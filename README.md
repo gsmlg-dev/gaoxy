@@ -1,0 +1,162 @@
+# Gaoxy
+
+An Elixir/OTP transport runtime, usable inside an application's supervision tree
+or as a standalone release. Gaoxy composes Thousand Island for TCP/OTP TLS and
+Abyss for UDP and optional generic QUIC. M0/M1 implements transport hosting,
+service lifecycle, finite admission, telemetry and custom protocol handlers.
+Native HTTP, WebSocket, Plug/Phoenix and proxies remain M2/M3/M4 work.
+
+**M0/M1 required transport foundation gates passed** on the recorded macOS and
+isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
+[task status and repair counters](docs/implementation-status.md).
+No release or package publication is claimed.
+
+## Development
+
+Core declares Elixir 1.18+. Executed baselines are macOS x86_64 with Elixir
+1.20.1/OTP29 and isolated Alpine Linux with Elixir1.19.5/OTP28. The pinned Abyss
+artifact builds a Rust NIF, so Rust/Cargo are required even for ordinary UDP.
+The locked Nix shell supplies Elixir1.18/OTP28, Rust/Cargo, Python, OpenSSL and
+Expect; its derivation was evaluated but the shell runtime was not executed.
+
+```sh
+mix deps.get --check-locked
+mix format --check-formatted
+mix compile --warnings-as-errors
+python3 scripts/check-tests.py
+bash scripts/external-consumer.sh
+```
+
+The test wrapper fails on empty execution. Tests use generated short-lived
+credentials and real sockets; independent TLS peers validate CA and hostname.
+For the measured local macOS timing environment, an explicit process-scoped
+`ELIXIR_ERL_OPTIONS='+S 2:2'` has passed the same checks/deadlines. Default VM
+release startup stalled during code preload, and default TLS timing has been
+intermittent; those failures remain recorded.
+
+## Embedded services
+
+```elixir
+defmodule Echo do
+  @behaviour Gaoxy.StreamHandler
+  def init(_metadata, _options), do: {:ok, nil}
+  def handle_data(bytes, state), do: {:send, bytes, state}
+end
+
+{:ok, runtime} = Gaoxy.start_link(services: [
+  %{id: "echo", transport: :tcp, ip: {127, 0, 0, 1}, port: 0, handler: Echo}
+])
+Gaoxy.info(runtime, "echo")
+Gaoxy.status(runtime, "echo")
+Gaoxy.pause(runtime, "echo")
+Gaoxy.resume(runtime, "echo")
+Gaoxy.remove(runtime, "echo", 1_000)
+Gaoxy.stop(runtime)
+```
+
+`Gaoxy.child_spec/1` embeds the runtime under supervision. `Gaoxy.add/2` validates
+before activation. Service IDs and telemetry are instance-scoped;
+`Gaoxy.handle/2` returns a generation-scoped handle usable in place of an ID.
+Actual ephemeral ports are reported after binding. Startup failure rolls back
+activated siblings, and explicit removal stays removed. TCP and UDP bindings
+are separate; conflicting same-family ownership is rejected.
+
+Streams preserve ordered bytes across arbitrary delivery boundaries. Their
+callbacks return continue/send/close/error actions, with independent state,
+output, callback and idle limits. TLS uses OTP `:ssl` explicitly. Selecting
+unsupported `:ex_ssl` or mTLS fails without fallback.
+
+Datagram handlers implement `handle_datagram(packet, options)` and return `:ok`,
+`{:reply, bytes}`, `{:send, destination, bytes}` or `{:error, reason}`. A packet
+preserves empty payloads, peer and actual local bind; unavailable destination
+and interface fields stay `:unknown`. The callback receives no listener socket
+or close capability. Addressed sends use the owned endpoint, enforce output/byte
+bounds and never automatically retry. Scoped IPv6 destinations use an explicit
+sockaddr. Multicast exposes `memberships/2`, `join/3`, `leave/3` with group/interface
+pairs, finite limits and desired-state recovery after restart.
+
+UDP pause retains the bind/memberships and stops admission; received paused
+packets are dropped, while kernel-queued packets may survive withheld credit.
+TCP/TLS pause unbinds new acceptance while admitted connections retain I/O;
+resume rebinds and may change a port-zero endpoint. Removal uses one absolute
+deadline and forces cleanup at expiry. Send telemetry distinguishes operation
+submission and local/unknown outcomes; admission and local completion do not
+prove peer delivery. Counters exclude arbitrary callback allocation and kernel
+buffers.
+
+## Standalone and mixed transports
+
+Standalone version1 JSON resolves handlers through a fixed allowlist, without
+evaluating code:
+
+```json
+{"version":1,"services":[{"id":"echo","transport":"tcp","handler":"stream_echo","ip":"127.0.0.1","port":4000}]}
+```
+
+```sh
+mix gaoxy.validate config.json
+MIX_ENV=prod mix release
+GAOXY_CONFIG=config.json _build/prod/rel/gaoxy/bin/gaoxy start
+```
+
+Startup emits `GAOXY_READY` with actual bound endpoints.
+[The mixed example](examples/mixed_transports/README.md) defines custom handlers
+and starts TCP, TLS, unicast, broadcast and multicast simultaneously. Its
+`MIXED_READY` record drives the dedicated example fixture.
+
+Run privileged network gates only in a disposable isolated Linux environment:
+
+```sh
+python3 integration/network/fixture.py --allow-privileged --ipv6
+GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6
+MIX_ENV=prod mix release
+python3 integration/network/release_gate.py --allow-privileged
+python3 integration/network/example_gate.py --allow-privileged
+```
+
+They create fixture-owned namespaces/veths, use two independent peers and clean
+up on failure. Do not use physical LAN broadcast or alter normal host routes.
+The recorded s93 executions use Docker `--network none` with explicit namespace
+capabilities. Linux IPv6 inet scoped egress passed; socket scoped egress is
+explicitly unsupported and tested for absence of delivery.
+
+## Optional QUIC
+
+The ordinary root/core graph contains no QUIC engine. An opt-in consumer locks
+`elixir_quic` and `ex_ssl` ==0.17.0 separately:
+
+```sh
+cd integration/quic_consumer
+mix deps.get --check-locked
+mix compile --warnings-as-errors
+python3 ../../scripts/check-tests.py
+```
+
+The consumer uses aioquic1.2.0/CPython3.12 via `uv`, generated credentials and a
+custom ALPN. The experimental `Gaoxy.QUICHandler` and `Gaoxy.QUIC` facade use
+only public `Abyss.QUIC` handles; the engine retains CID routing, cryptographic
+state, flow control and generations. Facade reads/writes are at most16KiB and
+also obey configured limits. Native operation references and unknown receipts
+are preserved; a write receipt means admission. QUIC pause and full protocol
+drain are unavailable; local host cleanup is reported explicitly. IPv6/wildcard
+QUIC, DATAGRAM, migration, mTLS,0-RTT,HTTP/3 and WebTransport are unsupported.
+The independent custom-ALPN wire gate passed. Test handlers can log
+`invalid_operation` after peer-requested close because polling races the native
+closing phase; clean/no-error fixture teardown is not established.
+
+| Feature | Current implementation/evidence |
+|---|---|
+| TCP / OTP TLS | Real exchanges, fragmented input, failure/bound isolation and independently validating TLS |
+| UDP unicast | Empty/nonempty/oversize, callback crash, sustained overload and admitted reply during drain |
+| IPv4 broadcast/multicast | Isolated inet/socket ingress/egress, two peers, TTL/interface/loopback and membership restart wire |
+| Lifecycle | Actual ports, pause/resume, deadline cleanup, generation/timer isolation and startup rollback |
+| Core-only consumer / release | Cold optional-stack exclusion; production five-transport traffic/shutdown/rebind |
+| IPv6 multicast | Linux inet accepted subset; socket scoped-send negative; macOS controls rejected |
+| Generic QUIC | Experimental custom-ALPN streams accepted with independent aioquic; noisy fixture close handling remains |
+| Custom TCP TLS | Explicitly unsupported; public ex_ssl server API missing |
+| Native HTTP/Phoenix/proxies | Future milestones; no placeholder engines |
+
+[Capability limits](docs/capabilities.md), [dependency provenance](docs/dependency-audit.md),
+[architecture](docs/architecture.md) and [ADRs](docs/adr/) define the boundaries.
+GitHub CI had not executed at implementation acceptance; local/isolated results
+are recorded separately from subsequent workflow runs.

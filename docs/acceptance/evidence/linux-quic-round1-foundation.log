@@ -1,0 +1,311 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', "docker run --rm --network none --cap-add NET_ADMIN --cap-add SYS_ADMIN --sysctl net.ipv6.conf.all.disable_ipv6=0 --sysctl net.ipv6.conf.default.disable_ipv6=0 --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/apps-quic-round1,dst=/input/apps,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/examples,dst=/work/examples,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/network,dst=/work/integration/network,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/tls_peer.py,dst=/work/integration/tls_peer.py,readonly gaoxy-m1-fixture:0b1c78889b84 /bin/sh -c 'set -e\ncp -a /input/apps/. /work/apps/\npython3 scripts/check-tests.py --seed 255475\nunbuffer mix compile --warnings-as-errors\npython3 integration/network/fixture.py --allow-privileged --ipv6\nGAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6\nMIX_ENV=prod unbuffer mix release\npython3 integration/network/release_gate.py --allow-privileged\npython3 integration/network/example_gate.py --allow-privileged'"]
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+==> earmark_parser
+Compiling 3 files (.erl)
+Compiling 32 files (.ex)
+Generated earmark_parser app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> rustler
+Compiling 7 files (.ex)
+Generated rustler app
+==> nimble_parsec
+Compiling 4 files (.ex)
+Generated nimble_parsec app
+==> makeup
+Compiling 15 files (.ex)
+Generated makeup app
+==> makeup_elixir
+Compiling 6 files (.ex)
+Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+Generated makeup_elixir app
+==> makeup_erlang
+Compiling 4 files (.ex)
+Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+Generated makeup_erlang app
+==> ex_doc
+Compiling 30 files (.ex)
+Generated ex_doc app
+===> Analyzing applications...
+===> Compiling telemetry
+==> thousand_island
+Compiling 18 files (.ex)
+Generated thousand_island app
+==> telemetry_metrics
+Compiling 7 files (.ex)
+Generated telemetry_metrics app
+==> abyss
+Compiling 28 files (.ex)
+Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+Generated abyss app
+==> gaoxy
+Compiling 14 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+==> gaoxy
+Running ExUnit with seed: 255475, max_cases: 4
+
+.....
+09:06:30.037 [info] The function passed as a handler with ID #Reference<0.2963560200.4052221953.203973> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+09:06:30.053 [info] The function passed as a handler with ID #Reference<0.2963560200.4052221954.204104> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+09:06:30.080 [error] GenServer #PID<0.1867.0> terminating
+** (stop) :fixture_init_error
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 56234}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.123>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2963560200.4052221953.204320>, start_time: -576460690985270082, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 56234, telemetry_span_context: #Reference<0.2963560200.4052221953.204320>, parent_telemetry_span_context: #Reference<0.2963560200.4052221953.204113>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2963560200.4052221953.204320>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2963560200.4052221953.203942>, service: :init_error, generation: #Reference<0.2963560200.4052221953.203949>}, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, handler_options: %{owner: #PID<0.1785.0>, action: :init_error}, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: [], quic: %{}}, gate: #PID<0.1791.0>}}
+
+09:06:30.100 [error] GenServer #PID<0.1869.0> terminating
+** (RuntimeError) fixture callback crash
+    test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:50: Gaoxy.StreamBridge.chunks/4
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+    (stdlib 7.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 41776}}}
+Last message: {:tcp, #Port<0.127>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.127>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2963560200.4052221953.204389>, start_time: -576460690973781370, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 41776, telemetry_span_context: #Reference<0.2963560200.4052221953.204389>, parent_telemetry_span_context: #Reference<0.2963560200.4052221953.204149>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2963560200.4052221953.204389>}}, read_timer: #Reference<0.2963560200.4052221953.204399>, read_deadline: -576460660971, timer_deadline: -576460660971}, %{scope: %{instance: #Reference<0.2963560200.4052221953.203942>, service: :crash, generation: #Reference<0.2963560200.4052221953.204116>}, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, handler_options: %{owner: #PID<0.1785.0>, action: :crash}, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: [], quic: %{}}, app: %{owner: #PID<0.1785.0>, action: :crash}, gate: #PID<0.1823.0>, lease: #Reference<0.2963560200.4052221953.204391>}}
+
+09:06:30.110 [error] GenServer #PID<0.1873.0> terminating
+** (stop) :state_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 48326}}}
+Last message: {:tcp, #Port<0.135>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.135>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2963560200.4052221953.204551>, start_time: -576460690954673738, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 48326, telemetry_span_context: #Reference<0.2963560200.4052221953.204551>, parent_telemetry_span_context: #Reference<0.2963560200.4052221953.204221>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2963560200.4052221953.204551>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2963560200.4052221953.203942>, service: :state, generation: #Reference<0.2963560200.4052221953.204188>}, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, handler_options: %{owner: #PID<0.1785.0>, action: :state}, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: [], quic: %{}}, app: %{owner: #PID<0.1785.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, gate: #PID<0.1841.0>, lease: #Reference<0.2963560200.4052221953.204553>}}
+
+09:06:30.113 [error] GenServer #PID<0.1875.0> terminating
+** (stop) :output_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 47324}}}
+Last message: {:tcp, #Port<0.139>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.139>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2963560200.4052221953.204616>, start_time: -576460690951935402, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 47324, telemetry_span_context: #Reference<0.2963560200.4052221953.204616>, parent_telemetry_span_context: #Reference<0.2963560200.4052221953.204257>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2963560200.4052221953.204616>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2963560200.4052221953.203942>, service: :output, generation: #Reference<0.2963560200.4052221953.204224>}, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, handler_options: %{owner: #PID<0.1785.0>, action: :output}, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: [], quic: %{}}, app: %{owner: #PID<0.1785.0>, action: :output}, gate: #PID<0.1850.0>, lease: #Reference<0.2963560200.4052221953.204618>}}
+..
+09:06:30.562 [info] The function passed as a handler with ID #Reference<0.2963560200.4052221953.204917> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+09:06:30.793 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+09:06:30.816 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+......
+09:06:31.388 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+09:06:31.421 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+..
+09:06:31.616 [info] The function passed as a handler with ID #Reference<0.2963560200.4052221954.205855> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+..
+09:06:31.629 [error] GenServer #PID<0.2187.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2183.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.2187.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+
+09:06:31.630 [error] GenServer #PID<0.2189.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2183.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.2183.0>}
+.
+09:06:31.630 [error] GenServer #PID<0.2184.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2183.0>, :killed}
+State: {:state, {#PID<0.2184.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.2185.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.2183.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2963560200.4052221954.205965>, service: "udp", generation: #Reference<0.2963560200.4052221954.205970>}, spec: %{id: "udp", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.LifecycleAcceptanceTest.Datagram, tls: %{}, handler_options: #PID<0.2177.0>, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 65507, max_state: 65536, drain_timeout: 5000, max_memberships: 64}, transport: :udp, capabilities: [], quic: %{}}, gate: #PID<0.2182.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, ...}
+
+09:06:31.636 [error] GenServer #PID<0.2210.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2203.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.2203.0>}
+
+09:06:31.636 [error] GenServer #PID<0.2208.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2203.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.2208.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{#PID<0.2211.0> => {{Abyss.Connection, :guarded_start, :undefined}, :temporary, 5000, :worker, [Abyss.Connection]}}, restarts: []}
+
+09:06:31.636 [error] GenServer #PID<0.2204.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2203.0>, :killed}
+State: {:state, {#PID<0.2204.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.2205.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.2203.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2963560200.4052221953.207613>, service: "echo", generation: #Reference<0.2963560200.4052221953.207618>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, handler_options: #PID<0.2197.0>, limits: %{max_bytes: 1048576, callback_timeout: 5000, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_output: 65507, max_state: 65536, drain_timeout: 5000, max_memberships: 64}, transport: :udp, capabilities: [], quic: %{}}, gate: #PID<0.2202.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, ...}
+
+09:06:31.636 [error] GenServer #PID<0.2132.0> terminating
+** (stop) killed
+Process Label: {:thousand_island, :acceptor_pool_supervisor, {0, Gaoxy.StreamBridge}}
+Last message: {:EXIT, #PID<0.2130.0>, :killed}
+State: {:state, {#PID<0.2132.0>, ThousandIsland.AcceptorPoolSupervisor}, :one_for_one, {["acceptor-1"], %{"acceptor-1" => {:child, #PID<0.2133.0>, "acceptor-1", {ThousandIsland.AcceptorSupervisor, :start_link, [{#PID<0.2130.0>, 1, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.2963560200.4052221954.205748>, service: "blocked", generation: #Reference<0.2963560200.4052221954.205758>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.SendOutcomeTest.Output, tls: %{}, handler_options: %{output: #Reference<0.2963560200.4052353026.205732>, owner: #PID<0.2108.0>}, limits: %{max_bytes: 16842752, callback_timeout: 500, idle_timeout: 30000, max_active: 1, max_packet: 65507, max_output: 16777216, max_state: 65536, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: [], quic: %{}}, gate: #PID<0.2129.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorSupervisor]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.2963560200.4052221953.207363>, ThousandIsland.AcceptorPoolSupervisor, ...}
+...
+Finished in 1.9 seconds (1.9s async, 0.00s sync)
+23 tests, 0 failures
+==> gaoxy_server
+Running ExUnit with seed: 255475, max_cases: 4
+
+.
+Finished in 0.04 seconds (0.04s async, 0.00s sync)
+1 test, 0 failures
+==> gaoxy_http
+There are no tests to run
+==> gaoxy_proxy
+There are no tests to run
+==> gaoxy
+Compiling 11 files (.ex)
+Generated gaoxy app
+PASS broadcast_255.255.255.255_two_senders_original_port_reply
+PASS broadcast_192.0.2.255_two_senders_original_port_reply
+PASS ipv4_two_groups_two_independent_subscribers
+PASS ipv4_duplicate_join_absent_leave_rejoin_delivery
+PASS ipv4_membership_limit_and_failed_startup_rollback
+PASS ipv4_same_group_membership_on_second_interface
+PASS ipv4_pause_retains_membership_and_original_reply_port
+PASS ipv6_two_groups_two_independent_subscribers
+PASS ipv6_duplicate_join_absent_leave_rejoin_delivery
+PASS ipv6_membership_limit_and_failed_startup_rollback
+PASS ipv6_same_group_membership_on_second_interface
+PASS ipv6_pause_retains_membership_and_original_reply_port
+PASS empty_datagram_and_independent_broadcast_multicast_listeners
+PASS ipv4_desired_membership_restart_wire_stale_handle_sibling_isolation
+PASS ipv6_desired_membership_restart_wire_stale_handle_sibling_isolation
+PASS outgoing_broadcast_255.255.255.255_source_port
+PASS outgoing_broadcast_192.0.2.255_source_port
+PASS ipv4_outgoing_ttl_hops_loopback_enabled_first_interface_empty
+PASS ipv4_outgoing_second_interface_ttl_hops_loopback_disabled
+PASS ipv6_outgoing_ttl_hops_loopback_enabled_first_interface_empty
+PASS ipv6_outgoing_second_interface_ttl_hops_loopback_disabled
+{"result": "PASS", "suite": "ingress_membership_egress", "gates": ["broadcast_255.255.255.255_two_senders_original_port_reply", "broadcast_192.0.2.255_two_senders_original_port_reply", "ipv4_two_groups_two_independent_subscribers", "ipv4_duplicate_join_absent_leave_rejoin_delivery", "ipv4_membership_limit_and_failed_startup_rollback", "ipv4_same_group_membership_on_second_interface", "ipv4_pause_retains_membership_and_original_reply_port", "ipv6_two_groups_two_independent_subscribers", "ipv6_duplicate_join_absent_leave_rejoin_delivery", "ipv6_membership_limit_and_failed_startup_rollback", "ipv6_same_group_membership_on_second_interface", "ipv6_pause_retains_membership_and_original_reply_port", "empty_datagram_and_independent_broadcast_multicast_listeners", "ipv4_desired_membership_restart_wire_stale_handle_sibling_isolation", "ipv6_desired_membership_restart_wire_stale_handle_sibling_isolation", "outgoing_broadcast_255.255.255.255_source_port", "outgoing_broadcast_192.0.2.255_source_port", "ipv4_outgoing_ttl_hops_loopback_enabled_first_interface_empty", "ipv4_outgoing_second_interface_ttl_hops_loopback_disabled", "ipv6_outgoing_ttl_hops_loopback_enabled_first_interface_empty", "ipv6_outgoing_second_interface_ttl_hops_loopback_disabled"], "count": 21, "backend": "inet", "payload_sizes": [0, 6, 40, 41, 42, 47, 48, 50, 51, 52, 53, 54, 56, 57, 59, 60, 62, 63, 66, 80, 83, 152, 155, 160, 163, 166, 174], "peer_capability_notices": ["PEER_CAP IPV6_MULTICAST_ALL unavailable; SO_BINDTODEVICE active"], "remaining_M1_gates": ["blocked_uncertain_sends"]}
+PASS broadcast_255.255.255.255_two_senders_original_port_reply
+PASS broadcast_192.0.2.255_two_senders_original_port_reply
+PASS ipv4_two_groups_two_independent_subscribers
+PASS ipv4_duplicate_join_absent_leave_rejoin_delivery
+PASS ipv4_membership_limit_and_failed_startup_rollback
+PASS ipv4_same_group_membership_on_second_interface
+PASS ipv4_pause_retains_membership_and_original_reply_port
+PASS ipv6_two_groups_two_independent_subscribers
+PASS ipv6_duplicate_join_absent_leave_rejoin_delivery
+PASS ipv6_membership_limit_and_failed_startup_rollback
+PASS ipv6_same_group_membership_on_second_interface
+PASS ipv6_pause_retains_membership_and_original_reply_port
+PASS empty_datagram_and_independent_broadcast_multicast_listeners
+PASS ipv4_desired_membership_restart_wire_stale_handle_sibling_isolation
+PASS ipv6_desired_membership_restart_wire_stale_handle_sibling_isolation
+PASS outgoing_broadcast_255.255.255.255_source_port
+PASS outgoing_broadcast_192.0.2.255_source_port
+PASS ipv4_outgoing_ttl_hops_loopback_enabled_first_interface_empty
+PASS ipv4_outgoing_second_interface_ttl_hops_loopback_disabled
+PASS ipv6_socket_scoped_send_explicit_unsupported
+{"result": "PASS", "suite": "ingress_membership_egress", "gates": ["broadcast_255.255.255.255_two_senders_original_port_reply", "broadcast_192.0.2.255_two_senders_original_port_reply", "ipv4_two_groups_two_independent_subscribers", "ipv4_duplicate_join_absent_leave_rejoin_delivery", "ipv4_membership_limit_and_failed_startup_rollback", "ipv4_same_group_membership_on_second_interface", "ipv4_pause_retains_membership_and_original_reply_port", "ipv6_two_groups_two_independent_subscribers", "ipv6_duplicate_join_absent_leave_rejoin_delivery", "ipv6_membership_limit_and_failed_startup_rollback", "ipv6_same_group_membership_on_second_interface", "ipv6_pause_retains_membership_and_original_reply_port", "empty_datagram_and_independent_broadcast_multicast_listeners", "ipv4_desired_membership_restart_wire_stale_handle_sibling_isolation", "ipv6_desired_membership_restart_wire_stale_handle_sibling_isolation", "outgoing_broadcast_255.255.255.255_source_port", "outgoing_broadcast_192.0.2.255_source_port", "ipv4_outgoing_ttl_hops_loopback_enabled_first_interface_empty", "ipv4_outgoing_second_interface_ttl_hops_loopback_disabled", "ipv6_socket_scoped_send_explicit_unsupported"], "count": 20, "backend": "socket", "payload_sizes": [0, 6, 40, 41, 42, 47, 48, 50, 51, 52, 53, 54, 56, 57, 59, 60, 62, 63, 66, 83, 100, 155, 163, 166, 174], "peer_capability_notices": ["PEER_CAP IPV6_MULTICAST_ALL unavailable; SO_BINDTODEVICE active"], "remaining_M1_gates": ["blocked_uncertain_sends"]}
+==> earmark_parser
+Compiling 3 files (.erl)
+Compiling 32 files (.ex)
+Generated earmark_parser app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> rustler
+Compiling 7 files (.ex)
+Generated rustler app
+==> nimble_parsec
+Compiling 4 files (.ex)
+Generated nimble_parsec app
+==> makeup
+Compiling 15 files (.ex)
+Generated makeup app
+==> makeup_elixir
+Compiling 6 files (.ex)
+Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+Generated makeup_elixir app
+==> makeup_erlang
+Compiling 4 files (.ex)
+Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+Generated makeup_erlang app
+==> ex_doc
+Compiling 30 files (.ex)
+Generated ex_doc app
+===> Analyzing applications...
+===> Compiling telemetry
+==> thousand_island
+Compiling 18 files (.ex)
+Generated thousand_island app
+==> telemetry_metrics
+Compiling 7 files (.ex)
+Generated telemetry_metrics app
+==> abyss
+Compiling 28 files (.ex)
+Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+Generated abyss app
+==> gaoxy
+Compiling 14 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+[32m* assembling [0mgaoxy-0.1.0 on MIX_ENV=prod[0m
+[33m* skipping [0mruntime configuration (config/runtime.exs not found)[0m
+[33m* skipping [0melixir.bat for windows (bin/elixir.bat not found in the Elixir installation)[0m
+[33m* skipping [0miex.bat for windows (bin/iex.bat not found in the Elixir installation)[0m
+
+Release created at _build/prod/rel/gaoxy
+
+    # To start your system
+    _build/prod/rel/gaoxy/bin/gaoxy start
+
+Once the release is running:
+
+    # To connect to it remotely
+    _build/prod/rel/gaoxy/bin/gaoxy remote
+
+    # To stop it gracefully (you may also send SIGINT/SIGTERM)
+    _build/prod/rel/gaoxy/bin/gaoxy stop
+
+To list all commands:
+
+    _build/prod/rel/gaoxy/bin/gaoxy
+
+/tmp/gaoxy-five-release-o3ik3z48/cert.pem: OK
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_all_five_bindings_reusable_after_shutdown
+{"result": "PASS", "suite": "five_transport_release", "count": 11, "transports": 5, "independent_peers": 2}
+/tmp/gaoxy-mixed-example-16noy5vt/cert.pem: OK
+FAIL AssertionError('child exited 1; output=[\'** (MatchError) no match of right hand side value:\', \'\', \'    {{192, 0, 2, 10}, 49430}\', \'\', \'    examples/mixed_transports/run.exs:61: anonymous fn/2 in :elixir_compiler_8.__FILE__/1\', \'    (elixir 1.19.5) lib/enum.ex:1688: Enum."-map/2-lists^map/1-1-"/2\', \'    examples/mixed_transports/run.exs:60: (file)\']')
+Child output:
+** (MatchError) no match of right hand side value:
+
+    {{192, 0, 2, 10}, 49430}
+
+    examples/mixed_transports/run.exs:61: anonymous fn/2 in :elixir_compiler_8.__FILE__/1
+    (elixir 1.19.5) lib/enum.ex:1688: Enum."-map/2-lists^map/1-1-"/2
+    examples/mixed_transports/run.exs:60: (file)
+EXIT 1 ELAPSED 205.74

@@ -1,0 +1,32 @@
+==> gaoxy
+Compiling 2 files (.ex)
+==> gaoxy
+Running ExUnit with seed: 152200, max_cases: 24
+
+.
+14:01:59.610 [error] GenServer #PID<0.371.0> terminating
+** (stop) exited in: GenServer.call(#PID<0.363.0>, {:acquire, 4}, 5000)
+    ** (EXIT) normal
+    (elixir 1.20.1) lib/gen_server.ex:1183: GenServer.call/3
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:10: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 8.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 8.0.1) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 60063, "wait"}}}
+State: %{broadcast: false, socket: #Port<0.29>, listener: #PID<0.366.0>, read_timeout: 30000, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.3952901112.2145386498.156850>, service: "echo", generation: #Reference<0.3952901112.2145386498.156855>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, limits: %{max_bytes: 1048576, max_memberships: 64, max_active: 64, max_packet: 65507, callback_timeout: 5000, idle_timeout: 30000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, transport: :udp, handler_options: #PID<0.358.0>, capabilities: []}, gate: #PID<0.363.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3952901112.2145386497.153488>, start_time: -576460683471554677, start_metadata: %{handler: Gaoxy.DatagramBridge, local_info: {{127, 0, 0, 1}, 61193}, server_pid: #PID<0.364.0>, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 60063, sampled: true, telemetry_span_context: #Reference<0.3952901112.2145386497.153488>, parent_telemetry_span_context: #Reference<0.3952901112.2145386497.153453>}}, processing_times: [], adaptive_timeout: 30000, memory_token: #Reference<0.3952901112.2145386497.153513>, idle_token: nil, idle_deadline: :infinity, idle_timer: nil, memory_check_interval: 10000, memory_timer: #Reference<0.3952901112.2145386497.153514>}
+
+
+  1) test deadline forces cleanup and intentionally removed child remains stopped (Gaoxy.RuntimeTest)
+     apps/gaoxy/test/runtime_test.exs:166
+     Assertion failed, no matching message after 100ms
+     The process mailbox is empty.
+     code: assert_receive {:packet, worker, _}
+     stacktrace:
+       test/runtime_test.exs:171: (test)
+
+.....
+Finished in 7.4 seconds (7.4s async, 0.00s sync)
+
+Result: 6/7 passed
+Failed: 1 test

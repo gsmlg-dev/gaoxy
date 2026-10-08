@@ -1,0 +1,190 @@
+DIAGNOSTIC: unchanged round2 test compiled in memory; only independent Peer.close logging added; no source files edited
+COMMAND: MIX_ENV=test ELIXIR_ERL_OPTIONS=+S 2:2 mix run -e <runner>
+PEER INSTRUMENTATION:
+#!/usr/bin/env python3
+"""Independent, certificate-validating aioquic 1.2.0 application peer."""
+import argparse
+import asyncio
+import json
+import datetime
+
+from aioquic.asyncio import connect
+from aioquic.asyncio.protocol import QuicConnectionProtocol
+from aioquic.quic.configuration import QuicConfiguration
+from aioquic.quic.events import (
+    ConnectionTerminated, StopSendingReceived, StreamDataReceived, StreamReset,
+)
+
+
+class Peer(QuicConnectionProtocol):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.data, self.fins, self.resets, self.stops = {}, set(), {}, {}
+        self.terminated = None
+        self.changed = asyncio.Event()
+
+    def close(self, *args, **kwargs):
+        print(json.dumps({"diagnostic": "peer_close_requested", "at": datetime.datetime.now().isoformat(timespec="milliseconds"), "connection": id(self), "mode": PROBE_MODE, "arguments": kwargs}), flush=True)
+        return super().close(*args, **kwargs)
+
+    def quic_event_received(self, event):
+        if isinstance(event, StreamDataReceived):
+            sid = event.stream_id
+            self.data[sid] = self.data.get(sid, b"") + event.data
+            if event.end_stream:
+                self.fins.add(sid)
+                # A server bidi FIN only closes its sending direction.
+                if sid == 1:
+                    self._quic.send_stream_data(sid, b"after-server-fin", end_stream=True)
+                    self.transmit()
+        elif isinstance(event, StreamReset):
+            self.resets[event.stream_id] = event.error_code
+        elif isinstance(event, StopSendingReceived):
+            self.stops[event.stream_id] = event.error_code
+        elif isinstance(event, ConnectionTerminated):
+            self.terminated = event.error_code
+        self.changed.set()
+
+    async def until(self, predicate):
+        async with asyncio.timeout(15):
+            while not predicate():
+                assert self.terminated is None, (self.terminated, self.data, self.fins)
+                self.changed.clear()
+                await self.changed.wait()
+
+    def send(self, sid, data, fin=True):
+        self._quic.send_stream_data(sid, data, end_stream=fin)
+        self.transmit()
+
+
+async def exchange(peer, value):
+    peer.send(0, value)
+    await peer.until(lambda: 0 in peer.fins and 1 in peer.fins)
+    assert peer.data[0] == value
+    assert peer.data[1] == b"server-fin"
+
+
+async def run(args):
+    global PROBE_MODE
+    PROBE_MODE = args.mode
+    config = QuicConfiguration(
+        is_client=True, alpn_protocols=[args.alpn], max_data=4096,
+        max_stream_data=2048, idle_timeout=20,
+    )
+    config.server_name = "localhost"
+    config.load_verify_locations(args.ca)
+    async with connect("127.0.0.1", args.port, configuration=config, create_protocol=Peer) as peer:
+        if args.mode == "echo":
+            await exchange(peer, b"bounded-gaoxy-stream-" * 16384)
+            peer.send(4, b"second-stream")
+            await peer.until(lambda: 4 in peer.fins)
+            assert peer.data[4] == b"second-stream"
+            print(json.dumps({"result": "PASS", "gate": "stream_flow_control_fin",
+                              "bytes": len(peer.data[0]), "streams": 3}), flush=True)
+        elif args.mode == "isolation":
+            async with connect("127.0.0.1", args.port, configuration=config, create_protocol=Peer) as sibling:
+                peer.close(error_code=0x9876, reason_phrase="one connection")
+                await asyncio.wait_for(peer.wait_closed(), 5)
+                await exchange(sibling, b"surviving-connection-" * 4096)
+                print(json.dumps({"result": "PASS", "gate": "connection_close_isolation",
+                                  "bytes": len(sibling.data[0])}), flush=True)
+        elif args.mode == "controls":
+            peer.send(0, b"reset", False)
+            peer.send(4, b"stop", False)
+            await peer.until(lambda: 0 in peer.resets and 4 in peer.stops)
+            assert peer.resets[0] == 0x12345
+            assert peer.stops[4] == 0x54321
+            print(json.dumps({"result": "PASS", "gate": "directional_reset_stop",
+                              "reset": peer.resets[0], "stop": peer.stops[4]}), flush=True)
+        elif args.mode == "negative":
+            raise AssertionError("unsupported ALPN / untrusted CA unexpectedly connected")
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--port", required=True, type=int)
+    parser.add_argument("--ca", required=True)
+    parser.add_argument("--alpn", default="gaoxy-stream-v1")
+    parser.add_argument("--mode", required=True, choices=["echo", "isolation", "controls", "negative"])
+    args = parser.parse_args()
+    try:
+        asyncio.run(run(args))
+    except ConnectionError:
+        if args.mode != "negative":
+            raise
+        print(json.dumps({"result": "PASS", "gate": "handshake_rejected", "alpn": args.alpn}), flush=True)
+
+
+if __name__ == "__main__":
+    main()
+
+RUNNER:
+ExUnit.start(autorun: false, seed: 757928)
+source = File.read!("test/quic_test.exs")
+source = String.replace(source, "\"peer.py\",", "\"-c\", Base.decode64!(\"IyEvdXNyL2Jpbi9lbnYgcHl0aG9uMwoiIiJJbmRlcGVuZGVudCwgY2VydGlmaWNhdGUtdmFsaWRhdGluZyBhaW9xdWljIDEuMi4wIGFwcGxpY2F0aW9uIHBlZXIuIiIiCmltcG9ydCBhcmdwYXJzZQppbXBvcnQgYXN5bmNpbwppbXBvcnQganNvbgppbXBvcnQgZGF0ZXRpbWUKCmZyb20gYWlvcXVpYy5hc3luY2lvIGltcG9ydCBjb25uZWN0CmZyb20gYWlvcXVpYy5hc3luY2lvLnByb3RvY29sIGltcG9ydCBRdWljQ29ubmVjdGlvblByb3RvY29sCmZyb20gYWlvcXVpYy5xdWljLmNvbmZpZ3VyYXRpb24gaW1wb3J0IFF1aWNDb25maWd1cmF0aW9uCmZyb20gYWlvcXVpYy5xdWljLmV2ZW50cyBpbXBvcnQgKAogICAgQ29ubmVjdGlvblRlcm1pbmF0ZWQsIFN0b3BTZW5kaW5nUmVjZWl2ZWQsIFN0cmVhbURhdGFSZWNlaXZlZCwgU3RyZWFtUmVzZXQsCikKCgpjbGFzcyBQZWVyKFF1aWNDb25uZWN0aW9uUHJvdG9jb2wpOgogICAgZGVmIF9faW5pdF9fKHNlbGYsICphcmdzLCAqKmt3YXJncyk6CiAgICAgICAgc3VwZXIoKS5fX2luaXRfXygqYXJncywgKiprd2FyZ3MpCiAgICAgICAgc2VsZi5kYXRhLCBzZWxmLmZpbnMsIHNlbGYucmVzZXRzLCBzZWxmLnN0b3BzID0ge30sIHNldCgpLCB7fSwge30KICAgICAgICBzZWxmLnRlcm1pbmF0ZWQgPSBOb25lCiAgICAgICAgc2VsZi5jaGFuZ2VkID0gYXN5bmNpby5FdmVudCgpCgogICAgZGVmIGNsb3NlKHNlbGYsICphcmdzLCAqKmt3YXJncyk6CiAgICAgICAgcHJpbnQoanNvbi5kdW1wcyh7ImRpYWdub3N0aWMiOiAicGVlcl9jbG9zZV9yZXF1ZXN0ZWQiLCAiYXQiOiBkYXRldGltZS5kYXRldGltZS5ub3coKS5pc29mb3JtYXQodGltZXNwZWM9Im1pbGxpc2Vjb25kcyIpLCAiY29ubmVjdGlvbiI6IGlkKHNlbGYpLCAibW9kZSI6IFBST0JFX01PREUsICJhcmd1bWVudHMiOiBrd2FyZ3N9KSwgZmx1c2g9VHJ1ZSkKICAgICAgICByZXR1cm4gc3VwZXIoKS5jbG9zZSgqYXJncywgKiprd2FyZ3MpCgogICAgZGVmIHF1aWNfZXZlbnRfcmVjZWl2ZWQoc2VsZiwgZXZlbnQpOgogICAgICAgIGlmIGlzaW5zdGFuY2UoZXZlbnQsIFN0cmVhbURhdGFSZWNlaXZlZCk6CiAgICAgICAgICAgIHNpZCA9IGV2ZW50LnN0cmVhbV9pZAogICAgICAgICAgICBzZWxmLmRhdGFbc2lkXSA9IHNlbGYuZGF0YS5nZXQoc2lkLCBiIiIpICsgZXZlbnQuZGF0YQogICAgICAgICAgICBpZiBldmVudC5lbmRfc3RyZWFtOgogICAgICAgICAgICAgICAgc2VsZi5maW5zLmFkZChzaWQpCiAgICAgICAgICAgICAgICAjIEEgc2VydmVyIGJpZGkgRklOIG9ubHkgY2xvc2VzIGl0cyBzZW5kaW5nIGRpcmVjdGlvbi4KICAgICAgICAgICAgICAgIGlmIHNpZCA9PSAxOgogICAgICAgICAgICAgICAgICAgIHNlbGYuX3F1aWMuc2VuZF9zdHJlYW1fZGF0YShzaWQsIGIiYWZ0ZXItc2VydmVyLWZpbiIsIGVuZF9zdHJlYW09VHJ1ZSkKICAgICAgICAgICAgICAgICAgICBzZWxmLnRyYW5zbWl0KCkKICAgICAgICBlbGlmIGlzaW5zdGFuY2UoZXZlbnQsIFN0cmVhbVJlc2V0KToKICAgICAgICAgICAgc2VsZi5yZXNldHNbZXZlbnQuc3RyZWFtX2lkXSA9IGV2ZW50LmVycm9yX2NvZGUKICAgICAgICBlbGlmIGlzaW5zdGFuY2UoZXZlbnQsIFN0b3BTZW5kaW5nUmVjZWl2ZWQpOgogICAgICAgICAgICBzZWxmLnN0b3BzW2V2ZW50LnN0cmVhbV9pZF0gPSBldmVudC5lcnJvcl9jb2RlCiAgICAgICAgZWxpZiBpc2luc3RhbmNlKGV2ZW50LCBDb25uZWN0aW9uVGVybWluYXRlZCk6CiAgICAgICAgICAgIHNlbGYudGVybWluYXRlZCA9IGV2ZW50LmVycm9yX2NvZGUKICAgICAgICBzZWxmLmNoYW5nZWQuc2V0KCkKCiAgICBhc3luYyBkZWYgdW50aWwoc2VsZiwgcHJlZGljYXRlKToKICAgICAgICBhc3luYyB3aXRoIGFzeW5jaW8udGltZW91dCgxNSk6CiAgICAgICAgICAgIHdoaWxlIG5vdCBwcmVkaWNhdGUoKToKICAgICAgICAgICAgICAgIGFzc2VydCBzZWxmLnRlcm1pbmF0ZWQgaXMgTm9uZSwgKHNlbGYudGVybWluYXRlZCwgc2VsZi5kYXRhLCBzZWxmLmZpbnMpCiAgICAgICAgICAgICAgICBzZWxmLmNoYW5nZWQuY2xlYXIoKQogICAgICAgICAgICAgICAgYXdhaXQgc2VsZi5jaGFuZ2VkLndhaXQoKQoKICAgIGRlZiBzZW5kKHNlbGYsIHNpZCwgZGF0YSwgZmluPVRydWUpOgogICAgICAgIHNlbGYuX3F1aWMuc2VuZF9zdHJlYW1fZGF0YShzaWQsIGRhdGEsIGVuZF9zdHJlYW09ZmluKQogICAgICAgIHNlbGYudHJhbnNtaXQoKQoKCmFzeW5jIGRlZiBleGNoYW5nZShwZWVyLCB2YWx1ZSk6CiAgICBwZWVyLnNlbmQoMCwgdmFsdWUpCiAgICBhd2FpdCBwZWVyLnVudGlsKGxhbWJkYTogMCBpbiBwZWVyLmZpbnMgYW5kIDEgaW4gcGVlci5maW5zKQogICAgYXNzZXJ0IHBlZXIuZGF0YVswXSA9PSB2YWx1ZQogICAgYXNzZXJ0IHBlZXIuZGF0YVsxXSA9PSBiInNlcnZlci1maW4iCgoKYXN5bmMgZGVmIHJ1bihhcmdzKToKICAgIGdsb2JhbCBQUk9CRV9NT0RFCiAgICBQUk9CRV9NT0RFID0gYXJncy5tb2RlCiAgICBjb25maWcgPSBRdWljQ29uZmlndXJhdGlvbigKICAgICAgICBpc19jbGllbnQ9VHJ1ZSwgYWxwbl9wcm90b2NvbHM9W2FyZ3MuYWxwbl0sIG1heF9kYXRhPTQwOTYsCiAgICAgICAgbWF4X3N0cmVhbV9kYXRhPTIwNDgsIGlkbGVfdGltZW91dD0yMCwKICAgICkKICAgIGNvbmZpZy5zZXJ2ZXJfbmFtZSA9ICJsb2NhbGhvc3QiCiAgICBjb25maWcubG9hZF92ZXJpZnlfbG9jYXRpb25zKGFyZ3MuY2EpCiAgICBhc3luYyB3aXRoIGNvbm5lY3QoIjEyNy4wLjAuMSIsIGFyZ3MucG9ydCwgY29uZmlndXJhdGlvbj1jb25maWcsIGNyZWF0ZV9wcm90b2NvbD1QZWVyKSBhcyBwZWVyOgogICAgICAgIGlmIGFyZ3MubW9kZSA9PSAiZWNobyI6CiAgICAgICAgICAgIGF3YWl0IGV4Y2hhbmdlKHBlZXIsIGIiYm91bmRlZC1nYW94eS1zdHJlYW0tIiAqIDE2Mzg0KQogICAgICAgICAgICBwZWVyLnNlbmQoNCwgYiJzZWNvbmQtc3RyZWFtIikKICAgICAgICAgICAgYXdhaXQgcGVlci51bnRpbChsYW1iZGE6IDQgaW4gcGVlci5maW5zKQogICAgICAgICAgICBhc3NlcnQgcGVlci5kYXRhWzRdID09IGIic2Vjb25kLXN0cmVhbSIKICAgICAgICAgICAgcHJpbnQoanNvbi5kdW1wcyh7InJlc3VsdCI6ICJQQVNTIiwgImdhdGUiOiAic3RyZWFtX2Zsb3dfY29udHJvbF9maW4iLAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYnl0ZXMiOiBsZW4ocGVlci5kYXRhWzBdKSwgInN0cmVhbXMiOiAzfSksIGZsdXNoPVRydWUpCiAgICAgICAgZWxpZiBhcmdzLm1vZGUgPT0gImlzb2xhdGlvbiI6CiAgICAgICAgICAgIGFzeW5jIHdpdGggY29ubmVjdCgiMTI3LjAuMC4xIiwgYXJncy5wb3J0LCBjb25maWd1cmF0aW9uPWNvbmZpZywgY3JlYXRlX3Byb3RvY29sPVBlZXIpIGFzIHNpYmxpbmc6CiAgICAgICAgICAgICAgICBwZWVyLmNsb3NlKGVycm9yX2NvZGU9MHg5ODc2LCByZWFzb25fcGhyYXNlPSJvbmUgY29ubmVjdGlvbiIpCiAgICAgICAgICAgICAgICBhd2FpdCBhc3luY2lvLndhaXRfZm9yKHBlZXIud2FpdF9jbG9zZWQoKSwgNSkKICAgICAgICAgICAgICAgIGF3YWl0IGV4Y2hhbmdlKHNpYmxpbmcsIGIic3Vydml2aW5nLWNvbm5lY3Rpb24tIiAqIDQwOTYpCiAgICAgICAgICAgICAgICBwcmludChqc29uLmR1bXBzKHsicmVzdWx0IjogIlBBU1MiLCAiZ2F0ZSI6ICJjb25uZWN0aW9uX2Nsb3NlX2lzb2xhdGlvbiIsCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAiYnl0ZXMiOiBsZW4oc2libGluZy5kYXRhWzBdKX0pLCBmbHVzaD1UcnVlKQogICAgICAgIGVsaWYgYXJncy5tb2RlID09ICJjb250cm9scyI6CiAgICAgICAgICAgIHBlZXIuc2VuZCgwLCBiInJlc2V0IiwgRmFsc2UpCiAgICAgICAgICAgIHBlZXIuc2VuZCg0LCBiInN0b3AiLCBGYWxzZSkKICAgICAgICAgICAgYXdhaXQgcGVlci51bnRpbChsYW1iZGE6IDAgaW4gcGVlci5yZXNldHMgYW5kIDQgaW4gcGVlci5zdG9wcykKICAgICAgICAgICAgYXNzZXJ0IHBlZXIucmVzZXRzWzBdID09IDB4MTIzNDUKICAgICAgICAgICAgYXNzZXJ0IHBlZXIuc3RvcHNbNF0gPT0gMHg1NDMyMQogICAgICAgICAgICBwcmludChqc29uLmR1bXBzKHsicmVzdWx0IjogIlBBU1MiLCAiZ2F0ZSI6ICJkaXJlY3Rpb25hbF9yZXNldF9zdG9wIiwKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgInJlc2V0IjogcGVlci5yZXNldHNbMF0sICJzdG9wIjogcGVlci5zdG9wc1s0XX0pLCBmbHVzaD1UcnVlKQogICAgICAgIGVsaWYgYXJncy5tb2RlID09ICJuZWdhdGl2ZSI6CiAgICAgICAgICAgIHJhaXNlIEFzc2VydGlvbkVycm9yKCJ1bnN1cHBvcnRlZCBBTFBOIC8gdW50cnVzdGVkIENBIHVuZXhwZWN0ZWRseSBjb25uZWN0ZWQiKQoKCmRlZiBtYWluKCk6CiAgICBwYXJzZXIgPSBhcmdwYXJzZS5Bcmd1bWVudFBhcnNlcigpCiAgICBwYXJzZXIuYWRkX2FyZ3VtZW50KCItLXBvcnQiLCByZXF1aXJlZD1UcnVlLCB0eXBlPWludCkKICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tY2EiLCByZXF1aXJlZD1UcnVlKQogICAgcGFyc2VyLmFkZF9hcmd1bWVudCgiLS1hbHBuIiwgZGVmYXVsdD0iZ2FveHktc3RyZWFtLXYxIikKICAgIHBhcnNlci5hZGRfYXJndW1lbnQoIi0tbW9kZSIsIHJlcXVpcmVkPVRydWUsIGNob2ljZXM9WyJlY2hvIiwgImlzb2xhdGlvbiIsICJjb250cm9scyIsICJuZWdhdGl2ZSJdKQogICAgYXJncyA9IHBhcnNlci5wYXJzZV9hcmdzKCkKICAgIHRyeToKICAgICAgICBhc3luY2lvLnJ1bihydW4oYXJncykpCiAgICBleGNlcHQgQ29ubmVjdGlvbkVycm9yOgogICAgICAgIGlmIGFyZ3MubW9kZSAhPSAibmVnYXRpdmUiOgogICAgICAgICAgICByYWlzZQogICAgICAgIHByaW50KGpzb24uZHVtcHMoeyJyZXN1bHQiOiAiUEFTUyIsICJnYXRlIjogImhhbmRzaGFrZV9yZWplY3RlZCIsICJhbHBuIjogYXJncy5hbHBufSksIGZsdXNoPVRydWUpCgoKaWYgX19uYW1lX18gPT0gIl9fbWFpbl9fIjoKICAgIG1haW4oKQo=\"),")
+Code.compile_string(source, "test/quic_test.exs")
+result = ExUnit.run()
+System.halt(if(result.failures == 0, do: 0, else: 2))
+
+OUTPUT:
+Running ExUnit with seed: 757928, max_cases: 4
+
+
+17:11:29.421 [info] The function passed as a handler with ID #Reference<0.452048760.564396033.68443> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+17:11:35.512 [error] GenServer #PID<0.321.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.297.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.320.0>, generation: #Reference<0.452048760.564396033.68521>}, initialized: true}}]]
+{"result": "PASS", "gate": "stream_flow_control_fin", "bytes": 344064, "streams": 3}
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:35.507", "connection": 4566119488, "mode": "echo", "arguments": {}}
+
+17:11:36.402 [error] GenServer #PID<0.323.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.297.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.322.0>, generation: #Reference<0.452048760.564396033.83416>}, initialized: true}}]]
+
+17:11:37.576 [error] GenServer #PID<0.325.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.297.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.324.0>, generation: #Reference<0.452048760.564396033.83587>}, initialized: true}}]]
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:36.396", "connection": 4415287712, "mode": "isolation", "arguments": {"error_code": 39030, "reason_phrase": "one connection"}}
+{"result": "PASS", "gate": "connection_close_isolation", "bytes": 86016}
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:37.562", "connection": 4415566576, "mode": "isolation", "arguments": {}}
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:37.732", "connection": 4415287712, "mode": "isolation", "arguments": {}}
+
+17:11:38.625 [error] GenServer #PID<0.327.0> terminating
+** (MatchError) no match of right hand side value:
+
+    {:error, :invalid_operation}
+
+    test/quic_test.exs:148: GaoxyQUICConsumerTest.Controls.handle_event/2
+    (gaoxy 0.1.0) lib/gaoxy/quic_bridge.ex:28: Gaoxy.QUICBridge.handle_event/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:482: anonymous fn/3 in Abyss.QUIC.Worker.handle_info/2
+    (elixir 1.20.1) lib/enum.ex:5119: Enumerable.List.reduce/3
+    (elixir 1.20.1) lib/enum.ex:2676: Enum.reduce_while/3
+    (abyss 0.7.0) lib/abyss/quic/service.ex:480: anonymous fn/1 in Abyss.QUIC.Worker.handle_info/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:547: Abyss.QUIC.Worker.watched/3
+    (stdlib 8.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 8.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.305.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.326.0>, generation: #Reference<0.452048760.564396033.87105>}, initialized: true}}]]
+{"result": "PASS", "gate": "directional_reset_stop", "reset": 74565, "stop": 344865}
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:38.616", "connection": 4477284096, "mode": "controls", "arguments": {}}
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:11:59.505", "connection": 4539675472, "mode": "negative", "arguments": {}}
+{"result": "PASS", "gate": "handshake_rejected", "alpn": "gaoxy-unsupported-v1"}
+[b2bdd9e385991778] Error: 298, reason: unable to get local issuer certificate, frame_type: 6
+{"diagnostic": "peer_close_requested", "at": "2026-10-08T17:12:00.792", "connection": 4544375808, "mode": "negative", "arguments": {}}
+{"result": "PASS", "gate": "handshake_rejected", "alpn": "gaoxy-stream-v1"}
+PASS QUIC_FACADE_WIRE_BOUNDS_LIFECYCLE
+.
+Finished in 32.8 seconds (32.8s async, 0.00s sync)
+
+Result: 1 passed
+
+EXIT: 0
+ELAPSED: 36.132s

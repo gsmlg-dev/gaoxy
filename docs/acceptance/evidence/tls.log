@@ -1,0 +1,32 @@
+==> gaoxy
+Running ExUnit with seed: 967180, max_cases: 24
+Excluding tags: [:test]
+Including tags: [location: "test/tls_test.exs", location: {"test/runtime_test.exs", 76}]
+
+.
+14:04:18.252 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+
+  1) test independent OpenSSL peer validates TLS and rejects invalid trust (Gaoxy.TLSTest)
+     apps/gaoxy/test/tls_test.exs:5
+     match (=) failed
+     code:  assert {output, 0} =
+              System.cmd(
+                "python3",
+                [
+                  Path.join(root, "integration/tls_peer.py"),
+                  Integer.to_string(port),
+                  Path.join(dir, "ca.pem")
+                ], stderr_to_stdout: true)
+     left:  {output, 0}
+     right: {"Traceback (most recent call last):\n  File \"/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/tls_peer.py\", line 11, in <module>\n    with context.wrap_socket(raw, server_hostname=\"localhost\") as connection:\n         ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/local/Cellar/python@3.14/3.14.8/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py\", line 469, in wrap_socket\n    return self.sslsocket_class._create(\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^\n        sock=sock,\n        ^^^^^^^^^^\n    ...<5 lines>...\n        session=session\n        ^^^^^^^^^^^^^^^\n    )\n    ^\n  File \"/usr/local/Cellar/python@3.14/3.14.8/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py\", line 1087, in _create\n    self.do_handshake()\n    ~~~~~~~~~~~~~~~~~^^\n  File \"/usr/local/Cellar/python@3.14/3.14.8/Frameworks/Python.framework/Versions/3.14/lib/python3.14/ssl.py\", line 1383, in do_handshake\n    self._sslobj.do_handshake()\n    ~~~~~~~~~~~~~~~~~~~~~~~~~^^\nssl.SSLCertVerificationError: [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: CA cert does not include key usage extension (_ssl.c:1082)\n",
+             1}
+     stacktrace:
+       test/tls_test.exs:29: (test)
+
+
+Finished in 7.8 seconds (7.8s async, 0.00s sync)
+
+Result: 1/2 passed, 6 excluded
+Failed: 1 test

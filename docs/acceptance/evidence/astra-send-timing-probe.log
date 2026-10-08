@@ -1,0 +1,671 @@
+COMMAND: mix run -e <code below>
+ELIXIR_ERL_OPTIONS=+S 2:2
+CODE:
+
+defmodule SendTimingProbe do
+  def init(_, options), do: {:ok, options}
+  def handle_data(_, %{owner: owner, size: size} = state) do
+    started = System.monotonic_time(:microsecond)
+    send(owner, {:copy_started, self(), started})
+    bytes = :binary.copy("x", size)
+    send(owner, {:copy_finished, self(), System.monotonic_time(:microsecond), byte_size(bytes)})
+    {:send, bytes, state}
+  end
+  def collect(client, worker, events, finish) do
+    remaining = max(0, finish - System.monotonic_time(:millisecond))
+    receive do
+      {:copy_started, pid, at} = event ->
+        Process.monitor(pid)
+        collect(client, pid, [{event, System.monotonic_time(:microsecond)} | events], finish)
+      {:copy_finished, _, _, _} = event ->
+        collect(client, worker, [event | events], finish)
+      {:probe_event, [:gaoxy, :send], at, %{outcome: :ok}} = event ->
+        :ok = :gen_tcp.send(client, "again")
+        collect(client, worker, [event | events], finish)
+      {:probe_event, _, _, _} = event ->
+        collect(client, worker, [event | events], finish)
+      {:DOWN, _, :process, ^worker, reason} ->
+        Enum.reverse([{:down, System.monotonic_time(:microsecond), reason} | events])
+    after
+      min(20, remaining) ->
+        if remaining == 0 do
+          Enum.reverse([:probe_deadline | events])
+        else
+          sample = if worker, do: Process.info(worker, [:current_function, :current_stacktrace, :status])
+          collect(client, worker, [{:sample, System.monotonic_time(:microsecond), sample} | events], finish)
+        end
+    end
+  end
+end
+for iteration <- 1..5 do
+  {:ok, instance} = Gaoxy.start_link(services: [%{id: "blocked", transport: :tcp, handler: SendTimingProbe, handler_options: %{owner: self(), size: 16 * 1_048_576}, limits: %{max_active: 1, max_output: 16 * 1_048_576, max_bytes: 16 * 1_048_576 + 65_536, callback_timeout: 500}}])
+  %{generation: generation, local: {:ok, {ip, port}}} = Gaoxy.info(instance, "blocked")
+  owner = self()
+  reference = make_ref()
+  :telemetry.attach_many(reference, [[:gaoxy, :work], [:gaoxy, :timeout], [:gaoxy, :send_started], [:gaoxy, :send]], fn event, measurements, metadata, _ ->
+    if metadata.generation == generation, do: send(owner, {:probe_event, event, System.monotonic_time(:microsecond), Map.merge(measurements, metadata)})
+  end, nil)
+  {:ok, client} = :gen_tcp.connect(ip, port, [:binary, active: false, recbuf: 1_024])
+  :ok = :gen_tcp.send(client, "begin")
+  events = SendTimingProbe.collect(client, nil, [], System.monotonic_time(:millisecond) + 3_000)
+  IO.inspect(events, label: "iteration #{iteration}", limit: :infinity, printable_limit: :infinity)
+  :telemetry.detach(reference)
+  :gen_tcp.close(client)
+  Gaoxy.stop(instance, 0)
+end
+
+OUTPUT:
+warning: variable "at" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ nofile:14: SendTimingProbe.collect/4
+
+warning: variable "at" is unused (if the variable is not meant to be used, prefix it with an underscore)
+└─ nofile:19: SendTimingProbe.collect/4
+
+
+16:44:11.204 [info] The function passed as a handler with ID #Reference<0.2062041001.2975858690.76916> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+iteration 1: [
+  {:probe_event, [:gaoxy, :work], -576460746415061,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460746414897,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460746414750,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460746414508,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {{:copy_started, #PID<0.281.0>, -576460746414442}, -576460746409728},
+  {:sample, -576460745989180,
+   [
+     current_function: {:gen, :do_call, 4},
+     current_stacktrace: [
+       {:gen, :do_call, 4, [file: ~c"gen.erl", line: 262]},
+       {GenServer, :call, 3, [file: ~c"lib/gen_server.ex", line: 1180]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 60]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :running
+   ]},
+  {:copy_finished, #PID<0.281.0>, -576460745989553, 16777216},
+  {:probe_event, [:gaoxy, :work], -576460745989276,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :send_started], -576460745989049,
+   %{
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     bytes: 16777216,
+     operation: #Reference<0.2062041001.2975858690.76986>,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :send], -576460745988223,
+   %{
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     bytes: 16777216,
+     operation: #Reference<0.2062041001.2975858690.76986>,
+     generation: #Reference<0.2062041001.2975858690.76826>,
+     outcome: :ok
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745987999,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745987831,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745987636,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {{:copy_started, #PID<0.281.0>, -576460745987602}, -576460745981877},
+  {:sample, -576460745582149,
+   [
+     current_function: {:gen, :do_call, 4},
+     current_stacktrace: [
+       {:gen, :do_call, 4, [file: ~c"gen.erl", line: 262]},
+       {GenServer, :call, 3, [file: ~c"lib/gen_server.ex", line: 1180]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 60]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :waiting
+   ]},
+  {:copy_finished, #PID<0.281.0>, -576460745582239, 16777216},
+  {:probe_event, [:gaoxy, :work], -576460745582027,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :send_started], -576460745581901,
+   %{
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     bytes: 16777216,
+     operation: #Reference<0.2062041001.2975858689.80656>,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:sample, -576460745560832,
+   [
+     current_function: {:prim_inet, :send, 4},
+     current_stacktrace: [
+       {:prim_inet, :send, 4, []},
+       {ThousandIsland.Socket, :send, 2,
+        [file: ~c"lib/thousand_island/socket.ex", line: 128]},
+       {Gaoxy.StreamBridge, :send_output, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 82]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 67]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]}
+     ],
+     status: :waiting
+   ]},
+  {:sample, -576460745539915,
+   [
+     current_function: {:prim_inet, :send, 4},
+     current_stacktrace: [
+       {:prim_inet, :send, 4, []},
+       {ThousandIsland.Socket, :send, 2,
+        [file: ~c"lib/thousand_island/socket.ex", line: 128]},
+       {Gaoxy.StreamBridge, :send_output, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 82]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 67]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]}
+     ],
+     status: :waiting
+   ]},
+  {:sample, -576460745518928,
+   [
+     current_function: {:prim_inet, :send, 4},
+     current_stacktrace: [
+       {:prim_inet, :send, 4, []},
+       {ThousandIsland.Socket, :send, 2,
+        [file: ~c"lib/thousand_island/socket.ex", line: 128]},
+       {Gaoxy.StreamBridge, :send_output, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 82]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 67]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]}
+     ],
+     status: :waiting
+   ]},
+  {:sample, -576460745497866,
+   [
+     current_function: {:prim_inet, :send, 4},
+     current_stacktrace: [
+       {:prim_inet, :send, 4, []},
+       {ThousandIsland.Socket, :send, 2,
+        [file: ~c"lib/thousand_island/socket.ex", line: 128]},
+       {Gaoxy.StreamBridge, :send_output, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 82]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 67]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]}
+     ],
+     status: :waiting
+   ]},
+  {:probe_event, [:gaoxy, :timeout], -576460745486399,
+   %{
+     count: 1,
+     reason: :callback_or_send_timeout,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :send], -576460745486221,
+   %{
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     bytes: 16777216,
+     operation: #Reference<0.2062041001.2975858689.80656>,
+     generation: #Reference<0.2062041001.2975858690.76826>,
+     outcome: {:unknown, :watchdog_timeout}
+   }},
+  {:down, -576460745486109, :killed}
+]
+
+16:44:12.201 [info] The function passed as a handler with ID #Reference<0.2062041001.2975858690.77134> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+iteration 2: [
+  {:probe_event, [:gaoxy, :work], -576460745485957,
+   %{
+     active: 0,
+     instance: #Reference<0.2062041001.2975858690.76817>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.76826>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745447276,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745447115,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745446978,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460745446770,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {{:copy_started, #PID<0.294.0>, -576460745446728}, -576460745439567},
+  {:sample, -576460744771008,
+   [
+     current_function: {:gen, :do_call, 4},
+     current_stacktrace: [
+       {:gen, :do_call, 4, [file: ~c"gen.erl", line: 262]},
+       {GenServer, :call, 3, [file: ~c"lib/gen_server.ex", line: 1180]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 60]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :running
+   ]},
+  {:copy_finished, #PID<0.294.0>, -576460744771449, 16777216},
+  {:probe_event, [:gaoxy, :timeout], -576460744771246,
+   %{
+     count: 1,
+     reason: :callback_or_send_timeout,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744771110,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:down, -576460744771003, :killed}
+]
+
+16:44:12.898 [info] The function passed as a handler with ID #Reference<0.2062041001.2975858689.80744> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+16:44:12.198 [error] GenServer #PID<0.280.0> terminating
+** (stop) exited in: GenServer.stop(#PID<0.275.0>, :normal, :infinity)
+    ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started
+    (elixir 1.20.1) lib/gen_server.ex:1144: GenServer.stop/3
+    (stdlib 8.0.1) gen_server.erl:2482: :gen_server.try_terminate/3
+    (stdlib 8.0.1) gen_server.erl:2733: :gen_server.terminate/9
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :shutdown_listener, {0, Gaoxy.StreamBridge}}
+Last message: {:EXIT, #PID<0.274.0>, :shutdown}
+State: #PID<0.275.0>
+iteration 3: [
+  {:probe_event, [:gaoxy, :work], -576460744770862,
+   %{
+     active: 0,
+     instance: #Reference<0.2062041001.2975858690.77091>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77096>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744750819,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744750602,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744750427,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744750184,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {{:copy_started, #PID<0.307.0>, -576460744750126}, -576460744748381},
+  {:sample, -576460744196331,
+   [
+     current_function: {System, :monotonic_time, 1},
+     current_stacktrace: [
+       {System, :monotonic_time, 1, [file: ~c"lib/system.ex", line: 1270]},
+       {SendTimingProbe, :handle_data, 2, [file: ~c"nofile", line: 8]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 50]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :running
+   ]},
+  {:copy_finished, #PID<0.307.0>, -576460744196384, 16777216},
+  {:probe_event, [:gaoxy, :timeout], -576460744196151,
+   %{
+     count: 1,
+     reason: :callback_or_send_timeout,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:down, -576460744195978, :killed}
+]
+
+16:44:12.199 [error] GenServer #PID<0.276.0> terminating
+** (stop) killed
+Process Label: {:thousand_island, :acceptor_pool_supervisor, {0, Gaoxy.StreamBridge}}
+Last message: {:EXIT, #PID<0.274.0>, :killed}
+State: {:state, {#PID<0.276.0>, ThousandIsland.AcceptorPoolSupervisor}, :one_for_one, {["acceptor-1"], %{"acceptor-1" => {:child, #PID<0.277.0>, "acceptor-1", {ThousandIsland.AcceptorSupervisor, :start_link, [{#PID<0.274.0>, 1, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.2062041001.2975858690.76817>, service: "blocked", generation: #Reference<0.2062041001.2975858690.76826>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: SendTimingProbe, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.101.0>, size: 16777216}, limits: %{max_bytes: 16842752, max_active: 1, max_output: 16777216, callback_timeout: 500, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000, max_state: 65536}, capabilities: [], quic: %{}}, gate: #PID<0.273.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorSupervisor]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, false, #Reference<0.2062041001.2975858690.76886>, ThousandIsland.AcceptorPoolSupervisor, {#PID<0.274.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.2062041001.2975858690.76817>, service: "blocked", generation: #Reference<0.2062041001.2975858690.76826>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: SendTimingProbe, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.101.0>, size: 16777216}, limits: %{max_bytes: 16842752, max_active: 1, max_output: 16777216, callback_timeout: 500, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000, max_state: 65536}, capabilities: [], quic: %{}}, gate: #PID<0.273.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}}
+
+16:44:13.462 [info] The function passed as a handler with ID #Reference<0.2062041001.2975858690.77254> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+iteration 4: [
+  {:probe_event, [:gaoxy, :work], -576460744195991,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744194634,
+   %{
+     active: 0,
+     instance: #Reference<0.2062041001.2975858689.80701>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858689.80706>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744187314,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744187163,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744187007,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460744186589,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {{:copy_started, #PID<0.320.0>, -576460744186490}, -576460744186364},
+  {:sample, -576460743680397,
+   [
+     current_function: {System, :monotonic_time, 1},
+     current_stacktrace: [
+       {System, :monotonic_time, 1, [file: ~c"lib/system.ex", line: 1270]},
+       {SendTimingProbe, :handle_data, 2, [file: ~c"nofile", line: 8]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 50]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :running
+   ]},
+  {:copy_finished, #PID<0.320.0>, -576460743680438, 16777216},
+  {:probe_event, [:gaoxy, :timeout], -576460743680303,
+   %{
+     count: 1,
+     reason: :callback_or_send_timeout,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:down, -576460743680080, :killed}
+]
+
+16:44:13.975 [info] The function passed as a handler with ID #Reference<0.2062041001.2975858689.80907> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+iteration 5: [
+  {:probe_event, [:gaoxy, :work], -576460743680123,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460743679807,
+   %{
+     active: 0,
+     instance: #Reference<0.2062041001.2975858690.77211>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858690.77216>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460743672969,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460743672765,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     retained_bytes: 0,
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460743672615,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     retained_bytes: 52,
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460743672398,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     retained_bytes: 57,
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {{:copy_started, #PID<0.333.0>, -576460743672355}, -576460743665681},
+  {:sample, -576460742936078,
+   [
+     current_function: {:gen, :do_call, 4},
+     current_stacktrace: [
+       {:gen, :do_call, 4, [file: ~c"gen.erl", line: 262]},
+       {GenServer, :call, 3, [file: ~c"lib/gen_server.ex", line: 1180]},
+       {Gaoxy.StreamBridge, :chunks, 4,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 60]},
+       {ThousandIsland.Handler, :invoke_callback, 2,
+        [file: ~c"lib/thousand_island/handler.ex", line: 633]},
+       {Gaoxy.StreamBridge, :handle_info, 2,
+        [file: ~c"lib/gaoxy/stream_bridge.ex", line: 3]},
+       {:gen_server, :try_handle_info, 3,
+        [file: ~c"gen_server.erl", line: 2434]},
+       {:gen_server, :handle_msg, 3, [file: ~c"gen_server.erl", line: 2420]},
+       {:proc_lib, :init_p_do_apply, 3, [file: ~c"proc_lib.erl", line: 333]}
+     ],
+     status: :running
+   ]},
+  {:copy_finished, #PID<0.333.0>, -576460742938861, 16777216},
+  {:probe_event, [:gaoxy, :timeout], -576460742938653,
+   %{
+     count: 1,
+     reason: :callback_or_send_timeout,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {:probe_event, [:gaoxy, :work], -576460742938517,
+   %{
+     active: 1,
+     instance: #Reference<0.2062041001.2975858689.80864>,
+     service: "blocked",
+     retained_bytes: 16777273,
+     generation: #Reference<0.2062041001.2975858689.80869>
+   }},
+  {:down, -576460742936072, :killed}
+]
+
+EXIT: 0
+ELAPSED: 9.312s

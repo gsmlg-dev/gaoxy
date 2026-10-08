@@ -1,0 +1,106 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', "docker run --rm --network none --cap-add NET_ADMIN --cap-add SYS_ADMIN --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/apps,dst=/work/apps,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/network,dst=/work/integration/network,readonly gaoxy-m1-fixture:0b1c78889b84 /bin/sh -c 'set -e\npython3 scripts/check-tests.py --seed 376638\nunbuffer mix compile --warnings-as-errors\npython3 integration/network/fixture.py --allow-privileged --ipv6\nGAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6\nMIX_ENV=prod unbuffer mix release\npython3 integration/network/release_gate.py --allow-privileged'"]
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+==> earmark_parser
+Compiling 3 files (.erl)
+Compiling 32 files (.ex)
+Generated earmark_parser app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> rustler
+Compiling 7 files (.ex)
+Generated rustler app
+==> nimble_parsec
+Compiling 4 files (.ex)
+Generated nimble_parsec app
+==> makeup
+Compiling 15 files (.ex)
+Generated makeup app
+==> makeup_elixir
+Compiling 6 files (.ex)
+Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+Generated makeup_elixir app
+==> makeup_erlang
+Compiling 4 files (.ex)
+Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+Generated makeup_erlang app
+==> ex_doc
+Compiling 30 files (.ex)
+Generated ex_doc app
+===> Analyzing applications...
+===> Compiling telemetry
+==> thousand_island
+Compiling 18 files (.ex)
+Generated thousand_island app
+==> telemetry_metrics
+Compiling 7 files (.ex)
+Generated telemetry_metrics app
+==> abyss
+Compiling 28 files (.ex)
+Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+Generated abyss app
+==> gaoxy
+Compiling 11 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+==> gaoxy
+Running ExUnit with seed: 376638, max_cases: 4
+
+.....
+08:22:17.716 [info] The function passed as a handler with ID #Reference<0.2445777493.824180737.179729> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+08:22:17.911 [info] The function passed as a handler with ID #Reference<0.2445777493.824180738.174305> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+......
+
+  1) test independent OpenSSL peer validates TLS and rejects invalid trust (Gaoxy.TLSTest)
+     apps/gaoxy/test/tls_test.exs:12
+     ** (EXIT from #PID<0.1939.0>) an exception was raised:
+         ** (File.Error) could not remove files and directories recursively from "/work/apps/gaoxy/tmp/Gaoxy.TLSTest/test-independent-OpenSSL-peer-validates-TLS-and-rejects-invalid-trust-f35883f9": read-only file system
+             (elixir 1.19.5) lib/file.ex:1681: File.rm_rf!/1
+             (ex_unit 1.19.5) lib/ex_unit/runner.ex:647: ExUnit.Runner.create_tmp_dir!/3
+             (ex_unit 1.19.5) lib/ex_unit/runner.ex:452: anonymous fn/2 in ExUnit.Runner.spawn_test_monitor/4
+             (stdlib 7.3) timer.erl:599: :timer.tc/2
+             (ex_unit 1.19.5) lib/ex_unit/runner.ex:450: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+
+......
+
+  2) test an IPv6 link-local destination without scope fails before submission (Gaoxy.DatagramEgressTest)
+     apps/gaoxy/test/datagram_egress_test.exs:30
+     ** (RuntimeError) failed to start child with the spec {Gaoxy, [services: [%{id: "scoped", ip: {0, 0, 0, 0, 0, 0, 0, 1}, handler: Gaoxy.DatagramEgressTest.Forward, handler_options: {{65152, 0, 0, 0, 0, 0, 0, 1}, 49999}, transport: :udp}]]}.
+     Reason: shutdown: failed to start child: :listener_pool
+         ** (EXIT) shutdown: failed to start child: "listener-1"
+             ** (EXIT) :eaddrnotavail
+     code: start_supervised!(
+     stacktrace:
+       (ex_unit 1.19.5) lib/ex_unit/callbacks.ex:597: ExUnit.Callbacks.start_supervised!/2
+       test/datagram_egress_test.exs:34: (test)
+
+.
+Finished in 2.2 seconds (2.2s async, 0.00s sync)
+20 tests, 2 failures
+==> gaoxy_server
+Running ExUnit with seed: 376638, max_cases: 4
+
+.
+Finished in 0.05 seconds (0.05s async, 0.00s sync)
+1 test, 0 failures
+==> gaoxy_http
+There are no tests to run
+==> gaoxy_proxy
+There are no tests to run
+EXIT 2

@@ -1,0 +1,29 @@
+==> gaoxy
+Running ExUnit with seed: 962683, max_cases: 4
+
+
+16:14:45.111 [info] The function passed as a handler with ID #Reference<0.502474804.2702442497.13921> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+
+  1) test backend oversize and paused drops carry the correct instance and generation (Gaoxy.BackendTelemetryTest)
+     apps/gaoxy/test/backend_telemetry_test.exs:13
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       generation_a = #Reference<0.502474804.2702442498.8307>
+       reference = #Reference<0.502474804.2702442497.13921>
+     The process mailbox is empty.
+     code: assert_receive {^reference, %{count: 1, bytes: 5},
+            %{generation: ^generation_a, service: "shared", source: :backend, reason: :packet_too_large}}
+     stacktrace:
+       test/backend_telemetry_test.exs:34: (test)
+
+
+Finished in 2.1 seconds (2.1s async, 0.00s sync)
+
+Result: 0/1 passed
+Failed: 1 test
+
+EXIT 2

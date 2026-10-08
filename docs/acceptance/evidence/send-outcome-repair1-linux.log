@@ -1,0 +1,77 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', 'docker run --rm --network none --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/apps,dst=/work/apps,readonly gaoxy-m1-fixture:0b1c78889b84 python3 scripts/check-tests.py apps/gaoxy/test/send_outcome_test.exs']
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+==> earmark_parser
+Compiling 3 files (.erl)
+Compiling 32 files (.ex)
+Generated earmark_parser app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> rustler
+Compiling 7 files (.ex)
+Generated rustler app
+==> nimble_parsec
+Compiling 4 files (.ex)
+Generated nimble_parsec app
+==> makeup
+Compiling 15 files (.ex)
+Generated makeup app
+==> makeup_elixir
+Compiling 6 files (.ex)
+Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+Generated makeup_elixir app
+==> makeup_erlang
+Compiling 4 files (.ex)
+Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+Generated makeup_erlang app
+==> ex_doc
+Compiling 30 files (.ex)
+Generated ex_doc app
+===> Analyzing applications...
+===> Compiling telemetry
+==> thousand_island
+Compiling 18 files (.ex)
+Generated thousand_island app
+==> telemetry_metrics
+Compiling 7 files (.ex)
+Generated telemetry_metrics app
+==> abyss
+Compiling 28 files (.ex)
+Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+Generated abyss app
+==> gaoxy
+Compiling 11 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+==> gaoxy
+Running ExUnit with seed: 620835, max_cases: 4
+
+
+08:14:45.869 [info] The function passed as a handler with ID #Reference<0.1928605454.3239313409.214454> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+08:14:46.510 [error] GenServer #PID<0.1662.0> terminating
+** (stop) killed
+Process Label: {:thousand_island, :acceptor_pool_supervisor, {0, Gaoxy.StreamBridge}}
+Last message: {:EXIT, #PID<0.1660.0>, :killed}
+State: {:state, {#PID<0.1662.0>, ThousandIsland.AcceptorPoolSupervisor}, :one_for_one, {["acceptor-1"], %{"acceptor-1" => {:child, #PID<0.1663.0>, "acceptor-1", {ThousandIsland.AcceptorSupervisor, :start_link, [{#PID<0.1660.0>, 1, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.1928605454.3239313409.214406>, service: "blocked", generation: #Reference<0.1928605454.3239313410.207289>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.SendOutcomeTest.Output, tls: %{}, handler_options: %{owner: #PID<0.1654.0>, size: 16777216}, limits: %{max_bytes: 16842752, callback_timeout: 500, idle_timeout: 30000, max_active: 1, max_packet: 65507, max_output: 16777216, max_state: 65536, drain_timeout: 5000, max_memberships: 64}, transport: :tcp, capabilities: []}, gate: #PID<0.1659.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorSupervisor]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.1928605454.3239313410.207322>, ThousandIsland.AcceptorPoolSupervisor, {...}}
+.
+08:14:46.613 [info] The function passed as a handler with ID #Reference<0.1928605454.3239313409.214620> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+Finished in 2.0 seconds (2.0s async, 0.00s sync)
+2 tests, 0 failures
+EXIT 0

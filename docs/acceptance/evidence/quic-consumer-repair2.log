@@ -1,0 +1,72 @@
+==> gaoxy
+Compiling 1 file (.ex)
+==> gaoxy_quic_consumer
+Running ExUnit with seed: 757928, max_cases: 4
+
+
+16:55:24.988 [error] GenServer #PID<0.340.0> terminating
+** (CaseClauseError) no case clause matching:
+
+    {:error, :not_established}
+
+    test/quic_test.exs:38: GaoxyQUICConsumerTest.Echo.open_local/1
+    test/quic_test.exs:24: GaoxyQUICConsumerTest.Echo.progress/1
+    (gaoxy 0.1.0) lib/gaoxy/quic_bridge.ex:28: Gaoxy.QUICBridge.handle_event/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:482: anonymous fn/3 in Abyss.QUIC.Worker.handle_info/2
+    (elixir 1.20.1) lib/enum.ex:5119: Enumerable.List.reduce/3
+    (elixir 1.20.1) lib/enum.ex:2676: Enum.reduce_while/3
+    (abyss 0.7.0) lib/abyss/quic/service.ex:480: anonymous fn/1 in Abyss.QUIC.Worker.handle_info/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:547: Abyss.QUIC.Worker.watched/3
+    (stdlib 8.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 8.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.316.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.339.0>, generation: #Reference<0.1029543618.3782475778.70347>}, initialized: true}}]]
+Traceback (most recent call last):
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 45, in until
+    await self.changed.wait()
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 109, in <module>
+    main()
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 101, in main
+    asyncio.run(run(args))
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 68, in run
+    await exchange(peer, b"bounded-gaoxy-stream-" * 16384)
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 54, in exchange
+    await peer.until(lambda: 0 in peer.fins and 1 in peer.fins)
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 41, in until
+    async with asyncio.timeout(15):
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+
+
+  1) test public optional host: verified streams, directional controls, bounds and isolation (GaoxyQUICConsumerTest)
+     test/quic_test.exs:152
+     independent echo peer exit 1
+     code: peer(echo, directory, "echo")
+     stacktrace:
+       test/quic_test.exs:247: GaoxyQUICConsumerTest.peer/4
+       test/quic_test.exs:189: (test)
+
+
+Finished in 18.4 seconds (18.4s async, 0.00s sync)
+
+Result: 0/1 passed
+Failed: 1 test

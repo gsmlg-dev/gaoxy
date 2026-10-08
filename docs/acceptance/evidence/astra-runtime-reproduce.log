@@ -1,0 +1,38 @@
+COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs', '--warnings-as-errors', '--seed', '152200', '--trace']
+ENV: inherited; no scheduler override
+==> gaoxy
+Running ExUnit with seed: 152200, max_cases: 1
+
+
+Gaoxy.RuntimeTest [test/runtime_test.exs]
+  * test two instances reuse service identities and reconstruct fragmented streams independently [L#76]
+  * test two instances reuse service identities and reconstruct fragmented streams independently (2131.8ms) [L#76]
+  * test deadline forces cleanup and intentionally removed child remains stopped [L#166]
+  * test deadline forces cleanup and intentionally removed child remains stopped (897.9ms) [L#166]
+
+  1) test deadline forces cleanup and intentionally removed child remains stopped (Gaoxy.RuntimeTest)
+     apps/gaoxy/test/runtime_test.exs:166
+     Assertion failed, no matching message after 100ms
+     The process mailbox is empty.
+     code: assert_receive {:packet, worker, _}
+     stacktrace:
+       test/runtime_test.exs:171: (test)
+
+  * test binding failure rolls back an already opened sibling socket [L#94]
+  * test binding failure rolls back an already opened sibling socket (3.3ms) [L#94]
+  * test paused UDP retains its endpoint and admitted work can reply during drain [L#145]
+  * test paused UDP retains its endpoint and admitted work can reply during drain (161.0ms) [L#145]
+  * test sustained UDP overload stays bounded and callback watchdog recovers capacity [L#181]
+  * test sustained UDP overload stays bounded and callback watchdog recovers capacity (520.2ms) [L#181]
+  * test TCP pause unbinds while admitted connections continue; resume reports its actual port [L#216]
+  * test TCP pause unbinds while admitted connections continue; resume reports its actual port (32.8ms) [L#216]
+  * test UDP preserves empty packets and oversize rejection; crashes do not close the socket [L#124]
+  * test UDP preserves empty packets and oversize rejection; crashes do not close the socket (9.6ms) [L#124]
+
+Finished in 7.7 seconds (7.7s async, 0.00s sync)
+
+Result: 6/7 passed
+Failed: 1 test
+
+EXIT: 2
+ELAPSED: 63.676s

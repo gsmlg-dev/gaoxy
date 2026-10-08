@@ -1,0 +1,225 @@
+COMMAND ['scp', '-q', 'integration/network/Dockerfile', 's93:/tmp/gaoxy-m1-0b1c78889b84/integration/network/Dockerfile']
+EXIT 0
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', 'docker build -t gaoxy-m1-fixture:0b1c78889b84 -f /tmp/gaoxy-m1-0b1c78889b84/integration/network/Dockerfile /tmp/gaoxy-m1-0b1c78889b84']
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 800B done
+#1 DONE 0.0s
+
+#2 [internal] load .dockerignore
+#2 transferring context: 2B done
+#2 DONE 0.1s
+
+#3 [internal] load metadata for ghcr.io/gsmlg-dev/phoenix@sha256:512564056d421e49343b84fc07fe0afe44eee760398ed94fb6c536d4682d191c
+#3 DONE 0.0s
+
+#4 [ 1/11] FROM ghcr.io/gsmlg-dev/phoenix@sha256:512564056d421e49343b84fc07fe0afe44eee760398ed94fb6c536d4682d191c
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 43.09kB 0.0s done
+#5 DONE 0.0s
+
+#6 [ 4/11] COPY mix.exs mix.lock .formatter.exs ./
+#6 CACHED
+
+#7 [ 3/11] WORKDIR /work
+#7 CACHED
+
+#8 [ 5/11] COPY config config
+#8 CACHED
+
+#9 [ 6/11] COPY apps apps
+#9 CACHED
+
+#10 [ 2/11] RUN apk add --no-cache python3 openssl expect
+#10 CACHED
+
+#11 [ 7/11] COPY examples examples
+#11 CACHED
+
+#12 [ 8/11] COPY integration integration
+#12 DONE 3.1s
+
+#13 [ 9/11] COPY scripts scripts
+#13 DONE 11.7s
+
+#14 [10/11] RUN unbuffer mix local.hex --force && unbuffer mix local.rebar --force     && unbuffer mix deps.get --check-locked && unbuffer mix compile --warnings-as-errors
+#14 7.008 [32m* creating [0m/root/.mix/archives/hex-2.5.1[0m
+#14 10.41 [32m* creating [0m/root/.mix/elixir/1-19-otp-28/rebar3[0m
+#14 11.73 * Getting thousand_island (https://github.com/mtrudel/thousand_island.git - 6146e1bfdd1a85c5c16c3c92ad98ff5f11066820)
+#14 13.68 remote: Enumerating objects: 2654, done.        
+#14 13.68 remote: Counting objects:   0% (1/973)        remote: Counting objects:   1% (10/973)        remote: Counting objects:   2% (20/973)        remote: Counting objects:   3% (30/973)        remote: Counting objects:   4% (39/973)        remote: Counting objects:   5% (49/973)        remote: Counting objects:   6% (59/973)        remote: Counting objects:   7% (69/973)        remote: Counting objects:   8% (78/973)        remote: Counting objects:   9% (88/973)        remote: Counting objects:  10% (98/973)        remote: Counting objects:  11% (108/973)        remote: Counting objects:  12% (117/973)        remote: Counting objects:  13% (127/973)        remote: Counting objects:  14% (137/973)        remote: Counting objects:  15% (146/973)        remote: Counting objects:  16% (156/973)        remote: Counting objects:  17% (166/973)        remote: Counting objects:  18% (176/973)        remote: Counting objects:  19% (185/973)        remote: Counting objects:  20% (195/973)        remote: Counting objects:  21% (205/973)        remote: Counting objects:  22% (215/973)        remote: Counting objects:  23% (224/973)        remote: Counting objects:  24% (234/973)        remote: Counting objects:  25% (244/973)        remote: Counting objects:  26% (253/973)        remote: Counting objects:  27% (263/973)        remote: Counting objects:  28% (273/973)        remote: Counting objects:  29% (283/973)        remote: Counting objects:  30% (292/973)        remote: Counting objects:  31% (302/973)        remote: Counting objects:  32% (312/973)        remote: Counting objects:  33% (322/973)        remote: Counting objects:  34% (331/973)        remote: Counting objects:  35% (341/973)        remote: Counting objects:  36% (351/973)        remote: Counting objects:  37% (361/973)        remote: Counting objects:  38% (370/973)        remote: Counting objects:  39% (380/973)        remote: Counting objects:  40% (390/973)        remote: Counting objects:  41% (399/973)        remote: Counting objects:  42% (409/973)        remote: Counting objects:  43% (419/973)        remote: Counting objects:  44% (429/973)        remote: Counting objects:  45% (438/973)        remote: Counting objects:  46% (448/973)        remote: Counting objects:  47% (458/973)        remote: Counting objects:  48% (468/973)        remote: Counting objects:  49% (477/973)        remote: Counting objects:  50% (487/973)        remote: Counting objects:  51% (497/973)        remote: Counting objects:  52% (506/973)        remote: Counting objects:  53% (516/973)        remote: Counting objects:  54% (526/973)        remote: Counting objects:  55% (536/973)        remote: Counting objects:  56% (545/973)        remote: Counting objects:  57% (555/973)        remote: Counting objects:  58% (565/973)        remote: Counting objects:  59% (575/973)        remote: Counting objects:  60% (584/973)        remote: Counting objects:  61% (594/973)        remote: Counting objects:  62% (604/973)        remote: Counting objects:  63% (613/973)        remote: Counting objects:  64% (623/973)        remote: Counting objects:  65% (633/973)        remote: Counting objects:  66% (643/973)        remote: Counting objects:  67% (652/973)        remote: Counting objects:  68% (662/973)        remote: Counting objects:  69% (672/973)        remote: Counting objects:  70% (682/973)        remote: Counting objects:  71% (691/973)        remote: Counting objects:  72% (701/973)        remote: Counting objects:  73% (711/973)        remote: Counting objects:  74% (721/973)        remote: Counting objects:  75% (730/973)        remote: Counting objects:  76% (740/973)        remote: Counting objects:  77% (750/973)        remote: Counting objects:  78% (759/973)        remote: Counting objects:  79% (769/973)        remote: Counting objects:  80% (779/973)        remote: Counting objects:  81% (789/973)        remote: Counting objects:  82% (798/973)        remote: Counting objects:  83% (808/973)        remote: Counting objects:  84% (818/973)        remote: Counting objects:  85% (828/973)        remote: Counting objects:  86% (837/973)        remote: Counting objects:  87% (847/973)        remote: Counting objects:  88% (857/973)        remote: Counting objects:  89% (866/973)        remote: Counting objects:  90% (876/973)        remote: Counting objects:  91% (886/973)        remote: Counting objects:  92% (896/973)        remote: Counting objects:  93% (905/973)        remote: Counting objects:  94% (915/973)        remote: Counting objects:  95% (925/973)        remote: Counting objects:  96% (935/973)        remote: Counting objects:  97% (944/973)        remote: Counting objects:  98% (954/973)        remote: Counting objects:  99% (964/973)        remote: Counting objects: 100% (973/973)        remote: Counting objects: 100% (973/973), done.        
+#14 13.68 remote: Compressing objects:   0% (1/301)        remote: Compressing objects:   1% (4/301)        remote: Compressing objects:   2% (7/301)        remote: Compressing objects:   3% (10/301)        remote: Compressing objects:   4% (13/301)        remote: Compressing objects:   5% (16/301)        remote: Compressing objects:   6% (19/301)        remote: Compressing objects:   7% (22/301)        remote: Compressing objects:   8% (25/301)        remote: Compressing objects:   9% (28/301)        remote: Compressing objects:  10% (31/301)        remote: Compressing objects:  11% (34/301)        remote: Compressing objects:  12% (37/301)        remote: Compressing objects:  13% (40/301)        remote: Compressing objects:  14% (43/301)        remote: Compressing objects:  15% (46/301)        remote: Compressing objects:  16% (49/301)        remote: Compressing objects:  17% (52/301)        remote: Compressing objects:  18% (55/301)        remote: Compressing objects:  19% (58/301)        remote: Compressing objects:  20% (61/301)        remote: Compressing objects:  21% (64/301)        remote: Compressing objects:  22% (67/301)        remote: Compressing objects:  23% (70/301)        remote: Compressing objects:  24% (73/301)        remote: Compressing objects:  25% (76/301)        remote: Compressing objects:  26% (79/301)        remote: Compressing objects:  27% (82/301)        remote: Compressing objects:  28% (85/301)        remote: Compressing objects:  29% (88/301)        remote: Compressing objects:  30% (91/301)        remote: Compressing objects:  31% (94/301)        remote: Compressing objects:  32% (97/301)        remote: Compressing objects:  33% (100/301)        remote: Compressing objects:  34% (103/301)        remote: Compressing objects:  35% (106/301)        remote: Compressing objects:  36% (109/301)        remote: Compressing objects:  37% (112/301)        remote: Compressing objects:  38% (115/301)        remote: Compressing objects:  39% (118/301)        remote: Compressing objects:  40% (121/301)        remote: Compressing objects:  41% (124/301)        remote: Compressing objects:  42% (127/301)        remote: Compressing objects:  43% (130/301)        remote: Compressing objects:  44% (133/301)        remote: Compressing objects:  45% (136/301)        remote: Compressing objects:  46% (139/301)        remote: Compressing objects:  47% (142/301)        remote: Compressing objects:  48% (145/301)        remote: Compressing objects:  49% (148/301)        remote: Compressing objects:  50% (151/301)        remote: Compressing objects:  51% (154/301)        remote: Compressing objects:  52% (157/301)        remote: Compressing objects:  53% (160/301)        remote: Compressing objects:  54% (163/301)        remote: Compressing objects:  55% (166/301)        remote: Compressing objects:  56% (169/301)        remote: Compressing objects:  57% (172/301)        remote: Compressing objects:  58% (175/301)        remote: Compressing objects:  59% (178/301)        remote: Compressing objects:  60% (181/301)        remote: Compressing objects:  61% (184/301)        remote: Compressing objects:  62% (187/301)        remote: Compressing objects:  63% (190/301)        remote: Compressing objects:  64% (193/301)        remote: Compressing objects:  65% (196/301)        remote: Compressing objects:  66% (199/301)        remote: Compressing objects:  67% (202/301)        remote: Compressing objects:  68% (205/301)        remote: Compressing objects:  69% (208/301)        remote: Compressing objects:  70% (211/301)        remote: Compressing objects:  71% (214/301)        remote: Compressing objects:  72% (217/301)        remote: Compressing objects:  73% (220/301)        remote: Compressing objects:  74% (223/301)        remote: Compressing objects:  75% (226/301)        remote: Compressing objects:  76% (229/301)        remote: Compressing objects:  77% (232/301)        remote: Compressing objects:  78% (235/301)        remote: Compressing objects:  79% (238/301)        remote: Compressing objects:  80% (241/301)        remote: Compressing objects:  81% (244/301)        remote: Compressing objects:  82% (247/301)        remote: Compressing objects:  83% (250/301)        remote: Compressing objects:  84% (253/301)        remote: Compressing objects:  85% (256/301)        remote: Compressing objects:  86% (259/301)        remote: Compressing objects:  87% (262/301)        remote: Compressing objects:  88% (265/301)        remote: Compressing objects:  89% (268/301)        remote: Compressing objects:  90% (271/301)        remote: Compressing objects:  91% (274/301)        remote: Compressing objects:  92% (277/301)        remote: Compressing objects:  93% (280/301)        remote: Compressing objects:  94% (283/301)        remote: Compressing objects:  95% (286/301)        remote: Compressing objects:  96% (289/301)        remote: Compressing objects:  97% (292/301)        remote: Compressing objects:  98% (295/301)        remote: Compressing objects:  99% (298/301)        remote: Compressing objects: 100% (301/301)        remote: Compressing objects: 100% (301/301), done.        
+#14 19.89 remote: Total 2654 (delta 879), reused 672 (delta 672), pack-reused 1681 (from 3)        
+#14 20.57 * Getting abyss (https://github.com/gsmlg-dev/abyss.git - 9b710e6480900e16e304f40e63623aff8c922e19)
+#14 22.58 remote: Enumerating objects: 852, done.        
+#14 22.58 remote: Counting objects:   0% (1/266)        remote: Counting objects:   1% (3/266)        remote: Counting objects:   2% (6/266)        remote: Counting objects:   3% (8/266)        remote: Counting objects:   4% (11/266)        remote: Counting objects:   5% (14/266)        remote: Counting objects:   6% (16/266)        remote: Counting objects:   7% (19/266)        remote: Counting objects:   8% (22/266)        remote: Counting objects:   9% (24/266)        remote: Counting objects:  10% (27/266)        remote: Counting objects:  11% (30/266)        remote: Counting objects:  12% (32/266)        remote: Counting objects:  13% (35/266)        remote: Counting objects:  14% (38/266)        remote: Counting objects:  15% (40/266)        remote: Counting objects:  16% (43/266)        remote: Counting objects:  17% (46/266)        remote: Counting objects:  18% (48/266)        remote: Counting objects:  19% (51/266)        remote: Counting objects:  20% (54/266)        remote: Counting objects:  21% (56/266)        remote: Counting objects:  22% (59/266)        remote: Counting objects:  23% (62/266)        remote: Counting objects:  24% (64/266)        remote: Counting objects:  25% (67/266)        remote: Counting objects:  26% (70/266)        remote: Counting objects:  27% (72/266)        remote: Counting objects:  28% (75/266)        remote: Counting objects:  29% (78/266)        remote: Counting objects:  30% (80/266)        remote: Counting objects:  31% (83/266)        remote: Counting objects:  32% (86/266)        remote: Counting objects:  33% (88/266)        remote: Counting objects:  34% (91/266)        remote: Counting objects:  35% (94/266)        remote: Counting objects:  36% (96/266)        remote: Counting objects:  37% (99/266)        remote: Counting objects:  38% (102/266)        remote: Counting objects:  39% (104/266)        remote: Counting objects:  40% (107/266)        remote: Counting objects:  41% (110/266)        remote: Counting objects:  42% (112/266)        remote: Counting objects:  43% (115/266)        remote: Counting objects:  44% (118/266)        remote: Counting objects:  45% (120/266)        remote: Counting objects:  46% (123/266)        remote: Counting objects:  47% (126/266)        remote: Counting objects:  48% (128/266)        remote: Counting objects:  49% (131/266)        remote: Counting objects:  50% (133/266)        remote: Counting objects:  51% (136/266)        remote: Counting objects:  52% (139/266)        remote: Counting objects:  53% (141/266)        remote: Counting objects:  54% (144/266)        remote: Counting objects:  55% (147/266)        remote: Counting objects:  56% (149/266)        remote: Counting objects:  57% (152/266)        remote: Counting objects:  58% (155/266)        remote: Counting objects:  59% (157/266)        remote: Counting objects:  60% (160/266)        remote: Counting objects:  61% (163/266)        remote: Counting objects:  62% (165/266)        remote: Counting objects:  63% (168/266)        remote: Counting objects:  64% (171/266)        remote: Counting objects:  65% (173/266)        remote: Counting objects:  66% (176/266)        remote: Counting objects:  67% (179/266)        remote: Counting objects:  68% (181/266)        remote: Counting objects:  69% (184/266)        remote: Counting objects:  70% (187/266)        remote: Counting objects:  71% (189/266)        remote: Counting objects:  72% (192/266)        remote: Counting objects:  73% (195/266)        remote: Counting objects:  74% (197/266)        remote: Counting objects:  75% (200/266)        remote: Counting objects:  76% (203/266)        remote: Counting objects:  77% (205/266)        remote: Counting objects:  78% (208/266)        remote: Counting objects:  79% (211/266)        remote: Counting objects:  80% (213/266)        remote: Counting objects:  81% (216/266)        remote: Counting objects:  82% (219/266)        remote: Counting objects:  83% (221/266)        remote: Counting objects:  84% (224/266)        remote: Counting objects:  85% (227/266)        remote: Counting objects:  86% (229/266)        remote: Counting objects:  87% (232/266)        remote: Counting objects:  88% (235/266)        remote: Counting objects:  89% (237/266)        remote: Counting objects:  90% (240/266)        remote: Counting objects:  91% (243/266)        remote: Counting objects:  92% (245/266)        remote: Counting objects:  93% (248/266)        remote: Counting objects:  94% (251/266)        remote: Counting objects:  95% (253/266)        remote: Counting objects:  96% (256/266)        remote: Counting objects:  97% (259/266)        remote: Counting objects:  98% (261/266)        remote: Counting objects:  99% (264/266)        remote: Counting objects: 100% (266/266)        remote: Counting objects: 100% (266/266), done.        
+#14 22.58 remote: Compressing objects:   0% (1/188)        remote: Compressing objects:   1% (2/188)        remote: Compressing objects:   2% (4/188)        remote: Compressing objects:   3% (6/188)        remote: Compressing objects:   4% (8/188)        remote: Compressing objects:   5% (10/188)        remote: Compressing objects:   6% (12/188)        remote: Compressing objects:   7% (14/188)        remote: Compressing objects:   8% (16/188)        remote: Compressing objects:   9% (17/188)        remote: Compressing objects:  10% (19/188)        remote: Compressing objects:  11% (21/188)        remote: Compressing objects:  12% (23/188)        remote: Compressing objects:  13% (25/188)        remote: Compressing objects:  14% (27/188)        remote: Compressing objects:  15% (29/188)        remote: Compressing objects:  16% (31/188)        remote: Compressing objects:  17% (32/188)        remote: Compressing objects:  18% (34/188)        remote: Compressing objects:  19% (36/188)        remote: Compressing objects:  20% (38/188)        remote: Compressing objects:  21% (40/188)        remote: Compressing objects:  22% (42/188)        remote: Compressing objects:  23% (44/188)        remote: Compressing objects:  24% (46/188)        remote: Compressing objects:  25% (47/188)        remote: Compressing objects:  26% (49/188)        remote: Compressing objects:  27% (51/188)        remote: Compressing objects:  28% (53/188)        remote: Compressing objects:  29% (55/188)        remote: Compressing objects:  30% (57/188)        remote: Compressing objects:  31% (59/188)        remote: Compressing objects:  32% (61/188)        remote: Compressing objects:  33% (63/188)        remote: Compressing objects:  34% (64/188)        remote: Compressing objects:  35% (66/188)        remote: Compressing objects:  36% (68/188)        remote: Compressing objects:  37% (70/188)        remote: Compressing objects:  38% (72/188)        remote: Compressing objects:  39% (74/188)        remote: Compressing objects:  40% (76/188)        remote: Compressing objects:  41% (78/188)        remote: Compressing objects:  42% (79/188)        remote: Compressing objects:  43% (81/188)        remote: Compressing objects:  44% (83/188)        remote: Compressing objects:  45% (85/188)        remote: Compressing objects:  46% (87/188)        remote: Compressing objects:  47% (89/188)        remote: Compressing objects:  48% (91/188)        remote: Compressing objects:  49% (93/188)        remote: Compressing objects:  50% (94/188)        remote: Compressing objects:  51% (96/188)        remote: Compressing objects:  52% (98/188)        remote: Compressing objects:  53% (100/188)        remote: Compressing objects:  54% (102/188)        remote: Compressing objects:  55% (104/188)        remote: Compressing objects:  56% (106/188)        remote: Compressing objects:  57% (108/188)        remote: Compressing objects:  58% (110/188)        remote: Compressing objects:  59% (111/188)        remote: Compressing objects:  60% (113/188)        remote: Compressing objects:  61% (115/188)        remote: Compressing objects:  62% (117/188)        remote: Compressing objects:  63% (119/188)        remote: Compressing objects:  64% (121/188)        remote: Compressing objects:  65% (123/188)        remote: Compressing objects:  66% (125/188)        remote: Compressing objects:  67% (126/188)        remote: Compressing objects:  68% (128/188)        remote: Compressing objects:  69% (130/188)        remote: Compressing objects:  70% (132/188)        remote: Compressing objects:  71% (134/188)        remote: Compressing objects:  72% (136/188)        remote: Compressing objects:  73% (138/188)        remote: Compressing objects:  74% (140/188)        remote: Compressing objects:  75% (141/188)        remote: Compressing objects:  76% (143/188)        remote: Compressing objects:  77% (145/188)        remote: Compressing objects:  78% (147/188)        remote: Compressing objects:  79% (149/188)        remote: Compressing objects:  80% (151/188)        remote: Compressing objects:  81% (153/188)        remote: Compressing objects:  82% (155/188)        remote: Compressing objects:  83% (157/188)        remote: Compressing objects:  84% (158/188)        remote: Compressing objects:  85% (160/188)        remote: Compressing objects:  86% (162/188)        remote: Compressing objects:  87% (164/188)        remote: Compressing objects:  88% (166/188)        remote: Compressing objects:  89% (168/188)        remote: Compressing objects:  90% (170/188)        remote: Compressing objects:  91% (172/188)        remote: Compressing objects:  92% (173/188)        remote: Compressing objects:  93% (175/188)        remote: Compressing objects:  94% (177/188)        remote: Compressing objects:  95% (179/188)        remote: Compressing objects:  96% (181/188)        remote: Compressing objects:  97% (183/188)        remote: Compressing objects:  98% (185/188)        remote: Compressing objects:  99% (187/188)        remote: Compressing objects: 100% (188/188)        remote: Compressing objects: 100% (188/188), done.        
+#14 23.78 remote: Total 852 (delta 92), reused 194 (delta 74), pack-reused 586 (from 1)        
+#14 25.46 Resolving Hex dependencies...
+#14 25.52 Resolution completed in 0.049s
+#14 25.52 Unchanged:
+#14 25.52   earmark_parser 1.4.46[0m[0m
+#14 25.52   ex_doc 0.40.4[0m[0m
+#14 25.52   jason 1.4.5[0m[0m
+#14 25.52   makeup 1.2.3[0m[0m
+#14 25.52   makeup_elixir 1.0.1[0m[0m
+#14 25.52   makeup_erlang 1.1.0[0m[0m
+#14 25.52   nimble_parsec 1.4.2[0m[0m
+#14 25.52   rustler 0.38.0[0m[0m
+#14 25.52   telemetry 1.4.2[0m[0m
+#14 25.52   telemetry_metrics 1.2.0[0m[0m
+#14 25.53 * Getting telemetry (Hex package)
+#14 26.03 * Getting telemetry_metrics (Hex package)
+#14 26.04 * Getting rustler (Hex package)
+#14 26.05 * Getting ex_doc (Hex package)
+#14 26.50 * Getting earmark_parser (Hex package)
+#14 26.52 * Getting makeup_elixir (Hex package)
+#14 26.53 * Getting makeup_erlang (Hex package)
+#14 26.54 * Getting makeup (Hex package)
+#14 26.55 * Getting nimble_parsec (Hex package)
+#14 26.56 * Getting jason (Hex package)
+#14 28.01 ==> earmark_parser
+#14 28.01 Compiling 2 files (.xrl)
+#14 28.05 Compiling 1 file (.yrl)
+#14 28.10 Compiling 3 files (.erl)
+#14 28.40 Compiling 32 files (.ex)
+#14 29.69 Generated earmark_parser app
+#14 29.80 ==> jason
+#14 29.80 Compiling 10 files (.ex)
+#14 31.96 Generated jason app
+#14 31.99 ==> rustler
+#14 31.99 Compiling 7 files (.ex)
+#14 32.24 Generated rustler app
+#14 32.26 ==> nimble_parsec
+#14 32.26 Compiling 4 files (.ex)
+#14 32.75 Generated nimble_parsec app
+#14 32.78 ==> makeup
+#14 32.78 Compiling 15 files (.ex)
+#14 33.48 Generated makeup app
+#14 33.51 ==> makeup_elixir
+#14 33.51 Compiling 6 files (.ex)
+#14 50.65 Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+#14 50.96 Generated makeup_elixir app
+#14 50.99 ==> makeup_erlang
+#14 50.99 Compiling 4 files (.ex)
+#14 69.36 Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+#14 70.21 Generated makeup_erlang app
+#14 70.26 ==> ex_doc
+#14 70.26 Compiling 30 files (.ex)
+#14 72.35 Generated ex_doc app
+#14 73.29 ===> Analyzing applications...
+#14 73.36 ===> Compiling telemetry
+#14 73.78 ==> thousand_island
+#14 73.78 Compiling 18 files (.ex)
+#14 74.34 Generated thousand_island app
+#14 74.36 ==> telemetry_metrics
+#14 74.36 Compiling 7 files (.ex)
+#14 74.55 Generated telemetry_metrics app
+#14 74.55 ==> abyss
+#14 74.55 Compiling 28 files (.ex)
+#14 74.89     Updating crates.io index
+#14 77.59  Downloading crates ...
+#14 78.23   Downloaded heck v0.5.0
+#14 78.61   Downloaded void v1.0.2
+#14 78.62   Downloaded rustler_sys v2.4.3
+#14 78.63   Downloaded windows-targets v0.52.6
+#14 78.63   Downloaded unreachable v1.0.0
+#14 78.79   Downloaded inventory v0.3.24
+#14 78.85   Downloaded rustversion v1.0.22
+#14 78.89   Downloaded rustler_codegen v0.34.0
+#14 78.91   Downloaded quote v1.0.46
+#14 78.99   Downloaded unicode-ident v1.0.24
+#14 79.00   Downloaded proc-macro2 v1.0.106
+#14 79.05   Downloaded socket2 v0.5.10
+#14 79.09   Downloaded rustler v0.34.0
+#14 79.12   Downloaded memchr v2.8.2
+#14 79.24   Downloaded regex v1.12.4
+#14 79.26   Downloaded aho-corasick v1.1.4
+#14 79.41   Downloaded syn v2.0.118
+#14 79.44   Downloaded regex-syntax v0.8.11
+#14 79.46   Downloaded windows_x86_64_gnullvm v0.52.6
+#14 79.48   Downloaded windows_aarch64_gnullvm v0.52.6
+#14 79.50   Downloaded windows_i686_gnullvm v0.52.6
+#14 79.51   Downloaded regex-automata v0.4.14
+#14 79.63   Downloaded libc v0.2.186
+#14 79.73   Downloaded windows_x86_64_msvc v0.52.6
+#14 79.76   Downloaded windows_x86_64_gnu v0.52.6
+#14 79.81   Downloaded windows_aarch64_msvc v0.52.6
+#14 79.84   Downloaded windows_i686_gnu v0.52.6
+#14 79.87   Downloaded windows_i686_msvc v0.52.6
+#14 79.90   Downloaded windows-sys v0.52.0
+#14 80.09 Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+#14 93.77 Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+#14 93.78 Compiling lib/abyss/dhcp_socket/native.ex (it's taking more than 10s)
+#14 93.89 Generated abyss app
+#14 93.93 ==> gaoxy
+#14 93.93 Compiling 11 files (.ex)
+#14 94.67 Generated gaoxy app
+#14 94.70 ==> gaoxy_server
+#14 94.70 Compiling 5 files (.ex)
+#14 94.79 Generated gaoxy_server app
+#14 94.81 ==> gaoxy_http
+#14 94.81 Generated gaoxy_http app
+#14 94.83 ==> gaoxy_proxy
+#14 94.83 Generated gaoxy_proxy app
+#14 DONE 95.5s
+
+#15 [11/11] RUN apk add --no-cache iproute2 util-linux
+#15 6.702 ( 1/42) Installing libcap2 (2.78-r0)
+#15 6.890 ( 2/42) Installing libelf (0.194-r0)
+#15 7.079 ( 3/42) Installing libmnl (1.0.5-r2)
+#15 7.267 ( 4/42) Installing iproute2-minimal (6.17.0-r0)
+#15 7.492 ( 5/42) Installing libxtables (1.8.11-r1)
+#15 7.678 ( 6/42) Installing iproute2-tc (6.17.0-r0)
+#15 8.087 ( 7/42) Installing iproute2-ss (6.17.0-r0)
+#15 8.511 ( 8/42) Installing iproute2 (6.17.0-r0)
+#15 8.703   Executing iproute2-6.17.0-r0.post-install
+#15 8.709 ( 9/42) Installing util-linux (2.41.6-r1)
+#15 8.939 (10/42) Installing dmesg (2.41.6-r1)
+#15 9.126 (11/42) Installing setarch (2.41.6-r1)
+#15 9.310 (12/42) Installing libeconf (0.8.3-r0)
+#15 9.497 (13/42) Installing libblkid (2.41.6-r1)
+#15 9.701 (14/42) Installing libuuid (2.41.6-r1)
+#15 9.897 (15/42) Installing libfdisk (2.41.6-r1)
+#15 10.10 (16/42) Installing libmount (2.41.6-r1)
+#15 10.29 (17/42) Installing libsmartcols (2.41.6-r1)
+#15 10.48 (18/42) Installing skalibs-libs (2.14.4.0-r0)
+#15 10.67 (19/42) Installing utmps-libs (0.1.3.1-r0)
+#15 10.85 (20/42) Installing util-linux-misc (2.41.6-r1)
+#15 11.08 (21/42) Installing linux-pam (1.7.1-r2)
+#15 11.29 (22/42) Installing runuser (2.41.6-r1)
+#15 11.47 (23/42) Installing mount (2.41.6-r1)
+#15 11.65 (24/42) Installing losetup (2.41.6-r1)
+#15 11.83 (25/42) Installing hexdump (2.41.6-r1)
+#15 12.01 (26/42) Installing uuidgen (2.41.6-r1)
+#15 12.20 (27/42) Installing blkid (2.41.6-r1)
+#15 12.39 (28/42) Installing sfdisk (2.41.6-r1)
+#15 12.57 (29/42) Installing mcookie (2.41.6-r1)
+#15 12.76 (30/42) Installing agetty (2.41.6-r1)
+#15 12.94 (31/42) Installing wipefs (2.41.6-r1)
+#15 13.13 (32/42) Installing cfdisk (2.41.6-r1)
+#15 13.32 (33/42) Installing umount (2.41.6-r1)
+#15 13.50 (34/42) Installing flock (2.41.6-r1)
+#15 13.69 (35/42) Installing lsblk (2.41.6-r1)
+#15 13.89 (36/42) Installing libcap-ng (0.8.5-r0)
+#15 14.07 (37/42) Installing setpriv (2.41.6-r1)
+#15 14.25 (38/42) Installing lscpu (2.41.6-r1)
+#15 14.43 (39/42) Installing logger (2.41.6-r1)
+#15 14.61 (40/42) Installing partx (2.41.6-r1)
+#15 14.79 (41/42) Installing fstrim (2.41.6-r1)
+#15 14.97 (42/42) Installing findmnt (2.41.6-r1)
+#15 15.16 Executing busybox-1.37.0-r30.trigger
+#15 15.17 OK: 741.5 MiB in 124 packages
+#15 DONE 15.3s
+
+#16 exporting to image
+#16 exporting layers
+#16 exporting layers 2.3s done
+#16 writing image sha256:fd6058eea2db8e6ff8902934b43afc8527296dc872baa329ddc27a08ee3c3026 done
+#16 naming to docker.io/library/gaoxy-m1-fixture:0b1c78889b84 done
+#16 DONE 2.3s
+EXIT 0

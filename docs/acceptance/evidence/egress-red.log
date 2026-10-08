@@ -1,0 +1,40 @@
+==> gaoxy
+Running ExUnit with seed: 186073, max_cases: 24
+
+
+
+  1) test addressed sends preserve empty datagrams and the listener's source port (Gaoxy.DatagramEgressTest)
+     apps/gaoxy/test/datagram_egress_test.exs:11
+     match (=) failed
+     The following variables were pinned:
+       ip = {127, 0, 0, 1}
+       packet = ""
+       port = 50700
+     code:  assert {:ok, {^ip, ^port, ^packet}} = :gen_udp.recv(receiver, 0, 2000)
+     left:  {:ok, {^ip, ^port, ^packet}}
+     right: {:error, :timeout}
+     stacktrace:
+       test/datagram_egress_test.exs:26: anonymous fn/5 in Gaoxy.DatagramEgressTest."test addressed sends preserve empty datagrams and the listener's source port"/1
+       (elixir 1.20.1) lib/enum.ex:2622: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/datagram_egress_test.exs:24: (test)
+
+     The following output was logged:
+     
+     15:28:35.055 [error] GenServer #PID<0.303.0> terminating
+     ** (CaseClauseError) no case clause matching:
+     
+         {:send, {{127, 0, 0, 1}, 50827}, ""}
+     
+         (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+         (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+         (stdlib 8.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+         (stdlib 8.0.1) gen_server.erl:2291: :gen_server.loop/4
+         (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 53835, ""}}}
+     State: %{broadcast: false, socket: #Port<0.14>, listener: #PID<0.298.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.1947991404.2964062214.174883>, service: "forward", generation: #Reference<0.1947991404.2964062214.174896>}, spec: %{id: "forward", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.DatagramEgressTest.Forward, tls: %{}, transport: :udp, handler_options: {{127, 0, 0, 1}, 50827}, capabilities: [], limits: %{max_bytes: 1048576, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000, idle_timeout: 30000, max_active: 64, max_output: 65507, max_state: 65536}}, gate: #PID<0.295.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, read_timeout: 30000, processing_times: [], adaptive_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1947991404.2964062214.175003>, start_time: -576460691009788865, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.296.0>, local_info: {{127, 0, 0, 1}, 50700}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 53835, sampled: true, telemetry_span_context: #Reference<0.1947991404.2964062214.175003>, parent_telemetry_span_context: #Reference<0.1947991404.2964062214.174958>}}, memory_token: #Reference<0.1947991404.2964062214.175017>, idle_token: nil, idle_deadline: :infinity, idle_timer: nil, memory_check_interval: 10000, memory_timer: #Reference<0.1947991404.2964062214.175018>}
+     
+
+Finished in 4.3 seconds (4.3s async, 0.00s sync)
+
+Result: 0/1 passed
+Failed: 1 test

@@ -1,0 +1,14 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', 'docker run --rm --network none --cap-add NET_ADMIN --cap-add SYS_ADMIN --env GAOXY_UDP_BACKEND=inet --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/network,dst=/work/integration/network,readonly gaoxy-m1-fixture:0b1c78889b84 python3 integration/network/fixture.py --allow-privileged --ipv6']
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+FAIL AssertionError("open tx6: OSError(92, 'Protocol not available')")
+Gaoxy output:
+
+08:00:55.464 [info] The function passed as a handler with ID "network-send-results" is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+WIRE RUNTIME %{otp: "28", elixir: "1.19.5", backend: "inet"}
+WIRE READY
+EXIT 1

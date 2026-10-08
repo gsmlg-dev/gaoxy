@@ -1,0 +1,183 @@
+--- before/apps/gaoxy/lib/gaoxy/service.ex
++++ after/apps/gaoxy/lib/gaoxy/service.ex
+@@ -104,7 +104,7 @@
+     result = membership_change(state, operation, membership)
+ 
+     if result == :ok do
+-      spec = put_in(state.spec.udp[:memberships], Abyss.memberships(state.backend))
++      spec = put_in(state.spec, [:udp, :memberships], Abyss.memberships(state.backend))
+       :ets.insert(state.table, {spec.id, spec})
+       {:reply, :ok, %{state | spec: spec}}
+     else
+--- before/apps/gaoxy/test/runtime_test.exs
++++ after/apps/gaoxy/test/runtime_test.exs
+@@ -1,5 +1,7 @@
+ defmodule Gaoxy.RuntimeTest do
+   use ExUnit.Case, async: true
++
++  @readiness_timeout 2_000
+ 
+   defmodule Lines do
+     @behaviour Gaoxy.StreamHandler
+@@ -56,7 +58,7 @@
+   end
+ 
+   def eventually(fun, deadline \\ nil) do
+-    deadline = deadline || System.monotonic_time(:millisecond) + 2_000
++    deadline = deadline || System.monotonic_time(:millisecond) + @readiness_timeout
+ 
+     case fun.() do
+       false ->
+@@ -70,6 +72,26 @@
+       result ->
+         result
+     end
++  end
++
++  defp ready_udp_endpoint(pid, id \\ "echo") do
++    eventually(fn ->
++      match?(
++        %{state: :ready, backend: %{mode: :running, receive_credit: 1}},
++        Gaoxy.status(pid, id)
++      )
++    end)
++
++    endpoint(pid, id)
++  end
++
++  defp admit_waiting_packet(client, {ip, port}) do
++    :ok = :gen_udp.send(client, ip, port, "wait")
++    # A bound socket precedes asynchronous worker admission. Synchronize with the
++    # callback's event before starting drain/overload, using the readiness budget.
++    assert_receive {:packet, worker, %{data: "wait"}}, @readiness_timeout
++    assert Process.alive?(worker)
++    worker
+   end
+ 
+   @tag :loopback
+@@ -123,7 +145,7 @@
+   @tag :loopback
+   test "UDP preserves empty packets and oversize rejection; crashes do not close the socket" do
+     pid = instance([spec(:udp, "echo", %{handler_options: self(), limits: %{max_packet: 8}})])
+-    {ip, port} = endpoint(pid)
++    {ip, port} = ready_udp_endpoint(pid)
+     {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+ 
+     for bytes <- ["", "hello"] do
+@@ -144,10 +166,9 @@
+   @tag :loopback
+   test "paused UDP retains its endpoint and admitted work can reply during drain" do
+     pid = instance([spec(:udp, "echo", %{handler_options: self()})])
+-    {ip, port} = endpoint(pid)
++    {ip, port} = ready_udp_endpoint(pid)
+     {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+-    :ok = :gen_udp.send(client, ip, port, "wait")
+-    assert_receive {:packet, worker, %{data: "wait"}}
++    worker = admit_waiting_packet(client, {ip, port})
+     assert :ok = Gaoxy.pause(pid, "echo")
+     assert {^ip, ^port} = endpoint(pid)
+     assert :ok = Gaoxy.resume(pid, "echo")
+@@ -165,10 +186,9 @@
+   @tag :loopback
+   test "deadline forces cleanup and intentionally removed child remains stopped" do
+     pid = instance([spec(:udp, "echo", %{handler_options: self()})])
+-    {ip, port} = endpoint(pid)
++    {ip, port} = ready_udp_endpoint(pid)
+     {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+-    :ok = :gen_udp.send(client, ip, port, "wait")
+-    assert_receive {:packet, worker, _}
++    worker = admit_waiting_packet(client, {ip, port})
+     monitor = Process.monitor(worker)
+     assert :ok = Gaoxy.remove(pid, "echo", 10)
+     assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 1_000
+@@ -188,12 +208,11 @@
+         spec(:udp, "other")
+       ])
+ 
+-    {ip, port} = endpoint(pid)
++    {ip, port} = ready_udp_endpoint(pid)
+     {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+-    :ok = :gen_udp.send(client, ip, port, "wait")
+-    assert_receive {:packet, first, _}
+-    :ok = :gen_udp.send(client, ip, port, "wait")
+-    assert_receive {:packet, second, _}
++    first = admit_waiting_packet(client, {ip, port})
++    second = admit_waiting_packet(client, {ip, port})
++    assert %{active: 2, backend: %{active_handlers: 2}} = Gaoxy.status(pid, "echo")
+     for _ <- 1..1_000, do: :gen_udp.send(client, ip, port, "wait")
+     eventually(fn -> Gaoxy.status(pid, "echo").backend.dropped > 0 end)
+ 
+@@ -205,7 +224,7 @@
+            } = Gaoxy.status(pid, "echo")
+ 
+     assert active <= 2 and high <= 2 and starting <= 1 and retained <= 4096
+-    {_, other} = endpoint(pid, "other")
++    {_, other} = ready_udp_endpoint(pid, "other")
+     :ok = :gen_udp.send(client, ip, other, "isolated")
+     assert {:ok, {^ip, ^other, "isolated"}} = :gen_udp.recv(client, 0, 1_000)
+     eventually(fn -> not Process.alive?(first) and not Process.alive?(second) end)
+@@ -227,4 +246,64 @@
+     assert new_port > 0
+     :gen_tcp.close(client)
+   end
++
++  @tag :loopback
++  @tag :membership
++  @tag :capture_log
++  test "multicast changes are idempotent and preserve identity and desired state across restart" do
++    pid =
++      instance([
++        spec(:udp, "membership", %{
++          mode: :multicast,
++          ip: {0, 0, 0, 0},
++          limits: %{max_memberships: 1}
++        })
++      ])
++
++    membership = {{239, 192, 74, 1}, {127, 0, 0, 1}}
++    other = {{239, 192, 74, 2}, {127, 0, 0, 1}}
++    handle = Gaoxy.handle(pid, "membership")
++    local = endpoint(pid, "membership")
++
++    assert :ok = Gaoxy.leave(pid, handle, membership)
++    assert [] = Gaoxy.memberships(pid, handle)
++    assert ^handle = Gaoxy.handle(pid, "membership")
++
++    for _ <- 1..2 do
++      assert :ok = Gaoxy.join(pid, handle, membership)
++      assert [^membership] = Gaoxy.memberships(pid, handle)
++      assert ^handle = Gaoxy.handle(pid, "membership")
++      assert ^local = endpoint(pid, "membership")
++    end
++
++    assert {:error, :membership_limit} = Gaoxy.join(pid, handle, other)
++    assert [^membership] = Gaoxy.memberships(pid, handle)
++
++    restart = fn previous ->
++      # Resolve the owned service only to inject failure; verify recovery through public APIs.
++      {:ok, service, _} = GenServer.call(pid, {:lookup, "membership"})
++      GenServer.stop(service, :fixture_restart)
++
++      eventually(fn ->
++        case Gaoxy.handle(pid, "membership") do
++          %{generation: generation} = current when generation != previous.generation -> current
++          _ -> false
++        end
++      end)
++    end
++
++    recovered = restart.(handle)
++    assert [^membership] = Gaoxy.memberships(pid, recovered)
++    assert {:error, :stale_generation} = Gaoxy.memberships(pid, handle)
++
++    for _ <- 1..2 do
++      assert :ok = Gaoxy.leave(pid, recovered, membership)
++      assert [] = Gaoxy.memberships(pid, recovered)
++      assert ^recovered = Gaoxy.handle(pid, "membership")
++    end
++
++    empty = restart.(recovered)
++    assert [] = Gaoxy.memberships(pid, empty)
++    assert ["membership"] = Gaoxy.services(pid)
++  end
+ end

@@ -1,0 +1,68 @@
+==> gaoxy
+Running ExUnit with seed: 915244, max_cases: 4
+
+.
+16:16:09.566 [info] The function passed as a handler with ID #Reference<0.2553564188.3508011010.234532> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+16:16:09.646 [info] The function passed as a handler with ID #Reference<0.2553564188.3508011010.234687> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+16:16:10.389 [info] The function passed as a handler with ID #Reference<0.2553564188.3508011009.241956> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.......
+16:16:10.880 [info] The function passed as a handler with ID #Reference<0.2553564188.3508011009.243903> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+16:16:11.183 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+16:16:11.219 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+....
+16:16:11.375 [error] GenServer #PID<0.595.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.591.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.595.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{#PID<0.598.0> => {{Abyss.Connection, :guarded_start, :undefined}, :temporary, 5000, :worker, [Abyss.Connection]}}, restarts: []}
+.
+16:16:11.376 [error] GenServer #PID<0.597.0> terminating
+** (stop) exited in: GenServer.call(#PID<0.593.0>, :pause, 5000)
+    ** (EXIT) shutdown
+    (elixir 1.20.1) lib/gen_server.ex:1183: GenServer.call/3
+    (elixir 1.20.1) lib/enum.ex:983: Enum."-each/2-lists^foreach/1-0-"/2
+    (abyss 0.7.0) lib/abyss/shutdown_listener.ex:25: Abyss.ShutdownListener.terminate/2
+    (stdlib 8.0.1) gen_server.erl:2482: :gen_server.try_terminate/3
+    (stdlib 8.0.1) gen_server.erl:2733: :gen_server.terminate/9
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:EXIT, #PID<0.591.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.591.0>}
+.
+16:16:11.376 [error] GenServer #PID<0.592.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.591.0>, :killed}
+State: {:state, {#PID<0.592.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.593.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.591.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2553564188.3508011009.244491>, service: "echo", generation: #Reference<0.2553564188.3508011009.244496>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.585.0>, limits: %{max_bytes: 1048576, max_output: 65507, max_active: 64, callback_timeout: 5000, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000, max_state: 65536}, capabilities: []}, gate: #PID<0.590.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, false, #Reference<0.2553564188.3508011009.244506>, Abyss.ListenerPool, {#PID<0.591.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2553564188.3508011009.244491>, service: "echo", generation: #Reference<0.2553564188.3508011009.244496>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.585.0>, limits: %{max_bytes: 1048576, max_output: 65507, max_active: 64, callback_timeout: 5000, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000, max_state: 65536}, capabilities: []}, gate: #PID<0.590.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}}
+...
+Finished in 2.5 seconds (2.5s async, 0.00s sync)
+
+Result: 19 passed
+==> gaoxy_server
+Running ExUnit with seed: 915244, max_cases: 4
+
+.
+Finished in 0.06 seconds (0.06s async, 0.00s sync)
+
+Result: 1 passed
+==> gaoxy_http
+There are no tests to run
+==> gaoxy_proxy
+There are no tests to run
+
+EXIT 0

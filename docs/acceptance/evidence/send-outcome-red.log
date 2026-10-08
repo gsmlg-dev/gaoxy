@@ -1,0 +1,37 @@
+==> gaoxy
+Running ExUnit with seed: 801759, max_cases: 4
+
+
+16:08:16.077 [info] The function passed as a handler with ID #Reference<0.4286456587.1091305473.61113> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+
+  1) test blocked real TCP output has a referenced uncertain outcome without retransmission (Gaoxy.SendOutcomeTest)
+     apps/gaoxy/test/send_outcome_test.exs:39
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       reference = #Reference<0.4286456587.1091305473.61113>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {^reference, [:gaoxy, :send_started], %{bytes: @output_size}, %{operation: operation}}
+     mailbox:
+       pattern: {^reference, [:gaoxy, :send_started], %{bytes: 16_777_216}, %{operation: operation}}
+       value:   {#Reference<0.4286456587.1091305473.61113>, [:gaoxy, :send],
+                 %{bytes: 16777216},
+                 %{
+                   instance: #Reference<0.4286456587.1091305474.54225>,
+                   service: "blocked",
+                   generation: #Reference<0.4286456587.1091305474.54235>,
+                   outcome: :local_completed
+                 }}
+     stacktrace:
+       test/send_outcome_test.exs:42: (test)
+
+
+Finished in 2.2 seconds (2.2s async, 0.00s sync)
+
+Result: 0/1 passed
+Failed: 1 test
+
+EXIT 2

@@ -1,0 +1,62 @@
+{
+  "task_id": "send-operation-outcomes",
+  "mode": "bounded diagnosis and implementation recovery",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 1,
+  "round1_result": "PASS",
+  "round2": "not started",
+  "root_cause": "16MiB generated inside the callback watchdog budget; measured copy durations exceed500ms before send submission",
+  "copy_durations_ms": [
+    [
+      424.889,
+      405.363
+    ],
+    [
+      675.279
+    ],
+    [
+      553.742
+    ],
+    [
+      506.052
+    ],
+    [
+      733.494
+    ]
+  ],
+  "probe_failure_pattern": "trials2-5 watchdog timeout and killed worker, zero send_started",
+  "changed_file": "apps/gaoxy/test/send_outcome_test.exs",
+  "changed_sha256": "538f92accb0058d57da1cde19bc69000188dc426897e23f9e3110950fde690a5",
+  "unchanged_snapshot_files": [
+    "apps/gaoxy/lib/gaoxy/admission.ex",
+    "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+    "apps/gaoxy/test/datagram_egress_test.exs",
+    "apps/gaoxy/lib/gaoxy/config.ex",
+    "apps/gaoxy/lib/gaoxy/service.ex",
+    "apps/gaoxy/lib/gaoxy/quic.ex",
+    "apps/gaoxy/lib/gaoxy/quic_bridge.ex",
+    "apps/gaoxy/lib/gaoxy/quic_handler.ex"
+  ],
+  "validation": {
+    "focused": "PASS2, exit0, seed2101",
+    "full": "PASS20 core +1 server, exit0, seed255475",
+    "compile_warnings_as_errors": "PASS exit0",
+    "global_format_final": "PASS exit0",
+    "global_format_initial": "FAIL exit1 solely concurrent parent-owned integration/quic_consumer/test/quic_test.exs; parent formatted it"
+  },
+  "environment": "ELIXIR_ERL_OPTIONS='+S 2:2' for all validation; unrelated Synapsis builds left untouched",
+  "commands": "all task command sessions completed; no owned background command remains",
+  "not_run": [
+    "Linux network/release",
+    "independent optional QUIC consumer"
+  ],
+  "limits_preserved": [
+    "callback watchdog500ms",
+    "forced drain10ms",
+    "max_active1",
+    "16MiB output",
+    "output+65536 max_bytes",
+    "existing assertions and async concurrency"
+  ]
+}

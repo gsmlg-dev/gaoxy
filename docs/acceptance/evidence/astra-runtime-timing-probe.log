@@ -1,0 +1,56 @@
+COMMAND: mix run -e <code below>
+ENV: inherited; no scheduler override
+CODE:
+
+defmodule AdmissionProbe do
+  def handle_datagram(packet, {owner, sent}) do
+    send(owner, {:admitted, self(), packet.data, System.monotonic_time(:microsecond) - sent})
+    receive do
+      :release -> :ok
+    end
+  end
+end
+for iteration <- 1..3 do
+  sent = System.monotonic_time(:microsecond)
+  {:ok, instance} = Gaoxy.start_link(services: [%{id: "probe", transport: :udp, handler: AdmissionProbe, handler_options: {self(), sent}}])
+  %{local: {:ok, {ip, port}}} = Gaoxy.info(instance, "probe")
+  IO.inspect(Gaoxy.status(instance, "probe"), label: "#{iteration} before send")
+  {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+  started = System.monotonic_time(:microsecond)
+  :ok = :gen_udp.send(client, ip, port, "probe")
+  receive do
+    {:admitted, worker, "probe", offset} ->
+      IO.inspect(%{receive_us: System.monotonic_time(:microsecond) - started, callback_us: offset - (started - sent)}, label: "#{iteration} within 100ms")
+      send(worker, :release)
+  after
+    100 ->
+      IO.inspect(Gaoxy.status(instance, "probe"), label: "#{iteration} after 100ms")
+      receive do
+        {:admitted, worker, "probe", offset} ->
+          IO.inspect(%{receive_us: System.monotonic_time(:microsecond) - started, callback_us: offset - (started - sent)}, label: "#{iteration} eventual admission")
+          send(worker, :release)
+      after
+        1900 -> raise "no admission within 2000ms"
+      end
+  end
+  :gen_udp.close(client)
+  Gaoxy.stop(instance, 1000)
+end
+
+OUTPUT:
+** (MatchError) no match of right hand side value:
+
+    %{
+      id: "probe",
+      local: {{127, 0, 0, 1}, 59216},
+      pause: :admission_only,
+      mode: :ready,
+      transport: :udp,
+      generation: #Reference<0.521390088.544210953.59654>
+    }
+
+    (stdlib 8.0.1) erl_eval.erl:796: :erl_eval.expr/6
+    (stdlib 8.0.1) erl_eval.erl:1048: :erl_eval.do_apply/7
+
+EXIT: 1
+ELAPSED: 62.758s

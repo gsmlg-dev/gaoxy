@@ -1,0 +1,38 @@
+COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs:201', '--warnings-as-errors', '--seed', '152200', '--trace']
+ENV: inherited; no scheduler override
+PURPOSE: first UDP admission in a fresh VM, no prior tests, unchanged500ms watchdog
+==> gaoxy
+Running ExUnit with seed: 152200, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/runtime_test.exs", 201}]
+
+
+Gaoxy.RuntimeTest [test/runtime_test.exs]
+  * test multicast changes are idempotent and preserve identity and desired state across restart [L#253]
+  * test multicast changes are idempotent and preserve identity and desired state across restart (excluded) [L#253]
+  * test two instances reuse service identities and reconstruct fragmented streams independently [L#98]
+  * test two instances reuse service identities and reconstruct fragmented streams independently (excluded) [L#98]
+  * test deadline forces cleanup and intentionally removed child remains stopped [L#187]
+  * test deadline forces cleanup and intentionally removed child remains stopped (excluded) [L#187]
+  * test binding failure rolls back an already opened sibling socket [L#116]
+  * test binding failure rolls back an already opened sibling socket (excluded) [L#116]
+  * test paused UDP retains its endpoint and admitted work can reply during drain [L#167]
+  * test paused UDP retains its endpoint and admitted work can reply during drain (excluded) [L#167]
+  * test TCP pause unbinds while admitted connections continue; resume reports its actual port [L#235]
+  * test TCP pause unbinds while admitted connections continue; resume reports its actual port (excluded) [L#235]
+  * test UDP preserves empty packets and oversize rejection; crashes do not close the socket [L#146]
+  * test UDP preserves empty packets and oversize rejection; crashes do not close the socket (excluded) [L#146]
+  * test sustained UDP overload stays bounded and callback watchdog recovers capacity [L#201]
+  * test sustained UDP overload stays bounded and callback watchdog recovers capacity (2397.8ms) [L#201]
+
+Finished in 5.4 seconds (5.4s async, 0.00s sync)
+
+Result: 1 passed, 7 excluded
+
+15:19:14.645 [error] GenServer #PID<0.300.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.296.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 2, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.300.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 2, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+
+EXIT: 0
+ELAPSED: 64.565s

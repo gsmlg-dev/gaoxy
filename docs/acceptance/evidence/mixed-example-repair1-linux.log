@@ -1,0 +1,21 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', "docker run --rm --network none --cap-add NET_ADMIN --cap-add SYS_ADMIN --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/apps-quic-round1,dst=/input/apps,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/examples,dst=/work/examples,readonly --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/network,dst=/work/integration/network,readonly gaoxy-m1-fixture:0b1c78889b84 /bin/sh -c 'set -e\ncp -a /input/apps/. /work/apps/\nunbuffer mix compile --warnings-as-errors\npython3 integration/network/example_gate.py --allow-privileged'"]
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+==> gaoxy
+Compiling 11 files (.ex)
+Generated gaoxy app
+/tmp/gaoxy-mixed-example-yqmcd934/cert.pem: OK
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_all_five_bindings_reusable_after_shutdown
+{"result": "PASS", "suite": "mixed_transport_custom_example", "count": 11, "transports": 5, "independent_peers": 2}
+EXIT 0

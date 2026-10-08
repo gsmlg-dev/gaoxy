@@ -1,0 +1,35 @@
+==> gaoxy
+Running ExUnit with seed: 979382, max_cases: 24
+
+.
+15:34:52.163 [info] The function passed as a handler with ID #Reference<0.1598054575.280756232.142740> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+
+  1) test an IPv6 link-local destination without scope fails before submission (Gaoxy.DatagramEgressTest)
+     apps/gaoxy/test/datagram_egress_test.exs:24
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       reference = #Reference<0.1598054575.280756232.142740>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {^reference, [:gaoxy, :send], %{bytes: 5}, %{outcome: {:error, :destination_scope_required}}}
+     mailbox:
+       pattern: {^reference, [:gaoxy, :send], %{bytes: 5}, %{outcome: {:error, :destination_scope_required}}}
+       value:   {#Reference<0.1598054575.280756232.142740>, [:gaoxy, :send],
+                 %{bytes: 5},
+                 %{
+                   instance: #Reference<0.1598054575.280756233.143810>,
+                   service: "scoped",
+                   generation: #Reference<0.1598054575.280756233.143815>,
+                   outcome: :ok
+                 }}
+     stacktrace:
+       test/datagram_egress_test.exs:34: (test)
+
+
+Finished in 3.1 seconds (3.1s async, 0.00s sync)
+
+Result: 1/2 passed
+Failed: 1 test

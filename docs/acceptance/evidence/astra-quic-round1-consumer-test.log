@@ -1,0 +1,69 @@
+COMMAND: ['mix', 'test', '--warnings-as-errors', '--seed', '757928']
+CWD: integration/quic_consumer
+ELIXIR_ERL_OPTIONS=+S 2:2
+==> gaoxy
+Compiling 2 files (.ex)
+==> gaoxy_quic_consumer
+Running ExUnit with seed: 757928, max_cases: 4
+
+
+17:02:20.425 [info] The function passed as a handler with ID #Reference<0.3831756745.2710568961.13060> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+17:02:38.173 [error] GenServer #PID<0.355.0> terminating
+** (stop) {:open_failed, {:error, :not_established}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.331.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.354.0>, generation: #Reference<0.3831756745.2710568961.13139>}, initialized: true}}]]
+Traceback (most recent call last):
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 45, in until
+    await self.changed.wait()
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 109, in <module>
+    main()
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 101, in main
+    asyncio.run(run(args))
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 68, in run
+    await exchange(peer, b"bounded-gaoxy-stream-" * 16384)
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 54, in exchange
+    await peer.until(lambda: 0 in peer.fins and 1 in peer.fins)
+  File "/Users/gao/Workspace/gsmlg-opt/gaoxy/integration/quic_consumer/peer.py", line 41, in until
+    async with asyncio.timeout(15):
+               ^^^^^^^^^^^^^^^^^^^
+  File "/Users/gao/.local/share/uv/python/cpython-3.12-macos-x86_64-none/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError
+
+
+  1) test public optional host: verified streams, directional controls, bounds and isolation (GaoxyQUICConsumerTest)
+     test/quic_test.exs:168
+     independent echo peer exit 1
+     code: peer(echo, directory, "echo")
+     stacktrace:
+       test/quic_test.exs:284: GaoxyQUICConsumerTest.peer/4
+       test/quic_test.exs:223: (test)
+
+
+Finished in 19.6 seconds (19.6s async, 0.00s sync)
+
+Result: 0/1 passed
+Failed: 1 test
+
+EXIT: 2
+ELAPSED: 25.696s

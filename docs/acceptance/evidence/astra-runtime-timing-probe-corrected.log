@@ -1,0 +1,139 @@
+COMMAND: mix run -e <code below>
+ENV: inherited; no scheduler override
+PROBE CORRECTION: Gaoxy UDP info.local is a direct endpoint tuple
+CODE:
+
+defmodule AdmissionProbe do
+  def handle_datagram(packet, {owner, sent}) do
+    send(owner, {:admitted, self(), packet.data, System.monotonic_time(:microsecond) - sent})
+    receive do
+      :release -> :ok
+    end
+  end
+end
+for iteration <- 1..3 do
+  sent = System.monotonic_time(:microsecond)
+  {:ok, instance} = Gaoxy.start_link(services: [%{id: "probe", transport: :udp, handler: AdmissionProbe, handler_options: {self(), sent}}])
+  %{local: {ip, port}} = Gaoxy.info(instance, "probe")
+  IO.inspect(Gaoxy.status(instance, "probe"), label: "#{iteration} before send")
+  {:ok, client} = :gen_udp.open(0, [:binary, active: false])
+  started = System.monotonic_time(:microsecond)
+  :ok = :gen_udp.send(client, ip, port, "probe")
+  receive do
+    {:admitted, worker, "probe", offset} ->
+      IO.inspect(%{receive_us: System.monotonic_time(:microsecond) - started, callback_us: offset - (started - sent)}, label: "#{iteration} within 100ms")
+      send(worker, :release)
+  after
+    100 ->
+      IO.inspect(Gaoxy.status(instance, "probe"), label: "#{iteration} after 100ms")
+      receive do
+        {:admitted, worker, "probe", offset} ->
+          IO.inspect(%{receive_us: System.monotonic_time(:microsecond) - started, callback_us: offset - (started - sent)}, label: "#{iteration} eventual admission")
+          send(worker, :release)
+      after
+        1900 -> raise "no admission within 2000ms"
+      end
+  end
+  :gen_udp.close(client)
+  Gaoxy.stop(instance, 1000)
+end
+
+OUTPUT:
+1 before send: %{
+  active: 0,
+  state: :ready,
+  rejected: 0,
+  retained_high_water: 0,
+  retained_bytes: 0,
+  backend: %{
+    local: {{127, 0, 0, 1}, 64556},
+    mode: :running,
+    starting: 0,
+    dropped: 0,
+    received: 0,
+    active_high_water: 0,
+    retained_high_water: 0,
+    active_handlers: 0,
+    pending_bytes: 0,
+    pending_count: 0,
+    receive_credit: 1,
+    retained_bytes: 0
+  },
+  queued_bytes: 0,
+  queued_items: 0
+}
+1 after 100ms: %{
+  active: 0,
+  state: :ready,
+  rejected: 0,
+  retained_high_water: 0,
+  retained_bytes: 0,
+  backend: %{
+    local: {{127, 0, 0, 1}, 64556},
+    mode: :running,
+    starting: 1,
+    dropped: 0,
+    received: 1,
+    active_high_water: 0,
+    retained_high_water: 5,
+    active_handlers: 0,
+    pending_bytes: 0,
+    pending_count: 0,
+    receive_credit: 0,
+    retained_bytes: 5
+  },
+  queued_bytes: 0,
+  queued_items: 0
+}
+1 eventual admission: %{receive_us: 198593, callback_us: 198550}
+2 before send: %{
+  active: 0,
+  state: :ready,
+  rejected: 0,
+  retained_high_water: 0,
+  retained_bytes: 0,
+  backend: %{
+    local: {{127, 0, 0, 1}, 64841},
+    mode: :running,
+    starting: 0,
+    dropped: 0,
+    received: 0,
+    active_high_water: 0,
+    retained_high_water: 0,
+    active_handlers: 0,
+    pending_bytes: 0,
+    pending_count: 0,
+    receive_credit: 1,
+    retained_bytes: 0
+  },
+  queued_bytes: 0,
+  queued_items: 0
+}
+2 within 100ms: %{receive_us: 11165, callback_us: 11122}
+3 before send: %{
+  active: 0,
+  state: :ready,
+  rejected: 0,
+  retained_high_water: 0,
+  retained_bytes: 0,
+  backend: %{
+    local: {{127, 0, 0, 1}, 64299},
+    mode: :running,
+    starting: 0,
+    dropped: 0,
+    received: 0,
+    active_high_water: 0,
+    retained_high_water: 0,
+    active_handlers: 0,
+    pending_bytes: 0,
+    pending_count: 0,
+    receive_credit: 1,
+    retained_bytes: 0
+  },
+  queued_bytes: 0,
+  queued_items: 0
+}
+3 within 100ms: %{receive_us: 11226, callback_us: 11167}
+
+EXIT: 0
+ELAPSED: 54.699s

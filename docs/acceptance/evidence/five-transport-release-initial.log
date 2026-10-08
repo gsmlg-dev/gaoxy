@@ -1,0 +1,90 @@
+COMMAND ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=5', 's93', "docker run --rm --network none --cap-add NET_ADMIN --cap-add SYS_ADMIN --mount type=bind,src=/tmp/gaoxy-m1-0b1c78889b84/integration/network,dst=/work/integration/network,readonly gaoxy-m1-fixture:0b1c78889b84 /bin/sh -c 'set -e\nMIX_ENV=prod unbuffer mix release\npython3 integration/network/release_gate.py --allow-privileged'"]
+bash: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+/bin/sh: warning: setlocale: LC_ALL: cannot change locale (C.UTF-8)
+manpath: can't set the locale; make sure $LC_* and $LANG are correct
+==> earmark_parser
+Compiling 3 files (.erl)
+Compiling 32 files (.ex)
+Generated earmark_parser app
+==> jason
+Compiling 10 files (.ex)
+Generated jason app
+==> rustler
+Compiling 7 files (.ex)
+Generated rustler app
+==> nimble_parsec
+Compiling 4 files (.ex)
+Generated nimble_parsec app
+==> makeup
+Compiling 15 files (.ex)
+Generated makeup app
+==> makeup_elixir
+Compiling 6 files (.ex)
+Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+Generated makeup_elixir app
+==> makeup_erlang
+Compiling 4 files (.ex)
+Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+Generated makeup_erlang app
+==> ex_doc
+Compiling 30 files (.ex)
+Generated ex_doc app
+===> Analyzing applications...
+===> Compiling telemetry
+==> thousand_island
+Compiling 18 files (.ex)
+Generated thousand_island app
+==> telemetry_metrics
+Compiling 7 files (.ex)
+Generated telemetry_metrics app
+==> abyss
+Compiling 28 files (.ex)
+Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+Generated abyss app
+==> gaoxy
+Compiling 11 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+[32m* assembling [0mgaoxy-0.1.0 on MIX_ENV=prod[0m
+[33m* skipping [0mruntime configuration (config/runtime.exs not found)[0m
+[33m* skipping [0melixir.bat for windows (bin/elixir.bat not found in the Elixir installation)[0m
+[33m* skipping [0miex.bat for windows (bin/iex.bat not found in the Elixir installation)[0m
+
+Release created at _build/prod/rel/gaoxy
+
+    # To start your system
+    _build/prod/rel/gaoxy/bin/gaoxy start
+
+Once the release is running:
+
+    # To connect to it remotely
+    _build/prod/rel/gaoxy/bin/gaoxy remote
+
+    # To stop it gracefully (you may also send SIGINT/SIGTERM)
+    _build/prod/rel/gaoxy/bin/gaoxy stop
+
+To list all commands:
+
+    _build/prod/rel/gaoxy/bin/gaoxy
+
+/tmp/gaoxy-five-release-l7mp_25z/cert.pem: OK
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_tcp_fragmented_verified_echo
+PASS release_tls_fragmented_verified_echo
+PASS release_udp_empty_nonempty_original_port
+PASS release_broadcast_empty_nonempty_original_port
+PASS release_multicast_empty_nonempty_original_port
+PASS release_all_five_bindings_reusable_after_shutdown
+{"result": "PASS", "suite": "five_transport_release", "count": 11, "transports": 5, "independent_peers": 2}
+EXIT 0

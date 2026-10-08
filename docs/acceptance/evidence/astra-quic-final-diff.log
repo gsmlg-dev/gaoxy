@@ -1,0 +1,170 @@
+--- baseline/apps/gaoxy/lib/gaoxy/quic.ex
++++ final/apps/gaoxy/lib/gaoxy/quic.ex
+@@ -65,7 +65,7 @@
+             case result do
+               {:ok, ^operation} -> {:admitted, operation}
+               {:unknown, ^operation} -> {:unknown, operation}
+-              {:blocked, reason} when is_atom(reason) -> {:blocked, reason}
++              {:blocked, reason} -> {:blocked, reason}
+               {:error, reason} when is_atom(reason) -> {:error, reason}
+               _ -> {:error, :quic_send_failed}
+             end
+--- baseline/apps/gaoxy/lib/gaoxy/service.ex
++++ final/apps/gaoxy/lib/gaoxy/service.ex
+@@ -90,15 +90,18 @@
+ 
+   def handle_call({:request, _, :pause}, _, state) do
+     :ok = Admission.mode(state.gate, :paused)
+-
+-    case host(state).suspend(state.backend) do
++    host = if state.spec.transport == :udp, do: Abyss, else: ThousandIsland
++
++    case host.suspend(state.backend) do
+       :ok -> {:reply, :ok, transition(state, :paused)}
+       error -> {:reply, error, state}
+     end
+   end
+ 
+   def handle_call({:request, _, :resume}, _, state) do
+-    case host(state).resume(state.backend) do
++    host = if state.spec.transport == :udp, do: Abyss, else: ThousandIsland
++
++    case host.resume(state.backend) do
+       :ok ->
+         Admission.mode(state.gate, :ready)
+         {:reply, :ok, transition(state, :ready)}
+@@ -337,7 +340,8 @@
+             max_ready_bytes: spec.limits.max_bytes,
+             max_streams_bidi: spec.limits.max_active,
+             max_streams_uni: spec.limits.max_active,
+-            max_stream_records: spec.limits.max_active * 2,
++            # The engine reserves both peer quotas before allocating local streams.
++            max_stream_records: spec.limits.max_active * 3,
+             max_recv_ranges: 128
+           ]
+         ]
+--- baseline/integration/quic_consumer/test/quic_test.exs
++++ final/integration/quic_consumer/test/quic_test.exs
+@@ -10,8 +10,17 @@
+       send(observer, {:connection, connection, metadata})
+ 
+       {:ok,
+-       %{connection: connection, local: false, streams: %{}, pending: %{}, observer: observer}}
+-    end
++       %{
++         connection: connection,
++         ready: false,
++         local: false,
++         streams: %{},
++         pending: %{},
++         observer: observer
++       }}
++    end
++
++    def handle_event({:ready, _metadata}, state), do: progress(%{state | ready: true})
+ 
+     def handle_event({:stream_open, stream, :bidi}, state),
+       do: {:ok, %{state | streams: Map.put(state.streams, stream, :echo)}}
+@@ -20,19 +29,22 @@
+     def handle_event({:readable, _}, state), do: progress(state)
+     def handle_event(_, state), do: {:ok, state}
+ 
++    # Host polling may emit :tick before the engine authenticates peer parameters.
++    defp progress(%{ready: false} = state), do: {:ok, state}
++
+     defp progress(state) do
+-      state = open_local(state)
+-
+-      Enum.reduce_while(state.streams, {:ok, state}, fn {stream, kind}, {:ok, acc} ->
+-        with {:ok, next} <- read(acc, stream, kind), {:ok, next} <- flush(next, stream) do
+-          {:cont, {:ok, next}}
+-        else
+-          failure -> {:halt, failure}
+-        end
+-      end)
+-    end
+-
+-    defp open_local(%{local: true} = state), do: state
++      with {:ok, state} <- open_local(state) do
++        Enum.reduce_while(state.streams, {:ok, state}, fn {stream, kind}, {:ok, acc} ->
++          with {:ok, next} <- read(acc, stream, kind), {:ok, next} <- flush(next, stream) do
++            {:cont, {:ok, next}}
++          else
++            failure -> {:halt, failure}
++          end
++        end)
++      end
++    end
++
++    defp open_local(%{local: true} = state), do: {:ok, state}
+ 
+     defp open_local(state) do
+       case QUIC.open_stream(state.connection, :bidi) do
+@@ -45,15 +57,19 @@
+ 
+           send(state.observer, {:flow_control, QUIC.send_stream(stream, :binary.copy("x", 4096))})
+ 
+-          %{
+-            state
+-            | local: true,
+-              streams: Map.put(state.streams, stream, :local),
+-              pending: Map.put(state.pending, stream, {"server-fin", true})
+-          }
++          {:ok,
++           %{
++             state
++             | local: true,
++               streams: Map.put(state.streams, stream, :local),
++               pending: Map.put(state.pending, stream, {"server-fin", true})
++           }}
+ 
+         {:blocked, _} ->
+-          state
++          {:ok, state}
++
++        failure ->
++          {:stop, {:open_failed, failure}, state}
+       end
+     end
+ 
+@@ -179,6 +195,24 @@
+     {:ok, {_, controls}} = Gaoxy.info(runtime, "controls").local
+     assert %{pause: :unsupported, drain: :local_host_cleanup} = Gaoxy.info(runtime, "echo")
+     assert {:error, {:unsupported_capability, :quic_pause}} = Gaoxy.pause(runtime, "echo")
++    assert {:error, {:unsupported_capability, :quic_pause}} = Gaoxy.resume(runtime, "echo")
++
++    observer = self()
++    reference = make_ref()
++    generation = Gaoxy.handle(runtime, "echo").generation
++
++    :ok =
++      :telemetry.attach(
++        reference,
++        [:gaoxy, :send],
++        fn _, _, metadata, _ ->
++          if metadata.generation == generation,
++            do: send(observer, {:send_outcome, metadata.operation, metadata.outcome})
++        end,
++        nil
++      )
++
++    on_exit(fn -> :telemetry.detach(reference) end)
+ 
+     assert {:error, {:unsupported_capability, :drain}} =
+              Gaoxy.add(
+@@ -193,10 +227,13 @@
+                    2000
+ 
+     assert_receive {:after_fin, "after-server-fin"}, 2000
+-    assert_receive {:flow_control, {:blocked, _}}, 2000
++    assert_receive {:flow_control, {:blocked, %{type: :data_blocked}}}, 2000
++    assert_receive {:send_outcome, blocked, {:blocked, %{type: :data_blocked}}}, 2000
++    assert is_reference(blocked)
+     assert_receive {:write, operation, status}, 2000
+     assert is_reference(operation)
+-    IO.inspect(status, label: "QUIC_NATIVE_OPERATION_STATUS")
++    assert %{status: :admitted, result: {:ok, ^operation}} = status
++    assert_receive {:send_outcome, ^operation, {:admitted, ^operation}}, 2000
+     peer(echo, directory, "isolation")
+     peer(controls, directory, "controls")
+     assert_receive {:reset_result, {:ok, reset}}, 2000

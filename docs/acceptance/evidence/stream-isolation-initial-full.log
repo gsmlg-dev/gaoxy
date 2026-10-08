@@ -1,0 +1,129 @@
+==> gaoxy
+Running ExUnit with seed: 376638, max_cases: 4
+
+....
+16:18:39.580 [error] GenServer #PID<0.368.0> terminating
+** (stop) :fixture_init_error
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 50887}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.19>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3417274779.1092616194.124807>, start_time: -576460750881720219, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 50887, telemetry_span_context: #Reference<0.3417274779.1092616194.124807>, parent_telemetry_span_context: #Reference<0.3417274779.1092616194.124589>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3417274779.1092616194.124807>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3417274779.1092616194.124501>, service: :init_error, generation: #Reference<0.3417274779.1092616194.124516>}, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.295.0>, action: :init_error}, limits: %{max_bytes: 1048576, max_state: 1024, max_output: 1024, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, gate: #PID<0.311.0>}}
+
+16:18:39.620 [error] GenServer #PID<0.381.0> terminating
+** (stop) :output_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 50895}}}
+Last message: {:tcp, #Port<0.35>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.35>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3417274779.1092616194.125148>, start_time: -576460750832492288, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 50895, telemetry_span_context: #Reference<0.3417274779.1092616194.125148>, parent_telemetry_span_context: #Reference<0.3417274779.1092616194.124754>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3417274779.1092616194.125148>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3417274779.1092616194.124501>, service: :output, generation: #Reference<0.3417274779.1092616194.124714>}, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.295.0>, action: :output}, limits: %{max_bytes: 1048576, max_state: 1024, max_output: 1024, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, app: %{owner: #PID<0.295.0>, action: :output}, gate: #PID<0.349.0>, lease: #Reference<0.3417274779.1092616194.125150>}}
+
+16:18:39.590 [error] GenServer #PID<0.372.0> terminating
+** (RuntimeError) fixture callback crash
+    test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:50: Gaoxy.StreamBridge.chunks/4
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+    (stdlib 8.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 8.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 50889}}}
+Last message: {:tcp, #Port<0.23>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.23>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3417274779.1092616194.124872>, start_time: -576460750866075321, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 50889, telemetry_span_context: #Reference<0.3417274779.1092616194.124872>, parent_telemetry_span_context: #Reference<0.3417274779.1092616194.124629>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3417274779.1092616194.124872>}}, read_timer: #Reference<0.3417274779.1092616194.124883>, read_deadline: -576460720865, timer_deadline: -576460720865}, %{scope: %{instance: #Reference<0.3417274779.1092616194.124501>, service: :crash, generation: #Reference<0.3417274779.1092616194.124592>}, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.295.0>, action: :crash}, limits: %{max_bytes: 1048576, max_state: 1024, max_output: 1024, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, app: %{owner: #PID<0.295.0>, action: :crash}, gate: #PID<0.321.0>, lease: #Reference<0.3417274779.1092616194.124874>}}
+
+16:18:39.609 [error] GenServer #PID<0.379.0> terminating
+** (stop) :state_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 50893}}}
+Last message: {:tcp, #Port<0.31>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.31>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3417274779.1092616194.125061>, start_time: -576460750843564419, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 50893, telemetry_span_context: #Reference<0.3417274779.1092616194.125061>, parent_telemetry_span_context: #Reference<0.3417274779.1092616194.124710>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3417274779.1092616194.125061>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3417274779.1092616194.124501>, service: :state, generation: #Reference<0.3417274779.1092616194.124677>}, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.295.0>, action: :state}, limits: %{max_bytes: 1048576, max_state: 1024, max_output: 1024, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, app: %{owner: #PID<0.295.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, gate: #PID<0.340.0>, lease: #Reference<0.3417274779.1092616194.125063>}}
+.
+16:18:39.767 [info] The function passed as a handler with ID #Reference<0.3417274779.1092616193.128084> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+16:18:40.111 [info] The function passed as a handler with ID #Reference<0.3417274779.1092616193.128172> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+16:18:40.683 [error] GenServer #PID<0.420.0> terminating
+** (stop) killed
+Process Label: {:thousand_island, :acceptor_pool_supervisor, {0, Gaoxy.StreamBridge}}
+Last message: {:EXIT, #PID<0.418.0>, :killed}
+State: {:state, {#PID<0.420.0>, ThousandIsland.AcceptorPoolSupervisor}, :one_for_one, {["acceptor-1"], %{"acceptor-1" => {:child, #PID<0.421.0>, "acceptor-1", {ThousandIsland.AcceptorSupervisor, :start_link, [{#PID<0.418.0>, 1, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.3417274779.1092616193.128128>, service: "blocked", generation: #Reference<0.3417274779.1092616193.128133>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.SendOutcomeTest.Output, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.412.0>, size: 16777216}, limits: %{max_bytes: 16842752, max_state: 65536, max_output: 16777216, max_active: 1, max_packet: 65507, callback_timeout: 500, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, gate: #PID<0.417.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorSupervisor]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, false, #Reference<0.3417274779.1092616193.128145>, ThousandIsland.AcceptorPoolSupervisor, {#PID<0.418.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 500}, {:send_timeout_close, true}], handler_module: Gaoxy.StreamBridge, handler_options: %{scope: %{instance: #Reference<0.3417274779.1092616193.128128>, service: "blocked", generation: #Reference<0.3417274779.1092616193.128133>}, spec: %{id: "blocked", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.SendOutcomeTest.Output, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.412.0>, size: 16777216}, limits: %{max_bytes: 16842752, max_state: 65536, max_output: 16777216, max_active: 1, max_packet: 65507, callback_timeout: 500, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, gate: #PID<0.417.0>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 1, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 500, shutdown_timeout: 5000, silent_terminate_on_error: false}}}
+.
+16:18:40.786 [info] The function passed as a handler with ID #Reference<0.3417274779.1092616193.128486> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.....
+16:18:41.459 [error] GenServer #PID<0.598.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.594.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.598.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{#PID<0.602.0> => {{Abyss.Connection, :guarded_start, :undefined}, :temporary, 5000, :worker, [Abyss.Connection]}}, restarts: []}
+.
+16:18:41.460 [error] GenServer #PID<0.600.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.594.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.594.0>}
+
+16:18:41.459 [error] GenServer #PID<0.595.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.594.0>, :killed}
+State: {:state, {#PID<0.595.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.596.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.594.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.3417274779.1092616193.129053>, service: "echo", generation: #Reference<0.3417274779.1092616193.129058>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.588.0>, limits: %{max_bytes: 1048576, max_state: 65536, max_output: 65507, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, gate: #PID<0.593.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, false, #Reference<0.3417274779.1092616193.129070>, Abyss.ListenerPool, {#PID<0.594.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.3417274779.1092616193.129053>, service: "echo", generation: #Reference<0.3417274779.1092616193.129058>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.588.0>, limits: %{max_bytes: 1048576, max_state: 65536, max_output: 65507, max_active: 64, max_packet: 65507, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000}, capabilities: []}, gate: #PID<0.593.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}}}
+..
+16:18:41.476 [info] The function passed as a handler with ID #Reference<0.3417274779.1092616193.129618> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+16:18:41.608 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+16:18:41.628 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+...
+
+  1) test addressed output is bounded and reports local outcomes without exposing the socket (Gaoxy.DatagramEgressTest)
+     apps/gaoxy/test/datagram_egress_test.exs:61
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       reason = :output_limit
+       reference = #Reference<0.3417274779.1092616193.128084>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {^reference, [:gaoxy, :admission_rejected], %{count: 1}, %{reason: ^reason}}
+     mailbox:
+       pattern: {^reference, [:gaoxy, :admission_rejected], %{count: 1}, %{reason: ^reason}}
+       value:   {#Reference<0.3417274779.1092616193.128084>,
+                 [:gaoxy, :admission_rejected], %{count: 1},
+                 %{
+                   reason: :byte_limit,
+                   instance: #Reference<0.3417274779.1092616194.125307>,
+                   service: "bounded",
+                   generation: #Reference<0.3417274779.1092616194.125312>
+                 }}
+     stacktrace:
+       test/datagram_egress_test.exs:96: anonymous fn/6 in Gaoxy.DatagramEgressTest."test addressed output is bounded and reports local outcomes without exposing the socket"/1
+       (elixir 1.20.1) lib/enum.ex:2622: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/datagram_egress_test.exs:93: (test)
+
+.
+16:18:41.894 [info] The function passed as a handler with ID #Reference<0.3417274779.1092616193.130249> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+Finished in 2.4 seconds (2.4s async, 0.00s sync)
+
+Result: 19/20 passed
+Failed: 1 test
+==> gaoxy_server
+Running ExUnit with seed: 376638, max_cases: 4
+
+.
+Finished in 0.06 seconds (0.06s async, 0.00s sync)
+
+Result: 1 passed
+==> gaoxy_http
+There are no tests to run
+==> gaoxy_proxy
+There are no tests to run
+
+EXIT 2

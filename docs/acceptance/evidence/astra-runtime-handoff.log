@@ -1,0 +1,99 @@
+{
+  "task": "runtime-foundation",
+  "mode": "bounded recovery implementation",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 1,
+  "round1_initial_full_validation": "FAILED, TLS handshake timeout; preserved",
+  "round2": "not started; no source edits after round1 focused pass",
+  "final_required_validation": "PASS; default repeat and explicit two-scheduler full runs; compile/format; cold overload",
+  "changed_source_sha256": {
+    "apps/gaoxy/lib/gaoxy/service.ex": "44d2e87a4c8f9619c172daba03d22b6b9868e1d003d27964546a9c1cad2eacdf",
+    "apps/gaoxy/test/runtime_test.exs": "3f818ca823f7bd85ef6b229459c79c0a5c1de0b3dc817ed427423427c218c89c"
+  },
+  "unchanged_inherited_files": 13,
+  "active_beam_cargo_rustc_processes": [],
+  "command_sessions": "all completed",
+  "logs": {
+    "astra-runtime-membership-red.log": [
+      "COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs', '--warnings-as-errors', '--only', 'membership', '--seed', '152200']",
+      "Running ExUnit with seed: 152200, max_cases: 24",
+      "Result: 0/1 passed, 7 excluded",
+      "EXIT: 2",
+      "ELAPSED: 74.373s"
+    ],
+    "astra-runtime-reproduce.log": [
+      "COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs', '--warnings-as-errors', '--seed', '152200', '--trace']",
+      "Running ExUnit with seed: 152200, max_cases: 1",
+      "Result: 6/7 passed",
+      "EXIT: 2",
+      "ELAPSED: 63.676s"
+    ],
+    "astra-runtime-round1-cold-overload.log": [
+      "COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs:201', '--warnings-as-errors', '--seed', '152200', '--trace']",
+      "Running ExUnit with seed: 152200, max_cases: 1",
+      "Result: 1 passed, 7 excluded",
+      "EXIT: 0",
+      "ELAPSED: 64.565s"
+    ],
+    "astra-runtime-round1-compile.log": [
+      "COMMAND: ['mix', 'compile', '--warnings-as-errors']",
+      "EXIT: 0",
+      "ELAPSED: 62.180s"
+    ],
+    "astra-runtime-round1-focused.log": [
+      "COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs', '--warnings-as-errors', '--seed', '152200']",
+      "Running ExUnit with seed: 152200, max_cases: 24",
+      "Result: 8 passed",
+      "EXIT: 0",
+      "ELAPSED: 87.645s"
+    ],
+    "astra-runtime-round1-format-check.log": [
+      "COMMAND: ['mix', 'format', '--check-formatted']",
+      "EXIT: 0",
+      "ELAPSED: 17.271s"
+    ],
+    "astra-runtime-round1-format.log": [
+      "COMMAND: ['mix', 'format', 'apps/gaoxy/lib/gaoxy/service.ex', 'apps/gaoxy/test/runtime_test.exs']",
+      "EXIT: 0",
+      "ELAPSED: 8.253s"
+    ],
+    "astra-runtime-round1-full-default-repeat.log": [
+      "COMMAND: ['python3', 'scripts/check-tests.py', '--seed', '317767']",
+      "Running ExUnit with seed: 317767, max_cases: 24",
+      "Result: 13 passed",
+      "Running ExUnit with seed: 317767, max_cases: 24",
+      "Result: 1 passed",
+      "EXIT: 0",
+      "ELAPSED: 61.765s"
+    ],
+    "astra-runtime-round1-full-two-schedulers.log": [
+      "COMMAND: ['python3', 'scripts/check-tests.py', '--seed', '317767']",
+      "Running ExUnit with seed: 317767, max_cases: 4",
+      "Result: 13 passed",
+      "Running ExUnit with seed: 317767, max_cases: 4",
+      "Result: 1 passed",
+      "EXIT: 0",
+      "ELAPSED: 60.446s"
+    ],
+    "astra-runtime-round1-full.log": [
+      "COMMAND: ['python3', 'scripts/check-tests.py']",
+      "Running ExUnit with seed: 317767, max_cases: 24",
+      "Result: 12/13 passed",
+      "Running ExUnit with seed: 317767, max_cases: 24",
+      "Result: 1 passed",
+      "EXIT: 2",
+      "ELAPSED: 65.947s"
+    ],
+    "astra-runtime-timing-probe-corrected.log": [
+      "COMMAND: mix run -e <code below>",
+      "EXIT: 0",
+      "ELAPSED: 54.699s"
+    ],
+    "astra-runtime-timing-probe.log": [
+      "COMMAND: mix run -e <code below>",
+      "EXIT: 1",
+      "ELAPSED: 62.758s"
+    ]
+  }
+}

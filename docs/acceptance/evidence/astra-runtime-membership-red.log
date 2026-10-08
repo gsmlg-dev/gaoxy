@@ -1,0 +1,131 @@
+COMMAND: ['mix', 'test', 'apps/gaoxy/test/runtime_test.exs', '--warnings-as-errors', '--only', 'membership', '--seed', '152200']
+ENV: inherited; no scheduler override
+EXPECTED RED: public absent leave currently crashes
+==> gaoxy
+Running ExUnit with seed: 152200, max_cases: 24
+Excluding tags: [:test]
+Including tags: [:membership]
+
+
+
+  1) test multicast changes are idempotent and preserve identity and desired state across restart (Gaoxy.RuntimeTest)
+     apps/gaoxy/test/runtime_test.exs:234
+     ** (exit) exited in: GenServer.call(#PID<0.297.0>, {:request, #Reference<0.2076829482.812646407.246369>, {:membership, :leave, {{239, 192, 74, 1}, {127, 0, 0, 1}}}}, 5000)
+         ** (EXIT) an exception was raised:
+             ** (KeyError) key :id not found in:
+
+         %{
+           scope: %{
+             instance: #Reference<0.2076829482.812646407.246353>,
+             service: "membership",
+             generation: #Reference<0.2076829482.812646407.246369>
+           },
+           table: #Reference<0.2076829482.812777479.246350>,
+           mode: :ready,
+           spec: %{
+             id: "membership",
+             port: 0,
+             udp: %{memberships: []},
+             mode: :multicast,
+             ip: {0, 0, 0, 0},
+             handler: Gaoxy.RuntimeTest.UDP,
+             tls: %{},
+             transport: :udp,
+             handler_options: [],
+             limits: %{
+               max_bytes: 1048576,
+               max_packet: 65507,
+               max_active: 64,
+               callback_timeout: 5000,
+               max_memberships: 1,
+               drain_timeout: 5000,
+               idle_timeout: 30000,
+               max_output: 65507,
+               max_state: 65536
+             },
+             capabilities: []
+           },
+           drain: nil,
+           generation: #Reference<0.2076829482.812646407.246369>,
+           backend: #PID<0.299.0>,
+           gate: #PID<0.298.0>
+         }
+
+                 (gaoxy 0.1.0) lib/gaoxy/service.ex:108: Gaoxy.Service.handle_call/3
+                 (stdlib 8.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+                 (stdlib 8.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+                 (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: assert :ok = Gaoxy.leave(pid, handle, membership)
+     stacktrace:
+       (elixir 1.20.1) lib/gen_server.ex:1183: GenServer.call/3
+       (gaoxy 0.1.0) lib/gaoxy.ex:64: Gaoxy.service_call/3
+       test/runtime_test.exs:249: (test)
+
+     The following output was logged:
+     
+     15:08:54.054 [error] GenServer #PID<0.297.0> terminating
+     ** (KeyError) key :id not found in:
+     
+         %{
+           scope: %{
+             instance: #Reference<0.2076829482.812646407.246353>,
+             service: "membership",
+             generation: #Reference<0.2076829482.812646407.246369>
+           },
+           table: #Reference<0.2076829482.812777479.246350>,
+           mode: :ready,
+           spec: %{
+             id: "membership",
+             port: 0,
+             udp: %{memberships: []},
+             mode: :multicast,
+             ip: {0, 0, 0, 0},
+             handler: Gaoxy.RuntimeTest.UDP,
+             tls: %{},
+             transport: :udp,
+             handler_options: [],
+             limits: %{
+               max_bytes: 1048576,
+               max_packet: 65507,
+               max_active: 64,
+               callback_timeout: 5000,
+               max_memberships: 1,
+               drain_timeout: 5000,
+               idle_timeout: 30000,
+               max_output: 65507,
+               max_state: 65536
+             },
+             capabilities: []
+           },
+           drain: nil,
+           generation: #Reference<0.2076829482.812646407.246369>,
+           backend: #PID<0.299.0>,
+           gate: #PID<0.298.0>
+         }
+     
+         (gaoxy 0.1.0) lib/gaoxy/service.ex:108: Gaoxy.Service.handle_call/3
+         (stdlib 8.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+         (stdlib 8.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+         (stdlib 8.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     Last message (from #PID<0.290.0>): {:request, #Reference<0.2076829482.812646407.246369>, {:membership, :leave, {{239, 192, 74, 1}, {127, 0, 0, 1}}}}
+     State: %{scope: %{instance: #Reference<0.2076829482.812646407.246353>, service: "membership", generation: #Reference<0.2076829482.812646407.246369>}, table: #Reference<0.2076829482.812777479.246350>, mode: :ready, spec: %{id: "membership", port: 0, udp: %{}, mode: :multicast, ip: {0, 0, 0, 0}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: [], limits: %{max_bytes: 1048576, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 1, drain_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_state: 65536}, capabilities: []}, drain: nil, generation: #Reference<0.2076829482.812646407.246369>, backend: #PID<0.299.0>, gate: #PID<0.298.0>}
+     Client #PID<0.290.0> is alive
+     
+         (stdlib 8.0.1) gen.erl:262: :gen.do_call/4
+         (elixir 1.20.1) lib/gen_server.ex:1180: GenServer.call/3
+         (gaoxy 0.1.0) lib/gaoxy.ex:64: Gaoxy.service_call/3
+         test/runtime_test.exs:249: Gaoxy.RuntimeTest."test multicast changes are idempotent and preserve identity and desired state across restart"/1
+         (ex_unit 1.20.1) lib/ex_unit/runner.ex:533: ExUnit.Runner.exec_test/2
+         (ex_unit 1.20.1) lib/ex_unit/capture_log.ex:127: ExUnit.CaptureLog.with_log/2
+         (ex_unit 1.20.1) lib/ex_unit/runner.ex:482: anonymous fn/3 in ExUnit.Runner.maybe_capture_log/3
+         (stdlib 8.0.1) timer.erl:599: :timer.tc/2
+         (ex_unit 1.20.1) lib/ex_unit/runner.ex:455: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+     
+
+Finished in 5.3 seconds (5.3s async, 0.00s sync)
+
+Result: 0/1 passed, 7 excluded
+Failed: 1 test
+
+EXIT: 2
+ELAPSED: 74.373s
