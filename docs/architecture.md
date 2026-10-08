@@ -7,8 +7,10 @@ service ID. Each service owns one backend, its admission/watchdog process and a
 fresh generation. No instance process participates in packet or connection data
 handling.
 
-The service supervisor restarts abnormal failures. Explicit removal drains and
-then terminates the dynamic child, so intentional stops do not restart. Backend
+The service supervisor restarts abnormal failures. Explicit removal drains, confirms
+owned-resource termination and stops the transient child normally, so intentional
+stops do not restart. Normal parent shutdown dispatches concurrent service barriers
+under one shared deadline before stopping that supervisor. Backend
 startup failure closes already-started siblings. The instance monitors its
 starter during preparation and links only after successful activation so bind
 errors return as errors while parent death still cleans resources.
@@ -36,7 +38,10 @@ UDP pause retains the socket/memberships and stops admission. TCP/TLS pause
 unbinds/rebinds acceptance while existing streams retain I/O. Drain establishes
 one absolute deadline. Ordinary UDP backend stop owns admission cleanup;
 stream drain waits for existing leases before backend shutdown. At expiry host
-cleanup is forced. No pause uses `:sys.suspend`. Optional QUIC cannot inherit
+cleanup is forced and confirmed; a caller deadline reports uncertainty if that
+confirmation is still pending. Registry owner loss triggers bounded reconciliation
+of both lifecycle and telemetry keys, then fail-closed teardown on expiry. See
+[ADR 004](adr/004-lifecycle.md) for results and outer shutdown budgets. No pause uses `:sys.suspend`. Optional QUIC cannot inherit
 these guarantees because stopping its ingress prevents protocol progress.
 
 `gaoxy_http` will own native codecs/server engines and the HTTP endpoint extension

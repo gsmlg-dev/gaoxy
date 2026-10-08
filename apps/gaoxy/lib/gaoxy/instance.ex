@@ -1,6 +1,7 @@
 defmodule Gaoxy.Instance do
   @moduledoc false
   use GenServer
+  alias Gaoxy.{Lifecycle, RegistryPolicy}
 
   def start_link(plan) do
     case GenServer.start(
@@ -15,20 +16,41 @@ defmodule Gaoxy.Instance do
       error ->
         error
     end
+  rescue
+    error in ArgumentError ->
+      if match?({:via, Registry, {Gaoxy.Registry, _}}, plan.name) or
+           match?({:via, Registry, {Gaoxy.Registry, _, _}}, plan.name),
+         do: {:error, :registry_unavailable},
+         else: reraise(error, __STACKTRACE__)
   end
+
+  def drain_timeout(services),
+    do: Enum.max(Enum.map(services, & &1.limits.drain_timeout), fn -> 5_000 end)
 
   @impl true
   def init({plan, parent}) do
     Process.flag(:trap_exit, true)
-    table = :ets.new(__MODULE__, [:set, :public])
+
+    case RegistryPolicy.watch_name(plan.name) do
+      {:ok, registry_monitor} -> init_services(plan, parent, registry_monitor)
+      {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp init_services(plan, parent, registry_monitor) do
     {:ok, supervisor} = DynamicSupervisor.start_link(strategy: :one_for_one)
 
     state = %{
-      table: table,
+      table: :ets.new(__MODULE__, [:set, :public]),
+      live: :ets.new(__MODULE__, [:set, :public]),
       supervisor: supervisor,
       scope: make_ref(),
       parent: parent,
-      parent_monitor: Process.monitor(parent)
+      parent_monitor: Process.monitor(parent),
+      registry_monitor: registry_monitor,
+      drain_timeout: drain_timeout(plan.services),
+      operations: %{},
+      stopping: nil
     }
 
     case Enum.reduce_while(plan.services, :ok, fn spec, _ ->
@@ -41,7 +63,7 @@ defmodule Gaoxy.Instance do
         {:ok, state}
 
       {:error, reason} ->
-        Supervisor.stop(supervisor)
+        terminate(reason, state)
         {:stop, reason}
     end
   end
@@ -50,72 +72,207 @@ defmodule Gaoxy.Instance do
   def handle_call(:services, _, state),
     do: {:reply, Enum.map(:ets.tab2list(state.table), &elem(&1, 0)), state}
 
-  def handle_call({:lookup, id}, _, state) do
-    {id, expected} =
-      case id do
-        %{id: id, generation: generation} -> {id, generation}
-        id -> {id, nil}
-      end
+  def handle_call({:lookup, id}, _, state), do: {:reply, lookup(state, id), state}
 
-    result =
-      case Registry.lookup(Gaoxy.Registry, {state.scope, id}) do
-        [{pid, generation}] when is_nil(expected) or expected == generation ->
-          {:ok, pid, generation}
-
-        [_] ->
-          {:error, :stale_generation}
-
-        [] ->
-          {:error, :not_running}
-      end
-
-    {:reply, result, state}
-  end
+  def handle_call({:add, _}, _, %{stopping: stopping} = state) when not is_nil(stopping),
+    do: {:reply, {:error, :stopping}, state}
 
   def handle_call({:add, input}, _, state) do
     result =
       with {:ok, plan} <-
              Gaoxy.Config.validate(
                services: [input | Enum.map(:ets.tab2list(state.table), &elem(&1, 1))]
-             ) do
+             ),
+           true <-
+             hd(plan.services).limits.drain_timeout <= state.drain_timeout ||
+               {:error, :shutdown_budget_exceeded} do
         start_service(hd(plan.services), state)
       end
 
     {:reply, result, state}
   end
 
-  def handle_call({:remove, id, pid}, _, state) do
-    id = if is_map(id), do: id.id, else: id
+  def handle_call({:remove, _id, _deadline}, _, %{stopping: stopping} = state)
+      when not is_nil(stopping),
+      do: {:reply, {:error, :stopping}, state}
 
-    case Registry.lookup(Gaoxy.Registry, {state.scope, id}) do
-      [{^pid, _}] ->
-        :ok = DynamicSupervisor.terminate_child(state.supervisor, pid)
-        :ets.delete(state.table, id)
-        {:reply, :ok, state}
+  def handle_call({:remove, id, deadline}, from, state) do
+    key = if is_map(id), do: id.id, else: id
 
-      _ ->
-        {:reply, {:error, :stale_generation}, state}
+    with false <- Map.has_key?(state.operations, key),
+         {:ok, pid, generation} <- lookup(state, id) do
+      operation = operation([{key, pid, generation}], deadline, from, key)
+      {:noreply, put_in(state.operations[key], operation)}
+    else
+      true -> {:reply, {:error, :already_draining}, state}
+      error -> {:reply, error, state}
     end
   end
 
+  def handle_call({:stop, _}, _, %{stopping: stopping} = state) when not is_nil(stopping),
+    do: {:reply, {:error, :stopping}, state}
+
+  def handle_call({:stop, deadline}, from, state) do
+    operation = operation(live_services(state), deadline, from, :instance)
+    {:noreply, %{state | stopping: operation}}
+  end
+
   @impl true
-  def handle_info({:EXIT, pid, reason}, %{supervisor: pid} = state), do: {:stop, reason, state}
-  def handle_info({:EXIT, pid, reason}, %{parent: pid} = state), do: {:stop, reason, state}
+  def handle_info({:operation_done, token, result}, state) do
+    cond do
+      state.stopping && state.stopping.token == token ->
+        Process.demonitor(state.stopping.monitor, [:flush])
+        {:stop, :normal, %{state | stopping: Map.put(state.stopping, :result, result)}}
+
+      true ->
+        case Enum.find(state.operations, fn {_, op} -> op.token == token end) do
+          {id, op} ->
+            Process.demonitor(op.monitor, [:flush])
+
+            result =
+              case result do
+                {:error, {:services, [{^id, error}]}} -> error
+                other -> other
+              end
+
+            GenServer.reply(op.from, result)
+            {:noreply, %{state | operations: Map.delete(state.operations, id)}}
+
+          nil ->
+            {:noreply, state}
+        end
+    end
+  end
 
   def handle_info({:DOWN, ref, :process, _, reason}, %{parent_monitor: ref} = state),
     do: {:stop, reason, state}
 
+  def handle_info({:DOWN, ref, :process, _, _}, %{registry_monitor: ref} = state),
+    do: {:stop, :normal, %{state | drain_timeout: min(state.drain_timeout, 1_000)}}
+
+  def handle_info({:DOWN, ref, :process, _, reason}, state) do
+    case Enum.find(state.operations, fn {_, op} -> op.monitor == ref end) do
+      {id, op} ->
+        GenServer.reply(op.from, {:error, {:cleanup_failed, {:coordinator_exit, reason}}})
+        {:noreply, %{state | operations: Map.delete(state.operations, id)}}
+
+      nil ->
+        if state.stopping && state.stopping.monitor == ref do
+          {:stop, :normal,
+           %{
+             state
+             | stopping:
+                 Map.put(
+                   state.stopping,
+                   :result,
+                   {:error, {:cleanup_failed, {:coordinator_exit, reason}}}
+                 )
+           }}
+        else
+          {:noreply, state}
+        end
+    end
+  end
+
+  def handle_info({:EXIT, pid, reason}, %{supervisor: pid} = state), do: {:stop, reason, state}
+  def handle_info({:EXIT, pid, reason}, %{parent: pid} = state), do: {:stop, reason, state}
   def handle_info(_, state), do: {:noreply, state}
+
   @impl true
-  def terminate(_, state),
-    do: if(Process.alive?(state.supervisor), do: Supervisor.stop(state.supervisor))
+  def terminate(_, state) do
+    deadline =
+      if state.stopping,
+        do: min(state.stopping.deadline, Lifecycle.deadline(state.drain_timeout)),
+        else: Lifecycle.deadline(state.drain_timeout)
+
+    # Children still run their normal callback loops while the instance is in
+    # terminate/2. No service needs a call to this instance to complete cleanup.
+    Lifecycle.drain_services(live_services(state), deadline)
+    cleanup_deadline = deadline + Lifecycle.cleanup_headroom()
+
+    result =
+      Lifecycle.protect(fn ->
+        Supervisor.stop(state.supervisor, :normal, Lifecycle.remaining(cleanup_deadline))
+      end)
+
+    if result != :ok do
+      resources = Lifecycle.resources(state.supervisor, self())
+      Lifecycle.terminate_resources(resources, deadline + 2 * Lifecycle.cleanup_headroom())
+    end
+
+    Enum.each(state.operations, fn {_, op} -> Process.exit(op.pid, :kill) end)
+
+    if state.stopping do
+      Process.exit(state.stopping.pid, :kill)
+
+      GenServer.reply(
+        state.stopping.from,
+        Map.get(state.stopping, :result, {:error, {:deadline_exceeded, :cleanup_pending}})
+      )
+    end
+  end
+
+  defp lookup(state, handle) do
+    {id, expected} =
+      case handle do
+        %{id: id, generation: generation} -> {id, generation}
+        id -> {id, nil}
+      end
+
+    case :ets.lookup(state.live, id) do
+      [{^id, pid, generation}] ->
+        cond do
+          expected != nil and expected != generation ->
+            {:error, :stale_generation}
+
+          not Process.alive?(pid) ->
+            {:error, :not_running}
+
+          true ->
+            case RegistryPolicy.lookup({state.scope, id}) do
+              {:ok, [{^pid, ^generation}]} -> {:ok, pid, generation}
+              _ -> {:error, :registry_unavailable}
+            end
+        end
+
+      [] ->
+        case RegistryPolicy.lookup({state.scope, id}) do
+          {:error, :registry_unavailable} -> {:error, :registry_unavailable}
+          _ -> {:error, :not_running}
+        end
+    end
+  end
+
+  defp live_services(state),
+    do:
+      for(
+        {id, pid, generation} <- :ets.tab2list(state.live),
+        Process.alive?(pid),
+        do: {id, pid, generation}
+      )
+
+  defp operation(services, deadline, from, id) do
+    owner = self()
+    token = make_ref()
+
+    {pid, monitor} =
+      :erlang.spawn_opt(
+        fn ->
+          result = Lifecycle.drain_services(services, deadline)
+          send(owner, {:operation_done, token, result})
+        end,
+        [:link, :monitor]
+      )
+
+    %{pid: pid, monitor: monitor, token: token, from: from, id: id, deadline: deadline}
+  end
 
   defp start_service(spec, state) do
     :ets.insert(state.table, {spec.id, spec})
 
     case DynamicSupervisor.start_child(
            state.supervisor,
-           {Gaoxy.Service, {state.table, spec.id, state.scope}}
+           {Gaoxy.Service, {state.table, state.live, spec.id, state.scope}}
          ) do
       {:ok, pid} ->
         {:ok, GenServer.call(pid, {:request, nil, :handle})}

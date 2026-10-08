@@ -95,6 +95,17 @@ defmodule Gaoxy.Admission do
 
   def handle_call({:mode, mode}, _from, state), do: {:reply, :ok, %{state | mode: mode}}
 
+  def handle_call(:force, _from, state) do
+    leases =
+      Map.new(state.leases, fn {ref, lease} ->
+        send_outcome(state, lease.send, {:unknown, :forced_cleanup})
+        Process.exit(lease.pid, :kill)
+        {ref, %{lease | send: nil}}
+      end)
+
+    {:reply, :ok, %{state | mode: :draining, leases: leases}}
+  end
+
   def handle_call({:adjust_bytes, ref, delta}, {pid, _}, state) when is_integer(delta) do
     case state.leases[ref] do
       %{pid: ^pid} = lease ->

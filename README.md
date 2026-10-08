@@ -18,6 +18,21 @@ Core declares Elixir 1.18+. Executed baselines are macOS x86_64 with Elixir
 artifact builds a Rust NIF, so Rust/Cargo are required even for ordinary UDP.
 The locked Nix shell supplies Elixir1.18/OTP28, Rust/Cargo, Python, OpenSSL and
 Expect; its derivation was evaluated but the shell runtime was not executed.
+Elixir **1.18.5** is the canonical formatter, matching the locked Nix package.
+Use that version for `mix format` and its check; formatting runs in its own CI
+job. Runtime compilation and tests retain both Elixir1.18.5/OTP28.5 and
+Elixir1.20.1/OTP29.0.2, independently of formatting. There is no devenv
+configuration in this repository.
+
+Certificate fixtures require OpenSSL3.x. `OPENSSL_BIN` optionally selects one
+executable path (including paths containing spaces); it is never evaluated as
+shell code. CI provisions OpenSSL3 on Linux and Homebrew `openssl@3` on macOS,
+records its version, and exports its absolute path. Generation uses an isolated
+private temporary directory and an explicit CA/leaf profile, verifies server
+purpose plus `localhost`/`127.0.0.1`, and removes signing keys/serial/request files.
+The caller owns the resulting short-lived leaf key and public certificates;
+never install this CA globally. TLS regressions also reject a different generated
+CA and a wrong hostname while keeping peer verification enabled.
 
 ```sh
 mix deps.get --check-locked

@@ -69,8 +69,8 @@ defmodule Gaoxy.LifecycleAcceptanceTest do
     :ok = :gen_udp.send(client, ip, port, "hold-old")
     assert_receive {:waiting, old_worker, _}, 2000
     [{lease, %{token: token, monitor: monitor}}] = Map.to_list(:sys.get_state(gate).leases)
-    assert :ok = Gaoxy.remove(runtime, old, 10)
-    eventually(fn -> not Process.alive?(old_worker) end)
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = Gaoxy.remove(runtime, old, 10)
+    eventually(fn -> not Process.alive?(old_worker) and Gaoxy.services(runtime) == [] end)
     assert {:ok, current} = Gaoxy.add(runtime, spec)
     assert current.generation != old.generation
     assert {:error, :stale_generation} = Gaoxy.remove(runtime, old, 10)

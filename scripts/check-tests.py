@@ -7,10 +7,12 @@ import sys
 result = subprocess.run(["mix", "test", "--warnings-as-errors", *sys.argv[1:]],
                         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
 print(result.stdout, end="")
-counts = [int(match) for match in re.findall(r"Result:\s+(?:\d+/)?(\d+) passed", result.stdout)]
+counts = [int(match) for match in re.findall(r"Result:\s+(\d+)(?:/\d+)? passed", result.stdout)]
 # Elixir 1.18/1.19 format: "N tests, 0 failures".
-counts.extend(int(match) for match in re.findall(r"(\d+) tests?, \d+ failures", result.stdout))
-if not counts or sum(counts) == 0:
+for total, suffix in re.findall(r"(\d+) tests?, \d+ failures?([^\n]*)", result.stdout):
+    not_run = sum(int(count) for count in re.findall(r"(\d+) (?:excluded|skipped)", suffix))
+    counts.append(int(total) - not_run)
+if not counts or sum(counts) <= 0:
     print("FAIL: zero executed tests", file=sys.stderr)
-    sys.exit(1)
+    sys.exit(result.returncode or 1)
 sys.exit(result.returncode)

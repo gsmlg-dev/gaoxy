@@ -8,11 +8,16 @@ defmodule Gaoxy do
     do: %{
       id: {__MODULE__, make_ref()},
       start: {__MODULE__, :start_link, [options]},
-      restart: :transient
+      restart: :transient,
+      shutdown: shutdown_timeout(options)
     }
 
-  def add(instance, spec), do: GenServer.call(instance, {:add, spec}, :infinity)
-  def services(instance), do: GenServer.call(instance, :services)
+  def add(instance, spec),
+    do: Gaoxy.Lifecycle.call(instance, {:add, spec}, Gaoxy.Lifecycle.deadline(5_000))
+
+  def services(instance),
+    do: Gaoxy.Lifecycle.call(instance, :services, Gaoxy.Lifecycle.deadline(5_000))
+
   def handle(instance, id), do: service_call(instance, id, :handle)
   def info(instance, id), do: service_call(instance, id, :info)
   def status(instance, id), do: service_call(instance, id, :status)
@@ -26,21 +31,41 @@ defmodule Gaoxy do
   def leave(instance, id, membership),
     do: service_call(instance, id, {:membership, :leave, membership})
 
+  @doc "Removes one service within a total operation budget. Deadline errors mean cleanup remains owned and may still be in progress."
   def remove(instance, id, timeout \\ 5_000) when is_integer(timeout) and timeout >= 0 do
-    with {:ok, pid, generation} <- GenServer.call(instance, {:lookup, id}),
-         :ok <- GenServer.call(pid, {:drain, generation, timeout}, :infinity) do
-      GenServer.call(instance, {:remove, id, pid}, :infinity)
-    end
+    deadline = Gaoxy.Lifecycle.deadline(timeout)
+    Gaoxy.Lifecycle.call(instance, {:remove, id, deadline}, deadline)
   end
 
-  def stop(instance, timeout \\ 5_000) do
-    deadline = System.monotonic_time(:millisecond) + timeout
+  @doc "Stops admission across all services, sharing one deadline. Service errors are aggregated."
+  def stop(instance, timeout \\ 5_000) when is_integer(timeout) and timeout >= 0 do
+    deadline = Gaoxy.Lifecycle.deadline(timeout)
+    monitor = Process.monitor(instance)
+    result = Gaoxy.Lifecycle.call(instance, {:stop, deadline}, deadline)
 
-    for id <- services(instance) do
-      remove(instance, id, max(0, deadline - System.monotonic_time(:millisecond)))
+    result =
+      if result == :ok do
+        receive do
+          {:DOWN, ^monitor, :process, _, _} -> :ok
+        after
+          Gaoxy.Lifecycle.remaining(deadline) -> {:error, {:deadline_exceeded, :cleanup_pending}}
+        end
+      else
+        result
+      end
+
+    Process.demonitor(monitor, [:flush])
+    result
+  end
+
+  defp shutdown_timeout(options) do
+    case Gaoxy.Config.validate(options) do
+      {:ok, plan} ->
+        Gaoxy.Instance.drain_timeout(plan.services) + 2 * Gaoxy.Lifecycle.cleanup_headroom()
+
+      _ ->
+        7_000
     end
-
-    GenServer.stop(instance, :normal)
   end
 
   def capabilities do
@@ -60,10 +85,10 @@ defmodule Gaoxy do
   end
 
   defp service_call(instance, id, request) do
-    with {:ok, pid, generation} <- GenServer.call(instance, {:lookup, id}) do
-      GenServer.call(pid, {:request, generation, request})
+    deadline = Gaoxy.Lifecycle.deadline(5_000)
+
+    with {:ok, pid, generation} <- Gaoxy.Lifecycle.call(instance, {:lookup, id}, deadline) do
+      Gaoxy.Lifecycle.call(pid, {:request, generation, request}, deadline)
     end
-  catch
-    :exit, {:noproc, _} -> {:error, :not_running}
   end
 end

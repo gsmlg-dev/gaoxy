@@ -12,6 +12,10 @@ defmodule Gaoxy.TLSTest do
   test "independent OpenSSL peer validates TLS and rejects invalid trust", %{tmp_dir: dir} do
     root = Path.expand("../../..", __DIR__)
     assert {_, 0} = System.cmd("bash", [Path.join(root, "scripts/generate-fixtures.sh"), dir])
+    wrong_ca_dir = Path.join(dir, "wrong-ca")
+
+    assert {_, 0} =
+             System.cmd("bash", [Path.join(root, "scripts/generate-fixtures.sh"), wrong_ca_dir])
 
     pid =
       start_supervised!(
@@ -39,7 +43,8 @@ defmodule Gaoxy.TLSTest do
                [
                  Path.join(root, "integration/tls_peer.py"),
                  Integer.to_string(port),
-                 Path.join(dir, "ca.pem")
+                 Path.join(dir, "ca.pem"),
+                 Path.join(wrong_ca_dir, "ca.pem")
                ],
                stderr_to_stdout: true
              )

@@ -33,7 +33,8 @@ with socket.create_connection(("127.0.0.1", port), timeout=2) as raw:
             received += connection.recv(1024)
         assert received == b"fragmented\n", received
 for hostname, trusted in [("wrong.example", True), ("localhost", False)]:
-    invalid = ssl.create_default_context(cafile=ca) if trusted else ssl.create_default_context()
+    wrong_ca = sys.argv[3] if len(sys.argv) > 3 else None
+    invalid = ssl.create_default_context(cafile=ca if trusted else wrong_ca)
     try:
         with socket.create_connection(("127.0.0.1", port), timeout=2) as raw:
             invalid.wrap_socket(raw, server_hostname=hostname)

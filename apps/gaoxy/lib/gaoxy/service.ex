@@ -1,48 +1,69 @@
 defmodule Gaoxy.Service do
   @moduledoc false
   use GenServer, restart: :transient
-  alias Gaoxy.{Admission, Telemetry}
+  alias Gaoxy.{Admission, Lifecycle, RegistryPolicy, Telemetry}
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
 
+  def child_spec({table, _live, id, _scope} = args) do
+    [{^id, spec}] = :ets.lookup(table, id)
+
+    %{
+      id: id,
+      start: {__MODULE__, :start_link, [args]},
+      restart: :transient,
+      shutdown: spec.limits.drain_timeout + 2 * Lifecycle.cleanup_headroom()
+    }
+  end
+
   @impl true
-  def init({table, id, instance}) do
+  def init({table, live, id, instance}) do
     Process.flag(:trap_exit, true)
     [{^id, spec}] = :ets.lookup(table, id)
     generation = make_ref()
     scope = %{instance: instance, service: id, generation: generation}
-    {:ok, _} = Registry.register(Gaoxy.Registry, {instance, id}, generation)
-    {:ok, gate} = Admission.start_link({spec.limits, scope})
-    context = %{spec: spec, gate: gate, scope: scope}
 
-    result =
-      try do
-        start_backend(spec, context)
-      rescue
-        error -> {:error, {:backend_configuration, error.__struct__}}
-      catch
-        :exit, reason -> {:error, {:backend_start, reason}}
+    with {:ok, policy} <- RegistryPolicy.register(scope) do
+      {:ok, gate} = Admission.start_link({spec.limits, scope})
+      context = %{spec: spec, gate: gate, scope: scope}
+      result = Lifecycle.protect(fn -> start_backend(spec, context) end)
+
+      case result do
+        {:ok, backend} ->
+          case RegistryPolicy.bind(policy, backend) do
+            {:ok, policy} ->
+              :ets.insert(live, {id, self(), generation})
+              Telemetry.emit(:lifecycle, %{count: 1}, scope, %{state: :ready})
+
+              {:ok,
+               %{
+                 spec: spec,
+                 table: table,
+                 live: live,
+                 backend: backend,
+                 gate: gate,
+                 scope: scope,
+                 generation: generation,
+                 mode: :ready,
+                 drain: nil,
+                 control: nil,
+                 registry_policy: policy,
+                 drain_fun: &Lifecycle.drain/4,
+                 backend_control: &backend_control/3
+               }}
+
+            {:error, reason} ->
+              close_resources(backend, gate, spec.transport)
+              RegistryPolicy.cancel(policy)
+              {:stop, reason}
+          end
+
+        {:error, reason} ->
+          GenServer.stop(gate)
+          RegistryPolicy.cancel(policy)
+          {:stop, reason}
       end
-
-    case result do
-      {:ok, backend} ->
-        {:ok, _} = Telemetry.bind_backend(backend, scope)
-        Telemetry.emit(:lifecycle, %{count: 1}, scope, %{state: :ready})
-
-        {:ok,
-         %{
-           spec: spec,
-           table: table,
-           backend: backend,
-           gate: gate,
-           scope: scope,
-           generation: generation,
-           mode: :ready,
-           drain: nil
-         }}
-
-      {:error, reason} ->
-        GenServer.stop(gate)
-        {:stop, reason}
+    else
+      {:error, reason} -> {:stop, reason}
     end
   end
 
@@ -51,63 +72,102 @@ defmodule Gaoxy.Service do
       when not is_nil(generation) and generation != state.generation,
       do: {:reply, {:error, :stale_generation}, state}
 
+  def handle_call({:request, _, _}, _, %{registry_policy: %{recovery: recovery}} = state)
+      when not is_nil(recovery),
+      do: {:reply, {:error, :registry_unavailable}, state}
+
   def handle_call({:request, _, :handle}, _, state),
     do: {:reply, %{id: state.spec.id, generation: state.generation}, state}
 
-  def handle_call({:request, _, :info}, _, state),
-    do:
-      {:reply,
-       %{
-         id: state.spec.id,
-         generation: state.generation,
-         transport: state.spec.transport,
-         mode: state.mode,
-         local: local(state),
-         pause:
-           case state.spec.transport do
-             :udp -> :admission_only
-             :quic -> :unsupported
-             _ -> :unbind_rebind
-           end,
-         drain: if(state.spec.transport == :quic, do: :local_host_cleanup, else: :admitted_work)
-       }, state}
+  def handle_call({:request, _, :info}, _, state) do
+    {:reply,
+     %{
+       id: state.spec.id,
+       generation: state.generation,
+       transport: state.spec.transport,
+       mode: state.mode,
+       local: Lifecycle.bounded(fn -> local(state) end, 50),
+       pause:
+         case state.spec.transport do
+           :udp -> :admission_only
+           :quic -> :unsupported
+           _ -> :unbind_rebind
+         end,
+       drain: if(state.spec.transport == :quic, do: :local_host_cleanup, else: :admitted_work)
+     }, state}
+  end
 
-  def handle_call({:request, _, :status}, _, state),
-    do:
-      {:reply,
-       Map.merge(Admission.status(state.gate), %{
-         state: state.mode,
-         backend: backend_status(state)
-       }), state}
+  def handle_call({:request, _, :status}, _, state) do
+    status = Lifecycle.call(state.gate, :status, Lifecycle.deadline(50))
+    status = if is_map(status), do: status, else: %{admission: status}
+
+    {:reply,
+     Map.merge(status, %{
+       state: state.mode,
+       backend: Lifecycle.bounded(fn -> backend_status(state) end, 50)
+     }), state}
+  end
 
   def handle_call({:request, _, operation}, _, %{mode: mode} = state)
-      when operation in [:pause, :resume] and mode in [:draining, :stopped],
+      when operation in [:pause, :resume] and mode in [:draining, :stopped, :failed],
       do: {:reply, {:error, mode}, state}
 
   def handle_call({:request, _, operation}, _, %{spec: %{transport: :quic}} = state)
       when operation in [:pause, :resume],
       do: {:reply, {:error, {:unsupported_capability, :quic_pause}}, state}
 
-  def handle_call({:request, _, :pause}, _, state) do
-    :ok = Admission.mode(state.gate, :paused)
-    host = if state.spec.transport == :udp, do: Abyss, else: ThousandIsland
+  def handle_call({:request, _, operation}, _, %{control: control} = state)
+      when operation in [:pause, :resume] and not is_nil(control),
+      do: {:reply, {:error, :transition_in_progress}, state}
 
-    case host.suspend(state.backend) do
-      :ok -> {:reply, :ok, transition(state, :paused)}
-      error -> {:reply, error, state}
-    end
-  end
+  def handle_call({:request, _, :pause}, _, %{mode: :paused} = state), do: {:reply, :ok, state}
+  def handle_call({:request, _, :resume}, _, %{mode: :ready} = state), do: {:reply, :ok, state}
 
-  def handle_call({:request, _, :resume}, _, state) do
-    host = if state.spec.transport == :udp, do: Abyss, else: ThousandIsland
-
-    case host.resume(state.backend) do
+  def handle_call({:request, _, operation}, from, state) when operation in [:pause, :resume] do
+    # The service alone commits admission reopening. A late backend result can
+    # never reopen a gate after a drain or a failed coordination step.
+    case gate_mode(state, :paused) do
       :ok ->
-        Admission.mode(state.gate, :ready)
-        {:reply, :ok, transition(state, :ready)}
+        owner = self()
+        token = make_ref()
+
+        {pid, monitor} =
+          :erlang.spawn_opt(
+            fn ->
+              result =
+                Lifecycle.protect(fn ->
+                  state.backend_control.(operation, state.spec.transport, state.backend)
+                end)
+
+              send(owner, {:controlled, state.generation, token, self(), result})
+            end,
+            [:link, :monitor]
+          )
+
+        timer =
+          Process.send_after(
+            self(),
+            {:control_deadline, token},
+            min(state.spec.limits.callback_timeout, 1_000)
+          )
+
+        control = %{
+          pid: pid,
+          monitor: monitor,
+          timer: timer,
+          token: token,
+          from: from,
+          operation: operation
+        }
+
+        {:noreply,
+         %{
+           transition(state, if(operation == :pause, do: :pausing, else: :resuming))
+           | control: control
+         }}
 
       error ->
-        {:reply, error, state}
+        {:reply, {:error, {:transition_failed, operation, error}}, fail_gate(state)}
     end
   end
 
@@ -126,102 +186,316 @@ defmodule Gaoxy.Service do
     end
   end
 
-  def handle_call({:drain, generation, timeout}, from, state)
-      when generation == state.generation and is_nil(state.drain) do
-    :ok = Admission.mode(state.gate, :draining)
-    deadline = System.monotonic_time(:millisecond) + timeout
-    owner = self()
-    backend = state.backend
-    host = host(state)
-    # Only control work is spawned. Datagram processing never creates rejected-work tasks.
-    {pid, monitor} =
-      spawn_monitor(fn ->
-        result =
-          if host in [Abyss, Abyss.QUIC] do
-            host.stop(backend, max(0, deadline - System.monotonic_time(:millisecond)))
-          else
-            ThousandIsland.suspend(backend)
-            send(owner, {:tcp_admission_stopped, self()})
+  def handle_call({:drain, generation, _deadline}, _, state)
+      when not is_nil(generation) and generation != state.generation,
+      do: {:reply, {:error, :stale_generation}, state}
 
-            receive do
-              :close_backend -> Supervisor.stop(backend, :normal, :infinity)
-            end
-          end
+  def handle_call({:drain, _, deadline}, from, %{drain: nil} = state) do
+    state = cancel_control(state, :draining)
+    barrier = gate_mode(state, :draining)
+    state = start_drain(state, deadline, [from])
 
-        send(owner, {:drained, self(), result})
-      end)
-
-    token = make_ref()
-    timer = Process.send_after(self(), {:drain_deadline, token}, timeout)
-    if host not in [Abyss, Abyss.QUIC], do: send(self(), :check_drain)
-
-    drain = %{
-      pid: pid,
-      monitor: monitor,
-      from: from,
-      timer: timer,
-      token: token,
-      deadline: deadline
-    }
-
-    {:noreply, %{transition(state, :draining) | drain: drain}}
-  end
-
-  def handle_call({:drain, _, _}, _, state),
-    do: {:reply, {:error, :already_draining_or_stale}, state}
-
-  @impl true
-  def handle_info(:check_drain, %{drain: nil} = state), do: {:noreply, state}
-
-  def handle_info(:check_drain, state) do
-    if Admission.status(state.gate).active == 0 do
-      send(state.drain.pid, :close_backend)
-    else
-      Process.send_after(self(), :check_drain, 5)
-    end
+    state =
+      if barrier == :ok,
+        do: state,
+        else: force_drain(state, {:cleanup_failed, {:admission_barrier, barrier}})
 
     {:noreply, state}
   end
 
-  def handle_info({:drained, pid, :ok}, %{drain: %{pid: pid}} = state),
-    do: finish_drain(state, :completed)
-
-  def handle_info({:drain_deadline, token}, %{drain: %{token: token}} = state) do
-    Process.exit(state.backend, :kill)
-    Process.exit(state.drain.pid, :kill)
-    finish_drain(state, :forced)
+  def handle_call({:drain, _, _deadline}, from, state) do
+    # At most the removal coordinator and the instance shutdown coordinator.
+    if length(state.drain.waiters) < 2 do
+      {:noreply, put_in(state.drain.waiters, [from | state.drain.waiters])}
+    else
+      {:reply, {:error, :already_draining}, state}
+    end
   end
 
-  def handle_info({:EXIT, pid, _}, %{backend: pid, mode: mode} = state)
-      when mode in [:draining, :stopped], do: {:noreply, state}
-
-  def handle_info({:EXIT, pid, reason}, state) when pid == state.backend or pid == state.gate,
-    do: {:stop, {:backend_failed, reason}, state}
-
-  def handle_info({:DOWN, monitor, :process, _pid, reason}, %{drain: %{monitor: monitor}} = state)
-      when reason != :normal,
-      do: finish_drain(state, {:cleanup_error, reason})
-
-  def handle_info(_, state), do: {:noreply, state}
   @impl true
-  def terminate(_, state) do
-    if state.drain, do: Process.exit(state.drain.pid, :kill)
-    if Process.alive?(state.gate), do: GenServer.stop(state.gate)
+  def handle_info(
+        {:controlled, generation, token, pid, result},
+        %{generation: generation, control: %{token: token, pid: pid}} = state
+      ) do
+    control = state.control
+    Process.cancel_timer(control.timer)
+    Process.demonitor(control.monitor, [:flush])
+    target = if control.operation == :pause, do: :paused, else: :ready
+    backend_result = result
+    result = if result == :ok, do: gate_mode(state, target), else: result
 
-    if Process.alive?(state.backend) do
-      try do
-        Supervisor.stop(state.backend, :normal, 1_000)
-      catch
-        :exit, _ -> Process.exit(state.backend, :kill)
+    if result == :ok do
+      GenServer.reply(control.from, :ok)
+      {:noreply, %{transition(state, target) | control: nil}}
+    else
+      GenServer.reply(control.from, {:error, {:transition_failed, control.operation, result}})
+      state = %{transition(state, :failed) | control: nil}
+
+      {:noreply,
+       if(backend_result == :ok or not Process.alive?(state.gate),
+         do: fail_gate(state),
+         else: state
+       )}
+    end
+  end
+
+  def handle_info({:control_deadline, token}, %{control: %{token: token}} = state) do
+    state = cancel_control(state, {:transition_failed, state.control.operation, :outcome_unknown})
+    {:noreply, transition(state, :failed)}
+  end
+
+  def handle_info(
+        {:drained, generation, token, pid, result},
+        %{generation: generation, drain: %{token: token, pid: pid, phase: :draining}} = state
+      ) do
+    outcome =
+      case result do
+        :ok -> :completed
+        error -> {:cleanup_failed, error}
+      end
+
+    {:noreply, force_drain(state, outcome)}
+  end
+
+  def handle_info({:drain_deadline, token}, %{drain: %{token: token, phase: :draining}} = state),
+    do: {:noreply, force_drain(state, :forced)}
+
+  def handle_info(
+        {:cleanup_check, generation, token},
+        %{generation: generation, drain: %{token: token, phase: :confirming}} = state
+      ) do
+    if Enum.all?(state.drain.resources, &(not Process.alive?(&1))) do
+      finish_drain(state)
+    else
+      if Lifecycle.remaining(state.drain.cleanup_deadline) == 0 do
+        Enum.each(
+          state.drain.waiters,
+          &GenServer.reply(&1, {:error, {:cleanup_failed, :termination_unconfirmed}})
+        )
+
+        Telemetry.emit(:drain, %{count: 1}, state.scope, %{outcome: :termination_unconfirmed})
+
+        {:noreply,
+         %{transition(state, :failed) | drain: %{state.drain | waiters: [], phase: :unconfirmed}}}
+      else
+        Process.send_after(self(), {:cleanup_check, generation, token}, 1)
+        {:noreply, state}
       end
     end
   end
 
-  defp finish_drain(state, outcome) do
-    Process.cancel_timer(state.drain.timer)
-    GenServer.reply(state.drain.from, :ok)
-    Telemetry.emit(:drain, %{count: 1}, state.scope, %{outcome: outcome})
-    {:noreply, %{transition(state, :stopped) | drain: nil}}
+  def handle_info(
+        {:DOWN, monitor, :process, _pid, reason},
+        %{drain: %{monitor: monitor, phase: :draining}} = state
+      ),
+      do: {:noreply, force_drain(state, {:cleanup_failed, {:helper_exit, reason}})}
+
+  def handle_info(
+        {:DOWN, monitor, :process, _pid, reason},
+        %{control: %{monitor: monitor}} = state
+      ) do
+    {:noreply,
+     state
+     |> cancel_control({:transition_failed, state.control.operation, {:helper_exit, reason}})
+     |> transition(:failed)}
+  end
+
+  def handle_info({:DOWN, monitor, :process, _pid, _reason}, state) do
+    case RegistryPolicy.loss(state.registry_policy, monitor) do
+      {:recovering, policy} ->
+        {:noreply, %{state | registry_policy: policy}}
+
+      :ignore ->
+        if state.drain && state.drain.phase == :unconfirmed &&
+             Enum.all?(state.drain.resources, &(not Process.alive?(&1))) do
+          finish_drain(state)
+        else
+          {:noreply, state}
+        end
+    end
+  end
+
+  def handle_info({:registry_recover, token}, state) do
+    case RegistryPolicy.recover(state.registry_policy, token) do
+      :ignore ->
+        {:noreply, state}
+
+      {result, policy} when result in [:ok, :retry] ->
+        {:noreply, %{state | registry_policy: policy}}
+
+      {:expired, policy} ->
+        state = %{state | registry_policy: policy}
+
+        state =
+          if state.drain,
+            do: state,
+            else: start_drain(cancel_control(state, :registry_unavailable), Lifecycle.now(), [])
+
+        {:noreply, force_drain(state, {:cleanup_failed, :registry_unavailable})}
+    end
+  end
+
+  def handle_info({:EXIT, pid, _}, %{drain: drain} = state)
+      when not is_nil(drain) and (pid == state.backend or pid == state.gate),
+      do: {:noreply, state}
+
+  def handle_info({:EXIT, pid, reason}, state) when pid == state.backend or pid == state.gate,
+    do: {:stop, {:backend_failed, reason}, state}
+
+  def handle_info(_, state), do: {:noreply, state}
+
+  @impl true
+  def terminate(_, state) do
+    RegistryPolicy.cancel(state.registry_policy)
+    if state.control, do: Process.exit(state.control.pid, :kill)
+
+    if state.drain do
+      Process.cancel_timer(state.drain.timer)
+      if state.drain.pid, do: Process.exit(state.drain.pid, :kill)
+    end
+
+    close_resources(state.backend, state.gate, state.spec.transport)
+    :ets.match_delete(state.live, {state.spec.id, self(), :_})
+  end
+
+  defp start_drain(state, deadline, waiters) do
+    owner = self()
+    token = make_ref()
+
+    resources =
+      Enum.uniq([
+        state.gate | Lifecycle.resources(state.backend, owner, state.spec.transport == :quic)
+      ])
+
+    monitors = Enum.map(resources, &Process.monitor/1)
+
+    {pid, monitor} =
+      :erlang.spawn_opt(
+        fn ->
+          result =
+            Lifecycle.protect(fn ->
+              state.drain_fun.(state.spec.transport, state.backend, state.gate, deadline)
+            end)
+
+          send(owner, {:drained, state.generation, token, self(), result})
+        end,
+        [:link, :monitor]
+      )
+
+    timer = Process.send_after(self(), {:drain_deadline, token}, Lifecycle.remaining(deadline))
+
+    drain = %{
+      pid: pid,
+      monitor: monitor,
+      token: token,
+      timer: timer,
+      deadline: deadline,
+      waiters: waiters,
+      resources: resources,
+      monitors: monitors,
+      phase: :draining,
+      outcome: nil,
+      cleanup_deadline: nil
+    }
+
+    %{transition(state, :draining) | drain: drain}
+  end
+
+  defp force_drain(%{drain: %{phase: phase}} = state, _) when phase != :draining, do: state
+
+  defp force_drain(state, outcome) do
+    drain = state.drain
+
+    outcome =
+      if outcome == :completed and
+           Enum.any?(List.delete(drain.resources, state.gate), &Process.alive?/1),
+         do: :forced,
+         else: outcome
+
+    Process.cancel_timer(drain.timer)
+    Process.exit(drain.pid, :kill)
+
+    resources =
+      Enum.uniq([
+        drain.pid
+        | drain.resources ++
+            Lifecycle.resources(state.backend, self(), state.spec.transport == :quic)
+      ])
+
+    # The gate emits pending send uncertainty before any owned work is killed.
+    Lifecycle.force(resources, state.gate)
+    send(self(), {:cleanup_check, state.generation, drain.token})
+
+    %{
+      state
+      | drain: %{
+          drain
+          | resources: resources,
+            phase: :confirming,
+            outcome: outcome,
+            cleanup_deadline: Lifecycle.deadline(Lifecycle.cleanup_headroom())
+        }
+    }
+  end
+
+  defp finish_drain(state) do
+    drain = state.drain
+    Enum.each(drain.monitors, &Process.demonitor(&1, [:flush]))
+    Process.demonitor(drain.monitor, [:flush])
+
+    result =
+      case drain.outcome do
+        {:cleanup_failed, reason} ->
+          {:error, {:cleanup_failed, reason}}
+
+        _ ->
+          if Lifecycle.remaining(drain.deadline) > 0,
+            do: :ok,
+            else: {:error, {:deadline_exceeded, :cleanup_pending}}
+      end
+
+    Telemetry.emit(:drain, %{count: 1}, state.scope, %{outcome: drain.outcome})
+    :ets.delete(state.table, state.spec.id)
+    Enum.each(drain.waiters, &GenServer.reply(&1, result))
+    {:stop, :normal, %{transition(state, :stopped) | drain: nil}}
+  end
+
+  defp close_resources(backend, gate, transport) do
+    resources = Enum.uniq([gate | Lifecycle.resources(backend, self(), transport == :quic)])
+    monitors = Enum.map(resources, &{&1, Process.monitor(&1)})
+    Lifecycle.force(resources, gate)
+    deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
+
+    Enum.each(monitors, fn {pid, monitor} ->
+      receive do
+        {:DOWN, ^monitor, :process, ^pid, _} -> :ok
+      after
+        Lifecycle.remaining(deadline) -> Process.demonitor(monitor, [:flush])
+      end
+    end)
+  end
+
+  defp fail_gate(state) do
+    state = if state.drain, do: state, else: start_drain(state, Lifecycle.now(), [])
+    state |> force_drain({:cleanup_failed, :admission_unavailable}) |> transition(:failed)
+  end
+
+  defp gate_mode(state, mode),
+    do: Lifecycle.protect(fn -> GenServer.call(state.gate, {:mode, mode}, 50) end)
+
+  defp cancel_control(%{control: nil} = state, _), do: state
+
+  defp cancel_control(state, reason) do
+    Process.cancel_timer(state.control.timer)
+    Process.exit(state.control.pid, :kill)
+    Process.demonitor(state.control.monitor, [:flush])
+    GenServer.reply(state.control.from, {:error, reason})
+    %{state | control: nil}
+  end
+
+  defp backend_control(operation, transport, backend) do
+    host = if transport == :udp, do: Abyss, else: ThousandIsland
+    apply(host, if(operation == :pause, do: :suspend, else: :resume), [backend])
   end
 
   defp transition(state, mode) do
@@ -229,9 +503,6 @@ defmodule Gaoxy.Service do
     %{state | mode: mode}
   end
 
-  defp host(%{spec: %{transport: :udp}}), do: Abyss
-  defp host(%{spec: %{transport: :quic}}), do: Abyss.QUIC
-  defp host(_), do: ThousandIsland
   defp local(%{mode: :stopped}), do: {:error, :stopped}
   defp local(%{spec: %{transport: :quic}} = state), do: Abyss.QUIC.local(state.backend)
 
