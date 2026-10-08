@@ -148,6 +148,9 @@ defmodule Gaoxy.LifecycleAcceptanceTest do
         {:error, :econnrefused} ->
           true
 
+        {:error, :econnreset} ->
+          false
+
         {:ok, socket} ->
           :gen_tcp.close(socket)
           false
