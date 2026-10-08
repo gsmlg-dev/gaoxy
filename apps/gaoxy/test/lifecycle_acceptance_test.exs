@@ -140,7 +140,21 @@ defmodule Gaoxy.LifecycleAcceptanceTest do
     eventually(fn -> Gaoxy.status(runtime, "tls").active == 1 end)
     assert :ok = Gaoxy.pause(runtime, "tls")
     assert %{mode: :paused, pause: :unbind_rebind} = Gaoxy.info(runtime, "tls")
-    assert {:error, _} = :gen_tcp.connect(ip, port, [:binary, active: false], 500)
+
+    # Listener-owner termination and TCP refusal are distinct barriers.
+    # Wait for the actual network barrier and close every transient probe.
+    eventually(fn ->
+      case :gen_tcp.connect(ip, port, [:binary, active: false], 500) do
+        {:error, :econnrefused} ->
+          true
+
+        {:ok, socket} ->
+          :gen_tcp.close(socket)
+          false
+      end
+    end)
+
+    assert %{state: :paused, active: 1} = Gaoxy.status(runtime, "tls")
     assert Port.command(peer, "admitted-during-pause\n")
     assert_receive {^peer, {:data, {:eol, "PASS admitted-during-pause"}}}, 2000
     assert :ok = Gaoxy.resume(runtime, "tls")

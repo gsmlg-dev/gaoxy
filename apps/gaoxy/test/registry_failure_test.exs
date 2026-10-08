@@ -155,7 +155,15 @@ defmodule Gaoxy.RegistryFailureTest do
     instance = runtime()
     {:ok, service, _} = GenServer.call(instance, {:lookup, "udp"})
     %{backend: backend, gate: gate} = :sys.get_state(service)
-    monitors = for pid <- [service, backend, gate], do: {pid, Process.monitor(pid)}
+    {:ok, tcp_service, _} = GenServer.call(instance, {:lookup, "tcp"})
+    %{backend: tcp_backend, gate: tcp_gate} = :sys.get_state(tcp_service)
+
+    # Each service receives owner loss independently; UDP completion is not a
+    # barrier for the TCP service's reconciliation deadline or cleanup.
+    monitors =
+      for pid <- [service, backend, gate, tcp_service, tcp_backend, tcp_gate],
+          do: {pid, Process.monitor(pid)}
+
     {ip, port} = Gaoxy.info(instance, "udp").local
     tcp_local = Gaoxy.info(instance, "tcp").local
     exchange_udp({ip, port})

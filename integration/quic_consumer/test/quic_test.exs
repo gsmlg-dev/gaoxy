@@ -23,7 +23,7 @@ defmodule GaoxyQUICConsumerTest do
     def handle_event({:ready, _metadata}, state), do: progress(%{state | ready: true})
 
     def handle_event({:stream_open, stream, :bidi}, state),
-      do: {:ok, %{state | streams: Map.put(state.streams, stream, :echo)}}
+      do: {:ok, %{state | streams: Map.put_new(state.streams, stream, :echo)}}
 
     def handle_event(event, state) when event in [:tick, :writable], do: progress(state)
     def handle_event({:readable, _}, state), do: progress(state)
@@ -163,6 +163,13 @@ defmodule GaoxyQUICConsumerTest do
   defmodule TCP do
     def init(_, _), do: {:ok, nil}
     def handle_data(bytes, state), do: {:send, bytes, state}
+  end
+
+  test "late stream_open preserves the locally opened stream role" do
+    stream = %QUIC.Stream{handle: make_ref(), connection: nil}
+    state = %{streams: %{stream => :local}}
+
+    assert {:ok, ^state} = Echo.handle_event({:stream_open, stream, :bidi}, state)
   end
 
   test "public optional host: verified streams, directional controls, bounds and isolation", %{
