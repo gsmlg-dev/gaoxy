@@ -1,5 +1,6 @@
 defmodule Gaoxy.LifecycleFaultTest do
-  use ExUnit.Case, async: true
+  # Exclusive ephemeral-port reuse must not race other tests allocating UDP sockets.
+  use ExUnit.Case, async: false
   @moduletag :loopback
   @moduletag :capture_log
 
@@ -74,15 +75,18 @@ defmodule Gaoxy.LifecycleFaultTest do
       for id <- ["a", "b"] do
         {pid, state} = service(instance, id)
         {_, worker, endpoint} = admit(instance, id)
-        {pid, state, worker, endpoint}
+        [listener] = Abyss.Listener.for_server(state.backend)
+        {socket, _} = Abyss.Listener.socket_info(listener)
+        resources = Gaoxy.Lifecycle.resources(state.backend, pid)
+        {pid, state, worker, endpoint, socket, resources}
       end
 
     started = Gaoxy.Lifecycle.now()
     async_call(:stopped, fn -> Supervisor.stop(parent) end)
-    for {pid, _, _, _} <- owned, do: wait(fn -> :sys.get_state(pid).mode == :draining end)
+    for {pid, _, _, _, _, _} <- owned, do: wait(fn -> :sys.get_state(pid).mode == :draining end)
 
     deadlines =
-      for {pid, state, worker, _} <- owned do
+      for {pid, state, worker, _, _, _} <- owned do
         assert {:error, :draining} = Gaoxy.Admission.acquire(state.gate, 0)
         assert Process.alive?(worker)
         :sys.get_state(pid).drain.deadline
@@ -93,8 +97,9 @@ defmodule Gaoxy.LifecycleFaultTest do
     assert_receive {:stopped, :ok}, 1_500
     assert Gaoxy.Lifecycle.now() - started < 1_000
 
-    for {pid, state, worker, {ip, port}} <- owned do
-      refute Enum.any?([pid, state.backend, state.gate, worker], &Process.alive?/1)
+    for {pid, state, worker, {ip, port}, original_socket, resources} <- owned do
+      refute Enum.any?([pid, state.backend, state.gate, worker | resources], &Process.alive?/1)
+      assert :erlang.port_info(original_socket) == :undefined
       assert {:ok, socket} = :gen_udp.open(port, ip: ip, active: false)
       :gen_udp.close(socket)
     end
