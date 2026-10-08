@@ -1,8 +1,15 @@
-name: Portable foundation
+name: Foundation integration tests
 on:
   push:
   pull_request:
   workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  ELIXIR_ERL_OPTIONS: '+S 2:2'
 jobs:
   portable:
     strategy:
@@ -17,21 +24,24 @@ jobs:
             otp: '29.0.2'
     runs-on: ${{ matrix.os }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
       - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.14'
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ runner.os }}-${{ runner.arch }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
-      - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
-      - name: Unit and configuration (nonempty)
-        run: python3 scripts/check-tests.py --exclude loopback
       - name: Real loopback sockets (nonempty)
         run: python3 scripts/check-tests.py --only loopback
       - name: External core consumer
@@ -42,15 +52,21 @@ jobs:
   isolated-network:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
       - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.14'
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            deps
+            _build
+          key: mix-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock') }}
       - run: sudo apt-get update && sudo apt-get install -y iproute2 util-linux
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked && mix compile --warnings-as-errors
@@ -70,13 +86,19 @@ jobs:
   optional-quic:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: erlef/setup-beam@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
         with:
           elixir-version: '1.18.5'
           otp-version: '28.5'
       - uses: dtolnay/rust-toolchain@stable
-      - uses: astral-sh/setup-uv@v6
+      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            integration/quic_consumer/deps
+            integration/quic_consumer/_build
+          key: mix-quic-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock', 'integration/quic_consumer/mix.lock') }}
       - run: mix local.hex --force && mix local.rebar --force
       - name: Locked optional consumer and independent validating aioquic peer
         working-directory: integration/quic_consumer

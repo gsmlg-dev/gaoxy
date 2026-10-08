@@ -1,0 +1,29 @@
+name: Release E2E (design pending)
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        type: string
+        required: true
+        description: Release version to test
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  e2e:
+    # TODO: Design E2E tests against downloaded GitHub Release artifacts.
+    # Define artifact/version verification, isolated environments, wire-level
+    # acceptance criteria, service cleanup and diagnostic artifact collection.
+    # Keep this job disabled until the design and real test suite are ready.
+    if: ${{ !always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: E2E design pending
+        run: |
+          echo 'TODO: design and implement release-artifact E2E tests'
