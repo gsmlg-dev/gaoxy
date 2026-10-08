@@ -1,0 +1,89 @@
+name: Portable foundation
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+jobs:
+  portable:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            elixir: '1.18.5'
+            otp: '28.5'
+          - os: macos-15-intel
+            elixir: '1.20.1'
+            otp: '29.0.2'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: ${{ matrix.elixir }}
+          otp-version: ${{ matrix.otp }}
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: mix local.hex --force && mix local.rebar --force
+      - run: mix deps.get --check-locked
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - name: Unit and configuration (nonempty)
+        run: python3 scripts/check-tests.py --exclude loopback
+      - name: Real loopback sockets (nonempty)
+        run: python3 scripts/check-tests.py --only loopback
+      - name: External core consumer
+        run: bash scripts/external-consumer.sh
+      - name: Portable release
+        run: MIX_ENV=prod mix release && python3 scripts/release-smoke.py
+
+  isolated-network:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+      - run: sudo apt-get update && sudo apt-get install -y iproute2 util-linux
+      - run: mix local.hex --force && mix local.rebar --force
+      - run: mix deps.get --check-locked && mix compile --warnings-as-errors
+      - name: Isolated IPv4 ingress, memberships, restart and egress
+        run: python3 integration/network/fixture.py --allow-privileged
+      - name: Isolated Linux IPv6 ingress, scope, hops and loopback
+        run: python3 integration/network/fixture.py --allow-privileged --ipv6
+      - name: Socket backend IPv4 ingress and egress
+        run: GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged
+      - name: Socket backend IPv6 scoped-send negative
+        run: GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6
+      - name: Production five-transport release
+        run: MIX_ENV=prod mix release && python3 integration/network/release_gate.py --allow-privileged
+      - name: Shipped five-transport custom-handler example
+        run: python3 integration/network/example_gate.py --allow-privileged
+
+  optional-quic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: astral-sh/setup-uv@v6
+      - run: mix local.hex --force && mix local.rebar --force
+      - name: Locked optional consumer and independent validating aioquic peer
+        working-directory: integration/quic_consumer
+        run: |
+          mix deps.get --check-locked
+          mix compile --warnings-as-errors
+          python3 ../../scripts/check-tests.py
+
+# Configured CI is not an executed GitHub run. s93 isolated-network/release
+# evidence is recorded separately from configured optional-consumer acceptance.
