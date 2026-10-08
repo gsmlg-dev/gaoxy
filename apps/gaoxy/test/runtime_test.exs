@@ -49,12 +49,23 @@ defmodule Gaoxy.RuntimeTest do
   end
 
   def endpoint(pid, id \\ "echo") do
-    %{local: local} = Gaoxy.info(pid, id)
+    eventually(fn ->
+      %{local: local} = Gaoxy.info(pid, id)
 
-    case local do
-      {:ok, address} -> address
-      address -> address
-    end
+      address =
+        case local do
+          {:ok, address} -> address
+          address -> address
+        end
+
+      case address do
+        {ip, port} when is_integer(port) and port in 1..65_535 ->
+          if :inet.is_ip_address(ip), do: address, else: false
+
+        _ ->
+          false
+      end
+    end)
   end
 
   def eventually(fun, deadline \\ nil) do
