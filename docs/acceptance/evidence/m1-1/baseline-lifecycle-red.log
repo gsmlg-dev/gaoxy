@@ -1,0 +1,107 @@
+==> gaoxy
+Compiling 2 files (.ex)
+Generated gaoxy app
+==> gaoxy
+Running ExUnit with seed: 0, max_cases: 4
+
+
+
+  1) test parent shutdown preserves admitted tcp response (Gaoxy.ShutdownHardeningTest)
+     apps/gaoxy/test/shutdown_hardening_test.exs:40
+     Assertion failed, no matching message after 2000ms
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:lifecycle, :draining}
+     mailbox:
+       pattern: {:lifecycle, :draining}
+       value:   {:DOWN, #Reference<0.3996609371.369098754.27094>, :process,
+                 #PID<0.305.0>, :killed}
+
+       pattern: {:lifecycle, :draining}
+       value:   {:parent_stopped, :ok}
+     stacktrace:
+       test/shutdown_hardening_test.exs:65: (test)
+
+     The following output was logged:
+
+     01:06:21.672 [info] The function passed as a handler with ID #Reference<0.3996609371.369098754.27095> is a local function.
+     This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+     https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+
+
+  2) test parent shutdown preserves admitted udp response (Gaoxy.ShutdownHardeningTest)
+     apps/gaoxy/test/shutdown_hardening_test.exs:40
+     Assertion failed, no matching message after 2000ms
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:lifecycle, :draining}
+     mailbox:
+       pattern: {:lifecycle, :draining}
+       value:   {:DOWN, #Reference<0.3996609371.369098754.27449>, :process,
+                 #PID<0.341.0>, :killed}
+
+       pattern: {:lifecycle, :draining}
+       value:   {:parent_stopped, :ok}
+     stacktrace:
+       test/shutdown_hardening_test.exs:65: (test)
+
+     The following output was logged:
+
+     01:06:23.753 [info] The function passed as a handler with ID #Reference<0.3996609371.369098754.27450> is a local function.
+     This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+     https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+....+........+.......+..+...+.+++++++++++++++++++++++++++++++++++++++*.+................+..+......+....+..+.+...+.........+.....+.......+........+.+.........+...+...+..+....+.....+...+.+.....+......+...+.+.....+++++++++++++++++++++++++++++++++++++++*..+..........+..+......+...................+.........+..+...+....+........+...+....+...+...+............+..+.+..+...+.+.....+.............+..+...............+....+.........+......+..+....+........+..........+..+....+...........+....+..+....+...+...+..+...+..........+............+.....+...+....+...+..+...+.+.....+.+....................+.+..+.....................+.......+.....+.........................+..+.+..+....+...........+.......+............+......+........+.......+..............+.+.....+.......+..+...................+..+.......+.....+.............+...+..+............+.+...........+...+......+....+........+..........+...+.....+.......+.....+............+...............+...+.......+..+....+.....+.+......+...+..+.........+...+......+.+...+........+..........+..+............+.........+.........+............+...+.......+......+..+...+..................+.......+...+..+...+....+...+...+..+.......+.....+...+............+......+....+..+.+.........+.....+....+.................+.......+.................+.+...+..+....+...+..+..........+...+...+.....+....+...+...+...+......+......+.....+....+........+...+..........+..............+...+.+......+.....+...+.+..+....+...........+.......+.....+.............+..+...+...+.+........+.............++++++
+......+.....+................+...+.........+..+...+.......+...+...+.....+++++++++++++++++++++++++++++++++++++++*..+..+......+.......+++++++++++++++++++++++++++++++++++++++*..+.................+......+.+...........+....+.....+.+..............+.+............+.....+.+.........+..+...................+...........+.+..+.+.....++++++
+-----
+...+...+.............+..+.......+++++++++++++++++++++++++++++++++++++++*.....+...+......+..+...+.........+++++++++++++++++++++++++++++++++++++++*.....+.+........+......+......+.....................................+..+..........+...+........+...+.......+.....+...+....+............+........+......+.+...+..+..........+..............................+.........+..+...+.......+..+.+...........+...+.+.....+......+...+.......+.....+.+........+...................+...++++++
+..+++++++++++++++++++++++++++++++++++++++*.....+...+...+.......+...+.........+......+...+..+.......+...+...+.........+..+......+...+++++++++++++++++++++++++++++++++++++++*.+......+.....+....+..+.......+........+...+.+.....+....+.....+.+..................+..+...+...+..........+........+......+...+...+.......+......+.........+......++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+
+
+  3) test parent shutdown preserves admitted tls response (Gaoxy.ShutdownHardeningTest)
+     apps/gaoxy/test/shutdown_hardening_test.exs:40
+     ** (MatchError) no match of right hand side value: {:error, {:tls_alert, {:no_application_protocol, ~c"TLS client: In state hello received SERVER ALERT: Fatal - No Application Protocol\n"}}}
+     code: client = connect(transport, ip, port, directory)
+     stacktrace:
+       test/shutdown_hardening_test.exs:126: Gaoxy.ShutdownHardeningTest.connect/4
+       test/shutdown_hardening_test.exs:58: (test)
+
+     The following output was logged:
+
+     01:06:26.568 [notice] TLS :server: In state :start at tls_server_connection_1_3.erl:1023 generated SERVER ALERT: Fatal - No Application Protocol
+
+
+     01:06:26.584 [notice] TLS :client: In state :hello received SERVER ALERT: Fatal - No Application Protocol
+
+
+
+
+  4) test drain helper death cannot report successful cleanup while backend is live (Gaoxy.ShutdownHardeningTest)
+     apps/gaoxy/test/shutdown_hardening_test.exs:85
+     Assertion failed, no matching message after 1500ms
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:removed, {:error, {:cleanup_failed, _}}}
+     mailbox:
+       pattern: {:removed, {:error, {:cleanup_failed, _}}}
+       value:   {:removed, :ok}
+     stacktrace:
+       test/shutdown_hardening_test.exs:97: (test)
+
+
+
+  5) test backend pause failure cannot advertise ready with a closed gate (Gaoxy.ShutdownHardeningTest)
+     apps/gaoxy/test/shutdown_hardening_test.exs:103
+     match (=) failed
+     code:  assert {:error, {:transition_failed, :pause, _}} = Gaoxy.pause(runtime, "service")
+     left:  {:error, {:transition_failed, :pause, _}}
+     right: :error
+     stacktrace:
+       test/shutdown_hardening_test.exs:109: (test)
+
+
+Finished in 7.0 seconds (7.0s async, 0.00s sync)
+5 tests, 5 failures

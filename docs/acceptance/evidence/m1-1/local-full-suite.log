@@ -1,0 +1,143 @@
+$ python3 scripts/check-tests.py --seed 0
+==> gaoxy
+Running ExUnit with seed: 0, max_cases: 4
+
+.....
+02:32:14.571 [info] The function passed as a handler with ID #Reference<0.3691946259.651165697.213327> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+02:32:14.707 [info] The function passed as a handler with ID #Reference<0.3691946259.651165697.213458> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+02:32:14.745 [info] The function passed as a handler with ID #Reference<0.3691946259.651165697.213674> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.........+.....+......+..........+.....+.......+...+......+...............+...+......+......+...+...........+.+......+...+++++++++++++++++++++++++++++++++++++++*.............+....+..+...+......+...+.+......+...+..+......+....+...+.....+......+.+.....+.+...+......+.....+....+..+++++++++++++++++++++++++++++++++++++++*............+...+...+.........+.+.....+.+...+......+............+.....+...+.+......+.........+.....+.+...............+...++++++
+...............+++++++++++++++++++++++++++++++++++++++*.....+++++++++++++++++++++++++++++++++++++++*.........+..........+.....+.+........+...+.......+......+..+...+....+...+..+.......+...........+....+......+..+...+............+.+...............+..+...+.+.....+.+............+......+.....+.........+.+..+............+.............+.....+...+.......+...+.....+.+......+..+...+...+....+........+...+.+...........+...+................+...+..+..........+...........+++++.+
+..-----
+.+.......+.....+.......+...........+.+......+..+.+..+....+........+...+++++++++++++++++++++++++++++++++++++++*..+....+......+......+........+++++++++++++++++++++++++++++++++++++++*.+..+...+.........................+...+..+............+.+.....+...+.........+.+.........+.....+......+....+...+.....+....+..............+.........+......+.+...+..+...............+......+...............+....+...+..+....+......+...+...+............+.....+......+.........+.+..+...+...............+......+....+...........+.+..+...+............+.......+...+...+...+.....+.+........++++++
+.........+................+..+...+.......+++++++++++++++++++++++++++++++++++++++*.......+.........+.+......+........+.+......+.....+...+....+............+...+.....+.+.........+...+..+......+..........+.....+.+.....+...+.............+++++++++++++++++++++++++++++++++++++++*.......+.....+....+..+...+...+....+.........+...............+..+.............+......+.....+.+...+......+......+.....+...+.......+...+............+..+.+..+....+.........+.....+.+...+.....+...+.......+..+.+.........+.....+...............+...............+......+.........+....+......+...+..+...+.+..+..........+..+...+.............+.....+...............+.+.....+.+.........+.........+...........+...+...............+.+......+......+..+...+.............+.....+..........+..+.........+...+.......+...+..+.+.....+.......+.....+.+.........+........+.......+...+........+....+...+...............+..+..........+.....+..................+.........+..........+.....+...+................+.....+.+...+............+........+......+.......+..+............+.+...+..+.......+.....+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+...
+02:32:16.260 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+02:32:16.321 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+02:32:16.263 [error] GenServer #PID<0.621.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.1) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 60455, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.61>, listener: #PID<0.606.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.3691946259.651165697.215349>, service: "echo", generation: #Reference<0.3691946259.651165697.215354>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.598.0>, limits: %{max_bytes: 1048576, max_packet: 8, max_active: 64, max_output: 65507, drain_timeout: 5000, max_memberships: 64, callback_timeout: 5000, idle_timeout: 30000, max_state: 65536}, quic: %{}, capabilities: []}, gate: #PID<0.603.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, read_timeout: 30000, processing_times: [], adaptive_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3691946259.651165698.215210>, start_time: -576460748610870974, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.604.0>, local_info: {{127, 0, 0, 1}, 48535}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 60455, sampled: true, telemetry_span_context: #Reference<0.3691946259.651165698.215210>, parent_telemetry_span_context: #Reference<0.3691946259.651165698.215149>}}, memory_token: #Reference<0.3691946259.651165698.215216>, idle_token: nil, idle_deadline: :infinity, idle_timer: nil, memory_check_interval: 10000, memory_timer: #Reference<0.3691946259.651165698.215217>}
+....
+02:32:17.203 [info] The function passed as a handler with ID #Reference<0.3691946259.651165698.216788> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+...
+02:32:17.294 [error] GenServer #PID<0.897.0> terminating
+** (stop) :fixture_init_error
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 54602}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.111>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3691946259.651165698.217548>, start_time: -576460747571949793, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 54602, telemetry_span_context: #Reference<0.3691946259.651165698.217548>, parent_telemetry_span_context: #Reference<0.3691946259.651165698.217356>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3691946259.651165698.217548>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3691946259.651165698.217317>, service: :init_error, generation: #Reference<0.3691946259.651165698.217322>}, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.830.0>, action: :init_error}, limits: %{max_bytes: 1048576, max_packet: 65507, max_active: 64, max_output: 1024, drain_timeout: 5000, max_memberships: 64, callback_timeout: 5000, idle_timeout: 30000, max_state: 1024}, quic: %{}, capabilities: []}, gate: #PID<0.835.0>}}
+
+02:32:17.296 [error] GenServer #PID<0.901.0> terminating
+** (RuntimeError) fixture callback crash
+    test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:50: Gaoxy.StreamBridge.chunks/4
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 39824}}}
+Last message: {:tcp, #Port<0.115>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.115>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3691946259.651165698.217609>, start_time: -576460747569754506, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 39824, telemetry_span_context: #Reference<0.3691946259.651165698.217609>, parent_telemetry_span_context: #Reference<0.3691946259.651165698.217393>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3691946259.651165698.217609>}}, read_timer: #Reference<0.3691946259.651165698.217617>, read_deadline: -576460717570, timer_deadline: -576460717570}, %{scope: %{instance: #Reference<0.3691946259.651165698.217317>, service: :crash, generation: #Reference<0.3691946259.651165698.217359>}, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.830.0>, action: :crash}, limits: %{max_bytes: 1048576, max_packet: 65507, max_active: 64, max_output: 1024, drain_timeout: 5000, max_memberships: 64, callback_timeout: 5000, idle_timeout: 30000, max_state: 1024}, quic: %{}, capabilities: []}, app: %{owner: #PID<0.830.0>, action: :crash}, gate: #PID<0.844.0>, lease: #Reference<0.3691946259.651165698.217611>}}
+
+02:32:17.302 [error] GenServer #PID<0.909.0> terminating
+** (stop) :state_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 53054}}}
+Last message: {:tcp, #Port<0.123>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.123>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3691946259.651165698.217753>, start_time: -576460747564127263, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 53054, telemetry_span_context: #Reference<0.3691946259.651165698.217753>, parent_telemetry_span_context: #Reference<0.3691946259.651165697.216830>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3691946259.651165698.217753>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3691946259.651165698.217317>, service: :state, generation: #Reference<0.3691946259.651165697.216789>}, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.830.0>, action: :state}, limits: %{max_bytes: 1048576, max_packet: 65507, max_active: 64, max_output: 1024, drain_timeout: 5000, max_memberships: 64, callback_timeout: 5000, idle_timeout: 30000, max_state: 1024}, quic: %{}, capabilities: []}, app: %{owner: #PID<0.830.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, gate: #PID<0.865.0>, lease: #Reference<0.3691946259.651165698.217755>}}
+
+02:32:17.309 [error] GenServer #PID<0.914.0> terminating
+** (stop) :output_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 53790}}}
+Last message: {:tcp, #Port<0.127>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.127>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3691946259.651165697.216967>, start_time: -576460747560228411, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 53790, telemetry_span_context: #Reference<0.3691946259.651165697.216967>, parent_telemetry_span_context: #Reference<0.3691946259.651165697.216874>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.3691946259.651165697.216967>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.3691946259.651165698.217317>, service: :output, generation: #Reference<0.3691946259.651165697.216833>}, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.830.0>, action: :output}, limits: %{max_bytes: 1048576, max_packet: 65507, max_active: 64, max_output: 1024, drain_timeout: 5000, max_memberships: 64, callback_timeout: 5000, idle_timeout: 30000, max_state: 1024}, quic: %{}, capabilities: []}, app: %{owner: #PID<0.830.0>, action: :output}, gate: #PID<0.876.0>, lease: #Reference<0.3691946259.651165697.216969>}}
+.......+....+...+...+..+.+..+...+.+......+..+......+.+.........+..+.......+........+....+......+.....+.......+..+...+++++++++++++++++++++++++++++++++++++++*...+...+....................+.+.........+.................+.+........+.+...+..+...+......+......+.+...+.....+............+....+........+.+......+...+.....+.......+.....+...+.+......+.....+....+..+...+.+.....+.+++++++++++++++++++++++++++++++++++++++*..........+...+........+...+.......+............+........+....+...+.....+.+..+....+......+.........+.....+.........+.++++++
+...+........+.+..+++++++++++++++++++++++++++++++++++++++*.........+........+++++++++++++++++++++++++++++++++++++++*..+.........+...+...+....+...+..+......+...................+.....+................+.....+....+........+...................+........+...+...+.+..............+......+.............+...+.........+...+......+...........+...+.......+...+......+..+...+.......+.....+...+......................+...+...........+...+..................+.........+...............+....+..+...+....+...+..+...+...+....+.......................+.......+..+.+........+....+..+.+.....+.......+...+...+..............+.......+......+...+..+....+......+..+.+......+.........+..+...+....+...........+....+..+......+...+....+.................+....+..+...+...............+....+..+....+.....+..........+...........+.+.....+.........+......+.......+...+..............+...+...+...+.........+.+......+...+...+..+...............+.+......+...+..+.........+......+....+.....+.......+..+.+..............+.+.....+.......+.................+.......+.....+.+.....+...............+.......+...+...+..+..........+.........+...++++++
+-----
+...+.....+.........+.+.....+...+....+........+.........+.+++++++++++++++++++++++++++++++++++++++*..+...........+.+..+.+..+....+...+++++++++++++++++++++++++++++++++++++++*........+.+......+............+...........++++++
+....+...+.....+.+..+....+.....................+..+.+.....+++++++++++++++++++++++++++++++++++++++*.+......+++++++++++++++++++++++++++++++++++++++*.......+..+............+....+......+...+........+...+.........+.+....................+....+.....+......+.+.....+...............+.+...+..+.......+...............+...........+.+...+....................+...+...+.+...+...+........+..........+..+...+.........+..........+.....+......+.+......+..+......+......+.+...+......+.....+....+......+.....+...+...+...+....+...+...+............+..+................+......+...........+..........+...+...............+..+...+......+.+..............+.+...+...........+.+...+..+....+.....+...+.+..+...+..........+.....+...............+.+......+..+..........+...+..............+.+........+....+...+.........+.....+...+...+.......+.....+......+.+...+....................+.+..+............+.....................+....+...+..+.+......+.....+.........+....+.....+.+............+..++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+.+..+....+.........+...+...+++++++++++++++++++++++++++++++++++++++*.+.....+...............+......+......+.+++++++++++++++++++++++++++++++++++++++*........+.......+..+....+..+...++++++
+.....+..+.+...+.........+..+...+.........................+......+++++++++++++++++++++++++++++++++++++++*....+...+......+............+++++++++++++++++++++++++++++++++++++++*...+.......+..+......+...+.+.........+.........+.................+......+.........+.+..+............+....+.........+.....+.+...........+...+.+......+......+..+...+............+.+.....+.......+...+.....+............+...+....+...+.....+.......+.....+.......+...+..+......+...+....+...+...+.....+......+..........+......+...+..+...+.+.....+.+..............+....+.....+....+..+..................+...+....+...+...+.........+......+..+..............+...+..+...+.+...+...+.........+.........+.....+.........+.+...........+....+......+...........+..........+...+......+.........+.....+......+.+..+...+..........+...............+.....+....+...+........+....+...+...........+.+....................+...+.+......+.....+.........+......+.+...+............+..............+...+.+..+....+...............+........+......+..........+.....+....+..+.+..+......+......................+..+...+..................+.......+.....+............+............+.+..+..........+........+...+.+.....+.+.....+...+......+..................+.+..+...+.+...........+.......+............+......+........+......+...+..........+...+.....+..........+...+......+.....+.........+.+...+.....+............+...+......+......+...+......+............+...+....+......+............+..............+......+...+.......+...+.........+.....+.......+......+..+...+....+.....+......+.............+...........+.+.....+.........+..................+.+..+...+......+...+.+............+........+......+...+......+.......+...+.....+......+.+..............+.............+...+..+.......+...+..+..........+...........+...+.+...........+...+..........+.....+....+...+...+..+.......+......+......+...+.....+............+....+.....+.+.........+..+..........+.....+.......+..+......+.......+..+...+..........+.....+...............+......+.........+.+............+...............+........+.+...+..+.+...+..+.......++++++
+-----
+..........+.....+..........+............+.....+...+.......+...+..............+...+.+.....+......+.+.....+++++++++++++++++++++++++++++++++++++++*..............+......+...+.......+........+...+...+++++++++++++++++++++++++++++++++++++++*.......+........+.......+...+...............+...+........+.........+...+.............+..+.......+......+..+...+....+..+..........+.....+..........+.....+.+............+...+...+..+.......+.....+...+.........+......+...+.+...+...+.........+......+...+......+...........+...+....+..+.+.....+.......+..+.............+...+..+.+...........+......+...+.......+...+...........+.................................+......+.+...+........+..........+.........+...+.....+.+..+.......+......+.....++++++
+.+.+.....+.............+...+...+..+....+.....+...+.+.....+....+......+..+.......+..+...+......+......+....+.....+....+..+.........+.+.....+.+.....+...............+.......+++++++++++++++++++++++++++++++++++++++*............+.....+.+...+.................+++++++++++++++++++++++++++++++++++++++*.........+.+..+.........+.........+....+......+.....+......+....+.........+..+......+....+........+...+....+...+...+........+............+.......+...+.................................+......+........+.+..+...+.........+.+.....+.+...+.....+............+.+...+...........+...+................+..+.............+..+.......+..+...+......+.+...+...+...+.....+....+..+...+.+......+...............+.....+.+............+
+02:32:18.295 [info] The function passed as a handler with ID #Reference<0.3691946259.651165698.218381> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+..+.+...+.....+.......+.....+.........+...+.+.................+.........+...+......................+...+..+.+.....+...+.+..............+....+......+......+.........+..+...+....+...+..+.............+........+.+........+.......+.....+.+.....+.......+......+.....+......+.............+..+......+....+...+............+...+...+....................+...+.+...+...........+.+.....+....+.........+...+...++++++
+-----
+.Certificate request self-signature ok
+subject=CN=localhost
+...............+...+........+.+...+...+.....+...+......+.+.....+....+...+...............+++++++++++++++++++++++++++++++++++++++*....+....+...+.....+...+....+...+..+.......+......+..+++++++++++++++++++++++++++++++++++++++*......+...+..++++++
+.+...........+...+.+.................+...+.+.....+.........+......+....+..+...+............+....+++++++++++++++++++++++++++++++++++++++*........+..+...+.+.........+...+..+.+.....+....+..+.........+++++++++++++++++++++++++++++++++++++++*......+..+......+...+.+.....+.+...........................+..+...+.............+.....+..........+..+.+......+...........+..........+.....+.......+........+.......+.....+...+....+........+.......+...+...+...+.....+.+.....+...+......+......+.+........+.+.....+.........+..........+...........+..........+...+...........+.+...+...+..++++++
+-----
+.......+.+++++++++++++++++++++++++++++++++++++++*..+..+...+....+.....+.+..+....+.....+++++++++++++++++++++++++++++++++++++++*....+...+.....................+.+.....+.............+..+....+..+.........+......+....+...+......+.........+...+..............+....+.....+......+.+...+..........................+.+...+............+..+.......+...........+...+.+...+.....+...+...+.......+...+..............+......+.+........+............+.........++++++
+.......+...+..+++++++++++++++++++++++++++++++++++++++*.+...+....+......+.....+..........+..+...+....+.....+...+...+....+...+...+.....+......+++++++++++++++++++++++++++++++++++++++*...+.....+.............+...........+.+............+.....+.......+...+...+...+.....+.+.....++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+..+......+.......+..+.+..+.+......+...+............+......+...+.........+.....+.............+..+++++++++++++++++++++++++++++++++++++++*.........+.+.....+......+....+......+........+.+......+..............+++++++++++++++++++++++++++++++++++++++*..............+..+.+......+.....+.+........+.+...............+...+..+.+...+..+.......+..+.+..+................+.....+....+.....+......+.+...............+.........+.....................+.....+.+...............+..+.......+.........+..+....+...+...........+..........+......+......++++++
+.............+.....+.+..+...+.+...+......+++++++++++++++++++++++++++++++++++++++*.+......+++++++++++++++++++++++++++++++++++++++*...+..+...+...+...............+.+...........+...+.........+.+.........+.....+...+...+.........+.+.....+....+.....+.+............+...............+.....+....+.....+.+..................+......+.....+...+...+.......+...+........+....+.....+.........................+..+.+.........+...........+...+....+...+..............+................+............+...+..+......+.+.....+.+........+.......++++++
+-----
+.....+.+...+......+++++++++++++++++++++++++++++++++++++++*..........+....+...............+......+.....+.......+..+...+...+.+++++++++++++++++++++++++++++++++++++++*.+.+......+.....+...+...+......................+.....+..........+.....+.+..+..........+.....+.........+.........+.+.........++++++
+..........+.+.................+..................+......+++++++++++++++++++++++++++++++++++++++*.....+.......+..+.............+..+.+.....+......+.+.....+.......+..+......+....+.........+..+++++++++++++++++++++++++++++++++++++++*.......+...+....+...........+....+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+.................
+02:32:22.513 [info] The function passed as a handler with ID #Reference<0.3691946259.651165698.222732> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+..
+02:32:22.581 [error] GenServer Gaoxy.Registry.PIDPartition0 terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1861.0>, :killed}
+State: {#Reference<0.3691946259.651296769.222704>, %{}}
+
+02:32:22.585 [notice] Application gaoxy exited: shutdown
+..........
+Finished in 10.3 seconds (6.5s async, 3.8s sync)
+63 tests, 0 failures
+==> gaoxy_server
+Running ExUnit with seed: 0, max_cases: 4
+
+.
+Finished in 0.04 seconds (0.04s async, 0.00s sync)
+1 test, 0 failures
+==> gaoxy_http
+There are no tests to run
+==> gaoxy_proxy
+There are no tests to run
+exit_status=0

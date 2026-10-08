@@ -42,6 +42,11 @@ Polling `Gaoxy.info/2` until `:not_running`, or monitoring the instance after st
 observes eventual completion. A local send result remains distinct from peer
 delivery; forced pending sends retain their original operation and unknown outcome.
 
+Read-only `info/2` and `status/2` sample backend/gate state with bounded internal
+queries. A field such as `local` can contain `{:error, :outcome_unknown}` when a
+query cannot complete; this is not a usable endpoint. Readiness callers must
+validate the successful address shape and retry within their own bounded budget.
+
 ## Outer supervision budget
 
 The initial instance drain budget is the maximum configured service

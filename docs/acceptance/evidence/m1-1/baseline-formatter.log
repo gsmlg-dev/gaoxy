@@ -1,0 +1,27 @@
+** (Mix) mix format failed due to --check-formatted.
+The following files are not formatted:
+
+[1m[31m/tmp/gaoxy-f5-baseline-service.ex
+[0m
+         |
+194 194  |
+195 195  |  def handle_info({:EXIT, pid, _}, %{backend: pid, mode: mode} = state)
+196     -|      when mode in [:draining, :stopped], do: {:noreply, state}
+    196 +|      when mode in [:draining, :stopped],
+    197 +|      do: {:noreply, state}
+197 198  |
+198 199  |  def handle_info({:EXIT, pid, reason}, state) when pid == state.backend or pid == state.gate,
+         |
+
+[1m[31m/tmp/gaoxy-f5-baseline-config.ex
+[0m
+         |
+265 265  |  defp handler(%{transport: :quic, handler: module}) when is_atom(module) do
+266 266  |    if Code.ensure_loaded?(module) and function_exported?(module, :init, 3) and
+267     -|         function_exported?(module, :handle_event, 2), do: :ok, else: {:error, :invalid_handler}
+    267 +|         function_exported?(module, :handle_event, 2),
+    268 +|       do: :ok,
+    269 +|       else: {:error, :invalid_handler}
+268 270  |  end
+269 271  |
+         |
