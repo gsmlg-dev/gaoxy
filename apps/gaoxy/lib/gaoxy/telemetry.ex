@@ -20,7 +20,13 @@ defmodule Gaoxy.Telemetry do
     do: Registry.register(Gaoxy.Registry, {__MODULE__, backend}, scope)
 
   def forward_backend_drop(_, measurements, %{server_id: backend, reason: reason}, _) do
-    for {_, scope} <- Registry.lookup(Gaoxy.Registry, {__MODULE__, backend}) do
+    bindings =
+      case Gaoxy.RegistryPolicy.lookup({__MODULE__, backend}) do
+        {:ok, bindings} -> bindings
+        {:error, :registry_unavailable} -> []
+      end
+
+    for {_, scope} <- bindings do
       reason = if reason == :suspended, do: :paused, else: reason
 
       reason =
@@ -33,9 +39,5 @@ defmodule Gaoxy.Telemetry do
         reason: reason
       })
     end
-  rescue
-    # Registry can disappear while the application is stopping. Its entries are
-    # owned by service processes and disappear automatically on every exit.
-    ArgumentError -> :ok
   end
 end

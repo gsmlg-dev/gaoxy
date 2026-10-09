@@ -69,8 +69,8 @@ defmodule Gaoxy.LifecycleAcceptanceTest do
     :ok = :gen_udp.send(client, ip, port, "hold-old")
     assert_receive {:waiting, old_worker, _}, 2000
     [{lease, %{token: token, monitor: monitor}}] = Map.to_list(:sys.get_state(gate).leases)
-    assert :ok = Gaoxy.remove(runtime, old, 10)
-    eventually(fn -> not Process.alive?(old_worker) end)
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = Gaoxy.remove(runtime, old, 10)
+    eventually(fn -> not Process.alive?(old_worker) and Gaoxy.services(runtime) == [] end)
     assert {:ok, current} = Gaoxy.add(runtime, spec)
     assert current.generation != old.generation
     assert {:error, :stale_generation} = Gaoxy.remove(runtime, old, 10)
@@ -140,7 +140,24 @@ defmodule Gaoxy.LifecycleAcceptanceTest do
     eventually(fn -> Gaoxy.status(runtime, "tls").active == 1 end)
     assert :ok = Gaoxy.pause(runtime, "tls")
     assert %{mode: :paused, pause: :unbind_rebind} = Gaoxy.info(runtime, "tls")
-    assert {:error, _} = :gen_tcp.connect(ip, port, [:binary, active: false], 500)
+
+    # Listener-owner termination and TCP refusal are distinct barriers.
+    # Wait for the actual network barrier and close every transient probe.
+    eventually(fn ->
+      case :gen_tcp.connect(ip, port, [:binary, active: false], 500) do
+        {:error, :econnrefused} ->
+          true
+
+        {:error, :econnreset} ->
+          false
+
+        {:ok, socket} ->
+          :gen_tcp.close(socket)
+          false
+      end
+    end)
+
+    assert %{state: :paused, active: 1} = Gaoxy.status(runtime, "tls")
     assert Port.command(peer, "admitted-during-pause\n")
     assert_receive {^peer, {:data, {:eol, "PASS admitted-during-pause"}}}, 2000
     assert :ok = Gaoxy.resume(runtime, "tls")

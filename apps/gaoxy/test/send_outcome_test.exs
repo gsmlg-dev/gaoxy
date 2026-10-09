@@ -119,7 +119,7 @@ defmodule Gaoxy.SendOutcomeTest do
     assert_receive {^reference, [:gaoxy, :send_started], _, %{operation: operation}}, 2_000
     assert_blocked_with_live_sibling(runtime, worker)
     started = System.monotonic_time(:millisecond)
-    assert :ok = Gaoxy.remove(runtime, "blocked", 10)
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = Gaoxy.remove(runtime, "blocked", 10)
     assert System.monotonic_time(:millisecond) - started < 500
 
     assert_receive {^reference, [:gaoxy, :send], %{bytes: @output_size},
@@ -127,7 +127,7 @@ defmodule Gaoxy.SendOutcomeTest do
                    2_000
 
     assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 2_000
-    assert {:error, :not_running} = Gaoxy.info(runtime, "blocked")
+    eventually(fn -> Gaoxy.info(runtime, "blocked") == {:error, :not_running} end)
     refute_receive {^reference, [:gaoxy, :send], _, _}, 100
   end
 

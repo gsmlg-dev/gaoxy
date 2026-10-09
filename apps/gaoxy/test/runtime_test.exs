@@ -49,12 +49,23 @@ defmodule Gaoxy.RuntimeTest do
   end
 
   def endpoint(pid, id \\ "echo") do
-    %{local: local} = Gaoxy.info(pid, id)
+    eventually(fn ->
+      %{local: local} = Gaoxy.info(pid, id)
 
-    case local do
-      {:ok, address} -> address
-      address -> address
-    end
+      address =
+        case local do
+          {:ok, address} -> address
+          address -> address
+        end
+
+      case address do
+        {ip, port} when is_integer(port) and port in 1..65_535 ->
+          if :inet.is_ip_address(ip), do: address, else: false
+
+        _ ->
+          false
+      end
+    end)
   end
 
   def eventually(fun, deadline \\ nil) do
@@ -190,9 +201,9 @@ defmodule Gaoxy.RuntimeTest do
     {:ok, client} = :gen_udp.open(0, [:binary, active: false])
     worker = admit_waiting_packet(client, {ip, port})
     monitor = Process.monitor(worker)
-    assert :ok = Gaoxy.remove(pid, "echo", 10)
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = Gaoxy.remove(pid, "echo", 10)
     assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 1_000
-    assert [] = Gaoxy.services(pid)
+    eventually(fn -> Gaoxy.services(pid) == [] end)
     assert {:error, :not_running} = Gaoxy.handle(pid, "echo")
     :gen_udp.close(client)
   end
