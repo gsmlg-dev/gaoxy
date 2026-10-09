@@ -1,0 +1,267 @@
+defmodule Gaoxy.HTTP.HTTP1.Response do
+  @moduledoc false
+  alias Gaoxy.HTTP.Exchange
+
+  @token ~r/\A[!#$%&'*+.^_`|~0-9A-Za-z-]+\z/
+
+  def send_resp(exchange, status, headers, body) do
+    omit = bodyless?(exchange, status)
+    length = IO.iodata_length(body)
+
+    with {:ok, headers} <- prepare_headers(exchange, status, headers, {:length, length}),
+         :ok <- send_head(exchange, status, headers),
+         :ok <- maybe_send_body(exchange, body, omit) do
+      {:ok, %{exchange | response: :sent, close: close?(exchange, headers)}}
+    end
+  end
+
+  def send_file(exchange, status, headers, filename, offset, length) do
+    with {:ok, stat} <- File.stat(filename),
+         true <- (offset >= 0 and offset <= stat.size) || {:error, :invalid_file_range},
+         actual = if(length == :all, do: stat.size - offset, else: length),
+         true <-
+           (is_integer(actual) and actual >= 0 and offset + actual <= stat.size) ||
+             {:error, :invalid_file_range},
+         {:ok, headers} <- prepare_headers(exchange, status, headers, {:length, actual}),
+         :ok <- send_head(exchange, status, headers),
+         :ok <- file_chunks(exchange, filename, offset, actual, bodyless?(exchange, status)) do
+      {:ok, %{exchange | response: :sent, close: close?(exchange, headers)}}
+    end
+  end
+
+  def send_chunked(exchange, status, headers) do
+    with {:ok, headers, mode} <- stream_headers(exchange, status, headers),
+         :ok <- send_head(exchange, status, headers) do
+      {:ok, %{exchange | response: mode, close: close?(exchange, headers)}}
+    end
+  end
+
+  def chunk(%{response: mode} = exchange, data) when mode in [:chunked, :close_stream] do
+    size = IO.iodata_length(data)
+
+    if size == 0 do
+      :ok
+    else
+      encoded =
+        if mode == :chunked,
+          do: [Integer.to_string(size, 16), "\r\n", data, "\r\n"],
+          else: data
+
+      Exchange.send_bytes(exchange, encoded)
+    end
+  end
+
+  def chunk(%{response: :bodyless_stream} = exchange, _data), do: {:ok, exchange}
+
+  def chunk(%{response: {:fixed_stream, remaining}} = exchange, data) do
+    size = IO.iodata_length(data)
+
+    if size <= remaining do
+      with :ok <- Exchange.send_bytes(exchange, data) do
+        {:ok, %{exchange | response: {:fixed_stream, remaining - size}}}
+      end
+    else
+      {:error, :content_length_exceeded}
+    end
+  end
+
+  def chunk(_, _), do: {:error, :invalid_response_state}
+
+  def inform(exchange, status, headers) when status in 100..199 and status != 101 do
+    with :ok <- validate_headers(headers),
+         true <-
+           Enum.all?(headers, fn {key, _} ->
+             key not in ["content-length", "transfer-encoding"]
+           end) ||
+             {:error, :invalid_response_framing},
+         :ok <- send_head(exchange, status, headers, false) do
+      :ok
+    end
+  end
+
+  def inform(_, _, _), do: {:error, :not_supported}
+
+  defp prepare_headers(exchange, status, headers, {:length, length}) do
+    with :ok <- validate_status(status),
+         :ok <- validate_headers(headers),
+         :ok <- valid_framing(headers) do
+      headers =
+        Enum.reject(headers, fn {key, _} -> key in ["content-length", "transfer-encoding"] end)
+
+      headers =
+        cond do
+          status in [204, 304] -> headers
+          status == 205 -> [{"content-length", "0"} | headers]
+          true -> [{"content-length", Integer.to_string(length)} | headers]
+        end
+
+      {:ok, add_connection(exchange, headers)}
+    end
+  end
+
+  defp stream_headers(exchange, status, headers) do
+    with :ok <- validate_status(status),
+         :ok <- validate_headers(headers),
+         :ok <- valid_framing(headers) do
+      length =
+        Enum.find_value(headers, fn {key, value} -> if key == "content-length", do: value end)
+
+      cond do
+        bodyless?(exchange, status) ->
+          headers =
+            cond do
+              status in [204, 304] ->
+                Enum.reject(headers, fn {key, _} -> key == "content-length" end)
+
+              status == 205 ->
+                [
+                  {"content-length", "0"}
+                  | Enum.reject(headers, fn {key, _} -> key == "content-length" end)
+                ]
+
+              true ->
+                headers
+            end
+
+          {:ok, add_connection(exchange, headers), :bodyless_stream}
+
+        length != nil ->
+          {number, ""} = Integer.parse(length)
+          {:ok, add_connection(exchange, headers), {:fixed_stream, number}}
+
+        exchange.request.version == :"HTTP/1.0" ->
+          {:ok, [{"connection", "close"} | headers], :close_stream}
+
+        true ->
+          headers = [{"transfer-encoding", "chunked"} | headers]
+          {:ok, add_connection(exchange, headers), :chunked}
+      end
+    end
+  end
+
+  defp valid_framing(headers) do
+    lengths = for {"content-length", value} <- headers, do: value
+    transfers = for {"transfer-encoding", value} <- headers, do: value
+
+    cond do
+      length(lengths) > 1 or transfers != [] ->
+        {:error, :invalid_response_framing}
+
+      lengths != [] and not Regex.match?(~r/\A(?:0|[1-9][0-9]*)\z/, hd(lengths)) ->
+        {:error, :invalid_response_framing}
+
+      true ->
+        :ok
+    end
+  end
+
+  defp validate_status(status) when is_integer(status) and status in 200..599, do: :ok
+  defp validate_status(_), do: {:error, :invalid_status}
+
+  defp validate_headers(headers) when is_list(headers) do
+    if Enum.all?(headers, fn
+         {key, value} when is_binary(key) and is_binary(value) ->
+           Regex.match?(@token, key) and key == String.downcase(key) and
+             Enum.all?(:binary.bin_to_list(value), &(&1 == 9 or (&1 >= 32 and &1 != 127)))
+
+         _ ->
+           false
+       end),
+       do: :ok,
+       else: {:error, :invalid_response_headers}
+  end
+
+  defp validate_headers(_), do: {:error, :invalid_response_headers}
+
+  defp add_connection(exchange, headers) do
+    cond do
+      close?(exchange, headers) ->
+        [{"connection", "close"} | Enum.reject(headers, fn {key, _} -> key == "connection" end)]
+
+      exchange.request.version == :"HTTP/1.0" ->
+        [
+          {"connection", "keep-alive"}
+          | Enum.reject(headers, fn {key, _} -> key == "connection" end)
+        ]
+
+      true ->
+        headers
+    end
+  end
+
+  defp close?(exchange, headers),
+    do:
+      exchange.close or exchange.body.phase != :done or
+        Enum.any?(headers, fn {key, value} ->
+          key == "connection" and
+            Enum.any?(String.split(String.downcase(value), ","), &(String.trim(&1) == "close"))
+        end)
+
+  defp head(exchange, status, headers) do
+    version = if exchange.request.version == :"HTTP/1.0", do: "HTTP/1.0", else: "HTTP/1.1"
+    reason = Plug.Conn.Status.reason_phrase(status)
+
+    [
+      version,
+      " ",
+      Integer.to_string(status),
+      " ",
+      reason,
+      "\r\n",
+      Enum.map(headers, fn {key, value} -> [key, ": ", value, "\r\n"] end),
+      "\r\n"
+    ]
+  end
+
+  defp send_head(exchange, status, headers, final? \\ true) do
+    head = head(exchange, status, headers)
+
+    if IO.iodata_length(head) <= exchange.limits.max_header_bytes do
+      # A failed final response write must never become a second response.
+      # Informational responses still allow the application to send its final head.
+      if final?, do: send(self(), Plug.Conn.Adapter.already_sent())
+      Exchange.send_bytes(exchange, head)
+    else
+      {:error, :response_header_limit}
+    end
+  end
+
+  defp bodyless?(exchange, status),
+    do:
+      exchange.request.method == "HEAD" or
+        status in [204, 205, 304]
+
+  defp maybe_send_body(_, _, true), do: :ok
+  defp maybe_send_body(exchange, body, false), do: Exchange.send_bytes(exchange, body)
+
+  defp file_chunks(_, _, _, 0, _), do: :ok
+  defp file_chunks(_, _, _, _, true), do: :ok
+
+  defp file_chunks(exchange, filename, offset, length, false) do
+    {:ok, file} = :file.open(filename, [:read, :binary, :raw])
+
+    try do
+      file_loop(exchange, file, offset, length)
+    after
+      :file.close(file)
+    end
+  end
+
+  defp file_loop(_, _, _, 0), do: :ok
+
+  defp file_loop(exchange, file, offset, length) do
+    size = min(length, min(exchange.limits.max_read_chunk, exchange.limits.max_write_chunk))
+
+    with :ok <-
+           Gaoxy.Admission.update(
+             exchange.gate,
+             exchange.lease,
+             Exchange.retained_bytes(exchange) + size
+           ),
+         {:ok, data} <- :file.pread(file, offset, size),
+         true <- byte_size(data) == size || {:error, :file_short_read},
+         :ok <- Exchange.send_bytes(exchange, data) do
+      file_loop(exchange, file, offset + size, length - size)
+    end
+  end
+end
