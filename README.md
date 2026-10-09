@@ -4,7 +4,9 @@ An Elixir/OTP transport runtime, usable inside an application's supervision tree
 or as a standalone release. Gaoxy composes Thousand Island for TCP/OTP TLS and
 Abyss for UDP and optional generic QUIC. M0/M1 implements transport hosting,
 service lifecycle, finite admission, telemetry and custom protocol handlers.
-Native HTTP, WebSocket, Plug/Phoenix and proxies remain M2/M3/M4 work.
+The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
+real browser fixture. **Full M2 remains incomplete:** remote routing and streaming
+proxy gates depend on upstream HTTP Fetch fixes. See [M2 evidence](docs/acceptance/m2.md).
 
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
@@ -50,6 +52,10 @@ release startup stalled during code preload, and default TLS timing has been
 intermittent; those failures remain recorded.
 
 ## Embedded services
+
+For native HTTP/Plug/Phoenix, see [the server guide](docs/native-http.md) and
+[runnable Phoenix fixture](examples/phoenix_native/README.md). The transport API
+below remains independent of all HTTP dependencies.
 
 ```elixir
 defmodule Echo do

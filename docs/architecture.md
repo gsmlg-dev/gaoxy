@@ -44,12 +44,18 @@ of both lifecycle and telemetry keys, then fail-closed teardown on expiry. See
 [ADR 004](adr/004-lifecycle.md) for results and outer shutdown budgets. No pause uses `:sys.suspend`. Optional QUIC cannot inherit
 these guarantees because stopping its ingress prevents protocol progress.
 
-`gaoxy_http` will own native codecs/server engines and the HTTP endpoint extension
-contract; it may depend on `gaoxy` but never on `gaoxy_proxy`. `gaoxy_proxy` will
+`gaoxy_http` owns native HTTP/1 and WebSocket codecs, Plug/Phoenix adapters and the
+HTTP endpoint extension contract; it depends on `gaoxy` but never on `gaoxy_proxy`.
+Native TCP/TLS handlers preserve Service/Admission ownership and admit each new
+request against the lifecycle barrier. WebSocket upgrade retains the connection
+owner and establishes one bounded protocol lifetime. See
+[ADR 006](adr/006-native-http.md) and [native HTTP limits](native-http.md).
+`gaoxy_proxy` will
 implement upstream policy and endpoints over that contract. `gaoxy_server` owns
 versioned JSON loading, a fixed handler allowlist and release startup using the
-same runtime. Its `prep_stop` drains the embedded instance. No management server,
-HTTP engine, Phoenix adapter or proxy placeholder exists in this milestone.
+same runtime. Its `prep_stop` drains the embedded instance. No management server
+or proxy placeholder is added. HTTP Fetch's required public-contract gaps block
+the proxy and full M2 acceptance; native local routing is independently tested.
 
 ## Optional generic QUIC
 

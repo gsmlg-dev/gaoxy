@@ -1,0 +1,193 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "mix",
+      "format",
+      "apps/gaoxy_http/lib/gaoxy/http.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex",
+      "apps/gaoxy_http/test/http_contract_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "started_at": "2026-10-09T09:18:46.454074+00:00",
+    "finished_at": "2026-10-09T09:18:47.562991+00:00",
+    "exit_code": 0,
+    "log": "format.log"
+  },
+  {
+    "name": "format-check",
+    "command": [
+      "mix",
+      "format",
+      "--check-formatted"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "started_at": "2026-10-09T09:18:47.563397+00:00",
+    "finished_at": "2026-10-09T09:18:48.579442+00:00",
+    "exit_code": 0,
+    "log": "format-check.log"
+  },
+  {
+    "name": "http-compile",
+    "command": [
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    "cwd": "apps/gaoxy_http",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T09:18:48.580098+00:00",
+    "finished_at": "2026-10-09T09:18:50.050825+00:00",
+    "exit_code": 0,
+    "log": "http-compile.log"
+  },
+  {
+    "name": "final-tests",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_http/test",
+      "apps/gaoxy/test/native_stream_test.exs",
+      "apps/gaoxy/test/config_test.exs",
+      "apps/gaoxy/test/runtime_test.exs",
+      "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+      "apps/gaoxy/test/lifecycle_ownership_test.exs",
+      "apps/gaoxy/test/lifecycle_fault_test.exs",
+      "apps/gaoxy/test/send_outcome_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "started_at": "2026-10-09T09:18:50.051269+00:00",
+    "finished_at": "2026-10-09T09:18:58.800139+00:00",
+    "exit_code": 0,
+    "log": "final-tests.log"
+  },
+  {
+    "name": "fixture-tests",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors"
+    ],
+    "cwd": "examples/phoenix_native",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "started_at": "2026-10-09T09:19:36.448978+00:00",
+    "finished_at": "2026-10-09T09:19:40.114602+00:00",
+    "exit_code": 0,
+    "log": "fixture-tests.log"
+  },
+  {
+    "name": "browser-run",
+    "command": [
+      ".audit/browser-venv/bin/python",
+      "integration/phoenix_native/run.py"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "started_at": "2026-10-09T09:19:40.115179+00:00",
+    "finished_at": "2026-10-09T09:19:50.413277+00:00",
+    "exit_code": 0,
+    "log": "browser-run.log"
+  },
+  {
+    "name": "core-consumer",
+    "command": [
+      "bash",
+      "scripts/external-consumer.sh"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit_code": 0,
+    "log": "core-consumer.log",
+    "note": "Completed earlier in the same implementation session; core and consumer inputs unchanged since this run.",
+    "log_transform": "Dependency-fetch progress omitted and trailing whitespace trimmed; test/compiler output retained."
+  },
+  {
+    "name": "actionlint",
+    "command": [
+      "nix",
+      "shell",
+      "nixpkgs#actionlint",
+      "-c",
+      "actionlint",
+      ".github/workflows/portable.yml"
+    ],
+    "cwd": ".",
+    "exit_code": 0,
+    "log": "actionlint.log"
+  },
+  {
+    "name": "review-red",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_http/test/http_contract_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit_code": 2,
+    "expected": "15 tests, 2 failures before the final response/TLS repairs",
+    "log": "review-red.log"
+  },
+  {
+    "name": "review-green",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_http/test/http_contract_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit_code": 0,
+    "log": "review-green.log"
+  },
+  {
+    "name": "vendor-test",
+    "command": [
+      "elixir",
+      "-pa",
+      "_build/test/lib/plug/ebin",
+      "-pa",
+      "_build/test/lib/websock/ebin",
+      "-r",
+      "vendor/websock_adapter/lib/websock_adapter/upgrade_error.ex",
+      "-r",
+      "vendor/websock_adapter/lib/websock_adapter/upgrade_validation.ex",
+      "-r",
+      "vendor/websock_adapter/lib/websock_adapter.ex",
+      "-r",
+      "apps/gaoxy_http/test/test_helper.exs",
+      "vendor/websock_adapter/test/gaoxy_dispatch_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit_code": 0,
+    "log": "vendor-test.log"
+  }
+]

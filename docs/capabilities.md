@@ -22,7 +22,23 @@ platform/backend limits shown separately.
 | Custom TCP TLS / ex_ssl | unsupported | Public facade audit + explicit selection rejection | Public server contract absent; no OTP fallback |
 | Generic QUIC | experimental opt-in | PASS independent aioquic custom-ALPN stream/FIN/reset/stop/flow-control/close-isolation; bounds and native receipts | Public `Abyss.QUIC` / `Quic`; at most16KiB; macOS accepted subset; fixture can log read errors after peer close; no pause/full protocol drain |
 | QUIC DATAGRAM/mTLS/migration/0-RTT | unsupported | No acceptance claimed | Host limitations preserved |
-| HTTP/H2/H3/WebSocket/Plug/Phoenix/proxies | future milestones | NOT RUN | No production backend, dummy implementation or advertised capability |
+| H2/H3 and proxy/relay protocols | future or upstream-blocked milestones | NOT RUN / BLOCKED | No implementation or acceptance claimed |
+
+## Native M2 candidate
+
+The following is local Linux evidence for the native M2 worktree, separate from
+the historical transport baseline above. Full M2 is **incomplete**; see its
+[requirement record](acceptance/m2.md).
+
+| Capability | Implementation and evidence | Limits |
+|---|---|---|
+| Native H1 / Plug | Real TCP, validating TLS, bounded reads/writes, pipeline/framing/error/lifecycle regressions PASS | Selected H1 profile; finite requests; no H2 ALPN |
+| WebSocket / WebSock | Native wire, controls/fragments/UTF-8/close/drain and independent client PASS | No compression; bounded lifetime/state/frame/message/mailbox checks |
+| Phoenix Endpoint | HTTP/HTTPS one-instance ownership and actual port lookup PASS | Endpoint-managed or explicitly gateway-managed; no Bandit backend |
+| Phoenix browser | Page, static, LiveView click/upload, Channels, SSE, reconnect, development reload and shutdown PASS | Chromium/Linux fixture; no production deployment or broad conformance claim |
+| Local routes | Immutable first-match host/method/raw-path routes, real pipeline PASS | No forwarding-header trust or configuration reload generation switch |
+| Reverse proxy / remote routes | BLOCKED on HTTP Fetch #27–#30 | No workaround or placeholder API; no remote-route acceptance |
+| Hosted M2 CI | Configured, NOT RUN on this unpublished candidate | Account payment/spending restriction also blocks current main jobs |
 
 ## Resource accounting scope
 

@@ -115,7 +115,13 @@ destructive cleanup occurred. Agent Note scope was unavailable because
 
 ## Next milestones
 
-M2: native HTTP/1.1, WebSocket/WebSockAdapter, Plug/Phoenix and initial endpoint
-routing. M3: HTTP/2 and complete gateway/relay policies. M4: independently
+M2 native HTTP/1, WebSock, Plug/Phoenix, browser fixture and local routing are
+implemented and locally verified on `codex/m2-native`. **M2 remains incomplete**:
+minimal streaming reverse proxy and real remote-route acceptance are blocked on
+HTTP Fetch #27–#30. The full gate, candidate checks and remaining requirements are
+tracked in [M2 acceptance](acceptance/m2.md). Do not advance its completion marker
+or advertise proxy support from the native server results.
+
+M3: HTTP/2 and complete gateway/relay policies. M4: independently
 verified HTTP/3. Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.

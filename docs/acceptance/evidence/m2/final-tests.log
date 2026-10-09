@@ -1,0 +1,47 @@
+==> gaoxy
+Running ExUnit with seed: 510169, max_cases: 4
+
+
+17:18:52.125 [error] GenServer #PID<0.311.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.1) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 35039, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.21>, listener: #PID<0.299.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.969801499.251133954.42645>, service: "echo", generation: #Reference<0.969801499.251133953.44712>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.284.0>, limits: %{max_bytes: 1048576, max_packet: 8, max_active: 64, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, idle_timeout: 30000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :stream}, gate: #PID<0.292.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, read_timeout: 30000, processing_times: [], adaptive_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.969801499.251133953.44887>, start_time: -576460750005659171, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.296.0>, local_info: {{127, 0, 0, 1}, 57316}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 35039, sampled: true, telemetry_span_context: #Reference<0.969801499.251133953.44887>, parent_telemetry_span_context: #Reference<0.969801499.251133953.44781>}}, memory_token: #Reference<0.969801499.251133953.44893>, idle_token: nil, idle_deadline: :infinity, idle_timer: nil, memory_check_interval: 10000, memory_timer: #Reference<0.969801499.251133953.44894>}
+.........+.+........+.......+.....+++++++++++++++++++++++++++++++++++++++*.....+............+..+....+...............+.....+.+...+...+..+.+..............+............+...+.+..+...+......+...+..........+++++++++++++++++++++++++++++++++++++++*...................+.+.....+.+...+..+...............+....+..+..........+.....+........................+.+..............+......+....+...+............+.....+...+.+...........+..........+...+.....+...+.........+....+.....+............+.........+...+.+............+...+.....+.+.........+.....+.......+...+.....+...................+...+.....+...+......+.............+..........................+....+...+.........+........+............+.+..+..........+..+.........+.........+...+....+........+.+.........+...+.....+.......+...+.........+.....+.+..+.+......+...........+....+.....+.+.....+............+.......+........+.+..+...+.......++++++
+..........+..............+++++++++++++++++++++++++++++++++++++++*.+...................+...+...+..+..........+.....+.+.....+.+.....+.+..+......+.+++++++++++++++++++++++++++++++++++++++*......+...+...+..+......+......+.+.......................+.......+..+.......+.........+..............+.+..+.......+..+..........+...+...+...+..+...+........................+...+...+.+...+........+.......+..+......+.......+..+..................+...+....+......+..+.+.....+.+...+...+...+............+...+.....................+...........+...+......+.+..+.........................+.....+.+.........+..+.+..+............+.+.....+...+.......+.....+...+.+..................+.....................+............+..+......+......+....+...........+...+.......+......+..+..........+......+.....+......+.+...+..+.......+........+.......+...+..+...+.........+...............+.........+....+...+........+....+..+.........+............+...............+.............+..+...+.+...............+..................+..+...+......+.+...+......+..+...+......+...+.......+.....+.............+...+...+...........++++++
+-----
+............+..+..........+...........+....+......+...+..+...+......+...+.......+......+...+++++++++++++++++++++++++++++++++++++++*..+.......+.....+......+.......+..+...+.......+..+.+........+.+......+.....+...+......+......+....+...+......+..............+++++++++++++++++++++++++++++++++++++++*..+...+..+..........+..................+...+.......................+.......+..+...+.......+..+...+.+.................+..................+.+.....+......+...+............+.......+........+...............+.......+.....+.+..+...+.......+.........+.+..............+..+.......+...+..+....+.......+........+............+.......+..+.............+..+...+...+...+....+...+..+..........++++++
+.....+.....+...+..........+.....+.......+...+..+.+..+....+++++++++++++++++++++++++++++++++++++++*..........+.............+.....+.+......+..+...+++++++++++++++++++++++++++++++++++++++*.....+......+.........+...+.......+......+...+..+....+......+..+......+.......+...+.........++++++
+.-----
+Certificate request self-signature ok
+subject=CN=localhost
+.
+17:18:53.393 [info] The function passed as a handler with ID #Reference<0.969801499.251133953.46896> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.....
+17:18:53.970 [info] The function passed as a handler with ID #Reference<0.969801499.251133953.47710> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+17:18:54.213 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+17:18:54.250 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+.............................
+Finished in 5.2 seconds (3.5s async, 1.6s sync)
+45 tests, 0 failures
+==> gaoxy_http
+Running ExUnit with seed: 510169, max_cases: 4
+
+..................................................................................
+Finished in 1.9 seconds (1.9s async, 0.00s sync)
+82 tests, 0 failures
