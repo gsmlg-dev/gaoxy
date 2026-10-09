@@ -264,7 +264,9 @@ defmodule Gaoxy.Config do
 
   defp handler(%{transport: :quic, handler: module}) when is_atom(module) do
     if Code.ensure_loaded?(module) and function_exported?(module, :init, 3) and
-         function_exported?(module, :handle_event, 2), do: :ok, else: {:error, :invalid_handler}
+         function_exported?(module, :handle_event, 2),
+       do: :ok,
+       else: {:error, :invalid_handler}
   end
 
   defp handler(%{transport: type, handler: module}) when is_atom(module) do

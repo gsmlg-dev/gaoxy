@@ -30,6 +30,18 @@ jobs:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
       - uses: dtolnay/rust-toolchain@stable
+      - name: Provision certificate tool
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install openssl@3
+            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
+          else
+            sudo apt-get update && sudo apt-get install -y openssl
+            certificate_tool="$(command -v openssl)"
+          fi
+          "$certificate_tool" version -a
+          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.14'
@@ -58,6 +70,18 @@ jobs:
           elixir-version: '1.18.5'
           otp-version: '28.5'
       - uses: dtolnay/rust-toolchain@stable
+      - name: Provision certificate tool
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install openssl@3
+            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
+          else
+            sudo apt-get update && sudo apt-get install -y openssl
+            certificate_tool="$(command -v openssl)"
+          fi
+          "$certificate_tool" version -a
+          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.14'
@@ -92,6 +116,18 @@ jobs:
           elixir-version: '1.18.5'
           otp-version: '28.5'
       - uses: dtolnay/rust-toolchain@stable
+      - name: Provision certificate tool
+        shell: bash
+        run: |
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            brew install openssl@3
+            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
+          else
+            sudo apt-get update && sudo apt-get install -y openssl
+            certificate_tool="$(command -v openssl)"
+          fi
+          "$certificate_tool" version -a
+          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
       - uses: astral-sh/setup-uv@v10.2.0
       - uses: actions/cache@v6.1.0
         with:

@@ -15,6 +15,21 @@ env:
   ELIXIR_ERL_OPTIONS: '+S 2:2'
 
 jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
+        with:
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
+      - name: Acceptance wrapper counter regressions
+        run: python3 scripts/test-check-tests.py
+      - name: Release smoke readiness regressions
+        run: python3 scripts/test-release-smoke.py
+      - name: Canonical formatter (Elixir 1.18.5)
+        run: mix format --check-formatted
+
   build:
     strategy:
       fail-fast: false
@@ -42,5 +57,4 @@ jobs:
           key: mix-${{ runner.os }}-${{ runner.arch }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
-      - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors

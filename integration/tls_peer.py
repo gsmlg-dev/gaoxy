@@ -4,10 +4,14 @@ import socket
 import ssl
 import sys
 
+# Shared CI runners may need longer than two seconds for a verified handshake.
+# This finite peer I/O budget is independent of the tested lifecycle deadlines.
+IO_TIMEOUT = 5
+
 port, ca = int(sys.argv[1]), sys.argv[2]
 context = ssl.create_default_context(cafile=ca)
 context.set_alpn_protocols(["gaoxy-echo-v1"])
-with socket.create_connection(("127.0.0.1", port), timeout=2) as raw:
+with socket.create_connection(("127.0.0.1", port), timeout=IO_TIMEOUT) as raw:
     with context.wrap_socket(raw, server_hostname="localhost") as connection:
         assert connection.selected_alpn_protocol() == "gaoxy-echo-v1"
         if len(sys.argv) > 3 and sys.argv[3] == "interactive":
@@ -33,9 +37,10 @@ with socket.create_connection(("127.0.0.1", port), timeout=2) as raw:
             received += connection.recv(1024)
         assert received == b"fragmented\n", received
 for hostname, trusted in [("wrong.example", True), ("localhost", False)]:
-    invalid = ssl.create_default_context(cafile=ca) if trusted else ssl.create_default_context()
+    wrong_ca = sys.argv[3] if len(sys.argv) > 3 else None
+    invalid = ssl.create_default_context(cafile=ca if trusted else wrong_ca)
     try:
-        with socket.create_connection(("127.0.0.1", port), timeout=2) as raw:
+        with socket.create_connection(("127.0.0.1", port), timeout=IO_TIMEOUT) as raw:
             invalid.wrap_socket(raw, server_hostname=hostname)
     except ssl.SSLCertVerificationError:
         pass
