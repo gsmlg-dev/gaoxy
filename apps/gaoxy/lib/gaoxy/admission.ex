@@ -4,7 +4,16 @@ defmodule Gaoxy.Admission do
   alias Gaoxy.Telemetry
 
   def start_link({limits, scope}), do: GenServer.start_link(__MODULE__, {limits, scope})
-  def acquire(gate, bytes), do: GenServer.call(gate, {:acquire, bytes})
+  def acquire(gate, bytes), do: acquire(gate, bytes, [])
+  def acquire(gate, bytes, options), do: GenServer.call(gate, {:acquire, bytes, options})
+
+  def begin_request(gate, lease, bytes, deadline),
+    do: GenServer.call(gate, {:begin_request, lease, bytes, deadline})
+
+  def begin_callback(gate, lease, bytes, deadline),
+    do: GenServer.call(gate, {:begin_callback, lease, bytes, deadline})
+
+  def drain(gate, deadline), do: GenServer.call(gate, {:drain, deadline})
   def begin(gate, lease, bytes), do: GenServer.call(gate, {:begin, lease, bytes})
   def retain(gate, lease, bytes), do: GenServer.call(gate, {:retain, lease, bytes})
   def update(gate, lease, bytes), do: GenServer.call(gate, {:update, lease, bytes})
@@ -25,6 +34,7 @@ defmodule Gaoxy.Admission do
          limits: limits,
          scope: scope,
          mode: :ready,
+         drain_deadline: nil,
          leases: %{},
          bytes: 0,
          high_water: 0,
@@ -32,7 +42,7 @@ defmodule Gaoxy.Admission do
        }}
 
   @impl true
-  def handle_call({:acquire, bytes}, {pid, _}, state) do
+  def handle_call({:acquire, bytes, options}, {pid, _}, state) do
     cond do
       state.mode != :ready ->
         reject(state, state.mode)
@@ -46,11 +56,92 @@ defmodule Gaoxy.Admission do
       true ->
         ref = make_ref()
         monitor = Process.monitor(pid)
-        lease = %{pid: pid, monitor: monitor, bytes: bytes, token: nil, timer: nil, send: nil}
+
+        lease = %{
+          pid: pid,
+          monitor: monitor,
+          bytes: bytes,
+          token: nil,
+          timer: nil,
+          send: nil,
+          drain_notify: Keyword.get(options, :drain_notify, false),
+          deadline: nil
+        }
+
         state = %{state | leases: Map.put(state.leases, ref, lease), bytes: state.bytes + bytes}
         {:reply, {:ok, ref}, sample(state)}
     end
   end
+
+  def handle_call({action, ref, bytes, deadline}, {pid, _}, state)
+      when action in [:begin_request, :begin_callback] do
+    case state.leases[ref] do
+      %{pid: ^pid} = lease ->
+        deadline =
+          if action == :begin_callback and lease.deadline != nil and is_integer(deadline),
+            do: min(deadline, lease.deadline),
+            else: deadline
+
+        cond do
+          action == :begin_request and state.mode != :ready ->
+            reject(state, state.mode)
+
+          action == :begin_callback and lease.deadline == nil and state.mode != :ready ->
+            reject(state, state.mode)
+
+          not is_integer(bytes) or bytes < 0 or
+              state.bytes - lease.bytes + bytes > state.limits.max_bytes ->
+            reject(state, :byte_limit)
+
+          not is_integer(deadline) or deadline <= Gaoxy.Lifecycle.now() ->
+            reject(state, :deadline_exceeded)
+
+          true ->
+            cancel(lease)
+            token = make_ref()
+
+            timer =
+              Process.send_after(
+                self(),
+                {:expired, ref, token},
+                Gaoxy.Lifecycle.remaining(deadline)
+              )
+
+            request_deadline =
+              if action == :begin_request or lease.deadline == nil,
+                do: deadline,
+                else: lease.deadline
+
+            lease = %{
+              lease
+              | bytes: bytes,
+                deadline: request_deadline,
+                token: token,
+                timer: timer
+            }
+
+            {:reply, :ok,
+             sample(%{
+               state
+               | bytes: state.bytes - state.leases[ref].bytes + bytes,
+                 leases: Map.put(state.leases, ref, lease)
+             })}
+        end
+
+      _ ->
+        {:reply, {:error, :stale_generation}, state}
+    end
+  end
+
+  def handle_call({:drain, deadline}, _from, %{drain_deadline: nil} = state) do
+    Enum.each(state.leases, fn {ref, lease} ->
+      if lease.drain_notify, do: send(lease.pid, {:gaoxy_drain, self(), ref, deadline})
+    end)
+
+    {:reply, :ok, %{state | mode: :draining, drain_deadline: deadline}}
+  end
+
+  def handle_call({:drain, _deadline}, _from, state), do: {:reply, :ok, state}
 
   def handle_call({action, ref, bytes}, {pid, _}, state)
       when action in [:begin, :retain, :update] do
@@ -92,6 +183,10 @@ defmodule Gaoxy.Admission do
         {:reply, {:error, :stale_generation}, state}
     end
   end
+
+  def handle_call({:mode, _mode}, _from, %{drain_deadline: deadline} = state)
+      when not is_nil(deadline),
+      do: {:reply, :ok, state}
 
   def handle_call({:mode, mode}, _from, state), do: {:reply, :ok, %{state | mode: mode}}
 

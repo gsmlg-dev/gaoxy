@@ -192,7 +192,10 @@ defmodule Gaoxy.Service do
 
   def handle_call({:drain, _, deadline}, from, %{drain: nil} = state) do
     state = cancel_control(state, :draining)
-    barrier = gate_mode(state, :draining)
+
+    barrier =
+      Lifecycle.protect(fn -> GenServer.call(state.gate, {:drain, deadline}, 50) end)
+
     state = start_drain(state, deadline, [from])
 
     state =
@@ -634,7 +637,8 @@ defmodule Gaoxy.Service do
       end
 
     ThousandIsland.start_link(
-      handler_module: Gaoxy.StreamBridge,
+      handler_module:
+        if(spec.handler_mode == :native, do: spec.handler, else: Gaoxy.StreamBridge),
       handler_options: context,
       port: spec.port,
       transport_module:
