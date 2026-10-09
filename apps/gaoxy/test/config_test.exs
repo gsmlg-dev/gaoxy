@@ -34,8 +34,14 @@ defmodule Gaoxy.ConfigTest do
                services: [service(%{transport: :tls, tls: %{provider: :ex_ssl}})]
              )
 
-    assert {:error, {:unsupported_capability, :quic}} =
-             Gaoxy.Config.validate(services: [service(%{transport: :quic})])
+    # Optional engines may be installed by another umbrella application.
+    if Code.ensure_loaded?(Quic) do
+      assert {:error, :invalid_alpn} =
+               Gaoxy.Config.validate(services: [service(%{transport: :quic})])
+    else
+      assert {:error, {:unsupported_capability, :quic}} =
+               Gaoxy.Config.validate(services: [service(%{transport: :quic})])
+    end
 
     assert {:error, {:unsupported_capability, :http3}} =
              Gaoxy.Config.validate(services: [service(%{capabilities: [:http3]})])
