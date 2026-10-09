@@ -54,8 +54,13 @@ owner and establishes one bounded protocol lifetime. See
 implement upstream policy and endpoints over that contract. `gaoxy_server` owns
 versioned JSON loading, a fixed handler allowlist and release startup using the
 same runtime. Its `prep_stop` drains the embedded instance. No management server
-or proxy placeholder is added. HTTP Fetch's required public-contract gaps block
-the proxy and full M2 acceptance; native local routing is independently tested.
+or proxy placeholder is added. The selected published HTTP Fetch/WebSocket
+0.17.2 packages pass the original #27–#30 contract regressions. Request-body
+preservation (#45) and valid WebSocket close codes (#38) still block the proxy
+and full M2 acceptance; native local routing is independently tested. The proxy
+package transitively installs QUIC/TLS engines, while standalone core consumers
+retain isolation. Dependency presence implies no H2/H3 support. See
+[the dependency audit](m2-dependency-audit.md).
 
 ## Optional generic QUIC
 

@@ -118,7 +118,14 @@ authority/framing validation occur first; the selected endpoint then applies
 its explicit policy. H1 absolute-target authority must agree with Host.
 
 The same endpoint contract admits future proxy targets without making
-`gaoxy_http` depend on `gaoxy_proxy`. Actual remote routing and reverse-proxy
-streaming remain blocked by HTTP Fetch's public-contract gaps
-[#27–#30](m2-dependency-audit.md). No proxy API or simulated proxy acceptance is
-shipped. M2 is incomplete until those required gates pass.
+`gaoxy_http` depend on `gaoxy_proxy`. Published HTTP Fetch 0.17.2 passes the
+original #27–#30 public-contract regressions. Actual remote routing and
+reverse-proxy streaming remain blocked by GET/DELETE body loss
+[#45](https://github.com/gsmlg-dev/http_fetch/issues/45) and valid WebSocket
+close-code propagation in [#38](https://github.com/gsmlg-dev/http_fetch/issues/38);
+see [the dependency audit](m2-dependency-audit.md). No proxy endpoint is shipped.
+A future proxy requires static startup `streaming_threshold: 0`, checked at
+initialization without per-request global mutation. Its selected dependency
+graph includes QUIC/TLS-engine packages; standalone core consumers remain
+isolated. These dependencies do not add H2/H3 server support. M2 is incomplete
+until the proxy gates pass.

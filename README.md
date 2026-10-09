@@ -6,7 +6,9 @@ Abyss for UDP and optional generic QUIC. M0/M1 implements transport hosting,
 service lifecycle, finite admission, telemetry and custom protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture. **Full M2 remains incomplete:** remote routing and streaming
-proxy gates depend on upstream HTTP Fetch fixes. See [M2 evidence](docs/acceptance/m2.md).
+proxy gates remain blocked on HTTP Fetch #45 (request bodies) and valid WebSocket
+close codes in #38. Published 0.17.2 passes the original four fixes. See
+[M2 evidence](docs/acceptance/m2.md).
 
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
@@ -143,8 +145,11 @@ explicitly unsupported and tested for absence of delivery.
 
 ## Optional QUIC
 
-The ordinary root/core graph contains no QUIC engine. An opt-in consumer locks
-`elixir_quic` and `ex_ssl` ==0.17.0 separately:
+The standalone core dependency graph contains no QUIC engine. The umbrella
+proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.17.2 through
+HTTP Fetch/WebSocket; this does not enable H2/H3 or qualify generic QUIC against
+that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`
+==0.17.0 separately:
 
 ```sh
 cd integration/quic_consumer

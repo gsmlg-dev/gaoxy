@@ -1,0 +1,223 @@
+[
+  {
+    "name": "method-body-probe",
+    "command": [
+      "mix",
+      "run",
+      "integration/http_fetch_contract/method_body_probe.exs"
+    ],
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:30:23.529242+00:00",
+    "finished_at": "2026-10-09T17:30:25.322682+00:00",
+    "exit_code": 1,
+    "log": "method-body-probe.log",
+    "cwd": ".",
+    "gate_status": "FAIL",
+    "note": "Required proxy behavior fails; nonzero reproduction is not passing acceptance."
+  },
+  {
+    "name": "websocket-close-probe",
+    "command": [
+      "mix",
+      "run",
+      "integration/http_fetch_contract/websocket_close_probe.exs"
+    ],
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:30:25.323181+00:00",
+    "finished_at": "2026-10-09T17:30:27.069095+00:00",
+    "exit_code": 1,
+    "log": "websocket-close-probe.log",
+    "cwd": ".",
+    "gate_status": "FAIL",
+    "note": "Required proxy behavior fails; nonzero reproduction is not passing acceptance."
+  },
+  {
+    "name": "contract-tests",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_proxy/test/http_fetch_contract_test.exs"
+    ],
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:30:27.069775+00:00",
+    "finished_at": "2026-10-09T17:30:29.441976+00:00",
+    "exit_code": 0,
+    "log": "contract-tests.log",
+    "cwd": ".",
+    "note": "Initial five-test result; the final-tests command reran the final reviewed helper and all five tests."
+  },
+  {
+    "name": "format",
+    "command": [
+      "mix",
+      "format",
+      "apps/gaoxy_proxy/mix.exs",
+      "apps/gaoxy_proxy/test/http_fetch_contract_test.exs",
+      "integration/http_fetch_contract/method_body_probe.exs",
+      "integration/http_fetch_contract/websocket_close_probe.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:35:14.137002+00:00",
+    "finished_at": "2026-10-09T17:35:15.103940+00:00",
+    "exit_code": 0,
+    "log": "format.log"
+  },
+  {
+    "name": "format-check",
+    "command": [
+      "mix",
+      "format",
+      "--check-formatted",
+      "apps/gaoxy/test/config_test.exs",
+      "apps/gaoxy_proxy/mix.exs",
+      "apps/gaoxy_proxy/test/http_fetch_contract_test.exs",
+      "integration/http_fetch_contract/method_body_probe.exs",
+      "integration/http_fetch_contract/websocket_close_probe.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:37:25.874956+00:00",
+    "finished_at": "2026-10-09T17:37:27.036706+00:00",
+    "exit_code": 0,
+    "log": "format-check.log"
+  },
+  {
+    "name": "dependency-graph-red",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_http/test",
+      "apps/gaoxy_proxy/test",
+      "apps/gaoxy/test/native_stream_test.exs",
+      "apps/gaoxy/test/config_test.exs",
+      "apps/gaoxy/test/runtime_test.exs",
+      "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+      "apps/gaoxy/test/lifecycle_ownership_test.exs",
+      "apps/gaoxy/test/lifecycle_fault_test.exs",
+      "apps/gaoxy/test/send_outcome_test.exs"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:35:26.114108+00:00",
+    "finished_at": "2026-10-09T17:35:35.725976+00:00",
+    "exit_code": 2,
+    "log": "dependency-graph-red.log",
+    "note": "Pre-repair: config test assumed Quic was absent before the proxy dependency graph installed it."
+  },
+  {
+    "name": "config-green",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy/test/config_test.exs",
+      "--seed",
+      "902300"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:37:03.480913+00:00",
+    "finished_at": "2026-10-09T17:37:05.174209+00:00",
+    "exit_code": 0,
+    "log": "config-green.log"
+  },
+  {
+    "name": "final-tests",
+    "command": [
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "apps/gaoxy_http/test",
+      "apps/gaoxy_proxy/test",
+      "apps/gaoxy/test/native_stream_test.exs",
+      "apps/gaoxy/test/config_test.exs",
+      "apps/gaoxy/test/runtime_test.exs",
+      "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+      "apps/gaoxy/test/lifecycle_ownership_test.exs",
+      "apps/gaoxy/test/lifecycle_fault_test.exs",
+      "apps/gaoxy/test/send_outcome_test.exs",
+      "--seed",
+      "902300"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:37:27.116262+00:00",
+    "finished_at": "2026-10-09T17:37:36.223420+00:00",
+    "exit_code": 0,
+    "log": "final-tests.log"
+  },
+  {
+    "name": "core-consumer",
+    "command": [
+      "bash",
+      "scripts/external-consumer.sh"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "started_at": "2026-10-09T17:35:26.135675+00:00",
+    "finished_at": "2026-10-09T17:37:07.868972+00:00",
+    "exit_code": 0,
+    "log": "core-consumer.log",
+    "log_transform": "Git transfer progress omitted and trailing whitespace trimmed; dependency resolution, compiler and test output retained."
+  },
+  {
+    "name": "deps-get",
+    "command": [
+      "mix",
+      "deps.get"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit_code": 0,
+    "log": "deps-get.log",
+    "note": "Collected earlier in this revalidation turn; exact wall-clock timestamps were not preserved."
+  },
+  {
+    "name": "compile",
+    "command": [
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    "cwd": ".",
+    "env": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "exit_code": 0,
+    "log": "compile.log",
+    "note": "Collected earlier in this revalidation turn; final scoped test command also enforces compilation warnings as errors."
+  }
+]

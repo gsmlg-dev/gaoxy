@@ -37,8 +37,16 @@ the historical transport baseline above. Full M2 is **incomplete**; see its
 | Phoenix Endpoint | HTTP/HTTPS one-instance ownership and actual port lookup PASS | Endpoint-managed or explicitly gateway-managed; no Bandit backend |
 | Phoenix browser | Page, static, LiveView click/upload, Channels, SSE, reconnect, development reload and shutdown PASS | Chromium/Linux fixture; no production deployment or broad conformance claim |
 | Local routes | Immutable first-match host/method/raw-path routes, real pipeline PASS | No forwarding-header trust or configuration reload generation switch |
-| Reverse proxy / remote routes | BLOCKED on HTTP Fetch #27–#30 | No workaround or placeholder API; no remote-route acceptance |
+| HTTP Fetch dependency contracts | Published 0.17.2: five public-API contract tests PASS on 2026-10-10; original #27–#30 closed | Raw gzip/duplicate headers, trailers, early response and WebSocket ownership validated; this is not proxy acceptance |
+| Reverse proxy / remote routes | BLOCKED on HTTP Fetch #45 and valid-close-code support in #38 | GET/DELETE bodies disappear; valid WebSocket close codes reject; no endpoint or remote-route acceptance |
 | Hosted M2 CI | Configured, NOT RUN on this unpublished candidate | Account payment/spending restriction also blocks current main jobs |
+
+The proxy package now selects HTTP Fetch/WebSocket and transitively includes
+`elixir_quic`/`ex_ssl` 0.17.2. Standalone core-only isolation remains a separate
+gate; the umbrella graph is not engine-free. No H2/H3 support follows from these
+dependencies. A future proxy may use explicit static startup
+`streaming_threshold: 0`; per-request streaming #37 is nonblocking under that
+constraint, without global mutation per request.
 
 ## Resource accounting scope
 

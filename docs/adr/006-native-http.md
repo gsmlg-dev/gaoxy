@@ -48,7 +48,19 @@ retain their escaping; matching never repeatedly decodes input. Invalid
 authorities and ambiguous framing are rejected before dispatch. Upstream
 authority/SNI and forwarding-header policy remain part of the blocked proxy work.
 
-The first upstream audit found missing required public HTTP Fetch H1 contracts.
-Its proxy integration is blocked on issues #27–#30 rather than using private
-socket owners, collecting arbitrary bodies, or weakening M2 acceptance. Native
-HTTP/Plug/WebSock/Phoenix and pure routing remain independently implementable.
+The first upstream audit found missing required public HTTP Fetch H1 contracts
+in 0.17.1 (#27–#30). All four issues are closed; the published 0.17.2 contract
+regressions pass. Proxy integration remains blocked on #45 (GET/DELETE request
+body loss) and the valid-close-code subset of #38. Message-level WebSocket
+proxying does not require exact fragmentation or ping/pong forwarding, but must
+preserve valid close codes. No private socket access or local workaround is
+accepted. Native HTTP/Plug/WebSock/Phoenix and pure routing are independently
+verified; full M2 remains incomplete.
+
+The global client streaming threshold can be an explicit static startup
+constraint: `streaming_threshold: 0`, checked when the future proxy initializes
+and never changed per request. This makes per-request streaming issue #37
+nonblocking under the documented host constraint. `gaoxy_proxy` selects the
+published Fetch/WebSocket packages and their QUIC/TLS-engine dependencies;
+standalone core consumers retain their isolation. Package presence establishes
+no H2/H3 capability. See [the current dependency audit](../m2-dependency-audit.md).
