@@ -1,0 +1,28 @@
+Running ExUnit with seed: 26660, max_cases: 96
+Excluding tags: [:test]
+Including tags: [location: {"test/quic_test.exs", 168}]
+
+
+
+  1) test late stream_open preserves the locally opened stream role (GaoxyQUICConsumerTest)
+     test/quic_test.exs:168
+     match (=) failed
+     The following variables were pinned:
+       state = %{streams: %{%Gaoxy.QUIC.Stream{handle: #Reference<0.2981476458.3328966664.191799>, connection: nil} => :local}}
+     code:  assert {:ok, ^state} = Echo.handle_event({:stream_open, stream, :bidi}, state)
+     left:  {:ok, ^state}
+     right: {:ok,
+             %{
+               streams: %{
+                 %Gaoxy.QUIC.Stream{
+                   handle: #Reference<0.2981476458.3328966664.191799>,
+                   connection: nil
+                 } => :echo
+               }
+             }}
+     stacktrace:
+       test/quic_test.exs:172: (test)
+
+
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+2 tests, 1 failure, 1 excluded

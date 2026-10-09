@@ -1,5 +1,8 @@
 # Implementation status
 
+> Historical M1 snapshot. M1.1 revalidation and the current hardening verdict are
+> recorded in [M1.1 acceptance](m1-1-hardening-acceptance.md); this historical PASS is not evidence for the changed candidate.
+
 **M0/M1 required transport foundation: PASS.** This is the pre-publication
 acceptance snapshot: no commit, remote creation, push, publication or deployment
 had occurred during implementation acceptance. Subsequent source publication

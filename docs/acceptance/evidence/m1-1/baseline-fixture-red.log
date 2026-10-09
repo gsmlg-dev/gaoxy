@@ -1,0 +1,48 @@
+[0mWaiting for lock on the build directory (held by process 862447)
+==> gaoxy
+[0mWaiting for lock on the build directory (held by process 922056)
+Compiling 14 files (.ex)
+Generated gaoxy app
+==> gaoxy_server
+[0mWaiting for lock on the build directory (held by process 922056)
+Compiling 5 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+[0mWaiting for lock on the build directory (held by process 862447)
+[0mWaiting for lock on the build directory (held by process 922056)
+[0mWaiting for lock on the build directory (held by process 862447)
+[0mWaiting for lock on the build directory (held by process 922056)
+==> gaoxy_proxy
+[0mWaiting for lock on the build directory (held by process 922056)
+[0mWaiting for lock on the build directory (held by process 862447)
+==> gaoxy
+Running ExUnit with seed: 88564, max_cases: 4
+
+.
+
+  1) test explicit certificate profile ignores machine configuration and stale serial files (Gaoxy.CertificateFixtureTest)
+     apps/gaoxy/test/certificate_fixture_test.exs:20
+     match (=) failed
+     code:  assert {output, 0} =
+              System.cmd("bash", [@script, dir],
+                env: [{"OPENSSL_BIN", selected}, {"OPENSSL_CONF", config}],
+                stderr_to_stdout: true
+              )
+     left:  {output, 0}
+     right: {"", 1}
+     stacktrace:
+       test/certificate_fixture_test.exs:30: (test)
+
+
+
+  2) test unavailable selected executable fails with a useful diagnostic (Gaoxy.CertificateFixtureTest)
+     apps/gaoxy/test/certificate_fixture_test.exs:8
+     Assertion with != failed, both sides are exactly equal
+     code: assert status != 0
+     left: 0
+     stacktrace:
+       test/certificate_fixture_test.exs:15: (test)
+
+
+Finished in 1.3 seconds (1.3s async, 0.00s sync)
+3 tests, 2 failures

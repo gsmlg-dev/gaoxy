@@ -1,5 +1,8 @@
 # Configured support and acceptance evidence
 
+> Historical M1 snapshot. M1.1 revalidation and the current hardening verdict are
+> recorded in [M1.1 acceptance](m1-1-hardening-acceptance.md); this historical PASS is not evidence for the changed candidate.
+
 The M1 required foundation matrix passed on the recorded environments.
 Configured support remains an adapter contract, with its acceptance scope and
 platform/backend limits shown separately.
