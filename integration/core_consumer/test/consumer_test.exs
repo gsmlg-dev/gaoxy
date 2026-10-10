@@ -8,7 +8,7 @@ defmodule CoreConsumerTest do
   end
 
   test "external core consumer exchanges TCP and UDP with no optional application installed" do
-    forbidden = [:plug, :phoenix, :bandit, :http_fetch, :elixir_quic, :ex_ssl]
+    forbidden = [:plug, :phoenix, :bandit, :http_fetch, :hpax, :elixir_quic, :ex_ssl]
 
     for app <- forbidden do
       refute File.exists?(Path.join(Mix.Project.deps_path(), Atom.to_string(app)))

@@ -33,7 +33,8 @@ defmodule Gaoxy.Service do
     generation = make_ref()
     scope = %{instance: instance, service: id, generation: generation}
 
-    with {:ok, policy} <- RegistryPolicy.register(scope) do
+    with {:ok, spec} <- prepare_dispatcher(spec),
+         {:ok, policy} <- RegistryPolicy.register(scope) do
       {:ok, gate} = Admission.start_link({spec.limits, Map.put(scope, :service_pid, self())})
 
       context = %{
@@ -41,13 +42,18 @@ defmodule Gaoxy.Service do
         gate: gate,
         scope: scope,
         service: self(),
-        instance: :ets.info(table, :owner)
+        instance: :ets.info(table, :owner),
+        startup_token: make_ref()
       }
 
-      result = Lifecycle.protect(fn -> start_backend(spec, context) end)
+      result =
+        Lifecycle.protect(fn ->
+          with {:ok, backend} <- start_backend(spec, context),
+               do: attach_dispatcher(backend, context)
+        end)
 
       case result do
-        {:ok, backend} ->
+        {:ok, backend, dispatcher_owner} ->
           case RegistryPolicy.bind(policy, backend) do
             {:ok, policy} ->
               :ets.insert(live, {id, self(), generation})
@@ -59,6 +65,8 @@ defmodule Gaoxy.Service do
                  table: table,
                  live: live,
                  backend: backend,
+                 dispatcher_owner: dispatcher_owner,
+                 dispatcher_monitor: if(dispatcher_owner, do: Process.monitor(dispatcher_owner)),
                  gate: gate,
                  scope: scope,
                  generation: generation,
@@ -73,13 +81,14 @@ defmodule Gaoxy.Service do
                }}
 
             {:error, reason} ->
-              close_resources(backend, gate, spec.transport)
+              close_resources(backend, gate, spec.transport, dispatcher_owner)
               RegistryPolicy.cancel(policy)
               {:stop, reason}
           end
 
         {:error, reason} ->
-          GenServer.stop(gate)
+          close_dispatcher_start(context)
+          if Process.alive?(gate), do: GenServer.stop(gate)
           RegistryPolicy.cancel(policy)
           {:stop, reason}
       end
@@ -205,7 +214,7 @@ defmodule Gaoxy.Service do
             fn ->
               result =
                 Lifecycle.protect(fn ->
-                  state.backend_control.(operation, state.spec.transport, state.backend)
+                  dispatcher_control(state, operation)
                 end)
 
               send(owner, {:controlled, state.generation, token, self(), result})
@@ -374,6 +383,31 @@ defmodule Gaoxy.Service do
      |> transition(:failed)}
   end
 
+  def handle_info(
+        {:DOWN, monitor, :process, _pid, reason},
+        %{dispatcher_monitor: monitor} = state
+      )
+      when not is_nil(monitor) do
+    if state.drain do
+      {:noreply, state}
+    else
+      state = start_drain(cancel_control(state, :failed), Lifecycle.now(), [])
+      {:noreply, force_drain(state, {:cleanup_failed, {:dispatcher_owner_failed, reason}})}
+    end
+  end
+
+  def handle_info(
+        {:gaoxy_dispatcher_failed, owner, generation, reason},
+        %{dispatcher_owner: owner, generation: generation} = state
+      ) do
+    state =
+      if state.drain,
+        do: state,
+        else: start_drain(cancel_control(state, :failed), Lifecycle.now(), [])
+
+    {:noreply, force_drain(state, {:cleanup_failed, reason})}
+  end
+
   def handle_info({:DOWN, monitor, :process, _pid, reason}, state) do
     case Enum.find(state.cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end) do
       {token, cleanup} ->
@@ -429,7 +463,7 @@ defmodule Gaoxy.Service do
       if state.drain.pid, do: Process.exit(state.drain.pid, :kill)
     end
 
-    close_resources(state.backend, state.gate, state.spec.transport)
+    close_resources(state.backend, state.gate, state.spec.transport, state.dispatcher_owner)
     deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
     cancel_cleanups(state, :service_terminating, deadline)
     await_cleanup_termination(state.cleanups, deadline)
@@ -487,7 +521,7 @@ defmodule Gaoxy.Service do
 
     resources =
       Enum.uniq([
-        state.gate | Lifecycle.resources(state.backend, owner, state.spec.transport == :quic)
+        state.gate | owned_resources(state)
       ])
 
     monitors = Enum.map(resources, &Process.monitor/1)
@@ -497,7 +531,7 @@ defmodule Gaoxy.Service do
         fn ->
           result =
             Lifecycle.protect(fn ->
-              state.drain_fun.(state.spec.transport, state.backend, state.gate, deadline)
+              dispatcher_drain(state, deadline)
             end)
 
           send(owner, {:drained, state.generation, token, self(), result})
@@ -542,7 +576,7 @@ defmodule Gaoxy.Service do
       Enum.uniq([
         drain.pid
         | drain.resources ++
-            Lifecycle.resources(state.backend, self(), state.spec.transport == :quic)
+            owned_resources(state)
       ])
 
     # The gate emits pending send uncertainty before any owned work is killed.
@@ -625,8 +659,12 @@ defmodule Gaoxy.Service do
 
   defp await_cleanup_termination(_, _), do: :ok
 
-  defp close_resources(backend, gate, transport) do
-    resources = Enum.uniq([gate | Lifecycle.resources(backend, self(), transport == :quic)])
+  defp close_resources(backend, gate, transport, dispatcher_owner \\ nil) do
+    extra = if dispatcher_owner, do: Lifecycle.resources(dispatcher_owner, self()), else: []
+
+    resources =
+      Enum.uniq([gate | extra ++ Lifecycle.resources(backend, self(), transport == :quic)])
+
     monitors = Enum.map(resources, &{&1, Process.monitor(&1)})
     Lifecycle.force(resources, gate)
     deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
@@ -656,6 +694,90 @@ defmodule Gaoxy.Service do
     Process.demonitor(state.control.monitor, [:flush])
     GenServer.reply(state.control.from, {:error, reason})
     %{state | control: nil}
+  end
+
+  defp prepare_dispatcher(%{handler_mode: :datagram_dispatcher} = spec) do
+    if function_exported?(spec.handler, :prepare_service, 2) do
+      case Lifecycle.bounded(
+             fn -> spec.handler.prepare_service(spec.handler_options, spec) end,
+             spec.limits.callback_timeout
+           ) do
+        {:ok, options} -> {:ok, %{spec | handler_options: options}}
+        {:error, reason} -> {:error, {:handler_preflight, reason}}
+        _ -> {:error, {:handler_preflight, :invalid_result}}
+      end
+    else
+      {:ok, spec}
+    end
+  end
+
+  defp prepare_dispatcher(spec), do: {:ok, spec}
+
+  defp close_dispatcher_start(context) do
+    generation = context.scope.generation
+    token = context.startup_token
+
+    receive do
+      {:gaoxy_dispatcher_ready, ^generation, ^token, owner} when is_pid(owner) ->
+        resources = Lifecycle.resources(owner, self())
+        Lifecycle.terminate_resources(resources, Lifecycle.deadline(Lifecycle.cleanup_headroom()))
+    after
+      0 -> :ok
+    end
+  end
+
+  defp attach_dispatcher(backend, %{spec: %{handler_mode: :datagram_dispatcher}} = context) do
+    generation = context.scope.generation
+    token = context.startup_token
+
+    receive do
+      {:gaoxy_dispatcher_ready, ^generation, ^token, owner} when is_pid(owner) ->
+        if Process.alive?(owner) do
+          {:ok, backend, owner}
+        else
+          close_resources(backend, context.gate, :udp, owner)
+          {:error, :dispatcher_start_failed}
+        end
+    after
+      context.spec.limits.callback_timeout ->
+        close_resources(backend, context.gate, :udp)
+        {:error, :dispatcher_start_timeout}
+    end
+  end
+
+  defp attach_dispatcher(backend, _context), do: {:ok, backend, nil}
+
+  defp owned_resources(state) do
+    extra =
+      if state.dispatcher_owner, do: Lifecycle.resources(state.dispatcher_owner, self()), else: []
+
+    Enum.uniq(extra ++ Lifecycle.resources(state.backend, self(), state.spec.transport == :quic))
+  end
+
+  defp dispatcher_control(%{dispatcher_owner: nil} = state, operation),
+    do: state.backend_control.(operation, state.spec.transport, state.backend)
+
+  defp dispatcher_control(state, :pause) do
+    with :ok <- state.spec.handler.control(state.dispatcher_owner, :pause, state.generation),
+         do: state.backend_control.(:pause, state.spec.transport, state.backend)
+  end
+
+  defp dispatcher_control(state, :resume) do
+    with :ok <- state.backend_control.(:resume, state.spec.transport, state.backend),
+         do: state.spec.handler.control(state.dispatcher_owner, :resume, state.generation)
+  end
+
+  defp dispatcher_drain(%{dispatcher_owner: nil} = state, deadline),
+    do: state.drain_fun.(state.spec.transport, state.backend, state.gate, deadline)
+
+  defp dispatcher_drain(state, deadline) do
+    with :ok <- Abyss.suspend(state.backend),
+         :ok <- state.spec.handler.drain(state.dispatcher_owner, deadline),
+         :ok <- Abyss.stop(state.backend, Lifecycle.remaining(deadline)) do
+      if Process.alive?(state.dispatcher_owner),
+        do: GenServer.stop(state.dispatcher_owner, :normal, Lifecycle.remaining(deadline)),
+        else: :ok
+    end
   end
 
   defp backend_control(operation, transport, backend) do
@@ -737,7 +859,7 @@ defmodule Gaoxy.Service do
       {:ip, spec.ip} | options
     ]
 
-    Abyss.start_link(
+    host_options = [
       handler_module: Gaoxy.DatagramBridge,
       handler_options: context,
       port: spec.port,
@@ -750,7 +872,20 @@ defmodule Gaoxy.Service do
       read_timeout: spec.limits.idle_timeout,
       shutdown_timeout: spec.limits.drain_timeout,
       connection_telemetry_sample_rate: 1.0
-    )
+    ]
+
+    host_options =
+      if spec.handler_mode == :datagram_dispatcher do
+        Keyword.merge(host_options,
+          datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, gaoxy: context},
+          dispatcher_max_queue: spec.dispatcher.max_queue,
+          dispatcher_max_queue_bytes: spec.dispatcher.max_bytes
+        )
+      else
+        host_options
+      end
+
+    Abyss.start_link(host_options)
   end
 
   defp start_backend(%{transport: :quic} = spec, context) do
@@ -788,12 +923,16 @@ defmodule Gaoxy.Service do
   defp start_backend(spec, context) do
     tls =
       if spec.transport == :tls do
-        [
+        credentials = [
           certfile: spec.tls.certfile,
           keyfile: spec.tls.keyfile,
-          versions: Map.get(spec.tls, :versions, [:"tlsv1.3"]),
-          alpn_preferred_protocols: Map.get(spec.tls, :alpn, [])
+          versions: Map.get(spec.tls, :versions, [:"tlsv1.3"])
         ]
+
+        case Map.get(spec.tls, :alpn, []) do
+          [] -> credentials
+          protocols -> [{:alpn_preferred_protocols, protocols} | credentials]
+        end
       else
         []
       end

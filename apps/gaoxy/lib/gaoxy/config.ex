@@ -23,6 +23,7 @@ defmodule Gaoxy.Config do
     :tls,
     :udp,
     :quic,
+    :dispatcher,
     :limits,
     :capabilities
   ]
@@ -48,6 +49,7 @@ defmodule Gaoxy.Config do
           tls: %{},
           udp: %{},
           quic: %{},
+          dispatcher: %{},
           handler_options: [],
           handler_mode: :stream,
           capabilities: []
@@ -60,6 +62,7 @@ defmodule Gaoxy.Config do
          :ok <- identity(spec),
          :ok <- limit_check(input, limits),
          :ok <- handler_mode(spec),
+         {:ok, spec} <- dispatcher(spec),
          :ok <- transport(spec),
          :ok <- handler(spec),
          :ok <- requested(spec),
@@ -273,7 +276,47 @@ defmodule Gaoxy.Config do
     do: {:error, :native_requires_stream_transport}
 
   defp handler_mode(%{handler_mode: :stream}), do: :ok
+
+  defp handler_mode(%{handler_mode: :datagram_dispatcher, transport: :udp, mode: :unicast}),
+    do: :ok
+
+  defp handler_mode(%{handler_mode: :datagram_dispatcher}),
+    do: {:error, :dispatcher_requires_udp_unicast}
+
   defp handler_mode(_), do: {:error, :invalid_handler_mode}
+
+  defp dispatcher(%{handler_mode: :datagram_dispatcher} = spec) do
+    with :ok <- known(spec.dispatcher, [:max_queue, :max_bytes, :handoff_timeout]) do
+      options =
+        Map.merge(%{max_queue: 32, max_bytes: 262_144, handoff_timeout: 50}, spec.dispatcher)
+
+      if Enum.all?(options, fn {_, n} -> is_integer(n) and n > 0 end) and
+           options.max_queue <= 256 and options.max_bytes <= 16_777_216 and
+           options.handoff_timeout <= 1000,
+         do: {:ok, %{spec | dispatcher: options}},
+         else: {:error, :invalid_dispatcher_options}
+    end
+  end
+
+  defp dispatcher(%{dispatcher: empty} = spec) when empty == %{}, do: {:ok, spec}
+  defp dispatcher(_), do: {:error, :inapplicable_options}
+
+  defp handler(%{handler_mode: :datagram_dispatcher, handler: module}) when is_atom(module) do
+    if Code.ensure_loaded?(module) and
+         Enum.all?(
+           [
+             validate_options: 1,
+             validate_service: 2,
+             start_link: 2,
+             offer: 2,
+             control: 3,
+             drain: 2
+           ],
+           fn {callback, arity} -> function_exported?(module, callback, arity) end
+         ),
+       do: :ok,
+       else: {:error, :invalid_handler}
+  end
 
   defp handler(%{handler_mode: :native, handler: module}) when is_atom(module) do
     if Code.ensure_loaded?(module) and
@@ -315,6 +358,17 @@ defmodule Gaoxy.Config do
 
   defp handler_options(%{handler_mode: :native} = spec) do
     case Gaoxy.Lifecycle.protect(fn -> spec.handler.validate_options(spec.handler_options) end) do
+      {:ok, normalized} -> {:ok, normalized}
+      {:error, reason} -> {:error, {:handler_options, reason}}
+      _ -> {:error, :invalid_handler_options}
+    end
+  end
+
+  defp handler_options(%{handler_mode: :datagram_dispatcher} = spec) do
+    case Gaoxy.Lifecycle.protect(fn ->
+           with {:ok, options} <- spec.handler.validate_options(spec.handler_options),
+                do: spec.handler.validate_service(options, spec)
+         end) do
       {:ok, normalized} -> {:ok, normalized}
       {:error, reason} -> {:error, {:handler_options, reason}}
       _ -> {:error, :invalid_handler_options}
