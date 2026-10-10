@@ -13,9 +13,8 @@ defmodule GaoxyProxy.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:gaoxy_http, in_umbrella: true},
-        # TODO(upstream): gsmlg-dev/http_fetch#60 - confirm request cleanup after cancellation.
-        {:http_fetch, "== 0.18.1"},
-        {:http_web_socket, "== 0.18.1"}
+        {:http_fetch, "== 0.19.0"},
+        {:http_web_socket, "== 0.19.0"}
       ]
     ]
   end
