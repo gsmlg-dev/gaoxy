@@ -52,8 +52,8 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
           headers: options.headers,
           body: upload,
           duplex: if(upload, do: :half, else: nil),
-          # TODO(upstream): gsmlg-dev/http_fetch#66 — pooled H1/H2 cleanup completion.
-          # TODO(upstream): gsmlg-dev/http_fetch#67 — H2 request upload trailers.
+          # TODO(upstream): gsmlg-dev/http_fetch#78 — owned pools and confirmed retirement.
+          # TODO(upstream): gsmlg-dev/http_fetch#79 — bounded H2 header-fragment metadata.
           http_version: :http1,
           http1_reuse: false,
           redirect: :manual,
