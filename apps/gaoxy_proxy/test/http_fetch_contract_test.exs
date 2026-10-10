@@ -2,9 +2,192 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
   use ExUnit.Case, async: true
   import Bitwise
 
-  alias HTTP.WebSocket.Event.{Close, Message, Open}
+  alias HTTP.WebSocket.Event.{Close, Frame, Message, Open}
 
   @timeout 3_000
+
+  test "per-request streaming resolves a small fixed response before body EOF" do
+    {url, peer} =
+      peer(fn socket, owner ->
+        {_head, _rest} = recv_head(socket)
+        :ok = :gen_tcp.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n")
+        send(owner, {:response_head, self()})
+
+        receive do
+          :send_body -> :gen_tcp.send(socket, "ok")
+        after
+          @timeout -> raise "body was not requested after headers"
+        end
+      end)
+
+    promise =
+      HTTP.fetch(url,
+        http_version: :http1,
+        http1_reuse: false,
+        stream_response: true,
+        request_mode: :proxy,
+        decode_body: false,
+        redirect: :manual
+      )
+
+    assert_receive {:response_head, ^peer}, @timeout
+
+    assert %HTTP.Response{status: 200, body: stream, stream: stream} =
+             HTTP.Promise.await(promise, @timeout)
+
+    assert is_pid(stream)
+    send(stream, {:read_chunk, self(), :ack})
+    send(peer, :send_body)
+    assert read_fixed_stream(stream, []) == "ok"
+    assert_peer_done(peer)
+  end
+
+  for method <- [:get, :delete] do
+    @method method
+
+    test "published Fetch proxy preserves buffered #{@method} bodies" do
+      method = @method
+      bytes = <<"first", 0, "last">>
+
+      {url, peer} =
+        peer(fn socket, _owner ->
+          {head, rest} = recv_head(socket)
+          {body, ""} = recv_bytes(socket, rest, byte_size(bytes))
+          send_fragmented(socket, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")
+          {head, body}
+        end)
+
+      assert %HTTP.Response{status: 200, body: "ok"} =
+               url
+               |> HTTP.fetch(
+                 method: method,
+                 body: bytes,
+                 headers: [{"Content-Length", to_string(byte_size(bytes))}],
+                 request_mode: :proxy,
+                 http_version: :http1,
+                 redirect: :manual,
+                 timeout: @timeout
+               )
+               |> HTTP.Promise.await(@timeout)
+
+      assert {head, ^bytes} = peer_result(peer)
+      assert head =~ "#{String.upcase(to_string(method))} / HTTP/1.1\r\n"
+      assert String.downcase(head) =~ "content-length: #{byte_size(bytes)}\r\n"
+      refute String.downcase(head) =~ "transfer-encoding:"
+    end
+
+    test "published Fetch proxy preserves PID-streamed #{@method} bodies" do
+      method = @method
+
+      {url, peer} =
+        peer(fn socket, owner ->
+          {head, rest} = recv_head(socket)
+          send(owner, {:request_head, self(), head})
+          {body, ""} = recv_chunked(socket, rest, [])
+          send_fragmented(socket, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")
+          body
+        end)
+
+      {:ok, upload} = HTTP.Stream.start_link(0)
+      Process.unlink(upload)
+      upload_monitor = Process.monitor(upload)
+      on_exit(fn -> stop_process(upload) end)
+
+      promise =
+        HTTP.fetch(url,
+          method: method,
+          body: upload,
+          duplex: :half,
+          request_mode: :proxy,
+          http_version: :http1,
+          redirect: :manual,
+          timeout: @timeout
+        )
+
+      assert_receive {:request_head, ^peer, head}, @timeout
+      assert head =~ "#{String.upcase(to_string(method))} / HTTP/1.1\r\n"
+      assert String.downcase(head) =~ "transfer-encoding: chunked\r\n"
+      refute String.downcase(head) =~ "content-length:"
+      assert :ok = HTTP.Stream.chunk(upload, "first", @timeout)
+      assert :ok = HTTP.Stream.chunk(upload, <<0, "last">>, @timeout)
+      assert :ok = HTTP.Stream.finish(upload)
+      assert %HTTP.Response{status: 200, body: "ok"} = HTTP.Promise.await(promise, @timeout)
+      assert <<"first", 0, "last">> == peer_result(peer)
+      assert_receive {:DOWN, ^upload_monitor, :process, ^upload, :normal}, @timeout
+    end
+  end
+
+  for code <- [1001, 1008, 1011] do
+    @code code
+
+    test "published WebSocket proxy preserves close #{@code} after acknowledged frame writes" do
+      code = @code
+
+      {url, peer} =
+        peer(fn socket, owner ->
+          {head, _rest} = recv_head(socket)
+
+          [key] =
+            Regex.run(~r/(?im)^sec-websocket-key: ([^\r]+)\r$/, head, capture: :all_but_first)
+
+          accept =
+            Base.encode64(:crypto.hash(:sha, key <> "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"))
+
+          send_fragmented(socket, [
+            "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n",
+            "Sec-WebSocket-Accept: ",
+            accept,
+            "\r\n\r\n",
+            <<0x81, 5, "hello">>
+          ])
+
+          {:binary, <<0, 1, 2>>} = recv_client_frame(socket)
+          send(owner, {:frame_received, self()})
+          {:close, <<^code::16, "done">>} = recv_client_frame(socket)
+          send_fragmented(socket, <<0x88, 6, code::16, "done">>)
+        end)
+
+      assert %HTTP.WebSocket{pid: pid} =
+               socket =
+               HTTP.WebSocket.new(String.replace_prefix(url, "http:", "ws:"), [],
+                 mode: :proxy,
+                 http_version: :http1,
+                 delivery: :ack,
+                 automatic_pong: false,
+                 opening_timeout: @timeout,
+                 idle_timeout: @timeout,
+                 write_timeout: @timeout,
+                 close_timeout: @timeout,
+                 max_message_size: 1024,
+                 max_queue_bytes: 2048,
+                 max_queue_events: 4,
+                 max_send_queue: 2048,
+                 max_send_frames: 4
+               )
+
+      monitor = Process.monitor(pid)
+      on_exit(fn -> stop_process(pid) end)
+      assert_receive {HTTP.WebSocket, ^socket, %Open{}}, @timeout
+      assert HTTP.WebSocket.http_version(socket) == :http1
+
+      assert_receive {HTTP.WebSocket, ^socket, %Frame{opcode: :text, data: "hello"},
+                      delivery_ref},
+                     @timeout
+
+      assert :ok = HTTP.WebSocket.acknowledge(socket, delivery_ref)
+      assert {:ok, write_ref} = HTTP.WebSocket.send_frame_ack(socket, {:binary, <<0, 1, 2>>})
+      assert_receive {HTTP.WebSocket, ^socket, {:send_result, ^write_ref, :ok}}, @timeout
+      assert_receive {:frame_received, ^peer}, @timeout
+      assert :ok = HTTP.WebSocket.close(socket, code, "done")
+
+      assert_receive {HTTP.WebSocket, ^socket,
+                      %Close{code: ^code, reason: "done", was_clean: true}},
+                     @timeout
+
+      assert_receive {:DOWN, ^monitor, :process, ^pid, :normal}, @timeout
+      assert_peer_done(peer)
+    end
+  end
 
   test "published Fetch preserves buffered gzip bytes and duplicate fields" do
     encoded = :zlib.gzip("raw proxy response")
@@ -265,7 +448,7 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
       end)
 
     on_exit(fn ->
-      if Process.alive?(pid), do: Process.exit(pid, :kill)
+      stop_process(pid)
       :gen_tcp.close(listener)
     end)
 
@@ -275,11 +458,64 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
   defp assert_peer_done(peer), do: assert(:ok == peer_result(peer))
 
   defp peer_result(peer) do
+    monitor = Process.monitor(peer)
+
+    result =
+      receive do
+        {:peer_done, ^peer, result} -> result
+        {:peer_error, ^peer, error} -> flunk("loopback peer failed: #{error}")
+      after
+        @timeout -> flunk("loopback peer did not complete")
+      end
+
+    assert_receive {:DOWN, ^monitor, :process, ^peer, reason} when reason in [:normal, :noproc],
+                   @timeout
+
+    result
+  end
+
+  defp stop_process(pid) do
+    monitor = Process.monitor(pid)
+    if Process.alive?(pid), do: Process.exit(pid, :kill)
+
     receive do
-      {:peer_done, ^peer, result} -> result
-      {:peer_error, ^peer, error} -> flunk("loopback peer failed: #{error}")
+      {:DOWN, ^monitor, :process, ^pid, _reason} -> :ok
     after
-      @timeout -> flunk("loopback peer did not complete")
+      @timeout -> raise "test process did not stop"
+    end
+  end
+
+  defp send_fragmented(socket, bytes) do
+    bytes
+    |> IO.iodata_to_binary()
+    |> :binary.bin_to_list()
+    |> Enum.chunk_every(3)
+    |> Enum.each(fn chunk -> :ok = :gen_tcp.send(socket, chunk) end)
+  end
+
+  defp recv_bytes(_socket, bytes, size) when byte_size(bytes) >= size do
+    <<body::binary-size(size), rest::binary>> = bytes
+    {body, rest}
+  end
+
+  defp recv_bytes(socket, bytes, size) do
+    {:ok, next} = :gen_tcp.recv(socket, 0, @timeout)
+    recv_bytes(socket, bytes <> next, size)
+  end
+
+  defp recv_chunked(socket, bytes, parts) do
+    {line, rest} = recv_until(socket, bytes, "\r\n")
+    size = line |> String.trim_trailing("\r\n") |> String.to_integer(16)
+
+    case size do
+      0 ->
+        {"\r\n", tail} = recv_bytes(socket, rest, 2)
+        {parts |> Enum.reverse() |> IO.iodata_to_binary(), tail}
+
+      size ->
+        {chunk, rest} = recv_bytes(socket, rest, size)
+        {"\r\n", rest} = recv_bytes(socket, rest, 2)
+        recv_chunked(socket, rest, [chunk | parts])
     end
   end
 
@@ -343,6 +579,25 @@ defmodule Gaoxy.Proxy.HTTPFetchContractTest do
         flunk("stream failed before its trailers: #{inspect(reason)}")
     after
       @timeout -> flunk("stream did not deliver its trailers")
+    end
+  end
+
+  defp read_fixed_stream(stream, parts) do
+    receive do
+      {:stream_chunk, ^stream, bytes, ref} ->
+        send(stream, {:stream_chunk_ack, ref})
+        read_fixed_stream(stream, [bytes | parts])
+
+      {:stream_end, ^stream} ->
+        IO.iodata_to_binary(Enum.reverse(parts))
+
+      {:stream_trailers, ^stream, _} ->
+        read_fixed_stream(stream, parts)
+
+      {:stream_error, ^stream, reason} ->
+        flunk("fixed stream failed: #{inspect(reason)}")
+    after
+      @timeout -> flunk("fixed stream did not finish")
     end
   end
 

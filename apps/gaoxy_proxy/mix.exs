@@ -13,13 +13,12 @@ defmodule GaoxyProxy.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:gaoxy_http, in_umbrella: true},
-        # TODO(upstream): gsmlg-dev/http_fetch#45 - preserve forwarded request bodies.
-        {:http_fetch, "== 0.17.2"},
-        # TODO(upstream): gsmlg-dev/http_fetch#38 - propagate valid WebSocket close codes.
-        {:http_web_socket, "== 0.17.2"}
+        # TODO(upstream): gsmlg-dev/http_fetch#60 - confirm request cleanup after cancellation.
+        {:http_fetch, "== 0.18.1"},
+        {:http_web_socket, "== 0.18.1"}
       ]
     ]
   end
 
-  def application, do: [extra_applications: [:logger]]
+  def application, do: [extra_applications: [:logger], mod: {Gaoxy.Proxy.Application, []}]
 end
