@@ -2,18 +2,42 @@ defmodule Gaoxy.Server.Config do
   @moduledoc "Version 1 JSON configuration. Handlers and keys use explicit allowlists; input creates no atoms."
   @handlers %{
     "stream_echo" => Gaoxy.Server.StreamEcho,
-    "datagram_echo" => Gaoxy.Server.DatagramEcho
+    "datagram_echo" => Gaoxy.Server.DatagramEcho,
+    "http" => Gaoxy.HTTP.Connection
   }
   @service_keys %{"id" => :id, "port" => :port, "handler_options" => :handler_options}
   @limits ~w(max_active max_bytes max_packet max_output max_state callback_timeout idle_timeout drain_timeout max_memberships)a
+  @http_limits ~w(max_request_line max_header_bytes max_headers max_body_bytes max_chunk_line max_trailer_bytes max_trailers max_read_chunk max_buffer_bytes request_timeout header_timeout read_timeout write_timeout)a
+  @h2_limits ~w(max_streams max_frame max_header_block table_size receive_window frame_timeout control_turn control_rate)a
+  @max_bytes 1_048_576
 
   def load(path) do
-    with {:ok, bytes} <- File.read(path),
-         true <- byte_size(bytes) <= 1_048_576 || {:error, :configuration_too_large},
+    with {:ok, bytes} <- read_file(path),
          {:ok, data} <- JSON.decode(bytes),
          {:ok, options} <- decode(data),
          {:ok, _} <- Gaoxy.Config.validate(options) do
       {:ok, options}
+    end
+  end
+
+  @doc false
+  def read_file(path) do
+    with {:ok, %File.Stat{type: :regular, size: size}} <- File.stat(path),
+         true <- size <= @max_bytes || {:error, :configuration_too_large},
+         {:ok, file} <- :file.open(path, [:read, :binary, :raw]) do
+      try do
+        case :file.read(file, @max_bytes + 1) do
+          {:ok, bytes} when byte_size(bytes) <= @max_bytes -> {:ok, bytes}
+          {:ok, _} -> {:error, :configuration_too_large}
+          :eof -> {:ok, ""}
+          error -> error
+        end
+      after
+        :file.close(file)
+      end
+    else
+      {:ok, %File.Stat{}} -> {:error, :invalid_configuration_file}
+      {:error, _} = error -> error
     end
   end
 
@@ -27,19 +51,28 @@ defmodule Gaoxy.Server.Config do
   def decode(_), do: {:error, :invalid_configuration_version_or_shape}
 
   defp service(data) when is_map(data) do
+    http_keys =
+      if data["handler"] == "http",
+        do: ["routes", "protocols", "h2c", "http_limits", "h2_limits"],
+        else: []
+
     with :ok <-
-           keys(data, [
-             "id",
-             "transport",
-             "handler",
-             "handler_options",
-             "ip",
-             "port",
-             "mode",
-             "limits",
-             "tls",
-             "udp"
-           ]),
+           keys(
+             data,
+             http_keys ++
+               [
+                 "id",
+                 "transport",
+                 "handler",
+                 "handler_options",
+                 "ip",
+                 "port",
+                 "mode",
+                 "limits",
+                 "tls",
+                 "udp"
+               ]
+           ),
          {:ok, transport} <-
            enum(data["transport"], %{"tcp" => :tcp, "tls" => :tls, "udp" => :udp, "quic" => :quic}),
          {:ok, handler} <- enum(data["handler"], @handlers),
@@ -59,20 +92,90 @@ defmodule Gaoxy.Server.Config do
           {@service_keys[key], value}
         end)
 
-      {:ok,
-       Map.merge(base, %{
-         transport: transport,
-         handler: handler,
-         ip: ip,
-         mode: mode,
-         limits: limits,
-         tls: tls,
-         udp: udp
-       })}
+      spec =
+        Map.merge(base, %{
+          transport: transport,
+          handler: handler,
+          ip: ip,
+          mode: mode,
+          limits: limits,
+          tls: tls,
+          udp: udp
+        })
+
+      if handler == Gaoxy.HTTP.Connection,
+        do: http_service(data, spec),
+        else: {:ok, spec}
     end
   end
 
   defp service(_), do: {:error, :invalid_service}
+
+  defp http_service(data, spec) do
+    with true <-
+           (not Map.has_key?(data, "handler_options") and spec.mode == :unicast and
+              spec.udp == %{}) ||
+             {:error, :invalid_http_options},
+         true <-
+           (is_binary(spec[:id]) and byte_size(spec.id) in 1..128) ||
+             {:error, :invalid_identity_or_binding},
+         {:ok, routes} <- Gaoxy.Server.RouteConfig.decode(data["routes"]),
+         {:ok, router} <- Gaoxy.HTTP.Router.compile(routes),
+         :ok <-
+           Gaoxy.HTTP.Generation.Store.compiled_bound(router, %{
+             max_routes: 1024,
+             max_config_bytes: @max_bytes
+           }),
+         {:ok, protocols} <-
+           traverse(
+             Map.get(data, "protocols", ["http1"]),
+             &enum(&1, %{"http1" => :http1, "http2" => :http2})
+           ),
+         {:ok, h2c} <-
+           enum(Map.get(data, "h2c", "disabled"), %{
+             "disabled" => :disabled,
+             "prior_knowledge" => :prior_knowledge
+           }),
+         {:ok, http_limits} <-
+           named(
+             Map.get(data, "http_limits", %{}),
+             Map.new(@http_limits, &{Atom.to_string(&1), &1})
+           ),
+         {:ok, h2_limits} <-
+           named(Map.get(data, "h2_limits", %{}), Map.new(@h2_limits, &{Atom.to_string(&1), &1})),
+         options = Map.take(spec, [:id, :ip, :port, :transport, :tls, :limits]) |> Map.to_list(),
+         {:ok, spec} <-
+           Gaoxy.HTTP.service_spec(
+             options ++
+               [
+                 endpoint: {Gaoxy.HTTP.Router, router},
+                 protocols: protocols,
+                 h2c: h2c,
+                 http_limits: http_limits,
+                 h2_limits: h2_limits
+               ]
+           ),
+         :ok <- Gaoxy.Server.RouteConfig.validate_routes(router, spec.handler_options),
+         :ok <- snapshot_budget(spec) do
+      {:ok, spec}
+    end
+  end
+
+  defp snapshot_budget(%{handler_options: options, limits: limits}) do
+    http = options.http_limits
+
+    required =
+      if :http2 in options.protocols do
+        reserves = Gaoxy.HTTP.HTTP2.Limits.reservation(http, options.h2_limits)
+        reserves.connection + reserves.stream + reserves.writer
+      else
+        2 * http.max_header_bytes + 4 * http.max_read_chunk + http.max_buffer_bytes
+      end
+
+    if limits.max_bytes >= 2 * @max_bytes + required,
+      do: :ok,
+      else: {:error, :route_snapshot_byte_budget}
+  end
 
   defp tls(data) do
     with {:ok, options} <-

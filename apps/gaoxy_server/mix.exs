@@ -10,7 +10,11 @@ defmodule GaoxyServer.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.18",
-      deps: [{:gaoxy, in_umbrella: true}]
+      deps: [
+        {:gaoxy, in_umbrella: true},
+        {:gaoxy_http, in_umbrella: true},
+        {:gaoxy_proxy, in_umbrella: true}
+      ]
     ]
   end
 

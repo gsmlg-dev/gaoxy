@@ -9,10 +9,7 @@ defmodule Gaoxy.Server.Application do
 
       path ->
         with {:ok, options} <- Gaoxy.Server.Config.load(path),
-             {:ok, supervisor} <-
-               Supervisor.start_link([{Gaoxy, Keyword.put(options, :name, Gaoxy.Server.Runtime)}],
-                 strategy: :one_for_one
-               ) do
+             {:ok, supervisor} <- Gaoxy.Server.Supervisor.start_link(options) do
           ready =
             for id <- Gaoxy.services(Gaoxy.Server.Runtime) do
               info = Gaoxy.info(Gaoxy.Server.Runtime, id)
