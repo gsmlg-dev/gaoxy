@@ -2,7 +2,9 @@ defmodule Gaoxy.NativeStreamHandler do
   @moduledoc """
   Trusted native TCP/TLS handlers implement `ThousandIsland.Handler` directly.
 
-  The initial handler state is `%{spec: spec, gate: gate, scope: scope}`. The pure
+  The initial handler state contains `spec`, `gate`, `scope`, and the owning
+  `service` and `instance` PIDs. The scope retains stable telemetry identifiers.
+  The pure
   `validate_options/1` callback normalizes `spec.handler_options` before binding.
   Validation must accept its own normalized result, as dynamic service additions
   validate the complete service plan again.

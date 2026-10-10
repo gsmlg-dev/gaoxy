@@ -15,6 +15,8 @@ defmodule Gaoxy.StreamBridge do
                local: local,
                peer: peer,
                transport: spec.transport,
+               service: state.service,
+               instance: state.instance,
                alpn: ThousandIsland.Socket.negotiated_protocol(socket)
              },
              spec.handler_options
