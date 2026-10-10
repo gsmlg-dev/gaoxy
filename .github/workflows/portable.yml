@@ -35,7 +35,17 @@ jobs:
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
       - name: Native protocol and lifecycle regressions
-        run: mix test --warnings-as-errors apps/gaoxy_http/test apps/gaoxy/test/native_stream_test.exs
+        run: >-
+          mix test --warnings-as-errors --max-cases 1
+          apps/gaoxy_http/test apps/gaoxy_proxy/test
+          apps/gaoxy/test/native_stream_test.exs
+          apps/gaoxy/test/cleanup_attachment_test.exs
+          apps/gaoxy/test/shutdown_hardening_test.exs
+      - name: Independent streaming reverse-proxy example
+        env:
+          MIX_ENV: test
+          GAOXY_PROXY_EVIDENCE: .audit/reverse-proxy
+        run: python integration/reverse_proxy/run.py
       - name: Independent Phoenix fixture dependencies
         working-directory: examples/phoenix_native
         run: mix deps.get --check-locked
@@ -56,6 +66,8 @@ jobs:
             .audit/m2-browser/server.log
             .audit/m2-browser/results.json
             .audit/m2-browser/liveview.png
+            .audit/reverse-proxy/example-server.log
+            .audit/reverse-proxy/example-results.json
   portable:
     strategy:
       fail-fast: false
