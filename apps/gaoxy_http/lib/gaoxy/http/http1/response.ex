@@ -175,7 +175,9 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
          :ok <- validate_headers(headers),
          :ok <- valid_framing(headers) do
       headers =
-        Enum.reject(headers, fn {key, _} -> key in ["content-length", "transfer-encoding"] end)
+        Enum.reject(headers, fn {key, _} ->
+          key == "transfer-encoding" or (key == "content-length" and status != 304)
+        end)
 
       headers =
         cond do
@@ -199,7 +201,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
         bodyless?(exchange, status) ->
           headers =
             cond do
-              status in [204, 304] ->
+              status == 204 ->
                 Enum.reject(headers, fn {key, _} -> key == "content-length" end)
 
               status == 205 ->

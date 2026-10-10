@@ -53,6 +53,8 @@ X-Forwarded-For, -Host and -Proto are regenerated from the downstream connection
 and parsed request. There is no trusted forwarding-chain configuration. Expect
 is handled locally. Transfer framing is regenerated for the downstream hop.
 Content-Encoding and compressed payload bytes are preserved without decoding.
+A 304 response preserves a supplied representation Content-Length without sending
+a body or adding a length when the upstream omitted it.
 The same forwarding distrust policy covers request trailer declarations and
 actual trailers, preventing identity fields from being restored after the head.
 

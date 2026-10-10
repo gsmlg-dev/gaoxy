@@ -47,6 +47,29 @@ defmodule Gaoxy.HTTP.NetworkTest do
         "/no-content" ->
           send_resp(conn, 204, "ignored")
 
+        path when path in ["/not-modified", "/not-modified-no-length", "/not-modified-invalid"] ->
+          headers =
+            case path do
+              "/not-modified" -> [{"content-length", "42"}]
+              "/not-modified-no-length" -> []
+              "/not-modified-invalid" -> opts[:headers]
+            end
+
+          conn = %{conn | resp_headers: headers ++ conn.resp_headers}
+
+          case opts[:mode] do
+            :buffered ->
+              send_resp(conn, 304, String.duplicate("x", 42))
+
+            :file ->
+              send_file(conn, 304, opts[:file])
+
+            :streamed ->
+              conn = send_chunked(conn, 304)
+              {:ok, conn} = chunk(conn, String.duplicate("x", 42))
+              conn
+          end
+
         "/bad-after" ->
           conn = send_chunked(conn, 200)
           {:ok, _conn} = chunk(conn, "x")
@@ -398,6 +421,72 @@ defmodule Gaoxy.HTTP.NetworkTest do
     response = receive_all(socket, "")
     assert response =~ "HTTP/1.1 200 OK\r\n"
     refute response =~ "500 Internal Server Error"
+  end
+
+  for mode <- [:buffered, :file, :streamed] do
+    @mode mode
+    @tag :tmp_dir
+    test "#{mode} 304 retains explicit metadata length without inventing a body or absent length",
+         %{tmp_dir: dir} do
+      file = Path.join(dir, "representation")
+      File.write!(file, String.duplicate("x", 42))
+      {:ok, server} = Gaoxy.HTTP.start_link(plug: {Echo, [mode: @mode, file: file]})
+      on_exit(fn -> Gaoxy.stop(server) end)
+      {:ok, {ip, port}} = Gaoxy.info(server, :http).local
+      {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1000)
+      on_exit(fn -> :gen_tcp.close(socket) end)
+
+      :ok =
+        :gen_tcp.send(
+          socket,
+          "GET /not-modified HTTP/1.1\r\nHost: localhost\r\n\r\n" <>
+            "GET /not-modified-no-length HTTP/1.1\r\nHost: localhost\r\n\r\n" <>
+            "GET /next HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+        )
+
+      [declared, absent, final, "/next"] =
+        socket |> receive_all("") |> String.split("\r\n\r\n")
+
+      assert declared =~ "HTTP/1.1 304 Not Modified\r\n"
+      assert declared =~ "content-length: 42\r\n"
+      assert absent =~ "HTTP/1.1 304 Not Modified\r\n"
+      refute absent =~ "content-length:"
+      refute declared =~ "transfer-encoding:"
+      refute absent =~ "transfer-encoding:"
+      assert final =~ "HTTP/1.1 200 OK\r\n"
+    end
+
+    @tag :tmp_dir
+    @tag :capture_log
+    test "#{mode} 304 rejects invalid framing before committing a response", %{tmp_dir: dir} do
+      file = Path.join(dir, "representation")
+      File.write!(file, String.duplicate("x", 42))
+
+      for headers <- [
+            [{"content-length", "-1"}],
+            [{"content-length", "42"}, {"content-length", "42"}],
+            [{"content-length", "42"}, {"transfer-encoding", "chunked"}]
+          ] do
+        {:ok, server} =
+          Gaoxy.HTTP.start_link(plug: {Echo, [mode: @mode, file: file, headers: headers]})
+
+        on_exit(fn -> Gaoxy.stop(server) end)
+        {:ok, {ip, port}} = Gaoxy.info(server, :http).local
+        {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1000)
+        on_exit(fn -> :gen_tcp.close(socket) end)
+
+        :ok =
+          :gen_tcp.send(
+            socket,
+            "GET /not-modified-invalid HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+          )
+
+        response = receive_all(socket, "")
+        assert response =~ "HTTP/1.1 500 Internal Server Error"
+        refute response =~ "304 Not Modified"
+        refute response =~ String.duplicate("x", 42)
+      end
+    end
   end
 
   @tag :tmp_dir

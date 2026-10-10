@@ -246,6 +246,39 @@ defmodule Gaoxy.Proxy.HTTPWireTest do
     assert :ok = Gaoxy.stop(server, @timeout)
   end
 
+  test "304 preserves representation length without a body before a pipelined response" do
+    {url, peer} =
+      peer(fn socket, _owner ->
+        upstream = head(socket)
+        assert upstream =~ "GET /cached HTTP/1.1\r\n"
+
+        :gen_tcp.send(
+          socket,
+          "HTTP/1.1 304 Not Modified\r\nContent-Length: 42\r\nETag: \"cached\"\r\n\r\n"
+        )
+      end)
+
+    server = server(url)
+    socket = connect(server)
+
+    :ok =
+      :gen_tcp.send(socket, [
+        request("GET", "/cached", [{"If-None-Match", "\"cached\""}]),
+        request("GET", "/local", [{"Connection", "close"}])
+      ])
+
+    response = head(socket)
+    assert response =~ "304 Not Modified\r\n"
+    assert response =~ "content-length: 42\r\n"
+    assert response =~ "etag: \"cached\"\r\n"
+    refute response =~ "transfer-encoding:"
+    assert String.starts_with?(head(socket), "HTTP/1.1 200 OK\r\n")
+    assert {:ok, "local"} = :gen_tcp.recv(socket, 5, @timeout)
+    assert {:error, :closed} = :gen_tcp.recv(socket, 1, @timeout)
+    assert_peer(peer)
+    assert :ok = Gaoxy.stop(server, @timeout)
+  end
+
   test "a truncated chunked upstream closes a committed response without a success terminator" do
     {url, peer} =
       peer(fn socket, _owner ->
