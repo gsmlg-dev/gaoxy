@@ -1,0 +1,281 @@
+{
+  "assignment": "direct independent sequential Sol specification/code/evidence review",
+  "baseline": "81b01bd3334fe4c90a739e1eebdee8bd29bf94f8",
+  "branch": "codex/m3-gateway",
+  "code_quality_verdict": "PASS",
+  "created_utc": "2026-10-10T21:15:43.540908+00:00",
+  "decisions_needed": [],
+  "findings": [],
+  "git_identity_basis": "Parent supplied; reviewer ran no Git command. Worktree path independently checked with pwd.",
+  "input_sha256": {
+    ".audit/m3-h1-model-collector.py": "903388780db0a04d1763513ac92cc7001dea3a71cfdd2c259e7d5a374cd841e1",
+    "AGENTS.md": "c0e76e879d663635b89b4c4fde4274561fce3c4c51a9d086e07908959e9431ed",
+    "docs/designs/m3-upstream-0.21.1-accounting-frontier-review.md": "b04852b8ba570e18a26219b6fc1773cdcb56b361b75b7ce1a224016d72ae9497",
+    "docs/designs/m3-upstream-0.21.1-accounting-frontier.md": "c01608f23972df371f1664e6a9a40b8598a6e28a129f16f78d23bc3444c00184",
+    "docs/plans/m3-h1-qualification-model-review.md": "bf38aa4889f1c146a262ee7859571477f622c5014d25d81d0c74e6cb7674620b",
+    "docs/plans/m3-h1-qualification-model.md": "cb3e10f0e62dc360d50b84a2bb85ff348fbd1a9c1d06b421c1f73a43e69bd171",
+    "integration/http_fetch_contract/managed_h1_lease_model.exs": "0fd4f9fe81dc605ad6265635ddbfce1f4855245df05c73d0bcbe2cc03541dd6d",
+    "integration/http_fetch_contract/managed_h1_lease_model_test.exs": "4399f426e993f8e87f8628b3b80c9aae97028c6d31419700b316f04f96d77b1f"
+  },
+  "limits": [
+    "22 behavioral tests and finite permutations are not exhaustive reachability/model checking.",
+    "Repeated late confirmation on sticky-unconfirmed state is verified statically; the suite directly exercises the initial late premise, not repeated identical-state assertions for that branch.",
+    "Symbolic frontier releases remain later source/fixture proof premises; no dependency arbitrary-history/native frontier is established.",
+    "Runtime environment/version identity stated by plan is not independently re-executed by reviewer.",
+    "All app/native/P0-P6/fixture/production qualification and M3 completion remain unqualified; no cohort0.21.2 conformance or API claim follows."
+  ],
+  "markdown_report_sha256": "329e0fb6556515984deea0a5a7588c96f3800cda83b634d04408d3bc6260e9b0",
+  "next_parent_gates": [
+    "Freeze reviewed inputs and run fresh scoped formatter check and actual22-test runner after this review; rehash unchanged inputs.",
+    "Independently assess fresh receipts, update owned checklist/evidence, and locally commit only the reviewed delivery.",
+    "Stop Slice A after its passing local delivery; separately reviewed fixture/ledger/production gates remain."
+  ],
+  "overall_scope": "Source-independent pure Slice A model only; fresh post-review verification and parent local delivery remain required.",
+  "own_commands": {
+    "VM_Mix_format_network_Git_dependency_commands_run": false,
+    "all_finished": true,
+    "background_processes_launched": false,
+    "executable_or_plan_edits": false,
+    "only_written_paths": [
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/h1-model/model-specification-code-review.md",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/h1-model/model-specification-code-review.json"
+    ],
+    "types": [
+      "pwd",
+      "rg",
+      "cat",
+      "sed",
+      "wc",
+      "Python SHA-256/JSON/static source/log checks"
+    ]
+  },
+  "receipts": {
+    "model-format": {
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "unbuffer",
+        "mix",
+        "format",
+        "integration/http_fetch_contract/managed_h1_lease_model.exs",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs"
+      ],
+      "environment": {
+        "ERL_FLAGS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "exit": 0,
+      "log": "model-format.log",
+      "log_sha256": "616af94fce86ec2d5e5daed733a760890594fc5f3d792403112eb694ee7b1ae7",
+      "receipt": "model-format.json",
+      "receipt_sha256": "ca8af8167d54243fa5e1701a0069967fa8d2138395689cb1cb756e9557dcaf64",
+      "scope": "Canonical formatting only; behavior acceptance is separate"
+    },
+    "model-green-initial": {
+      "all_two_input_hashes_unchanged": true,
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "unbuffer",
+        "mix",
+        "run",
+        "--no-compile",
+        "--no-start",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs"
+      ],
+      "completed_utc": "2026-10-10T21:08:11.000371+00:00",
+      "environment": {
+        "ERL_FLAGS": "+S 2:2",
+        "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "MIX_ENV": "test"
+      },
+      "exit": 1,
+      "frozen_inputs": {
+        "integration/http_fetch_contract/managed_h1_lease_model.exs": "dc91e9c7bc60c73aab8d53797e7966e10284cf288c9b03ba20537fb6d9f49e31",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs": "aed65496a27547574380a3db267c878143ebbfeb1b66b2dcbf8f9cdcf4602bc4"
+      },
+      "log": "model-green-initial.log",
+      "log_sha256": "7f33ecb87706133e227680aca64098af0f12a67ee6b86758bd65fb3489c59379",
+      "receipt": "model-green-initial.json",
+      "receipt_sha256": "feac1549c8df7bd52b3c0bedb4b2fc7f25ab0e28d12a12102ca17929f05b0998",
+      "source_after": "model-green-initial-source-after.json",
+      "source_after_sha256": "5fc16bad63aab68209fe91efcf0e6f8153f2345c2546fd1c1ab1eecaa6006e9c",
+      "source_before": "model-green-initial-source-before.json",
+      "source_before_sha256": "5fc16bad63aab68209fe91efcf0e6f8153f2345c2546fd1c1ab1eecaa6006e9c",
+      "summary": {
+        "excluded": 0,
+        "failures": 2,
+        "skipped": 0,
+        "total": 22
+      },
+      "timed_out": false
+    },
+    "model-green-repair1": {
+      "all_two_input_hashes_unchanged": true,
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "bash",
+        "-c",
+        "set -e\nunbuffer mix format --check-formatted integration/http_fetch_contract/managed_h1_lease_model.exs integration/http_fetch_contract/managed_h1_lease_model_test.exs\nunbuffer mix run --no-compile --no-start integration/http_fetch_contract/managed_h1_lease_model_test.exs"
+      ],
+      "completed_utc": "2026-10-10T21:11:25.278064+00:00",
+      "environment": {
+        "ERL_FLAGS": "+S 2:2",
+        "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "MIX_ENV": "test"
+      },
+      "exit": 0,
+      "frozen_inputs": {
+        "integration/http_fetch_contract/managed_h1_lease_model.exs": "0fd4f9fe81dc605ad6265635ddbfce1f4855245df05c73d0bcbe2cc03541dd6d",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs": "4399f426e993f8e87f8628b3b80c9aae97028c6d31419700b316f04f96d77b1f"
+      },
+      "log": "model-green-repair1.log",
+      "log_sha256": "4326110235ee3d6890119f444816c83c8c5b016978226eb2cae780f2ff3fc435",
+      "receipt": "model-green-repair1.json",
+      "receipt_sha256": "6a9bf5a0d6af6b7b4e02102c0e1ce37f562ffae5375842d587fc9f1eb6822ea1",
+      "source_after": "model-green-repair1-source-after.json",
+      "source_after_sha256": "37514ae21aeb8bb7b685432bbd2847e7874daab49a9eca9ede0ad44de3e9b4c4",
+      "source_before": "model-green-repair1-source-before.json",
+      "source_before_sha256": "37514ae21aeb8bb7b685432bbd2847e7874daab49a9eca9ede0ad44de3e9b4c4",
+      "summary": {
+        "excluded": 0,
+        "failures": 0,
+        "skipped": 0,
+        "total": 22
+      },
+      "timed_out": false
+    },
+    "model-red": {
+      "all_two_input_hashes_unchanged": true,
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "unbuffer",
+        "mix",
+        "run",
+        "--no-compile",
+        "--no-start",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs"
+      ],
+      "completed_utc": "2026-10-10T21:00:09.819481+00:00",
+      "environment": {
+        "ERL_FLAGS": "+S 2:2",
+        "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "MIX_ENV": "test"
+      },
+      "exit": 1,
+      "frozen_inputs": {
+        "integration/http_fetch_contract/managed_h1_lease_model.exs": "2bf003bc02013392199659a7eb8ba60771bc48fb3688f6032ab8bfb9996228b1",
+        "integration/http_fetch_contract/managed_h1_lease_model_test.exs": "c15e047229fd059e3c6bd750ee02319a0e6aa7c3dffce12ae46f76c7d91d6883"
+      },
+      "log": "model-red.log",
+      "log_sha256": "75636bd5f01f66d8743f83e9c129b3614351491e10449ce98b28cc7d72e16558",
+      "receipt": "model-red.json",
+      "receipt_sha256": "652a368cb4dce8da41cc625c412c2c45690aa228e063a9ca23425b0c5f525df1",
+      "source_after": "model-red-source-after.json",
+      "source_after_sha256": "d51f324ccbc52d46aa4330cd1548139d8eeefc4ec147b586082a82aa6d4c0eb2",
+      "source_before": "model-red-source-before.json",
+      "source_before_sha256": "d51f324ccbc52d46aa4330cd1548139d8eeefc4ec147b586082a82aa6d4c0eb2",
+      "summary": {
+        "excluded": 0,
+        "failures": 22,
+        "skipped": 0,
+        "total": 22
+      },
+      "timed_out": false
+    }
+  },
+  "repair_assessment": {
+    "shape_checker": "Map.to_list(value) permits traversing structs while retaining map-size/node/scalar/current-token assertions. Current code and initial failure trace inspected; exact edit delta supplied by parent, previous source bytes not archived in supplied receipts.",
+    "sticky_confirmation": "The revised specification explicitly distinguishes applying a late confirmation premise from recording cleanup success. Current code returns applied with identical state for unconfirmed completion and duplicate for confirmed completion. No refund, success, or history is introduced."
+  },
+  "repair_counters": {
+    "astra_gate": null,
+    "astra_recovery_rounds": 0,
+    "expected_red_consumes_repair": false,
+    "initial_plan_A1_repairs": 1,
+    "initial_plan_A1_unsuccessful_repairs": 0,
+    "model_initial_implementation_failures": 1,
+    "model_sol_repairs": 1,
+    "model_sol_unsuccessful_repairs": 0,
+    "reviewer_repairs": 0
+  },
+  "review_order": [
+    "specification",
+    "code_quality",
+    "saved_execution_evidence"
+  ],
+  "saved_execution_evidence_verdict": "PASS",
+  "semantic_checks": [
+    {
+      "area": "admission",
+      "evidence": "Four generation slots and 32 attempt slots per generation allocate before root capture; valid full-capacity rejection returns busy with identical state. Closed generation admission rejects both acquire and first launch.",
+      "status": "PASS"
+    },
+    {
+      "area": "identity",
+      "evidence": "Fresh references issued only on allocation; exact current owner/root/chunk/control equality rejects old events after same-slot or same-role reuse. No historical token set or epoch is stored.",
+      "status": "PASS"
+    },
+    {
+      "area": "streams",
+      "evidence": "One chunk per direction; release preserves identity until matching ACK. Held ACK and overlapping offer fail. Consumer/source/terminal/parser roots remain separate. Finish is one-shot and successful data result requires response finish.",
+      "status": "PASS"
+    },
+    {
+      "area": "controls",
+      "evidence": "Each fixed operation issues once and repeats join token/cached result. Reply, helper release, and frontier release are independent. Pending result or either missing flag retains ownership; cleanup_pending cannot substitute for confirmed completion.",
+      "status": "PASS"
+    },
+    {
+      "area": "deadlines",
+      "evidence": "Advance independently examines every pending opening, retirement, and request outcome through cleanup_hold. Both deadline orders and equality are tested; late known failure preserves opening timeout and retirement state. Late open/retirement/cleanup does not overwrite a timed-out result or reopen admission.",
+      "status": "PASS"
+    },
+    {
+      "area": "uncertainty",
+      "evidence": "Owner DOWN, explicit unconfirmed, and cleanup_unconfirmed retain sticky lost proof. Later modeled public confirmation does not clear that flag or permit release. Confirmed request marker repeats duplicate; unconfirmed marker receives applied with unchanged state, including repeats, without added history.",
+      "status": "PASS"
+    },
+    {
+      "area": "release",
+      "evidence": "Lost proof precedes ownership_pending, then missing terminal/public evidence. Attempt release cannot refund generation. Generation release requires no attempts/roots/outstanding controls and retired or known-not-opened evidence without a successful open.",
+      "status": "PASS"
+    },
+    {
+      "area": "bounded_shape",
+      "evidence": "Fixed tuples/maps/enums and bounded time domain; no payload, I/O, HTTP, process, callback, historical nonce, event log, cumulative counter, numeric byte budget, or activation API. Snapshot keys are exact and qualification always unqualified. Ceilings derive as 4*5+4*32*8=1044 roots, 4*32*2=256 chunks, 4*3+4*32*2=268 controls.",
+      "status": "PASS"
+    }
+  ],
+  "specification_verdict": "PASS",
+  "status": "DONE",
+  "task_id": "m3_h1_model_review",
+  "test_coverage": {
+    "current_shape_checks": [
+      "exact fixed record keys",
+      "tuple widths",
+      "map size <=12",
+      "tuple size <=32",
+      "allowed scalar domains",
+      "node count equals held-sibling baseline",
+      "recent released tokens absent",
+      "held sibling present",
+      "sibling reservation blocks full capacity"
+    ],
+    "exact_named_tests": 22,
+    "generation_release_orders": 24,
+    "names_match_plan_rows": true,
+    "release_order_prefixes_require_all_premises": true,
+    "request_release_orders": 24,
+    "runner": "ExUnit autorun false, seed21112026/max_cases1, exactly one explicit run; exit0 requires exactly22/0 and skips/exclusions0.",
+    "turnover_checkpoint_interval": 128,
+    "turnover_cycles": 2048
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

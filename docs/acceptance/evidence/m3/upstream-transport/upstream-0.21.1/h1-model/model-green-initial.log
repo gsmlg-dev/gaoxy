@@ -1,0 +1,104 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+Running ExUnit with seed: 21112026, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test long turnover retains only current slots (Gaoxy.Qualification.ManagedH1LeaseModelTest)
+     [1m[30mintegration/http_fetch_contract/managed_h1_lease_model_test.exs:604[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Qualification.ManagedH1LeaseModel.State (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Qualification.ManagedH1LeaseModel.State{
+           now: 0,
+           generations: {%Gaoxy.Qualification.ManagedH1LeaseModel.Generation{
+              token: {:generation, 0, #Reference<0.1899610193.3537633281.96265>},
+              phase: :ready,
+              opening_deadline: 100,
+              retirement_deadline: nil,
+              opening_outcome: :ready,
+              retirement_outcome: :not_started,
+              scope_evidence: :opened,
+              lost_proof: false,
+              roots: %{
+                scope: {:root,
+                 {:generation, 0, #Reference<0.1899610193.3537633281.96265>}, :scope,
+                 #Reference<0.1899610193.3537633281.96267>},
+                policy_source: nil,
+                policy_prepared: nil,
+                custodian: {:root,
+                 {:generation, 0, #Reference<0.1899610193.3537633281.96265>}, :custodian,
+                 #Reference<0.1899610193.3537633281.96266>},
+                shared_controls: nil
+              },
+              controls: %{
+                abort: :unused,
+                open: %Gaoxy.Qualification.ManagedH1LeaseModel.Control{
+                  token: {:control,
+                   {:generation, 0, #Reference<0.1899610193.3537633281.96265>}, :open,
+                   #Reference<0.1899610193.3537633281.96268>},
+                  result: :ok,
+                  helper_released: true,
+                  frontier_released: true
+                },
+                retire: :unused
+              },
+              attempts: {%Gaoxy.Qualification.ManagedH1LeaseModel.Attempt{
+                 token: {:attempt,
+                  {:generation, 0, #Reference<0.1899610193.3537633281.96265>}, 0,
+                  #Reference<0.1899610193.3537633281.96269>},
+                 phase: :preparing,
+                 deadline: 100,
+                 outcome: :pending,
+                 launched: false,
+                 completion: :none,
+                 lost_proof: false,
+                 roots: %{
+                   prepared: nil,
+                   terminal: nil,
+                   source: {:root,
+                    {:attempt,
+                     {:generation, 0, #Reference<0.1899610193.3537633281.96265>}, 0,
+                     #Reference<0.1899610193.3537633281.96269>}, :source,
+                    #Reference<0.1899610193.3537633281.96270>},
+                   upstream: nil,
+                   helpers: nil,
+                   parser_batch: nil,
+                   upload_source: nil,
+                   response_consumer: nil
+                 },
+                 chunks: %{response: nil, upload: nil},
+                 finished: %{response: false, upload: false},
+                 controls: %{initial_wait: :unused, abort_wait: :unused}
+               }, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+               nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
+               nil, nil}
+            }, nil, nil, nil}
+         }
+     [0m
+     [36mcode: [0mbaseline_nodes = bounded_shape(state)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       integration/http_fetch_contract/managed_h1_lease_model_test.exs:852: Gaoxy.Qualification.ManagedH1LeaseModelTest.scalar_nodes/1
+       integration/http_fetch_contract/managed_h1_lease_model_test.exs:607: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test owner death and unconfirmed stay charged (Gaoxy.Qualification.ManagedH1LeaseModelTest)
+     [1m[30mintegration/http_fetch_contract/managed_h1_lease_model_test.exs:436[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert receipt == :applied
+     [36mleft:  [0m[31m:duplicate[0m
+     [36mright: [0m[32m:applied[0m
+     [36mstacktrace:[0m
+       integration/http_fetch_contract/managed_h1_lease_model_test.exs:675: Gaoxy.Qualification.ManagedH1LeaseModelTest.applied/2
+       integration/http_fetch_contract/managed_h1_lease_model_test.exs:450: anonymous fn/2 in Gaoxy.Qualification.ManagedH1LeaseModelTest."test owner death and unconfirmed stay charged"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       integration/http_fetch_contract/managed_h1_lease_model_test.exs:437: (test)
+
+
+Finished in 0.1 seconds (0.00s async, 0.1s sync)
+[31m22 tests, 2 failures[0m
+H1_MODEL_EXUNIT_SUMMARY: %{total: 22, failures: 2, skipped: 0, excluded: 0}

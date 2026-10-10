@@ -208,6 +208,16 @@ This section states required capabilities. The installed facade supplies the
 operations above, but complete accounting and runtime qualification remain
 prerequisites before dependent Gaoxy runtime edits.
 
+Task3 qualification work may first implement a pure bounded lease model and a
+separate fixture using public managed APIs and independent loopback peers.
+Follow the reviewed [accounting frontier](m3-upstream-0.21.1-accounting-frontier.md)
+and [model plan](../plans/m3-h1-qualification-model.md). These fixtures may expose
+functional and ownership defects before the numeric expression is complete;
+their symbolic credits establish no retained-byte reservation. Production
+Task4 still requires the complete applicable accounting and lifetime contract,
+then actual ingress/adapter/manager conformance before activation. Every
+unresolved native/control frontier remains unqualified.
+
 1. Create a transport resource under an explicit owner, returning an opaque
    identity usable in Fetch. Bound resource count, connection attempts, active
    and idle connections, H2 streams, pending requests and retained bytes. All

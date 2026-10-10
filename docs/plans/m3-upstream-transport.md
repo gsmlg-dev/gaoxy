@@ -333,6 +333,22 @@ constructor components; cold/reload work, immutable snapshot enforcement and
 simultaneous copy/release proofs remain open. Neither that trace nor the
 point-in-time artifact checkpoint closes full P3 or the process-integration gate.
 
+### Qualification-only H1 model and fixture
+
+The reviewed [accounting frontier](../designs/m3-upstream-0.21.1-accounting-frontier.md)
+permits the [pure lease model](m3-h1-qualification-model.md) and a separately
+specified public-API fixture before the numeric expression is complete. Require
+independent specification/code review, actual nonzero scoped execution and
+frozen inputs for each delivery. The model must execute all22 named cases,
+including release-order permutations, independent deadlines and2048 turnovers.
+Slice B requires its own reviewed plan and real public/peer barriers; model
+events cannot supply missing runtime release evidence.
+
+These are Task3 qualification fixtures. They add no production interface,
+byte evaluator or activation budget. Task4 production edits remain gated by
+complete applicable P0–P6 accounting and qualified lifetimes; production
+conformance and existing managed soaks remain required before activation/M3.
+
 ## Task 3a: Pure compact H1 preparation (unblocked)
 
 Follow the [compact preparation design](../designs/m3-managed-h1-preparation.md)
