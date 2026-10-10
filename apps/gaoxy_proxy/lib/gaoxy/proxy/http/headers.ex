@@ -14,7 +14,8 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
          {:ok, policy} <- trailer_policy(fields, exchange.limits),
          policy = distrust_forwarding_trailers(policy),
          true <-
-           (policy.allowed == [] or exchange.request.body == :chunked) ||
+           (policy.allowed == [] or exchange.request.body == :chunked or
+              exchange.request.version == :"HTTP/2") ||
              {:error, :invalid_proxy_trailers} do
       fields =
         Enum.reject(fields, fn {name, _} ->
@@ -86,7 +87,7 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
   end
 
   defp trailers_supported?(exchange, status, fields) do
-    exchange.request.version == :"HTTP/1.1" and exchange.request.method != "HEAD" and
+    exchange.request.version in [:"HTTP/1.1", :"HTTP/2"] and exchange.request.method != "HEAD" and
       status not in [204, 205, 304] and
       not Enum.any?(fields, fn {name, _} -> name == "content-length" end)
   end
@@ -102,7 +103,7 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
       end)
 
     host_fields = if host, do: [{"x-forwarded-host", host}], else: []
-    scheme = if ThousandIsland.Socket.secure?(exchange.socket), do: "https", else: "http"
+    scheme = if Gaoxy.HTTP.Exchange.secure?(exchange), do: "https", else: "http"
     {address, _port} = exchange.peer
 
     [{"x-forwarded-for", address |> :inet.ntoa() |> to_string()}] ++

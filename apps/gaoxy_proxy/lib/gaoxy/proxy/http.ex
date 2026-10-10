@@ -17,7 +17,7 @@ defmodule Gaoxy.Proxy.HTTP do
   """
   @behaviour Gaoxy.HTTP.Endpoint
   alias Gaoxy.{Lifecycle, Proxy.HTTPFetchClient}
-  alias Gaoxy.HTTP.{Exchange, HTTP1.Response}
+  alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.Proxy.HTTP.{Headers, Session}
 
   @defaults %{
@@ -37,7 +37,7 @@ defmodule Gaoxy.Proxy.HTTP do
     "OPTIONS" => :options
   }
   @poll_ms 5
-  defstruct [:uri, :cacertfile, :limits]
+  defstruct [:uri, :cacertfile, :connect_address, :limits]
 
   @impl true
   def init(%__MODULE__{} = config) do
@@ -50,7 +50,9 @@ defmodule Gaoxy.Proxy.HTTP do
     uri = URI.parse(upstream)
     limits = Map.merge(@defaults, Map.take(options, Map.keys(@defaults)))
 
-    with true <- Map.keys(options) -- [:upstream, :cacertfile | Map.keys(@defaults)] == [],
+    with true <-
+           Map.keys(options) -- [:upstream, :cacertfile, :connect_address | Map.keys(@defaults)] ==
+             [],
          true <- uri.scheme in ["http", "https"] and is_binary(uri.host) and uri.host != "",
          true <- is_integer(uri.port) and uri.port in 1..65_535,
          true <-
@@ -61,9 +63,15 @@ defmodule Gaoxy.Proxy.HTTP do
          true <-
            is_nil(options[:cacertfile]) or
              (is_binary(options[:cacertfile]) and File.regular?(options[:cacertfile])),
+         {:ok, address} <- connect_address(options[:connect_address]),
          true <- HTTPFetchClient.host_supported?() do
       {:ok,
-       %__MODULE__{uri: %{uri | path: nil}, cacertfile: options[:cacertfile], limits: limits}}
+       %__MODULE__{
+         uri: %{uri | path: nil},
+         cacertfile: options[:cacertfile],
+         connect_address: address,
+         limits: limits
+       }}
     else
       _ -> {:error, :invalid_http_proxy_options}
     end
@@ -72,6 +80,25 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   def init(_), do: {:error, :invalid_http_proxy_options}
+
+  @doc false
+  def group_limits(options) when is_map(options) do
+    limits = Map.merge(@defaults, options)
+
+    if Map.keys(options) -- Map.keys(@defaults) == [] and
+         Enum.all?(limits, fn {_, value} -> is_integer(value) and value > 0 end) and
+         limits.max_chunk_bytes <= 65_536,
+       do: {:ok, limits},
+       else: {:error, :invalid_group_endpoint_options}
+  end
+
+  def group_limits(_), do: {:error, :invalid_group_endpoint_options}
+
+  @doc false
+  def unavailable(exchange), do: error_response(exchange, 503)
+
+  defp connect_address(nil), do: {:ok, nil}
+  defp connect_address(address), do: Gaoxy.Proxy.DestinationPolicy.normalize_address(address)
 
   @impl true
   def call(exchange, config) do
@@ -135,17 +162,21 @@ defmodule Gaoxy.Proxy.HTTP do
         do: exchange.request.query_string,
         else: nil
 
-    url = URI.to_string(%{config.uri | path: exchange.request.path, query: query})
-    deadline = min(exchange.deadline, Lifecycle.deadline(config.limits.max_lifetime))
+    started_at = Lifecycle.now()
+    deadline = min(exchange.deadline, started_at + config.limits.max_lifetime)
+
+    selector =
+      case config do
+        %{group: handle} -> {:group, handle, exchange.resource_pins}
+        _ -> {:fixed, config}
+      end
 
     request_options = %{
-      url: url,
       method: method,
       headers: headers,
       body: exchange.request.body,
-      opening_timeout: config.limits.opening_timeout,
-      write_timeout: config.limits.write_timeout,
-      cacertfile: config.cacertfile
+      path: exchange.request.path,
+      query: query
     }
 
     args = %{
@@ -153,12 +184,24 @@ defmodule Gaoxy.Proxy.HTTP do
       service: exchange.service,
       instance: exchange.instance,
       gate: exchange.gate,
+      started_at: started_at,
       deadline: deadline,
       config: config,
+      selector: selector,
       request_options: request_options
     }
 
-    reserve = HTTPFetchClient.reservation(headers, url, config.limits.max_chunk_bytes)
+    url_bytes =
+      case selector do
+        {:group, handle, _} ->
+          handle.max_url_bytes + byte_size(exchange.request.path) +
+            if(query == nil, do: 0, else: byte_size(query) + 1)
+
+        {:fixed, fixed} ->
+          byte_size(URI.to_string(%{fixed.uri | path: exchange.request.path, query: query}))
+      end
+
+    reserve = HTTPFetchClient.reservation_bytes(headers, url_bytes, config.limits.max_chunk_bytes)
 
     with {:ok, session} <-
            DynamicSupervisor.start_child(Gaoxy.Proxy.SessionSupervisor, {Session, args}) do
@@ -211,7 +254,7 @@ defmodule Gaoxy.Proxy.HTTP do
       remaining <= 0 ->
         fail(state, :timeout)
 
-      state.ready and not state.upload_stopped and state.exchange.body.phase != :done ->
+      state.ready and not state.upload_stopped and not Exchange.body_complete?(state.exchange) ->
         read_upload(state, min(@poll_ms, remaining))
 
       true ->
@@ -244,7 +287,8 @@ defmodule Gaoxy.Proxy.HTTP do
 
         case result do
           :ok when kind == :ok ->
-            with {:ok, trailers} <- Headers.trailers(exchange.body.trailers, state.policy),
+            with {:ok, trailers} <-
+                   Headers.trailers(Exchange.request_trailers(exchange), state.policy),
                  :ok <- HTTPFetchClient.finish_body(state.upload, trailers) do
               pump(%{state | upload_stopped: true})
             else
@@ -254,7 +298,7 @@ defmodule Gaoxy.Proxy.HTTP do
           :ok ->
             pump(state)
 
-          {:error, :timeout} when timeout <= 0 ->
+          {:error, :timeout} ->
             fail(state, :timeout)
 
           {:error, _} ->
@@ -265,12 +309,32 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
-  defp dispatch({:ready, upload}, state), do: pump(%{state | ready: true, upload: upload})
+  defp dispatch({:ready, upload, limits, deadline}, state) do
+    deadline = min(state.deadline, deadline)
+
+    exchange = %{
+      state.exchange
+      | deadline: deadline,
+        limits: %{
+          state.exchange.limits
+          | write_timeout: min(state.exchange.limits.write_timeout, limits.write_timeout)
+        }
+    }
+
+    pump(%{
+      state
+      | ready: true,
+        upload: upload,
+        config: %{state.config | limits: limits},
+        deadline: deadline,
+        exchange: exchange
+    })
+  end
 
   defp dispatch({:headers, status, fields}, state) do
     exchange = %{
       state.exchange
-      | close: state.exchange.close or state.exchange.body.phase != :done
+      | close: state.exchange.close or not Exchange.body_complete?(state.exchange)
     }
 
     case Headers.response(exchange, status, fields) do
@@ -347,6 +411,7 @@ defmodule Gaoxy.Proxy.HTTP do
           {:request_error, status, _} -> status
           :timeout -> 504
           :request_timeout -> 504
+          :unavailable -> 503
           _ -> 502
         end
 

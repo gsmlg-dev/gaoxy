@@ -9,4 +9,6 @@ defmodule Gaoxy.Proxy.UpstreamClient do
   @callback finish_body(term(), list()) :: :ok | {:error, term()}
   @callback acknowledge(term(), reference()) :: :ok
   @callback cleanup(term(), boolean()) :: :ok | {:error, term()}
+  @callback completion(term()) :: term()
+  @callback await_completion(term(), boolean()) :: :ok | {:error, term()}
 end

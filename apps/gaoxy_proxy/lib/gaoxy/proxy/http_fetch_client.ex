@@ -18,10 +18,19 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
     backend == :inet and is_integer(active) and active in 1..100
   end
 
+  @impl true
+  def completion(handle), do: handle.completion
+  @impl true
+  def await_completion(completion, true), do: RequestCompletion.abort_and_await(completion, 0)
+  def await_completion(completion, false), do: RequestCompletion.await(completion, 0)
+
   def reservation(fields, url, chunk_bytes),
     do:
       8 * (@max_delivery + @framing_carry) + 8 * chunk_bytes +
         2 * :erlang.external_size({fields, url})
+
+  def reservation_bytes(fields, url_bytes, chunk_bytes),
+    do: reservation(fields, "", chunk_bytes) + 2 * url_bytes
 
   @impl true
   def open(options) do
@@ -53,6 +62,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
           stream_response: true,
           tls_backend: :ssl,
           ssl: ssl,
+          connect_address: Map.get(options, :connect_address),
           timeout: options.timeout,
           connect_timeout: min(options.timeout, options.opening_timeout),
           telemetry: false,

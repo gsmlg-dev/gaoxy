@@ -69,6 +69,45 @@ defmodule Gaoxy.Proxy.HTTPTLSTest do
     )
   end
 
+  test "a numeric dial pin keeps the HTTPS authority and original SNI", context do
+    baseline = supervisor_counts()
+
+    {url, peer} =
+      tls_peer(
+        context.trusted,
+        "localhost",
+        fn socket ->
+          assert {:ok, info} = :ssl.connection_information(socket, [:sni_hostname])
+          assert to_string(info[:sni_hostname]) == "localhost"
+          request = head(:ssl, socket)
+          assert {:ok, {_, port}} = :ssl.sockname(socket)
+          assert request =~ "GET /pinned HTTP/1.1\r\n"
+          assert String.downcase(request) =~ "host: localhost:#{port}\r\n"
+          refute request =~ "127.0.0.2"
+          :ok = :ssl.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\npinned")
+          assert {:error, :closed} = :ssl.recv(socket, 0, @timeout)
+        end,
+        {127, 0, 0, 2}
+      )
+
+    server = server(url, Path.join(context.trusted, "ca.pem"), %{connect_address: {127, 0, 0, 2}})
+    socket = connect(server)
+
+    :ok =
+      :gen_tcp.send(
+        socket,
+        "GET /pinned HTTP/1.1\r\nHost: edge.test\r\nConnection: close\r\n\r\n"
+      )
+
+    assert_receive {:tls_attempt, ^peer}, @timeout
+    assert head(:gen_tcp, socket) =~ "200 OK"
+    assert {:ok, "pinned"} = :gen_tcp.recv(socket, 6, @timeout)
+    assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)
+    assert_receive {:tls_finished, ^peer, :ok}, @timeout
+    assert_cleanup(server, baseline)
+    assert_no_replay(peer)
+  end
+
   test "a trusted certificate for another hostname rejects HTTPS without fallback or replay",
        context do
     assert_rejected(
@@ -99,10 +138,12 @@ defmodule Gaoxy.Proxy.HTTPTLSTest do
     assert :ok = Gaoxy.stop(server, @timeout)
   end
 
-  defp server(url, ca) do
+  defp server(url, ca, additional \\ %{}) do
     {:ok, server} =
       Gaoxy.HTTP.start_link(
-        endpoint: {Gaoxy.Proxy.HTTP, %{upstream: url, cacertfile: ca, opening_timeout: 1_000}},
+        endpoint:
+          {Gaoxy.Proxy.HTTP,
+           Map.merge(%{upstream: url, cacertfile: ca, opening_timeout: 1_000}, additional)},
         limits: %{max_bytes: 16_777_216}
       )
 
@@ -117,12 +158,12 @@ defmodule Gaoxy.Proxy.HTTPTLSTest do
     socket
   end
 
-  defp tls_peer(directory, hostname, exchange) do
+  defp tls_peer(directory, hostname, exchange, bind \\ {0, 0, 0, 0}) do
     {:ok, listener} =
       :ssl.listen(0, [
         :binary,
         active: false,
-        ip: {0, 0, 0, 0},
+        ip: bind,
         certfile: String.to_charlist(Path.join(directory, "cert.pem")),
         keyfile: String.to_charlist(Path.join(directory, "key.pem")),
         verify: :verify_none,
