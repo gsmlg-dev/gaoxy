@@ -1,0 +1,55 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 21107026, max_cases: 1
+
+
+
+  1) test builds fixed numeric-pinned H1 options without opening a scope (Gaoxy.Proxy.ManagedH1PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h1_preparation_test.exs:5[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Proxy.ManagedH1Preparation.Policy (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Proxy.ManagedH1Preparation.Policy{
+           origin: "http://example.test",
+           scheme: :http,
+           host: "example.test",
+           port: 80,
+           connect_address: {127, 0, 0, 1},
+           open_options: [
+             origin: "http://example.test",
+             connect_address: {127, 0, 0, 1},
+             http_version: :http1,
+             tls_backend: :ssl,
+             http2_profile: :native_v1,
+             max_requests: 32,
+             max_connections: 2,
+             max_pending: 0,
+             idle_timeout: 30000,
+             ssl: [],
+             socket_opts: [
+               buffer: 8192,
+               recbuf: 8192,
+               sndbuf: 8192,
+               nodelay: true,
+               send_timeout: 30000,
+               send_timeout_close: true
+             ]
+           ]
+         }
+     [0m
+     [36mcode: [0massert {:ok, policy, manifest} = Preparation.prepare_policy(%{
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       lib/gaoxy/proxy/managed_h1_preparation.ex:153: Gaoxy.Proxy.ManagedH1Preparation.manifest/4
+       lib/gaoxy/proxy/managed_h1_preparation.ex:31: Gaoxy.Proxy.ManagedH1Preparation.prepare_policy/1
+       test/managed_h1_preparation_test.exs:6: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+[31m1 test, 1 failure[0m
