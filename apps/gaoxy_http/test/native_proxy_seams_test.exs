@@ -10,6 +10,10 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
   end
 
   defmodule FailedTransport do
+    def setopts(_owner, send_timeout: timeout, send_timeout_close: true)
+        when is_integer(timeout) and timeout > 0,
+        do: :ok
+
     def send(owner, bytes) do
       Kernel.send(owner, {:failed_write, IO.iodata_to_binary(bytes)})
       {:error, :closed}

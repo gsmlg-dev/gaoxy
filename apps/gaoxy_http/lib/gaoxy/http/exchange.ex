@@ -116,6 +116,53 @@ defmodule Gaoxy.HTTP.Exchange do
     end
   end
 
+  @doc "Polls one socket byte for peer closure, retaining input for the next request or body read."
+  def poll_connection(exchange, wait_ms) do
+    cond do
+      not is_integer(wait_ms) or wait_ms < 0 ->
+        {:error, :invalid_read_timeout, exchange}
+
+      Gaoxy.Lifecycle.remaining(exchange.deadline) <= 0 ->
+        {:error, :timeout, exchange}
+
+      byte_size(exchange.buffer) >= exchange.limits.max_buffer_bytes ->
+        {:error, :buffer_limit, exchange}
+
+      true ->
+        case Admission.update(
+               exchange.gate,
+               exchange.lease,
+               retained_bytes(exchange) + byte_size(exchange.buffer) + 1
+             ) do
+          :ok -> recv_connection(exchange, wait_ms)
+          {:error, reason} -> {:error, reason, exchange}
+        end
+    end
+  end
+
+  defp recv_connection(exchange, wait_ms) do
+    remaining = Gaoxy.Lifecycle.remaining(exchange.deadline)
+
+    result =
+      if remaining <= 0,
+        do: {:error, :timeout},
+        else: Socket.recv(exchange.socket, 1, min(wait_ms, remaining))
+
+    case result do
+      {:ok, byte} ->
+        exchange = %{exchange | buffer: exchange.buffer <> byte}
+
+        case Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange)) do
+          :ok -> {:more, exchange}
+          {:error, reason} -> {:error, reason, exchange}
+        end
+
+      {:error, reason} ->
+        _ = Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange))
+        if reason == :timeout, do: wait_expired(exchange), else: {:error, reason, exchange}
+    end
+  end
+
   defp maybe_continue(%{request: %{expect_continue: true}, expect_sent: false} = exchange) do
     # A failed write may have sent a prefix; never replay the informational head.
     exchange = %{exchange | expect_sent: true}
@@ -249,7 +296,7 @@ defmodule Gaoxy.HTTP.Exchange do
     with :ok <-
            Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange) + size),
          {:ok, operation} <- Admission.start_send(exchange.gate, exchange.lease, size) do
-      result = if size == 0, do: :ok, else: Socket.send(exchange.socket, chunk)
+      result = if size == 0, do: :ok, else: send_window(exchange, chunk)
       :ok = Admission.finish_send(exchange.gate, exchange.lease, operation, result)
       :ok = Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange))
 
@@ -259,6 +306,22 @@ defmodule Gaoxy.HTTP.Exchange do
       end
     end
   end
+
+  defp send_window(%{deadline: deadline} = exchange, chunk) when is_integer(deadline) do
+    case Gaoxy.Lifecycle.remaining(deadline) do
+      0 ->
+        {:error, :timeout}
+
+      remaining ->
+        timeout = min(Map.get(exchange.limits, :write_timeout, 5_000), remaining)
+
+        with :ok <-
+               Socket.setopts(exchange.socket, send_timeout: timeout, send_timeout_close: true),
+             do: Socket.send(exchange.socket, chunk)
+    end
+  end
+
+  defp send_window(exchange, chunk), do: Socket.send(exchange.socket, chunk)
 
   @doc false
   def retained_bytes(exchange) do
