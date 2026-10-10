@@ -1,0 +1,313 @@
+{
+  "abi_premises": [
+    "LP64: pointer/Eterm/Uint/UWord/SWord/long sizes8",
+    "ordinary alignment8 for word/scalar64 and pointer; no packing overrides",
+    "inspected exported ethread definitions only unless overridden",
+    "unqualified build variants remain symbolic"
+  ],
+  "absent_build_config": {
+    "checked_absent_paths": [
+      "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/x86_64-pc-linux-gnu/config.h",
+      "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/emulator/x86_64-pc-linux-gnu/Makefile",
+      "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/include/internal/x86_64-pc-linux-gnu/ethread_header_config.h",
+      "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/erts-16.4.0.6/include/internal/ethr_config.h"
+    ],
+    "emulator_makefile_is_unconfigured_dispatcher": true,
+    "installed_config_h_search": {
+      "matches": [],
+      "pattern": "recursive exact filename config.h",
+      "root": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/erts-16.4.0.6/include"
+    },
+    "source_erts_config_h_search": {
+      "matches": [],
+      "pattern": "recursive exact filename config.h",
+      "root": "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts"
+    }
+  },
+  "arithmetic_checks": {
+    "binary_vectors": 3,
+    "combined_and_used_vs_allocated_checks": 74496,
+    "meaning": "abstract field-layout and algebra only; no native sizeof measurement",
+    "message_vectors": 2,
+    "range": "n=1..4096, allocated=1..256, used=0..allocated, both probe variants"
+  },
+  "assignment": "direct bounded source investigation",
+  "binary_conditional_vectors": [
+    {
+      "intern_size": 24,
+      "kind": "native64",
+      "orig_bytes_offset": 32,
+      "premise": "LP64 ordinary field alignment; hypothetical selected type",
+      "refc_alignment": 8,
+      "refc_offset": 16,
+      "refc_size": 8
+    },
+    {
+      "intern_size": 24,
+      "kind": "locked_scalar_fallback",
+      "orig_bytes_offset": 32,
+      "premise": "LP64 ordinary field alignment; hypothetical selected type",
+      "refc_alignment": 8,
+      "refc_offset": 16,
+      "refc_size": 8
+    },
+    {
+      "intern_size": 32,
+      "kind": "native32_pair_fallback",
+      "orig_bytes_offset": 40,
+      "premise": "LP64 ordinary field alignment; hypothetical selected type",
+      "refc_alignment": 8,
+      "refc_offset": 16,
+      "refc_size": 16
+    }
+  ],
+  "binary_symbolic": {
+    "driver_extra": "0 if DEBUG/VALGRIND/ADDRESS_SANITIZER defined, else pointer_size-1",
+    "intern_size": "align_up(refc_offset+S,max(8,A))",
+    "normal_allocation_request": "payload_offset+n",
+    "payload_offset": "align_up(intern_size,8)+W",
+    "refc_offset": "align_up(2W,A)"
+  },
+  "branch": "codex/m3-gateway",
+  "charge_boundary": {
+    "excluded": [
+      "unreachable garbage",
+      "unused heap capacity",
+      "allocator fragmentation and slack",
+      "kernel buffers",
+      "TLS-private allocations"
+    ],
+    "included": [
+      "retained native object headers and field padding",
+      "reachable owned term objects and their padding",
+      "distinct retained backing and linked resources",
+      "reachable overlapping owned copies"
+    ],
+    "used_size_is_not_allocation_request_or_reachability_proof": true
+  },
+  "command_shutdown": "all commands completed; no own background jobs",
+  "exported_ethread_config": {
+    "ASSUMED_CACHE_LINE_SIZE": {
+      "state": "defined",
+      "value": "64"
+    },
+    "ETHR_BIGENDIAN": {
+      "state": "undefined_in_exported_header"
+    },
+    "ETHR_DISABLE_NATIVE_IMPLS": {
+      "state": "undefined_in_exported_header"
+    },
+    "ETHR_HAVE_GCC___ATOMIC_BUILTINS": {
+      "state": "defined",
+      "value": "1"
+    },
+    "ETHR_HAVE_LIBATOMIC_OPS": {
+      "state": "undefined_in_exported_header"
+    },
+    "ETHR_HAVE___atomic_compare_exchange_n": {
+      "state": "defined",
+      "value": "12"
+    },
+    "ETHR_HAVE___sync_val_compare_and_swap": {
+      "state": "defined",
+      "value": "12"
+    },
+    "ETHR_PREFER_GCC_NATIVE_IMPLS": {
+      "state": "undefined_in_exported_header"
+    },
+    "ETHR_PREFER_LIBATOMIC_OPS_NATIVE_IMPLS": {
+      "state": "undefined_in_exported_header"
+    },
+    "ETHR_SIZEOF_INT": {
+      "state": "defined",
+      "value": "4"
+    },
+    "ETHR_SIZEOF_LONG": {
+      "state": "defined",
+      "value": "8"
+    },
+    "ETHR_SIZEOF_LONG_LONG": {
+      "state": "defined",
+      "value": "8"
+    },
+    "ETHR_SIZEOF_PTR": {
+      "state": "defined",
+      "value": "8"
+    },
+    "ETHR_SIZEOF___INT128_T": {
+      "state": "defined",
+      "value": "16"
+    }
+  },
+  "independent_review": "PENDING",
+  "input_hashes": {
+    "h1-accounting-architecture.md": "6ac9a051172e761717da3be3861566740724ff5507601314ea332e1a36bebe81",
+    "h1-runtime-layout-profile-repair1.json": "0e33a01f03064e63b7d11532cb5c5035294cdf46815326507e0888ab8089fa42",
+    "h1-term-layout-proof.json": "9afd005835d6a67790ca4aad2c0dae3125d8b112b83fb50efd9fb17b49d39bf6",
+    "h1-term-layout-proof.md": "3c8b4c5bd86df8f6d56538cfbdc984111c5d8c2dd7eeaf301f88d91bfa1a0c53",
+    "otp-source-provenance.json": "0a71c965c2ca335fb7d36c2e33be6d2b26d0646e4c0eafdf8e88f44ad46db493"
+  },
+  "installed_generated_hashes": {
+    "erl_int_sizes_config.h": "9778f570e78aefe130c9cbdb38fef1bbfab9a7a6f0018859c70c1aec9fbb904a",
+    "internal/ethread.mk": "f6847c57e1c7d95b00cdb4c659a20fe903189b2cf378efde7622584512763601",
+    "internal/ethread_header_config.h": "091b135bed01d8ea4e449bc588ba7b763171f575c2b21832245391ccd64fc374"
+  },
+  "installed_internal_source_matches": {
+    "ethr_atomics.h": {
+      "equal": true,
+      "installed_sha256": "809e8d4de9dce97d90d1a2e274ad2f9bfecc9d0ab31800223f6fe455500f8217",
+      "source_sha256": "809e8d4de9dce97d90d1a2e274ad2f9bfecc9d0ab31800223f6fe455500f8217"
+    },
+    "ethread.h": {
+      "equal": true,
+      "installed_sha256": "57fe81370be50ec93a93a3b901ed9e1b5d9bc39f8d5e798ae449f985efa18de1",
+      "source_sha256": "57fe81370be50ec93a93a3b901ed9e1b5d9bc39f8d5e798ae449f985efa18de1"
+    },
+    "gcc/ethr_atomic.h": {
+      "equal": true,
+      "installed_sha256": "bbb5f997aba5c7fe9570a78bfbaebd7f3aa3c7a774e8aacf05fb3bfd475ebc24",
+      "source_sha256": "bbb5f997aba5c7fe9570a78bfbaebd7f3aa3c7a774e8aacf05fb3bfd475ebc24"
+    },
+    "gcc/ethread.h": {
+      "equal": true,
+      "installed_sha256": "86b61a35b04ff5ccb7e142562f22b72c73184e09058b3a012c37579c39f075e9",
+      "source_sha256": "86b61a35b04ff5ccb7e142562f22b72c73184e09058b3a012c37579c39f075e9"
+    },
+    "i386/atomic.h": {
+      "equal": true,
+      "installed_sha256": "2faa7c1b9a4f534686bbf330f1800f1f9efd101aa3fcce125bee9dd52d6ead76",
+      "source_sha256": "2faa7c1b9a4f534686bbf330f1800f1f9efd101aa3fcce125bee9dd52d6ead76"
+    },
+    "i386/ethread.h": {
+      "equal": true,
+      "installed_sha256": "6ecad43e3ccd77d956c6693a3826f5bcaf592416855ecb5d4a4cde94cd1f6b10",
+      "source_sha256": "6ecad43e3ccd77d956c6693a3826f5bcaf592416855ecb5d4a4cde94cd1f6b10"
+    },
+    "x86_64/ethread.h": {
+      "equal": true,
+      "installed_sha256": "c084e296db58b5e7380d9d9a41e1a4472d3b7e967f240f72000717542139a6d4",
+      "source_sha256": "c084e296db58b5e7380d9d9a41e1a4472d3b7e967f240f72000717542139a6d4"
+    }
+  },
+  "installed_public_integer_header": {
+    "matches_erts_header": true,
+    "path": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/usr/include/erl_int_sizes_config.h",
+    "sha256": "9778f570e78aefe130c9cbdb38fef1bbfab9a7a6f0018859c70c1aec9fbb904a"
+  },
+  "native_build_selection": "conditional: GNU x86_64 plus exported defines and no overrides selects native64; actual emulator config absent",
+  "observed_head": "6ef8a3ad8e26e2f4992adeaf9558199aef8105a5",
+  "observed_utc": "2026-10-10T19:44:57.186814+00:00",
+  "ordinary_message_conditional_vectors": [
+    {
+      "combined_header_size": 80,
+      "fragment_header_size": 40,
+      "fragment_size_with_one_word": 48,
+      "message_size_with_one_word": 88,
+      "off_heap_size": 16,
+      "reference_size": 40,
+      "reference_slots": 3
+    },
+    {
+      "combined_header_size": 88,
+      "fragment_header_size": 40,
+      "fragment_size_with_one_word": 48,
+      "message_size_with_one_word": 96,
+      "off_heap_size": 16,
+      "reference_size": 48,
+      "reference_slots": 4
+    }
+  ],
+  "prior_overlapping_source_hash_checks": {
+    "distinct_source_files": 4,
+    "source_provenance": {
+      "erts/emulator/beam/erl_binary.h": true,
+      "erts/emulator/beam/erl_message.c": true,
+      "erts/emulator/beam/erl_message.h": true
+    },
+    "term_layout": {
+      "erts/emulator/beam/erl_binary.h": true,
+      "erts/emulator/beam/erl_message.h": true,
+      "erts/emulator/beam/sys.h": true
+    }
+  },
+  "remaining_proof_classes": [
+    "actual translation-unit definitions/ABI layout/loaded native identity",
+    "message kinds/fragments and copy multiplicity/release",
+    "Process",
+    "ETS",
+    "atomics resource",
+    "monitor",
+    "timer",
+    "other signal kinds",
+    "native/socket/magic resources",
+    "preparation algorithm peaks"
+  ],
+  "repair_counters": {
+    "astra": 0,
+    "diagnostic": "OTP-relative rg ran from worktree, emitted missing-path errors; rerun from OTP root exit0",
+    "executable_or_implementation_repairs": 0,
+    "sol_successful_diagnostic_repairs": 1,
+    "sol_unsuccessful_repairs": 0
+  },
+  "report_sha256": "cf9b651f77e8514aed1e626e8a2f456484f2ed9ded9c29c43d4d5916e10124e8",
+  "runtime_derivation": {
+    "fields": {
+      "CFLAGS": null,
+      "NIX_CFLAGS_COMPILE": null,
+      "configureFlags": "--with-ssl=/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5 --with-ssl-incl=/nix/store/7l09089ahshxjx4js3zswqk6azhx6ccq-openssl-3.6.5-dev --enable-threads --enable-smp-support --enable-kernel-poll --enable-hipe --enable-wx --enable-systemd",
+      "patches": "",
+      "src": "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source",
+      "system": "x86_64-linux"
+    },
+    "limits": "effective emulator command-line flags and packing not certified",
+    "path": "/nix/store/ckl72c9yq125214w0zdglh7cr5jycz9r-erlang-28.5.0.7.drv",
+    "sha256": "ffb0d6d1fdf5007be6b3d30510d6188391f7051d8b4d602c65a81a0cb8cadf02"
+  },
+  "runtime_root": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang",
+  "scope": "normal Binary and ordinary message/reference/heap-fragment conditional layouts only; no numeric activation budget",
+  "source_hashes": {
+    "erts/config.h.in": "c2ff35be6d75bc97b7f97b865c30d3e1258d966da8140176e58d894c7da12541",
+    "erts/configure.ac": "711342f1059f77276a64ce7ef3cfe8040b9c74ec612d74f1b42449c2fe347c26",
+    "erts/emulator/Makefile": "14ce2f6262c55261d9ce72e3404fcab4f80ae95bacc17cf21c181bb4d1332344",
+    "erts/emulator/Makefile.in": "7c33799bf4b8a130a2b59dd74faf0cc469d08b72aebd055f653c6a9f4f1e81c2",
+    "erts/emulator/beam/erl_alloc.h": "36f8a26a39a6cceb02be93d050a8d0d7c86281c9ccdb1b463aeef891f691228c",
+    "erts/emulator/beam/erl_binary.h": "31ba99c1b20ee2c2e67ebc1654b65c6638ffa6372b6b4e972396c36adbfc80a5",
+    "erts/emulator/beam/erl_message.c": "511c7335299301ef411945821d7f0dd708b73301f433229c7d00ef45733fcb58",
+    "erts/emulator/beam/erl_message.h": "ce7b97ef8dcb560430ee5e2a0f5886b34ac62d51444c0d22a2ecef194329bdfd",
+    "erts/emulator/beam/erl_threads.h": "4c36fea0b76b5abe8702786c8055d203f70b3133606d0638e6bd8811ee349cca",
+    "erts/emulator/beam/sys.h": "4d789c1a5175a736bde353a004aa22ec63b7f26a42fda7c6c92d52ccf1ac6e26",
+    "erts/include/internal/ethr_atomics.h": "809e8d4de9dce97d90d1a2e274ad2f9bfecc9d0ab31800223f6fe455500f8217",
+    "erts/include/internal/ethread.h": "57fe81370be50ec93a93a3b901ed9e1b5d9bc39f8d5e798ae449f985efa18de1",
+    "erts/include/internal/gcc/ethr_atomic.h": "bbb5f997aba5c7fe9570a78bfbaebd7f3aa3c7a774e8aacf05fb3bfd475ebc24",
+    "erts/include/internal/gcc/ethread.h": "86b61a35b04ff5ccb7e142562f22b72c73184e09058b3a012c37579c39f075e9",
+    "erts/include/internal/i386/atomic.h": "2faa7c1b9a4f534686bbf330f1800f1f9efd101aa3fcce125bee9dd52d6ead76",
+    "erts/include/internal/i386/ethread.h": "6ecad43e3ccd77d956c6693a3826f5bcaf592416855ecb5d4a4cde94cd1f6b10",
+    "erts/include/internal/x86_64/ethread.h": "c084e296db58b5e7380d9d9a41e1a4472d3b7e967f240f72000717542139a6d4"
+  },
+  "source_store_path": "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source",
+  "start_head": "d8e3a2622e88037419077989547e2e0a00d5c4e4",
+  "status": "STATIC_CONDITIONAL_PASS",
+  "task_id": "m3_h1_native_object_layout_source",
+  "unqualified": [
+    "p0",
+    "p1",
+    "p2",
+    "p3",
+    "p4",
+    "p5",
+    "p6"
+  ],
+  "upstream95": "separate TLS tracking/lifecycle qualification remains gated; no upstream operation in this task",
+  "verification": {
+    "collector": "PASS: source/input hashes, installed/source matches, build config extraction, scoped absence and conditional arithmetic",
+    "commands_not_run": [
+      "VM",
+      "Mix",
+      "C compiler",
+      "network/upstream",
+      "TLS/lifecycle tests"
+    ],
+    "post_write_verification": "PASS: separate reread hashes, JSON, local links, fences, trailing whitespace and conditional arithmetic; see worksheet command"
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

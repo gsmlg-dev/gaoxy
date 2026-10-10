@@ -295,10 +295,19 @@ Bounded source follow-ups now pass their separate independent reviews:
 [33-entry HAMT structure](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-map-layout-independent-review.md),
 and [control-turnover/TLS evidence](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-turnover-and-delivery-review.md).
 The HAMT envelope applies per completed occurrence plus children; the request
-mapping remains unwired. Remaining local source-proof work includes helper/native
-costs, policy/host-CA overlap, loaded code/profile enforcement, root/copy
+mappings remain unwired. Independently reviewed conditional native Binary and
+ordinary-message/fragment formulas add bounded representation components;
+the actual emulator ABI is still unqualified. A read-only34-module identity
+checkpoint pins currently loaded code and disk/native artifacts, without
+establishing source reproduction or scope-lifetime enforcement. Remaining local
+source-proof work includes other helper/native costs, policy/host-CA overlap,
+loaded code/profile enforcement, root/copy
 multiplicities and control-release frontiers. These component results leave every
 full P0–P6 activation obligation and the Task3 prerequisite checkboxes open.
+The new bounded policy/CA trace derives warm-snapshot and explicit-DER
+constructor components; cold/reload work, immutable snapshot enforcement and
+simultaneous copy/release proofs remain open. Neither that trace nor the
+point-in-time artifact checkpoint closes full P3 or the process-integration gate.
 
 ## Task 3a: Pure compact H1 preparation (unblocked)
 
@@ -595,7 +604,9 @@ separate independent review. Full P0-P6, held preparing/connecting saturation
 and Tasks4–8 remain unqualified. The fresh remote receipt records #86–#89
 CLOSED with latest published release still0.21.0; containing fixes and renewed
 qualification remain required. New blocker#95 is OPEN for managed OTP28 TLS
-tracking. A [fresh remote recheck](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh2.json)
-confirms the same issue/release states at2026-10-10T19:33:09Z. The older handoff
+tracking. A [later remote recheck](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh3.json)
+observes published GitHub/Hex0.21.1 at2026-10-10T19:52:26Z, with installed0.21.0
+and95 still open. Follow the [patch qualification plan](m3-upstream-0.21.1-qualification.md)
+for containing-source review, coordinated upgrade and fresh gates. The older handoff
 preserves its original prerelease boundary. Local delivery `d8e3a26` records the
 reviewed qualification and TLS blocker; it does not lift Tasks4–8's gates.

@@ -8,9 +8,10 @@ Date: 2026-10-10. Architecture decision, not runtime acceptance. Gaoxy baseline
 ## Decision and present gate
 
 Current external gate, 2026-10-11: #86–#89 are now CLOSED in the
-[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh2.json),
-but published/installed artifacts remain0.21.0 and need containing-release
-qualification. New [Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
+[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh3.json).
+GitHub/Hex0.21.1 is published while the installed cohort remains0.21.0;
+containing-source, installation and renewed qualification are required.
+New [Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
 blocks actual OTP28 TLS-process tracking/release. Finite public retirement
 observations cannot certify unregistered receiver/sender termination. Do not
 patch dependencies, use private resource tracking or lift activation gates.
@@ -52,6 +53,16 @@ evidence; see [current acceptance](../acceptance/m3.md) for their separate
 reviews and identities. They close no complete P0–P6 obligation. Helper/native
 layout costs, policy/host-CA overlap, loaded-code/profile enforcement and
 simultaneous root/copy/control release remain required before Task4 integration.
+Subsequent conditional native Binary/message/fragment formulas pass independent
+source review, and a34-module checkpoint establishes point-in-time BEAM/native
+identity. Actual native ABI, other object classes and lifetime enforcement stay
+open. Published0.21.1 now requires the separate
+[patch qualification plan](../plans/m3-upstream-0.21.1-qualification.md);95 is
+still open and the installed0.21.0 proof cohort is unchanged.
+The bounded policy/CA trace establishes warm snapshot sharing and explicit-DER
+option constructor components. Cold cache loading/replacement and immutable
+snapshot enforcement remain required; the global exclusion cannot absorb owned
+copies after mutation. Full P3 and simultaneous policy-copy lifetimes stay open.
 
 The historical 0.20 public probes passed16/16 on complete202-file maps, and its
 finite empty-CONTINUATION diagnostic was INCONCLUSIVE. Preserve that evidence

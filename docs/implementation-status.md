@@ -208,8 +208,8 @@ lemmas pass independent source review in their conditional scope. Effective
 profile enforcement, full policy/request/control lifetime accounting and
 P0-P6 composition remain open. No complete activation proof is established.
 
-Fresh remote status records #86–#89 CLOSED while published/installed artifacts
-remain0.21.0; closure alone does not qualify those fixes. New
+Earlier remote checkpoints record #86–#89 CLOSED while published/installed
+artifacts remained0.21.0; closure alone does not qualify those fixes. New
 [Bug95](dependency-requests/http-fetch-otp28-tls-tracking.md) blocks managed
 OTP28 TLS resource tracking. A real verified TLS connection returns the new
 eight-element socket, skipped by installed `track_tls/2`; final diagnostic
@@ -223,8 +223,20 @@ separate independent reviews. The HAMT structural envelope is8,984 bytes per
 complete occurrence plus children; constructor/native work, simultaneous roots
 and release enforcement remain open. Control-turnover/TLS evidence and current
 delivery status pass their bounded independent review, committed as `d8e3a26`.
-The latest read-only remote recheck still records published0.21.0, closed86–89
-and open95. These source results do not complete P0–P6 or M3.
+Conditional native Binary/message/fragment formulas now pass independent source
+review; actual ABI and multiplicities remain open. A read-only VM checkpoint
+records34 matching loaded/disk code-MD5s, BEAM/native whole-file identities,
+FetchOptions33 and429 unchanged sources. It establishes no future hot-code or
+profile enforcement, source reproduction or complete native-layout proof.
+The bounded policy/host-CA trace records unchanged warm snapshot lookup and
+explicit-DER keyword transformations. Cold loading, cache mutation, immutable
+snapshot enforcement and simultaneous copy lifetimes remain unqualified; its
+constructor counts are conditional components rather than a complete P3 peak.
+The latest read-only remote recheck records GitHub/Hex0.21.1, closed86–89 and
+open95, while installed artifacts remain0.21.0. The
+[patch qualification plan](plans/m3-upstream-0.21.1-qualification.md) preserves
+old evidence and requires independent containing-source review and fresh gates.
+These source and identity results do not complete P0–P6 or M3.
 Follow the [transport plan](plans/m3-upstream-transport.md) and
 [current acceptance](acceptance/m3.md) for actual receipts and limits.
 
