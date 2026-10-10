@@ -1,5 +1,12 @@
 # Codex Kickoff Prompt — Gaoxy
 
+> Historical M0/M1 kickoff. The user's 2026-10-10 continuing authorization in
+> `AGENTS.md` now governs execution: start M3, maintain stage designs/plans,
+> complete verification and independent review, commit locally, and advance
+> through existing milestones without routine approvals. The kickoff-only scope
+> and stop rules below do not restrict that authorized work. Explicit product,
+> Vault, E2E, publication/deployment, and production data limits still apply.
+
 You are implementing **Gaoxy**, an Elixir/OTP multi-protocol server runtime and gateway.
 
 Read the companion `implement-plan.md` completely before changing code. If it is under `docs/`, use that copy. This prompt also contains the essential decisions so you can begin when the companion is provided as an attachment.

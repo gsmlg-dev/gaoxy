@@ -18,7 +18,9 @@ callback. Unsupported mTLS/packet/options must reject before I/O; explicit
 provider selection cannot fall back. Existing HTTPS client or QUIC TLS checks do
 not establish the required TCP server behavior.
 
-No upstream issue, label, source edit, patch publication or push was performed.
-This is a proposed issue specification prepared using `upstream-github-routing`
-under the implementation's external-mutation boundary. Subsequent authorization
-to publish Gaoxy source does not authorize upstream issue or source changes.
+Historical M1 record: no upstream issue, label, source edit, patch publication
+or push was performed when this specification was prepared under that task's
+external-mutation boundary. Current dependency discoveries follow the explicit
+upstream issue-routing instructions in `AGENTS.md`; routine issue creation is
+authorized there. Upstream source changes and publication still require their
+own authorization.

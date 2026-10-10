@@ -1,0 +1,86 @@
+# Gaoxy agent instructions
+
+## Continuing development authorization
+
+The user granted continuing authorization on 2026-10-10 for the existing product
+goals in `implement-plan.md`, beginning with M3. This authorization supersedes
+older routine development approval and phase-stop rules, including historical
+kickoff instructions limited to M0/M1 and old per-file scope lists.
+
+- Choose the recommended design and execution approach automatically. Complete
+  design, plans, implementation, necessary compatibility repairs, test-contract
+  updates, documentation, tests, independent review, and local conventional
+  commits without requesting individual `approve` responses.
+- Keep a written design and implementation plan for each stage. Advance to the
+  next planned stage after the prescribed verification and independent review
+  pass, without waiting for another routine stage approval.
+- Stay within the established product scope. A necessary compatibility repair
+  may touch files outside an older file list; this is not a reason to stop.
+- Diagnose and repair failed tests. Never weaken assertions, skip required
+  verification, or describe a failed, blocked, or unexecuted gate as passing.
+- Default to parallel agents for independent work. Give each writer explicit
+  ownership, preserve others' edits, and serialize dependent operations.
+  Sol handles implementation, debugging, tests, and routine independent review.
+  Astra may design architecture or take bounded recovery after two unsuccessful
+  Sol repair rounds or an evidenced technical impasse. Preserve cumulative
+  repair counters across handoffs; allow at most two Astra recovery rounds.
+- Stop only for new external permissions, a product decision the user must
+  make, or a genuine external blocker that cannot be resolved autonomously.
+  Continue other unblocked work when only one task is blocked.
+
+This authorization does not expand product scope or remove explicit Vault
+freezes, E2E restrictions, publication/deployment restrictions, or production
+data restrictions. The release-artifact E2E workflow remains disabled until its
+design and real suite meet the existing gate. Required local independent-peer
+and browser verification remains part of implementation acceptance. Do not
+push, publish packages/releases/images, deploy, alter production data, issue
+operational certificates, or enable a public management endpoint without the
+separate authorization required by the product plan.
+
+## Workspace and implementation
+
+- Put new worktrees in this project's `.trees/` directory; use `codex/` branches.
+- Preserve unrelated changes and untracked user files. Stage only task-owned
+  files. Omit generated-by and AI co-author trailers from commits.
+- State assumptions, prefer the smallest solution, match existing style, and
+  avoid unrelated cleanup or speculative features.
+- Use pure modules for configuration and policy; introduce processes only for
+  mutable runtime state, concurrency, or fault isolation.
+- Gaoxy owns server lifecycle and adapters. Use supported dependency APIs; do
+  not patch `deps/`, depend on private client processes, or hide Bandit as the
+  production server. Core-only consumers must remain isolated.
+- Do not ship an open proxy. Forward/CONNECT policies require explicit
+  authentication, destination rules, and validation at connection time.
+
+## Dependency issue routing
+
+For a dependency bug or missing required feature sourced from gsmlgorg,
+gsmlg-dev, duskmoon-dev, gsmlg-app, Gao-OS, gsmlg-opt, gsmlg-ci, gsmlg-games,
+or gsmlg-com:
+
+1. Identify the repository from package provenance.
+2. Create an upstream issue with `gh issue create --type Bug` or `--type Feature`,
+   label `internal request` (create the label if missing), and title
+   `[internal] <concise description>`.
+3. Include requesting `org/repo` and branch, need and rationale, minimal bug
+   reproduction or feature expectations, and severity `blocker`, `needed`, or
+   `nice-to-have`.
+4. Add `# TODO(upstream): org/repo#<number>` at the affected callsite.
+5. For a blocker, stop that task without a local workaround. Resume only after
+   the upstream issue is resolved and the dependency is updated. For lesser
+   severities, mark a temporary repair with
+   `# WORKAROUND(upstream): org/repo#<number>`.
+
+## Verification and acceptance
+
+- Run relevant scoped tests and required stage gates; compatibility tests needed
+  by the product goal are authorized. Diagnose failures instead of seeking a
+  routine approval. Unrelated failures stay visible and are not silently fixed.
+- Require nonzero executed tests. Record commands, environment, source identity,
+  counts, exits, and evidence, with PASS, FAIL, BLOCKED, and NOT RUN distinct.
+- Use real network/independent-peer tests for protocol acceptance and deterministic
+  synchronization for lifecycle races. Keep assertions and finite deadlines.
+- Complete independent specification and code review, resolve actionable findings,
+  then run fresh verification before committing or advancing a milestone.
+- Keep hosted CI, local evidence, publication, deployment, and production
+  acceptance separate. Do not infer one from another.

@@ -2,8 +2,18 @@
 
 **Date:** 2026-10-08  
 **Status:** Architecture and execution plan; not an implementation or acceptance report  
-**Initial execution scope:** M0 + M1, the transport-runtime foundation  
+**Initial execution scope (historical kickoff):** M0 + M1, the transport-runtime foundation
 **Companion:** `codex-prompt.md`
+
+**Current execution authorization (2026-10-10):** Begin M3 and continue through
+the existing milestone plan after each stage passes its prescribed verification
+and independent review. Automatically choose recommended designs, write stage
+designs/plans, implement, repair, document, test, review, and commit locally;
+routine per-action and per-stage approval is no longer required. Necessary
+compatibility fixes and test/documentation updates are authorized beyond older
+file lists. Historical M0/M1 stop rules below apply only to the kickoff.
+Product scope and explicit Vault, E2E, publication/deployment, and production
+data restrictions remain in force. See `AGENTS.md` for the continuing workflow.
 
 ## 1. Product and success criteria
 
