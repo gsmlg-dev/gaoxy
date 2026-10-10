@@ -115,24 +115,32 @@ destructive cleanup occurred. Agent Note scope was unavailable because
 
 ## Next milestones
 
-M2 native HTTP/1, WebSock, Plug/Phoenix, browser fixture and local routing are
-implemented and locally verified on `codex/m2-native`. **M2 remains incomplete**:
-minimal streaming reverse proxy and real remote-route acceptance are blocked on
-HTTP Fetch #45 (GET/DELETE request-body loss) and valid WebSocket close-code
-propagation in #38. On 2026-10-10 the selected published Fetch/Core/Runtime/
-WebSocket/QUIC/TLS-engine packages are 0.17.2; strict compilation and five
-public-API contract tests pass, and original #27–#30 are closed. The updated
-scoped suite passes 45 core + 82 HTTP + 5 contract tests (132 total); the fresh
-standalone core consumer passes strict compilation and 1 test. The configuration
-test now accounts for the engine installed by the umbrella dependency graph;
-runtime code is unchanged. Historical Phoenix fixture/browser evidence was not
-rerun because its source and independent lock are unchanged. Both new blocking
-probes exit 1. No proxy endpoint or workaround is implemented.
-Standalone core-only dependency isolation is separate from the updated umbrella
-graph, which now includes `elixir_quic`/`ex_ssl`; no H2/H3 support is implied.
-The full gate, candidate checks and remaining requirements are
-tracked in [M2 acceptance](acceptance/m2.md). Do not advance its completion marker
-or advertise proxy support from the native server results.
+M2 native HTTP/1, WebSock, Plug/Phoenix, browser fixture, local routing and
+message-level WebSocket reverse proxying are implemented on `codex/m2-native`.
+**M2 remains incomplete:** HTTP streaming proxy cleanup is blocked on HTTP Fetch
+[#60](https://github.com/gsmlg-dev/http_fetch/issues/60), a missing public
+request-owned transport completion barrier. There is no local workaround.
+
+The 2026-10-10 retry selects published Fetch/Core/Runtime/WebSocket/QUIC/TLS
+packages 0.18.1 at release commit `f3a72c7b5f059c9862b8fdc0221cffcdaddde301`.
+Original #27–#30 and subsequent #38/#45 are closed. Thirteen dependency contract
+tests cover raw bytes, ordered duplicates/trailers, early upload responses,
+GET/DELETE bodies, per-request streaming and WebSocket semantics. The two
+previously failing probes now exit 0. New native streaming and lifecycle seams
+have their own deterministic regressions. Current scoped results and fresh
+Phoenix/browser/core-consumer evidence are recorded in
+[M2 acceptance](acceptance/m2.md); historical bundles remain intact.
+
+The WebSocket endpoint uses a fixed upstream authority, verified WSS, finite
+message/queue/lifetime limits, acknowledged writes and external cleanup guardians.
+Guardians survive instance force-stop and confirm the public upstream PID's DOWN
+before issuing a cleanup receipt. Persistent reservations do not add active leases
+and are not erased by native byte updates or connection death.
+
+Standalone core-only dependency isolation is separate from the umbrella graph,
+which includes `elixir_quic`/`ex_ssl`; no H2/H3 support is implied. The HTTP
+streaming proxy and full reverse-proxy example remain undelivered until #60 is
+resolved and the dependency is updated.
 
 M3: HTTP/2 and complete gateway/relay policies. M4: independently
 verified HTTP/3. Optional ex_ssl TCP hosting needs the public server contract in

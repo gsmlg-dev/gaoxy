@@ -1,0 +1,80 @@
+==> gaoxy
+Running ExUnit with seed: 590857, max_cases: 1
+
+.
+09:44:23.568 [error] GenServer #PID<0.328.0> terminating
+** (ArgumentError) errors were found at the given arguments:
+
+  * 1st argument: the table identifier does not refer to an existing ETS table
+
+    (stdlib 7.3.0.1) :ets.internal_select_delete(#Reference<0.1774871343.3088187394.204952>, [{{"native", #PID<0.328.0>, :_}, [], [true]}])
+    (stdlib 7.3.0.1) ets.erl:1498: :ets.select_delete/2
+    (stdlib 7.3.0.1) ets.erl:2265: :ets.match_delete/2
+    (stdlib 7.3.0.1) gen_server.erl:2482: :gen_server.try_terminate/3
+    (stdlib 7.3.0.1) gen_server.erl:2733: :gen_server.terminate/9
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:EXIT, #PID<0.327.0>, :shutdown}
+State: %{control: nil, scope: %{instance: #Reference<0.1774871343.3088056322.204953>, service: "native", generation: #Reference<0.1774871343.3088056322.204958>}, table: #Reference<0.1774871343.3088187394.204951>, mode: :draining, spec: %{id: "native", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.CleanupAttachmentTest.Native, tls: %{}, transport: :tcp, handler_options: %{owner: #PID<0.324.0>}, handler_mode: :native, limits: %{max_bytes: 100, idle_timeout: 30000, max_active: 64, drain_timeout: 30, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}}, live: #Reference<0.1774871343.3088187394.204952>, drain: %{monitor: #Reference<0.1774871343.3088056322.205064>, monitors: [#Reference<0.1774871343.3088056322.205056>, #Reference<0.1774871343.3088056322.205057>, #Reference<0.1774871343.3088056322.205058>, #Reference<0.1774871343.3088056322.205059>, #Reference<0.1774871343.3088056322.205060>, #Reference<0.1774871343.3088056322.205061>, #Reference<0.1774871343.3088056322.205062>, #Reference<0.1774871343.3088056322.205063>], pid: #PID<0.342.0>, timer: #Reference<0.1774871343.3088056322.205065>, deadline: -576460749558, token: #Reference<0.1774871343.3088056322.205035>, phase: :confirming, waiters: [{#PID<0.326.0>, [:alias | #Reference<0.0.41731.1774871343.3088121858.205033>]}], outcome: {:cleanup_failed, {:error, {:deadline_exceeded, :cleanup_pending}}}, resources: [#PID<0.342.0>, #PID<0.329.0>, #PID<0.330.0>, #PID<0.331.0>, #PID<0.332.0>, #PID<0.333.0>, #PID<0.334.0>, #PID<0.335.0>, #PID<0.336.0>], cleanup_deadline: -576460748558}, generation: #Reference<0.1774871343.3088056322.204958>, backend: #PID<0.330.0>, gate: #PID<0.329.0>, cleanup_failed: nil, cleanups: %{#Reference<0.1774871343.3088056322.205027> => %{monitor: #Reference<0.1774871343.3088056322.205030>, guardian: #PID<0.341.0>, receipt: false}}, registry_policy: %{scope: %{instance: #Reference<0.1774871343.3088056322.204953>, service: "native", generation: #Reference<0.1774871343.3088056322.204958>}, backend: #PID<0.330.0>, owners: %{#Reference<0.1774871343.3088056322.204959> => #PID<0.230.0>}, recovery: nil}, backend_control: #Function<18.8710885/3 in Gaoxy.Service.backend_control>, drain_fun: &Gaoxy.Lifecycle.drain/4}
+
+
+  1) test external instance owner death cancels but does not kill a pending guardian (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:343
+     Assertion failed, no matching message after 1500ms
+     The following variables were pinned:
+       service_monitor = #Reference<0.1774871343.3088056322.205014>
+     Showing 3 of 3 messages in the mailbox
+     code: assert_receive {:DOWN, ^service_monitor, :process, service, :shutdown}
+     mailbox:
+       pattern: {:DOWN, ^service_monitor, :process, service, :shutdown}
+       value:   {:cancelled, #PID<0.341.0>,
+                 #Reference<0.1774871343.3088056322.205027>,
+                 :forced, -576460749558}
+
+       pattern: {:DOWN, ^service_monitor, :process, service, :shutdown}
+       value:   {:cancelled, #PID<0.341.0>,
+                 #Reference<0.1774871343.3088056322.205027>,
+                 :service_terminating, -576460748557}
+
+       pattern: {:DOWN, ^service_monitor, :process, service, :shutdown}
+       value:   {:DOWN, #Reference<0.1774871343.3088056322.205014>, :process,
+                 #PID<0.328.0>,
+                 {:badarg,
+                  [
+                    {:ets, :internal_select_delete,
+                     [
+                       #Reference<0.1774871343.3088187394.204952>,
+                       [
+                         {{"native", #PID<0.328.0>, :_}, [],
+                          [true]}
+                       ]
+                     ],
+                     [
+                       error_info: %{
+                         cause: :id,
+                         module: :erl_stdlib_errors
+                       }
+                     ]},
+                    {:ets, :select_delete, 2,
+                     [file: ~c"ets.erl", line: 1498]},
+                    {:ets, :match_delete, 2,
+                     [file: ~c"ets.erl", line: 2265]},
+                    {:gen_server, :try_terminate, 3,
+                     [file: ~c"gen_server.erl", line: 2482]},
+                    {:gen_server, :terminate, 9,
+                     [file: ~c"gen_server.erl", line: 2733]},
+                    {:proc_lib, :init_p_do_apply, 3,
+                     [file: ~c"proc_lib.erl", line: 333]}
+                  ]}}
+     stacktrace:
+       test/cleanup_attachment_test.exs:385: (test)
+
+.......
+09:44:25.261 [error] Task #PID<0.471.0> started from #PID<0.455.0> terminating
+** (stop) :injected
+    test/cleanup_attachment_test.exs:71: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<4.92605962/0 in Gaoxy.CleanupAttachmentTest.guardian/0>
+    Args: []
+....
+Finished in 3.6 seconds (3.6s async, 0.00s sync)
+13 tests, 1 failure

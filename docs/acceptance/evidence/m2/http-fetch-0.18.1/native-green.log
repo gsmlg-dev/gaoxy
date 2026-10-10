@@ -1,0 +1,43 @@
+==> gaoxy_http
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 956534, max_cases: 4
+
+...............................
+
+  1) test pending and socket errors retain expect state without duplicate Continue (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:33
+     ** (KeyError) key :bytes not found in: %{
+       active: 1,
+       rejected: 0,
+       retained_bytes: 70,
+       retained_high_water: 95,
+       queued_items: 0,
+       queued_bytes: 0
+     }
+     code: assert Gaoxy.Admission.status(failed.gate).bytes == Exchange.retained_bytes(failed)
+     stacktrace:
+       test/native_proxy_seams_test.exs:47: (test)
+
+.
+
+  2) test step retains fragmented chunk-size and trailers across pending waits (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:12
+     ** (KeyError) key :bytes not found in: %{
+       active: 1,
+       rejected: 0,
+       retained_bytes: 128,
+       retained_high_water: 132,
+       queued_items: 0,
+       queued_bytes: 0
+     }
+     code: assert Gaoxy.Admission.status(next.gate).bytes == Exchange.retained_bytes(next)
+     stacktrace:
+       test/native_proxy_seams_test.exs:30: (test)
+
+....................
+Finished in 1.9 seconds (1.9s async, 0.00s sync)
+54 tests, 2 failures

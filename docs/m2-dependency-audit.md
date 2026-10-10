@@ -1,7 +1,7 @@
 # M2 dependency audit — 2026-10-10
 
 Source contracts were refreshed before native server implementation on
-2026-10-09 and revalidated against published HTTP Fetch 0.17.2 on 2026-10-10.
+2026-10-09 and revalidated against published HTTP Fetch 0.18.1 on 2026-10-10.
 These are contract/provenance records; compatibility requires Gaoxy's own
 network and browser acceptance.
 
@@ -12,8 +12,8 @@ network and browser acceptance.
 | WebSockAdapter | phoenixframework/websock_adapter `80901f46c8864cb8bd5231c32b7171b9d0e330ce`; local fork `53ee1c7c9edb39fda9c531a5c79aec17ee081a6c` | 0.6.0 | MIT | Vendored immutable source, one runtime dispatch clause, independent review and wire regression passed; see `vendor/websock_adapter/GAOXY.md` |
 | Phoenix | phoenixframework/phoenix `bd1801833b4fd7ceb02497cc7ba2d05e9bd391c8` | 1.8.15 | MIT | External fixture lock; browser and independent network acceptance passed |
 | Phoenix LiveView | Exact Hex checksums in `examples/phoenix_native/mix.lock` | 1.2.12 | MIT | External fixture only; real click, binary upload and reconnect passed |
-| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.17.2 tag `500fbb90ce4eeddbba16b9bb5da91f70f0764995` | 0.17.2 | MIT | Exact published Hex packages/checksums in root lock; library files match release source; five public-API contract tests pass |
-| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.17.2 source release; Hex checksums in root lock | 0.17.2 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
+| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.18.1 tag `f3a72c7b5f059c9862b8fdc0221cffcdaddde301` | 0.18.1 | MIT | Exact published Hex packages/checksums in root lock; library files match release source; thirteen public-API contract tests pass |
+| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.18.1 source release; Hex checksums in root lock | 0.18.1 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
 
 The native server continues using the locked public Thousand Island socket
 contract and OTP TLS. Core gains no HTTP application dependency. Phoenix stays
@@ -55,12 +55,12 @@ uploads use `HTTP.Stream` and `duplex: "half"`. Response streams support explici
 ACK mode: `{:read_chunk, consumer, :ack}`, one
 `{:stream_chunk, stream, bytes, ref}`, then `{:stream_chunk_ack, ref}`. The other
 mode can send subsequent chunks eagerly and is unsuitable for bounded mailboxes.
-Streaming is automatic for chunked/unknown or sufficiently large bodies; the
-global threshold defaults to 5,000,000 bytes, without a per-request force-stream
-option. A future proxy can require explicit static startup
-`streaming_threshold: 0`, validate it at initialization and never mutate it per
-request. Under this documented host constraint, per-request streaming issue
-[#37](https://github.com/gsmlg-dev/http_fetch/issues/37) is not an M2 blocker.
+`stream_response: true` now forces streaming for a single request, including
+small Content-Length bodies. A controlled peer holds the body until the Promise
+has returned response headers; the public-API regression passes without changing
+global configuration. The earlier proposed static streaming threshold is unnecessary.
+`request_mode: :proxy` preserves supported GET/DELETE request entities. Use fixed
+supported method atoms rather than creating atoms from untrusted method strings.
 Duplicate headers survive ordered lists; converting headers to a map would
 discard them.
 
@@ -69,7 +69,8 @@ barrier or proof that an upstream request was unexecuted. No automatic replay is
 appropriate. `redirect: :manual` prevents reverse-proxy redirect following.
 The OTP SSL transport supports explicit verified TLS, CAs, hostname matching and
 SNI; Gaoxy must not accept configuration that silently disables this policy.
-H1 closes connections after responses; H2/H3 reuse does not establish H1 pooling.
+`http1_reuse: false` scopes a future H1 HTTP proxy request to its own transport;
+this does not by itself expose cleanup completion. H2/H3 reuse is outside M2.
 
 ## Historical 0.17.1 blockers
 
@@ -103,9 +104,9 @@ execution. It compiled only selected untouched H1 modules into memory with the
 existing Telemetry dependency; uncompiled H2/H3 references produce warnings.
 This is focused reproduction evidence, not full upstream package acceptance.
 
-## Published 0.17.2 revalidation
+## Historical published 0.17.2 revalidation
 
-The root lock now selects the actual Hex packages `http_fetch`, `http_core`,
+The earlier 2026-10-10 root lock selected the actual Hex packages `http_fetch`, `http_core`,
 `http_runtime`, `http_web_socket`, `elixir_quic`, `elixir_quic_http3` and `ex_ssl`
 at 0.17.2. Other existing lock entries are unchanged. Strict umbrella compilation
 passed. The Fetch/Core/Runtime/WebSocket published library sources match the
@@ -129,13 +130,13 @@ passed with the published dependency graph:
    negotiated subprotocol, ACK delivery, acknowledged text/binary writes,
    normal close and owner cleanup.
 
-Original #27–#30 are CLOSED as of the 2026-10-10 issue refresh. Two remaining
-required contracts fail against the same published packages:
+Original #27–#30 were CLOSED at that refresh. Two required contracts still
+failed against 0.17.2 (the newer release below resolves both):
 
 | Contract | Observed result | Upstream blocker |
 |---|---|---|
-| Forward supported GET/DELETE request bodies | POST preserves `abc` with Content-Length 3; GET/DELETE send an empty body and remove Content-Length, while all calls return 200 | New Bug [#45](https://github.com/gsmlg-dev/http_fetch/issues/45), OPEN |
-| Propagate valid WebSocket close codes | 1000 returns `:ok`; 1001/1008/1011 return `{:error, :invalid_close_code}` | Valid-close-code subset of Feature [#38](https://github.com/gsmlg-dev/http_fetch/issues/38), OPEN |
+| Forward supported GET/DELETE request bodies | POST preserves `abc` with Content-Length 3; GET/DELETE send an empty body and remove Content-Length, while all calls return 200 | New Bug [#45](https://github.com/gsmlg-dev/http_fetch/issues/45), OPEN at that check |
+| Propagate valid WebSocket close codes | 1000 returns `:ok`; 1001/1008/1011 return `{:error, :invalid_close_code}` | Valid-close-code subset of Feature [#38](https://github.com/gsmlg-dev/http_fetch/issues/38), OPEN at that check |
 
 Both have the `internal request` label. The
 [method-body probe](../integration/http_fetch_contract/method_body_probe.exs)
@@ -146,8 +147,40 @@ fresh native WebSock connection per code and confirms owner cleanup; its 1000
 cleanup after a rejected code does not preserve the requested semantics.
 
 M2 requires message-level WebSocket forwarding with valid close-code propagation;
-exact frame fragmentation and ping/pong forwarding are not required. The proxy
-task remains blocked on #45 and this subset of #38. No proxy endpoint, private
-API bypass, method rewrite, body-dropping fallback or close-code mapping is
-implemented. Native server, WebSock/Phoenix and local routing results retain
-their independently recorded scope; full M2 is incomplete.
+exact frame fragmentation and ping/pong forwarding are not required. These two
+contracts blocked the previous retry; the 0.17.2 evidence bundle remains intact.
+
+## Published 0.18.1 revalidation
+
+The selected seven Hex packages are now 0.18.1. Fetch/Core/Runtime/WebSocket library
+files match the release archive byte-for-byte (15/31/19/10 files). The release tag
+identifies commit `f3a72c7b5f059c9862b8fdc0221cffcdaddde301`. Other lock entries are
+unchanged. Package API metadata, release/issue state, source hashes and fresh logs
+are preserved in [the separate evidence bundle](acceptance/evidence/m2/http-fetch-0.18.1/).
+
+Thirteen dependency contract tests pass. In addition to the original five, these
+cover buffered and PID-streamed GET/DELETE bodies with `request_mode: :proxy`,
+WebSocket 1001/1008/1011 closes with `mode: :proxy`, and per-request fixed-length
+streaming before body EOF. The standalone probes pass all six POST/DELETE/GET
+body cases and all four 1000/1001/1008/1011 close cases. #38 and #45 are CLOSED.
+
+`HTTP.WebSocket` proxy mode reassembles data messages and delivers acknowledged
+`Event.Frame` events. Gaoxy leaves automatic Pong enabled on each hop, acknowledges
+upstream data only after downstream writes complete, and awaits every upstream
+`send_frame_ack/2` result before locally closing. Valid/empty Close details and
+negotiated subprotocols survive. The documented public socket PID's DOWN confirms
+upstream cleanup, so the independent WebSocket slice can proceed.
+
+HTTP request cleanup still lacks that public boundary. `AbortController.abort/1`
+only signals cancellation; a streamed Promise ends at headers, and the response
+stream can terminate before the request owner closes its transport. This is a
+missing synchronization contract, not evidence that ordinary cancellation leaks
+sockets. Feature [#60](https://github.com/gsmlg-dev/http_fetch/issues/60), label
+`internal request`, requests a bounded request-scoped completion handle before
+establishment, across upload and post-header streaming. See the
+[source-backed request](dependency-requests/http-fetch-cancellation-completion.md).
+
+Full HTTP reverse-proxy cleanup, SSE/body streaming and the complete reverse-proxy
+example remain BLOCKED on #60. Gaoxy does not inspect private Agent state, process
+links or SocketClient internals to infer successful cleanup. Native HTTP seams and
+the WebSocket reverse proxy have independently scoped evidence; M2 is incomplete.

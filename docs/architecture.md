@@ -50,17 +50,22 @@ Native TCP/TLS handlers preserve Service/Admission ownership and admit each new
 request against the lifecycle barrier. WebSocket upgrade retains the connection
 owner and establishes one bounded protocol lifetime. See
 [ADR 006](adr/006-native-http.md) and [native HTTP limits](native-http.md).
-`gaoxy_proxy` will
-implement upstream policy and endpoints over that contract. `gaoxy_server` owns
-versioned JSON loading, a fixed handler allowlist and release startup using the
-same runtime. Its `prep_stop` drains the embedded instance. No management server
-or proxy placeholder is added. The selected published HTTP Fetch/WebSocket
-0.17.2 packages pass the original #27–#30 contract regressions. Request-body
-preservation (#45) and valid WebSocket close codes (#38) still block the proxy
-and full M2 acceptance; native local routing is independently tested. The proxy
-package transitively installs QUIC/TLS engines, while standalone core consumers
-retain isolation. Dependency presence implies no H2/H3 support. See
-[the dependency audit](m2-dependency-audit.md).
+`gaoxy_proxy` implements a message-level WebSocket upstream endpoint over that
+contract. Its application supervises temporary session guardians outside the
+per-instance forced-cleanup subtree. Service serializes attachment with drain;
+Admission charges an independent reservation against the original connection
+lease. Cleanup succeeds only after an authenticated receipt and normal guardian
+DOWN, following the public upstream WebSocket PID's termination. Gate, connection,
+service and instance death independently trigger cancellation. Failed guardians
+fail admission closed; deadline expiry retains cleanup-pending semantics.
+
+`gaoxy_server` owns versioned JSON loading, a fixed handler allowlist and release
+startup using the same runtime. Its `prep_stop` drains the embedded instance. No
+management server or HTTP proxy placeholder is added. HTTP Fetch/WebSocket 0.18.1
+fixes #27–#30, #38 and #45. Full HTTP proxy integration remains blocked on the
+public cancellation-completion contract in #60. The proxy package transitively
+installs QUIC/TLS engines while standalone core consumers retain isolation;
+dependency presence implies no H2/H3 support. See [the dependency audit](m2-dependency-audit.md).
 
 ## Optional generic QUIC
 

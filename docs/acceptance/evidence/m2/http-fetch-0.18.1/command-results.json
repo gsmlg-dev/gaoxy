@@ -1,0 +1,116 @@
+{
+  "date": "2026-10-10",
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "scoped_tests": {
+    "gaoxy": 66,
+    "gaoxy_http": 101,
+    "gaoxy_proxy": 30,
+    "failures": 0,
+    "seed": 121875,
+    "max_cases": 1
+  },
+  "results": [
+    {
+      "check": "final-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "final-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "final-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test",
+        "apps/gaoxy_proxy/test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy/test/runtime_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/send_outcome_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/shutdown_hardening_test.exs"
+      ],
+      "exit_code": 0
+    },
+    {
+      "check": "published-method-body-probe",
+      "command": [
+        "mix",
+        "run",
+        "integration/http_fetch_contract/method_body_probe.exs"
+      ],
+      "exit_code": 0,
+      "passed_cases": 6
+    },
+    {
+      "check": "published-websocket-close-probe",
+      "command": [
+        "mix",
+        "run",
+        "integration/http_fetch_contract/websocket_close_probe.exs"
+      ],
+      "exit_code": 0,
+      "passed_cases": 4
+    },
+    {
+      "check": "independent-phoenix-fixture",
+      "cwd": "examples/phoenix_native",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors"
+      ],
+      "exit_code": 0,
+      "tests": 2
+    },
+    {
+      "check": "chromium-independent-peers",
+      "command": [
+        ".audit/browser-venv/bin/python",
+        "integration/phoenix_native/run.py"
+      ],
+      "exit_code": 0,
+      "passed_checks": 13
+    },
+    {
+      "check": "fresh-core-consumer",
+      "command": [
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "status": "PASS",
+      "exit_code": 0,
+      "tests": 1,
+      "seed": 585828
+    },
+    {
+      "check": "http-request-cancellation-completion",
+      "status": "BLOCKED",
+      "issue": "https://github.com/gsmlg-dev/http_fetch/issues/60",
+      "scope": "HTTP/1 request-owned transport cleanup; not WebSocket"
+    }
+  ],
+  "source_commit": "abb2e4ed5d0df78c64898371d2e4ebb24525619f",
+  "checked_at": "2026-10-10T01:50:56.996574+00:00"
+}

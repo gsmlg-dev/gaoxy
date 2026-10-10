@@ -1,0 +1,253 @@
+==> gaoxy_http
+Running ExUnit with seed: 823191, max_cases: 4
+
+    warning: Gaoxy.HTTP.Exchange.read_body_step/3 is undefined or private. Did you mean:
+
+          * read_body/3
+
+    │
+ 14 │     assert {:pending, next} = Exchange.read_body_step(exchange, 2, 5)
+    │                                        ~
+    │
+    └─ test/native_proxy_seams_test.exs:14:40: Gaoxy.HTTP.NativeProxySeamsTest."test step retains fragmented chunk-size and trailers across pending waits"/1
+    └─ test/native_proxy_seams_test.exs:20:43: Gaoxy.HTTP.NativeProxySeamsTest."test step retains fragmented chunk-size and trailers across pending waits"/1
+    └─ test/native_proxy_seams_test.exs:21:40: Gaoxy.HTTP.NativeProxySeamsTest."test step retains fragmented chunk-size and trailers across pending waits"/1
+    └─ test/native_proxy_seams_test.exs:26:39: Gaoxy.HTTP.NativeProxySeamsTest."test step retains fragmented chunk-size and trailers across pending waits"/1
+    └─ test/native_proxy_seams_test.exs:35:40: Gaoxy.HTTP.NativeProxySeamsTest."test pending and socket errors retain expect state without duplicate Continue"/1
+    └─ test/native_proxy_seams_test.exs:38:40: Gaoxy.HTTP.NativeProxySeamsTest."test pending and socket errors retain expect state without duplicate Continue"/1
+    └─ test/native_proxy_seams_test.exs:41:42: Gaoxy.HTTP.NativeProxySeamsTest."test pending and socket errors retain expect state without duplicate Continue"/1
+    └─ test/native_proxy_seams_test.exs:43:49: Gaoxy.HTTP.NativeProxySeamsTest."test pending and socket errors retain expect state without duplicate Continue"/1
+    └─ test/native_proxy_seams_test.exs:54:25: Gaoxy.HTTP.NativeProxySeamsTest."test step validates arguments and caps wait at the original request deadline"/1
+    └─ test/native_proxy_seams_test.exs:58:25: Gaoxy.HTTP.NativeProxySeamsTest."test step validates arguments and caps wait at the original request deadline"/1
+    └─ test/native_proxy_seams_test.exs:62:48: Gaoxy.HTTP.NativeProxySeamsTest."test step validates arguments and caps wait at the original request deadline"/1
+    └─ test/native_proxy_seams_test.exs:65:49: Gaoxy.HTTP.NativeProxySeamsTest."test step validates arguments and caps wait at the original request deadline"/1
+    └─ test/native_proxy_seams_test.exs:71:23: Gaoxy.HTTP.NativeProxySeamsTest."test parser and admission errors retain decoder and buffered input"/1
+    └─ test/native_proxy_seams_test.exs:76:53: Gaoxy.HTTP.NativeProxySeamsTest."test parser and admission errors retain decoder and buffered input"/1
+
+    warning: Gaoxy.HTTP.HTTP1.Response.finish/2 is undefined or private
+    │
+ 92 │     assert {:ok, next} = Response.finish(next, [{"x-two", "a"}, {"x-one", "b"}, {"x-two", "c"}])
+    │                                   ~
+    │
+    └─ test/native_proxy_seams_test.exs:92:35: Gaoxy.HTTP.NativeProxySeamsTest."test finish emits ordered duplicate trailers and exactly one terminator"/1
+    └─ test/native_proxy_seams_test.exs:105:37: Gaoxy.HTTP.NativeProxySeamsTest."test finish validates prohibited, malformed, undeclared, and bounded trailers before writing"/1
+    └─ test/native_proxy_seams_test.exs:108:23: Gaoxy.HTTP.NativeProxySeamsTest."test finish validates prohibited, malformed, undeclared, and bounded trailers before writing"/1
+    └─ test/native_proxy_seams_test.exs:110:23: Gaoxy.HTTP.NativeProxySeamsTest."test finish validates prohibited, malformed, undeclared, and bounded trailers before writing"/1
+    └─ test/native_proxy_seams_test.exs:132:60: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+
+    warning: Gaoxy.HTTP.HTTP1.Response.finish/1 is undefined or private
+    │
+ 94 │     assert {:ok, ^next} = Response.finish(next)
+    │                                    ~
+    │
+    └─ test/native_proxy_seams_test.exs:94:36: Gaoxy.HTTP.NativeProxySeamsTest."test finish emits ordered duplicate trailers and exactly one terminator"/1
+    └─ test/native_proxy_seams_test.exs:127:58: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+    └─ test/native_proxy_seams_test.exs:128:49: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+    └─ test/native_proxy_seams_test.exs:129:49: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+    └─ test/native_proxy_seams_test.exs:130:62: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+    └─ test/native_proxy_seams_test.exs:131:57: Gaoxy.HTTP.NativeProxySeamsTest."test finish checks fixed length and completes bodyless and close streams"/1
+
+
+
+  1) test finish validates prohibited, malformed, undeclared, and bounded trailers before writing (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:100
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP1.Response.finish/2 is undefined or private
+     code: for trailers <- [[{"content-length", "1"}], [{"x-other", "a"}], [{"x-one", "a\r\nb"}], [{"X-One", "a"}], :invalid] do
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.HTTP1.Response.finish(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :none, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.23>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205058.192124>, start_time: -576460749892741375, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192124>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192124>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.303.0>, lease: #Reference<0.1889613740.668205058.192113>, deadline: -576460748861, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :done, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "", peer: {{127, 0, 0, 1}, 59492}, local: {{127, 0, 0, 1}, 57005}, response: :chunked, close: false, expect_sent: false}, [{"content-length", "1"}])
+       test/native_proxy_seams_test.exs:105: anonymous fn/3 in Gaoxy.HTTP.NativeProxySeamsTest."test finish validates prohibited, malformed, undeclared, and bounded trailers before writing"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/native_proxy_seams_test.exs:104: (test)
+
+
+
+  2) test pending and socket errors retain expect state without duplicate Continue (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:33
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.Exchange.read_body_step/3 is undefined or private. Did you mean:
+
+           * read_body/3
+
+     code: assert {:pending, next} = Exchange.read_body_step(exchange, 1, 5)
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.Exchange.read_body_step(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: {:length, 2}, keep_alive: true, expect_continue: true}, socket: %ThousandIsland.Socket{socket: #Port<0.26>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205058.192326>, start_time: -576460749835940878, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192326>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192326>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.308.0>, lease: #Reference<0.1889613740.668205057.200168>, deadline: -576460748836, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: {:length, 2}, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "", peer: {{127, 0, 0, 1}, 56388}, local: {{127, 0, 0, 1}, 37227}, response: :unset, close: false, expect_sent: false}, 1, 5)
+       test/native_proxy_seams_test.exs:35: (test)
+
+
+
+  3) test step validates arguments and caps wait at the original request deadline (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:50
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.Exchange.read_body_step/3 is undefined or private. Did you mean:
+
+           * read_body/3
+
+     code: for credit <- [0, -1, :infinity] do
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.Exchange.read_body_step(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: {:length, 1}, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.29>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205058.192379>, start_time: -576460749834102877, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192379>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205058.192379>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.312.0>, lease: #Reference<0.1889613740.668205058.192371>, deadline: -576460748834, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: {:length, 1}, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "", peer: {{127, 0, 0, 1}, 57536}, local: {{127, 0, 0, 1}, 49093}, response: :unset, close: false, expect_sent: false}, 0, 1)
+       test/native_proxy_seams_test.exs:54: anonymous fn/3 in Gaoxy.HTTP.NativeProxySeamsTest."test step validates arguments and caps wait at the original request deadline"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/native_proxy_seams_test.exs:52: (test)
+
+
+
+  4) test invalid trailer declarations fail before a head is committed (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:114
+     match (=) failed
+     code:  assert {:error, :invalid_response_trailers} =
+              Response.send_chunked(exchange, 200, [{"trailer", declaration}])
+     left:  {:error, :invalid_response_trailers}
+     right: {:ok,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: "/",
+                 target_form: :origin,
+                 version: :"HTTP/1.1",
+                 path: "/",
+                 query_string: "",
+                 host: "localhost",
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 35,
+                 headers: [{"host", "localhost"}],
+                 body: :none,
+                 keep_alive: true,
+                 expect_continue: false
+               },
+               socket: %ThousandIsland.Socket{
+                 socket: #Port<0.32>,
+                 transport_module: ThousandIsland.Transports.TCP,
+                 read_timeout: 1000,
+                 handshake_timeout: 1000,
+                 silent_terminate_on_error: false,
+                 span: %ThousandIsland.Telemetry{
+                   span_name: :connection,
+                   telemetry_span_context: #Reference<0.1889613740.668205058.192415>,
+                   start_time: -576460749832705535,
+                   start_metadata: %{
+                     handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                     telemetry_span_context: #Reference<0.1889613740.668205058.192415>
+                   },
+                   handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                   span_metadata: %{
+                     handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                     telemetry_span_context: #Reference<0.1889613740.668205058.192415>
+                   }
+                 },
+                 read_timer: nil,
+                 read_deadline: nil,
+                 timer_deadline: nil
+               },
+               gate: #PID<0.315.0>,
+               lease: #Reference<0.1889613740.668205058.192407>,
+               deadline: -576460748833,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32,
+                 read_timeout: 5000,
+                 max_write_chunk: 1024,
+                 max_read_chunk: 16384,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_header_bytes: 32768,
+                 max_headers: 100,
+                 max_request_line: 8192
+               },
+               body: %Gaoxy.HTTP.HTTP1.Body{
+                 phase: :done,
+                 total: 0,
+                 trailers: [],
+                 trailer_bytes: 0,
+                 limits: %{
+                   max_buffer_bytes: 65536,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32,
+                   read_timeout: 5000,
+                   max_write_chunk: 1024,
+                   max_read_chunk: 16384,
+                   write_timeout: 5000,
+                   request_timeout: 30000,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_header_bytes: 32768,
+                   max_headers: 100,
+                   max_request_line: 8192
+                 }
+               },
+               buffer: "",
+               peer: {{127, 0, 0, 1}, 49470},
+               local: {{127, 0, 0, 1}, 41445},
+               response: :chunked,
+               close: false,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/native_proxy_seams_test.exs:117: anonymous fn/3 in Gaoxy.HTTP.NativeProxySeamsTest."test invalid trailer declarations fail before a head is committed"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/native_proxy_seams_test.exs:116: (test)
+
+
+
+  5) test step retains fragmented chunk-size and trailers across pending waits (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:12
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.Exchange.read_body_step/3 is undefined or private. Did you mean:
+
+           * read_body/3
+
+     code: assert {:pending, next} = Exchange.read_body_step(exchange, 2, 5)
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.Exchange.read_body_step(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :chunked, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.35>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205057.200190>, start_time: -576460749829651253, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200190>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200190>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.318.0>, lease: #Reference<0.1889613740.668205057.200184>, deadline: -576460748830, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :chunk_size, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "2\r", peer: {{127, 0, 0, 1}, 42170}, local: {{127, 0, 0, 1}, 57993}, response: :unset, close: false, expect_sent: false}, 2, 5)
+       test/native_proxy_seams_test.exs:14: (test)
+
+
+
+  6) test endpoint error after committing chunked response closes without a success terminator (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:136
+     ** (CaseClauseError) no case clause matching: {:error, :timeout}
+     code: wire = receive_all(client, "")
+     stacktrace:
+       test/native_proxy_seams_test.exs:177: Gaoxy.HTTP.NativeProxySeamsTest.receive_all/2
+       test/native_proxy_seams_test.exs:148: (test)
+
+.
+
+  7) test finish checks fixed length and completes bodyless and close streams (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:125
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP1.Response.finish/1 is undefined or private
+     code: assert {:error, :content_length_mismatch} = Response.finish(%{exchange | response: {:fixed_stream, 1}})
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.HTTP1.Response.finish(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :none, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.44>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205057.200553>, start_time: -576460748730948234, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200553>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200553>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.340.0>, lease: #Reference<0.1889613740.668205057.200547>, deadline: -576460747731, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :done, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "", peer: {{127, 0, 0, 1}, 45058}, local: {{127, 0, 0, 1}, 57327}, response: {:fixed_stream, 1}, close: false, expect_sent: false})
+       test/native_proxy_seams_test.exs:127: (test)
+
+
+
+  8) test parser and admission errors retain decoder and buffered input (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:68
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.Exchange.read_body_step/3 is undefined or private. Did you mean:
+
+           * read_body/3
+
+     code: Exchange.read_body_step(exchange, 2, 1)
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.Exchange.read_body_step(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :chunked, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.47>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205057.200584>, start_time: -576460748729291066, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200584>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200584>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.343.0>, lease: #Reference<0.1889613740.668205057.200578>, deadline: -576460747730, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :chunk_size, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "z\r\n", peer: {{127, 0, 0, 1}, 41056}, local: {{127, 0, 0, 1}, 32827}, response: :unset, close: false, expect_sent: false}, 2, 1)
+       test/native_proxy_seams_test.exs:71: (test)
+
+
+
+  9) test finish emits ordered duplicate trailers and exactly one terminator (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:88
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP1.Response.finish/2 is undefined or private
+     code: assert {:ok, next} = Response.finish(next, [{"x-two", "a"}, {"x-one", "b"}, {"x-two", "c"}])
+     stacktrace:
+       (gaoxy_http 0.1.0) Gaoxy.HTTP.HTTP1.Response.finish(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :none, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.50>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.1889613740.668205057.200610>, start_time: -576460748727983124, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200610>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.1889613740.668205057.200610>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.346.0>, lease: #Reference<0.1889613740.668205057.200604>, deadline: -576460747728, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :done, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 1024, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192}}, buffer: "", peer: {{127, 0, 0, 1}, 49560}, local: {{127, 0, 0, 1}, 52525}, response: :chunked, close: false, expect_sent: false}, [{"x-two", "a"}, {"x-one", "b"}, {"x-two", "c"}])
+       test/native_proxy_seams_test.exs:92: (test)
+
+
+Finished in 1.7 seconds (1.7s async, 0.00s sync)
+10 tests, 9 failures

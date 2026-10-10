@@ -1,49 +1,37 @@
 # HTTP Fetch public contract revalidation
 
-## Published 0.17.2
+## Published 0.18.1
 
-The Gaoxy root lock selects published Fetch/Core/Runtime/WebSocket and their
-QUIC/TLS-engine dependencies at 0.17.2. The upstream release tag points to
-`500fbb90ce4eeddbba16b9bb5da91f70f0764995`; published Fetch/Core/Runtime/WebSocket
-library files match that archive. The original #27–#30 issues are closed.
+The root lock selects the seven published Fetch/Core/Runtime/WebSocket/QUIC/TLS
+packages at 0.18.1, release commit `f3a72c7b5f059c9862b8fdc0221cffcdaddde301`.
+Fetch/Core/Runtime/WebSocket library files match that archive. #27–#30, #38 and
+#45 are closed.
 
-From the Gaoxy worktree root, run the public-API contract tests:
+From the worktree root:
 
 ```sh
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix test --warnings-as-errors \
   apps/gaoxy_proxy/test/http_fetch_contract_test.exs
-```
-
-Five tests passed on 2026-10-10: buffered/ACK-streamed raw gzip and duplicate
-headers, trailers before stream end, early 413 with upload stop, declared upload
-trailers, and WebSocket upgrade/initial bytes/subprotocol/ACK writes/normal
-cleanup. These are dependency contract checks, not full proxy acceptance.
-
-Two required contracts remain blocked. Reproduce them with the same published
-packages, without modifying dependencies:
-
-```sh
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/method_body_probe.exs
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/websocket_close_probe.exs
 ```
 
-Each probe currently exits **1**, preserving actual failed gates:
+Thirteen tests pass, covering original raw bytes/trailers/early-response/WS
+contracts plus buffered/PID GET/DELETE entities, valid WebSocket close codes and
+small fixed-length streaming before body EOF. Both probes now exit **0**: six
+POST/GET/DELETE body cases and four exact close-code cases. The fixes require
+`request_mode: :proxy` and WebSocket `mode: :proxy`; browser defaults intentionally
+retain their browser restrictions. `stream_response: true` is per request and
+replaces the earlier proposed global threshold constraint.
 
-- [#45](https://github.com/gsmlg-dev/http_fetch/issues/45): POST sends `abc` and
-  Content-Length 3; GET/DELETE discard the same body and Content-Length.
-- The valid-close-code subset of
-  [#38](https://github.com/gsmlg-dev/http_fetch/issues/38): WebSocket close 1000
-  succeeds; 1001/1008/1011 return `{:error, :invalid_close_code}`. Each code uses
-  a fresh native WebSock connection and confirms cleanup. Closing with 1000 after
-  a rejection is probe cleanup, not proxy close-code preservation.
-
-The [current audit](../../docs/m2-dependency-audit.md) explains the scope and
-static startup `streaming_threshold: 0` constraint for future proxy work.
-[New evidence](../../docs/acceptance/evidence/m2/http-fetch-0.17.2/) is separate
-from the historical native acceptance bundle. Full M2 remains incomplete;
-no proxy endpoint or dependency workaround is implemented.
+The [current audit](../../docs/m2-dependency-audit.md) and
+[0.18.1 evidence](../../docs/acceptance/evidence/m2/http-fetch-0.18.1/)
+record these dependency gates separately from the historical 0.17.2 failures.
+Full HTTP proxy integration remains blocked by the missing request cancellation
+completion contract in [#60](https://github.com/gsmlg-dev/http_fetch/issues/60).
+The WebSocket proxy has its own wire/TLS/lifecycle acceptance tests.
 
 ## Historical 0.17.1 reproduction
 
@@ -68,4 +56,4 @@ early 413. Undefined H2/H3 module warnings are expected because only H1 modules
 are compiled in memory. The recorded log used the same source files from the
 audit snapshot. The separately source-audited 101 upgrade ownership gap was #30.
 Do not count historical defect output as a passing proxy gate or as current
-0.17.2 behavior.
+0.18.1 behavior.

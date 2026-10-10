@@ -117,15 +117,27 @@ forwarding-header trust, or header mutation during selection. Parsing and
 authority/framing validation occur first; the selected endpoint then applies
 its explicit policy. H1 absolute-target authority must agree with Host.
 
-The same endpoint contract admits future proxy targets without making
-`gaoxy_http` depend on `gaoxy_proxy`. Published HTTP Fetch 0.17.2 passes the
-original #27–#30 public-contract regressions. Actual remote routing and
-reverse-proxy streaming remain blocked by GET/DELETE body loss
-[#45](https://github.com/gsmlg-dev/http_fetch/issues/45) and valid WebSocket
-close-code propagation in [#38](https://github.com/gsmlg-dev/http_fetch/issues/38);
-see [the dependency audit](m2-dependency-audit.md). No proxy endpoint is shipped.
-A future proxy requires static startup `streaming_threshold: 0`, checked at
-initialization without per-request global mutation. Its selected dependency
-graph includes QUIC/TLS-engine packages; standalone core consumers remain
-isolated. These dependencies do not add H2/H3 server support. M2 is incomplete
-until the proxy gates pass.
+The endpoint contract also supports the independently implemented
+[WebSocket reverse proxy](websocket-proxy.md), without making `gaoxy_http` depend
+on `gaoxy_proxy`. HTTP Fetch 0.18.1 preserves GET/DELETE bodies and valid WebSocket
+close codes. Full HTTP streaming proxy integration remains blocked on request
+cancellation-completion [#60](https://github.com/gsmlg-dev/http_fetch/issues/60).
+Per-request `stream_response: true` replaces the earlier proposed global threshold
+constraint. These dependencies add no H2/H3 server support.
+
+Native endpoints can call `Exchange.read_body_step(exchange, credit, wait_ms)`
+with positive credit and finite nonnegative wait. It returns `{:more, bytes, next}`,
+`{:ok, bytes, next}`, `{:pending, next}` or `{:error, reason, next}`. Preserve `next`
+on every result; waiting does not renew the request deadline. The existing blocking
+Plug body reader retains its API. `HTTP1.Response.finish(exchange, trailers)`
+completes a stream once; nonempty trailers require a validated `Trailer`
+declaration, retain ordered duplicates and obey count/byte limits. HTTP/1.0 and
+fixed-length responses cannot send trailers. An endpoint error after commitment
+closes the connection without a successful terminal chunk or second response.
+
+The optional native WebSock callback `gaoxy_close({code_or_nil, reason}, state)`
+returns `{:ok, state}` before the server echoes peer Close. Ordinary WebSock
+termination remains `terminate(:remote, state)`. A native callback result
+`{:gaoxy_push, messages, {recipient, ref}, state}` delivers
+`{:gaoxy_websocket_written, ref, result}` after local writes finish; only `:ok`
+permits an upstream delivery acknowledgment. `{nil, ""}` preserves an empty Close.

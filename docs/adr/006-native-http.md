@@ -46,21 +46,21 @@ Routes use first-declared matching precedence, immutable compiled entries,
 normalized hosts, case-sensitive methods, and exact or segment-prefix raw paths. Paths
 retain their escaping; matching never repeatedly decodes input. Invalid
 authorities and ambiguous framing are rejected before dispatch. Upstream
-authority/SNI and forwarding-header policy remain part of the blocked proxy work.
+authority/SNI comes from fixed trusted WebSocket endpoint configuration.
+Forwarding fields from the client and all Connection-nominated fields are removed;
+new forwarding metadata uses the actual downstream connection.
 
-The first upstream audit found missing required public HTTP Fetch H1 contracts
-in 0.17.1 (#27–#30). All four issues are closed; the published 0.17.2 contract
-regressions pass. Proxy integration remains blocked on #45 (GET/DELETE request
-body loss) and the valid-close-code subset of #38. Message-level WebSocket
-proxying does not require exact fragmentation or ping/pong forwarding, but must
-preserve valid close codes. No private socket access or local workaround is
-accepted. Native HTTP/Plug/WebSock/Phoenix and pure routing are independently
-verified; full M2 remains incomplete.
+HTTP Fetch 0.18.1 resolves the earlier #27–#30, #38 and #45 contracts. Native
+message-level WebSocket proxying now preserves valid/empty Close details and
+subprotocols, with independent ping/pong on each hop. It uses public acknowledged
+send/delivery APIs and monitors the public socket PID for completed cleanup.
+Guardians live outside the instance subtree; core cleanup attachments retain byte
+reservations without allocating a second active lease. Service drain requires a
+receipt and normal guardian DOWN and never kills the cleanup owner to infer success.
 
-The global client streaming threshold can be an explicit static startup
-constraint: `streaming_threshold: 0`, checked when the future proxy initializes
-and never changed per request. This makes per-request streaming issue #37
-nonblocking under the documented host constraint. `gaoxy_proxy` selects the
-published Fetch/WebSocket packages and their QUIC/TLS-engine dependencies;
-standalone core consumers retain their isolation. Package presence establishes
-no H2/H3 capability. See [the current dependency audit](../m2-dependency-audit.md).
+Full HTTP proxy integration remains blocked on #60 because abort and response
+stream DOWN do not establish request transport termination. No private client
+state or local workaround is accepted. Per-request `stream_response: true` removes
+the need for the proposed static global streaming threshold. Core consumers remain
+isolated from the proxy's published QUIC/TLS-engine dependencies. Package presence
+establishes no H2/H3 capability. See [the current dependency audit](../m2-dependency-audit.md).
