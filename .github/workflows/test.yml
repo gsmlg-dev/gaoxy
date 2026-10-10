@@ -47,5 +47,9 @@ jobs:
           key: mix-${{ runner.os }}-${{ runner.arch }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
+      - name: Pinned independent native H2 peer
+        run: |
+          python -m venv .audit/h2peer
+          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt
       - name: Unit and configuration (nonempty)
         run: python3 scripts/check-tests.py --exclude loopback
