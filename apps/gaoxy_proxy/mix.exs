@@ -13,8 +13,8 @@ defmodule GaoxyProxy.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:gaoxy_http, in_umbrella: true},
-        {:http_fetch, "== 0.19.0"},
-        {:http_web_socket, "== 0.19.0"}
+        {:http_fetch, "== 0.19.1"},
+        {:http_web_socket, "== 0.19.1"}
       ]
     ]
   end

@@ -1,4 +1,4 @@
-# TODO(upstream): gsmlg-dev/http_fetch#64
+# Regression for gsmlg-dev/http_fetch#64, fixed in the published 0.19.1 packages.
 # Public HTTP.fetch/2 wire regression; exits nonzero when an empty query is lost.
 {:ok, _} = Application.ensure_all_started(:http_fetch)
 

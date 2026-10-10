@@ -2,10 +2,8 @@ defmodule Gaoxy.Proxy.HTTP do
   @moduledoc """
   Native HTTP/1 reverse proxy to one fixed HTTP or verified HTTPS authority.
 
-  M2 raw-target acceptance is pending HTTP Fetch #64: the pinned 0.19.0 client
-  drops a present empty query delimiter. Its wire regression remains enabled.
-
-  Paths and queries retain their wire escaping. Uploads and raw responses stream
+  Paths and queries retain their wire escaping, including a present empty query.
+  Uploads and raw responses stream
   with acknowledged local writes; redirects are returned and requests are never
   replayed. An external guardian retains the admission reservation until public
   request cleanup completes. Configure a service byte budget for the conservative
@@ -137,7 +135,6 @@ defmodule Gaoxy.Proxy.HTTP do
         do: exchange.request.query_string,
         else: nil
 
-    # TODO(upstream): gsmlg-dev/http_fetch#64 - preserve the present empty query on the wire.
     url = URI.to_string(%{config.uri | path: exchange.request.path, query: query})
     deadline = min(exchange.deadline, Lifecycle.deadline(config.limits.max_lifetime))
 

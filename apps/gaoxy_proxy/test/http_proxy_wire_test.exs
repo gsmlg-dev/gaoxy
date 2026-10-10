@@ -98,7 +98,7 @@ defmodule Gaoxy.Proxy.HTTPWireTest do
   end
 
   test "a present empty query remains distinct from an absent query" do
-    # TODO(upstream): gsmlg-dev/http_fetch#64 - retain this failing wire regression.
+    # Regression for gsmlg-dev/http_fetch#64, fixed in the published 0.19.1 packages.
     {url, peer} =
       peer(fn socket, owner ->
         send(owner, {:upstream_target, self(), head(socket)})
