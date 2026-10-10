@@ -3,6 +3,10 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   alias Gaoxy.HTTP.Exchange
 
   @token ~r/\A[!#$%&'*+.^_`|~0-9A-Za-z-]+\z/
+  @forbidden_trailers ~w(content-length transfer-encoding host connection trailer te upgrade
+                        keep-alive proxy-connection authorization proxy-authorization
+                        proxy-authenticate www-authenticate content-encoding content-type
+                        content-range expect cache-control cookie set-cookie)
 
   def send_resp(exchange, status, headers, body) do
     omit = bodyless?(exchange, status)
@@ -29,12 +33,97 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
     end
   end
 
-  def send_chunked(exchange, status, headers) do
-    with {:ok, headers, mode} <- stream_headers(exchange, status, headers),
+  def send_chunked(exchange, status, original_headers) do
+    with {:ok, headers, mode} <- stream_headers(exchange, status, original_headers),
+         {:ok, trailers} <- declared_trailers(exchange, original_headers, mode),
          :ok <- send_head(exchange, status, headers) do
-      {:ok, %{exchange | response: mode, close: close?(exchange, headers)}}
+      exchange = %{
+        exchange
+        | response: mode,
+          response_trailers: trailers,
+          close: close?(exchange, headers)
+      }
+
+      with :ok <-
+             Gaoxy.Admission.update(
+               exchange.gate,
+               exchange.lease,
+               Exchange.retained_bytes(exchange)
+             ),
+           do: {:ok, exchange}
     end
   end
+
+  @doc "Completes a stream once, preserving ordered duplicate declared trailers."
+  def finish(exchange, trailers \\ [])
+
+  def finish(%{response: :chunked} = exchange, trailers) do
+    with :ok <- validate_trailers(exchange, trailers),
+         :ok <- Exchange.send_bytes(exchange, ["0\r\n", fields(trailers), "\r\n"]) do
+      exchange = %{exchange | response: :sent, response_trailers: []}
+
+      with :ok <-
+             Gaoxy.Admission.update(
+               exchange.gate,
+               exchange.lease,
+               Exchange.retained_bytes(exchange)
+             ),
+           do: {:ok, exchange}
+    end
+  end
+
+  def finish(%{response: {:fixed_stream, remaining}}, []) when remaining != 0,
+    do: {:error, :content_length_mismatch}
+
+  def finish(%{response: :close_stream} = exchange, []),
+    do: {:ok, %{exchange | response: :sent, close: true}}
+
+  def finish(%{response: mode} = exchange, [])
+      when mode in [:sent, :bodyless_stream] or mode == {:fixed_stream, 0},
+      do: {:ok, %{exchange | response: :sent}}
+
+  def finish(_, trailers) when trailers != [], do: {:error, :invalid_response_trailers}
+  def finish(_, []), do: {:error, :invalid_response_state}
+
+  defp declared_trailers(exchange, headers, mode) do
+    declarations = for {"trailer", value} <- headers, do: value
+
+    names =
+      Enum.flat_map(declarations, &String.split(&1, ","))
+      |> Enum.map(&String.downcase(String.trim(&1)))
+
+    connection =
+      for {"connection", value} <- headers,
+          name <- String.split(value, ","),
+          do: String.downcase(String.trim(name))
+
+    if (names == [] or mode == :chunked) and
+         length(names) <= exchange.limits.max_trailers and
+         Enum.all?(
+           names,
+           &(Regex.match?(@token, &1) and &1 not in @forbidden_trailers and &1 not in connection)
+         ) do
+      {:ok, names}
+    else
+      {:error, :invalid_response_trailers}
+    end
+  end
+
+  defp validate_trailers(exchange, trailers) do
+    with :ok <- validate_headers(trailers),
+         true <-
+           Enum.all?(trailers, fn {name, _} ->
+             name in exchange.response_trailers and name not in @forbidden_trailers
+           end) || {:error, :invalid_response_trailers},
+         true <-
+           (length(trailers) <= exchange.limits.max_trailers and
+              IO.iodata_length(fields(trailers)) + 2 <= exchange.limits.max_trailer_bytes) ||
+             {:error, :response_trailer_limit} do
+      :ok
+    end
+  end
+
+  defp fields(headers), do: Enum.map(headers, fn {key, value} -> [key, ": ", value, "\r\n"] end)
 
   def chunk(%{response: mode} = exchange, data) when mode in [:chunked, :close_stream] do
     size = IO.iodata_length(data)
@@ -208,7 +297,7 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
       " ",
       reason,
       "\r\n",
-      Enum.map(headers, fn {key, value} -> [key, ": ", value, "\r\n"] end),
+      fields(headers),
       "\r\n"
     ]
   end

@@ -108,7 +108,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     with {:ok, headers} <- Handshake.headers(exchange.request, response_headers),
          # Upgrade is a single transition from the completed H1 request to a new
          # admitted protocol lifetime. Later callbacks cannot renew this deadline.
-         :ok <- Admission.begin_request(exchange.gate, exchange.lease, retained(ws), deadline),
+         :ok <- Admission.upgrade(exchange.gate, exchange.lease, retained(ws), deadline),
          :ok <-
            Admission.begin_callback(
              exchange.gate,
@@ -180,8 +180,27 @@ defmodule Gaoxy.HTTP.WebSocket do
   defp dispatch(%{closing: true} = ws, _), do: parse(ws)
 
   defp dispatch(ws, %{opcode: :close, payload: payload}) do
-    _ = send_frame(ws, :close, payload)
-    {:close, %{ws | reason: :remote}}
+    result =
+      if function_exported?(ws.handler, :gaoxy_close, 2) do
+        detail =
+          case payload do
+            "" -> {nil, ""}
+            <<code::16, reason::binary>> -> {code, reason}
+          end
+
+        callback(ws, :gaoxy_close, [detail, ws.app_state], byte_size(payload))
+      else
+        {:continue, ws}
+      end
+
+    case result do
+      {:continue, ws} ->
+        _ = send_frame(ws, :close, payload)
+        {:close, %{ws | reason: :remote}}
+
+      other ->
+        other
+    end
   end
 
   defp dispatch(ws, frame) do
@@ -284,6 +303,18 @@ defmodule Gaoxy.HTTP.WebSocket do
     end
   end
 
+  defp result(ws, {:gaoxy_push, messages, {recipient, reference}, state})
+       when is_pid(recipient) and is_reference(reference) do
+    ws = %{ws | app_state: state}
+    result = push(ws, messages)
+    send(recipient, {:gaoxy_websocket_written, reference, result})
+
+    case result do
+      :ok -> idle(ws)
+      {:error, reason} -> close(ws, 1011, {:error, reason})
+    end
+  end
+
   defp result(ws, {:stop, reason, state}) do
     code =
       case reason do
@@ -375,6 +406,7 @@ defmodule Gaoxy.HTTP.WebSocket do
   defp close(ws, detail, reason) do
     payload =
       case detail do
+        {nil, ""} -> ""
         code when is_integer(code) -> <<code::16>>
         {code, text} -> <<code::16>> <> IO.iodata_to_binary(text || "")
       end

@@ -106,7 +106,7 @@ defmodule Gaoxy.HTTP.Connection do
           _ = write_error(socket, state, 400)
           {:close, state}
         else
-          exchange =
+          exchange = %{
             Exchange.new(
               request,
               socket,
@@ -120,6 +120,9 @@ defmodule Gaoxy.HTTP.Connection do
               ),
               rest
             )
+            | service: Map.get(state, :service),
+              instance: Map.get(state, :instance)
+          }
 
           state = %{state | buffer: ""}
 
@@ -148,7 +151,10 @@ defmodule Gaoxy.HTTP.Connection do
         do: %{exchange | response: :sent, close: true},
         else: exchange
 
-    exchange = finish_response(exchange)
+    exchange =
+      if match?({:error, _, _}, result) and exchange.response != :unset,
+        do: %{exchange | close: true},
+        else: finish_response(exchange)
 
     cond do
       match?({:websocket, _, _, _, _}, exchange.response) ->
@@ -193,26 +199,16 @@ defmodule Gaoxy.HTTP.Connection do
     end
   end
 
-  defp finish_response(%{response: :chunked} = exchange) do
-    case Exchange.send_bytes(exchange, "0\r\n\r\n") do
-      :ok -> %{exchange | response: :sent}
-      _ -> %{exchange | close: true}
+  defp finish_response(%{response: response} = exchange)
+       when response in [:unset] or (is_tuple(response) and elem(response, 0) == :websocket),
+       do: exchange
+
+  defp finish_response(exchange) do
+    case Gaoxy.HTTP.HTTP1.Response.finish(exchange) do
+      {:ok, exchange} -> exchange
+      {:error, _} -> %{exchange | close: true}
     end
   end
-
-  defp finish_response(%{response: {:fixed_stream, 0}} = exchange),
-    do: %{exchange | response: :sent}
-
-  defp finish_response(%{response: {:fixed_stream, _}} = exchange),
-    do: %{exchange | close: true}
-
-  defp finish_response(%{response: :close_stream} = exchange),
-    do: %{exchange | close: true}
-
-  defp finish_response(%{response: :bodyless_stream} = exchange),
-    do: %{exchange | response: :sent}
-
-  defp finish_response(exchange), do: exchange
 
   defp write_error(socket, state, code) do
     reason = Plug.Conn.Status.reason_phrase(code)
