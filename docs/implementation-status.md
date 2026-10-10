@@ -179,22 +179,51 @@ captured processes DOWN and zero reservations/tasks/guardians. All199 frozen
 source hashes remain exact. Groups have bounded concurrency/health/ownership
 qualification; the fixed-proxy soak does not imply a group/probe soak.
 
-Coordinated HTTP Fetch0.20.0 is now installed; actual release tag
-`951ec75dadcebd8218f30d3ecdf99da142d4a463` contains #66/#67. New strict
-format/compile and460 scoped upgrade-compatibility tests pass at seed161790;
-the unchanged Phoenix fixture passes2/0 at seed792852. These are separate from
-the historical frozen load/browser evidence above.
+Coordinated HTTP Fetch0.21.0 is now installed; actual release tag
+`9813c126dc8b48055b9ee941c693fc27fa691489` contains #78 managed scopes and
+#79 fragment caps, in addition to #66/#67 request cleanup/trailers. All196
+shipped files and175 runtime blobs match the verified artifacts. Strict
+format/compile and460 scoped upgrade-compatibility tests pass at seed21102026
+with228 unchanged source hashes. These are separate from historical load,
+Phoenix/browser and0.20 request probes.
 
-**Full M3 remains BLOCKED** on public managed transports/confirmed retirement
-[Feature #78](https://github.com/gsmlg-dev/http_fetch/issues/78) and remaining
-H2 bounds/qualification. Positive public completion/trailer probes and a finite
-empty-CONTINUATION diagnostic have executed under the
-[new transport plan](plans/m3-upstream-transport.md): **16/16 public request
-cases PASS**, including separately verified TLS H2 and h2c; diagnostic
-**INCONCLUSIVE**, with confirmed public cleanup/peer shutdown. All 202 source
-hashes match for both corrected runs, including the main probe omitted from the
-original 201 maps. The source-confirmed missing fragment metadata cap is routed
-as [Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79). No pooling/private-client
-workaround is used. Tested work is delivered locally; M4 waits for complete
-M3 public lifecycle, bounds and version-matrix qualification.
-No remote publication or production acceptance is implied.
+**Full M3 remains BLOCKED** on H2 header/control event bound
+[Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86), complete H1
+retained-state accounting and managed runtime/integration qualification.
+Task3's initial and diagnostic-only frozen public runs FAIL after11 cases;
+the diagnostic confirms H2 force-retired request uncertainty while independent
+B is live before cleanup. Historical repair1 FAILs after24 cases; repair2's
+preflight FAILs on formatting. Bounded Astra recovery1 and fresh independent
+review/strict verification now pass39/39 public cases,39 joined cleanups,
+425 stable source hashes and no remaining peer; focused preflight passes18/0.
+TLS H2 and h2c capacity error shape remains separately MISMATCH in needed#89.
+Tasks4–8 remain gated. The pure compact-input and constructor-accounting slice
+now passes independent specification/code-quality reviews and fresh26/0 tests
+of reviewed formatted source, with429 stable hashes. It creates no scope and
+always refuses activation; H1/H2 component subtotals are not complete
+reservations. Source-backed needed issues#87/#88
+are separate from H2 blocker#86 and are not measured leaks.
+Exact OTP-source delivery/credit/decode, parser-root and general term-layout
+lemmas pass independent source review in their conditional scope. Effective
+profile enforcement, full policy/request/control lifetime accounting and
+P0-P6 composition remain open. No complete activation proof is established.
+
+Fresh remote status records #86–#89 CLOSED while published/installed artifacts
+remain0.21.0; closure alone does not qualify those fixes. New
+[Bug95](dependency-requests/http-fetch-otp28-tls-tracking.md) blocks managed
+OTP28 TLS resource tracking. A real verified TLS connection returns the new
+eight-element socket, skipped by installed `track_tls/2`; final diagnostic
+exits0 with joined peer and429 stable source hashes. Its initial missing-ALPN
+peer failure is preserved. No retirement race or runtime leak was measured.
+Generated String/source provenance passes separate independent review in its
+conditional scope; P3/P4/composition and loaded-code/profile enforcement remain
+open. The reviewed pure implementation is committed locally as `56fd518`.
+Follow the [transport plan](plans/m3-upstream-transport.md) and
+[current acceptance](acceptance/m3.md) for actual receipts and limits.
+
+Historical0.20 public request probes passed16/16 with202 unchanged hashes;
+its finite empty-CONTINUATION diagnostic was INCONCLUSIVE. #78/#79 issue
+closure is now confirmed in installed artifacts, but neither historical
+request evidence nor upgrade compatibility proves managed lifecycle/bounds.
+Gaoxy production adapters remain dedicated H1. M4 waits for complete M3
+acceptance; no remote publication, deployment or production acceptance is implied.

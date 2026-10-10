@@ -43,6 +43,8 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
         stream
       end
 
+    # TODO(upstream): gsmlg-dev/http_fetch#88 — bound retained TLS policy backing.
+    # WORKAROUND(upstream): gsmlg-dev/http_fetch#88 — file input excludes borrowed trust binaries.
     ssl = if options.cacertfile, do: [cacertfile: options.cacertfile], else: []
 
     try do
@@ -50,10 +52,14 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
         HTTP.fetch(options.url,
           method: options.method,
           headers: options.headers,
+          # TODO(upstream): gsmlg-dev/http_fetch#87 — charge normalized request inputs.
+          # WORKAROUND(upstream): gsmlg-dev/http_fetch#87 — URL strings, explicit fields, nil/PID body.
           body: upload,
           duplex: if(upload, do: :half, else: nil),
-          # TODO(upstream): gsmlg-dev/http_fetch#78 — owned pools and confirmed retirement.
-          # TODO(upstream): gsmlg-dev/http_fetch#79 — bounded H2 header-fragment metadata.
+          # Managed ownership/fragment caps (#78/#79) ship in 0.21; qualification remains gated.
+          # TODO(upstream): gsmlg-dev/http_fetch#86 — bounded H2 header/control event backlog.
+          # TODO(upstream): gsmlg-dev/http_fetch#89 — canonical H2 connection-capacity rejection.
+          # TODO(upstream): gsmlg-dev/http_fetch#95 — OTP 28 TLS resource tracking gates managed activation.
           http_version: :http1,
           http1_reuse: false,
           redirect: :manual,

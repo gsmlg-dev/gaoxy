@@ -4,7 +4,7 @@ Date: 2026-10-11 Asia/Shanghai. Task: Task3 pure H1 preparation; direct Sol
 assignment. Status: written design/plan, implementation specification and
 code-quality reviews PASS; canonical formatter and global format check PASS.
 Fresh tests of the reviewed formatted source pass26/0 with429 stable hashes.
-Local commit remains pending; all P0-P6 activation obligations remain open.
+Local implementation commit: `56fd518`; all P0-P6 activation obligations remain open.
 
 Worktree `.trees/m3-gateway`, branch `codex/m3-gateway`, baseline
 `4cc7a1a967d1b90a62d42db438316b10a03a1e16`. The installed seven-package
@@ -298,8 +298,8 @@ and [code-quality](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1
 reviews PASS. The [fresh final run](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-preparation-final.json)
 executes26 tests/0 failures, exit0, seed21108026, with429 unchanged source
 hashes. Both reviews' four executable hashes match that run and current files.
-The local commit is the remaining delivery step. No full acceptance or
-production activation claim.
+The reviewed pure implementation is delivered in local commit `56fd518`.
+No full acceptance or production activation claim.
 
 Three unexpected initial validation runs are preserved as FAIL: the map
 constructor walk tried Enumerable on a struct; an append-built fixture retained

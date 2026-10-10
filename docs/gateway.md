@@ -136,7 +136,8 @@ all baseline/preparation/request/selection/probe holds to clear. Owner/caller
 loss preserves failed cleanup instead of inventing successful retirement.
 
 Each request/probe uses a dedicated H1 transport. Group balancing and health are
-implemented; reusable H1 pools and upstream H2 remain BLOCKED on HTTP Fetch
-[#66](https://github.com/gsmlg-dev/http_fetch/issues/66), with H2 upload trailers
-also requiring [#67](https://github.com/gsmlg-dev/http_fetch/issues/67). Install and
-qualify a containing upstream release before enabling either blocked path.
+implemented. Installed HTTP Fetch0.21 contains request cleanup/trailers and
+managed ownership/retirement, but reusable H1 and upstream H2 remain disabled
+pending complete H1 accounting and managed runtime qualification, and H2
+header/control bound [#86](https://github.com/gsmlg-dev/http_fetch/issues/86).
+See the [transport plan](plans/m3-upstream-transport.md).

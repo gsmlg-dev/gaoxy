@@ -27,27 +27,68 @@ own authorization.
 
 ## M3 public reusable transport ownership
 
-The installed coordinated HTTP Fetch stack is0.20.0 and contains #66/#67's
-public request-completion and H2 upload-trailer fixes. The
-[new public source audit](acceptance/evidence/m3/upstream-0.20/public-client-audit.md)
-confirms a separate missing caller-owned pool and deadline-confirmed retirement
-contract, routed as [Feature #78](https://github.com/gsmlg-dev/http_fetch/issues/78),
-type Feature, label `internal request`, severity blocker. See
-[the concrete request](dependency-requests/http-fetch-managed-transports.md)
-and [conditional execution plan](plans/m3-upstream-transport.md).
+Fresh [remote status](acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh1.json)
+records #86–#89 CLOSED, with latest published/installed release still0.21.0.
+Their installed-source findings and canonical MISMATCH remain until containing
+artifacts are installed and qualified. Historical issue receipts are preserved.
+[Bug95](dependency-requests/http-fetch-otp28-tls-tracking.md) is OPEN, typed Bug,
+labeled `internal request`, severity blocker for managed OTP28 TLS lifecycle.
+The actual eight-element TLS socket skips the installed three-element tracking
+clause. A verified public shape diagnostic confirms the mismatch and joins its
+peer; full lifecycle races are NOT RUN. Managed activation stops without a
+local workaround; pure input/source-proof work can continue.
 
-The [positive public probes](acceptance/evidence/m3/upstream-0.20/public-probes-final.json)
-pass 16/16, including H1 reuse and separate verified TLS H2/h2c cleanup/trailers.
-The audit also identifies a source-evidenced H2 empty-CONTINUATION fragment
-metadata gap, routed after independent source review as
-[Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79), type Bug,
-label `internal request`, severity blocker. See [source/wire reproduction](dependency-requests/http-fetch-empty-continuation.md).
-Its [finite diagnostic](acceptance/evidence/m3/upstream-0.20/empty-continuation-final.json)
-is INCONCLUSIVE: 80,000 empty frames correlate with 4,683,568 bytes of VM-wide
-process-used growth, but only two batch deltas meet the preset threshold, and
-send receipts do not establish sample-time consumption. The bound remains
-unresolved. Dedicated H1 remains enabled and passes460 upgrade-compatibility
-tests. Gaoxy reusable
-H1/upstream H2 activation and full M3/M4 progression remain blocked until
-containing artifacts and the prescribed lifecycle/bounds/matrix gates qualify.
-No private-client or dependency-source workaround is used.
+Installed coordinated HTTP Fetch0.21.0 contains #66/#67 request cleanup and
+upload trailers, #78 caller-owned scopes and confirmed retirement, and #79's
+256-frame header-fragment cap. [Published/installed provenance](acceptance/evidence/m3/upstream-transport/upstream-0.21/installed-provenance.json)
+and [compatibility460/0](acceptance/evidence/m3/upstream-transport/upstream-0.21/compatibility.json)
+qualify these containing artifacts. The former
+[Feature78](dependency-requests/http-fetch-managed-transports.md) and
+[Bug79](dependency-requests/http-fetch-empty-continuation.md) requests remain
+historical; no longer treat them as missing installed operations/caps.
+
+Current [Bug86](https://github.com/gsmlg-dev/http_fetch/issues/86), type Bug,
+label `internal request`, severity blocker, addresses valid peer-driven decoded
+head events and asynchronous SETTINGS capacity notifications without hard
+aggregate outstanding bounds. See [the exact request](dependency-requests/http-fetch-h2-header-control-bounds.md),
+[source worksheet](acceptance/evidence/m3/upstream-transport/retained-bounds-source.md)
+and [independent installed-source confirmation](acceptance/evidence/m3/upstream-transport/upstream-0.21/independent-bounds-review.md).
+This is source evidence, not a measured runtime leak. Dedicated H1 remains
+enabled; managed H2 activation stops without a dependency/local workaround.
+
+Narrow managed H1 functional qualification proceeds separately, preserving
+frozen8192-byte buffers and nil/PID acknowledged binary upload. Its complete
+policy/preparation/copy/structure/metadata and managed OTP-delivery accounting
+is still required before activation. Neither protocol's component subtotal is
+an approved reservation. Follow the [transport plan](plans/m3-upstream-transport.md).
+
+[Bug87](dependency-requests/http-fetch-managed-request-inputs.md), severity
+needed, requests charging final normalized request inputs, including late
+Content-Type, unused URI authority and zero-payload iodata structure.
+[Feature88](dependency-requests/http-fetch-managed-tls-backing.md), severity
+needed, requests an explicit retained-backing contract for frozen TLS material.
+Both are independently source-confirmed; their finite recipes are NOT RUN and
+retention amounts are unmeasured. Existing URL-string/explicit-field/nil-PID
+inputs exclude#87's broad forms. Controlled compact DER preparation is the
+recommended narrow managed profile for#88, with source-plus-copy peaks charged;
+it is not yet an enabled transport or a complete reservation. Adapter TODO and
+WORKAROUND comments link both requests without dependency patches.
+
+[Bug89](dependency-requests/http-fetch-managed-capacity-error.md), severity
+needed, records the verified TLS H2 GOAWAY capacity error shape: the public
+facade documents `{:error, {:transport_scope_capacity, :connections}}`, while
+the pool returns `{:error, :pending_capacity}`. The named finite resource case
+passed before the unrelated empty-response fixture failure in repair1; h2c
+was not reached in that cited run. The later complete recovery1 run passes39/39
+and independently confirms the same mismatch for both TLS H2 and h2c. The functional fixture records the exact
+observed rejection separately from canonical **MISMATCH**; it cannot claim
+canonical compliance. Adapter/fixture TODOs and the explicit fixture WORKAROUND
+link#89. No production H2 error normalization or transport activation is added.
+
+Historical0.20 [positive request probes](acceptance/evidence/m3/upstream-0.20/public-probes-final.json)
+passed16/16. Its [finite fragment diagnostic](acceptance/evidence/m3/upstream-0.20/empty-continuation-final.json)
+was INCONCLUSIVE:80,000 frames correlated with4,683,568 bytes VM-wide
+process-used growth; only two preset batch deltas met threshold, and send
+receipts did not prove sample-time consumption. Preserve these limits and logs.
+No private client/source patch is used; full M3/M4 progression awaits all
+required managed lifecycle, bounds, matrix and load gates.

@@ -7,32 +7,102 @@ Date: 2026-10-10. Architecture decision, not runtime acceptance. Gaoxy baseline
 
 ## Decision and present gate
 
+Current external gate, 2026-10-11: #86–#89 are now CLOSED in the
+[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh1.json),
+but published/installed artifacts remain0.21.0 and need containing-release
+qualification. New [Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
+blocks actual OTP28 TLS-process tracking/release. Finite public retirement
+observations cannot certify unregistered receiver/sender termination. Do not
+patch dependencies, use private resource tracking or lift activation gates.
+
 Use the public HTTP Fetch request/stream/completion contract behind the existing
 `Gaoxy.Proxy.UpstreamClient` adapter. Reusable transports must additionally have
 an explicitly owned, bounded transport resource with confirmed retirement.
 Keep immutable route pins and request guardians; a request completion receipt
 and a transport retirement receipt prove different things.
 
-Installed coordinated HTTP packages are now 0.20.0. The parent verified upstream
-tag commit `951ec75dadcebd8218f30d3ecdf99da142d4a463`; installed source was read
-for this design. The independent source audit is
-[`public-client-audit.md`](../acceptance/evidence/m3/upstream-0.20/public-client-audit.md).
-That release supports the earlier #66 pooled completion and
-#67 streamed H2 request-trailer contracts. It does **not** expose a supported
-way to attach `HTTP.fetch/2` to a caller-owned pool, or retire a complete caller
-scope with a cleanup receipt. Therefore managed H1 reuse and managed upstream H2
-activation remain **BLOCKED** on
-[gsmlg-dev/http_fetch#78](https://github.com/gsmlg-dev/http_fetch/issues/78),
-the managed-resource Feature blocker routed by the parent. Request-level
-0.20 contract qualification can proceed independently, without enabling pooled
-production routes or claiming M3 completion.
+Installed coordinated HTTP packages are now **0.21.0**, actual tag commit
+`9813c126dc8b48055b9ee941c693fc27fa691489`. The
+[release provenance](../acceptance/evidence/m3/upstream-transport/upstream-0.21/release-provenance.json)
+verifies all seven archives, checksums and #78/#79 fix ancestry. The
+[installed provenance](../acceptance/evidence/m3/upstream-transport/upstream-0.21/installed-provenance.json)
+matches all 196 shipped files and 175 runtime Git blobs. The upgrade's
+[compatibility gate](../acceptance/evidence/m3/upstream-transport/upstream-0.21/compatibility.json)
+passes strict format/compile and 460 tests, seed21102026; this does not qualify
+managed transport activation.
 
-The ready-now public probes now pass16/16 on complete202-file source maps.
-The finite empty-CONTINUATION memory diagnostic is INCONCLUSIVE, while the
-missing fragment metadata cap is independently source-confirmed and routed as
-[Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79). That containing fix
-and the finite-bound regression are additional H2 prerequisites; no wrapper
-workaround or successful diagnostic exit substitutes for them.
+The caller-owned facade requested in #78 and fragment cap requested in #79
+are present in these installed artifacts. H2 activation remains **BLOCKED** on
+[Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86): valid peer-driven
+decoded-head events and asynchronous SETTINGS capacity updates lack a hard
+aggregate outstanding-event bound. Two independent source reviews confirm the
+gap; no runtime leak or memory-exhaustion claim is made. H1 functional
+qualification proceeds separately with an explicitly narrow policy, while its
+complete retained-byte reservation remains unqualified. Neither the H2
+52,207,632-byte subtotal nor H1 261,199,114-byte subtotal is an activation budget.
+The [controlled H1 architecture](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-accounting-architecture.md)
+replaces uncertified delivery/copy assumptions with named P0–P6 obligations.
+The [pure preparation design](m3-managed-h1-preparation.md) and
+[scoped plan](../plans/m3-managed-h1-preparation.md) can implement bounded compact
+inputs and constructor facts before process integration. They cannot return
+an activation budget or open managed resources while those proofs remain open.
+
+The historical 0.20 public probes passed16/16 on complete202-file maps, and its
+finite empty-CONTINUATION diagnostic was INCONCLUSIVE. Preserve that evidence
+unchanged. Installed0.21 finite public capacity, deadline, isolation, retirement
+and256/257-frame regressions now pass39/39 with39 joined cleanups and425 stable
+hashes in `managed-probes-recovery1.json`. Canonical H2 connection-capacity
+errors remain MISMATCH under needed#89. This result closes no retained-byte,
+Gaoxy integration, version-matrix or managed-soak gate.
+
+### Installed-source checkpoint, 2026-10-11 Asia/Shanghai
+
+Upstream closed #79 through PR80, merge
+`ed7a8e23fb969b1337703d8ea5d12f774e5a5edb`, and #78 through PR81, merge
+`a75ec3c34446a1877366a0e52055743d28eabcc9`. Independent Sol inspection of
+PR81 head `11f1642cf6408219d4813772bda1055e605bbdc4` finds the requested
+public facade. The
+[independent source/API and architecture receipt](../acceptance/evidence/m3/upstream-transport/source-api-review.md)
+preserves that preparatory checkpoint. Release38067971805 completed successfully
+at workflow head `0833de2c4bbe7567cc19eed4a86a69005d2058f6`; all four critical
+audited facade/policy/scope/H2-owner blobs match the installed0.21 release.
+Package provenance is qualified; Gaoxy managed runtime acceptance remains pending.
+
+The public source contract is:
+
+| Operation | Exact result / integration constraint |
+| --- | --- |
+| `HTTP.ManagedTransport.open(options)` | `{:ok, scope}` or error; opaque scope monitors its creator |
+| `HTTP.fetch(url, transport_scope: scope, ...)` | Original Promise/completion; raw acknowledged streaming, manual/error redirects, frozen matching origin/policy |
+| `HTTP.ManagedTransport.snapshot(scope, timeout_ms)` | `{:ok, aggregate_snapshot}` or error; finite timeout, redacted aggregate counts and limits |
+| `HTTP.ManagedTransport.retire(scope, mode: :graceful)` | `{:ok, receipt}` or error; also `:abort`; repeated calls share the durable receipt, graceful can escalate to abort |
+| `HTTP.ManagedTransport.await_retired(receipt, timeout_ms)` | `:ok`, `{:error, :cleanup_pending}` or `{:error, :cleanup_unconfirmed}`; success also requires coordinator termination |
+
+Scope limits are `max_requests` 1..2048, `max_connections` 1..256,
+`max_pending` exactly 0 and `idle_timeout` 1..60000 milliseconds. Preparation
+and unread responses hold request slots. Connecting, TLS and protocol-owner
+resources retain connection capacity until all tracked resources terminate.
+Per-request budgets are excluded from managed reuse identity. These findings
+still require public network and retained-state qualification on installed
+containing artifacts.
+
+`open/1` requires `origin`, literal `connect_address` and explicit `http_version`.
+Optional keys are `tls_backend`, `ssl`, `socket_opts`, `max_requests`,
+`max_connections`, `max_pending`, `idle_timeout`, `http2_profile`; unknown and
+duplicate keys reject. Only OTP `:ssl` and `:native_v1` are supported. Gaoxy's
+prepared policy remains narrower than any unrelated optional upstream feature.
+
+PR80 caps header blocks at 256 total frames, including initial HEADERS and
+final END_HEADERS. Frame257 fails before retention/HPACK decode; empty payload
+fragments are omitted and the 65,536 compressed-byte limit remains. The
+`:header_block_too_fragmented` error closes the connection. Affected pooled
+request cleanup may conservatively return `:cleanup_unconfirmed`; the regression
+must preserve that outcome and prove an independent connection progresses.
+
+The containing-artifact gate for #78/#79 is satisfied by the published0.21
+cohort. Use those portable Hex manifests and exact lock checksums; no dependency
+patch or locally staged replacement release is needed. Public fixtures and the
+numeric accounting worksheet are separate gates.
 
 | Approach | Tradeoff | Decision |
 | --- | --- | --- |
@@ -42,13 +112,14 @@ workaround or successful diagnostic exit substitutes for them.
 
 No registered process name, `:sys` state inspection, private pool call, global
 application-environment mutation, timeout sleep, or `GenServer.stop/1` on a
-shared pool is a substitute for the missing facade. Disabling reuse can prove
+shared pool is a substitute for the public facade. Disabling reuse can prove
 request semantics but cannot satisfy the reusable-transport gate.
 
-## Exact installed API and source evidence
+## Request API and historical global-pool evidence
 
-The following APIs exist in 0.20.0; the later proposed Gaoxy interfaces are not
-claims about upstream APIs.
+These request APIs, already qualified on0.20, remain in installed0.21. The
+managed operations above add caller-owned scope selection and retirement.
+The later proposed Gaoxy interfaces remain design interfaces.
 
 | Public contract | Use / limitation |
 | --- | --- |
@@ -62,8 +133,9 @@ claims about upstream APIs.
 | `http2_reuse`, `http2_scope`, `http2_profile` | Reuse defaults true. Scope is an atom/string isolation value, not an ownership or retirement handle |
 | `connect_address` | Validated literal IP dial; preserves URL authority/SNI/certificate hostname; no DNS fallback or replay; part of reuse identity |
 
+The historical0.20 audit found that
 `deps/http_fetch/lib/http/request_completion.ex` explicitly separates pooled
-request cleanup from shared connection lifetime. `FetchOptions` has no pool
+request cleanup from shared connection lifetime. At that checkpoint, `FetchOptions` had no pool
 handle or retirement option. `deps/http_fetch/lib/http/socket_client.ex`
 `maybe_reused_http2_owner/4` and `register_http2_owner/7` select
 `:http_fetch_http2_pool`. `deps/http_runtime/lib/http_runtime.ex` starts that
@@ -83,16 +155,16 @@ file identity includes contents and metadata, not only a pathname. It also
 includes `connect_timeout`; socket identity includes `send_timeout`. The current
 Gaoxy adapter supplies remaining request budgets in these fields, so requests
 to the same origin can acquire different keys. Do not round or extend deadlines
-to manufacture reuse. The upstream managed contract must separate immutable
-transport policy from decreasing request deadlines, or document an equivalent
-supported mechanism. Qualification must prove reuse with unequal remaining
-budgets.
+to manufacture reuse. The installed managed contract separates immutable
+transport policy from decreasing request deadlines. Qualification must prove
+both reuse with unequal remaining budgets and real deadline expiry without
+mutating a healthy sibling.
 
 ## Required upstream managed-resource contract
 
-This section states missing capabilities, not invented callable functions.
-The containing release's actual public names and result shapes must be recorded
-in the plan before dependent runtime edits begin.
+This section states required capabilities. The installed facade supplies the
+operations above, but complete accounting and runtime qualification remain
+prerequisites before dependent Gaoxy runtime edits.
 
 1. Create a transport resource under an explicit owner, returning an opaque
    identity usable in Fetch. Bound resource count, connection attempts, active
@@ -242,6 +314,16 @@ An unconfirmed registration must never be followed by resource allocation.
 Use temporary children; a restarted owner cannot replace a failed registration
 and erase its cleanup uncertainty. Endpoints still receive prepared handles.
 
+The merged facade monitors the process calling `open/1` as scope creator;
+creator DOWN initiates abort retirement. Each admitted transport record therefore
+has one bounded persistent proxy custodian, created only after the ledger's core
+registration and capacity reservation. The custodian calls `open/1` and remains
+alive through retirement; short-lived preparation workers must not create scopes.
+Opening also uses a fixed 5,000-ms handle call with no caller deadline. If
+preparation expires before its result, reject publication, retain the allocation
+reservation and retire any late-created scope. Caller death or a lost result is
+not cleanup proof.
+
 `Gaoxy.stop(instance, timeout)` remains the user/configuration-owner entrypoint
 and computes the one absolute deadline D. `Instance.operation` snapshots both
 services and participants after closing instance configuration admission. Its
@@ -288,6 +370,18 @@ extend the public success budget. In ordinary embedding, the configuration
 owner calls `Gaoxy.stop/2` while participant siblings are still alive, then
 stops its enclosing supervisor. A raw supervisor stop is not a public Gaoxy
 cleanup receipt; forced kill paths can only report uncertainty.
+
+Public `retire/2` itself has a fixed 5,000-ms control call and no caller timeout.
+Run initiation in monitored, bounded proxy helpers, without blocking the core
+participant, transport ledger or custodian. Limit each scope to one initiation
+and, when needed, one abort-escalation helper; keep unsettled helpers represented
+in admission/accounting. Close local admission before starting them. Receipt
+waits use `max(D - now, 0)`; a helper outliving D cannot extend the stop success
+budget. If initiation loses its result, reconcile with bounded repeated public
+`retire/2` calls to recover the same receipt. Never construct or inspect receipt
+fields. Late confirmed retirement may refund retained capacity, but cannot
+retroactively change a timed-out stop result to success. A retired-scope snapshot
+error alone does not prove cleanup.
 
 The externally supervised transport owner remains alive through its retirement
 operation even if the instance exits. On unexpected instance DOWN it refuses
@@ -375,7 +469,8 @@ qualified OTP/TCP maximum delivery plus 65,536-byte framing carry, eight upload
 chunks and duplicated request metadata. Preserve its host assumptions and
 exclusions; do not relabel that expression as an H2/shared-pool bound.
 
-0.20 source provides useful finite inputs: H2 send queue 1,048,576 bytes;
+Installed0.21 source provides useful finite inputs: H2 synchronous writer batch
+1,048,576 bytes, which is not an aggregate send/control queue limit;
 receive DATA budget at least 1,048,576 bytes with the default profile;
 65,536-byte compressed header block; HPACK 65,536 decoded bytes and 256 fields
 with a default 4,096-byte dynamic table; upload bridge 65,536 bytes with 16,384
@@ -390,7 +485,7 @@ decomposition is:
 ```text
 transport = config_and_secret_bytes
           + max_connections * (receive_credit + framing_and_headers
-              + hpack_tables_and_decode_transient + bounded_send_queue
+              + hpack_tables_and_decode_transient + bounded_write_overlap
               + delivery_copy_overlap + bounded_control_metadata)
           + max_pending * bounded_pending_metadata
 request   = upload_bridge_and_source + delivered_response_and_copy_overlap
@@ -406,20 +501,26 @@ confirmed retirement. The instance owner exposes its separate reserved total;
 service cleanup continues to expose request-held bytes. Do not present either
 as a total BEAM/RSS/kernel measurement.
 
-One concrete source gap needs its own public reproduction: in
-`HTTP.HTTP2.ConnectionOwner.dispatch_frame/2`, each nonterminal CONTINUATION
-conses a fragment onto a list, but the 65,536 limit counts payload bytes only.
-Repeated empty CONTINUATION frames retain growing list metadata while the sum
-stays zero. This is source evidence, not a performed runtime measurement. Run
-the bounded public-peer reproduction and route a separate Bug if confirmed;
-do not silently compensate with a Gaoxy timeout or call the state bounded.
+The historical empty-CONTINUATION metadata defect (#79) is fixed by the installed
+256-frame cap and empty-fragment omission. The current H2 gap is #86: decoded
+response-head events are accumulated and sent without recipient admission/ACK,
+and valid SETTINGS produce asynchronous pool capacity casts without a hard
+outstanding-update cap or coalescing. DATA credit, per-block limits, active-once
+receive and the synchronous writer batch do not bound those retained events.
+See the
+[source-derived worksheet](../acceptance/evidence/m3/upstream-transport/retained-bounds-source.md)
+and [independent bounds review](../acceptance/evidence/m3/upstream-transport/upstream-0.21/independent-bounds-review.md).
+H1 excludes those H2 paths and the buffered-iodata input under its frozen
+nil/PID upload contract, but still requires policy/copy/structure, process,
+ETS, monitor/timer/control metadata and exact managed OTP delivery accounting.
 
 The implementation gate requires a source-derived numeric worksheet for the
 exact release/profile and a corresponding finite public lifecycle/bounds
 contract. Control-frame floods, zero-length fragmented headers and message
 queue growth require focused adversarial checks; DATA flow control alone is
 insufficient evidence. No final H2 reservation constant is approved by this
-document because the managed API and its complete bound do not yet exist.
+document because its complete retained-state bound remains unresolved. Missing
+terms cannot be zeroed or replaced by an arbitrary multiplier.
 
 ## Acceptance and compatibility
 

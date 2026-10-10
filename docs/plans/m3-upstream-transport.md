@@ -5,8 +5,9 @@
 > authorization in `AGENTS.md` replaces routine approval pauses. The Astra
 > architecture assignment does not authorize Astra implementation or commits.
 
-**Goal:** Qualify HTTP Fetch 0.20 request completion/trailers now, then activate
-bounded owned H1 reuse and upstream H2 after public transport prerequisites pass.
+**Goal:** Qualify installed HTTP Fetch 0.21 managed transport contracts, then
+activate bounded owned H1 reuse and upstream H2 after their independent public
+runtime and complete retained-state prerequisites pass.
 
 **Architecture:** Preserve the existing HTTP pump, Session guardian, group
 selection and generic generation-resource pins. Add an explicitly supervised
@@ -15,25 +16,38 @@ releases request holds and a separate retirement receipt releases transport
 capacity. See [`../designs/m3-upstream-transport.md`](../designs/m3-upstream-transport.md).
 
 **Tech stack:** Existing Elixir 1.18.5 / OTP 28 environment, HTTP Fetch coordinated
-0.20 packages, native Gaoxy H1/H2, independent raw TCP/Python `h2` peers already
+0.21 packages, native Gaoxy H1/H2, independent raw TCP/Python `h2` peers already
 used by the repository. No new production dependency.
 
 **Baseline:** `d92d3691e073fbf33195b567af7be10cea6132fc`,
 `codex/m3-gateway`, `.trees/m3-gateway`. Parent owns the dependency update and
-its evidence. Upstream release tag commit supplied and verified by parent:
-`951ec75dadcebd8218f30d3ecdf99da142d4a463`.
+its evidence. Historical0.20 tag is
+`951ec75dadcebd8218f30d3ecdf99da142d4a463`. Current0.21 tag is
+`9813c126dc8b48055b9ee941c693fc27fa691489`, verified against all installed
+archives/runtime blobs from local baseline `4cc7a1a967d1b90a62d42db438316b10a03a1e16`.
 
 ## Execution boundaries
 
-Tasks 0–2 are ready now and must leave Gaoxy production modes dedicated H1.
-Tasks 3–8 are conditional on
-[http_fetch#78](https://github.com/gsmlg-dev/http_fetch/issues/78) and the source-confirmed
-metadata-cap [Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79)
-being fixed in installed artifacts. A missing public operation is a
-blocker, never an invitation to fill it with private transport calls. Conditional
-tasks describe the complete intended implementation; their unchecked state is
-deliberate. Once upstream publishes, record its exact public API and accounting
-contract here before runtime edits. Do not substitute proposed API names.
+Tasks0–2 were completed on0.20 and their evidence remains historical. The seven
+packages are now installed at0.21.0. Release38067971805 completed successfully;
+all196 shipped-file hashes and175 runtime Git blobs match, with #78/#79 fixes
+in the actual tag ancestry. Their containing-artifact prerequisite is resolved.
+Task3 now runs public functional probes after independent fixture review and a
+new complete source freeze. Runtime edits in Tasks4–8 still require Task3's
+protocol-specific functional and complete accounting gates. A missing bound
+cannot be supplied by private transport calls or an arbitrary allowance.
+
+Managed H2 accounting is **BLOCKED** on
+[Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86), an independently
+source-confirmed aggregate header-event/SETTINGS-notification bound gap.
+H1 functional investigation proceeds independently with C2/R32/P0,
+`buffer/recbuf/sndbuf=8192`, nil/PID uploads, ACKed binary chunks≤65536,
+raw streamed responses and manual redirects. The historical261,199,114-byte
+component subtotal has uncertified delivery/copy assumptions and incomplete
+policy, backing, structure and metadata coverage. The
+[controlled H1 architecture](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-accounting-architecture.md)
+replaces it with named P0–P6 obligations. The H2 52,207,632-byte component
+subtotal is likewise not a reservation. Neither enables transport activation.
 
 The parent serializes all shared `http_fetch_client.ex`, `http/session.ex`,
 `http.ex`, `upstream_groups.ex`, package/lock and acceptance-document edits. An
@@ -190,30 +204,112 @@ checkboxes do not qualify conditional transport activation or full M3.
 
 ## Task 3: Reopen the public managed-transport gate (conditional)
 
+### Preparatory API checkpoint
+
+Independent Sol source inspection of PR81 head
+`11f1642cf6408219d4813772bda1055e605bbdc4`, merged as
+`a75ec3c34446a1877366a0e52055743d28eabcc9`, identifies:
+
+```elixir
+HTTP.ManagedTransport.open(options) # {:ok, scope} | {:error, reason}
+HTTP.fetch(url, transport_scope: scope, redirect: :manual,
+  decode_body: false, stream_response: true)
+HTTP.ManagedTransport.snapshot(scope, timeout_ms) # {:ok, aggregate} | error
+HTTP.ManagedTransport.retire(scope, mode: :graceful) # {:ok, receipt} | error
+# :abort escalates graceful retirement; repeated calls share the receipt.
+HTTP.ManagedTransport.await_retired(receipt, timeout_ms)
+# :ok | {:error, :cleanup_pending | :cleanup_unconfirmed}
+```
+
+`open/1` monitors its calling creator, and uses a fixed 5,000-ms handle call.
+`retire/2` also uses a fixed 5,000-ms control call. Neither accepts a caller
+deadline. Snapshot/receipt waits accept finite milliseconds. Use a persistent
+scope custodian and bounded monitored initiation helpers; always preserve the
+original Gaoxy absolute deadline. The audited finite limits are requests
+1..2048, connections1..256, pending exactly0 and idle timeout1..60000 ms.
+The [installed provenance](../acceptance/evidence/m3/upstream-transport/upstream-0.21/installed-provenance.json)
+confirms the four audited critical blobs match. Complete numeric accounting
+and runtime qualification remain separate gates below.
+
+The [audited source receipt](../acceptance/evidence/m3/upstream-transport/source-api-review.md)
+records the options and immutable blobs. `open/1` requires origin URL, literal
+address tuple and explicit protocol; optional keys are TLS backend/policy,
+socket options, finite request/connection/pending/idle limits and H2 profile.
+No private fields of scopes or receipts are an integration surface.
+
 Files: this plan's API checkpoint, the design's audited API table,
 `apps/gaoxy_proxy/mix.exs`, `mix.lock`, new
 `integration/http_fetch_contract/managed_transport_probe.exs`, later evidence.
 
-- [ ] Confirm #78 and any reproduced bound issue are resolved in the actual
-  installed containing release, not merely closed in GitHub. Record artifact
-  hashes and exact documented create/select/limit/retire/await/stats signatures.
-- [ ] Prove Fetch accepts the opaque caller-owned resource and cannot silently
-  use the global pool. Prove finite total/active/idle/connecting/stream/pending
-  limits, including a configured zero queue or equivalent immediate rejection.
-- [ ] Prove same-policy requests with unequal opening/total remaining deadlines
+- [x] Confirm #78/#79 are resolved in actual installed0.21 artifacts. Record
+  archive/shipped-file/runtime-blob hashes and exact documented public signatures
+  in `upstream-transport/upstream-0.21/release-provenance.json`,
+  `installed-provenance.json` and the source/API receipt. #86 remains a separate
+  unresolved H2 blocker; this checkbox does not approve Task3.
+- [x] Prove Fetch accepts the opaque caller-owned resource and cannot silently
+  use the global pool. Inspect finite ingress/connection ledgers covering
+  preparation, connection setup and active/idle requests; independently exercise
+  held active/unread capacity, idle reuse, draining connection occupancy and
+  immediate rejection with a zero pending queue. Held connecting/preparing
+  saturation is NOT RUN by the39-case fixture; source bounds do not imply that
+  those runtime states were sampled.
+- [x] Prove same-policy requests with unequal opening/total remaining deadlines
   reuse while preserving each request's absolute deadline. If timeout policy
   still changes the reuse key or sibling socket state, keep activation blocked.
-- [ ] Prove complete retirement closes idle sockets, rejects new work, survives
+- [x] Verify public retirement receipts close idle sockets, reject new work, survive
   late checkin, and returns pending/unconfirmed distinctly from confirmed
   completion. Scope A retirement must preserve scope B on the same origin.
+- [ ] Independently qualify actual OTP28 TLS-process tracking and release:
+  blocker [#95](../dependency-requests/http-fetch-otp28-tls-tracking.md).
+  Installed `track_tls/2` silently skips the actual socket shape. Public receipt
+  observations do not prove termination of unregistered receiver/sender processes.
 - [ ] Build the design's numeric retained-byte worksheet from this exact source.
   Include transient HPACK/header decoding, fragment/control metadata, payload
   copies, pending requests, idle connections and unknown/unconfirmed holds.
   Run the fixed empty-continuation case and bounded slow-peer/control cases.
   Missing finite bounds keep H2 activation blocked.
+- [ ] Qualify the narrow H1 accounting expression independently: explicit
+  policy/preparation copy multiplicities, binary backing and header/trailer
+  structural overlap, bounded process/ETS/monitor/timer/control-message counts
+  and serialized-to-retained conversion, plus exact managed OTP delivery proof.
+  Preserve unknown terms; a component subtotal is never a complete budget.
 - [ ] Independent Sol specification review must approve these prerequisites
   before Task 4 runtime edits. This is technical qualification under existing
   authorization, not a routine user-approval step.
+- [ ] Before activation, exercise held connection setup and preparation/admission
+  turnover with the qualified scope boundary. Preserve finite slot limits and
+  exact retirement outcomes; source-only coverage is not runtime acceptance.
+
+Functional execution receipt: `upstream-0.21/managed-probes-recovery1.json`,
+39/39 cases,39 successful joined cleanups, exit0,425 unchanged frozen source
+hashes and no remaining owned peer. Independent specification/code-quality
+delta review and strict preflight18/0 pass. Both verified TLS H2 and h2c retain
+needed#89's separately recorded canonical capacity-error MISMATCH. Initial,
+diagnostic and repair failures remain preserved. These functional checkboxes
+do not satisfy complete accounting, integration, matrix or load requirements.
+The exact-source `h1-delivery-proof.md` contributes conditional raw logical/
+backing lemmas; full P1 and all P0–P6 activation obligations remain open.
+
+## Task 3a: Pure compact H1 preparation (unblocked)
+
+Follow the [compact preparation design](../designs/m3-managed-h1-preparation.md)
+and [scoped execution plan](m3-managed-h1-preparation.md). This slice may proceed
+before complete runtime accounting: bounded canonical policy/request data,
+separate source backing/owned constructor manifests and named partial facts.
+It opens no scope, starts no process, performs no I/O and wires no adapter.
+Its activation API stays explicitly unqualified while P0–P6 remain open.
+Needed upstream input/backing requests#87/#88 are excluded by the narrow grammar;
+they do not complete the remaining local proof work or resolve H2 blocker#86.
+
+- [x] Independent specification review of the written narrow design/plan:
+  `upstream-0.21/h1-preparation-spec-review.md`, with no-start test commands,
+  canonical policy grammar and opaque trust-payload wording corrected.
+- [x] Scoped red/green tests and minimal pure implementation.
+- [x] Independent specification/code-quality review and fresh formatter/scoped
+  tests:26/0, exit0, seed21108026;429 unchanged source hashes. See the pure
+  preparation plan and `upstream-0.21/h1-preparation-final.json`.
+- [x] Record exact source/results and local commit `56fd518`; retain the
+  activation gate. Task3a pure preparation is complete; Tasks4–8 remain gated.
 
 ## Task 4: Pure policy and bounded transport resource (conditional)
 
@@ -269,6 +365,15 @@ These core edits implement the generic stop hook; no HTTP dependency enters core
   pending/unconfirmed retirement, repeated finish/release and cross-instance
   isolation. Public retirement confirmation is necessary before refunding
   connection capacity. No ledger restart that forgets old live transports.
+- [ ] Create each upstream scope from its persistent custodian, never from an
+  exiting preparation worker. Bound custodians by admitted transport records;
+  preparation timeout rejects publication while retaining uncertain allocation
+  holds and retires late scopes. Test creator DOWN through the public contract.
+- [ ] Bound scope retirement initiation and abort-escalation helpers, preserving
+  D around fixed 5,000-ms upstream calls. Test short-D pending initiation,
+  graceful-to-abort escalation, repeated public receipt recovery, late confirmed
+  capacity release and unchanged failed stop results. Snapshot retirement errors
+  and helper DOWN do not substitute for public cleanup confirmation.
 
 Run `mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstream_transports_test.exs apps/gaoxy/test/lifecycle_participant_test.exs`
 in the canonical environment; capture red then green with exact counts.
@@ -472,3 +577,12 @@ success (Tasks 4/7), two new >=600-second managed transport profiles qualify
 sustained lifetime/churn (Task 7b), and resource facade/provider arities remain
 distinct. Document self-review is not the pending independent re-review and
 does not qualify runtime behavior.
+
+Current checkpoint, 2026-10-11: installed0.21 artifacts resolve #78/#79;
+Task3's finite functional probes pass39/39 and pure Task3a passes26/0 with
+independent implementation reviews. Conditional source lemmas pass their
+separate independent review. Full P0-P6, held preparing/connecting saturation
+and Tasks4–8 remain unqualified. The fresh remote receipt records #86–#89
+CLOSED with latest published release still0.21.0; containing fixes and renewed
+qualification remain required. New blocker#95 is OPEN for managed OTP28 TLS
+tracking. The older handoff preserves its original prerelease boundary.

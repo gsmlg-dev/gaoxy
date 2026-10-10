@@ -49,9 +49,11 @@ unchanged. There is no automatic retry, replay, protocol or TLS-provider fallbac
 Each request owns a new H1 connection. M3 adds supervised upstream groups,
 health probes and generation-pinned selection through `Gaoxy.Proxy.GroupEndpoint`;
 see [the gateway guide](gateway.md). Groups do not imply connection reuse.
-Reusable H1 and upstream H2 remain BLOCKED by HTTP Fetch
-[#66](https://github.com/gsmlg-dev/http_fetch/issues/66); upstream H2 upload
-trailers also need [#67](https://github.com/gsmlg-dev/http_fetch/issues/67).
+Installed HTTP Fetch0.21 provides public request cleanup, upload trailers and
+managed scope retirement. Reusable H1 and upstream H2 remain disabled pending
+[managed qualification](plans/m3-upstream-transport.md): complete H1 accounting
+and runtime gates, and the H2 header/control bound in
+[#86](https://github.com/gsmlg-dev/http_fetch/issues/86).
 
 Ordered duplicate fields survive. Hop-by-hop fields and every Connection-nominated
 field are removed. Incoming Forwarded, X-Real-IP and X-Forwarded-* are discarded;

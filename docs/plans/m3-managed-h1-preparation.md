@@ -315,10 +315,10 @@ end
   environment/source identity, command/exit, nonzero test count and findings.
 - [x] Update only these design/plan execution status/checklist lines. Parent
   owns evidence receipts and shared acceptance documentation.
-- [ ] After passing independent reviews/fresh verification, parent may authorize
-  this worker's local conventional commit of only owned files. No commit runs
-  during freeze or in this docs-only assignment. Suggested message:
-  `feat(proxy): prepare bounded managed H1 inputs`.
+- [x] After passing independent reviews/fresh verification, parent creates the
+  authorized local conventional commit of reviewed task-owned files:
+  `56fd518 feat(proxy): prepare bounded managed H1 inputs`. No worker commit
+  ran during freeze or in the earlier docs-only assignment.
 - [x] Stop at pure preparation. H1 numeric activation bound stays NOT ESTABLISHED,
   P0-P6 open; no manager/adapter integration, network qualification or broader
   M3 completion claim. Preserve commands/processes owned by others.
@@ -347,8 +347,8 @@ Tasks0-4 and final self-review are complete. Executable writes are stopped.
 The parent completed canonical formatting of the four new files and the global
 format check, exit0. Independent implementation specification and code-quality
 reviews PASS. The fresh final test of those reviewed formatted bytes passes26/0,
-exit0, seed21108026, with429 unchanged source fingerprints. Only local commit
-delivery remains pending in Task5. There is no routine user design decision.
+exit0, seed21108026, with429 unchanged source fingerprints. Local commit
+`56fd518` completes Task5 delivery. There is no routine user design decision.
 
 Final receipts: [specification review](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-preparation-implementation-spec-review.md),
 [code-quality review](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-preparation-implementation-quality-review.md),
@@ -395,6 +395,6 @@ validations successful,0 unsuccessful; Astra0. No escalation gate applies.
 
 Worker owns only the four new executable files and these two documents. All
 worker commands finished; shared source/docs/dependency/fixture files and others'
-processes were preserved. No commit, process integration or activation occurred.
+processes were preserved. No worker commit, process integration or activation occurred.
 P0-P6 remain open. Independent implementation reviews, canonical formatting,
 global format check and fresh tests of the formatted source have passed.

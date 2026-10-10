@@ -1,0 +1,38 @@
+{
+  "command": [
+    "nix",
+    "develop",
+    "--command",
+    "elixir",
+    "-e",
+    "<recorded program>",
+    "<ephemeral loopback port>",
+    "<disposable peer CA>"
+  ],
+  "complete_peer_protocol_gate": "FAIL",
+  "elapsed_seconds": 10.932,
+  "exception": null,
+  "exit": 0,
+  "frozen_source_files": 429,
+  "full_lifecycle_race": "NOT RUN",
+  "full_m3": "NOT ESTABLISHED",
+  "helper_sha256": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f",
+  "legacy_tracking_pattern_matches": false,
+  "log": "tls-socket-shape-probe.log",
+  "log_sha256": "ef140e6738f239a8a1637947599f7214a9fc3e74a36d221c7b521b9cecd2f5e2",
+  "observed_tuple_arity": 8,
+  "observed_utc": "2026-10-10T19:07:49.093394+00:00",
+  "peer_joined": true,
+  "peer_live_threads_after": 0,
+  "peer_protocol_failure": {
+    "event": "failure",
+    "reason": "AssertionError()",
+    "root_cause": "Diagnostic SSL client omitted h2 ALPN expected by the inherited TLS peer",
+    "socket_shape_still_confirmed": true,
+    "source": "completed parent tool output"
+  },
+  "program": "\n[port, ca] = System.argv()\n{:ok, _} = Application.ensure_all_started(:ssl)\n{:ok, socket} = :ssl.connect({127, 0, 0, 1}, String.to_integer(port),\n  [:binary, active: false, verify: :verify_peer,\n   cacertfile: String.to_charlist(ca), server_name_indication: ~c\"localhost\",\n   customize_hostname_check: [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)]], 3000)\nold_shape = match?({:sslsocket, _, processes} when is_list(processes), socket)\nIO.puts(\"TLS_SOCKET_SHAPE arity=#{tuple_size(socket)} tag=#{elem(socket, 0)} legacy_tracking_pattern=#{old_shape}\")\nIO.puts(\"TLS_RUNTIME elixir=#{System.version()} erts=#{:erlang.system_info(:version)} ssl=#{Application.spec(:ssl, :vsn)}\")\n{:ok, info} = :ssl.connection_information(socket, [:protocol, :selected_cipher_suite])\nIO.inspect(info, label: \"TLS_PUBLIC_CONNECTION_INFO\")\n8 = tuple_size(socket)\nfalse = old_shape\n:ok = :ssl.close(socket, 1000)\nIO.puts(\"TLS_SHAPE_PROBE_PASS public_verified_connect=1 close=ok lifecycle_retirement_not_tested\")\n",
+  "scope": "One verified public OTP SSL loopback connection; public returned socket shape only; no HTTP private calls/process inspection or lifecycle-retirement claim",
+  "source_hashes_unchanged": true,
+  "status": "PARTIAL_SHAPE_CONFIRMED_PEER_ALPN_FAILURE"
+}

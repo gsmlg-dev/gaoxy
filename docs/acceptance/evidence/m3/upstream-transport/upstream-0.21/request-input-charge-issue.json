@@ -1,0 +1,113 @@
+{
+  "body_sha256": "1b6d9641c766649d5e7a78c72ee76b34c016af85e01ee0efa2053fc543f233e5",
+  "independent_review": "h1-inputs-independent-review.md",
+  "installed_version": "0.21.0",
+  "issue": {
+    "active_lock_reason": null,
+    "assignee": null,
+    "assignees": [],
+    "author_association": "MEMBER",
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-gateway`\n\n**Severity:** needed for complete managed input accounting. Current Gaoxy uses\nbounded URL strings, explicit fields and nil/PID uploads, so these broad public\nforms are unreachable in that adapter. This is not an H1 activation blocker or\na runtime leak claim. No dependency/private-API patch is proposed.\n\n**Source:** installed seven-package 0.21.0 cohort, actual immutable tag\n`9813c126dc8b48055b9ee941c693fc27fa691489`. Gaoxy verified all196 shipped\nfiles and175 runtime Git blobs. Two independent source reviews confirmed the\nfollowing pre-normalization charge gaps. Reproductions below are finite\nsource-backed recipes, **NOT RUN**; no measured memory or wire outcome is claimed.\n\n## Findings and minimal recipes\n\nOpen a public H1 `HTTP.ManagedTransport` pinned to an independent loopback peer,\nwith finite C2/R32/P0 limits. Use public Fetch, capture original completion,\nmanual redirects and raw streaming, finite request deadline and bounded cleanup.\n\n1. **Late Content-Type exceeds the managed request field budget.**\n   FetchOptions289\u2013310 preserves `content_type`. Managed Policy148\u2013164 checks\n   explicit fields/path/query but ignores that convenience input. Request152\u2013154,\n   183\u2013189 and263\u2013264 insert Content-Type after admission. HTTP1.prepare_request\n   44\u201352 and safe_header_value535\u2013538 add no size check for printable values.\n   Recipe: `{:ok, upload} = HTTP.Stream.start_link(0)`; Fetch a matching URL with\n   `body: upload`, no explicit Content-Type, and `content_type: String.duplicate(\"a\", 65_537)`.\n   The visible request passes the earlier64KiB field charge while normalized\n   serialization has a larger ordinary header. Expected: normalize and reject\n   over-budget effective fields before dial/request bytes.\n2. **Unused URI authority escapes retained request charge.**\n   Fetch282\u2013298 accepts a `%URI{}` unchanged. Policy148\u2013157 charges only fields,\n   path/query, and170\u2013173 compares scheme/host/port, not authority. SocketClient\n   304\u2013314/531\u2013556 retains the full request;1431 puts the original URL in response.\n   Recipe: parse a matching URL then set `authority` to `String.duplicate(\"a\", 131_072)`.\n   Expected: normalize/reject unused URI metadata or charge every retained field,\n   rather than carrying an arbitrarily large uncharged convenience value.\n3. **Buffered empty iodata has no structural retained-input bound.**\n   Policy162\u2013164 uses `IO.iodata_length`; FetchOptions278/309\u2013310 retains the\n   original term; Request254 flattens later. The original request remains in the\n   H1 owner context/state after flattening. Recipe: `body: List.duplicate([], 8_192)`\n   has zero logical bytes but thousands of retained list cells. Expected: enforce\n   a structural/normalized-input charge or reject such forms before retention.\n\nRun each named case with a finite independent peer and exact accept/request-byte\nreceipts; abort/await the original completion, retire/await scope and join peer.\nThese recipes do not inspect private processes or rely on a shared global pool.\n\n## Needed behavior\n\nApply the managed request charge to the final normalized supported request,\nincluding convenience fields and retained original representations. Include a\nfinite structural/backing contract where logical payload length is insufficient,\nor reject unsupported public forms before admission. Preserve existing public\nerror/cancellation/retirement behavior and no replay. Add finite regressions and\npublish containing artifacts before Gaoxy broadens its controlled input profile.\n",
+    "closed_at": null,
+    "closed_by": null,
+    "comments": 0,
+    "comments_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87/comments",
+    "created_at": "2026-10-10T17:36:18Z",
+    "events_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87/events",
+    "html_url": "https://github.com/gsmlg-dev/http_fetch/issues/87",
+    "id": 5793687885,
+    "issue_dependencies_summary": {
+      "blocked_by": 0,
+      "blocking": 0,
+      "total_blocked_by": 0,
+      "total_blocking": 0
+    },
+    "issue_field_values": [],
+    "labels": [
+      {
+        "archived_at": null,
+        "archived_by": null,
+        "color": "1D76DB",
+        "default": false,
+        "description": "Requests from internal repositories",
+        "id": 11240157899,
+        "name": "internal request",
+        "node_id": "LA_kwDOPU6rnM8AAAACnfcyyw",
+        "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/labels/internal%20request"
+      }
+    ],
+    "labels_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87/labels{/name}",
+    "locked": false,
+    "milestone": null,
+    "node_id": "I_kwDOPU6rnM8AAAABWVSpTQ",
+    "number": 87,
+    "performed_via_github_app": null,
+    "pinned_comment": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87/reactions"
+    },
+    "repository_url": "https://api.github.com/repos/gsmlg-dev/http_fetch",
+    "state": "open",
+    "state_reason": null,
+    "sub_issues_summary": {
+      "completed": 0,
+      "percent_completed": 0,
+      "total": 0
+    },
+    "timeline_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87/timeline",
+    "title": "[internal] Charge normalized managed request inputs before admission",
+    "type": {
+      "color": "red",
+      "created_at": "2024-02-04T19:49:46Z",
+      "description": "An unexpected problem or behavior",
+      "id": 12442810,
+      "is_enabled": true,
+      "name": "Bug",
+      "node_id": "IT_kwDOA-mPyM4Avdy6",
+      "updated_at": "2024-07-26T13:17:12Z"
+    },
+    "updated_at": "2026-10-10T17:36:20Z",
+    "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/87",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/3713684?v=4",
+      "events_url": "https://api.github.com/users/gsmlg/events{/privacy}",
+      "followers_url": "https://api.github.com/users/gsmlg/followers",
+      "following_url": "https://api.github.com/users/gsmlg/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gsmlg/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/gsmlg",
+      "id": 3713684,
+      "login": "gsmlg",
+      "node_id": "MDQ6VXNlcjM3MTM2ODQ=",
+      "organizations_url": "https://api.github.com/users/gsmlg/orgs",
+      "received_events_url": "https://api.github.com/users/gsmlg/received_events",
+      "repos_url": "https://api.github.com/users/gsmlg/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/gsmlg/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gsmlg/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/gsmlg",
+      "user_view_type": "public"
+    }
+  },
+  "labels": [
+    "internal request"
+  ],
+  "number": 87,
+  "observed_utc": "2026-10-10T17:36:21.256980+00:00",
+  "runtime_reproduction": "NOT RUN",
+  "severity": "needed",
+  "state": "open",
+  "tag_commit": "9813c126dc8b48055b9ee941c693fc27fa691489",
+  "type": "Bug",
+  "url": "https://github.com/gsmlg-dev/http_fetch/issues/87"
+}

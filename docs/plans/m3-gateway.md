@@ -15,7 +15,7 @@ immutable configuration generations before activation, retaining stable socket
 owners and each in-flight request's selected generation.
 
 **Tech stack:** Elixir 1.18.5 / OTP 28; Thousand Island and Abyss public adapters;
-Plug/WebSock; pinned coordinated HTTP Fetch0.20.0; HPAX for
+Plug/WebSock; pinned coordinated HTTP Fetch0.21.0; HPAX for
 HTTP/2 header compression; independent loopback peers.
 
 **Base:** `71f1b02032b440c5626263bd48aa4f622260e70a`, worktree
@@ -86,12 +86,24 @@ updated for installed0.20.0 under the new plan; historical raw logs stay intact.
   Only then enable upstream H2/H1 reuse. Until then stop activation and
   continue independent tasks; no private pool calls or local workaround.
 
-Current checkpoint: #66/#67 fixes are installed in0.20.0; the460-test upgrade
-compatibility gate passes. Follow [`m3-upstream-transport.md`](m3-upstream-transport.md)
-for positive public probes (16/16 PASS) and the finite empty-CONTINUATION
-diagnostic (INCONCLUSIVE, confirmed cleanup; metadata bound unresolved).
-Activation remains BLOCKED on #78 and source-confirmed H2 metadata Bug #79,
-plus remaining qualification.
+Current checkpoint: all seven packages are installed at0.21.0, containing
+#66/#67/#78/#79; the strict460-test upgrade compatibility gate passes at
+seed21102026. Follow [`m3-upstream-transport.md`](m3-upstream-transport.md)
+for separate managed public probes and complete accounting qualification.
+The0.21 finite managed public run now passes39/39 with39 joined cleanups,
+425 stable source hashes and no remaining owned peer; canonical H2 capacity
+errors remain MISMATCH under needed#89. This does not enable the adapter or
+complete the required retained-byte/matrix/load gates.
+Historical0.20 public cases passed16/16; its finite memory diagnostic remains
+INCONCLUSIVE. H2 activation is BLOCKED on #86, while H1 requires complete
+retained-state accounting and both require managed lifecycle/matrix/load gates.
+
+Fresh remote status records #86–#89 CLOSED, latest published/installed0.21.0;
+containing fixes and renewed qualification remain required. New
+[Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md) blocks managed
+OTP28 TLS resource tracking/release. Pure H1 preparation passes26/0 and both
+independent implementation reviews, delivered in local commit `56fd518`.
+Full M3 remains incomplete; M4 cannot start.
 
 ## Task 2: Native HTTP/2 and shared HTTP operations
 
@@ -219,7 +231,7 @@ documentation, independent loopback/load harnesses and scoped CI wiring.
 - [x] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.
 - [ ] Mark M3 complete only if every required gate and upstream prerequisite
-  passes. Then write the M4 design/plan and automatically continue. If #78 or
+  passes. Then write the M4 design/plan and automatically continue. If #86 or
   another required public contract/bound is unresolved in the installed release, report BLOCKED for
   the affected tasks/M3 completion and preserve all tested independent work.
 

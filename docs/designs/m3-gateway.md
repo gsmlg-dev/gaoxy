@@ -19,13 +19,19 @@ H2 server independently of upstream H2. H2 downstream → direct H1 upstream is 
 valid, separately tested matrix entry. Do not describe upstream groups as pools.
 
 The original audited interfaces below are the0.19.1 design baseline. Installed
-0.20.0 now contains request-completion and streamed H2 request trailers. Full
-M3 remains blocked on owned reusable transport retirement (#78), finite H2
-metadata bounds and remaining qualification. The
+0.21.0 now contains request-completion, streamed H2 request trailers, managed
+ownership/retirement (#78) and the fragment cap (#79). Full M3 remains blocked
+on installed H2 header/control event bounds (#86), actual OTP28 TLS resource
+tracking (#95), complete H1 accounting and
+remaining managed runtime qualification. The
 [current transport design](m3-upstream-transport.md) and
 [plan](../plans/m3-upstream-transport.md) supersede P8's old release blockers.
 Independent slices may reach acceptance and local commits without asserting
 the entire milestone passed.
+
+#86–#89 are now CLOSED upstream, while published/installed artifacts remain
+0.21.0. A containing update and renewed qualification are still required;
+issue closure alone does not change this design's activation gate.
 
 ## Audited seams and dependency decisions
 
@@ -504,7 +510,7 @@ conflicts. Do not let independent workers edit the same HTTP connection module.
 | P5: UDP relay | Core dispatcher bridge + proxy UDP association; independent of H2 | Independent UDP peer; multiple clients, empty/max datagrams, return-source rejection, preserved source port, bounded overload, expiry/drain/reload and writer uncertainty |
 | P6: groups/health | Proxy group state + existing direct H1 sessions; independent of H2 | Round-robin, saturation/no replay, health transitions, bounded probes, stale generation results, verified TLS, guardian cleanup; explicitly no transport reuse |
 | P7: stable-listener generations | HTTP Generation snapshot endpoint + server config; after P1, integrate P4–P6 | Old admitted work/new request split, H2 streams across reload, preparation rollback, unchanged real bound port, concurrent/stale CAS, bounded preparation/snapshots, resource-holder crash, no atom growth |
-| P8: reusable upstream transport | HTTP Fetch adapter;0.20 fixes #66/#67; activation BLOCKED on owned pool/confirmed retirement #78 and remaining H2 bounds | H1 reuse and H2 upstream demand, cancellation and public request completion; H2 upload trailers; healthy shared resources survive cleanup; owned pool retirement/isolation/capacity/load, no private processes |
+| P8: reusable upstream transport | HTTP Fetch adapter;0.21 fixes #66/#67/#78/#79; activation gated by H2 #86, complete H1 accounting and managed qualification | H1 reuse and H2 upstream demand, cancellation and public request completion; H2 upload trailers; healthy shared resources survive cleanup; owned pool retirement/isolation/capacity/load, no private processes |
 | P9: beta integration/soak | Scoped acceptance and docs; after all required slices | Fresh independent review, native browser regressions, external core consumer, sustained-load/slow-peer evidence, truthfully populated capability matrix; M3 cannot pass while P8 blocked |
 
 Sustained-load gate: at least 10 minutes, mixed local and H1-proxied H2 requests

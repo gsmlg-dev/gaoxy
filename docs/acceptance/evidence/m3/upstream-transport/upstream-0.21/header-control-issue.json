@@ -1,0 +1,118 @@
+{
+  "body_sha256": "b3743801d037933e43e95f0d02baed62d75aff3adc52c76ad23a8d9a7fa5154c",
+  "independent_reviews": [
+    "../retained-bounds-source.md",
+    "independent-bounds-review.md"
+  ],
+  "installed_version": "0.21.0",
+  "issue": {
+    "active_lock_reason": null,
+    "assignee": null,
+    "assignees": [],
+    "author_association": "MEMBER",
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-gateway`\n\n**Severity:** blocker for M3 managed upstream HTTP/2 retained-state qualification.\nDedicated HTTP/1 remains enabled. This follow-up is separate from resolved\nmanaged-resource #78 and header-fragment #79; Gaoxy has installed the seven\ncoordinated 0.21.0 Hex packages and verified their archive checksums, actual tag\nsource and fix ancestry.\n\n**Source:** immutable v0.21.0 commit\n`9813c126dc8b48055b9ee941c693fc27fa691489`. The relevant Owner/Pool/Policy bytes\nare unchanged from independently audited PR81 head\n`11f1642cf6408219d4813772bda1055e605bbdc4`. Two independent Sol source reviews\nconfirmed the missing aggregate accounting terms. This issue reports a missing\nsource-backed hard bound, not a performed runtime leak or memory-exhaustion\nmeasurement.\n\n## Required behavior and source findings\n\nGaoxy needs a conservative finite reservation before creating a managed H2\ngeneration. Request slots, connection slots, DATA credit, compressed/decoded\nheader-block limits and the new 256-frame cap are useful but do not charge the\nfollowing outstanding notifications created by valid peer bytes:\n\n1. In `apps/http_runtime/lib/http/http2/connection_owner.ex`, `header_events/4`\n   (1200\u20131219) appends decoded response heads to `response_events`.\n   `process_bytes/2` (747\u2013765) processes the complete delivery before flushing\n   that list. `notify_stream/3` (1545\u20131549) uses unacknowledged `send` to the\n   request recipient. StreamState accepts repeated legal informational heads.\n   Fetch's informational limit (128 responses / 65536 serialized bytes,\n   SocketClient 1018\u20131054) is checked by the recipient later; no hard aggregate\n   outstanding owner-event/recipient-mailbox admission was found before send.\n2. Each valid non-ACK SETTINGS (853\u2013885), including an empty SETTINGS, writes\n   its ACK and invokes `report_capacity/1` (1711\u20131725). That sends an asynchronous\n   cast to the managed H2 pool. Incoming rearm does not await pool consumption;\n   no bounded outstanding-update admission or coalescing was found. Repeated\n   deliveries can renew casts while prior pool messages remain outstanding.\n\n`max_pending: 0` bounds the external request waiting queue, not either of these\nqueues. Native DATA receive credit does not charge headers/SETTINGS. Active-once\nreceive controls delivery count per rearm, not accumulated notifications. The\n1 MiB writer check (667\u2013710) bounds a synchronous batch; `state.bytes` is not an\naggregate outstanding notification/queue ledger. A request timeout is a finite\nduration, not a retained-byte/count maximum. These messages arise from legitimate\nwire input, rather than arbitrary excluded caller messages or OS/TLS allocation.\n\n## Minimal finite public-peer reproduction / qualification recipe\n\nThis recipe is **NOT RUN** by Gaoxy yet; source accounting, rather than a measured\nleak, is the current blocking evidence.\n\n1. Open a public `HTTP.ManagedTransport` with explicit h2c, loopback literal\n   address, `max_connections: 1`, `max_requests: 2`, `max_pending: 0`. Fetch a raw\n   streamed manual-redirect response through that opaque scope, with a finite\n   total deadline. Use an independent Python h2/raw peer.\n2. After standard SETTINGS, send legal single-frame informational 103 HEADERS\n   (END_HEADERS, no END_STREAM) in predeclared finite batches, first129 and then\n   at most4096. Each individual block remains within byte/field/frame limits.\n   Record raw peer frame receipts and exact request/connection counts.\n3. In a separate named case, send at most4096 legal empty non-ACK SETTINGS,\n   draining the client's ACKs. Record generation usage through the public\n   snapshot and VM-wide samples with their attribution limits. Do not inspect,\n   suspend, or modify private dependency processes.\n4. Abort/await the original completion, retire/await the scope and join the\n   peer under a single finite cleanup budget. Keep a second independent scope\n   progressing and verify no replay. Pending/unconfirmed must remain explicit.\n\nThe runtime sample alone cannot prove a hard bound. Source qualification must\nidentify how every outstanding decoded-header/control notification remains\ncharged or coalesced before another one can be retained.\n\n## Expected fix and release gate\n\nProvide a supported finite aggregate accounting contract for owner response\nevents, request-recipient notifications and pool capacity updates, including\ntransient decode/copy overlap. Bound or coalesce peer-driven control updates\nbefore enqueue; enforce notification admission before accumulation/send, or\nprovide an equivalent documented mechanism. Preserve healthy H2 sibling progress,\nno replay, conservative request cleanup and whole-generation retirement receipts.\nDocument error scope and hard count/byte limits, with deterministic regressions\nfor repeated legal informational heads and SETTINGS. Ship the containing fix\nbefore Gaoxy enables managed upstream H2. Gaoxy will not patch dependency source,\nuse private pool APIs or compensate with timeout-based memory claims.\n",
+    "closed_at": null,
+    "closed_by": null,
+    "comments": 0,
+    "comments_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86/comments",
+    "created_at": "2026-10-10T17:05:20Z",
+    "events_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86/events",
+    "html_url": "https://github.com/gsmlg-dev/http_fetch/issues/86",
+    "id": 5793432661,
+    "issue_dependencies_summary": {
+      "blocked_by": 0,
+      "blocking": 0,
+      "total_blocked_by": 0,
+      "total_blocking": 0
+    },
+    "issue_field_values": [],
+    "labels": [
+      {
+        "archived_at": null,
+        "archived_by": null,
+        "color": "1D76DB",
+        "default": false,
+        "description": "Requests from internal repositories",
+        "id": 11240157899,
+        "name": "internal request",
+        "node_id": "LA_kwDOPU6rnM8AAAACnfcyyw",
+        "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/labels/internal%20request"
+      }
+    ],
+    "labels_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86/labels{/name}",
+    "locked": false,
+    "milestone": null,
+    "node_id": "I_kwDOPU6rnM8AAAABWVDEVQ",
+    "number": 86,
+    "performed_via_github_app": null,
+    "pinned_comment": null,
+    "reactions": {
+      "+1": 0,
+      "-1": 0,
+      "confused": 0,
+      "eyes": 0,
+      "heart": 0,
+      "hooray": 0,
+      "laugh": 0,
+      "rocket": 0,
+      "total_count": 0,
+      "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86/reactions"
+    },
+    "repository_url": "https://api.github.com/repos/gsmlg-dev/http_fetch",
+    "state": "open",
+    "state_reason": null,
+    "sub_issues_summary": {
+      "completed": 0,
+      "percent_completed": 0,
+      "total": 0
+    },
+    "timeline_url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86/timeline",
+    "title": "[internal] Bound managed H2 peer header and capacity-event backlog",
+    "type": {
+      "color": "red",
+      "created_at": "2024-02-04T19:49:46Z",
+      "description": "An unexpected problem or behavior",
+      "id": 12442810,
+      "is_enabled": true,
+      "name": "Bug",
+      "node_id": "IT_kwDOA-mPyM4Avdy6",
+      "updated_at": "2024-07-26T13:17:12Z"
+    },
+    "updated_at": "2026-10-10T17:05:21Z",
+    "url": "https://api.github.com/repos/gsmlg-dev/http_fetch/issues/86",
+    "user": {
+      "avatar_url": "https://avatars.githubusercontent.com/u/3713684?v=4",
+      "events_url": "https://api.github.com/users/gsmlg/events{/privacy}",
+      "followers_url": "https://api.github.com/users/gsmlg/followers",
+      "following_url": "https://api.github.com/users/gsmlg/following{/other_user}",
+      "gists_url": "https://api.github.com/users/gsmlg/gists{/gist_id}",
+      "gravatar_id": "",
+      "html_url": "https://github.com/gsmlg",
+      "id": 3713684,
+      "login": "gsmlg",
+      "node_id": "MDQ6VXNlcjM3MTM2ODQ=",
+      "organizations_url": "https://api.github.com/users/gsmlg/orgs",
+      "received_events_url": "https://api.github.com/users/gsmlg/received_events",
+      "repos_url": "https://api.github.com/users/gsmlg/repos",
+      "site_admin": false,
+      "starred_url": "https://api.github.com/users/gsmlg/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/gsmlg/subscriptions",
+      "type": "User",
+      "url": "https://api.github.com/users/gsmlg",
+      "user_view_type": "public"
+    }
+  },
+  "labels": [
+    "internal request"
+  ],
+  "number": 86,
+  "observed_utc": "2026-10-10T17:11:10.181190+00:00",
+  "runtime_reproduction": "NOT RUN",
+  "scope": "Managed upstream H2 header/control retained-state qualification only; source-confirmed absence of aggregate bounds, not a runtime leak claim.",
+  "severity": "blocker",
+  "state": "open",
+  "tag_commit": "9813c126dc8b48055b9ee941c693fc27fa691489",
+  "type": "Bug",
+  "url": "https://github.com/gsmlg-dev/http_fetch/issues/86",
+  "verification": "GitHub REST gh api; exact type, label, state and issue body verified"
+}
