@@ -1,0 +1,27 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
++ git rev-parse HEAD
+22b76e8051ddaf09e36797cb781b9b119870a9d4
++ elixir --version
+Erlang/OTP 28 [erts-16.4.0.6] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+
+Elixir 1.18.5 (compiled with Erlang/OTP 28)
++ unbuffer mix format --check-formatted apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs
+[31m[1m** (Mix) mix format failed due to --check-formatted.
+The following files are not formatted:
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs
+[0m
+         |
+105 105  |        assert_receive {:member_request, worker, _}, @timeout
+106 106  |        send(worker, :reply)
+    107[32m +[0m|[32m[0m
+107 108  |        assert receive_all(context.client, 500) ==
+108 109  |                 "HTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 5\r\n\r\nhello"
+    110[32m +[0m|[32m[0m
+109 111  |        assert_receive {:actual_write, ^native, 80}, 500
+110 112  |        assert_receive {:member_closed, ^worker}, 500
+         |
+
+
+[0m
+VALIDATION_EXIT=1

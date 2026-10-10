@@ -1,0 +1,50 @@
+Compiling 2 files (.ex)
+Generated gaoxy_http app
+Running ExUnit with seed: 541741, max_cases: 4
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test malformed TLS options return a validation error before binding (Gaoxy.HTTP.ContractTest)
+     [1m[30mtest/http_contract_test.exs:223[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_options} = Gaoxy.HTTP.service_spec(plug: {Plug, []}, transport: :tls, tls: tls)
+     [36mleft:  [0m{:error, [31m:invalid_options[0m}
+     [36mright: [0m{:error, [32m:invalid_http_protocols[0m}
+     [36mstacktrace:[0m
+       test/http_contract_test.exs:225: anonymous fn/2 in Gaoxy.HTTP.ContractTest."test malformed TLS options return a validation error before binding"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http_contract_test.exs:224: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test independent Python h2 qualifies TCP and TLS ALPN with cross-process writes (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:122[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {output, 0} =
+              System.cmd(
+                python,
+                [
+                  Path.join(__DIR__, "support/h2_peer.py"),
+                  Integer.to_string(port),
+                  if mode == :tcp do
+                    "tcp"
+                  else
+                    "tls"
+                  end,
+                  Path.join(dir, "ca.pem")
+                ],
+                stderr_to_stdout: true
+              )
+     [36mleft:  [0m{output, [31m0[0m}
+     [36mright: [0m{
+              "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http/test/support/h2_peer.py\", line 46, in <module>\n    sock.sendall(pending)\n    ~~~~~~~~~~~~^^^^^^^^^\nBrokenPipeError: [Errno 32] Broken pipe\n",
+              [32m1[0m
+            }
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:158: anonymous fn/3 in Gaoxy.HTTP2NetworkTest."test independent Python h2 qualifies TCP and TLS ALPN with cross-process writes"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http2_network_test.exs:136: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 2.2 seconds (2.2s async, 0.00s sync)
+[31m60 tests, 2 failures[0m

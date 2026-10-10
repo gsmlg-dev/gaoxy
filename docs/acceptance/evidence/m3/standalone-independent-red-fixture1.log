@@ -1,0 +1,69 @@
+==> gaoxy_server
+Running ExUnit with seed: 331925, max_cases: 1
+
+
+
+  1) test a nonregular route file cannot hold reload beyond its deadline (Gaoxy.Server.StandaloneIndependentReviewTest)
+     [1m[30mapps/gaoxy_server/test/standalone_independent_review_test.exs:9[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, {:error, _}} = Task.yield(task, 250)
+     [36mleft:  [0m[31m{:ok, {:error, _}}[0m
+     [36mright: [0m[32mnil[0m
+     [36mstacktrace:[0m
+       test/standalone_independent_review_test.exs:23: (test)
+
+
+
+  2) test static bytes overflow cannot replace a usable live generation (Gaoxy.Server.StandaloneIndependentReviewTest)
+     [1m[30mapps/gaoxy_server/test/standalone_independent_review_test.exs:48[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Gaoxy.Server.reload_routes("review-web", path, 1000)
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{[32m:ok[0m, #Reference<0.3154087560.3717988353.102685>}
+     [36mstacktrace:[0m
+       test/standalone_independent_review_test.exs:60: (test)
+
+
+
+  3) test static count overflow rejects standalone configuration before startup (Gaoxy.Server.StandaloneIndependentReviewTest)
+     [1m[30mapps/gaoxy_server/test/standalone_independent_review_test.exs:38[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Config.decode(config limits, routes("unsafe", fields))
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [services: [%{id: "review-web", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 536870912, idle_timeout: 30000, max_active: 128, max_packet: 65507, max_output: 65507, max_state: 65536, callback_timeout: 5000, drain_timeout: 5000, max_memberships: 64}, capabilities: [], quic: %{}, handler_options: %{protocols: [:http2], initialized: true, h2c: :prior_knowledge, h2_limits: %{max_streams: 32, max_frame: 16384, max_header_block: 16384, table_size: 4096, receive_window: 65535, frame_timeout: 5000, control_turn: 32, control_rate: 256}, http_limits: %{max_headers: 5, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_read_chunk: 16384, max_buffer_bytes: 65536, max_chunk_line: 1024, request_timeout: 30000, header_timeout: 5000, read_timeout: 5000, write_timeout: 5000}, endpoint: {Gaoxy.HTTP.Router, %Gaoxy.HTTP.Router{generation: #Reference<0.3154087560.3717988353.102824>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StaticEndpoint, %{status: 200, body: "unsafe", headers: [{"x-1", "v"}, {"x-2", "v"}, {"x-3", "v"}, {"x-4", "v"}]}}}], resources: []}}}, handler_mode: :native}]]
+            }
+     [36mstacktrace:[0m
+       test/standalone_independent_review_test.exs:43: (test)
+
+
+
+  4) test static bytes overflow rejects standalone configuration before startup (Gaoxy.Server.StandaloneIndependentReviewTest)
+     [1m[30mapps/gaoxy_server/test/standalone_independent_review_test.exs:38[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Config.decode(config limits, routes("unsafe", fields))
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [services: [%{id: "review-web", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 536870912, idle_timeout: 30000, max_active: 128, max_packet: 65507, max_output: 65507, max_state: 65536, callback_timeout: 5000, drain_timeout: 5000, max_memberships: 64}, capabilities: [], quic: %{}, handler_options: %{protocols: [:http2], initialized: true, h2c: :prior_knowledge, h2_limits: %{max_streams: 32, max_frame: 16384, max_header_block: 16384, table_size: 4096, receive_window: 65535, frame_timeout: 5000, control_turn: 32, control_rate: 256}, http_limits: %{max_headers: 100, max_header_bytes: 256, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_read_chunk: 16384, max_buffer_bytes: 65536, max_chunk_line: 1024, request_timeout: 30000, header_timeout: 5000, read_timeout: 5000, write_timeout: 5000}, endpoint: {Gaoxy.HTTP.Router, %Gaoxy.HTTP.Router{generation: #Reference<0.3154087560.3717988353.102863>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StaticEndpoint, %{status: 200, body: "unsafe", headers: [{"x", "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"}]}}}], resources: []}}}, handler_mode: :native}]]
+            }
+     [36mstacktrace:[0m
+       test/standalone_independent_review_test.exs:43: (test)
+
+
+
+  5) test static count overflow cannot replace a usable live generation (Gaoxy.Server.StandaloneIndependentReviewTest)
+     [1m[30mapps/gaoxy_server/test/standalone_independent_review_test.exs:48[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Gaoxy.Server.reload_routes("review-web", path, 1000)
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{[32m:ok[0m, #Reference<0.3154087560.3717988353.103053>}
+     [36mstacktrace:[0m
+       test/standalone_independent_review_test.exs:60: (test)
+
+
+Finished in 0.8 seconds (0.00s async, 0.8s sync)
+[31m5 tests, 5 failures[0m
+
+Actual shell exit: 2; seed: 331925; executed: 5; failures: 5.

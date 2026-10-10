@@ -1,0 +1,340 @@
+==> gaoxy
+Running ExUnit with seed: 49315, max_cases: 1
+
+[32m.[0m.+..+....+...........+....+...+...+............+..+....+..+.........+...+.+..+...................+...+......+.....+.+......+...+......+++++++++++++++++++++++++++++++++++++++*......+..+.+...+.........+..+++++++++++++++++++++++++++++++++++++++*.......+.+......+........+......+.+..+..........+..+......+...+....+......+..+.......+..+.........+.+........+.............+.........+...+......+..++++++
+...........+.+..+.............+...+......+.....+...+...+...+.......+........+....+......+++++++++++++++++++++++++++++++++++++++*...+..............+.+........+.+.....+.+.....+.+++++++++++++++++++++++++++++++++++++++*.....+.......+..+...+.............+...+......+...+...+..+.+.....+...................+...+........+....+...+...+.....+......+...+.+......+..................+...+.........+.........+.....+.+......+.....+...+.+........+.......+...........+.......+...+..+...+.............+......+......+..+......+......+.........+..........+.....+.......+..............+....+.....+..........+...........+......+...+.......+..+......+....+...+...+..............+...+..........+........+.........................+..............+...............+...+.......+...+.........+........+......+.........+..........+...............+...+...+..+.........+....+.....+.......+.....+.......+......+...........+.+...+......+......+.....+........................+..........+...+..+...+...+...+....+.....+.+..+...+.+......+..+......+...............+.+.....+......+....+...+...............+...+..+.+...............+......+..............+..........+......+.....+.+..+.+..+...+......+......+...+..........+.........+...+.........+...........+.......+...+...+.....+.+.....+....+......+......+..+..........+...+..+......+.+.....+....+..+...+.......+...+..+.......+.....+.+......+...+...............+...........+......+.+..+......+....+.....+......+.......+........+.......+.....+....+...+......+..+..................+.....................+...+.......+...+..+...+...+.......+..++++++
+-----
+.............+...+...+...+......+........+.+......+...........+...+.......+...............+++++++++++++++++++++++++++++++++++++++*....+++++++++++++++++++++++++++++++++++++++*........+............+...+......+......+.....+.+..+............+..........+.....+...+......+.+.....+.+.....+...+....+...++++++
+....+.......+..+++++++++++++++++++++++++++++++++++++++*.+.+...........+..........+...+..+.......+..+...+............+++++++++++++++++++++++++++++++++++++++*......+.........+...+.......+...+......+.........+......+..+...+......+.........+......+...+.............+..............+.+........+................+........+...+...+....+......+.....+.+.........+....................+.+...+...+.....+....+...+...+............+...+.....+....+..............+..........+.....+.+.....+.+........+.........+.+..+.........+..............................+.....................+...+....+...+...+..............+.+...........+.+..............+......+...+......+....+.........+......+..+....+........+...+....+...+...+...+.........+..+...+.+............+..+.+..+.........+................+.....+...+.......+..+...+....+.......................+...+...+.......+.........+........+...+.........+...+...+.........+......+.......+.....+.+......+........+.......+...........+.............+.....+.......+..+......+.+...+........+...+......+.+...+..............+.......+........+.+......+......+...+..+..........+.........+.....+...+.+......+.....+...............+.........+....+...............+...........+....+........+.........+.+..+......+......+.............+..+..........+.........+...........+.+..+...+.........+..........+.........+...........+..........+......+.....+...+......+...+................+.....+....+...+...+..+.......+...........+.+........+.................................+...............+...+.+..................+..+.+..+...+.......+.....+...+....+.........+.....+.+......+...+...........+...+.+.........+..+.............+...........+......++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[22m
+20:48:17.053 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[22m
+20:48:17.101 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:17.464 [error] GenServer #PID<0.630.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.3) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.3) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 48389, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.65>, listener: #PID<0.620.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2694199223.1312030722.222925>, service: "echo", generation: #Reference<0.2694199223.1312030722.222930>}, instance: #PID<0.614.0>, service: #PID<0.616.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, dispatcher: %{}, handler_options: #PID<0.612.0>, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 8, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :stream}, gate: #PID<0.617.0>, startup_token: #Reference<0.2694199223.1312030722.222934>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, idle_timer: nil, idle_token: nil, read_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312030722.223052>, start_time: -576460747814376848, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.618.0>, local_info: {{127, 0, 0, 1}, 39418}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 48389, sampled: true, telemetry_span_context: #Reference<0.2694199223.1312030722.223052>, parent_telemetry_span_context: #Reference<0.2694199223.1312030722.222948>}}, processing_times: [], adaptive_timeout: 30000, memory_token: #Reference<0.2694199223.1312030722.223058>, idle_deadline: :infinity, memory_check_interval: 10000, memory_timer: #Reference<0.2694199223.1312030722.223059>}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:18.119 [error] GenServer #PID<0.795.0> terminating
+** (stop) :fixture_init_error
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 52842}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.84>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312030721.228274>, start_time: -576460747156206361, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 52842, telemetry_span_context: #Reference<0.2694199223.1312030721.228274>, parent_telemetry_span_context: #Reference<0.2694199223.1312030721.228057>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2694199223.1312030721.228274>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312030721.228018>, service: :init_error, generation: #Reference<0.2694199223.1312030721.228023>}, instance: #PID<0.738.0>, service: #PID<0.740.0>, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{owner: #PID<0.736.0>, action: :init_error}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 1024, max_output: 1024, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :stream}, gate: #PID<0.741.0>, startup_token: #Reference<0.2694199223.1312030721.228027>}}
+[0m[31m
+20:48:18.134 [error] GenServer #PID<0.799.0> terminating
+** (RuntimeError) fixture callback crash
+    test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:52: Gaoxy.StreamBridge.chunks/4
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy 0.1.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+    (stdlib 7.3.0.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 60852}}}
+Last message: {:tcp, #Port<0.88>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.88>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312030721.228332>, start_time: -576460747140912565, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 60852, telemetry_span_context: #Reference<0.2694199223.1312030721.228332>, parent_telemetry_span_context: #Reference<0.2694199223.1312030721.228095>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2694199223.1312030721.228332>}}, read_timer: #Reference<0.2694199223.1312030721.228340>, read_deadline: -576460717139, timer_deadline: -576460717139}, %{scope: %{instance: #Reference<0.2694199223.1312030721.228018>, service: :crash, generation: #Reference<0.2694199223.1312030721.228061>}, instance: #PID<0.738.0>, service: #PID<0.749.0>, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{owner: #PID<0.736.0>, action: :crash}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 1024, max_output: 1024, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :stream}, app: %{owner: #PID<0.736.0>, action: :crash}, lease: #Reference<0.2694199223.1312030721.228334>, gate: #PID<0.750.0>, startup_token: #Reference<0.2694199223.1312030721.228065>}}
+[0m[31m
+20:48:18.150 [error] GenServer #PID<0.807.0> terminating
+** (stop) :state_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 36450}}}
+Last message: {:tcp, #Port<0.96>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.96>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312030721.228490>, start_time: -576460747122395113, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 36450, telemetry_span_context: #Reference<0.2694199223.1312030721.228490>, parent_telemetry_span_context: #Reference<0.2694199223.1312030721.228171>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2694199223.1312030721.228490>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312030721.228018>, service: :state, generation: #Reference<0.2694199223.1312030721.228137>}, instance: #PID<0.738.0>, service: #PID<0.767.0>, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{owner: #PID<0.736.0>, action: :state}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 1024, max_output: 1024, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :stream}, app: %{owner: #PID<0.736.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, lease: #Reference<0.2694199223.1312030721.228492>, gate: #PID<0.768.0>, startup_token: #Reference<0.2694199223.1312030721.228141>}}
+[0m[31m
+20:48:18.154 [error] GenServer #PID<0.811.0> terminating
+** (stop) :output_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 45992}}}
+Last message: {:tcp, #Port<0.100>, "trigger"}
+State: {%ThousandIsland.Socket{socket: #Port<0.100>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312030721.228555>, start_time: -576460747119406561, start_metadata: %{handler: Gaoxy.StreamBridge, remote_address: {127, 0, 0, 1}, remote_port: 45992, telemetry_span_context: #Reference<0.2694199223.1312030721.228555>, parent_telemetry_span_context: #Reference<0.2694199223.1312030721.228209>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2694199223.1312030721.228555>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312030721.228018>, service: :output, generation: #Reference<0.2694199223.1312030721.228175>}, instance: #PID<0.738.0>, service: #PID<0.776.0>, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{owner: #PID<0.736.0>, action: :output}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 1024, max_output: 1024, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :stream}, app: %{owner: #PID<0.736.0>, action: :output}, lease: #Reference<0.2694199223.1312030721.228557>, gate: #PID<0.777.0>, startup_token: #Reference<0.2694199223.1312030721.228179>}}
+[0m[32m.[0m........+.........+.............+..............+.+..+............+.+.....+.........+.+...+......+...+......+..+++++++++++++++++++++++++++++++++++++++*.....+...+...+....+...........+....+......+..+..........+..+.........+.+.....+....+.....+.........+................+.....+....+..+...+...+.......+..+....+............+...+.........+...+.........+.....+...+++++++++++++++++++++++++++++++++++++++*.+...........+.+......+.........+......+.........+.....+.+..+.+.....+.........++++++
+.....+...+++++++++++++++++++++++++++++++++++++++*...+..........+......+..+...+................+.....+++++++++++++++++++++++++++++++++++++++*.........+......+.....+.+..+...+.......+...............+......+.....+.........+.+...............+......+......+..+.+..+...+.......+..+.....................+.+......+.....++++++
+-----
+..........+.......+..+......+++++++++++++++++++++++++++++++++++++++*.........+...+............+....+.....+.+......+.....+...+....+......+...........+.........+....+++++++++++++++++++++++++++++++++++++++*.+......+......+........+.+......+.....+.........+.+..+.......+...+........+....+...+.................+...+.......+...........+.........+......+.......+...........+......+..........++++++
+........+..+++++++++++++++++++++++++++++++++++++++*..+.+...+.....+.+.....+......+...+....+........+...+......+.+...+.....+.......+............+.....+...+..........+..+.+......+.....+.+..+.+......+++++++++++++++++++++++++++++++++++++++*.+.....+.+.....+.......+...+...+......+...+..+....+..+...+..........+.....+....+..+...+.......+......+.....+..........+..+......+.+...+..+....+...........+.+..+.....................+.......+...+......+........+......+.......+.....+....+...+..+...+......+....+...+........+....+..+....+......+.........+......+..............+.........+............+.+..+.+.........+..+.+..+.....................+....+...+.........+.........+...........................+..+.+......+.....+....+..+.........+...+.......+.........+.....+.........+.+..+.......+........+...+....+...+.....+...+.........+......+.+..........................+...+.......+...+.....+.........+............+...+.+.....+............+.......+..+.+...+......+.........+..+.......+...+........+.+.....+......+.......+........+....+.....+......+.............+......+.........+...........+.+..+..........+..+......+..........+..............+....+..+....+...+..+....+.........+.....+.+......+...+...+..+......+.+......+...+..++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+..+...+......+.+.....+...+..........+.....+....+...+.....+.........+....+.....+.+........+++++++++++++++++++++++++++++++++++++++*........+...+++++++++++++++++++++++++++++++++++++++*.+.....+..........+...+..+......+...+.......+..+..........+......+..+....+........+.......+.....+....+...............+..+...+....+..+.+........+.+...+..+.............+....................+.+..+....+...+...+.....+...+.......+...+.....+......+.+..++++++
+.+..+..........+.....+.........+.+++++++++++++++++++++++++++++++++++++++*..+......+.........+..+...+.+............+.........+...+..+.........+.........+......+.+...+...+..+++++++++++++++++++++++++++++++++++++++*...+............+........+...+...+.+........+......+.+...+......+......+.....+...+.+..+....+...+...+.....+..................+...................+............+........+.+......+.....+.+........+.+.........+..............+......+......................+.....+....+...+.....+...+...+.+...........+............+.+.....+.........+.+...........+.+.....+...+.......+...............+.........+...+.....+.+..+..........+.....+....+.....+...+..................+..................+.+...+...+............+..+...+...+............+.+.....+.+........+.......+.....+.+...+............+..+.+..+.........+...+...+..........+...+.........+............+..............+.+......+..+..........+......+.....+.+.........+............+..+......+.+.....+....+.....+.....................+....+......+...+........+.......+......+.....+......+..........+...+............+.....+....+.....+......+...............+.........+....+.....+.+............+........+.+.....+..........+...+...+....................+...+.........+.+..+.......+........+.......+...+...+..++++++
+-----
+...................+++++++++++++++++++++++++++++++++++++++*...+.....+++++++++++++++++++++++++++++++++++++++*......+.....+...+..........+...+..+......+.....................+....+............+.....+...+......+.............+........+.........+....+..+.......+...+........+.+...+.....+......++++++
+..+.........+.+++++++++++++++++++++++++++++++++++++++*.+......+.+..............+.+++++++++++++++++++++++++++++++++++++++*....+............+...+....+...+..+....+..............+.+......+...+..................+.....+...+.........+.......+....................+.+.....+.......+..+.........+.+......+..+.............+..+.......+........+..................+...+......+.+........+.........+..........+.....+...+.......+...+...+..+....+.....+..........+.....+....+..+...+.........+......++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[22m
+20:48:19.207 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[22m
+20:48:19.214 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+20:48:19.238 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030722.225661> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+20:48:21.589 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030721.230043> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[22m
+20:48:22.788 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030721.230299> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:24.217 [error] Task #PID<0.1294.0> started from #PID<0.1278.0> terminating
+** (stop) :injected
+    test/cleanup_attachment_test.exs:71: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<4.54325958/0 in Gaoxy.CleanupAttachmentTest.guardian/0>
+    Args: []
+[0m[32m.[0m[32m.[0m[22m
+20:48:24.233 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030722.227100> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[22m
+20:48:24.345 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030721.232256> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m............+......+...+......+.........+.+...+..+......+.............+......+...+.....+...+...+.+......+.....+....+++++++++++++++++++++++++++++++++++++++*....+++++++++++++++++++++++++++++++++++++++*.+..+......+.+...+.....+............+....+......+.....+.+............+..+.+..................+..+....+........+...++++++
+....+.......+..+...+......+++++++++++++++++++++++++++++++++++++++*.+...+.+.....+++++++++++++++++++++++++++++++++++++++*........+...+...+.........+.....+......+.......+........+.......+..................+...+..+............................+..+...+..........+.....+......+.........................+.....+......+.............+..+.......+..+...+.......+...+............+.....+...+.......+..............+.+...+........+...+.+.....+.+.....+...+....+...+..+...+.......+.....+.+......+........+...+...+.+.........+......+..............+.+...+.....+...+...+....+......++++++
+-----
+....+.....+...+.+.....+.............+........+.......+..+++++++++++++++++++++++++++++++++++++++*.+...+............+....+.....+................+...+.........+..+................+.....+.........+...+++++++++++++++++++++++++++++++++++++++*..................+.........+...+.......+.........+............+...+..++++++
+.+.......+...+.....+......+....+++++++++++++++++++++++++++++++++++++++*..........+.....+......+...+......+....+...+.....+..................+......+.+..+.......+...+..+..........+...+...+..+.+..+...+......+.+.................+...+....+......+..............+.........+....+..+..........+...+++++++++++++++++++++++++++++++++++++++*......+....+...+...+...............+..+.+.....+......+.+...............+.................+.+......+..............+.+......+..+.+......+.........+...............+......+...+..+...+...+.......+..+.+........+..........+..+....+...+..................+...+.........+..+...+.+............+..+.......+.....+...+...+.........+.+...+.........+......+...........+....+.........+...+.....+.......+..+...+.......+......+...+.....+.+......+........+.+...+...............+.....+...............+..........+.....+......+........................+...+............+...+....+......+...............+.................+...+....+......+...+.....+....+..+.+...............+.....+.........+..........+.....+....+.....+.........+............+...+...+....+...+......+.....+.........+.......+..............+....+.....+............+....+..+...+....+..+.+...+..............+.+..+.......+...+........+.+...+..+.+.........+........+.+......+......+........+.+.....+....+..+...+......+.+...+......+.....................+..+............+...+......+..........+.....+.......+..+...+......................+.....+...+....+..........................+.......+..+...+.+..............+.+......+...........+...+....+......+...........+....+......+...............+......+.....+...+..........+......+......+..+...+.........+.+..............+.+...+..+...+.........+.+..+....+.........+....................+.+......+........+......+....+.....+............+...+...............+......+...+..........+.....+......+.+........+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m.....+..+............+...+...+...+.+.........+..+....+++++++++++++++++++++++++++++++++++++++*..+.......+++++++++++++++++++++++++++++++++++++++*..+.............+..+...+...+.+.........+...........+....+......+.....+.+.....+.........+.+........+....+...............+...........+............+.........+.+........+..........+..+.......+..+.+........+.+...+..+.........+....+.....++++++
+...+......+...+.+......+.....+....+..+...+++++++++++++++++++++++++++++++++++++++*.......+.....................+...........+...+.+..+.......+......+.....+......+...+++++++++++++++++++++++++++++++++++++++*.......+...+..........+......+.....+....+.....+......+......+.+..+.+.........+........++++++
+-----
+...+++++++++++++++++++++++++++++++++++++++*...+.+.....+.........+......+.............+..+...+.+...+............+++++++++++++++++++++++++++++++++++++++*.....+....+........+...+.......+........+....+......+.................+......+.++++++
+..+.+++++++++++++++++++++++++++++++++++++++*.....+.+........+..........+..+.........+....+.....+.+..+.......+......+.....+...............+.+...+...+.................+......+.+.....+.+.....+...+....+...+............+..+.+..+...............+.+++++++++++++++++++++++++++++++++++++++*...+..+.......+......+.....+....+......+..+.......+......+.....+.......+..+.+..+....+.....+.+............+..+.+........+......+....+................................+...+....+..................+...+......+...+...+.........+.....+.+...+..+.......+..+....+.........+......+......+.............................+.+.....+......++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+20:48:28.668 [info] The function passed as a handler with ID #Reference<0.2694199223.1312030721.237442> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:28.733 [error] GenServer Gaoxy.Registry.PIDPartition0 terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2292.0>, :killed}
+State: {#Reference<0.2694199223.1312161794.232028>, %{}}
+[0m[22m
+20:48:28.739 [notice] Application gaoxy exited: shutdown
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 15.6 seconds (11.8s async, 3.8s sync)
+[32m90 tests, 0 failures[0m
+==> gaoxy_http
+Running ExUnit with seed: 49315, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 7.3 seconds (7.3s async, 0.02s sync)
+[32m196 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 49315, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:45.041 [error] GenServer #PID<0.6312.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6311.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.6312.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.6313.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.2694199223.1312423937.120433>, #Reference<0.2694199223.1312423937.120434>, :http, #Reference<0.2694199223.1312292865.120435>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:45.577 [error] GenServer #PID<0.6546.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6544.0>, :killed}
+State: %{owner: #PID<0.6544.0>, socket: #Port<0.1077>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6545.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.104927>, owner_monitor: #Reference<0.2694199223.1312292866.104936>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[31m
+20:48:45.779 [error] GenServer #PID<0.6526.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6524.0>, :killed}
+State: %{owner: #PID<0.6524.0>, socket: #Port<0.1073>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6525.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.104779>, owner_monitor: #Reference<0.2694199223.1312292866.104788>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+20:48:45.864 [error] GenServer #PID<0.6565.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6564.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 0, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.6565.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 0, max_seconds: 5, children: %{#PID<0.6566.0> => {{Gaoxy.Proxy.UDPRelay.Association, :start_link, :undefined}, :temporary, 100, :worker, [Gaoxy.Proxy.UDPRelay.Association]}}, restarts: []}
+[0m[32m.[0m[31m
+20:48:46.387 [error] GenServer #PID<0.6581.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6579.0>, :killed}
+State: %{owner: #PID<0.6579.0>, socket: #Port<0.1082>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6580.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.105356>, owner_monitor: #Reference<0.2694199223.1312292866.105365>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:46.519 [error] GenServer #PID<0.6613.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6611.0>, :killed}
+State: %{owner: #PID<0.6611.0>, socket: #Port<0.1089>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6612.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.105661>, owner_monitor: #Reference<0.2694199223.1312292866.105670>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+20:48:46.765 [error] GenServer #PID<0.6638.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6636.0>, :killed}
+State: %{owner: #PID<0.6636.0>, socket: #Port<0.1095>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6637.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.105889>, owner_monitor: #Reference<0.2694199223.1312292866.105898>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[32m.[0m[31m
+20:48:46.974 [error] GenServer #PID<0.6668.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6666.0>, :killed}
+State: %{owner: #PID<0.6666.0>, socket: #Port<0.1104>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6667.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292866.106166>, owner_monitor: #Reference<0.2694199223.1312292866.106175>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+20:48:47.185 [error] GenServer #PID<0.6696.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6694.0>, :killed}
+State: %{owner: #PID<0.6694.0>, socket: #Port<0.1109>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6695.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292865.122722>, owner_monitor: #Reference<0.2694199223.1312292865.122731>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+20:48:47.219 [error] GenServer #PID<0.6715.0> terminating
+** (stop) {:owner_down, :shutdown}
+Last message: {:DOWN, #Reference<0.2694199223.1312292865.123019>, :process, #PID<0.6710.0>, :shutdown}
+State: %{owner: #PID<0.6710.0>, socket: #PID<0.6710.0>, queue: {[], []}, max_bytes: 128, admission: #PID<0.6714.0>, transport: Gaoxy.Proxy.UDPRelayTest.BlockingWriter, max_queue: 1, generation: #Reference<0.2694199223.1312292865.123002>, owner_monitor: #Reference<0.2694199223.1312292865.123019>, queue_bytes: 0, sending: false, owns_admission: true}
+[0m[32m.[0m[31m
+20:48:47.221 [error] GenServer #PID<0.6725.0> terminating
+** (stop) {:owner_down, :shutdown}
+Last message: {:DOWN, #Reference<0.2694199223.1312292865.123092>, :process, #PID<0.6720.0>, :shutdown}
+State: %{owner: #PID<0.6720.0>, socket: #PID<0.6720.0>, queue: {[], []}, max_bytes: 128, admission: #PID<0.6724.0>, transport: Gaoxy.Proxy.UDPRelayTest.BlockingWriter, max_queue: 1, generation: #Reference<0.2694199223.1312292865.123075>, owner_monitor: #Reference<0.2694199223.1312292865.123092>, queue_bytes: 0, sending: false, owns_admission: true}
+[0m[32m.[0m[31m
+20:48:47.304 [error] GenServer #PID<0.6735.0> terminating
+** (stop) {:owner_down, :shutdown}
+Last message: {:DOWN, #Reference<0.2694199223.1312292865.123167>, :process, #PID<0.6730.0>, :shutdown}
+State: %{owner: #PID<0.6730.0>, socket: #PID<0.6730.0>, queue: {[], []}, max_bytes: 128, admission: #PID<0.6734.0>, transport: Gaoxy.Proxy.UDPRelayTest.BlockingWriter, max_queue: 1, generation: #Reference<0.2694199223.1312292865.123150>, owner_monitor: #Reference<0.2694199223.1312292865.123167>, queue_bytes: 0, sending: false, owns_admission: true}
+[0m[32m.[0m[32m.[0m[31m
+20:48:47.345 [error] GenServer #PID<0.6767.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6757.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.6767.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[31m
+20:48:47.346 [error] GenServer #PID<0.6762.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6760.0>, :killed}
+State: %{owner: #PID<0.6760.0>, socket: #Port<0.1124>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6761.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292865.123325>, owner_monitor: #Reference<0.2694199223.1312292865.123334>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[31m
+20:48:47.346 [error] GenServer #PID<0.6769.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6757.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.6757.0>}
+[0m[31m
+20:48:47.345 [error] GenServer #PID<0.6758.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6757.0>, :killed}
+State: {:state, {#PID<0.6758.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.6759.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.6757.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", generation: #Reference<0.2694199223.1312292865.123304>}, instance: #PID<0.6752.0>, service: #PID<0.6754.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 56841}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, ...}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}, local_networks: [{{127, 0, 0, 1}, {255, 0, 0, 0}}, {{169, 254, 0, 2}, {255, 255, 255, ...}}, {{10, 100, 10, ...}, {255, 255, ...}}, {{172, 17, ...}, {255, ...}}, {{172, ...}, {...}}]}, limits: %{max_bytes: 4194304, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :datagram_dispatcher}, gate: #PID<0.6756.0>, startup_token: #Reference<0.2694199223.1312292865.123311>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", ...}, instance: #PID<0.6752.0>, service: #PID<0.6754.0>, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.2694199223.1312292865.123319>, Abyss.ListenerPool, {#PID<0.6757.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", generation: #Reference<0.2694199223.1312292865.123304>}, instance: #PID<0.6752.0>, service: #PID<0.6754.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 56841}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, drain_grace: 200, ...}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}, local_networks: [{{127, 0, 0, 1}, {255, 0, 0, 0}}, {{169, 254, 0, 2}, {255, 255, 255, 0}}, {{10, 100, 10, 10}, {255, 255, 240, ...}}, {{172, 17, 0, ...}, {255, 255, ...}}, {{172, 18, ...}, {255, ...}}]}, limits: %{max_bytes: 4194304, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :datagram_dispatcher}, gate: #PID<0.6756.0>, startup_token: #Reference<0.2694199223.1312292865.123311>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", generation: #Reference<0.2694199223.1312292865.123304>}, instance: #PID<0.6752.0>, service: #PID<0.6754.0>, spec: %{...}, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}}
+[0m[31m
+20:48:47.347 [error] GenServer #PID<0.6754.0> terminating
+** (stop) {:backend_failed, :killed}
+Last message: {:EXIT, #PID<0.6757.0>, :killed}
+State: %{control: nil, scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", generation: #Reference<0.2694199223.1312292865.123304>}, table: #Reference<0.2694199223.1312423937.123297>, mode: :ready, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 56841}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, drain_grace: 200, rate_bytes: 65536, packet_ratio: 1, byte_ratio: 1}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}, local_networks: [{{127, 0, 0, 1}, {255, 0, 0, 0}}, {{169, 254, 0, 2}, {255, 255, 255, 0}}, {{10, 100, 10, 10}, {255, 255, 240, 0}}, {{172, 17, 0, 1}, {255, 255, 0, 0}}, {{172, 18, 0, 1}, {255, 255, 0, 0}}]}, limits: %{max_bytes: 4194304, idle_timeout: 30000, max_packet: 65507, max_active: 64, callback_timeout: 5000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :datagram_dispatcher}, live: #Reference<0.2694199223.1312423937.123298>, drain: nil, generation: #Reference<0.2694199223.1312292865.123304>, backend: #PID<0.6757.0>, gate: #PID<0.6756.0>, cleanup_failed: nil, backend_control: #Function<18.93161736/3 in Gaoxy.Service.backend_control>, cleanups: %{}, dispatcher_owner: #PID<0.6764.0>, drain_fun: &Gaoxy.Lifecycle.drain/4, registry_policy: %{scope: %{instance: #Reference<0.2694199223.1312292865.123299>, service: "relay", generation: #Reference<0.2694199223.1312292865.123304>}, backend: #PID<0.6757.0>, owners: %{#Reference<0.2694199223.1312292865.123308> => #PID<0.2460.0>}, recovery: nil}, dispatcher_monitor: #Reference<0.2694199223.1312292865.123360>}
+[0m[31m
+20:48:47.553 [error] GenServer #PID<0.6780.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6778.0>, :killed}
+State: %{owner: #PID<0.6778.0>, socket: #Port<0.1126>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6779.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292865.123406>, owner_monitor: #Reference<0.2694199223.1312292865.123415>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[31m
+20:48:47.554 [error] GenServer #PID<0.6800.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6798.0>, :killed}
+State: %{owner: #PID<0.6798.0>, socket: #Port<0.1131>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6799.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292865.123576>, owner_monitor: #Reference<0.2694199223.1312292866.106579>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+20:48:47.863 [error] GenServer #PID<0.6824.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.6822.0>, :killed}
+State: %{owner: #PID<0.6822.0>, socket: #Port<0.1134>, queue: {[], []}, max_bytes: 262144, admission: #PID<0.6823.0>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, generation: #Reference<0.2694199223.1312292865.123689>, owner_monitor: #Reference<0.2694199223.1312292865.123698>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:51.001 [error] GenServer #PID<0.7356.0> terminating
+** (stop) :byte_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 39866}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.1254>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312292865.128501>, start_time: -576460714270877513, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 39866, telemetry_span_context: #Reference<0.2694199223.1312292865.128501>, parent_telemetry_span_context: #Reference<0.2694199223.1312292865.128483>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2694199223.1312292865.128501>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312292865.128445>, service: :relay, generation: #Reference<0.2694199223.1312292865.128450>}, instance: #PID<0.7344.0>, service: #PID<0.7346.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{mode: :tcp, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 56719}, max_lifetime: 300000, write_timeout: 5000, max_chunk_bytes: 16384, upstream_tls: %{}}, limits: %{max_bytes: 1, idle_timeout: 30000, max_packet: 65507, max_active: 32, callback_timeout: 1000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 500}, capabilities: [], quic: %{}, handler_mode: :native}, gate: #PID<0.7347.0>, startup_token: #Reference<0.2694199223.1312292865.128454>}}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:48:52.572 [error] GenServer #PID<0.7467.0> terminating
+** (stop) :active_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 33674}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.1286>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312292865.129432>, start_time: -576460712701247481, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 33674, telemetry_span_context: #Reference<0.2694199223.1312292865.129432>, parent_telemetry_span_context: #Reference<0.2694199223.1312292865.129414>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2694199223.1312292865.129432>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312292865.129376>, service: :relay, generation: #Reference<0.2694199223.1312292865.129381>}, instance: #PID<0.7455.0>, service: #PID<0.7457.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{mode: :tcp, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 49583}, max_lifetime: 300000, write_timeout: 5000, max_chunk_bytes: 16384, upstream_tls: %{}}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_packet: 65507, max_active: 2, callback_timeout: 1000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 500}, capabilities: [], quic: %{}, handler_mode: :native}, gate: #PID<0.7458.0>, startup_token: #Reference<0.2694199223.1312292865.129385>}}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+20:48:54.105 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate
+ - {:bad_cert,
+ {:hostname_check_failed, {:requested, ~c"wrong.example"},
+  {:received, [dNSName: ~c"localhost", iPAddress: <<127, 0, 0, 1>>]}}}
+[0m[22m
+20:48:54.105 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Bad Certificate
+
+[0m[31m
+20:48:54.106 [error] GenServer #PID<0.7577.0> terminating
+** (stop) {:tls_alert, {:bad_certificate, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate\n {bad_cert,\n     {hostname_check_failed,\n         {requested,\"wrong.example\"},\n         {received,[{dNSName,\"localhost\"},{iPAddress,<<127,0,0,1>>}]}}}"}}
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 56996}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.1318>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312292865.131118>, start_time: -576460711201746716, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 56996, telemetry_span_context: #Reference<0.2694199223.1312292865.131118>, parent_telemetry_span_context: #Reference<0.2694199223.1312292865.131102>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2694199223.1312292865.131118>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312292865.131062>, service: :relay, generation: #Reference<0.2694199223.1312292865.131067>}, instance: #PID<0.7565.0>, service: #PID<0.7567.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 49139}, max_lifetime: 10000, write_timeout: 1000, max_chunk_bytes: 16384, upstream_tls: %{server_name: "wrong.example", cacertfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/ca.pem"}}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_packet: 65507, max_active: 32, callback_timeout: 3000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :native}, gate: #PID<0.7568.0>, startup_token: #Reference<0.2694199223.1312292865.131071>}}
+[0m[22m
+20:48:54.130 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+
+[0m[22m
+20:48:54.131 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+
+[0m[31m
+20:48:54.131 [error] GenServer #PID<0.7601.0> terminating
+** (stop) {:tls_alert, {:unknown_ca, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA\n"}}
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 60574}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.1324>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2694199223.1312292865.131316>, start_time: -576460711160431968, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 60574, telemetry_span_context: #Reference<0.2694199223.1312292865.131316>, parent_telemetry_span_context: #Reference<0.2694199223.1312292865.131300>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2694199223.1312292865.131316>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2694199223.1312292865.131260>, service: :relay, generation: #Reference<0.2694199223.1312292865.131265>}, instance: #PID<0.7589.0>, service: #PID<0.7591.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 38077}, max_lifetime: 10000, write_timeout: 1000, max_chunk_bytes: 16384, upstream_tls: %{server_name: "localhost", cacertfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/other/ca.pem"}}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_packet: 65507, max_active: 32, callback_timeout: 3000, max_memberships: 64, max_state: 65536, max_output: 65507, drain_timeout: 5000}, capabilities: [], quic: %{}, handler_mode: :native}, gate: #PID<0.7592.0>, startup_token: #Reference<0.2694199223.1312292865.131269>}}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 25.9 seconds (10.0s async, 15.9s sync)
+[32m156 tests, 0 failures[0m
+==> gaoxy_server
+Running ExUnit with seed: 49315, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 0.6 seconds (0.5s async, 0.09s sync)
+[32m18 tests, 0 failures[0m
+{"name": "settings_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "settings_ack_payload", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "settings_tuple_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "settings_push_value", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "settings_initial_window", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "settings_frame_size", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "ping_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "ping_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "rst_zero_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "rst_idle_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "rst_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "priority_zero_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "goaway_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "goaway_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_zero_connection", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_idle_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_zero_idle_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_connection_overflow", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "data_zero_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "data_idle_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "headers_zero_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "headers_even_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "headers_invalid_padding", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "headers_priority_length", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "continuation_without_headers", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "continuation_interleaving", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "continuation_wrong_stream", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "hpack_invalid_index", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "oversized_frame_header", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "first_frame_must_settings", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "first_settings_cannot_ack", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_zero_stream_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "window_stream_overflow_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "priority_self_dependency_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "priority_length_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "duplicate_pseudo_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "connection_header_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "uppercase_field_sibling", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}
+{"name": "unknown_setting_and_frame_ignored", "status": "PASS", "cleanup": {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": null}}

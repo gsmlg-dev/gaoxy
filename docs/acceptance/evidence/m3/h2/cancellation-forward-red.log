@@ -1,0 +1,37 @@
+Command: unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test/http2_network_test.exs apps/gaoxy_proxy/test/forward_http_test.exs
+==> gaoxy_http
+Running ExUnit with seed: 422729, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test reset removes a response waiting behind another writer operation and preserves its sibling (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:267[0m
+     [31mAssertion with > failed, both sides are exactly equal[0m
+     [36mcode: [0massert Gaoxy.Lifecycle.remaining(deadline) > 0
+     [36mleft: [0m0
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:533: Gaoxy.HTTP2NetworkTest.await_h2/3
+       test/http2_network_test.exs:277: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 4.7 seconds (4.7s async, 0.00s sync)
+[31m18 tests, 1 failure[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 422729, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m
+
+  1) test a verified TLS forward listener accepts an authorized absolute HTTP target (Gaoxy.Proxy.ForwardHTTPTest)
+     [1m[30mapps/gaoxy_proxy/test/forward_http_test.exs:126[0m
+     [31mAssertion with =~ failed[0m
+     [36mcode:  [0massert response =~ "HTTP/1.1 200 "
+     [36mleft:  [0m"[31mHTTP/1.1 400 Bad Request\r\ncontent-length: 0\r\nconnection: close\r\n\r\n[0m"
+     [36mright: [0m"[32mHTTP/1.1 200 [0m"
+     [36mstacktrace:[0m
+       test/forward_http_test.exs:147: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 2.8 seconds (2.8s async, 0.00s sync)
+[31m8 tests, 1 failure[0m
+
+Exit: 2

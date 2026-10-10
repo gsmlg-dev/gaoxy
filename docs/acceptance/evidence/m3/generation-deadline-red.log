@@ -1,0 +1,56 @@
+==> gaoxy_http
+Compiling 4 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_http
+Running ExUnit with seed: 707798, max_cases: 1
+
+[32m.[0m[32m.[0m
+
+  1) test reload keeps one total deadline when the generation owner is unavailable (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:105[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, {:error, :generation_unavailable}} = result
+     [36mleft:  [0m[31m{:ok, {:error, :generation_unavailable}}[0m
+     [36mright: [0m[32mnil[0m
+     [36mstacktrace:[0m
+       test/generation_test.exs:112: (test)
+
+[32m.[0m[32m.[0m
+
+  2) test invalid public options and timeouts fail without starting an owner (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:130[0m
+     [31m** (FunctionClauseError) no function clause matching in Gaoxy.HTTP.Generation.reload/3[0m
+
+     The following arguments were given to Gaoxy.HTTP.Generation.reload/3:
+
+         # 1
+         #PID<0.383.0>
+
+         # 2
+         []
+
+         # 3
+         0
+
+     Attempted function clauses (showing 1 out of 1):
+
+         def reload(store, routes, timeout) when is_integer(timeout) and [31mtimeout > 0[0m
+
+     [36mcode: [0massert {:error, :invalid_reload_timeout} = Generation.reload(self(), [], 0)
+     [36mstacktrace:[0m
+       (gaoxy_http 0.1.0) lib/gaoxy/http/generation.ex:44: Gaoxy.HTTP.Generation.reload/3
+       test/generation_test.exs:137: (test)
+
+[32m.[0m
+
+  3) test an activation queued beyond its deadline cannot mutate the live snapshot (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:116[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert function_exported?(Generation, :activate, 4)
+     [36mstacktrace:[0m
+       test/generation_test.exs:120: (test)
+
+[32m.[0m
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+[31m9 tests, 3 failures[0m
+COMMAND_EXIT=2

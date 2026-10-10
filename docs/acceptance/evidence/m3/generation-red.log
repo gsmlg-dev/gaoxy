@@ -1,0 +1,136 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 452511, max_cases: 4
+
+
+
+  1) test route and compiled byte bounds reject before activation (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:50[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: routes(:old), max_routes: 1})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:51: (test)
+
+
+
+  2) test one bounded preparation runs outside the store and competing preparation is rejected (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:66[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: routes(:old)})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:67: (test)
+
+
+
+  3) test expired preparation is terminated and a later preparation can proceed (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:79[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: routes(:old)})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:80: (test)
+
+
+
+  4) test a live listener keeps its port while old and new requests retain different snapshots (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:103[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: initial})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:105: (test)
+
+
+
+  5) test stopping the store terminates its blocked preparation (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:92[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: routes(:old)})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:93: (test)
+
+
+
+  6) test activation compares generations and preparation failure preserves the current snapshot (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:39[0m
+     [31m** (ArgumentError) The module Gaoxy.HTTP.Generation was given as a child to a supervisor but it does not exist[0m
+     [36mcode: [0mstore = start_supervised!({Generation, routes: routes(:old)})
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/generation_test.exs:40: (test)
+
+    [33mwarning:[0m Gaoxy.HTTP.Generation.snapshot/1 is undefined (module Gaoxy.HTTP.Generation is not available or is yet to be defined)
+    │
+ 41 │     assert {:ok, original, old_router} = Generation.snapshot(store)
+    │ [33m                                                    ~[0m
+    │
+    └─ test/generation_test.exs:41:53: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:47:49: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:52:49: Gaoxy.HTTP.GenerationTest."test route and compiled byte bounds reject before activation"/1
+    └─ test/generation_test.exs:60:51: Gaoxy.HTTP.GenerationTest."test route and compiled byte bounds reject before activation"/1
+    └─ test/generation_test.exs:68:49: Gaoxy.HTTP.GenerationTest."test one bounded preparation runs outside the store and competing preparation is rejected"/1
+    └─ test/generation_test.exs:72:51: Gaoxy.HTTP.GenerationTest."test one bounded preparation runs outside the store and competing preparation is rejected"/1
+    └─ test/generation_test.exs:76:51: Gaoxy.HTTP.GenerationTest."test one bounded preparation runs outside the store and competing preparation is rejected"/1
+    └─ test/generation_test.exs:81:49: Gaoxy.HTTP.GenerationTest."test expired preparation is terminated and a later preparation can proceed"/1
+    └─ test/generation_test.exs:88:51: Gaoxy.HTTP.GenerationTest."test expired preparation is terminated and a later preparation can proceed"/1
+    └─ test/generation_test.exs:106:44: Gaoxy.HTTP.GenerationTest."test a live listener keeps its port while old and new requests retain different snapshots"/1
+
+    [33mwarning:[0m Gaoxy.HTTP.Generation.prepare/2 is undefined (module Gaoxy.HTTP.Generation is not available or is yet to be defined)
+    │
+ 42 │     assert {:ok, prepared} = Generation.prepare(store, routes(:new))
+    │ [33m                                        ~[0m
+    │
+    └─ test/generation_test.exs:42:41: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:46:51: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:55:25: Gaoxy.HTTP.GenerationTest."test route and compiled byte bounds reject before activation"/1
+    └─ test/generation_test.exs:58:25: Gaoxy.HTTP.GenerationTest."test route and compiled byte bounds reject before activation"/1
+    └─ test/generation_test.exs:63:60: Gaoxy.HTTP.GenerationTest."test route and compiled byte bounds reject before activation"/1
+    └─ test/generation_test.exs:70:40: Gaoxy.HTTP.GenerationTest."test one bounded preparation runs outside the store and competing preparation is rejected"/1
+    └─ test/generation_test.exs:73:53: Gaoxy.HTTP.GenerationTest."test one bounded preparation runs outside the store and competing preparation is rejected"/1
+    └─ test/generation_test.exs:89:42: Gaoxy.HTTP.GenerationTest."test expired preparation is terminated and a later preparation can proceed"/1
+    └─ test/generation_test.exs:95:40: Gaoxy.HTTP.GenerationTest."test stopping the store terminates its blocked preparation"/1
+    └─ test/generation_test.exs:116:41: Gaoxy.HTTP.GenerationTest."test a live listener keeps its port while old and new requests retain different snapshots"/1
+
+    [33mwarning:[0m Gaoxy.HTTP.Generation.activate/3 is undefined (module Gaoxy.HTTP.Generation is not available or is yet to be defined)
+    │
+ 43 │     assert {:ok, next} = Generation.activate(store, original, prepared)
+    │ [33m                                    ~[0m
+    │
+    └─ test/generation_test.exs:43:37: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:45:53: Gaoxy.HTTP.GenerationTest."test activation compares generations and preparation failure preserves the current snapshot"/1
+    └─ test/generation_test.exs:117:34: Gaoxy.HTTP.GenerationTest."test a live listener keeps its port while old and new requests retain different snapshots"/1
+
+    [33mwarning:[0m Gaoxy.HTTP.Generation.prepare/3 is undefined (module Gaoxy.HTTP.Generation is not available or is yet to be defined)
+    │
+ 83 │     task = Task.async(fn -> Generation.prepare(store, routes({:wait, owner}), 100) end)
+    │ [33m                                       ~[0m
+    │
+    └─ test/generation_test.exs:83:40: Gaoxy.HTTP.GenerationTest."test expired preparation is terminated and a later preparation can proceed"/1
+
+
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+[31m6 tests, 6 failures[0m

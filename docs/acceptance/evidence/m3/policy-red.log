@@ -1,0 +1,137 @@
+==> gaoxy_http
+    [33mwarning:[0m unused alias Exchange
+    │
+  4 │   alias Gaoxy.HTTP.{Exchange, Response}
+    │ [33m  ~[0m
+    │
+    └─ lib/gaoxy/http/http2/stream.ex:4:3
+
+==> gaoxy_proxy
+Running ExUnit with seed: 839058, max_cases: 1
+
+
+
+  1) test authentication and a nonempty explicit destination policy are required (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:5[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0mfor options <- [%{}, %{authenticate: &auth/1}, %{rules: [rule()]}, %{authenticate: &auth/1, rules: []}] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{})
+       test/destination_policy_test.exs:7: anonymous fn/2 in Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/destination_policy_test.exs:6: (test)
+
+
+
+  2) test a reserved address needs an explicit narrow CIDR exception and mapped IPv6 is normalized (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:52[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0massert {:ok, authorization} = DestinationPolicy.authorize(policy(rule), "operator", context())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{authenticate: #Function<0.126091801/1 in Gaoxy.Proxy.DestinationPolicyTest.auth>, rules: [%{ports: ~c"P", hosts: ["example.test"], methods: ["GET"], cidrs: ["127.0.0.1/32"], allow_reserved: true, principals: ["operator"], operations: [:forward]}]})
+       test/destination_policy_test.exs:83: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+       test/destination_policy_test.exs:54: (test)
+
+
+
+  3) test principal, authority, port, operation and method are checked before resolution (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:21[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0mpolicy = policy()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{authenticate: #Function<0.126091801/1 in Gaoxy.Proxy.DestinationPolicyTest.auth>, rules: [%{ports: ~c"P", hosts: ["example.test"], methods: ["GET"], cidrs: ["0.0.0.0/0"], allow_reserved: false, principals: ["operator"], operations: [:forward]}]})
+       test/destination_policy_test.exs:83: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+       test/destination_policy_test.exs:22: (test)
+
+
+
+  4) test every resolved address is checked and mixed answers fail closed (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:33[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0massert {:ok, authorization} = DestinationPolicy.authorize(policy(), "operator", context())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{authenticate: #Function<0.126091801/1 in Gaoxy.Proxy.DestinationPolicyTest.auth>, rules: [%{ports: ~c"P", hosts: ["example.test"], methods: ["GET"], cidrs: ["0.0.0.0/0"], allow_reserved: false, principals: ["operator"], operations: [:forward]}]})
+       test/destination_policy_test.exs:83: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+       test/destination_policy_test.exs:34: (test)
+
+
+
+  5) test numeric destinations are revalidated at connection time without a DNS lookup (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:71[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0massert {:ok, authorization} = DestinationPolicy.authorize(policy(rule), "operator", %{context() | host: "127.0.0.1"})
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{authenticate: #Function<0.126091801/1 in Gaoxy.Proxy.DestinationPolicyTest.auth>, rules: [%{ports: ~c"P", hosts: ["127.0.0.1"], methods: ["GET"], cidrs: ["127.0.0.1/32"], allow_reserved: true, principals: ["operator"], operations: [:forward]}]})
+       test/destination_policy_test.exs:83: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+       test/destination_policy_test.exs:73: (test)
+
+
+
+  6) test IPv6 public candidates require an applicable explicit CIDR rule (Gaoxy.Proxy.DestinationPolicyTest)
+     [1m[30mapps/gaoxy_proxy/test/destination_policy_test.exs:63[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available)[0m
+     [36mcode: [0massert {:ok, authorization} = DestinationPolicy.authorize(policy(rule), "operator", context())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.DestinationPolicy.init(%{authenticate: #Function<0.126091801/1 in Gaoxy.Proxy.DestinationPolicyTest.auth>, rules: [%{ports: ~c"P", hosts: ["example.test"], methods: ["GET"], cidrs: ["2001:4860::/32"], allow_reserved: false, principals: ["operator"], operations: [:forward]}]})
+       test/destination_policy_test.exs:83: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+       test/destination_policy_test.exs:65: (test)
+
+    [33mwarning:[0m Gaoxy.Proxy.DestinationPolicy.init/1 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available or is yet to be defined)
+    │
+  7 │       assert {:error, :invalid_destination_policy} = DestinationPolicy.init(options)
+    │ [33m                                                                       ~[0m
+    │
+    └─ test/destination_policy_test.exs:7:72: Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+    └─ test/destination_policy_test.exs:58:70: Gaoxy.Proxy.DestinationPolicyTest."test a reserved address needs an explicit narrow CIDR exception and mapped IPv6 is normalized"/1
+    └─ test/destination_policy_test.exs:83:46: Gaoxy.Proxy.DestinationPolicyTest.policy/1
+
+    [33mwarning:[0m Gaoxy.Proxy.DestinationPolicy.authenticate/2 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available or is yet to be defined)
+    │
+ 11 │     assert {:error, :authentication_required} = DestinationPolicy.authenticate(policy, [])
+    │ [33m                                                                  ~[0m
+    │
+    └─ test/destination_policy_test.exs:11:67: Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+    └─ test/destination_policy_test.exs:12:67: Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+    └─ test/destination_policy_test.exs:14:67: Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+    └─ test/destination_policy_test.exs:18:50: Gaoxy.Proxy.DestinationPolicyTest."test authentication and a nonempty explicit destination policy are required"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.DestinationPolicy.authorize/3 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available or is yet to be defined)
+    │
+ 23 │     assert {:ok, authorization} = DestinationPolicy.authorize(policy, "operator", context())
+    │ [33m                                                    ~[0m
+    │
+    └─ test/destination_policy_test.exs:23:53: Gaoxy.Proxy.DestinationPolicyTest."test principal, authority, port, operation and method are checked before resolution"/1
+    └─ test/destination_policy_test.exs:27:64: Gaoxy.Proxy.DestinationPolicyTest."test principal, authority, port, operation and method are checked before resolution"/1
+    └─ test/destination_policy_test.exs:30:62: Gaoxy.Proxy.DestinationPolicyTest."test principal, authority, port, operation and method are checked before resolution"/1
+    └─ test/destination_policy_test.exs:34:53: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:54:53: Gaoxy.Proxy.DestinationPolicyTest."test a reserved address needs an explicit narrow CIDR exception and mapped IPv6 is normalized"/1
+    └─ test/destination_policy_test.exs:65:53: Gaoxy.Proxy.DestinationPolicyTest."test IPv6 public candidates require an applicable explicit CIDR rule"/1
+    └─ test/destination_policy_test.exs:73:53: Gaoxy.Proxy.DestinationPolicyTest."test numeric destinations are revalidated at connection time without a DNS lookup"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.DestinationPolicy.pin/2 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available or is yet to be defined)
+    │
+ 35 │     assert {:ok, {8, 8, 8, 8}} = DestinationPolicy.pin(authorization, [{8, 8, 8, 8}])
+    │ [33m                                                   ~[0m
+    │
+    └─ test/destination_policy_test.exs:35:52: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:44:64: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:45:64: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:48:62: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:49:62: Gaoxy.Proxy.DestinationPolicyTest."test every resolved address is checked and mixed answers fail closed"/1
+    └─ test/destination_policy_test.exs:55:54: Gaoxy.Proxy.DestinationPolicyTest."test a reserved address needs an explicit narrow CIDR exception and mapped IPv6 is normalized"/1
+    └─ test/destination_policy_test.exs:56:62: Gaoxy.Proxy.DestinationPolicyTest."test a reserved address needs an explicit narrow CIDR exception and mapped IPv6 is normalized"/1
+    └─ test/destination_policy_test.exs:67:48: Gaoxy.Proxy.DestinationPolicyTest."test IPv6 public candidates require an applicable explicit CIDR rule"/1
+    └─ test/destination_policy_test.exs:68:62: Gaoxy.Proxy.DestinationPolicyTest."test IPv6 public candidates require an applicable explicit CIDR rule"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.DestinationPolicy.resolve/2 is undefined (module Gaoxy.Proxy.DestinationPolicy is not available or is yet to be defined)
+    │
+ 74 │     assert {:ok, {127, 0, 0, 1}} = DestinationPolicy.resolve(authorization, Gaoxy.Lifecycle.deadline(1_000))
+    │ [33m                                                     ~[0m
+    │
+    └─ test/destination_policy_test.exs:74:54: Gaoxy.Proxy.DestinationPolicyTest."test numeric destinations are revalidated at connection time without a DNS lookup"/1
+    └─ test/destination_policy_test.exs:75:61: Gaoxy.Proxy.DestinationPolicyTest."test numeric destinations are revalidated at connection time without a DNS lookup"/1
+
+
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+[31m6 tests, 6 failures[0m
+COMMAND_EXIT=2

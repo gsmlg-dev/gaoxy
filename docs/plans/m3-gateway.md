@@ -80,26 +80,29 @@ Expected: exit 0 proving the BLOCKED option gates, not pooling/H2 acceptance.
   Only then enable upstream H2; H1 reuse requires #66. Until then stop this task and
   continue independent tasks; no private pool calls or local workaround.
 
+Final live checkpoint: both issues CLOSED; latest and installed0.19.1 predates
+the fixes. The containing release/update and this qualification remain BLOCKED.
+
 ## Task 2: Native HTTP/2 and shared HTTP operations
 
 Owned area: `apps/gaoxy_http/` H2 modules and Exchange/Response/Plug protocol
 dispatch, plus directly required HTTP proxy compatibility seams and HPAX lock.
 
-- [ ] Audit HPAX package/version/license/public decoder and resize contract.
-- [ ] Add failing tests for independent stream cancellation, SETTINGS/window
+- [x] Audit HPAX package/version/license/public decoder and resize contract.
+- [x] Add failing tests for independent stream cancellation, SETTINGS/window
   changes, malformed HEADERS/CONTINUATION, bounded decoding, and GOAWAY.
-- [ ] Introduce protocol-neutral read, poll, response, metadata, and terminal
+- [x] Introduce protocol-neutral read, poll, response, metadata, and terminal
   operations while preserving H1 state and wire behavior.
-- [ ] Implement the native H2 connection state machine and bounded stream
+- [x] Implement the native H2 connection state machine and bounded stream
   workers; each worker owns its admission lease and absolute deadline.
-- [ ] Test HTTP semantics: request fields/trailers, body limits, informational
+- [x] Test HTTP semantics: request fields/trailers, body limits, informational
   headers, HEAD/204/205/304, duplicate fields, files, and streaming response.
-- [ ] Prove TLS ALPN `h2` independently; qualify explicit prior-knowledge h2c
+- [x] Prove TLS ALPN `h2` independently; qualify explicit prior-knowledge h2c
   separately. Do not advertise h2c upgrade, push, or WebSocket extended-CONNECT
   without their own implementation and gates.
-- [ ] Prove flow-control demand, slow peers, fair sibling progress, RST_STREAM,
+- [x] Prove flow-control demand, slow peers, fair sibling progress, RST_STREAM,
   downstream→dedicated-H1 proxy cleanup, drain and force-stop ownership.
-- [ ] Run `unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test apps/gaoxy_proxy/test`
+- [x] Run `unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test apps/gaoxy_proxy/test`
   and independent H2 peer checks; resolve specification then quality findings.
 
 Representative required assertion: after resetting one stalled upload, another
@@ -112,22 +115,22 @@ Owned area: new `apps/gaoxy_proxy/lib/gaoxy/proxy/` destination-policy,
 forward/CONNECT, and stream-relay modules plus their tests and user documentation.
 Serialize any shared `HTTPFetchClient` changes with Task 2.
 
-- [ ] Write failing policy tests for absent authentication/rules, duplicate
+- [x] Write failing policy tests for absent authentication/rules, duplicate
   credentials, resolved IPv4/IPv6/mapped destinations, and explicit CIDR/port
   allow rules. Authentication and destination rules must be deliberate.
-- [ ] Resolve once within the dial deadline, check every candidate, and dial
+- [x] Resolve once within the dial deadline, check every candidate, and dial
   only the approved numeric address; retain URL authority and TLS identity via
   the documented public `connect_address` option.
-- [ ] Implement separate forward HTTP configuration and explicit CONNECT
+- [x] Implement separate forward HTTP configuration and explicit CONNECT
   authentication; strip proxy credentials before upstream exchange.
-- [ ] Implement bounded duplex raw transfer with one credited chunk per
+- [x] Implement bounded duplex raw transfer with one credited chunk per
   direction, finite writes/idle/lifetime, tested half-close and force cleanup.
-- [ ] Distinguish TCP, OTP TLS termination, verified upstream TLS, and opaque
+- [x] Distinguish TCP, OTP TLS termination, verified upstream TLS, and opaque
   passthrough. Reject unsupported interception/PROXY/SNI inspection claims.
-- [ ] Run focused policy and relay tests against real peers; verify no replay,
+- [x] Run focused policy and relay tests against real peers; verify no replay,
   a live sibling under blocked writes, EOF→directional shutdown→remaining reply,
   credential rejection, TLS name/trust rejection, and resource restoration.
-- [ ] Complete independent specification and quality review before commit.
+- [x] Complete independent specification and quality review before commit.
 
 Required wire assertion: a peer that receives request bytes until FIN can still
 send its exact response through the relay after the client calls write shutdown.
@@ -137,20 +140,20 @@ send its exact response through the relay after the client calls write shutdown.
 Owned area: a new route-generation endpoint/store in `apps/gaoxy_http/`,
 allowlisted data configuration in `apps/gaoxy_server/`, and focused tests.
 
-- [ ] Write failing real-listener tests that pause an old request at a barrier,
+- [x] Write failing real-listener tests that pause an old request at a barrier,
   prepare/activate a new route table, and prove old/new requests use their own
   generation while the listener's bound port and owner remain stable.
-- [ ] Compile and validate outside the generation owner; use an expected
+- [x] Compile and validate outside the generation owner; use an expected
   generation on activation so concurrent stale updates fail atomically.
-- [ ] Bound configuration bytes/routes and endpoint preparation; failed
+- [x] Bound configuration bytes/routes and endpoint preparation; failed
   preparation must leave the live route table unchanged.
-- [ ] Decode named endpoints through a fixed allowlist; reject unknown keys,
+- [x] Decode named endpoints through a fixed allowlist; reject unknown keys,
   arbitrary modules, atom creation, and code evaluation in external data.
-- [ ] Keep same-port listener changes explicit: reject changes requiring
+- [x] Keep same-port listener changes explicit: reject changes requiring
   restart, rather than claiming an unimplemented transactional handoff.
-- [ ] Test reload rollback, concurrent activation, an in-flight old-generation
+- [x] Test reload rollback, concurrent activation, an in-flight old-generation
   proxy, repeated updates under traffic, and bounded retained state.
-- [ ] Run focused generation/server tests and independent review; commit only
+- [x] Run focused generation/server tests and independent review; commit only
   after the wire and rollback assertions pass.
 
 ## Task 5: Upstream groups and complete reverse-proxy policy
@@ -158,32 +161,35 @@ allowlisted data configuration in `apps/gaoxy_server/`, and focused tests.
 Owned area: group/health policy modules in `apps/gaoxy_proxy/`, client options
 required by explicit deadlines, and focused tests.
 
-- [ ] Add bounded immutable upstream groups, deterministic load balancing,
+- [x] Add bounded immutable upstream groups, deterministic load balancing,
   finite health probe intervals/deadlines, and explicit availability state.
-- [ ] Preserve verified HTTPS, header/trailer policy, raw compression, separate
+- [x] Preserve verified HTTPS, header/trailer policy, raw compression, separate
   opening/idle/write/total deadlines, no automatic redirects, and no replay.
-- [ ] Prove failed selection sends at most one request; health recovery and
+- [x] Prove failed selection sends at most one request; health recovery and
   new-generation membership do not move an in-flight request's selected peer.
-- [ ] Qualify sustained concurrent load and health-probe ownership/cleanup.
-  Group selection is not transport pooling; keep Task 1's blocker visible.
-- [ ] Complete scoped red/green, independent review and local commit.
+- [x] Qualify bounded concurrent selections/saturation and health-probe
+  ownership/cleanup, with exact old/new group peers across one activation.
+  G5 requires these bounded concurrency/generation gates. Repeated fixed-proxy
+  generations and Task7's600-second echo/fixed-proxy profile have separate
+  evidence; no group/probe soak is claimed. Keep Task1's release blocker visible.
+- [x] Complete scoped red/green, independent review and local commit (`6d92298`).
 
 ## Task 6: Persistent bounded UDP associations
 
 Owned area: core validated datagram-dispatcher adapter, proxy UDP relay modules,
 and scoped core/proxy tests; keep ordinary UDP/core-only consumers unchanged.
 
-- [ ] Add the smallest explicit core adapter for public
+- [x] Add the smallest explicit core adapter for public
   `Abyss.DatagramDispatcher` and generation-tagged send capabilities.
-- [ ] Bound association count, per-association/aggregate retained bytes,
+- [x] Bound association count, per-association/aggregate retained bytes,
   datagram sizes, idle expiry, and writer admission/receipt deadlines.
-- [ ] Validate upstream return source and preserve each datagram, including
+- [x] Validate upstream return source and preserve each datagram, including
   empty payloads. Never retry an admitted/uncertain send.
-- [ ] Prove independent associations, expiry, admission rejection, stale
+- [x] Prove independent associations, expiry, admission rejection, stale
   receipts, listener force-stop, and association socket cleanup.
-- [ ] Keep broadcast/multicast relays opt-in with explicit ingress/egress and
+- [x] Keep broadcast/multicast relays opt-in with explicit ingress/egress and
   loop/amplification constraints; unsupported modes reject before binding.
-- [ ] Run focused core/datagram/proxy suites and external core consumer;
+- [x] Run focused core/datagram/proxy suites and external core consumer;
   complete independent review before commit.
 
 ## Task 7: Operational gates, acceptance and progression
@@ -191,14 +197,14 @@ and scoped core/proxy tests; keep ordinary UDP/core-only consumers unchanged.
 Files: `docs/acceptance/m3.md`, M3 evidence bundle, feature/capability/status
 documentation, independent loopback/load harnesses and scoped CI wiring.
 
-- [ ] Execute nonempty interoperability, security, cancellation/slow-peer,
+- [x] Execute nonempty interoperability, security, cancellation/slow-peer,
   relay, reload, and sustained-load gates for the actual candidate.
-- [ ] Record concurrency, payloads, throughput/latency, retained bytes, drops,
+- [x] Record concurrency, payloads, throughput/latency, retained bytes, drops,
   environment, limits and measurement exclusions; no conformance/security or
   production claim follows from selected local gates.
-- [ ] Re-run changed compatibility suites, strict compilation, canonical
+- [x] Re-run changed compatibility suites, strict compilation, canonical
   formatting, external core-consumer isolation, and relevant native fixture.
-- [ ] Perform independent full specification and code review; repair findings
+- [x] Perform independent full specification and code review; repair findings
   with deterministic regressions, maintaining Sol/Astra repair counters.
 - [ ] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.

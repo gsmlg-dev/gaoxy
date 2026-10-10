@@ -1,0 +1,39 @@
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_server
+Compiling 3 files (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Running ExUnit with seed: 497012, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+[32m12 tests, 0 failures[0m
+==> gaoxy_server
+Running ExUnit with seed: 497012, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test mixed standalone runtime reloads routes on one stable listener and rolls back invalid files (Gaoxy.Server.StandaloneGenerationTest)
+     [1m[30mapps/gaoxy_server/test/standalone_generation_test.exs:28[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, rebound} = :gen_tcp.listen(port, [:binary, active: false, ip: ip])
+     [36mleft:  [0m{[31m:ok[0m, rebound}
+     [36mright: [0m{[32m:error[0m, :eaddrinuse}
+     [36mstacktrace:[0m
+       test/standalone_generation_test.exs:73: (test)
+
+
+
+  2) test failed mixed startup stops generation owners and releases the already-bound HTTP port (Gaoxy.Server.StandaloneGenerationTest)
+     [1m[30mapps/gaoxy_server/test/standalone_generation_test.exs:77[0m
+     [31m** (EXIT from #PID<0.558.0>) shutdown: failed to start child: {Gaoxy, #Reference<0.825531356.3179282434.261259>}
+         ** (EXIT) shutdown: failed to start child: :listener_pool
+             ** (EXIT) shutdown: failed to start child: "listener-1"
+                 ** (EXIT) :eaddrinuse[0m
+
+[32m.[0m[32m.[0m
+Finished in 0.9 seconds (0.7s async, 0.1s sync)
+[31m13 tests, 2 failures[0m
+COMMAND_EXIT=2

@@ -1,0 +1,40 @@
+{
+  "status": "PASS",
+  "command": "nix develop --command bash /tmp/gaoxy-m3-canonical.sh",
+  "command_body": "#!/usr/bin/env bash\nexport ERL_FLAGS='+S 2:2'\nexport MIX_ENV=test\nset -euo pipefail\n{\n  unbuffer mix format --check-formatted\n  unbuffer mix compile --warnings-as-errors\n  unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test apps/gaoxy_proxy/test apps/gaoxy/test apps/gaoxy_server/test\n  /tmp/gaoxy-m3-h2-soak-venv/bin/python integration/h2_rfc/run.py --evidence docs/acceptance/evidence/m3/h2-rfc-s5-final\n} 2>&1 | tee docs/acceptance/evidence/m3/canonical-s5-final.log\n",
+  "exit_code": 0,
+  "source_unchanged": true,
+  "counts": {
+    "gaoxy": {
+      "tests": 90,
+      "failures": 0
+    },
+    "gaoxy_http": {
+      "tests": 196,
+      "failures": 0
+    },
+    "gaoxy_proxy": {
+      "tests": 156,
+      "failures": 0
+    },
+    "gaoxy_server": {
+      "tests": 18,
+      "failures": 0
+    }
+  },
+  "total_tests": 460,
+  "seed": 49315,
+  "source_before": "canonical-s5-source-before.json",
+  "source_after": "canonical-s5-source-after.json",
+  "log": "canonical-s5-final.log",
+  "rfc": "h2-rfc-s5-final/results.json",
+  "recorded_utc": "2026-10-10T12:49:25.347102+00:00",
+  "rfc_executed": 40,
+  "rfc_exit": 0,
+  "rfc_all_zero_reservations": true,
+  "rfc_teardown": {
+    "event": "stopped",
+    "runtime_down": true,
+    "port_rebound": true
+  }
+}

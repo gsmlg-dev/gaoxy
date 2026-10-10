@@ -1,0 +1,17 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
++ unbuffer mix format apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs
++ unbuffer mix format --check-formatted apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs
++ unbuffer mix compile --warnings-as-errors
++ unbuffer mix test apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs apps/gaoxy_proxy/test/http_proxy_runtime_test.exs apps/gaoxy_proxy/test/upstream_group_proxy_test.exs --warnings-as-errors --max-cases 1 --seed 107342
+==> gaoxy_proxy
+Running ExUnit with seed: 107342, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+20:46:03.600 [error] GenServer #PID<0.796.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.795.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.796.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.797.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.892648299.4264427522.223201>, #Reference<0.892648299.4264427522.223202>, :http, #Reference<0.892648299.4264296450.223203>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 2.4 seconds (2.4s async, 0.00s sync)
+[32m26 tests, 0 failures[0m
+VALIDATION_EXIT=0

@@ -151,7 +151,37 @@ and stable qualified host settings; it is not a total BEAM memory limit.
 
 Standalone core-only isolation remains separate from the umbrella graph, which
 includes `elixir_quic`/`ex_ssl`. Gaoxy CI, push, merge, release and deployment are
-**NOT RUN** for this candidate. No H2/H3 or production acceptance is implied.
-M3: HTTP/2 and complete gateway/relay policies. M4: independently verified HTTP/3.
+**NOT RUN** for that candidate. No upstream H2/H3 or production acceptance is
+implied by the M2 record. M4 requires complete M3 acceptance.
 Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.
+
+## Current M3 implementation and remaining gates
+
+M3 runs in `.trees/m3-gateway` on `codex/m3-gateway`. Continuing authorization
+is committed in `AGENTS.md`; designs/plans remain required while routine
+development approvals are removed. The [acceptance matrix](acceptance/m3.md)
+is authoritative for executed scope, pending gates, repairs and final source.
+
+Native H2, shared HTTP operations, authenticated forward/H1 CONNECT, bounded
+TCP/TLS/UDP unicast relay, route generations, standalone HTTP and supervised
+dedicated-H1 groups are implemented. Final S5 canonical strict format/compile
+and **460 scoped tests** pass: core90, HTTP196, proxy156, server18, zero failures
+at seed49315. The 40 independent selected RFC cases and unchanged-source clean
+core consumer1/0 pass. S1–S5 independent findings are resolved; separate full
+specification and quality reviews pass. Phoenix fixture2/0, browser15/15 and
+reverse example6/6 pass, including verified H2 and source restoration.
+
+The frozen 600.000-second H2 echo/fixed-H1-proxy soak passes: 4064 offered,
+3872 exact completions,192 expected progress resets,zero unexpected errors,
+299 reloads. All600 sampled resource bounds pass; teardown7ms confirms6082
+captured processes DOWN and zero reservations/tasks/guardians. All199 frozen
+source hashes remain exact. Groups have bounded concurrency/health/ownership
+qualification; the fixed-proxy soak does not imply a group/probe soak.
+
+**Full M3 remains BLOCKED** on a containing HTTP Fetch release and qualification
+of reusable H1/upstream H2. Both #66/#67 are CLOSED in the final live read, but
+installed and latest GitHub/Hex0.19.1 predates their fixes. No pooling/private
+client workaround is used. Tested work is delivered locally; M4 waits for the
+containing dependency update and remaining cleanup/trailer/version-matrix gates.
+No remote publication or production acceptance is implied.

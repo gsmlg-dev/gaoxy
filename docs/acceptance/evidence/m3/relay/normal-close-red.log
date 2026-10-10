@@ -1,0 +1,22 @@
+Command: unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/stream_relay_test.exs:338
+==> gaoxy_proxy
+Running ExUnit with seed: 250425, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/stream_relay_test.exs", 338}]
+
+
+
+  1) test drain controls normal EOF cleanup while the half-closed peer withholds reads (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/stream_relay_test.exs:338[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert :ok = Gaoxy.stop(server, 100)
+     [36mleft:  [0m[31m:ok[0m
+     [36mright: [0m[32m{:error, {:deadline_exceeded, :cleanup_pending}}[0m
+     [36mstacktrace:[0m
+       test/stream_relay_test.exs:376: (test)
+
+
+Finished in 1.1 seconds (0.00s async, 1.1s sync)
+[31m16 tests, 1 failure, 15 excluded[0m
+
+Exit: 2

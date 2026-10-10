@@ -1,6 +1,6 @@
 # Native HTTP reverse proxy
 
-`Gaoxy.Proxy.HTTP` streams HTTP/1 requests to one configured HTTP or verified
+`Gaoxy.Proxy.HTTP` streams native HTTP/1 or HTTP/2 requests to one configured HTTP or verified
 HTTPS authority. It implements the native endpoint contract and can share a
 listener with local Plug/Phoenix and WebSocket proxy routes:
 
@@ -8,7 +8,8 @@ The selected HTTP Fetch 0.19.1 preserves present empty queries: `/upload?`
 reaches the origin unchanged. The historical
 [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker is resolved;
 its regression and the public Fetch probe now pass without a local workaround.
-See [current acceptance](acceptance/m2.md) for the scoped local verdict.
+See [M2 acceptance](acceptance/m2.md) and [the M3 record](acceptance/m3.md) for
+their scoped local verdicts.
 
 ```elixir
 {:ok, gateway} = Gaoxy.HTTP.start_link(
@@ -45,7 +46,12 @@ Supported methods are GET, HEAD, POST, PUT, PATCH, DELETE and OPTIONS. Supported
 origin/absolute targets retain ordinary HTTP semantics; CONNECT and other target
 forms receive 501. GET and DELETE entities are forwarded. Redirects are returned
 unchanged. There is no automatic retry, replay, protocol or TLS-provider fallback.
-Each request owns a new H1 connection; pooling and upstream groups belong to M3.
+Each request owns a new H1 connection. M3 adds supervised upstream groups,
+health probes and generation-pinned selection through `Gaoxy.Proxy.GroupEndpoint`;
+see [the gateway guide](gateway.md). Groups do not imply connection reuse.
+Reusable H1 and upstream H2 remain BLOCKED by HTTP Fetch
+[#66](https://github.com/gsmlg-dev/http_fetch/issues/66); upstream H2 upload
+trailers also need [#67](https://github.com/gsmlg-dev/http_fetch/issues/67).
 
 Ordered duplicate fields survive. Hop-by-hop fields and every Connection-nominated
 field are removed. Incoming Forwarded, X-Real-IP and X-Forwarded-* are discarded;
@@ -62,8 +68,9 @@ Declared, permitted trailers retain order and duplicates under the native
 trailer count/byte limits. Undeclared or forbidden trailers fail; nominated
 hop-by-hop request trailers and declarations are removed. The pinned upstream
 parser rejects actual Connection-nominated response trailers before delivery.
-Trailer promises incompatible with HTTP/1.0,
-HEAD/bodyless or fixed-length responses fail before response commitment.
+Trailer promises incompatible with HTTP/1.0 or HEAD/bodyless responses fail
+before commitment. H1 trailers require chunked framing; H2 trailers use a
+terminal header block and may accompany a valid Content-Length.
 An error after commitment closes the connection without a successful terminal
 chunk or a second response.
 

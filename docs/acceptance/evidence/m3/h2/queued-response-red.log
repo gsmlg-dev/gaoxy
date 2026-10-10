@@ -1,0 +1,18 @@
+Command: unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test/http2_network_test.exs
+==> gaoxy_http
+Running ExUnit with seed: 589749, max_cases: 1
+
+
+
+  1) test reset removes a response waiting behind another writer operation and preserves its sibling (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:267[0m
+     [31m%{3 => %{body: "/blocked", headers: [{":status", "200"}, {"content-length", "8"}]}, 5 => %{body: "", headers: [{":status", "200"}, {"content-length", "7"}]}}[0m
+     [36mcode: [0mrefute Map.has_key?(result, 5), inspect(result)
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:290: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 3.7 seconds (3.7s async, 0.00s sync)
+[31m18 tests, 1 failure[0m
+
+Exit: 2

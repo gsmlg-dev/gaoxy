@@ -1,0 +1,85 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+Resolving Hex dependencies...
+Resolution completed in 0.16s
+New:
+[32m  hpax 1.1.0[31m[0m
+Unchanged:
+  earmark_parser 1.4.46
+  elixir_quic 0.19.1
+  elixir_quic_http3 0.19.1
+  ex_doc 0.40.4
+  ex_ssl 0.19.1
+  http_core 0.19.1
+  http_fetch 0.19.1
+  http_runtime 0.19.1
+  http_web_socket 0.19.1
+  jason 1.4.5
+  makeup 1.2.3
+  makeup_elixir 1.0.1
+  makeup_erlang 1.1.0
+  mime 2.0.7
+  nimble_parsec 1.4.2
+  plug 1.20.3
+  plug_crypto 2.2.0
+  rustler 0.38.0
+  telemetry 1.4.2
+  telemetry_metrics 1.2.0
+  websock 0.5.3
+* Getting hpax (Hex package)
+==> hpax
+Compiling 4 files (.ex)
+Generated hpax app
+==> websock_adapter
+Generated websock_adapter app
+==> gaoxy
+Generated gaoxy app
+==> gaoxy_http
+Compiling 1 file (.ex)
+Compiling 1 file (.ex)
+    [33mwarning:[0m conflicting behaviours found. Callback function init/1 is defined by both GenServer and Gaoxy.HTTP.Endpoint (in module Gaoxy.HTTP.Generation)
+    │
+  1 │ defmodule Gaoxy.HTTP.Generation do
+    │ [33m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    │
+    └─ lib/gaoxy/http/generation.ex:1: Gaoxy.HTTP.Generation (module)
+
+    [33mwarning:[0m def prepare/3 has multiple clauses and also declares default values. In such cases, the default values should be defined in a header. Instead of:
+
+        def foo(:first_clause, b \\ :default) do ... end
+        def foo(:second_clause, b) do ... end
+
+    one should write:
+
+        def foo(a, b \\ :default)
+        def foo(:first_clause, b) do ... end
+        def foo(:second_clause, b) do ... end
+
+    │
+ 33 │   def prepare(_, _, _), do: {:error, :invalid_prepare_timeout}
+    │ [33m      ~[0m
+    │
+    └─ lib/gaoxy/http/generation.ex:33:7
+
+Generated gaoxy_http app
+==> gaoxy_proxy
+Generated gaoxy_proxy app
+==> gaoxy_server
+Compiling 2 files (.ex)
+
+== Compilation error in file lib/gaoxy/server/route_config.ex ==
+** (SyntaxError) invalid syntax found on lib/gaoxy/server/route_config.ex:69:80:
+    [31merror:[0m unexpected expression after keyword list. Keyword lists must always come as the last argument. Therefore, this is not allowed:
+
+        function_call(1, some: :option, 2)
+
+    Instead, wrap the keyword in brackets:
+
+        function_call(1, [some: :option], 2)
+
+    Syntax error after: ','
+    │
+ 69 │            do: Map.put(options, :cacertfile, data["cacertfile"]), else: options,
+    │ [31m                                                                               ^[0m
+    │
+    └─ lib/gaoxy/server/route_config.ex:69:80
+    (elixir 1.18.5) lib/kernel/parallel_compiler.ex:423: anonymous fn/5 in Kernel.ParallelCompiler.spawn_workers/8

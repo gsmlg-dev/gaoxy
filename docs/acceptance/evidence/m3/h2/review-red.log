@@ -1,0 +1,96 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 23458, max_cases: 1
+
+[32m.[0m
+
+  1) test invalid TLS protocol options return an error before ALPN mapping (Gaoxy.HTTP2ProtocolTest)
+     [1m[30mapps/gaoxy_http/test/http2_protocol_test.exs:93[0m
+     [31m** (FunctionClauseError) no function clause matching in anonymous fn/1 in Gaoxy.HTTP.spec/2[0m
+
+     The following arguments were given to anonymous fn/1 in Gaoxy.HTTP.spec/2:
+
+         # 1
+         :unknown
+
+     [36mcode: [0mfor protocols <- [[:unknown], :http2, nil, ["h2"], [:http1, :http2]] do
+     [36mstacktrace:[0m
+       (gaoxy_http 0.1.0) lib/gaoxy/http.ex:62: anonymous fn/1 in Gaoxy.HTTP.spec/2
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       (gaoxy_http 0.1.0) lib/gaoxy/http.ex:62: Gaoxy.HTTP.spec/2
+       test/http2_protocol_test.exs:96: anonymous fn/2 in Gaoxy.HTTP2ProtocolTest."test invalid TLS protocol options return an error before ALPN mapping"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http2_protocol_test.exs:94: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test a finite connection poll waits without delaying another stream or control frames (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:179[0m
+     [31mexpected PING progress during poll, got {1, 4, 1, <<63, 225, 31, 136, 31, 13, 1, 54>>}[0m
+     [36mcode: [0massert_ping(socket, "pollping")
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:184: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  3) test body credit above the H2 transport window is clamped while preserving the payload (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:172[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert responses(socket, [1])[1].body == "hello"
+     [36mleft:  [0m"[48;5;88m[0m"
+     [36mright: [0m"[32mhello[0m"
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:176: (test)
+
+
+
+  4) test a closed stream consumes HPACK changes before resetting and a sibling can use them (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:139[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :closed}[0m
+     [36mcode: [0massert responses(socket, [3])[3].body == "/sibling"
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:283: Gaoxy.HTTP2NetworkTest.recv_frame/1
+       test/http2_network_test.exs:292: Gaoxy.HTTP2NetworkTest.responses/3
+       test/http2_network_test.exs:163: (test)
+
+
+
+  5) test an oversized first compressed fragment is rejected before CONTINUATION arrives (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:166[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert goaway(socket) == 11
+     [36mleft:  [0m1
+     [36mright: [0m1[32m1[0m
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:169: (test)
+
+
+Finished in 2.9 seconds (2.9s async, 0.00s sync)
+[31m17 tests, 5 failures[0m
+==> gaoxy_server
+Running ExUnit with seed: 23458, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test 304 static metadata rejects a length beyond the protocol decimal limit (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:116[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} =
+              RouteConfig.decode(
+                data(%{
+                  "type" => "static",
+                  "status" => 304,
+                  "headers" => [["content-length", String.duplicate("1", 21)]]
+                })
+              )
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [%{target: {Gaoxy.Server.StaticEndpoint, %{status: 304, body: "", headers: [{"content-length", "111111111111111111111"}]}}}]
+            }
+     [36mstacktrace:[0m
+       test/route_config_test.exs:117: (test)
+
+
+Finished in 1.1 seconds (1.1s async, 0.00s sync)
+[31m7 tests, 1 failure[0m

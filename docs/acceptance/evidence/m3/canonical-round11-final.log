@@ -1,0 +1,494 @@
+[31m[1m** (Mix) mix format failed due to --check-formatted.
+The following files are not formatted:
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/test/http_proxy_tls_test.exs
+[0m
+         |
+ 74  74  |
+ 75  75  |    {url, peer} =
+ 76    [31m -[0m|[31m      tls_peer(context.trusted, "localhost", fn socket ->[0m
+ 77    [31m -[0m|[31m        assert {:ok, info} = :ssl.connection_information(socket, [:sni_hostname])[0m
+ 78    [31m -[0m|[31m        assert to_string(info[:sni_hostname]) == "localhost"[0m
+ 79    [31m -[0m|[31m        request = head(:ssl, socket)[0m
+ 80    [31m -[0m|[31m        assert {:ok, {_, port}} = :ssl.sockname(socket)[0m
+ 81    [31m -[0m|[31m        assert request =~ "GET /pinned HTTP/1.1\r\n"[0m
+ 82    [31m -[0m|[31m        assert String.downcase(request) =~ "host: localhost:#{port}\r\n"[0m
+ 83    [31m -[0m|[31m        refute request =~ "127.0.0.2"[0m
+ 84    [31m -[0m|[31m        :ok = :ssl.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\npinned")[0m
+ 85    [31m -[0m|[31m        assert {:error, :closed} = :ssl.recv(socket, 0, @timeout)[0m
+ 86    [31m -[0m|[31m      end, {127, 0, 0, 2})[0m
+     76[32m +[0m|[32m      tls_peer([0m
+     77[32m +[0m|[32m        context.trusted,[0m
+     78[32m +[0m|[32m        "localhost",[0m
+     79[32m +[0m|[32m        fn socket ->[0m
+     80[32m +[0m|[32m          assert {:ok, info} = :ssl.connection_information(socket, [:sni_hostname])[0m
+     81[32m +[0m|[32m          assert to_string(info[:sni_hostname]) == "localhost"[0m
+     82[32m +[0m|[32m          request = head(:ssl, socket)[0m
+     83[32m +[0m|[32m          assert {:ok, {_, port}} = :ssl.sockname(socket)[0m
+     84[32m +[0m|[32m          assert request =~ "GET /pinned HTTP/1.1\r\n"[0m
+     85[32m +[0m|[32m          assert String.downcase(request) =~ "host: localhost:#{port}\r\n"[0m
+     86[32m +[0m|[32m          refute request =~ "127.0.0.2"[0m
+     87[32m +[0m|[32m          :ok = :ssl.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 6\r\n\r\npinned")[0m
+     88[32m +[0m|[32m          assert {:error, :closed} = :ssl.recv(socket, 0, @timeout)[0m
+     89[32m +[0m|[32m        end,[0m
+     90[32m +[0m|[32m        {127, 0, 0, 2}[0m
+     91[32m +[0m|[32m      )[0m
+ 87  92  |
+ 88  93  |    server = server(url, Path.join(context.trusted, "ca.pem"), %{connect_address: {127, 0, 0, 2}})
+ 89  94  |    socket = connect(server)
+ 90    [31m -[0m|[31m    :ok = :gen_tcp.send(socket, "GET /pinned HTTP/1.1\r\nHost: edge.test\r\nConnection: close\r\n\r\n")[0m
+     95[32m +[0m|[32m[0m
+     96[32m +[0m|[32m    :ok =[0m
+     97[32m +[0m|[32m      :gen_tcp.send([0m
+     98[32m +[0m|[32m        socket,[0m
+     99[32m +[0m|[32m        "GET /pinned HTTP/1.1\r\nHost: edge.test\r\nConnection: close\r\n\r\n"[0m
+    100[32m +[0m|[32m      )[0m
+    101[32m +[0m|[32m[0m
+ 91 102  |    assert_receive {:tls_attempt, ^peer}, @timeout
+ 92 103  |    assert head(:gen_tcp, socket) =~ "200 OK"
+         |
+131 142  |    {:ok, server} =
+132 143  |      Gaoxy.HTTP.start_link(
+133    [31m -[0m|[31m        endpoint: {Gaoxy.Proxy.HTTP, Map.merge(%{upstream: url, cacertfile: ca, opening_timeout: 1_000}, additional)},[0m
+    144[32m +[0m|[32m        endpoint:[0m
+    145[32m +[0m|[32m          {Gaoxy.Proxy.HTTP,[0m
+    146[32m +[0m|[32m           Map.merge(%{upstream: url, cacertfile: ca, opening_timeout: 1_000}, additional)},[0m
+134 147  |        limits: %{max_bytes: 16_777_216}
+135 148  |      )
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/test/forward_http_test.exs
+[0m
+         |
+  5   5  |
+  6   6  |  test "forward configuration requires explicit authentication and destination rules" do
+  7    [31m -[0m|[31m    for options <- [%{}, %{policy: %{}}, %{policy: %{authenticate: fn _ -> {:ok, "owner"} end, rules: []}}] do[0m
+      7[32m +[0m|[32m    for options <- [[0m
+      8[32m +[0m|[32m          %{},[0m
+      9[32m +[0m|[32m          %{policy: %{}},[0m
+     10[32m +[0m|[32m          %{policy: %{authenticate: fn _ -> {:ok, "owner"} end, rules: []}}[0m
+     11[32m +[0m|[32m        ] do[0m
+  8  12  |      assert {:error, _} = ForwardHTTP.init(options)
+  9  13  |    end
+         |
+ 12  16  |  test "authorized forward HTTP pins the destination and strips proxy credentials" do
+ 13  17  |    owner = self()
+ 14    [31m -[0m|[31m    {port, peer} = peer(fn socket ->[0m
+ 15    [31m -[0m|[31m      head = head(socket)[0m
+ 16    [31m -[0m|[31m      send(owner, {:upstream_head, self(), head})[0m
+ 17    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")[0m
+ 18    [31m -[0m|[31m      assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+ 19    [31m -[0m|[31m    end)[0m
+     18[32m +[0m|[32m[0m
+     19[32m +[0m|[32m    {port, peer} =[0m
+     20[32m +[0m|[32m      peer(fn socket ->[0m
+     21[32m +[0m|[32m        head = head(socket)[0m
+     22[32m +[0m|[32m        send(owner, {:upstream_head, self(), head})[0m
+     23[32m +[0m|[32m        :ok = :gen_tcp.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\nok")[0m
+     24[32m +[0m|[32m        assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+     25[32m +[0m|[32m      end)[0m
+     26[32m +[0m|[32m[0m
+ 20  27  |    server = server(port)
+ 21  28  |    socket = connect(server)
+ 22    [31m -[0m|[31m    :ok = :gen_tcp.send(socket, "GET http://localhost:#{port}/a%2Fb?x=%2F HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n")[0m
+     29[32m +[0m|[32m[0m
+     30[32m +[0m|[32m    :ok =[0m
+     31[32m +[0m|[32m      :gen_tcp.send([0m
+     32[32m +[0m|[32m        socket,[0m
+     33[32m +[0m|[32m        "GET http://localhost:#{port}/a%2Fb?x=%2F HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n"[0m
+     34[32m +[0m|[32m      )[0m
+     35[32m +[0m|[32m[0m
+ 23  36  |    assert until_fin(socket) =~ "\r\n\r\nok"
+ 24  37  |    assert_receive {:upstream_head, ^peer, upstream}, @timeout
+         |
+ 36  49  |    {:ok, {_, port}} = :inet.sockname(listener)
+ 37  50  |    server = server(port)
+     51[32m +[0m|[32m[0m
+ 38  52  |    for {fields, host, status} <- [
+ 39  53  |          {"", "localhost", 407},
+ 40  54  |          {"Proxy-Authorization: Bearer wrong\r\n", "localhost", 407},
+ 41    [31m -[0m|[31m          {"Proxy-Authorization: Bearer secret\r\nProxy-Authorization: Bearer secret\r\n", "localhost", 407},[0m
+     55[32m +[0m|[32m          {"Proxy-Authorization: Bearer secret\r\nProxy-Authorization: Bearer secret\r\n",[0m
+     56[32m +[0m|[32m           "localhost", 407},[0m
+ 42  57  |          {"Proxy-Authorization: Bearer secret\r\n", "127.0.0.2", 403}
+ 43  58  |        ] do
+ 44  59  |      socket = connect(server)
+ 45    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, "GET http://#{host}:#{port}/ HTTP/1.1\r\nHost: #{host}:#{port}\r\n#{fields}Connection: close\r\n\r\n")[0m
+     60[32m +[0m|[32m[0m
+     61[32m +[0m|[32m      :ok =[0m
+     62[32m +[0m|[32m        :gen_tcp.send([0m
+     63[32m +[0m|[32m          socket,[0m
+     64[32m +[0m|[32m          "GET http://#{host}:#{port}/ HTTP/1.1\r\nHost: #{host}:#{port}\r\n#{fields}Connection: close\r\n\r\n"[0m
+     65[32m +[0m|[32m        )[0m
+     66[32m +[0m|[32m[0m
+ 46  67  |      response = until_fin(socket)
+ 47  68  |      assert response =~ "HTTP/1.1 #{status} "
+         |
+ 49  70  |      refute response =~ "secret"
+ 50  71  |    end
+     72[32m +[0m|[32m[0m
+ 51  73  |    assert {:error, :timeout} = :gen_tcp.accept(listener, 100)
+ 52  74  |    restored(server)
+         |
+ 58  80  |    {:ok, {_, port}} = :inet.sockname(listener)
+ 59  81  |    server = server(port)
+     82[32m +[0m|[32m[0m
+ 60  83  |    for request <- [
+ 61  84  |          "GET http://user:password@localhost:#{port}/ HTTP/1.1\r\nHost: localhost:#{port}\r\n",
+         |
+ 64  87  |        ] do
+ 65  88  |      socket = connect(server)
+ 66    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, request <> "Proxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n")[0m
+     89[32m +[0m|[32m[0m
+     90[32m +[0m|[32m      :ok =[0m
+     91[32m +[0m|[32m        :gen_tcp.send([0m
+     92[32m +[0m|[32m          socket,[0m
+     93[32m +[0m|[32m          request <> "Proxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n"[0m
+     94[32m +[0m|[32m        )[0m
+     95[32m +[0m|[32m[0m
+ 67  96  |      assert until_fin(socket) =~ "HTTP/1.1 400 "
+ 68  97  |    end
+     98[32m +[0m|[32m[0m
+ 69  99  |    assert {:error, :timeout} = :gen_tcp.accept(listener, 100)
+ 70 100  |    restored(server)
+         |
+ 75 105  |    later = :binary.copy(<<0, 255, 1>>, 60_000)
+ 76 106  |    expected = prefix <> later
+ 77    [31m -[0m|[31m    {port, peer} = peer(fn socket ->[0m
+ 78    [31m -[0m|[31m      assert ^expected = until_fin(socket)[0m
+ 79    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, "reply-after-fin")[0m
+ 80    [31m -[0m|[31m      :ok = :gen_tcp.shutdown(socket, :write)[0m
+ 81    [31m -[0m|[31m    end)[0m
+    107[32m +[0m|[32m[0m
+    108[32m +[0m|[32m    {port, peer} =[0m
+    109[32m +[0m|[32m      peer(fn socket ->[0m
+    110[32m +[0m|[32m        assert ^expected = until_fin(socket)[0m
+    111[32m +[0m|[32m        :ok = :gen_tcp.send(socket, "reply-after-fin")[0m
+    112[32m +[0m|[32m        :ok = :gen_tcp.shutdown(socket, :write)[0m
+    113[32m +[0m|[32m      end)[0m
+    114[32m +[0m|[32m[0m
+ 82 115  |    server = server(port)
+ 83 116  |    socket = connect(server)
+ 84    [31m -[0m|[31m    :ok = :gen_tcp.send(socket, ["CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\n\r\n", prefix])[0m
+    117[32m +[0m|[32m[0m
+    118[32m +[0m|[32m    :ok =[0m
+    119[32m +[0m|[32m      :gen_tcp.send(socket, [[0m
+    120[32m +[0m|[32m        "CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\n\r\n",[0m
+    121[32m +[0m|[32m        prefix[0m
+    122[32m +[0m|[32m      ])[0m
+    123[32m +[0m|[32m[0m
+ 85 124  |    assert head(socket) == "HTTP/1.1 200 Connection Established\r\n\r\n"
+ 86 125  |    :ok = :gen_tcp.send(socket, later)
+         |
+ 97 136  |    server = server(port)
+ 98 137  |    socket = connect(server)
+ 99    [31m -[0m|[31m    :ok = :gen_tcp.send(socket, "CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n")[0m
+    138[32m +[0m|[32m[0m
+    139[32m +[0m|[32m    :ok =[0m
+    140[32m +[0m|[32m      :gen_tcp.send([0m
+    141[32m +[0m|[32m        socket,[0m
+    142[32m +[0m|[32m        "CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n"[0m
+    143[32m +[0m|[32m      )[0m
+    144[32m +[0m|[32m[0m
+100 145  |    response = until_fin(socket)
+101 146  |    assert response =~ "HTTP/1.1 502 "
+         |
+106 151  |  test "CONNECT lifetime is the original HTTP request budget and force stop closes the upstream" do
+107 152  |    owner = self()
+    153[32m +[0m|[32m[0m
+108 154  |    for stop <- [false, true] do
+109    [31m -[0m|[31m      {port, peer} = peer(fn socket ->[0m
+110    [31m -[0m|[31m        send(owner, {:connected, self()})[0m
+111    [31m -[0m|[31m        assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+112    [31m -[0m|[31m      end)[0m
+    155[32m +[0m|[32m      {port, peer} =[0m
+    156[32m +[0m|[32m        peer(fn socket ->[0m
+    157[32m +[0m|[32m          send(owner, {:connected, self()})[0m
+    158[32m +[0m|[32m          assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+    159[32m +[0m|[32m        end)[0m
+    160[32m +[0m|[32m[0m
+113 161  |      server = server(port, if(stop, do: 3_000, else: 150))
+114 162  |      socket = connect(server)
+115    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, "CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\n\r\n")[0m
+    163[32m +[0m|[32m[0m
+    164[32m +[0m|[32m      :ok =[0m
+    165[32m +[0m|[32m        :gen_tcp.send([0m
+    166[32m +[0m|[32m          socket,[0m
+    167[32m +[0m|[32m          "CONNECT localhost:#{port} HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\n\r\n"[0m
+    168[32m +[0m|[32m        )[0m
+    169[32m +[0m|[32m[0m
+116 170  |      assert head(socket) == "HTTP/1.1 200 Connection Established\r\n\r\n"
+117 171  |      assert_receive {:connected, ^peer}, @timeout
+         |
+124 178  |
+125 179  |  @tag :tmp_dir
+126    [31m -[0m|[31m  test "a verified TLS forward listener accepts an authorized absolute HTTP target", %{tmp_dir: dir} do[0m
+    180[32m +[0m|[32m  test "a verified TLS forward listener accepts an authorized absolute HTTP target", %{[0m
+    181[32m +[0m|[32m    tmp_dir: dir[0m
+    182[32m +[0m|[32m  } do[0m
+127 183  |    script = Path.expand("../../../scripts/generate-fixtures.sh", __DIR__)
+128 184  |    assert {_, 0} = System.cmd("bash", [script, dir], stderr_to_stdout: true)
+129 185  |    owner = self()
+130    [31m -[0m|[31m    {port, peer} = peer(fn socket ->[0m
+131    [31m -[0m|[31m      request = head(socket)[0m
+132    [31m -[0m|[31m      send(owner, {:tls_forward_head, self(), request})[0m
+133    [31m -[0m|[31m      :ok = :gen_tcp.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nforward")[0m
+134    [31m -[0m|[31m      assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+135    [31m -[0m|[31m    end)[0m
+136    [31m -[0m|[31m    server = server(port, @timeout, [transport: :tls, tls: %{certfile: Path.join(dir, "cert.pem"), keyfile: Path.join(dir, "key.pem")}])[0m
+    186[32m +[0m|[32m[0m
+    187[32m +[0m|[32m    {port, peer} =[0m
+    188[32m +[0m|[32m      peer(fn socket ->[0m
+    189[32m +[0m|[32m        request = head(socket)[0m
+    190[32m +[0m|[32m        send(owner, {:tls_forward_head, self(), request})[0m
+    191[32m +[0m|[32m        :ok = :gen_tcp.send(socket, "HTTP/1.1 200 OK\r\nContent-Length: 7\r\n\r\nforward")[0m
+    192[32m +[0m|[32m        assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)[0m
+    193[32m +[0m|[32m      end)[0m
+    194[32m +[0m|[32m[0m
+    195[32m +[0m|[32m    server =[0m
+    196[32m +[0m|[32m      server(port, @timeout,[0m
+    197[32m +[0m|[32m        transport: :tls,[0m
+    198[32m +[0m|[32m        tls: %{certfile: Path.join(dir, "cert.pem"), keyfile: Path.join(dir, "key.pem")}[0m
+    199[32m +[0m|[32m      )[0m
+    200[32m +[0m|[32m[0m
+137 201  |    assert {:ok, {ip, listener_port}} = Gaoxy.info(server, :http).local
+138    [31m -[0m|[31m    assert {:ok, socket} = :ssl.connect(ip, listener_port, [[0m
+139    [31m -[0m|[31m      :binary, active: false, verify: :verify_peer,[0m
+140    [31m -[0m|[31m      cacertfile: String.to_charlist(Path.join(dir, "ca.pem")),[0m
+141    [31m -[0m|[31m      server_name_indication: ~c"localhost",[0m
+142    [31m -[0m|[31m      customize_hostname_check: [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)][0m
+143    [31m -[0m|[31m    ], @timeout)[0m
+    202[32m +[0m|[32m[0m
+    203[32m +[0m|[32m    assert {:ok, socket} =[0m
+    204[32m +[0m|[32m             :ssl.connect([0m
+    205[32m +[0m|[32m               ip,[0m
+    206[32m +[0m|[32m               listener_port,[0m
+    207[32m +[0m|[32m               [[0m
+    208[32m +[0m|[32m                 :binary,[0m
+    209[32m +[0m|[32m                 active: false,[0m
+    210[32m +[0m|[32m                 verify: :verify_peer,[0m
+    211[32m +[0m|[32m                 cacertfile: String.to_charlist(Path.join(dir, "ca.pem")),[0m
+    212[32m +[0m|[32m                 server_name_indication: ~c"localhost",[0m
+    213[32m +[0m|[32m                 customize_hostname_check: [[0m
+    214[32m +[0m|[32m                   match_fun: :public_key.pkix_verify_hostname_match_fun(:https)[0m
+    215[32m +[0m|[32m                 ][0m
+    216[32m +[0m|[32m               ],[0m
+    217[32m +[0m|[32m               @timeout[0m
+    218[32m +[0m|[32m             )[0m
+    219[32m +[0m|[32m[0m
+144 220  |    on_exit(fn -> :ssl.close(socket, 0) end)
+145    [31m -[0m|[31m    :ok = :ssl.send(socket, "GET http://localhost:#{port}/secure-forward HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n")[0m
+    221[32m +[0m|[32m[0m
+    222[32m +[0m|[32m    :ok =[0m
+    223[32m +[0m|[32m      :ssl.send([0m
+    224[32m +[0m|[32m        socket,[0m
+    225[32m +[0m|[32m        "GET http://localhost:#{port}/secure-forward HTTP/1.1\r\nHost: localhost:#{port}\r\nProxy-Authorization: Bearer secret\r\nConnection: close\r\n\r\n"[0m
+    226[32m +[0m|[32m      )[0m
+    227[32m +[0m|[32m[0m
+146 228  |    response = tls_fin(socket)
+147 229  |    assert response =~ "HTTP/1.1 200 "
+         |
+160 242  |        _ -> {:error, :invalid}
+161 243  |      end,
+162    [31m -[0m|[31m      rules: [%{[0m
+163    [31m -[0m|[31m        principals: ["owner"], hosts: ["localhost"], ports: [port], operations: [:forward, :connect],[0m
+164    [31m -[0m|[31m        methods: :any, cidrs: ["127.0.0.1/32", "::1/128"], allow_reserved: true[0m
+165    [31m -[0m|[31m      }][0m
+    244[32m +[0m|[32m      rules: [[0m
+    245[32m +[0m|[32m        %{[0m
+    246[32m +[0m|[32m          principals: ["owner"],[0m
+    247[32m +[0m|[32m          hosts: ["localhost"],[0m
+    248[32m +[0m|[32m          ports: [port],[0m
+    249[32m +[0m|[32m          operations: [:forward, :connect],[0m
+    250[32m +[0m|[32m          methods: :any,[0m
+    251[32m +[0m|[32m          cidrs: ["127.0.0.1/32", "::1/128"],[0m
+    252[32m +[0m|[32m          allow_reserved: true[0m
+    253[32m +[0m|[32m        }[0m
+    254[32m +[0m|[32m      ][0m
+166 255  |    }
+167    [31m -[0m|[31m    {:ok, server} = Gaoxy.HTTP.start_link(Keyword.merge([endpoint: {ForwardHTTP, %{policy: policy}}, http_limits: %{request_timeout: timeout}, limits: %{max_bytes: 33_554_432, max_active: 128}], extras))[0m
+    256[32m +[0m|[32m[0m
+    257[32m +[0m|[32m    {:ok, server} =[0m
+    258[32m +[0m|[32m      Gaoxy.HTTP.start_link([0m
+    259[32m +[0m|[32m        Keyword.merge([0m
+    260[32m +[0m|[32m          [[0m
+    261[32m +[0m|[32m            endpoint: {ForwardHTTP, %{policy: policy}},[0m
+    262[32m +[0m|[32m            http_limits: %{request_timeout: timeout},[0m
+    263[32m +[0m|[32m            limits: %{max_bytes: 33_554_432, max_active: 128}[0m
+    264[32m +[0m|[32m          ],[0m
+    265[32m +[0m|[32m          extras[0m
+    266[32m +[0m|[32m        )[0m
+    267[32m +[0m|[32m      )[0m
+    268[32m +[0m|[32m[0m
+168 269  |    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server, @timeout) end)
+169 270  |    server
+170 271  |  end
+    272[32m +[0m|[32m[0m
+171 273  |  defp tls_fin(socket, bytes \\ "") do
+172 274  |    case :ssl.recv(socket, 0, @timeout) do
+         |
+175 277  |    end
+176 278  |  end
+    279[32m +[0m|[32m[0m
+177 280  |  defp connect(server) do
+178 281  |    {:ok, {ip, port}} = Gaoxy.info(server, :http).local
+179    [31m -[0m|[31m    {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false, exit_on_close: false], @timeout)[0m
+    282[32m +[0m|[32m[0m
+    283[32m +[0m|[32m    {:ok, socket} =[0m
+    284[32m +[0m|[32m      :gen_tcp.connect(ip, port, [:binary, active: false, exit_on_close: false], @timeout)[0m
+    285[32m +[0m|[32m[0m
+180 286  |    on_exit(fn -> :gen_tcp.close(socket) end)
+181 287  |    socket
+182 288  |  end
+    289[32m +[0m|[32m[0m
+183 290  |  defp head(socket, bytes \\ "") do
+184    [31m -[0m|[31m    if String.ends_with?(bytes, "\r\n\r\n"), do: bytes, else: ({:ok, byte} = :gen_tcp.recv(socket, 1, @timeout); head(socket, bytes <> byte))[0m
+    291[32m +[0m|[32m    if String.ends_with?(bytes, "\r\n\r\n"),[0m
+    292[32m +[0m|[32m      do: bytes,[0m
+    293[32m +[0m|[32m      else:[0m
+    294[32m +[0m|[32m        ([0m
+    295[32m +[0m|[32m          {:ok, byte} = :gen_tcp.recv(socket, 1, @timeout)[0m
+    296[32m +[0m|[32m          head(socket, bytes <> byte)[0m
+    297[32m +[0m|[32m        )[0m
+185 298  |  end
+    299[32m +[0m|[32m[0m
+186 300  |  defp until_fin(socket, bytes \\ "") do
+187 301  |    case :gen_tcp.recv(socket, 0, @timeout) do
+         |
+190 304  |    end
+191 305  |  end
+    306[32m +[0m|[32m[0m
+192 307  |  defp peer(fun) do
+193    [31m -[0m|[31m    {:ok, listener} = :gen_tcp.listen(0, [:binary, active: false, exit_on_close: false, ip: {127, 0, 0, 1}])[0m
+    308[32m +[0m|[32m    {:ok, listener} =[0m
+    309[32m +[0m|[32m      :gen_tcp.listen(0, [:binary, active: false, exit_on_close: false, ip: {127, 0, 0, 1}])[0m
+    310[32m +[0m|[32m[0m
+194 311  |    {:ok, {_, port}} = :inet.sockname(listener)
+195 312  |    owner = self()
+196    [31m -[0m|[31m    pid = spawn(fn ->[0m
+197    [31m -[0m|[31m      try do[0m
+198    [31m -[0m|[31m        {:ok, socket} = :gen_tcp.accept(listener, @timeout)[0m
+199    [31m -[0m|[31m        try do fun.(socket); send(owner, {:peer_done, self()}) after :gen_tcp.close(socket) end[0m
+200    [31m -[0m|[31m      rescue error -> send(owner, {:peer_error, self(), Exception.format(:error, error, __STACKTRACE__)})[0m
+201    [31m -[0m|[31m      after :gen_tcp.close(listener) end[0m
+    313[32m +[0m|[32m[0m
+    314[32m +[0m|[32m    pid =[0m
+    315[32m +[0m|[32m      spawn(fn ->[0m
+    316[32m +[0m|[32m        try do[0m
+    317[32m +[0m|[32m          {:ok, socket} = :gen_tcp.accept(listener, @timeout)[0m
+    318[32m +[0m|[32m[0m
+    319[32m +[0m|[32m          try do[0m
+    320[32m +[0m|[32m            fun.(socket)[0m
+    321[32m +[0m|[32m            send(owner, {:peer_done, self()})[0m
+    322[32m +[0m|[32m          after[0m
+    323[32m +[0m|[32m            :gen_tcp.close(socket)[0m
+    324[32m +[0m|[32m          end[0m
+    325[32m +[0m|[32m        rescue[0m
+    326[32m +[0m|[32m          error ->[0m
+    327[32m +[0m|[32m            send(owner, {:peer_error, self(), Exception.format(:error, error, __STACKTRACE__)})[0m
+    328[32m +[0m|[32m        after[0m
+    329[32m +[0m|[32m          :gen_tcp.close(listener)[0m
+    330[32m +[0m|[32m        end[0m
+    331[32m +[0m|[32m      end)[0m
+    332[32m +[0m|[32m[0m
+    333[32m +[0m|[32m    on_exit(fn ->[0m
+    334[32m +[0m|[32m      if Process.alive?(pid), do: Process.exit(pid, :kill)[0m
+    335[32m +[0m|[32m      :gen_tcp.close(listener)[0m
+202 336  |    end)
+203    [31m -[0m|[31m[0m[41m    [0m[31mon_exit(fn[0m[41m [0m[31m->[0m[41m [0m[31mif[0m[41m [0m[31mProcess.alive?(pid),[0m[41m [0m[31mdo:[0m[41m [0m[31mProcess.exit(pid,[0m[41m [0m[31m:kill);[0m[41m [0m[31m:gen_tcp.close(listener)[0m[41m [0m[31mend)[0m
+    337[32m +[0m|
+204 338  |    {port, pid}
+205 339  |  end
+    340[32m +[0m|[32m[0m
+206 341  |  defp assert_peer(peer) do
+207 342  |    receive do
+208 343  |      {:peer_done, ^peer} -> :ok
+209 344  |      {:peer_error, ^peer, error} -> flunk(error)
+210    [31m -[0m|[31m    after @timeout -> flunk("forward peer did not finish") end[0m
+    345[32m +[0m|[32m    after[0m
+    346[32m +[0m|[32m      @timeout -> flunk("forward peer did not finish")[0m
+    347[32m +[0m|[32m    end[0m
+211 348  |  end
+    349[32m +[0m|[32m[0m
+212 350  |  defp restored(server, deadline \\ nil) do
+213 351  |    deadline = deadline || Gaoxy.Lifecycle.deadline(@timeout)
+214 352  |    status = Gaoxy.status(server, :http)
+    353[32m +[0m|[32m[0m
+215 354  |    if not match?(%{active: 0, retained_bytes: 0, cleanup_pending: 0}, status) do
+216 355  |      assert Gaoxy.Lifecycle.remaining(deadline) > 0, inspect(status)
+217    [31m -[0m|[31m      receive do after 1 -> restored(server, deadline) end[0m
+    356[32m +[0m|[32m[0m
+    357[32m +[0m|[32m      receive do[0m
+    358[32m +[0m|[32m      after[0m
+    359[32m +[0m|[32m        1 -> restored(server, deadline)[0m
+    360[32m +[0m|[32m      end[0m
+218 361  |    else
+219 362  |      assert status.cleanup_failed == nil
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex
+[0m
+         |
+151 151  |    if validate(fields, max_count, max_bytes) == :ok and
+152 152  |         Enum.all?(fields, fn {name, _} -> not String.starts_with?(name, ":") end),
+153    [31m -[0m|[31m      do: :ok,[0m
+154    [31m -[0m|[31m      else: {:error, :invalid_response_headers}[0m
+    153[32m +[0m|[32m       do: :ok,[0m
+    154[32m +[0m|[32m       else: {:error, :invalid_response_headers}[0m
+155 155  |  end
+156 156  |
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http/lib/gaoxy/http/http2/response.ex
+[0m
+         |
+ 45  45  |    if (names == [] or not bodyless?(exchange, status)) and
+ 46  46  |         Headers.trailers(Enum.map(names, &{&1, ""}), exchange.limits) == :ok,
+ 47    [31m -[0m|[31m      do: {:ok, names},[0m
+ 48    [31m -[0m|[31m      else: {:error, :invalid_response_trailers}[0m
+     47[32m +[0m|[32m       do: {:ok, names},[0m
+     48[32m +[0m|[32m       else: {:error, :invalid_response_trailers}[0m
+ 49  49  |  end
+ 50  50  |
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex
+[0m
+         |
+ 15  15  |         policy = distrust_forwarding_trailers(policy),
+ 16  16  |         true <-
+ 17    [31m -[0m|[31m           (policy.allowed == [] or exchange.request.body == :chunked or exchange.request.version == :"HTTP/2") ||[0m
+     17[32m +[0m|[32m           (policy.allowed == [] or exchange.request.body == :chunked or[0m
+     18[32m +[0m|[32m              exchange.request.version == :"HTTP/2") ||[0m
+ 18  19  |             {:error, :invalid_proxy_trailers} do
+ 19  20  |      fields =
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_server/test/route_config_test.exs
+[0m
+         |
+132 132  |        ] do
+133 133  |      assert {:error, _} =
+134    [31m -[0m|[31m               RouteConfig.decode(data(%{"type" => "static", "body" => "ok", "headers" => headers}))[0m
+    134[32m +[0m|[32m               RouteConfig.decode([0m
+    135[32m +[0m|[32m                 data(%{"type" => "static", "body" => "ok", "headers" => headers})[0m
+    136[32m +[0m|[32m               )[0m
+135 137  |    end
+136 138  |  end
+         |
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex
+[0m
+         |
+ 95  95  |          do: {:error, :timeout, exchange},
+ 96  96  |          else: {:pending, exchange}
+ 97    [31m -[0m|[31m      {:error, reason} -> {:error, reason, exchange}[0m
+     97[32m +[0m|[32m[0m
+     98[32m +[0m|[32m      {:error, reason} ->[0m
+     99[32m +[0m|[32m        {:error, reason, exchange}[0m
+ 98 100  |    end
+ 99 101  |  end
+         |
+
+
+[0m

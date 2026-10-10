@@ -1,0 +1,148 @@
+==> gaoxy_http
+Compiling 4 files (.ex)
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_proxy
+Compiling 6 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 483847, max_cases: 1
+
+
+
+  1) test a queued response head retains its original absolute stream deadline (Gaoxy.HTTP2IndependentReviewTest)
+     [1m[30mapps/gaoxy_http/test/http2_independent_review_test.exs:140[0m
+     [31mAssertion with <= failed[0m
+     [36mcode:  [0massert deadline <= original_deadline
+     [36mleft:  [0m-57646074[31m1[0m5[31m2[0m3
+     [36mright: [0m-576460745[32m5[0m3[32m2[0m
+     [36mstacktrace:[0m
+       test/http2_independent_review_test.exs:157: (test)
+
+[32m.[0m[32m.[0m
+
+  2) test terminal trailers buffered before worker admission still require final body consumption (Gaoxy.HTTP2IndependentReviewTest)
+     [1m[30mapps/gaoxy_http/test/http2_independent_review_test.exs:69[0m
+     [31mAssertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       trailers = [{"x-check", "first"}, {"x-check", "last"}]
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:review_trailers, false, ^trailers}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:review_trailers, [31mfalse[0m, ^trailers}
+       [36mvalue:   [0m{
+                  :review_trailers,
+                  [32mtrue[0m,
+                  [{"x-check", "first"}, {"x-check", "last"}]
+                }
+     [36mstacktrace:[0m
+       test/http2_independent_review_test.exs:88: (test)
+
+
+
+  3) test informational headers cannot follow a committed final response (Gaoxy.HTTP2IndependentReviewTest)
+     [1m[30mapps/gaoxy_http/test/http2_independent_review_test.exs:60[0m
+     [31mAssertion failed, no matching message after 2000ms
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:review_inform, {:error, :invalid_response_state}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:review_inform, [31m{:error, :invalid_response_state}[0m}
+       [36mvalue:   [0m{:review_inform, [32m:ok[0m}
+     [36mstacktrace:[0m
+       test/http2_independent_review_test.exs:63: (test)
+
+
+
+  4) test generated status and framing fields stay inside the configured response header count (Gaoxy.HTTP2IndependentReviewTest)
+     [1m[30mapps/gaoxy_http/test/http2_independent_review_test.exs:94[0m
+     [31mAssertion failed, no matching message after 2000ms
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:review_header_limit, {:error, :invalid_response_headers}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:review_header_limit, {[31m:error[0m, [31m:invalid_response_headers[0m}}
+       [36mvalue:   [0m{
+                  :review_header_limit,
+                  {
+                    [32m:ok[0m,
+                    [32m%Gaoxy.HTTP.Exchange{
+                      close: false,
+                      local: {{127, 0, 0, 1}, 46197},
+                      request: %Gaoxy.HTTP.Request{
+                        local: nil,
+                        port: 80,
+                        scheme: :http,
+                        version: :"HTTP/2",
+                        path: "/response-header-limit",
+                        host: "localhost",
+                        peer: nil,
+                        target: "/response-header-limit",
+                        body: :none,
+                        keep_alive: true,
+                        headers: [],
+                        query_string: "",
+                        method: "GET",
+                        expect_continue: false,
+                        head_bytes: 195,
+                        target_form: :origin
+                      },
+                      buffer: "",
+                      ssl: nil,
+                      socket: nil,
+                      instance: #PID<0.519.0>,
+                      service: #PID<0.521.0>,
+                      peer: {{127, 0, 0, 1}, 42744},
+                      deadline: -576460737401,
+                      response: :sent,
+                      body: %{
+                        total: 0,
+                        phase: :done,
+                        trailers: [],
+                        trailer_bytes: 0
+                      },
+                      gate: #PID<0.522.0>,
+                      lease: #Reference<0.3795532804.225443841.14528>,
+                      limits: %{
+                        read_timeout: 5000,
+                        max_read_chunk: 16384,
+                        max_buffer_bytes: 65536,
+                        max_write_chunk: 16384,
+                        write_timeout: 5000,
+                        request_timeout: 5000,
+                        header_timeout: 5000,
+                        max_header_bytes: 32768,
+                        max_body_bytes: 8388608,
+                        max_headers: 5,
+                        max_trailers: 32,
+                        max_trailer_bytes: 8192,
+                        max_chunk_line: 1024,
+                        max_request_line: 8192
+                      },
+                      response_trailers: [],
+                      route_bytes: 0,
+                      resource_pins: [],
+                      protocol_bytes: 196608,
+                      transport: Gaoxy.HTTP.HTTP2.Transport,
+                      transport_state: {#PID<0.532.0>, 1, #Reference<0.3795532804.225443841.14522>},
+                      secure: false,
+                      peer_cert: nil,
+                      expect_sent: false
+                    }[0m
+                  }
+                }
+     [36mstacktrace:[0m
+       test/http2_independent_review_test.exs:97: (test)
+
+
+
+  5) test the advertised maximum frame fits the validated ingress carry budget (Gaoxy.HTTP2IndependentReviewTest)
+     [1m[30mapps/gaoxy_http/test/http2_independent_review_test.exs:129[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :closed}[0m
+     [36mcode: [0massert response(socket, 3).body == "sibling"
+     [36mstacktrace:[0m
+       test/http2_independent_review_test.exs:229: Gaoxy.HTTP2IndependentReviewTest.recv_frame/1
+       test/http2_independent_review_test.exs:197: Gaoxy.HTTP2IndependentReviewTest.response/5
+       test/http2_independent_review_test.exs:135: (test)
+
+
+Finished in 6.7 seconds (6.7s async, 0.00s sync)
+[31m7 tests, 5 failures[0m

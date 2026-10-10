@@ -1,0 +1,53 @@
+==> gaoxy
+Running ExUnit with seed: 367774, max_cases: 4
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+18:49:43.235 [error] GenServer #PID<0.395.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.3) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.3) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 54549, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.24>, listener: #PID<0.385.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.3530912787.3173253121.108900>, service: "echo", generation: #Reference<0.3530912787.3173253121.108905>}, instance: #PID<0.379.0>, service: #PID<0.381.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 8, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, max_output: 65507, max_state: 65536}, quic: %{}, capabilities: [], handler_options: #PID<0.377.0>, handler_mode: :stream}, startup_token: #Reference<0.3530912787.3173253121.108909>, gate: #PID<0.382.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, idle_timer: nil, idle_token: nil, read_timeout: 30000, processing_times: [], adaptive_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.3530912787.3173253121.109026>, start_time: -576460749467585473, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.383.0>, local_info: {{127, 0, 0, 1}, 37844}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 54549, sampled: true, telemetry_span_context: #Reference<0.3530912787.3173253121.109026>, parent_telemetry_span_context: #Reference<0.3530912787.3173253121.108923>}}, memory_token: #Reference<0.3530912787.3173253121.109032>, idle_deadline: :infinity, memory_check_interval: 10000, memory_timer: #Reference<0.3530912787.3173253121.109033>}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+[32m14 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 367774, max_cases: 4
+
+[31m
+18:49:44.648 [error] GenServer #PID<0.581.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.579.0>, :killed}
+State: %{owner: #PID<0.579.0>, socket: #Port<0.62>, queue: {[], []}, admission: #PID<0.580.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253121.110237>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253121.110264>, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+18:49:44.955 [error] GenServer #PID<0.606.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.604.0>, :killed}
+State: %{owner: #PID<0.604.0>, socket: #Port<0.68>, queue: {[], []}, admission: #PID<0.605.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253121.110623>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253121.110632>, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+18:49:45.162 [error] GenServer #PID<0.629.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.627.0>, :killed}
+State: %{owner: #PID<0.627.0>, socket: #Port<0.73>, queue: {[], []}, admission: #PID<0.628.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253121.110807>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253121.110816>, sending: false, owns_admission: false}
+[0m[32m.[0m[32m.[0m[31m
+18:49:45.290 [error] GenServer #PID<0.656.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.654.0>, :killed}
+State: %{owner: #PID<0.654.0>, socket: #Port<0.79>, queue: {[], []}, admission: #PID<0.655.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253122.102238>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253122.102247>, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+18:49:45.449 [error] GenServer #PID<0.698.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.696.0>, :killed}
+State: %{owner: #PID<0.696.0>, socket: #Port<0.87>, queue: {[], []}, admission: #PID<0.697.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253121.111345>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253121.111354>, sending: false, owns_admission: false}
+[0m[31m
+18:49:45.651 [error] GenServer #PID<0.680.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.678.0>, :killed}
+State: %{owner: #PID<0.678.0>, socket: #Port<0.84>, queue: {[], []}, admission: #PID<0.679.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.3530912787.3173253121.111212>, queue_bytes: 0, owner_monitor: #Reference<0.3530912787.3173253121.111221>, sending: false, owns_admission: false}
+[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.8 seconds (1.8s async, 0.00s sync)
+[32m8 tests, 0 failures[0m

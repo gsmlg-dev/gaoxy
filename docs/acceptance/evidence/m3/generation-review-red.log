@@ -1,0 +1,49 @@
+==> gaoxy_http
+Compiling 4 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 511487, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test oversized activation is rejected before its payload crosses to the owner (Gaoxy.HTTP.GenerationTest)
+     [1m[30mapps/gaoxy_http/test/generation_test.exs:163[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Enum.all?(sizes, &(&1 < 1024))
+     [36marguments:[0m
+
+         # 1
+         [2000316]
+
+         # 2
+         #Function<17.92667573/1 in Gaoxy.HTTP.GenerationTest."test oversized activation is rejected before its payload crosses to the owner"/1>
+
+     [36mstacktrace:[0m
+       test/generation_test.exs:174: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.3 seconds (1.3s async, 0.00s sync)
+[31m12 tests, 1 failure[0m
+==> gaoxy_server
+Running ExUnit with seed: 511487, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m
+
+  1) test unusable static response framing cannot replace a live generation (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:75[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = RouteConfig.reload(store, path)
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{[32m:ok[0m, #Reference<0.3245752649.3164078081.20591>}
+     [36mstacktrace:[0m
+       test/route_config_test.exs:88: anonymous fn/5 in Gaoxy.Server.RouteConfigTest."test unusable static response framing cannot replace a live generation"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/route_config_test.exs:81: (test)
+
+[32m.[0m
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+[31m5 tests, 1 failure[0m
+COMMAND_EXIT=2

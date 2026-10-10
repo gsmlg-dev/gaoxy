@@ -1,0 +1,71 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy
+Compiling 3 files (.ex)
+Generated gaoxy app
+==> gaoxy_http
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_proxy
+Compiling 6 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 910150, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test reset preserves END_HEADERS for a header block already handed to the writer (Gaoxy.HTTP2NetworkTest)
+     [1m[30mapps/gaoxy_http/test/http2_network_test.exs:333[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {3, 0, 3, _} = recv_frame(socket)
+     [36mleft:  [0m{[31m3[0m, [31m0[0m, [31m3[0m, _}
+     [36mright: [0m{[32m1[0m, [32m5[0m, [32m1[0m, <<32, 142, 31, 13, 1, 48>>}
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:358: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 5.0 seconds (5.0s async, 0.00s sync)
+[31m28 tests, 1 failure[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 910150, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+19:06:05.872 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Bad Certificate
+
+[0m[22m
+19:06:05.872 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate
+ - {:bad_cert,
+ {:hostname_check_failed, {:requested, ~c"wrong.example"},
+  {:received, [dNSName: ~c"localhost", iPAddress: <<127, 0, 0, 1>>]}}}
+[0m[31m
+19:06:05.893 [error] GenServer #PID<0.1384.0> terminating
+** (stop) {:tls_alert, {:bad_certificate, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate\n {bad_cert,\n     {hostname_check_failed,\n         {requested,\"wrong.example\"},\n         {received,[{dNSName,\"localhost\"},{iPAddress,<<127,0,0,1>>}]}}}"}}
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 38652}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.245>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2185305108.1028390913.17925>, start_time: -576460734738083486, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 38652, telemetry_span_context: #Reference<0.2185305108.1028390913.17925>, parent_telemetry_span_context: #Reference<0.2185305108.1028390913.17909>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2185305108.1028390913.17925>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2185305108.1028390913.17869>, service: :relay, generation: #Reference<0.2185305108.1028390913.17874>}, instance: #PID<0.1372.0>, service: #PID<0.1374.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_active: 32, max_packet: 65507, max_memberships: 64, callback_timeout: 3000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 54933}, max_lifetime: 10000, write_timeout: 1000, max_chunk_bytes: 16384, upstream_tls: %{server_name: "wrong.example", cacertfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/ca.pem"}}, handler_mode: :native, quic: %{}, capabilities: []}, gate: #PID<0.1375.0>, startup_token: #Reference<0.2185305108.1028390913.17878>}}
+[0m[22m
+19:06:05.925 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+
+[0m[22m
+19:06:05.925 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+
+[0m[31m
+19:06:05.925 [error] GenServer #PID<0.1411.0> terminating
+** (stop) {:tls_alert, {:unknown_ca, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA\n"}}
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 49770}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.251>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2185305108.1028390913.18127>, start_time: -576460734686828048, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 49770, telemetry_span_context: #Reference<0.2185305108.1028390913.18127>, parent_telemetry_span_context: #Reference<0.2185305108.1028390913.18111>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2185305108.1028390913.18127>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2185305108.1028390913.18071>, service: :relay, generation: #Reference<0.2185305108.1028390913.18076>}, instance: #PID<0.1399.0>, service: #PID<0.1401.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_active: 32, max_packet: 65507, max_memberships: 64, callback_timeout: 3000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 50713}, max_lifetime: 10000, write_timeout: 1000, max_chunk_bytes: 16384, upstream_tls: %{server_name: "localhost", cacertfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/other/ca.pem"}}, handler_mode: :native, quic: %{}, capabilities: []}, gate: #PID<0.1402.0>, startup_token: #Reference<0.2185305108.1028390913.18080>}}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+19:06:10.429 [error] GenServer #PID<0.1775.0> terminating
+** (stop) :byte_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 35794}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.351>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2185305108.1028390913.21850>, start_time: -576460730166117052, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 35794, telemetry_span_context: #Reference<0.2185305108.1028390913.21850>, parent_telemetry_span_context: #Reference<0.2185305108.1028390913.21832>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2185305108.1028390913.21850>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2185305108.1028390913.21794>, service: :relay, generation: #Reference<0.2185305108.1028390913.21799>}, instance: #PID<0.1763.0>, service: #PID<0.1765.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1, idle_timeout: 30000, max_active: 32, max_packet: 65507, max_memberships: 64, callback_timeout: 1000, drain_timeout: 500, max_output: 65507, max_state: 65536}, handler_options: %{mode: :tcp, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 44375}, max_lifetime: 300000, write_timeout: 5000, max_chunk_bytes: 16384, upstream_tls: %{}}, handler_mode: :native, quic: %{}, capabilities: []}, gate: #PID<0.1766.0>, startup_token: #Reference<0.2185305108.1028390913.21803>}}
+[0m[32m.[0m[32m.[0m[32m.[0m[31m
+19:06:10.568 [error] GenServer #PID<0.1818.0> terminating
+** (stop) :active_limit
+Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 40334}}}
+Last message: {:continue, :handle_connection}
+State: {%ThousandIsland.Socket{socket: #Port<0.364>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2185305108.1028390913.22771>, start_time: -576460730027037638, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, remote_address: {127, 0, 0, 1}, remote_port: 40334, telemetry_span_context: #Reference<0.2185305108.1028390913.22771>, parent_telemetry_span_context: #Reference<0.2185305108.1028390913.22753>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2185305108.1028390913.22771>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2185305108.1028390913.22715>, service: :relay, generation: #Reference<0.2185305108.1028390913.22720>}, instance: #PID<0.1806.0>, service: #PID<0.1808.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_active: 2, max_packet: 65507, max_memberships: 64, callback_timeout: 1000, drain_timeout: 500, max_output: 65507, max_state: 65536}, handler_options: %{mode: :tcp, connect_timeout: 5000, idle_timeout: 30000, upstream: {{127, 0, 0, 1}, 56837}, max_lifetime: 300000, write_timeout: 5000, max_chunk_bytes: 16384, upstream_tls: %{}}, handler_mode: :native, quic: %{}, capabilities: []}, gate: #PID<0.1809.0>, startup_token: #Reference<0.2185305108.1028390913.22724>}}
+[0m[32m.[0m[32m.[0m
+Finished in 14.5 seconds (2.7s async, 11.8s sync)
+[32m33 tests, 0 failures[0m

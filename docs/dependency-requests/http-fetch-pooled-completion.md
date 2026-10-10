@@ -5,6 +5,11 @@
 **Status:** BLOCKED — [gsmlg-dev/http_fetch#66](https://github.com/gsmlg-dev/http_fetch/issues/66)
 (Feature, `internal request`).
 
+**Final live state (2026-10-10T13:18:23Z):** #66 CLOSED at13:12:38Z.
+Installed/latest GitHub/Hex0.19.1 predates the fix; runtime acceptance remains
+BLOCKED on a containing release, dependency update and public cleanup gates.
+The evidence below describes the installed0.19.1 contract.
+
 Gaoxy M3 requires upstream HTTP/1 connection reuse and HTTP/2 multiplexing while
 retaining its request-scoped cleanup barrier. The proxy holds request resource
 reservations until `HTTP.RequestCompletion.await/2` or `abort_and_await/2`

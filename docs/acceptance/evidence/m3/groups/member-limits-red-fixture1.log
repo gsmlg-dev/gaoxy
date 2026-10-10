@@ -1,0 +1,67 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 862773, max_cases: 1
+
+
+
+  1) test a tighter member idle deadline closes a stalled response body (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:66[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :closed} = :gen_tcp.recv(context.client, 0, 500)
+     [36mleft:  [0m{:error, [31m:closed[0m}
+     [36mright: [0m{:error, [32m:timeout[0m}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:72: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test a tighter member idle deadline closes a stalled response body"/1
+       test/upstream_group_member_limits_test.exs:153: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:67: (test)
+
+
+
+  2) test member lifetime expiry keeps established passive health unchanged (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:79[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert member(context).health == :healthy
+     [36mleft:  [0m[31m:unhealthy[0m
+     [36mright: [0m[32m:healthy[0m
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:153: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:80: (test)
+
+
+
+  3) test effective member limits reach the pump before a real downstream write (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:91[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ready, _upload, effective, deadline} = ready
+     [36mleft:  [0m{:ready, _upload, [31meffective[0m, [31mdeadline[0m}
+     [36mright: [0m{:ready, nil}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:101: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test effective member limits reach the pump before a real downstream write"/1
+       test/upstream_group_member_limits_test.exs:153: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:92: (test)
+
+[31m
+20:37:04.152 [error] Process #PID<0.416.0> raised an exception
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert {:ok, more} = :gen_tcp.recv(socket, 0, @timeout)
+left:  {:ok, more}
+right: {:error, :closed}
+
+    test/upstream_group_member_limits_test.exs:242: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.receive_head/2
+    test/upstream_group_member_limits_test.exs:216: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.serve/2
+[0m
+
+  4) test a tighter member opening deadline closes the peer and counts an upstream failure (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:54[0m
+     [31mmember response did not close in its bound: {:error, :timeout}[0m
+     [36mcode: [0mwith_proxy(%{opening_timeout: 80}, fn context ->
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:59: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test a tighter member opening deadline closes the peer and counts an upstream failure"/1
+       test/upstream_group_member_limits_test.exs:153: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:55: (test)
+
+
+Finished in 1.7 seconds (1.7s async, 0.00s sync)
+[31m4 tests, 4 failures[0m

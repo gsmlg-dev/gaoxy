@@ -1,0 +1,40 @@
+Command: unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/forward_http_test.exs apps/gaoxy_proxy/test/http_proxy_tls_test.exs apps/gaoxy_proxy/test/destination_policy_test.exs apps/gaoxy_http/test/http2_integration_test.exs
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_proxy
+Compiling 7 files (.ex)
+     [33mwarning:[0m missing parentheses for expression following "do:" keyword. Parentheses are required to solve ambiguity inside keywords.
+
+     This error happens when you have function calls without parentheses inside keywords. For example:
+
+         function(arg, one: nested_call a, b, c)
+         function(arg, one: if expr, do: :this, else: :that)
+
+     In the examples above, we don't know if the arguments "b" and "c" apply to the function "function" or "nested_call". Or if the keywords "do" and "else" apply to the function "function" or "if". You can solve this by explicitly adding parentheses:
+
+         function(arg, one: if(expr, do: :this, else: :that))
+         function(arg, one: nested_call(a, b, c))
+
+     Ambiguity found at:
+     │
+ 190 │   defp permit_operations(state, key), do: for {operation, %{key: ^key}} <- state.permits, do: operation
+     │   [33m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ lib/gaoxy/proxy/udp_relay/controller.ex:190
+
+Generated gaoxy_proxy app
+==> gaoxy_http
+Running ExUnit with seed: 857389, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+[32m9 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 857389, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 4.2 seconds (2.0s async, 2.1s sync)
+[32m19 tests, 0 failures[0m
+
+Exit: 0

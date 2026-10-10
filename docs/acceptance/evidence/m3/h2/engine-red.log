@@ -1,0 +1,109 @@
+path "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http" does not contain a 'flake.nix', searching up
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+Running ExUnit with seed: 182474, max_cases: 4
+
+
+
+  1) test settings validate wire values and retain negative stream-window deltas (Gaoxy.HTTP2ProtocolTest)
+     [1m[30mtest/http2_protocol_test.exs:13[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Settings.defaults/0 is undefined (module Gaoxy.HTTP.HTTP2.Settings is not available)[0m
+     [36mcode: [0mdefaults = apply(Gaoxy.HTTP.HTTP2.Settings, :defaults, [])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.HTTP2.Settings.defaults()
+       test/http2_protocol_test.exs:14: (test)
+
+
+
+  2) test frame length is rejected from the advertised header before buffering its payload (Gaoxy.HTTP2ProtocolTest)
+     [1m[30mtest/http2_protocol_test.exs:5[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Frame.decode/2 is undefined (module Gaoxy.HTTP.HTTP2.Frame is not available)[0m
+     [36mcode: [0massert {:error, :frame_size_error} = apply(Gaoxy.HTTP.HTTP2.Frame, :decode, [header, 16_384])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.HTTP2.Frame.decode(<<0, 64, 1, 0, 0, 0, 0, 0, 1>>, 16384)
+       test/http2_protocol_test.exs:7: (test)
+
+
+
+  3) test header mapping rejects pseudoheader ambiguity and retains escaped targets (Gaoxy.HTTP2ProtocolTest)
+     [1m[30mtest/http2_protocol_test.exs:25[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Headers.request/3 is undefined (module Gaoxy.HTTP.HTTP2.Headers is not available)[0m
+     [36mcode: [0mapply(Gaoxy.HTTP.HTTP2.Headers, :request, [fields, false, limits])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.HTTP2.Headers.request([{":method", "POST"}, {":scheme", "http"}, {":authority", "example.test"}, {":path", "/a%2Fb?x=%2F"}, {"content-length", "3"}, {"x-value", "a"}, {"x-value", "b"}], false, %{request_timeout: 30000, max_read_chunk: 16384, write_timeout: 5000, read_timeout: 5000, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32})
+       test/http2_protocol_test.exs:30: (test)
+
+
+
+  4) test codec reservation includes worst-case expansion before dispatch capacity (Gaoxy.HTTP2ProtocolTest)
+     [1m[30mtest/http2_protocol_test.exs:36[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Limits.normalize/1 is undefined (module Gaoxy.HTTP.HTTP2.Limits is not available)[0m
+     [36mcode: [0m{:ok, h2} = apply(Gaoxy.HTTP.HTTP2.Limits, :normalize, [%{}])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.HTTP2.Limits.normalize(%{})
+       test/http2_protocol_test.exs:38: (test)
+
+
+
+  5) test two concurrent streams preserve bodies and response semantics (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:51[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :invalid_http_options}[0m
+     [36mcode: [0m{socket, _} = connect()
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:105: Gaoxy.HTTP2NetworkTest.connect/1
+       test/http2_network_test.exs:52: (test)
+
+
+
+  6) test prior knowledge is explicit and rejects the insufficient core byte budget (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:44[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :http2_byte_budget} =
+              Gaoxy.HTTP.service_spec(endpoint: {Endpoint, []}, protocols: [:http2], h2c: :prior_knowledge)
+     [36mleft:  [0m{:error, [31m:http2_byte_budget[0m}
+     [36mright: [0m{:error, [32m:invalid_http_options[0m}
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:45: (test)
+
+
+
+  7) test a stalled endpoint does not block a sibling and reset terminates only its worker (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:63[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :invalid_http_options}[0m
+     [36mcode: [0m{socket, _} = connect(owner: self())
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:105: Gaoxy.HTTP2NetworkTest.connect/1
+       test/http2_network_test.exs:64: (test)
+
+
+
+  8) test zero stream write window leaves a ready sibling and control traffic live (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:76[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :invalid_http_options}[0m
+     [36mcode: [0m{socket, _} = connect()
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:105: Gaoxy.HTTP2NetworkTest.connect/1
+       test/http2_network_test.exs:77: (test)
+
+
+
+  9) test response trailers terminate streaming without H1 chunk framing (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:88[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :invalid_http_options}[0m
+     [36mcode: [0m{socket, _} = connect()
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:105: Gaoxy.HTTP2NetworkTest.connect/1
+       test/http2_network_test.exs:89: (test)
+
+
+
+ 10) test continuation exclusivity is a connection error (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:97[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :invalid_http_options}[0m
+     [36mcode: [0m{socket, _} = connect()
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:105: Gaoxy.HTTP2NetworkTest.connect/1
+       test/http2_network_test.exs:98: (test)
+
+
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+[31m10 tests, 10 failures[0m

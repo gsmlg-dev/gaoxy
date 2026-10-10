@@ -22,7 +22,7 @@ platform/backend limits shown separately.
 | Custom TCP TLS / ex_ssl | unsupported | Public facade audit + explicit selection rejection | Public server contract absent; no OTP fallback |
 | Generic QUIC | experimental opt-in | PASS independent aioquic custom-ALPN stream/FIN/reset/stop/flow-control/close-isolation; bounds and native receipts | Public `Abyss.QUIC` / `Quic`; at most16KiB; macOS accepted subset; fixture can log read errors after peer close; no pause/full protocol drain |
 | QUIC DATAGRAM/mTLS/migration/0-RTT | unsupported | No acceptance claimed | Host limitations preserved |
-| H2/H3 and remaining proxy/relay protocols | future or upstream-blocked milestones | NOT RUN / BLOCKED | No implementation or acceptance claimed |
+| Historical H2/H3 and remaining proxy/relay protocols | Not implemented at the M1 snapshot | NOT RUN / BLOCKED then; current M3 below | Historical foundation evidence only |
 
 ## Native M2 local acceptance
 
@@ -46,10 +46,37 @@ with Fetch 0.19.1: 255 scoped tests, 2 fixture tests, 13 browser/peer checks,
 
 The proxy package selects HTTP Fetch/WebSocket and transitively includes
 `elixir_quic`/`ex_ssl` 0.19.1. Standalone core-only isolation remains a separate
-gate; the umbrella graph is not engine-free. These dependencies imply no H2/H3
-support. The per-request streaming option removes the global threshold constraint.
+gate; the umbrella graph is not engine-free. These dependencies imply no upstream
+H2/H3 support. The explicit native H2 engine belongs to `gaoxy_http`. The
+per-request streaming option removes the global threshold constraint.
 WebSocket persistent reservations survive native updates and connection death;
 see [their accounting scope](websocket-proxy.md).
+
+## Current M3 implemented scope
+
+Full M3 remains **BLOCKED** on the containing release and qualification of
+upstream #66/#67 fixes. Both issues are CLOSED, but installed/latest HTTP Fetch
+0.19.1 predates the fixes; M4 progression is pending.
+The [M3 matrix](acceptance/m3.md) records actual commands, nonempty counts,
+independent reviews, source identities and any pending gate. Each claim is
+limited to its recorded Linux candidate; hosted CI/release/deployment remain
+separate.
+
+| Capability | Current implementation | Qualification boundary |
+| --- | --- | --- |
+| Native H2/Plug/Phoenix | Explicit TLS ALPN or prior-knowledge h2c; bounded decoder, stream/writer ownership, flow control/trailers/reset/drain | Qualified OTP28/:inet resource profile; no h2c upgrade, push, H2 CONNECT/extended-CONNECT or H3 |
+| Forward HTTP/H1 CONNECT | Required authentication and destination rules, all-answer validation, numeric pinned dial and finite opaque tunnel | Explicit rules; no open proxy, interception, SNI/PROXY/SOCKS |
+| TCP/TLS stream relay | Credited independent duplex writers, finite cleanup, verified upstream TLS and opaque passthrough | TCP half-close; TLS directional shutdown unsupported |
+| UDP association relay | Source/destination policy, unicast per-peer associations, empty payloads, finite rate/credit/capacity and idle expiry | CIDRs do not authenticate; no broadcast/multicast relay; no retry of uncertain output |
+| Route/standalone generations | Bounded preparation/CAS, old request/resource pins, stable listener reload and strict version1 JSON | Only static/fixed reverse-proxy JSON targets; local API; no public management listener |
+| Upstream groups | Supervised health and bounded deterministic selections with confirmed public cleanup | Dedicated H1 per request; effective member deadlines and bounded concurrency/ownership gates PASS; no group soak claim |
+| H1 reuse/upstream H2 | Awaiting containing release of closed public-contract issues and local qualification | BLOCKED on HTTP Fetch #66 release; H2 upload trailers also #67 release |
+
+Final local evidence passes460 scoped tests,40 independent selected RFC checks,
+15 browser/peer checks and6 reverse-example checks. The qualified600-second
+profile covers local echo and a fixed dedicated-H1 proxy; all199 frozen source
+hashes remain unchanged. Separate independent specification and quality reviews
+pass. These gates do not establish full M3 or production acceptance.
 
 ## Resource accounting scope
 

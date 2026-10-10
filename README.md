@@ -15,6 +15,15 @@ Phoenix/browser, reverse-proxy example and core-consumer checks pass.
 See [M2 evidence](docs/acceptance/m2.md). Gaoxy hosted CI, push, merge, release
 and deployment are not part of this local acceptance.
 
+M3 implements opt-in native HTTP/2, authenticated forward HTTP/H1 CONNECT,
+TCP/TLS relays, bounded UDP unicast associations, immutable route generations,
+standalone HTTP configuration and supervised dedicated-H1 upstream groups.
+See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
+[M3 acceptance](docs/acceptance/m3.md) for exact gates and limits. **Full M3 is
+BLOCKED** on HTTP Fetch [#66](https://github.com/gsmlg-dev/http_fetch/issues/66)
+and [#67](https://github.com/gsmlg-dev/http_fetch/issues/67); reusable upstream
+connections/H2 remain disabled until a containing release is qualified.
+
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
 [task status and repair counters](docs/implementation-status.md).
@@ -26,7 +35,7 @@ Core declares Elixir 1.18+. Executed baselines are macOS x86_64 with Elixir
 1.20.1/OTP29 and isolated Alpine Linux with Elixir1.19.5/OTP28. The pinned Abyss
 artifact builds a Rust NIF, so Rust/Cargo are required even for ordinary UDP.
 The locked Nix shell supplies Elixir1.18/OTP28, Rust/Cargo, Python, OpenSSL and
-Expect; its derivation was evaluated but the shell runtime was not executed.
+Expect; M3 executes that shell on Linux with Elixir1.18.5/OTP28.5.0.7.
 Elixir **1.18.5** is the canonical formatter, matching the locked Nix package.
 Use that version for `mix format` and its check; formatting runs in its own CI
 job. Runtime compilation and tests retain both Elixir1.18.5/OTP28.5 and
@@ -152,7 +161,8 @@ explicitly unsupported and tested for absence of delivery.
 
 The standalone core dependency graph contains no QUIC engine. The umbrella
 proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.19.1 through
-HTTP Fetch/WebSocket; this does not enable H2/H3 or qualify generic QUIC against
+HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
+dependency selection does not enable upstream H2/H3 or qualify generic QUIC against
 that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`
 ==0.17.0 separately:
 
@@ -186,6 +196,7 @@ closing phase; clean/no-error fixture teardown is not established.
 | Generic QUIC | Experimental custom-ALPN streams accepted with independent aioquic; noisy fixture close handling remains |
 | Custom TCP TLS | Explicitly unsupported; public ex_ssl server API missing |
 | Native HTTP/Phoenix/proxies | Native HTTP/Phoenix, WebSocket and HTTP streaming implemented; M2 local gates PASS with HTTP Fetch 0.19.1: 255 scoped tests, native Phoenix/browser, routes, streaming and clean core consumer |
+| Native H2 / gateway M3 | Native H2, forward/CONNECT, relays, generations and dedicated-H1 groups implemented; [current candidate gates and upstream blockers](docs/acceptance/m3.md) remain distinct |
 
 [Capability limits](docs/capabilities.md), [dependency provenance](docs/dependency-audit.md),
 [architecture](docs/architecture.md) and [ADRs](docs/adr/) define the boundaries.

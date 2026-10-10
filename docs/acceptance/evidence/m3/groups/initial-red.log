@@ -1,0 +1,61 @@
+==> gaoxy_http
+Running ExUnit with seed: 869135, max_cases: 1
+
+
+
+  1) test a compiled initial router and Registry name activate without endpoint recompilation (Gaoxy.HTTP.GenerationResourcesTest)
+     [1m[30mapps/gaoxy_http/test/generation_resources_test.exs:13[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, store} = Generation.start_link(router: router, name: name)
+     [36mleft:  [0m{[31m:ok[0m, store}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_options}
+     [36mstacktrace:[0m
+       test/generation_resources_test.exs:19: (test)
+
+
+
+  2) test router resource sidecars are bounded and snapshot-for-request returns pins (Gaoxy.HTTP.GenerationResourcesTest)
+     [1m[30mapps/gaoxy_http/test/generation_resources_test.exs:28[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Map.has_key?(%Router{}, :resources)
+     [36mstacktrace:[0m
+       test/generation_resources_test.exs:29: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+[31m2 tests, 2 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 869135, max_cases: 1
+
+
+
+  1) test group compilation is strict, origin-only, bounded and idempotent (Gaoxy.Proxy.UpstreamGroupsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_groups_test.exs:7[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Code.ensure_loaded?(UpstreamGroups)
+     [36mstacktrace:[0m
+       test/upstream_groups_test.exs:8: (test)
+
+
+
+  2) test real initial HEAD probes enable round robin and saturation has no queue (Gaoxy.Proxy.UpstreamGroupsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_groups_test.exs:22[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Code.ensure_loaded?(UpstreamGroups)
+     [36mstacktrace:[0m
+       test/upstream_groups_test.exs:23: (test)
+
+
+
+  3) test retiring group stays pinned for an old snapshot and guardian death retains unbound selection (Gaoxy.Proxy.UpstreamGroupsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_groups_test.exs:47[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Code.ensure_loaded?(UpstreamGroups)
+     [36mstacktrace:[0m
+       test/upstream_groups_test.exs:48: (test)
+
+
+Finished in 0.2 seconds (0.2s async, 0.00s sync)
+[31m3 tests, 3 failures[0m
+
+Exit: 2

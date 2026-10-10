@@ -1,0 +1,199 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 325816, max_cases: 1
+
+
+
+  1) test control turn above the qualified ceiling is rejected before binding (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:28[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert result == {:error, reason}
+     [36mleft:  [0m{[31m:ok[0m, [31m#PID<0.309.0>[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_http2_limits[0m}
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:29: (test)
+
+
+
+  2) test a budget sufficient for default ingress rejects carry as large as the whole budget (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:45[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert result == {:error, :http2_byte_budget}
+     [36mleft:  [0m{[31m:ok[0m, [31m#PID<0.342.0>[0m}
+     [36mright: [0m{[32m:error[0m, [32m:http2_byte_budget[0m}
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:55: (test)
+
+
+
+  3) test an unsupported native TCP backend is rejected by pure prebind validation (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:68[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _reason} = Gaoxy.HTTP.service_spec(options())
+     [36mleft:  [0m{[31m:error[0m, _reason}
+     [36mright: [0m{
+              [32m:ok[0m,
+              %{
+                id: :http,
+                port: 0,
+                udp: %{},
+                mode: :unicast,
+                ip: {127, 0, 0, 1},
+                handler: Gaoxy.HTTP.Connection,
+                tls: %{},
+                transport: :tcp,
+                dispatcher: %{},
+                handler_options: %{
+                  protocols: [:http2],
+                  initialized: true,
+                  h2c: :prior_knowledge,
+                  h2_limits: %{
+                    max_streams: 32,
+                    control_rate: 256,
+                    control_turn: 32,
+                    max_frame: 16384,
+                    receive_window: 65535,
+                    max_header_block: 16384,
+                    table_size: 4096,
+                    frame_timeout: 5000
+                  },
+                  http_limits: %{
+                    max_buffer_bytes: 65536,
+                    max_read_chunk: 16384,
+                    request_timeout: 5000,
+                    read_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    write_timeout: 5000
+                  },
+                  endpoint: {Gaoxy.HTTP2CapacityTest.Endpoint, #PID<0.356.0>}
+                },
+                limits: %{
+                  max_bytes: 268435456,
+                  idle_timeout: 30000,
+                  max_active: 128,
+                  max_packet: 65507,
+                  max_memberships: 64,
+                  callback_timeout: 5000,
+                  drain_timeout: 5000,
+                  max_output: 65507,
+                  max_state: 65536
+                },
+                capabilities: [],
+                quic: %{},
+                handler_mode: :native
+              }
+            }
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:73: anonymous fn/0 in Gaoxy.HTTP2CapacityTest."test an unsupported native TCP backend is rejected by pure prebind validation"/1
+       test/http2_capacity_test.exs:221: Gaoxy.HTTP2CapacityTest.with_env/4
+       test/http2_capacity_test.exs:69: (test)
+
+[32m.[0m
+
+  4) test OTP TLS delivery profiles must stay within the qualified finite range (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:78[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _reason} = Gaoxy.HTTP.service_spec(tls_options)
+     [36mleft:  [0m{[31m:error[0m, _reason}
+     [36mright: [0m{
+              [32m:ok[0m,
+              %{
+                id: :http,
+                port: 0,
+                udp: %{},
+                mode: :unicast,
+                ip: {127, 0, 0, 1},
+                handler: Gaoxy.HTTP.Connection,
+                tls: %{
+                  certfile: "cert.pem",
+                  keyfile: "key.pem",
+                  alpn: ["h2"]
+                },
+                transport: :tls,
+                dispatcher: %{},
+                handler_options: %{
+                  protocols: [:http2],
+                  initialized: true,
+                  h2c: :disabled,
+                  h2_limits: %{
+                    max_streams: 32,
+                    control_rate: 256,
+                    control_turn: 32,
+                    max_frame: 16384,
+                    receive_window: 65535,
+                    max_header_block: 16384,
+                    table_size: 4096,
+                    frame_timeout: 5000
+                  },
+                  http_limits: %{
+                    max_buffer_bytes: 65536,
+                    max_read_chunk: 16384,
+                    request_timeout: 5000,
+                    read_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    write_timeout: 5000
+                  },
+                  endpoint: {Gaoxy.HTTP2CapacityTest.Endpoint, #PID<0.380.0>}
+                },
+                limits: %{
+                  max_bytes: 268435456,
+                  idle_timeout: 30000,
+                  max_active: 128,
+                  max_packet: 65507,
+                  max_memberships: 64,
+                  callback_timeout: 5000,
+                  drain_timeout: 5000,
+                  max_output: 65507,
+                  max_state: 65536
+                },
+                capabilities: [],
+                quic: %{},
+                handler_mode: :native
+              }
+            }
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:91: anonymous fn/1 in Gaoxy.HTTP2CapacityTest."test OTP TLS delivery profiles must stay within the qualified finite range"/1
+       test/http2_capacity_test.exs:221: Gaoxy.HTTP2CapacityTest.with_env/4
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http2_capacity_test.exs:221: Gaoxy.HTTP2CapacityTest.with_env/4
+       test/http2_capacity_test.exs:82: (test)
+
+
+
+  5) test control rate above the qualified ceiling is rejected before binding (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:24[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert result == {:error, reason}
+     [36mleft:  [0m{[31m:ok[0m, [31m#PID<0.382.0>[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_http2_limits[0m}
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:25: (test)
+
+
+
+  6) test large body credit preserves payload without enlarging native ingress buffers (Gaoxy.HTTP2CapacityTest)
+     [1m[30mapps/gaoxy_http/test/http2_capacity_test.exs:58[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert large == baseline
+     [36mleft:  [0m[buffer: [31m65536[0m, recbuf: [31m1[0m3[31m107[0m2]
+     [36mright: [0m[buffer: [32m16384[0m, recbuf: 32[32m768[0m]
+     [36mstacktrace:[0m
+       test/http2_capacity_test.exs:64: (test)
+
+
+Finished in 0.5 seconds (0.00s async, 0.5s sync)
+[31m7 tests, 6 failures[0m

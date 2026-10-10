@@ -1,0 +1,37 @@
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+Running ExUnit with seed: 155787, max_cases: 4
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test independent Python h2 qualifies TCP and TLS ALPN with cross-process writes (Gaoxy.HTTP2NetworkTest)
+     [1m[30mtest/http2_network_test.exs:122[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {output, 0} =
+              System.cmd(
+                python,
+                [
+                  Path.join(__DIR__, "support/h2_peer.py"),
+                  Integer.to_string(port),
+                  if mode == :tcp do
+                    "tcp"
+                  else
+                    "tls"
+                  end,
+                  Path.join(dir, "ca.pem")
+                ],
+                stderr_to_stdout: true
+              )
+     [36mleft:  [0m{output, [31m0[0m}
+     [36mright: [0m{
+              "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/apps/gaoxy_http/test/support/h2_peer.py\", line 46, in <module>\n    sock.sendall(pending)\n    ~~~~~~~~~~~~^^^^^^^^^\nBrokenPipeError: [Errno 32] Broken pipe\n",
+              [32m1[0m
+            }
+     [36mstacktrace:[0m
+       test/http2_network_test.exs:158: anonymous fn/3 in Gaoxy.HTTP2NetworkTest."test independent Python h2 qualifies TCP and TLS ALPN with cross-process writes"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http2_network_test.exs:136: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 2.1 seconds (2.1s async, 0.00s sync)
+[31m60 tests, 1 failure[0m

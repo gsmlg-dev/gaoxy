@@ -1,0 +1,164 @@
+==> gaoxy
+Running ExUnit with seed: 404023, max_cases: 4
+
+[32m.[0m
+
+  1) test blocked dispatcher initialization has a finite deadline and rolls back its bind (Gaoxy.DatagramDispatcherTest)
+     [1m[30mapps/gaoxy/test/datagram_dispatcher_test.exs:135[0m
+     [31mAssertion failed, no matching message after 800ms
+     The process mailbox is empty.[0m
+     [36mcode: [0massert_receive {:dispatcher_start_result, {:error, _}}
+     [36mstacktrace:[0m
+       test/datagram_dispatcher_test.exs:149: (test)
+
+[32m.[0m
+Finished in 1.2 seconds (1.2s async, 0.00s sync)
+[31m3 tests, 1 failure[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 404023, max_cases: 4
+
+
+
+  1) test configured handoff budget includes delayed control lookup without an implicit 50 ms cap (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:323[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, _worker} = UDPRelay.offer(owner, packet(context, "budget"))
+     [36mleft:  [0m{[31m:ok[0m, _worker}
+     [36mright: [0m{[32m:error[0m, {:deadline_exceeded, :cleanup_pending}}
+     [36mstacktrace:[0m
+       test/udp_relay_test.exs:329: (test)
+
+[31m
+19:00:05.946 [error] GenServer #PID<0.352.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.351.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 0, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.352.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 0, max_seconds: 5, children: %{}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test payload queued before the timer still rejects an absolutely expired permit (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:304[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:reply, {:error, :invalid_permit}} = :gen_server.receive_response(request, 100)
+     [36mleft:  [0m{:reply, {[31m:error[0m, [31m:invalid_permit[0m}}
+     [36mright: [0m{:reply, {[32m:ok[0m, [32m#PID<0.457.0>[0m}}
+     [36mstacktrace:[0m
+       test/udp_relay_test.exs:318: (test)
+
+[31m
+19:00:06.840 [error] GenServer #PID<0.476.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.467.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.476.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[31m
+19:00:06.840 [error] GenServer #PID<0.478.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.467.0>, :killed}
+State: %{timeout: 5000, server_pid: #PID<0.467.0>}
+[0m[31m
+19:00:06.840 [error] GenServer #PID<0.472.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.470.0>, :killed}
+State: %{owner: #PID<0.470.0>, socket: #Port<0.42>, queue: {[], []}, admission: #PID<0.471.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.201695>, owner_monitor: #Reference<0.739397581.2369519617.201704>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[31m
+19:00:06.841 [error] GenServer #PID<0.465.0> terminating
+** (stop) {:backend_failed, :killed}
+Last message: {:EXIT, #PID<0.467.0>, :killed}
+State: %{control: nil, scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", generation: #Reference<0.739397581.2369519617.201677>}, table: #Reference<0.739397581.2369650689.201670>, mode: :ready, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 45705}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, packet_ratio: 1, byte_ratio: 1, rate_bytes: 65536, drain_grace: 200}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}}, limits: %{max_bytes: 4194304, idle_timeout: 30000, callback_timeout: 5000, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, max_active: 64, max_output: 65507, max_state: 65536}, quic: %{}, capabilities: []}, live: #Reference<0.739397581.2369650689.201671>, drain: nil, generation: #Reference<0.739397581.2369519617.201677>, backend: #PID<0.467.0>, gate: #PID<0.466.0>, cleanup_failed: nil, backend_control: #Function<18.91138300/3 in Gaoxy.Service.backend_control>, cleanups: %{}, dispatcher_owner: #PID<0.473.0>, drain_fun: &Gaoxy.Lifecycle.drain/4, registry_policy: %{scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", generation: #Reference<0.739397581.2369519617.201677>}, backend: #PID<0.467.0>, owners: %{#Reference<0.739397581.2369519617.201678> => #PID<0.230.0>}, recovery: nil}, dispatcher_monitor: #Reference<0.739397581.2369519617.201727>}
+[0m[31m
+19:00:06.840 [error] GenServer #PID<0.468.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.467.0>, :killed}
+State: {:state, {#PID<0.468.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.469.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.467.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", generation: #Reference<0.739397581.2369519617.201677>}, instance: #PID<0.463.0>, service: #PID<0.465.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 45705}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, ...}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}}, limits: %{max_bytes: 4194304, idle_timeout: 30000, callback_timeout: 5000, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, max_active: 64, max_output: 65507, max_state: 65536}, quic: %{}, capabilities: []}, startup_token: #Reference<0.739397581.2369519617.201681>, gate: #PID<0.466.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", ...}, instance: #PID<0.463.0>, service: #PID<0.465.0>, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.739397581.2369519617.201689>, Abyss.ListenerPool, {#PID<0.467.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", generation: #Reference<0.739397581.2369519617.201677>}, instance: #PID<0.463.0>, service: #PID<0.465.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 45705}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, ...}, reservation: %{worker: 200617, max_packet: 65507, max_associations: 11, infrastructure: 977746}}, limits: %{max_bytes: 4194304, idle_timeout: 30000, callback_timeout: 5000, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, max_active: 64, max_output: 65507, max_state: 65536}, quic: %{}, capabilities: []}, startup_token: #Reference<0.739397581.2369519617.201681>, gate: #PID<0.466.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.739397581.2369519617.201672>, service: "relay", generation: #Reference<0.739397581.2369519617.201677>}, instance: #PID<0.463.0>, service: #PID<0.465.0>, spec: %{...}, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}}
+[0m[31m
+19:00:07.043 [error] GenServer #PID<0.488.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.486.0>, :killed}
+State: %{owner: #PID<0.486.0>, socket: #Port<0.43>, queue: {[], []}, admission: #PID<0.487.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.201770>, owner_monitor: #Reference<0.739397581.2369519617.201779>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[31m
+19:00:07.044 [error] GenServer #PID<0.507.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.505.0>, :killed}
+State: %{owner: #PID<0.505.0>, socket: #Port<0.47>, queue: {[], []}, admission: #PID<0.506.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.202023>, owner_monitor: #Reference<0.739397581.2369519617.202032>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+19:00:07.172 [error] GenServer #PID<0.528.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.526.0>, :killed}
+State: %{owner: #PID<0.526.0>, socket: #Port<0.49>, queue: {[], []}, admission: #PID<0.527.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.202220>, owner_monitor: #Reference<0.739397581.2369519617.202229>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m
+
+  3) test actual local directed broadcast preflight fails before the listener bind (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:344[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, {:handler_preflight, :directed_broadcast}} =
+              Gaoxy.start_link(
+                services: [
+                  %{
+                    id: "broadcast-denied",
+                    ip: ip,
+                    port: port,
+                    transport: :udp,
+                    handler_mode: :datagram_dispatcher,
+                    handler: UDPRelay,
+                    handler_options:
+                      options(1234, %{
+                        upstream: {{127, 255, 255, 255}, 1234},
+                        destination: %{allow: ["127.255.255.255/32"], allow_reserved: true}
+                      }),
+                    limits: %{max_bytes: 4_194_304}
+                  }
+                ]
+              )
+     [36mleft:  [0m{:error, {[31m:handler_preflight[0m, [31m:directed_broadcast[0m}}
+     [36mright: [0m{:error, {[32m:handler_options[0m, [32m:invalid_udp_relay_options[0m}}
+     [36mstacktrace:[0m
+       test/udp_relay_test.exs:347: (test)
+
+[31m
+19:00:07.379 [error] GenServer #PID<0.554.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.551.0>, :killed}
+State: %{owner: #PID<0.551.0>, socket: #Port<0.55>, queue: {[], []}, admission: #PID<0.553.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.202409>, owner_monitor: #Reference<0.739397581.2369519617.202418>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+19:00:07.686 [error] GenServer #PID<0.580.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.578.0>, :killed}
+State: %{owner: #PID<0.578.0>, socket: #Port<0.59>, queue: {[], []}, admission: #PID<0.579.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519618.196003>, owner_monitor: #Reference<0.739397581.2369519618.196012>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+19:00:07.689 [error] GenServer #PID<0.596.0> terminating
+** (stop) {:owner_down, :shutdown}
+Last message: {:DOWN, #Reference<0.739397581.2369519617.202729>, :process, #PID<0.591.0>, :shutdown}
+State: %{owner: #PID<0.591.0>, socket: #PID<0.591.0>, queue: {[], []}, admission: #PID<0.595.0>, transport: Gaoxy.Proxy.UDPRelayTest.BlockingWriter, max_bytes: 128, max_queue: 1, generation: #Reference<0.739397581.2369519617.202712>, owner_monitor: #Reference<0.739397581.2369519617.202729>, queue_bytes: 0, sending: false, owns_admission: true}
+[0m[32m.[0m[31m
+19:00:08.134 [error] GenServer #PID<0.612.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.610.0>, :killed}
+State: %{owner: #PID<0.610.0>, socket: #Port<0.66>, queue: {[], []}, admission: #PID<0.611.0>, transport: Abyss.Transport.UDP.Unicast, max_bytes: 262144, max_queue: 32, generation: #Reference<0.739397581.2369519617.202836>, owner_monitor: #Reference<0.739397581.2369519617.202845>, queue_bytes: 0, sending: false, owns_admission: false}
+[0m[32m.[0m[31m
+19:00:08.218 [error] GenServer #PID<0.629.0> terminating
+** (stop) {:unknown_send, :receipt_deadline}
+Last message: {:association_unknown, #PID<0.631.0>, #Reference<0.739397581.2369519617.203110>, :receipt_deadline}
+State: %{mode: :failed, options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 55319}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 80, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, packet_ratio: 1, byte_ratio: 1, rate_bytes: 65536, drain_grace: 200}, reservation: %{worker: 4480, max_packet: 128, max_associations: 11, infrastructure: 585472}}, context: %{scope: %{generation: #Reference<0.739397581.2369519617.203076>}, send: %Abyss.Dispatcher.SendCapability{writer: #PID<0.628.0>, generation: #Reference<0.739397581.2369519617.203077>, admission: nil}, instance: #PID<0.623.0>, service: #PID<0.623.0>, spec: %{id: "controlled", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, transport: :udp, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 55319}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 80, lifetime: 300000, idle_timeout: 30000, max_packet: 65507, queue_bytes: 65536, max_associations: 256, reservation_timeout: 100, rate_packets: 64, queue_items: 8, packet_ratio: 1, byte_ratio: 1, rate_bytes: 65536, drain_grace: 200}, reservation: %{worker: 4480, max_packet: 128, max_associations: 11, infrastructure: 585472}}, limits: %{max_bytes: 4194304, idle_timeout: 30000, callback_timeout: 5000, max_packet: 128, max_memberships: 64, drain_timeout: 5000, max_active: 64, max_output: 128, max_state: 65536}, quic: %{}, capabilities: []}, dispatcher: #PID<0.623.0>, local_info: {{127, 0, 0, 1}, 1234}, generation: #Reference<0.739397581.2369519617.203076>, writer_generation: #Reference<0.739397581.2369519617.203077>, gate: #PID<0.626.0>}, supervisor: #PID<0.630.0>, bytes: 0, items: 0, rejected: 0, drain: nil, lease: #Reference<0.739397581.2369519617.203099>, dispatcher_monitor: #Reference<0.739397581.2369519617.203103>, associations: %{{#Reference<0.739397581.2369519617.203076>, #Reference<0.739397581.2369519617.203077>, {127, 0, 0, 1}, 9000} => %{busy: nil, monitor: #Reference<0.739397581.2369519617.203120>, pid: #PID<0.631.0>, closing: false, queue: {[], []}, bytes: 0, items: 0, token: #Reference<0.739397581.2369519617.203110>, ready: true, sealed: false}}, permits: %{}}
+[0m
+
+  4) test blocked public writer has one submission and unknown settlement fails controller closed (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:282[0m
+     [31m** (exit) exited in: GenServer.call(#PID<0.629.0>, :status, 100)
+         ** (EXIT) {:unknown_send, :receipt_deadline}[0m
+     [36mcode: [0massert %{mode: :failed} = UDPRelay.status(owner)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/udp_relay_test.exs:291: (test)
+
+[32m.[0m
+
+  5) test directed broadcast vectors cover non /24 masks without denying valid .255 unicast (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:333[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UDPRelay.Options.directed_broadcast?/2 is undefined or private[0m
+     [36mcode: [0massert Options.directed_broadcast?({10, 0, 0, 3}, networks)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.1.0) Gaoxy.Proxy.UDPRelay.Options.directed_broadcast?({10, 0, 0, 3}, [{{10, 0, 0, 1}, {255, 255, 255, 252}}, {{192, 168, 0, 1}, {255, 255, 255, 128}}])
+       test/udp_relay_test.exs:336: (test)
+
+[32m.[0m
+Finished in 3.5 seconds (3.5s async, 0.00s sync)
+[31m17 tests, 5 failures[0m

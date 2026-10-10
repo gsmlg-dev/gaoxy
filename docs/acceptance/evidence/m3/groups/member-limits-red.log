@@ -1,0 +1,146 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 630936, max_cases: 1
+
+
+
+  1) test a tighter member opening deadline closes the peer and counts an upstream failure (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:52[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:member_request, worker, _}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:member_request[0m, worker, [31m_[0m}
+       [36mvalue:   [0m{[32m:member_closed[0m, #PID<0.322.0>}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:55: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test a tighter member opening deadline closes the peer and counts an upstream failure"/1
+       test/upstream_group_member_limits_test.exs:151: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:53: (test)
+
+
+
+  2) test effective member limits reach the pump before a real downstream write (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:89[0m
+     [31mAssertion failed, no matching message after 500ms
+     The following variables were pinned:
+       native = #PID<0.363.0>
+     Showing 10 of 13 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:trace, ^native, :receive, {:gaoxy_proxy_http, session, ready}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, [31mready[0m}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m[:alias | #Reference<0.0.46467.1837644910.2921136130.16103>][0m,
+                    :ok
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, [31m{:gaoxy_proxy_http, session, ready}[0m}
+       [36mvalue:   [0m{:trace, #PID<0.363.0>, :receive, [32m:timeout[0m}
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, [31mready[0m}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m[:alias | #Reference<0.0.46467.1837644910.2921136130.16104>][0m,
+                    :ok
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, [31mready[0m}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m[:alias | #Reference<0.0.46467.1837644910.2921136130.16105>][0m,
+                    {:ok, #Reference<0.1837644910.2921070594.16106>}
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, ready}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m:inet_reply[0m,
+                    #Port<0.29>,
+                    :ok,
+                    [32m#Reference<0.1837644910.2921070594.16107>[0m
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, [31mready[0m}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m[:alias | #Reference<0.0.46467.1837644910.2921136130.16108>][0m,
+                    :ok
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, [31mready[0m}}
+       [36mvalue:   [0m{
+                  :trace,
+                  #PID<0.363.0>,
+                  :receive,
+                  {
+                    [32m[:alias | #Reference<0.0.46467.1837644910.2921136130.16109>][0m,
+                    :ok
+                  }
+                }
+
+       [36mpattern: [0m{:trace, ^native, :receive, [31m{:gaoxy_proxy_http, session, ready}[0m}
+       [36mvalue:   [0m{:trace, #PID<0.363.0>, :receive, [32m:timeout[0m}
+
+       [36mpattern: [0m{:trace, ^native, :receive, {[31m:gaoxy_proxy_http[0m, session, ready}}
+       [36mvalue:   [0m{:trace, #PID<0.363.0>, :receive, {[32m:EXIT[0m, #Port<0.29>, :normal}}
+
+       [36mpattern: [0m{:trace, ^native, :receive, [31m{:gaoxy_proxy_http, session, ready}[0m}
+       [36mvalue:   [0m{:trace, #PID<0.363.0>, :receive, [32m:timeout[0m}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:98: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test effective member limits reach the pump before a real downstream write"/1
+       test/upstream_group_member_limits_test.exs:151: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:90: (test)
+
+
+
+  3) test member lifetime expiry keeps established passive health unchanged (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:77[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:member_request, worker, _}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:member_request[0m, worker, [31m_[0m}
+       [36mvalue:   [0m{[32m:member_closed[0m, #PID<0.378.0>}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:80: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test member lifetime expiry keeps established passive health unchanged"/1
+       test/upstream_group_member_limits_test.exs:151: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:78: (test)
+
+
+
+  4) test a tighter member idle deadline closes a stalled response body (Gaoxy.Proxy.UpstreamGroupMemberLimitsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_member_limits_test.exs:64[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:member_request, worker, _}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:member_request[0m, worker, [31m_[0m}
+       [36mvalue:   [0m{[32m:member_closed[0m, #PID<0.415.0>}
+     [36mstacktrace:[0m
+       test/upstream_group_member_limits_test.exs:67: anonymous fn/1 in Gaoxy.Proxy.UpstreamGroupMemberLimitsTest."test a tighter member idle deadline closes a stalled response body"/1
+       test/upstream_group_member_limits_test.exs:151: Gaoxy.Proxy.UpstreamGroupMemberLimitsTest.with_proxy/2
+       test/upstream_group_member_limits_test.exs:65: (test)
+
+
+Finished in 10.4 seconds (10.4s async, 0.00s sync)
+[31m4 tests, 4 failures[0m

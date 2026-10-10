@@ -1,0 +1,26 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 93061, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:handle_identity]
+
+
+
+[31m
+19:50:50.722 [error] Process #PID<0.306.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :closed}
+    test/upstream_groups_test.exs:198: Gaoxy.Proxy.UpstreamGroupsTest.probe_loop/2
+[0m  1) test request holder death cannot free a live selection and only its guardian may finish (Gaoxy.Proxy.UpstreamGroupsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_groups_test.exs:138[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :stale_group} = Resources.pin_many([tampered], self(), :request, deadline)
+     [36mleft:  [0m{[31m:error[0m, [31m:stale_group[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m[%{owner: #PID<0.308.0>, handles: [%{owner: #PID<0.308.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.269151817.4256169985.80383>, max_url_bytes: 21, owner_epoch: #Reference<0.269151817.4256169985.80337>}], kind: :request, ref: #Reference<0.269151817.4256169986.71653>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.269151817.4256169985.80337>, operation: #Reference<0.269151817.4256169986.71651>}][0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_groups_test.exs:155: (test)
+
+
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+[31m6 tests, 1 failure, 5 excluded[0m

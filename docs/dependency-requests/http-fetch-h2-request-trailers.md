@@ -5,6 +5,11 @@
 **Status:** BLOCKED — [gsmlg-dev/http_fetch#67](https://github.com/gsmlg-dev/http_fetch/issues/67)
 (Feature, `internal request`).
 
+**Final live state (2026-10-10T13:18:23Z):** #67 CLOSED at12:59:54Z.
+Installed/latest GitHub/Hex0.19.1 predates the fix; the upstreamH2 trailer matrix
+remainsBLOCKED on a containing release, dependency update and qualification.
+The evidence below describes the installed0.19.1 contract.
+
 Gaoxy M3 must preserve admitted request trailers when proxying to an HTTP/2
 upstream. HTTP Fetch 0.19.1 provides bounded streaming uploads and public
 `HTTP.Stream.finish/2`, but explicitly rejects request upload trailers in its

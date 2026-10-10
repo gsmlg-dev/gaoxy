@@ -1,0 +1,140 @@
+Running ExUnit with seed: 942288, max_cases: 4
+
+    [33mwarning:[0m Gaoxy.Proxy.StreamRelay.validate_options/1 is undefined (module Gaoxy.Proxy.StreamRelay is not available or is yet to be defined)
+    │
+  7 │     assert {:ok, config} = StreamRelay.validate_options(%{upstream: {{127, 0, 0, 1}, 80}})
+    │ [33m                                       ~[0m
+    │
+    └─ test/stream_relay_test.exs:7:40: Gaoxy.Proxy.StreamRelayTest."test relay modes and finite limits are validated before binding"/1
+    └─ test/stream_relay_test.exs:8:41: Gaoxy.Proxy.StreamRelayTest."test relay modes and finite limits are validated before binding"/1
+    └─ test/stream_relay_test.exs:16:40: Gaoxy.Proxy.StreamRelayTest."test relay modes and finite limits are validated before binding"/1
+
+
+
+  1) test relay modes and finite limits are validated before binding (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mtest/stream_relay_test.exs:6[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.StreamRelay.validate_options/1 is undefined (module Gaoxy.Proxy.StreamRelay is not available)[0m
+     [36mcode: [0massert {:ok, config} = StreamRelay.validate_options(%{upstream: {{127, 0, 0, 1}, 80}})
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.StreamRelay.validate_options(%{upstream: {{127, 0, 0, 1}, 80}})
+       test/stream_relay_test.exs:7: (test)
+
+
+
+  2) test force stop closes upstream and downstream while a separate relay remains usable (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mtest/stream_relay_test.exs:72[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, server} =
+              Gaoxy.start_link(
+                services: [
+                  %{
+                    id: :relay,
+                    transport: :tcp,
+                    handler_mode: :native,
+                    handler: StreamRelay,
+                    handler_options: Map.merge(%{upstream: upstream}, extra),
+                    limits: %{
+                      max_active: 32,
+                      max_bytes: 16_777_216,
+                      callback_timeout: 1000,
+                      drain_timeout: 500
+                    }
+                  }
+                ]
+              )
+     [36mleft:  [0m{[31m:ok[0m, server}
+     [36mright: [0m{[32m:error[0m, :invalid_handler}
+     [36mstacktrace:[0m
+       test/stream_relay_test.exs:101: Gaoxy.Proxy.StreamRelayTest.relay/2
+       test/stream_relay_test.exs:85: (test)
+
+
+
+  3) test finite lifetime closes both owned sockets and restores all admission reservations (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mtest/stream_relay_test.exs:57[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, server} =
+              Gaoxy.start_link(
+                services: [
+                  %{
+                    id: :relay,
+                    transport: :tcp,
+                    handler_mode: :native,
+                    handler: StreamRelay,
+                    handler_options: Map.merge(%{upstream: upstream}, extra),
+                    limits: %{
+                      max_active: 32,
+                      max_bytes: 16_777_216,
+                      callback_timeout: 1000,
+                      drain_timeout: 500
+                    }
+                  }
+                ]
+              )
+     [36mleft:  [0m{[31m:ok[0m, server}
+     [36mright: [0m{[32m:error[0m, :invalid_handler}
+     [36mstacktrace:[0m
+       test/stream_relay_test.exs:101: Gaoxy.Proxy.StreamRelayTest.relay/2
+       test/stream_relay_test.exs:64: (test)
+
+
+
+  4) test upstream FIN permits a later downstream request in the remaining direction (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mtest/stream_relay_test.exs:38[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, server} =
+              Gaoxy.start_link(
+                services: [
+                  %{
+                    id: :relay,
+                    transport: :tcp,
+                    handler_mode: :native,
+                    handler: StreamRelay,
+                    handler_options: Map.merge(%{upstream: upstream}, extra),
+                    limits: %{
+                      max_active: 32,
+                      max_bytes: 16_777_216,
+                      callback_timeout: 1000,
+                      drain_timeout: 500
+                    }
+                  }
+                ]
+              )
+     [36mleft:  [0m{[31m:ok[0m, server}
+     [36mright: [0m{[32m:error[0m, :invalid_handler}
+     [36mstacktrace:[0m
+       test/stream_relay_test.exs:101: Gaoxy.Proxy.StreamRelayTest.relay/2
+       test/stream_relay_test.exs:47: (test)
+
+
+
+  5) test downstream FIN drains all request bytes and still permits the upstream reply (Gaoxy.Proxy.StreamRelayTest)
+     [1m[30mtest/stream_relay_test.exs:20[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, server} =
+              Gaoxy.start_link(
+                services: [
+                  %{
+                    id: :relay,
+                    transport: :tcp,
+                    handler_mode: :native,
+                    handler: StreamRelay,
+                    handler_options: Map.merge(%{upstream: upstream}, extra),
+                    limits: %{
+                      max_active: 32,
+                      max_bytes: 16_777_216,
+                      callback_timeout: 1000,
+                      drain_timeout: 500
+                    }
+                  }
+                ]
+              )
+     [36mleft:  [0m{[31m:ok[0m, server}
+     [36mright: [0m{[32m:error[0m, :invalid_handler}
+     [36mstacktrace:[0m
+       test/stream_relay_test.exs:101: Gaoxy.Proxy.StreamRelayTest.relay/2
+       test/stream_relay_test.exs:29: (test)
+
+
+Finished in 0.4 seconds (0.00s async, 0.4s sync)
+[31m5 tests, 5 failures[0m

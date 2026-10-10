@@ -1,0 +1,163 @@
+==> gaoxy
+Running ExUnit with seed: 2314, max_cases: 4
+
+
+
+  1) test dispatcher validation is strict, opt in, unicast only, and idempotent (Gaoxy.DatagramDispatcherTest)
+     [1m[30mapps/gaoxy/test/datagram_dispatcher_test.exs:26[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, normalized} = Gaoxy.Config.service(spec())
+     [36mleft:  [0m{[31m:ok[0m, normalized}
+     [36mright: [0m{[32m:error[0m, :invalid_handler_mode}
+     [36mstacktrace:[0m
+       test/datagram_dispatcher_test.exs:27: (test)
+
+
+
+  2) test bridge preserves separate generations and bounded metadata without exporting socket (Gaoxy.DatagramDispatcherTest)
+     [1m[30mapps/gaoxy/test/datagram_dispatcher_test.exs:38[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.Config.service(spec())
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_handler_mode}
+     [36mstacktrace:[0m
+       test/datagram_dispatcher_test.exs:39: (test)
+
+    [33mwarning:[0m Gaoxy.DatagramDispatcherBridge.init/2 is undefined (module Gaoxy.DatagramDispatcherBridge is not available or is yet to be defined)
+    │
+ 46 │     assert {:ok, state} = Gaoxy.DatagramDispatcherBridge.init(
+    │ [33m                                                         ~[0m
+    │
+    └─ test/datagram_dispatcher_test.exs:46:58: Gaoxy.DatagramDispatcherTest."test bridge preserves separate generations and bounded metadata without exporting socket"/1
+
+    [33mwarning:[0m Gaoxy.DatagramDispatcherBridge.handle_datagram/4 is undefined (module Gaoxy.DatagramDispatcherBridge is not available or is yet to be defined)
+    │
+ 57 │       Gaoxy.DatagramDispatcherBridge.handle_datagram({{127, 0, 0, 1}, 1234}, "", 123, datagram_context)
+    │ [33m                                     ~[0m
+    │
+    └─ test/datagram_dispatcher_test.exs:57:38: Gaoxy.DatagramDispatcherTest."test bridge preserves separate generations and bounded metadata without exporting socket"/1
+
+    [33mwarning:[0m Gaoxy.DatagramDispatcherBridge.terminate/2 is undefined (module Gaoxy.DatagramDispatcherBridge is not available or is yet to be defined)
+    │
+ 58 │     Gaoxy.DatagramDispatcherBridge.terminate(:normal, state)
+    │ [33m                                   ~[0m
+    │
+    └─ test/datagram_dispatcher_test.exs:58:36: Gaoxy.DatagramDispatcherTest."test bridge preserves separate generations and bounded metadata without exporting socket"/1
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+[31m2 tests, 2 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 2314, max_cases: 4
+
+
+
+  1) test pause preserves ephemeral binding and resume permits new traffic (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:39[0m
+     [31m** (RuntimeError) failed to start child with the spec {Gaoxy, [services: [%{id: "relay", handler: Gaoxy.Proxy.UDPRelay, transport: :udp, handler_mode: :datagram_dispatcher, handler_options: %{destination: %{allow: ["127.0.0.1/32"], allow_reserved: true}, upstream: {{127, 0, 0, 1}, 53842}, ingress: ["127.0.0.0/8"]}, limits: %{max_bytes: 4194304}}]]}.
+     Reason: :invalid_handler_mode[0m
+     [36mcode: [0minstance = instance(port)
+     [36mstacktrace:[0m
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:590: ExUnit.Callbacks.start_supervised!/2
+       test/udp_relay_test.exs:117: Gaoxy.Proxy.UDPRelayTest.instance/2
+       test/udp_relay_test.exs:41: (test)
+
+
+
+  2) test requires explicit ingress and narrow destination exceptions with finite limits (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:10[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UDPRelay.validate_options/1 is undefined (module Gaoxy.Proxy.UDPRelay is not available)[0m
+     [36mcode: [0massert {:ok, normalized} = UDPRelay.validate_options(options(1234))
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UDPRelay.validate_options(%{destination: %{allow: ["127.0.0.1/32"], allow_reserved: true}, upstream: {{127, 0, 0, 1}, 1234}, ingress: ["127.0.0.0/8"]})
+       test/udp_relay_test.exs:11: (test)
+
+
+
+  3) test metadata permits expire without retaining payload and cannot refund twice (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:87[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} =
+              Gaoxy.Config.service(%{
+                id: "direct",
+                transport: :udp,
+                handler_mode: :datagram_dispatcher,
+                handler: UDPRelay,
+                handler_options: options(port, %{limits: %{reservation_timeout: 30}}),
+                limits: %{max_packet: 128, max_output: 128, max_bytes: 4_194_304}
+              })
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_handler_mode}
+     [36mstacktrace:[0m
+       test/udp_relay_test.exs:89: (test)
+
+
+
+  4) test idle expiry releases owned upstream socket and creates a fresh association (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:68[0m
+     [31m** (RuntimeError) failed to start child with the spec {Gaoxy, [services: [%{id: "relay", handler: Gaoxy.Proxy.UDPRelay, transport: :udp, handler_mode: :datagram_dispatcher, handler_options: %{destination: %{allow: ["127.0.0.1/32"], allow_reserved: true}, limits: %{lifetime: 500, idle_timeout: 60}, upstream: {{127, 0, 0, 1}, 52142}, ingress: ["127.0.0.0/8"]}, limits: %{max_bytes: 4194304}}]]}.
+     Reason: :invalid_handler_mode[0m
+     [36mcode: [0minstance = instance(port, %{handler_options: options(port, %{limits: %{idle_timeout: 60, lifetime: 500}})})
+     [36mstacktrace:[0m
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:590: ExUnit.Callbacks.start_supervised!/2
+       test/udp_relay_test.exs:117: Gaoxy.Proxy.UDPRelayTest.instance/2
+       test/udp_relay_test.exs:70: (test)
+
+
+
+  5) test source policy rejects before association creation and bounded count isolates peers (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:53[0m
+     [31m** (RuntimeError) failed to start child with the spec {Gaoxy, [services: [%{id: "relay", handler: Gaoxy.Proxy.UDPRelay, transport: :udp, handler_mode: :datagram_dispatcher, handler_options: %{destination: %{allow: ["127.0.0.1/32"], allow_reserved: true}, limits: %{max_associations: 1}, upstream: {{127, 0, 0, 1}, 57634}, ingress: ["127.0.0.0/8"]}, limits: %{max_bytes: 4194304}}]]}.
+     Reason: :invalid_handler_mode[0m
+     [36mcode: [0minstance = instance(port, %{handler_options: options(port, %{limits: %{max_associations: 1}})})
+     [36mstacktrace:[0m
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:590: ExUnit.Callbacks.start_supervised!/2
+       test/udp_relay_test.exs:117: Gaoxy.Proxy.UDPRelayTest.instance/2
+       test/udp_relay_test.exs:55: (test)
+
+
+
+  6) test independent peers preserve empty packets and reply from the original listener (Gaoxy.Proxy.UDPRelayTest)
+     [1m[30mapps/gaoxy_proxy/test/udp_relay_test.exs:21[0m
+     [31m** (RuntimeError) failed to start child with the spec {Gaoxy, [services: [%{id: "relay", handler: Gaoxy.Proxy.UDPRelay, transport: :udp, handler_mode: :datagram_dispatcher, handler_options: %{destination: %{allow: ["127.0.0.1/32"], allow_reserved: true}, upstream: {{127, 0, 0, 1}, 40445}, ingress: ["127.0.0.0/8"]}, limits: %{max_bytes: 4194304}}]]}.
+     Reason: :invalid_handler_mode[0m
+     [36mcode: [0minstance = instance(port)
+     [36mstacktrace:[0m
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:590: ExUnit.Callbacks.start_supervised!/2
+       test/udp_relay_test.exs:117: Gaoxy.Proxy.UDPRelayTest.instance/2
+       test/udp_relay_test.exs:23: (test)
+
+    [33mwarning:[0m Gaoxy.Proxy.UDPRelay.validate_options/1 is undefined (module Gaoxy.Proxy.UDPRelay is not available or is yet to be defined)
+    │
+ 11 │     assert {:ok, normalized} = UDPRelay.validate_options(options(1234))
+    │ [33m                                        ~[0m
+    │
+    └─ test/udp_relay_test.exs:11:41: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:12:42: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:13:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:14:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:15:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:16:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:17:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+    └─ test/udp_relay_test.exs:18:35: Gaoxy.Proxy.UDPRelayTest."test requires explicit ingress and narrow destination exceptions with finite limits"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.UDPRelay.status/1 is undefined (module Gaoxy.Proxy.UDPRelay is not available or is yet to be defined)
+    │
+ 78 │     [worker] = Map.values(UDPRelay.status(owner).associations)
+    │ [33m                                   ~[0m
+    │
+    └─ test/udp_relay_test.exs:78:36: Gaoxy.Proxy.UDPRelayTest."test idle expiry releases owned upstream socket and creates a fresh association"/1
+    └─ test/udp_relay_test.exs:105:65: Gaoxy.Proxy.UDPRelayTest."test metadata permits expire without retaining payload and cannot refund twice"/1
+    └─ test/udp_relay_test.exs:108:63: Gaoxy.Proxy.UDPRelayTest."test metadata permits expire without retaining payload and cannot refund twice"/1
+    └─ test/udp_relay_test.exs:110:63: Gaoxy.Proxy.UDPRelayTest."test metadata permits expire without retaining payload and cannot refund twice"/1
+
+     [33mwarning:[0m Gaoxy.Proxy.UDPRelay.start_link/2 is undefined (module Gaoxy.Proxy.UDPRelay is not available or is yet to be defined)
+     │
+ 100 │     {:ok, owner} = UDPRelay.start_link(context, spec.handler_options)
+     │ [33m                            ~[0m
+     │
+     └─ test/udp_relay_test.exs:100:29: Gaoxy.Proxy.UDPRelayTest."test metadata permits expire without retaining payload and cannot refund twice"/1
+
+
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+[31m6 tests, 6 failures[0m

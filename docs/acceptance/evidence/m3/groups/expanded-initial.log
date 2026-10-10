@@ -1,0 +1,74 @@
+==> gaoxy_http
+Running ExUnit with seed: 311044, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.1 seconds (1.1s async, 0.00s sync)
+[32m21 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 311044, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+19:52:17.761 [error] Process #PID<0.630.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :closed}
+    test/upstream_groups_test.exs:227: Gaoxy.Proxy.UpstreamGroupsTest.probe_loop/2
+[0m[32m.[0m[31m
+19:52:17.788 [error] Process #PID<0.635.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :closed}
+    test/upstream_groups_test.exs:227: Gaoxy.Proxy.UpstreamGroupsTest.probe_loop/2
+[0m[32m.[0m[31m
+19:52:17.812 [error] Process #PID<0.667.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :closed}
+    test/upstream_groups_test.exs:227: Gaoxy.Proxy.UpstreamGroupsTest.probe_loop/2
+[0m[31m
+19:52:17.813 [error] Process #PID<0.680.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :closed}
+    test/upstream_groups_test.exs:227: Gaoxy.Proxy.UpstreamGroupsTest.probe_loop/2
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+19:52:23.332 [error] Process #PID<0.1124.0> raised an exception
+** (ExUnit.AssertionError) 
+
+group peer response barrier expired
+
+    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:436: ExUnit.Assertions.assert/2
+    test/upstream_group_proxy_test.exs:289: Gaoxy.Proxy.UpstreamGroupProxyTest.serve/3
+[0m
+
+  1) test group opening_timeout expires independently and closes its one upstream connection (Gaoxy.Proxy.UpstreamGroupProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_proxy_test.exs:158[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.1124.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:group_closed, ^worker}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:group_closed, [31m^worker[0m}
+       [36mvalue:   [0m{:group_closed, [32m#PID<0.1104.0>[0m}
+     [36mstacktrace:[0m
+       test/upstream_group_proxy_test.exs:187: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+19:52:23.873 [error] GenServer #PID<0.1346.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1345.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.1346.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.1347.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.2634162108.1035075585.78573>, #Reference<0.2634162108.1035075585.78574>, :http, #Reference<0.2634162108.1034944513.78575>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test verified TLS HEAD and selected request preserve SNI and numeric pin; later TLS rejection false has no retry (Gaoxy.Proxy.UpstreamGroupTLSTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_tls_test.exs:27[0m
+     [31m** (MatchError) no match of right hand side value: {:error, {:options, {:certfile, {~c"/tmp/nix-shell.whPsqf/gaoxy-groups-tls-2195/trusted/server.pem", :enoent}}}}[0m
+     [36mcode: [0m{:ok, listener} =
+     [36mstacktrace:[0m
+       test/upstream_group_tls_test.exs:32: (test)
+
+
+
+  3) test verified TLS HEAD and selected request preserve SNI and numeric pin; later TLS rejection true has no retry (Gaoxy.Proxy.UpstreamGroupTLSTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_tls_test.exs:27[0m
+     [31m** (MatchError) no match of right hand side value: {:error, {:options, {:certfile, {~c"/tmp/nix-shell.whPsqf/gaoxy-groups-tls-2195/trusted/server.pem", :enoent}}}}[0m
+     [36mcode: [0m{:ok, listener} =
+     [36mstacktrace:[0m
+       test/upstream_group_tls_test.exs:32: (test)
+
+
+Finished in 11.3 seconds (8.5s async, 2.8s sync)
+[31m59 tests, 3 failures[0m

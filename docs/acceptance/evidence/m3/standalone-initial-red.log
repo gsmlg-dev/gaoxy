@@ -1,0 +1,40 @@
+==> gaoxy_server
+Running ExUnit with seed: 715130, max_cases: 1
+
+
+
+  1) test data-only native HTTP services validate before starting configuration owners (Gaoxy.Server.StandaloneGenerationTest)
+     [1m[30mapps/gaoxy_server/test/standalone_generation_test.exs:5[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, options} = Config.decode(config())
+     [36mleft:  [0m{[31m:ok[0m, options}
+     [36mright: [0m{[32m:error[0m, :unknown_configuration_keys}
+     [36mstacktrace:[0m
+       test/standalone_generation_test.exs:6: (test)
+
+
+
+  2) test failed mixed startup stops generation owners and releases the already-bound HTTP port (Gaoxy.Server.StandaloneGenerationTest)
+     [1m[30mapps/gaoxy_server/test/standalone_generation_test.exs:77[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, options} = Config.decode(data)
+     [36mleft:  [0m{[31m:ok[0m, options}
+     [36mright: [0m{[32m:error[0m, :unknown_configuration_keys}
+     [36mstacktrace:[0m
+       test/standalone_generation_test.exs:101: (test)
+
+
+
+  3) test mixed standalone runtime reloads routes on one stable listener and rolls back invalid files (Gaoxy.Server.StandaloneGenerationTest)
+     [1m[30mapps/gaoxy_server/test/standalone_generation_test.exs:28[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, options} = Config.load(path)
+     [36mleft:  [0m{[31m:ok[0m, options}
+     [36mright: [0m{[32m:error[0m, :unknown_configuration_keys}
+     [36mstacktrace:[0m
+       test/standalone_generation_test.exs:40: (test)
+
+[32m.[0m
+Finished in 0.3 seconds (0.00s async, 0.3s sync)
+[31m4 tests, 3 failures[0m
+COMMAND_EXIT=2

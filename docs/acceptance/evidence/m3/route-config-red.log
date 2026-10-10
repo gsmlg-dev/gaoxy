@@ -1,0 +1,103 @@
+==> gaoxy_http
+Compiling 1 file (.ex)
+    [33mwarning:[0m def prepare/3 has multiple clauses and also declares default values. In such cases, the default values should be defined in a header. Instead of:
+
+        def foo(:first_clause, b \\ :default) do ... end
+        def foo(:second_clause, b) do ... end
+
+    one should write:
+
+        def foo(a, b \\ :default)
+        def foo(:first_clause, b) do ... end
+        def foo(:second_clause, b) do ... end
+
+    │
+ 33 │   def prepare(_, _, _), do: {:error, :invalid_prepare_timeout}
+    │ [33m      ~[0m
+    │
+    └─ lib/gaoxy/http/generation.ex:33:7
+
+    [33mwarning:[0m conflicting behaviours found. Callback function init/1 is defined by both GenServer and Gaoxy.HTTP.Endpoint (in module Gaoxy.HTTP.Generation)
+    │
+  1 │ defmodule Gaoxy.HTTP.Generation do
+    │ [33m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+    │
+    └─ lib/gaoxy/http/generation.ex:1: Gaoxy.HTTP.Generation (module)
+
+Generated gaoxy_http app
+==> gaoxy_server
+Running ExUnit with seed: 325380, max_cases: 4
+
+
+
+  1) test route count is bounded before endpoint initialization (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:66[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Server.RouteConfig.decode/1 is undefined (module Gaoxy.Server.RouteConfig is not available)[0m
+     [36mcode: [0massert {:error, :route_limit} = RouteConfig.decode(%{"version" => 1, "routes" => routes})
+     [36mstacktrace:[0m
+       Gaoxy.Server.RouteConfig.decode(%{"routes" => [%{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{"type" => "static"}}, %{"target" => %{...}}, %{...}, ...], "version" => 1})
+       test/route_config_test.exs:68: (test)
+
+
+
+  2) test bounded file reload activates a new route generation and rolls back invalid input (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:47[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Server.RouteConfig.decode/1 is undefined (module Gaoxy.Server.RouteConfig is not available)[0m
+     [36mcode: [0massert {:ok, routes} = RouteConfig.decode(data(%{"type" => "static", "body" => "old"}))
+     [36mstacktrace:[0m
+       Gaoxy.Server.RouteConfig.decode(%{"routes" => [%{"target" => %{"body" => "old", "type" => "static"}}], "version" => 1})
+       test/route_config_test.exs:48: (test)
+
+
+
+  3) test versioned route data resolves only registered endpoint types (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:5[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Server.RouteConfig.decode/1 is undefined (module Gaoxy.Server.RouteConfig is not available)[0m
+     [36mcode: [0mRouteConfig.decode(%{
+     [36mstacktrace:[0m
+       Gaoxy.Server.RouteConfig.decode(%{"routes" => [%{"host" => "example.test", "prefix" => "/api", "target" => %{"body" => "created", "status" => 201, "type" => "static"}}], "version" => 1})
+       test/route_config_test.exs:7: (test)
+
+
+
+  4) test strict route shapes reject ambiguous matches and arbitrary keys (Gaoxy.Server.RouteConfigTest)
+     [1m[30mapps/gaoxy_server/test/route_config_test.exs:29[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Server.RouteConfig.decode/1 is undefined (module Gaoxy.Server.RouteConfig is not available)[0m
+     [36mcode: [0mfor route <- [
+     [36mstacktrace:[0m
+       Gaoxy.Server.RouteConfig.decode(%{"routes" => [%{"path" => "/", "prefix" => "/", "target" => %{"type" => "static"}}], "version" => 1})
+       test/route_config_test.exs:36: anonymous fn/2 in Gaoxy.Server.RouteConfigTest."test strict route shapes reject ambiguous matches and arbitrary keys"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/route_config_test.exs:30: (test)
+
+    [33mwarning:[0m Gaoxy.Server.RouteConfig.decode/1 is undefined (module Gaoxy.Server.RouteConfig is not available or is yet to be defined)
+    │
+  7 │              RouteConfig.decode(%{
+    │ [33m                         ~[0m
+    │
+    └─ test/route_config_test.exs:7:26: Gaoxy.Server.RouteConfigTest."test versioned route data resolves only registered endpoint types"/1
+    └─ test/route_config_test.exs:25:40: Gaoxy.Server.RouteConfigTest."test versioned route data resolves only registered endpoint types"/1
+    └─ test/route_config_test.exs:36:40: Gaoxy.Server.RouteConfigTest."test strict route shapes reject ambiguous matches and arbitrary keys"/1
+    └─ test/route_config_test.exs:40:26: Gaoxy.Server.RouteConfigTest."test strict route shapes reject ambiguous matches and arbitrary keys"/1
+    └─ test/route_config_test.exs:43:26: Gaoxy.Server.RouteConfigTest."test strict route shapes reject ambiguous matches and arbitrary keys"/1
+    └─ test/route_config_test.exs:48:40: Gaoxy.Server.RouteConfigTest."test bounded file reload activates a new route generation and rolls back invalid input"/1
+    └─ test/route_config_test.exs:68:49: Gaoxy.Server.RouteConfigTest."test route count is bounded before endpoint initialization"/1
+
+    [33mwarning:[0m Gaoxy.Server.RouteConfig.reload/2 is undefined (module Gaoxy.Server.RouteConfig is not available or is yet to be defined)
+    │
+ 53 │     assert {:ok, next} = RouteConfig.reload(store, path)
+    │ [33m                                     ~[0m
+    │
+    └─ test/route_config_test.exs:53:38: Gaoxy.Server.RouteConfigTest."test bounded file reload activates a new route generation and rolls back invalid input"/1
+    └─ test/route_config_test.exs:59:38: Gaoxy.Server.RouteConfigTest."test bounded file reload activates a new route generation and rolls back invalid input"/1
+
+    [33mwarning:[0m Gaoxy.Server.RouteConfig.load/1 is undefined (module Gaoxy.Server.RouteConfig is not available or is yet to be defined)
+    │
+ 63 │     assert {:error, :configuration_too_large} = RouteConfig.load(path)
+    │ [33m                                                            ~[0m
+    │
+    └─ test/route_config_test.exs:63:61: Gaoxy.Server.RouteConfigTest."test bounded file reload activates a new route generation and rolls back invalid input"/1
+
+
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+[31m4 tests, 4 failures[0m
