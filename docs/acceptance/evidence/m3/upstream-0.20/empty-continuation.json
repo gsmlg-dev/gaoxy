@@ -1,0 +1,41 @@
+{
+  "status": "INCONCLUSIVE",
+  "diagnostic_execution": "PASS",
+  "transport_bound_gate": "UNQUALIFIED",
+  "session": 60194,
+  "exit": 0,
+  "recorded_at": "2026-10-10T14:48:21.734313+00:00",
+  "frames_sent": 80000,
+  "batches": 4,
+  "frames_per_batch": 20000,
+  "compressed_header_payload_bytes": 0,
+  "wire_bytes_sent": 720009,
+  "vm_processes_used_samples": [
+    18257896,
+    21173576,
+    21173552,
+    22949528,
+    22941600
+  ],
+  "processes_used_growth": 4683704,
+  "per_batch_deltas": [
+    2915680,
+    -24,
+    1775976,
+    -7928
+  ],
+  "reason": "Growth exceeds 640000 bytes but only 2 of 4 batch deltas exceed 160000; predeclared reproduction criterion requires at least 3. Peer send receipts do not prove client consumption at sample time. VM-wide heap samples cannot uniquely attribute memory to header metadata.",
+  "source_concern": "ConnectionOwner appends one empty payload per frame while checking only compressed payload byte sum; finite metadata bound remains unresolved.",
+  "source_sha256": "933fdbab2d36ca790611d7305e079c8b6f1e2ed825e6e7e62e354ef7f16e32d4",
+  "public_cleanup": "ok",
+  "promise_error": "aborted",
+  "reset_observed": true,
+  "confirmed_peer_stops": 1,
+  "peer_live_threads": 0,
+  "source_unchanged": true,
+  "source_file_count": 201,
+  "before": "empty-continuation-source-before.json",
+  "after": "empty-continuation-source-after.json",
+  "log": "empty-continuation.log",
+  "command": "HTTP_FETCH_PEER_PYTHON=/tmp/gaoxy-m3-h2-soak-venv/bin/python nix develop --command bash -c 'export ERL_FLAGS=\"+S 2:2\"; export MIX_ENV=test; set -euo pipefail; unbuffer mix run --no-compile --no-start integration/http_fetch_contract/empty_continuation_probe.exs 2>&1 | tee docs/acceptance/evidence/m3/upstream-0.20/empty-continuation.log'"
+}

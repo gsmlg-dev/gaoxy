@@ -15,7 +15,7 @@ immutable configuration generations before activation, retaining stable socket
 owners and each in-flight request's selected generation.
 
 **Tech stack:** Elixir 1.18.5 / OTP 28; Thousand Island and Abyss public adapters;
-Plug/WebSock; pinned HTTP Fetch 0.19.1 until a qualified upstream update; HPAX for
+Plug/WebSock; pinned coordinated HTTP Fetch0.20.0; HPAX for
 HTTP/2 header compression; independent loopback peers.
 
 **Base:** `71f1b02032b440c5626263bd48aa4f622260e70a`, worktree
@@ -62,7 +62,7 @@ Files: `integration/http_fetch_contract/pooled_completion_probe.exs`,
 - [x] Route the distinct upstream-H2 request-upload trailer prerequisite as
   Feature blocker `gsmlg-dev/http_fetch#67`; completion support alone cannot
   satisfy the full cross-version proxy trailer matrix.
-- [x] Execute the public option-gate probe and confirm both exact failures:
+- [x] Historically execute the0.19.1 public option-gate probe and confirm both exact failures:
 
 ```elixir
 {:error, {:unsupported_completion, :http1_reuse}} =
@@ -71,17 +71,27 @@ Files: `integration/http_fetch_contract/pooled_completion_probe.exs`,
   HTTP.RequestCompletion.abort_and_await(HTTP.Promise.completion(h2), 0)
 ```
 
-Run: `unbuffer mix run --no-compile --no-start integration/http_fetch_contract/pooled_completion_probe.exs`.
-Expected: exit 0 proving the BLOCKED option gates, not pooling/H2 acceptance.
+Historical run: `unbuffer mix run --no-compile --no-start integration/http_fetch_contract/pooled_completion_probe.exs`.
+Recorded result: exit0 proving the0.19.1 BLOCKED option gates. The live probe is
+updated for installed0.20.0 under the new plan; historical raw logs stay intact.
 
-- [ ] After #66 and #67 are resolved and a containing dependency is installed, verify
+- [x] Install the containing0.20.0 release for #66/#67 and record exact source,
+  Hex checksums, strict format/compile and460/0 compatibility tests.
+- [x] Independently audit public pool ownership/retirement and route the missing
+  contract as Feature `gsmlg-dev/http_fetch#78`; record the separate H2 metadata
+  concern and write a ready-now/conditional transport design and plan.
+- [ ] After #78 and any demonstrated bounds defects are fixed in installed artifacts, verify
   confirmed normal/cancel cleanup, live multiplexed siblings, pool retirement,
   TLS policy isolation, stale sockets, finite capacity, and old generations.
-  Only then enable upstream H2; H1 reuse requires #66. Until then stop this task and
+  Only then enable upstream H2/H1 reuse. Until then stop activation and
   continue independent tasks; no private pool calls or local workaround.
 
-Final live checkpoint: both issues CLOSED; latest and installed0.19.1 predates
-the fixes. The containing release/update and this qualification remain BLOCKED.
+Current checkpoint: #66/#67 fixes are installed in0.20.0; the460-test upgrade
+compatibility gate passes. Follow [`m3-upstream-transport.md`](m3-upstream-transport.md)
+for positive public probes (16/16 PASS) and the finite empty-CONTINUATION
+diagnostic (INCONCLUSIVE, confirmed cleanup; metadata bound unresolved).
+Activation remains BLOCKED on #78 and source-confirmed H2 metadata Bug #79,
+plus remaining qualification.
 
 ## Task 2: Native HTTP/2 and shared HTTP operations
 
@@ -209,8 +219,8 @@ documentation, independent loopback/load harnesses and scoped CI wiring.
 - [x] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.
 - [ ] Mark M3 complete only if every required gate and upstream prerequisite
-  passes. Then write the M4 design/plan and automatically continue. If #66/#67
-  remains open or the installed release lacks its contract, report BLOCKED for
+  passes. Then write the M4 design/plan and automatically continue. If #78 or
+  another required public contract/bound is unresolved in the installed release, report BLOCKED for
   the affected tasks/M3 completion and preserve all tested independent work.
 
 No push, release publication, deployment, production-data operation, Vault

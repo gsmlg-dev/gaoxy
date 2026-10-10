@@ -1,0 +1,44 @@
+PUBLIC_PROBE_ENV: %{otp: "28", elixir: "1.18.5", erts: ~c"16.4.0.6", http_fetch: ~c"0.20.0"}
+PUBLIC_CASE: %{
+  case: "h1_sequential_reuse",
+  requests: 2,
+  result: :pass,
+  accepts: 1,
+  cross_process_completion: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stalled_cancel_no_replay",
+  requests: 1,
+  result: :pass,
+  socket_closed: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stale_before_write_no_replay",
+  requests: 2,
+  result: :pass,
+  accepts: 2
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 2, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1/trailers",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 9,
+  trailer_fields: 2,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+[22m
+22:34:18.319 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2273 generated CLIENT ALERT: Fatal - Bad Certificate
+ - :selfsigned_peer
+[0mPUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+** (RuntimeError) peer barrier deadline exceeded
+    integration/http_fetch_contract/pooled_completion_probe.exs:160: HTTPFetchPublicProbe.event_until/3
+    integration/http_fetch_contract/pooled_completion_probe.exs:298: anonymous fn/2 in HTTPFetchPublicProbe.h2/1
+    integration/http_fetch_contract/pooled_completion_probe.exs:48: HTTPFetchPublicProbe.with_peer/2
+    integration/http_fetch_contract/pooled_completion_probe.exs:296: HTTPFetchPublicProbe.h2/1
+    integration/http_fetch_contract/pooled_completion_probe.exs:473: HTTPFetchPublicProbe.run/0
+    integration/http_fetch_contract/pooled_completion_probe.exs:482: (file)

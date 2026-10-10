@@ -1,0 +1,63 @@
+PUBLIC_PROBE_ENV: %{otp: "28", elixir: "1.18.5", erts: ~c"16.4.0.6", http_fetch: ~c"0.20.0"}
+PUBLIC_CASE: %{
+  case: "h1_sequential_reuse",
+  requests: 2,
+  result: :pass,
+  accepts: 1,
+  cross_process_completion: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stalled_cancel_no_replay",
+  requests: 1,
+  result: :pass,
+  socket_closed: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stale_before_write_no_replay",
+  requests: 2,
+  result: :pass,
+  accepts: 2
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 2, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1/trailers",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 9,
+  trailer_fields: 2,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  reset: true,
+  case: "tls_live_sibling_cancel_reuse",
+  requests: 3,
+  result: :pass,
+  accepts: 1,
+  streams: [1, 3]
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+[31m
+22:37:40.724 [error] Task #PID<0.301.0> started from #PID<0.300.0> terminating
+** (ArgumentError) Trailer request headers are not supported
+    (http_core 0.20.0) lib/http/request.ex:241: HTTP.Request.reject_unsupported_request_framing!/1
+    (http_core 0.20.0) lib/http/http2.ex:881: HTTP.HTTP2.base_request_headers/1
+    (http_core 0.20.0) lib/http/http2.ex:117: HTTP.HTTP2.request_headers/3
+    (http_fetch 0.20.0) lib/http/socket_client.ex:575: HTTP.SocketClient.run_http2_owner/4
+    (http_fetch 0.20.0) lib/http/socket_client.ex:557: HTTP.SocketClient.maybe_http2_owner/5
+    (http_fetch 0.20.0) lib/http/socket_client.ex:352: HTTP.SocketClient.handle_new_connection/7
+    (http_fetch 0.20.0) lib/http/socket_client.ex:263: HTTP.SocketClient.owner/7
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<18.57733151/0 in HTTP.SocketClient.request_socket/3>
+    Args: []
+[0mPUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+** (MatchError) no match of right hand side value: {:error, :cleanup_unconfirmed}
+    integration/http_fetch_contract/pooled_completion_probe.exs:52: anonymous fn/1 in HTTPFetchPublicProbe.with_peer/2
+    (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+    integration/http_fetch_contract/pooled_completion_probe.exs:51: HTTPFetchPublicProbe.with_peer/2
+    integration/http_fetch_contract/pooled_completion_probe.exs:330: HTTPFetchPublicProbe.h2/1
+    integration/http_fetch_contract/pooled_completion_probe.exs:473: HTTPFetchPublicProbe.run/0
+    integration/http_fetch_contract/pooled_completion_probe.exs:482: (file)

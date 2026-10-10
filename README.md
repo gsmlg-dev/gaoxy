@@ -7,7 +7,7 @@ service lifecycle, finite admission, telemetry and custom protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
 message-level [WebSocket reverse proxying](docs/websocket-proxy.md).
-HTTP Fetch 0.19.1 supplies request-owned cleanup and preserves present empty
+HTTP Fetch 0.20.0 supplies request-owned cleanup and preserves present empty
 queries (`/upload?` remains `/upload?`), resolving the former
 [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker.
 **M2 local completion gates pass**: all 255 scoped tests and refreshed native
@@ -20,9 +20,13 @@ TCP/TLS relays, bounded UDP unicast associations, immutable route generations,
 standalone HTTP configuration and supervised dedicated-H1 upstream groups.
 See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
 [M3 acceptance](docs/acceptance/m3.md) for exact gates and limits. **Full M3 is
-BLOCKED** on HTTP Fetch [#66](https://github.com/gsmlg-dev/http_fetch/issues/66)
-and [#67](https://github.com/gsmlg-dev/http_fetch/issues/67); reusable upstream
-connections/H2 remain disabled until a containing release is qualified.
+BLOCKED** on HTTP Fetch [#78](https://github.com/gsmlg-dev/http_fetch/issues/78)
+for owned reusable transports and confirmed retirement, plus remaining H2
+bounds/qualification. Installed 0.20.0 includes #66/#67; its 460-test upgrade
+compatibility gate and 16 public completion/trailer cases pass. The bounded
+empty-CONTINUATION diagnostic is INCONCLUSIVE; its source-confirmed missing
+metadata cap is routed as [Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79).
+Reusable upstream connections/H2 remain disabled.
 
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
@@ -160,7 +164,7 @@ explicitly unsupported and tested for absence of delivery.
 ## Optional QUIC
 
 The standalone core dependency graph contains no QUIC engine. The umbrella
-proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.19.1 through
+proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.20.0 through
 HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
 dependency selection does not enable upstream H2/H3 or qualify generic QUIC against
 that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`

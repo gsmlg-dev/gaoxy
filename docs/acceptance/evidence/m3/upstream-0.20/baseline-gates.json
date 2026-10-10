@@ -1,0 +1,58 @@
+{
+  "status": "PASS",
+  "baseline_head": "d92d3691e073fbf33195b567af7be10cea6132fc",
+  "source_changes_at_execution": [
+    "apps/gaoxy_proxy/mix.exs exact http_fetch/http_web_socket pins0.20.0",
+    "mix.lock coordinated seven packages0.20.0"
+  ],
+  "package_source": "installed-source.json",
+  "commands": [
+    {
+      "command": "unbuffer mix deps.get",
+      "session": 28647,
+      "exit": 0,
+      "log": "deps-get.log"
+    },
+    {
+      "command": "unbuffer mix compile --warnings-as-errors",
+      "session": 28647,
+      "exit": 0,
+      "log": "compile-baseline.log"
+    },
+    {
+      "command": "unbuffer mix format --check-formatted",
+      "session": 98976,
+      "exit": 0,
+      "log": "format-baseline.log"
+    },
+    {
+      "command": "unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test apps/gaoxy_proxy/test apps/gaoxy/test apps/gaoxy_server/test",
+      "session": 98976,
+      "exit": 0,
+      "log": "scoped-baseline.log"
+    }
+  ],
+  "environment": "nix develop; ERL_FLAGS=+S 2:2; MIX_ENV=test",
+  "seed": 161790,
+  "counts": {
+    "gaoxy": {
+      "tests": 90,
+      "failures": 0
+    },
+    "gaoxy_http": {
+      "tests": 196,
+      "failures": 0
+    },
+    "gaoxy_proxy": {
+      "tests": 156,
+      "failures": 0
+    },
+    "gaoxy_server": {
+      "tests": 18,
+      "failures": 0
+    }
+  },
+  "total_tests": 460,
+  "scope": "Upgrade compatibility using existing dedicated-H1 Gaoxy adapter. Reusable Gaoxy H1/H2 NOT ENABLED; no M3/M4 acceptance claim.",
+  "prior_tooling_failure": "deps-update-initial.json"
+}

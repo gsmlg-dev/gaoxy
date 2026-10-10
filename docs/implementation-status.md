@@ -165,7 +165,7 @@ is authoritative for executed scope, pending gates, repairs and final source.
 
 Native H2, shared HTTP operations, authenticated forward/H1 CONNECT, bounded
 TCP/TLS/UDP unicast relay, route generations, standalone HTTP and supervised
-dedicated-H1 groups are implemented. Final S5 canonical strict format/compile
+dedicated-H1 groups are implemented. Historical0.19.1 S5 strict format/compile
 and **460 scoped tests** pass: core90, HTTP196, proxy156, server18, zero failures
 at seed49315. The 40 independent selected RFC cases and unchanged-source clean
 core consumer1/0 pass. S1–S5 independent findings are resolved; separate full
@@ -179,9 +179,22 @@ captured processes DOWN and zero reservations/tasks/guardians. All199 frozen
 source hashes remain exact. Groups have bounded concurrency/health/ownership
 qualification; the fixed-proxy soak does not imply a group/probe soak.
 
-**Full M3 remains BLOCKED** on a containing HTTP Fetch release and qualification
-of reusable H1/upstream H2. Both #66/#67 are CLOSED in the final live read, but
-installed and latest GitHub/Hex0.19.1 predates their fixes. No pooling/private
-client workaround is used. Tested work is delivered locally; M4 waits for the
-containing dependency update and remaining cleanup/trailer/version-matrix gates.
+Coordinated HTTP Fetch0.20.0 is now installed; actual release tag
+`951ec75dadcebd8218f30d3ecdf99da142d4a463` contains #66/#67. New strict
+format/compile and460 scoped upgrade-compatibility tests pass at seed161790;
+the unchanged Phoenix fixture passes2/0 at seed792852. These are separate from
+the historical frozen load/browser evidence above.
+
+**Full M3 remains BLOCKED** on public managed transports/confirmed retirement
+[Feature #78](https://github.com/gsmlg-dev/http_fetch/issues/78) and remaining
+H2 bounds/qualification. Positive public completion/trailer probes and a finite
+empty-CONTINUATION diagnostic have executed under the
+[new transport plan](plans/m3-upstream-transport.md): **16/16 public request
+cases PASS**, including separately verified TLS H2 and h2c; diagnostic
+**INCONCLUSIVE**, with confirmed public cleanup/peer shutdown. All 202 source
+hashes match for both corrected runs, including the main probe omitted from the
+original 201 maps. The source-confirmed missing fragment metadata cap is routed
+as [Bug #79](https://github.com/gsmlg-dev/http_fetch/issues/79). No pooling/private-client
+workaround is used. Tested work is delivered locally; M4 waits for complete
+M3 public lifecycle, bounds and version-matrix qualification.
 No remote publication or production acceptance is implied.

@@ -54,9 +54,13 @@ see [their accounting scope](websocket-proxy.md).
 
 ## Current M3 implemented scope
 
-Full M3 remains **BLOCKED** on the containing release and qualification of
-upstream #66/#67 fixes. Both issues are CLOSED, but installed/latest HTTP Fetch
-0.19.1 predates the fixes; M4 progression is pending.
+Full M3 remains **BLOCKED** on HTTP Fetch [#78](https://github.com/gsmlg-dev/http_fetch/issues/78)
+for caller-owned reusable transports/confirmed retirement and remaining H2
+bounds/qualification. Installed 0.20.0 contains the #66/#67 fixes and passes
+460 scoped compatibility tests and 16 direct public request cases. The bounded
+empty-CONTINUATION diagnostic is INCONCLUSIVE; source-confirmed missing metadata
+cap [#79](https://github.com/gsmlg-dev/http_fetch/issues/79) also blocks H2 qualification.
+M4 progression is pending.
 The [M3 matrix](acceptance/m3.md) records actual commands, nonempty counts,
 independent reviews, source identities and any pending gate. Each claim is
 limited to its recorded Linux candidate; hosted CI/release/deployment remain
@@ -70,12 +74,12 @@ separate.
 | UDP association relay | Source/destination policy, unicast per-peer associations, empty payloads, finite rate/credit/capacity and idle expiry | CIDRs do not authenticate; no broadcast/multicast relay; no retry of uncertain output |
 | Route/standalone generations | Bounded preparation/CAS, old request/resource pins, stable listener reload and strict version1 JSON | Only static/fixed reverse-proxy JSON targets; local API; no public management listener |
 | Upstream groups | Supervised health and bounded deterministic selections with confirmed public cleanup | Dedicated H1 per request; effective member deadlines and bounded concurrency/ownership gates PASS; no group soak claim |
-| H1 reuse/upstream H2 | Awaiting containing release of closed public-contract issues and local qualification | BLOCKED on HTTP Fetch #66 release; H2 upload trailers also #67 release |
+| H1 reuse/upstream H2 | Direct public request cases PASS 16/16 in 0.20; Gaoxy activation remains disabled | BLOCKED on #78/#79 and remaining qualification; memory diagnostic INCONCLUSIVE |
 
-Final local evidence passes460 scoped tests,40 independent selected RFC checks,
+The historical0.19.1 local candidate passes460 scoped tests,40 independent selected RFC checks,
 15 browser/peer checks and6 reverse-example checks. The qualified600-second
-profile covers local echo and a fixed dedicated-H1 proxy; all199 frozen source
-hashes remain unchanged. Separate independent specification and quality reviews
+profile covers local echo and a fixed dedicated-H1 proxy; all199 recorded source
+hashes identify that candidate. Separate independent specification and quality reviews
 pass. These gates do not establish full M3 or production acceptance.
 
 ## Resource accounting scope

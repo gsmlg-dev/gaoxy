@@ -1,0 +1,15 @@
+{
+  "original_maps": {
+    "file_count": 201,
+    "coverage_limitation": "Omit pooled_completion_probe.exs, including helper loaded by empty diagnostic. They still faithfully bind the listed files and must not be represented as complete probe-source maps."
+  },
+  "observed_pre_astra_runtime_handoff_probe_sha256": "f681723ff58754cb6169d0b42fb681a8439eeaa6c7ec7e94c752894405ce1e30",
+  "corrected_maps": {
+    "file_count": 202,
+    "added_path": "integration/http_fetch_contract/pooled_completion_probe.exs",
+    "public_rerun_receipt": "public-probes-final.json",
+    "diagnostic_rerun_receipt": "empty-continuation-final.json"
+  },
+  "original_raw_evidence_preserved": true,
+  "source_script_contents": "from pathlib import Path\nimport json,hashlib,subprocess,sys\nbaseline=json.loads(Path(\"docs/acceptance/evidence/m3/candidate-frozen.json\").read_text())\npaths=set(baseline[\"sha256\"]) | {\"integration/http_fetch_contract/upstream_peer.py\", \"integration/http_fetch_contract/empty_continuation_probe.exs\", \"integration/http_fetch_contract/pooled_completion_probe.exs\"}\nresult={\"head\":subprocess.check_output([\"git\",\"rev-parse\",\"HEAD\"],text=True).strip(),\"sha256\":{p:hashlib.sha256(Path(p).read_bytes()).hexdigest() for p in sorted(paths)}}\nPath(sys.argv[1]).write_text(json.dumps(result,indent=2,sort_keys=True)+\"\\n\")\nprint(\"Captured\",len(paths),\"source files\",sys.argv[1])\n"
+}

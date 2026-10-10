@@ -2,13 +2,16 @@
 
 **Severity:** blocker
 
-**Status:** BLOCKED — [gsmlg-dev/http_fetch#66](https://github.com/gsmlg-dev/http_fetch/issues/66)
+**Status:** FIXED IN INSTALLED 0.20.0 — [gsmlg-dev/http_fetch#66](https://github.com/gsmlg-dev/http_fetch/issues/66)
 (Feature, `internal request`).
 
-**Final live state (2026-10-10T13:18:23Z):** #66 CLOSED at13:12:38Z.
-Installed/latest GitHub/Hex0.19.1 predates the fix; runtime acceptance remains
-BLOCKED on a containing release, dependency update and public cleanup gates.
-The evidence below describes the installed0.19.1 contract.
+**Current state:** #66 is CLOSED and its fix is contained in installed0.20.0,
+actual tag `951ec75dadcebd8218f30d3ecdf99da142d4a463`. Positive public-network
+request qualification passes [16/16 cases](../acceptance/evidence/m3/upstream-0.20/public-probes-final.json).
+Gaoxy transport activation remains BLOCKED on the
+separate [managed-resource prerequisite #78](http-fetch-managed-transports.md)
+and remaining bounds/qualification. The text and negative evidence below are
+the historical0.19.1 contract, not the current installed API.
 
 Gaoxy M3 requires upstream HTTP/1 connection reuse and HTTP/2 multiplexing while
 retaining its request-scoped cleanup barrier. The proxy holds request resource
