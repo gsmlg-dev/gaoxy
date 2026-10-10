@@ -117,9 +117,10 @@ destructive cleanup occurred. Agent Note scope was unavailable because
 
 Native HTTP/1, WebSock, Plug/Phoenix, the browser fixture, local/remote routing,
 HTTP streaming and message-level WebSocket reverse proxying are implemented on
-`codex/m2-native`. The runnable reverse-proxy example passes its independent
+`codex/m2-native`. The earlier 0.19.0 run recorded passing independent
 local/remote, raw gzip, duplicate-cookie, upload/download, SSE, redirect and
-shutdown checks.
+shutdown checks for the runnable reverse-proxy example. Those checks were not
+rerun for the current narrow 304 repair.
 
 **M2 remains incomplete:** published HTTP Fetch 0.19.0 drops a present empty
 query (`/upload?` becomes `/upload`). Bug
@@ -137,10 +138,24 @@ upstream cleanup before receipt and normal DOWN. Caller expiry retains
 `cleanup_pending`. No request is replayed and HTTPS verification stays enabled.
 
 The scoped retry also repairs downstream per-write deadlines, polling copy
-credit, and client-supplied forwarding trailers. Current counts, commands,
-Phoenix/browser/core-consumer results and the failing #64 probe are recorded in
-[M2 acceptance](acceptance/m2.md). Historical bundles remain intact. HTTP capacity
-is source-qualified on OTP 28.5.0.5 with explicit socket buffers and stable
+credit, and client-supplied forwarding trailers. The current completion audit
+at source `e1fa21edc5cfdbfda887c5d7a505659444efc1c0` additionally preserves explicit
+304 representation-length metadata through buffered, file and streamed responses
+without adding a body or inventing an absent length. A proxy regression covers
+that metadata before a pipelined successor.
+
+The final scoped run records **66 core / 0 failures + 116 HTTP / 0 failures +
+73 proxy / 1 failure = 255 tests, 254 pass**, seed `302084`, `--max-cases 1`,
+exit 2. Only the enabled #64 empty-query regression fails; the formatter exits 0.
+The 304 regressions have separate red/green logs. See
+[the completion evidence](acceptance/evidence/m2/completion-audit-0.19.0/command-results.json)
+and [M2 acceptance](acceptance/m2.md). Earlier Phoenix/browser/example/core-consumer
+results remain historical and were not rerun for this change; their bundles stay
+intact. The upstream check at **2026-10-10T07:01:15Z** still records #64 **OPEN**
+and GitHub/Hex latest **0.19.0**, so full M2 remains incomplete pending a released
+fix and dependency update.
+
+HTTP capacity is source-qualified on OTP 28.5.0.5 with explicit socket buffers and stable
 qualified host settings; it is not a total BEAM memory limit.
 
 Standalone core-only dependency isolation is separate from the umbrella graph,

@@ -1,0 +1,208 @@
+{
+  "date": "2026-10-10",
+  "source_commit": "e1fa21edc5cfdbfda887c5d7a505659444efc1c0",
+  "status": "INCOMPLETE / BLOCKED_UPSTREAM",
+  "blocker": "https://github.com/gsmlg-dev/http_fetch/issues/64",
+  "scoped_tests": {
+    "gaoxy": 66,
+    "gaoxy_http": 116,
+    "gaoxy_proxy": 73,
+    "passed": 254,
+    "failures": 1,
+    "total": 255,
+    "seed": 302084,
+    "max_cases": 1,
+    "exit_code": 2
+  },
+  "focused_checks": {
+    "native_http": {
+      "tests": 116,
+      "failures": 0
+    },
+    "proxy_304": {
+      "executed": 1,
+      "failures": 0,
+      "excluded": 11
+    }
+  },
+  "upstream_checked_at": "2026-10-10T07:01:15.047940+00:00",
+  "independent_checks": {
+    "status": "NOT RERUN",
+    "prior_evidence": "../http-fetch-0.19.0/command-results.json",
+    "reason": "Narrow native 304 response-metadata repair; prior Phoenix/browser/example/core-only results remain historical."
+  },
+  "results": [
+    {
+      "check": "304-proxy-red",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs:249"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:58:11.274417+00:00",
+      "finished_at": "2026-10-10T06:58:14.083626+00:00",
+      "exit_code": 2,
+      "log": "304-proxy-red.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "304-tests-format",
+      "command": [
+        "mix",
+        "format",
+        "apps/gaoxy_http/test/http_network_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:59:44.964331+00:00",
+      "finished_at": "2026-10-10T06:59:46.042474+00:00",
+      "exit_code": 0,
+      "log": "304-tests-format.log",
+      "status": "PASS"
+    },
+    {
+      "check": "304-native-red",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test/http_network_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:00:05.921319+00:00",
+      "finished_at": "2026-10-10T07:00:10.417334+00:00",
+      "exit_code": 2,
+      "log": "304-native-red.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "304-format",
+      "command": [
+        "mix",
+        "format",
+        "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex",
+        "apps/gaoxy_http/test/http_network_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:01:21.943120+00:00",
+      "finished_at": "2026-10-10T07:01:22.993244+00:00",
+      "exit_code": 0,
+      "log": "304-format.log",
+      "status": "PASS"
+    },
+    {
+      "check": "304-native-green",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:01:28.259271+00:00",
+      "finished_at": "2026-10-10T07:01:34.155286+00:00",
+      "exit_code": 0,
+      "log": "304-native-green.log",
+      "status": "PASS"
+    },
+    {
+      "check": "304-proxy-green",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs:249"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:01:59.089066+00:00",
+      "finished_at": "2026-10-10T07:02:01.648591+00:00",
+      "exit_code": 0,
+      "log": "304-proxy-green.log",
+      "status": "PASS"
+    },
+    {
+      "check": "304-format-check",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:02:18.358672+00:00",
+      "finished_at": "2026-10-10T07:02:19.873744+00:00",
+      "exit_code": 0,
+      "log": "304-format-check.log",
+      "status": "PASS"
+    },
+    {
+      "check": "final-scoped",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test",
+        "apps/gaoxy_proxy/test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy/test/runtime_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/send_outcome_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/shutdown_hardening_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:03:20.928084+00:00",
+      "finished_at": "2026-10-10T07:03:40.619426+00:00",
+      "exit_code": 2,
+      "log": "final-scoped.log",
+      "status": "FAIL"
+    }
+  ]
+}
