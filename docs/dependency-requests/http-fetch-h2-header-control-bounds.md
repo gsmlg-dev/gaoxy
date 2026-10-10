@@ -1,5 +1,24 @@
 # Managed H2 header and control backlog bounds
 
+## Current 0.21.1 disposition
+
+#86 is closed; the containing fix is present in installed0.21.1. Independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+finds lifetime informational-head admission, one in-flight capacity update per
+owner and copied retained header/frame slices. Independent
+[installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+binds those bytes to the shipped cohort. Source containment does not complete
+the finite adversarial-backlog recipe below or full H2/P0–P6 accounting.
+The [finite cleartext green](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes24/24 with24 successful joined cleanups and exact canonical capacity MATCH;
+it does not execute the complete adversarial-backlog recipe. Full39/TLS remains
+BLOCKED because installed0.21.1 lacks95's fix, even though
+[refresh4](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+now records95 CLOSED. Managed activation remains disabled. The finding below
+is historical0.21.0 evidence, not a claim that0.21.1 lacks the reported fix.
+
+## Historical 0.21.0 request
+
 Upstream: [gsmlg-dev/http_fetch#86](https://github.com/gsmlg-dev/http_fetch/issues/86).
 Type Bug; label `internal request`.
 

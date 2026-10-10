@@ -1,5 +1,24 @@
 # Canonical managed H2 connection-capacity error
 
+## Current 0.21.1 disposition
+
+#89 is closed; independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms managed SocketClient now maps `:pending_capacity` to the canonical
+`{:transport_scope_capacity, :connections}` reason. Independent
+[installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+binds the fix to0.21.1. The [cleartext green](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes24/24 distinct cases (9 H1,15 h2c),24 successful cleanups, exact canonical
+connection-capacity MATCH, exit0,429 unchanged inputs and no remaining peer.
+The [initial cleanup failure](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
+and [repaired expected red](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json)
+remain separate under the [cleartext contract](../plans/m3-upstream-0.21.1-cleartext.md).
+Full39/TLS stays BLOCKED because installed0.21.1 lacks95's containing fix,
+despite its [subsequent issue closure](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json).
+The original0.21.0 MISMATCH receipts below remain historical and unchanged.
+
+## Historical 0.21.0 request
+
 Upstream: [gsmlg-dev/http_fetch#89](https://github.com/gsmlg-dev/http_fetch/issues/89).
 Type Bug; label `internal request`; severity needed.
 

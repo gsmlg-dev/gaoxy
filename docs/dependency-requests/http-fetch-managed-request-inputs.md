@@ -1,5 +1,21 @@
 # Charge normalized managed request inputs before admission
 
+## Current 0.21.1 disposition
+
+#87 is closed; independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms the containing request normalization and effective-field charge changes.
+Unused URI metadata is discarded, accepted request binaries are copied and
+non-PID bodies are structurally scanned before flattening. Independent
+[installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+binds this fix to installed0.21.1. The narrow Gaoxy nil/PID profile remains;
+source containment does not qualify original caller roots, transient copies or
+complete P0–P6. Old request/wire formulas below remain0.21.0 evidence and need
+source-specific updates. No managed activation or broad input-profile expansion
+follows from the fix.
+
+## Historical 0.21.0 request
+
 Upstream: [https://github.com/gsmlg-dev/http_fetch/issues/87](https://github.com/gsmlg-dev/http_fetch/issues/87).
 Type Bug; label `internal request`; severity needed.
 

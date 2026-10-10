@@ -6,7 +6,7 @@ defmodule Gaoxy.Proxy.ManagedH1Accounting do
   def facts do
     %{
       qualification: :unqualified,
-      cohort: %{version: "0.21.0", packages: 7, tag: "9813c126dc8b48055b9ee941c693fc27fa691489"},
+      cohort: %{version: "0.21.1", packages: 7, tag: "bdf849adf119039ed679d24d5fbb0a321f5e578a"},
       runtime: %{
         elixir: "1.18.5",
         otp: "28.5.0.7",

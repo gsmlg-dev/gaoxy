@@ -714,25 +714,18 @@ defmodule HTTPFetchManagedProbe do
 
       wire_before = wire(peer)
       {rejected, cr} = fetch(peer, scope, "/draining-overflow")
-      # PR81 SocketClient466–482 propagates Pool505's zero-queue error.
-      # This differs from the canonical capacity tuple in facade docs45–48.
       actual_error = Promise.await(rejected, @timeout)
       documented_error = {:error, {:transport_scope_capacity, :connections}}
-      # TODO(upstream): gsmlg-dev/http_fetch#89 — canonical connection-capacity tuple.
-      # WORKAROUND(upstream): gsmlg-dev/http_fetch#89 — retain explicit canonical MISMATCH.
-      source_error = {:error, :pending_capacity}
 
       IO.inspect(
         %{
           documented: documented_error,
-          source_expected: source_error,
           observed: actual_error,
           result: if(actual_error == documented_error, do: :match, else: :mismatch)
         },
         label: "MANAGED_CAPACITY_ERROR_CONTRACT"
       )
 
-      ^source_error = actual_error
       Peer.complete(cr)
       no_request_bytes(peer, wire_before)
       events = Peer.snapshot(peer)
@@ -767,10 +760,11 @@ defmodule HTTPFetchManagedProbe do
       ] = Peer.requests(events)
 
       true = independent_cid != cid and replacement_cid != cid
+      ^documented_error = actual_error
 
       report(
         "#{protocol}_max_connections_draining_before_bytes_no_pending_queue",
-        %{canonical_error_contract: :mismatch, observed_error: actual_error}
+        %{canonical_error_contract: :match, observed_error: actual_error}
       )
     end)
   end
@@ -918,25 +912,43 @@ defmodule HTTPFetchManagedProbe do
   end
 
   def run do
+    case System.argv() do
+      [] -> run_profile(:full)
+      ["--cleartext"] -> run_profile(:cleartext)
+      args -> raise ArgumentError, "unsupported managed probe arguments: #{inspect(args)}"
+    end
+  end
+
+  defp run_profile(profile) do
+    {protocols, h2_protocols, expected_cases} =
+      case profile do
+        :full -> {["h1", "tls", "h2c"], ["tls", "h2c"], 39}
+        :cleartext -> {["h1", "h2c"], ["h2c"], 24}
+      end
+
+    IO.puts(
+      "MANAGED_PROBE_PROFILE profile=#{profile} protocols=#{Enum.join(protocols, ",")}; TLS/full39 qualification BLOCKED #95"
+    )
+
     Peer.start_apps()
     Process.put(:managed_case_count, 0)
 
-    for protocol <- ["h1", "tls", "h2c"] do
+    for protocol <- protocols do
       common(protocol)
       deadline(protocol)
     end
 
     h1_extra()
 
-    for protocol <- ["tls", "h2c"] do
+    for protocol <- h2_protocols do
       h2_capacity(protocol)
       fragments(protocol)
     end
 
-    39 = Process.get(:managed_case_count)
+    ^expected_cases = Process.get(:managed_case_count)
 
     IO.puts(
-      "MANAGED_PROBE_PASS cases=39; resource properties only; canonical H2 capacity error MISMATCH"
+      "MANAGED_PROBE_PASS profile=#{profile} cases=#{expected_cases}; resource properties only; canonical H2 capacity error MATCH"
     )
   end
 end

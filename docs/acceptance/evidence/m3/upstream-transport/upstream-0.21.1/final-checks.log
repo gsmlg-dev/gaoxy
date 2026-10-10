@@ -1,0 +1,252 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 21111026, max_cases: 1
+
+
+
+  1) test upload cancellation joins the source and its blocked library enumerable producer (Gaoxy.Proxy.HTTPFetchCompletionTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_completion_test.exs:55[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.236.0>, #PID<0.236.0>}, [#PID<0.236.0>], {:erlang, :apply, [#Function<2.64129785/0 in HTTP.Stream.from_enumerable/2>, []]}], nil, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0m{:ok, upload} = HTTP.Stream.from_enumerable(enumerable)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (http_fetch 0.21.1) lib/http/stream.ex:65: HTTP.Stream.from_enumerable/2
+       test/http_fetch_completion_test.exs:72: (test)
+
+
+
+  2) test post-header cancellation settles an outstanding ACK chunk and closes the peer (Gaoxy.Proxy.HTTPFetchCompletionTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_completion_test.exs:26[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.240.0>, #PID<0.240.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mpromise = fetch(url, stream_response: true)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_completion_test.exs:40: (test)
+
+
+
+  3) test completed requests support concurrent cross-process waits and repeated cancellation (Gaoxy.Proxy.HTTPFetchCompletionTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_completion_test.exs:116[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.244.0>, #PID<0.244.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mpromise = fetch(url)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_completion_test.exs:124: (test)
+
+
+
+  4) test the public handle cancels before response headers and confirms peer closure (Gaoxy.Proxy.HTTPFetchCompletionTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_completion_test.exs:8[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.248.0>, #PID<0.248.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mpromise = fetch(url)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_completion_test.exs:16: (test)
+
+
+
+  5) test the public handle cancels a stalled OTP TLS handshake before headers (Gaoxy.Proxy.HTTPFetchCompletionTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_completion_test.exs:97[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.252.0>, #PID<0.252.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mpromise = fetch(String.replace_prefix(url, "http:", "https:"))
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_completion_test.exs:105: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  6) test published Fetch preserves buffered gzip bytes and duplicate fields (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:192[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.293.0>, #PID<0.293.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0m|> HTTP.fetch(http_version: :http1, redirect: :manual, decode_body: false)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:212: (test)
+
+
+
+  7) test published Fetch proxy preserves PID-streamed get bodies (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:79[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.298.0>, #PID<0.298.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.fetch(url,
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:97: (test)
+
+
+
+  8) test published Fetch proxy preserves buffered get bodies (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:48[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.303.0>, #PID<0.303.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0m|> HTTP.fetch(
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:62: (test)
+
+
+
+  9) test published WebSocket proxy preserves close 1001 after acknowledged frame writes (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:123[0m
+     [31m** (exit) exited in: GenServer.call(HTTP.WebSocket.ConnectionSupervisor, {:start_child, {{HTTP.WebSocket.Connection, :start_link, [%HTTP.WebSocket.Options{uri: %URI{scheme: "ws", authority: "127.0.0.1:41445", userinfo: nil, host: "127.0.0.1", port: 41445, path: "/", query: nil, fragment: nil}, url: "ws://127.0.0.1:41445/", telemetry_url: :default, protocols: [], owner: #PID<0.307.0>, binary_type: :blob, mode: :proxy, automatic_pong: false, headers: [], timeout: 30000, connect_timeout: 30000, ssl: [], socket_opts: [], tls_backend: :ssl, max_message_size: 1024, max_send_queue: 2048, http_version: :http1, http2_profile: nil, http2_scope: nil, http2_reuse: true, unix_socket: nil, delivery: :ack, max_queue_bytes: 2048, max_queue_events: 4, opening_timeout: 3000, idle_timeout: 3000, close_timeout: 3000, write_timeout: 3000, max_send_frames: 4, max_control_frames: 16, max_frame_parts: 16384, ref: #Reference<0.3424116848.3263168514.234758>}]}, :temporary, 5000, :worker, [HTTP.WebSocket.Connection]}}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.WebSocket.new(String.replace_prefix(url, "http:", "ws:"), [],
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (http_web_socket 0.21.1) lib/http/web_socket.ex:119: HTTP.WebSocket.new/3
+       test/http_fetch_contract_test.exs:152: (test)
+
+
+
+ 10) test published Fetch proxy preserves PID-streamed delete bodies (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:79[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.310.0>, #PID<0.310.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.fetch(url,
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:97: (test)
+
+
+
+ 11) test per-request streaming resolves a small fixed response before body EOF (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:9[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.315.0>, #PID<0.315.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.fetch(url,
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:24: (test)
+
+
+
+ 12) test published Fetch emits declared, ordered upload trailers (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:319[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.319.0>, #PID<0.319.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.fetch(url,
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:332: (test)
+
+
+
+ 13) test published WebSocket proxy preserves close 1011 after acknowledged frame writes (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:123[0m
+     [31m** (exit) exited in: GenServer.call(HTTP.WebSocket.ConnectionSupervisor, {:start_child, {{HTTP.WebSocket.Connection, :start_link, [%HTTP.WebSocket.Options{uri: %URI{scheme: "ws", authority: "127.0.0.1:37235", userinfo: nil, host: "127.0.0.1", port: 37235, path: "/", query: nil, fragment: nil}, url: "ws://127.0.0.1:37235/", telemetry_url: :default, protocols: [], owner: #PID<0.324.0>, binary_type: :blob, mode: :proxy, automatic_pong: false, headers: [], timeout: 30000, connect_timeout: 30000, ssl: [], socket_opts: [], tls_backend: :ssl, max_message_size: 1024, max_send_queue: 2048, http_version: :http1, http2_profile: nil, http2_scope: nil, http2_reuse: true, unix_socket: nil, delivery: :ack, max_queue_bytes: 2048, max_queue_events: 4, opening_timeout: 3000, idle_timeout: 3000, close_timeout: 3000, write_timeout: 3000, max_send_frames: 4, max_control_frames: 16, max_frame_parts: 16384, ref: #Reference<0.3424116848.3263168513.244899>}]}, :temporary, 5000, :worker, [HTTP.WebSocket.Connection]}}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.WebSocket.new(String.replace_prefix(url, "http:", "ws:"), [],
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (http_web_socket 0.21.1) lib/http/web_socket.ex:119: HTTP.WebSocket.new/3
+       test/http_fetch_contract_test.exs:152: (test)
+
+
+
+ 14) test published Fetch returns an early 413 while upload remains open and stops its source (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:271[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.327.0>, #PID<0.327.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.fetch(url,
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:301: (test)
+
+
+
+ 15) test published Fetch ACK stream preserves gzip bytes and delivers ordered trailers before end (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:221[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.332.0>, #PID<0.332.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0m|> HTTP.fetch(http_version: :http1, redirect: :manual, decode_body: false)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:252: (test)
+
+
+
+ 16) test published Fetch proxy preserves buffered delete bodies (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:48[0m
+     [31m** (exit) exited in: GenServer.call(:http_fetch_task_supervisor, {:start_task, [{:nonode@nohost, #PID<0.336.0>, #PID<0.336.0>}, :monitor], :temporary, nil}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0m|> HTTP.fetch(
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (elixir 1.18.5) lib/task/supervisor.ex:598: Task.Supervisor.async/6
+       (http_core 0.21.1) lib/http/request_lifecycle.ex:14: HTTP.RequestLifecycle.launch/2
+       (http_fetch 0.21.1) lib/http.ex:340: HTTP.fetch/2
+       test/http_fetch_contract_test.exs:62: (test)
+
+
+
+ 17) test published WebSocket handles coalesced 101 and frame with acknowledged messages and writes (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:352[0m
+     [31m** (exit) exited in: GenServer.call(HTTP.WebSocket.ConnectionSupervisor, {:start_child, {{HTTP.WebSocket.Connection, :start_link, [%HTTP.WebSocket.Options{uri: %URI{scheme: "ws", authority: "127.0.0.1:33199", userinfo: nil, host: "127.0.0.1", port: 33199, path: "/", query: nil, fragment: nil}, url: "ws://127.0.0.1:33199/", telemetry_url: :default, protocols: ["chat.v1"], owner: #PID<0.340.0>, binary_type: :array_buffer, mode: :browser, automatic_pong: true, headers: [], timeout: 30000, connect_timeout: 30000, ssl: [], socket_opts: [], tls_backend: :ssl, max_message_size: 1024, max_send_queue: 2048, http_version: :http1, http2_profile: nil, http2_scope: nil, http2_reuse: true, unix_socket: nil, delivery: :ack, max_queue_bytes: 2048, max_queue_events: 4, opening_timeout: 3000, idle_timeout: 3000, close_timeout: 3000, write_timeout: 3000, max_send_frames: 4, max_control_frames: 16, max_frame_parts: 16384, ref: #Reference<0.3424116848.3263168514.234948>}]}, :temporary, 5000, :worker, [HTTP.WebSocket.Connection]}}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.WebSocket.new(String.replace_prefix(url, "http:", "ws:"), ["chat.v1"],
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (http_web_socket 0.21.1) lib/http/web_socket.ex:119: HTTP.WebSocket.new/3
+       test/http_fetch_contract_test.exs:380: (test)
+
+
+
+ 18) test published WebSocket proxy preserves close 1008 after acknowledged frame writes (Gaoxy.Proxy.HTTPFetchContractTest)
+     [1m[30mapps/gaoxy_proxy/test/http_fetch_contract_test.exs:123[0m
+     [31m** (exit) exited in: GenServer.call(HTTP.WebSocket.ConnectionSupervisor, {:start_child, {{HTTP.WebSocket.Connection, :start_link, [%HTTP.WebSocket.Options{uri: %URI{scheme: "ws", authority: "127.0.0.1:42619", userinfo: nil, host: "127.0.0.1", port: 42619, path: "/", query: nil, fragment: nil}, url: "ws://127.0.0.1:42619/", telemetry_url: :default, protocols: [], owner: #PID<0.343.0>, binary_type: :blob, mode: :proxy, automatic_pong: false, headers: [], timeout: 30000, connect_timeout: 30000, ssl: [], socket_opts: [], tls_backend: :ssl, max_message_size: 1024, max_send_queue: 2048, http_version: :http1, http2_profile: nil, http2_scope: nil, http2_reuse: true, unix_socket: nil, delivery: :ack, max_queue_bytes: 2048, max_queue_events: 4, opening_timeout: 3000, idle_timeout: 3000, close_timeout: 3000, write_timeout: 3000, max_send_frames: 4, max_control_frames: 16, max_frame_parts: 16384, ref: #Reference<0.3424116848.3263168514.234961>}]}, :temporary, 5000, :worker, [HTTP.WebSocket.Connection]}}, :infinity)
+         ** (EXIT) no process: the process is not alive or there's no process currently associated with the given name, possibly because its application isn't started[0m
+     [36mcode: [0mHTTP.WebSocket.new(String.replace_prefix(url, "http:", "ws:"), [],
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/gen_server.ex:1121: GenServer.call/3
+       (http_web_socket 0.21.1) lib/http/web_socket.ex:119: HTTP.WebSocket.new/3
+       test/http_fetch_contract_test.exs:152: (test)
+
+
+Finished in 2.0 seconds (2.0s async, 0.00s sync)
+[31m44 tests, 18 failures[0m

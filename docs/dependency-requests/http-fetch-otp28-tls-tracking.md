@@ -1,5 +1,21 @@
 # OTP 28 TLS resource tracking request
 
+## Current 0.21.1 disposition
+
+#95 is now CLOSED, but installed/artifact TLS qualification remains BLOCKED.
+[Refresh4](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+observed20:19:06Z, updated20:05:59Z, with GitHub/Hex latest still0.21.1. Independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms RequestLifecycle and SSL transport are byte-identical to0.21.0 and the
+actual OTP28 socket still has no containing tracking fix. Independent
+[installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+establishes installed0.21.1. Full39/TLS H1/H2, resource turnover and whole-generation
+retirement qualification remain BLOCKED; no private workaround or activation.
+The public shape probe below is historical0.21.0 corroboration, not a fresh
+0.21.1 lifecycle test. Cleartext evidence cannot qualify this TLS path.
+
+## Historical 0.21.0 finding and public diagnostic
+
 Upstream [Bug #95](https://github.com/gsmlg-dev/http_fetch/issues/95), typed Bug
 and labeled `internal request`. Managed OTP TLS qualification is blocked;
 no local workaround.

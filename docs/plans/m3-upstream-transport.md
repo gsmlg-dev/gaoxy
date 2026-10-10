@@ -22,24 +22,43 @@ used by the repository. No new production dependency.
 **Baseline:** `d92d3691e073fbf33195b567af7be10cea6132fc`,
 `codex/m3-gateway`, `.trees/m3-gateway`. Parent owns the dependency update and
 its evidence. Historical0.20 tag is
-`951ec75dadcebd8218f30d3ecdf99da142d4a463`. Current0.21 tag is
+`951ec75dadcebd8218f30d3ecdf99da142d4a463`. Historical0.21.0 tag is
 `9813c126dc8b48055b9ee941c693fc27fa691489`, verified against all installed
 archives/runtime blobs from local baseline `4cc7a1a967d1b90a62d42db438316b10a03a1e16`.
 
 ## Execution boundaries
 
 Tasks0–2 were completed on0.20 and their evidence remains historical. The seven
-packages are now installed at0.21.0. Release38067971805 completed successfully;
-all196 shipped-file hashes and175 runtime Git blobs match, with #78/#79 fixes
-in the actual tag ancestry. Their containing-artifact prerequisite is resolved.
-Task3 now runs public functional probes after independent fixture review and a
-new complete source freeze. Runtime edits in Tasks4–8 still require Task3's
+packages are now installed at0.21.1. Independent
+[installed review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+passes196 shipped files and seven archive/lock identities; Fetch and WebSocket
+both pin `== 0.21.1`, exactly seven lock entries changed and17 unrelated entries
+are preserved. The [release](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/release-provenance.json)
+and [tag/source records](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/tag-source-provenance.json)
+identify tag `bdf849adf119039ed679d24d5fbb0a321f5e578a`, tree
+`2188645d94575d7cb452e41eab156e80d38a26ef`. The independent
+[source review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms fixes86–89 present and95 absent. Fresh
+[compatibility](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/compatibility.json)
+passes486/0, seed21111026, exit0,429 unchanged source identities, strict global/
+probe format and strict compile. The
+[cleartext green](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes24/24 (9 H1,15 h2c),24 successful joined cleanups, exact canonical MATCH,
+exit0,429 unchanged inputs and no remaining peer after independent
+[canonical code review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-canonical-code-review.md).
+The [initial cleanup-gate failure](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
+and [repaired expected red](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json)
+remain separate. [Remote refresh4](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+observes#95 CLOSED at20:19:06Z with latest GitHub/Hex still0.21.1; the installed
+cohort lacks its containing fix. Full39/TLS remains BLOCKED95 under the
+[patch plan](m3-upstream-0.21.1-qualification.md).
+Runtime edits in Tasks4–8 still require Task3's
 protocol-specific functional and complete accounting gates. A missing bound
 cannot be supplied by private transport calls or an arbitrary allowance.
 
-Managed H2 accounting is **BLOCKED** on
-[Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86), an independently
-source-confirmed aggregate header-event/SETTINGS-notification bound gap.
+Managed H2 accounting remains **UNQUALIFIED**: containing source fixes
+[Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86)'s reported paths,
+but complete adversarial-backlog and retained-byte qualification remain open.
 H1 functional investigation proceeds independently with C2/R32/P0,
 `buffer/recbuf/sndbuf=8192`, nil/PID uploads, ACKed binary chunks≤65536,
 raw streamed responses and manual redirects. The historical261,199,114-byte
@@ -48,6 +67,10 @@ policy, backing, structure and metadata coverage. The
 [controlled H1 architecture](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-accounting-architecture.md)
 replaces it with named P0–P6 obligations. The H2 52,207,632-byte component
 subtotal is likewise not a reservation. Neither enables transport activation.
+All old formulas, copy/construction facts, loaded identities and source reviews
+below are historical0.21.0 evidence. New normalization and recursive policy
+copies require source-specific accounting updates; complete P0–P6, held
+preparing/connecting saturation and Task4/M4 remain unqualified.
 
 The parent serializes all shared `http_fetch_client.ex`, `http/session.ex`,
 `http.ex`, `upstream_groups.ex`, package/lock and acceptance-document edits. An
@@ -244,8 +267,9 @@ Files: this plan's API checkpoint, the design's audited API table,
 - [x] Confirm #78/#79 are resolved in actual installed0.21 artifacts. Record
   archive/shipped-file/runtime-blob hashes and exact documented public signatures
   in `upstream-transport/upstream-0.21/release-provenance.json`,
-  `installed-provenance.json` and the source/API receipt. #86 remains a separate
-  unresolved H2 blocker; this checkbox does not approve Task3.
+  `installed-provenance.json` and the source/API receipt. This records the
+  historical0.21.0 checkpoint, when#86 remained unresolved; it does not approve
+  Task3 or replace the0.21.1 qualification above.
 - [x] Prove Fetch accepts the opaque caller-owned resource and cannot silently
   use the global pool. Inspect finite ingress/connection ledgers covering
   preparation, connection setup and active/idle requests; independently exercise
@@ -280,7 +304,7 @@ Files: this plan's API checkpoint, the design's audited API table,
   turnover with the qualified scope boundary. Preserve finite slot limits and
   exact retirement outcomes; source-only coverage is not runtime acceptance.
 
-Functional execution receipt: `upstream-0.21/managed-probes-recovery1.json`,
+Historical0.21.0 functional execution receipt: `upstream-0.21/managed-probes-recovery1.json`,
 39/39 cases,39 successful joined cleanups, exit0,425 unchanged frozen source
 hashes and no remaining owned peer. Independent specification/code-quality
 delta review and strict preflight18/0 pass. Both verified TLS H2 and h2c retain
@@ -318,7 +342,8 @@ separate source backing/owned constructor manifests and named partial facts.
 It opens no scope, starts no process, performs no I/O and wires no adapter.
 Its activation API stays explicitly unqualified while P0–P6 remain open.
 Needed upstream input/backing requests#87/#88 are excluded by the narrow grammar;
-they do not complete the remaining local proof work or resolve H2 blocker#86.
+their0.21.1 source fixes do not complete local P0–P6 proof work or the full#86
+adversarial-backlog gate.
 
 - [x] Independent specification review of the written narrow design/plan:
   `upstream-0.21/h1-preparation-spec-review.md`, with no-start test commands,
@@ -597,16 +622,16 @@ sustained lifetime/churn (Task 7b), and resource facade/provider arities remain
 distinct. Document self-review is not the pending independent re-review and
 does not qualify runtime behavior.
 
-Current checkpoint, 2026-10-11: installed0.21 artifacts resolve #78/#79;
-Task3's finite functional probes pass39/39 and pure Task3a passes26/0 with
-independent implementation reviews. Conditional source lemmas pass their
-separate independent review. Full P0-P6, held preparing/connecting saturation
-and Tasks4–8 remain unqualified. The fresh remote receipt records #86–#89
-CLOSED with latest published release still0.21.0; containing fixes and renewed
-qualification remain required. New blocker#95 is OPEN for managed OTP28 TLS
-tracking. A [later remote recheck](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh3.json)
-observes published GitHub/Hex0.21.1 at2026-10-10T19:52:26Z, with installed0.21.0
-and95 still open. Follow the [patch qualification plan](m3-upstream-0.21.1-qualification.md)
-for containing-source review, coordinated upgrade and fresh gates. The older handoff
-preserves its original prerelease boundary. Local delivery `d8e3a26` records the
-reviewed qualification and TLS blocker; it does not lift Tasks4–8's gates.
+Current checkpoint, 2026-10-11: installed0.21.1 provenance and independent
+source review PASS; fixes86–89 present,95 absent. Fresh compatibility PASS486/0,
+seed21111026, exit0,429 unchanged source identities, strict format/compile;
+cleartext green PASS24/24 with24 joined cleanups and canonical MATCH; the initial
+red cleanup failure and repaired expected-red success remain separate. Issue95
+is now closed, but installed0.21.1 lacks its fix, so full39/TLS stays BLOCKED.
+Historical
+0.21.0 Task3 functional39/39, pure Task3a26/0 and conditional source reviews
+remain tied to their original cohort. Follow the
+[patch qualification plan](m3-upstream-0.21.1-qualification.md) for fresh gates.
+Full P0–P6, held preparing/connecting saturation, complete#86 adversarial backlog
+and Tasks4–8 remain unqualified; M4 is gated. The older handoff and local delivery
+`d8e3a26` preserve their historical qualification/TLS boundary.

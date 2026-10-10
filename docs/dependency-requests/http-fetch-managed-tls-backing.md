@@ -1,5 +1,19 @@
 # Bound retained TLS policy backing for managed scopes
 
+## Current 0.21.1 disposition
+
+#88 is closed; independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms recursive owned binary copies after frozen policy validation. Independent
+[installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+binds that change to installed0.21.1. Historical0.21.0 shared-DER constructor/
+copy facts do not qualify the added0.21.1 copies. Cold CA/file loading, snapshot
+immutability, transient overlap and release still require complete P3 accounting.
+TLS resource tracking remains BLOCKED95; this policy fix does not qualify TLS
+turnover or whole-generation retirement and enables no managed activation.
+
+## Historical 0.21.0 request
+
 Upstream: [https://github.com/gsmlg-dev/http_fetch/issues/88](https://github.com/gsmlg-dev/http_fetch/issues/88).
 Type Feature; label `internal request`; severity needed.
 

@@ -1,5 +1,52 @@
 # Managed transport probe preparation
 
+## Current 0.21.1 cleartext qualification
+
+All seven packages are installed at0.21.1, actual tag
+`bdf849adf119039ed679d24d5fbb0a321f5e578a`, tree
+`2188645d94575d7cb452e41eab156e80d38a26ef`. The
+[release](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/release-provenance.json)
+and [tag/source provenance](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/tag-source-provenance.json)
+are reconciled by independent
+[source/API](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+and [installed-cohort reviews](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md):
+196 shipped files, seven archive/inner/outer/lock identities, both direct pins
+exactly `== 0.21.1`, exactly seven changed lock entries and17 unrelated preserved.
+Fixes86–89 are present;95 is absent. Fresh
+[compatibility](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/compatibility.json)
+passes486/0, seed21111026, exit0,429 unchanged source identities, strict format
+and compile. The
+[cleartext green](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes24 distinct cases (9 H1,15 h2c),24 successful joined cleanups, exact
+canonical connection-capacity MATCH, exit0,429 unchanged inputs and no remaining
+peer after [canonical code review](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-canonical-code-review.md).
+
+The explicit `--cleartext` profile selects all existing H1/h2c cases and requires
+exactly24 completed cases; default execution retains39. Unsupported arguments
+reject before app/peer startup. Parent serializes execution after independent
+review and complete input freeze; see the
+[cleartext plan](../../docs/plans/m3-upstream-0.21.1-cleartext.md) and current
+invocation/status in [README](README.md). The
+[initial red](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
+remains a cleanup FAILURE with16 case receipts,17 peer joins and16 fully
+successful cleanups. [Repair1 review](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-review.md)
+moved the same hard capacity match after normal finite completion without
+weakening cleanup. The [repaired red](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json)
+passes the expected-red gate:16 cases,17 fully successful cleanups, exit1.
+Harness counters are Sol repair1 successful, unsuccessful0, Astra0; historical
+0.21.0 counters below remain separate. The canonical green requires exact MATCH.
+[Refresh4](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+observes#95 CLOSED at20:19:06Z, but GitHub/Hex latest and installed0.21.1 lack
+its fix. Full39/TLS remains **BLOCKED95**, and this24-case pass
+does not qualify full M3, memory accounting, held preparing/connecting saturation,
+the complete#86 adversarial-backlog gate or Task4/M4 activation.
+
+## Historical 0.21.0 fixture and runtime evidence
+
+All receipts, source pointers, formulas and instructions below describe the
+historical0.21.0 checkpoint. Preserve them unchanged; they do not establish
+0.21.1 canonical compliance or qualify its new normalization/copy phases.
+
 Status: **Finite public resource-property qualification PASS:39/39 cases,
 39 successful joined peer cleanups, exit0 and425 unchanged frozen source hashes.**
 Astra recovery1 passed independent specification/code-quality delta review,

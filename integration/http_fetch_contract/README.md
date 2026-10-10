@@ -1,6 +1,33 @@
 # HTTP Fetch public contract revalidation
 
-## Current published 0.21.0 managed qualification
+## Current 0.21.1 cleartext qualification
+
+From the worktree root, run
+`unbuffer mix run --no-compile --no-start integration/http_fetch_contract/managed_transport_probe.exs --cleartext`
+in the frozen test environment only after parent review and serialized source
+freeze. The explicit profile selects the existing H1/h2c cases and requires
+exactly24 completions; omitting the flag retains the full39-case driver. Other
+arguments are rejected before app/peer startup. The
+[cleartext green](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes **24/24 distinct cases** (9 H1,15 h2c),24 successful joined cleanups,
+exact canonical connection-capacity **MATCH**, exit0,429 unchanged inputs and
+no remaining peer after independent
+[canonical code review](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-canonical-code-review.md).
+The [initial red cleanup FAILURE](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
+retains16 case receipts,17 peer joins and16 successful cleanups. The
+[repaired expected red](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json)
+records16 case receipts and17 successful cleanups after moving the unchanged
+old hard match after normal finite completion, weakening no cleanup expectation.
+Harness Sol repair1 succeeded, unsuccessful0, Astra0; historical0.21.0 counters
+remain separate. [Refresh4](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+observes#95 CLOSED at20:19:06Z, but GitHub/Hex latest and installed0.21.1 lack
+the fix. TLS/full39 qualification remains **BLOCKED on [#95](https://github.com/gsmlg-dev/http_fetch/issues/95)**.
+This24-case pass cannot qualify full M3, memory budgets, held preparing/connecting
+saturation or the complete #86 adversarial-backlog gate. Follow the
+[cleartext qualification plan](../../docs/plans/m3-upstream-0.21.1-cleartext.md);
+the historical0.21.0 PASS/MISMATCH receipts below remain tied to their old cohort.
+
+## Historical published 0.21.0 managed qualification
 
 The seven packages are installed at0.21.0, actual tag
 `9813c126dc8b48055b9ee941c693fc27fa691489`. The

@@ -7,14 +7,34 @@ Date: 2026-10-10. Architecture decision, not runtime acceptance. Gaoxy baseline
 
 ## Decision and present gate
 
-Current external gate, 2026-10-11: #86–#89 are now CLOSED in the
-[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh3.json).
-GitHub/Hex0.21.1 is published while the installed cohort remains0.21.0;
-containing-source, installation and renewed qualification are required.
-New [Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
-blocks actual OTP28 TLS-process tracking/release. Finite public retirement
-observations cannot certify unregistered receiver/sender termination. Do not
-patch dependencies, use private resource tracking or lift activation gates.
+Current gate, 2026-10-11: all seven packages are installed at0.21.1. The
+[release](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/release-provenance.json)
+and [tag/source provenance](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/tag-source-provenance.json)
+identify tag `bdf849adf119039ed679d24d5fbb0a321f5e578a`, tree
+`2188645d94575d7cb452e41eab156e80d38a26ef`. Independent
+[source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
+confirms fixes#86–#89 present and95 absent. Independent
+[installed-cohort review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
+passes196 shipped files and seven archive/lock identities, both exact0.21.1
+direct pins, seven changed lock entries and17 unrelated entries preserved.
+Fresh [compatibility](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/compatibility.json)
+passes **486 tests / 0 failures**, seed21111026, exit0,429 unchanged source
+identities, strict global/probe format and strict compile. Fresh
+[cleartext green](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
+passes24/24 distinct cases (9 H1,15 h2c),24 successful joined cleanups, exact
+canonical connection-capacity MATCH, exit0,429 unchanged inputs and no remaining
+owned peer after the [canonical code review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-canonical-code-review.md).
+The [initial red cleanup failure](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
+is preserved separately from the
+[repaired expected red](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json).
+[Remote refresh4](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
+observes#95 CLOSED at20:19:06Z, but latest GitHub/Hex and installed0.21.1 lack
+its fix; artifact/TLS lifecycle qualification remains blocked. Full39/TLS remains
+**BLOCKED on [#95](../dependency-requests/http-fetch-otp28-tls-tracking.md)**.
+Source fix86 does not qualify adversarial backlog or full H2 accounting; complete
+P0–P6, held preparing/connecting saturation and Task4/M4 activation remain gated.
+Finite retirement observations cannot certify unregistered TLS receiver/sender
+termination. Do not patch dependencies, use private tracking or lift activation.
 
 Use the public HTTP Fetch request/stream/completion contract behind the existing
 `Gaoxy.Proxy.UpstreamClient` adapter. Reusable transports must additionally have
@@ -22,7 +42,13 @@ an explicitly owned, bounded transport resource with confirmed retirement.
 Keep immutable route pins and request guardians; a request completion receipt
 and a transport retirement receipt prove different things.
 
-Installed coordinated HTTP packages are now **0.21.0**, actual tag commit
+The historical0.21.0 checkpoint below retains its original source findings and
+functional receipts. Its formulas, conditional proofs and loaded identities are
+restricted to0.21.0; new request normalization and policy copying require renewed
+accounting. Follow the [patch plan](../plans/m3-upstream-0.21.1-qualification.md)
+for the fresh compatibility/cleartext receipts and remaining delivery checks.
+
+Historically installed coordinated HTTP packages were **0.21.0**, actual tag commit
 `9813c126dc8b48055b9ee941c693fc27fa691489`. The
 [release provenance](../acceptance/evidence/m3/upstream-transport/upstream-0.21/release-provenance.json)
 verifies all seven archives, checksums and #78/#79 fix ancestry. The
@@ -33,7 +59,7 @@ passes strict format/compile and 460 tests, seed21102026; this does not qualify
 managed transport activation.
 
 The caller-owned facade requested in #78 and fragment cap requested in #79
-are present in these installed artifacts. H2 activation remains **BLOCKED** on
+are present in those historical artifacts. At that checkpoint H2 was **BLOCKED** on
 [Bug #86](https://github.com/gsmlg-dev/http_fetch/issues/86): valid peer-driven
 decoded-head events and asynchronous SETTINGS capacity updates lack a hard
 aggregate outstanding-event bound. Two independent source reviews confirm the
@@ -56,9 +82,8 @@ simultaneous root/copy/control release remain required before Task4 integration.
 Subsequent conditional native Binary/message/fragment formulas pass independent
 source review, and a34-module checkpoint establishes point-in-time BEAM/native
 identity. Actual native ABI, other object classes and lifetime enforcement stay
-open. Published0.21.1 now requires the separate
-[patch qualification plan](../plans/m3-upstream-0.21.1-qualification.md);95 is
-still open and the installed0.21.0 proof cohort is unchanged.
+open. These0.21.0 proofs remain historical after the coordinated0.21.1 install;
+the separate patch qualification and95 blocker are recorded above.
 The bounded policy/CA trace establishes warm snapshot sharing and explicit-DER
 option constructor components. Cold cache loading/replacement and immutable
 snapshot enforcement remain required; the global exclusion cannot absorb owned
@@ -66,13 +91,13 @@ copies after mutation. Full P3 and simultaneous policy-copy lifetimes stay open.
 
 The historical 0.20 public probes passed16/16 on complete202-file maps, and its
 finite empty-CONTINUATION diagnostic was INCONCLUSIVE. Preserve that evidence
-unchanged. Installed0.21 finite public capacity, deadline, isolation, retirement
+unchanged. Historical0.21.0 finite public capacity, deadline, isolation, retirement
 and256/257-frame regressions now pass39/39 with39 joined cleanups and425 stable
 hashes in `managed-probes-recovery1.json`. Canonical H2 connection-capacity
 errors remain MISMATCH under needed#89. This result closes no retained-byte,
 Gaoxy integration, version-matrix or managed-soak gate.
 
-### Installed-source checkpoint, 2026-10-11 Asia/Shanghai
+### Historical 0.21.0 installed-source checkpoint, 2026-10-11 Asia/Shanghai
 
 Upstream closed #79 through PR80, merge
 `ed7a8e23fb969b1337703d8ea5d12f774e5a5edb`, and #78 through PR81, merge
