@@ -6,7 +6,7 @@ defmodule Gaoxy.Proxy.WebSocket do
 
   Options are a map with `:upstream`, optional `:cacertfile`, and finite limits
   below. Compression, redirects and automatic replay are disabled. This endpoint
-  handles WebSocket upgrades; HTTP body proxying has a separate upstream gate.
+  handles WebSocket upgrades; use `Gaoxy.Proxy.HTTP` for HTTP body proxying.
 
   Each session reserves 4 MiB plus eight message windows and its request fields
   before opening upstream. The fixed allowance covers the pinned client's raw
