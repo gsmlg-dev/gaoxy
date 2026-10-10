@@ -5,7 +5,7 @@ only. Worktree: `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway`, branch
 `codex/m3-gateway`; starting HEAD
 `22b76e8051ddaf09e36797cb781b9b119870a9d4`, with shared uncommitted M3 changes.
 
-**Evidence/documentation verdict: PASS. Local commit packaging: PENDING.**
+**Delivery verdict: PASS for the locally committed implemented scope.**
 No actionable evidence or documentation inconsistency remains in the completed
 local gate bundle. This audit is separate from runtime specification and quality
 review, and does not mark full M3 complete. No Mix, fixture, test, network,
@@ -109,5 +109,47 @@ child process remains active. Auditor Sol repair rounds: 0; received Task 5 Astr
 recovery counter: 2 with one format failure, not an auditor repair.
 No design decision, scope expansion or repair is requested.
 
-Final delivery PASS awaits root's local commits and a final read-only comparison
-of committed source/evidence/documentation coverage against this accepted bundle.
+## Final committed packaging conclusion
+
+**Delivery PASS at `a5f639946b024fabdc0429b2c5bfd943126c3739`.** Independent
+read-only comparison confirms all 199 committed source blobs and all 178 static
+artifact blobs exactly match the accepted manifest. All 181 M3 evidence files
+are committed: the static map plus the three explicitly excluded closure
+reports. Documentation and evidence are covered by the 189-file M3 record
+commit; no required implementation, tool, fixture or evidence file is omitted.
+
+Seven local commits divide the delivered scope without mixing unrelated work:
+
+| Commit | Scope | Changed files |
+| --- | --- | ---: |
+| `25d68da` | Bounded UDP dispatcher and relay associations | 11 |
+| `050fc85` | Native HTTP/2, HTTP operations and generations | 38 |
+| `6d92298` | Destination policy, relays and upstream groups | 26 |
+| `6786d8f` | Strict standalone HTTP route reloads | 10 |
+| `8e89470` | Independent peers/browser/soak and local environment | 13 |
+| `9eda1ca` | GitHub Actions integration | 2 |
+| `a5f6399` | Current documentation and preserved evidence | 189 |
+
+Their commit subjects are conventional and contain no generated-by or Claude
+co-author trailers. Committed release-artifact E2E/release workflows remain
+unchanged by these seven delivery commits. No ignored build/dependency/browser
+runtime files, generated credentials or private-key PEM markers are tracked.
+Root-main HEAD and the unrelated user prompt remain exact.
+
+Committed full-scope whitespace verification returns exit 2 with the same 28
+preserved raw-log findings in seven evidence logs. Committed authored non-log
+verification returns exit 0 across 165 changed files. These actual outcomes
+remain distinct; this delivery verdict does not claim a green full whitespace
+check or rewrite the raw evidence.
+
+Parent's final seal may refresh only closure documentation, manifest receipts
+and checklist bookkeeping. At audit completion the already observed changes
+are the upstream snapshot read timestamp and Task 7's local delivery checkbox;
+the latest/installed dependency remains 0.19.1 and the blocker is unchanged.
+The parent must refresh affected artifact hashes when sealing those records.
+The auditor changes only this report, launches no runtime command and creates
+no commit. All auditor commands have finished; repair counters remain zero.
+
+Full M3 is still BLOCKED on the containing upstream release/update and required
+qualification. No M4 progression, remote publication, deployment or production
+acceptance follows from this local delivery PASS.

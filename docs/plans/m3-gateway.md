@@ -206,7 +206,7 @@ documentation, independent loopback/load harnesses and scoped CI wiring.
   formatting, external core-consumer isolation, and relevant native fixture.
 - [x] Perform independent full specification and code review; repair findings
   with deterministic regressions, maintaining Sol/Astra repair counters.
-- [ ] Update current capability docs without rewriting historical logs, review
+- [x] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.
 - [ ] Mark M3 complete only if every required gate and upstream prerequisite
   passes. Then write the M4 design/plan and automatically continue. If #66/#67
