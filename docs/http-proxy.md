@@ -4,10 +4,11 @@
 HTTPS authority. It implements the native endpoint contract and can share a
 listener with local Plug/Phoenix and WebSocket proxy routes:
 
-This M2 candidate is **not fully accepted**: published HTTP Fetch 0.19.0 drops
-a present empty query, so `/upload?` reaches the origin as `/upload`.
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocks that wire-identity
-gate; its failing regression remains enabled. No local workaround is applied.
+The selected HTTP Fetch 0.19.1 preserves present empty queries: `/upload?`
+reaches the origin unchanged. The historical
+[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker is resolved;
+its regression and the public Fetch probe now pass without a local workaround.
+See [current acceptance](acceptance/m2.md) for the scoped local verdict.
 
 ```elixir
 {:ok, gateway} = Gaoxy.HTTP.start_link(
@@ -35,8 +36,7 @@ route table over real sockets.
 
 The first matching route wins. Local Plug calls execute directly. Upstream
 authority, Host and TLS SNI come from configuration; the incoming raw escaped
-path and nonempty query are preserved. The empty-query exception above remains
-an upstream blocker. Configured
+path and query, including a present empty query, are preserved. Configured
 userinfo, path/query, fragment and unknown options are rejected. For a private
 CA, use `cacertfile: "/path/to/ca.pem"`. Certificate and hostname verification
 remain enabled, with OTP `:ssl` selected explicitly.
@@ -95,12 +95,13 @@ unconfirmed cleanup fails the service closed.
 
 ## Qualified capacity
 
-The pinned Fetch/Core/Runtime 0.19.0 client uses explicit 8,192-byte receive
+The pinned Fetch/Core/Runtime 0.19.1 client uses explicit 8,192-byte receive
 buffers, direct H1, no connection reuse, raw response streaming and ACK delivery.
 The source-qualified OTP 28.5.0.5 host uses the default `:inet` backend and
 `:ssl.internal_active_n` in 1..100. Keep those startup settings stable.
 Incompatible host settings are rejected without mutating global configuration.
-The [source audit](acceptance/evidence/m2/http-fetch-0.19.0/otp-receive-bound.md)
+The [OTP source audit](acceptance/evidence/m2/http-fetch-0.19.0/otp-receive-bound.md),
+with the [0.19.1 contract comparison](acceptance/evidence/m2/http-fetch-0.19.1/contract-diff.md),
 derives a conservative maximum SSL delivery of 837,637 bytes plus a 65,536-byte
 HTTP framing carry.
 

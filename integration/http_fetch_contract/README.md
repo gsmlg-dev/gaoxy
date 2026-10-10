@@ -1,11 +1,14 @@
 # HTTP Fetch public contract revalidation
 
-## Published 0.19.0
+## Published 0.19.1
 
 The root lock selects the seven published Fetch/Core/Runtime/WebSocket/QUIC/TLS
-packages at 0.19.0, release commit `09b1686fb2ce529a17287d97801107c53b1ac57c`.
-Fetch/Core/Runtime/WebSocket library files match that archive. #27–#30, #38,
-#45 and #60 are closed.
+packages at 0.19.1. The release tag identifies commit `c26a17712a02a03985a764b6b100ca840fcc4349`;
+workflow main HEAD is not the release identity. #27–#30, #38, #45, #60 and #64
+are closed. The [current audit](../../docs/m2-dependency-audit.md) and
+[0.19.1 evidence](../../docs/acceptance/evidence/m2/http-fetch-0.19.1/) record
+immutable Git tree/blob verification and dependency gates separately from
+historical failures.
 
 From the worktree root:
 
@@ -17,36 +20,31 @@ ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/method_body_probe.exs
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/websocket_close_probe.exs
-```
-
-Thirteen tests pass, covering original raw bytes/trailers/early-response/WS
-contracts plus buffered/PID GET/DELETE entities, valid WebSocket close codes and
-small fixed-length streaming before body EOF. Both probes now exit **0**: six
-POST/GET/DELETE body cases and four exact close-code cases. The fixes require
-`request_mode: :proxy` and WebSocket `mode: :proxy`; browser defaults intentionally
-retain their browser restrictions. `stream_response: true` is per request and
-replaces the earlier proposed global threshold constraint.
-
-The [current audit](../../docs/m2-dependency-audit.md) and
-[0.19.0 evidence](../../docs/acceptance/evidence/m2/http-fetch-0.19.0/)
-record these dependency gates separately from the historical 0.17.2 failures.
-Five additional completion tests pass with the public RequestCompletion handle,
-including cancellation before establishment, upload and outstanding response ACK,
-plus confirmed completed-request cleanup. The WebSocket proxy has its own
-wire/TLS/lifecycle acceptance tests.
-
-Raw-target acceptance remains blocked by
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64): both string and URI
-Fetch inputs remove a present empty query. This probe intentionally exits **1**
-on 0.19.0, separately from the passing body/close/completion contracts:
-
-```sh
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/empty_query_probe.exs
 ```
 
-The equivalent end-to-end regression remains enabled in `http_proxy_wire_test.exs`.
+Thirteen streaming/WebSocket tests and five public RequestCompletion tests pass.
+They cover raw bytes, trailers, early responses, GET/DELETE entities, exact valid
+WebSocket close codes, incremental fixed-length responses and confirmed request
+cleanup. `request_mode: :proxy` and WebSocket `mode: :proxy` preserve proxy
+semantics; browser defaults retain their browser restrictions.
+`stream_response: true` remains a per-request option.
+
+Both string and URI Fetch inputs now preserve `/upload?` on the wire. The public
+empty-query probe exits **0**, and both request cleanup receipts return `:ok`.
+The equivalent end-to-end regression in `http_proxy_wire_test.exs` also passes.
+The method-body and close-code probes pass all **6 and 4 cases**, exit 0.
 No dependency patch, private target API or URI rewrite workaround is used.
+
+## Historical 0.19.0 raw-target failure
+
+HTTP Fetch 0.19.0 removed a present empty query from string and URI inputs:
+`/upload?` reached the peer as `/upload`. The public probe exited **1** and the
+proxy regression failed, even though request completion independently returned
+`:ok`. Bug [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocked that
+raw-target gate until the published 0.19.1 fix. Original failed evidence remains
+in [the earlier bundle](../../docs/acceptance/evidence/m2/http-fetch-0.19.0/).
 
 ## Historical 0.17.1 reproduction
 
@@ -71,4 +69,4 @@ early 413. Undefined H2/H3 module warnings are expected because only H1 modules
 are compiled in memory. The recorded log used the same source files from the
 audit snapshot. The separately source-audited 101 upgrade ownership gap was #30.
 Do not count historical defect output as a passing proxy gate or as current
-0.19.0 behavior.
+0.19.1 behavior.

@@ -119,9 +119,9 @@ its explicit policy. H1 absolute-target authority must agree with Host.
 
 The endpoint contract also supports [HTTP streaming](http-proxy.md) and
 [WebSocket reverse proxying](websocket-proxy.md), without making `gaoxy_http`
-depend on `gaoxy_proxy`. HTTP Fetch 0.19.0 confirms request cleanup through its
-public completion handle. M2's remaining blocker is raw-target identity:
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) drops a present empty query.
+depend on `gaoxy_proxy`. HTTP Fetch 0.19.1 confirms request cleanup through its
+public completion handle and preserves present empty queries. The historical
+raw-target blocker [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) is resolved.
 Per-request `stream_response: true` avoids a global streaming threshold.
 These dependencies add no H2/H3 server support.
 

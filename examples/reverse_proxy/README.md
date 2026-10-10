@@ -1,9 +1,10 @@
 # Local routes and a streaming reverse proxy
 
-The example's six independent checks pass, but the M2 candidate still has an
-upstream raw-target blocker: HTTP Fetch 0.19.0 removes a present empty query
-(`/path?` becomes `/path`). See [#64](https://github.com/gsmlg-dev/http_fetch/issues/64)
-and [the HTTP proxy guide](../../docs/http-proxy.md).
+The gateway streams local and remote routes through one native listener.
+HTTP Fetch 0.19.1 preserves present empty queries (`/path?` stays `/path?`),
+resolving the historical [#64](https://github.com/gsmlg-dev/http_fetch/issues/64)
+blocker. See [current acceptance](../../docs/acceptance/m2.md) and
+[the HTTP proxy guide](../../docs/http-proxy.md).
 
 From the umbrella root, point the example at one trusted upstream authority:
 
@@ -12,7 +13,7 @@ GAOXY_UPSTREAM=http://127.0.0.1:4001 GAOXY_PORT=4000 mix run examples/reverse_pr
 ```
 
 The gateway binds loopback. `/local` runs a local Plug directly; every other
-path goes to the configured upstream with its raw path and nonempty query preserved.
+path goes to the configured upstream with its raw path and query, including a present empty query, preserved.
 Enter `stop` to drain the gateway and exit. Set `GAOXY_PORT=0` to select an
 ephemeral port; the `GAOXY_PROXY_READY` line reports its actual address.
 

@@ -50,7 +50,7 @@ authority/SNI comes from fixed trusted HTTP/WebSocket endpoint configuration.
 Forwarding fields from the client and all Connection-nominated fields are removed;
 new forwarding metadata uses the actual downstream connection.
 
-HTTP Fetch 0.19.0 resolves the earlier #27–#30, #38, #45 and #60 contracts. Native
+HTTP Fetch 0.19.1 includes the earlier #27–#30, #38, #45, #60 and #64 fixes. Native
 message-level WebSocket proxying now preserves valid/empty Close details and
 subprotocols, with independent ping/pong on each hop. It uses public acknowledged
 send/delivery APIs and monitors the public socket PID for completed cleanup.
@@ -66,9 +66,9 @@ state. Native body polling, finite per-window writes and header/trailer policy
 connect both hops without collecting bodies. Explicit socket buffers and the
 inspected OTP 28.5.0.5 receive contract supply the conservative reservation bound.
 
-Full M2 raw-target acceptance remains blocked on #64: the upstream H1 serializer
-loses a present empty query. Its regression stays enabled, without a local URI
-rewrite. Per-request `stream_response: true` avoids a global streaming threshold.
+The former M2 raw-target blocker #64 is resolved by published 0.19.1: the
+upstream H1 serializer preserves present empty queries. The public probe and
+enabled proxy regression pass without a local URI rewrite. Per-request `stream_response: true` avoids a global streaming threshold.
 Core consumers remain isolated from the proxy's published QUIC/TLS-engine
 dependencies. Package presence establishes no H2/H3 capability. See
 [the current dependency audit](../m2-dependency-audit.md).

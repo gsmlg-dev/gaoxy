@@ -62,11 +62,11 @@ fail admission closed; deadline expiry retains cleanup-pending semantics.
 
 `gaoxy_server` owns versioned JSON loading, a fixed handler allowlist and release
 startup using the same runtime. Its `prep_stop` drains the embedded instance. No
-management server is added. HTTP Fetch/WebSocket 0.19.0 fixes #27–#30, #38, #45
-and #60. HTTP uploads and raw ACK responses stream with finite deadlines, fixed
+management server is added. HTTP Fetch/WebSocket 0.19.1 includes the #27–#30, #38, #45,
+#60 and #64 fixes. HTTP uploads and raw ACK responses stream with finite deadlines, fixed
 authority, verified TLS and no replay. Native connection polling retains input
-and detects idle downstream closure. The complete raw-target gate remains blocked
-on #64 (a present empty query is lost). The proxy package transitively
+and detects idle downstream closure. Present empty queries survive the
+upstream wire path; the former #64 blocker is resolved. The proxy package transitively
 installs QUIC/TLS engines while standalone core consumers retain isolation;
 dependency presence implies no H2/H3 support. See [the dependency audit](m2-dependency-audit.md).
 

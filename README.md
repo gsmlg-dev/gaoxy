@@ -7,12 +7,13 @@ service lifecycle, finite admission, telemetry and custom protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
 message-level [WebSocket reverse proxying](docs/websocket-proxy.md).
-HTTP Fetch 0.19.0 supplies the required cancellation-completion contract.
-**Full M2 remains incomplete:** its HTTP serializer drops a present empty query
-(`/upload?` becomes `/upload`), tracked in
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64). The failing regression
-is retained without a dependency workaround. See
-[M2 evidence](docs/acceptance/m2.md).
+HTTP Fetch 0.19.1 supplies request-owned cleanup and preserves present empty
+queries (`/upload?` remains `/upload?`), resolving the former
+[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker.
+**M2 local completion gates pass**: all 255 scoped tests and refreshed native
+Phoenix/browser, reverse-proxy example and core-consumer checks pass.
+See [M2 evidence](docs/acceptance/m2.md). Gaoxy hosted CI, push, merge, release
+and deployment are not part of this local acceptance.
 
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
@@ -150,7 +151,7 @@ explicitly unsupported and tested for absence of delivery.
 ## Optional QUIC
 
 The standalone core dependency graph contains no QUIC engine. The umbrella
-proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.19.0 through
+proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.19.1 through
 HTTP Fetch/WebSocket; this does not enable H2/H3 or qualify generic QUIC against
 that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`
 ==0.17.0 separately:
@@ -184,7 +185,7 @@ closing phase; clean/no-error fixture teardown is not established.
 | IPv6 multicast | Linux inet accepted subset; socket scoped-send negative; macOS controls rejected |
 | Generic QUIC | Experimental custom-ALPN streams accepted with independent aioquic; noisy fixture close handling remains |
 | Custom TCP TLS | Explicitly unsupported; public ex_ssl server API missing |
-| Native HTTP/Phoenix/proxies | Native HTTP/Phoenix, WebSocket and HTTP streaming implemented; M2 raw-target acceptance blocked on HTTP Fetch #64 |
+| Native HTTP/Phoenix/proxies | Native HTTP/Phoenix, WebSocket and HTTP streaming implemented; M2 local gates PASS with HTTP Fetch 0.19.1: 255 scoped tests, native Phoenix/browser, routes, streaming and clean core consumer |
 
 [Capability limits](docs/capabilities.md), [dependency provenance](docs/dependency-audit.md),
 [architecture](docs/architecture.md) and [ADRs](docs/adr/) define the boundaries.

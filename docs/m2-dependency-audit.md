@@ -1,7 +1,7 @@
 # M2 dependency audit — 2026-10-10
 
 Source contracts were refreshed before native server implementation on
-2026-10-09 and revalidated against published HTTP Fetch 0.19.0 on 2026-10-10.
+2026-10-09 and revalidated against published HTTP Fetch 0.19.1 on 2026-10-10.
 These are contract/provenance records; compatibility requires Gaoxy's own
 network and browser acceptance.
 
@@ -12,8 +12,8 @@ network and browser acceptance.
 | WebSockAdapter | phoenixframework/websock_adapter `80901f46c8864cb8bd5231c32b7171b9d0e330ce`; local fork `53ee1c7c9edb39fda9c531a5c79aec17ee081a6c` | 0.6.0 | MIT | Vendored immutable source, one runtime dispatch clause, independent review and wire regression passed; see `vendor/websock_adapter/GAOXY.md` |
 | Phoenix | phoenixframework/phoenix `bd1801833b4fd7ceb02497cc7ba2d05e9bd391c8` | 1.8.15 | MIT | External fixture lock; browser and independent network acceptance passed |
 | Phoenix LiveView | Exact Hex checksums in `examples/phoenix_native/mix.lock` | 1.2.12 | MIT | External fixture only; real click, binary upload and reconnect passed |
-| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.19.0 tag `09b1686fb2ce529a17287d97801107c53b1ac57c` | 0.19.0 | MIT | Exact published Hex packages/checksums in root lock; library files match release source; eighteen streaming/WS/completion contract tests pass; empty-query wire regression fails (#64) |
-| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.19.0 source release; Hex checksums in root lock | 0.19.0 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
+| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.19.1 tag `c26a17712a02a03985a764b6b100ca840fcc4349` | 0.19.1 | MIT | Seven Hex checksums match root lock; installed library file sets and Git blob SHA-1 match the immutable tag; eighteen streaming/WS/completion tests and empty-query probe pass; #64 is closed |
+| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.19.1 source release; Hex checksums in root lock | 0.19.1 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
 
 The native server continues using the locked public Thousand Island socket
 contract and OTP TLS. Core gains no HTTP application dependency. Phoenix stays
@@ -70,7 +70,7 @@ appropriate. `redirect: :manual` prevents reverse-proxy redirect following.
 The OTP SSL transport supports explicit verified TLS, CAs, hostname matching and
 SNI; Gaoxy must not accept configuration that silently disables this policy.
 `http1_reuse: false` scopes each H1 HTTP proxy request to its own transport.
-The 0.19.0 RequestCompletion API below supplies the separate cleanup barrier. H2/H3 reuse is outside M2.
+The public RequestCompletion API introduced in 0.19.0 supplies the separate cleanup barrier. H2/H3 reuse is outside M2.
 
 ## Historical 0.17.1 blockers
 
@@ -152,7 +152,7 @@ contracts blocked the previous retry; the 0.17.2 evidence bundle remains intact.
 
 ## Historical published 0.18.1 revalidation
 
-This section records the earlier blocked retry; the 0.19.0 section supersedes
+This section records the earlier blocked retry; the 0.19.1 section supersedes
 its dependency version and blocker status.
 
 The selected seven Hex packages are now 0.18.1. Fetch/Core/Runtime/WebSocket library
@@ -188,7 +188,7 @@ example remain BLOCKED on #60. Gaoxy does not inspect private Agent state, proce
 links or SocketClient internals to infer successful cleanup. Native HTTP seams and
 the WebSocket reverse proxy have independently scoped evidence; M2 is incomplete.
 
-## Published 0.19.0 revalidation
+## Historical published 0.19.0 revalidation
 
 The root lock selects the same seven packages at 0.19.0, release commit
 `09b1686fb2ce529a17287d97801107c53b1ac57c`, published 2026-10-10T05:12:09Z.
@@ -230,3 +230,38 @@ label `internal request`, severity blocker, has the reproduction and source path
 The [public probe](../integration/http_fetch_contract/empty_query_probe.exs) exits
 1 and the unskipped end-to-end regression fails. Raw-target work is stopped until
 an upstream release fixes it; no dependency or URI rewrite workaround is used.
+
+## Published 0.19.1 revalidation
+
+The root lock upgrades only the same seven Fetch/Core/Runtime/WebSocket/QUIC/TLS
+entries to **0.19.1**; other packages are unchanged. The release was published
+at **2026-10-10T07:20:34Z**. Its tag identifies
+`c26a17712a02a03985a764b6b100ca840fcc4349`, which differs from the workflow's main
+HEAD. All seven Hex release checksums match the lock and none is retired.
+Installed Fetch/Core/Runtime/WebSocket file sets and Git blob SHA-1 match the
+exact immutable tag tree (**16/32/19/10 files**). The archive download timed out;
+verification used Git tree/blob identity instead. Release metadata and that
+conclusive comparison are recorded in
+[the current bundle](acceptance/evidence/m2/http-fetch-0.19.1/), including
+[package verification](acceptance/evidence/m2/http-fetch-0.19.1/package-source-verification.json).
+
+#64 is **CLOSED**. Both string and URI inputs through public `HTTP.fetch/2`
+retain `/upload?`, the enabled native proxy regression passes, and each public
+completion receipt returns `:ok`. The standalone probe exits 0. No dependency
+patch, private target override or URI rewrite workaround is used. The historical
+0.19.0 failures remain preserved separately.
+
+All **255 scoped tests pass**: 66 core, 116 native HTTP and 73 proxy, seed
+`754722`, `--max-cases 1`, exit 0. Strict compilation and formatting exit 0.
+The fresh fixture/browser/example/core-consumer gates pass (2/13/6/1), as do
+all 6 method-body and 4 WebSocket-close probe cases. The public
+RequestCompletion and acknowledged streaming contracts remain in use; the
+[contract comparison](acceptance/evidence/m2/http-fetch-0.19.1/contract-diff.md)
+records the patch against the earlier receive/carry qualification: only
+Core `request.ex` changes its origin-form query condition; Fetch, Runtime and
+WebSocket library sources are unchanged from 0.19.0. Streaming, cancellation,
+parser, dial, TLS and socket code is byte-identical, retaining the prior bound
+on the same qualified host. That audit
+applies to the inspected OTP 28.5.0.5 host and stable qualified settings, not
+other OTP versions or total VM/kernel memory. Gaoxy H2/H3, pools and complete
+gateway controls remain later milestones.

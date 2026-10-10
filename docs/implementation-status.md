@@ -113,55 +113,45 @@ active after handoff. Shared workspace changes were preserved; no reset/stash or
 destructive cleanup occurred. Agent Note scope was unavailable because
 `.agents/current.md` is missing; no project was guessed and no note was written.
 
-## Current M2 retry and next milestones
+## Current M2 acceptance and next milestones
 
 Native HTTP/1, WebSock, Plug/Phoenix, the browser fixture, local/remote routing,
 HTTP streaming and message-level WebSocket reverse proxying are implemented on
-`codex/m2-native`. The earlier 0.19.0 run recorded passing independent
-local/remote, raw gzip, duplicate-cookie, upload/download, SSE, redirect and
-shutdown checks for the runnable reverse-proxy example. Those checks were not
-rerun for the current narrow 304 repair.
+`codex/m2-native`. **M2 local completion gates PASS** with published HTTP Fetch
+0.19.1. The scoped suite passes **255 tests**:
+**66 core + 116 HTTP + 73 proxy, 0 failures**, seed `754722`, `--max-cases 1`,
+exit 0. Strict compilation and formatting exit 0. Fresh independent checks pass:
+2 Phoenix fixture tests, 13 browser/peer checks, 6 reverse-proxy example checks
+and 1 strict-compiled external core-consumer test. The method-body and
+WebSocket-close probes pass all 6 and 4 cases. The browser reload check restores
+the controller with identical before/after SHA256.
 
-**M2 remains incomplete:** published HTTP Fetch 0.19.0 drops a present empty
-query (`/upload?` becomes `/upload`). Bug
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) is filed with type Bug,
-label `internal request`, and severity blocker. The enabled regression fails;
-there is no private API, dependency patch, URI rewrite or skipped-test workaround.
-Only that raw-target task is stopped pending a released fix and dependency update.
+The seven selected Fetch/Core/Runtime/WebSocket/QUIC/TLS packages are 0.19.1;
+other lock entries are unchanged. The release tag identifies
+`c26a17712a02a03985a764b6b100ca840fcc4349`, published **2026-10-10T07:20:34Z**,
+not the workflow main HEAD. #60 and #64 are resolved. Present empty queries now
+survive both string and URI Fetch inputs and the real proxy wire path, with
+confirmed public completion. The probe exits 0. No dependency patch, private
+API, URI rewrite or skipped-test workaround was used.
 
-The seven selected Fetch/Core/Runtime/WebSocket/QUIC/TLS packages are 0.19.0,
-release commit `09b1686fb2ce529a17287d97801107c53b1ac57c`. #60 is resolved:
-a public RequestCompletion handle confirms cleanup before establishment, during
-upload, and after response headers. HTTP and WebSocket guardians survive native
-owner/instance force-stop, retain admission reservations, and confirm public
-upstream cleanup before receipt and normal DOWN. Caller expiry retains
-`cleanup_pending`. No request is replayed and HTTPS verification stays enabled.
+HTTP and WebSocket guardians survive native owner/instance force-stop, retain
+admission reservations and confirm public upstream cleanup before receipt and
+normal DOWN. Caller expiry retains `cleanup_pending`. HTTPS verification stays
+enabled; requests are not replayed and redirects are returned to the caller.
+The scoped suite also covers repaired downstream per-write deadlines, polling
+copy credit, client-supplied forwarding trailers and 304 representation-length
+metadata without an invented body or absent length.
 
-The scoped retry also repairs downstream per-write deadlines, polling copy
-credit, and client-supplied forwarding trailers. The current completion audit
-at source `e1fa21edc5cfdbfda887c5d7a505659444efc1c0` additionally preserves explicit
-304 representation-length metadata through buffered, file and streamed responses
-without adding a body or inventing an absent length. A proxy regression covers
-that metadata before a pipelined successor.
+Current counts, commands, source/package verification and independent outcomes
+are recorded in [M2 acceptance](acceptance/m2.md) and
+[the 0.19.1 evidence](acceptance/evidence/m2/http-fetch-0.19.1/command-results.json).
+Historical failed gates and the earlier 304 red/green audit remain intact.
+HTTP capacity stays source-qualified on OTP 28.5.0.5 with explicit socket buffers
+and stable qualified host settings; it is not a total BEAM memory limit.
 
-The final scoped run records **66 core / 0 failures + 116 HTTP / 0 failures +
-73 proxy / 1 failure = 255 tests, 254 pass**, seed `302084`, `--max-cases 1`,
-exit 2. Only the enabled #64 empty-query regression fails; the formatter exits 0.
-The 304 regressions have separate red/green logs. See
-[the completion evidence](acceptance/evidence/m2/completion-audit-0.19.0/command-results.json)
-and [M2 acceptance](acceptance/m2.md). Earlier Phoenix/browser/example/core-consumer
-results remain historical and were not rerun for this change; their bundles stay
-intact. The upstream check at **2026-10-10T07:01:15Z** still records #64 **OPEN**
-and GitHub/Hex latest **0.19.0**, so full M2 remains incomplete pending a released
-fix and dependency update.
-
-HTTP capacity is source-qualified on OTP 28.5.0.5 with explicit socket buffers and stable
-qualified host settings; it is not a total BEAM memory limit.
-
-Standalone core-only dependency isolation is separate from the umbrella graph,
-which includes `elixir_quic`/`ex_ssl`; no H2/H3 support is implied. No push, merge,
-release, deployment or hosted M2 run is part of this local retry.
-
+Standalone core-only isolation remains separate from the umbrella graph, which
+includes `elixir_quic`/`ex_ssl`. Gaoxy CI, push, merge, release and deployment are
+**NOT RUN** for this candidate. No H2/H3 or production acceptance is implied.
 M3: HTTP/2 and complete gateway/relay policies. M4: independently verified HTTP/3.
 Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.
