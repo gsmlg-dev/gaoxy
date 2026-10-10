@@ -1,7 +1,20 @@
 defmodule Gaoxy.HTTP do
-  @moduledoc "Native HTTP/1 service backed by a Gaoxy TCP or TLS listener."
+  @moduledoc "Native HTTP/1 and opt-in HTTP/2 service backed by a Gaoxy TCP or TLS listener."
 
-  @keys [:id, :ip, :port, :transport, :tls, :limits, :http_limits, :plug, :endpoint]
+  @keys [
+    :id,
+    :ip,
+    :port,
+    :transport,
+    :tls,
+    :limits,
+    :http_limits,
+    :plug,
+    :endpoint,
+    :protocols,
+    :h2c,
+    :h2_limits
+  ]
 
   def start_link(options) do
     with {:ok, spec} <- service_spec(options), do: Gaoxy.start_link(services: [spec])
@@ -40,9 +53,6 @@ defmodule Gaoxy.HTTP do
     transport = Keyword.get(options, :transport, :tcp)
     tls = Keyword.get(options, :tls, %{})
 
-    tls =
-      if transport == :tls and is_map(tls), do: Map.put_new(tls, :alpn, ["http/1.1"]), else: tls
-
     service = %{
       id: Keyword.get(options, :id, :http),
       ip: Keyword.get(options, :ip, {127, 0, 0, 1}),
@@ -52,11 +62,66 @@ defmodule Gaoxy.HTTP do
       limits: Keyword.get(options, :limits, %{}),
       handler_mode: :native,
       handler: Gaoxy.HTTP.Connection,
-      handler_options: %{endpoint: endpoint, http_limits: Keyword.get(options, :http_limits, %{})}
+      handler_options: %{
+        endpoint: endpoint,
+        http_limits: Keyword.get(options, :http_limits, %{}),
+        protocols: Keyword.get(options, :protocols, [:http1]),
+        h2c: Keyword.get(options, :h2c, :disabled),
+        h2_limits: Keyword.get(options, :h2_limits, %{})
+      }
     }
 
-    if transport == :tls and is_map(tls) and tls.alpn not in [[], ["http/1.1"]],
-      do: {:error, :unsupported_http_alpn},
-      else: Gaoxy.Config.service(service)
+    with {:ok, normalized} <- Gaoxy.HTTP.Options.normalize(service.handler_options),
+         tls = alpn(transport, tls, normalized.protocols),
+         :ok <- protocol_transport(transport, tls, normalized),
+         {:ok, spec} <- Gaoxy.Config.service(%{service | handler_options: normalized, tls: tls}),
+         :ok <- budget(spec) do
+      {:ok, spec}
+    end
+  end
+
+  defp alpn(:tls, tls, protocols) when is_map(tls) do
+    Map.put_new(
+      tls,
+      :alpn,
+      Enum.map(protocols, fn
+        :http1 -> "http/1.1"
+        :http2 -> "h2"
+      end)
+    )
+  end
+
+  defp alpn(_, tls, _), do: tls
+
+  defp protocol_transport(:tcp, _, %{protocols: [:http1], h2c: :disabled}), do: :ok
+  defp protocol_transport(:tcp, _, %{protocols: [:http2], h2c: :prior_knowledge}), do: :ok
+
+  defp protocol_transport(:tls, tls, %{h2c: :disabled, protocols: protocols}) when is_map(tls) do
+    allowed =
+      Enum.map(protocols, fn
+        :http1 -> "http/1.1"
+        :http2 -> "h2"
+      end)
+
+    if Map.get(tls, :alpn, []) == allowed or (protocols == [:http1] and tls.alpn == []),
+      do: :ok,
+      else: {:error, :unsupported_http_alpn}
+  end
+
+  defp protocol_transport(:tls, tls, _) when not is_map(tls), do: {:error, :invalid_options}
+  defp protocol_transport(_, _, _), do: {:error, :invalid_http_protocols}
+
+  defp budget(%{handler_options: %{protocols: protocols} = options} = spec) do
+    if :http2 in protocols do
+      with :ok <- Gaoxy.HTTP.HTTP2.Limits.validate_host(spec.transport) do
+        Gaoxy.HTTP.HTTP2.Limits.validate_budget(
+          options.http_limits,
+          options.h2_limits,
+          spec.limits
+        )
+      end
+    else
+      :ok
+    end
   end
 end

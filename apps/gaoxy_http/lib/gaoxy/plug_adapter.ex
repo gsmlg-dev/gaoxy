@@ -1,6 +1,6 @@
 defmodule Gaoxy.PlugAdapter do
   @behaviour Plug.Conn.Adapter
-  alias Gaoxy.HTTP.{Exchange, HTTP1.Response}
+  alias Gaoxy.HTTP.{Exchange, Response}
 
   def send_resp(exchange, status, headers, body) do
     case Response.send_resp(exchange, status, headers, body) do
@@ -51,6 +51,8 @@ defmodule Gaoxy.PlugAdapter do
 
   def inform(exchange, status, headers), do: Response.inform(exchange, status, headers)
 
+  def upgrade(%{request: %{version: :"HTTP/2"}}, _, _), do: {:error, :not_supported}
+
   def upgrade(exchange, :websocket, arguments) do
     case Gaoxy.HTTP.WebSocket.prepare(exchange, arguments) do
       {:ok, exchange} -> {:ok, exchange}
@@ -61,33 +63,9 @@ defmodule Gaoxy.PlugAdapter do
   def upgrade(_, _, _), do: {:error, :not_supported}
   def push(_, _, _), do: {:error, :not_supported}
 
-  def get_peer_data(exchange) do
-    {address, port} = exchange.peer
-
-    cert =
-      case ThousandIsland.Socket.peercert(exchange.socket) do
-        {:ok, value} -> value
-        _ -> nil
-      end
-
-    %{address: address, port: port, ssl_cert: cert}
-  end
-
-  def get_sock_data(exchange) do
-    {address, port} = exchange.local
-    %{address: address, port: port}
-  end
-
-  def get_ssl_data(exchange) do
-    if ThousandIsland.Socket.secure?(exchange.socket) do
-      case ThousandIsland.Socket.connection_information(exchange.socket) do
-        {:ok, data} -> data
-        _ -> nil
-      end
-    else
-      nil
-    end
-  end
+  def get_peer_data(exchange), do: Exchange.peer_data(exchange)
+  def get_sock_data(exchange), do: Exchange.sock_data(exchange)
+  def get_ssl_data(exchange), do: Exchange.ssl_data(exchange)
 
   def get_http_protocol(%{request: %{version: version}}), do: version
 end

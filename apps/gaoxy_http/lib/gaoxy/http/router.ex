@@ -6,8 +6,9 @@ defmodule Gaoxy.HTTP.Router do
   during routing. Target endpoints own their explicit header policy.
   """
   @behaviour Gaoxy.HTTP.Endpoint
-  alias Gaoxy.HTTP.HTTP1.{Parser, Response}
-  defstruct [:generation, routes: []]
+  alias Gaoxy.HTTP.HTTP1.Parser
+  alias Gaoxy.HTTP.Response
+  defstruct [:generation, routes: [], resources: []]
 
   @impl true
   def init(%__MODULE__{} = router), do: {:ok, router}
@@ -21,12 +22,43 @@ defmodule Gaoxy.HTTP.Router do
       end
     end)
     |> case do
-      {:ok, routes} -> {:ok, %__MODULE__{generation: make_ref(), routes: Enum.reverse(routes)}}
-      error -> error
+      {:ok, routes} ->
+        with {:ok, resources} <- collect_resources(routes),
+             do:
+               {:ok,
+                %__MODULE__{
+                  generation: make_ref(),
+                  routes: Enum.reverse(routes),
+                  resources: resources
+                }}
+
+      error ->
+        error
     end
   end
 
   def compile(_), do: {:error, :invalid_routes}
+
+  defp collect_resources(routes) do
+    Enum.reduce_while(routes, {:ok, []}, fn %{target: {module, options}}, {:ok, acc} ->
+      handles =
+        if function_exported?(module, :resources, 1), do: module.resources(options), else: []
+
+      with {:ok, handles} <- Gaoxy.HTTP.Resources.validate(handles),
+           {:ok, union} <- Gaoxy.HTTP.Resources.validate(Enum.uniq(acc ++ handles)) do
+        {:cont, {:ok, union}}
+      else
+        error -> {:halt, error}
+      end
+    end)
+  rescue
+    _ -> {:error, :invalid_endpoint_resources}
+  catch
+    _, _ -> {:error, :invalid_endpoint_resources}
+  end
+
+  @impl true
+  def resources(router), do: router.resources
 
   def match(%__MODULE__{routes: routes}, request) do
     case Enum.find(routes, &matches?(&1, request)) do

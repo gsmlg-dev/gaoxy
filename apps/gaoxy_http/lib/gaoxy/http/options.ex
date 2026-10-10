@@ -32,7 +32,29 @@ defmodule Gaoxy.HTTP.Options do
            (Code.ensure_loaded?(module) and function_exported?(module, :init, 1) and
               function_exported?(module, :call, 2)) || {:error, :invalid_endpoint},
          {:ok, initialized} <- initialize(module, options, Map.get(original, :initialized, false)) do
-      {:ok, %{endpoint: {module, initialized}, http_limits: limits, initialized: true}}
+      with {:ok, h2} <- Gaoxy.HTTP.HTTP2.Limits.normalize(Map.get(original, :h2_limits, %{})),
+           protocols = Map.get(original, :protocols, [:http1]),
+           h2c = Map.get(original, :h2c, :disabled),
+           true <-
+             protocols in [[:http1], [:http2], [:http2, :http1]] ||
+               {:error, :invalid_http_protocols},
+           true <- h2c in [:disabled, :prior_knowledge] || {:error, :invalid_http_protocols},
+           true <-
+             (h2c != :prior_knowledge or protocols == [:http2]) ||
+               {:error, :invalid_http_protocols},
+           true <-
+             (:http2 not in protocols or h2.max_frame + 9 <= limits.max_buffer_bytes) ||
+               {:error, :http2_ingress_budget} do
+        {:ok,
+         %{
+           endpoint: {module, initialized},
+           http_limits: limits,
+           initialized: true,
+           protocols: protocols,
+           h2c: h2c,
+           h2_limits: h2
+         }}
+      end
     end
   end
 

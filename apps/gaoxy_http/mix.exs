@@ -13,11 +13,12 @@ defmodule GaoxyHttp.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:plug, "== 1.20.3"},
+        {:hpax, "== 1.1.0"},
         {:websock, "== 0.5.3"},
         {:websock_adapter, path: "../../vendor/websock_adapter", override: true}
       ]
     ]
   end
 
-  def application, do: [extra_applications: [:logger]]
+  def application, do: [extra_applications: [:logger], mod: {Gaoxy.HTTP.Application, []}]
 end

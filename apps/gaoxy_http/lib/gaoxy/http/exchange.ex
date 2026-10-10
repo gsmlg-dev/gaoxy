@@ -20,6 +20,14 @@ defmodule Gaoxy.HTTP.Exchange do
     response: :unset,
     response_trailers: [],
     close: false,
+    route_bytes: 0,
+    resource_pins: [],
+    protocol_bytes: 0,
+    transport: nil,
+    transport_state: nil,
+    secure: nil,
+    ssl: nil,
+    peer_cert: nil,
     expect_sent: false
   ]
 
@@ -46,7 +54,7 @@ defmodule Gaoxy.HTTP.Exchange do
 
   def plug_conn(exchange) do
     request = exchange.request
-    scheme = if Socket.secure?(exchange.socket), do: "https", else: "http"
+    scheme = if secure?(exchange), do: "https", else: "http"
 
     uri = %URI{
       scheme: scheme,
@@ -92,6 +100,9 @@ defmodule Gaoxy.HTTP.Exchange do
   end
 
   @doc "Reads at most one credited body piece, retaining state when the finite wait expires."
+  def read_body_step(%{transport: module} = exchange, credit, wait_ms) when not is_nil(module),
+    do: module.read_body_step(exchange, credit, wait_ms)
+
   def read_body_step(exchange, credit, wait_ms) do
     cond do
       not is_integer(credit) or credit <= 0 ->
@@ -117,6 +128,9 @@ defmodule Gaoxy.HTTP.Exchange do
   end
 
   @doc "Polls one socket byte for peer closure, retaining input for the next request or body read."
+  def poll_connection(%{transport: module} = exchange, wait_ms) when not is_nil(module),
+    do: module.poll_connection(exchange, wait_ms)
+
   def poll_connection(exchange, wait_ms) do
     cond do
       not is_integer(wait_ms) or wait_ms < 0 ->
@@ -328,7 +342,59 @@ defmodule Gaoxy.HTTP.Exchange do
     headers = if exchange.request, do: 2 * exchange.request.head_bytes, else: 0
     trailers = if exchange.body, do: 2 * exchange.body.trailer_bytes, else: 0
     response_trailers = 2 * Enum.reduce(exchange.response_trailers, 0, &(byte_size(&1) + &2))
-    byte_size(exchange.buffer) + headers + trailers + response_trailers
+
+    byte_size(exchange.buffer) + headers + trailers + response_trailers + exchange.route_bytes +
+      exchange.protocol_bytes
+  end
+
+  def body_complete?(%{transport: nil, body: %{phase: :done}}), do: true
+  def body_complete?(%{transport: nil}), do: false
+  def body_complete?(%{transport: module} = exchange), do: module.body_complete?(exchange)
+
+  def request_trailers(%{body: %{trailers: trailers}}), do: trailers
+  def request_trailers(_), do: []
+
+  def secure?(%{secure: secure}) when is_boolean(secure), do: secure
+  def secure?(exchange), do: Socket.secure?(exchange.socket)
+
+  def peer_data(exchange) do
+    {address, port} = exchange.peer
+
+    certificate =
+      if exchange.transport == nil do
+        case Socket.peercert(exchange.socket) do
+          {:ok, cert} -> cert
+          _ -> nil
+        end
+      else
+        exchange.peer_cert
+      end
+
+    %{address: address, port: port, ssl_cert: certificate}
+  end
+
+  def sock_data(exchange) do
+    {address, port} = exchange.local
+    %{address: address, port: port}
+  end
+
+  def ssl_data(%{transport: module, ssl: ssl}) when not is_nil(module), do: ssl
+
+  def ssl_data(exchange) do
+    if secure?(exchange) do
+      case Socket.connection_information(exchange.socket) do
+        {:ok, data} -> data
+        _ -> nil
+      end
+    end
+  end
+
+  def abort(%{transport: module} = exchange, reason) when not is_nil(module),
+    do: module.abort(exchange, reason)
+
+  def abort(exchange, _reason) do
+    Socket.close(exchange.socket)
+    {:ok, %{exchange | close: true}}
   end
 
   # Traverse application-owned iodata lazily. Never flatten an entire response

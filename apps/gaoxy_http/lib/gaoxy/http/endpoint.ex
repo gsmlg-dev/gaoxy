@@ -3,4 +3,7 @@ defmodule Gaoxy.HTTP.Endpoint do
   @callback init(term()) :: {:ok, term()} | {:error, term()}
   @callback call(Gaoxy.HTTP.Exchange.t(), term()) ::
               {:ok, Gaoxy.HTTP.Exchange.t()} | {:error, term(), Gaoxy.HTTP.Exchange.t()}
+  @callback absolute_form_scheme?(atom()) :: boolean()
+  @callback resources(term()) :: list()
+  @optional_callbacks absolute_form_scheme?: 1, resources: 1
 end

@@ -10,7 +10,67 @@ defmodule Gaoxy.HTTP.Connection do
   def validate_options(options), do: Options.normalize(options)
 
   @impl true
-  def handle_connection(socket, %{spec: spec, gate: gate} = context) do
+  def handle_connection(socket, %{spec: spec} = context) do
+    case protocol(socket, spec.handler_options) do
+      :http2 ->
+        {:ok, peer} = ThousandIsland.Socket.peername(socket)
+        {:ok, local} = ThousandIsland.Socket.sockname(socket)
+
+        ssl =
+          case ThousandIsland.Socket.connection_information(socket) do
+            {:ok, value} -> value
+            _ -> nil
+          end
+
+        cert =
+          case ThousandIsland.Socket.peercert(socket) do
+            {:ok, value} -> value
+            _ -> nil
+          end
+
+        Gaoxy.HTTP.HTTP2.Connection.start(
+          socket,
+          Map.merge(context, %{
+            owner: self(),
+            peer: peer,
+            local: local,
+            secure: ThousandIsland.Socket.secure?(socket),
+            ssl: ssl,
+            peer_cert: cert
+          })
+        )
+
+      :http1 ->
+        start_http1(socket, context)
+
+      {:error, reason} ->
+        {:error, reason, context}
+    end
+  end
+
+  defp protocol(socket, options) do
+    if ThousandIsland.Socket.secure?(socket) do
+      case ThousandIsland.Socket.negotiated_protocol(socket) do
+        {:ok, "h2"} ->
+          if :http2 in options.protocols, do: :http2, else: {:error, :unsupported_protocol}
+
+        {:ok, "http/1.1"} ->
+          if :http1 in options.protocols, do: :http1, else: {:error, :unsupported_protocol}
+
+        {:error, :protocol_not_negotiated} ->
+          if :http1 in options.protocols, do: :http1, else: {:error, :unsupported_protocol}
+
+        _ ->
+          {:error, :unsupported_protocol}
+      end
+    else
+      if options.h2c == :prior_knowledge and options.protocols == [:http2],
+        do: :http2,
+        else: :http1
+    end
+  end
+
+  defp start_http1(socket, %{spec: spec, gate: gate} = context) do
     limits = spec.handler_options.http_limits
 
     with :ok <-
@@ -39,6 +99,9 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   @impl true
+  def handle_data(bytes, socket, %{phase: :http2} = state),
+    do: Gaoxy.HTTP.HTTP2.Connection.data(bytes, socket, state)
+
   def handle_data(bytes, socket, %{phase: :websocket} = state) do
     websocket_result(WebSocket.data(bytes, socket, state.websocket), state)
   end
@@ -102,7 +165,14 @@ defmodule Gaoxy.HTTP.Connection do
         Process.cancel_timer(state.header_timer)
         scheme = if ThousandIsland.Socket.secure?(socket), do: :https, else: :http
 
-        if request.scheme != nil and request.scheme != scheme do
+        {endpoint, _options} = state.spec.handler_options.endpoint
+
+        allowed_absolute =
+          request.target_form == :absolute and
+            function_exported?(endpoint, :absolute_form_scheme?, 1) and
+            endpoint.absolute_form_scheme?(request.scheme)
+
+        if request.scheme != nil and request.scheme != scheme and not allowed_absolute do
           _ = write_error(socket, state, 400)
           {:close, state}
         else
@@ -200,7 +270,8 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   defp finish_response(%{response: response} = exchange)
-       when response in [:unset] or (is_tuple(response) and elem(response, 0) == :websocket),
+       when response in [:unset, :tunnel] or
+              (is_tuple(response) and elem(response, 0) == :websocket),
        do: exchange
 
   defp finish_response(exchange) do
@@ -221,6 +292,13 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   @impl true
+  def handle_call(message, from, {socket, %{phase: :http2} = state}),
+    do: Gaoxy.HTTP.HTTP2.Connection.call(message, from, socket, state)
+
+  @impl true
+  def handle_info(message, {socket, %{phase: :http2} = state}),
+    do: Gaoxy.HTTP.HTTP2.Connection.info(message, socket, state)
+
   def handle_info(
         {:gaoxy_drain, gate, lease, deadline},
         {socket, %{phase: :websocket, gate: gate, lease: lease} = state}
@@ -271,22 +349,28 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   @impl true
+  def handle_close(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
   def handle_close(_, %{phase: :websocket, websocket: ws}), do: WebSocket.terminate(ws, :remote)
   def handle_close(_, _), do: :ok
 
   @impl true
+  def handle_error(_, _, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
+
   def handle_error(reason, _, %{phase: :websocket, websocket: ws}),
     do: WebSocket.terminate(ws, {:error, reason})
 
   def handle_error(_, _, _), do: :ok
 
   @impl true
+  def handle_shutdown(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
+
   def handle_shutdown(_, %{phase: :websocket, websocket: ws}),
     do: WebSocket.terminate(ws, :shutdown)
 
   def handle_shutdown(_, _), do: :ok
 
   @impl true
+  def handle_timeout(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
   def handle_timeout(_, %{phase: :websocket, websocket: ws}), do: WebSocket.timeout(ws)
   def handle_timeout(_, _), do: :ok
 end

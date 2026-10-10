@@ -43,7 +43,7 @@ defmodule Gaoxy.HTTP.PlugEndpoint do
           if flush_sent() do
             %{exchange | response: :sent, close: true}
           else
-            case Gaoxy.HTTP.HTTP1.Response.send_resp(
+            case Gaoxy.HTTP.Response.send_resp(
                    %{exchange | close: true},
                    Plug.Exception.status(error),
                    [],

@@ -5,7 +5,7 @@ defmodule Gaoxy.PhoenixAdapter do
   `server: false` so its supervisor does not create another listener.
   """
 
-  @http_options [:ip, :port, :limits, :http_limits]
+  @http_options [:ip, :port, :limits, :http_limits, :protocols, :h2c, :h2_limits]
   @https_options @http_options ++ [:certfile, :keyfile, :versions, :alpn]
 
   def child_specs(endpoint, config) when is_atom(endpoint) and is_list(config) do
@@ -69,7 +69,10 @@ defmodule Gaoxy.PhoenixAdapter do
       transport: if(scheme == :http, do: :tcp, else: :tls),
       endpoint: {Gaoxy.HTTP.PlugEndpoint, {plug_module, plug_options, :endpoint_managed}},
       limits: Keyword.get(options, :limits, %{}),
-      http_limits: Keyword.get(options, :http_limits, %{})
+      http_limits: Keyword.get(options, :http_limits, %{}),
+      protocols: Keyword.get(options, :protocols, [:http1]),
+      h2c: Keyword.get(options, :h2c, :disabled),
+      h2_limits: Keyword.get(options, :h2_limits, %{})
     ]
 
     args =
