@@ -109,6 +109,150 @@ defmodule Gaoxy.Qualification.ManagedH1LeaseModelTest do
 
     state = applied(state, {:release_attempt, attempt})
     assert Model.snapshot(state).occupied_attempts == {0, 0, 0, 0}
+
+    for phase <- [:reserved, :preparing] do
+      {state, generation} = ready_generation(fresh())
+      {state, old} = apply_event(state, {:acquire_attempt, generation, 10})
+      {state, source} = apply_event(state, {:retain_root, old, :source})
+      {state, helpers} = apply_event(state, {:retain_root, old, :helpers})
+
+      state =
+        if phase == :preparing do
+          state = applied(state, {:prepare_attempt, old})
+          {state, _prepared} = apply_event(state, {:retain_root, old, :prepared})
+          state
+        else
+          state
+        end
+
+      original = attempt(state, old)
+      state = applied(state, {:advance, 9})
+      assert attempt(state, old) == original
+      state = applied(state, {:advance, 10})
+      expired = %{original | outcome: :timed_out, phase: :cleanup_hold}
+      assert attempt(state, old) == expired
+      rejected(state, {:release_attempt, old}, :ownership_pending)
+      rejected(state, {:request_completed, old}, :invalid_phase)
+      rejected(state, {:begin_control, old, :initial_wait}, :invalid_phase)
+      without_roots = clear_roots(state, old)
+      rejected(without_roots, {:release_attempt, old}, :invalid_phase)
+      assert attempt(without_roots, old).completion == :none
+
+      counts = Model.snapshot(state)
+      state = applied(state, {:reject_attempt, old})
+      terminal = %{expired | completion: :not_launched, phase: :releasing}
+      assert attempt(state, old) == terminal
+      assert Model.snapshot(state) == counts
+      assert terminal.controls == %{initial_wait: :unused, abort_wait: :unused}
+      unchanged(state, {:reject_attempt, old}, :duplicate)
+      rejected(state, {:release_attempt, old}, :ownership_pending)
+
+      held = applied(state, {:owner_down, old})
+      assert :ok = Model.invariants(held)
+      assert attempt(held, old) == %{terminal | lost_proof: true, phase: :cleanup_hold}
+      assert Model.snapshot(held) == counts
+      unchanged(held, {:owner_down, old}, :duplicate)
+      unchanged(held, {:reject_attempt, old}, :duplicate)
+      rejected(held, {:release_attempt, old}, :lost_proof)
+      held = clear_roots(held, old)
+      assert Enum.all?(Map.values(attempt(held, old).roots), &is_nil/1)
+      assert attempt(held, old).completion == :not_launched
+      assert attempt(held, old).outcome == :timed_out
+      assert attempt(held, old).deadline == 10
+      assert attempt(held, old).chunks == terminal.chunks
+      assert attempt(held, old).controls == terminal.controls
+      rejected(held, {:release_attempt, old}, :lost_proof)
+      assert Model.snapshot(held).occupied_attempts == counts.occupied_attempts
+
+      state = applied(state, {:advance, 11})
+      assert attempt(state, old) == terminal
+      state = applied(state, {:release_root, source})
+      rejected(state, {:release_attempt, old}, :ownership_pending)
+      state = clear_roots(state, old)
+      assert attempt(state, old).outcome == :timed_out
+      assert attempt(state, old).deadline == 10
+      state = applied(state, {:release_attempt, old})
+      assert Model.snapshot(state).occupied_attempts == {0, 0, 0, 0}
+      {state, current} = apply_event(state, {:acquire_attempt, generation, 20})
+      {state, current_source} = apply_event(state, {:retain_root, current, :source})
+      assert elem(current, 2) == elem(old, 2)
+      refute elem(current, 3) == elem(old, 3)
+      assert attempt(state, current).roots.source == current_source
+
+      for event <- [
+            {:attempt_result, old, :ok},
+            {:request_completed, old},
+            {:release_root, source},
+            {:release_root, helpers},
+            {:reject_attempt, old},
+            {:release_attempt, old}
+          ] do
+        unchanged(state, event, :stale)
+      end
+
+      assert Model.snapshot(state).occupied_attempts == {1, 0, 0, 0}
+    end
+
+    for issued_control <- [false, true] do
+      {state, generation} = ready_generation(fresh())
+      {state, launched} = launched_attempt(state, generation, 10)
+
+      state =
+        if issued_control do
+          {state, _control} = apply_event(state, {:begin_control, launched, :initial_wait})
+          state
+        else
+          state
+        end
+
+      state = applied(state, {:advance, 10})
+      rejected(state, {:reject_attempt, launched}, :invalid_phase)
+      assert attempt(state, launched).completion == :none
+      state = clear_roots(state, launched)
+
+      if issued_control do
+        state = applied(state, {:request_completed, launched})
+        rejected(state, {:reject_attempt, launched}, :invalid_phase)
+        rejected(state, {:release_attempt, launched}, :ownership_pending)
+        assert attempt(state, launched).controls.initial_wait.result == :pending
+        refute attempt(state, launched).controls.initial_wait.helper_released
+        refute attempt(state, launched).controls.initial_wait.frontier_released
+      else
+        rejected(state, {:release_attempt, launched}, :invalid_phase)
+      end
+    end
+
+    for {lost_at, event, completion, outcome} <- [
+          {:before_expiry, :attempt_unconfirmed, :unconfirmed, :timed_out},
+          {:after_expiry, :attempt_unconfirmed, :unconfirmed, :timed_out},
+          {:before_expiry, :owner_down, :none, :failed},
+          {:after_expiry, :owner_down, :none, :timed_out}
+        ] do
+      {state, generation} = ready_generation(fresh())
+      {state, uncertain} = preparing_attempt(state, generation, 10)
+
+      state =
+        if lost_at == :before_expiry,
+          do: applied(state, {event, uncertain}),
+          else: state
+
+      state = applied(state, {:advance, 10})
+
+      state =
+        if lost_at == :after_expiry,
+          do: applied(state, {event, uncertain}),
+          else: state
+
+      rejected(state, {:reject_attempt, uncertain}, :invalid_phase)
+      assert attempt(state, uncertain).completion == completion
+      assert attempt(state, uncertain).outcome == outcome
+      assert attempt(state, uncertain).deadline == 10
+      assert attempt(state, uncertain).lost_proof
+      assert attempt(state, uncertain).phase == :cleanup_hold
+      state = clear_roots(state, uncertain)
+      rejected(state, {:release_attempt, uncertain}, :lost_proof)
+      assert Model.snapshot(state).occupied_attempts == {1, 0, 0, 0}
+    end
   end
 
   test "closed generation denies acquisition and launch" do

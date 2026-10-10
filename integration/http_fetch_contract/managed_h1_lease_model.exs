@@ -359,8 +359,13 @@ defmodule Gaoxy.Qualification.ManagedH1LeaseModel do
   defp transition(state, {:reject_attempt, token}) do
     on_attempt(state, token, fn owner ->
       cond do
-        owner.outcome == :rejected ->
+        owner.outcome == :rejected or
+            (owner.outcome == :timed_out and owner.completion == :not_launched) ->
           same(owner, :duplicate)
+
+        not owner.launched and owner.outcome == :timed_out and owner.phase == :cleanup_hold and
+          not owner.lost_proof and Enum.all?(Map.values(owner.controls), &(&1 == :unused)) ->
+          same(%{owner | completion: :not_launched, phase: :releasing})
 
         owner.launched or owner.phase not in [:reserved, :preparing] or owner.outcome != :pending ->
           {:error, :invalid_phase}
@@ -910,7 +915,9 @@ defmodule Gaoxy.Qualification.ManagedH1LeaseModel do
   defp valid_attempt_phase?(%Attempt{phase: :releasing} = owner),
     do:
       (owner.launched and owner.outcome in [:ok, :failed]) or
-        (not owner.launched and owner.outcome == :rejected)
+        (not owner.launched and
+           (owner.outcome == :rejected or
+              (owner.outcome == :timed_out and owner.completion == :not_launched)))
 
   defp valid_attempt_phase?(%Attempt{phase: :cleanup_hold} = owner),
     do: owner.outcome == :timed_out
@@ -921,7 +928,13 @@ defmodule Gaoxy.Qualification.ManagedH1LeaseModel do
   defp valid_completion?(%Attempt{completion: :confirmed} = owner), do: owner.launched
 
   defp valid_completion?(%Attempt{completion: :not_launched} = owner),
-    do: not owner.launched and owner.outcome == :rejected
+    do:
+      not owner.launched and
+        (owner.outcome == :rejected or
+           (owner.outcome == :timed_out and
+              ((owner.phase == :releasing and not owner.lost_proof) or
+                 (owner.phase == :cleanup_hold and owner.lost_proof)) and
+              Enum.all?(Map.values(owner.controls), &(&1 == :unused))))
 
   defp valid_completion?(%Attempt{completion: :unconfirmed} = owner), do: owner.lost_proof
   defp valid_completion?(_owner), do: false

@@ -1,0 +1,168 @@
+{
+  "task_id": "m3_h1_no_launch_independent_review",
+  "status": "DONE_REVIEW_SPEC_FAIL",
+  "assignment": "direct independent specification review; code quality conditional on spec PASS",
+  "observed_utc": "2026-10-10T22:41:43.296609+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway",
+  "branch": "codex/m3-gateway",
+  "branch_evidence": "Read worktree .git pointer and HEAD; no Git command",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "baseline_evidence": "Parent supplied; no Git command",
+  "spec_review": {
+    "verdict": "FAIL",
+    "findings": [
+      {
+        "id": "SPEC-01",
+        "priority": "P1",
+        "status": "OPEN",
+        "title": "Owner death after accepted no-launch evidence produces an invalid held state",
+        "location": {
+          "file": "integration/http_fetch_contract/managed_h1_lease_model.exs",
+          "line": 930,
+          "related_lines": [
+            359,
+            416,
+            573,
+            874,
+            907
+          ]
+        },
+        "contract": {
+          "file": "docs/plans/m3-h1-qualification-model.md",
+          "line": 188
+        },
+        "reachable_trace": [
+          "Ready generation; acquire unlaunched reserved or preparing attempt at deadline D=10 with source/helper roots retained",
+          "advance to D: outcome=timed_out, phase=cleanup_hold, completion=none",
+          "reject_attempt: outcome=timed_out, phase=releasing, completion=not_launched, lost_proof=false; roots/chunks/controls unchanged",
+          "owner_down: outcome=timed_out, phase=cleanup_hold, completion=not_launched, lost_proof=true; roots/chunks/controls unchanged",
+          "Model.invariants returns error invalid_event by static predicate evaluation: valid_attempt_phase? accepts the hold, but valid_completion? requires releasing and no lost_proof",
+          "Repeated reject_attempt returns duplicate with identical state; clear roots then release_attempt still returns lost_proof, but test helpers reject the state before applying any later event"
+        ],
+        "evidence_kind": "SOURCE_PROVEN_STATIC_TRACE; runtime NOT_RUN by independent reviewer",
+        "root_cause": "The new completion predicate applies evidence-admission conditions permanently and excludes the existing owner_down transition after admission.",
+        "required_repair": "Preserve sticky accepted not_launched evidence when later owner_down sets lost_proof/cleanup_hold. Keep the safe rejection admission branch, release lost-proof guard, ownership/control predicates and expiry unchanged.",
+        "required_regression": "Extend the existing named test for both reserved/preparing expiry -> explicit rejection -> owner_down. Assert Model.invariants :ok, original timed_out outcome and deadline, completion not_launched, lost_proof true, cleanup_hold, unchanged roots/chunks/controls and slot charge. Assert repeated owner_down/reject_attempt inert, matched root release remains lawful, and even with all roots cleared release_attempt returns lost_proof with occupied slot unchanged. Parent must preserve deterministic RED before repair, GREEN afterward, exact22 test contract and scoped formatting."
+      }
+    ]
+  },
+  "code_quality_review": {
+    "verdict": "NOT_RUN",
+    "reason": "Specification gate failed; parent required sequential spec PASS before code quality"
+  },
+  "source_sha256": {
+    "integration/http_fetch_contract/managed_h1_lease_model.exs": "09fcf257386b3d1fde541058f69fb8842b66f3ff36990f924e44c18589296435",
+    "integration/http_fetch_contract/managed_h1_lease_model_test.exs": "fcab79c63fc8c4f69f07aa6a727a7226bdb603ba69e0c2bc8ccb9edfe48acfd4",
+    "docs/plans/m3-h1-qualification-model.md": "a5c1a309d6331fe99813bf9ad3af53473027e5928bc5b3386e93e6b1745afca9"
+  },
+  "contract_and_handoff_sha256": {
+    "AGENTS.md": "c0e76e879d663635b89b4c4fde4274561fce3c4c51a9d086e07908959e9431ed",
+    "docs/plans/m3-h1-no-launch-timeout-repair.md": "12aae5945f23619144a85c4ec40f1a24fddc2274fbaf13940fb6649d3ce9e914",
+    "docs/plans/m3-h1-qualification-fixture.md": "1bc54a09507a070d50a1a316b3e875fac615bf2a98d9aaa7de77ea0a9dcbd0bf",
+    "docs/acceptance/m3.md": "0bb5f67daa666cc7067934a6253aed3ab13d4ff178d78ed7c1cb02a7d5365ae2",
+    ".audit/m3-transport/h1-no-launch-timeout-repair/final-selfreview.md": "17f91a66516fa6b668f0d49faf5263f9a7e00bcf8904ed597d13e67a3e416a4c",
+    ".audit/m3-transport/h1-no-launch-timeout-repair/final-selfreview.json": "6b604c9fe61201c152146ff1ba33e79efad07ccaaf81b49d7669ebbf6010e0c2"
+  },
+  "receipt_sha256": {
+    "h1-no-launch-model-red.json": "5e9374d6c0d6a2a31eb71f0e28eff920c42f253f8fa5e61aa671f81c8391bc40",
+    "h1-no-launch-model-red.log": "df179ce9bc608ac870543f65008a1d8d68d306e476f919b3f0fb6cae672c8eeb",
+    "h1-no-launch-model-format.json": "00e980a90c9c950fc690c1c81b933ee3cba4a4740213d62084d2a9d0fd1a0ce1",
+    "h1-no-launch-model-format.log": "eeaff83845d017a6f75c7165cdc00740096bcbee953a812ea7bdbd105a542c87",
+    "h1-no-launch-model-canonical-format.json": "2046005e21c0c29de08ca409c4c68714e948fed8aae14391f879ca8f9010f352",
+    "h1-no-launch-model-canonical-format.log": "616af94fce86ec2d5e5daed733a760890594fc5f3d792403112eb694ee7b1ae7",
+    "h1-no-launch-model-green.json": "9a62624a897763ea5c215d894866a39a7f056e06f8123c5755c8b5e98fab081c",
+    "h1-no-launch-model-green.log": "b52986bbc713ef7dcde1ad7a2cc874cbf30b03964e62493644779d3d7cc56b34",
+    "h1-no-launch-model-repair1-green.json": "c9a74d3120dd5bfeffaf42658c4c3a6adff74d9d50765eddc051f1a28eacbd7f",
+    "h1-no-launch-model-repair1-green.log": "8ab3fec177f66fc73ae39b985f61f7cc079c0d32eda3ab949772f4f242afe68b",
+    "h1-no-launch-model-repair1-green-source-before.json": "7a06a738c3f1888f8a3f399c8bdb500aad787edf1b971139bbf26a70a3f653a4",
+    "h1-no-launch-model-repair1-green-source-after.json": "7a06a738c3f1888f8a3f399c8bdb500aad787edf1b971139bbf26a70a3f653a4"
+  },
+  "static_checks": {
+    "source_final_snapshot_matches_current": true,
+    "original22_test_names_preserved": true,
+    "original_test_lines_removed": 0,
+    "runner_suffix_unchanged": true,
+    "task_diff": "Only reject_attempt, valid_attempt_phase?, valid_completion?; existing named test additions; one event row. No expiry, release_attempt, nonce/control/root/chunk helper change.",
+    "round1": "No model change; four exact owner_down/attempt_unconfirmed cases correct prior newly introduced expectation without weakening existing assertions. Gap is owner_down after successful rejection.",
+    "positive_admission_guards": "Present and narrow; all controls unused, never launched, timed_out/cleanup_hold, no lost proof.",
+    "sticky_duplicate": "Duplicate never clears lost proof or releases roots; newly reachable owner_down state is nonetheless excluded by completion predicate."
+  },
+  "preserved_runtime_evidence": {
+    "red": {
+      "exit": 1,
+      "tests": 22,
+      "failures": 1,
+      "cause": "Missing post-timeout invalid_phase branch"
+    },
+    "precanonical_format": {
+      "exit": 1
+    },
+    "canonical_format": {
+      "exit": 0,
+      "note": "Mutation command, not a final check-formatted gate; one indentation change"
+    },
+    "initial_green": {
+      "exit": 1,
+      "tests": 22,
+      "failures": 1,
+      "cause": "New owner_down negative trace expected unconfirmed instead of none"
+    },
+    "repair1_green": {
+      "exit": 0,
+      "tests": 22,
+      "failures": 0,
+      "skipped": 0,
+      "excluded": 0,
+      "seed": 21112026,
+      "argv": [
+        "nix",
+        "develop",
+        "--offline",
+        "--command",
+        "bash",
+        "-c",
+        "unbuffer mix run --no-compile --no-start integration/http_fetch_contract/managed_h1_lease_model_test.exs"
+      ],
+      "environment": {
+        "ERL_FLAGS": "+S 2:2",
+        "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "MIX_ENV": "test",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "elapsed_seconds": 21.182,
+      "before_after_inventory_equal": true,
+      "inventory_size": 1128,
+      "current_selected_model_test_match_receipt": true,
+      "model_plan_present_in_receipt_inventory": false,
+      "owned_peer_processes_after": [],
+      "limitation": "Historical inventory equality is verified only between preserved before/after manifests. Current full inventory not compared; unrelated parent docs changed after run. Model plan current hash agrees with source-final snapshot and handoff."
+    }
+  },
+  "runtime_by_reviewer": "NOT_RUN; no VM/Mix/formatter/Git/network/dependency command",
+  "changed_files": [
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-no-launch-independent-review.md",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-no-launch-independent-review.json"
+  ],
+  "model_repair_counters_received": {
+    "sol": 1,
+    "unsuccessful_sol": 0,
+    "astra": 0,
+    "received_astra": 0
+  },
+  "reviewer_repairs": 0,
+  "retained_tls_chain": {
+    "sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "status": "EXHAUSTED/BLOCKED; untouched"
+  },
+  "astra_gate": "NOT_APPLICABLE",
+  "remaining_gates": [
+    "SPEC-01 targeted model/test repair; parent deterministic RED/GREEN and scoped formatting",
+    "Independent spec re-review then code-quality review",
+    "Fresh parent post-review scoped verification",
+    "H1 numerical accounting remains BLOCKED by upstream gsmlg-dev/http_fetch Feature97; activation disabled; broader M3/TLS acceptance not established"
+  ],
+  "decisions_needed": "No product decision or scope expansion. Parent dispatches bounded repair2 to original implementer.",
+  "command_shutdown": "All reviewer commands synchronous and complete; no owned background job started; implementation untouched; review artifact ownership RELEASED"
+}
