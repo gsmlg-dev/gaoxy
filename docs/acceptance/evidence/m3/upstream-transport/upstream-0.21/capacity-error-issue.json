@@ -1,0 +1,34 @@
+{
+  "body_matches_submitted": true,
+  "body_sha256": "0569cb2ea42a256e72375b6e4c5009b546d3d07475513ba65f13564d3ec39fdc",
+  "callsite_todo": "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex",
+  "canonical_contract": "MISMATCH",
+  "finite_resource_properties": "PASS for named TLS GOAWAY case only; full run FAIL",
+  "fixture_todo_workaround": "integration/http_fetch_contract/managed_transport_probe.exs",
+  "h2c_runtime": "NOT REACHED in cited run",
+  "issue": {
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-gateway`\n\n**Severity:** needed. Managed H2 connection capacity must retain its documented\npublic error shape while a GOAWAY owner drains. Finite rejection, isolation and\nreplacement behavior currently pass in our TLS fixture; this report does not\nclaim a capacity bypass, replay or measured leak. The separate aggregate\nheader/control bounds blocker is #86.\n\n**Source/artifacts:** Installed coordinated HTTP packages 0.21.0, actual tag\n`9813c126dc8b48055b9ee941c693fc27fa691489`; all196 shipped files and175 runtime\nGit blobs match the containing artifacts. Elixir1.18.5, OTP28.5.0.7,\nERTS16.4.0.6, SSL11.6.0.6, x86_64 Linux.\n\n**Minimal public reproduction:**\n\n1. Open a public managed verified TLS H2 scope pinned to an independent peer,\n   with `max_connections: 1`, `max_requests: 32`, `max_pending: 0`, finite\n   timeouts, raw streaming and manual redirects.\n2. Admit a request and hold its response after final headers. Send valid\n   GOAWAY retaining that stream, then PING; observe the client PING ACK before\n   the next admission. The first owner still occupies the one connection slot.\n3. Fetch another request through the same opaque managed scope, capturing and\n   awaiting its original public Promise/completion.\n4. Actual rejection is `{:error, :pending_capacity}`. The facade documents\n   `{:error, {:transport_scope_capacity, :connections}}`.\n5. Confirm no new accept/request-frame bytes; finish the held stream, await\n   original completion and public zero connection/request counts, then make\n   one explicit replacement on a new connection. Independent scope B remains\n   usable. Retire/await every scope and join the owned peer.\n\n**Executed evidence:** Gaoxy\n`integration/http_fetch_contract/managed_transport_probe.exs`,\n`tls_max_connections_draining_before_bytes_no_pending_queue`. The run emits\n`MANAGED_CAPACITY_ERROR_CONTRACT` with documented, source-predicted and observed\nresults and explicitly labels canonical compliance MISMATCH. Repair1 overall\nexited1 after24 case receipts/25 successful peer cleanups due to a later unrelated\nempty-response fixture dispatch error; this named capacity case passed its finite\nresource-property checks before that error. All425 frozen source hashes matched,\nno owned peer remained. h2c was not reached, so no h2c runtime claim is made.\n\n**Source path:** Public facade `apps/http_runtime/lib/http/managed_transport.ex`\nlines45\u201348 documents the canonical tuple. SocketClient466\u2013482 propagates pool\nreservation errors unchanged. H2 Pool504\u2013505 returns `:pending_capacity` when\nthe zero-length pending queue is full during draining-owner saturation.\n\n**Expected behavior:** Normalize this managed-scope saturation to the documented\nconnection-capacity tuple, or deliberately revise and document the public\ncontract. Preserve immediate bounded admission with no pending payload queue,\nno new request bytes, healthy independent scopes, confirmed original completion,\nretirement and no replay. Add verified TLS H2 and separate h2c public regressions\nand publish containing artifacts before canonical compliance is claimed.\n",
+    "issueType": {
+      "name": "Bug"
+    },
+    "labels": {
+      "nodes": [
+        {
+          "name": "internal request"
+        }
+      ]
+    },
+    "number": 89,
+    "state": "OPEN",
+    "title": "[internal] Return canonical managed connection-capacity error while H2 drains",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/89"
+  },
+  "observed_protocol": "verified TLS H2",
+  "observed_utc": "2026-10-10T17:59:26.760903+00:00",
+  "requesting_branch": "codex/m3-gateway",
+  "requesting_remote": "https://github.com/gsmlg-opt/gaoxy.git",
+  "requesting_repo": "gsmlg-opt/gaoxy",
+  "runtime_evidence": "managed-probes-contract1.log",
+  "severity": "needed",
+  "status": "VERIFIED"
+}

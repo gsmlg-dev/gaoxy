@@ -1,8 +1,39 @@
 # HTTP Fetch public contract revalidation
 
-## Current published 0.20.0 public qualification
+## Current published 0.21.0 managed qualification
 
-The coordinated seven packages are now 0.20.0, upstream tag commit
+The seven packages are installed at0.21.0, actual tag
+`9813c126dc8b48055b9ee941c693fc27fa691489`. The
+[artifact/installed provenance](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21/installed-provenance.json)
+and [460-test compatibility gate](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21/compatibility.json)
+are recorded separately from public managed runtime qualification. The
+[managed fixture instructions](MANAGED_README.md) retain finite capacity,
+deadline, isolation, retirement and256/257-fragment assertions. Serialize
+execution after independent review and a renewed complete source freeze. The
+[recovery1 runtime receipt](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21/managed-probes-recovery1.json)
+records **39/39 PASS**,39 successful cleanups, exit0,425 unchanged source hashes
+and no remaining owned peer. Strict preflight passes18/0. Both TLS H2 and h2c
+retain the separately reported canonical capacity-error **MISMATCH** in
+[Bug89](https://github.com/gsmlg-dev/http_fetch/issues/89).
+The historical initial and diagnostic-only runs both FAIL after11 case receipts; the
+[diagnostic receipt](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21/managed-probes-diagnostic1.json)
+identifies conservative H2 request completion after force retirement, with
+independent B still live before cleanup. Contract repair1's24-case runtime
+failure and repair2's formatter-preflight failure remain preserved separately;
+one bounded Astra formatting recovery and fresh complete verification resolved
+the local fixture failures without removing any of the39 cases.
+
+#78 ownership/retirement and #79 fragment-cap fixes are present in installed
+artifacts. H2 retained header/control event bounds remain blocked on
+[#86](https://github.com/gsmlg-dev/http_fetch/issues/86); complete H1 accounting
+also remains unqualified. Functional PASS cannot approve either subtotal as a
+memory reservation or enable Gaoxy managed transports.
+
+## Historical published 0.20.0 public qualification
+
+The following receipts and commands belong to the historical0.20 candidate;
+the old empty-CONTINUATION diagnostic is not the0.21 positive cap regression.
+The coordinated seven packages at that checkpoint were0.20.0, upstream tag commit
 `951ec75dadcebd8218f30d3ecdf99da142d4a463`. The installed-source
 [audit](../../docs/acceptance/evidence/m3/upstream-0.20/public-client-audit.md)
 separates public request completion/trailers from the missing owned transport
