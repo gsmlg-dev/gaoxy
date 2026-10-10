@@ -1,0 +1,28 @@
+==> gaoxy_http
+Running ExUnit with seed: 547455, max_cases: 4
+
+..
+
+  1) test finish emits ordered duplicate trailers and exactly one terminator (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:102
+     Assertion with == failed
+     code:  assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+     left:  90
+     right: 70
+     stacktrace:
+       test/native_proxy_seams_test.exs:108: (test)
+
+..
+
+  2) test parser error preserves successful metadata transitions from the same input buffer (Gaoxy.HTTP.NativeProxySeamsTest)
+     apps/gaoxy_http/test/native_proxy_seams_test.exs:86
+     Assertion with == failed
+     code:  assert next.body.phase == :trailers
+     left:  :chunk_size
+     right: :trailers
+     stacktrace:
+       test/native_proxy_seams_test.exs:89: (test)
+
+.....
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+11 tests, 2 failures

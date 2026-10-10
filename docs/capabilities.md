@@ -22,7 +22,34 @@ platform/backend limits shown separately.
 | Custom TCP TLS / ex_ssl | unsupported | Public facade audit + explicit selection rejection | Public server contract absent; no OTP fallback |
 | Generic QUIC | experimental opt-in | PASS independent aioquic custom-ALPN stream/FIN/reset/stop/flow-control/close-isolation; bounds and native receipts | Public `Abyss.QUIC` / `Quic`; at most16KiB; macOS accepted subset; fixture can log read errors after peer close; no pause/full protocol drain |
 | QUIC DATAGRAM/mTLS/migration/0-RTT | unsupported | No acceptance claimed | Host limitations preserved |
-| HTTP/H2/H3/WebSocket/Plug/Phoenix/proxies | future milestones | NOT RUN | No production backend, dummy implementation or advertised capability |
+| H2/H3 and remaining proxy/relay protocols | future or upstream-blocked milestones | NOT RUN / BLOCKED | No implementation or acceptance claimed |
+
+## Native M2 local acceptance
+
+The following is local Linux evidence for the native M2 worktree, separate from
+the historical transport baseline above. **M2 local completion gates PASS**
+with Fetch 0.19.1: 255 scoped tests, 2 fixture tests, 13 browser/peer checks,
+6 example checks and 1 fresh core-consumer test. See the
+[requirement record](acceptance/m2.md); hosted CI and publication are not claimed.
+
+| Capability | Implementation and evidence | Limits |
+|---|---|---|
+| Native H1 / Plug | Real TCP, validating TLS, bounded reads/writes, pipeline/framing/error/lifecycle regressions PASS | Selected H1 profile; finite requests; no H2 ALPN |
+| WebSocket / WebSock | Native wire, controls/fragments/UTF-8/close/drain and independent client PASS | No compression; bounded lifetime/state/frame/message/mailbox checks |
+| Phoenix Endpoint | HTTP/HTTPS one-instance ownership and actual port lookup PASS | Endpoint-managed or explicitly gateway-managed; no Bandit backend |
+| Phoenix browser | Page, static, LiveView click/upload, Channels, SSE, reconnect, development reload and shutdown PASS | Chromium/Linux fixture; no production deployment or broad conformance claim |
+| Local routes | Immutable first-match host/method/raw-path routes, real pipeline PASS | No forwarding-header trust or configuration reload generation switch |
+| HTTP Fetch dependency contracts | Published 0.19.1: thirteen streaming/WS and five request-completion contracts PASS; public string/URI empty-query probe PASS; #27–#30/#38/#45/#60/#64 closed | Includes GET/DELETE bodies, per-request streaming, raw bytes/trailers, early responses and WebSocket close semantics; separate from full HTTP proxy acceptance |
+| WebSocket reverse proxy / remote routes | Real native routes, text/binary/subprotocol/close and shutdown tests PASS | Fixed upstream authority; per-hop ping/pong; no compression or exact fragmentation forwarding; finite reservations and explicit verified WSS |
+| HTTP streaming reverse proxy | Implemented; scoped wire/TLS/lifecycle tests PASS with HTTP Fetch 0.19.1 | Verified HTTPS, bounded upload/download, SSE, early responses, raw compression, trailers and external cleanup; present empty queries survive and their regression passes |
+| Hosted M2 CI | Configured, NOT RUN on this unpublished candidate | Historical payment/spending restriction is recorded separately; current hosted state not rechecked |
+
+The proxy package selects HTTP Fetch/WebSocket and transitively includes
+`elixir_quic`/`ex_ssl` 0.19.1. Standalone core-only isolation remains a separate
+gate; the umbrella graph is not engine-free. These dependencies imply no H2/H3
+support. The per-request streaming option removes the global threshold constraint.
+WebSocket persistent reservations survive native updates and connection death;
+see [their accounting scope](websocket-proxy.md).
 
 ## Resource accounting scope
 

@@ -10,9 +10,14 @@ defmodule GaoxyProxy.MixProject do
       deps_path: "../../deps",
       lockfile: "../../mix.lock",
       elixir: "~> 1.18",
-      deps: [{:gaoxy, in_umbrella: true}, {:gaoxy_http, in_umbrella: true}]
+      deps: [
+        {:gaoxy, in_umbrella: true},
+        {:gaoxy_http, in_umbrella: true},
+        {:http_fetch, "== 0.19.1"},
+        {:http_web_socket, "== 0.19.1"}
+      ]
     ]
   end
 
-  def application, do: [extra_applications: [:logger]]
+  def application, do: [extra_applications: [:logger], mod: {Gaoxy.Proxy.Application, []}]
 end

@@ -1,0 +1,113 @@
+Running ExUnit with seed: 166470, max_cases: 4
+Excluding tags: [:test]
+Including tags: [location: {"test/native_proxy_seams_test.exs", 166}]
+
+
+
+  1) test invalid trailer declarations fail before a head is committed (Gaoxy.HTTP.NativeProxySeamsTest)
+     test/native_proxy_seams_test.exs:166
+     match (=) failed
+     code:  assert {:error, :invalid_response_trailers} =
+              Response.send_chunked(exchange, 200, [{"connection", "x-hop, close"}, {"trailer", "x-hop"}])
+     left:  {:error, :invalid_response_trailers}
+     right: {:ok,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: "/",
+                 target_form: :origin,
+                 version: :"HTTP/1.1",
+                 path: "/",
+                 query_string: "",
+                 host: "localhost",
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 35,
+                 headers: [{"host", "localhost"}],
+                 body: :none,
+                 keep_alive: true,
+                 expect_continue: false
+               },
+               socket: %ThousandIsland.Socket{
+                 socket: #Port<0.16>,
+                 transport_module: ThousandIsland.Transports.TCP,
+                 read_timeout: 1000,
+                 handshake_timeout: 1000,
+                 silent_terminate_on_error: false,
+                 span: %ThousandIsland.Telemetry{
+                   span_name: :connection,
+                   telemetry_span_context: #Reference<0.2598665618.671088642.209717>,
+                   start_time: -576460749814168550,
+                   start_metadata: %{
+                     handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                     telemetry_span_context: #Reference<0.2598665618.671088642.209717>
+                   },
+                   handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                   span_metadata: %{
+                     handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                     telemetry_span_context: #Reference<0.2598665618.671088642.209717>
+                   }
+                 },
+                 read_timer: nil,
+                 read_deadline: nil,
+                 timer_deadline: nil
+               },
+               gate: #PID<0.249.0>,
+               lease: #Reference<0.2598665618.671088642.209707>,
+               deadline: -576460748799,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32,
+                 read_timeout: 5000,
+                 max_write_chunk: 1024,
+                 max_read_chunk: 16384,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_header_bytes: 32768,
+                 max_headers: 100,
+                 max_request_line: 8192
+               },
+               body: %Gaoxy.HTTP.HTTP1.Body{
+                 phase: :done,
+                 total: 0,
+                 trailers: [],
+                 trailer_bytes: 0,
+                 limits: %{
+                   max_buffer_bytes: 65536,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32,
+                   read_timeout: 5000,
+                   max_write_chunk: 1024,
+                   max_read_chunk: 16384,
+                   write_timeout: 5000,
+                   request_timeout: 30000,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_header_bytes: 32768,
+                   max_headers: 100,
+                   max_request_line: 8192
+                 }
+               },
+               buffer: "",
+               peer: {{127, 0, 0, 1}, 35612},
+               local: {{127, 0, 0, 1}, 38973},
+               service: nil,
+               instance: nil,
+               response: :chunked,
+               response_trailers: ["x-hop"],
+               close: true,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/native_proxy_seams_test.exs:177: (test)
+
+
+Finished in 0.7 seconds (0.7s async, 0.00s sync)
+12 tests, 1 failure, 11 excluded

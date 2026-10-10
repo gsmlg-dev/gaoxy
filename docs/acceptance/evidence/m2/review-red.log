@@ -1,0 +1,30 @@
+==> gaoxy_http
+Running ExUnit with seed: 770169, max_cases: 4
+
+..........
+
+  1) test oversized informational headers are rejected before any response bytes (Gaoxy.HTTP.ContractTest)
+     apps/gaoxy_http/test/http_contract_test.exs:135
+     Assertion with =~ failed
+     code:  assert response =~ "HTTP/1.1 500 Internal Server Error"
+     left:  "HTTP/1.1 103 Early Hints\r\nlink: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\r\n\r\nHTTP/1.1 200 OK\r\nconnection: close\r\ncontent-length: 2\r\ncache-control: max-age=0, private, must-revalidate\r\n\r\nok"
+     right: "HTTP/1.1 500 Internal Server Error"
+     stacktrace:
+       test/http_contract_test.exs:144: (test)
+
+
+
+  2) test malformed TLS options return a validation error before binding (Gaoxy.HTTP.ContractTest)
+     apps/gaoxy_http/test/http_contract_test.exs:223
+     ** (BadMapError) expected a map, got: [certfile: "cert.pem", keyfile: "key.pem"]
+     code: for tls <- [[certfile: "cert.pem", keyfile: "key.pem"], nil, :invalid, "tls"] do
+     stacktrace:
+       (elixir 1.18.5) lib/map.ex:343: Map.put_new/3
+       (gaoxy_http 0.1.0) lib/gaoxy/http.ex:42: Gaoxy.HTTP.spec/2
+       test/http_contract_test.exs:226: anonymous fn/2 in Gaoxy.HTTP.ContractTest."test malformed TLS options return a validation error before binding"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http_contract_test.exs:224: (test)
+
+...
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+15 tests, 2 failures

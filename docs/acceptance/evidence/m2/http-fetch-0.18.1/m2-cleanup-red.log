@@ -1,0 +1,361 @@
+==> gaoxy
+Running ExUnit with seed: 837135, max_cases: 4
+
+    warning: Gaoxy.Service.attach_cleanup/6 is undefined or private
+    │
+ 19 │       result = Service.attach_cleanup(state.service, state.gate, state.lease, guardian, bytes, state.deadline)
+    │                        ~
+    │
+    └─ test/cleanup_attachment_test.exs:19:24: Gaoxy.CleanupAttachmentTest.Native.handle_info/2
+
+    warning: Gaoxy.Service.complete_cleanup/2 is undefined or private
+    │
+ 45 │         result = Service.complete_cleanup(service, token)
+    │                          ~
+    │
+    └─ test/cleanup_attachment_test.exs:45:26: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+    └─ test/cleanup_attachment_test.exs:49:60: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+
+     warning: Gaoxy.Admission.attach_cleanup/7 is undefined or private
+     │
+ 119 │     assert :ok = Admission.attach_cleanup(gate, owner, lease, guardian, 30, deadline, token)
+     │                            ~
+     │
+     └─ test/cleanup_attachment_test.exs:119:28: Gaoxy.CleanupAttachmentTest."test reservation survives absolute native accounting and owner death without another slot"/1
+     └─ test/cleanup_attachment_test.exs:139:52: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+     └─ test/cleanup_attachment_test.exs:142:65: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+     └─ test/cleanup_attachment_test.exs:145:46: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+     └─ test/cleanup_attachment_test.exs:146:53: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+     └─ test/cleanup_attachment_test.exs:147:28: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+     └─ test/cleanup_attachment_test.exs:148:52: Gaoxy.CleanupAttachmentTest."test only the service can attach an active native request with one reservation"/1
+
+     warning: Gaoxy.Service.attach_cleanup/6 is undefined or private
+     │
+ 154 │     assert {:error, :stale_generation} = Service.attach_cleanup(context.service, context.gate, lease, guardian, 20, deadline)
+     │                                                  ~
+     │
+     └─ test/cleanup_attachment_test.exs:154:50: Gaoxy.CleanupAttachmentTest."test service authenticates lease owner and rejects attachment after its drain barrier"/1
+
+
+
+  1) test clean stop needs both authenticated receipt and guardian DOWN (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:166
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.42577>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.42582>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.302.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.307.0>
+     }
+     code: {runtime, _owner, context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:167: (test)
+
+
+
+  2) test gate death cancels cleanup without killing guardian or reporting clean removal (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:188
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.43008>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43013>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.323.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.328.0>
+     }
+     code: {_runtime, _owner, context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:189: (test)
+
+
+
+  3) test timed out stop keeps guardian alive and reports cleanup pending (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:179
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.43170>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43175>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.340.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.345.0>
+     }
+     code: {runtime, _owner, context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:180: (test)
+
+
+
+  4) test only the service can attach an active native request with one reservation (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:133
+     ** (UndefinedFunctionError) function Gaoxy.Admission.attach_cleanup/7 is undefined or private
+     code: assert {:error, :inactive_request} = Admission.attach_cleanup(gate, self(), lease, guardian, 20, deadline, token)
+     stacktrace:
+       (gaoxy 0.1.0) Gaoxy.Admission.attach_cleanup(#PID<0.359.0>, #PID<0.357.0>, #Reference<0.1517661765.937689089.43313>, #PID<0.360.0>, 20, -576460744658, #Reference<0.1517661765.937689089.43316>)
+       test/cleanup_attachment_test.exs:139: (test)
+
+
+
+  5) test abnormal guardian exit after receipt cannot yield successful drain (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:205
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.43335>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43340>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.362.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.367.0>
+     }
+     code: {runtime, _owner, _context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:206: (test)
+
+
+
+  6) test reservation survives absolute native accounting and owner death without another slot (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:98
+     ** (UndefinedFunctionError) function Gaoxy.Admission.attach_cleanup/7 is undefined or private
+     code: assert :ok = Admission.attach_cleanup(gate, owner, lease, guardian, 30, deadline, token)
+     stacktrace:
+       (gaoxy 0.1.0) Gaoxy.Admission.attach_cleanup(#PID<0.381.0>, #PID<0.382.0>, #Reference<0.1517661765.937689090.36383>, #PID<0.383.0>, 30, -576460744656, #Reference<0.1517661765.937689089.43391>)
+       test/cleanup_attachment_test.exs:119: (test)
+
+
+
+  7) test guardian death without receipt fails the service closed (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:198
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.43410>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43415>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.385.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.390.0>
+     }
+     code: {runtime, _owner, context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:199: (test)
+
+
+
+  8) test service authenticates lease owner and rejects attachment after its drain barrier (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:151
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689089.43549>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43554>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.402.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.407.0>
+     }
+     code: {runtime, owner, context, lease, deadline} = connected()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:152: (test)
+
+
+
+  9) test connection death retains reservation until independently supervised cleanup finishes (Gaoxy.CleanupAttachmentTest)
+     apps/gaoxy/test/cleanup_attachment_test.exs:216
+     ** (KeyError) key :instance not found in: %{
+       scope: %{
+         instance: #Reference<0.1517661765.937689090.36437>,
+         service: "native",
+         generation: #Reference<0.1517661765.937689089.43677>
+       },
+       spec: %{
+         id: "native",
+         port: 0,
+         udp: %{},
+         mode: :unicast,
+         ip: {127, 0, 0, 1},
+         handler: Gaoxy.CleanupAttachmentTest.Native,
+         tls: %{},
+         transport: :tcp,
+         handler_options: %{owner: #PID<0.419.0>},
+         handler_mode: :native,
+         limits: %{
+           max_bytes: 100,
+           idle_timeout: 30000,
+           max_active: 64,
+           drain_timeout: 200,
+           max_packet: 65507,
+           max_memberships: 64,
+           callback_timeout: 5000,
+           max_output: 65507,
+           max_state: 65536
+         },
+         capabilities: [],
+         quic: %{}
+       },
+       gate: #PID<0.424.0>
+     }
+     code: {runtime, owner, context, _lease, _deadline, guardian, _token} = attached()
+     stacktrace:
+       test/cleanup_attachment_test.exs:70: Gaoxy.CleanupAttachmentTest.connected/0
+       test/cleanup_attachment_test.exs:76: Gaoxy.CleanupAttachmentTest.attached/0
+       test/cleanup_attachment_test.exs:217: (test)
+
+
+Finished in 0.7 seconds (0.7s async, 0.00s sync)
+9 tests, 9 failures

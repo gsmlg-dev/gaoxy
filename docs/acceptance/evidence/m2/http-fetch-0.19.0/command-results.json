@@ -1,0 +1,424 @@
+{
+  "date": "2026-10-10",
+  "source_commit": "597ec0c056cd3ecb4bf1c53e7c99d57691514c2b",
+  "status": "INCOMPLETE / BLOCKED_UPSTREAM",
+  "blocker": "https://github.com/gsmlg-dev/http_fetch/issues/64",
+  "scoped_tests": {
+    "gaoxy": 66,
+    "gaoxy_http": 110,
+    "gaoxy_proxy": 72,
+    "passed": 247,
+    "failures": 1,
+    "total": 248,
+    "seed": 531954,
+    "max_cases": 1,
+    "exit_code": 2
+  },
+  "independent_checks": {
+    "phoenix_fixture_tests": 2,
+    "browser_peer_checks": 13,
+    "reverse_proxy_example_checks": 6,
+    "fresh_core_consumer_tests": 1
+  },
+  "results": [
+    {
+      "check": "http-wire-initial",
+      "command": [
+        "mix",
+        "test",
+        "--no-compile",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:53:45.082206+00:00",
+      "finished_at": "2026-10-10T05:54:03.030091+00:00",
+      "exit_code": 2,
+      "log": "http-wire-initial.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "example-run",
+      "command": [
+        "python3",
+        "integration/reverse_proxy/run.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:54:34.638609+00:00",
+      "finished_at": "2026-10-10T05:54:38.285258+00:00",
+      "exit_code": 0,
+      "log": "example-run.log",
+      "status": "PASS"
+    },
+    {
+      "check": "http-wire-trailers-diagnostic",
+      "command": [
+        "mix",
+        "test",
+        "--no-compile",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs:100"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:55:26.316365+00:00",
+      "finished_at": "2026-10-10T05:55:30.572406+00:00",
+      "exit_code": 2,
+      "log": "http-wire-trailers-diagnostic.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "core-consumer",
+      "command": [
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:53:55.226585+00:00",
+      "finished_at": "2026-10-10T05:56:02.570457+00:00",
+      "exit_code": 0,
+      "log": "core-consumer.log",
+      "status": "PASS"
+    },
+    {
+      "check": "forwarding-trailers-red",
+      "command": [
+        "mix",
+        "test",
+        "--no-compile",
+        "--warnings-as-errors",
+        "apps/gaoxy_proxy/test/http_headers_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:58:10.410099+00:00",
+      "finished_at": "2026-10-10T05:58:12.233251+00:00",
+      "exit_code": 2,
+      "log": "forwarding-trailers-red.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "forwarding-trailers-green",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "apps/gaoxy_proxy/test/http_headers_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T05:59:17.646670+00:00",
+      "finished_at": "2026-10-10T05:59:21.577793+00:00",
+      "exit_code": 0,
+      "log": "forwarding-trailers-green.log",
+      "status": "PASS"
+    },
+    {
+      "check": "http-wire-review",
+      "command": [
+        "mix",
+        "test",
+        "--no-compile",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:00:57.287248+00:00",
+      "finished_at": "2026-10-10T06:00:59.912226+00:00",
+      "exit_code": 2,
+      "log": "http-wire-review.log",
+      "status": "FAIL",
+      "blocker": "https://github.com/gsmlg-dev/http_fetch/issues/64"
+    },
+    {
+      "check": "final-scoped-format",
+      "command": [
+        "mix",
+        "format",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+        "examples/reverse_proxy/run.exs",
+        "integration/http_fetch_contract/empty_query_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:03:09.476033+00:00",
+      "finished_at": "2026-10-10T06:03:11.117991+00:00",
+      "exit_code": 0,
+      "log": "final-scoped-format.log",
+      "status": "PASS"
+    },
+    {
+      "check": "final-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:04:11.343315+00:00",
+      "finished_at": "2026-10-10T06:04:13.393110+00:00",
+      "exit_code": 0,
+      "log": "final-compile.log",
+      "status": "PASS"
+    },
+    {
+      "check": "final-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test",
+        "apps/gaoxy_proxy/test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy/test/runtime_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/send_outcome_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/shutdown_hardening_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:04:43.168569+00:00",
+      "finished_at": "2026-10-10T06:05:05.903455+00:00",
+      "exit_code": 2,
+      "log": "final-tests.log",
+      "status": "FAIL"
+    },
+    {
+      "check": "actionlint",
+      "command": [
+        "nix",
+        "shell",
+        "nixpkgs#actionlint",
+        "--command",
+        "actionlint",
+        ".github/workflows/portable.yml"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:05:20.488101+00:00",
+      "finished_at": "2026-10-10T06:05:25.612092+00:00",
+      "exit_code": 0,
+      "log": "actionlint.log",
+      "status": "PASS"
+    },
+    {
+      "check": "final-tests-current",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test",
+        "apps/gaoxy_proxy/test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy/test/runtime_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/send_outcome_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/shutdown_hardening_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:05:49.062496+00:00",
+      "finished_at": "2026-10-10T06:06:12.358409+00:00",
+      "exit_code": 2,
+      "log": "final-tests-current.log",
+      "status": "FAIL",
+      "blocker": "https://github.com/gsmlg-dev/http_fetch/issues/64"
+    },
+    {
+      "check": "final-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:06:57.718868+00:00",
+      "finished_at": "2026-10-10T06:06:59.002980+00:00",
+      "exit_code": 0,
+      "log": "final-format.log",
+      "status": "PASS"
+    },
+    {
+      "check": "fixture-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors"
+      ],
+      "cwd": "examples/phoenix_native",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:07:16.984594+00:00",
+      "finished_at": "2026-10-10T06:07:19.750623+00:00",
+      "exit_code": 0,
+      "log": "fixture-tests.log",
+      "status": "PASS"
+    },
+    {
+      "check": "browser-run",
+      "command": [
+        ".audit/browser-venv/bin/python",
+        "integration/phoenix_native/run.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:07:46.037180+00:00",
+      "finished_at": "2026-10-10T06:08:01.379895+00:00",
+      "exit_code": 0,
+      "log": "browser-run.log",
+      "status": "PASS",
+      "fixture_environment": {
+        "MIX_ENV": "dev",
+        "ELIXIR_ERL_OPTIONS": "+S 2:2"
+      }
+    },
+    {
+      "check": "example-final",
+      "command": [
+        "python3",
+        "integration/reverse_proxy/run.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:08:36.855492+00:00",
+      "finished_at": "2026-10-10T06:08:39.723708+00:00",
+      "exit_code": 0,
+      "log": "example-final.log",
+      "status": "PASS"
+    },
+    {
+      "check": "method-body-probe",
+      "command": [
+        "mix",
+        "run",
+        "--no-compile",
+        "integration/http_fetch_contract/method_body_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:08:48.885110+00:00",
+      "finished_at": "2026-10-10T06:08:50.526066+00:00",
+      "exit_code": 0,
+      "log": "method-body-probe.log",
+      "status": "PASS"
+    },
+    {
+      "check": "websocket-close-probe",
+      "command": [
+        "mix",
+        "run",
+        "--no-compile",
+        "integration/http_fetch_contract/websocket_close_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:09:08.663041+00:00",
+      "finished_at": "2026-10-10T06:09:10.628175+00:00",
+      "exit_code": 0,
+      "log": "websocket-close-probe.log",
+      "status": "PASS"
+    },
+    {
+      "check": "empty-query-probe",
+      "command": [
+        "mix",
+        "run",
+        "--no-compile",
+        "integration/http_fetch_contract/empty_query_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T06:09:30.988421+00:00",
+      "finished_at": "2026-10-10T06:09:33.611801+00:00",
+      "exit_code": 1,
+      "log": "empty-query-probe.log",
+      "status": "FAIL",
+      "blocker": "https://github.com/gsmlg-dev/http_fetch/issues/64"
+    }
+  ],
+  "hosted_ci": "NOT RUN",
+  "publication": "NOT RUN"
+}

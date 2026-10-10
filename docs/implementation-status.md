@@ -7,7 +7,7 @@
 acceptance snapshot: no commit, remote creation, push, publication or deployment
 had occurred during implementation acceptance. Subsequent source publication
 is separately authorized by the user. The supplied `implement-plan.md` remains the scope and
-acceptance authority; M2/M3/M4 are not implemented. This is foundation
+acceptance authority; M2/M3/M4 were not implemented in this historical snapshot. This is foundation
 acceptance on recorded environments, not a beta/security/conformance claim.
 
 | Work package | Delivered and verified | Limits / remaining scope |
@@ -113,9 +113,45 @@ active after handoff. Shared workspace changes were preserved; no reset/stash or
 destructive cleanup occurred. Agent Note scope was unavailable because
 `.agents/current.md` is missing; no project was guessed and no note was written.
 
-## Next milestones
+## Current M2 acceptance and next milestones
 
-M2: native HTTP/1.1, WebSocket/WebSockAdapter, Plug/Phoenix and initial endpoint
-routing. M3: HTTP/2 and complete gateway/relay policies. M4: independently
-verified HTTP/3. Optional ex_ssl TCP hosting needs the public server contract in
+Native HTTP/1, WebSock, Plug/Phoenix, the browser fixture, local/remote routing,
+HTTP streaming and message-level WebSocket reverse proxying are implemented on
+`codex/m2-native`. **M2 local completion gates PASS** with published HTTP Fetch
+0.19.1. The scoped suite passes **255 tests**:
+**66 core + 116 HTTP + 73 proxy, 0 failures**, seed `754722`, `--max-cases 1`,
+exit 0. Strict compilation and formatting exit 0. Fresh independent checks pass:
+2 Phoenix fixture tests, 13 browser/peer checks, 6 reverse-proxy example checks
+and 1 strict-compiled external core-consumer test. The method-body and
+WebSocket-close probes pass all 6 and 4 cases. The browser reload check restores
+the controller with identical before/after SHA256.
+
+The seven selected Fetch/Core/Runtime/WebSocket/QUIC/TLS packages are 0.19.1;
+other lock entries are unchanged. The release tag identifies
+`c26a17712a02a03985a764b6b100ca840fcc4349`, published **2026-10-10T07:20:34Z**,
+not the workflow main HEAD. #60 and #64 are resolved. Present empty queries now
+survive both string and URI Fetch inputs and the real proxy wire path, with
+confirmed public completion. The probe exits 0. No dependency patch, private
+API, URI rewrite or skipped-test workaround was used.
+
+HTTP and WebSocket guardians survive native owner/instance force-stop, retain
+admission reservations and confirm public upstream cleanup before receipt and
+normal DOWN. Caller expiry retains `cleanup_pending`. HTTPS verification stays
+enabled; requests are not replayed and redirects are returned to the caller.
+The scoped suite also covers repaired downstream per-write deadlines, polling
+copy credit, client-supplied forwarding trailers and 304 representation-length
+metadata without an invented body or absent length.
+
+Current counts, commands, source/package verification and independent outcomes
+are recorded in [M2 acceptance](acceptance/m2.md) and
+[the 0.19.1 evidence](acceptance/evidence/m2/http-fetch-0.19.1/command-results.json).
+Historical failed gates and the earlier 304 red/green audit remain intact.
+HTTP capacity stays source-qualified on OTP 28.5.0.5 with explicit socket buffers
+and stable qualified host settings; it is not a total BEAM memory limit.
+
+Standalone core-only isolation remains separate from the umbrella graph, which
+includes `elixir_quic`/`ex_ssl`. Gaoxy CI, push, merge, release and deployment are
+**NOT RUN** for this candidate. No H2/H3 or production acceptance is implied.
+M3: HTTP/2 and complete gateway/relay policies. M4: independently verified HTTP/3.
+Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.

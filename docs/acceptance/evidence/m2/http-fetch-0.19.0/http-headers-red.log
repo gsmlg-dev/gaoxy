@@ -1,0 +1,113 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 666100, max_cases: 4
+
+
+
+  1) test invalid field bytes and finite trailer limits are enforced before forwarding (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:109
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.response/3 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: assert {:error, _} = Headers.response(exchange(), 200, [{"X-Bad", "one\r\nInjected: two"}])
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.response(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false}, 200, [{"X-Bad", "one\r\nInjected: two"}])
+       test/http_headers_test.exs:110: (test)
+
+
+
+  2) test response nominations are applied before rebuilding its trailer declaration (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:80
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.response/3 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: Headers.response(exchange(), 200, fields)
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.response(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false}, 200, [{"Connection", "X-Remove, Content-Length"}, {"Content-Length", "99"}, {"Transfer-Encoding", "chunked"}, {"Trailer", "X-Trace, X-Remove"}])
+       test/http_headers_test.exs:89: (test)
+
+
+
+  3) test response policy preserves raw compression, cookies and content length (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:60
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.response/3 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: ], %{allowed: []}} = Headers.response(exchange(), 200, fields)
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.response(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false}, 200, [{"Content-Encoding", "gzip"}, {"Content-Length", "27"}, {"Set-Cookie", "first=1"}, {"Set-Cookie", "second=2"}, {"Connection", "close, X-Remove"}, {"X-Remove", "private"}, {"Proxy-Connection", "close"}])
+       test/http_headers_test.exs:77: (test)
+
+
+
+  4) test HTTP 1.0 and bodyless responses cannot promise terminal trailers (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:97
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.response/3 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: assert {:error, _} = Headers.response(old, 200, fields)
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.response(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.0", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false}, 200, [{"trailer", "x-trace"}])
+       test/http_headers_test.exs:103: (test)
+
+
+
+  5) test chunked upload trailers retain ordered duplicates after hop filtering (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:35
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.request/1 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: assert {:ok, fields, policy} = Headers.request(exchange)
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.request(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [{"transfer-encoding", "chunked"}, {"trailer", "X-Trace, X-Remove"}, {"connection", "X-Remove"}], body: :chunked, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false})
+       test/http_headers_test.exs:43: (test)
+
+
+
+  6) test request trailers require chunk framing and safe declared names (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:54
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.request/1 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: assert {:error, _} = Headers.request(exchange([{"trailer", "x-trace"}], {:length, 3}))
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.request(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [{"trailer", "x-trace"}], body: {:length, 3}, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false})
+       test/http_headers_test.exs:55: (test)
+
+
+
+  7) test request policy preserves duplicates and fixed framing while regenerating forwarding fields (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:7
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.Headers.request/1 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available)
+     code: assert {:ok, fields, %{allowed: []}} = Headers.request(exchange)
+     stacktrace:
+       Gaoxy.Proxy.HTTP.Headers.request(%Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/1.1", path: nil, query_string: nil, host: "downstream.example", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [{"host", "downstream.example:8080"}, {"content-length", "3"}, {"x-trace", "first"}, {"x-trace", "second"}, {"connection", "keep-alive, X-Remove"}, {"x-remove", "private"}, {"proxy-connection", "keep-alive"}, {"forwarded", "for=spoofed"}, {"x-forwarded-for", "spoofed"}, {"x-real-ip", "spoofed"}, {"expect", "100-continue"}], body: {:length, 3}, keep_alive: false, expect_continue: false}, socket: %ThousandIsland.Socket{socket: nil, transport_module: ThousandIsland.Transports.TCP, read_timeout: nil, handshake_timeout: nil, silent_terminate_on_error: nil, span: nil, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: nil, lease: nil, deadline: nil, limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}, body: nil, buffer: nil, peer: {{127, 0, 0, 1}, 12345}, local: nil, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false})
+       test/http_headers_test.exs:23: (test)
+
+    warning: Gaoxy.Proxy.HTTP.Headers.request/1 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available or is yet to be defined)
+    │
+ 23 │     assert {:ok, fields, %{allowed: []}} = Headers.request(exchange)
+    │                                                    ~
+    │
+    └─ test/http_headers_test.exs:23:52: Gaoxy.Proxy.HTTPHeadersTest."test request policy preserves duplicates and fixed framing while regenerating forwarding fields"/1
+    └─ test/http_headers_test.exs:43:44: Gaoxy.Proxy.HTTPHeadersTest."test chunked upload trailers retain ordered duplicates after hop filtering"/1
+    └─ test/http_headers_test.exs:55:34: Gaoxy.Proxy.HTTPHeadersTest."test request trailers require chunk framing and safe declared names"/1
+    └─ test/http_headers_test.exs:56:34: Gaoxy.Proxy.HTTPHeadersTest."test request trailers require chunk framing and safe declared names"/1
+    └─ test/http_headers_test.exs:57:34: Gaoxy.Proxy.HTTPHeadersTest."test request trailers require chunk framing and safe declared names"/1
+
+    warning: Gaoxy.Proxy.HTTP.Headers.trailers/2 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available or is yet to be defined)
+    │
+ 48 │              Headers.trailers(
+    │                      ~
+    │
+    └─ test/http_headers_test.exs:48:22: Gaoxy.Proxy.HTTPHeadersTest."test chunked upload trailers retain ordered duplicates after hop filtering"/1
+    └─ test/http_headers_test.exs:92:22: Gaoxy.Proxy.HTTPHeadersTest."test response nominations are applied before rebuilding its trailer declaration"/1
+    └─ test/http_headers_test.exs:94:34: Gaoxy.Proxy.HTTPHeadersTest."test response nominations are applied before rebuilding its trailer declaration"/1
+    └─ test/http_headers_test.exs:114:34: Gaoxy.Proxy.HTTPHeadersTest."test invalid field bytes and finite trailer limits are enforced before forwarding"/1
+    └─ test/http_headers_test.exs:115:34: Gaoxy.Proxy.HTTPHeadersTest."test invalid field bytes and finite trailer limits are enforced before forwarding"/1
+
+    warning: Gaoxy.Proxy.HTTP.Headers.response/3 is undefined (module Gaoxy.Proxy.HTTP.Headers is not available or is yet to be defined)
+    │
+ 77 │             ], %{allowed: []}} = Headers.response(exchange(), 200, fields)
+    │                                          ~
+    │
+    └─ test/http_headers_test.exs:77:42: Gaoxy.Proxy.HTTPHeadersTest."test response policy preserves raw compression, cookies and content length"/1
+    └─ test/http_headers_test.exs:89:22: Gaoxy.Proxy.HTTPHeadersTest."test response nominations are applied before rebuilding its trailer declaration"/1
+    └─ test/http_headers_test.exs:103:34: Gaoxy.Proxy.HTTPHeadersTest."test HTTP 1.0 and bodyless responses cannot promise terminal trailers"/1
+    └─ test/http_headers_test.exs:104:34: Gaoxy.Proxy.HTTPHeadersTest."test HTTP 1.0 and bodyless responses cannot promise terminal trailers"/1
+    └─ test/http_headers_test.exs:105:34: Gaoxy.Proxy.HTTPHeadersTest."test HTTP 1.0 and bodyless responses cannot promise terminal trailers"/1
+    └─ test/http_headers_test.exs:106:34: Gaoxy.Proxy.HTTPHeadersTest."test HTTP 1.0 and bodyless responses cannot promise terminal trailers"/1
+    └─ test/http_headers_test.exs:110:34: Gaoxy.Proxy.HTTPHeadersTest."test invalid field bytes and finite trailer limits are enforced before forwarding"/1
+    └─ test/http_headers_test.exs:111:34: Gaoxy.Proxy.HTTPHeadersTest."test invalid field bytes and finite trailer limits are enforced before forwarding"/1
+    └─ test/http_headers_test.exs:113:39: Gaoxy.Proxy.HTTPHeadersTest."test invalid field bytes and finite trailer limits are enforced before forwarding"/1
+
+
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+7 tests, 7 failures

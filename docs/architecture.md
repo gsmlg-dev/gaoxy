@@ -44,12 +44,37 @@ of both lifecycle and telemetry keys, then fail-closed teardown on expiry. See
 [ADR 004](adr/004-lifecycle.md) for results and outer shutdown budgets. No pause uses `:sys.suspend`. Optional QUIC cannot inherit
 these guarantees because stopping its ingress prevents protocol progress.
 
-`gaoxy_http` will own native codecs/server engines and the HTTP endpoint extension
-contract; it may depend on `gaoxy` but never on `gaoxy_proxy`. `gaoxy_proxy` will
-implement upstream policy and endpoints over that contract. `gaoxy_server` owns
-versioned JSON loading, a fixed handler allowlist and release startup using the
-same runtime. Its `prep_stop` drains the embedded instance. No management server,
-HTTP engine, Phoenix adapter or proxy placeholder exists in this milestone.
+`gaoxy_http` owns native HTTP/1 and WebSocket codecs, Plug/Phoenix adapters and the
+HTTP endpoint extension contract; it depends on `gaoxy` but never on `gaoxy_proxy`.
+Native TCP/TLS handlers preserve Service/Admission ownership and admit each new
+request against the lifecycle barrier. WebSocket upgrade retains the connection
+owner and establishes one bounded protocol lifetime. See
+[ADR 006](adr/006-native-http.md) and [native HTTP limits](native-http.md).
+`gaoxy_proxy` implements HTTP streaming and message-level WebSocket endpoints over that
+contract. Its application supervises temporary session guardians outside the
+per-instance forced-cleanup subtree. Service serializes attachment with drain;
+Admission charges an independent reservation against the original connection
+lease. Cleanup succeeds only after an authenticated receipt and normal guardian
+DOWN, following public HTTP RequestCompletion confirmation or upstream WebSocket
+PID termination. Gate, connection,
+service and instance death independently trigger cancellation. Failed guardians
+fail admission closed; deadline expiry retains cleanup-pending semantics.
+
+`gaoxy_server` owns versioned JSON loading, a fixed handler allowlist and release
+startup using the same runtime. Its `prep_stop` drains the embedded instance. No
+management server is added. HTTP Fetch/WebSocket 0.19.1 includes the #27–#30, #38, #45,
+#60 and #64 fixes. HTTP uploads and raw ACK responses stream with finite deadlines, fixed
+authority, verified TLS and no replay. Native connection polling retains input
+and detects idle downstream closure. Present empty queries survive the
+upstream wire path; the former #64 blocker is resolved. The proxy package transitively
+installs QUIC/TLS engines while standalone core consumers retain isolation;
+dependency presence implies no H2/H3 support. See [the dependency audit](m2-dependency-audit.md).
+
+HTTP capacity is reserved before activation using explicit client socket buffers
+and the inspected OTP 28.5.0.5 receive path; the qualified default `:inet` backend
+and SSL active-N settings must remain stable. The reservation includes bounded
+receive/parser/copy windows, not all BEAM or kernel memory. See
+[HTTP proxy limits](http-proxy.md).
 
 ## Optional generic QUIC
 

@@ -1,0 +1,92 @@
+==> gaoxy
+Running ExUnit with seed: 531954, max_cases: 1
+
+..+.+..+..................+....+...+.....+.+..+...................+.....+...+.+..+++++++++++++++++++++++++++++++++++++++*..+.+..+.....................+++++++++++++++++++++++++++++++++++++++*..........+........+......+....+.....+...+.........+.+...++++++
+......+....+..+....+++++++++++++++++++++++++++++++++++++++*...+..........+.........+.....+............+.+...+.....+......+.+.....+.........+...+...+....+...+......+..+....+.....+....+.....+.+..................+++++++++++++++++++++++++++++++++++++++*.....+...+...+...+.....................+...........+...+....+...+..+.......+...+...+..+............+.+.........+...++++++
+-----
+.......+....+...............+++++++++++++++++++++++++++++++++++++++*.+..+.+++++++++++++++++++++++++++++++++++++++*...................+.....+......+....+..+.+..+......+......+......+.......+.....+......+......+...............+...............+......+.......+.....+.+...........+....+...............+..+.......+...+.....+....+..................+......+..+....+..............+....++++++
+.......+...+..+.........+...+...+..........+..+.+..+.........+.+..+......+.+.....+++++++++++++++++++++++++++++++++++++++*....+.............+..+......+....+...+......+.........+.....+++++++++++++++++++++++++++++++++++++++*..+....+...........+......+......+..........+........+.+..............+......+...+...+.......+..+...+..........+...........+.+...+..+.+........++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+
+14:05:55.183 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+14:05:55.228 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+....
+14:05:55.467 [error] GenServer #PID<0.497.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.1) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 57641, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.35>, listener: #PID<0.487.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.474795361.1249640449.120972>, service: "echo", generation: #Reference<0.474795361.1249640449.120977>}, instance: #PID<0.481.0>, service: #PID<0.483.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.479.0>, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 8, max_active: 64, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :stream}, gate: #PID<0.484.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, idle_timer: nil, idle_token: nil, read_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.474795361.1249640449.121098>, start_time: -576460745679914097, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.485.0>, local_info: {{127, 0, 0, 1}, 48028}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 57641, sampled: true, telemetry_span_context: #Reference<0.474795361.1249640449.121098>, parent_telemetry_span_context: #Reference<0.474795361.1249640449.120994>}}, processing_times: [], adaptive_timeout: 30000, memory_token: #Reference<0.474795361.1249640449.121104>, idle_deadline: :infinity, memory_check_interval: 10000, memory_timer: #Reference<0.474795361.1249640449.121105>}
+........................+...................+..+...+.......+...+.....+.+++++++++++++++++++++++++++++++++++++++*.+.+++++++++++++++++++++++++++++++++++++++*....+...+............+.....................+..+...+................+.........+.........+...+.........+...+.....+.+..+...+.+........+...+.......+......+.....+..........+..+....+.....+.+..+...+....+...+........+..........+...+....................++++++
+.+.....+...+.+++++++++++++++++++++++++++++++++++++++*.....+.......+..+...+......+..........+.........+.....+++++++++++++++++++++++++++++++++++++++*.+..+...+....+......+.........+...+...............+..+..........+..+.+........+....+..+....+..+...+......+...+.+..+.............+.....+.........+.+..............+.............+..+.......+........+..............................+...+.......+......+.........+...+..+.+..+....+...+..................+...+.....................+...+..+.+.................+.+.........+..+...+...+...+.+...+......+.....+.......+.........+......+.....+....+........+...+.........+.+........+......+.+.........+.....+....+............+..+......+......+.+...+......+........+.+...........+...+................+.....+......+.+...+..+..................+.......+.....+...+......+..........+.........+.....+.........+............+.+............+........++++++
+-----
+..+............+.+..+......+....+++++++++++++++++++++++++++++++++++++++*..+..+...+................+...............+........+.+.........+...+.........+.....+.+...+..+...+......+.+..+.+...........+.........+.+......+..+.+..........................+...+++++++++++++++++++++++++++++++++++++++*....++++++
+.+.+.....+...............+.+......+.....+++++++++++++++++++++++++++++++++++++++*...+................+..+.+......+.....+....+++++++++++++++++++++++++++++++++++++++*.+..+.+..+...+.................................+....+...+..+.+.....+.......+...+.....+......+.+..+............+.........+.........+...+.......+..+.............+...+.....+...+..........+.....+.+......+..++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+........+.+...+..+.......+...........+....+........+++++++++++++++++++++++++++++++++++++++*..........................+..+.+.....+.+.........+.....+++++++++++++++++++++++++++++++++++++++*...........+....+..............+.+.........+..+....+.....+....+.....+......+....+..+...+............+.........+.+...+...+............+..+.+.....+...............+............+.........................+.....+......+......+.+...+......+...+........++++++
+...+...+......+......+......+..+......+....+...........+++++++++++++++++++++++++++++++++++++++*...+......+++++++++++++++++++++++++++++++++++++++*....+...+...+..................+...............+....+..+...+.......+.....+...+...+....+.........+......+........+............+...+.......+...+...+............+..................+.....+....+...+..+..........+...+......+.....+..........+.....+.......+..+.+...........+.+........+.+.....+......+.......+.....+...+.............+..+...+.+...........+...+.++++++
+-----
+..+..+++++++++++++++++++++++++++++++++++++++*...+.+++++++++++++++++++++++++++++++++++++++*...........+...........+.+..+.......+.....+..........+......+...+..+...+.......+.....+....+........+...............+.+.....+.......+...+.................+............+.......+...+........+..........+............+............+...+...........+.+...+...+.........+.....+...+...+....++++++
+...+....+..+...+......+.......+...+...........+.+...+..+....+...+..+..................+...+...+.+...+..+.+........+.+......+...+..+...+.+...+..+...+++++++++++++++++++++++++++++++++++++++*...+.........+.+......+............+..+.+............+++++++++++++++++++++++++++++++++++++++*..........+................+.....+.......+..+.........+.+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+.
+14:05:59.020 [info] The function passed as a handler with ID #Reference<0.474795361.1249640450.118758> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+.
+14:05:59.563 [info] The function passed as a handler with ID #Reference<0.474795361.1249640449.126888> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+...........
+14:06:01.429 [error] Task #PID<0.1256.0> started from #PID<0.1240.0> terminating
+** (stop) :injected
+    test/cleanup_attachment_test.exs:71: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<4.92605962/0 in Gaoxy.CleanupAttachmentTest.guardian/0>
+    Args: []
+...............................
+Finished in 10.0 seconds (8.3s async, 1.6s sync)
+66 tests, 0 failures
+==> gaoxy_http
+Running ExUnit with seed: 531954, max_cases: 1
+
+..............................................................................................................
+Finished in 2.5 seconds (2.5s async, 0.00s sync)
+110 tests, 0 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 531954, max_cases: 1
+
+................
+14:06:07.704 [error] GenServer #PID<0.3222.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.3221.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.3222.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.3223.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.474795361.1249771521.142350>, #Reference<0.474795361.1249771521.142351>, :http, #Reference<0.474795361.1249640449.142352>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+...................................
+
+  1) test a present empty query remains distinct from an absent query (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:100
+     Assertion with =~ failed
+     code:  assert upstream =~ "GET /upload? HTTP/1.1\r\n"
+     left:  "GET /upload HTTP/1.1\r\nHost: 127.0.0.1:43947\r\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.5 Elixir/1.18.5 http_fetch/0.19.0\r\nx-forwarded-for: 127.0.0.1\r\nx-forwarded-host: downstream.test\r\nx-forwarded-proto: http\r\nConnection: close\r\n\r\n"
+     right: "GET /upload? HTTP/1.1\r\n"
+     stacktrace:
+       test/http_proxy_wire_test.exs:113: (test)
+
+....................
+Finished in 6.0 seconds (2.9s async, 3.1s sync)
+72 tests, 1 failure

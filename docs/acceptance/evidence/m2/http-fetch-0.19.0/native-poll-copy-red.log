@@ -1,0 +1,111 @@
+==> gaoxy_http
+Running ExUnit with seed: 369753, max_cases: 4
+
+......
+
+  1) test buffer-copy admission denies polling before consuming a byte that alone would fit (Gaoxy.HTTP.ConnectionPollTest)
+     apps/gaoxy_http/test/connection_poll_test.exs:77
+     match (=) failed
+     The following variables were pinned:
+       exchange = %Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :none, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: #Port<0.37>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2134235238.2323120129.64016>, start_time: -576460749412287058, start_metadata: %{handler: Gaoxy.HTTP.ConnectionPollTest, telemetry_span_context: #Reference<0.2134235238.2323120129.64016>}, handler: Gaoxy.HTTP.ConnectionPollTest, span_metadata: %{handler: Gaoxy.HTTP.ConnectionPollTest, telemetry_span_context: #Reference<0.2134235238.2323120129.64016>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.322.0>, lease: #Reference<0.2134235238.2323120129.64010>, deadline: -576460748413, limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :done, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_read_chunk: 16384, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32}}, buffer: "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp", peer: {{127, 0, 0, 1}, 54668}, local: {{127, 0, 0, 1}, 58927}, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, expect_sent: false}
+     code:  assert {:error, :byte_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
+     left:  {:error, :byte_limit, ^exchange}
+     right: {:more,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: "/",
+                 target_form: :origin,
+                 version: :"HTTP/1.1",
+                 path: "/",
+                 query_string: "",
+                 host: "localhost",
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 35,
+                 headers: [{"host", "localhost"}],
+                 body: :none,
+                 keep_alive: true,
+                 expect_continue: false
+               },
+               socket: %ThousandIsland.Socket{
+                 socket: #Port<0.37>,
+                 transport_module: ThousandIsland.Transports.TCP,
+                 read_timeout: 1000,
+                 handshake_timeout: 1000,
+                 silent_terminate_on_error: false,
+                 span: %ThousandIsland.Telemetry{
+                   span_name: :connection,
+                   telemetry_span_context: #Reference<0.2134235238.2323120129.64016>,
+                   start_time: -576460749412287058,
+                   start_metadata: %{
+                     handler: Gaoxy.HTTP.ConnectionPollTest,
+                     telemetry_span_context: #Reference<0.2134235238.2323120129.64016>
+                   },
+                   handler: Gaoxy.HTTP.ConnectionPollTest,
+                   span_metadata: %{
+                     handler: Gaoxy.HTTP.ConnectionPollTest,
+                     telemetry_span_context: #Reference<0.2134235238.2323120129.64016>
+                   }
+                 },
+                 read_timer: nil,
+                 read_deadline: nil,
+                 timer_deadline: nil
+               },
+               gate: #PID<0.322.0>,
+               lease: #Reference<0.2134235238.2323120129.64010>,
+               deadline: -576460748413,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 read_timeout: 5000,
+                 max_read_chunk: 16384,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_header_bytes: 32768,
+                 max_headers: 100,
+                 max_request_line: 8192,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32
+               },
+               body: %Gaoxy.HTTP.HTTP1.Body{
+                 phase: :done,
+                 total: 0,
+                 trailers: [],
+                 trailer_bytes: 0,
+                 limits: %{
+                   max_buffer_bytes: 65536,
+                   read_timeout: 5000,
+                   max_read_chunk: 16384,
+                   write_timeout: 5000,
+                   request_timeout: 30000,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_header_bytes: 32768,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32
+                 }
+               },
+               buffer: "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppz",
+               peer: {{127, 0, 0, 1}, 54668},
+               local: {{127, 0, 0, 1}, 58927},
+               service: nil,
+               instance: nil,
+               response: :unset,
+               response_trailers: [],
+               close: false,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/connection_poll_test.exs:81: (test)
+
+..
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+9 tests, 1 failure

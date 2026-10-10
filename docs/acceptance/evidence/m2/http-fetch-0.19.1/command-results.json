@@ -1,0 +1,255 @@
+{
+  "date": "2026-10-10",
+  "source_commit": "deffbc7001ac2e8d59099acec134a65aec139d07",
+  "status": "PASS / M2 COMPLETE LOCALLY",
+  "upstream_release": {
+    "version": "0.19.1",
+    "commit": "c26a17712a02a03985a764b6b100ca840fcc4349",
+    "issue_64": "CLOSED"
+  },
+  "scoped_tests": {
+    "gaoxy": 66,
+    "gaoxy_http": 116,
+    "gaoxy_proxy": 73,
+    "passed": 255,
+    "failures": 0,
+    "total": 255,
+    "seed": 754722,
+    "max_cases": 1,
+    "exit_code": 0
+  },
+  "independent_checks": {
+    "phoenix_fixture_tests": 2,
+    "browser_peer_checks": 13,
+    "reverse_proxy_example_checks": 6,
+    "fresh_core_consumer_tests": 1
+  },
+  "probes": {
+    "empty_query": 2,
+    "method_body": 6,
+    "websocket_close": 4
+  },
+  "not_run": [
+    "Gaoxy hosted CI",
+    "push",
+    "merge",
+    "Gaoxy release",
+    "deployment",
+    "M3/M4"
+  ],
+  "results": [
+    {
+      "check": "deps-update",
+      "command": [
+        "mix",
+        "deps.update",
+        "http_fetch",
+        "http_web_socket"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:24:36.248979+00:00",
+      "finished_at": "2026-10-10T07:24:46.957281+00:00",
+      "exit_code": 0,
+      "log": "deps-update.log",
+      "status": "PASS"
+    },
+    {
+      "check": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:25:06.055207+00:00",
+      "finished_at": "2026-10-10T07:25:34.270444+00:00",
+      "exit_code": 0,
+      "log": "compile.log",
+      "status": "PASS"
+    },
+    {
+      "check": "empty-query-probe",
+      "command": [
+        "mix",
+        "run",
+        "integration/http_fetch_contract/empty_query_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:25:59.306777+00:00",
+      "finished_at": "2026-10-10T07:26:00.886410+00:00",
+      "exit_code": 0,
+      "log": "empty-query-probe.log",
+      "status": "PASS"
+    },
+    {
+      "check": "final-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test",
+        "apps/gaoxy_proxy/test",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy/test/runtime_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/send_outcome_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/shutdown_hardening_test.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:26:29.714238+00:00",
+      "finished_at": "2026-10-10T07:26:51.379954+00:00",
+      "exit_code": 0,
+      "log": "final-tests.log",
+      "status": "PASS"
+    },
+    {
+      "check": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:28:38.269879+00:00",
+      "finished_at": "2026-10-10T07:28:39.583680+00:00",
+      "exit_code": 0,
+      "log": "format.log",
+      "status": "PASS"
+    },
+    {
+      "check": "method-body-probe",
+      "command": [
+        "mix",
+        "run",
+        "integration/http_fetch_contract/method_body_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:28:39.693779+00:00",
+      "finished_at": "2026-10-10T07:28:41.564201+00:00",
+      "exit_code": 0,
+      "log": "method-body-probe.log",
+      "status": "PASS"
+    },
+    {
+      "check": "websocket-close-probe",
+      "command": [
+        "mix",
+        "run",
+        "integration/http_fetch_contract/websocket_close_probe.exs"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:28:41.666621+00:00",
+      "finished_at": "2026-10-10T07:28:43.807091+00:00",
+      "exit_code": 0,
+      "log": "websocket-close-probe.log",
+      "status": "PASS"
+    },
+    {
+      "check": "example-run",
+      "command": [
+        "python3",
+        "integration/reverse_proxy/run.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test",
+        "GAOXY_PROXY_EVIDENCE": ".audit/http-fetch-0.19.1"
+      },
+      "started_at": "2026-10-10T07:28:43.895932+00:00",
+      "finished_at": "2026-10-10T07:28:46.763341+00:00",
+      "exit_code": 0,
+      "log": "example-run.log",
+      "status": "PASS"
+    },
+    {
+      "check": "fixture-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors"
+      ],
+      "cwd": "examples/phoenix_native",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:28:46.874460+00:00",
+      "finished_at": "2026-10-10T07:28:49.586955+00:00",
+      "exit_code": 0,
+      "log": "fixture-tests.log",
+      "status": "PASS"
+    },
+    {
+      "check": "browser-run",
+      "command": [
+        ".audit/browser-venv/bin/python",
+        "integration/phoenix_native/run.py"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:28:49.685613+00:00",
+      "finished_at": "2026-10-10T07:29:07.246692+00:00",
+      "exit_code": 0,
+      "log": "browser-run.log",
+      "status": "PASS",
+      "fixture_environment": {
+        "MIX_ENV": "dev"
+      }
+    },
+    {
+      "check": "core-consumer",
+      "command": [
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "cwd": ".",
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 2:2",
+        "MIX_ENV": "test"
+      },
+      "started_at": "2026-10-10T07:27:00.461955+00:00",
+      "finished_at": "2026-10-10T07:30:26.832740+00:00",
+      "exit_code": 0,
+      "log": "core-consumer.log",
+      "status": "PASS"
+    }
+  ]
+}

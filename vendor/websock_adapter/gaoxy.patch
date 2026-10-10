@@ -1,0 +1,49 @@
+From 53ee1c7c9edb39fda9c531a5c79aec17ee081a6c Mon Sep 17 00:00:00 2001
+From: Jonathan Gao <gsmlg.com@gmail.com>
+Date: Fri, 9 Oct 2026 16:44:44 +0800
+Subject: [PATCH] feat: support native Gaoxy WebSock upgrades
+
+---
+ lib/websock_adapter.ex       |  1 +
+ test/gaoxy_dispatch_test.exs | 17 +++++++++++++++++
+ 2 files changed, 18 insertions(+)
+ create mode 100644 test/gaoxy_dispatch_test.exs
+
+diff --git a/lib/websock_adapter.ex b/lib/websock_adapter.ex
+index de367e6..71123c8 100644
+--- a/lib/websock_adapter.ex
++++ b/lib/websock_adapter.ex
+@@ -72,6 +72,7 @@ defmodule WebSockAdapter do
+     Plug.Conn.upgrade_adapter(conn, :websocket, tuple)
+   end
+ 
++  defp tuple_for(Gaoxy.PlugAdapter, websock, state, opts), do: {websock, state, opts}
+   defp tuple_for(Bandit.Adapter, websock, state, opts), do: {websock, state, opts}
+   # Support for adapters as specified prior to Bandit 1.4
+   defp tuple_for(Bandit.HTTP1.Adapter, websock, state, opts), do: {websock, state, opts}
+diff --git a/test/gaoxy_dispatch_test.exs b/test/gaoxy_dispatch_test.exs
+new file mode 100644
+index 0000000..383578b
+--- /dev/null
++++ b/test/gaoxy_dispatch_test.exs
+@@ -0,0 +1,17 @@
++# This isolated dependency test supplies the consumer's public adapter contract.
++defmodule Gaoxy.PlugAdapter do
++  def upgrade(:payload, :websocket, {handler, state, options}),
++    do: {:ok, {:native, handler, state, options}}
++end
++
++defmodule WebSockAdapter.GaoxyDispatchTest do
++  use ExUnit.Case, async: true
++
++  test "dispatches the native Gaoxy adapter tuple" do
++    conn = %Plug.Conn{adapter: {Gaoxy.PlugAdapter, :payload}}
++    upgraded = WebSockAdapter.upgrade(conn, MyWebSock, :state, early_validate_upgrade: false)
++    assert upgraded.state == :upgraded
++    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
++    assert options[:max_frame_size] == 10_000_000
++  end
++end
+-- 
+2.54.0
+

@@ -1,0 +1,43 @@
+==> gaoxy_http
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+==> gaoxy_http
+Running ExUnit with seed: 743358, max_cases: 4
+
+..............
+
+  1) test failed write never acknowledges success or sends later data frames (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:111
+     Assertion failed, no matching message after 100ms
+     The following variables were pinned:
+       worker = #PID<0.400.0>
+       monitor = #Reference<0.852602210.4159438850.74920>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^worker, :normal}
+       value:   {:DOWN, #Reference<0.852602210.4159438850.74920>, :process,
+                 #PID<0.400.0>, :killed}
+     stacktrace:
+       test/native_websocket_proxy_test.exs:120: (test)
+
+.
+
+  2) test push acknowledges only after every frame write succeeds (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:97
+     Assertion failed, no matching message after 100ms
+     The following variables were pinned:
+       worker = #PID<0.453.0>
+       monitor = #Reference<0.852602210.4159438849.79232>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^worker, :normal}
+       value:   {:DOWN, #Reference<0.852602210.4159438849.79232>, :process,
+                 #PID<0.453.0>, :killed}
+     stacktrace:
+       test/native_websocket_proxy_test.exs:108: (test)
+
+...........
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+28 tests, 2 failures

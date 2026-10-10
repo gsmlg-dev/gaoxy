@@ -1,0 +1,17 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 791777, max_cases: 1
+
+........
+
+  1) test a present empty query remains distinct from an absent query (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:100
+     Assertion with =~ failed
+     code:  assert upstream =~ "GET /upload? HTTP/1.1\r\n"
+     left:  "GET /upload HTTP/1.1\r\nHost: 127.0.0.1:42481\r\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.5 Elixir/1.18.5 http_fetch/0.19.0\r\nx-forwarded-for: 127.0.0.1\r\nx-forwarded-host: downstream.test\r\nx-forwarded-proto: http\r\nConnection: close\r\n\r\n"
+     right: "GET /upload? HTTP/1.1\r\n"
+     stacktrace:
+       test/http_proxy_wire_test.exs:113: (test)
+
+..
+Finished in 1.0 seconds (0.00s async, 1.0s sync)
+11 tests, 1 failure

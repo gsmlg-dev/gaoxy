@@ -1,0 +1,86 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 179890, max_cases: 4
+
+
+
+  1) test service drain closes both peers and confirms the upstream process is gone (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:103
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:111: (test)
+
+
+
+  2) test upstream Close <<3, 243, 117, 112, 115, 116, 114, 101, 97, 109, 32, 101, 114, 114, 111, 114>> reaches downstream without rewriting (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:72
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:79: (test)
+
+
+
+  3) test configuration requires one fixed authority, verified TLS and finite limits (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:13
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.WebSocket.init/1 is undefined (module Gaoxy.Proxy.WebSocket is not available)
+     code: assert {:ok, _} = Proxy.init(%{upstream: "wss://localhost:443"})
+     stacktrace:
+       Gaoxy.Proxy.WebSocket.init(%{upstream: "wss://localhost:443"})
+       test/websocket_proxy_test.exs:14: (test)
+
+
+
+  4) test upstream Close "" reaches downstream without rewriting (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:72
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:79: (test)
+
+
+
+  5) test upstream rejection produces an HTTP error before downstream upgrade (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:90
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:95: (test)
+
+
+
+  6) test local routing and WebSocket proxy preserve path, protocol, binary and close semantics (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:25
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:37: (test)
+
+
+
+  7) test insufficient service byte budget rejects before opening upstream (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:125
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: server = server(url, max_bytes: 1_024)
+     stacktrace:
+       test/websocket_proxy_test.exs:139: Gaoxy.Proxy.WebSocketTest.server/2
+       test/websocket_proxy_test.exs:130: (test)
+
+    warning: Gaoxy.Proxy.WebSocket.init/1 is undefined (module Gaoxy.Proxy.WebSocket is not available or is yet to be defined)
+    │
+ 14 │     assert {:ok, _} = Proxy.init(%{upstream: "wss://localhost:443"})
+    │                             ~
+    │
+    └─ test/websocket_proxy_test.exs:14:29: Gaoxy.Proxy.WebSocketTest."test configuration requires one fixed authority, verified TLS and finite limits"/1
+    └─ test/websocket_proxy_test.exs:18:34: Gaoxy.Proxy.WebSocketTest."test configuration requires one fixed authority, verified TLS and finite limits"/1
+    └─ test/websocket_proxy_test.exs:21:32: Gaoxy.Proxy.WebSocketTest."test configuration requires one fixed authority, verified TLS and finite limits"/1
+    └─ test/websocket_proxy_test.exs:22:32: Gaoxy.Proxy.WebSocketTest."test configuration requires one fixed authority, verified TLS and finite limits"/1
+
+
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+7 tests, 7 failures

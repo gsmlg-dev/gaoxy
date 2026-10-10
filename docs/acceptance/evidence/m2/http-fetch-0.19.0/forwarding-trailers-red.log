@@ -1,0 +1,23 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 909038, max_cases: 4
+
+.....
+
+  1) test request trailers cannot restore client supplied forwarding identities (Gaoxy.Proxy.HTTPHeadersTest)
+     apps/gaoxy_proxy/test/http_headers_test.exs:66
+     Assertion with in failed
+     code:  assert {"trailer", "x-trace"} in headers
+     left:  {"trailer", "x-trace"}
+     right: [
+              {"trailer",
+               "forwarded, x-forwarded-for, x-forwarded-client-cert, x-real-ip, x-trace"},
+              {"x-forwarded-for", "127.0.0.1"},
+              {"x-forwarded-host", "downstream.example"},
+              {"x-forwarded-proto", "http"}
+            ]
+     stacktrace:
+       test/http_headers_test.exs:78: (test)
+
+..
+Finished in 0.2 seconds (0.2s async, 0.00s sync)
+8 tests, 1 failure

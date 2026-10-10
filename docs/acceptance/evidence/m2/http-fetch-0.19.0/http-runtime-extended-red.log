@@ -1,0 +1,40 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 634046, max_cases: 4
+
+.
+13:56:25.866 [error] GenServer #PID<0.306.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.305.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.306.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.307.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.2468454754.3127771138.152371>, #Reference<0.2468454754.3127771138.152372>, :http, #Reference<0.2468454754.3127640066.152373>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+
+
+  1) test a blocked downstream write respects the endpoint write timeout and bounded retention (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:279
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       native = #PID<0.342.0>
+       monitor = #Reference<0.2468454754.3127640066.152709>
+     The process mailbox is empty.
+     code: assert_receive {:DOWN, ^monitor, :process, ^native, _}
+     stacktrace:
+       test/http_proxy_runtime_test.exs:298: (test)
+
+
+
+  2) test a blocked downstream write respects the endpoint maximum lifetime and bounded retention (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:279
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       native = #PID<0.366.0>
+       monitor = #Reference<0.2468454754.3127640066.152943>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^native, _}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^native, _}
+       value:   {:peer_done, #PID<0.353.0>, [:ok]}
+     stacktrace:
+       test/http_proxy_runtime_test.exs:298: (test)
+
+............
+Finished in 3.6 seconds (3.6s async, 0.00s sync)
+15 tests, 2 failures

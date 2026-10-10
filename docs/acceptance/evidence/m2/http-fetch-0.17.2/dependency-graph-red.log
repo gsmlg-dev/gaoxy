@@ -1,0 +1,65 @@
+==> gaoxy
+Running ExUnit with seed: 902300, max_cases: 4
+
+
+01:35:28.748 [error] GenServer #PID<0.346.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.1.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.1) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 40146, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.21>, listener: #PID<0.333.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2768060715.1401946113.13667>, service: "echo", generation: #Reference<0.2768060715.1401946113.13673>}, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, handler_options: #PID<0.315.0>, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 8, max_active: 64, callback_timeout: 5000, max_memberships: 64, drain_timeout: 5000, max_output: 65507, max_state: 65536}, handler_mode: :stream, capabilities: [], quic: %{}}, gate: #PID<0.329.0>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, idle_timer: nil, idle_token: nil, read_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2768060715.1401946113.13920>, start_time: -576460749459457278, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.330.0>, local_info: {{127, 0, 0, 1}, 41471}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 40146, sampled: true, telemetry_span_context: #Reference<0.2768060715.1401946113.13920>, parent_telemetry_span_context: #Reference<0.2768060715.1401946113.13787>}}, processing_times: [], adaptive_timeout: 30000, memory_token: #Reference<0.2768060715.1401946113.13926>, idle_deadline: :infinity, memory_check_interval: 10000, memory_timer: #Reference<0.2768060715.1401946113.13927>}
+............
+
+  1) test explicit unsupported providers and capabilities never fall back (Gaoxy.ConfigTest)
+     apps/gaoxy/test/config_test.exs:31
+     match (=) failed
+     code:  assert {:error, {:unsupported_capability, :quic}} =
+              Gaoxy.Config.validate(services: [service(%{transport: :quic})])
+     left:  {:error, {:unsupported_capability, :quic}}
+     right: {:error, :invalid_alpn}
+     stacktrace:
+       test/config_test.exs:37: (test)
+
+......+++++++++++++++++++++++++++++++++++++++*..........+........+++++++++++++++++++++++++++++++++++++++*.+.........+....+......+...++++++
+.......+..+...+...............+.......+++++++++++++++++++++++++++++++++++++++*....+.........+.......+.....+.........+.+......+...+..+....+.....+......+.......+.................+++++++++++++++++++++++++++++++++++++++*..........+...+.+..+.......+.................+...+............+.+........+.+...+...+........+.....................+....+...............+.........+.....+......+....+...........+.......++++++
+-----
+..+...........+...+++++++++++++++++++++++++++++++++++++++*.+....+...+++++++++++++++++++++++++++++++++++++++*.+......+....+..................+............+......+..+.............+..+...+......+.+..............+.+.....+.......+..+..........+......+...+............+............+..+.........+.+...+...........+.+.....+...+......+..+........+.......+............+.........+.....+..+.......+....+...+......+........+...+....+.........+......+..........+......+.....+...+.......+...+..+...+...+.......+..+.............++++++
+..............+.+...+......+...+...........+....+.....+++++++++++++++++++++++++++++++++++++++*.....+...+.+......+...+++++++++++++++++++++++++++++++++++++++*..........+.........+..................+..+......+......+...............+...+.......+...............+...+...+........+......+.+..+.......+...+.....+...+....+...+...+..+......+................+......+.+...+.........+...........+....+......+..+..........+.....+............+...+.......+...........+.......+........+.......+.....+...+.+++++
+-----
+.Certificate request self-signature ok
+subject=CN=localhost
+
+01:35:30.174 [info] The function passed as a handler with ID #Reference<0.2768060715.1401946114.8529> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+
+01:35:30.736 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+
+01:35:30.793 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+....
+01:35:31.243 [info] The function passed as a handler with ID #Reference<0.2768060715.1401946113.16507> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+...............
+Finished in 5.1 seconds (3.4s async, 1.6s sync)
+45 tests, 1 failure
+==> gaoxy_http
+Running ExUnit with seed: 902300, max_cases: 4
+
+..................................................................................
+Finished in 1.9 seconds (1.9s async, 0.00s sync)
+82 tests, 0 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 902300, max_cases: 4
+
+.....
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+5 tests, 0 failures

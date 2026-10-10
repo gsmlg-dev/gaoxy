@@ -1,0 +1,101 @@
+==> gaoxy
+Compiling 4 files (.ex)
+Generated gaoxy app
+==> gaoxy_http
+Running ExUnit with seed: 248516, max_cases: 4
+
+
+
+  1) test failed write never acknowledges success or sends later data frames (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:106
+     Assertion failed, no matching message after 100ms
+     The following variables were pinned:
+       worker = #PID<0.367.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:write_started, ^worker, <<129, 3, "one">>}
+     mailbox:
+       pattern: {:write_started, ^worker, <<129, 3, "one">>}
+       value:   {:write_started, #PID<0.367.0>, <<136, 2, 3, 243>>}
+     stacktrace:
+       test/native_websocket_proxy_test.exs:109: (test)
+
+
+
+  2) test native exchange carries exact instance and service PIDs from context (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:68
+     Assertion with =~ failed
+     code:  assert head(socket, "") =~ "101 Switching Protocols"
+     left:  "HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+     right: "101 Switching Protocols"
+     stacktrace:
+       test/native_websocket_proxy_test.exs:157: Gaoxy.HTTP.NativeWebSocketProxyTest.connect/0
+       test/native_websocket_proxy_test.exs:69: (test)
+
+
+
+  3) test optional callback preserves valid peer code and UTF-8 reason before echo (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:56
+     Assertion with =~ failed
+     code:  assert head(socket, "") =~ "101 Switching Protocols"
+     left:  "HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+     right: "101 Switching Protocols"
+     stacktrace:
+       test/native_websocket_proxy_test.exs:157: Gaoxy.HTTP.NativeWebSocketProxyTest.connect/0
+       test/native_websocket_proxy_test.exs:57: (test)
+
+
+
+  4) test push acknowledges only after every frame write succeeds (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:92
+     Assertion failed, no matching message after 100ms
+     The following variables were pinned:
+       worker = #PID<0.403.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:write_started, ^worker, <<129, 3, "one">>}
+     mailbox:
+       pattern: {:write_started, ^worker, <<129, 3, "one">>}
+       value:   {:write_started, #PID<0.403.0>, <<136, 2, 3, 243>>}
+     stacktrace:
+       test/native_websocket_proxy_test.exs:95: (test)
+
+
+
+  5) test empty local close output is a valid zero-length frame (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:75
+     Assertion with =~ failed
+     code:  assert head(socket, "") =~ "101 Switching Protocols"
+     left:  "HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+     right: "101 Switching Protocols"
+     stacktrace:
+       test/native_websocket_proxy_test.exs:157: Gaoxy.HTTP.NativeWebSocketProxyTest.connect/0
+       test/native_websocket_proxy_test.exs:76: (test)
+
+
+
+  6) test reserved close codes never reach the wire (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:84
+     Assertion with =~ failed
+     code:  assert head(socket, "") =~ "101 Switching Protocols"
+     left:  "HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+     right: "101 Switching Protocols"
+     stacktrace:
+       test/native_websocket_proxy_test.exs:157: Gaoxy.HTTP.NativeWebSocketProxyTest.connect/0
+       test/native_websocket_proxy_test.exs:86: anonymous fn/2 in Gaoxy.HTTP.NativeWebSocketProxyTest."test reserved close codes never reach the wire"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/native_websocket_proxy_test.exs:85: (test)
+
+
+
+  7) test optional callback observes empty peer close before native echo (Gaoxy.HTTP.NativeWebSocketProxyTest)
+     apps/gaoxy_http/test/native_websocket_proxy_test.exs:45
+     Assertion with =~ failed
+     code:  assert head(socket, "") =~ "101 Switching Protocols"
+     left:  "HTTP/1.1 500 Internal Server Error\r\ncontent-length: 0\r\nconnection: close\r\n\r\n"
+     right: "101 Switching Protocols"
+     stacktrace:
+       test/native_websocket_proxy_test.exs:157: Gaoxy.HTTP.NativeWebSocketProxyTest.connect/0
+       test/native_websocket_proxy_test.exs:46: (test)
+
+
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+7 tests, 7 failures

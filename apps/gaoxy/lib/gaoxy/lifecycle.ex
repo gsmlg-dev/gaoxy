@@ -142,7 +142,7 @@ defmodule Gaoxy.Lifecycle do
 
   defp await_leases(gate, deadline) do
     case call(gate, :status, deadline) do
-      %{active: 0} ->
+      %{active: 0, cleanup_pending: 0} ->
         :ok
 
       %{active: _} ->

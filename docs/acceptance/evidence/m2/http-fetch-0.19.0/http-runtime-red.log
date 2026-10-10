@@ -1,0 +1,90 @@
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 576518, max_cases: 4
+
+
+
+  1) test service shutdown cancels an admitted upstream request without headers (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:123
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: {server, client} = proxy(url)
+     stacktrace:
+       test/http_proxy_runtime_test.exs:139: Gaoxy.Proxy.HTTPRuntimeTest.proxy/1
+       test/http_proxy_runtime_test.exs:131: (test)
+
+
+
+  2) test configuration rejects unsafe authority, unknown options and unbounded limits (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:17
+     ** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.init/1 is undefined (module Gaoxy.Proxy.HTTP is not available)
+     code: assert {:ok, _} = Gaoxy.Proxy.HTTP.init(%{upstream: "http://localhost:1234"})
+     stacktrace:
+       Gaoxy.Proxy.HTTP.init(%{upstream: "http://localhost:1234"})
+       test/http_proxy_runtime_test.exs:18: (test)
+
+
+
+  3) test owner kill before headers leaves independently owned upstream cleanup (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:97
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, {:exception, UndefinedFunctionError}}}
+     code: {:ok, server} =
+     stacktrace:
+       test/http_proxy_runtime_test.exs:105: (test)
+
+    warning: Gaoxy.Proxy.HTTP.init/1 is undefined (module Gaoxy.Proxy.HTTP is not available or is yet to be defined)
+    │
+  8 │       with {:ok, config} <- Gaoxy.Proxy.HTTP.init(config), do: {:ok, {config, owner}}
+    │                                              ~
+    │
+    └─ test/http_proxy_runtime_test.exs:8:46: Gaoxy.Proxy.HTTPRuntimeTest.ObservedEndpoint.init/1
+
+    warning: Gaoxy.Proxy.HTTP.init/1 is undefined (module Gaoxy.Proxy.HTTP is not available or is yet to be defined)
+    │
+ 18 │     assert {:ok, _} = Gaoxy.Proxy.HTTP.init(%{upstream: "http://localhost:1234"})
+    │                                        ~
+    │
+    └─ test/http_proxy_runtime_test.exs:18:40: Gaoxy.Proxy.HTTPRuntimeTest."test configuration rejects unsafe authority, unknown options and unbounded limits"/1
+    └─ test/http_proxy_runtime_test.exs:30:71: Gaoxy.Proxy.HTTPRuntimeTest."test configuration rejects unsafe authority, unknown options and unbounded limits"/1
+
+
+
+  4) test disconnect during an idle upstream SSE response cancels and releases the guardian (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:79
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: {server, client} = proxy(url)
+     stacktrace:
+       test/http_proxy_runtime_test.exs:139: Gaoxy.Proxy.HTTPRuntimeTest.proxy/1
+       test/http_proxy_runtime_test.exs:88: (test)
+
+    warning: Gaoxy.Proxy.HTTP.call/2 is undefined (module Gaoxy.Proxy.HTTP is not available or is yet to be defined)
+    │
+ 13 │       Gaoxy.Proxy.HTTP.call(exchange, config)
+    │                        ~
+    │
+    └─ test/http_proxy_runtime_test.exs:13:24: Gaoxy.Proxy.HTTPRuntimeTest.ObservedEndpoint.call/2
+
+
+
+  5) test an early final response survives upload source termination (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:62
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: {server, client} = proxy(url)
+     stacktrace:
+       test/http_proxy_runtime_test.exs:139: Gaoxy.Proxy.HTTPRuntimeTest.proxy/1
+       test/http_proxy_runtime_test.exs:70: (test)
+
+
+
+  6) test normal completion clears the guardian before a pipelined next proxy request (Gaoxy.Proxy.HTTPRuntimeTest)
+     apps/gaoxy_proxy/test/http_proxy_runtime_test.exs:34
+     ** (MatchError) no match of right hand side value: {:error, {:handler_options, :invalid_endpoint}}
+     code: {server, client} = proxy(url)
+     stacktrace:
+       test/http_proxy_runtime_test.exs:139: Gaoxy.Proxy.HTTPRuntimeTest.proxy/1
+       test/http_proxy_runtime_test.exs:43: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+6 tests, 6 failures

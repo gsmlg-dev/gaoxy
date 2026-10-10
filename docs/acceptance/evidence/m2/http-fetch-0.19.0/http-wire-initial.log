@@ -1,0 +1,65 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 177241, max_cases: 1
+
+.
+
+  1) test POST uploads fixed bytes before downstream EOF and preserves an empty query (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:68
+     Assertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       peer = #PID<0.322.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:first_upload_piece, ^peer}
+     mailbox:
+       pattern: {:first_upload_piece, ^peer}
+       value:   {:peer_error, #PID<0.322.0>,
+                 "** (ExUnit.AssertionError) \n\nAssertion with =~ failed\ncode:  assert upstream =~ \"\#{method} /upload? HTTP/1.1\r\n            \"\nleft:  \"POST /upload HTTP/1.1\\r\\nContent-Type: application/octet-stream\\r\\nHost: 127.0.0.1:46619\\r\\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.5 Elixir/1.18.5 http_fetch/0.19.0\\r\\nx-forwarded-for: 127.0.0.1\\r\\nx-forwarded-host: downstream.test\\r\\nx-forwarded-proto: http\\r\\nConnection: close\\r\\nContent-Length: 6\\r\\n\\r\\n\"\nright: \"POST /upload? HTTP/1.1\\r\\n\"\n\n    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:436: ExUnit.Assertions.assert/2\n    test/http_proxy_wire_test.exs:74: anonymous fn/2 in Gaoxy.Proxy.HTTPWireTest.\"test POST uploads fixed bytes before downstream EOF and preserves an empty query\"/1\n    test/http_proxy_wire_test.exs:267: anonymous fn/3 in Gaoxy.Proxy.HTTPWireTest.peer/1\n"}
+     stacktrace:
+       test/http_proxy_wire_test.exs:91: (test)
+
+
+
+  2) test GET uploads fixed bytes before downstream EOF and preserves an empty query (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:68
+     Assertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       peer = #PID<0.346.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:first_upload_piece, ^peer}
+     mailbox:
+       pattern: {:first_upload_piece, ^peer}
+       value:   {:peer_error, #PID<0.346.0>,
+                 "** (ExUnit.AssertionError) \n\nAssertion with =~ failed\ncode:  assert upstream =~ \"\#{method} /upload? HTTP/1.1\r\n            \"\nleft:  \"GET /upload HTTP/1.1\\r\\nContent-Type: application/octet-stream\\r\\nHost: 127.0.0.1:38725\\r\\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.5 Elixir/1.18.5 http_fetch/0.19.0\\r\\nx-forwarded-for: 127.0.0.1\\r\\nx-forwarded-host: downstream.test\\r\\nx-forwarded-proto: http\\r\\nConnection: close\\r\\nContent-Length: 6\\r\\n\\r\\n\"\nright: \"GET /upload? HTTP/1.1\\r\\n\"\n\n    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:436: ExUnit.Assertions.assert/2\n    test/http_proxy_wire_test.exs:74: anonymous fn/2 in Gaoxy.Proxy.HTTPWireTest.\"test GET uploads fixed bytes before downstream EOF and preserves an empty query\"/1\n    test/http_proxy_wire_test.exs:267: anonymous fn/3 in Gaoxy.Proxy.HTTPWireTest.peer/1\n"}
+     stacktrace:
+       test/http_proxy_wire_test.exs:91: (test)
+
+....
+
+  3) test DELETE uploads fixed bytes before downstream EOF and preserves an empty query (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:68
+     Assertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       peer = #PID<0.473.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:first_upload_piece, ^peer}
+     mailbox:
+       pattern: {:first_upload_piece, ^peer}
+       value:   {:peer_error, #PID<0.473.0>,
+                 "** (ExUnit.AssertionError) \n\nAssertion with =~ failed\ncode:  assert upstream =~ \"\#{method} /upload? HTTP/1.1\r\n            \"\nleft:  \"DELETE /upload HTTP/1.1\\r\\nContent-Type: application/octet-stream\\r\\nHost: 127.0.0.1:42233\\r\\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.5 Elixir/1.18.5 http_fetch/0.19.0\\r\\nx-forwarded-for: 127.0.0.1\\r\\nx-forwarded-host: downstream.test\\r\\nx-forwarded-proto: http\\r\\nConnection: close\\r\\nContent-Length: 6\\r\\n\\r\\n\"\nright: \"DELETE /upload? HTTP/1.1\\r\\n\"\n\n    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:436: ExUnit.Assertions.assert/2\n    test/http_proxy_wire_test.exs:74: anonymous fn/2 in Gaoxy.Proxy.HTTPWireTest.\"test DELETE uploads fixed bytes before downstream EOF and preserves an empty query\"/1\n    test/http_proxy_wire_test.exs:267: anonymous fn/3 in Gaoxy.Proxy.HTTPWireTest.peer/1\n"}
+     stacktrace:
+       test/http_proxy_wire_test.exs:91: (test)
+
+
+
+  4) test chunked upload and response preserve ordered declared trailers with hop filtering (Gaoxy.Proxy.HTTPWireTest)
+     apps/gaoxy_proxy/test/http_proxy_wire_test.exs:100
+     Assertion with =~ failed
+     code:  assert response =~ "200 OK"
+     left:  "HTTP/1.1 502 Bad Gateway\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"
+     right: "200 OK"
+     stacktrace:
+       test/http_proxy_wire_test.exs:130: (test)
+
+
+Finished in 15.7 seconds (0.00s async, 15.7s sync)
+9 tests, 4 failures

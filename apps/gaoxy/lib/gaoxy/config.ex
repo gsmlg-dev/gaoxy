@@ -15,6 +15,7 @@ defmodule Gaoxy.Config do
     :id,
     :transport,
     :handler,
+    :handler_mode,
     :handler_options,
     :ip,
     :port,
@@ -48,6 +49,7 @@ defmodule Gaoxy.Config do
           udp: %{},
           quic: %{},
           handler_options: [],
+          handler_mode: :stream,
           capabilities: []
         },
         input
@@ -57,10 +59,12 @@ defmodule Gaoxy.Config do
     with :ok <- known(input, @keys),
          :ok <- identity(spec),
          :ok <- limit_check(input, limits),
+         :ok <- handler_mode(spec),
          :ok <- transport(spec),
          :ok <- handler(spec),
-         :ok <- requested(spec) do
-      {:ok, spec}
+         :ok <- requested(spec),
+         {:ok, options} <- handler_options(spec) do
+      {:ok, %{spec | handler_options: options}}
     end
   rescue
     BadMapError -> {:error, :invalid_options}
@@ -262,6 +266,34 @@ defmodule Gaoxy.Config do
 
   def valid_membership?(_, _), do: false
 
+  defp handler_mode(%{handler_mode: :native, transport: type}) when type in [:tcp, :tls],
+    do: :ok
+
+  defp handler_mode(%{handler_mode: :native}),
+    do: {:error, :native_requires_stream_transport}
+
+  defp handler_mode(%{handler_mode: :stream}), do: :ok
+  defp handler_mode(_), do: {:error, :invalid_handler_mode}
+
+  defp handler(%{handler_mode: :native, handler: module}) when is_atom(module) do
+    if Code.ensure_loaded?(module) and
+         Enum.all?(
+           [
+             start_link: 1,
+             handle_connection: 2,
+             handle_data: 3,
+             handle_close: 2,
+             handle_error: 3,
+             handle_shutdown: 2,
+             handle_timeout: 2,
+             validate_options: 1
+           ],
+           fn {callback, arity} -> function_exported?(module, callback, arity) end
+         ),
+       do: :ok,
+       else: {:error, :invalid_handler}
+  end
+
   defp handler(%{transport: :quic, handler: module}) when is_atom(module) do
     if Code.ensure_loaded?(module) and function_exported?(module, :init, 3) and
          function_exported?(module, :handle_event, 2),
@@ -280,6 +312,16 @@ defmodule Gaoxy.Config do
   end
 
   defp handler(_), do: {:error, :invalid_handler}
+
+  defp handler_options(%{handler_mode: :native} = spec) do
+    case Gaoxy.Lifecycle.protect(fn -> spec.handler.validate_options(spec.handler_options) end) do
+      {:ok, normalized} -> {:ok, normalized}
+      {:error, reason} -> {:error, {:handler_options, reason}}
+      _ -> {:error, :invalid_handler_options}
+    end
+  end
+
+  defp handler_options(spec), do: {:ok, spec.handler_options}
 
   defp requested(spec) do
     supported =

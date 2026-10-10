@@ -1,0 +1,36 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 132797, max_cases: 4
+Excluding tags: [:test]
+Including tags: [:proxy_policy]
+
+
+
+  1) test a present empty query remains in the upstream raw target (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:94
+     Expected truthy, got false
+     code: assert String.starts_with?(upstream, "GET /ws? HTTP/1.1\r\n")
+     arguments:
+
+         # 1
+         "GET /ws HTTP/1.1\r\nX-Forwarded-For: 127.0.0.1\r\nX-Forwarded-Host: downstream.test\r\nX-Forwarded-Proto: http\r\nHost: 127.0.0.1:33531\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Key: SvLTvOUUhUaxAlqYFTfwtA==\r\nSec-WebSocket-Version: 13\r\nSec-WebSocket-Protocol: chat\r\n\r\n"
+
+         # 2
+         "GET /ws? HTTP/1.1\r\n"
+
+     stacktrace:
+       test/websocket_proxy_test.exs:107: (test)
+
+
+
+  2) test local routing and WebSocket proxy preserve path, protocol, binary and close semantics (Gaoxy.Proxy.WebSocketTest)
+     apps/gaoxy_proxy/test/websocket_proxy_test.exs:32
+     Refute with =~ failed
+     code:  refute String.downcase(upstream) =~ "proxy-connection:"
+     left:  "get /ws/a%2fb?q=%2f&x=1 http/1.1\r\nx-trace: one\r\nx-trace: two\r\nproxy-connection: keep-alive\r\nx-forwarded-for: 127.0.0.1\r\nx-forwarded-host: downstream.test\r\nx-forwarded-proto: http\r\nhost: 127.0.0.1:41957\r\nupgrade: websocket\r\nconnection: upgrade\r\nsec-websocket-key: 0/1vxd6iyetiehnjpgn8cw==\r\nsec-websocket-version: 13\r\nsec-websocket-protocol: chat\r\n\r\n"
+     right: "proxy-connection:"
+     stacktrace:
+       test/websocket_proxy_test.exs:74: (test)
+
+
+Finished in 0.9 seconds (0.00s async, 0.9s sync)
+14 tests, 2 failures, 12 excluded

@@ -1,0 +1,226 @@
+    warning: HTTP.HTTP3.request/3 is undefined (module HTTP.HTTP3 is not available or is yet to be defined)
+    │
+ 99 │         case HTTP.HTTP3.request(request, state, &handle_http3_event/2) do
+    │                         ~
+    │
+    └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:99:25: HTTP.SocketClient.http3_owner/6
+
+     warning: HTTP.HTTP2.PoolKey.build/3 is undefined (module HTTP.HTTP2.PoolKey is not available or is yet to be defined)
+     │
+ 345 │            {:ok, key} <- PoolKey.build(request, profile, protocol) do
+     │                                  ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:345:34: HTTP.SocketClient.maybe_reused_http2_owner/4
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:629:17: HTTP.SocketClient.pool_key_for_registration/3
+
+     warning: HTTP.HTTP2.Pool.try_reserve/2 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 346 │         case Pool.try_reserve(pool, key) do
+     │                   ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:346:19: HTTP.SocketClient.maybe_reused_http2_owner/4
+
+     warning: HTTP.HTTP2.Pool.claim_connect/2 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 362 │     case Pool.claim_connect(pool, key) do
+     │               ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:362:15: HTTP.SocketClient.reserve_or_claim_http2_owner/4
+
+     warning: HTTP.HTTP2.Pool.cancel/2 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 397 │         _ = Pool.cancel(pool, token)
+     │                  ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:397:18: HTTP.SocketClient.await_http2_reservation_reply/5
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:401:18: HTTP.SocketClient.await_http2_reservation_reply/5
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:405:18: HTTP.SocketClient.await_http2_reservation_reply/5
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:421:18: HTTP.SocketClient.await_http2_reservation_reply/5
+
+     warning: HTTP.HTTP2.request_headers/3 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+     │
+ 485 │     with {:ok, headers, body} <- HTTP.HTTP2.request_headers(request, profile, order?: false),
+     │                                             ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:485:45: HTTP.SocketClient.run_http2_owner/4
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:564:39: HTTP.SocketClient.run_http2_reused_owner/4
+
+     warning: HTTP.HTTP2.ConnectionSupervisor.start_connection/1 is undefined (module HTTP.HTTP2.ConnectionSupervisor is not available or is yet to be defined)
+     │
+ 487 │            ConnectionSupervisor.start_connection(
+     │                                 ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:487:33: HTTP.SocketClient.run_http2_owner/4
+
+     warning: HTTP.HTTP2.ConnectionOwner.activate/1 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+     │
+ 495 │          :ok <- ConnectionOwner.activate(owner),
+     │                                 ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:495:33: HTTP.SocketClient.run_http2_owner/4
+
+     warning: HTTP.HTTP2.Pool.release/3 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 533 │             do: safe_http2_cleanup(fn -> Pool.release(pool, key, reservation) end)
+     │                                               ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:533:47: HTTP.SocketClient.run_http2_owner/4
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:593:18: HTTP.SocketClient.run_http2_reused_owner/4
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:613:22: HTTP.SocketClient.register_http2_owner/6
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1136:14: HTTP.SocketClient.finish_http2/2
+
+     warning: HTTP.HTTP2.Pool.register/4 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 607 │            :ok <- Pool.register(pool, key, owner, connecting?: is_tuple(claim), max_streams: 0) do
+     │                        ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:607:24: HTTP.SocketClient.register_http2_owner/6
+
+     warning: HTTP.HTTP2.Pool.complete_connect/2 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 634 │   defp complete_http2_connect({pool, key}), do: Pool.complete_connect(pool, key)
+     │                                                      ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:634:54: HTTP.SocketClient.complete_http2_connect/1
+
+     warning: HTTP.HTTP2.Pool.fail_connect/3 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+     │
+ 638 │     do: Pool.fail_connect(pool, key, reason)
+     │              ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:638:14: HTTP.SocketClient.fail_http2_connect/2
+
+     warning: HTTP.HTTP2.BodyBridge.start_link/3 is undefined (module HTTP.HTTP2.BodyBridge is not available or is yet to be defined)
+     │
+ 650 │     with {:ok, bridge} <- BodyBridge.start_link(stream, owner, opts), do: {:ok, bridge, nil}
+     │                                      ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:650:38: HTTP.SocketClient.maybe_start_http2_bridge/3
+
+     warning: HTTP.HTTP2.BodyBridge.start_link/2 is undefined (module HTTP.HTTP2.BodyBridge is not available or is yet to be defined)
+     │
+ 667 │       case BodyBridge.start_link(stream, owner) do
+     │                       ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:667:23: HTTP.SocketClient.maybe_start_http2_bridge/3
+
+     warning: HTTP.HTTP2.ConnectionOwner.open_stream/3 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+     │
+ 684 │           ConnectionOwner.open_stream(owner, headers,
+     │                           ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:684:27: HTTP.SocketClient.start_http2_stream/3
+
+     warning: HTTP.HTTP2.ConnectionOwner.release_stream/2 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+     │
+ 708 │               safe_http2_cleanup(fn -> ConnectionOwner.release_stream(owner, id) end)
+     │                                                        ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:708:56: HTTP.SocketClient.start_http2_stream/3
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1131:23: HTTP.SocketClient.finish_http2/2
+
+     warning: HTTP.HTTP2.BodyBridge.discard/1 is undefined (module HTTP.HTTP2.BodyBridge is not available or is yet to be defined)
+     │
+ 720 │     if is_pid(bridge), do: safe_http2_cleanup(fn -> BodyBridge.discard(bridge) end)
+     │                                                                ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:720:64: HTTP.SocketClient.discard_http2_bridge/2
+
+     warning: HTTP.HTTP2.ConnectionOwner.send_data/4 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+     │
+ 733 │     do: ConnectionOwner.send_data(owner, id, body, true)
+     │                         ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:733:25: HTTP.SocketClient.send_http2_body/4
+
+     warning: HTTP.HTTP2.BodyBridge.credit/2 is undefined (module HTTP.HTTP2.BodyBridge is not available or is yet to be defined)
+     │
+ 736 │     do: BodyBridge.credit(bridge, 65_536)
+     │                    ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:736:20: HTTP.SocketClient.send_http2_body/4
+
+     warning: HTTP.HTTP2.Frame.flag?/2 is undefined (module HTTP.HTTP2.Frame is not available or is yet to be defined)
+     │
+ 854 │           not Frame.flag?(flags, 0x1) ->
+     │                     ~
+     │
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:854:21: HTTP.SocketClient.handle_http2_headers/3
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:939:13: HTTP.SocketClient.handle_http2_final_headers/4
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:993:25: HTTP.SocketClient.handle_http2_data/3
+     └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1017:25: HTTP.SocketClient.handle_http2_data/3
+
+      warning: HTTP.HTTP2.BodyBridge.early_response/1 is undefined (module HTTP.HTTP2.BodyBridge is not available or is yet to be defined)
+      │
+ 1062 │     do: safe_http2_cleanup(fn -> BodyBridge.early_response(bridge) end)
+      │                                             ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1062:45: HTTP.SocketClient.maybe_cancel_http2_bridge/1
+
+      warning: HTTP.HTTP2.ConnectionOwner.cancel/2 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+      │
+ 1069 │         ConnectionOwner.cancel(state.owner, state.stream_id)
+      │                         ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1069:25: HTTP.SocketClient.cancel_http2_stream/1
+
+      warning: HTTP.HTTP2.ConnectionOwner.acknowledge/2 is undefined (module HTTP.HTTP2.ConnectionOwner is not available or is yet to be defined)
+      │
+ 1075 │         ConnectionOwner.acknowledge(state.owner, state.stream_id)
+      │                         ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1075:25: HTTP.SocketClient.acknowledge_http2_data/2
+
+      warning: HTTP.HTTP2.Pool.mark_draining/3 is undefined (module HTTP.HTTP2.Pool is not available or is yet to be defined)
+      │
+ 1099 │        do: Pool.mark_draining(pool, key, owner)
+      │                 ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1099:17: HTTP.SocketClient.mark_http2_draining/1
+
+      warning: HTTP.HTTP2.new/1 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1434 │     conn = HTTP.HTTP2.new(request.method)
+      │                       ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1434:23: HTTP.SocketClient.prepare_http2_request/1
+
+      warning: HTTP.HTTP2.prepare_request/2 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1440 │       HTTP.HTTP2.prepare_request(conn, request)
+      │                  ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1440:18: HTTP.SocketClient.prepare_http2_request/1
+
+      warning: HTTP.HTTP2.take_outbound/1 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1571 │     {protocol, iodata} = HTTP.HTTP2.take_outbound(protocol)
+      │                                     ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1571:37: HTTP.SocketClient.flush_protocol_writes/2
+
+      warning: HTTP.HTTP2.outbound_control_only?/1 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1593 │     HTTP.HTTP2.outbound_control_only?(protocol) and
+      │                ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1593:16: HTTP.SocketClient.discard_closed_control_writes?/2
+
+      warning: HTTP.HTTP2.complete_response?/1 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1595 │          (HTTP.HTTP2.complete_response?(protocol) and :done in events))
+      │                      ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1595:22: HTTP.SocketClient.discard_closed_control_writes?/2
+
+      warning: HTTP.HTTP2.stop_request/1 is undefined (module HTTP.HTTP2 is not available or is yet to be defined)
+      │
+ 1611 │         {:ok, %{state | protocol: HTTP.HTTP2.stop_request(state.protocol)}}
+      │                                              ~
+      │
+      └─ .audit/http_fetch/apps/http_fetch/lib/http/socket_client.ex:1611:46: HTTP.SocketClient.flush_protocol_write/3
+
+{:buffered, "proxy-content", "gzip", "33", 33}
+{:streamed, {"proxy-content", #Reference<0.2160931436.3191341067.54010>},
+ {:stream_end, #PID<0.259.0>}, "gzip", [], ["a=1", "b=2"]}
+{:h1_early_response, {:error, :request_timeout}}

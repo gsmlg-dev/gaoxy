@@ -4,6 +4,17 @@ defmodule Gaoxy.Service do
   alias Gaoxy.{Admission, Lifecycle, RegistryPolicy, Telemetry}
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
 
+  def attach_cleanup(service, gate, lease, guardian, reserved_bytes, deadline),
+    do:
+      Lifecycle.call(
+        service,
+        {:attach_cleanup, gate, lease, guardian, reserved_bytes, deadline},
+        deadline
+      )
+
+  def complete_cleanup(service, token),
+    do: Lifecycle.call(service, {:complete_cleanup, token}, Lifecycle.deadline(1_000))
+
   def child_spec({table, _live, id, _scope} = args) do
     [{^id, spec}] = :ets.lookup(table, id)
 
@@ -23,8 +34,16 @@ defmodule Gaoxy.Service do
     scope = %{instance: instance, service: id, generation: generation}
 
     with {:ok, policy} <- RegistryPolicy.register(scope) do
-      {:ok, gate} = Admission.start_link({spec.limits, scope})
-      context = %{spec: spec, gate: gate, scope: scope}
+      {:ok, gate} = Admission.start_link({spec.limits, Map.put(scope, :service_pid, self())})
+
+      context = %{
+        spec: spec,
+        gate: gate,
+        scope: scope,
+        service: self(),
+        instance: :ets.info(table, :owner)
+      }
+
       result = Lifecycle.protect(fn -> start_backend(spec, context) end)
 
       case result do
@@ -46,6 +65,8 @@ defmodule Gaoxy.Service do
                  mode: :ready,
                  drain: nil,
                  control: nil,
+                 cleanups: %{},
+                 cleanup_failed: nil,
                  registry_policy: policy,
                  drain_fun: &Lifecycle.drain/4,
                  backend_control: &backend_control/3
@@ -68,6 +89,52 @@ defmodule Gaoxy.Service do
   end
 
   @impl true
+  def handle_call({:attach_cleanup, _, _, _, _, _}, _, %{mode: mode} = state)
+      when mode != :ready,
+      do: {:reply, {:error, mode}, state}
+
+  def handle_call({:attach_cleanup, gate, lease, guardian, bytes, deadline}, {owner, _}, state)
+      when gate == state.gate do
+    token = make_ref()
+
+    result =
+      Lifecycle.protect(fn ->
+        Admission.attach_cleanup(gate, owner, lease, guardian, bytes, deadline, token)
+      end)
+
+    case result do
+      :ok ->
+        cleanup = %{guardian: guardian, monitor: Process.monitor(guardian), receipt: false}
+        state = %{state | cleanups: Map.put(state.cleanups, token, cleanup)}
+        send(guardian, {:gaoxy_cleanup_activate, token})
+        {:reply, {:ok, token}, state}
+
+      error ->
+        state = if match?({:error, {:exit, _}}, error), do: fail_gate(state), else: state
+        {:reply, error, state}
+    end
+  end
+
+  def handle_call({:attach_cleanup, _, _, _, _, _}, _, state),
+    do: {:reply, {:error, :stale_generation}, state}
+
+  def handle_call({:complete_cleanup, token}, {guardian, _}, state) do
+    case state.cleanups[token] do
+      %{guardian: ^guardian} = cleanup ->
+        state = put_in(state.cleanups[token], %{cleanup | receipt: true})
+
+        result = Lifecycle.protect(fn -> Admission.complete_cleanup(state.gate, token) end)
+
+        state =
+          if result != :ok and Process.alive?(state.gate), do: fail_gate(state), else: state
+
+        {:reply, :ok, state}
+
+      _ ->
+        {:reply, {:error, :stale_cleanup}, state}
+    end
+  end
+
   def handle_call({:request, generation, _}, _, state)
       when not is_nil(generation) and generation != state.generation,
       do: {:reply, {:error, :stale_generation}, state}
@@ -104,6 +171,8 @@ defmodule Gaoxy.Service do
     {:reply,
      Map.merge(status, %{
        state: state.mode,
+       cleanup_pending: map_size(state.cleanups),
+       cleanup_failed: state.cleanup_failed,
        backend: Lifecycle.bounded(fn -> backend_status(state) end, 50)
      }), state}
   end
@@ -192,7 +261,10 @@ defmodule Gaoxy.Service do
 
   def handle_call({:drain, _, deadline}, from, %{drain: nil} = state) do
     state = cancel_control(state, :draining)
-    barrier = gate_mode(state, :draining)
+
+    barrier =
+      Lifecycle.protect(fn -> GenServer.call(state.gate, {:drain, deadline}, 50) end)
+
     state = start_drain(state, deadline, [from])
 
     state =
@@ -264,14 +336,16 @@ defmodule Gaoxy.Service do
         {:cleanup_check, generation, token},
         %{generation: generation, drain: %{token: token, phase: :confirming}} = state
       ) do
-    if Enum.all?(state.drain.resources, &(not Process.alive?(&1))) do
+    if cleanup_done?(state) do
       finish_drain(state)
     else
       if Lifecycle.remaining(state.drain.cleanup_deadline) == 0 do
-        Enum.each(
-          state.drain.waiters,
-          &GenServer.reply(&1, {:error, {:cleanup_failed, :termination_unconfirmed}})
-        )
+        outcome =
+          if native_cleanup_done?(state) and map_size(state.cleanups) > 0,
+            do: {:deadline_exceeded, :cleanup_pending},
+            else: {:cleanup_failed, :termination_unconfirmed}
+
+        Enum.each(state.drain.waiters, &GenServer.reply(&1, {:error, outcome}))
 
         Telemetry.emit(:drain, %{count: 1}, state.scope, %{outcome: :termination_unconfirmed})
 
@@ -300,18 +374,13 @@ defmodule Gaoxy.Service do
      |> transition(:failed)}
   end
 
-  def handle_info({:DOWN, monitor, :process, _pid, _reason}, state) do
-    case RegistryPolicy.loss(state.registry_policy, monitor) do
-      {:recovering, policy} ->
-        {:noreply, %{state | registry_policy: policy}}
+  def handle_info({:DOWN, monitor, :process, _pid, reason}, state) do
+    case Enum.find(state.cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end) do
+      {token, cleanup} ->
+        cleanup_down(state, token, cleanup, reason)
 
-      :ignore ->
-        if state.drain && state.drain.phase == :unconfirmed &&
-             Enum.all?(state.drain.resources, &(not Process.alive?(&1))) do
-          finish_drain(state)
-        else
-          {:noreply, state}
-        end
+      nil ->
+        registry_down(state, monitor)
     end
   end
 
@@ -339,6 +408,12 @@ defmodule Gaoxy.Service do
       when not is_nil(drain) and (pid == state.backend or pid == state.gate),
       do: {:noreply, state}
 
+  def handle_info({:EXIT, pid, reason}, state)
+      when (pid == state.backend or pid == state.gate) and map_size(state.cleanups) > 0 do
+    state = start_drain(cancel_control(state, :failed), Lifecycle.now(), [])
+    {:noreply, force_drain(state, {:cleanup_failed, {:backend_failed, reason}})}
+  end
+
   def handle_info({:EXIT, pid, reason}, state) when pid == state.backend or pid == state.gate,
     do: {:stop, {:backend_failed, reason}, state}
 
@@ -355,10 +430,58 @@ defmodule Gaoxy.Service do
     end
 
     close_resources(state.backend, state.gate, state.spec.transport)
-    :ets.match_delete(state.live, {state.spec.id, self(), :_})
+    deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
+    cancel_cleanups(state, :service_terminating, deadline)
+    await_cleanup_termination(state.cleanups, deadline)
+
+    # The instance owns this table and may exit while guardian cleanup continues.
+    try do
+      :ets.match_delete(state.live, {state.spec.id, self(), :_})
+    catch
+      :error, :badarg -> :ok
+    end
+  end
+
+  defp registry_down(state, monitor) do
+    case RegistryPolicy.loss(state.registry_policy, monitor) do
+      {:recovering, policy} ->
+        {:noreply, %{state | registry_policy: policy}}
+
+      :ignore ->
+        if state.drain && state.drain.phase == :unconfirmed &&
+             cleanup_done?(state) do
+          finish_drain(state)
+        else
+          {:noreply, state}
+        end
+    end
+  end
+
+  defp cleanup_down(state, token, cleanup, reason) do
+    state = %{state | cleanups: Map.delete(state.cleanups, token)}
+
+    state =
+      if cleanup.receipt and reason == :normal do
+        state
+      else
+        failure = if cleanup.receipt, do: {:guardian_exit, reason}, else: :cleanup_receipt_missing
+        state = %{state | cleanup_failed: failure}
+        state = if state.drain, do: state, else: start_drain(state, Lifecycle.now(), [])
+        state = force_drain(state, {:cleanup_failed, failure})
+
+        %{
+          transition(state, :failed)
+          | drain: %{state.drain | outcome: {:cleanup_failed, failure}}
+        }
+      end
+
+    if state.drain && state.drain.phase == :unconfirmed && cleanup_done?(state),
+      do: finish_drain(state),
+      else: {:noreply, state}
   end
 
   defp start_drain(state, deadline, waiters) do
+    cancel_cleanups(state, :draining, deadline)
     owner = self()
     token = make_ref()
 
@@ -423,6 +546,7 @@ defmodule Gaoxy.Service do
       ])
 
     # The gate emits pending send uncertainty before any owned work is killed.
+    cancel_cleanups(state, :forced, drain.deadline)
     Lifecycle.force(resources, state.gate)
     send(self(), {:cleanup_check, state.generation, drain.token})
 
@@ -459,6 +583,47 @@ defmodule Gaoxy.Service do
     Enum.each(drain.waiters, &GenServer.reply(&1, result))
     {:stop, :normal, %{transition(state, :stopped) | drain: nil}}
   end
+
+  defp native_cleanup_done?(state),
+    do: Enum.all?(state.drain.resources, &(not Process.alive?(&1)))
+
+  defp cleanup_done?(state),
+    do: native_cleanup_done?(state) and map_size(state.cleanups) == 0
+
+  defp cancel_cleanups(state, reason, deadline) do
+    Enum.each(state.cleanups, fn {token, cleanup} ->
+      send(cleanup.guardian, {:gaoxy_cleanup_cancel, token, reason, deadline})
+    end)
+  end
+
+  # A terminating service cannot run handle_call/3. Authenticate and acknowledge
+  # receipts here so a guardian can finish without waiting for service death.
+  defp await_cleanup_termination(cleanups, deadline) when map_size(cleanups) > 0 do
+    receive do
+      {:"$gen_call", {guardian, _} = from, {:complete_cleanup, token}} ->
+        case cleanups[token] do
+          %{guardian: ^guardian} = cleanup ->
+            GenServer.reply(from, :ok)
+
+            await_cleanup_termination(
+              Map.put(cleanups, token, %{cleanup | receipt: true}),
+              deadline
+            )
+
+          _ ->
+            GenServer.reply(from, {:error, :stale_cleanup})
+            await_cleanup_termination(cleanups, deadline)
+        end
+
+      {:DOWN, monitor, :process, _, _} ->
+        cleanups = Map.reject(cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end)
+        await_cleanup_termination(cleanups, deadline)
+    after
+      Lifecycle.remaining(deadline) -> :ok
+    end
+  end
+
+  defp await_cleanup_termination(_, _), do: :ok
 
   defp close_resources(backend, gate, transport) do
     resources = Enum.uniq([gate | Lifecycle.resources(backend, self(), transport == :quic)])
@@ -634,7 +799,8 @@ defmodule Gaoxy.Service do
       end
 
     ThousandIsland.start_link(
-      handler_module: Gaoxy.StreamBridge,
+      handler_module:
+        if(spec.handler_mode == :native, do: spec.handler, else: Gaoxy.StreamBridge),
       handler_options: context,
       port: spec.port,
       transport_module:
