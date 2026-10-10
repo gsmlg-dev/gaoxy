@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Real Chromium, independent HTTP/TLS/WebSocket, reload and shutdown gate."""
 import json
+import base64
+import hashlib
 import os
 from pathlib import Path
 import re
@@ -18,7 +20,7 @@ from websockets.exceptions import ConnectionClosed
 
 ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = ROOT / "examples/phoenix_native"
-EVIDENCE = ROOT / ".audit/m2-browser"
+EVIDENCE = Path(os.environ.get("GAOXY_PHOENIX_EVIDENCE", str(ROOT / ".audit/m2-browser")))
 EVIDENCE.mkdir(parents=True, exist_ok=True)
 CERTS = EVIDENCE / "certs"
 subprocess.run(["bash", str(ROOT / "scripts/generate-fixtures.sh"), str(CERTS)], check=True)
@@ -88,6 +90,14 @@ try:
         raise AssertionError("wrong TLS hostname was accepted")
     passed("verified_https_and_hostname_rejection")
 
+    h2_enabled = env.get("PHOENIX_NATIVE_H2") == "1"
+    if h2_enabled:
+        with httpx.Client(http2=True, verify=trust, timeout=5) as independent:
+            response = independent.get(tls_base + "/")
+            assert response.http_version == "HTTP/2" and response.status_code == 200
+            assert "Gaoxy Phoenix native" in response.text
+        passed("independent_verified_h2_phoenix")
+
     ws_url = f"ws://127.0.0.1:{ports['http']}/socket/websocket?vsn=2.0.0"
     with connect(ws_url, origin=base, compression=None, open_timeout=5) as peer:
         peer.send(json.dumps(["1", "1", "room:test", "phx_join", {}]))
@@ -101,7 +111,15 @@ try:
     passed("independent_websocket_channel_fragmentation_ping_close")
 
     with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(executable_path=shutil.which("chromium"), headless=True)
+        browser_args = []
+        if h2_enabled:
+            # Trust only this temporary leaf's public key in the test browser.
+            # Independent TLS peers above still validate CA and hostname.
+            public_key = subprocess.check_output(["openssl", "x509", "-in", str(CERTS / "cert.pem"), "-pubkey", "-noout"])
+            spki = subprocess.check_output(["openssl", "pkey", "-pubin", "-outform", "DER"], input=public_key)
+            pin = base64.b64encode(hashlib.sha256(spki).digest()).decode()
+            browser_args.append("--ignore-certificate-errors-spki-list=" + pin)
+        browser = playwright.chromium.launch(executable_path=shutil.which("chromium"), headless=True, args=browser_args)
         page = browser.new_page()
         errors = []
         sockets = []
@@ -162,6 +180,26 @@ try:
         passed("development_code_reload_and_restore")
         assert not errors, errors
         passed("browser_no_page_errors", websockets=len(sockets))
+
+        if h2_enabled:
+            h2_page = browser.new_page()
+            protocols = []
+            h2_errors = []
+            h2_page.on("pageerror", lambda error: h2_errors.append(str(error)))
+            session = h2_page.context.new_cdp_session(h2_page)
+            session.on("Network.responseReceived", lambda event: protocols.append(event["response"]))
+            session.send("Network.enable")
+            h2_page.goto(tls_base + "/", wait_until="networkidle")
+            expect(h2_page.locator("#page")).to_have_text("Gaoxy Phoenix native")
+            assert any(value["url"] == tls_base + "/" and value["protocol"] == "h2" for value in protocols), protocols
+            h2_page.goto(tls_base + "/live-counter", wait_until="networkidle")
+            expect(h2_page.locator("#count")).to_have_text("0")
+            h2_page.locator("#increment").click()
+            expect(h2_page.locator("#count")).to_have_text("1")
+            assert any(value["url"] == tls_base + "/live-counter" and value["protocol"] == "h2" for value in protocols), protocols
+            assert not h2_errors, h2_errors
+            passed("browser_h2_phoenix_and_liveview", protocol="h2", websocket="HTTP/1 upgrade")
+            h2_page.close()
         browser.close()
 
     with connect(ws_url, origin=base, compression=None, open_timeout=5) as peer:

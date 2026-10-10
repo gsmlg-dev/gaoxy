@@ -14,6 +14,16 @@ https =
       ]
   end
 
+https =
+  if https && System.get_env("PHOENIX_NATIVE_H2") == "1" do
+    Keyword.merge(https,
+      protocols: [:http2, :http1],
+      limits: %{max_active: 128, max_bytes: 536_870_912}
+    )
+  else
+    https
+  end
+
 config :phoenix_native, PhoenixNative.Endpoint,
   adapter: Gaoxy.PhoenixAdapter,
   http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PHOENIX_NATIVE_PORT", "0"))],

@@ -8,10 +8,12 @@
       devShells = nixpkgs.lib.genAttrs systems (system:
         let pkgs = import nixpkgs { inherit system; };
         in {
-          default = pkgs.mkShell {
+          default = pkgs.mkShell ({
             packages = [ pkgs.beam.packages.erlang_28.elixir_1_18 pkgs.rustc pkgs.cargo
               pkgs.python3 pkgs.openssl pkgs.git pkgs.pkg-config pkgs.expect ];
-          };
+          } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+            LD_LIBRARY_PATH = pkgs.lib.makeLibraryPath [ pkgs.stdenv.cc.cc.lib ];
+          });
         });
     };
 }
