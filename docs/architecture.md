@@ -50,22 +50,31 @@ Native TCP/TLS handlers preserve Service/Admission ownership and admit each new
 request against the lifecycle barrier. WebSocket upgrade retains the connection
 owner and establishes one bounded protocol lifetime. See
 [ADR 006](adr/006-native-http.md) and [native HTTP limits](native-http.md).
-`gaoxy_proxy` implements a message-level WebSocket upstream endpoint over that
+`gaoxy_proxy` implements HTTP streaming and message-level WebSocket endpoints over that
 contract. Its application supervises temporary session guardians outside the
 per-instance forced-cleanup subtree. Service serializes attachment with drain;
 Admission charges an independent reservation against the original connection
 lease. Cleanup succeeds only after an authenticated receipt and normal guardian
-DOWN, following the public upstream WebSocket PID's termination. Gate, connection,
+DOWN, following public HTTP RequestCompletion confirmation or upstream WebSocket
+PID termination. Gate, connection,
 service and instance death independently trigger cancellation. Failed guardians
 fail admission closed; deadline expiry retains cleanup-pending semantics.
 
 `gaoxy_server` owns versioned JSON loading, a fixed handler allowlist and release
 startup using the same runtime. Its `prep_stop` drains the embedded instance. No
-management server or HTTP proxy placeholder is added. HTTP Fetch/WebSocket 0.18.1
-fixes #27–#30, #38 and #45. Full HTTP proxy integration remains blocked on the
-public cancellation-completion contract in #60. The proxy package transitively
+management server is added. HTTP Fetch/WebSocket 0.19.0 fixes #27–#30, #38, #45
+and #60. HTTP uploads and raw ACK responses stream with finite deadlines, fixed
+authority, verified TLS and no replay. Native connection polling retains input
+and detects idle downstream closure. The complete raw-target gate remains blocked
+on #64 (a present empty query is lost). The proxy package transitively
 installs QUIC/TLS engines while standalone core consumers retain isolation;
 dependency presence implies no H2/H3 support. See [the dependency audit](m2-dependency-audit.md).
+
+HTTP capacity is reserved before activation using explicit client socket buffers
+and the inspected OTP 28.5.0.5 receive path; the qualified default `:inet` backend
+and SSL active-N settings must remain stable. The reservation includes bounded
+receive/parser/copy windows, not all BEAM or kernel memory. See
+[HTTP proxy limits](http-proxy.md).
 
 ## Optional generic QUIC
 

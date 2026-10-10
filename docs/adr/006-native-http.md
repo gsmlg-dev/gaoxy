@@ -46,11 +46,11 @@ Routes use first-declared matching precedence, immutable compiled entries,
 normalized hosts, case-sensitive methods, and exact or segment-prefix raw paths. Paths
 retain their escaping; matching never repeatedly decodes input. Invalid
 authorities and ambiguous framing are rejected before dispatch. Upstream
-authority/SNI comes from fixed trusted WebSocket endpoint configuration.
+authority/SNI comes from fixed trusted HTTP/WebSocket endpoint configuration.
 Forwarding fields from the client and all Connection-nominated fields are removed;
 new forwarding metadata uses the actual downstream connection.
 
-HTTP Fetch 0.18.1 resolves the earlier #27–#30, #38 and #45 contracts. Native
+HTTP Fetch 0.19.0 resolves the earlier #27–#30, #38, #45 and #60 contracts. Native
 message-level WebSocket proxying now preserves valid/empty Close details and
 subprotocols, with independent ping/pong on each hop. It uses public acknowledged
 send/delivery APIs and monitors the public socket PID for completed cleanup.
@@ -58,9 +58,17 @@ Guardians live outside the instance subtree; core cleanup attachments retain byt
 reservations without allocating a second active lease. Service drain requires a
 receipt and normal guardian DOWN and never kills the cleanup owner to infer success.
 
-Full HTTP proxy integration remains blocked on #60 because abort and response
-stream DOWN do not establish request transport termination. No private client
-state or local workaround is accepted. Per-request `stream_response: true` removes
-the need for the proposed static global streaming threshold. Core consumers remain
-isolated from the proxy's published QUIC/TLS-engine dependencies. Package presence
-establishes no H2/H3 capability. See [the current dependency audit](../m2-dependency-audit.md).
+HTTP streaming uses a public RequestCompletion handle obtained immediately from
+its original Promise. Cleanup receipts require completion confirmation, including
+abort before establishment and during upload or response streaming. The adapter
+uses public Task results and ACK stream events; it never inspects private client
+state. Native body polling, finite per-window writes and header/trailer policy
+connect both hops without collecting bodies. Explicit socket buffers and the
+inspected OTP 28.5.0.5 receive contract supply the conservative reservation bound.
+
+Full M2 raw-target acceptance remains blocked on #64: the upstream H1 serializer
+loses a present empty query. Its regression stays enabled, without a local URI
+rewrite. Per-request `stream_response: true` avoids a global streaming threshold.
+Core consumers remain isolated from the proxy's published QUIC/TLS-engine
+dependencies. Package presence establishes no H2/H3 capability. See
+[the current dependency audit](../m2-dependency-audit.md).

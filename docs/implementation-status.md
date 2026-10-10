@@ -7,7 +7,7 @@
 acceptance snapshot: no commit, remote creation, push, publication or deployment
 had occurred during implementation acceptance. Subsequent source publication
 is separately authorized by the user. The supplied `implement-plan.md` remains the scope and
-acceptance authority; M2/M3/M4 are not implemented. This is foundation
+acceptance authority; M2/M3/M4 were not implemented in this historical snapshot. This is foundation
 acceptance on recorded environments, not a beta/security/conformance claim.
 
 | Work package | Delivered and verified | Limits / remaining scope |
@@ -113,35 +113,40 @@ active after handoff. Shared workspace changes were preserved; no reset/stash or
 destructive cleanup occurred. Agent Note scope was unavailable because
 `.agents/current.md` is missing; no project was guessed and no note was written.
 
-## Next milestones
+## Current M2 retry and next milestones
 
-M2 native HTTP/1, WebSock, Plug/Phoenix, browser fixture, local routing and
-message-level WebSocket reverse proxying are implemented on `codex/m2-native`.
-**M2 remains incomplete:** HTTP streaming proxy cleanup is blocked on HTTP Fetch
-[#60](https://github.com/gsmlg-dev/http_fetch/issues/60), a missing public
-request-owned transport completion barrier. There is no local workaround.
+Native HTTP/1, WebSock, Plug/Phoenix, the browser fixture, local/remote routing,
+HTTP streaming and message-level WebSocket reverse proxying are implemented on
+`codex/m2-native`. The runnable reverse-proxy example passes its independent
+local/remote, raw gzip, duplicate-cookie, upload/download, SSE, redirect and
+shutdown checks.
 
-The 2026-10-10 retry selects published Fetch/Core/Runtime/WebSocket/QUIC/TLS
-packages 0.18.1 at release commit `f3a72c7b5f059c9862b8fdc0221cffcdaddde301`.
-Original #27–#30 and subsequent #38/#45 are closed. Thirteen dependency contract
-tests cover raw bytes, ordered duplicates/trailers, early upload responses,
-GET/DELETE bodies, per-request streaming and WebSocket semantics. The two
-previously failing probes now exit 0. New native streaming and lifecycle seams
-have their own deterministic regressions. Current scoped results and fresh
-Phoenix/browser/core-consumer evidence are recorded in
-[M2 acceptance](acceptance/m2.md); historical bundles remain intact.
+**M2 remains incomplete:** published HTTP Fetch 0.19.0 drops a present empty
+query (`/upload?` becomes `/upload`). Bug
+[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) is filed with type Bug,
+label `internal request`, and severity blocker. The enabled regression fails;
+there is no private API, dependency patch, URI rewrite or skipped-test workaround.
+Only that raw-target task is stopped pending a released fix and dependency update.
 
-The WebSocket endpoint uses a fixed upstream authority, verified WSS, finite
-message/queue/lifetime limits, acknowledged writes and external cleanup guardians.
-Guardians survive instance force-stop and confirm the public upstream PID's DOWN
-before issuing a cleanup receipt. Persistent reservations do not add active leases
-and are not erased by native byte updates or connection death.
+The seven selected Fetch/Core/Runtime/WebSocket/QUIC/TLS packages are 0.19.0,
+release commit `09b1686fb2ce529a17287d97801107c53b1ac57c`. #60 is resolved:
+a public RequestCompletion handle confirms cleanup before establishment, during
+upload, and after response headers. HTTP and WebSocket guardians survive native
+owner/instance force-stop, retain admission reservations, and confirm public
+upstream cleanup before receipt and normal DOWN. Caller expiry retains
+`cleanup_pending`. No request is replayed and HTTPS verification stays enabled.
+
+The scoped retry also repairs downstream per-write deadlines, polling copy
+credit, and client-supplied forwarding trailers. Current counts, commands,
+Phoenix/browser/core-consumer results and the failing #64 probe are recorded in
+[M2 acceptance](acceptance/m2.md). Historical bundles remain intact. HTTP capacity
+is source-qualified on OTP 28.5.0.5 with explicit socket buffers and stable
+qualified host settings; it is not a total BEAM memory limit.
 
 Standalone core-only dependency isolation is separate from the umbrella graph,
-which includes `elixir_quic`/`ex_ssl`; no H2/H3 support is implied. The HTTP
-streaming proxy and full reverse-proxy example remain undelivered until #60 is
-resolved and the dependency is updated.
+which includes `elixir_quic`/`ex_ssl`; no H2/H3 support is implied. No push, merge,
+release, deployment or hosted M2 run is part of this local retry.
 
-M3: HTTP/2 and complete gateway/relay policies. M4: independently
-verified HTTP/3. Optional ex_ssl TCP hosting needs the public server contract in
+M3: HTTP/2 and complete gateway/relay policies. M4: independently verified HTTP/3.
+Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.

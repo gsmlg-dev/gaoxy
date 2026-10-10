@@ -1,17 +1,18 @@
 # HTTP Fetch public contract revalidation
 
-## Published 0.18.1
+## Published 0.19.0
 
 The root lock selects the seven published Fetch/Core/Runtime/WebSocket/QUIC/TLS
-packages at 0.18.1, release commit `f3a72c7b5f059c9862b8fdc0221cffcdaddde301`.
-Fetch/Core/Runtime/WebSocket library files match that archive. #27–#30, #38 and
-#45 are closed.
+packages at 0.19.0, release commit `09b1686fb2ce529a17287d97801107c53b1ac57c`.
+Fetch/Core/Runtime/WebSocket library files match that archive. #27–#30, #38,
+#45 and #60 are closed.
 
 From the worktree root:
 
 ```sh
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix test --warnings-as-errors \
-  apps/gaoxy_proxy/test/http_fetch_contract_test.exs
+  apps/gaoxy_proxy/test/http_fetch_contract_test.exs \
+  apps/gaoxy_proxy/test/http_fetch_completion_test.exs
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
   integration/http_fetch_contract/method_body_probe.exs
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
@@ -27,11 +28,25 @@ retain their browser restrictions. `stream_response: true` is per request and
 replaces the earlier proposed global threshold constraint.
 
 The [current audit](../../docs/m2-dependency-audit.md) and
-[0.18.1 evidence](../../docs/acceptance/evidence/m2/http-fetch-0.18.1/)
+[0.19.0 evidence](../../docs/acceptance/evidence/m2/http-fetch-0.19.0/)
 record these dependency gates separately from the historical 0.17.2 failures.
-Full HTTP proxy integration remains blocked by the missing request cancellation
-completion contract in [#60](https://github.com/gsmlg-dev/http_fetch/issues/60).
-The WebSocket proxy has its own wire/TLS/lifecycle acceptance tests.
+Five additional completion tests pass with the public RequestCompletion handle,
+including cancellation before establishment, upload and outstanding response ACK,
+plus confirmed completed-request cleanup. The WebSocket proxy has its own
+wire/TLS/lifecycle acceptance tests.
+
+Raw-target acceptance remains blocked by
+[#64](https://github.com/gsmlg-dev/http_fetch/issues/64): both string and URI
+Fetch inputs remove a present empty query. This probe intentionally exits **1**
+on 0.19.0, separately from the passing body/close/completion contracts:
+
+```sh
+ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test mix run \
+  integration/http_fetch_contract/empty_query_probe.exs
+```
+
+The equivalent end-to-end regression remains enabled in `http_proxy_wire_test.exs`.
+No dependency patch, private target API or URI rewrite workaround is used.
 
 ## Historical 0.17.1 reproduction
 
@@ -56,4 +71,4 @@ early 413. Undefined H2/H3 module warnings are expected because only H1 modules
 are compiled in memory. The recorded log used the same source files from the
 audit snapshot. The separately source-audited 101 upgrade ownership gap was #30.
 Do not count historical defect output as a passing proxy gate or as current
-0.18.1 behavior.
+0.19.0 behavior.

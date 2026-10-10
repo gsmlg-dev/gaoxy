@@ -1,3 +1,7 @@
+> Historical request #60, resolved by HTTP Fetch 0.19.0 on 2026-10-10.
+> Five public completion regressions now pass; see [current acceptance](../acceptance/m2.md).
+> The original source evidence below is preserved.
+
 **Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m2-native`
 
 **Severity:** blocker

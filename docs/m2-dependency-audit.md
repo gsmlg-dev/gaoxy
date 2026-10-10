@@ -1,7 +1,7 @@
 # M2 dependency audit — 2026-10-10
 
 Source contracts were refreshed before native server implementation on
-2026-10-09 and revalidated against published HTTP Fetch 0.18.1 on 2026-10-10.
+2026-10-09 and revalidated against published HTTP Fetch 0.19.0 on 2026-10-10.
 These are contract/provenance records; compatibility requires Gaoxy's own
 network and browser acceptance.
 
@@ -12,8 +12,8 @@ network and browser acceptance.
 | WebSockAdapter | phoenixframework/websock_adapter `80901f46c8864cb8bd5231c32b7171b9d0e330ce`; local fork `53ee1c7c9edb39fda9c531a5c79aec17ee081a6c` | 0.6.0 | MIT | Vendored immutable source, one runtime dispatch clause, independent review and wire regression passed; see `vendor/websock_adapter/GAOXY.md` |
 | Phoenix | phoenixframework/phoenix `bd1801833b4fd7ceb02497cc7ba2d05e9bd391c8` | 1.8.15 | MIT | External fixture lock; browser and independent network acceptance passed |
 | Phoenix LiveView | Exact Hex checksums in `examples/phoenix_native/mix.lock` | 1.2.12 | MIT | External fixture only; real click, binary upload and reconnect passed |
-| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.18.1 tag `f3a72c7b5f059c9862b8fdc0221cffcdaddde301` | 0.18.1 | MIT | Exact published Hex packages/checksums in root lock; library files match release source; thirteen public-API contract tests pass |
-| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.18.1 source release; Hex checksums in root lock | 0.18.1 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
+| HTTP Fetch/Core/Runtime/WebSocket | gsmlg-dev/http_fetch v0.19.0 tag `09b1686fb2ce529a17287d97801107c53b1ac57c` | 0.19.0 | MIT | Exact published Hex packages/checksums in root lock; library files match release source; eighteen streaming/WS/completion contract tests pass; empty-query wire regression fails (#64) |
+| elixir_quic / elixir_quic_http3 / ex_ssl | Same v0.19.0 source release; Hex checksums in root lock | 0.19.0 | MIT / MIT / Apache-2.0 | Transitive proxy dependencies; compilation does not imply H2/H3 or refreshed generic QUIC acceptance |
 
 The native server continues using the locked public Thousand Island socket
 contract and OTP TLS. Core gains no HTTP application dependency. Phoenix stays
@@ -69,8 +69,8 @@ barrier or proof that an upstream request was unexecuted. No automatic replay is
 appropriate. `redirect: :manual` prevents reverse-proxy redirect following.
 The OTP SSL transport supports explicit verified TLS, CAs, hostname matching and
 SNI; Gaoxy must not accept configuration that silently disables this policy.
-`http1_reuse: false` scopes a future H1 HTTP proxy request to its own transport;
-this does not by itself expose cleanup completion. H2/H3 reuse is outside M2.
+`http1_reuse: false` scopes each H1 HTTP proxy request to its own transport.
+The 0.19.0 RequestCompletion API below supplies the separate cleanup barrier. H2/H3 reuse is outside M2.
 
 ## Historical 0.17.1 blockers
 
@@ -150,7 +150,10 @@ M2 requires message-level WebSocket forwarding with valid close-code propagation
 exact frame fragmentation and ping/pong forwarding are not required. These two
 contracts blocked the previous retry; the 0.17.2 evidence bundle remains intact.
 
-## Published 0.18.1 revalidation
+## Historical published 0.18.1 revalidation
+
+This section records the earlier blocked retry; the 0.19.0 section supersedes
+its dependency version and blocker status.
 
 The selected seven Hex packages are now 0.18.1. Fetch/Core/Runtime/WebSocket library
 files match the release archive byte-for-byte (15/31/19/10 files). The release tag
@@ -184,3 +187,46 @@ Full HTTP reverse-proxy cleanup, SSE/body streaming and the complete reverse-pro
 example remain BLOCKED on #60. Gaoxy does not inspect private Agent state, process
 links or SocketClient internals to infer successful cleanup. Native HTTP seams and
 the WebSocket reverse proxy have independently scoped evidence; M2 is incomplete.
+
+## Published 0.19.0 revalidation
+
+The root lock selects the same seven packages at 0.19.0, release commit
+`09b1686fb2ce529a17287d97801107c53b1ac57c`, published 2026-10-10T05:12:09Z.
+Fetch/Core/Runtime/WebSocket library files match that archive (16/32/19/10 files).
+Other root lock entries are unchanged. Package API responses, source hashes,
+release/issue metadata and execution logs are preserved in
+[the separate retry bundle](acceptance/evidence/m2/http-fetch-0.19.0/).
+
+#60 is CLOSED. `HTTP.Promise.completion/1` returns a public request handle before
+establishment. `HTTP.RequestCompletion.await/2` and `abort_and_await/2` return
+`:ok` only after request-owned transport, helpers, streams and library enumerable
+producers terminate. Finite waits can return `:cleanup_pending` or
+`:cleanup_unconfirmed`; a caller timeout is not success. Arbitrary producer tasks
+created by an application remain application-owned. Five focused real-socket
+completion tests pass, including cancellation before headers, during upload,
+after headers, a stalled verified-TLS handshake, and concurrent/repeated waits
+on completed requests.
+
+The adapter owns the original public, non-opaque Promise/Task. It uses Task
+completion messages or `Task.yield/2` in that same process, and documented Stream
+ACK messages. It does not call Promise.await from another process or use a zero
+await timeout to poll. Response ACK follows downstream write completion; uploads
+wait for acknowledged local writes and obey the public 65,536-byte chunk limit.
+Direct H1, no reuse, manual redirects, raw bodies and OTP TLS are selected explicitly.
+
+Explicit 8,192-byte socket buffers plus the inspected OTP 28.5.0.5 `:inet`/SSL
+active-N contract bound each delivered input batch. Add 65,536 bytes of HTTP
+parser carry, then reserve bounded receive/copy/upload windows before activation.
+The detailed [source qualification](acceptance/evidence/m2/http-fetch-0.19.0/otp-receive-bound.md)
+records exact OTP driver hashes, library versions, code pointers and exclusions.
+It is not qualification of other OTP versions or total VM/kernel memory.
+
+The newly unblocked real proxy tests found a separate serializer defect:
+`HTTP.Request.origin_form/1` treats `query: ""` like `nil`, removing a present `?`.
+Both string and URI input through public `HTTP.fetch/2` produce the wrong wire
+request target; cleanup independently confirms `:ok`. No public target override
+exists. Bug [#64](https://github.com/gsmlg-dev/http_fetch/issues/64), type Bug,
+label `internal request`, severity blocker, has the reproduction and source path.
+The [public probe](../integration/http_fetch_contract/empty_query_probe.exs) exits
+1 and the unskipped end-to-end regression fails. Raw-target work is stopped until
+an upstream release fixes it; no dependency or URI rewrite workaround is used.

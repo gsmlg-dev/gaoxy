@@ -52,7 +52,7 @@ callback and mailbox limits also apply.
 
 Before connecting, a session reserves 4 MiB plus eight maximum message windows and
 twice its opening field footprint against the service byte limit. The conservative
-fixed allowance covers the pinned 0.18.1 client's bounded raw receive queue, opening
+fixed allowance covers the pinned 0.19.0 client's bounded raw receive queue, opening
 headers and copies; update this audit when changing the client. Native retained
 bytes are charged separately. A service using the core default 1 MiB budget rejects
 these sessions: choose an explicit budget for the desired concurrency. Reservations
@@ -69,7 +69,8 @@ receipt and guardian DOWN. An expired caller deadline returns
 `{:error, {:deadline_exceeded, :cleanup_pending}}`; cleanup continues independently.
 Unexpected guardian death fails the service closed.
 
-This endpoint does not proxy ordinary HTTP request/response bodies, SSE or CONNECT.
-The M2 HTTP streaming proxy remains blocked on
-[HTTP Fetch #60](https://github.com/gsmlg-dev/http_fetch/issues/60). WebSocket
-wire/TLS/lifecycle evidence is recorded separately in [M2 acceptance](acceptance/m2.md).
+Ordinary HTTP request/response bodies and SSE use the separate
+[HTTP endpoint](http-proxy.md); CONNECT remains outside M2. HTTP Fetch 0.19.0
+resolves the request-cleanup blocker #60. The HTTP empty-query gate is blocked
+on [#64](https://github.com/gsmlg-dev/http_fetch/issues/64). WebSocket wire/TLS/lifecycle
+evidence is recorded separately in [M2 acceptance](acceptance/m2.md).

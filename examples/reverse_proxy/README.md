@@ -12,7 +12,7 @@ GAOXY_UPSTREAM=http://127.0.0.1:4001 GAOXY_PORT=4000 mix run examples/reverse_pr
 ```
 
 The gateway binds loopback. `/local` runs a local Plug directly; every other
-path goes to the configured upstream with its raw path and query preserved.
+path goes to the configured upstream with its raw path and nonempty query preserved.
 Enter `stop` to drain the gateway and exit. Set `GAOXY_PORT=0` to select an
 ephemeral port; the `GAOXY_PROXY_READY` line reports its actual address.
 
