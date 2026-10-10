@@ -218,6 +218,13 @@ peer failure is preserved. No retirement race or runtime leak was measured.
 Generated String/source provenance passes separate independent review in its
 conditional scope; P3/P4/composition and loaded-code/profile enforcement remain
 open. The reviewed pure implementation is committed locally as `56fd518`.
+Conditional request/wire construction and33-entry HAMT structure now pass
+separate independent reviews. The HAMT structural envelope is8,984 bytes per
+complete occurrence plus children; constructor/native work, simultaneous roots
+and release enforcement remain open. Control-turnover/TLS evidence and current
+delivery status pass their bounded independent review, committed as `d8e3a26`.
+The latest read-only remote recheck still records published0.21.0, closed86–89
+and open95. These source results do not complete P0–P6 or M3.
 Follow the [transport plan](plans/m3-upstream-transport.md) and
 [current acceptance](acceptance/m3.md) for actual receipts and limits.
 

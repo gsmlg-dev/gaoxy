@@ -8,7 +8,7 @@ Date: 2026-10-10. Architecture decision, not runtime acceptance. Gaoxy baseline
 ## Decision and present gate
 
 Current external gate, 2026-10-11: #86–#89 are now CLOSED in the
-[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh1.json),
+[remote receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh2.json),
 but published/installed artifacts remain0.21.0 and need containing-release
 qualification. New [Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
 blocks actual OTP28 TLS-process tracking/release. Finite public retirement
@@ -46,6 +46,12 @@ The [pure preparation design](m3-managed-h1-preparation.md) and
 [scoped plan](../plans/m3-managed-h1-preparation.md) can implement bounded compact
 inputs and constructor facts before process integration. They cannot return
 an activation budget or open managed resources while those proofs remain open.
+Independent conditional source follow-ups now cover request/wire constructors,
+the33-entry FetchOptions HAMT structural envelope and control-turnover/TLS
+evidence; see [current acceptance](../acceptance/m3.md) for their separate
+reviews and identities. They close no complete P0–P6 obligation. Helper/native
+layout costs, policy/host-CA overlap, loaded-code/profile enforcement and
+simultaneous root/copy/control release remain required before Task4 integration.
 
 The historical 0.20 public probes passed16/16 on complete202-file maps, and its
 finite empty-CONTINUATION diagnostic was INCONCLUSIVE. Preserve that evidence

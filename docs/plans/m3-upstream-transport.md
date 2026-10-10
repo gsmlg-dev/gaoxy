@@ -290,6 +290,16 @@ do not satisfy complete accounting, integration, matrix or load requirements.
 The exact-source `h1-delivery-proof.md` contributes conditional raw logical/
 backing lemmas; full P1 and all P0–P6 activation obligations remain open.
 
+Bounded source follow-ups now pass their separate independent reviews:
+[request/wire construction](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-request-wire-independent-review.md),
+[33-entry HAMT structure](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-map-layout-independent-review.md),
+and [control-turnover/TLS evidence](../acceptance/evidence/m3/upstream-transport/upstream-0.21/h1-turnover-and-delivery-review.md).
+The HAMT envelope applies per completed occurrence plus children; the request
+mapping remains unwired. Remaining local source-proof work includes helper/native
+costs, policy/host-CA overlap, loaded code/profile enforcement, root/copy
+multiplicities and control-release frontiers. These component results leave every
+full P0–P6 activation obligation and the Task3 prerequisite checkboxes open.
+
 ## Task 3a: Pure compact H1 preparation (unblocked)
 
 Follow the [compact preparation design](../designs/m3-managed-h1-preparation.md)
@@ -585,4 +595,7 @@ separate independent review. Full P0-P6, held preparing/connecting saturation
 and Tasks4–8 remain unqualified. The fresh remote receipt records #86–#89
 CLOSED with latest published release still0.21.0; containing fixes and renewed
 qualification remain required. New blocker#95 is OPEN for managed OTP28 TLS
-tracking. The older handoff preserves its original prerelease boundary.
+tracking. A [fresh remote recheck](../acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh2.json)
+confirms the same issue/release states at2026-10-10T19:33:09Z. The older handoff
+preserves its original prerelease boundary. Local delivery `d8e3a26` records the
+reviewed qualification and TLS blocker; it does not lift Tasks4–8's gates.
