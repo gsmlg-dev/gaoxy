@@ -34,3 +34,7 @@ remain unchanged.
 [machine receipt](evidence/release-0.2.0/independent-review.json) cover the release
 changes and M4 architecture. The owner-loss design finding is resolved; M4
 implementation is not claimed.
+
+Raw execution logs are stored as lossless gzip archives. The local verification
+receipt includes compressed and decompressed SHA256 values; no log whitespace
+or failure output was normalized.
