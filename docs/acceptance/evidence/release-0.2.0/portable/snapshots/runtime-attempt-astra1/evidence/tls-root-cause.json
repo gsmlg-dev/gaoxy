@@ -1,0 +1,71 @@
+{
+  "status": "ROOT_CAUSE_CONFIRMED",
+  "source_sha": "32ec599790ccddb477345a765681f74852e5ffc0",
+  "initial_failure_log": "docker-build-initial.log",
+  "failures": [
+    {
+      "test": "apps/gaoxy_proxy/test/websocket_tls_test.exs:70",
+      "assertion_line": 96,
+      "expected_peer_alert": "bad_certificate",
+      "actual_peer_alert": "handshake_failure",
+      "local_reason": "bad_cert/hostname_check_failed",
+      "prior_passed_contracts": [
+        "502 Bad Gateway",
+        "no downstream101",
+        "downstream closed"
+      ]
+    },
+    {
+      "test": "apps/gaoxy_proxy/test/http_proxy_tls_test.exs:111",
+      "assertion_line": 135,
+      "expected_peer_alert": "bad_certificate",
+      "actual_peer_alert": "handshake_failure",
+      "local_reason": "bad_cert/hostname_check_failed",
+      "prior_passed_contracts": [
+        "502 Bad Gateway",
+        "no200 OK",
+        "downstream closed"
+      ]
+    }
+  ],
+  "fixture_secondary_message": "verification was not requested is emitted because assertion aborts before assert_no_replay sends verify_no_replay; it is not a hostname-verification bypass",
+  "otp_source_mapping": [
+    {
+      "tag": "OTP-28.5",
+      "url": "https://raw.githubusercontent.com/erlang/otp/OTP-28.5/lib/ssl/src/ssl_handshake.erl",
+      "snapshot": "OTP-28.5-ssl_handshake.erl",
+      "sha256": "02fcc32c9ec17881e3d943304892b32c21d66e705dd1418d9060c008ac6ee44e",
+      "hostname_check_failed_alert": "HANDSHAKE_FAILURE"
+    },
+    {
+      "tag": "OTP-28.5.0.2",
+      "url": "https://raw.githubusercontent.com/erlang/otp/OTP-28.5.0.2/lib/ssl/src/ssl_handshake.erl",
+      "snapshot": "OTP-28.5.0.2-ssl_handshake.erl",
+      "sha256": "55d68d3195d255d882f7bd0ea06f1d6590b61f08bef785d75a80f670316ad404",
+      "hostname_check_failed_alert": "BAD_CERTIFICATE"
+    },
+    {
+      "tag": "OTP-28.5.0.5",
+      "url": "https://raw.githubusercontent.com/erlang/otp/OTP-28.5.0.5/lib/ssl/src/ssl_handshake.erl",
+      "snapshot": "OTP-28.5.0.5-ssl_handshake.erl",
+      "sha256": "61d5100213815c56147f102c63a82a6d78cb34841587f6038bdbf391ba650bf2",
+      "hostname_check_failed_alert": "BAD_CERTIFICATE"
+    }
+  ],
+  "chosen_fix": "Align portable toolchain to patched OTP28.5.0.5; preserve frozen source and assertions",
+  "scope": "portable audit files only",
+  "build_runtime_evidence_separate": true,
+  "patched_direct_probe": {
+    "log": "hostname-probe-patched.log",
+    "log_sha256": "33c83c62b855ff8ee0ce80774f5fa9dd7d08ffac835271d1e2036637e8b7ec88",
+    "exit_code": 0,
+    "network_mode": "none",
+    "otp": "28.5.0.5",
+    "ssl": "11.6.0.4",
+    "client_alert": "bad_certificate",
+    "peer_alert": "bad_certificate",
+    "local_reason": "bad_cert/hostname_check_failed",
+    "role": "diagnostic evidence; does not replace unchanged compatibility tests"
+  },
+  "builder_image_id": "sha256:1b4af9b743237ebe684f327c1b6e588b9269af24be9b768969ce8e76ad83528a"
+}

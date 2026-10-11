@@ -1,0 +1,102 @@
+{
+  "task": "release-0.2.0-portable",
+  "source_sha": "32ec599790ccddb477345a765681f74852e5ffc0",
+  "recorded_utc": "2026-10-11T12:23:19.609236+00:00",
+  "initial_compatibility": {
+    "tests": 486,
+    "failures": 2,
+    "build_exit": 1,
+    "compatibility_exit": 2,
+    "otp": "28.5",
+    "log_sha256": "cebf6225fa0513ce9f14e622ad3f2d152aafe8c966cb78f742e65f75a0ea0ca9"
+  },
+  "portable_sol_repair_round": 2,
+  "portable_unsuccessful_repairs": 2,
+  "astra_repairs": 2,
+  "historical_smoke_sol_repairs": 1,
+  "historical_smoke_unsuccessful_repairs": 0,
+  "repair": "Align pinned Debian bookworm amd64 builder to OTP28.5.0.5; exact Elixir1.18.5 compilation and all tracked source/tests unchanged.",
+  "root_cause": "OTP28.5 ssl_handshake hostname rejection maps to HANDSHAKE_FAILURE; OTP28.5.0.5 maps to BAD_CERTIFICATE.",
+  "builder_digest": "sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb",
+  "builder_tag": "1.19.6-erlang-28.5.0.5-debian-bookworm-20260824-slim",
+  "attempt_bound_seconds": 1800,
+  "status": "PASS",
+  "builder_timeout_process_pid": 2240282,
+  "builder_started_utc": "2026-10-11T12:23:19.900881+00:00",
+  "builder_elapsed_seconds_at_checkpoint": 1051,
+  "fresh_runtime_outer_bound_seconds": 600,
+  "builder_total_authorized_bound_seconds": 2400,
+  "bound_change": {
+    "recorded_utc": "2026-10-11T12:46:42.729770+00:00",
+    "from_seconds": 1800,
+    "to_seconds": 2400,
+    "reason": "Parent authorized larger outer guardian budget after clearly progressing Debian package downloads consumed1064s. Current GNU timeout1800 remains immutable; preserve actual result and use completed cache only if continuation needed.",
+    "all_inner_assertions_and_deadlines_unchanged": true,
+    "continuation_rule": "If actualexit124, record repair1 unsuccessful and bounded cached continuation as repair2. Do not reset historical counters."
+  },
+  "repair1": {
+    "status": "FAIL",
+    "exit_code": 124,
+    "elapsed_seconds": 1800,
+    "completed_utc": "2026-10-11T12:54:16.953990+00:00",
+    "phase": "Production compilation after toolchain/locked dependency/peer dependency setup; compatibility/package/runtimeNOT RUN",
+    "log": "docker-build-repair1.log"
+  },
+  "repair2": {
+    "status": "FAIL",
+    "started_utc": "2026-10-11T12:54:16.953990+00:00",
+    "bound_seconds": 539,
+    "command": [
+      "timeout",
+      "539",
+      "docker",
+      "buildx",
+      "build",
+      "--platform",
+      "linux/amd64",
+      "--progress",
+      "plain",
+      "--target",
+      "artifact",
+      "--output",
+      "type=local,dest=.audit/release-0.2.0-portable/artifacts",
+      ".audit/release-0.2.0-portable/context"
+    ],
+    "repair": "Only outer guardian continuation from completed clean cached base/source layers; recipe, assertions and inner deadlines unchanged.",
+    "exit_code": 124,
+    "elapsed_seconds": 542.0088231023401,
+    "completed_utc": "2026-10-11T13:03:18.963223+00:00"
+  },
+  "astra_unsuccessful_repairs": 1,
+  "astra1": {
+    "status": "FAIL",
+    "builder": "PASS",
+    "fresh_runtime": "FAIL",
+    "builder_receipt": "astra1-builder.json",
+    "runtime_receipt": "astra1-runtime.json",
+    "root_cause": "UNKNOWN: container exited1 before log collection; inherited wrapper removed it without saving stderr",
+    "completed_utc": "2026-10-11T13:29:22.292939+00:00",
+    "further_recovery_started": false
+  },
+  "astra2": {
+    "status": "PASS",
+    "root_cause": "Debian Python3.11.2 tarfile.extractall has no filter keyword",
+    "diagnostic_receipt": "astra2-diagnostic/receipt.json",
+    "compatibility_probe_receipt": "astra2-compatibility-probe/receipt.json",
+    "received_sol_counter": 2,
+    "sol3": "NOT RUN; no counter increment",
+    "runtime_receipt": "astra2-runtime.json",
+    "completed_utc": "2026-10-11T13:39:01.350376+00:00",
+    "artifact_bytes_unchanged": true,
+    "checks": {
+      "diagnostic": "reproduced exact TypeError; diagnostic only",
+      "python311_extraction_probe": "PASS",
+      "fresh_runtime": "PASS",
+      "elf_objects": 21,
+      "missing_libraries": 0,
+      "nix_dependencies": 0,
+      "core_transports": 3,
+      "gateway_exchanges": 2
+    }
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "bound_seconds": 600,
+  "started_utc": "2026-10-11T13:36:52.730026+00:00",
+  "stages": [
+    {
+      "name": "runtime-image",
+      "command": [
+        "docker",
+        "buildx",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress",
+        "plain",
+        "--target",
+        "runtime",
+        "--load",
+        "-t",
+        "gaoxy-release-020-portable-runtime:local",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/release-0.2.0-portable/context"
+      ],
+      "elapsed_seconds": 4.827787946909666,
+      "exit_code": 0
+    },
+    {
+      "name": "fresh-runtime",
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/release-0.2.0-portable/context/run_runtime.py",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/release-0.2.0-portable",
+        "575"
+      ],
+      "elapsed_seconds": 12.098340237513185,
+      "exit_code": 0
+    }
+  ],
+  "status": "PASS",
+  "elapsed_seconds": 16.965315710753202,
+  "completed_utc": "2026-10-11T13:37:09.695364+00:00"
+}

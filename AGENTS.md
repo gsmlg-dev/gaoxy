@@ -16,6 +16,10 @@ older publication bans for this release only. Deployment, production data,
 operational certificates, public management, Vault freezes and the disabled
 release-artifact E2E workflow retain their existing restrictions.
 
+Do not re-raise account spending/quota-increase requests for this work. If a
+hosted job cannot start, preserve its unexecuted status and use a separately
+qualified local release build without changing account or repository settings.
+
 ## Continuing development authorization
 
 The user granted continuing authorization on 2026-10-10 for the existing product
