@@ -1,0 +1,129 @@
+{
+  "assignment": "direct independent Sol static review of parent-authored tooling only",
+  "astra_gate": "none",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "branch": "codex/m3-gateway",
+  "changes": [
+    "tls95-repaired-tooling-review.md",
+    "tls95-repaired-tooling-review.json"
+  ],
+  "code_quality": "FAIL",
+  "command_shutdown": "All own commands completed or stopped safely; no owned background process remains.",
+  "commands": "Read-only git HEAD/status, scoped cat/nl/sed/rg; in-memory Python AST/JSON/SHA-256 and cached tar inspection. A broad read-only Nix file search was stopped safely with SIGINT exit130; an initial text decoding probe hit UnicodeDecodeError on an ELF wrapper and was replaced by successful binary/sibling source inspection. No reviewed scripts, peer, VM, Mix, formatter, network, dependency or Git mutation ran.",
+  "counters": {
+    "received_astra_rounds": 0,
+    "separate_fixture_sol_repairs": 0,
+    "separate_spec_astra_rounds": 0,
+    "separate_spec_sol_repairs": 2,
+    "separate_spec_unsuccessful_sol_repairs": 1,
+    "tooling_astra_rounds": 0,
+    "tooling_sol_repair_rounds": 1,
+    "tooling_unsuccessful_sol_repairs_after_this_review": 1
+  },
+  "decisions_needed": "No product/user decision; parent owns tooling Sol repair2 and independent re-review.",
+  "findings": [
+    {
+      "evidence": "The materializer copies deps/telemetry/.hex and computes its new hash without comparing it to the reviewed acquisition receipt or frozen inventory. Shipped telemetry bytes and archive checksums are verified, but .hex is not archive-shipped and is outside those checks. The current .hex hash passes an independent read-only check; the script itself does not enforce that identity.",
+      "id": "TLS95-REPAIR1-01",
+      "initial_finding": "TLS95-TOOL-02",
+      "location": ".audit/m3-tls95-baseline-materialize.py:66-68",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Before the first preserve call, require a PASS acquisition receipt and compare the installed .hex hash to its reviewed installed_hex_sha256 or the independently frozen inventory value. Fail before writing if it differs.",
+      "title": "Verify installed telemetry .hex before any destination writes"
+    },
+    {
+      "evidence": "install_tools validates existing files under MIX_HOME and source/archive symlinks, but HEX_HOME is only mkdir(exist_ok=True). An existing candidate .hex directory symlink is accepted and supplied to the VM; stale/unlisted .hex contents are neither rejected nor frozen. Existing unlisted empty MIX_HOME directories are also accepted. The collector lacks the materializer complete-destination prevalidation for its separately owned candidate tool root.",
+      "id": "TLS95-REPAIR1-02",
+      "initial_finding": "TLS95-TOOL-02",
+      "location": ".audit/m3-tls95-collector.py:51-78,125-128",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Before any tool destination writes, reject symlinked target/HEX_HOME/ancestors and stale or unlisted files/directories in the complete owned tool root. Bind HEX_HOME to its intended real owned root and include its inventory in before/after receipts. Preserve mismatching existing bytes and stop rather than deleting them.",
+      "title": "Validate the complete owned Hex/tool destination inventory before copying"
+    },
+    {
+      "evidence": "After process.wait returns an actual exit, outer calls protected(), source/build scanning and JSON parsing before creating the final receipt. protected validates frozen inputs while reading them; a changed/missing input raises immediately. That failure path preserves the raw log but loses the final receipt containing the actual exit and distinct identity error. The wrapper primary/post separation is repaired, but the outer collector can still replace the command outcome with a post-collection exception.",
+      "id": "TLS95-REPAIR1-03",
+      "initial_finding": "TLS95-TOOL-05 collector continuation",
+      "location": ".audit/m3-tls95-collector.py:170-194; protected():30-45",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Capture the actual process exit/timing immediately. Attempt each post collection independently, retain its raw data or explicit failure, and always write a final receipt containing primary exit plus separate post-identity/collection errors. Fail qualification on any missing/mismatching post evidence while preserving the driver failure.",
+      "title": "Always preserve the actual command exit and post-identity failures"
+    },
+    {
+      "evidence": "The profiler hashes each selected tool entry point and follows ldd dependencies only for ELF files. It does not follow shell/Tcl scripts, executable wrapper targets, interpreter/package inputs, or non-ELF launcher dependencies. Installed expect layouts have an ELF bin/unbuffer and a separate bin/.unbuffer-wrapped script that executes tclsh and package require Expect. The collector launches unbuffer, but none of that hidden script/interpreter/package closure is added by this profiler. The profiler does not launch unbuffer, so its Python /proc maps cannot supply that missing closure. ELF linkage of the wrapper alone does not include executables/scripts it later launches.",
+      "id": "TLS95-REPAIR1-04",
+      "initial_finding": "TLS95-TOOL-04",
+      "location": ".audit/m3-tls95-native-profile.py:41-71",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Freeze and validate the actual selected unbuffer wrapper target, Tcl interpreter and required Expect/Tcl package inputs, and equivalent transitive inputs for the other selected script/wrapper launchers and compiler tools. Keep file-identity claims separate from ABI/lifetime qualification.",
+      "title": "Native profiler omits transitive launcher/interpreter inputs"
+    },
+    {
+      "evidence": "The only initial evidence-preservation guard checks name.json. All sidecar JSON writes use write_text. A failed attempt before the final name.json can leave environment/source/tool/inner receipts; retrying that name overwrites those sidecars before the later exclusive log open fails. The raw log guard therefore does not protect the already written partial receipts.",
+      "id": "TLS95-REPAIR1-05",
+      "initial_finding": "new collector code-quality finding",
+      "location": ".audit/m3-tls95-collector.py:18,86,112,120,128-131,160,173-194",
+      "phase": "code quality",
+      "priority": "P2",
+      "required_change": "Reserve every output name before any mutation or use exclusive creation for all evidence files. Reject a reused name if any corresponding log/sidecar/final receipt exists, including incomplete attempts. Never replace prior failure evidence.",
+      "title": "Partial failure receipts can be overwritten on a same-name retry"
+    }
+  ],
+  "finite_findings_count": 5,
+  "freeze_receipt_sha256": "1a8bda380a7b4dec92bc2bec205b538d37ecf84623e60a24222e1534da36cb93",
+  "initial_findings": {
+    "TLS95-TOOL-01": "CLOSED_STATIC: separate official acquisition receipt and offline materializer",
+    "TLS95-TOOL-02": "PARTIAL: complete baseline stale/symlink prevalidation and manifest repaired; telemetry .hex identity assertion and collector Hex ownership remain",
+    "TLS95-TOOL-03": "CLOSED_STATIC: synchronized env/argv/wrapper/startup",
+    "TLS95-TOOL-04": "PARTIAL: cohort real origins/module coverage/loaded MD5 and same-VM identity repaired; transitive tool closure remains incomplete",
+    "TLS95-TOOL-05": "PARTIAL: wrapper primary/post separation repaired; outer post-collection exception can prevent final exit receipt"
+  },
+  "observed_utc": "2026-10-10T21:38:08.523677+00:00",
+  "remaining_risks": "Tooling must be repaired and changed bytes independently reviewed before construction/build/runtime qualification. No independent fixture verdict or runtime/native/M3 acceptance is supplied.",
+  "review_inputs_sha256": {
+    ".audit/m3-tls95-baseline-materialize.py": "ee126b61210e0df84a4998d9357864ff347af006eccfe7d35423c73e86d9b15c",
+    ".audit/m3-tls95-collector.py": "a69fb4ccc5bc9783a16b8d7b1d86f402783a168e80cd701149b65cad54d59eac",
+    ".audit/m3-tls95-native-profile.py": "21a15bc74bc7ea2e4f80f59009ff2bbc600217225368db67996da5e410d21877",
+    ".audit/m3-tls95-telemetry-acquire.py": "16a1f10ff713d9b3df38dc1bd8594a20dfb83c0ea31a96f2343d1e9915264c84",
+    ".audit/m3-transport/tls95-fixture-inputs.json": "5ab1a057c867271d59b1b0beb3621235bc5ce29c596ec978a8cbc35409c165f1",
+    ".audit/m3-transport/tls95-runtime-identity.exs": "819be77f306c35f8546f7c8b2d665186bc6515d4372a228b402e863f1e18a7f1",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-registration-inventory.json": "4f74eb993e8693fd01bad4758888f96ad6191bef757e3c19a07b9df710c680e5",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-telemetry-acquisition.json": "7dcb7ae5657647a1e1cbbd200bb9bd40801c5d7ce4ff173cba51800fdb9d44aa",
+    "docs/plans/m3-tls-tracking-qualification.md": "9951eaeb0cc8ea82ceebcf3ade4c74301c18de6ed69eba7f9394c0adb50cf0a0",
+    "integration/http_fetch_contract/managed_peer.py": "319e9c9f2832ddf2ab9cc84aedd519bfe33f36e2152d24bb47bf5fcde8169d79",
+    "integration/http_fetch_contract/managed_tls_tracking_peer.py": "5fba2a96dc3274f7b9ef3f1e2a893d76ab43f7a47d633e355254fd25ed715406",
+    "integration/http_fetch_contract/managed_tls_tracking_probe.exs": "efb1eb2864eec629701c20d8c16dea4a7249890a41d811c0568c4bf4ce278b76",
+    "integration/http_fetch_contract/pooled_completion_probe.exs": "f681723ff58754cb6169d0b42fb681a8439eeaa6c7ec7e94c752894405ce1e30",
+    "integration/http_fetch_contract/upstream_peer.py": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f"
+  },
+  "review_sequence": [
+    "1. Freeze and specification compliance",
+    "2. Code-quality review"
+  ],
+  "review_verdict": "FAIL",
+  "scope": "Only parent-authored acquisition/materializer/runtime wrapper/collector/native profiler. Fixture hash inputs were checked for freeze consistency only; fixture author makes no independent fixture conclusion.",
+  "specification_compliance": "FAIL",
+  "status": "DONE_REVIEW_WITH_FINDINGS",
+  "task_id": "m3_tls95_repaired_tooling_review",
+  "telemetry_archive_sha256": "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1",
+  "verification": {
+    "baseline_RED": "NOT_RUN",
+    "baseline_materialization": "NOT_RUN",
+    "build": "NOT_RUN",
+    "candidate_GREEN": "NOT_RUN",
+    "fixture_input_map": "PASS 10/10 hashes only",
+    "frozen_hashes": "PASS 14/14 before review and before report writes",
+    "native_ABI_byte_lifetime_M3": "NOT_QUALIFIED",
+    "python_AST": "PASS 4/4, parsed in memory without script execution/imports",
+    "telemetry_archive": "PASS exact outer and inner checksums against raw cached archive and receipt",
+    "telemetry_hex": "PASS current .hex hash equals acquisition receipt; materializer missing enforcement remains a finding",
+    "telemetry_protected": "PASS 63/63 receipt before/after/current hashes",
+    "telemetry_shipped": "PASS 16/16 archive/receipt/current installed source hashes",
+    "wrapper_VM": "NOT_RUN_BY_REVIEW"
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

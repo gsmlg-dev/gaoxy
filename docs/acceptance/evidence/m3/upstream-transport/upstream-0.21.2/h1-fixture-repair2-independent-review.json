@@ -1,0 +1,259 @@
+{
+  "schema_version": 1,
+  "task_id": "m3_h1_fixture_repair2_review",
+  "status": "DONE_REVIEW_ONLY",
+  "assignment": "direct bounded independent implementation SPEC then CODE QUALITY",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway",
+  "branch": "codex/m3-gateway",
+  "historical_comparison_baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "current_head": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "implementation_spec_review": {
+    "stage_order": 1,
+    "verdict": "PASS",
+    "findings": [],
+    "plan_sha256": "01acb850d85b90c2409092d7bf25c5400ad2e519d233858d9194dbce211e6720",
+    "tuple_repair": {
+      "line": 147,
+      "previous": "{:ok, [{^module, disk_md5}]} = :beam_lib.md5(binary)",
+      "current": "{:ok, {^module, disk_md5}} = :beam_lib.md5(binary)",
+      "retained_checks": [
+        "pinned module",
+        "loaded module MD5 equals object/disk MD5",
+        "object origin equals code origin",
+        "BEAM SHA256",
+        "source/runtime identity",
+        "exact cohort versions",
+        "telemetry false"
+      ]
+    },
+    "test_contract": {
+      "verdict": "PASS_EVIDENCE_BOUND_CORRECTION",
+      "original_assumption": "native_origins must be nonempty",
+      "classification": "TEST_CONTRACT_ERROR",
+      "actual_field_scope": "regular files in seven cohort app priv trees, not VM/OTP native mappings",
+      "expected_complete_set": [],
+      "independent_diagnosis": "205 installed identities and14 cached archives match; no archive priv members, no cohort build priv entries, no native compiler/load_nif for ex_ssl/elixir_quic",
+      "corrected_lines": [
+        30,
+        31,
+        32,
+        34,
+        35,
+        36,
+        40,
+        41
+      ],
+      "all_valid_previous_checks_preserved": true,
+      "per_file_checks_preserved": true,
+      "new_native_claim": "NONE"
+    }
+  },
+  "code_quality_review": {
+    "stage_order": 2,
+    "verdict": "PASS",
+    "findings": [],
+    "review_basis": "initial full executable/contract review plus accepted repair1 integration, exact preserved canonical prerepair2 diff and v2 unit diff",
+    "changed_source_lines": [
+      147
+    ],
+    "changed_source_files": [
+      "integration/http_fetch_contract/managed_h1_accounting_fixture.exs"
+    ],
+    "source_entries_preserved": 207,
+    "F1_F2_repair1": "BYTE_IDENTICAL_UNCHANGED",
+    "new_roles_controls_public_calls_deadlines_refunds": 0,
+    "unit_check": "seven File.ls roots must contain no entries, then field equals exact empty set; unexpected entries/errors fail; all valid prior assertions unchanged"
+  },
+  "inventory": {
+    "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-inventory.json",
+    "sha256": "2183a347a13a306dfb23dd00b790204deb5cbe95dd749f7b3d9e5b443dc1e806",
+    "source_inputs": 208,
+    "source_inputs_matched": 208,
+    "evidence_helper_unit_artifact_bindings": 28,
+    "bindings_matched": 28,
+    "mismatches": [],
+    "canonical_code_sha256": {
+      "integration/http_fetch_contract/managed_h1_accounting_fixture.exs": "937bdfd98d23a0045a2e685cca123bbde7492467bef43f85bcc3489c4a554735",
+      "integration/http_fetch_contract/managed_h1_accounting_fixture_test.exs": "09cd6382d3158666db69de784e05dc55b76b42641a2437de278b779c4ee50ac0",
+      "integration/http_fetch_contract/managed_h1_accounting_peer.py": "e997a5fcd0d7391cf56ba278e5dccf3d61b5e68fbb2bae4cbedf1c69f75e0fb2"
+    },
+    "evidence_and_helper_sha256": {
+      ".audit/m3-h1-scoped-collector.py": "8a2ce4c4993c15fffe88ee327c3d52f079427634a565a61a8e194af70387ef42",
+      ".audit/m3-transport/h1-fixture-repair1-ledger-test.exs": "6d76d6b9e207303a2c7f24520816ed786f0c5129f154ebd936f14193b5a371ef",
+      ".audit/m3-transport/h1-fixture-repair2-identity-test-v2.exs": "8011ac3ef541478a346a327f5b53d3ee7a02857dcb35ce15010b463c30fe6b4f",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-independent-review.json": "9285534449622d73421e27a149241a68adc70bd7f6f1900d5c6d811ff26fc52a",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-independent-review.json": "14d417a77218b6f17ab36ad7295348ba8da9889c0b720825487e867cb799980a",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-independent-review.md": "37b4fbec587ffd85edaab3281e784f57bbfaaa62e4cd5f59824bf14d2dbce42f",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-baseline1-analysis.json": "008d1ddf860b67ccb5e1799406d6b89378152265bb3a28127d97697fe2e0d8e4",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-baseline1.json": "d578c78afc190cc5ebd95d08f4d8e22289766ca2e0de6e3162717595f3084179",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-canonical-format.json": "4d1d7c4d281016278376916e4e23223cd9e7603c8c62328663fd5f9f04ee8988",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-independent-review.json": "652272a9e25a02084a3d4abf0e670c79cafe9bd93f9e9eabb8716c6ef301c9c6",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-independent-review.md": "b08eda6f1b86e50609dda9a76d4babf0b0de698a382eadbf33a5947a2cf39890",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-ledger-green-analysis.json": "145e20b9f4c7308b8163078bfffadef3a0b612946d8a2f34f7a78c1092a497b4",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-ledger-green.json": "ebd5ff0734bc134357eef9f26a30296991ea26bedea8490dd4dab31d8014b10d",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-ledger-red.json": "ab37224eb502202755f9092f00b9c002b734ea7dc5be6399a4627e2d92d270e1",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair1-ledger-test.exs": "6d76d6b9e207303a2c7f24520816ed786f0c5129f154ebd936f14193b5a371ef",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-format-check.json": "cffc66273251cc77b17071a60fd169e00381beee379383ac3d1f2fb2ac41edfd",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-attempted-green-analysis.json": "b52a4430d94868ddf460a90b3699ea9b2363d773abbb67b63b39fbe4211b5eb1",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-contract-decision.json": "fce18fb7ffccad40eab64f9972c3c8b897d8c44b84a5afe350cdff28c197378c",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-green.json": "2767f04a010bc0c1227b89d7e47cd050c9798602281628bd5f852613c1c20a6b",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-red.json": "d8d05ccbc8fccdb06886dc3b8f30f566b4dd8af19a7ab4d4ea197ceecd3f0726",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-test-v2.exs": "8011ac3ef541478a346a327f5b53d3ee7a02857dcb35ce15010b463c30fe6b4f",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-test.exs": "7fb090d32b63d4298b60ae07bc4fb02190dcdcf742b83880e6ecdefa61aefcd0",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-green-analysis.json": "cd99f20e5218f961bc5181ef11e2ba9f2061feba108b3757513f9be5e1388a07",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-green-artifacts/run-identity.json": "a2ce5583741420dfa163e2f30f9e10f4699b714f91cc8cb7a1fb100c43209cd2",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-green-artifacts/run-origin": "08ca413e16387010c12de84f480014f76e34d902b4be05fa4b5f84ffe11a4ea9",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-green.json": "383e7af33f88ee7582004349196c5f210805ecb3bc95536f63bdc4841de8a827",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-red.json": "e4cb0ab17b07e1805e6605cab504017b85553706f951d78650df47cbaa8f67a0",
+      "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-scoped-run-collector-repair1.py": "8a2ce4c4993c15fffe88ee327c3d52f079427634a565a61a8e194af70387ef42"
+    },
+    "previous_canonical_fixture_sha256": "caeb5fa1fb68b45fb7661577fb32f89a01a3029f3b6d3e60fa4f6d9bd10c9800"
+  },
+  "parent_evidence": {
+    "preserved_first_baseline_startup": {
+      "receipt": "h1-fixture-repair1-baseline1.json",
+      "exit": 1,
+      "tests": 0,
+      "network_cases": 0,
+      "failure": "actual beam_lib return tuple did not match erroneous list; no test/peer allocation"
+    },
+    "original_identity_red": {
+      "receipt": "h1-fixture-repair2-identity-red.json",
+      "exit": 1,
+      "tests": 1,
+      "failures": 1
+    },
+    "attempted_original_identity_green": {
+      "receipt": "h1-fixture-repair2-identity-green.json",
+      "exit": 1,
+      "tests": 1,
+      "failures": 1,
+      "classification": "TEST_CONTRACT_ERROR_NONEMPTY_PRIV_ASSERTION",
+      "all_prior_valid_checks_passed": true,
+      "source_unchanged_after_tuple_fix": true,
+      "original_unit_sha256": "7fb090d32b63d4298b60ae07bc4fb02190dcdcf742b83880e6ecdefa61aefcd0",
+      "failed_artifacts_preserved_and_hash_verified": true,
+      "no_failure_relabeling": "FAIL remains preserved; contract classification separate"
+    },
+    "corrected_v2_unit": {
+      "sha256": "8011ac3ef541478a346a327f5b53d3ee7a02857dcb35ce15010b463c30fe6b4f",
+      "audit_and_tracked_copies_match": true,
+      "immutable_red_green": true
+    },
+    "corrected_v2_red": {
+      "receipt": "h1-fixture-repair2-identity-v2-red.json",
+      "exit": 1,
+      "tests": 1,
+      "failures": 1,
+      "skipped": 0,
+      "excluded": 0,
+      "seed": 21112026,
+      "fixture_sha256": "caeb5fa1fb68b45fb7661577fb32f89a01a3029f3b6d3e60fa4f6d9bd10c9800",
+      "actual_source_path": "integration/http_fetch_contract/managed_h1_accounting_fixture.exs",
+      "failure_line": 147,
+      "selected_inputs": 1132,
+      "before_after_identical": true,
+      "manifest_sha256": "1c3c23c229721419e73a9808cf9f2768880cf024bda5d3d391dfd8ed71f1a3f1",
+      "log_sha256": "973761809933bbc5c73b88a0033d93cb7249b743de9090c14a6480230ca5a10b"
+    },
+    "corrected_v2_green": {
+      "receipt": "h1-fixture-repair2-identity-v2-green.json",
+      "exit": 0,
+      "tests": 1,
+      "failures": 0,
+      "skipped": 0,
+      "excluded": 0,
+      "seed": 21112026,
+      "fixture_sha256": "937bdfd98d23a0045a2e685cca123bbde7492467bef43f85bcc3489c4a554735",
+      "selected_inputs": 1132,
+      "before_after_identical": true,
+      "current_matches": 1132,
+      "red_green_map_delta": [
+        "integration/http_fetch_contract/managed_h1_accounting_fixture.exs"
+      ],
+      "manifest_sha256": "1f91bdec4d3dd67549088faf4a271817199c4f47eb8e3a41c3253d6c399409aa",
+      "log_sha256": "dcbc523202e2d343c137e655c745729baf29d588b841d5a1d5eb845f9cce1a4c"
+    },
+    "format_check": {
+      "receipt": "h1-fixture-repair2-format-check.json",
+      "exit": 0,
+      "tests": 0,
+      "selected_inputs": 1132,
+      "before_after_identical": true,
+      "manifest_sha256": "1f91bdec4d3dd67549088faf4a271817199c4f47eb8e3a41c3253d6c399409aa"
+    },
+    "captured_green_identity": {
+      "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-identity-v2-green-artifacts/run-identity.json",
+      "sha256": "a2ce5583741420dfa163e2f30f9e10f4699b714f91cc8cb7a1fb100c43209cd2",
+      "run_origin_sha256": "08ca413e16387010c12de84f480014f76e34d902b4be05fa4b5f84ffe11a4ea9",
+      "beams": 10,
+      "all_10_current_disk_sha256_match": true,
+      "python_disk_sha256_match": true,
+      "runtime_sources": 175,
+      "versions": "seven0.21.2",
+      "telemetry": "bothfalse",
+      "native_origins": [],
+      "cohort_priv_dirs": "sevenabsent",
+      "preserved_identity_matches_live_artifact": true,
+      "actual_loaded_md5_evidence": "parent unit actual passing assertions, not reviewer VM"
+    }
+  },
+  "baseline": {
+    "actual_network_cases": 0,
+    "runtime": "NOT_RUN",
+    "review_prerequisite": "SATISFIED_FOR_PARENT_FRESH_BASELINE20_ONLY",
+    "functional_acceptance": "NOT_ESTABLISHED",
+    "B21": "DEFERRED_FAIL_CLOSED",
+    "numerical": "BLOCKED_FEATURE97_N8",
+    "native_ABI_N8_TLS": "UNQUALIFIED",
+    "native_frontier": "unestablished",
+    "M3_completion": "NOT_CLAIMED"
+  },
+  "counters": {
+    "fixture": {
+      "astra": 0,
+      "sol_repairs": 2,
+      "sol_unsuccessful": 1
+    },
+    "parent_test_contract_correction": 1,
+    "model": {
+      "astra": 0,
+      "sol_repairs": 2,
+      "sol_unsuccessful": 1
+    },
+    "TLS_tooling": {
+      "astra": 2,
+      "sol_repairs": 2,
+      "sol_unsuccessful": 2
+    },
+    "reviewer_implementation_edits": 0,
+    "received_astra": 0,
+    "astra_gate": "NONE",
+    "reset": "NONE"
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-independent-review.md",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-fixture-repair2-independent-review.json"
+  ],
+  "verification": {
+    "commands": "synchronous cat/sed/nl/rg; Python stdlib hash/JSON/difflib; final binding checks PASS",
+    "discovery_note": "initial alternate filename suffix read ENOENT; corrected by scoped file discovery, no writes or implementation repair",
+    "not_run": [
+      "VM",
+      "Mix",
+      "parser",
+      "formatter",
+      "Git",
+      "network",
+      "dependency operations",
+      "peer launch"
+    ]
+  },
+  "command_shutdown": "All reviewer commands finished synchronously; no background job/process started. NEW review report ownership released after final source/report binding.",
+  "remaining_risks": [
+    "Baseline20 and actual cleanup/B17/runtime integration still unexecuted",
+    "Startup identity1/0 does not establish native ABI/N8/TLS/resource bounds",
+    "B21 and Feature97/N8 deferred/blocked; exhausted TLS chain unchanged"
+  ],
+  "decisions_needed": "Parent fresh baseline20 under exact repair2 source/helper freeze. No new user design decision."
+}

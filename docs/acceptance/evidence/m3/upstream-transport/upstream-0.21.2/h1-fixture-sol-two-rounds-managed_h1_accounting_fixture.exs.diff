@@ -1,0 +1,330 @@
+--- h1-fixture-prerepair1-managed_h1_accounting_fixture.exs
++++ h1-fixture-preastra1-managed_h1_accounting_fixture.exs
+@@ -144,7 +144,7 @@
+       Enum.map(modules, fn module ->
+         {:module, ^module} = Code.ensure_loaded(module)
+         {^module, binary, file} = :code.get_object_code(module)
+-        {:ok, [{^module, disk_md5}]} = :beam_lib.md5(binary)
++        {:ok, {^module, disk_md5}} = :beam_lib.md5(binary)
+         ensure(module.module_info(:md5) == disk_md5, :loaded_beam_identity)
+         origin = Path.expand(to_string(:code.which(module)))
+         ensure(origin == Path.expand(to_string(file)), :beam_origin)
+@@ -367,15 +367,25 @@
+       end
+     end
+ 
+-    def handle_call({:command, index}, _, state) do
+-      actor = elem(state.actors, index)
+-      Fixture.ensure(actor.status == :alive and is_nil(actor.operation), :actor_in_flight)
+-      operation = state.operation + 1
+-      actor = %{actor | operation: operation}
+-
+-      {:reply, {actor.pid, operation},
+-       %{state | actors: put_elem(state.actors, index, actor), operation: operation}}
+-    end
++    def handle_call({:command, index}, _, state) when index in 0..664 do
++      case elem(state.actors, index) do
++        %{status: :alive, operation: nil} = actor ->
++          operation = state.operation + 1
++          actor = %{actor | operation: operation}
++
++          {:reply, {actor.pid, operation},
++           %{state | actors: put_elem(state.actors, index, actor), operation: operation}}
++
++        %{status: :alive} ->
++          {:reply, {:error, :actor_in_flight}, state}
++
++        _ ->
++          {:reply, {:error, :actor_unavailable}, state}
++      end
++    end
++
++    def handle_call({:command, _index}, _, state),
++      do: {:reply, {:error, :actor_unavailable}, state}
+ 
+     def handle_call({:ack, index, operation}, _, state) do
+       actor = elem(state.actors, index)
+@@ -488,7 +498,7 @@
+   defp command(ctx, g, role, owner, operation, descriptor) do
+     _ = actor(ctx, g, role, owner)
+     index = role_index(g, role, owner)
+-    {pid, id} = call(ctx, {:command, index})
++    {pid, id} = take_command(ctx, index)
+ 
+     envelope =
+       {ctx.id, gslot(g), if(match?({:attempt, _, _, _}, owner), do: aslot(owner), else: -1),
+@@ -496,6 +506,16 @@
+ 
+     send(pid, {:command, self(), envelope, operation, descriptor})
+     {index, id, owner}
++  end
++
++  defp take_command(ctx, index) do
++    case call(ctx, {:command, index}) do
++      {pid, id} when is_pid(pid) and is_integer(id) ->
++        {pid, id}
++
++      {:error, reason} when reason in [:actor_unavailable, :actor_in_flight] ->
++        throw({:fixture_local_command_error, reason})
++    end
+   end
+ 
+   defp reply(ctx, {index, id, owner}, deadline) do
+@@ -532,62 +552,69 @@
+       port: nil
+     }
+ 
+-    outcome =
+-      try do
+-        ctx = start_peer(ctx)
+-        result = scenario(which, ctx)
+-        {:ok, result, ctx}
+-      rescue
+-        exception ->
+-          {:error,
+-           %{
+-             category: :assertion_or_contract,
+-             exception: exception.__struct__,
+-             sites: safe_sites(__STACKTRACE__)
+-           }, ctx}
+-      catch
+-        :exit, _ -> {:error, :owned_operation_exit, ctx}
+-      end
+-
+-    ctx = call(ctx, :context) || ctx
+-    cleanup = cleanup(ctx)
+-    state = call(ctx, :state)
+-    snapshot = Model.snapshot(state.model)
+-
+-    result =
+-      case outcome do
+-        {:ok, result, _} -> result
+-        {:error, reason, _} -> %{failure: reason}
+-      end
+-
+-    status = if match?({:ok, _, _}, outcome) and cleanup.ok, do: "PASS_FUNCTIONAL", else: "FAIL"
+-
+-    row = %{
+-      id: id,
+-      run_origin: run_origin,
+-      status: status,
+-      oracle: json_value(result),
+-      joins: cleanup.ok,
+-      cleanup: cleanup.evidence,
+-      accounting: "ACCOUNTING_BLOCKED_INPUT",
+-      native_frontier: "unestablished",
+-      outstanding_controls: snapshot.outstanding_controls,
+-      held_roots: snapshot.held_roots,
+-      held_chunks: snapshot.held_chunks,
+-      occupied_attempts: Tuple.to_list(snapshot.occupied_attempts),
+-      actors: Enum.count(Tuple.to_list(state.actors), &(not is_nil(&1))),
+-      fetches: state.fetches,
+-      operations: state.operation,
+-      identity_sha256: sha256(File.read!(Path.join(@audit, "run-identity.json")))
+-    }
+-
+-    encoded = JSON.encode!(json_value(row))
+-    ensure(byte_size(encoded) <= 4096, :row_limit)
+-    File.write!(Path.join(@audit, id <> "-result.json"), encoded)
+-    IO.puts("H1_ACCOUNTING_FIXTURE_CASE " <> encoded)
+-    GenServer.stop(ledger, :normal, max(remaining(ctx.shutdown), 1))
+-    ensure(status == "PASS_FUNCTIONAL", :case_failed)
+-    result
++    try do
++      outcome =
++        try do
++          ctx = start_peer(ctx)
++          result = scenario(which, ctx)
++          {:ok, result, ctx}
++        rescue
++          exception ->
++            {:error,
++             %{
++               category: :assertion_or_contract,
++               exception: exception.__struct__,
++               sites: safe_sites(__STACKTRACE__)
++             }, ctx}
++        catch
++          :throw, {:fixture_local_command_error, reason} ->
++            {:error, {:fixture_local_command_error, reason}, ctx}
++
++          :exit, _ ->
++            {:error, :owned_operation_exit, ctx}
++        end
++
++      ctx = call(ctx, :context) || ctx
++      cleanup = guarded_cleanup(ctx)
++      state = call(ctx, :state)
++      snapshot = Model.snapshot(state.model)
++
++      result =
++        case outcome do
++          {:ok, result, _} -> result
++          {:error, reason, _} -> %{failure: reason}
++        end
++
++      status = if match?({:ok, _, _}, outcome) and cleanup.ok, do: "PASS_FUNCTIONAL", else: "FAIL"
++
++      row = %{
++        id: id,
++        run_origin: run_origin,
++        status: status,
++        oracle: json_value(result),
++        joins: cleanup.ok,
++        cleanup: cleanup.evidence,
++        accounting: "ACCOUNTING_BLOCKED_INPUT",
++        native_frontier: "unestablished",
++        outstanding_controls: snapshot.outstanding_controls,
++        held_roots: snapshot.held_roots,
++        held_chunks: snapshot.held_chunks,
++        occupied_attempts: Tuple.to_list(snapshot.occupied_attempts),
++        actors: Enum.count(Tuple.to_list(state.actors), &(not is_nil(&1))),
++        fetches: state.fetches,
++        operations: state.operation,
++        identity_sha256: sha256(File.read!(Path.join(@audit, "run-identity.json")))
++      }
++
++      encoded = JSON.encode!(json_value(row))
++      ensure(byte_size(encoded) <= 4096, :row_limit)
++      File.write!(Path.join(@audit, id <> "-result.json"), encoded)
++      IO.puts("H1_ACCOUNTING_FIXTURE_CASE " <> encoded)
++      ensure(status == "PASS_FUNCTIONAL", :case_failed)
++      result
++    after
++      final_shutdown(ctx)
++    end
+   end
+ 
+   defp json_value(value) when is_tuple(value),
+@@ -1604,7 +1631,7 @@
+   defp peer(ctx, operation, descriptor, deadline \\ nil) do
+     deadline = deadline || ctx.primary
+     ensure(remaining(deadline) > 0, :peer_phase_deadline)
+-    {pid, id} = call(ctx, {:command, 664})
++    {pid, id} = take_command(ctx, 664)
+ 
+     descriptor =
+       case descriptor do
+@@ -1738,7 +1765,7 @@
+     {"/unused", base_fields(policy), nil, [], :get, source}
+   end
+ 
+-  defp source_parts(policy, {:backing_field, backing}, case_id, slot) do
++  defp source_parts(_policy, {:backing_field, backing}, case_id, slot) do
+     parent = :binary.copy("p", backing)
+     value = binary_part(parent, 0, 4096)
+     ensure(:binary.referenced_byte_size(value) == backing, :field_backing_constructed)
+@@ -2805,7 +2832,7 @@
+     :ok = completion(ctx, token, :abort_wait)
+     reply(ctx, consumer, ctx.cleanup)
+     late = retirement_wait(ctx, g, late_receipt, true)
+-    ensure(late in [:ok, {:error, :cleanup_pending}], :late_public_receipt)
++    ensure(late == :ok, :late_public_receipt)
+     model_g = elem(call(ctx, :state).model.generations, 0)
+ 
+     ensure(
+@@ -2821,6 +2848,7 @@
+       graceful_calls: 1,
+       abort_calls: 1,
+       late_receipt_registered: true,
++      retirement_confirmation: late,
+       overshoot_ms: overshoot
+     }
+   end
+@@ -2982,6 +3010,70 @@
+     # The persistent slot is consumed; no source actor is respawned.
+   end
+ 
++  defp guarded_cleanup(ctx) do
++    cleanup(ctx)
++  rescue
++    _ -> failed_cleanup(ctx, :cleanup_exception)
++  catch
++    :throw, {:fixture_local_command_error, reason} -> failed_cleanup(ctx, reason)
++    :exit, _ -> failed_cleanup(ctx, :cleanup_exit)
++  end
++
++  defp failed_cleanup(ctx, reason) do
++    joined = owned_join(ctx)
++
++    failures =
++      cleanup_step([reason], :result_preservation, fn ->
++        ensure(joined != nil, :owned_join_missing)
++        preserve_rows(ctx, joined)
++      end)
++
++    actors = if joined, do: Tuple.to_list(joined.actors) |> Enum.reject(&is_nil/1), else: []
++
++    %{
++      ok: false,
++      evidence: %{
++        failed_steps: Enum.uniq(failures),
++        actors_joined: Enum.count(actors, &(&1.status != :alive)),
++        actors_total: length(actors),
++        peer: %{ok: false},
++        identity_stable: false
++      }
++    }
++  end
++
++  defp owned_join(ctx) do
++    state = call(ctx, :state)
++
++    Enum.each(Tuple.to_list(state.actors), fn
++      %{status: :alive, pid: pid} -> send(pid, {:stop, ctx.shutdown})
++      _ -> :ok
++    end)
++
++    call(ctx, {:join, ctx.shutdown})
++  rescue
++    _ -> nil
++  catch
++    :exit, _ -> nil
++  end
++
++  defp final_shutdown(ctx) do
++    try do
++      original_ctx = call(ctx, :context) || ctx
++      owned_join(original_ctx)
++    rescue
++      _ -> :ok
++    catch
++      :exit, _ -> :ok
++    after
++      try do
++        GenServer.stop(ctx.ledger, :normal, max(remaining(ctx.shutdown), 1))
++      catch
++        :exit, _ -> :ok
++      end
++    end
++  end
++
+   defp cleanup(ctx) do
+     :ok = call(ctx, :close_admission)
+     # Each step is attempted independently; one failed row cannot abandon later
+@@ -3059,6 +3151,7 @@
+         rescue
+           _ -> %{ok: false}
+         catch
++          :throw, {:fixture_local_command_error, reason} -> %{ok: false, failure: reason}
+           :exit, _ -> %{ok: false}
+         end
+       else
+@@ -3138,6 +3231,7 @@
+     rescue
+       _ -> [step | failures]
+     catch
++      :throw, {:fixture_local_command_error, reason} -> [{step, reason} | failures]
+       :exit, _ -> [step | failures]
+     end
+   end
+@@ -3254,8 +3348,7 @@
+       row = generation(ctx, g)
+ 
+       ensure(
+-        failures == [] and
+-          (row.retired or (ctx.id == "B17" and elem(row.waits, 0) == {:error, :cleanup_pending})),
++        failures == [] and row.retired,
+         :scope_cleanup_confirmation
+       )
+     else

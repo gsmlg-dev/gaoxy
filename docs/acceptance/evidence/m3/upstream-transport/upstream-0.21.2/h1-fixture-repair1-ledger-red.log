@@ -1,0 +1,97 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway' is dirty
+      [33mwarning:[0m variable "policy" is unused (if the variable is not meant to be used, prefix it with an underscore)
+      │
+ 1741 │   defp source_parts(policy, {:backing_field, backing}, case_id, slot) do
+      │ [33m                    ~~~~~~[0m
+      │
+      └─ integration/http_fetch_contract/managed_h1_accounting_fixture.exs:1741:21: Gaoxy.Qualification.ManagedH1AccountingFixture.source_parts/4
+
+Running ExUnit with seed: 21112026, max_cases: 1
+
+[31m
+07:18:07.930 [error] GenServer #PID<0.245.0> terminating
+** (RuntimeError) actor_in_flight
+    integration/http_fetch_contract/managed_h1_accounting_fixture.exs:127: Gaoxy.Qualification.ManagedH1AccountingFixture.ensure/2
+    integration/http_fetch_contract/managed_h1_accounting_fixture.exs:372: Gaoxy.Qualification.ManagedH1AccountingFixture.Ledger.handle_call/3
+    (stdlib 7.3.0.3) gen_server.erl:2470: :gen_server.try_handle_call/4
+    (stdlib 7.3.0.3) gen_server.erl:2499: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message (from #PID<0.244.0>): {:command, 664}
+State: %{context: nil, case: "LOCAL_LEDGER_FAULT_PROBE", model: %Gaoxy.Qualification.ManagedH1LeaseModel.State{now: 0, generations: {nil, nil, nil, nil}}, t0: nil, generations: {nil, nil, nil, nil}, actors: {nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ...}, operation: 0, fetches: 0, admission: true}
+Client #PID<0.244.0> is alive
+
+    (stdlib 7.3.0.3) gen.erl:262: :gen.do_call/4
+    (elixir 1.18.5) lib/gen_server.ex:1125: GenServer.call/3
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:37: H1FixtureLedgerFaultTest.command_result/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:16: anonymous fn/3 in H1FixtureLedgerFaultTest."test dead owned actor refusal preserves the cleanup ledger and counters"/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:50: H1FixtureLedgerFaultTest.with_owned_actor/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:12: H1FixtureLedgerFaultTest."test dead owned actor refusal preserves the cleanup ledger and counters"/1
+    (ex_unit 1.18.5) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+    (stdlib 7.3.0.3) timer.erl:599: :timer.tc/2
+    (ex_unit 1.18.5) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+[0m[31m
+07:18:07.952 [error] GenServer #PID<0.248.0> terminating
+** (RuntimeError) actor_in_flight
+    integration/http_fetch_contract/managed_h1_accounting_fixture.exs:127: Gaoxy.Qualification.ManagedH1AccountingFixture.ensure/2
+    integration/http_fetch_contract/managed_h1_accounting_fixture.exs:372: Gaoxy.Qualification.ManagedH1AccountingFixture.Ledger.handle_call/3
+    (stdlib 7.3.0.3) gen_server.erl:2470: :gen_server.try_handle_call/4
+    (stdlib 7.3.0.3) gen_server.erl:2499: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message (from #PID<0.247.0>): {:command, 664}
+State: %{context: nil, case: "LOCAL_LEDGER_FAULT_PROBE", model: %Gaoxy.Qualification.ManagedH1LeaseModel.State{now: 0, generations: {nil, nil, nil, nil}}, t0: nil, generations: {nil, nil, nil, nil}, actors: {nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, ...}, operation: 1, fetches: 0, admission: true}
+Client #PID<0.247.0> is alive
+
+    (stdlib 7.3.0.3) gen.erl:262: :gen.do_call/4
+    (elixir 1.18.5) lib/gen_server.ex:1125: GenServer.call/3
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:37: H1FixtureLedgerFaultTest.command_result/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:28: anonymous fn/3 in H1FixtureLedgerFaultTest."test second owned actor command preserves the original in-flight operation"/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:50: H1FixtureLedgerFaultTest.with_owned_actor/1
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:25: H1FixtureLedgerFaultTest."test second owned actor command preserves the original in-flight operation"/1
+    (ex_unit 1.18.5) lib/ex_unit/runner.ex:511: ExUnit.Runner.exec_test/2
+    (stdlib 7.3.0.3) timer.erl:599: :timer.tc/2
+    (ex_unit 1.18.5) lib/ex_unit/runner.ex:433: anonymous fn/6 in ExUnit.Runner.spawn_test_monitor/4
+[0m
+
+  1) test dead owned actor refusal preserves the cleanup ledger and counters (H1FixtureLedgerFaultTest)
+     [1m[30m.audit/m3-transport/h1-fixture-repair1-ledger-test.exs:11[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Process.alive?(ledger)
+     [36marguments:[0m
+
+         # 1
+         #PID<0.245.0>
+
+     [36mstacktrace:[0m
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:18: anonymous fn/3 in H1FixtureLedgerFaultTest."test dead owned actor refusal preserves the cleanup ledger and counters"/1
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:50: H1FixtureLedgerFaultTest.with_owned_actor/1
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:12: (test)
+
+
+
+  2) test second owned actor command preserves the original in-flight operation (H1FixtureLedgerFaultTest)
+     [1m[30m.audit/m3-transport/h1-fixture-repair1-ledger-test.exs:24[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Process.alive?(ledger)
+     [36marguments:[0m
+
+         # 1
+         #PID<0.248.0>
+
+     [36mstacktrace:[0m
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:30: anonymous fn/3 in H1FixtureLedgerFaultTest."test second owned actor command preserves the original in-flight operation"/1
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:50: H1FixtureLedgerFaultTest.with_owned_actor/1
+       .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:25: (test)
+
+
+Finished in 0.03 seconds (0.00s async, 0.03s sync)
+[31m2 tests, 2 failures[0m
+H1_FIXTURE_LEDGER_REGRESSION_SUMMARY %{total: 2, failures: 2, skipped: 0, excluded: 0}
+** (RuntimeError) local ledger regression failed
+    .audit/m3-transport/h1-fixture-repair1-ledger-test.exs:64: (file)
+    (elixir 1.18.5) lib/code.ex:1525: Code.require_file/2
+    (mix 1.18.5) lib/mix/tasks/run.ex:148: Mix.Tasks.Run.run/5
+    (mix 1.18.5) lib/mix/tasks/run.ex:87: Mix.Tasks.Run.run/1
+    (mix 1.18.5) lib/mix/task.ex:495: anonymous fn/3 in Mix.Task.run_task/5
+    (mix 1.18.5) lib/mix/cli.ex:107: Mix.CLI.run_task/2
+    /nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/bin/mix:2: (file)
+    (elixir 1.18.5) lib/code.ex:1525: Code.require_file/2

@@ -1,0 +1,77 @@
+{
+  "task_id": "m3_h1_fixture_astra1_recovery",
+  "assignment_mode": "diagnosis_with_authorized_documentation_only",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "gate_evidence": ["h1-fixture-repair1-baseline1.json", "h1-fixture-repair2-baseline2.json", "parent_confirmed_sol2_unsuccessful2"],
+  "status": "DONE_DIAGNOSIS",
+  "implementation_status": "NOT_STARTED",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway",
+  "branch": "codex/m3-gateway",
+  "parent_verified_head": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "canonical_plan_sha256": "01acb850d85b90c2409092d7bf25c5400ad2e519d233858d9194dbce211e6720",
+  "source_sha256": {
+    "managed_h1_accounting_fixture.exs": "937bdfd98d23a0045a2e685cca123bbde7492467bef43f85bcc3489c4a554735",
+    "managed_h1_accounting_fixture_test.exs": "09cd6382d3158666db69de784e05dc55b76b42641a2437de278b779c4ee50ac0",
+    "managed_h1_accounting_peer.py": "e997a5fcd0d7391cf56ba278e5dccf3d61b5e68fbb2bae4cbedf1c69f75e0fb2"
+  },
+  "pre_existing_edits": "Parent Git inventory: 21 tracked modified files, many untracked evidence files and all three fixture executables; none modified by this diagnosis",
+  "findings": {
+    "B05": {
+      "root_cause": "Append-created URL parent has overallocated referenced backing",
+      "probe": "h1-fixture-astra1-b05-backing-probe.log",
+      "probe_sha256": "4dd493c241a51c668b2c5e6a69f6a1febd38afd2bef45e98ab3eb05dc7445bdc",
+      "parent_probe_exit": 0,
+      "logical_vs_referenced": [[65536,131072],[131072,157286]],
+      "copied_logical_vs_referenced": [[65536,65536],[131072,131072]],
+      "proposed_fix": "Copy completed parent before slicing; retain exact backing and preparation oracles"
+    },
+    "B11_B12": {
+      "status": "BLOCKED_UPSTREAM",
+      "repository": "gsmlg-dev/http_fetch",
+      "severity": "blocker",
+      "root_cause": "SocketClient.fail sends lifecycle abort before exact Stream.error; tracker stop races error and reader attachment; unread stop exits without delivery",
+      "source_evidence": ["deps/http_fetch/lib/http/socket_client.ex:1560", "deps/http_core/lib/http/request_lifecycle.ex:321", "deps/http_core/lib/http/request_lifecycle.ex:412", "deps/http_fetch/lib/http/stream.ex:185", "deps/http_fetch/lib/http/stream.ex:325"],
+      "actual_receipts": ["B11-attempt-results.jsonl:2", "B12-attempt-results.jsonl:3"],
+      "scheduler_order_observed": false,
+      "new_minimal_public_repro": "PROPOSED_NOT_RUN",
+      "parent_owns_issue_and_todos": true,
+      "local_workaround": "FORBIDDEN"
+    },
+    "B17": {
+      "status": "BLOCKED_DESIGN_PENDING_REVIEW_AND_GO",
+      "root_cause": "Second zero-time receipt wait after request cleanup has no ordering guarantee for whole-generation retirement",
+      "original_deadline_ms": 500,
+      "original_outcome": "cleanup_pending",
+      "proposed_second_observation": {"purpose":"late_cleanup","predeclared_deadline_ms":25000,"required_result":"ok","slot":1},
+      "wait_ceiling": 2,
+      "graceful_ceiling": 1,
+      "abort_ceiling": 1,
+      "original_outcome_and_deadline_immutable": true,
+      "new_helpers_or_retries": 0,
+      "native_frontier": "unestablished"
+    }
+  },
+  "verification": {
+    "astra_static_reads_and_hashes": "PASS",
+    "parent_b05_probe": "PASS",
+    "historical_baseline2": {"tests":20,"failures":4,"skipped":0,"excluded":0,"exit":1,"selected_inputs_unchanged":1132},
+    "fresh_fixture_tests": "NOT_RUN",
+    "astra_vm_mix_network_parser_formatter_git": "NOT_RUN",
+    "json_parse": "NOT_RUN_PARENT_ONLY"
+  },
+  "acceptance": {
+    "existing_twenty_tests": "PRESERVE_ALL",
+    "B05": "exact backing rejects/copies; zero Fetch; all owned joins",
+    "B17": "D500/pending/tolerance retained, two original receipt observations, second real ok under predeclared cleanup deadline, all joins",
+    "B11_B12": "No weakening or timing workaround; wait for upstream fix and updated dependency",
+    "baseline20": "FAILED_NOT_ACCEPTED",
+    "B21": "DEFERRED_FAIL_CLOSED",
+    "N8_feature97": "BLOCKED",
+    "M3_activation": "BLOCKED"
+  },
+  "counters": {"received_sol_repairs":2,"received_sol_unsuccessful":2,"received_astra_completed_repairs":0,"assigned_astra_round":1,"completed_astra_repairs_this_assignment":0,"astra_maximum":2,"tls_chain_separate_and_frozen":true},
+  "changed_files": ["h1-fixture-astra1-recovery-design.md", "h1-fixture-astra1-recovery-design.json"],
+  "command_shutdown": "All Astra reads and documentation writes synchronous; no background process started",
+  "decisions_needed": ["Independent specification amendment review and parent executable GO", "Parent upstream blocker routing and eventual dependency update"],
+  "residual_risks": ["B17 proposed repair unimplemented and untested", "New minimal public upstream reproduction unrun", "Full baseline remains failed"]
+}

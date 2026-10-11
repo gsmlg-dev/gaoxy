@@ -1,0 +1,27 @@
+{
+  "B09": {
+    "expected_error": ":ownership_pending",
+    "operation": "Model.apply(state, {:offer_chunk, attempt, :response}) while an existing response chunk is held",
+    "prior_normalization": ":busy",
+    "reason": "A held directional chunk rejects the second offer as ownership_pending; this is not a second local reservation busy result.",
+    "source": "integration/http_fetch_contract/managed_h1_lease_model.exs:463"
+  },
+  "B11": {
+    "expected_data_bytes": 3,
+    "expected_data_sha256": "ae7c791a527d756a15cdb11de8c13feefd266a81ea9671d3e65f1e7da00e2e5e",
+    "prior_incorrect_length": 1,
+    "reason": "The declared chunk size is larger than the three remaining wire bytes, so z plus CRLF are all incomplete chunk data and no chunk terminator has been reached. Final public stream error remains closed.",
+    "source": "deps/http_core/lib/http/http1.ex:168",
+    "wire": "f repeated 4096 plus CRLF plus z plus CRLF, then EOF"
+  },
+  "actual_test_only_red_cases": 0,
+  "assertion_policy": "Exact public outcome and length/digest strengthened; no parser delivery segmentation assertion added.",
+  "functional_acceptance": "NOT_RUN",
+  "observed_utc": "2026-10-10T22:56:49.864401+00:00",
+  "prior_plan": "h1-fixture-plan-before-oracle-amendments.md",
+  "prior_plan_sha256": "7628dedc98f9c62cb136116500466e212562848d502c99a4ecacca7c53bcee46",
+  "status": "SOURCE_BACKED_ORACLE_AMENDMENTS_PENDING_INDEPENDENT_REVIEW",
+  "test_only_red_preserved_source": "h1-fixture-test-only-red-source.exs",
+  "test_only_red_receipt": "h1-accounting-fixture-red.json",
+  "test_only_red_source_sha256": "eac26726b5189b395190283b65c8f92be8befb79652ce26219a36f38ce5c6862"
+}

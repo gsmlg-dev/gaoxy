@@ -1,0 +1,132 @@
+{
+  "assignment": "direct independent changed-byte tooling-only Sol review",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "astra_gate_evidence": "Parent repair1 failed independent review with five findings. Parent repair2 again fails the same complete-owned-inventory and primary-exit-preservation boundaries, despite fresh freeze/AST/input checks passing. Cumulative two unsuccessful repair-and-review rounds meet the retained gate; no third Sol repair is attempted.",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "bounded_escalation_question": "How should the collector retain a complete root/directory identity and guarantee a final actual-exit receipt when a required post input is missing? Limit recovery to these two collector gaps, preserve all passing tooling/source work, source oracles and immutable reports, then re-review changed bytes before execution.",
+  "branch": "codex/m3-gateway",
+  "changed_files": [
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-tooling-repair2-review.md",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-tooling-repair2-review.json"
+  ],
+  "code_quality": "NO_ADDITIONAL_FINDINGS_AFTER_SPECIFICATION_REVIEW",
+  "command_shutdown": "All own commands completed synchronously; no owned background process was started or remains.",
+  "commands": "Scoped cat/nl/sed/rg and Python-B JSON/AST/hash/cached tar reads; reviewed scripts never imported/executed. One zsh wildcard read search had a normal no-match expansion error and was replaced by direct scoped reads. Only the two authorized review reports were written. No Git, Nix query/hash execution, VM, Mix, formatter, peer, network, dependency action or delegation.",
+  "counters": {
+    "received_astra_rounds": 0,
+    "separate_fixture_sol_repairs": 1,
+    "separate_fixture_unsuccessful_sol_repairs": 0,
+    "separate_spec_astra_rounds": 0,
+    "separate_spec_sol_repairs": 2,
+    "separate_spec_unsuccessful_sol_repairs": 1,
+    "tooling_astra_recovery_rounds": 0,
+    "tooling_sol_repair_rounds": 2,
+    "tooling_unsuccessful_sol_repair_rounds_after_this_review": 2
+  },
+  "decisions_needed": "Parent validates SOL_REPEATED_FAILURE and arranges bounded Astra collector recovery. No user/product decision is missing.",
+  "findings": [
+    {
+      "evidence": "The new pre-copy guard rejects symlinked Mix/Hex roots, unlisted directories and nonempty HEX_HOME. Post collection still calls tree(hex_home), which records only regular-file paths/hashes. It records no directories, no root real path/type, and merely resolves directory symlinks without adding them to the returned map. For an initially empty HEX_HOME, adding an unlisted empty directory or replacing the root with a symlink to an empty external directory produces the same empty map. hex_inventory_match remains true, so the new before/after guard cannot enforce the reviewed complete owned-directory identity after the command. The same file-only collector representation also omits empty tool directories.",
+      "id": "TLS95-REPAIR2-01",
+      "location": ".audit/m3-tls95-collector.py:22-30,145-147,212,222-223,233",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Have the post inventory preserve and validate root/ancestor ownership and every file/directory/symlink entry, including empty directories. Require HEX_HOME itself to remain the same real owned directory and empty after execution. Apply the complete inventory to the owned Mix/tool root, retaining precise failure evidence without deleting unknown files.",
+      "retained_finding": "TLS95-REPAIR1-02",
+      "status": "OPEN",
+      "title": "Post-run Hex inventory does not bind directories or the owned root identity"
+    },
+    {
+      "evidence": "Repair2 correctly wraps protected/source/build/tool/Hex/peer post operations and record parsing with separate error capture. Final receipt construction still evaluates collector_sha256 = sha(Path(__file__)) outside collect(). The collector source is itself a frozen input. If it is unavailable after execution, protected() records the missing-input error and all other collections can finish, but this final unguarded read raises before save(name.json). The actual code from process.wait is then absent from the final receipt, reproducing the retained failure-preservation gap for a required missing-file identity case. AST inspection independently confirms this is a direct sha call in the receipt dictionary, not a guarded operation.",
+      "id": "TLS95-REPAIR2-02",
+      "location": ".audit/m3-tls95-collector.py:189-199,214-228; especially227",
+      "phase": "specification compliance",
+      "priority": "P1",
+      "required_change": "Capture the collector and any other required final metadata/log identity reads through the independent post collector, retaining null/error values where unavailable. Construct the final receipt from already captured data and preserve the actual process exit plus distinct post failures. Final receipt writing must not depend on rereading an input already diagnosed missing.",
+      "retained_finding": "TLS95-REPAIR1-03",
+      "status": "OPEN",
+      "title": "An unguarded collector hash can still suppress the actual-exit receipt"
+    }
+  ],
+  "finite_findings_count": 2,
+  "freeze_receipt_sha256": "35e04013a1bbd3a86bb9848ffed143b514e14157a5cb061c0c287c2745a9c38d",
+  "historical_report_sha256": {
+    "tls95-repaired-tooling-review.json": "ff6b661de976b3e3a81a1eba426d4de10e75f7ce8d555882b5d437aac7cc5a67",
+    "tls95-repaired-tooling-review.md": "f62e44c0d865d7ce82381961b35efff1d4d9867a5b8426337983ea19292bdfd1",
+    "tls95-runtime-tooling-review.json": "7afc5cf8c7c2f9e8acdb5b831ebced433f93162ff6f1c99bfb567257112dbd75",
+    "tls95-runtime-tooling-review.md": "aa30c57fe98d5fb71410a03dacdb5b88bfd00bad69eff19edfaf04fe5df8afb1"
+  },
+  "observed_utc": "2026-10-10T21:51:49.320057+00:00",
+  "preserved_initial_findings": "Initial TLS95-TOOL-01..05 FAIL and repair1 TLS95-REPAIR1-01..05 FAIL reports remain immutable; closed static portions retained, remaining complete-inventory/failure-receipt gaps are reported without source repair.",
+  "remaining_risks": "Do not admit a tooling PASS file or run materialization/build/runtime qualification until bounded recovery and independent changed-byte review pass. Runtime/native identities and fixture behavior remain unqualified by this static tooling review.",
+  "repair1_finding_disposition": {
+    "TLS95-REPAIR1-01": {
+      "evidence": "Materializer69-71 validates PASS acquisition, cached archive identity and exact installed .hex against both receipt and reviewed inventory before first preserve at112-113.",
+      "status": "CLOSED_STATIC"
+    },
+    "TLS95-REPAIR1-02": {
+      "evidence": "Collector53-95 validates complete initial Mix/Hex roots/ancestors/allowed directories, cached122-file archive and empty Hex home before copying; post file-only identity remains TLS95-REPAIR2-01.",
+      "status": "PARTIAL"
+    },
+    "TLS95-REPAIR1-03": {
+      "evidence": "Collector189-213 independently captures reviewed post operations, but unguarded final collector input read remains TLS95-REPAIR2-02.",
+      "status": "PARTIAL"
+    },
+    "TLS95-REPAIR1-04": {
+      "evidence": "Profiler60-85 resolves selected tools to Nix store roots, records hidden wrappers, queries full requisite closures and compares actual NAR hashes to registered SHA256 for every returned store path. Cached Hex122-file map is checked independently before copying. Python imported/native identities and ELF closure remain captured. Actual selected paths/closure/NAR success must be validated at execution; no native ABI/memory claim is supplied.",
+      "status": "CLOSED_STATIC_FOR_SELECTED_TOOL_COLLECTION"
+    },
+    "TLS95-REPAIR1-05": {
+      "evidence": "Collector18-20 exclusively creates every JSON sidecar;137 rejects names with any prior final/log/partial sidecar;179 exclusively creates raw log.",
+      "status": "CLOSED_STATIC"
+    }
+  },
+  "review_inputs_sha256": {
+    ".audit/m3-tls95-baseline-materialize.py": "572bc1ba3f615f390d39443438f18e084b620b1e1e93b6eb9b67e8459a09440a",
+    ".audit/m3-tls95-collector.py": "4c4b291c169856841fd0d9d6bc3c3cb4ac36a3001231504b7c53f150ca8d92f7",
+    ".audit/m3-tls95-native-profile.py": "c9cd8fd47cd9f61778f069b3bcfd43c0be37acc3a385028022b8a1d7d6cde46c",
+    ".audit/m3-tls95-telemetry-acquire.py": "16a1f10ff713d9b3df38dc1bd8594a20dfb83c0ea31a96f2343d1e9915264c84",
+    ".audit/m3-transport/tls95-build-tool-inputs.json": "8ab8fb3819a073ffea09d74a0e471226f730021e71d02305d73b85d99eda4bbb",
+    ".audit/m3-transport/tls95-fixture-inputs.json": "060116f4767386ad829df3910c879aed9fdbd2048dd43dd30ce822c90b12d60a",
+    ".audit/m3-transport/tls95-runtime-identity.exs": "819be77f306c35f8546f7c8b2d665186bc6515d4372a228b402e863f1e18a7f1",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-registration-inventory.json": "d9d76bfd76bd64c6042d9d7b00c2f6eda8e2f2da010a84a6fb577aa7010957d0",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-telemetry-acquisition.json": "7dcb7ae5657647a1e1cbbd200bb9bd40801c5d7ce4ff173cba51800fdb9d44aa",
+    "docs/plans/m3-tls-tracking-qualification.md": "fe08cabba0590a9e1c8f08d8147b46462215b939d4326eb356af3b02d60d7bac",
+    "integration/http_fetch_contract/managed_peer.py": "319e9c9f2832ddf2ab9cc84aedd519bfe33f36e2152d24bb47bf5fcde8169d79",
+    "integration/http_fetch_contract/managed_tls_tracking_peer.py": "5fba2a96dc3274f7b9ef3f1e2a893d76ab43f7a47d633e355254fd25ed715406",
+    "integration/http_fetch_contract/managed_tls_tracking_probe.exs": "3f51ec383ffabe16ae3d5a9c223505eedce37282bcb14850265a7b8880e70074",
+    "integration/http_fetch_contract/pooled_completion_probe.exs": "f681723ff58754cb6169d0b42fb681a8439eeaa6c7ec7e94c752894405ce1e30",
+    "integration/http_fetch_contract/upstream_peer.py": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f"
+  },
+  "review_sequence": [
+    "Verify15 frozen hashes",
+    "Specification compliance against initial and repair1 reviews/current plan",
+    "Code quality"
+  ],
+  "review_verdict": "FAIL",
+  "scope": "Parent-authored materializer/collector/native profiler/acquisition and actual same-VM wrapper only. Fixture author makes no independent fixture verdict; fixture hashes establish freeze consistency only.",
+  "specification_compliance": "FAIL",
+  "status": "ESCALATE_TO_ASTRA",
+  "task_id": "m3_tls95_tooling_repair2_review",
+  "task_status": "DONE_REVIEW",
+  "verification": {
+    "ABI_retained_bytes_lifetime_M3": "NOT_QUALIFIED",
+    "NAR_verification": "NOT_RUN: source-reviewed only",
+    "baseline_RED": "NOT_RUN",
+    "candidate_GREEN": "NOT_RUN",
+    "compilation": "NOT_RUN",
+    "compiler_tool_input_hashes": "PASS122/122 exact cached Hex archive file inventory",
+    "final_receipt_AST": "PASS evidence: collector_sha256 field is direct unguarded sha(Path(__file__))",
+    "fixture_independent_review": "OUT_OF_SCOPE",
+    "frozen_hashes": "PASS15/15 freshly checked at start and immediately before report creation",
+    "inventory_inputs": "PASS63/63 current reviewed hashes",
+    "materialization": "NOT_RUN",
+    "python_AST": "PASS4/4 parsed in memory without imports or reviewed-script execution",
+    "same_VM": "NOT_RUN",
+    "telemetry_archive": "PASS exact cached raw outer/inner checksums",
+    "telemetry_hex": "PASS exact receipt/inventory/current file",
+    "telemetry_shipped": "PASS16/16 archive/receipt/current source"
+  },
+  "why_not_another_sol_round": "The same integrity/failure-evidence seams remain incomplete after two parent Sol repair rounds. Retained budget forbids another Sol repair; parent must validate the gate and arrange bounded Astra recovery rather than resetting counters.",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

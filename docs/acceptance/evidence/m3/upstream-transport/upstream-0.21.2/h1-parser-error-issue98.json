@@ -1,0 +1,78 @@
+{
+  "body_matches_submitted": true,
+  "body_sha256": "d9d3c4051c1731acec031a9caa1bb5c8e16b40b205ad72a294907514cce2dd7e",
+  "branch": "codex/m3-gateway",
+  "control_issue97": {
+    "comments": [
+      {
+        "author": {
+          "login": "gsmlg"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "Automated fix not possible with the current runtime contract and supplied certificates. This issue remains open and blocking for the requesting repo's numerical accounting/production activation.\n\nThe architecture review checked the cited OTP 28.5.0.7 sources: `erl_hl_timer.c:1098\u20131126` sets TIMED_OUT before expiry allocation/enqueueing; `1881\u20131883` queues cross-scheduler cancellation. `erl_proc_sig_queue.c:10644\u201310654` defers signal-buffer release through thread progress/aux work, and `erl_proc_sig_queue.h:1964\u20131973` frees at final reference-count zero. `gen.erl:251\u2013280` deactivates a timed-out call's reply alias without acknowledging target consumption or native reclamation. Public demonitor/trace-delivery guarantees do not bridge these reclamation edges.\n\nNeither request completion, scope retirement, additional DOWN waits, mailbox inspection nor zero snapshots can certify the requested native/deferred frontier. No history-independent envelope bound has been established here, and this is not evidence of a memory leak. Implementing a receipt based on those observations would incorrectly claim the missing guarantee.\n\nResolution needs either a source/ABI/profile-bound conservative envelope covering these native objects and TLS caller/delivery/tracking metadata, or runtime support for an acknowledged reclamation frontier. Missing/mismatched certification must fail closed in that future contract. This checkout's local OTP 28.5.0.5 / ERTS 16.4.0.5 also differs from the requesting profile's OTP 28.5.0.7 / ERTS 16.4.0.6.\n\nWe are continuing the independent functional fix in #98; that fix and its release do not resolve #97 or authorize managed production activation.\n",
+        "createdAt": "2026-10-11T03:25:51Z",
+        "id": "IC_kwDOPU6rnM8AAAABa-L_Ow",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gsmlg-dev/http_fetch/issues/97#issuecomment-6105005883",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 97,
+    "state": "OPEN",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/97"
+  },
+  "creation_reconciliation": "Original gh issue create handle unavailable after continuation; authoritative exact-title/body GitHub query confirms issue98, no duplicate create.",
+  "functional_B11_B12": "BLOCKED_UNTIL_CONTAINING_DEPENDENCY_UPDATED_AND_ORIGINAL_CASES_REQUALIFIED",
+  "installed_version": "0.21.2",
+  "issue": {
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-gateway`\n\n**Severity:** blocker for M3 managed H1 parser/trailer functional qualification (B11/B12). Managed production activation remains disabled. We are stopping these cases without a local timing workaround or weakened error assertions.\n\nWe need parser failures on a streamed H1 response to remain observable through the supported response-stream API, including when the first reader attaches after the response head. The installed coordinated HTTP Fetch 0.21.2 cohort can terminate the public stream through lifecycle cancellation before delivering its parser error. A late reader can receive no terminal response; an already attached reader can race to generic `:aborted` instead of the original parser reason.\n\nAudited release: seven packages at 0.21.2, tag `f677ca49519a007a7a551a5a515127c0f29d8ae6`, tree `664a2a0de2bd4820017599b2d25f62bc7dcf63b0`. Environment: Elixir 1.18.5, OTP 28.5.0.7 / ERTS 16.4.0.6, Linux x86_64, `+S 2:2`. Package provenance is `deps/http_fetch/mix.exs` (`@source_url https://github.com/gsmlg-dev/http_fetch`); the lifecycle module comes from the coordinated `http_core` package.\n\n**Minimal public reproduction**\n\n1. Open one supported `HTTP.ManagedTransport` scope with explicit H1, finite deadlines and connection/request limits. Start a loopback independent peer.\n2. Call `HTTP.fetch` with that scope and `stream_response: true`. Register the original `HTTP.Promise.completion(promise)` before `HTTP.Promise.await` and retain that original handle.\n3. The peer sends `HTTP/1.1 200 OK\\r\\nTransfer-Encoding: chunked\\r\\nConnection: close\\r\\n\\r\\n`. Return the public response head before attaching its reader.\n4. After the controller receives the head, the peer emits 8193 ASCII `0` bytes without CRLF and holds the socket open. This must fail as `:line_too_long`.\n5. Await the original completion with a finite timeout before first reader attachment, then attach with the supported `{:read_chunk, self(), :ack}` stream message and wait finitely for its terminal error.\n6. The current source permits completion `:ok` after cancellation stops the unread stream; the subsequently attached reader receives no terminal error. With an earlier reader, lifecycle cancellation can race with the parser error and expose `:aborted`.\n\nThe same race affects forbidden or excess H1 response trailers. No private-process monitoring, process suspension, source patch or artificial reader-order barrier is needed to expose the defect.\n\n**Source ordering**\n\n- `apps/http_fetch/lib/http/socket_client.ex:1558-1575`: `fail/2` calls `HTTP.RequestLifecycle.abort(...)` before `HTTP.Stream.error(stream_pid, reason)`.\n- `apps/http_core/lib/http/request_lifecycle.ex:409-412`: cancellation of a managed response stream sends `{:request_lifecycle_stop, :aborted}`.\n- `apps/http_fetch/lib/http/stream.ex:194-202`: lifecycle-stop flushes an error and returns `:ok` unconditionally. If no reader is attached, the stream exits with no consumer terminal message. Its later parser-error message cannot be delivered.\n\nThese messages originate from different senders, so their order is not established by the order of calls in `fail/2`. A requester-side reader barrier does not establish the ordering of lifecycle stop and parser error.\n\n**Actual requesting-repo evidence**\n\nOur unchanged-oracle 20-case baseline executed 20 tests, with 4 failures, exit 1 and zero skips/exclusions. B11 times out consuming the 8193-byte line case; B12 times out consuming forbidden trailers, while a preceding excess-trailer case did deliver its exact error. B05/B17 are distinct local fixture issues and are being handled separately. All 1132 selected source/build inputs were unchanged. Owned fixture actors and peers were stopped/joined, but public attempt cleanup proof for the failed cases did not pass.\n\nPreserved artifacts in `docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/`:\n\n- `h1-fixture-repair2-baseline2.json`, `.log`, `-analysis.json`;\n- `h1-fixture-repair2-baseline2-artifacts/B11-result.json` and `B12-result.json`, plus their attempt/generation rows;\n- baseline log SHA256 `993d6e494225d014381d39fbf10a6144af4dc8bec4fa42dfae5f4b9ca8063cc3`.\n\n**Expected behavior and upstream acceptance**\n\nPreserve the original parser error for both already attached and late first response readers, with exactly one terminal observation and bounded cleanup. A malformed response must not become an unobservable dead stream or a generic abort merely because internal lifecycle cleanup won a race. Add deterministic regressions for the line limit and malformed response trailers, with reader attachment before and after failure; verify original completion and scope retirement separately. Publish the fix in the coordinated dependency release so the requesting repo can update and requalify its original cases.\n",
+    "closedAt": "2026-10-11T03:43:28Z",
+    "labels": [
+      {
+        "color": "1D76DB",
+        "description": "Requests from internal repositories",
+        "id": "LA_kwDOPU6rnM8AAAACnfcyyw",
+        "name": "internal request"
+      }
+    ],
+    "number": 98,
+    "state": "CLOSED",
+    "title": "[internal] H1 parser errors race lifecycle cancellation and disappear before stream readers attach",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/98"
+  },
+  "issue_type_and_closer": {
+    "closedAt": "2026-10-11T03:43:28Z",
+    "issueType": {
+      "name": "Bug"
+    },
+    "number": 98,
+    "state": "CLOSED",
+    "timelineItems": {
+      "nodes": [
+        {
+          "closer": {
+            "__typename": "PullRequest",
+            "mergeCommit": {
+              "oid": "263858903a586f31d1f25da41d444d718e497695"
+            },
+            "number": 99,
+            "url": "https://github.com/gsmlg-dev/http_fetch/pull/99"
+          },
+          "createdAt": "2026-10-11T03:43:29Z"
+        }
+      ]
+    }
+  },
+  "latest_github_release": [
+    {
+      "isPrerelease": false,
+      "publishedAt": "2026-10-10T20:33:44Z",
+      "tagName": "v0.21.2"
+    }
+  ],
+  "observed_utc": "2026-10-11T04:09:02.106039+00:00",
+  "requesting_repo": "gsmlg-opt/gaoxy"
+}

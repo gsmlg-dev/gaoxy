@@ -1,0 +1,114 @@
+--- wrapper-before.exs
++++ wrapper-after.exs
+@@ -137,13 +137,101 @@
+     records
+   end
+ 
++  def application_manifest(app) do
++    {paths, removed_path?} =
++      case :code.lib_dir(app, :ebin) do
++        ebin when is_list(ebin) ->
++          {[Path.join(to_string(ebin), "#{app}.app")], false}
++
++        {:error, :bad_name} ->
++          # Mix can remove code paths without unloading application metadata or
++          # code. Recover only from the running OTP and the frozen copied archive.
++          otp_root = real(:code.root_dir())
++          version = Application.spec(app, :vsn) |> to_string()
++          otp_path = Path.join([otp_root, "lib", "#{app}-#{version}", "ebin", "#{app}.app"])
++          otp = if File.exists?(otp_path), do: [within!(otp_path, otp_root)], else: []
++
++          archives =
++            if app == :hex do
++              true = is_nil(System.get_env("MIX_ARCHIVES"))
++              archive_root = real(Path.join(System.fetch_env!("MIX_HOME"), "archives"))
++
++              Path.wildcard(Path.join(archive_root, "*/*/ebin/hex.app"))
++              |> Enum.map(&within!(&1, archive_root))
++            else
++              []
++            end
++
++          {otp ++ archives, true}
++      end
++
++    path = manifest!(app, paths)
++
++    if removed_path? do
++      for mod <- Application.spec(app, :modules), {:file, origin} <- [:code.is_loaded(mod)] do
++        case origin do
++          :preloaded ->
++            :ok
++
++          origin when is_list(origin) and origin != [] ->
++            true = real(origin) == Path.join(Path.dirname(path), "#{mod}.beam")
++
++          _ ->
++            raise "Application module has no immutable disk origin: #{mod}"
++        end
++      end
++    end
++
++    path
++  end
++
++  def manifest!(app, paths) do
++    path =
++      case paths |> Enum.map(&real/1) |> Enum.uniq() do
++        [path] -> path
++        candidates -> raise "Expected one manifest for #{app}, got: #{inspect(candidates)}"
++      end
++
++    {:ok, [{:application, ^app, disk}]} = :file.consult(String.to_charlist(path))
++    true = Keyword.keyword?(disk)
++    true = length(Keyword.keys(disk)) == length(Enum.uniq(Keyword.keys(disk)))
++
++    # Public Application.spec/1 omits mutable env and exposes these OTP defaults.
++    # Environment remains independently hashed in runtime/0.
++    defaults = [
++      description: ~c"",
++      id: ~c"",
++      vsn: ~c"",
++      modules: [],
++      maxP: :infinity,
++      maxT: :infinity,
++      registered: [],
++      included_applications: [],
++      optional_applications: [],
++      applications: [],
++      mod: [],
++      start_phases: :undefined
++    ]
++
++    loaded = Application.spec(app)
++    true = is_list(loaded)
++
++    for {key, value} <- loaded do
++      unless value == Keyword.get(disk, key, Keyword.fetch!(defaults, key)) do
++        raise "Loaded application descriptor differs from #{path}: #{key}"
++      end
++    end
++
++    path
++  end
++
+   def runtime do
+     started = Application.started_applications() |> Enum.map(&elem(&1, 0)) |> Enum.sort()
+     loaded = Application.loaded_applications() |> Enum.map(&elem(&1, 0)) |> Enum.sort()
+ 
+     applications =
+       Enum.map(loaded, fn app ->
+-        path = :code.lib_dir(app, :ebin) |> to_string() |> Path.join("#{app}.app") |> real()
++        path = application_manifest(app)
+ 
+         %{
+           application: Atom.to_string(app),
+@@ -190,7 +278,7 @@
+ 
+     %{
+       elixir: System.version(),
+-      mix: Mix.version(),
++      mix: Application.spec(:mix, :vsn) |> to_string(),
+       otp: to_string(:erlang.system_info(:otp_release)),
+       erts: to_string(:erlang.system_info(:version)),
+       architecture: to_string(:erlang.system_info(:system_architecture)),

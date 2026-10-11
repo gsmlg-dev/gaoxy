@@ -1,0 +1,248 @@
+{
+  "artifacts": {
+    "current_collector": {
+      "bytes": 5691,
+      "path": ".audit/m3-h1-scoped-collector.py",
+      "sha256": "8a2ce4c4993c15fffe88ee327c3d52f079427634a565a61a8e194af70387ef42"
+    },
+    "parent_green_receipt": {
+      "bytes": 1171,
+      "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-repair1-green.json",
+      "sha256": "afebafdcad211cf4a86bdf34c4649969fa62e16d928a7f05c895dddf217438fe"
+    },
+    "parent_red_receipt": {
+      "bytes": 1008,
+      "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-red.json",
+      "sha256": "2cfa6558c5d4547cf9669feb7b17b03413a298bce351ccd11b82a5c1f0c3df66"
+    },
+    "red_source": {
+      "bytes": 5689,
+      "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-red-source.py",
+      "sha256": "faf24854bf2cfb35f99a33b8ac4a57259f38c28a21b7fc7b3ebd58d614bfbce8"
+    },
+    "repaired_preserved_source": {
+      "bytes": 5691,
+      "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-scoped-run-collector-repair1.py",
+      "sha256": "8a2ce4c4993c15fffe88ee327c3d52f079427634a565a61a8e194af70387ef42"
+    }
+  },
+  "assignment": "direct independent bounded review",
+  "astra_gate": null,
+  "baseline": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "branch": "codex/m3-gateway",
+  "changed_files": [
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-independent-review.md",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-collector-peer-independent-review.json"
+  ],
+  "code_quality_verdict": "PASS",
+  "command_shutdown": "All reviewer commands synchronous and completed; no background process started.",
+  "counters": {
+    "h1_collector": {
+      "astra": 0,
+      "provenance": "Green receipt and assignment",
+      "sol": 1,
+      "sol_unsuccessful": 0
+    },
+    "received_astra_repairs": 0,
+    "reviewer_repairs": 0,
+    "tls_chain": {
+      "astra": 2,
+      "provenance": "Assignment; current collector preserves same hard-coded TLS counters",
+      "sol": 2,
+      "sol_unsuccessful": 2,
+      "state": "EXHAUSTED/BLOCKED"
+    }
+  },
+  "decisions_needed": [],
+  "exact_byte_diff": [
+    {
+      "bytes": "_",
+      "new_offset_zero_based": 2426,
+      "old_offset_zero_based": 2426,
+      "operation": "insert"
+    },
+    {
+      "bytes": "_",
+      "new_offset_zero_based": 2440,
+      "old_offset_zero_based": 2439,
+      "operation": "insert"
+    }
+  ],
+  "findings": [],
+  "identity_verification": "Read .git worktree pointer, HEAD, commondir and branch ref directly; no Git command.",
+  "limits": [
+    "Accepts only intended filename selection under existing command-line delimiters.",
+    "Process-name filtering does not establish process ownership or a general proof of no leaked processes.",
+    "No actual H1 baseline, TLS case, VM runtime or native numerical accounting acceptance established.",
+    "Parent green receipt independent_review remains PENDING as preserved evidence; this report supplies a separate verdict without rewriting it.",
+    "Source hashes bind this exact collector; fresh parent execution remains required before broader acceptance."
+  ],
+  "new_pattern": "(?:^|/| )managed_(?:h1_accounting_|tls_tracking_|)peer\\.py(?: |$)",
+  "old_pattern": "(?:^|/| )managed_(?:h1_accounting|tls_tracking|)peer\\.py(?: |$)",
+  "original_bytes": 5689,
+  "repaired_bytes": 5691,
+  "review_order": [
+    "SPEC",
+    "CODE_QUALITY"
+  ],
+  "reviewed_utc": "2026-10-10T23:13:18.764811+00:00",
+  "root_cause": "Missing trailing underscores in h1_accounting and tls_tracking alternatives caused actual managed_h1_accounting_peer.py and managed_tls_tracking_peer.py names to be missed.",
+  "scope": "Only the H1 parent collector process-name inventory repair and preserved red/green evidence.",
+  "source_line": 58,
+  "spec_verdict": "PASS",
+  "status": "DONE",
+  "task_id": "m3_h1_collector_peer_review",
+  "untouched": [
+    "H1 fixture runtime",
+    "ignored TLS runtime wrapper",
+    "TLS driver/collector",
+    "TLS recovery budget",
+    "native numerical accounting",
+    "unrelated active fixture3 sources"
+  ],
+  "verification": {
+    "Git_commands": "NOT_RUN",
+    "Mix": "NOT_RUN",
+    "VM": "NOT_RUN",
+    "actual_fixture_cases": 0,
+    "ast_equality": "PASS after normalizing only the changed regex constant",
+    "ast_parse": "PASS for both preserved sources and current source",
+    "collector_import_or_execution": "NOT_RUN",
+    "command_family": "Synchronous python3 inline static scripts using pathlib, ast, hashlib, json, difflib and re only; separate scoped rg/cat/pwd reads.",
+    "dependency_operations": "NOT_RUN",
+    "exact_source_diff": "PASS: exactly two underscore insertions, one line; no other byte changes",
+    "formatter": "NOT_RUN",
+    "independent_regex_probes": {
+      "cases": 15,
+      "core_six_old_pattern_failures": [
+        "h1",
+        "tls"
+      ],
+      "failures": 0,
+      "input_provenance": "Independent reviewer inputs. Parent receipts omit original input strings; these are reconstructed filename cases, not a claim of identical parent inputs.",
+      "results": [
+        {
+          "expected": true,
+          "id": "h1",
+          "input": "123 1 python3 /tmp/managed_h1_accounting_peer.py --port 1",
+          "red_actual": false,
+          "repaired_actual": true
+        },
+        {
+          "expected": true,
+          "id": "tls",
+          "input": "124 1 python3 /tmp/managed_tls_tracking_peer.py --port 1",
+          "red_actual": false,
+          "repaired_actual": true
+        },
+        {
+          "expected": true,
+          "id": "historical",
+          "input": "125 1 python3 /tmp/managed_peer.py",
+          "red_actual": true,
+          "repaired_actual": true
+        },
+        {
+          "expected": false,
+          "id": "lookalike",
+          "input": "126 1 python3 /tmp/unmanaged_h1_accounting_peer.py",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "extension",
+          "input": "127 1 python3 /tmp/managed_h1_accounting_peer.py.bak",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "different",
+          "input": "128 1 python3 /tmp/unrelated_peer.py",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": true,
+          "id": "bare_h1",
+          "input": "managed_h1_accounting_peer.py",
+          "red_actual": false,
+          "repaired_actual": true
+        },
+        {
+          "expected": true,
+          "id": "bare_tls",
+          "input": "managed_tls_tracking_peer.py",
+          "red_actual": false,
+          "repaired_actual": true
+        },
+        {
+          "expected": true,
+          "id": "space_historical",
+          "input": "129 1 python3 managed_peer.py --port 1",
+          "red_actual": true,
+          "repaired_actual": true
+        },
+        {
+          "expected": false,
+          "id": "extra_prefix",
+          "input": "130 1 python3 /tmp/xmanaged_tls_tracking_peer.py",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "extra_suffix",
+          "input": "131 1 python3 /tmp/managed_tls_tracking_peer.pyx",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "unescaped_dot",
+          "input": "132 1 python3 /tmp/managed_h1_accounting_peerXpy",
+          "red_actual": false,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "obsolete_h1_typo",
+          "input": "133 1 python3 /tmp/managed_h1_accountingpeer.py",
+          "red_actual": true,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "obsolete_tls_typo",
+          "input": "134 1 python3 /tmp/managed_tls_trackingpeer.py",
+          "red_actual": true,
+          "repaired_actual": false
+        },
+        {
+          "expected": false,
+          "id": "directory_only",
+          "input": "135 1 python3 /tmp/managed_h1_accounting_peer.py/other",
+          "red_actual": false,
+          "repaired_actual": false
+        }
+      ]
+    },
+    "network": "NOT_RUN",
+    "parent_reported_execution": {
+      "actual_peer_process_inventory": [],
+      "green_cases": 6,
+      "green_exit": 0,
+      "green_failures": 0,
+      "inventory_provenance": "Preserved parent green receipt only; reviewer did not execute ps.",
+      "provenance": "Assignment reports command exits. Red exit1 is also recorded as prior_red_exit in green JSON; green JSON does not contain its own exit field.",
+      "red_cases": 6,
+      "red_exit": 1,
+      "red_failures": 2
+    },
+    "receipt_consistency": "PASS: six results each, source hashes and regex match, red failures2 and green failures0 recomputed",
+    "source_copy_match": "PASS: repaired preserved source equals current ignored collector byte for byte",
+    "verification_exit": 0
+  },
+  "workspace": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

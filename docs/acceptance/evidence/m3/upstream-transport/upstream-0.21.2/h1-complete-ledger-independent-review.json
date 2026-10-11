@@ -1,0 +1,248 @@
+{
+  "assignment": "direct independent finite static review",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "baseline_source": "parent handoff; no Git operation performed",
+  "branch": "codex/m3-gateway",
+  "command_shutdown": "All own commands completed synchronously; no background process started; other jobs untouched",
+  "decisions_needed": "Parent routes typed Feature/internal request/blocker to upstream and adds actual-number TODO; no numerical refund/activation until certificates and fresh qualification.",
+  "false_release_traces": [
+    {
+      "id": "T1",
+      "missing": "N8 selected executor/profile and bounded pre-enqueue+queue+canceled cleanup overlap",
+      "refuted_inference": "cancel_timer(false)/removed logical entry => expiry consumed and native timer/message reclaimed",
+      "source": [
+        "timer:1089-1147",
+        "timer:1810-1888",
+        "pool:104-118,202-212"
+      ],
+      "source_hash": {
+        "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/emulator/beam/erl_hl_timer.c": "3b80a2872c32e2b719375a7b342215f1ba102d36b2f09e33eceabd72fffdb254",
+        "deps/http_runtime/lib/http/http1/pool.ex": "d7ef7edbd880fed75ebc1f1b043fba47524af658d6b7e62a4c78ebb0a7542978"
+      },
+      "steps": [
+        "Timer executor CAS ACTIVE->TIMED_OUT.",
+        "Executor pauses before erts_alloc_message/erts_queue_message.",
+        "Pool removes entry and cancel_timer sees non-ACTIVE; false is allowed.",
+        "Timer executor later enqueues {:expire,token}."
+      ]
+    },
+    {
+      "id": "T2",
+      "missing": "N8 complete same-sender logical-order theorem plus native/refcount/thread-progress overlap ceiling; ACK ordering may bound target signals, not established arbitrary-repeat leak",
+      "refuted_inference": "ACK + demonitor flush => every native monitor/buffer object globally reclaimed",
+      "source": [
+        "stream:84-114,214-228",
+        "signal:2930-2968",
+        "signal:10581-10660",
+        "signalh:1957-1977"
+      ],
+      "source_hash": {
+        "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/emulator/beam/erl_proc_sig_queue.c": "2d5cc2ce101428130ccb284cdd25e78993cebd34e6dc3a49afa26837903720db",
+        "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/erts/emulator/beam/erl_proc_sig_queue.h": "ca6c71cbfd860260cd218f2443d176000ff216bc0f8941ace4a7f3debb485168",
+        "deps/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05"
+      },
+      "steps": [
+        "chunk caller monitors stream and sends current chunk.",
+        "Stream delivers; reader/send credit eventually yields ACK.",
+        "Caller receives ACK and demonitor[:flush], then is permitted another chunk.",
+        "Native demonitor is separately routed; deinstalled signal arrays can wait thread progress/refcount zero."
+      ]
+    },
+    {
+      "id": "T3",
+      "missing": "N8 each edge sender/target/order and deferred reclamation; canceled reply is not target request removal",
+      "refuted_inference": "timeout alias deactivation or a different-sender later reply => all old calls/native work consumed",
+      "source": [
+        "gen:251-280",
+        "life:386-395",
+        "pool:16-31"
+      ],
+      "source_hash": {
+        "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/lib/stdlib/src/gen.erl": "b828697b055865df24aad48ec4cd7f23821fa54a7aa2baa0408a444a5d0d04be",
+        "deps/http_core/lib/http/request_lifecycle.ex": "7ea6f109aea3c32d556cf02a957cc56f8075a4c89d678645338f789b4edb5a37",
+        "deps/http_runtime/lib/http/http1/pool.ex": "d7ef7edbd880fed75ebc1f1b043fba47524af658d6b7e62a4c78ebb0a7542978"
+      },
+      "steps": [
+        "Caller sends finite GenServer.call request with alias monitor.",
+        "Caller timeout deactivates alias/demonitors; target can still have queued request.",
+        "Another sender completes a later call to another target or the same target."
+      ]
+    },
+    {
+      "id": "T4",
+      "missing": "Q3 local helper/root termination plus N8 frontier",
+      "refuted_inference": "public completion :ok => tracker/native metadata already reclaimed",
+      "source": [
+        "life:358-363",
+        "completion:116-143"
+      ],
+      "source_hash": {
+        "deps/http_core/lib/http/request_lifecycle.ex": "7ea6f109aea3c32d556cf02a957cc56f8075a4c89d678645338f789b4edb5a37",
+        "deps/http_fetch/lib/http/request_completion.ex": "2579b9bbae473603227bcf0edc9509adb8c070927d44fb4e141e7d11160bcb9f"
+      },
+      "steps": [
+        "Tracker writes atomics latch2.",
+        "Completion waiter observes2 and returns :ok.",
+        "Tracker then returns stop and native exit/monitor processing follows."
+      ]
+    },
+    {
+      "id": "T5",
+      "missing": "N1 copied snapshot roots + N8 certified mailbox/control frontier",
+      "refuted_inference": "mailbox snapshot/zero logical resource count => controls consumed or old allocations reclaimed",
+      "source": [
+        "pool:186-188",
+        "scope:56-86"
+      ],
+      "source_hash": {
+        "deps/http_runtime/lib/http/http1/pool.ex": "d7ef7edbd880fed75ebc1f1b043fba47524af658d6b7e62a4c78ebb0a7542978",
+        "deps/http_runtime/lib/http/managed_transport/scope.ex": "eebb773bdd3bf08523fbaa295e40bdb402b05c94acd1dfaf9dc40b26c912c967"
+      },
+      "steps": [
+        "Pool calls Process.info(self(),:messages), obtaining a copied list.",
+        "The original messages remain in its mailbox; aggregate scope resource count can separately be zero."
+      ]
+    }
+  ],
+  "findings": [],
+  "gates": {
+    "B21": "NOT_RUN_GATE_REQUIRED",
+    "P0_P6": "UNQUALIFIED",
+    "Q_enforcement": "NOT_RUN_BY_REVIEWER",
+    "Task4": "BLOCKED",
+    "activation": "DISABLED",
+    "numeric_evaluation": "NOT_RUN"
+  },
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-complete-ledger.json": "b7894784ace34b5f98a32d59dacec8438748b21f063fa99d4969075838b4a8f8",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/h1-complete-ledger.md": "7068592b0865106658c8aafdf659dbfd6864e4ab52b54aa08e524c2944723dc4"
+  },
+  "inventory_verification": {
+    "N_ids": [
+      "N0",
+      "N1",
+      "N2",
+      "N3",
+      "N4",
+      "N5",
+      "N6",
+      "N7",
+      "N8"
+    ],
+    "P_ids": [
+      "P0",
+      "P1",
+      "P2",
+      "P3",
+      "P4",
+      "P5",
+      "P6"
+    ],
+    "Q_ids": [
+      "Q0",
+      "Q1",
+      "Q2",
+      "Q3",
+      "Q4",
+      "Q5"
+    ],
+    "changed": 0,
+    "matching_hashes": 187,
+    "missing": 0,
+    "phases": [
+      "G0",
+      "G1",
+      "G2",
+      "A0",
+      "A1",
+      "A2",
+      "A3",
+      "A4",
+      "A5",
+      "A6",
+      "A7",
+      "A8",
+      "A9",
+      "G3"
+    ],
+    "required_fields_missing": 0,
+    "row_hash_mismatches": 0,
+    "rows": 72,
+    "traces": 5,
+    "unique_rows": 72
+  },
+  "lane": "A_complete_ledger",
+  "markdown_sha256": "d6227b7533ae5714036e40dbdd06c5ea4a5413d9129d00fe76316384164549f1",
+  "native": {
+    "N8": "NOT_ESTABLISHED",
+    "NAR_equality_receipt_records": 5,
+    "NAR_equality_receipt_records_matching": 5,
+    "NAR_recomputed_by_reviewer": false,
+    "configuration_recovery": "PASS_PROVENANCE_ONLY",
+    "configure_receipt_exit": 0,
+    "configure_receipt_seconds": 168.119,
+    "generated_int_header_matches_installed": true,
+    "native_ABI": "NOT_QUALIFIED",
+    "native_build_inputs_unavailable": false,
+    "selected_TU_ABI": "NOT_RUN"
+  },
+  "numerical_verdict": "ACCOUNTING_BLOCKED_INPUT",
+  "parent_tls_recovery2_update": {
+    "cause": ":application.load tuple/public API distinction",
+    "correction": "IN_PROGRESS_PARENT_OWNED",
+    "logs_sources_preserved": "PARENT_REPORTED",
+    "new_TLS_qualification_PASS": false,
+    "setup_errors_before_asserts": 18
+  },
+  "preexisting_edits": "Parent/task/native/TLS/preparation/model inputs preserved. Only the four assigned new review files are written. Historical failures and receipts unchanged.",
+  "repair_counters": {
+    "astra": 0,
+    "received_astra": 0,
+    "sol": 0,
+    "unsuccessful_sol": 0
+  },
+  "runtime": "NOT_RUN_BY_REVIEWER",
+  "schema_version": 1,
+  "source_caller_mapping": {
+    "L001-L011": "policy/open/scope",
+    "L012-L020": "source/request/normalize/launch",
+    "L021-L029": "connect/send/upload",
+    "L030-L042": "parse/stream/checkin/retire",
+    "L043-L049": "Gaoxy/fixture roles",
+    "L050-L063": "control/credit/deferred resources",
+    "L064-L072": "native missing inputs"
+  },
+  "task_id": "m3_h1_complete_and_fixture_spec_review",
+  "task_status": "DONE_REVIEW_ONLY",
+  "upstream_feature": {
+    "TODO": "parent adds # TODO(upstream): gsmlg-dev/http_fetch#<actual number> at authorized callsite; do not fabricate issue number",
+    "branch": "codex/m3-gateway",
+    "expectation": "Document a conservative history-independent owned term/native/control envelope under this exact G4/C2/R32/P0 raw H1 profile OR provide supported acknowledged control-quiescence with precise object inclusion, all sender/target/native executor ordering, old expiry/demonitor/deferred destruction consumption/reclamation and immutable profile premises. Include TLS external caller/delivered/tracking metadata, failed setup uncertainty, repeated per-chunk monitors, public send release and term/native source-to-ABI provenance. Release/update dependency and freshly requalify before accounting refunds.",
+    "independent_routing_verdict": "ROUTE_FEATURE_BLOCKER_NOW_FINITE_LANE_DID_NOT_ESTABLISH_N8",
+    "issue_creation": "NOT_RUN_PARENT_OWNED",
+    "label": "internal request",
+    "leak_counterexample": "NOT_PROVEN",
+    "minimal_evidence": [
+      "T1",
+      "T2",
+      "T3",
+      "T4",
+      "T5"
+    ],
+    "not_requested": "No leak bug/security allegation, no private API/suspension/flush/workaround/measurement allowance/rotation/quota",
+    "repo": "gsmlg-dev/http_fetch",
+    "requesting_repo": "gsmlg-opt/gaoxy",
+    "routing": "parent only after finite source lane fails N8; no issue/network mutation by ledger",
+    "severity": "blocker for numerical qualification",
+    "title": "[internal] Supported bounded accounting or acknowledged control quiescence for managed H1",
+    "type": "Feature"
+  },
+  "verdict": "PASS_FINITE_STATIC_INVENTORY_REVIEW",
+  "verification_commands": [
+    "rg -n and cat/sed exact current caller/native source reads",
+    "Python hashlib.sha256(Path.read_bytes()) for187 ledger inputs",
+    "Python JSON row/required-field/phase/P/N/Q/trace and source-hash-reference checks",
+    "Read/hash recovered original derivation configure artifacts and5 NAR equality receipt records"
+  ],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

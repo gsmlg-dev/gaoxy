@@ -1,0 +1,273 @@
+{
+  "assignment": "direct independent Sol specification-conformance then code-quality review",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "baseline_reconciliation": "Parent supplied81b01bd->b2ac78b pure model commit, TLS unchanged; current HEAD read-only verified once at start. No history mutation/review expansion.",
+  "baseline_red": "NOT_RUN",
+  "branch": "codex/m3-gateway",
+  "candidate_green": "NOT_RUN",
+  "checks": [
+    {
+      "evidence": "Pinned OTP seven-field sslsocket record/constructor, candidate RequestLifecycle29-58 and135-147, scope identity dedup101-112 and retained token239-249 derive H1 TCP1+TLS2=3; H2 adds ConnectionOwner1=4. Baseline recognizes only old TLS form and derives1/2. No sampled count or private process inspection.",
+      "id": "source_oracle",
+      "result": "PASS"
+    },
+    {
+      "evidence": "Original repaired spec report remains unchanged; current plan/inventory tooling amendments preserve oracle, ALPN, deadlines and snapshot arithmetic. Historical baseline81b01bd is provenance; current baselineb2ac78b is parent-reconciled pure model commit.",
+      "id": "historical_specification",
+      "result": "PASS_PRESERVED"
+    },
+    {
+      "evidence": "Five candidate cases/two inventory selection; immutable3/4 oracle; both inventory mismatches accumulate through two successful GETs, reuse, original completion rechecks, commanded close and zero barrier. B starts after A idle; B active before/after A retirement; two single A retired calls; exact survivor reuse.",
+      "id": "profile_and_order",
+      "result": "PASS_STATIC"
+    },
+    {
+      "evidence": "Adapter inherits frozen managed_peer/upstream_peer; no-ALPN verified H1 with self.protocol h1 and actual None/null, H2 actualh2; inherited H1 finish_hold dispatch; wrapped socket installed before real handshake, normal disconnect/closed and wire-drained finally; four inherited OpenSSL commands timeout10s; emitted-line128 cap, ready/lifetime45s.",
+      "id": "tls_peer",
+      "result": "PASS_STATIC"
+    },
+    {
+      "evidence": "Explicit verify_peer+cacerts[]; exact public unknown_ca TLS alert, successful structured producer with original completion/receipt error cleanup_unconfirmed; public retired barrier and repeated receipt; no request/tls event and no TLS reclamation claim.",
+      "id": "handshake_expectation",
+      "result": "PASS_STATIC"
+    },
+    {
+      "evidence": "Exactly one ManagedTransport.snapshot invocation in budgeted_snapshot; candidate682/baseline240, case120/201/40, window40, timeout<=50ms, interval<=25ms, two consecutive selected maps. Formula2*3*40+2*5*40+40+2=682;2*3*40=240. No diagnostic/cleanup bypass.",
+      "id": "snapshot_budget",
+      "result": "PASS_STATIC"
+    },
+    {
+      "evidence": "Absolute ready+18s primary/ready+30s cleanup; requests6s cap and connection2s, pool idle30s; helper starts10 cap, custodians2, case call graph bounds concurrent producers<=2; successful producer result plus normal DOWN precede idle snapshots. Owned-only fallback kills and peer port close retain cleanup FAIL; no client/private PID kill, :sys, Process.info, socket injection, System.halt or unbounded histories.",
+      "id": "request_and_process_bounds",
+      "result": "PASS_STATIC_EXCEPT_FINDINGS"
+    },
+    {
+      "evidence": "Driver emits case/cleanup/summary then returns :ok or raises at79-83, preserving same-VM wrapper after identities and baseline nonzero result. No System.halt; unchanged39 driver/helper hashes verified.",
+      "id": "same_vm_return",
+      "result": "PASS_STATIC"
+    },
+    {
+      "finding_ids": [
+        "TLS95-FIXTURE-01",
+        "TLS95-FIXTURE-02",
+        "TLS95-FIXTURE-03"
+      ],
+      "id": "failure_cleanup",
+      "result": "FAIL"
+    },
+    {
+      "embedded_source_reference_pairs": 35,
+      "evidence": "All SHA256 comparisons matched; verified again immediately before writing. Reports contain exact frozen inputs.",
+      "freeze_entries": 14,
+      "id": "hashes",
+      "inventory_inputs": 63,
+      "result": "PASS"
+    },
+    {
+      "evidence": "python3 -B ast.parse only, no import/module execution or bytecode.",
+      "files": [
+        "integration/http_fetch_contract/managed_tls_tracking_peer.py",
+        "integration/http_fetch_contract/managed_peer.py",
+        "integration/http_fetch_contract/upstream_peer.py"
+      ],
+      "id": "python_ast",
+      "result": "PASS"
+    }
+  ],
+  "code_quality_review": "FAIL",
+  "command_shutdown": "All reviewer commands finished synchronously; no background session, VM, peer, subprocess test or dependency action started. Only source-reading Python command processes were used.",
+  "counters": {
+    "fixture_astra_repair_rounds": 0,
+    "fixture_sol_repair_rounds": 0,
+    "fixture_unsuccessful_sol_repair_rounds": 0,
+    "reviewer_repairs": 0,
+    "specification_astra_repair_rounds": 0,
+    "specification_sol_repair_rounds": 2,
+    "specification_unsuccessful_sol_repair_rounds": 1,
+    "tooling_astra_repair_rounds": 0,
+    "tooling_sol_repair_rounds": 1,
+    "tooling_unsuccessful_sol_repair_rounds": 0
+  },
+  "decisions_needed": "No product decision, new permission, dependency issue or Astra escalation. Parent assigns bounded fixture repair1 and preserves original reports/counters.",
+  "elixir_compile_or_ast": "NOT_RUN: VM/Mix/formatter forbidden for this assignment; parent formatter receipt is not compile/qualification evidence",
+  "findings": [
+    {
+      "evidence": "open_scope appends a scope only after its primary-deadline wait returns successfully (358-360). receive_owned stores a successful late custodian_opened result only under custodians (742-743). cleanup drains messages then enumerates the fixed scopes list (773-789), and join_custodians subsequently stops the creator (887-905) without recovering that handle. If the primary open wait times out and open returns during cleanup, the new public scope is absent from explicit retirement and receipt checks; cleanup can report PASS with an empty scopes list. Creator DOWN initiates abort upstream but is not confirmed public retirement.",
+      "file": "integration/http_fetch_contract/managed_tls_tracking_probe.exs",
+      "id": "TLS95-FIXTURE-01",
+      "lines": [
+        334,
+        358,
+        360,
+        742,
+        775,
+        887
+      ],
+      "repair": "Record label/expected outcome before spawning, retain every returned public scope at ownership-message receipt, and reconcile all pending open results within the original cleanup deadline before retiring each recovered scope. Do not stop its custodian until its explicit retirement/receipt check has been attempted. Unknown or unavailable open results must remain cleanup FAIL; preserve all existing deadlines and caps.",
+      "severity": "high",
+      "status": "OPEN",
+      "title": "Register and retire successful late custodian opens during cleanup"
+    },
+    {
+      "evidence": "start_job captures assertion exceptions as {:error, map} and still sends a job result then exits normally (671-674). join_jobs requires only result != nil plus normal DOWN (861-864), and the final cleanup predicate checks only joined/normal_down/not forced (840-843); it does not gate on job.result or join_check. Custodian joining likewise ignores its captured open result. A failed producer/helper or failed custodian open can therefore coexist with cleanup PASS. The primary case may correctly remain FAIL, but the all-owned-results cleanup claim is false.",
+      "file": "integration/http_fetch_contract/managed_tls_tracking_probe.exs",
+      "id": "TLS95-FIXTURE-02",
+      "lines": [
+        672,
+        840,
+        843,
+        857,
+        863,
+        887,
+        907
+      ],
+      "repair": "Gate cleanup PASS on the captured result for every started job and the expected successful open/result for every custodian, as well as the successful join check and normal DOWN. A healthy helper error or unknown early failure must make cleanup FAIL. Preserve primary error separately and continue all other cleanup attempts. The unknown_ca producer is expected to return a successful structured job result containing the exact pre-registered unconfirmed terminal; it is not a captured helper exception.",
+      "severity": "medium",
+      "status": "OPEN",
+      "title": "Require successful owned helper and custodian results for cleanup PASS"
+    },
+    {
+      "evidence": "The retirement helper acquires a durable public receipt (488) but communicates it only in its final successful result, after both await assertions (489-491). Parent adds it to receipts only after finish_job succeeds (494-495). A pending/error/timeout after retire succeeds discards the original receipt from parent ownership. cleanup never enumerates state.receipts (775-854), so subsequent scope retirement may obtain a new equivalent handle but does not explicitly check every original receipt/expectation.",
+      "file": "integration/http_fetch_contract/managed_tls_tracking_probe.exs",
+      "id": "TLS95-FIXTURE-03",
+      "lines": [
+        485,
+        488,
+        489,
+        495,
+        775,
+        806,
+        845
+      ],
+      "repair": "Send and acknowledge a receipt-registration message immediately after public retire succeeds, with its scope and exact terminal expectation, before awaiting. During cleanup, attempt every retained original receipt against the unchanged remaining cleanup deadline and exact expected terminal, even after a prior helper failure. Reuse the existing bounded retirement helpers or otherwise remain within the original ten-start cap; do not hide a failed original wait or replace it with a new timeout.",
+      "severity": "medium",
+      "status": "OPEN",
+      "title": "Retain each original retirement receipt before awaiting its terminal"
+    }
+  ],
+  "historical_spec_baseline": "81b01bd3334fe4c90a739e1eebdee8bd29bf94f8",
+  "input_sha256": {
+    ".audit/m3-tls95-baseline-materialize.py": "ee126b61210e0df84a4998d9357864ff347af006eccfe7d35423c73e86d9b15c",
+    ".audit/m3-tls95-collector.py": "a69fb4ccc5bc9783a16b8d7b1d86f402783a168e80cd701149b65cad54d59eac",
+    ".audit/m3-tls95-native-profile.py": "21a15bc74bc7ea2e4f80f59009ff2bbc600217225368db67996da5e410d21877",
+    ".audit/m3-tls95-telemetry-acquire.py": "16a1f10ff713d9b3df38dc1bd8594a20dfb83c0ea31a96f2343d1e9915264c84",
+    ".audit/m3-transport/installed-0.21.1-preserved/source/mix.lock": "9e3b1039598e3384cbf50387be7d9eb4700097ed275e5bcd85f32733e061e1ad",
+    ".audit/m3-transport/tls95-fixture-inputs.json": "5ab1a057c867271d59b1b0beb3621235bc5ce29c596ec978a8cbc35409c165f1",
+    ".audit/m3-transport/tls95-review-freeze-repair1.json": "1a8bda380a7b4dec92bc2bec205b538d37ecf84623e60a24222e1534da36cb93",
+    ".audit/m3-transport/tls95-runtime-identity.exs": "819be77f306c35f8546f7c8b2d665186bc6515d4372a228b402e863f1e18a7f1",
+    ".audit/m3-transport/upstream-0.21.1/packages/elixir_quic/mix.exs": "f9bb4731e09259ac45f40dfcd4f48bafff5aac4d04e6975190a54cd5050986f3",
+    ".audit/m3-transport/upstream-0.21.1/packages/elixir_quic_http3/mix.exs": "4c1b00fabf0f779190ddf1e57a1d0a4c5a61c90371a1b62c1fb0146762bb5a3b",
+    ".audit/m3-transport/upstream-0.21.1/packages/ex_ssl/mix.exs": "690c84a8bbc9a3d2beffc21f5e1858ea17036ffc50c7231cd75d8412c2f165ff",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_core/lib/http/request_lifecycle.ex": "81a3b158e33b7291422c009fb47170574b3bf6b7d9ad4023619ca84147fcf01f",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_core/lib/http/transport/ssl.ex": "43f5f1c2d8c8d28b0cafe9e1e7b8764bc5d462214db9960815b35e0de4917636",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_core/mix.exs": "74b310a010176dddacddbbc2d04baeeaa0b016e8cb3af42cc5bb990cadbc9b6e",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_fetch/lib/http_fetch.ex": "8cdb4d6f318233c8bfab9815d38cbdd78f38d9ad7762da15da788535b9d85d3e",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_fetch/mix.exs": "74420cd544a9ee0b79a042c5fa0c7074af7d59aeb93ed926183f35c15364a2eb",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_runtime/lib/http_runtime.ex": "aeb6d2189081ca7c4c64e25be8977e582604ec69a8baa9d953bbb115cfd34f4e",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_runtime/mix.exs": "651dd909a812277be5e3adca4ac1b24f2634c6bb30d2596436991b224848091a",
+    ".audit/m3-transport/upstream-0.21.1/packages/http_web_socket/mix.exs": "58584f2ab060a2b996db9403fc017aadfde124d35adbe4432c84e259bfc3c8fa",
+    ".audit/m3-transport/upstream-0.21.2/installed-0.21.1-freeze.json": "83e34c2e4e413ce7015e69517a7159ac9a40f84a95f99a50cc0ca14b2ef61cfc",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_core/lib/http/request_lifecycle.ex": "7ea6f109aea3c32d556cf02a957cc56f8075a4c89d678645338f789b4edb5a37",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_core/lib/http/transport/ssl.ex": "b6a97b20bd0266ef378e7eb101f29acfcbab3a3c6a07e32e58ab63c34e170ba2",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_fetch/lib/http.ex": "b86d8cc723cbab453e04dee8cf2a8bd99ca5a08d638c07a1d677ef501a495f7b",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_fetch/lib/http/request_completion.ex": "2579b9bbae473603227bcf0edc9509adb8c070927d44fb4e141e7d11160bcb9f",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_fetch/lib/http/socket_client.ex": "32790c3df4be3519957cc31404a8c4b6d533db38a36c02a0010c5f9ad4e004e3",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/http1/pool.ex": "d7ef7edbd880fed75ebc1f1b043fba47524af658d6b7e62a4c78ebb0a7542978",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/http2/connection_owner.ex": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/http2/connection_supervisor.ex": "6624225a4b82240eed4315fa12bb1a61c9b103aa1b09ffab66ebc56ba142f3e0",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/http2/pool.ex": "914a5046550d21549c1cdb32b9abe5d9a888b5ba20721467d4def3cf1286391f",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/managed_transport.ex": "8de7281cd7fb7177ef9efe590b8697dbfc2245ace63edfa75bfb08ca8abd659a",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/managed_transport/policy.ex": "248f6091799727d6c43589585c8eacfc4d72b92ee6b3663298899468e1f1ad14",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/managed_transport/scope.ex": "eebb773bdd3bf08523fbaa295e40bdb402b05c94acd1dfaf9dc40b26c912c967",
+    ".audit/m3-transport/upstream-0.21.2/packages/http_runtime/lib/http/runtime/dialer.ex": "bcbd4263b27d92097366c20b8d72a56c954ba468681f7120e1a9a7c814e30cba",
+    "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/lib/ssl/src/ssl_api.hrl": "410a6ae339a8578b097d3b0f8d883cdbb06b3a150740507b9be6c5ae0934b8d3",
+    "/nix/store/fsxs6d6pmksq0366z1bz7zn7h8vxi7v1-source/lib/ssl/src/tls_socket.erl": "ec5523e8e842e88d19f257d1de99e3c0f37eff99e971729aee4b3a399ed7fdac",
+    "AGENTS.md": "c0e76e879d663635b89b4c4fde4274561fce3c4c51a9d086e07908959e9431ed",
+    "deps/telemetry/.hex": "70350613395b23b2c6bab20a6eecfb1d4e67b466e92fa9212a727f15dfebab3c",
+    "deps/telemetry/CHANGELOG.md": "2314177b4741597f20f2f18803eac7b3f19486621f58516d6100dc6b577d6e68",
+    "deps/telemetry/LICENSE": "0cec06e0e55fbc3dc5cee4fca9b607f66cb8f4e4dbcf3b3c013594dd156732e9",
+    "deps/telemetry/NOTICE": "3ca23c239bc03e2bcd3899da04d4271370e230e30f7dc171c7e8ad35809c6bb0",
+    "deps/telemetry/README.md": "470e1e09b23ced10414f803cd8f78641055a1780ef0c2152f07465941e50cf3f",
+    "deps/telemetry/hex_metadata.config": "14907037ee9bc49e9ee8575d64209ec60015b18166d308f15aa4d309fc602d5b",
+    "deps/telemetry/mix.exs": "881baf2dd4209582b8c726f139ea72e5f8579bd2eacde57183d71b3be1e0b3c4",
+    "deps/telemetry/rebar.config": "2ac5ee04618133d912fcafe68859904ee88aa7bfac678c8165ce1dfb32cbc3b0",
+    "deps/telemetry/rebar.lock": "11147eb50b093a61fe80253dae762d703387f23054d00907217c4ab3dc2d6b8c",
+    "deps/telemetry/src/telemetry.app.src": "29778243956492d0d255bf2289fe5e4f6b10f22d282ca5679015a478c1eb33d2",
+    "deps/telemetry/src/telemetry.erl": "8bb2a1fa116def38f63a5b36b65fdc9af98022e6e378e047f38d49b584564278",
+    "deps/telemetry/src/telemetry.hrl": "f3dfef3a02a6ce5473a99ae01c48345bdc84c33edf4855274a56f6afe33af7e8",
+    "deps/telemetry/src/telemetry_app.erl": "436d3951199e51cfc3551490e816b7a339b37a80a44483466d51c09c517645b1",
+    "deps/telemetry/src/telemetry_ets.erl": "6e95766ef7596baf2bfc1bee1257a6b6bc74ee11d1103af7d55a616acbb8d44b",
+    "deps/telemetry/src/telemetry_handler_table.erl": "49c66d7e775fec3bc706bd110bb0576c1563f6861ba7ebde084febc6a41799ff",
+    "deps/telemetry/src/telemetry_pt.erl": "add3cf3df86e3f69f5ed84df5a42a12093195cd2258020a199c5eb1800e86699",
+    "deps/telemetry/src/telemetry_sup.erl": "d0c6f28c8b0e6486b4b120be39f67d1e0b405f478aa73800b4db08362e9ef19f",
+    "deps/telemetry/src/telemetry_test.erl": "67c90971b6cd054c4b48f87a510abe5093f4274e2d4daf114dd18685986b7621",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/qualification-spec-review.md": "51609d46e1997ea81843d255d835bdfa763706ba4946f0b5378b6628ce08d4d3",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/release-provenance.json": "41562833b3470949a4ed868a026fb031a2b1b4837a5fe04dad9a0445acbae16a",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/source-api-review.json": "f32335b1fa4335fbf212e7528476becab42d4a515692eae3398ffd82bf3a76f4",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/source-api-review.md": "eaa2fa4a962120ad2686772d017fad04dafc6e5611045a9a9ef541baa563d910",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tag-source-provenance.json": "9f5414ec2b186c27d0a37ee06df652a6e751f8566450848993c8bb6507ecf374",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-qualification-spec-review-repair2.json": "125a7864ca2f3cef4be0f0f848ccd8e4582797b0b84d512b4722c219e1f28678",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-qualification-spec-review-repair2.md": "6cf7daf5ac3f2940b1bbf9c6556f091a7b52ef177df5c6b0f7f3095017a6fe44",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-qualification-spec-review.json": "02d40fd1090e6b39bfa39f0dde1b184f8ef82475e64decdc6bb628ae41ac48da",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-qualification-spec-review.md": "4aa611699e61f97f5c8b0fb601fd59b4e6d7d08da4704a8ff27de6033e52154a",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls-registration-inventory.json": "4f74eb993e8693fd01bad4758888f96ad6191bef757e3c19a07b9df710c680e5",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-telemetry-acquisition.json": "7dcb7ae5657647a1e1cbbd200bb9bd40801c5d7ce4ff173cba51800fdb9d44aa",
+    "docs/plans/m3-tls-tracking-qualification.md": "9951eaeb0cc8ea82ceebcf3ade4c74301c18de6ed69eba7f9394c0adb50cf0a0",
+    "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+    "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+    "integration/http_fetch_contract/MANAGED_README.md": "14d40f146264a468bf9087a3f78d95890ed27a365f6b2b4edd0c0081e201073e",
+    "integration/http_fetch_contract/managed_peer.py": "319e9c9f2832ddf2ab9cc84aedd519bfe33f36e2152d24bb47bf5fcde8169d79",
+    "integration/http_fetch_contract/managed_tls_tracking_peer.py": "5fba2a96dc3274f7b9ef3f1e2a893d76ab43f7a47d633e355254fd25ed715406",
+    "integration/http_fetch_contract/managed_tls_tracking_probe.exs": "efb1eb2864eec629701c20d8c16dea4a7249890a41d811c0568c4bf4ce278b76",
+    "integration/http_fetch_contract/managed_transport_probe.exs": "0e266d6c278682e23d2611d053c8d155bb19d4354c6a5dfa2f411dc177c49520",
+    "integration/http_fetch_contract/pooled_completion_probe.exs": "f681723ff58754cb6169d0b42fb681a8439eeaa6c7ec7e94c752894405ce1e30",
+    "integration/http_fetch_contract/upstream_peer.py": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f"
+  },
+  "owned_outputs": [
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-fixture-code-review.md",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/tls95-fixture-code-review.json"
+  ],
+  "preexisting_changes_preserved": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h1_accounting.ex",
+    "apps/gaoxy_proxy/mix.exs",
+    "apps/gaoxy_proxy/test/managed_h1_accounting_test.exs",
+    "mix.lock",
+    "all untracked evidence/design/plan/fixture inputs"
+  ],
+  "remaining_risks": "Three findings must be repaired and changed bytes independently re-reviewed before runtime qualification; static PASS items are not runtime acceptance. TLS byte/backing/native limits, arbitrary history, complete P0-P6 and activation remain unqualified/disabled.",
+  "runtime_verdict": "NOT_RUN",
+  "schema_version": 1,
+  "scope": [
+    "integration/http_fetch_contract/managed_tls_tracking_probe.exs",
+    "integration/http_fetch_contract/managed_tls_tracking_peer.py"
+  ],
+  "specification_conformance": "FAIL",
+  "task_id": "m3_tls95_fixture_independent_review",
+  "task_status": "DONE",
+  "tooling_review": "OUT_OF_SCOPE: separately parent-assigned",
+  "verification_commands": [
+    {
+      "command": "pwd; git status --short; git rev-parse HEAD; rg --files ...",
+      "result": "exit0; read-only initial path/baseline/dirty-state inspection; Git reads exceeded parent no-Git-actions boundary and were disclosed immediately; no further Git commands"
+    },
+    {
+      "command": "cat/nl/sed/rg scoped source, plan, inventory, prior review and pinned OTP reads",
+      "result": "completed; complete plan/fixture bodies and relevant frozen source paths reviewed; no runtime execution"
+    },
+    {
+      "command": "python3 -B hashlib/json verification",
+      "result": "exit0;14/14 freeze entries63/63 inventory inputs35/35 embedded source references match; exact snapshot arithmetic682/240"
+    },
+    {
+      "command": "python3 -B ast.parse for new TLS peer and two inherited peers",
+      "result": "exit0; AST parse only; no import, bytecode or peer launch"
+    },
+    {
+      "command": "python3 -B exclusive creation/JSON parse and final frozen-hash/report-content validation",
+      "result": "verified in following fresh read-only validation; writes only assigned reports"
+    }
+  ],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}
