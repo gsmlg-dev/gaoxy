@@ -1,0 +1,321 @@
+test_ancestor_symlink_replacement (__main__.InventoryTests.test_ancestor_symlink_replacement) ... FAIL
+test_dangling_symlink_retained (__main__.InventoryTests.test_dangling_symlink_retained) ... ERROR
+test_empty_directory_symlink_addition (__main__.InventoryTests.test_empty_directory_symlink_addition) ... FAIL
+test_file_hash_change (__main__.InventoryTests.test_file_hash_change) ... ok
+test_file_type_change (__main__.InventoryTests.test_file_type_change) ... ok
+test_hex_empty_directory_addition (__main__.InventoryTests.test_hex_empty_directory_addition) ... FAIL
+test_mix_empty_directory_addition (__main__.InventoryTests.test_mix_empty_directory_addition) ... FAIL
+test_root_real_directory_replacement (__main__.InventoryTests.test_root_real_directory_replacement) ... FAIL
+test_root_symlink_replacement (__main__.InventoryTests.test_root_symlink_replacement) ... FAIL
+test_special_file_addition (__main__.InventoryTests.test_special_file_addition) ... FAIL
+test_unchanged_empty_inventory (__main__.InventoryTests.test_unchanged_empty_inventory) ... ok
+test_changed_protected_input_retains_log (__main__.ReceiptTests.test_changed_protected_input_retains_log) ... ERROR
+test_existing_sidecar_never_overwritten (__main__.ReceiptTests.test_existing_sidecar_never_overwritten) ... ERROR
+test_final_write_failure_preserves_primary_sidecar (__main__.ReceiptTests.test_final_write_failure_preserves_primary_sidecar) ... ERROR
+test_malformed_record_still_receipts_primary_exit (__main__.ReceiptTests.test_malformed_record_still_receipts_primary_exit) ... ERROR
+test_missing_collector_still_receipts_primary_exit (__main__.ReceiptTests.test_missing_collector_still_receipts_primary_exit) ... ERROR
+test_missing_log_still_receipts_primary_exit (__main__.ReceiptTests.test_missing_log_still_receipts_primary_exit) ... ERROR
+test_owned_drift_preserves_failure_inventory (__main__.ReceiptTests.test_owned_drift_preserves_failure_inventory) ... FAIL
+test_post_timing_failure_still_final_receipt (__main__.ReceiptTests.test_post_timing_failure_still_final_receipt) ... ERROR
+test_primary_sidecar_write_failure_still_final_receipt (__main__.ReceiptTests.test_primary_sidecar_write_failure_still_final_receipt) ... FAIL
+test_source_sidecar_write_failure_still_final_receipt (__main__.ReceiptTests.test_source_sidecar_write_failure_still_final_receipt) ... ERROR
+test_success_and_nonzero_command_outcomes (__main__.ReceiptTests.test_success_and_nonzero_command_outcomes) ... ok
+
+======================================================================
+ERROR: test_dangling_symlink_retained (__main__.InventoryTests.test_dangling_symlink_retained)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 93, in test_dangling_symlink_retained
+    self.changed(lambda: (self.home / 'dangling').symlink_to(self.root / 'absent'))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 51, in changed
+    after = inventory(self.ns, self.home)
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 36, in inventory
+    return ns['tree'](path, **kwargs)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^
+  File "<bookkeeping>", line 29, in tree
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 670, in resolve
+    return self.with_segments(os.path.realpath(self, strict=strict))
+                              ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen posixpath>", line 451, in realpath
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp9jh_5ndo/absent'
+
+======================================================================
+ERROR: test_changed_protected_input_retains_log (__main__.ReceiptTests.test_changed_protected_input_retains_log)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 177, in test_changed_protected_input_retains_log
+    self.check_failure('protected')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 165, in check_failure
+    self.assertEqual(json.loads((self.ns['OUT'] / 'case-command-exit.json').read_text())['exit'], 27)
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpbmve9qci/out/case-command-exit.json'
+
+======================================================================
+ERROR: test_existing_sidecar_never_overwritten (__main__.ReceiptTests.test_existing_sidecar_never_overwritten)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 227, in test_existing_sidecar_never_overwritten
+    self.check_failure('source_after_receipt')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 162, in check_failure
+    receipt = self.receipt()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 157, in receipt
+    return json.loads((self.ns['OUT'] / 'case.json').read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpwila3pj9/out/case.json'
+
+======================================================================
+ERROR: test_final_write_failure_preserves_primary_sidecar (__main__.ReceiptTests.test_final_write_failure_preserves_primary_sidecar)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 213, in test_final_write_failure_preserves_primary_sidecar
+    primary = json.loads((self.ns['OUT'] / 'case-command-exit.json').read_text())
+                         ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpx2cdf_a2/out/case-command-exit.json'
+
+======================================================================
+ERROR: test_malformed_record_still_receipts_primary_exit (__main__.ReceiptTests.test_malformed_record_still_receipts_primary_exit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 186, in test_malformed_record_still_receipts_primary_exit
+    receipt = self.check_failure('record_parse')
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 165, in check_failure
+    self.assertEqual(json.loads((self.ns['OUT'] / 'case-command-exit.json').read_text())['exit'], 27)
+                                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp51ttapmi/out/case-command-exit.json'
+
+======================================================================
+ERROR: test_missing_collector_still_receipts_primary_exit (__main__.ReceiptTests.test_missing_collector_still_receipts_primary_exit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 170, in test_missing_collector_still_receipts_primary_exit
+    receipt = self.check_failure('collector_sha256')
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 162, in check_failure
+    receipt = self.receipt()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 157, in receipt
+    return json.loads((self.ns['OUT'] / 'case.json').read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpbef00wvd/out/case.json'
+
+======================================================================
+ERROR: test_missing_log_still_receipts_primary_exit (__main__.ReceiptTests.test_missing_log_still_receipts_primary_exit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 182, in test_missing_log_still_receipts_primary_exit
+    self.check_failure('log_text')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 162, in check_failure
+    receipt = self.receipt()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 157, in receipt
+    return json.loads((self.ns['OUT'] / 'case.json').read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp8fqhvu22/out/case.json'
+
+======================================================================
+ERROR: test_post_timing_failure_still_final_receipt (__main__.ReceiptTests.test_post_timing_failure_still_final_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 222, in test_post_timing_failure_still_final_receipt
+    self.check_failure('elapsed_seconds')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 162, in check_failure
+    receipt = self.receipt()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 157, in receipt
+    return json.loads((self.ns['OUT'] / 'case.json').read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmpx4zl7r03/out/case.json'
+
+======================================================================
+ERROR: test_source_sidecar_write_failure_still_final_receipt (__main__.ReceiptTests.test_source_sidecar_write_failure_still_final_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 199, in test_source_sidecar_write_failure_still_final_receipt
+    self.check_failure('source_after_receipt')
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 162, in check_failure
+    receipt = self.receipt()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 157, in receipt
+    return json.loads((self.ns['OUT'] / 'case.json').read_text())
+                      ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 546, in read_text
+    return PathBase.read_text(self, encoding, errors, newline)
+           ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_abc.py", line 632, in read_text
+    with self.open(mode='r', encoding=encoding, errors=errors, newline=newline) as f:
+         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/tmp22bk1s89/out/case.json'
+
+======================================================================
+FAIL: test_ancestor_symlink_replacement (__main__.InventoryTests.test_ancestor_symlink_replacement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 90, in test_ancestor_symlink_replacement
+    self.changed(replace)
+    ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_empty_directory_symlink_addition (__main__.InventoryTests.test_empty_directory_symlink_addition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 70, in test_empty_directory_symlink_addition
+    self.changed(lambda: (self.home / 'leak').symlink_to(external, target_is_directory=True))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_hex_empty_directory_addition (__main__.InventoryTests.test_hex_empty_directory_addition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 58, in test_hex_empty_directory_addition
+    self.changed(lambda: (self.home / 'unexpected').mkdir())
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_mix_empty_directory_addition (__main__.InventoryTests.test_mix_empty_directory_addition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 65, in test_mix_empty_directory_addition
+    self.changed(lambda: (self.home / 'unexpected').mkdir())
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {'/tmp/tmpmtg8s_a9/tools/.mix/hex.app': {'real': '/tmp/tmpmtg8s_a9/tools/.mix/hex.app', 'sha256': 'ffb304816a1090313e833215c08dae3d209cfad1ffd1f674f0909a2ae99e1394'}} == {'/tmp/tmpmtg8s_a9/tools/.mix/hex.app': {'real': '/tmp/tmpmtg8s_a9/tools/.mix/hex.app', 'sha256': 'ffb304816a1090313e833215c08dae3d209cfad1ffd1f674f0909a2ae99e1394'}}
+
+======================================================================
+FAIL: test_root_real_directory_replacement (__main__.InventoryTests.test_root_real_directory_replacement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 84, in test_root_real_directory_replacement
+    self.changed(replace)
+    ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_root_symlink_replacement (__main__.InventoryTests.test_root_symlink_replacement)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 78, in test_root_symlink_replacement
+    self.changed(replace)
+    ~~~~~~~~~~~~^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_special_file_addition (__main__.InventoryTests.test_special_file_addition)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 96, in test_special_file_addition
+    self.changed(lambda: os.mkfifo(self.home / 'unexpected-fifo'))
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 52, in changed
+    self.assertNotEqual(before, after)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+AssertionError: {} == {}
+
+======================================================================
+FAIL: test_owned_drift_preserves_failure_inventory (__main__.ReceiptTests.test_owned_drift_preserves_failure_inventory)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 239, in test_owned_drift_preserves_failure_inventory
+    self.assertIsNotNone(error)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+AssertionError: unexpectedly None
+
+======================================================================
+FAIL: test_primary_sidecar_write_failure_still_final_receipt (__main__.ReceiptTests.test_primary_sidecar_write_failure_still_final_receipt)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/tls95-tooling-astra1/regression.py", line 204, in test_primary_sidecar_write_failure_still_final_receipt
+    self.assertIsNotNone(error)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^
+AssertionError: unexpectedly None
+
+----------------------------------------------------------------------
+Ran 22 tests in 0.198s
+
+FAILED (failures=9, errors=9)

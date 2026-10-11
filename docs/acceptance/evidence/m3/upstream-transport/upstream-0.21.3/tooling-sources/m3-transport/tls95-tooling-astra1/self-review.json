@@ -1,0 +1,115 @@
+{
+  "artifacts_sha256": {
+    "collector-after.py": "9a3339aaf839592b992a3b4596d6ab60a75fec5617a156c15c553ad1251a0890",
+    "collector-before.py": "4c4b291c169856841fd0d9d6bc3c3cb4ac36a3001231504b7c53f150ca8d92f7",
+    "collector.diff": "3a1d1d04f3639a3c7837efe39d763e4ebdd75a4b2c8d671f67922c0915c7e059",
+    "freeze-after.json": "7c7546e1cf6ab9a59bf18300ab53eb87f4c39aeee667cccf611891a8c312aa1a",
+    "freeze-before.json": "cab8e3fc962c223d05cc138ef7a55b26c576788f0b0ec7fa5606757cbc9f0b18",
+    "green.json": "4054b3eeb77c021154e18cb46b331750229ce80112d44b9cd55e19857ca88ef2",
+    "green.log": "5360174cab7615840c822d2465670b5800447589a94fa726819b1a99b02f9dbe",
+    "red-final.json": "fe6bb7febf91116d9fe0e908c07ffb41193cfed9d92803aca614bea0c6b50be3",
+    "red-final.log": "57524c945e38e47448a0e7f1b90ff8678197aa9d36f9af39146963cf7091a817",
+    "red.json": "b2c6e6888d3b71fe9a6c1d62732f4c5640ad11ecb38454d11b5f76cc3a1bedd3",
+    "red.log": "97795ae13bd487edc9c64df49f3829829ac17aedc171fd16a24e50ae42340b99",
+    "regression.py": "209ba4328e1f8491754e9f3cdd96ba2badc9d14b13a32da072a6d4b15d7d8faa"
+  },
+  "assignment": "bounded collector recovery",
+  "astra_counters": {
+    "cumulative_repairs": 1,
+    "independent_review": "PENDING",
+    "prior_repairs": 0,
+    "unsuccessful": 0
+  },
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "baseline": "b2ac78b518f459ec2c95b7823226640413f2ca95",
+  "baseline_verification": "Read .git worktree pointer, HEAD and referenced branch file; matches handoff. No Git commands.",
+  "before_source_sha256": "4c4b291c169856841fd0d9d6bc3c3cb4ac36a3001231504b7c53f150ca8d92f7",
+  "branch": "codex/m3-gateway",
+  "changes": [
+    "tree() records root and every directory/file/symlink/special/missing entry with type, real path, device/inode/mode and applicable link target/content hash; owned inventories also bind ancestors through ROOT.",
+    "Mix and Hex before/after comparisons use complete owned inventories; post Mix inventory retained in receipt; stale entries untouched.",
+    "Actual process wait result is saved to an exclusive command-exit sidecar before post file reads/parsers; independent captures cover post inventories, sidecar writes, log read/hash, collector hash, clocks, final write and stdout serialization.",
+    "Final receipt uses captured metadata; missing collector/log remains null with separate post errors. Collector post hash must match existing independently reviewed source hash.",
+    "JSON serialization happens before exclusive file creation; existing evidence is never replaced."
+  ],
+  "command_shutdown": "All commands synchronously completed; no VM/peer/background process started or left running; no foreign process stopped.",
+  "decisions_needed": "No product decision. Parent routes independent Sol changed-byte review before admitting tooling PASS and any runtime qualification.",
+  "gate_evidence": [
+    "tls95-repaired-tooling-review.md FAIL after Sol repair1",
+    "tls95-tooling-repair2-review.md FAIL after Sol repair2; same inventory and actual-exit defects"
+  ],
+  "mode": "implementation",
+  "observed_utc": "2026-10-10T21:58:18.079352+00:00",
+  "ownership": "Parent confirmed stopped predecessor and exclusive collector ownership before writes. Ownership released on final delivery.",
+  "pre_existing_edits": "All inherited collector edits retained except bounded patch. Other20 frozen input/report files unchanged. Parent native-profile recovery and Sol H1 ledger edits outside owned scope were not touched or inventoried repository-wide; Git prohibited.",
+  "received_sol_counters": {
+    "repairs": 2,
+    "unsuccessful": 2
+  },
+  "residual_limits": [
+    "Bookkeeping tests extract only save/tree definitions and the outer post-wait block using AST; they do not qualify subprocess, Mix, native or fixture runtime.",
+    "Complete inventory is a before/after snapshot, not continuous filesystem monitoring.",
+    "If final receipt output is unavailable, the earlier command-exit sidecar preserves actual exit; no claim of write success when the filesystem rejects every evidence write."
+  ],
+  "self_review": {
+    "TLS95-REPAIR2-01": "CLOSED_BY_LOCAL_REGRESSIONS_PENDING_INDEPENDENT_REVIEW",
+    "TLS95-REPAIR2-02": "CLOSED_BY_LOCAL_REGRESSIONS_PENDING_INDEPENDENT_REVIEW"
+  },
+  "source_sha256": "9a3339aaf839592b992a3b4596d6ab60a75fec5617a156c15c553ad1251a0890",
+  "status": "DONE",
+  "task_id": "m3_tls95_tooling_astra_recovery1",
+  "verification": {
+    "Mix_VM_peer_network": "NOT_RUN",
+    "final_red": {
+      "command": [
+        "python3",
+        "-B",
+        ".audit/m3-transport/tls95-tooling-astra1/regression.py",
+        ".audit/m3-transport/tls95-tooling-astra1/collector-before.py"
+      ],
+      "errors": 9,
+      "exit": 1,
+      "failures": 10,
+      "status": "EXPECTED_RED",
+      "tests": 25
+    },
+    "green": {
+      "command": [
+        "python3",
+        "-B",
+        ".audit/m3-transport/tls95-tooling-astra1/regression.py",
+        ".audit/m3-tls95-collector.py"
+      ],
+      "errors": 0,
+      "exit": 0,
+      "failures": 0,
+      "status": "PASS",
+      "tests": 25
+    },
+    "independent_Sol_review": "PENDING",
+    "preservation": {
+      "changed_files": [
+        ".audit/m3-tls95-collector.py"
+      ],
+      "status": "PASS",
+      "total_frozen_files": 21,
+      "unchanged_frozen_files": 20
+    },
+    "python_AST": {
+      "files": [
+        ".audit/m3-tls95-baseline-materialize.py",
+        ".audit/m3-tls95-collector.py",
+        ".audit/m3-tls95-native-profile.py",
+        ".audit/m3-tls95-telemetry-acquire.py",
+        "integration/http_fetch_contract/managed_peer.py",
+        "integration/http_fetch_contract/managed_tls_tracking_peer.py",
+        "integration/http_fetch_contract/upstream_peer.py"
+      ],
+      "method": "python3 -B in-memory ast.parse; no reviewed-script import or runtime execution",
+      "status": "PASS"
+    },
+    "runtime_RED_GREEN": "NOT_RUN",
+    "source_materialization": "NOT_RUN"
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

@@ -15,7 +15,7 @@ immutable configuration generations before activation, retaining stable socket
 owners and each in-flight request's selected generation.
 
 **Tech stack:** Elixir 1.18.5 / OTP 28; Thousand Island and Abyss public adapters;
-Plug/WebSock; pinned coordinated HTTP Fetch0.21.0; HPAX for
+Plug/WebSock; pinned coordinated HTTP Fetch0.21.3; HPAX for
 HTTP/2 header compression; independent loopback peers.
 
 **Base:** `71f1b02032b440c5626263bd48aa4f622260e70a`, worktree
@@ -86,26 +86,72 @@ updated for installed0.20.0 under the new plan; historical raw logs stay intact.
   Only then enable upstream H2/H1 reuse. Until then stop activation and
   continue independent tasks; no private pool calls or local workaround.
 
-Current checkpoint: all seven packages are installed at0.21.0, containing
-#66/#67/#78/#79; the strict460-test upgrade compatibility gate passes at
-seed21102026. Follow [`m3-upstream-transport.md`](m3-upstream-transport.md)
-for separate managed public probes and complete accounting qualification.
-The0.21 finite managed public run now passes39/39 with39 joined cleanups,
-425 stable source hashes and no remaining owned peer; canonical H2 capacity
-errors remain MISMATCH under needed#89. This does not enable the adapter or
-complete the required retained-byte/matrix/load gates.
-Historical0.20 public cases passed16/16; its finite memory diagnostic remains
-INCONCLUSIVE. H2 activation is BLOCKED on #86, while H1 requires complete
-retained-state accounting and both require managed lifecycle/matrix/load gates.
+Current checkpoint (2026-10-11):
 
-Fresh remote status records #86–#89 CLOSED, latest published/installed0.21.0;
-containing fixes and renewed qualification remain required. New
-[Bug95](../dependency-requests/http-fetch-otp28-tls-tracking.md) blocks managed
-OTP28 TLS resource tracking/release. Pure H1 preparation passes26/0 and both
-independent implementation reviews, delivered in local commit `56fd518`.
-Full M3 remains incomplete; M4 cannot start.
+All seven coordinated HTTP packages are installed at **0.21.3**, tag
+`ceecbf2df62ca80c361597c7303f65a153f2ce3c`, tree
+`6a44b862e8a09fb2648e48f928e37c20b1c8109a`. Both direct pins are
+`== 0.21.3`; seven lock entries changed and 17 unrelated entries are preserved.
+Independent source/artifact review verifies 196 shipped files and 175 runtime
+sources, including the containing parser/cancellation fixes #98/#100.
+Strict compilation and compatibility **486/0** pass. The unchanged public
+managed driver passes **39/39** with 39 joined cleanups and canonical capacity
+MATCH; these finite resource properties do not certify memory bounds.
 
-## Task 2: Native HTTP/2 and shared HTTP operations
+Actual supplemental TLS95 qualification passes **five cases/five cleanups,
+exit0**. The isolated0.21.1 negative control executes both inventory cases with
+exact H1 observed1/expected3 and H2 observed2/expected4 mismatches, two cleanups
+and real exit1. Source/build/tool/native environment freezes and original
+loaded/disk comparisons pass; every original loaded row remains unchanged and
+new rows are independently validated. Identity regression23/0 and independent
+SPEC/CODE review pass. The earlier90-second native-profile timeout executed zero
+cases and remains preserved; the unchanged profile later passed within its
+original deadline. TLS tooling counters are Sol4/unsuccessful2/Astra2; no third
+Astra recovery is authorized.
+
+H1 functional baseline B01–B20 passes **20/0**, no skips/exclusions and all owned
+joins, after the reviewed B05 backing/B17 late-cleanup amendments. Model22/0,
+ledger-refusal2/0 and loaded-identity1/0 pass. The final grouped source passes
+canonical format, baseline20 and separately admitted B21 without the grouping
+warning. B21 observes two ClientHellos, rejects the third request at C2, retains
+both genuine cleanup_unconfirmed completions and original retirement, joins15/15
+owned actors and refunds no native control credit. Eight invalid gate probes
+plus the existing relative-path probe reject with zero registered tests.
+H1 counters are Sol3/unsuccessful2/Astra1; all original deadlines remain fixed.
+
+The public H2 parser/cancellation supplement passes **8/8** (TLS4/h2c4), with
+zero skips/failures, eight joined peer shutdowns and real exit0. Exact parser
+invalid_headers_transition/RST1 and abort/deadline aborted/request_timeout/RST8
+oracles pass. Manual original completion confirms after reader consumption;
+follow completion stays explicitly unsupported. Frozen source/native/loaded
+before-after identities pass. H2 counters are Sol1/unsuccessful0/Astra0.
+Five separately frozen acquisition-failure probes meet their expected negative
+oracles. Both prerepair controls omit cancellation/recovery and record reset0;
+repaired manual/follow controls publicly cancel, recover the first response and
+record reset8. The lost-alias control preserves its real Task.await timeout,
+public abort and no second await, with explicit BLOCKED_HANDOFF. All five retain
+real VM exit1: four FAIL and one BLOCKED_HANDOFF, adding zero normal-suite cases.
+Wrapper post-identity/outcome and loaded-after identity are NOT RUN for these
+negatives because System.halt(1) bypasses them. Parent input freezes and actual
+owned process/peer joins are separately verified. Fresh native profiles compare
+exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
+H1/H2 specification, code and evidence review passes with no findings.
+
+Complete H1 numerical accounting and production activation remain **BLOCKED**
+on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
+currently OPEN. It requires a supported history-independent control bound or
+acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
+do not establish N8. The independently reviewed72-row/14-phase ledger is a
+finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
+Full H2 accounting/adversarial backlog and the complete proxy matrix remain
+unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
+and M4 remain gated; independent functional PASS does not enable activation.
+
+Follow [the transport plan](m3-upstream-transport.md) and
+[current acceptance](../acceptance/m3.md). Earlier0.20/0.21.0/0.21.1/0.21.2
+results remain historical. Full M3 is incomplete; M4 cannot start.
+
+## Task 2:## Task 2: Native HTTP/2 and shared HTTP operations
 
 Owned area: `apps/gaoxy_http/` H2 modules and Exchange/Response/Plug protocol
 dispatch, plus directly required HTTP proxy compatibility seams and HPAX lock.
@@ -231,8 +277,8 @@ documentation, independent loopback/load harnesses and scoped CI wiring.
 - [x] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.
 - [ ] Mark M3 complete only if every required gate and upstream prerequisite
-  passes. Then write the M4 design/plan and automatically continue. If #86 or
-  another required public contract/bound is unresolved in the installed release, report BLOCKED for
+  passes. Then write the M4 design/plan and automatically continue. While #97 or
+  another required accounting/lifetime gate remains unresolved, report BLOCKED for
   the affected tasks/M3 completion and preserve all tested independent work.
 
 No push, release publication, deployment, production-data operation, Vault

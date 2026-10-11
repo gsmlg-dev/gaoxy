@@ -1,0 +1,259 @@
+{
+  "status": "PASS_EXPECTED_NEGATIVE_REGRESSION_ORACLES",
+  "probes": 5,
+  "normal_suite_cases_added": 0,
+  "actual_nonzero_vm_exits": 5,
+  "source": "Pinned prerepair source lacks acquisition cancellation; repaired source performs public cancellation before stream exposure and never retries a failed await",
+  "fixture_failures_preserved": 4,
+  "fixture_blocked_handoffs_preserved": 1,
+  "loaded_after_identity": "NOT_RUN_FOR_NEGATIVES",
+  "rows": [
+    {
+      "probe": "repair1-acquired-manual",
+      "case": "H2C98_LATE",
+      "actual_vm_exit": 1,
+      "fixture_status": "FAIL",
+      "original_primary_failure_retained": true,
+      "operations": [
+        {
+          "result": ":ok",
+          "operation": "negative_acquired_request_barrier",
+          "start_ms": -576460744991,
+          "end_ms": -576460744991,
+          "deadline_ms": -576460735027
+        },
+        {
+          "result": ":ok",
+          "operation": "failure_abort_and_await",
+          "start_ms": -576460744977,
+          "end_ms": -576460744976,
+          "deadline_ms": -576460730027
+        },
+        {
+          "result": "%HTTP.Response{status: 200, status_text: \"OK\", ok: true, headers: %HTTP.Headers{headers: []}, body: #PID<0.291.0>, body_used: false, url: %URI{scheme: \"http\", authority: \"127.0.0.1:34581\", userinfo: nil, ...}, redirected: false, type: :basic, stream: #PID<0.291.0>, ...}",
+          "operation": "failure_response",
+          "start_ms": -576460744976,
+          "end_ms": -576460744976,
+          "deadline_ms": -576460730027
+        },
+        {
+          "result": ":noproc",
+          "operation": "failure_stream_down",
+          "start_ms": -576460744964,
+          "end_ms": -576460744964,
+          "deadline_ms": -576460730027
+        }
+      ],
+      "cleanup_errors": [],
+      "peer_exit": 0,
+      "peer_port_down": ":normal",
+      "vm_process_group_joined": true,
+      "parent_frozen_inputs": 1285,
+      "wrapper_post_identity": "NOT_RUN_SYSTEM_HALT",
+      "artifacts": [
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-manual1-artifacts/H2C98_LATE.json",
+          "sha256": "0d5d0a3871f95d9f6057729b98fc9ef3b4bd503baf85ce73966ce2af406bf792"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-manual1-artifacts/identity.json",
+          "sha256": "f6b1dbce32512195c8179086ca1894dc3082387eb2b8ffff587c7adbd93e2ca2"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-manual1-artifacts/results.json",
+          "sha256": "3f13217c9271bd8afde249ab858a2df9b18b98a2f8d0b0be919b58b587a3eb6a"
+        }
+      ]
+    },
+    {
+      "probe": "repair1-acquired-follow",
+      "case": "H2C100_ABORT",
+      "actual_vm_exit": 1,
+      "fixture_status": "FAIL",
+      "original_primary_failure_retained": true,
+      "operations": [
+        {
+          "result": ":ok",
+          "operation": "negative_acquired_request_barrier",
+          "start_ms": -576460744597,
+          "end_ms": -576460744597,
+          "deadline_ms": -576460734667
+        },
+        {
+          "result": ":ok",
+          "operation": "failure_abort",
+          "start_ms": -576460744584,
+          "end_ms": -576460744584,
+          "deadline_ms": -576460729667
+        },
+        {
+          "result": "%HTTP.Response{status: 200, status_text: \"OK\", ok: true, headers: %HTTP.Headers{headers: []}, body: #PID<0.291.0>, body_used: false, url: %URI{scheme: \"http\", authority: \"127.0.0.1:48467\", userinfo: nil, ...}, redirected: false, type: :basic, stream: #PID<0.291.0>, ...}",
+          "operation": "failure_response",
+          "start_ms": -576460744584,
+          "end_ms": -576460744584,
+          "deadline_ms": -576460729667
+        },
+        {
+          "result": ":normal",
+          "operation": "failure_stream_down",
+          "start_ms": -576460744576,
+          "end_ms": -576460744576,
+          "deadline_ms": -576460729667
+        }
+      ],
+      "cleanup_errors": [],
+      "peer_exit": 0,
+      "peer_port_down": ":normal",
+      "vm_process_group_joined": true,
+      "parent_frozen_inputs": 1285,
+      "wrapper_post_identity": "NOT_RUN_SYSTEM_HALT",
+      "artifacts": [
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-follow1-artifacts/H2C100_ABORT.json",
+          "sha256": "7e948a04242b4280193597d4f4dedbf97db7ae2104095b5eb6a4bc9aae1967fd"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-follow1-artifacts/identity.json",
+          "sha256": "f6b1dbce32512195c8179086ca1894dc3082387eb2b8ffff587c7adbd93e2ca2"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-acquired-follow1-artifacts/results.json",
+          "sha256": "d02d61de93793f59d71206cac1c227382d56426b3528f466daf8d4c40ed704a3"
+        }
+      ]
+    },
+    {
+      "probe": "repair1-lost-alias-follow",
+      "case": "H2C100_ABORT",
+      "actual_vm_exit": 1,
+      "fixture_status": "BLOCKED_HANDOFF",
+      "original_primary_failure_retained": true,
+      "operations": [
+        {
+          "result": ":ok",
+          "operation": "negative_acquired_request_barrier",
+          "start_ms": -576460744212,
+          "end_ms": -576460744212,
+          "deadline_ms": -576460734286
+        },
+        {
+          "result": "{:error, {:unsupported_completion, :redirect}}",
+          "operation": "unsupported_completion",
+          "start_ms": -576460744212,
+          "end_ms": -576460744212,
+          "deadline_ms": -576460734286
+        },
+        {
+          "result": "{:error, \"** (exit) exited in: Task.await(%Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.95.0>, pid: #PID<0.285.0>, ref: #Reference<0.0.12163.4047400315.980746241.81146>}, 2000)\\n    ** (EXIT) time out\\n    (elixir 1.18.5) lib/task.ex:888: Task.await_receive/3\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:424: HTTPFetchH2FunctionalSupplement.await_response/1\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:811: \" <> ...}",
+          "operation": "response",
+          "start_ms": -576460744208,
+          "end_ms": -576460742183,
+          "deadline_ms": -576460734286
+        },
+        {
+          "result": ":ok",
+          "operation": "failure_abort",
+          "start_ms": -576460742178,
+          "end_ms": -576460742178,
+          "deadline_ms": -576460729286
+        }
+      ],
+      "cleanup_errors": [
+        "{:error, \"** (RuntimeError) BLOCKED_HANDOFF: original Promise response ownership unconfirmed; dedicated VM must end\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:560: anonymous fn/2 in HTTPFetchH2FunctionalSupplement.cleanup/1\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:811: HTTPFetchH2FunctionalSupplement.capture/1\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:614: anonymous fn/1 in HTTPFetchH2FunctionalSupplement.cleanup/1\\n    (elixir 1.18.5) lib/enum.ex:4442: Enum.flat_map_list/2\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:613: HTTPFetchH2FunctionalSupplement.cleanup/1\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:338: HTTPFetchH2FunctionalSupplement.run_case/2\\n    .audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs:53: anonymous fn/3 in HTTPFetchH2FunctionalSupplement.run/0\\n    (elixir 1.18.5) lib/enum.ex:987: Enum.\\\"-each/2-lists^foreach/1-0-\\\"/2\\n\"}"
+      ],
+      "peer_exit": 0,
+      "peer_port_down": ":normal",
+      "vm_process_group_joined": true,
+      "parent_frozen_inputs": 1285,
+      "wrapper_post_identity": "NOT_RUN_SYSTEM_HALT",
+      "artifacts": [
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-lost-alias-follow1-artifacts/H2C100_ABORT.json",
+          "sha256": "c33c816fa8b63cc3b4986de6c502f4a7533c163c39d07e6e6a9b7ebcae71da88"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-lost-alias-follow1-artifacts/identity.json",
+          "sha256": "f6b1dbce32512195c8179086ca1894dc3082387eb2b8ffff587c7adbd93e2ca2"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-repair1-lost-alias-follow1-artifacts/results.json",
+          "sha256": "77462927587cc93454f53fde0b9b132666eedac800e6389283fbe997b0af0a92"
+        }
+      ]
+    },
+    {
+      "probe": "prerepair-acquired-manual",
+      "case": "H2C98_LATE",
+      "actual_vm_exit": 1,
+      "fixture_status": "FAIL",
+      "original_primary_failure_retained": true,
+      "operations": [
+        {
+          "result": ":ok",
+          "operation": "negative_acquired_request_barrier",
+          "start_ms": -576460744228,
+          "end_ms": -576460744228,
+          "deadline_ms": -576460734259
+        }
+      ],
+      "cleanup_errors": [],
+      "peer_exit": 0,
+      "peer_port_down": ":normal",
+      "vm_process_group_joined": true,
+      "parent_frozen_inputs": 1285,
+      "wrapper_post_identity": "NOT_RUN_SYSTEM_HALT",
+      "artifacts": [
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-manual1-artifacts/H2C98_LATE.json",
+          "sha256": "dbfef85c3dbf49be7f085b7ebfc5c8a6e397e345cbbf061eaf92bea1ae553023"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-manual1-artifacts/identity.json",
+          "sha256": "f6b1dbce32512195c8179086ca1894dc3082387eb2b8ffff587c7adbd93e2ca2"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-manual1-artifacts/results.json",
+          "sha256": "a2e1803ffb8b370ee9deb33732a3faa381eb2caef701ebcc4fa9dae3c2de7c96"
+        }
+      ]
+    },
+    {
+      "probe": "prerepair-acquired-follow",
+      "case": "H2C100_ABORT",
+      "actual_vm_exit": 1,
+      "fixture_status": "FAIL",
+      "original_primary_failure_retained": true,
+      "operations": [
+        {
+          "result": ":ok",
+          "operation": "negative_acquired_request_barrier",
+          "start_ms": -576460744997,
+          "end_ms": -576460744997,
+          "deadline_ms": -576460735064
+        }
+      ],
+      "cleanup_errors": [],
+      "peer_exit": 0,
+      "peer_port_down": ":normal",
+      "vm_process_group_joined": true,
+      "parent_frozen_inputs": 1285,
+      "wrapper_post_identity": "NOT_RUN_SYSTEM_HALT",
+      "artifacts": [
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-follow1-artifacts/H2C100_ABORT.json",
+          "sha256": "5216caff8511e594933cb9939066bd8a39129a52bb77dd1ec8c8f00a8c6d820a"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-follow1-artifacts/identity.json",
+          "sha256": "f6b1dbce32512195c8179086ca1894dc3082387eb2b8ffff587c7adbd93e2ca2"
+        },
+        {
+          "path": "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-negative-prerepair-acquired-follow1-artifacts/results.json",
+          "sha256": "b0ddc6e8c0b127fb0af2bbe0929e41cff8722ac0d972ea457bad9f075490b74c"
+        }
+      ]
+    }
+  ],
+  "analysis_tool_sha256": "2ec02639c942c028cf43fa524656d5302ab6d3691ef85062ca4b49240949dfcd",
+  "claim": "Expected failure-path behavior and dedicated VM/peer shutdown; no native reclamation or M3 acceptance proof"
+}

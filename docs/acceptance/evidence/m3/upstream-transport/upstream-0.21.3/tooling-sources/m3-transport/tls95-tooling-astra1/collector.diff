@@ -1,0 +1,143 @@
+--- collector-before.py
++++ .audit/m3-tls95-collector.py
+@@ -6,6 +6,7 @@
+ import os
+ import re
+ import signal
++import stat
+ import subprocess
+ import sys
+ import time
+@@ -16,17 +17,40 @@
+ PYTHON = '/tmp/gaoxy-m3-h2-soak-venv/bin/python'
+ sha = lambda p: hashlib.sha256(Path(p).read_bytes()).hexdigest()
+ def save(path, value):
++    text = json.dumps(value, indent=2, sort_keys=True)+'\n'
+     with Path(path).open('x') as output:
+-        output.write(json.dumps(value, indent=2, sort_keys=True)+'\n')
+-
+-def tree(path):
++        output.write(text)
++
++def tree(path, owned=False):
+     result = {}
+-    if path.exists():
+-        for p in sorted(path.rglob('*')):
++    def visit(p, descend):
++        try:
++            identity = p.lstat()
++        except FileNotFoundError:
++            result[str(p)] = {'type': 'missing'}
++            return
++        kind = ('symlink' if stat.S_ISLNK(identity.st_mode) else
++                'directory' if stat.S_ISDIR(identity.st_mode) else
++                'file' if stat.S_ISREG(identity.st_mode) else 'special')
++        entry = {'type': kind, 'real': str(p.resolve()), 'mode': identity.st_mode,
++                 'device': identity.st_dev, 'inode': identity.st_ino}
++        result[str(p)] = entry
++        if kind == 'symlink':
++            entry['target'] = os.readlink(p)
+             if p.is_file():
+-                result[str(p)] = {'real': str(p.resolve(strict=True)), 'sha256': sha(p)}
+-            elif p.is_symlink():
+-                p.resolve(strict=True)
++                entry['sha256'] = sha(p)
++        elif kind == 'file':
++            entry['sha256'] = sha(p)
++        elif kind == 'directory' and descend:
++            for child in sorted(p.iterdir()):
++                visit(child, True)
++    if owned:
++        assert path.is_relative_to(ROOT)
++        for ancestor in path.parents:
++            visit(ancestor, False)
++            if ancestor == ROOT:
++                break
++    visit(path, True)
+     return result
+ 
+ def protected():
+@@ -92,7 +116,7 @@
+         if not destination.exists():
+             destination.write_bytes(p.read_bytes())
+     hex_home.mkdir(exist_ok=True)
+-    return target, hex_home, frozen_tools, tree(target)
++    return target, hex_home, frozen_tools, tree(target, owned=True)
+ 
+ def profile(name, phase):
+     result = subprocess.run([PYTHON, str(ROOT / '.audit/m3-tls95-native-profile.py')],
+@@ -142,7 +166,7 @@
+     root = ROOT if mode == 'candidate' else BASELINE
+     before = protected()
+     mix_home, hex_home, tool_sources, tool_copy = install_tools(root, mode)
+-    hex_before = tree(hex_home)
++    hex_before = tree(hex_home, owned=True)
+     save(OUT / f'{name}-mix-tool-copy.json', {'source': tool_sources, 'copy': tool_copy,
+          'hex_home': str(hex_home), 'hex_inventory': hex_before})
+     disk_before = tree(root / '_build/test')
+@@ -193,13 +217,21 @@
+         except BaseException as error:
+             post_errors[label] = repr(error)
+             return None
++    # Preserve the actual wait result before any post-run file read or parser.
++    receipt = {'status': 'COMMAND_FINISHED' if not timed_out else 'FAIL_TIMEOUT', 'mode': mode,
++               'argv': command, 'cwd': str(root), 'started_utc': started,
++               'timeout_seconds': timeout, 'exit': code, 'timed_out': timed_out, 'log': log.name}
++    collect('command_exit_receipt', lambda: save(OUT / f'{name}-command-exit.json', receipt))
++    completed = collect('completed_utc', lambda: datetime.datetime.now(datetime.timezone.utc).isoformat())
++    elapsed = collect('elapsed_seconds', lambda: round(time.monotonic()-timer, 3))
+     after = collect('protected', protected)
+     disk_after = collect('build_tree', lambda: tree(root / '_build/test'))
+     source_after = collect('source_tree', lambda: tree(root / 'packages') if mode != 'candidate' else tree(ROOT / 'deps'))
+-    save(OUT / f'{name}-source-after.json', {'protected': after, 'source_tree': source_after, 'build_tree': disk_after})
+-    text = re.sub(r'\x1b\[[0-9;]*m', '', log.read_text(errors='replace'))
++    collect('source_after_receipt', lambda: save(OUT / f'{name}-source-after.json',
++            {'protected': after, 'source_tree': source_after, 'build_tree': disk_after}))
++    text = collect('log_text', lambda: re.sub(r'\x1b\[[0-9;]*m', '', log.read_text(errors='replace')))
+     records = {}
+-    for line in text.splitlines():
++    for line in (text or '').splitlines():
+         if line.startswith('TLS95_') and ' ' in line:
+             key, value = line.split(' ', 1)
+             if value.startswith('{'):
+@@ -208,28 +240,29 @@
+                 except BaseException as error:
+                     post_errors.setdefault('record_parse', []).append(repr(error))
+     peer_after = collect('peer_inventory', peers)
+-    tool_after = collect('tool_copy', lambda: tree(mix_home))
+-    hex_after = collect('hex_inventory', lambda: tree(hex_home))
++    tool_after = collect('tool_copy', lambda: tree(mix_home, owned=True))
++    hex_after = collect('hex_inventory', lambda: tree(hex_home, owned=True))
+     tool_source_after = collect('tool_sources', lambda: {p: sha(p) for p in tool_sources})
+-    receipt = {'status': 'COMMAND_FINISHED' if not timed_out else 'FAIL_TIMEOUT', 'mode': mode,
+-               'argv': command, 'cwd': str(root), 'started_utc': started,
+-               'completed_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+-               'elapsed_seconds': round(time.monotonic()-timer, 3), 'timeout_seconds': timeout,
+-               'exit': code, 'timed_out': timed_out, 'log': log.name, 'log_sha256': sha(log),
++    log_sha = collect('log_sha256', lambda: sha(log))
++    collector_sha = collect('collector_sha256', lambda: sha(Path(__file__)))
++    receipt.update({'completed_utc': completed, 'elapsed_seconds': elapsed, 'log_sha256': log_sha,
+                'protected_inputs_match': before == after, 'source_tree_match': source_before == source_after,
+                'build_tree_match': disk_before == disk_after, 'build_mutation_authorized': mode == 'build',
+-               'tool_copy_match': tool_copy == tool_after,
++               'tool_copy_match': tool_copy == tool_after, 'tool_copy_after': tool_after,
+                'hex_inventory_match': hex_before == hex_after, 'hex_inventory_before': hex_before,
+                'hex_inventory_after': hex_after, 'tool_sources_match': tool_sources == tool_source_after,
+                'post_collection_errors': post_errors,
+                'peer_processes_before': peer_before, 'peer_processes_after': peer_after,
+                'record_counts': {k: len(v) for k, v in records.items()},
+-               'tooling_reviewed_inputs': reviewed, 'collector_sha256': sha(Path(__file__))}
+-    save(OUT / f'{name}.json', receipt)
+-    print(json.dumps(receipt, indent=2))
++               'tooling_reviewed_inputs': reviewed, 'collector_sha256': collector_sha,
++               'collector_sha256_match': collector_sha is not None and
++                   collector_sha == reviewed['files'].get('.audit/m3-tls95-collector.py')})
++    collect('final_receipt', lambda: save(OUT / f'{name}.json', receipt))
++    collect('receipt_stdout', lambda: print(json.dumps(receipt, indent=2)))
+     assert before == after and source_before == source_after
+     assert mode == 'build' or disk_before == disk_after
+     assert not post_errors and receipt['tool_copy_match'] and receipt['tool_sources_match']
++    assert receipt['collector_sha256_match']
+     assert receipt['hex_inventory_match'] and peer_after == []
+     return code
+ 

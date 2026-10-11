@@ -1,0 +1,38 @@
+{
+  "checked_utc": "2026-10-11T10:38:47.281879+00:00",
+  "argv": [
+    "gh",
+    "issue",
+    "view",
+    "97",
+    "--repo",
+    "gsmlg-dev/http_fetch",
+    "--json",
+    "number,state,url,title,comments,updatedAt"
+  ],
+  "actual_exit": 0,
+  "body": {
+    "comments": [
+      {
+        "id": "IC_kwDOPU6rnM8AAAABa-L_Ow",
+        "author": {
+          "login": "gsmlg"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "Automated fix not possible with the current runtime contract and supplied certificates. This issue remains open and blocking for the requesting repo's numerical accounting/production activation.\n\nThe architecture review checked the cited OTP 28.5.0.7 sources: `erl_hl_timer.c:1098\u20131126` sets TIMED_OUT before expiry allocation/enqueueing; `1881\u20131883` queues cross-scheduler cancellation. `erl_proc_sig_queue.c:10644\u201310654` defers signal-buffer release through thread progress/aux work, and `erl_proc_sig_queue.h:1964\u20131973` frees at final reference-count zero. `gen.erl:251\u2013280` deactivates a timed-out call's reply alias without acknowledging target consumption or native reclamation. Public demonitor/trace-delivery guarantees do not bridge these reclamation edges.\n\nNeither request completion, scope retirement, additional DOWN waits, mailbox inspection nor zero snapshots can certify the requested native/deferred frontier. No history-independent envelope bound has been established here, and this is not evidence of a memory leak. Implementing a receipt based on those observations would incorrectly claim the missing guarantee.\n\nResolution needs either a source/ABI/profile-bound conservative envelope covering these native objects and TLS caller/delivery/tracking metadata, or runtime support for an acknowledged reclamation frontier. Missing/mismatched certification must fail closed in that future contract. This checkout's local OTP 28.5.0.5 / ERTS 16.4.0.5 also differs from the requesting profile's OTP 28.5.0.7 / ERTS 16.4.0.6.\n\nWe are continuing the independent functional fix in #98; that fix and its release do not resolve #97 or authorize managed production activation.\n",
+        "createdAt": "2026-10-11T03:25:51Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gsmlg-dev/http_fetch/issues/97#issuecomment-6105005883",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 97,
+    "state": "OPEN",
+    "title": "[internal] Supported bounded accounting or acknowledged control quiescence for managed H1",
+    "updatedAt": "2026-10-11T03:25:51Z",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/97"
+  }
+}

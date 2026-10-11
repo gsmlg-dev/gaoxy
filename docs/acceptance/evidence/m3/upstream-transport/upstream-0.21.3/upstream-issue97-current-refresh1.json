@@ -1,0 +1,42 @@
+{
+  "observed_utc": "2026-10-11T10:19:05.342287+00:00",
+  "exit": 0,
+  "argv": [
+    "gh",
+    "issue",
+    "view",
+    "97",
+    "--repo",
+    "gsmlg-dev/http_fetch",
+    "--json",
+    "number,title,state,closedAt,url,updatedAt,body,comments"
+  ],
+  "issue": {
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-gateway`\n\n**Severity:** blocker for managed H1 numerical accounting and production\nactivation. Public functional qualification can continue independently.\n\nWe need a supported, source-backed bound for included managed H1 control\nresources across repeated requests and chunks, or an acknowledged public\ncontrol-quiescence contract that makes their release observable. Existing\nrequest completion and scope snapshots/retirement do not certify the required\nnative/deferred frontier. Our independently reviewed complete ledger leaves\nthis term unresolved, so it cannot produce a finite activation budget.\n\nAudited cohort: seven coordinated packages at **0.21.2**, tag commit\n`f677ca49519a007a7a551a5a515127c0f29d8ae6`, tree\n`664a2a0de2bd4820017599b2d25f62bc7dcf63b0`. Runtime: Elixir 1.18.5,\nOTP 28.5.0.7 / ERTS 16.4.0.6 / SSL 11.6.0.6, Linux x86_64, two normal\nschedulers. Exact original Nix configuration inputs were recovered; the\nseparate native ABI/layout certification remains incomplete.\n\nThe controlled profile has four outer generation slots, per-scope\n`max_connections: 2`, `max_requests: 32`, `max_pending: 0`, explicit H1,\nOTP `:ssl`, manual redirects, raw streamed responses, bounded nil/PID upload\nsources, buffer/recbuf/sndbuf 8192 and finite immutable deadlines. Scope\noperations and snapshot callers have fixed counts; there is no retry waiter\nfanout or unbounded external diagnostic input. Repeated chunks within one\nlong request still repeat stream monitor/demonitor operations.\n\n**Minimal ordering traces and affected sources**\n\n1. In OTP `erts/emulator/beam/erl_hl_timer.c` (1089\u20131147, 1810\u20131888), a timer\n   executor changes ACTIVE to TIMED_OUT before allocating/enqueueing expiry.\n   It can pause in that interval. The H1 pool removes its entry and\n   `cancel_timer` can return false; the executor later queues `{:expire, token}`.\n   Removing the logical entry or seeing false does not acknowledge that\n   deferred message or native timer reclamation.\n   `apps/http_runtime/lib/http/http1/pool.ex`:104\u2013118,202\u2013212.\n2. A chunk caller monitors the stream, sends a chunk, receives ACK and\n   demonitor-flushes before producing another chunk. Native demonitor routing,\n   signal-buffer deinstallation, reference counts and thread-progress\n   reclamation are separate. The controlled data credit needs an additional\n   history-independent bound for those native/deferred objects.\n   `apps/http_fetch/lib/http/stream.ex`:84\u2013114,214\u2013228; OTP\n   `erl_proc_sig_queue.c`:2930\u20132968,10581\u201310660 and\n   `erl_proc_sig_queue.h`:1957\u20131977.\n3. A timed-out `GenServer.call` deactivates its reply alias, while the target\n   can retain the request. A later call from a different sender does not\n   establish an all-sender consumption or native reclamation frontier.\n   OTP `lib/stdlib/src/gen.erl`:251\u2013280;\n   `apps/http_core/lib/http/request_lifecycle.ex`:386\u2013395;\n   `apps/http_runtime/lib/http/http1/pool.ex`:16\u201331.\n4. `RequestLifecycle.settle` writes latch 2 before returning stop. A public\n   completion waiter can observe that latch and return `:ok` before tracker\n   termination and subsequent native exit/monitor processing.\n   `apps/http_core/lib/http/request_lifecycle.ex`:358\u2013363;\n   `apps/http_fetch/lib/http/request_completion.ex`:116\u2013143.\n5. `Process.info(self(), :messages)` copies the message list and consumes\n   nothing. Aggregate zero resource counts also do not expose old timer,\n   alias or deferred monitor allocations.\n   `apps/http_runtime/lib/http/http1/pool.ex`:186\u2013188;\n   `apps/http_runtime/lib/http/managed_transport/scope.ex`:56\u201386.\n\nThese traces refute premature release inferences. No arbitrary-repeat memory\nleak counterexample has been established; this is a missing supported contract.\n\n**Expected behavior / acceptance**\n\nProvide either a documented conservative history-independent envelope for\nincluded term/native/control resources under this profile, or a supported\nacknowledged quiescence operation with precise included objects and ordering.\nState each relevant sender/target/native executor edge, outstanding expiry and\ncancel queues, aliases, repeated stream monitors, signal buffers and deferred\ndestruction/refcount/thread-progress costs. Define when old attempt/generation\ncontrols may be refunded and how pending/uncertain outcomes retain ownership.\n\nThe contract must include externally visible TLS caller/delivery/tracking\nmetadata and failed-setup uncertainty, even when private TLS/crypto/kernel\nheaps are explicitly excluded. Public send return, helper DOWN, completion,\nmailbox inspection and zero snapshots need their individual limits of evidence.\nBind the result to enforceable runtime/profile/source premises. Missing or\nmismatched certificates must fail closed. Publish the supported contract in a\ndependency release so the requester can update and independently requalify it.\n\nGaoxy evidence: `docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.2/`\n`h1-complete-ledger.md/json` and `h1-complete-ledger-independent-review.md/json`:\n72 rows, 14 phases, N0\u2013N8 / P0\u2013P6 / Q0\u2013Q5; 187 source/evidence hashes.\nWe will keep managed production activation disabled and do not use a private\nflush, process suspension, dependency patch or inferred frontier workaround.\n",
+    "closedAt": null,
+    "comments": [
+      {
+        "id": "IC_kwDOPU6rnM8AAAABa-L_Ow",
+        "author": {
+          "login": "gsmlg"
+        },
+        "authorAssociation": "MEMBER",
+        "body": "Automated fix not possible with the current runtime contract and supplied certificates. This issue remains open and blocking for the requesting repo's numerical accounting/production activation.\n\nThe architecture review checked the cited OTP 28.5.0.7 sources: `erl_hl_timer.c:1098\u20131126` sets TIMED_OUT before expiry allocation/enqueueing; `1881\u20131883` queues cross-scheduler cancellation. `erl_proc_sig_queue.c:10644\u201310654` defers signal-buffer release through thread progress/aux work, and `erl_proc_sig_queue.h:1964\u20131973` frees at final reference-count zero. `gen.erl:251\u2013280` deactivates a timed-out call's reply alias without acknowledging target consumption or native reclamation. Public demonitor/trace-delivery guarantees do not bridge these reclamation edges.\n\nNeither request completion, scope retirement, additional DOWN waits, mailbox inspection nor zero snapshots can certify the requested native/deferred frontier. No history-independent envelope bound has been established here, and this is not evidence of a memory leak. Implementing a receipt based on those observations would incorrectly claim the missing guarantee.\n\nResolution needs either a source/ABI/profile-bound conservative envelope covering these native objects and TLS caller/delivery/tracking metadata, or runtime support for an acknowledged reclamation frontier. Missing/mismatched certification must fail closed in that future contract. This checkout's local OTP 28.5.0.5 / ERTS 16.4.0.5 also differs from the requesting profile's OTP 28.5.0.7 / ERTS 16.4.0.6.\n\nWe are continuing the independent functional fix in #98; that fix and its release do not resolve #97 or authorize managed production activation.\n",
+        "createdAt": "2026-10-11T03:25:51Z",
+        "includesCreatedEdit": false,
+        "isMinimized": false,
+        "minimizedReason": "",
+        "reactionGroups": [],
+        "url": "https://github.com/gsmlg-dev/http_fetch/issues/97#issuecomment-6105005883",
+        "viewerDidAuthor": true
+      }
+    ],
+    "number": 97,
+    "state": "OPEN",
+    "title": "[internal] Supported bounded accounting or acknowledged control quiescence for managed H1",
+    "updatedAt": "2026-10-11T03:25:51Z",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/97"
+  },
+  "stderr": "",
+  "scope": "Read-only upstream status; no new external write"
+}

@@ -54,13 +54,19 @@ see [their accounting scope](websocket-proxy.md).
 
 ## Current M3 implemented scope
 
-Full M3 remains **BLOCKED** on HTTP Fetch [#78](https://github.com/gsmlg-dev/http_fetch/issues/78)
-for caller-owned reusable transports/confirmed retirement and remaining H2
-bounds/qualification. Installed 0.20.0 contains the #66/#67 fixes and passes
-460 scoped compatibility tests and 16 direct public request cases. The bounded
-empty-CONTINUATION diagnostic is INCONCLUSIVE; source-confirmed missing metadata
-cap [#79](https://github.com/gsmlg-dev/http_fetch/issues/79) also blocks H2 qualification.
-M4 progression is pending.
+M3 remains **INCOMPLETE**. Installed HTTP Fetch0.21.3 contains fixes #86–#89/#95/#98/#100.
+Compatibility486/0 and the frozen public managed driver39/39 with canonical
+capacity MATCH and39 joined cleanups pass. Actual supplemental TLS95 passes
+five cases/five cleanups; its isolated0.21.1 two-case negative oracle fails only
+on exact registration mismatches with both cleanups successful. H1 functional
+baseline20/0, B21 and the public H2 supplement8/8 pass with owned joins.
+Five acquisition-failure probes meet their expected negative oracles; independent
+H1/H2 specification, code and evidence review passes.
+Complete H1 numerical accounting and production activation remain blocked on
+[#97](https://github.com/gsmlg-dev/http_fetch/issues/97). Full H2 accounting,
+adversarial backlog, managed integration and soaks remain unqualified;
+reusable upstream H1/H2 stay disabled. The bounded preparation and lease model
+are qualification fixtures with an unestablished native frontier.
 The [M3 matrix](acceptance/m3.md) records actual commands, nonempty counts,
 independent reviews, source identities and any pending gate. Each claim is
 limited to its recorded Linux candidate; hosted CI/release/deployment remain
@@ -74,7 +80,7 @@ separate.
 | UDP association relay | Source/destination policy, unicast per-peer associations, empty payloads, finite rate/credit/capacity and idle expiry | CIDRs do not authenticate; no broadcast/multicast relay; no retry of uncertain output |
 | Route/standalone generations | Bounded preparation/CAS, old request/resource pins, stable listener reload and strict version1 JSON | Only static/fixed reverse-proxy JSON targets; local API; no public management listener |
 | Upstream groups | Supervised health and bounded deterministic selections with confirmed public cleanup | Dedicated H1 per request; effective member deadlines and bounded concurrency/ownership gates PASS; no group soak claim |
-| H1 reuse/upstream H2 | Direct public request cases PASS 16/16 in 0.20; Gaoxy activation remains disabled | BLOCKED on #78/#79 and remaining qualification; memory diagnostic INCONCLUSIVE |
+| H1 reuse/upstream H2 | Installed0.21.3 managed39/39, TLS supplemental5/5, H1 baseline20/0, B21 and public H2 supplement8/8; Gaoxy activation remains disabled | H1 numerical accounting BLOCKED #97; H2 full accounting/backlog and managed integration/soaks remain incomplete |
 
 The historical0.19.1 local candidate passes460 scoped tests,40 independent selected RFC checks,
 15 browser/peer checks and6 reverse-example checks. The qualified600-second

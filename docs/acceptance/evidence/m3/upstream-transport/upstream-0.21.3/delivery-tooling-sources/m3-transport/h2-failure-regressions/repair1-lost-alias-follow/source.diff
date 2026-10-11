@@ -1,0 +1,33 @@
+--- integration/http_fetch_contract/h2_functional_supplement.exs
++++ /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/h2-failure-regressions/repair1-lost-alias-follow/h2_functional_supplement.exs
+@@ -5,16 +5,7 @@
+   @plan "docs/plans/m3-h2-0.21.3-functional-supplement.md"
+   @plan_hash "25fdfb876f7e83f65b97414816a6a82c258ec8f789f0d0eb7f4e07f627ad7270"
+   @packages ~w(http_core http_runtime http_fetch http_web_socket ex_ssl elixir_quic elixir_quic_http3)
+-  @cases [
+-    {"TLS98_LATE", "tls", :late},
+-    {"TLS98_EARLY", "tls", :early},
+-    {"TLS100_ABORT", "tls", :abort},
+-    {"TLS100_DEADLINE", "tls", :deadline},
+-    {"H2C98_LATE", "h2c", :late},
+-    {"H2C98_EARLY", "h2c", :early},
+-    {"H2C100_ABORT", "h2c", :abort},
+-    {"H2C100_DEADLINE", "h2c", :deadline}
+-  ]
++  @cases [{"H2C100_ABORT", "h2c", :abort}]
+ 
+   def run do
+     ["--evidence", directory] = System.argv()
+@@ -214,6 +205,12 @@
+         update(%{completion: completion})
+         deadline = state().oracle_deadline
+ 
++        %{"connection" => 1} = event("accept", capped(deadline))
++        %{"connection" => 1, "end_stream" => true, "upload_bytes" => 0, "stream" => sid} =
++          event("request", capped(deadline))
++        true = is_integer(sid) and sid > 0
++        operation("negative_acquired_request_barrier", :ok, deadline)
++
+         if kind in [:abort, :deadline] do
+           {:error, {:unsupported_completion, :redirect}} =
+             observe(

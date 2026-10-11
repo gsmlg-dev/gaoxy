@@ -28,30 +28,70 @@ archives/runtime blobs from local baseline `4cc7a1a967d1b90a62d42db438316b10a03a
 
 ## Execution boundaries
 
-Tasks0–2 were completed on0.20 and their evidence remains historical. The seven
-packages are now installed at0.21.1. Independent
-[installed review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/installed-cohort-verification.md)
-passes196 shipped files and seven archive/lock identities; Fetch and WebSocket
-both pin `== 0.21.1`, exactly seven lock entries changed and17 unrelated entries
-are preserved. The [release](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/release-provenance.json)
-and [tag/source records](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/tag-source-provenance.json)
-identify tag `bdf849adf119039ed679d24d5fbb0a321f5e578a`, tree
-`2188645d94575d7cb452e41eab156e80d38a26ef`. The independent
-[source review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
-confirms fixes86–89 present and95 absent. Fresh
-[compatibility](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/compatibility.json)
-passes486/0, seed21111026, exit0,429 unchanged source identities, strict global/
-probe format and strict compile. The
-[cleartext green](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-green-analysis.json)
-passes24/24 (9 H1,15 h2c),24 successful joined cleanups, exact canonical MATCH,
-exit0,429 unchanged inputs and no remaining peer after independent
-[canonical code review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-canonical-code-review.md).
-The [initial cleanup-gate failure](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-analysis.json)
-and [repaired expected red](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/cleartext-red-repair1-analysis.json)
-remain separate. [Remote refresh4](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/upstream-status-refresh4.json)
-observes#95 CLOSED at20:19:06Z with latest GitHub/Hex still0.21.1; the installed
-cohort lacks its containing fix. Full39/TLS remains BLOCKED95 under the
-[patch plan](m3-upstream-0.21.1-qualification.md).
+Tasks0–2 were completed on 0.20 and their evidence remains historical.
+All seven coordinated HTTP packages are installed at **0.21.3**, tag
+`ceecbf2df62ca80c361597c7303f65a153f2ce3c`, tree
+`6a44b862e8a09fb2648e48f928e37c20b1c8109a`. Both direct pins are
+`== 0.21.3`; seven lock entries changed and 17 unrelated entries are preserved.
+Independent source/artifact review verifies 196 shipped files and 175 runtime
+sources, including the containing parser/cancellation fixes #98/#100.
+Strict compilation and compatibility **486/0** pass. The unchanged public
+managed driver passes **39/39** with 39 joined cleanups and canonical capacity
+MATCH; these finite resource properties do not certify memory bounds.
+
+Actual supplemental TLS95 qualification passes **five cases/five cleanups,
+exit0**. The isolated0.21.1 negative control executes both inventory cases with
+exact H1 observed1/expected3 and H2 observed2/expected4 mismatches, two cleanups
+and real exit1. Source/build/tool/native environment freezes and original
+loaded/disk comparisons pass; every original loaded row remains unchanged and
+new rows are independently validated. Identity regression23/0 and independent
+SPEC/CODE review pass. The earlier90-second native-profile timeout executed zero
+cases and remains preserved; the unchanged profile later passed within its
+original deadline. TLS tooling counters are Sol4/unsuccessful2/Astra2; no third
+Astra recovery is authorized.
+
+H1 functional baseline B01–B20 passes **20/0**, no skips/exclusions and all owned
+joins, after the reviewed B05 backing/B17 late-cleanup amendments. Model22/0,
+ledger-refusal2/0 and loaded-identity1/0 pass. The final grouped source passes
+canonical format, baseline20 and separately admitted B21 without the grouping
+warning. B21 observes two ClientHellos, rejects the third request at C2, retains
+both genuine cleanup_unconfirmed completions and original retirement, joins15/15
+owned actors and refunds no native control credit. Eight invalid gate probes
+plus the existing relative-path probe reject with zero registered tests.
+H1 counters are Sol3/unsuccessful2/Astra1; all original deadlines remain fixed.
+
+The public H2 parser/cancellation supplement passes **8/8** (TLS4/h2c4), with
+zero skips/failures, eight joined peer shutdowns and real exit0. Exact parser
+invalid_headers_transition/RST1 and abort/deadline aborted/request_timeout/RST8
+oracles pass. Manual original completion confirms after reader consumption;
+follow completion stays explicitly unsupported. Frozen source/native/loaded
+before-after identities pass. H2 counters are Sol1/unsuccessful0/Astra0.
+Five separately frozen acquisition-failure probes meet their expected negative
+oracles. Both prerepair controls omit cancellation/recovery and record reset0;
+repaired manual/follow controls publicly cancel, recover the first response and
+record reset8. The lost-alias control preserves its real Task.await timeout,
+public abort and no second await, with explicit BLOCKED_HANDOFF. All five retain
+real VM exit1: four FAIL and one BLOCKED_HANDOFF, adding zero normal-suite cases.
+Wrapper post-identity/outcome and loaded-after identity are NOT RUN for these
+negatives because System.halt(1) bypasses them. Parent input freezes and actual
+owned process/peer joins are separately verified. Fresh native profiles compare
+exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
+H1/H2 specification, code and evidence review passes with no findings.
+
+Complete H1 numerical accounting and production activation remain **BLOCKED**
+on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
+currently OPEN. It requires a supported history-independent control bound or
+acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
+do not establish N8. The independently reviewed72-row/14-phase ledger is a
+finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
+Full H2 accounting/adversarial backlog and the complete proxy matrix remain
+unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
+and M4 remain gated; independent functional PASS does not enable activation.
+
+Use the [0.21.3 qualification plan](m3-upstream-0.21.3-qualification.md),
+[complete H1 plan](m3-h1-complete-0.21.2-accounting.md) and
+[functional fixture specification](m3-h1-qualification-fixture.md).
+
 Runtime edits in Tasks4–8 still require Task3's
 protocol-specific functional and complete accounting gates. A missing bound
 cannot be supplied by private transport calls or an arbitrary allowance.
@@ -283,10 +323,12 @@ Files: this plan's API checkpoint, the design's audited API table,
 - [x] Verify public retirement receipts close idle sockets, reject new work, survive
   late checkin, and returns pending/unconfirmed distinctly from confirmed
   completion. Scope A retirement must preserve scope B on the same origin.
-- [ ] Independently qualify actual OTP28 TLS-process tracking and release:
-  blocker [#95](../dependency-requests/http-fetch-otp28-tls-tracking.md).
-  Installed `track_tls/2` silently skips the actual socket shape. Public receipt
-  observations do not prove termination of unregistered receiver/sender processes.
+- [x] Independently qualify actual OTP28 TLS-process tracking and release:
+  containing fix [#95](../dependency-requests/http-fetch-otp28-tls-tracking.md)
+  is installed in0.21.3. Actual supplemental qualification passes five cases
+  and five joined cleanups with frozen before/after loaded/native identities;
+  see [current acceptance](../acceptance/m3.md). This finite process-tracking
+  evidence does not establish the native lifetime/accounting frontier.
 - [ ] Build the design's numeric retained-byte worksheet from this exact source.
   Include transient HPACK/header decoding, fragment/control metadata, payload
   copies, pending requests, idle connections and unknown/unconfirmed holds.
@@ -358,7 +400,7 @@ separate source backing/owned constructor manifests and named partial facts.
 It opens no scope, starts no process, performs no I/O and wires no adapter.
 Its activation API stays explicitly unqualified while P0–P6 remain open.
 Needed upstream input/backing requests#87/#88 are excluded by the narrow grammar;
-their0.21.1 source fixes do not complete local P0–P6 proof work or the full#86
+their0.21.1 source fixes do not complete local P0–P6 proof work or the full H2
 adversarial-backlog gate.
 
 - [x] Independent specification review of the written narrow design/plan:
@@ -615,7 +657,7 @@ documentation, `docs/dependency-followups.md`, later evidence directory.
   review pass; stage only owned files and preserve unrelated edits. Publication
   and deployment remain outside this plan.
 
-## Self-review and current handoff
+## Historical architecture self-review and handoff
 
 Requirements map: public API/deadline identity and source bounds -> Tasks 1–3;
 capacity/ownership/trust and generic instance stop hook -> Task 4;
@@ -626,9 +668,10 @@ independent review/compatibility/evidence -> Task 8.
 
 The architecture worker wrote only the two assigned documents and performed
 source/document checks. Runtime checks are NOT RUN by that worker. No recovery
-repair budget was used. Sol can execute Tasks 0–2 now; Tasks 3–8 remain gated by
-upstream #78, resolution of demonstrated bounds defects, and containing-release
-qualification. No additional product decision is needed to run the ready-now
+repair budget was used. At that architecture checkpoint, Sol could execute Tasks 0–2; Tasks 3–8
+remained gated by upstream #78, resolution of demonstrated bounds defects, and
+containing-release qualification. The current disposition below supersedes that
+installed-source and blocker state. No additional product decision is needed to run the ready-now
 probes or route their findings.
 
 Architecture refinement 1 addresses independent SPEC findings S1–S3: the
@@ -638,16 +681,19 @@ sustained lifetime/churn (Task 7b), and resource facade/provider arities remain
 distinct. Document self-review is not the pending independent re-review and
 does not qualify runtime behavior.
 
-Current checkpoint, 2026-10-11: installed0.21.1 provenance and independent
-source review PASS; fixes86–89 present,95 absent. Fresh compatibility PASS486/0,
-seed21111026, exit0,429 unchanged source identities, strict format/compile;
-cleartext green PASS24/24 with24 joined cleanups and canonical MATCH; the initial
-red cleanup failure and repaired expected-red success remain separate. Issue95
-is now closed, but installed0.21.1 lacks its fix, so full39/TLS stays BLOCKED.
-Historical
-0.21.0 Task3 functional39/39, pure Task3a26/0 and conditional source reviews
-remain tied to their original cohort. Follow the
-[patch qualification plan](m3-upstream-0.21.1-qualification.md) for fresh gates.
-Full P0–P6, held preparing/connecting saturation, complete#86 adversarial backlog
-and Tasks4–8 remain unqualified; M4 is gated. The older handoff and local delivery
+## Current execution checkpoint — 2026-10-11
+
+Installed0.21.3 provenance/source review, compatibility486/0 and finite managed
+driver39/39 with canonical MATCH and39 joined cleanups pass. Supplemental
+TLS95 passes5/5, H1 baseline20/0 and separately admitted B21 pass, and the public
+H2 parser/cancellation supplement passes8/8 (TLS4/h2c4), with eight joined peers
+and exit0. Five acquisition-failure probes meet their expected negative oracles;
+independent H1/H2 specification, code and evidence review passes. See
+[current acceptance](../acceptance/m3.md) for exact receipts.
+Feature#97 remains OPEN and blocks complete H1 native/control numerical
+accounting and managed activation. Full P0–P6, H2 accounting/backlog, managed
+Tasks4–8 and their sustained-load gates remain unqualified; M4 is gated.
+The previous 0.21.1 cleartext24/24 and 0.21.0 functional/source receipts retain
+their exact historical scopes and failures.
+The older handoff and local delivery
 `d8e3a26` preserve their historical qualification/TLS boundary.

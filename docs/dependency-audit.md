@@ -1,4 +1,22 @@
-# Dependency audit — 2026-10-08
+# Dependency audit
+
+## Current M3 cohort — 2026-10-11
+
+The proxy directly pins Fetch/WebSocket to `== 0.21.3`; all seven coordinated
+HTTP packages resolve to0.21.3. Verified tag is
+`ceecbf2df62ca80c361597c7303f65a153f2ce3c`, tree
+`6a44b862e8a09fb2648e48f928e37c20b1c8109a`. Independent
+[installed verification](acceptance/evidence/m3/upstream-transport/upstream-0.21.3/installed-cohort-verification.md)
+checks all seven archives,196 shipped files and175 runtime sources;17 unrelated
+lock entries are preserved. Compatibility486/0, finite managed39/39, H1
+baseline20/0, B21, public H2 supplement8/8 and actual TLS supplemental5/5 pass.
+Five acquisition-failure probes meet their expected negative oracles; independent
+H1/H2 specification, code and evidence review passes.
+The locked Nix shell uses Linux, Elixir1.18.5/OTP28.5.0.7/ERTS16.4.0.6/SSL11.6.0.6.
+[M3 acceptance](acceptance/m3.md) records Feature#97's unresolved native-control
+contract, unqualified full H2 accounting/backlog and disabled managed activation.
+
+## Historical foundation audit — 2026-10-08
 
 Repository inspection found an unborn `main` branch and three untracked user
 documents. The original kickoff and implementation plan are retained. No sibling

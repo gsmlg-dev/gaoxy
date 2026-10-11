@@ -1,0 +1,390 @@
+{
+  "adversarial_tests": [
+    {
+      "id": "A01",
+      "proves": "Functional frame-count boundary and owned cleanup; no memory envelope",
+      "scope": "TLS H2 and h2c exact256 empty/body success and257 empty/nonempty final/nonfinal rejection; connection-failure sibling and independent-scope/no-replay cases",
+      "source": "managed_transport_probe.exs:772-912; managed_peer.py:273-307",
+      "status": "EXECUTABLE_UNCHANGED_DEFAULT39_NOT_RUN_BY_AUDIT"
+    },
+    {
+      "id": "A02",
+      "proves": "Functional logical admission/draining/idle holds; no native release proof",
+      "scope": "H2 held request/unread capacity, GOAWAY+PING ACK before admission rejection, independent scope progress, replacement only after public retirement/ledger confirmation",
+      "source": "managed_transport_probe.exs:441-467,693-769; managed_peer.py:261-268",
+      "status": "EXECUTABLE_UNCHANGED_DEFAULT39_NOT_RUN_BY_AUDIT"
+    },
+    {
+      "id": "A03",
+      "proves": "Functional finite deadlines/receipts/no replay; no heap or timer reclamation bound",
+      "scope": "Unequal and short absolute deadlines, graceful pending late checkin, abort/creator death cleanup while healthy sibling/scope continues",
+      "source": "managed_transport_probe.exs:389-634",
+      "status": "EXECUTABLE_UNCHANGED_DEFAULT39_NOT_RUN_BY_AUDIT"
+    },
+    {
+      "id": "A04",
+      "proves": "Public repeated GOAWAY wire behavior using existing grammar; cannot measure private cast count or prove native control reclamation",
+      "scope": "Finite repeated drain_connection commands on one held stream, with peer PING ACK and exact public terminal/remaining healthy-sibling outcomes; immutable original deadline and joins",
+      "source": "managed_peer.py:252-268",
+      "status": "EXISTING_FINITE_PEER_COMMANDS_ONLY_NEW_CONTROLLER_REQUIRED_NOT_IMPLEMENTED"
+    },
+    {
+      "id": "A05",
+      "proves": "Separate bounded public-peer specification required before implementing/running; upstream private owner tests are not permitted requester APIs or current default39 coverage",
+      "scope": "SETTINGS flood/coalescing under blocked consumer, informational128/129 and metadata limit, Huffman/table scratch, raw delivery/copy peaks, truly stalled upload/slow-reader credit and held preparing/connecting saturation",
+      "source": "Upstream notification_bounds_test.exs contains source regressions; existing managed_peer exposes finish_hold/fragments/drain_connection/wire_snapshot, not these scripts",
+      "status": "NOT_EXECUTABLE_WITH_UNCHANGED_DEFAULT39_OR_EXISTING_PEER_GRAMMAR"
+    }
+  ],
+  "assignment": "direct read-only investigation; two create-only reports",
+  "baseline": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "blocker": {
+    "issue": "https://github.com/gsmlg-dev/http_fetch/issues/97",
+    "mechanism": "Shared native/control/lifetime missing contract applies directly to H2 scope/lifecycle/Stream/TLS, and H2 idle/reservation timers have the same cancel-vs-deferred-expiry frontier. No arbitrary-repeat leak demonstrated.",
+    "next_upstream_contract": "Extend the supported source/ABI/profile-bound envelope or acknowledged reclamation receipt requested by97 to native_v1 H2: repeated peer SETTINGS/PING/GOAWAY and idle/reservation timers; stream/call/monitor/signal/refcount/thread-progress controls; raw TCP/OTP-TLS caller/delivery/tracking metadata and failed setup; all-sender edges and retain/refund rules. Publish coordinated release; mismatched/missing certificates fail closed. Parent can route an evidence-backed H2 supplement to97 without duplicate local lemmas or workaround."
+  },
+  "complete_numeric_expression": "BLOCKED",
+  "full_expression": "B_required = sum(W01..W15 with listed enforced population multiplicities and all simultaneous representation/copy/native holds); UNRESOLVED because listed missing terms have no certified retained-byte value or release frontier. No subtotal is an activation budget.",
+  "local_review_input_sha256": {
+    "docs/plans/m3-upstream-transport.md": "97dfb4aa0ef171c432e64c170ab305dad6e551c196015772ef3b29c6cf90c8e6",
+    "integration/http_fetch_contract/managed_peer.py": "319e9c9f2832ddf2ab9cc84aedd519bfe33f36e2152d24bb47bf5fcde8169d79",
+    "integration/http_fetch_contract/managed_transport_probe.exs": "0e266d6c278682e23d2611d053c8d155bb19d4354c6a5dfa2f411dc177c49520",
+    "integration/http_fetch_contract/pooled_completion_probe.exs": "f681723ff58754cb6169d0b42fb681a8439eeaa6c7ec7e94c752894405ce1e30",
+    "integration/http_fetch_contract/upstream_peer.py": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f"
+  },
+  "observed_utc": "2026-10-11T09:31:02.326778+00:00",
+  "proposed_existing_command": "ERL_FLAGS='+S 2:2' MIX_ENV=test nix develop --offline --command unbuffer mix run --no-compile --no-start integration/http_fetch_contract/managed_transport_probe.exs",
+  "public_contract_sha256": "44643365bb4f1b1cebf1c018b7a9506570de2171409b12e254e77e53901432af",
+  "recommended_parent_execution": "Use unchanged default39 via existing Nix/OTP profile after compile/loaded identity gates; command recorded below, not run by audit. It gives scoped functional evidence only.",
+  "release": {
+    "tag_commit": "ceecbf2df62ca80c361597c7303f65a153f2ce3c",
+    "tree_sha": "6a44b862e8a09fb2648e48f928e37c20b1c8109a",
+    "version": "0.21.3"
+  },
+  "remaining_risks": "Missing profile/ABI/ingress/copy certificates and97 frontier block complete H2 numerical qualification; independent functional39 work can proceed; no managed activation/soak/M4 qualification follows.",
+  "shutdown": "All audit commands finished; no VM/peer/background jobs started; only two new audit reports written",
+  "source_identity": {
+    "http_core/lib/http/http2/boundary.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/boundary.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/boundary.ex",
+      "sha256": "67bebd1b226069753fab1c4b70b21cce1fc2e5846f8b45a219dd69c5bee283ee",
+      "size_bytes": 2314
+    },
+    "http_core/lib/http/http2/connection.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/connection.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/connection.ex",
+      "sha256": "b9079e36ef4a98502852943af5d371d781094905ca0f36d45662931c7eb10716",
+      "size_bytes": 16902
+    },
+    "http_core/lib/http/http2/frame.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/frame.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/frame.ex",
+      "sha256": "b3140bfcfca3691d7868c2542e839adc7332c0ae196640c57d8f5674521adf01",
+      "size_bytes": 2626
+    },
+    "http_core/lib/http/http2/hpack.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/hpack.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/hpack.ex",
+      "sha256": "aba3c8b8f3384127d5266ed5de23ee10344e3a0620d0baa6e4a2bdbf559fbbc9",
+      "size_bytes": 26234
+    },
+    "http_core/lib/http/http2/stream_state.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/stream_state.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/stream_state.ex",
+      "sha256": "ea6dc2679733fe88c7f686df3cf417e220ebbe38923e704254aae849a1b6e280",
+      "size_bytes": 11759
+    },
+    "http_core/lib/http/http2/wire_profile.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/http2/wire_profile.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/http2/wire_profile.ex",
+      "sha256": "0ba06539f405188c51c9a009475baad676b83268d2151293d8ac4df780e086e6",
+      "size_bytes": 10928
+    },
+    "http_core/lib/http/request_lifecycle.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/request_lifecycle.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/request_lifecycle.ex",
+      "sha256": "4254536dae70cc96e7094ecffd40622c88f7626123bf458e0fc572421007fc3e",
+      "size_bytes": 14293
+    },
+    "http_core/lib/http/transport/ssl.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/transport/ssl.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/transport/ssl.ex",
+      "sha256": "b6a97b20bd0266ef378e7eb101f29acfcbab3a3c6a07e32e58ab63c34e170ba2",
+      "size_bytes": 6789
+    },
+    "http_core/lib/http/transport/tcp.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_core/lib/http/transport/tcp.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_core/lib/http/transport/tcp.ex",
+      "sha256": "2685ee728c19fc21014972792e5d71560fc8b08f5553b9a3874707fe534a7c9d",
+      "size_bytes": 1369
+    },
+    "http_fetch/lib/http/http2/body_bridge.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_fetch/lib/http/http2/body_bridge.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_fetch/lib/http/http2/body_bridge.ex",
+      "sha256": "e27351a43ca89e80e169a66b8a186c9ae9079d522ba87d769a62cd5746c9ecb3",
+      "size_bytes": 9287
+    },
+    "http_fetch/lib/http/request_completion.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_fetch/lib/http/request_completion.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_fetch/lib/http/request_completion.ex",
+      "sha256": "2579b9bbae473603227bcf0edc9509adb8c070927d44fb4e141e7d11160bcb9f",
+      "size_bytes": 4722
+    },
+    "http_fetch/lib/http/socket_client.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_fetch/lib/http/socket_client.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_fetch/lib/http/socket_client.ex",
+      "sha256": "d46dfc7058ebe3d65217389beee9957d7df8e94f1db1f0159fabac3952fd22b5",
+      "size_bytes": 66950
+    },
+    "http_fetch/lib/http/stream.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_fetch/lib/http/stream.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_fetch/lib/http/stream.ex",
+      "sha256": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+      "size_bytes": 12030
+    },
+    "http_runtime/lib/http/http2/connection_owner.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_runtime/lib/http/http2/connection_owner.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_runtime/lib/http/http2/connection_owner.ex",
+      "sha256": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615",
+      "size_bytes": 62001
+    },
+    "http_runtime/lib/http/http2/pool.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_runtime/lib/http/http2/pool.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_runtime/lib/http/http2/pool.ex",
+      "sha256": "914a5046550d21549c1cdb32b9abe5d9a888b5ba20721467d4def3cf1286391f",
+      "size_bytes": 37922
+    },
+    "http_runtime/lib/http/managed_transport.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_runtime/lib/http/managed_transport.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_runtime/lib/http/managed_transport.ex",
+      "sha256": "8de7281cd7fb7177ef9efe590b8697dbfc2245ace63edfa75bfb08ca8abd659a",
+      "size_bytes": 14245
+    },
+    "http_runtime/lib/http/managed_transport/policy.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_runtime/lib/http/managed_transport/policy.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_runtime/lib/http/managed_transport/policy.ex",
+      "sha256": "248f6091799727d6c43589585c8eacfc4d72b92ee6b3663298899468e1f1ad14",
+      "size_bytes": 17327
+    },
+    "http_runtime/lib/http/managed_transport/scope.ex": {
+      "installed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/deps/http_runtime/lib/http/managed_transport/scope.ex",
+      "published_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/.audit/m3-transport/upstream-0.21.3/packages/http_runtime/lib/http/managed_transport/scope.ex",
+      "sha256": "eebb773bdd3bf08523fbaa295e40bdb402b05c94acd1dfaf9dc40b26c912c967",
+      "size_bytes": 12012
+    }
+  },
+  "status": "DONE_AUDIT_FULL_H2_NUMERIC_QUALIFICATION_BLOCKED",
+  "task_id": "m3_h2_accounting_prerequisite_audit",
+  "upstream_regression_source_sha256": {
+    "apps/http_runtime/test/http/http2/header_fragment_limit_test.exs": "1f4e4e01756dc1e78e316c469adb0a5690e2377e55dab9594bb98051c74a61e6",
+    "apps/http_runtime/test/http/http2/notification_bounds_test.exs": "25273ca1a2894f33ec556c806940e817ad38b9ee49cb30c32ee78e21f64208d2"
+  },
+  "validation": {
+    "VM": "NOT RUN",
+    "audited_runtime_files_equal_installed_published": 18,
+    "dependency_git_issue_mutations": "NONE",
+    "own_repair_rounds": 0,
+    "received_astra_counter": "not applicable; parent counters unchanged",
+    "runtime_tests": "NOT RUN",
+    "scanned_worksheet_rows": 15
+  },
+  "worksheet": [
+    {
+      "class": "Outer generations and failed/unconfirmed ownership",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "A scope closes admission and keeps independently tracked resources through pending retirement. Never refund cleanup_pending/cleanup_unconfirmed.",
+      "id": "W01",
+      "missing_contract_or_input": "INPUT_G: enforceable fixed outer generation count and operation grammar, including failed/opening/uncertain generations; no H2 production profile exists. Native release also needs NATIVE97.",
+      "multiplicity": "G",
+      "source_refs": [
+        "http_runtime/lib/http/managed_transport/scope.ex:215-247",
+        "http_runtime/lib/http/managed_transport.ex:162-205"
+      ]
+    },
+    {
+      "class": "Frozen origin/TLS/socket policy and preparation",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "external_size({ssl,sockets})<=1048576; bounded_term depth16; accepted binaries copied; origin host<=253. Request traversal max65536 nodes/depth32.",
+      "id": "W02",
+      "missing_contract_or_input": "POLICY_HEAP: source/ABI/profile heap conversion and simultaneous trust/file/PEM/preparation copy multiplicities, including parsed TLS and setup overlap inside the declared accounting scope. Serialized policy cap is not heap bytes.",
+      "multiplicity": "G plus bounded simultaneous constructor copies",
+      "source_refs": [
+        "http_runtime/lib/http/managed_transport/policy.ex:4-7,51-108,157-175",
+        "http_runtime/lib/http/managed_transport.ex:45-62"
+      ]
+    },
+    {
+      "class": "Request/preparing/connection/idle populations",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Ingress fixed R ETS slots; pending=0; connecting+checked-out+idle included in connection slot; scope slots<=C. H2 pool max_keys=1/max_streams=R/max_total_connections=C. Idle timeout1..60000ms does not refund live holds.",
+      "id": "W03",
+      "missing_contract_or_input": "POPULATION_HEAP: per-slot/tracker/connector/owner/pool/ETS/monitor term/native costs and simultaneous release edges; NATIVE97 survives logical slot removal. Held connecting/preparing runtime states are not covered by default39.",
+      "multiplicity": "G*R requests and G*C member slots; R=1..2048,C=1..256",
+      "source_refs": [
+        "http_runtime/lib/http/managed_transport/policy.ex:63-66",
+        "http_runtime/lib/http/managed_transport/scope.ex:10-31,84-110,132-174",
+        "http_runtime/lib/http/http2/pool.ex:1002-1022"
+      ]
+    },
+    {
+      "class": "Prepared target, headers and trailers",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Managed effective fields+target<=65536 accounted bytes,<=256 fields; nil/PID body grammar for selected controlled profile; bounded trailer validation applies.",
+      "id": "W04",
+      "missing_contract_or_input": "REQUEST_COPIES: enforce frozen H2 caller body/trailer/redirect/raw-stream grammar; bound concurrent prepared/header/wire/Fetch copies and structure via ABI. Do not import H1 copy lemmas as H2 proof.",
+      "multiplicity": "G*R live request copies",
+      "source_refs": [
+        "http_runtime/lib/http/managed_transport/policy.ex:157-175,264-304",
+        "http_fetch/lib/http/socket_client.ex:1180-1280"
+      ]
+    },
+    {
+      "class": "Raw TCP/TLS delivery, partial frame and concatenation",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Native local max frame F=16384. Boundary rejects length>F after3 bytes. A :more carry has <F+9 logical bytes and is binary.copy compacted. Owner parses state.buffer<>delivery within callback and rearms active-once afterward.",
+      "id": "W05",
+      "missing_contract_or_input": "INGRESS_ABI: maximum raw delivery backing for chosen TCP and OTP TLS options; raw message/caller/TLS delivery/tracking metadata, concat old/new overlap, kernel-vs-included boundaries and per-callback copies. active-once and DATA credit do not bound these allocations.",
+      "multiplicity": "G*C plus overlapping received messages",
+      "source_refs": [
+        "http_core/lib/http/http2/boundary.ex:5-8",
+        "http_core/lib/http/http2/frame.ex:44-58",
+        "http_runtime/lib/http/http2/connection_owner.ex:336-352,786-822",
+        "http_core/lib/http/transport/tcp.ex:7-38",
+        "http_core/lib/http/transport/ssl.ex:11-84"
+      ]
+    },
+    {
+      "class": "Encoded header fragments and concatenation",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "H=65536 logical encoded bytes;<=256 total HEADERS/CONTINUATION frames including empty; empty fragments omitted and nonempty compacted. Published conservative scratch:3*H encoded representations during fragment/reverse/concat overlap.",
+      "id": "W06",
+      "missing_contract_or_input": "HEADER_REPR: convert finite fragment-list, frame/map/subbinary and scratch counts to actual heap/native bytes under certified runtime; callback and garbage root release must be enforced.",
+      "multiplicity": "G*C one current block per connection",
+      "source_refs": [
+        "http_runtime/lib/http/http2/connection_owner.ex:1020-1080,1126-1127",
+        "docs/managed-transports.md:140-151"
+      ]
+    },
+    {
+      "class": "Decoded HPACK blocks and Huffman transient",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Decoded name+value bytes<=65536 and fields<=256; raw literal strings copied. Huffman bit list<=8*65536=524288 cells; output<=65536 one-byte binary entries; original+reverse lists, output binary and freshly constructed fixed decoding trie.",
+      "id": "W07",
+      "missing_contract_or_input": "HPACK_HEAP: exact certified list/tuple/map/small-binary/subbinary/trie/recursion/GC overlap and release sizes; fixed trie size is source finite but no accepted runtime heap certificate. Published scratch count is not complete retained bytes.",
+      "multiplicity": "G*C one callback decoder, plus outstanding roots",
+      "source_refs": [
+        "http_core/lib/http/http2/hpack.ex:534-537,584-710,740-772,828-894",
+        "docs/managed-transports.md:140-151"
+      ]
+    },
+    {
+      "class": "HPACK dynamic tables and outbound encoder",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Native decoder4096 accounted bytes; entry_size=name+value+32 implies<=128 entries; reserve old/new4096 tables and insertion/eviction list overlap. Native encoder indexing=:literal,huffman=:never does not add dynamic entries, even when peer HEADER_TABLE_SIZE updates its scalar limit.",
+      "id": "W08",
+      "missing_contract_or_input": "TABLE_HEAP: table tuples/lists/binary ownership and old/new root-release conversions; exact outbound header encoding scratch/structures still need source/profile conversion. Do not claim arbitrary peer-selected encoder table4096; current literal profile is the premise.",
+      "multiplicity": "G*C decoder+encoder roots",
+      "source_refs": [
+        "http_core/lib/http/http2/wire_profile.ex:24-30,68-79",
+        "http_core/lib/http/http2/connection.ex:103-116",
+        "http_core/lib/http/http2/hpack.ex:439-507,795-827"
+      ]
+    },
+    {
+      "class": "Informational/final/trailer events after #86",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Before enqueue:<=128 informational heads and<=65536 regular accounted bytes per stream lifetime; counters never replenish. Final/trailer each once;<=130 header events and<=33280 pairs. Published accounted-data expression65536+128*42+2*(65536+256*32)=218368 per request, for owner and recipient representations and separately Fetch representation. Terminal streams cannot renew header/upload-stop notices; rejected blocks still advance HPACK.",
+      "id": "W09",
+      "missing_contract_or_input": "EVENT_HEAP_COPIES: actual term/structural bytes and simultaneous recipient/owner/Fetch copy/root multiplicity with release evidence. 32-byte field charge and218368 are accounting data conventions, not BEAM byte envelope; do not sum them into an activation constant.",
+      "multiplicity": "G*R lifetime recipients, not current protocol stream count",
+      "source_refs": [
+        "http_runtime/lib/http/http2/connection_owner.ex:1239-1305,1668-1698",
+        "http_core/lib/http/http2/stream_state.ex",
+        "docs/managed-transports.md:114-139"
+      ]
+    },
+    {
+      "class": "DATA credit, delivery queues and downstream copies",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Brecv=max(1048576,native connection_initial_window)=1048576. Return connection credit only while unacknowledged+receive_window fits Brecv; stream credit only after application consumption. Per-stream delivery queue<=128 entries; byte-stream coalescing begins at64; ordinary raw Fetch preserves ACK chain.",
+      "id": "W10",
+      "missing_contract_or_input": "DATA_COPIES: exact owner events/subbinary backing/SocketClient/mailbox/HTTP.Stream/downstream copies and overlap until respective ACK; ingress W05 remains additional. Protocol bytes do not translate directly into physical residency.",
+      "multiplicity": "G*C receive allowance plus G*R deliveries",
+      "source_refs": [
+        "http_runtime/lib/http/http2/connection_owner.ex:126,1097-1121,1141-1237",
+        "http_fetch/lib/http/socket_client.ex:1180-1280"
+      ]
+    },
+    {
+      "class": "Upload bridge/source/pending writer pieces",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Bridge<=65536 buffered source chunk, one inflight slice<=16384; credit clamped to buffer capacity; next source ACK after complete slice consumption. Owner pending_body one per stream, copies remaining piece on progress; EOF/trailer/stop messages finite per admitted request.",
+      "id": "W11",
+      "missing_contract_or_input": "UPLOAD_COPIES: source backing under frozen nil/PID one-credit grammar, bridge/owner/sent-frame remainder overlap, term/ref costs and repeated monitor native frontier NATIVE97; external producer history excluded only by explicit declared scope.",
+      "multiplicity": "G*R and owner stream roots",
+      "source_refs": [
+        "http_fetch/lib/http/http2/body_bridge.ex:10-11,63-74,117-140,207-243",
+        "http_runtime/lib/http/http2/connection_owner.ex:1348-1360,1469-1496",
+        "http_fetch/lib/http/stream.ex:84-114"
+      ]
+    },
+    {
+      "class": "Synchronous writer batch and socket/TLS delivery",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Before transport_send, state.bytes+IO.iodata_length(frames)<=1048576; frozen finite send_timeout/send_timeout_close. Native profile max header/data fragment16384; bridge slices retain their credit discipline.",
+      "id": "W12",
+      "missing_contract_or_input": "SEND_ABI: complete frame/iodata encode overlap, native TCP send queues/TLS caller and sender delivery metadata, ACK/ref lifetime and failed-send uncertainty. Synchronous send return or 1MiB batch cap is not a whole transport queue/reclamation receipt.",
+      "multiplicity": "G*C writer plus G*R pending bodies",
+      "source_refs": [
+        "http_runtime/lib/http/http2/connection_owner.ex:23,705-755,1431-1450",
+        "http_core/lib/http/transport/ssl.ex",
+        "http_core/lib/http/transport/tcp.ex:29-38"
+      ]
+    },
+    {
+      "class": "SETTINGS/GOAWAY and per-stream protocol metadata",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "One unacknowledged capacity {token,snapshot} plus current desired/acknowledged state per connection; matching pool/token ACK only, stale ACK ignored; pool applies then ACKs, wire SETTINGS ACK continue. GOAWAY one draining update/connection and one nonterminal notice/surviving stream; decreasing cutoff terminates excluded streams once without new drain timer. Stream maps/ref/scheduler/header-phase state bounded by R; close_stream removes associated entries.",
+      "id": "W13",
+      "missing_contract_or_input": "CONTROL_REPR: constant-size message/ref/map/queue representations and all-sender/native signal release. Repeated peer SETTINGS/PING/control frames can cause arbitrarily many sequential actions during idle lifetime; one logical in-flight snapshot does not certify reclaimed old controls.",
+      "multiplicity": "G*C plus G*R bounded stream records",
+      "source_refs": [
+        "http_runtime/lib/http/http2/connection_owner.ex:197-205,893-925,927-978,1788-1814",
+        "http_runtime/lib/http/http2/pool.ex:349-365",
+        "http_core/lib/http/http2/connection.ex:91-102"
+      ]
+    },
+    {
+      "class": "Timers, aliases, monitors, signals and deferred native reclamation",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "Logical H2 idle/reservation timers are cancelled/replaced; owner SETTINGS/drain timers finite logical slots; scope repeats reconcile timer. Calls use aliases/monitors; Stream.chunk creates/demonitors a monitor every chunk; request completion can observe latch before tracker exit. Generation retirement waits coordinator DOWN but only proves named independently monitored termination.",
+      "id": "W14",
+      "missing_contract_or_input": "NATIVE97: history-independent source/ABI/profile bound for native/deferred controls or supported acknowledged reclamation frontier; absent for H2 shared scope/lifecycle/Stream/TLS paths as for H1. cancel_timer, ACK, public send, demonitor flush, coordinator DOWN and zero snapshot individually do not establish it.",
+      "multiplicity": "Active populations plus arbitrary request/chunk/idle histories",
+      "source_refs": [
+        "http_runtime/lib/http/http2/pool.ex:624-625,658-707,1083-1102",
+        "http_runtime/lib/http/http2/connection_owner.ex:893-904,927-978",
+        "http_runtime/lib/http/managed_transport/scope.ex:31,180-185",
+        "http_core/lib/http/request_lifecycle.ex:68-74,237-238,394-400",
+        "http_fetch/lib/http/stream.ex:84-114",
+        "http_fetch/lib/http/request_completion.ex:110-141",
+        "http_runtime/lib/http/managed_transport.ex:162-205"
+      ]
+    },
+    {
+      "class": "Failed setup, idle and unconfirmed terminal holds",
+      "complete_retained_bytes": "UNQUALIFIED",
+      "enforced_source_expression": "OTP TLS independent receiver/sender tracking is installed. Missing returned TLS inventory/unsupported representation makes scope unconfirmed; request errors preserved. Retired generation cannot be credited by response terminal alone; unread parser-failed response keeps request lease until consumed/cancelled.",
+      "id": "W15",
+      "missing_contract_or_input": "TLS_UNCERTAINTY: inventory/native delivery-tracking metadata on failed setup; complete per-held-resource bytes even after cleanup_unconfirmed; qualified lifetime/profile enforcement. Fail closed retains ownership; it does not supply a numeric size.",
+      "multiplicity": "Existing charged G,C,R slots until proven applicable release",
+      "source_refs": [
+        "http_core/lib/http/transport/ssl.ex:30-84,93-97",
+        "http_runtime/lib/http/managed_transport.ex:70-89",
+        "http_core/lib/http/request_lifecycle.ex:84-116",
+        "docs/managed-transports.md:210-245"
+      ]
+    }
+  ],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

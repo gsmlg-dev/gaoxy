@@ -25,9 +25,30 @@ upstream issue-routing instructions in `AGENTS.md`; routine issue creation is
 authorized there. Upstream source changes and publication still require their
 own authorization.
 
-## M3 public reusable transport ownership
+## Current M3 managed transport disposition — 2026-10-11
 
-Fresh [remote status](acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh1.json)
+Installed coordinated HTTP packages are0.21.3. Fixes#66/#67/#78/#79/#86–#89/#95/#98/#100
+are present. Compatibility486/0, finite public driver39/39 with canonical MATCH
+and39 joined cleanups, H1 baseline20/0 and actual TLS supplemental5/5 pass.
+The two-case isolated0.21.1 negative registration oracle executes with exact
+mismatches and both successful cleanups. Installed bytes are bound by
+[provenance](acceptance/evidence/m3/upstream-transport/upstream-0.21.3/installed-cohort-verification.md).
+B21 and the public eight-case H2 supplement pass on final source. Five
+acquisition-failure probes meet their expected negative oracles; independent
+H1/H2 specification, code and evidence review passes.
+
+[Feature #97](dependency-requests/http-fetch-managed-h1-control-frontier.md),
+typed Feature and labeled `internal request`, is OPEN. It is a blocker for
+complete H1 numerical accounting and production activation. The independently
+reviewed ledger cannot infer native N8 from completion, helper DOWN or zero
+snapshots. No local workaround is admitted; independent functional work continues.
+Full H2 accounting/backlog, managed integration and >=600-second soaks remain
+unqualified. [Current acceptance](acceptance/m3.md) supersedes the installed and
+remote state in the historical observations below.
+
+## Historical 0.21.0 public reusable transport ownership
+
+At that historical checkpoint, [remote status](acceptance/evidence/m3/upstream-transport/upstream-0.21/upstream-status-refresh1.json)
 records #86–#89 CLOSED, with latest published/installed release still0.21.0.
 Their installed-source findings and canonical MISMATCH remain until containing
 artifacts are installed and qualified. Historical issue receipts are preserved.

@@ -1,0 +1,127 @@
+{
+  "assignment": "direct_bounded_independent_SPEC_then_CODE_review",
+  "baseline_parent_supplied": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "branch_parent_supplied": "codex/m3-gateway",
+  "command_shutdown": "ALL_OWN_STATIC_COMMANDS_FINISHED_SYNCHRONOUSLY_NO_BACKGROUND_PROCESSES",
+  "commands_not_run": [
+    "VM",
+    "Mix",
+    "tests",
+    "peer",
+    "network",
+    "Git mutations",
+    "dependency actions"
+  ],
+  "counters": {
+    "H1_received": {
+      "astra": 1,
+      "sol": 2,
+      "sol_unsuccessful": 2
+    },
+    "TLS_received": {
+      "astra": 2,
+      "sol": 4,
+      "sol_unsuccessful": 2
+    },
+    "new_H2_astra": 0,
+    "new_H2_sol_repairs": 0,
+    "new_H2_unsuccessful": 0
+  },
+  "decisions_needed": "No design/user decision; parent assigns bounded acquisition-cleanup implementation repair with unchanged primary oracles/deadlines.",
+  "format_transition": "Parent canonical formatter completed exit0; permitted paths recorded in fixture-b21-h2-format1.json. Final review binds formatted current bytes.",
+  "formatted_source_sha256": "83a947b179ce40e3f2b1e511fe3dd8f4995cd4fcff1743bb2b540d9141b43c62",
+  "initial_source_sha256": {
+    "integration/http_fetch_contract/h2_functional_supplement.exs": "506420637ef2cb3403ea8649bd8d88e7a0446c41cbbbb5c5cb3d1cd2a4f66f24",
+    "integration/http_fetch_contract/h2_functional_supplement_peer.py": "b1bcff8b19eba8c7bccb315ecd3ee66be860816128e76b2a15b5a36e0968f170"
+  },
+  "input_sha256": {
+    "deps/http_core/lib/http/transport/ssl.ex": "b6a97b20bd0266ef378e7eb101f29acfcbab3a3c6a07e32e58ab63c34e170ba2",
+    "deps/http_fetch/lib/http/abort_controller.ex": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+    "deps/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+    "deps/http_fetch/lib/http/request_completion.ex": "2579b9bbae473603227bcf0edc9509adb8c070927d44fb4e141e7d11160bcb9f",
+    "deps/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/fixture-b21-h2-format1.json": "2e268315b63fe332df31b7299a3a5c69540f6e9da79e157109703c05bb00f588",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-functional-supplement-spec-review.json": "66a7efd80c8c6098c7d94778df8034a92b567034bc93abcbb58e191e94bda590",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-functional-supplement-spec-review.md": "3ad44371798ec724ca579bb387eeebb8e3a80a6216c2a4af68ae549bf0ef7113",
+    "docs/plans/m3-h2-0.21.3-functional-supplement.md": "25fdfb876f7e83f65b97414816a6a82c258ec8f789f0d0eb7f4e07f627ad7270",
+    "integration/http_fetch_contract/h2_functional_supplement.exs": "83a947b179ce40e3f2b1e511fe3dd8f4995cd4fcff1743bb2b540d9141b43c62",
+    "integration/http_fetch_contract/h2_functional_supplement_peer.py": "b1bcff8b19eba8c7bccb315ecd3ee66be860816128e76b2a15b5a36e0968f170"
+  },
+  "mutations": "Only new owned h2-functional-supplement-code-review.md/json written. No source/plan/model/manifest/other evidence changes.",
+  "open_findings": [
+    {
+      "actual": "cleanup gates both supported RequestCompletion.abort_and_await and follow AbortController.abort on is_pid(state.stream). With no exposed stream, public request cancellation is skipped; controller/peer are stopped and the original promise is not retained for late response acquisition.",
+      "evidence": "Promise.await is a direct Task.await (deps/http_fetch/lib/http/promise.ex:89); catching its timeout is not a request cleanup receipt. Existing state retains completion but not promise.",
+      "file": "integration/http_fetch_contract/h2_functional_supplement.exs",
+      "id": "H2-IMPL-01",
+      "impact": "An already acquired request can continue after its public cleanup responsibility was bypassed; any subsequently exposed response stream cannot be captured/drained/joined using the saved original promise. Primary failure remains FAIL, but partial-acquisition cleanup is incomplete.",
+      "line": 473,
+      "priority": "P2",
+      "related_lines": [
+        208,
+        209,
+        210,
+        223,
+        224,
+        227,
+        475,
+        477,
+        489,
+        490
+      ],
+      "required_repair": "Retain the original promise immediately. On any primary failure cancel via the captured supported completion or owned follow AbortController independently of stream availability, within originalC. Capture/register any late public response stream and drain/join it within originalC as applicable. Never call abort_and_await on unsupported follow completion or inspect/discover private task/worker state. Preserve exact main oracles, deadlines and primary FAIL.",
+      "review_stage": [
+        "SPEC",
+        "CODE"
+      ],
+      "status": "OPEN",
+      "title": "Cancel acquired requests even when response acquisition fails before stream registration",
+      "trigger": "After HTTP.fetch returns and the original completion is captured, the bounded Promise.await returns an error or exits on timeout before state.stream is assigned."
+    }
+  ],
+  "owned_outputs": [
+    "h2-functional-supplement-code-review.md",
+    "h2-functional-supplement-code-review.json"
+  ],
+  "passing_sections": {
+    "TLS_and_peer": "Four disposable OpenSSL commands cap10s, IP SAN127.0.0.1/serverAuth verified with verify_ip before ready; ssl verify_peer uses cacertfile and default hostname check, ALPNh2 required; package versions pinned.",
+    "bounds": "Peer emits\u2264128 events/4096-byte lines, reads\u22644097, accepts\u22643 controls includingstop, rejects duplicate/unknown controls; controller independently enforces matching bounds.",
+    "deadlines": "Fixed ready45s, D10s/C15s afterready; request6s/connect2s unchanged. All waits derive remaining original deadline with2s operation ceilings except original deadline reset. Peer shared shutdown2s; original lifetime60s. External600s collector remains parent-owned and is not reviewed in these two sources.",
+    "fixed_case_registration": "Exactly TLS98_LATE/EARLY, TLS100_ABORT/DEADLINE, H2C98_LATE/EARLY, H2C100_ABORT/DEADLINE in fixed list; invocation scope includes unique run/case.",
+    "normal_teardown": "Public controller Agent.stop normalDOWN, peer stopped/live_threads0, original Port exit0+normalDOWN, disposable trust directory absent, exactly1accept/request/reset and actual ownedclose. Source drift prevents suitePASS; forcedcleanup preventsPASS; BLOCKED_HANDOFF on unconfirmed OS-group termination.",
+    "public_profile": "Manual parser completion captured once; follow cancellation requires exact unsupported_completion:redirect. Explicit native_v1/reuse,6s request/2s connect, no connect_address, streaming_timeout prerequisite60000.",
+    "quality": "Qualification-only modules, no dependency/product adapter change or private runtime-operation calls. Clear fixed grammar and explicit public handles. Acquisition-based cleanup defect is the sole actionable finding.",
+    "wire_and_reader_oracles": "Exact14-byte nonterminal trailer HEADERS flags4/payload0001780176 and one DATA sentinelr. ACK before malformed early case; reset1 or8 with exact case-local connection/stream before first late read; exact public invalid_headers_transition/aborted/request_timeout and normal streamDOWN; reject extra stream messages."
+  },
+  "remaining_risks": [
+    "Repair and fresh independent review required before runtime admission.",
+    "Passing static sections establish no actual wire/runtime success, native cleanup accounting, sibling/proxy-matrix/fullM3 or production activation.",
+    "Parent must preserve actual child wait/exit before parsing under fixed600s external deadline and verify before/after runtime cohort/native identities."
+  ],
+  "review_order": [
+    "SPEC",
+    "CODE"
+  ],
+  "schema_version": 1,
+  "scoped_checks": {
+    "Elixir_compile": "NOT_RUN",
+    "Python_AST_parse": "PASS",
+    "current_input_hashes": "PASS",
+    "eight_case_runtime": "NOT_RUN",
+    "parent_external_collector_runtime": "NOT_RUN",
+    "plan_frozen_source_hash_rows": {
+      "count": 16,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "prior_SPEC_report": "PASS_STATIC_SPEC against exact supplied plan; zero open prior findings."
+  },
+  "status": "DONE_REVIEW_WITH_FINDINGS",
+  "task": "h2_0_21_3_functional_supplement_implementation_review",
+  "verdicts": {
+    "CODE": "FAIL_CODE",
+    "SPEC": "FAIL_SPEC",
+    "runtime": "NOT_RUN"
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway"
+}

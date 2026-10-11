@@ -1,6 +1,35 @@
 # HTTP Fetch public contract revalidation
 
-## Current 0.21.1 cleartext qualification
+## Current 0.21.3 qualification
+
+Installed coordinated packages are0.21.3, tag
+`ceecbf2df62ca80c361597c7303f65a153f2ce3c`, tree
+`6a44b862e8a09fb2648e48f928e37c20b1c8109a`. Provenance and source review
+verify the containing#86–#89/#95/#98/#100 fixes. Compatibility486/0 and the
+unchanged39-case public managed driver pass with39 joined cleanups and canonical
+capacity MATCH. Actual TLS supplemental5/5 and the exact old-version negative2
+registration oracle pass their required outcome gates. Early profile and tooling
+failures remain historical evidence. H1 functional baseline B01–B20 passes20/0,
+no skips/exclusions, with all owned joins. Final grouped baseline20 and B21
+pass; public H2 supplement8/8 (TLS4/h2c4) passes with eight joined peers and
+exit0. Five acquisition-failure probes meet their expected negative oracles;
+independent H1/H2 specification, code and evidence review passes.
+See [current acceptance](../../docs/acceptance/m3.md),
+[TLS analysis](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/tls95-supplemental-analysis.json),
+[B21 execution](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h1-b21-current2-analysis.json),
+[H2 execution](../../docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-functional-supplement-current1-analysis.json),
+[B21 plan](../../docs/plans/m3-h1-b21-tls-connecting.md) and
+[unchanged H2 supplement plan](../../docs/plans/m3-h2-0.21.3-functional-supplement.md).
+
+Functional cleanup never emits a native frontier release. Complete numerical
+accounting and production activation remain blocked on
+[Feature97](../../docs/dependency-requests/http-fetch-managed-h1-control-frontier.md).
+Public completion, owned worker DOWN and zero snapshots cannot supply N8.
+Full H2 accounting/adversarial backlog and the four-direction proxy matrix,
+managed integration/soaks, production Tasks4–8 and M4 remain unqualified.
+
+
+## Historical 0.21.1 cleartext qualification
 
 From the worktree root, run
 `unbuffer mix run --no-compile --no-start integration/http_fetch_contract/managed_transport_probe.exs --cleartext`

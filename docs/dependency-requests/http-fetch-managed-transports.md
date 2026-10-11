@@ -1,5 +1,26 @@
 # HTTP Fetch managed reusable transport prerequisite
 
+## Current 0.21.3 disposition — 2026-10-11
+
+Feature#78 has a containing public managed-scope implementation in
+installed0.21.3. Request completion and scope retirement remain separate;
+finite functional qualification does not establish complete resource accounting.
+
+Installed coordinated packages are **0.21.3**, tag
+`ceecbf2df62ca80c361597c7303f65a153f2ce3c`, tree
+`6a44b862e8a09fb2648e48f928e37c20b1c8109a`. Compatibility486/0, public
+managed39/39, supplemental TLS95 five cases/five cleanups, H1 baseline20/0,
+B21 and public H2 supplement8/8 (TLS4/h2c4) pass with owned joins.
+See [current acceptance](../acceptance/m3.md) for the exact execution receipts.
+Five acquired-request failure regressions and final delivery review are pending.
+
+Feature [#97](http-fetch-managed-h1-control-frontier.md) remains OPEN and blocks
+complete H1 numerical/native control accounting and managed activation. Full
+H2 accounting/adversarial backlog, managed integration, matrix and soaks remain
+unqualified; managed Tasks4–8 and M4 stay gated. No local workaround is used.
+
+## Historical 0.20.0 disposition and submitted request
+
 **Status: BLOCKED** on [Feature #78](https://github.com/gsmlg-dev/http_fetch/issues/78).
 Issue type Feature, label `internal request`, severity blocker.
 

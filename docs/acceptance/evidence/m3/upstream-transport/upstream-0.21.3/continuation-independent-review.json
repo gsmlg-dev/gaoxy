@@ -1,0 +1,61 @@
+{
+  "task": "m3_continuation_independent_review",
+  "assignment": "direct_bounded_independent_review",
+  "status": "DONE_REVIEW_WITH_ACTIONABLE_FINDING",
+  "baseline_parent_supplied": "85c2284a035e0b4ecbf577279eee01142702b5a3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway",
+  "branch_parent_supplied": "codex/m3-gateway",
+  "review_order": ["SPEC", "CODE_QUALITY"],
+  "verdicts": {
+    "continuation_and_B05_B17_specification": "PASS_SCOPED",
+    "H1_implementation_SPEC": "PASS_STATIC_REVIEW",
+    "H1_CODE_QUALITY": "PASS_STATIC_REVIEW",
+    "TLS_mapping_implementation_SPEC": "FAIL",
+    "TLS_mapping_CODE_QUALITY": "FAIL",
+    "H1_baseline20_runtime": "NOT_RUN_BY_REVIEWER",
+    "TLS_runtime_qualification": "NOT_RUN",
+    "numerical_accounting": "BLOCKED_UPSTREAM_97",
+    "managed_activation": "GATED"
+  },
+  "findings": [{
+    "id": "TLS-MAP-01",
+    "priority": "P2",
+    "path": ".audit/m3-transport/tls95-runtime-identity.exs",
+    "line": 289,
+    "reason": "Zero-width whitespace permits malformed inode/path concatenation to classify as JIT exclusion",
+    "static_counterexample": "1000-2000 r-xs 00000000 00:01 7/memfd:vmem (deleted)\n3000-4000 rw-s 00000000 00:01 7/memfd:vmem (deleted)\n",
+    "execution": "NOT_RUN_STATIC_SOURCE_DERIVATION",
+    "required_repair": "Require pathname delimiter while allowing absent pathname; add deterministic paired no-delimiter rejection"
+  }],
+  "reviewed_sha256": {
+    "docs/plans/m3-upstream-0.21.3-qualification.md": "1f2d529a0efcc333a50e625103a9bae65297c38dfe911c9571697ae0d8a6fe8b",
+    "docs/plans/m3-h1-qualification-fixture.md": "ffebaee34759d0d09077faaf8dd8e60f7ee3dc60072f3575d8b2d20512e9137c",
+    "docs/acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h1-fixture-spec-inventory.json": "0f54f37a63bcef2367c34644698ae7bb70dc08fb296f247248ee42c06fff1a39",
+    "integration/http_fetch_contract/managed_h1_accounting_fixture.exs": "12dc455611718802e1939f356e1dd7bc18b1444c50f3ac44dca727a5150507fd",
+    "integration/http_fetch_contract/managed_h1_accounting_fixture_test.exs": "1af1b70b864825dfb9de5265a48e40ac83b735656d1dd663ff1df671cd2844f2",
+    "integration/http_fetch_contract/managed_h1_accounting_peer.py": "e997a5fcd0d7391cf56ba278e5dccf3d61b5e68fbb2bae4cbedf1c69f75e0fb2",
+    ".audit/m3-transport/tls95-runtime-identity.exs": "0ea66635781ab8a3297d5b5910e1660e3a292be42aabddc3927fc971dc597b99",
+    ".audit/m3-transport/continuation-2026-10-11/tls95-identity-regression.exs": "537093be1d6dddb2f68a5d99a2e05aaefe27b4d13a46627a17f3729d36e266c6"
+  },
+  "parent_TLS_regression_evidence": {
+    "receipt": "tls95-identity-sol3-green.json",
+    "cases": 22,
+    "failures": 0,
+    "exit": 0,
+    "tls_cases": 0,
+    "wrapper_hash_at_run": "8c9c75d9a2d9c9e7ad9f65168beae734f1bead51ba8fe2bde8029e636b02d240",
+    "current_source_gate": "FRESH_VERIFICATION_REQUIRED_AFTER_COHORT_REBIND_AND_PARSER_REPAIR",
+    "log_sha256_verified": "2fcc959656a401cc34d81b1b08cc34b317b774bcb11f3b232568f105f1b763ec",
+    "raw_mapping": "SAME_DEVICE_INODE_SHARED_RX_RW_OFFSET0_EQUAL_64MIB"
+  },
+  "counters": {
+    "reviewer": {"sol": 0, "sol_unsuccessful": 0, "astra": 0},
+    "H1_received": {"sol": 2, "sol_unsuccessful": 2, "completed_astra": 0, "astra1_edit_validation": "PENDING"},
+    "TLS_received": {"sol": 3, "sol_unsuccessful": 2, "astra": 2}
+  },
+  "inventory_static_verification": {"source_hashes": 207, "matched": 207, "missing": 0, "changed": 0, "runtime_paths": 175, "unique_runtime_paths": 175, "plan_hash_matches": true, "case_ids": "B01-B20", "B17_amendment_text": "MATCH"},
+  "pending_parent_gates": ["installed/build binding", "H1 baseline20 and ledger/identity regression", "TLS parser repair and fresh review/regression", "actual TLS baseline/candidate cases", "B21 envelope rebind before separate admission"],
+  "command_shutdown": "ALL_STATIC_COMMANDS_FINISHED_NO_BACKGROUND_JOBS",
+  "prohibited_commands_run": [],
+  "owned_outputs": ["continuation-independent-review.md", "continuation-independent-review.json"]
+}

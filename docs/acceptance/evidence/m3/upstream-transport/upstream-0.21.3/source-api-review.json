@@ -1,0 +1,154 @@
+{
+  "anchors": {
+    "packages/http_core/lib/http/request_lifecycle.ex": [
+      {
+        "line": 87,
+        "text": "def fail_response(nil, stream, reason) do"
+      },
+      {
+        "line": 93,
+        "text": "def fail_response(tracker, stream, reason) when reason in [:aborted, :request_timeout],"
+      },
+      {
+        "line": 96,
+        "text": "def fail_response(tracker, stream, {kind, _} = reason)"
+      },
+      {
+        "line": 100,
+        "text": "def fail_response(tracker, stream, reason) do"
+      },
+      {
+        "line": 106,
+        "text": "defp cancel_response(tracker, stream, reason) do"
+      },
+      {
+        "line": 353,
+        "text": "def handle_info({:response_failure, stream}, state) do"
+      }
+    ],
+    "packages/http_fetch/lib/http/socket_client.ex": [
+      {
+        "line": 1562,
+        "text": "defp report_failure(%{response_sent?: true, mode: {:stream, stream}}, reason),"
+      },
+      {
+        "line": 1565,
+        "text": "defp report_failure(state, reason) do"
+      }
+    ],
+    "packages/http_fetch/lib/http/stream.ex": [],
+    "packages/http_runtime/lib/http/managed_transport.ex": [
+      {
+        "line": 15,
+        "text": "return `:cleanup_pending`; lost evidence returns `:cleanup_unconfirmed`."
+      },
+      {
+        "line": 82,
+        "text": "receipt waits after `{:error, :cleanup_pending}`. Lost evidence produces"
+      },
+      {
+        "line": 198,
+        "text": "{:error, :cleanup_pending}"
+      },
+      {
+        "line": 407,
+        "text": ":exit, {:timeout, _} -> {:error, :cleanup_pending}"
+      }
+    ],
+    "tag-source/CHANGELOG.md": [],
+    "tag-source/apps/http_fetch/test/http/managed_response_error_test.exs": [
+      {
+        "line": 15,
+        "text": "test \"H1 #{name} preserves its error for the #{reader} reader\" do"
+      },
+      {
+        "line": 28,
+        "text": "assert {:error, :cleanup_pending} = RequestCompletion.await(completion, 30)"
+      },
+      {
+        "line": 54,
+        "text": "assert {:error, :cleanup_pending} = RequestCompletion.await(completion, 30)"
+      },
+      {
+        "line": 94,
+        "text": "assert {:error, :cleanup_pending} = RequestCompletion.await(completion, 30)"
+      }
+    ],
+    "tag-source/apps/http_fetch/test/http/response_cancellation_compatibility_test.exs": [
+      {
+        "line": 8,
+        "text": "test \"untracked H2 #{name} retains its error after the peer observes cancellation\" do"
+      }
+    ],
+    "tag-source/apps/http_fetch/test/http/stream_test.exs": [
+      {
+        "line": 131,
+        "text": "assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(completion, 20)"
+      },
+      {
+        "line": 138,
+        "text": "test \"untracked #{reason} remains available to a late first reader\" do"
+      }
+    ],
+    "tag-source/docs/managed-transports.md": [
+      {
+        "line": 35,
+        "text": "{:error, :cleanup_pending} -> :wait_again_later"
+      },
+      {
+        "line": 119,
+        "text": "key. Expired control-operation waits return `{:error, :cleanup_pending}`."
+      },
+      {
+        "line": 211,
+        "text": "Streamed parser failures retain their original terminal error for an attached"
+      },
+      {
+        "line": 215,
+        "text": "`{:error, :cleanup_pending}` until that stream is consumed or explicitly"
+      },
+      {
+        "line": 229,
+        "text": "`:cleanup_pending`. Lost coordinator evidence returns `:cleanup_unconfirmed`;"
+      }
+    ]
+  },
+  "findings": {
+    "completion_order": "Before reading a failed tracked response, original completion stays cleanup_pending. After consuming exact stream_error, original completion and retirement must be independently confirmed.",
+    "native_contract": "ManagedTransport public module is byte-identical to installed/published 0.21.2. No new history-independent native/deferred envelope or acknowledged reclamation frontier is supplied.",
+    "tracked_cancellation": "Abort, request_timeout and worker/body/owner-down still use abort and request_lifecycle_stop to release unread tracked responses.",
+    "tracked_parser_error": "SocketClient report_failure delegates sent streamed errors to lifecycle fail_response. Parser failures send their original error to the response then ask tracker to cancel other resources; the response stream alone remains tracked until consumption/cancellation.",
+    "untracked_cancellation": "The nil-tracker clause runs first and sends error rather than lifecycle stop, preserving legacy late-reader abort/deadline delivery."
+  },
+  "gates": {
+    "installed_source_identity": "NOT RUN_AWAIT_PARENT_UPDATE",
+    "managed_activation": "DISABLED",
+    "native_frontier97": "BLOCKED",
+    "numerical_accounting": "BLOCKED",
+    "parser98_source_containment": "PASS",
+    "publication_source_identity": "PASS_COLLECTED_PENDING_OFFLINE_RECHECK",
+    "runtime_functional": "NOT RUN",
+    "untracked100_source_containment": "PASS"
+  },
+  "observed_utc": "2026-10-11T09:19:56.565737+00:00",
+  "repair_rounds": 0,
+  "review": "Direct Sol source review; parent must arrange independent review",
+  "review_source_sha256": {
+    "issue97.json": "0a9b9ab2aed3ccecaa8ed863be30ba0bd130c10f7cf970cbf4a87313b8af5ced",
+    "issue98.json": "1dc664b8f7726966ac4d8190b7341320f71acb2adaa88e9f8a5e160e3dd8cdd5",
+    "packages/http_core/lib/http/request_lifecycle.ex": "4254536dae70cc96e7094ecffd40622c88f7626123bf458e0fc572421007fc3e",
+    "packages/http_fetch/lib/http/socket_client.ex": "d46dfc7058ebe3d65217389beee9957d7df8e94f1db1f0159fabac3952fd22b5",
+    "packages/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+    "packages/http_runtime/lib/http/managed_transport.ex": "8de7281cd7fb7177ef9efe590b8697dbfc2245ace63edfa75bfb08ca8abd659a",
+    "tag-source/CHANGELOG.md": "fbba85cc88fefd7a5b2a825cbb79645a68d3f00d5c0fd4630b40bcb55c85fec3",
+    "tag-source/apps/http_fetch/test/http/managed_response_error_test.exs": "5bebf04e25b95c1ae6d2b9c5059ff5ed2db26d7a4e8ebcac2aee705004f6790b",
+    "tag-source/apps/http_fetch/test/http/response_cancellation_compatibility_test.exs": "d113c0cdddac61d4d561a3288c94ef673c4123e02afa2f051ef50e07b2cdad00",
+    "tag-source/apps/http_fetch/test/http/stream_test.exs": "810904bc93ae85db45ead02f2ea26f23a081c4d6401bfa46b000c7863dffc1fd",
+    "tag-source/docs/managed-transports.md": "44643365bb4f1b1cebf1c018b7a9506570de2171409b12e254e77e53901432af"
+  },
+  "status": "PASS_SOURCE_CONTAINMENT_ONLY",
+  "tag_commit": "ceecbf2df62ca80c361597c7303f65a153f2ce3c",
+  "task_id": "upstream_contract_status_0_21_3",
+  "tree_sha": "6a44b862e8a09fb2648e48f928e37c20b1c8109a",
+  "version": "0.21.3"
+}

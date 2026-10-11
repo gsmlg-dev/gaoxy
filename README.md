@@ -7,7 +7,7 @@ service lifecycle, finite admission, telemetry and custom protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
 message-level [WebSocket reverse proxying](docs/websocket-proxy.md).
-HTTP Fetch 0.21.0 supplies request-owned cleanup and preserves present empty
+HTTP Fetch 0.21.3 supplies request-owned cleanup and preserves present empty
 queries (`/upload?` remains `/upload?`), resolving the former
 [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker.
 **M2 local completion gates pass**: all 255 scoped tests and refreshed native
@@ -19,23 +19,20 @@ M3 implements opt-in native HTTP/2, authenticated forward HTTP/H1 CONNECT,
 TCP/TLS relays, bounded UDP unicast associations, immutable route generations,
 standalone HTTP configuration and supervised dedicated-H1 upstream groups.
 See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
-[M3 acceptance](docs/acceptance/m3.md) for exact gates and limits. **Full M3 is
-BLOCKED** on HTTP Fetch [#86](https://github.com/gsmlg-dev/http_fetch/issues/86)
-for finite H2 header/control event bounds, plus complete H1 accounting and
-managed runtime qualification. Installed 0.21.0 includes the #78 managed
-ownership/retirement and #79 fragment-cap fixes; its strict upgrade gate passes
-460 tests. Separate public managed functional probes pass39/39 with39 joined
-cleanups and425 stable source hashes; canonical H2 capacity errors remain
-MISMATCH under needed[#89](https://github.com/gsmlg-dev/http_fetch/issues/89).
-Historical 0.20
-completion/trailer probes passed16/16 and its empty-CONTINUATION diagnostic was
-INCONCLUSIVE. Reusable upstream connections/H2 remain disabled.
-
-Fresh upstream status records #86–#89 CLOSED while published/installed packages
-remain0.21.0. Managed OTP28 TLS resource tracking is additionally blocked by
-[#95](https://github.com/gsmlg-dev/http_fetch/issues/95); containing fixes and
-renewed qualification are required. The pure bounded H1 preparation slice
-passes26 tests and independent reviews without enabling a managed transport.
+[M3 acceptance](docs/acceptance/m3.md) for exact gates and limits. **M3 remains
+incomplete.** Installed HTTP Fetch0.21.3 contains fixes #86–#89/#95/#98/#100.
+Compatibility486/0 and the frozen public managed driver39/39 with canonical
+capacity MATCH and39 joined cleanups pass. Actual supplemental TLS95 passes
+five cases/five cleanups; its isolated0.21.1 two-case negative oracle fails only
+on exact registration mismatches with both cleanups successful. H1 functional
+baseline20/0, B21 and the public H2 supplement8/8 pass with owned joins.
+Five acquisition-failure probes meet their expected negative oracles; independent
+H1/H2 specification, code and evidence review passes.
+Complete H1 numerical accounting and production activation remain blocked on
+[#97](https://github.com/gsmlg-dev/http_fetch/issues/97). Full H2 accounting,
+adversarial backlog, managed integration and soaks remain unqualified;
+reusable upstream H1/H2 stay disabled. The bounded preparation and lease model
+are qualification fixtures with an unestablished native frontier.
 
 **M0/M1 required transport foundation gates passed** on the recorded macOS and
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
@@ -173,7 +170,7 @@ explicitly unsupported and tested for absence of delivery.
 ## Optional QUIC
 
 The standalone core dependency graph contains no QUIC engine. The umbrella
-proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.0 through
+proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.3 through
 HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
 dependency selection does not enable upstream H2/H3 or qualify generic QUIC against
 that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`

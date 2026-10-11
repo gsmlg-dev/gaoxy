@@ -1,6 +1,37 @@
 # Canonical managed H2 connection-capacity error
 
-## Current 0.21.1 disposition
+## Current 0.21.3 disposition
+
+The containing fix is present in the independently verified installed 0.21.3
+cohort. [Installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.3/installed-cohort-verification.md)
+binds all seven archives, 196 shipped files and 175 runtime sources.
+Compatibility486/0 and finite managed39/39 with canonical capacity MATCH and39
+joined cleanups pass. Supplemental TLS95 now passes five cases/five cleanups;
+the isolated0.21.1 negative control preserves both exact registration mismatches
+and both successful cleanups. H1 baseline20/0 and the separately admitted B21
+pass on the final grouped source with all joins and unchanged finite deadlines.
+These selected functional gates do not establish complete memory accounting.
+Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97) is still OPEN and
+blocks the supported native control bound/frontier needed for numerical H1
+accounting and production activation. Full H2 accounting/adversarial backlog,
+managed integration/soaks and the complete proxy matrix remain unqualified.
+See [current acceptance](../acceptance/m3.md) for the H2 supplement and final
+review receipts. The 0.21.2 and older dispositions below are preserved history.
+
+## Historical 0.21.2 disposition
+
+The containing fix is present in independently verified installed 0.21.2.
+[Source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.2/source-api-review.md)
+and [installed verification](../acceptance/evidence/m3/upstream-transport/upstream-0.21.2/installed-cohort-verification.md)
+bind the current artifacts. Compatibility 486/0 and finite managed driver39/39
+with canonical MATCH and 39 successful joined cleanups pass. Supplemental TLS95
+registration is blocked in local identity tooling before cases; complete memory
+accounting is not established. Feature97 blocks H1 numerical accounting and
+activation; full H2 accounting/backlog and managed integration/soaks remain open.
+See [current acceptance](../acceptance/m3.md). The former 0.21.1 disposition
+below is historical; its absent95/remote-state claims do not apply to 0.21.2.
+
+## Historical 0.21.1 disposition
 
 #89 is closed; independent
 [source/API review](../acceptance/evidence/m3/upstream-transport/upstream-0.21.1/source-api-review.md)
