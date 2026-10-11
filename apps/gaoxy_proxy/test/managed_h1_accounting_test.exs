@@ -18,7 +18,7 @@ defmodule Gaoxy.Proxy.ManagedH1AccountingTest do
     facts = Accounting.facts()
     assert :unqualified = facts.qualification
 
-    assert %{version: "0.21.1", packages: 7, tag: "bdf849adf119039ed679d24d5fbb0a321f5e578a"} =
+    assert %{version: "0.21.3", packages: 7, tag: "ceecbf2df62ca80c361597c7303f65a153f2ce3c"} =
              facts.cohort
 
     assert %{elixir: "1.18.5", otp: "28.5.0.7", erts: "16.4.0.6", ssl: "11.6.0.6", word_bytes: 8} =

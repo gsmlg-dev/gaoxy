@@ -6,7 +6,7 @@ defmodule Gaoxy.Proxy.ManagedH1Accounting do
   def facts do
     %{
       qualification: :unqualified,
-      cohort: %{version: "0.21.1", packages: 7, tag: "bdf849adf119039ed679d24d5fbb0a321f5e578a"},
+      cohort: %{version: "0.21.3", packages: 7, tag: "ceecbf2df62ca80c361597c7303f65a153f2ce3c"},
       runtime: %{
         elixir: "1.18.5",
         otp: "28.5.0.7",
@@ -72,6 +72,7 @@ defmodule Gaoxy.Proxy.ManagedH1Accounting do
     }
   end
 
+  # TODO(upstream): gsmlg-dev/http_fetch#97 — supported control accounting gates activation.
   # Deliberately no proof/constant arguments, evaluator or activation-success path.
   def activation_status, do: {:error, {:unqualified, [:p0, :p1, :p2, :p3, :p4, :p5, :p6]}}
 end

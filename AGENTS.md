@@ -6,6 +6,11 @@ The user granted continuing authorization on 2026-10-10 for the existing product
 goals in `implement-plan.md`, beginning with M3. This authorization supersedes
 older routine development approval and phase-stop rules, including historical
 kickoff instructions limited to M0/M1 and old per-file scope lists.
+The user renewed this authorization on 2026-10-11: ordinary implementation or
+test failures enter diagnosis and repair rather than a user-approval pause.
+Cumulative Sol/Astra counters remain recorded; this renewal does not reset them
+or authorize a third Astra recovery round. Necessary additional local Sol
+repairs are authorized, with fresh independent review and unchanged assertions.
 
 - Choose the recommended design and execution approach automatically. Complete
   design, plans, implementation, necessary compatibility repairs, test-contract
