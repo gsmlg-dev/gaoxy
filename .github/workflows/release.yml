@@ -84,6 +84,14 @@ jobs:
       - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
       - run: mix release gaoxy
+      - name: Pinned independent native H2 peer
+        run: |
+          python -m venv .audit/h2peer
+          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt
+      - name: Standalone core and native H1/H2 gateway release smoke
+        run: |
+          python3 scripts/release-smoke.py
+          .audit/h2peer/bin/python scripts/gateway-release-smoke.py
       - name: Package Linux x86_64 application
         run: |
           mkdir -p dist
@@ -108,5 +116,9 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          notes=(--generate-notes)
+          if [[ -f "docs/releases/${RELEASE_VERSION}.md" ]]; then
+            notes=(--notes-file "docs/releases/${RELEASE_VERSION}.md")
+          fi
           gh release create "v${RELEASE_VERSION}" dist/* \
-            --verify-tag --generate-notes --title "Gaoxy v${RELEASE_VERSION}"
+            --verify-tag "${notes[@]}" --title "Gaoxy v${RELEASE_VERSION}"

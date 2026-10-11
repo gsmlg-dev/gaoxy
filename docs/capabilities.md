@@ -54,23 +54,14 @@ see [their accounting scope](websocket-proxy.md).
 
 ## Current M3 implemented scope
 
-M3 remains **INCOMPLETE**. Installed HTTP Fetch0.21.3 contains fixes #86–#89/#95/#98/#100.
-Compatibility486/0 and the frozen public managed driver39/39 with canonical
-capacity MATCH and39 joined cleanups pass. Actual supplemental TLS95 passes
-five cases/five cleanups; its isolated0.21.1 two-case negative oracle fails only
-on exact registration mismatches with both cleanups successful. H1 functional
-baseline20/0, B21 and the public H2 supplement8/8 pass with owned joins.
-Five acquisition-failure probes meet their expected negative oracles; independent
-H1/H2 specification, code and evidence review passes.
-Complete H1 numerical accounting and production activation remain blocked on
-[#97](https://github.com/gsmlg-dev/http_fetch/issues/97). Full H2 accounting,
-adversarial backlog, managed integration and soaks remain unqualified;
-reusable upstream H1/H2 stay disabled. The bounded preparation and lease model
-are qualification fixtures with an unestablished native frontier.
-The [M3 matrix](acceptance/m3.md) records actual commands, nonempty counts,
-independent reviews, source identities and any pending gate. Each claim is
-limited to its recorded Linux candidate; hosted CI/release/deployment remain
-separate.
+The v0.2.0 gateway beta covers native H1/H2, policy-controlled gateway services,
+route generations and dedicated-H1 upstream groups. Installed HTTP Fetch0.21.3
+passes compatibility486/0, public managed39/39, H1 baseline20/0, B21,
+supplemental TLS5/5 and the public H2 supplement8/8. Negative-oracle receipts keep
+their actual failure exits. See [M3 acceptance](acceptance/m3.md) and
+[ADR007](adr/007-m3-beta-and-m4.md). Upstream pools, upstream H2 and HTTP/3 are not
+implemented; deferred fixtures do not block this release or M4 preparation.
+Hosted execution, publication and deployment retain separate evidence.
 
 | Capability | Current implementation | Qualification boundary |
 | --- | --- | --- |
@@ -80,13 +71,14 @@ separate.
 | UDP association relay | Source/destination policy, unicast per-peer associations, empty payloads, finite rate/credit/capacity and idle expiry | CIDRs do not authenticate; no broadcast/multicast relay; no retry of uncertain output |
 | Route/standalone generations | Bounded preparation/CAS, old request/resource pins, stable listener reload and strict version1 JSON | Only static/fixed reverse-proxy JSON targets; local API; no public management listener |
 | Upstream groups | Supervised health and bounded deterministic selections with confirmed public cleanup | Dedicated H1 per request; effective member deadlines and bounded concurrency/ownership gates PASS; no group soak claim |
-| H1 reuse/upstream H2 | Installed0.21.3 managed39/39, TLS supplemental5/5, H1 baseline20/0, B21 and public H2 supplement8/8; Gaoxy activation remains disabled | H1 numerical accounting BLOCKED #97; H2 full accounting/backlog and managed integration/soaks remain incomplete |
+| H1 reuse/upstream H2 | Public dependency contracts tested; production Gaoxy adapters not implemented | Outside v0.2.0 scope; current dedicated H1 remains enabled |
 
 The historical0.19.1 local candidate passes460 scoped tests,40 independent selected RFC checks,
 15 browser/peer checks and6 reverse-example checks. The qualified600-second
 profile covers local echo and a fixed dedicated-H1 proxy; all199 recorded source
 hashes identify that candidate. Separate independent specification and quality reviews
-pass. These gates do not establish full M3 or production acceptance.
+pass. These historical gates do not establish the deferred upstream features or
+production acceptance; current release verification has its own receipt.
 
 ## Resource accounting scope
 

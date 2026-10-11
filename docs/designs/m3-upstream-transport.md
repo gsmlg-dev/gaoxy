@@ -5,7 +5,14 @@ Date: 2026-10-10. Architecture decision, not runtime acceptance. Gaoxy baseline
 `.trees/m3-gateway`. Read together with `m3-gateway.md`,
 `m3-upstream-groups.md`, and `../plans/m3-upstream-transport.md`.
 
-## Decision and present gate
+## Current scope
+
+This is the deferred reusable-transport design. ADR007 supersedes its former
+proof requirements and release/M4 gates; do not pursue equivalent requirements.
+Detailed numerical obligations below remain historical design inputs, not
+current release prerequisites.
+
+## Decision and reviewed disposition
 
 Current gate, 2026-10-11:
 
@@ -58,15 +65,15 @@ owned process/peer joins are separately verified. Fresh native profiles compare
 exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
 H1/H2 specification, code and evidence review passes with no findings.
 
-Complete H1 numerical accounting and production activation remain **BLOCKED**
-on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
-currently OPEN. It requires a supported history-independent control bound or
-acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
-do not establish N8. The independently reviewed72-row/14-phase ledger is a
-finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
-Full H2 accounting/adversarial backlog and the complete proxy matrix remain
-unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
-and M4 remain gated; independent functional PASS does not enable activation.
+**Reviewed disposition, 2026-10-11:** The user dismissed the former control-proof
+request as excessive. It is excluded from Gaoxy acceptance and must not be
+pursued, replaced with equivalent requirements, or used to block release or M4.
+Numerical fixtures and their failed/unqualified receipts remain historical;
+this decision does not turn them into passing tests. Production uses dedicated
+H1 connections. Reusable H1 and upstream H2 adapters are not implemented and
+are outside the v0.2.0 gateway beta release. See [ADR007](../adr/007-m3-beta-and-m4.md).
+Old managed-integration requirements below describe the deferred variant,
+rather than prerequisites for this release or M4.
 
 See [current acceptance](../acceptance/m3.md),
 [complete H1 design](m3-h1-complete-0.21.2-accounting.md) and
@@ -596,8 +603,8 @@ original source findings in the
 and [independent bounds review](../acceptance/evidence/m3/upstream-transport/upstream-0.21/independent-bounds-review.md)
 remain historical. Full H2 retained-state accounting and adversarial-backlog
 qualification remain incomplete; neither source containment nor public
-functional PASS supplies a complete numeric bound. Feature#97 remains OPEN
-and blocks complete H1 native/control accounting and managed activation.
+functional PASS supplies a complete numeric bound. The subsequent ADR007
+scope decision excludes this numerical proof from release/M4 acceptance.
 H1 excludes those H2 paths and the buffered-iodata input under its frozen
 nil/PID upload contract, but still requires policy/copy/structure, process,
 ETS, monitor/timer/control metadata and exact managed OTP delivery accounting.

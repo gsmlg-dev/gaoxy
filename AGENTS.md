@@ -1,5 +1,21 @@
 # Gaoxy agent instructions
 
+## Reviewed M3 disposition and release authorization — 2026-10-11
+
+The user reviewed `gsmlg-dev/http_fetch#97` and excluded its requested proof as
+excessively strict. Do not pursue or re-raise it, introduce equivalent replacement
+requirements, or use it as a stage, release, or M4 blocker. Preserve assertions,
+failures and immutable historical evidence; dismissal is a scope decision.
+
+The user separately authorizes the necessary integration into main, push, tag
+and GitHub standalone release after relevant verification and independent review.
+Release v0.2.0 covers native H1/H2 and the dedicated-H1 gateway beta subset;
+upstream connection pools and upstream H2 are not implemented. Prepare M4's
+HTTP/3 design and plan under continuing authorization. This exception supersedes
+older publication bans for this release only. Deployment, production data,
+operational certificates, public management, Vault freezes and the disabled
+release-artifact E2E workflow retain their existing restrictions.
+
 ## Continuing development authorization
 
 The user granted continuing authorization on 2026-10-10 for the existing product

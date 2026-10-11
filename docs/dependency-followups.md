@@ -37,14 +37,11 @@ B21 and the public eight-case H2 supplement pass on final source. Five
 acquisition-failure probes meet their expected negative oracles; independent
 H1/H2 specification, code and evidence review passes.
 
-[Feature #97](dependency-requests/http-fetch-managed-h1-control-frontier.md),
-typed Feature and labeled `internal request`, is OPEN. It is a blocker for
-complete H1 numerical accounting and production activation. The independently
-reviewed ledger cannot infer native N8 from completion, helper DOWN or zero
-snapshots. No local workaround is admitted; independent functional work continues.
-Full H2 accounting/backlog, managed integration and >=600-second soaks remain
-unqualified. [Current acceptance](acceptance/m3.md) supersedes the installed and
-remote state in the historical observations below.
+The user dismissed the former control-proof request on 2026-10-11. It is
+archived, must not be pursued, and does not block v0.2.0 or M4. See
+[ADR007](adr/007-m3-beta-and-m4.md). Reusable H1/upstream H2 integration is
+unimplemented; numerical/managed-soak fixtures retain their original status.
+[Current acceptance](acceptance/m3.md) supersedes older disposition statements.
 
 ## Historical 0.21.0 public reusable transport ownership
 
@@ -111,5 +108,5 @@ passed16/16. Its [finite fragment diagnostic](acceptance/evidence/m3/upstream-0.
 was INCONCLUSIVE:80,000 frames correlated with4,683,568 bytes VM-wide
 process-used growth; only two preset batch deltas met threshold, and send
 receipts did not prove sample-time consumption. Preserve these limits and logs.
-No private client/source patch is used; full M3/M4 progression awaits all
-required managed lifecycle, bounds, matrix and load gates.
+No private client/source patch is used. The historical managed gate is
+superseded for release/M4 progression by the reviewed scope in ADR007.

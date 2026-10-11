@@ -5,9 +5,11 @@
 > authorization in `AGENTS.md` replaces routine approval pauses. The Astra
 > architecture assignment does not authorize Astra implementation or commits.
 
-**Goal:** Qualify installed HTTP Fetch 0.21 managed transport contracts, then
-activate bounded owned H1 reuse and upstream H2 after their independent public
-runtime and complete retained-state prerequisites pass.
+**Historical goal:** Qualify HTTP Fetch managed transports and integrate owned
+H1 reuse/upstream H2. This is a deferred adapter design. ADR007 dismisses the
+former control-proof requirement and supersedes its release/M4 gates. Remaining
+numerical requirements below are historical design inputs, not requirements to
+re-raise for this release. Use the v0.2.0 release plan for current execution.
 
 **Architecture:** Preserve the existing HTTP pump, Session guardian, group
 selection and generic generation-resource pins. Add an explicitly supervised
@@ -78,15 +80,15 @@ owned process/peer joins are separately verified. Fresh native profiles compare
 exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
 H1/H2 specification, code and evidence review passes with no findings.
 
-Complete H1 numerical accounting and production activation remain **BLOCKED**
-on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
-currently OPEN. It requires a supported history-independent control bound or
-acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
-do not establish N8. The independently reviewed72-row/14-phase ledger is a
-finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
-Full H2 accounting/adversarial backlog and the complete proxy matrix remain
-unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
-and M4 remain gated; independent functional PASS does not enable activation.
+**Reviewed disposition, 2026-10-11:** The user dismissed the former control-proof
+request as excessive. It is excluded from Gaoxy acceptance and must not be
+pursued, replaced with equivalent requirements, or used to block release or M4.
+Numerical fixtures and their failed/unqualified receipts remain historical;
+this decision does not turn them into passing tests. Production uses dedicated
+H1 connections. Reusable H1 and upstream H2 adapters are not implemented and
+are outside the v0.2.0 gateway beta release. See [ADR007](../adr/007-m3-beta-and-m4.md).
+Old managed-integration requirements below describe the deferred variant,
+rather than prerequisites for this release or M4.
 
 Use the [0.21.3 qualification plan](m3-upstream-0.21.3-qualification.md),
 [complete H1 plan](m3-h1-complete-0.21.2-accounting.md) and
@@ -116,8 +118,9 @@ The parent serializes all shared `http_fetch_client.ex`, `http/session.ex`,
 `http.ex`, `upstream_groups.ex`, package/lock and acceptance-document edits. An
 independent worker can own protocol fixtures/tests while another implements the
 transport owner after the gate passes. Do not run concurrent Mix builds or
-shared-port fixtures. No push, release, deployment, Vault/public-management
-change, production-data operation or release-artifact E2E enabling.
+shared-port fixtures. The v0.2.0 integration/push/GitHub release is separately authorized. Deployment,
+Vault/public management, operational certificates, production data and
+release-artifact E2E enabling remain restricted.
 
 Canonical shell for scoped Mix commands:
 
@@ -690,9 +693,9 @@ H2 parser/cancellation supplement passes8/8 (TLS4/h2c4), with eight joined peers
 and exit0. Five acquisition-failure probes meet their expected negative oracles;
 independent H1/H2 specification, code and evidence review passes. See
 [current acceptance](../acceptance/m3.md) for exact receipts.
-Feature#97 remains OPEN and blocks complete H1 native/control numerical
-accounting and managed activation. Full P0–P6, H2 accounting/backlog, managed
-Tasks4–8 and their sustained-load gates remain unqualified; M4 is gated.
+ADR007 excludes the dismissed control-proof gate from acceptance. Numerical
+fixtures remain historical and reusable adapters are unimplemented; neither
+blocks the reviewed v0.2.0 subset or M4 preparation.
 The previous 0.21.1 cleartext24/24 and 0.21.0 functional/source receipts retain
 their exact historical scopes and failures.
 The older handoff and local delivery

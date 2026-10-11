@@ -137,19 +137,20 @@ owned process/peer joins are separately verified. Fresh native profiles compare
 exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
 H1/H2 specification, code and evidence review passes with no findings.
 
-Complete H1 numerical accounting and production activation remain **BLOCKED**
-on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
-currently OPEN. It requires a supported history-independent control bound or
-acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
-do not establish N8. The independently reviewed72-row/14-phase ledger is a
-finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
-Full H2 accounting/adversarial backlog and the complete proxy matrix remain
-unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
-and M4 remain gated; independent functional PASS does not enable activation.
+**Reviewed disposition, 2026-10-11:** The user dismissed the former control-proof
+request as excessive. It is excluded from Gaoxy acceptance and must not be
+pursued, replaced with equivalent requirements, or used to block release or M4.
+Numerical fixtures and their failed/unqualified receipts remain historical;
+this decision does not turn them into passing tests. Production uses dedicated
+H1 connections. Reusable H1 and upstream H2 adapters are not implemented and
+are outside the v0.2.0 gateway beta release. See [ADR007](../adr/007-m3-beta-and-m4.md).
+Old managed-integration requirements below describe the deferred variant,
+rather than prerequisites for this release or M4.
 
 Follow [the transport plan](m3-upstream-transport.md) and
 [current acceptance](../acceptance/m3.md). Earlier0.20/0.21.0/0.21.1/0.21.2
-results remain historical. Full M3 is incomplete; M4 cannot start.
+results remain historical. Deferred upstream adapters do not block the
+reviewed subset release or M4 preparation.
 
 ## Task 2:## Task 2: Native HTTP/2 and shared HTTP operations
 
@@ -239,7 +240,7 @@ required by explicit deadlines, and focused tests.
   ownership/cleanup, with exact old/new group peers across one activation.
   G5 requires these bounded concurrency/generation gates. Repeated fixed-proxy
   generations and Task7's600-second echo/fixed-proxy profile have separate
-  evidence; no group/probe soak is claimed. Keep Task1's release blocker visible.
+  evidence; no group/probe soak is claimed. Disclose implemented group scope.
 - [x] Complete scoped red/green, independent review and local commit (`6d92298`).
 
 ## Task 6: Persistent bounded UDP associations
@@ -276,11 +277,12 @@ documentation, independent loopback/load harnesses and scoped CI wiring.
   with deterministic regressions, maintaining Sol/Astra repair counters.
 - [x] Update current capability docs without rewriting historical logs, review
   the diff/staged files, and create local conventional commits.
-- [ ] Mark M3 complete only if every required gate and upstream prerequisite
-  passes. Then write the M4 design/plan and automatically continue. While #97 or
-  another required accounting/lifetime gate remains unresolved, report BLOCKED for
-  the affected tasks/M3 completion and preserve all tested independent work.
+- [x] Record the reviewed subset disposition in ADR007. Remove the dismissed
+  gate without rewriting failures or claiming upstream pools/H2 are implemented.
+  Proceed to release and M4 preparation.
+- [ ] Finish fresh artifact verification, independent release review and
+  publication in [the release plan](release-0.2.0.md); independently review M4.
 
-No push, release publication, deployment, production-data operation, Vault
-change, public management listener, or release-artifact E2E enabling is part of
-this execution plan.
+The user authorizes integration, push and GitHub v0.2.0 release. Deployment,
+production data, Vault, operational certificates, public management and
+release-artifact E2E enabling retain their restrictions.

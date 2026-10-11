@@ -152,7 +152,7 @@ and stable qualified host settings; it is not a total BEAM memory limit.
 Standalone core-only isolation remains separate from the umbrella graph, which
 includes `elixir_quic`/`ex_ssl`. Gaoxy CI, push, merge, release and deployment are
 **NOT RUN** for that candidate. No upstream H2/H3 or production acceptance is
-implied by the M2 record. M4 requires complete M3 acceptance.
+implied by the historical M2 record. Current release/M4 progression follows ADR007.
 Optional ex_ssl TCP hosting needs the public server contract in
 [the upstream follow-up](dependency-followups.md); no automatic provider fallback.
 
@@ -230,15 +230,15 @@ owned process/peer joins are separately verified. Fresh native profiles compare
 exactly: 254 file hashes, 113 ELF paths and 483 unique NAR identities. Independent
 H1/H2 specification, code and evidence review passes with no findings.
 
-Complete H1 numerical accounting and production activation remain **BLOCKED**
-on upstream Feature [#97](https://github.com/gsmlg-dev/http_fetch/issues/97),
-currently OPEN. It requires a supported history-independent control bound or
-acknowledged native quiescence. Public completion, helper DOWN and zero snapshots
-do not establish N8. The independently reviewed72-row/14-phase ledger is a
-finite static inventory with unresolved native ABI/lifetime and P0–P6 inputs.
-Full H2 accounting/adversarial backlog and the complete proxy matrix remain
-unqualified. Production managed adapter Tasks4–8, managed >=600-second soaks
-and M4 remain gated; independent functional PASS does not enable activation.
+**Reviewed disposition, 2026-10-11:** The user dismissed the former control-proof
+request as excessive. It is excluded from Gaoxy acceptance and must not be
+pursued, replaced with equivalent requirements, or used to block release or M4.
+Numerical fixtures and their failed/unqualified receipts remain historical;
+this decision does not turn them into passing tests. Production uses dedicated
+H1 connections. Reusable H1 and upstream H2 adapters are not implemented and
+are outside the v0.2.0 gateway beta release. See [ADR007](adr/007-m3-beta-and-m4.md).
+Old managed-integration requirements below describe the deferred variant,
+rather than prerequisites for this release or M4.
 
 See [current acceptance](acceptance/m3.md) and
 [TLS supplemental receipt](acceptance/evidence/m3/upstream-transport/upstream-0.21.3/tls95-supplemental-analysis.json).
@@ -310,5 +310,6 @@ Historical0.20 public request probes passed16/16 with202 unchanged hashes;
 its finite empty-CONTINUATION diagnostic was INCONCLUSIVE. #78/#79 issue
 closure is now confirmed in installed artifacts, but neither historical
 request evidence nor upgrade compatibility proves managed lifecycle/bounds.
-Gaoxy production adapters remain dedicated H1. M4 waits for complete M3
-acceptance; no remote publication, deployment or production acceptance is implied.
+Production adapters remain dedicated H1. The reviewed scope in ADR007 permits
+release/M4 preparation; the release receipt separately records remote publication.
+No production deployment or production acceptance is implied.

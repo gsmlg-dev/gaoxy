@@ -43,8 +43,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
         stream
       end
 
-    # Managed 0.21.2 owns bounded TLS policy backing (#88).
-    # Keep file trust input here until managed accounting and integration qualify.
+    # The dedicated-H1 adapter uses the caller's certificate file directly.
     ssl = if options.cacertfile, do: [cacertfile: options.cacertfile], else: []
 
     try do
@@ -56,10 +55,8 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
           # Keep URL strings, explicit fields and nil/PID body inputs here.
           body: upload,
           duplex: if(upload, do: :half, else: nil),
-          # Managed ownership/input/control fixes (#78/#79/#86–#89) ship in 0.21.2.
-          # Complete accounting and runtime qualification still gate reuse and H2.
-          # TLS tracking fix #95 is functionally qualified on installed 0.21.3.
-          # TODO(upstream): gsmlg-dev/http_fetch#97 — complete H1 control accounting gates managed activation.
+          # v0.2.0 uses one dedicated H1 connection per request.
+          # Reusable H1 and upstream H2 adapters are not implemented.
           http_version: :http1,
           http1_reuse: false,
           redirect: :manual,

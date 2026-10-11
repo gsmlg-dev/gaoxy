@@ -5,8 +5,9 @@ Base: `85c2284a035e0b4ecbf577279eee01142702b5a3`, `.trees/m3-gateway`.
 
 **Goal:** Install the containing parser/cancellation fixes, qualify unchanged
 H1 error oracles and complete the remaining independent public functional work.
-Full M3 acceptance and managed production activation still require the complete
-resource contract; upstream Feature #97 remains a distinct blocker.
+The subsequent reviewed scope in ADR007 excludes the former control-proof gate.
+Qualification is delivered; reusable adapters remain deferred features rather
+than release/M4 prerequisites.
 
 **Design:** Keep the existing native server and dedicated H1 production adapter.
 Use the seven-package coordinated 0.21.3 release through supported APIs. Preserve
@@ -107,13 +108,13 @@ execution receipt; its original design bytes and hard hash remain unchanged.
 - [x] Complete fresh independent specification and quality review of all owned
   source/docs; fix actionable findings and run affected checks.
 - [x] Commit only task-owned changes locally using conventional messages.
-- [x] Continue other genuinely unblocked prerequisite work. If #97 still lacks
-  the supported complete bound/frontier, record its exact external blocker;
-  no managed activation, managed soak or M4 acceptance follows from functional
-  PASS. Do not start production Task4–8 while its prerequisites remain open.
+- [x] Preserve functional/numerical receipts while applying reviewed subset
+  scope. The dismissed requirement does not block v0.2.0 or M4. No reusable
+  production adapter or managed soak is claimed.
 
-Vault, release-artifact E2E, push/publication/deployment, public management and
-production-data restrictions remain in force. No new product scope is added.
+Integration, push and GitHub v0.2.0 release are now authorized. Vault,
+release-artifact E2E, deployment, operational certificates, public management and
+production-data restrictions remain. No new product scope is added.
 
 Execution disposition: [functional qualification and external blocker](../acceptance/evidence/m3/upstream-transport/upstream-0.21.3/execution-receipt.md),
 [five expected negative oracles](../acceptance/evidence/m3/upstream-transport/upstream-0.21.3/h2-acquisition-failure-regression-analysis.json)
@@ -126,5 +127,6 @@ Final delivery review: [SPEC/CODE/docs/evidence PASS, no findings](../acceptance
 Verified local source commit `bfdd4ab1b557ff01af58670a1902bf7fdb40cf3f` and historical
 evidence commit `eb9e87ece318f79617eff0841a8b4058434ad9e1`; current docs/evidence
 are delivered by the commit containing [the local receipt](../acceptance/evidence/m3/upstream-transport/upstream-0.21.3/local-delivery.json).
-M3 remains BLOCKED on #97; these completed local-delivery tasks do not close
-production managed qualification or permit M4.
+ADR007 supersedes the archived blocker disposition. Completed qualification
+and the disclosed dedicated-H1 subset permit release/M4 preparation without
+claiming deferred reusable adapters are implemented.

@@ -1,5 +1,14 @@
 # Gaoxy Implementation Plan
 
+**Reviewed execution update, 2026-10-11:** The former http_fetch#97 proof
+requirement is dismissed and must not be revived or replaced by equivalent gates.
+Preserve historical evidence and assertions. Release the verified native H1/H2
+and dedicated-H1 gateway beta subset as v0.2.0, disclosing unimplemented upstream
+pools and upstream H2. Integration, push, tagging and GitHub standalone release
+are authorized. Prepare M4's design/plan. Vault, disabled release-artifact E2E,
+deployment, production data, operational certificates and public management
+restrictions remain. See [ADR007](docs/adr/007-m3-beta-and-m4.md).
+
 **Date:** 2026-10-08  
 **Status:** Architecture and execution plan; not an implementation or acceptance report  
 **Initial execution scope (historical kickoff):** M0 + M1, the transport-runtime foundation

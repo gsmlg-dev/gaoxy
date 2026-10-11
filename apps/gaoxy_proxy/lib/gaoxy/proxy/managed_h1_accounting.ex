@@ -72,7 +72,7 @@ defmodule Gaoxy.Proxy.ManagedH1Accounting do
     }
   end
 
-  # TODO(upstream): gsmlg-dev/http_fetch#97 — supported control accounting gates activation.
+  # Historical numerical qualification fixture; outside release acceptance.
   # Deliberately no proof/constant arguments, evaluator or activation-success path.
   def activation_status, do: {:error, {:unqualified, [:p0, :p1, :p2, :p3, :p4, :p5, :p6]}}
 end

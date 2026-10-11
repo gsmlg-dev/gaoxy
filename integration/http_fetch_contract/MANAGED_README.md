@@ -21,13 +21,12 @@ See [current acceptance](../../docs/acceptance/m3.md),
 [B21 plan](../../docs/plans/m3-h1-b21-tls-connecting.md) and
 [unchanged H2 supplement plan](../../docs/plans/m3-h2-0.21.3-functional-supplement.md).
 
-Functional cleanup never emits a native frontier release. Complete numerical
-accounting and production activation remain blocked on
-[Feature97](../../docs/dependency-requests/http-fetch-managed-h1-control-frontier.md).
-Public completion, owned worker DOWN and zero snapshots cannot supply N8.
-Full H2 accounting/adversarial backlog and the four-direction proxy matrix,
-managed integration/soaks, production Tasks4–8 and M4 remain unqualified.
-
+These probes are qualification fixtures, not production reusable adapters.
+The dismissed control-proof requirement must not be pursued or used as a
+release/M4 gate. [ADR007](../../docs/adr/007-m3-beta-and-m4.md) supersedes old
+dispositions. Production remains dedicated H1; reusable H1/upstream H2 is
+unimplemented. Historical negative exits, assertions, hashes and numerical
+fixture statuses remain preserved.
 
 ## Historical 0.21.1 cleartext qualification
 

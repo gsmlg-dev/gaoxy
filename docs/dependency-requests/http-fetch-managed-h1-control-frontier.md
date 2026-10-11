@@ -1,5 +1,11 @@
 # Managed H1 control accounting or acknowledged quiescence
 
+**Reviewed disposition — 2026-10-11: DISMISSED / ARCHIVED.** The user judged this
+request excessive. Do not pursue or re-raise it, introduce equivalent
+requirements, or use it as a release/stage/M4 blocker. The submitted request and
+observations below remain verbatim historical evidence; old severity/open-state
+statements are not current Gaoxy requirements. See [ADR007](../adr/007-m3-beta-and-m4.md).
+
 Upstream: [gsmlg-dev/http_fetch#97](https://github.com/gsmlg-dev/http_fetch/issues/97).
 Type Feature; label `internal request`; verified OPEN on 2026-10-11.
 Numerical qualification/production activation is BLOCKED with no local workaround.

@@ -1,0 +1,45 @@
+{
+  "utc": "2026-10-11T11:45:38.591240+00:00",
+  "head": "32408c8054ba485f2a15c0fd244ae4b8d1615c5e",
+  "release_start_erl": "16.4.0.6 0.2.0",
+  "scope": "Nix local runtime against production artifact; portable publication and release-artifact E2E not qualified",
+  "sol_repair_rounds": 1,
+  "sol_unsuccessful_repair_rounds": 0,
+  "checks": [
+    {
+      "name": "core",
+      "command": "nix develop --command env ERL_FLAGS='+S 2:2' ELIXIR_ERL_OPTIONS='+S 2:2' python3 scripts/release-smoke.py",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": ".audit/release-0.2.0-core-smoke.log",
+      "log_sha256": "fe6beca7f97fc8462349f74420a01f5253e1057faa404e839115827dc477113e",
+      "transports": 3
+    },
+    {
+      "name": "gateway-initial",
+      "command": "nix develop --command env ERL_FLAGS='+S 2:2' ELIXIR_ERL_OPTIONS='+S 2:2' .audit/h2peer/bin/python scripts/gateway-release-smoke.py --release /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/_build/prod/rel/gaoxy/bin/gaoxy",
+      "exit_code": 1,
+      "status": "FAIL",
+      "log": ".audit/release-0.2.0-gateway-smoke.log",
+      "log_sha256": "3dbfd5c5b96a8ff417a6bef592a98af4fab07867af1759dfbd6be64d797a88e4",
+      "exchanges": 0,
+      "reason": "fixture configured unsupported mixed cleartext protocols; invalid_http_protocols"
+    },
+    {
+      "name": "gateway-repair1",
+      "command": "nix develop --command env ERL_FLAGS='+S 2:2' ELIXIR_ERL_OPTIONS='+S 2:2' .audit/h2peer/bin/python scripts/gateway-release-smoke.py --release /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-gateway/_build/prod/rel/gaoxy/bin/gaoxy",
+      "exit_code": 0,
+      "status": "PASS",
+      "log": ".audit/release-0.2.0-gateway-smoke-repair1.log",
+      "log_sha256": "394a8ffd9962b0c4950b3726adce9b317e1c2c0f98a699e76c4131b3bdb054bc",
+      "exchanges": 2,
+      "gateway_ports_rebound": 2,
+      "upstream_ports_rebound": 1
+    }
+  ],
+  "sha256": {
+    "scripts/gateway-release-smoke.py": "3eb57e8b13376d76d76a4bf7486b65639cecc33234f4806d465be573229e4ddb",
+    ".github/workflows/release.yml": "f1537fddfaff7eb68c83e5907422205a0e62262c854ff7c6fe750ca43d57130c",
+    "_build/prod/rel/gaoxy/bin/gaoxy": "e5e7b5282757db4e71966e4c59b4a19bcc50d467e17631e344beeea7bc59dbc3"
+  }
+}

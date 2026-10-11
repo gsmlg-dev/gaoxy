@@ -13,8 +13,10 @@ baseline20/0, B21, public H2 supplement8/8 and actual TLS supplemental5/5 pass.
 Five acquisition-failure probes meet their expected negative oracles; independent
 H1/H2 specification, code and evidence review passes.
 The locked Nix shell uses Linux, Elixir1.18.5/OTP28.5.0.7/ERTS16.4.0.6/SSL11.6.0.6.
-[M3 acceptance](acceptance/m3.md) records Feature#97's unresolved native-control
-contract, unqualified full H2 accounting/backlog and disabled managed activation.
+[M3 acceptance](acceptance/m3.md) and [ADR007](adr/007-m3-beta-and-m4.md) record
+the reviewed gateway beta subset. The former control-proof request is excluded
+from acceptance. Production uses dedicated H1; reusable H1/upstream H2 adapters
+are unimplemented. Numerical fixtures retain their historical status.
 
 ## Historical foundation audit — 2026-10-08
 
