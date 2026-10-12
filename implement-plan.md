@@ -28,6 +28,12 @@ explicit implementation start; retain that dated release disposition as history.
 Full M4 acceptance includes the remaining upstream-H3 proxy matrix and explicit
 standalone H3 opt-in, following their bounded written designs and verification.
 
+**Conditional publication authorization, 2026-10-12:** After M4 completes its
+required verification and independent review, integrate main, push to GitHub,
+publish a new version and prepare the next planned stage. An incomplete/blocked
+gate is not completion. Deployment, production data/certificates, Vault, public
+management and disabled release-artifact E2E restrictions remain.
+
 ## 1. Product and success criteria
 
 Gaoxy is an Elixir/OTP multi-protocol server runtime, native HTTP server, and programmable proxy gateway. It must support embedded use in an application's supervision tree and standalone use as a release, with the same service model and data paths.

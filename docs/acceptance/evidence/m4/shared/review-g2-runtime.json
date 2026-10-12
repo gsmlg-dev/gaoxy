@@ -1,0 +1,432 @@
+{
+  "task_id": "/root/m4_spec_review/g2-runtime-final",
+  "status": "DONE",
+  "assignment": "direct independent source/evidence review of final G2 runtime gate; root executed gates",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "unresolved_findings": [],
+  "reviewer_sol_repair_rounds": 0,
+  "counter_note": "Root-authored busy/schema repairs and previous Connection/Astra counters remain parent-owned and preserved. Peer initial informational repair1 unchanged; no new reviewer repair.",
+  "command_shutdown": "All review source/hash/log/receipt commands finished; no Mix/live/source edits or commit.",
+  "decisions_needed": [],
+  "runtime_review": "PASS G2 only",
+  "reviewer_execution": "Reviewer did not rerun Mix/live; independently inspected actual source, complete test/gate evidence, source manifests and all exits. Reviewer authored portions of peer source; root independent peer review receipts cover that source. This review is independent of product G2 authors and root-authored schema/busy repairs.",
+  "live_gate": {
+    "run": "docs/acceptance/evidence/m4/shared/run-1791790864133547066",
+    "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python integration/http3/run.py --gate shared --evidence docs/acceptance/evidence/m4/shared",
+    "checks": 59,
+    "pass": 59,
+    "fail": 0,
+    "owned_child_exits": [
+      {
+        "pid": 531920,
+        "exit": 0
+      },
+      {
+        "pid": 560921,
+        "exit": 0
+      },
+      {
+        "pid": 618322,
+        "exit": 0
+      },
+      {
+        "pid": 647352,
+        "exit": 0
+      },
+      {
+        "pid": 801206,
+        "exit": 0
+      },
+      {
+        "pid": 808571,
+        "exit": 0
+      }
+    ],
+    "source_unchanged": true,
+    "all_recorded_hashes_match_current_source": true,
+    "environment": {
+      "runtime": {
+        "busy_port": 42769,
+        "port": 50468,
+        "profile": "shared",
+        "otp": "28",
+        "elixir": "1.18.5",
+        "erts": "16.4.0.6",
+        "event": "ready",
+        "sibling_port": 42568,
+        "busy_request_timeout": 1500,
+        "application_limits": {
+          "max_slots": 8,
+          "max_ingress_bytes": 524288,
+          "max_output_bytes": 524288,
+          "admission_max_bytes": 16777216
+        }
+      },
+      "python_environment": [
+        "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+        "1.2.0"
+      ]
+    },
+    "case_names": [
+      "shared_get",
+      "shared_static_qpack",
+      "shared_plug_metadata",
+      "shared_simultaneous_requests",
+      "shared_worker_crash_request_isolation",
+      "shared_streaming_post_response",
+      "shared_ordered_request_response_trailers",
+      "shared_zero_data_ordered_trailers",
+      "shared_fixed_streaming_response",
+      "shared_file_range",
+      "shared_early_response_unread_body",
+      "shared_informational_before_final",
+      "shared_expect_continue_before_body",
+      "shared_head_bodyless",
+      "shared_bodyless_204",
+      "shared_bodyless_205",
+      "shared_bodyless_304",
+      "shared_tiny_window_file_progress",
+      "definitely_blocked_output",
+      "shared_application_queue_bounds",
+      "shared_admission_slots_returned_to_baseline",
+      "shared_busy_confirmed_cleanup",
+      "shared_busy_owner_kill_network_isolation",
+      "data_before_headers",
+      "control_frame_on_request",
+      "duplicate_settings",
+      "settings_first",
+      "invalid_settings",
+      "duplicate_critical_0",
+      "critical_fin_0",
+      "critical_reset_0",
+      "duplicate_critical_2",
+      "critical_fin_2",
+      "critical_reset_2",
+      "duplicate_critical_3",
+      "critical_fin_3",
+      "critical_reset_3",
+      "client_push_stream",
+      "qpack_encoder_capacity",
+      "qpack_decoder_invalid_ack",
+      "incomplete_extension_discard_deadline",
+      "qpack_dynamic_reference",
+      "qpack_invalid_huffman",
+      "duplicate_pseudo",
+      "missing_authority",
+      "body_length_underflow",
+      "body_length_overflow",
+      "compressed_header_limit",
+      "decoded_field_limit",
+      "duplicate_pseudo_open_direction",
+      "missing_authority_open_direction",
+      "body_length_overflow_open_direction",
+      "compressed_header_limit_open_direction",
+      "decoded_field_limit_open_direction",
+      "data_after_trailers",
+      "request_reset_stop_isolation",
+      "bounded_listener_remove",
+      "listener_shutdown_sibling_isolation",
+      "bounded_runtime_stop"
+    ]
+  },
+  "scoped_verification": {
+    "evidence": "docs/acceptance/evidence/m4/shared/parent-fresh-1791785649813795257",
+    "source_bound": true,
+    "current_product_and_lock_hashes_match": true,
+    "http_tests": 50,
+    "http3_tests": 111,
+    "total_tests": 161,
+    "failures": 0,
+    "checks": [
+      {
+        "name": "compile",
+        "command": [
+          "mix",
+          "compile",
+          "--warnings-as-errors"
+        ],
+        "exit": 0,
+        "status": "PASS",
+        "counts": [],
+        "evidence": "compile.log"
+      },
+      {
+        "name": "format",
+        "command": [
+          "mix",
+          "format",
+          "--check-formatted",
+          "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex",
+          "apps/gaoxy_http/lib/gaoxy/http/http2/response.ex",
+          "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+          "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex",
+          "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex",
+          "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex",
+          "apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex",
+          "apps/gaoxy_http3/test/connection_test.exs",
+          "apps/gaoxy_http3/test/lifecycle_test.exs",
+          "apps/gaoxy_http3/test/lifecycle_race_test.exs",
+          "apps/gaoxy_http3/test/plug_test.exs",
+          "apps/gaoxy_http3/test/operations_test.exs",
+          "apps/gaoxy_http3/test/transport_test.exs",
+          "integration/http3/fixture.exs"
+        ],
+        "exit": 0,
+        "status": "PASS",
+        "counts": [],
+        "evidence": "format.log"
+      },
+      {
+        "name": "python-syntax",
+        "command": [
+          "python",
+          "-m",
+          "py_compile",
+          "integration/http3/peer.py",
+          "integration/http3/run.py"
+        ],
+        "exit": 0,
+        "status": "PASS",
+        "counts": [],
+        "evidence": "python-syntax.log"
+      },
+      {
+        "name": "scoped-tests",
+        "command": [
+          "python",
+          "scripts/check-tests.py",
+          "apps/gaoxy_http3/test",
+          "apps/gaoxy_http/test/http_contract_test.exs",
+          "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+          "apps/gaoxy_http/test/http2_facade_test.exs",
+          "apps/gaoxy_http/test/http2_network_test.exs"
+        ],
+        "exit": 0,
+        "status": "PASS",
+        "counts": [
+          [
+            "50",
+            "0",
+            ""
+          ],
+          [
+            "111",
+            "0",
+            ""
+          ]
+        ],
+        "evidence": "scoped-tests.log"
+      },
+      {
+        "name": "diff-check",
+        "command": [
+          "git",
+          "diff",
+          "--check"
+        ],
+        "exit": 0,
+        "status": "PASS",
+        "counts": [],
+        "evidence": "diff-check.log"
+      }
+    ],
+    "scope_limit": "Unit gate predates peer-only schema/informational/busy corrections; all product/test/lock hashes remain current. Final real peer gate source hashes include all final peer corrections."
+  },
+  "observed_required_receipts": {
+    "initial_and_streamed_plug": "GET/HTTPSH3metadata/concurrency/progressive299000byte upload/ordered repeated trailers/zeroDATAtrailers/fixed stream/file range all passed.",
+    "response_semantics": "Actual raw pylsqpack103\u2192200 and100\u2192200 status/body/FIN checks, HEAD/204/205/304 and1MiB tiny-window exact data passed.",
+    "error_isolation": "Worker self-crash exact RESET+STOP0x102/no-lateDATA plus full G1 malformed/cancellation scoped errors and sibling behavior passed.",
+    "definitely_blocked_output": 28,
+    "application_baseline": {
+      "name": "shared_admission_slots_returned_to_baseline",
+      "result": "PASS",
+      "blocked": 28,
+      "admission": {
+        "active": 0,
+        "retained_high_water": 484980,
+        "retained_bytes": 0,
+        "cleanup_failed": null,
+        "cleanup_pending": 0
+      },
+      "admitted": 237,
+      "event": "sample",
+      "application_queue_high_water": {
+        "slot_count": 2,
+        "ingress_bytes": 65536,
+        "output_bytes": 16389,
+        "parser_bytes": 0
+      },
+      "application_queue_observations": 1091,
+      "application_slots": 0
+    },
+    "busy_local_cleanup": {
+      "name": "shared_busy_confirmed_cleanup",
+      "result": "PASS",
+      "event": "busy-cleaned",
+      "owner_down": true,
+      "pins": 0,
+      "worker_down": true,
+      "ets_deleted": true,
+      "admission_alive": true,
+      "admission_before": {
+        "active": 2,
+        "rejected": 0,
+        "retained_high_water": 216757,
+        "retained_bytes": 215538,
+        "cleanup_pending": 0,
+        "queued_bytes": 0,
+        "queued_items": 0
+      },
+      "admission_after": {
+        "active": 0,
+        "rejected": 0,
+        "retained_high_water": 216757,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "queued_bytes": 0,
+        "queued_items": 0
+      },
+      "service_cleanup_failed": null,
+      "cleanup_remaining_ms": 999,
+      "plug_release_sent": false,
+      "worker_kill_requested": false
+    },
+    "busy_network_deadline": {
+      "name": "shared_busy_owner_kill_network_isolation",
+      "result": "PASS",
+      "elapsed_ms": 1760,
+      "request_deadline_ms": 1500,
+      "cleanup_headroom_ms": 1000,
+      "another_connection_completed": true,
+      "sibling_listener_completed": true,
+      "response_data_bytes": 0,
+      "wire_connection_close_observed": false
+    },
+    "supported_explicit_stop": {
+      "name": "listener_shutdown_sibling_isolation",
+      "result": "PASS",
+      "close_code": 0,
+      "established_sibling_completed": true
+    },
+    "listener_remove": {
+      "name": "bounded_listener_remove",
+      "result": "PASS",
+      "event": "removed",
+      "elapsed_ms": 6,
+      "port_rebound": true,
+      "admission_gate_down": true,
+      "sibling_admission": {
+        "active": 1,
+        "retained_high_water": 216806,
+        "retained_bytes": 16559,
+        "cleanup_failed": null,
+        "cleanup_pending": 0
+      }
+    },
+    "runtime_stop": {
+      "name": "bounded_runtime_stop",
+      "result": "PASS",
+      "event": "stopped",
+      "elapsed_ms": 2,
+      "runtime_down": true,
+      "ports_rebound": true,
+      "admission_gates_down": true
+    }
+  },
+  "historical_failures": "Original informational peer error, nullable cleanup schema error and non-contractual abrupt-close waitFAIL preserved under their immutable source-bound run directories. Fresh PASS does not alter historical statuses.",
+  "source_sha256": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75",
+    "apps/gaoxy/lib/gaoxy/application.ex": "a651bb8a06b3223a6248fb235788e44916986daee09eca0d67b44b95af6b8950",
+    "apps/gaoxy/lib/gaoxy/config.ex": "43609c0e7ea8150161f315b242e0d5c38d92baba4cb9f11700605195dbdcf241",
+    "apps/gaoxy/lib/gaoxy/datagram_bridge.ex": "688ab1ac3c295ed886943f6570b96a11ab49f93a8f0048136330dde14db5e402",
+    "apps/gaoxy/lib/gaoxy/datagram_dispatcher.ex": "8b240d116bf4fb76c397407ff8e6921801f74b894cf39b27b297313b6ac9be03",
+    "apps/gaoxy/lib/gaoxy/datagram_dispatcher_bridge.ex": "eb6dc87e73301c09d67578fb765fb0b9c1fd45107ad8e6a96fd209fa4a33c054",
+    "apps/gaoxy/lib/gaoxy/datagram_handler.ex": "3ff449882d182d20fc64311c31678ad10e51b810ee805c128aedc28a8c30f939",
+    "apps/gaoxy/lib/gaoxy/instance.ex": "ba8e5f38f027adc1b20977b0612b5ef986663c656c0d0f0c2dd43ec390966b1e",
+    "apps/gaoxy/lib/gaoxy/lifecycle.ex": "2fc9c20f820cb8049bb950698cd6a5206c511b15e65b4228351e3699d08c0f82",
+    "apps/gaoxy/lib/gaoxy/native_stream_handler.ex": "ba9a4f897fc963aec9b82d3ef98949e26038a2096a4e3af83ea034ff03a74739",
+    "apps/gaoxy/lib/gaoxy/quic.ex": "138f847c993bcbd7ae54127cd0f22614f726e78d3eccc8bc76e3d624b3031b98",
+    "apps/gaoxy/lib/gaoxy/quic_bridge.ex": "249d39e3956212eb49c0692c19c46f401e9d29e846af0fd8f1e409d993cc6a32",
+    "apps/gaoxy/lib/gaoxy/quic_handler.ex": "80bac8766df903c64f03245a3814bbe006ad9c180f8ddc479019ecce8bd1972d",
+    "apps/gaoxy/lib/gaoxy/registry_policy.ex": "57d15d58f1e35ced0bf7deeb67d69b293eac02671950065aa4de9bfebf1401bd",
+    "apps/gaoxy/lib/gaoxy/service.ex": "c0fa0549815500dad5f50779b05777880b008276540bae58d47a4cccd061037b",
+    "apps/gaoxy/lib/gaoxy/stream_bridge.ex": "3f1b9ca7ba004cee152f39dde272600d5f2880974ce1244209ab9c8ea1becdd2",
+    "apps/gaoxy/lib/gaoxy/stream_handler.ex": "5e96a0b3bc7e4629e9f305b50225e1056e50e91d8152f83f39992cf5945f7680",
+    "apps/gaoxy/lib/gaoxy/telemetry.ex": "749421579aa4d6c5c8d8def5d9cdf502a59c7aa194203a8fb6c3051de1b72961",
+    "apps/gaoxy/lib/gaoxy.ex": "68c001820bd7eeea92053ebb26be6053ee64ffdcefc2f5184143aa8f319dc974",
+    "apps/gaoxy/mix.exs": "5eac4c03ba2c72121d83ee291dd574bb791eb61cdc064ebe455c534b6781dd17",
+    "apps/gaoxy_http/lib/gaoxy/http/application.ex": "052d7f0eb9d2d8c08b3b83ac31724eda7adad32a07038dd110e849d5932fde3e",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "7c2b82c4d708728ac601fb6c5af82fd7e0c808ed6d8e8405ba8b8220b1b9c8e3",
+    "apps/gaoxy_http/lib/gaoxy/http/endpoint.ex": "ae24f1266ba8c71b92800aab025b2dd3415cbd996fd154b28cc747a7c1fa7715",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "0dd40f1635f8da7d7063e593c9f80cf5e402005ac9cb36f51d0aee96e0752c57",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "b4318cda8dc312984fbcc61b6d148727ed4ed98af8c9e9a22d34904be2a33f2a",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex": "3d4a54b993d49e526203c2814379ad1459295e22d491191a2104355114a90136",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/parser.ex": "1754519c713e292d02b8b49931d74f40ee27de4c387c904a6f2d0b3c62b5372c",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "7fbdc45512c525fea62dcdf99d43cda6a43a5835a119de04703e9ff40f178cf7",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "3e604e41244d64a0dba8cc6f5b87655bf1f6c60e2944f6c37d5dc979d846735b",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/frame.ex": "319d286ef3d9bbe1185ae93b51f8e9af090c02b438de8c1f45118f7300016f9d",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/response.ex": "350be2d50090b273cd4af2e8d9ae6f9439959c2cd8dfbb69db276dc19f069a8a",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/settings.ex": "9d134d612e9c6e2408e78fd7be142b0b2dafb262becc2d591b6b28b18763cfe3",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "b6bbfcf79f1b1dd81a3a67a8251b027ca3008b554d4fa37376993a91fe383cbe",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "49f4d711c5642be6a89639a9631c8d6370e55188d184ecdd5abd96e5866aef11",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "54052d64cfb83fb4c0a8a2a834105f7b89d45994b582b5a73f095a1cea105235",
+    "apps/gaoxy_http/lib/gaoxy/http/options.ex": "3c1a68f1bf58d4f205958b82230e6d28665b719c7b64923593992decdcafdb90",
+    "apps/gaoxy_http/lib/gaoxy/http/plug_endpoint.ex": "ba94e2dc22cae2187e0dc32d1bcf143f9a25b64fb71f7a0b793b83f7d7967cdb",
+    "apps/gaoxy_http/lib/gaoxy/http/request.ex": "44895f9382e126cfda120f95f2a6925e987383f5c5a2adf8d05dd9dc4edb1f1c",
+    "apps/gaoxy_http/lib/gaoxy/http/request_error.ex": "351535c0c15bd8a919ed1c0588de15c4b32fac79a613d01030365b98dc41b2bb",
+    "apps/gaoxy_http/lib/gaoxy/http/resources.ex": "0e58a4f0badd2ba6d21b9f118c5b3f6c4d1070b4371e76e9dfc0656796f0907b",
+    "apps/gaoxy_http/lib/gaoxy/http/response.ex": "e198c13303dbf4ddd6b536a94f73bdcc4560fc406bb9645a81a26e4cf5f5fabe",
+    "apps/gaoxy_http/lib/gaoxy/http/router.ex": "1cb7a4d354ae6f46cac993494eb81265725e10cacb147d20028aea96a326eee7",
+    "apps/gaoxy_http/lib/gaoxy/http/websocket/frame.ex": "01b0dfcd187fe298811702d03340e34612dca3f0fdd938660bd5ee39efa00997",
+    "apps/gaoxy_http/lib/gaoxy/http/websocket/handshake.ex": "2e402c2c5d516b40bf5f2be41def2838e8cb0b787342763236c108d5e3d63986",
+    "apps/gaoxy_http/lib/gaoxy/http/websocket/message.ex": "84daa3a371fcbbaaffebf6343b6de2d1d555548ab915276a4d23d6e0eea85cd5",
+    "apps/gaoxy_http/lib/gaoxy/http/websocket.ex": "393bcb7fcd6f97f04be0fc8c87d0ab63ed32e6b591257b1614ced9a5d4405b62",
+    "apps/gaoxy_http/lib/gaoxy/http.ex": "e08385455d89ab422e4d3b8e4d68c0d555343986e32c59faff5dbcef5cef489c",
+    "apps/gaoxy_http/lib/gaoxy/phoenix_adapter.ex": "1f116b12c12b675248e8dfcb8e3421787b53de30dc703cfc02f01a5bb1361d9d",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "apps/gaoxy_http/mix.exs": "f98337d27935c031cc8690ef24f872eae2ee783887c9d33b312596f33198c4fa",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "2c237a16b2cdf52c8b67110523f290cbd7ac238e15cc1fe99ef248526e5139f8",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex": "87fedd6a097542d810cc6c49fb6b9dc0a7aac47d6fc7522333212936ceeaa84d",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "00c1832ee7a946c90d42aa82b8abffe7424062a9e078b84884837a9dfb1dcd18",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex": "0e7c588075ebccb16e6d3d6dde32c0ad2cb8a65dc04a4010e6d0fbdffcb9194f",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex": "810b75c00eb44a337e1d5fffd4d23feab61d96d7d6eea88b5106c34b5ede1d16",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "11309eba6daed70360297cee42a8f366fdb39ed3e5637af9981898b1f8b0558f",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "a84e29f1703bc6182f4bcbd75eb4b76a940c13715a48a761b51ed0442cd1e9e8",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3.ex": "8fd829412e75d0340e4a7e582869700a31f5be3d02bdaddacd47d0a2a9880eb3",
+    "apps/gaoxy_http3/mix.exs": "5391c790c0720e678f1a0ea99f4462df9069e89fb5536b97f03a317d5a86bc86",
+    "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+    "integration/http3/fixture.exs": "3b35698f03263bf51af16611d8c843b1b87f9dfe529aca9456c14850771fb47a",
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899",
+    "integration/http3/requirements.txt": "baa71ded2594f376d2ee2772a724b5b3d8be79e37a3b76392a94130e2069a3fb",
+    "integration/http3/run.py": "7d5e4c4191ee626f57d539ad9a3f9a4165598a20acadc2a249dcf49a282aa4f9",
+    "mix.exs": "4b63924a87089a670042d5544980ff8e4847ba02e11a13a161cc1d6d86f90be5",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/summary.json": "3ed32ed39d4ab9b4b0ea32fdba2360e3c31fb3fae2de8366062e6702429da9b0",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/shared.log": "8ff067c66d457e1ad31da8753dee2e801c0661c4a07e304e2240c5ae994effd6",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/busy.log": "31f082ecb7e1de00db57efe3b0416c90bbe147575b6dc04739dae4d203083f17",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/malformed.log": "df6276dcfe352c4e33bf16adbe04b576f15ba0956be16ea9008952143148c3f3",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/cancellation.log": "88729fc1ee9f73695ebc0b4814745dd3a74c880224f1f20aac0d0463526ca659",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/shutdown.log": "368ce1d0f871e66957eeef9467199814e7f303b479a1bf22ba1649b9d56965f3",
+    "docs/acceptance/evidence/m4/shared/parent-fresh-1791785649813795257/execution.json": "fffbd7cb2ca19ce890d0c2c0203118fb8c61c9d8144bcb491e58cdf3766059b6",
+    "docs/acceptance/evidence/m4/shared/parent-fresh-1791785649813795257/scoped-tests.log": "07abfb8a630887c12d479fa5b3cbbebc77140856530fbec526f5395340dc9552",
+    "docs/acceptance/evidence/m4/shared/busy-contract-resolution.json": "23b4b8b311dc422d4ccfa3139c8eed9324284fdd743993706d3d732095c72f32"
+  },
+  "remaining_risks": [
+    "G2 acceptance does not complete M4: downstream proxy/Phoenix browser/clean consumers, required upstream-H3 and standalone remain separate.",
+    "No hosted CI, release-artifact E2E, deployment or production acceptance inferred.",
+    "No graceful remote close promise for abrupt owner kill; live wire-close observation false is retained alongside required bounded local cleanup and sibling success."
+  ],
+  "next_step": "Root may update G2 acceptance/checklists, commit precise task-owned stage files locally and automatically proceed to G3; conditional publication awaits complete prescribed M4 gates."
+}

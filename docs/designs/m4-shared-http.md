@@ -26,7 +26,9 @@ registry, extra admission timer or new endpoint API.
 `Operations.new/0` creates an unnamed public ETS set owned by the connection
 callback process. Only the owner creates and removes request rows, bounded by the
 existing eight active request contexts. A row contains its opaque stream key,
-generation token, worker identity, original deadline and one operation state.
+generation token, worker identity, original deadline, normalized metadata limits
+and one operation state. The owner fixes those limits at registration; endpoint
+workers cannot broaden header/trailer admission beyond the service's configuration.
 The owner registers a row before starting its task. The task immediately monitors
 the owner and waits for a token-bound start message. After `start_child/2` returns,
 the owner binds exactly that returned PID to the row, then sends the start
@@ -53,13 +55,22 @@ in the bounded ingress state before attempting its reply. A lost reply claim
 terminates the request visibly; it never returns retryable `:pending` after
 discarding bytes. Stale tokens, another
 worker, an expired D and a deleted table return a closed/timeout result without
-publishing another operation. Each operation retains an absolute D_op, bounded
-by original D and the configured write timeout or requested read/poll wait. The
-same D_op is used by submission, claim, endpoint waiting, owner progress and
-uncertain-reference resolution; it is never renewed on a tick. Read/poll
-owner-confirmed no-progress preserves their `:pending` result, while caller or
-output expiry is a terminal timeout. Zero wait is an immediate probe and must not publish a
-destructive operation that can execute after the caller has returned.
+publishing another operation. Output retains an absolute D_op bounded by original
+D and the configured write timeout. Read/poll carries a fixed I/O deadline D_io
+as `{:until, D_io}`, computed at read/poll entry as
+`min(D, now + requested_wait)`, before any first-read Continue operation.
+Its confirmation deadline D_op is `min(D, D_io + write_timeout)`, allowing the
+owner to acknowledge an expired finite wait without extending the request's D.
+This is necessary for the existing proxy's 5 ms polling contract. Requested wait
+bounds empty I/O, while confirmation may take up to the configured write timeout
+capped by D; this does not promise a 5 ms total operation duration. Submission,
+claim and endpoint waiting use D_op; the owner's read/no-progress decision uses
+D_io. Neither deadline is renewed on a tick. Unknown host references retain the
+deadline recorded when that host operation first started. An owner-confirmed
+no-progress result before D_op preserves `:pending`; actual caller or output
+expiry is terminal. A completed-but-unacknowledged reply that races caller expiry
+also becomes a terminal tombstone. Zero wait returns immediately without
+publishing an operation that could execute after the caller has returned.
 
 Transport state records `{owner, table, stream_key, token}`. A worker monitors
 the owner while awaiting dispatch or an operation reply. Missing ETS and owner
@@ -87,7 +98,8 @@ operation returns the existing `{:ok | :more, bytes, ended, trailers}` shape;
 finite no-progress waits return `:pending`. Requests before peer SETTINGS remain
 legal. CONNECT returns 501 and H3 upgrades return `:not_supported`.
 
-Owner operations are `{:read, credit, wait}`, `{:poll, wait}`, `{:abort, reason}`,
+Owner operations are `{:read, credit, {:until, D_io}}`,
+`{:poll, {:until, D_io}}`, `{:abort, reason}`,
 `{:head, status, fields, ended}`, `{:data, binary, ended}` and
 `{:trailers, fields}`. Data operations are at most 16 KiB; header/trailer fields
 are validated against configured limits before QPACK encoding. One output

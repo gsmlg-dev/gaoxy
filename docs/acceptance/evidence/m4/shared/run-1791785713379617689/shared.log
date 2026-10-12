@@ -1,0 +1,31 @@
+GAOXY_HTTP3_PEER {"name": "shared_get", "result": "PASS", "production_plug": true}
+GAOXY_HTTP3_PEER {"name": "shared_static_qpack", "result": "PASS", "settings": {"1": 0, "6": 32768, "7": 0}}
+GAOXY_HTTP3_PEER {"name": "shared_plug_metadata", "result": "PASS", "scheme": "https", "protocol": "HTTP/3", "authority": "localhost:443"}
+GAOXY_HTTP3_PEER {"name": "shared_simultaneous_requests", "result": "PASS", "requests": 2}
+GAOXY_HTTP3_PEER {"name": "shared_worker_crash_request_isolation", "result": "PASS", "reset": 258, "stop": 258, "response_data_bytes": 0, "same_connection_sibling_completed": true, "sibling_listener_completed": true}
+GAOXY_HTTP3_PEER {"name": "shared_streaming_post_response", "result": "PASS", "bytes": 299000, "response_progress_before_upload_fin": true, "initial_stream_window": 2048, "initial_connection_window": 4096}
+GAOXY_HTTP3_PEER {"name": "shared_ordered_request_response_trailers", "result": "PASS", "fields": [["x-first", "one"], ["x-second", "two"], ["x-first", "three"]]}
+GAOXY_HTTP3_PEER {"name": "shared_zero_data_ordered_trailers", "result": "PASS", "data_bytes": 0, "initial_body_complete": "false", "fields": [["x-first", "one"], ["x-second", "two"], ["x-first", "three"]]}
+GAOXY_HTTP3_PEER {"name": "shared_fixed_streaming_response", "result": "PASS", "content_length": 12}
+GAOXY_HTTP3_PEER {"name": "shared_file_range", "result": "PASS", "offset": 11, "bytes": 8193, "status": 206}
+GAOXY_HTTP3_PEER {"name": "shared_peer_runtime", "result": "FAIL", "error": "AssertionError: unexpected connection close 0x10e"}
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 573, in <module>
+    main()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 564, in main
+    asyncio.run(globals()[args.mode](args))
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 469, in shared
+    await peer.until(lambda: sid in peer.ended or sid in peer.resets)
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 103, in until
+    assert self.terminated is None, f"unexpected connection close {self.terminated:#x}"
+           ^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: unexpected connection close 0x10e

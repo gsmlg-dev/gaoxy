@@ -1,0 +1,19 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 257392, max_cases: 4
+
+..........
+
+  1) test opaque map and QUIC stream keys preserve exactly one claim and reply (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:47
+     ** (MatchError) no match of right hand side value: {:error, :closed}
+     code: for key <- [%{opaque: make_ref()}, %Gaoxy.QUIC.Stream{handle: make_ref(), connection: %{opaque: make_ref()}}] do
+     stacktrace:
+       test/operations_test.exs:41: Gaoxy.HTTP.HTTP3.OperationsTest.slot/2
+       test/operations_test.exs:49: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OperationsTest."test opaque map and QUIC stream keys preserve exactly one claim and reply"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/operations_test.exs:48: (test)
+
+....
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+15 tests, 1 failure

@@ -1,0 +1,77 @@
+{
+  "task_id": "/root/m4_spec_review/busy-contract-resolution",
+  "status": "DONE",
+  "assignment": "direct independent read-only root-authored busy contract resolution and source/evidence review",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "unresolved_findings": [],
+  "reviewer_sol_repair_rounds": 0,
+  "counter_note": "Root-authored busy/schema repairs and previous Connection/Astra counters remain parent-owned and preserved. Peer initial informational repair1 unchanged; no new reviewer repair.",
+  "command_shutdown": "All review source/hash/log/receipt commands finished; no Mix/live/source edits or commit.",
+  "decisions_needed": [],
+  "resolution": "One absolute asyncio.timeout_at(started+2.5) now covers busy request, runner coordination, new connection handshake and both sibling requests. Exact zeroDATA before and after sibling exchange and total<=2500 remain asserted. Remote close is observed boolean rather than a prerequisite; supported explicit shutdown close0 and worker-crash0x102/no-close tests remain unchanged.",
+  "exact_delta_proof": "Restoring only entire busy function (with original boundary newline) reproduces archived run-1791786468960637952 peer.py SHA256. All other peer cases are byte-for-byte unchanged. Fixture/run schema and all local cleanup assertions unchanged from independently reviewed schema resolution.",
+  "prior_contract_receipt": "review-busy-contract.json",
+  "live_result": {
+    "name": "shared_busy_owner_kill_network_isolation",
+    "result": "PASS",
+    "elapsed_ms": 1760,
+    "request_deadline_ms": 1500,
+    "cleanup_headroom_ms": 1000,
+    "another_connection_completed": true,
+    "sibling_listener_completed": true,
+    "response_data_bytes": 0,
+    "wire_connection_close_observed": false
+  },
+  "cleanup_result": {
+    "name": "shared_busy_confirmed_cleanup",
+    "result": "PASS",
+    "event": "busy-cleaned",
+    "owner_down": true,
+    "pins": 0,
+    "worker_down": true,
+    "ets_deleted": true,
+    "admission_alive": true,
+    "admission_before": {
+      "active": 2,
+      "rejected": 0,
+      "retained_high_water": 216757,
+      "retained_bytes": 215538,
+      "cleanup_pending": 0,
+      "queued_bytes": 0,
+      "queued_items": 0
+    },
+    "admission_after": {
+      "active": 0,
+      "rejected": 0,
+      "retained_high_water": 216757,
+      "retained_bytes": 0,
+      "cleanup_pending": 0,
+      "queued_bytes": 0,
+      "queued_items": 0
+    },
+    "service_cleanup_failed": null,
+    "cleanup_remaining_ms": 999,
+    "plug_release_sent": false,
+    "worker_kill_requested": false
+  },
+  "source_sha256": {
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899",
+    "integration/http3/README.md": "207792d5f1b3b66fecf25187e05eb12598ec95b60bd7e9df46fac44be9ef7f78",
+    "integration/http3/fixture.exs": "3b35698f03263bf51af16611d8c843b1b87f9dfe529aca9456c14850771fb47a",
+    "integration/http3/run.py": "7d5e4c4191ee626f57d539ad9a3f9a4165598a20acadc2a249dcf49a282aa4f9"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/summary.json": "3ed32ed39d4ab9b4b0ea32fdba2360e3c31fb3fae2de8366062e6702429da9b0",
+    "docs/acceptance/evidence/m4/shared/run-1791790864133547066/busy.log": "31f082ecb7e1de00db57efe3b0416c90bbe147575b6dc04739dae4d203083f17",
+    "docs/acceptance/evidence/m4/shared/review-busy-contract.json": "6b61c909653ed3ed62ff233c425fc43dd3f180d93b24178766ca3d957d7a3aca"
+  },
+  "remaining_risks": [
+    "G2 runtime review is separately recorded; G3/upstream/standalone remain required M4 work."
+  ]
+}

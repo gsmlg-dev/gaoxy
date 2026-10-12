@@ -1,0 +1,32 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_http3
+Running ExUnit with seed: 536482, max_cases: 4
+
+.
+
+  1) test a caller paused past confirmation expiry cannot acknowledge into idle (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:186
+     match (=) failed
+     code:  assert {:error, :timeout} = invoke(pid, :ack, [table, key, token, ref])
+     left:  {:error, :timeout}
+     right: :ok
+     stacktrace:
+       test/operations_test.exs:195: (test)
+
+......
+
+  2) test a late owner reply cannot complete an expired reference (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:174
+     match (=) failed
+     code:  assert {:error, :timeout} = op(:reply, [table, key, token, ref, :ok])
+     left:  {:error, :timeout}
+     right: :ok
+     stacktrace:
+       test/operations_test.exs:181: (test)
+
+....
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+13 tests, 2 failures

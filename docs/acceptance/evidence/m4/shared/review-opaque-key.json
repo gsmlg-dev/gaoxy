@@ -1,0 +1,49 @@
+{
+  "task_id": "/root/m4_spec_review/opaque-key-resolution",
+  "status": "DONE",
+  "assignment": "direct independent read-only resolution review; root author",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "specification_review": "PASS",
+  "code_quality_review": "PASS",
+  "root_cause": "ETS select_replace needs a provably preserved key. The former literal row pattern treats map keys as partial map patterns, so its literal replacement fails for supported opaque map/QUIC Stream keys despite reference-only unit fixtures passing.",
+  "resolution": "Seven bound match variables and exact =:= {:const, old_value} guards compare every old row field; replacement preserves bound $1 as its key and supplies all remaining new fields as literal constants. This supports opaque map/struct keys without partial map matching, preserves exact token/worker/state/limits CAS and performs no mutable key replacement.",
+  "regression": "Map and actual Gaoxy.QUIC.Stream struct keys execute registration/bind/readiness, one submit, exactly one claim/reply/ACK and removal; the pre-fix test failed before the fix and all existing identity/deadline/budget cases remain.",
+  "historical_review": "review-root.json remains unchanged except its previously authorized exact-command correction. It is historical pre-discovery evidence; its reference-key review does not establish opaque runtime-key acceptance. This supplementary receipt resolves that subsequently discovered issue.",
+  "verification": {
+    "execution_owner": "/root",
+    "reviewer_reran_mix": false,
+    "fresh_log": "docs/acceptance/evidence/m4/shared/slots/opaque-key-green.log",
+    "tests": 26,
+    "failures": 0,
+    "operations_tests": 15,
+    "transport_tests": 11,
+    "result": "PASS",
+    "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_http3/test/operations_test.exs apps/gaoxy_http3/test/transport_test.exs"
+  },
+  "retained_failure_evidence": {
+    "slots/opaque-key-red.log": "364d5ef88b9d2d76bfcc1063b04586d3f8b1e25749c8403f12bf62b35b436272",
+    "slots/opaque-key-green.log": "08170d77eb55cdfebc502d63467b8d0e5e935ea814374665460bd319c87c8dec",
+    "connection-map-key-diagnostic.log": "a2e978eb072f4536dbb3523fc8e060d19a2b59cb992142f79926a99cb122b96b",
+    "connection-initial-red.log": "db6dab8d5c77b0e0bdec867a0d2eb466499db230c4bfdadf4cadb0f55b212912"
+  },
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "25f9d2baeb6c045107b633a0907be1be91e1d02b8a4c01203e1550b89aafee5b",
+    "apps/gaoxy_http3/test/operations_test.exs": "556041c0fdebf8637b4dce91c8655539033a1d9b37317956a9ca0d3c8ea79fc0",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "1a917457369bd5a0e5775ddd7056eb1f4d1251a19d509d32fed75fafba543199",
+    "apps/gaoxy_http3/test/transport_test.exs": "a0410834da17cf647fdd502c3b9d556a278b7b632189871696f0042bcef615b3"
+  },
+  "unresolved_findings": [],
+  "reviewer_sol_repair_rounds": 0,
+  "root_repair_counters": "Root-owned; preserved, not inferred or reset.",
+  "command_shutdown": "Reviewer read/hash/write-receipt commands completed; no Mix/live process owned.",
+  "remaining_risks": [
+    "Connection/Stream final unit evidence and independent delta review remain pending.",
+    "Full source-frozen shared peer network gate, final formatting/strict compilation and fresh post-review verification remain required."
+  ],
+  "decisions_needed": []
+}

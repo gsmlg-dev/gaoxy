@@ -200,17 +200,17 @@ Owner: HTTP integration worker. Files:
   only where a real protocol-neutral seam is missing, with H1/H2 regressions.
 - Extend `integration/http3/{fixture.exs,peer.py,run.py}` with `--gate shared`.
 
-- [ ] Test and implement one bounded ETS operation slot per admitted worker,
+- [x] Test and implement one bounded ETS operation slot per admitted worker,
   generation token checks, claim/reply reference, absolute deadline and tombstones
   preventing timeout/retry duplication. Poll from owner ticks; do not send
   GenServer operations to the Abyss worker or move I/O to endpoint processes.
-- [ ] Before dispatch, have each worker acquire its own request lease and arm
+- [x] Before dispatch, have each worker acquire its own request lease and arm
   `Admission.begin_request(gate, lease, reserve, D)` with the original absolute
   request deadline. Monitor owner for cooperative Transport exit; owner polls
   worker liveness. A busy Plug cannot handle DOWN. Admission's existing deadline
   kill, followed by its worker-DOWN lease release, enforces that case independently
   of the connection owner. Do not renew D or add a second guard timer.
-- [ ] Add a deterministic owner-killed-while-Plug-busy regression. The fixture
+- [x] Add a deterministic owner-killed-while-Plug-busy regression. The fixture
   Plug signals `{:plug_busy, worker, ref}` after dispatch, then waits only for a
   test release token outside Transport (no DOWN clause); the test never sends
   that token. After the readiness barrier, kill only its callback owner. Keep
@@ -221,30 +221,35 @@ Owner: HTTP integration worker. Files:
   absolute bound, without sleeps used as readiness or success evidence. Incomplete
   receipt is `termination_unconfirmed`, not PASS. Prove another connection's
   request and another listener still complete successfully after the kill.
-- [ ] Deterministically test failed start, worker crash, cooperative owner loss,
+- [x] Deterministically test failed start, worker crash, cooperative owner loss,
   cancellation before/after claim, stale generation and late response. Prove slot,
   request lease and generation resource release on every path, including forced
   death where endpoint `after` cleanup does not run. Keep existing service drain /
   forced-cleanup deadlines and test their separate confirmation path.
-- [ ] Construct Exchange with `transport: HTTP3.Transport`, H3 request version,
+- [x] Construct Exchange with `transport: HTTP3.Transport`, H3 request version,
   HTTPS, actual peer/local metadata and nil for unavailable certificate metadata.
   Implement the existing facade's return contracts, not an H3-specific Plug API.
-- [ ] Reject H3 WebSocket upgrades explicitly in the shared Plug adapter and
+- [x] Reject H3 WebSocket upgrades explicitly in the shared Plug adapter and
   verify `:not_supported` without entering the H1 upgrade path; preserve H1/H2.
-- [ ] Test request streaming/trailers, response streaming/file/trailers,
+- [x] Test request streaming/trailers, response streaming/file/trailers,
   informational responses/100-continue, HEAD/204/304, early response with unread
   request data, output deadlines and simultaneous unrelated streams.
-- [ ] Verify limits with slow independent peers and application-body credit:
+- [x] Verify limits with slow independent peers and application-body credit:
   record queue bytes/slots and Admission state returning to baseline. Separate
   engine/host ceilings from application state; report observations honestly.
-- [ ] Run new scoped suites and existing `apps/gaoxy_http/test/http_contract_test.exs`,
+- [x] Run new scoped suites and existing `apps/gaoxy_http/test/http_contract_test.exs`,
   `native_proxy_seams_test.exs`, `http2_facade_test.exs` (fully qualify each path),
   followed by `python integration/http3/run.py --gate shared --evidence
   docs/acceptance/evidence/m4/shared`.
-- [ ] Independent Sol review, targeted repairs, fresh verification.
+- [x] Independent Sol review, targeted repairs, fresh verification.
 
 **G2 pass:** existing endpoint/Plug API serves H3 with finite ownership and
 stream isolation. No upstream pooling or H2 adapter is enabled by this task.
+
+**G2 verified, 2026-10-12:** shared facade 111 H3 tests/0 plus50 H1/H2 compatibility
+tests/0 and59 independent live checks passed after specification, code and
+evidence review. Source unchanged; six owned children exit0. Continue the
+reviewed [G3 supplement](m4-downstream-matrix.md); no full M4 claim.
 
 ## Task 4 — downstream proxy and browser matrix (G3)
 

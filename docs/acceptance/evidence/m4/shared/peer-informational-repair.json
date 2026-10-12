@@ -1,0 +1,105 @@
+{
+  "task_id": "/root/m4_spec_review/informational-peer-repair",
+  "assignment": "direct peer-only diagnosis and narrow correction",
+  "status": "OFFLINE_VERIFIED_LIVE_NOT_RUN",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "head": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "root_cause": "Pinned aioquic1.2 H3Connection advances INITIAL to AFTER_HEADERS on any first response HEADERS, including100/103, and validates the second HEADERS as trailers. Valid final :status200 causes local close0x10e with Pseudo-header b':status' is not valid.",
+  "dependency_source": "integration/quic_consumer/.venv/lib/python3.12/site-packages/aioquic/h3/connection.py:708-781; public handle_event catches ProtocolError at453 and locally closes QUIC. No informational-response branch exists.",
+  "repair": "Move /inform and /continue cases into existing raw static pylsqpack context used for legal HEAD/bodyless semantics; send Continue upload as raw encoded DATA+FIN. No dependency/runtime source changed.",
+  "preserved_assertions": [
+    "103 then200 exact status list, Link field, exact informed body, request not reset, response FIN reached.",
+    "One100 before upload, followed by200 exact status list, exact continued-input body, request not reset and response FIN reached.",
+    "Raw decoder rejects dynamic instructions and truncated frame at FIN; unchanged fixed until deadline and all other shared peer assertions."
+  ],
+  "evidence": {
+    "original_live": "run-1791785713379617689:FAIL after10PASS; child exits confirmed and source unchanged. This is historical immutable evidence.",
+    "offline_command": "integration/quic_consumer/.venv/bin/python docs/acceptance/evidence/m4/shared/peer-informational-regression.py",
+    "offline_exit": 0,
+    "offline_cases": [
+      {
+        "initial": "103",
+        "result": "PASS",
+        "pinned_decoder_failure": {
+          "error_code": 270,
+          "reason_phrase": "Pseudo-header b':status' is not valid"
+        },
+        "wire_hex": "01180000d85b93fff8c4a6f29b6c2ffdfda9616882bb0b41c72701060000d95401380008696e666f726d6564",
+        "raw_headers": [
+          [
+            [
+              ":status",
+              "103"
+            ],
+            [
+              "link",
+              "</fixture>; rel=preload"
+            ]
+          ],
+          [
+            [
+              ":status",
+              "200"
+            ],
+            [
+              "content-length",
+              "8"
+            ]
+          ]
+        ],
+        "body": "informed",
+        "fragment_bytes": 3,
+        "fin": true
+      },
+      {
+        "initial": "100",
+        "result": "PASS",
+        "pinned_decoder_failure": {
+          "error_code": 270,
+          "reason_phrase": "Pseudo-header b':status' is not valid"
+        },
+        "wire_hex": "01040000ff0001070000d954023135000f636f6e74696e7565642d696e707574",
+        "raw_headers": [
+          [
+            [
+              ":status",
+              "100"
+            ]
+          ],
+          [
+            [
+              ":status",
+              "200"
+            ],
+            [
+              "content-length",
+              "15"
+            ]
+          ]
+        ],
+        "body": "continued-input",
+        "fragment_bytes": 3,
+        "fin": true
+      }
+    ],
+    "offline_limit": "Synthetic static wire vectors, not captured server output. Both public pinned decoder defects reproduced; existing raw Peer event path decodes exact ordered headers/body/FIN under3-byte fragmentation. Fresh actual-server informational wire acceptance remains required.",
+    "python_compile_exit": 0,
+    "fresh_live_gate": "NOT RUN; parent review/lease required."
+  },
+  "source_sha256": {
+    "integration/http3/peer.py": "87a833a378eff29a938c156ba6bca4aa3b61569828f83b96beac4be23f3fc62d"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/peer-informational-regression.py": "ec3be55a1a11516db87c86f763a46b3475b0a8dc90b3c494ec2578421bf33323",
+    "docs/acceptance/evidence/m4/shared/peer-informational-regression.log": "72aa305b710b03fc88eb60723f139af74fde602a2d1b01da49d152fc0a48fe8e",
+    "docs/acceptance/evidence/m4/shared/run-1791785713379617689/summary.json": "0b4c3d92439adc4adeeb4b0c7ef3d8d1192b88d3e5b1af9f42e65e54fbddf4fd",
+    "docs/acceptance/evidence/m4/shared/run-1791785713379617689/shared.log": "d9168da0b7d2fc23189df901581a9cac39d1fa285d8469532f0c8e6c8a24a083"
+  },
+  "peer_sol_repair_rounds": 1,
+  "peer_unsuccessful_sol_repair_rounds": 0,
+  "counter_limit": "One peer correction with passing offline validation; full live qualification pending. Prior Connection Sol/Astra and root counters unchanged.",
+  "command_shutdown": "All offline Python/read/write commands finished. No Mix/live process owned.",
+  "source_frozen": true,
+  "decisions_needed": []
+}

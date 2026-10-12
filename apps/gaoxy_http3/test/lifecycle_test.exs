@@ -68,18 +68,22 @@ defmodule Gaoxy.HTTP.HTTP3.LifecycleTest do
     assert {:ok, ^state} = Connection.handle_event({:stopped, key, 0x10C}, state)
   end
 
-  test "minimal gate rejects ordinary endpoint execution until shared adapter exists" do
+  test "shared endpoint ownership is initialized without executing its callback" do
     {:ok, spec} =
       Options.normalize(
         endpoint: {Endpoint, %{}},
         tls: %{certfile: "fixture.pem", keyfile: "key.pem"}
       )
 
-    assert {:error, :http3_endpoint_not_implemented} =
+    assert {:ok, state} =
              Connection.init(
                %{gate: nil, limits: spec.limits},
                %{alpn: "h3"},
                spec.handler_options
              )
+
+    assert :ets.info(state.operations, :owner) == self()
+    assert :ok = Connection.terminate(:test, state)
+    assert :ets.info(state.operations) == :undefined
   end
 end

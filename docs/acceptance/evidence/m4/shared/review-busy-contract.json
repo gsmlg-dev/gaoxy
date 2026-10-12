@@ -1,0 +1,85 @@
+{
+  "task_id": "/root/m4_spec_review/busy-contract",
+  "status": "DONE",
+  "assignment": "direct independent read-only test-contract review before root repair",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS proposed narrow contract correction",
+  "finding": "Current busy peer waits for remote CONNECTION_CLOSE after abrupt callback-owner :kill before exercising siblings. That requirement is absent from selected busy acceptance and waits up to10s beyond original D+1000. Abrupt kill bypasses best-effort application termination callback; host documents close-event/termination loss on crashes. This does not provide a graceful wire-close guarantee.",
+  "contract_evidence": {
+    "design": "m4-shared-http.md acceptance requires observed worker DOWN, deleted ETS, released Admission lease/bytes and pins by originalD+1000 plus another connection/listener requests.",
+    "plan": "Busy regression explicitly never releases Plug or requests worker kill, uses originalD+cleanup_headroom and observed local cleanup receipts.",
+    "readme": "New connection on busy listener and existing sibling listener must complete within same bound; owner DOWN alone never sufficient. No graceful remote close assertion.",
+    "host": "Abyss.QUIC.Handler documents best-effort terminate/2 and possible lost close notification on crashes; shared service does not block on explicit close after consumer death."
+  },
+  "preserved_failed_run": {
+    "run": "run-1791786468960637952",
+    "status": "FAIL",
+    "pass_checks": 22,
+    "cleanup_receipt": {
+      "name": "shared_busy_confirmed_cleanup",
+      "result": "PASS",
+      "event": "busy-cleaned",
+      "owner_down": true,
+      "pins": 0,
+      "worker_down": true,
+      "ets_deleted": true,
+      "admission_alive": true,
+      "admission_before": {
+        "active": 2,
+        "rejected": 0,
+        "retained_high_water": 216757,
+        "retained_bytes": 215538,
+        "cleanup_pending": 0,
+        "queued_bytes": 0,
+        "queued_items": 0
+      },
+      "admission_after": {
+        "active": 0,
+        "rejected": 0,
+        "retained_high_water": 216757,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "queued_bytes": 0,
+        "queued_items": 0
+      },
+      "service_cleanup_failed": null,
+      "cleanup_remaining_ms": 999,
+      "plug_release_sent": false,
+      "worker_kill_requested": false
+    },
+    "actual_peer_failure": "busy.log TimeoutError at await stalled.until(terminated is not None, allow_close=True), fixed10s timeout, before sibling requests.",
+    "owned_children_exited": true,
+    "source_unchanged": true,
+    "historical_log_unchanged": true
+  },
+  "accepted_correction_requirements": [
+    "After confirmed local cleanup, exercise new connection on busy listener and existing sibling immediately. Enforce one absolute deadline encompassing coordination, handshake and both exact response/body checks: peer request start+2500ms (at least as strict as later serverD+1000). Do not reset wait after cleanup.",
+    "Retain zero busy responseDATA before and after sibling exchange. Capture wireclose observed true/false as an observation; absence must not delay sibling verification or be described as a graceful close.",
+    "Retain all fixture worker/ETS/pin/Admission/service-failure/originalD+1000 checks, unreleased Plug and owner-only kill.",
+    "Preserve supported explicit listener shutdown exact close0 assertion and /crash request-local RESET+STOP0x102/no-connection-close/no-lateDATA assertions untouched.",
+    "No product/runtime/dependency/private-host workaround or new accounting obligation. Preserve failed run and count; fresh source-frozen live gate remains required."
+  ],
+  "unresolved_findings": [],
+  "runtime_acceptance": "NOT RUN by reviewer; this receipt accepts the proposed contract correction, not implementation or full G2 acceptance.",
+  "source_sha256": {
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899",
+    "integration/http3/fixture.exs": "3b35698f03263bf51af16611d8c843b1b87f9dfe529aca9456c14850771fb47a",
+    "integration/http3/run.py": "7d5e4c4191ee626f57d539ad9a3f9a4165598a20acadc2a249dcf49a282aa4f9",
+    "docs/designs/m4-shared-http.md": "61c687e74a9398f818489b67b2ccebf25a50ceb05f44a5ba36dee41c849fdd27",
+    "docs/plans/m4-shared-http.md": "9979835fbf5f9cc4f86a56550a8dde9a22846d2d684dd416973bb99e879d0ed6",
+    "integration/http3/README.md": "207792d5f1b3b66fecf25187e05eb12598ec95b60bd7e9df46fac44be9ef7f78",
+    "deps/abyss/lib/abyss/quic/handler.ex": "a0e1bc27356c3144db0b3651a524d9712b30a5890a3383be78d7bf78e0b762ed"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/run-1791786468960637952/summary.json": "523eb4e332b44ed99e95342f151bd962726a4e0d45d5bb2be50ac9a371313596",
+    "docs/acceptance/evidence/m4/shared/run-1791786468960637952/busy.log": "6a090536c355debf5e8e7ccba0d14e54f7e8aa63c6c09093e126f9d141fa8577"
+  },
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "Root/Connection/Astra/peer counters preserved; prospective root-owned test-contract correction not counted or inferred by reviewer.",
+  "command_shutdown": "All reviewer reads/hash/receipt commands finished; no source edit, Mix or live process.",
+  "decisions_needed": []
+}

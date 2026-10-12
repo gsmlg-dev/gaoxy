@@ -1,0 +1,138 @@
+{
+  "task": "M4 G2 shared Connection/Stream unit integration",
+  "assignment": "direct",
+  "recorded_at": "2026-10-12T06:10:49.175911+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "branch": "codex/m4-http3",
+  "m4_baseline": "78de9d0",
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "2c237a16b2cdf52c8b67110523f290cbd7ac238e15cc1fe99ef248526e5139f8",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "11309eba6daed70360297cee42a8f366fdb39ed3e5637af9981898b1f8b0558f",
+    "apps/gaoxy_http3/test/connection_test.exs": "60c035aacfccc1122363e44226244043206f74927e9cdeb599094a5b44005eb2",
+    "apps/gaoxy_http3/test/lifecycle_test.exs": "45c021fa6934d52d3fe18643e5edcc1d8cdb74d3a1310bdbc5820bd650111414",
+    "apps/gaoxy_http3/test/plug_test.exs": "6be765a0d9a20e2d67554b5b04a2e85d2134f27d16d1d0f2d4f72eafa9664ef9",
+    "apps/gaoxy_http3/test/lifecycle_race_test.exs": "6144ef229a0ad417beeb3dbcccc0c42fd6e06f47aed10586a822573d6d26f03f",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "a84e29f1703bc6182f4bcbd75eb4b76a940c13715a48a761b51ed0442cd1e9e8",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "environment": {
+    "command_prefix": "nix develop -c env MIX_ENV=test ERL_FLAGS='+S 2:2'",
+    "elixir": "1.18.5",
+    "otp": "28",
+    "peer": "integration/quic_consumer/.venv/bin/python (existing locked aioquic peer)"
+  },
+  "checks": [
+    {
+      "name": "review repair strict compile",
+      "command": "mix compile --warnings-as-errors",
+      "status": "PASS",
+      "exit": 0,
+      "evidence": "connection-review-repair1-compile.log"
+    },
+    {
+      "name": "review repair owned formatting",
+      "command": "mix format --check-formatted apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs apps/gaoxy_http3/test/plug_test.exs apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "status": "PASS",
+      "exit": 0,
+      "evidence": "connection-review-repair1-format.log"
+    },
+    {
+      "name": "review repair owned scoped suites",
+      "command": "python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs apps/gaoxy_http3/test/plug_test.exs apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "status": "PASS",
+      "executed": 21,
+      "failures": 0,
+      "exit": 0,
+      "evidence": "connection-review-repair1-green.log"
+    },
+    {
+      "name": "strict compilation",
+      "command": "mix compile --warnings-as-errors",
+      "status": "PASS",
+      "exit": 0,
+      "evidence": "connection-final-compile.log"
+    },
+    {
+      "name": "owned formatting",
+      "command": "mix format --check-formatted apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs apps/gaoxy_http3/test/plug_test.exs apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "status": "PASS",
+      "exit": 0,
+      "evidence": "connection-format.log"
+    },
+    {
+      "name": "owned scoped suites",
+      "command": "python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs apps/gaoxy_http3/test/plug_test.exs apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "status": "PASS",
+      "executed": 19,
+      "failures": 0,
+      "exit": 0,
+      "evidence": "connection-final-green.log"
+    },
+    {
+      "name": "intentional premature ingress drain red",
+      "command": "python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs:98",
+      "status": "EXPECTED_RED",
+      "executed": 1,
+      "failures": 1,
+      "excluded": 7,
+      "exit": 2,
+      "evidence": "connection-read-cas-red.log",
+      "assertion": "owner must retain input retained; premature drain leaves ained",
+      "restoration": "candidate helper restored byte-for-byte before final compile and scoped suites"
+    },
+    {
+      "name": "initial candidate suites",
+      "status": "FAIL",
+      "executed": 19,
+      "failures": 1,
+      "exit": 2,
+      "evidence": "connection-initial-green-attempt.log",
+      "root_cause": "root-owned Operations CAS rejected opaque map/struct keys after successful registration; independent real H3 isolated recovery exposed it",
+      "resolution": "root-owned key-safe Ops CAS repair; unchanged owned suites then19/0"
+    },
+    {
+      "name": "validated zero-DATA trailers before dispatch",
+      "status": "EXPECTED_RED",
+      "executed": 1,
+      "failures": 1,
+      "excluded": 8,
+      "exit": 2,
+      "evidence": "connection-zero-trailers-red.log",
+      "root_cause": "completed initial Exchange body discarded entry ordered trailers and their byte count",
+      "repair": "initialize trailers and byte count when initial body phase done; retain empty metadata until credited read for data phase"
+    },
+    {
+      "name": "retained parser continuation with accepted single-quantum ingress budget",
+      "status": "EXPECTED_RED",
+      "executed": 1,
+      "failures": 1,
+      "excluded": 9,
+      "exit": 2,
+      "evidence": "connection-parser-credit-red.log",
+      "root_cause": "whole fresh-read quantum gate prevented even pure parser continuation when retained bytes reduced credit",
+      "repair": "run bounded empty feed before shared fresh-I/O credit gate; allow positive short credited reads through public capped QUIC API; unknown writes stay fenced; legacy minimal fixture guard preserved"
+    }
+  ],
+  "owned_counter": {
+    "prior_connection_sol_repair_rounds": 2,
+    "prior_connection_unsuccessful_sol_rounds": 2,
+    "prior_connection_astra_rounds": 1,
+    "prior_connection_unsuccessful_astra_rounds": 0,
+    "g2_connection_initial_implementation": 1,
+    "g2_connection_sol_repair_rounds": 1,
+    "g2_connection_unsuccessful_sol_rounds": 0,
+    "note": "Expected TDD reds and root-owned Operations repair are not Connection repair rounds; parent owns cumulative recovery routing.",
+    "cumulative_connection_sol_repair_rounds": 3,
+    "cumulative_connection_unsuccessful_sol_rounds": 2
+  },
+  "shutdown": "All owned exec sessions finished; isolated VM and both Python peer commands exited; no model/daemon processes created. Test after blocks stop runtime/supervisor; busy Plug is never released and actual worker DOWN is asserted.",
+  "limits": [
+    "Unit receipt is not whole G2 acceptance.",
+    "Independent Connection review and fresh whole shared peer gate remain parent-coordinated.",
+    "Busy owner-unit siblings are synthetic owner/Admission cases; real network sibling receipt belongs to peer gate.",
+    "No commit, publication or deployment performed."
+  ],
+  "review_repairs": "One successful repair-and-validation round resolved both independently confirmed mapping and parser-credit findings; no assertion weakened."
+}

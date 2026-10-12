@@ -69,6 +69,16 @@ push, publish packages/releases/images, deploy, alter production data, issue
 operational certificates, or enable a public management endpoint without the
 separate authorization required by the product plan.
 
+## Conditional M4 publication authorization — 2026-10-12
+
+The user separately authorizes integration into main, push to GitHub and a new
+version release after M4 actually completes its prescribed verification and
+independent review, followed by preparation of the next planned stage. This
+supersedes the local-only publication boundary for that completed release.
+Incomplete or blocked M4 gates do not satisfy the condition. Deployment,
+production data/certificates, Vault, public management and the disabled
+release-artifact E2E retain their explicit restrictions.
+
 ## Workspace and implementation
 
 - Put new worktrees in this project's `.trees/` directory; use `codex/` branches.

@@ -1,0 +1,46 @@
+{
+  "task_id": "/root/m4_spec_review/gate-schema",
+  "status": "DONE",
+  "assignment": "direct independent read-only schema repair review; root repair author",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "unresolved_findings": [],
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "Root/Connection/Astra/peer counters preserved; root-owned repair is not inferred or reset.",
+  "command_shutdown": "All reviewer reads/hash/AST predicate/receipt commands finished; no Mix/live process or source edit.",
+  "decisions_needed": [],
+  "root_cause": "Gaoxy.status merges Service cleanup_failed, whose successful value is nil (JSON null), with Admission counters. Admission.status itself has no cleanup_failed field. Previous runner compared service nullable failure state with numeric0, while busy helper attempted missing Admission field.",
+  "resolution": [
+    "Baseline requires active/retained_bytes/cleanup_pending/application_slots exactly0 AND service cleanup_failed is None; no get/default can conceal a missing schema key.",
+    "Busy helper requires actual public Admission active/retained_bytes/cleanup_pending exactly0 and independent pins0. Fixture separately matches nil=Gaoxy.status(runtime,:busy).cleanup_failed before emitting service_cleanup_failed:null; runner asserts null.",
+    "Owner-only kill, observed owner/worker DOWN, ETS deleted, busy worker initially alive, Admission alive, unreleased Plug, no worker kill request, original D+1000 and positive remaining cleanup bound remain unchanged. Network sibling/connection and no-response-DATA checks remain unchanged."
+  ],
+  "proof": {
+    "exact_diff": "Reversing only two runner additions/one predicate replacement and only three fixture schema substitutions produces exact source SHA256 from archived failed run-1791786157345333055. This independently confirms no remaining source assertions changed.",
+    "actual_predicate": "Parsed and evaluated the actual current runner AST condition against archived real successful sample (all counters0/failureNone): accepted. Eight non-success variants (three positive counters, positive slot, failure0/string/False/map) each rejected.",
+    "public_sources": "Service initializes cleanup_failed:nil and status merges it; Admission status fields exclude cleanup_failed.",
+    "historical_run": "FAIL with18peerPASS+2queuePASS; archived public sample active0/bytes0/pending0/slots0/failureNone. Child exits confirmed/source unchanged. Original receipt unchanged.",
+    "fresh_live_gate": "NOT RUN by reviewer; new source-frozen live run remains required."
+  },
+  "source_sha256": {
+    "integration/http3/fixture.exs": "3b35698f03263bf51af16611d8c843b1b87f9dfe529aca9456c14850771fb47a",
+    "integration/http3/run.py": "7d5e4c4191ee626f57d539ad9a3f9a4165598a20acadc2a249dcf49a282aa4f9",
+    "integration/http3/peer.py": "87a833a378eff29a938c156ba6bca4aa3b61569828f83b96beac4be23f3fc62d",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75",
+    "apps/gaoxy/lib/gaoxy/service.ex": "c0fa0549815500dad5f50779b05777880b008276540bae58d47a4cccd061037b"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/run-1791786157345333055/summary.json": "87a3bda64c4b81a4012a93103188e69735db1fdd95204da68831746f0d78a50f",
+    "docs/acceptance/evidence/m4/shared/run-1791786157345333055/shared.log": "8ff067c66d457e1ad31da8753dee2e801c0661c4a07e304e2240c5ae994effd6"
+  },
+  "remaining_risks": [
+    "Fresh shared busy/malformed/cancellation/shutdown/full-gate acceptance remains required; source review does not turn preserved FAIL into PASS."
+  ]
+}

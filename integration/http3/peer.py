@@ -393,6 +393,155 @@ async def cancellation(args):
         emit("request_reset_stop_isolation", code=0x10C, sibling_completed=True, late_data_bytes=0)
 
 
+async def shared(args):
+    """Production Plug facade, independently decoded by aioquic/pylsqpack."""
+    async with opened(args) as peer:
+        try:
+            await peer.response(peer.request())
+        except Exception as error:
+            print("GAOXY_HTTP3_PEER " + json.dumps(dict(name="shared_get", result="FAIL",
+                  error=f"{type(error).__name__}: {error}")), flush=True)
+            raise
+        emit("shared_get", production_plug=True)
+        await peer.until(lambda: peer.http.received_settings is not None)
+        assert peer.http.received_settings[1] == peer.http.received_settings[7] == 0
+        emit("shared_static_qpack", settings=peer.http.received_settings)
+        await peer.response(peer.request(path=b"/metadata"), b"https:HTTP/3:localhost:443")
+        emit("shared_plug_metadata", scheme="https", protocol="HTTP/3", authority="localhost:443")
+        first, second = peer.request(), peer.request()
+        await asyncio.gather(peer.response(first), peer.response(second))
+        emit("shared_simultaneous_requests", requests=2)
+
+        crashed = peer.request(path=b"/crash", fin=False)
+        await peer.until(lambda: crashed in peer.resets and crashed in peer.stops)
+        assert peer.resets[crashed] == peer.stops[crashed] == 0x102
+        assert peer.data.get(crashed, b"") == b"", "crashed worker emitted response DATA"
+        assert peer.terminated is None, peer.terminated
+        async with opened(args, port=args.sibling_port) as sibling:
+            await asyncio.gather(peer.response(peer.request()), sibling.response(sibling.request()))
+        assert peer.data.get(crashed, b"") == b"", "late DATA after worker crash cancellation"
+        assert peer.terminated is None, peer.terminated
+        emit("shared_worker_crash_request_isolation", reset=0x102, stop=0x102,
+             response_data_bytes=0, same_connection_sibling_completed=True,
+             sibling_listener_completed=True)
+
+        payload = b"shared-fragmented-body-" * 13_000
+        sid = peer.request(b"POST", b"/echo", [(b"content-length", str(len(payload)).encode())], fin=False)
+        peer.http.send_data(sid, payload[:17], end_stream=False)
+        peer.transmit()
+        await peer.until(lambda: len(peer.data.get(sid, b"")) >= 17)
+        for offset in range(17, len(payload), 1021):
+            peer.http.send_data(sid, payload[offset:offset + 1021],
+                                end_stream=offset + 1021 >= len(payload))
+        peer.transmit()
+        await peer.response(sid, payload)
+        emit("shared_streaming_post_response", bytes=len(payload), response_progress_before_upload_fin=True,
+             initial_stream_window=2048, initial_connection_window=4096)
+
+        sid = peer.request(b"POST", b"/echo", fin=False)
+        trailers = [(b"x-first", b"one"), (b"x-second", b"two"), (b"x-first", b"three")]
+        peer.http.send_data(sid, b"ordered-trailers", end_stream=False)
+        peer.http.send_headers(sid, trailers, end_stream=True)
+        peer.transmit()
+        await peer.response(sid, b"ordered-trailers")
+        assert peer.headers[sid][-1] == trailers, peer.headers[sid]
+        emit("shared_ordered_request_response_trailers", fields=[[k.decode(), v.decode()] for k, v in trailers])
+
+        sid = peer.request(b"POST", b"/zero-trailers", [(b"content-length", b"0")], fin=False)
+        peer.http.send_headers(sid, trailers, end_stream=True)
+        peer.transmit()
+        await peer.response(sid, b"")
+        assert peer.headers[sid][-1] == trailers, peer.headers[sid]
+        complete = [v for k, v in peer.headers[sid][0] if k == b"x-initial-body-complete"]
+        assert complete in ([b"true"], [b"false"]), complete
+        emit("shared_zero_data_ordered_trailers", data_bytes=0,
+             initial_body_complete=complete[0].decode(),
+             fields=[[k.decode(), v.decode()] for k, v in trailers])
+        await peer.response(peer.request(path=b"/fixed"), b"fixed-stream")
+        emit("shared_fixed_streaming_response", content_length=12)
+        file_bytes = b"0123456789abcdef" * 65_536
+        sid = peer.request(path=b"/file")
+        await peer.response(sid, file_bytes[11:11 + 8193], b"206")
+        assert (b"content-length", b"8193") in peer.headers[sid][0], peer.headers[sid]
+        emit("shared_file_range", offset=11, bytes=8193, status=206)
+
+        sid = peer.request(b"POST", b"/early", [(b"content-length", b"1000000")], fin=False)
+        peer.http.send_data(sid, b"unread-prefix", end_stream=False)
+        peer.transmit()
+        await peer.response(sid, b"early")
+        await peer.response(peer.request())
+        assert peer.terminated is None
+        emit("shared_early_response_unread_body", unread_prefix_bytes=13, request_fin=False,
+             sibling_completed=True)
+
+    # aioquic1.2 treats a final HEADERS after100/103 as trailers and its generic
+    # Content-Length checker omits HEAD/bodyless rules. Decode these legal wire
+    # responses independently; retain exact statuses, body, trailers and FIN.
+    async with opened(args, standard=False) as peer:
+        peer.setup()
+        sid = peer.request(path=b"/inform")
+        await peer.until(lambda: sid in peer.ended or sid in peer.resets)
+        assert sid not in peer.resets, peer.resets
+        assert [dict(h)[b":status"] for h in peer.headers[sid]] == [b"103", b"200"], peer.headers[sid]
+        assert (b"link", b"</fixture>; rel=preload") in peer.headers[sid][0], peer.headers[sid]
+        assert peer.data.get(sid) == b"informed", peer.data
+        emit("shared_informational_before_final", statuses=[103, 200])
+
+        sid = peer.request(b"POST", b"/continue", [(b"expect", b"100-continue"),
+                           (b"content-length", b"15")], fin=False)
+        await peer.until(lambda: sid in peer.headers or sid in peer.resets)
+        assert sid not in peer.resets and dict(peer.headers[sid][0])[b":status"] == b"100", peer.headers
+        peer.raw(sid, encode_frame(0, b"continued-input"), fin=True)
+        await peer.until(lambda: sid in peer.ended or sid in peer.resets)
+        assert sid not in peer.resets, peer.resets
+        assert [dict(h)[b":status"] for h in peer.headers[sid]] == [b"100", b"200"], peer.headers[sid]
+        assert peer.data.get(sid) == b"continued-input", peer.data
+        emit("shared_expect_continue_before_body", statuses=[100, 200], continue_count=1)
+
+        sid = peer.request(b"HEAD")
+        await peer.response(sid, b"")
+        assert (b"content-length", b"2") in peer.headers[sid][0], peer.headers[sid]
+        emit("shared_head_bodyless", data_bytes=0, content_length=2)
+        for status in (204, 205, 304):
+            sid = peer.request(path=f"/empty-{status}".encode())
+            await peer.response(sid, b"", str(status).encode())
+            lengths = [v for k, v in peer.headers[sid][0] if k == b"content-length"]
+            expected = {204: [], 205: [b"0"], 304: [b"17"]}[status]
+            assert lengths == expected, (status, lengths)
+            emit(f"shared_bodyless_{status}", data_bytes=0,
+                 content_length=[v.decode() for v in lengths])
+
+    async with opened(args) as peer, opened(args, port=args.sibling_port) as sibling:
+        large, small = peer.request(path=b"/large"), peer.request()
+        await asyncio.gather(peer.response(large, file_bytes), peer.response(small),
+                             sibling.response(sibling.request()))
+        emit("shared_tiny_window_file_progress", bytes=len(file_bytes),
+             initial_stream_window=2048, initial_connection_window=4096,
+             same_connection_sibling_completed=True, sibling_listener_completed=True)
+
+
+async def busy(args):
+    async with opened(args, port=args.busy_port) as stalled, opened(args, port=args.sibling_port) as sibling:
+        started = time.monotonic()
+        async with asyncio.timeout_at(started + 2.5):
+            sid = stalled.request(path=b"/busy")
+            print('GAOXY_HTTP3_PEER {"event":"busy_ready"}', flush=True)
+            command = await asyncio.to_thread(sys.stdin.readline)
+            assert command == "cleaned\n", command
+            assert stalled.data.get(sid, b"") == b"", "busy Plug emitted response DATA"
+            # Abrupt owner death proves local cleanup; explicit stop separately
+            # verifies its supported wire close. Exercise siblings by original D.
+            async with opened(args, port=args.busy_port) as another:
+                await asyncio.gather(another.response(another.request()), sibling.response(sibling.request()))
+            assert stalled.data.get(sid, b"") == b"", "late DATA after busy owner cleanup"
+        elapsed_ms = round((time.monotonic() - started) * 1000)
+        assert elapsed_ms <= 2500, ("busy original D + cleanup headroom exceeded", elapsed_ms)
+        emit("shared_busy_owner_kill_network_isolation", elapsed_ms=elapsed_ms,
+             request_deadline_ms=1500, cleanup_headroom_ms=1000,
+             another_connection_completed=True, sibling_listener_completed=True, response_data_bytes=0,
+             wire_connection_close_observed=stalled.terminated is not None)
+
+
 async def shutdown(args):
     async with opened(args) as main_peer, opened(args, port=args.sibling_port) as sibling:
         await main_peer.response(main_peer.request())
@@ -411,10 +560,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--port", required=True, type=int)
     parser.add_argument("--sibling-port", required=True, type=int)
+    parser.add_argument("--busy-port", type=int)
     parser.add_argument("--ca", required=True)
-    parser.add_argument("--mode", choices=["ordinary", "malformed", "cancellation", "shutdown", "diagnostic"], required=True)
+    parser.add_argument("--mode", choices=["ordinary", "malformed", "cancellation", "shutdown", "diagnostic", "shared", "busy"], required=True)
     args = parser.parse_args()
-    asyncio.run(globals()[args.mode](args))
+    try:
+        asyncio.run(globals()[args.mode](args))
+    except Exception as error:
+        if args.mode == "shared":
+            print("GAOXY_HTTP3_PEER " + json.dumps(dict(name="shared_peer_runtime", result="FAIL",
+                  error=f"{type(error).__name__}: {error}")), flush=True)
+        raise
 
 
 if __name__ == "__main__":

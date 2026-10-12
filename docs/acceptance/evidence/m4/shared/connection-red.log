@@ -1,0 +1,87 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 416515, max_cases: 4
+
+
+
+  1) test an ordinary Plug creates a shared owner without dispatch before authenticated readiness (Gaoxy.HTTP.HTTP3.PlugTest)
+     apps/gaoxy_http3/test/plug_test.exs:13
+     match (=) failed
+     code:  assert {:ok, state} =
+              Connection.init(%{gate: self(), limits: spec.limits}, %{alpn: "h3"}, spec.handler_options)
+     left:  {:ok, state}
+     right: {:error, :http3_endpoint_not_implemented}
+     stacktrace:
+       test/plug_test.exs:20: (test)
+
+
+13:30:52.955 [error] Task #PID<0.340.0> started from #PID<0.339.0> terminating
+** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Stream.run/7 is undefined (module Gaoxy.HTTP.HTTP3.Stream is not available)
+    Gaoxy.HTTP.HTTP3.Stream.run(#PID<0.339.0>, #Reference<0.2811173205.886177793.131359>, #Reference<0.2811173205.886046721.131360>, #Reference<0.2811173205.886046721.131361>, #PID<0.338.0>, 196608, -576460749006)
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<16.36486597/0 in Gaoxy.HTTP.HTTP3.LifecycleRaceTest.owner/5>
+    Args: []
+
+13:30:53.030 [error] Task #PID<0.346.0> started from #PID<0.345.0> terminating
+** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Stream.run/7 is undefined (module Gaoxy.HTTP.HTTP3.Stream is not available)
+    Gaoxy.HTTP.HTTP3.Stream.run(#PID<0.345.0>, #Reference<0.2811173205.886177794.122296>, #Reference<0.2811173205.886046722.122297>, #Reference<0.2811173205.886046722.122298>, #PID<0.344.0>, 196608, -576460748912)
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<16.36486597/0 in Gaoxy.HTTP.HTTP3.LifecycleRaceTest.owner/5>
+    Args: []
+
+
+  2) test owner death before the token start barrier ends the unadmitted worker (Gaoxy.HTTP.HTTP3.LifecycleRaceTest)
+     apps/gaoxy_http3/test/lifecycle_race_test.exs:170
+     worker exited before installing its owner monitor
+     code: assert monitored(owner, worker, Lifecycle.deadline(1_000)) == :ok
+     stacktrace:
+       test/lifecycle_race_test.exs:174: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Stream.run/7 is undefined (module Gaoxy.HTTP.HTTP3.Stream is not available or is yet to be defined)
+    │
+ 90 │         Stream.run(owner, table, key, token, gate, reserve, deadline)
+    │                ~
+    │
+    └─ test/lifecycle_race_test.exs:90:16: Gaoxy.HTTP.HTTP3.LifecycleRaceTest.owner/5
+
+
+
+  3) test start barrier binds the worker before admission and preserves the original deadline (Gaoxy.HTTP.HTTP3.LifecycleRaceTest)
+     apps/gaoxy_http3/test/lifecycle_race_test.exs:151
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       worker = #PID<0.346.0>
+       owner = #PID<0.345.0>
+     The process mailbox is empty.
+     code: assert_receive {:ready, ^owner, ^worker, lease}
+     stacktrace:
+       test/lifecycle_race_test.exs:159: (test)
+
+
+13:30:54.032 [error] Task #PID<0.354.0> started from #PID<0.353.0> terminating
+** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Stream.run/7 is undefined (module Gaoxy.HTTP.HTTP3.Stream is not available)
+    Gaoxy.HTTP.HTTP3.Stream.run(#PID<0.353.0>, #Reference<0.2811173205.886177793.131501>, #Reference<0.2811173205.886046721.131502>, #Reference<0.2811173205.886046721.131503>, #PID<0.351.0>, 196608, -576460748110)
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<16.36486597/0 in Gaoxy.HTTP.HTTP3.LifecycleRaceTest.owner/5>
+    Args: []
+
+13:30:54.832 [error] Process #PID<0.353.0> raised an exception
+** (RuntimeError) worker readiness deadline
+    test/lifecycle_race_test.exs:122: Gaoxy.HTTP.HTTP3.LifecycleRaceTest.await_ready/4
+    test/lifecycle_race_test.exs:97: anonymous fn/6 in Gaoxy.HTTP.HTTP3.LifecycleRaceTest.owner/5
+
+
+  4) test a busy Plug survives owner kill only until original D with confirmed independent cleanup (Gaoxy.HTTP.HTTP3.LifecycleRaceTest)
+     apps/gaoxy_http3/test/lifecycle_race_test.exs:185
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       worker = #PID<0.354.0>
+       owner = #PID<0.353.0>
+     The process mailbox is empty.
+     code: assert_receive {:ready, ^owner, ^worker, _}
+     stacktrace:
+       test/lifecycle_race_test.exs:193: (test)
+
+
+Finished in 2.5 seconds (2.5s async, 0.00s sync)
+4 tests, 4 failures

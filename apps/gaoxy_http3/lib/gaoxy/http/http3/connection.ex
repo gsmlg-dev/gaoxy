@@ -2,7 +2,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   @moduledoc false
   @behaviour Gaoxy.QUICHandler
   alias Gaoxy.QUIC
-  alias Gaoxy.HTTP.HTTP3.Protocol
+  alias Gaoxy.HTTP.Exchange
+  alias Gaoxy.HTTP.HTTP3.{Headers, Operations, Options, Protocol, Stream, Transport}
   alias QuicHttp3.{Control, Frame, Qpack}
 
   @impl true
@@ -11,8 +12,15 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         metadata,
         %{endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{profile: :minimal} = fixture}} = options
       ) do
+    initialize(connection, metadata, options, fixture)
+  end
+
+  def init(connection, metadata, %{endpoint: {module, _}} = options) when is_atom(module),
+    do: initialize(connection, metadata, options, nil)
+
+  defp initialize(connection, metadata, options, fixture) do
     with {:ok, protocol} <- Protocol.new(options) do
-      if is_pid(fixture[:observer]),
+      if fixture != nil and is_pid(fixture[:observer]),
         do: send(fixture.observer, {:http3_fixture_connection, fixture[:id], connection.gate})
 
       {:ok,
@@ -21,6 +29,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
          options: options,
          metadata: metadata,
          protocol: protocol,
+         operations: if(fixture == nil, do: Operations.new()),
          ready: false,
          control: nil,
          control_bytes: Control.local_payload(protocol.control),
@@ -33,8 +42,6 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
        }}
     end
   end
-
-  def init(_, _, _), do: {:error, :http3_endpoint_not_implemented}
 
   @impl true
   def handle_event({:ready, metadata}, state) do
@@ -60,12 +67,22 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         kind: kind,
         request: nil,
         mode: nil,
+        input: <<>>,
+        trailers: [],
+        token: nil,
+        worker: nil,
+        lease: nil,
+        operation: nil,
+        worker_finished: false,
+        response_phase: :unset,
+        abort_pending: false,
         out: <<>>,
         send_fin: false,
         send_done: false,
         recv_fin: false,
         fin_pending: false,
         cancel: [],
+        cancel_deadline: nil,
         deadline: now() + state.options.http_limits.request_timeout,
         header_deadline: now() + state.options.http_limits.header_timeout,
         output_deadline: nil,
@@ -99,7 +116,10 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   def handle_event(_, state), do: {:ok, state}
 
   @impl true
-  def terminate(_, _), do: :ok
+  def terminate(_, state) do
+    _ = clear(state)
+    :ok
+  end
 
   defp progress(%{ready: false} = state), do: {:ok, state}
   defp progress(%{closed: true} = state), do: {:stop, :normal, state}
@@ -217,14 +237,17 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         cleanup_stream(cancel(state, key, 0x10C), key)
 
       true ->
-        with {:ok, state} <- flush(state, key),
+        with {:ok, state} <- endpoint_turn(state, key),
+             {:ok, state} <- flush(state, key),
              {:ok, state} <- receive_stream(state, key),
              {:ok, state} <- flush(state, key),
-             do: {:ok, retire(state, key)}
+             {:ok, state} <- complete_output(state, key),
+             do: {:ok, observe(retire(state, key))}
     end
   end
 
-  defp receive_stream(state, key) do
+  @doc false
+  def receive_stream(state, key) do
     case state.streams[key] do
       nil ->
         {:ok, state}
@@ -238,10 +261,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       entry ->
         # Preserve the exact write completion while its admission is uncertain.
         # Reserve one read quantum plus DATA framing before consuming application bytes.
-        credit = state.options.h3_limits.max_pending_output - byte_size(entry.out) - 32
+        credit = receive_credit(state, key)
 
         if Map.has_key?(state.pending, {key, :write}) or
-             (entry.kind == :bidi and credit < state.options.http_limits.max_read_chunk) do
+             (state.operations == nil and entry.kind == :bidi and
+                credit < state.options.http_limits.max_read_chunk) do
           {:ok, state}
         else
           before = state.protocol.streams[key]
@@ -259,6 +283,9 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
               entry.fin_pending ->
                 finish_receive(state, key)
 
+              entry.kind == :bidi and credit <= 0 ->
+                {:ok, state}
+
               true ->
                 read_stream(state, key, min(credit, state.options.http_limits.max_read_chunk))
             end
@@ -269,6 +296,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
   defp read_stream(state, key, maximum) do
     deadline = now() + state.options.http_limits.read_timeout
+
+    deadline =
+      if state.operations != nil and state.streams[key].kind == :bidi,
+        do: min(state.streams[key].deadline, deadline),
+        else: deadline
 
     case operation(state, {key, :read}, deadline, fn opts -> QUIC.read(key, maximum, opts) end) do
       {:ok, state, {:ok, items}} ->
@@ -337,7 +369,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   defp transition(state, _, {:error, :connection, code, reason, protocol}),
     do: fail(%{state | protocol: protocol}, code, reason)
 
-  defp action(state, {:headers, key, request}) do
+  defp action(%{operations: nil} = state, {:headers, key, request}) do
     {status, body, mode} =
       case {request.method, request.path} do
         {"GET", "/ok"} -> {200, "ok", :discard}
@@ -357,11 +389,24 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     enqueue(state, key, bytes)
   end
 
+  defp action(state, {:headers, key, request}), do: start_endpoint(state, key, request)
+
+  defp action(%{operations: table} = state, {:data, key, bytes}) when table != nil do
+    entry = state.streams[key]
+
+    if byte_size(entry.input) + byte_size(bytes) <= state.options.http_limits.max_buffer_bytes,
+      do: {:ok, update_entry(state, key, &%{&1 | input: &1.input <> bytes})},
+      else: {:ok, cancel(state, key, 0x107)}
+  end
+
   defp action(state, {:data, key, bytes}) do
     if state.streams[key].mode == :echo,
       do: enqueue(state, key, Frame.encode!(:data, bytes)),
       else: {:ok, state}
   end
+
+  defp action(%{operations: table} = state, {:trailers, key, fields}) when table != nil,
+    do: {:ok, update_entry(state, key, &%{&1 | trailers: fields})}
 
   defp action(state, {:trailers, key, fields}) do
     if state.streams[key].mode == :echo do
@@ -371,6 +416,9 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       {:ok, state}
     end
   end
+
+  defp action(%{operations: table} = state, {:complete, _key}) when table != nil,
+    do: {:ok, state}
 
   defp action(state, {:complete, key}),
     do:
@@ -409,6 +457,365 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     else
       {:ok, cancel(state, key, 0x107)}
     end
+  end
+
+  defp receive_credit(%{operations: nil} = state, key),
+    do: state.options.h3_limits.max_pending_output - byte_size(state.streams[key].out) - 32
+
+  defp receive_credit(state, key) do
+    entry = state.streams[key]
+    parser = state.protocol.streams[key]
+    buffered = if parser == nil, do: 0, else: byte_size(parser.buffer)
+    state.options.http_limits.max_buffer_bytes - byte_size(entry.input) - buffered
+  end
+
+  defp start_endpoint(state, key, request) do
+    token = make_ref()
+    entry = state.streams[key]
+    owner = self()
+    reserve = Options.reservation(state.options).request
+    table = state.operations
+    gate = state.connection.gate
+    deadline = entry.deadline
+
+    with :ok <- Operations.register(table, key, token, deadline, state.options.http_limits),
+         {:ok, worker} <-
+           start_worker(fn ->
+             Stream.run(owner, table, key, token, gate, reserve, deadline)
+           end) do
+      case Operations.bind(state.operations, key, token, worker) do
+        :ok ->
+          send(worker, {:h3_start, owner, key, token})
+          {:ok, update_entry(state, key, &%{&1 | request: request, token: token, worker: worker})}
+
+        _ ->
+          Process.exit(worker, :kill)
+          _ = Operations.remove(state.operations, key, token)
+          {:ok, cancel(state, key, 0x107)}
+      end
+    else
+      _ ->
+        _ = Operations.remove(state.operations, key, token)
+        {:ok, cancel(state, key, 0x107)}
+    end
+  end
+
+  defp start_worker(fun) do
+    Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fun)
+  catch
+    :exit, _ -> {:error, :task_supervisor_unavailable}
+  end
+
+  defp endpoint_turn(%{operations: nil} = state, _), do: {:ok, state}
+
+  defp endpoint_turn(state, key) do
+    case state.streams[key] do
+      %{token: nil} ->
+        {:ok, state}
+
+      %{cancel: [_ | _]} ->
+        {:ok, state}
+
+      %{token: token, worker: worker} = entry ->
+        case Operations.status(state.operations, key, token) do
+          {:ok, %{worker: ^worker, lease: lease, status: :ready}} ->
+            if Process.alive?(worker) and
+                 Operations.activate(state.operations, key, token, worker) == :ok do
+              exchange = exchange(state, key, lease)
+              send(worker, {:h3_dispatch, self(), key, token, exchange, state.options.endpoint})
+              {:ok, update_entry(state, key, &%{&1 | lease: lease})}
+            else
+              {:ok, cancel(state, key, 0x107)}
+            end
+
+          {:ok, %{status: {:finished, _}}} ->
+            if entry.send_done,
+              do: {:ok, update_entry(state, key, &%{&1 | worker_finished: true})},
+              else: {:ok, cancel(state, key, 0x102)}
+
+          {:ok, %{status: {:cancelled, _, _}}} ->
+            {:ok, cancel(state, key, 0x10C)}
+
+          {:ok, %{worker: ^worker}} ->
+            if Process.alive?(worker),
+              do: claim_operation(state, key),
+              else: {:ok, cancel(state, key, 0x102)}
+
+          _ ->
+            {:ok, cancel(state, key, 0x102)}
+        end
+    end
+  end
+
+  @doc false
+  def exchange(state, key, lease) do
+    entry = state.streams[key]
+    request = %{entry.request | peer: state.metadata[:remote], local: state.metadata[:local]}
+    scope = Map.get(state.connection, :scope, %{})
+    ended = entry.recv_fin and entry.input == <<>>
+    trailers = if ended, do: entry.trailers, else: []
+
+    %Exchange{
+      request: request,
+      gate: state.connection.gate,
+      lease: lease,
+      deadline: entry.deadline,
+      limits: Map.put(state.options.http_limits, :max_write_chunk, 16_384),
+      body: %{
+        phase: if(ended, do: :done, else: :data),
+        total: 0,
+        trailers: trailers,
+        trailer_bytes: Headers.bytes(trailers)
+      },
+      buffer: <<>>,
+      transport: Transport,
+      transport_state: {self(), state.operations, key, entry.token},
+      peer: state.metadata[:remote],
+      local: state.metadata[:local],
+      secure: true,
+      ssl: nil,
+      peer_cert: nil,
+      service: scope[:service],
+      instance: scope[:instance],
+      protocol_bytes: Options.reservation(state.options).request
+    }
+  end
+
+  defp claim_operation(state, key) do
+    entry = state.streams[key]
+
+    if entry.operation == nil do
+      case Operations.claim(state.operations, key, entry.token) do
+        {:ok, worker, ref, operation, deadline} when worker == entry.worker ->
+          state = update_entry(state, key, &%{&1 | operation: {ref, operation, deadline}})
+          prepare_operation(state, key, operation, deadline)
+
+        :idle ->
+          if entry.abort_pending,
+            do: {:ok, cancel(state, key, 0x10C)},
+            else: {:ok, state}
+
+        _ ->
+          {:ok, cancel(state, key, 0x10C)}
+      end
+    else
+      {_, operation, deadline} = entry.operation
+
+      if elem(operation, 0) in [:head, :data, :trailers] and now() >= deadline and
+           not Map.has_key?(state.pending, {key, :write}),
+         do: {:ok, cancel(state, key, 0x10C)},
+         else: {:ok, state}
+    end
+  end
+
+  defp prepare_operation(state, key, {:head, status, fields, ended}, deadline) do
+    entry = state.streams[key]
+
+    if entry.response_phase != :final and (status >= 200 or not ended) do
+      with :ok <-
+             Headers.response(
+               fields,
+               state.options.http_limits.max_headers,
+               state.options.http_limits.max_header_bytes
+             ),
+           {:ok, block} <-
+             Qpack.encode_header_block([{":status", Integer.to_string(status)} | fields]) do
+        state =
+          update_entry(
+            state,
+            key,
+            &%{&1 | response_phase: if(status < 200, do: :informational, else: :final)}
+          )
+
+        output_operation(state, key, Frame.encode!(:headers, block), ended, deadline)
+      else
+        _ -> {:ok, cancel(state, key, 0x102)}
+      end
+    else
+      {:ok, cancel(state, key, 0x102)}
+    end
+  end
+
+  defp prepare_operation(state, key, {:data, bytes, ended}, deadline) do
+    if state.streams[key].response_phase == :final and not state.streams[key].send_done,
+      do:
+        output_operation(
+          state,
+          key,
+          if(bytes == <<>>, do: <<>>, else: Frame.encode!(:data, bytes)),
+          ended,
+          deadline
+        ),
+      else: {:ok, cancel(state, key, 0x102)}
+  end
+
+  defp prepare_operation(state, key, {:trailers, fields}, deadline) do
+    with true <- state.streams[key].response_phase == :final and not state.streams[key].send_done,
+         :ok <- Headers.trailers(fields, state.options.http_limits),
+         {:ok, block} <- Qpack.encode_header_block(fields) do
+      output_operation(state, key, Frame.encode!(:headers, block), true, deadline)
+    else
+      _ -> {:ok, cancel(state, key, 0x102)}
+    end
+  end
+
+  defp prepare_operation(state, _key, operation, _deadline)
+       when elem(operation, 0) in [:read, :poll, :abort],
+       do: {:ok, state}
+
+  defp output_operation(state, key, bytes, ended, deadline) do
+    if byte_size(bytes) <= state.options.h3_limits.max_pending_output do
+      {:ok,
+       update_entry(state, key, &%{&1 | out: bytes, send_fin: ended, output_deadline: deadline})}
+    else
+      {:ok, cancel(state, key, 0x107)}
+    end
+  end
+
+  defp complete_output(%{operations: nil} = state, _), do: {:ok, state}
+
+  defp complete_output(state, key) do
+    case state.streams[key] do
+      %{cancel: [_ | _]} ->
+        {:ok, state}
+
+      %{operation: {_, {:read, credit, {:until, io_deadline}}, deadline}} = entry ->
+        cond do
+          now() >= deadline ->
+            {:ok, cancel(state, key, 0x10C)}
+
+          now() >= io_deadline ->
+            reply_operation(state, key, :pending)
+
+          entry.input != <<>> or entry.recv_fin ->
+            reply_read(state, key, credit)
+
+          true ->
+            {:ok, state}
+        end
+
+      %{operation: {_, {:poll, {:until, io_deadline}}, deadline}} ->
+        cond do
+          now() >= deadline -> {:ok, cancel(state, key, 0x10C)}
+          now() >= io_deadline -> reply_operation(state, key, :pending)
+          true -> {:ok, state}
+        end
+
+      %{operation: {_, {:abort, _}, _}} ->
+        with {:ok, next} <- reply_operation(state, key, :ok),
+             do: {:ok, update_entry(next, key, &%{&1 | abort_pending: true})}
+
+      %{operation: {_, operation, deadline}, out: <<>>}
+      when elem(operation, 0) in [:head, :data, :trailers] ->
+        if Map.has_key?(state.pending, {key, :write}) do
+          {:ok, state}
+        else
+          if now() >= deadline,
+            do: {:ok, cancel(state, key, 0x10C)},
+            else: reply_operation(state, key, :ok)
+        end
+
+      _ ->
+        {:ok, state}
+    end
+  end
+
+  @doc false
+  def reply_read(state, key, credit) do
+    entry = state.streams[key]
+    count = min(credit, byte_size(entry.input))
+    <<bytes::binary-size(count), rest::binary>> = entry.input
+    ended = entry.recv_fin and rest == <<>>
+    result = {if(ended, do: :ok, else: :more), bytes, ended, entry.trailers}
+    {ref, _, _} = entry.operation
+
+    case Operations.reply(state.operations, key, entry.token, ref, result) do
+      :ok -> {:ok, update_entry(state, key, &%{&1 | operation: nil, input: rest})}
+      _ -> {:ok, cancel(state, key, 0x10C)}
+    end
+  end
+
+  defp reply_operation(state, key, result) do
+    entry = state.streams[key]
+    {ref, _, _} = entry.operation
+
+    case Operations.reply(state.operations, key, entry.token, ref, result) do
+      :ok -> {:ok, update_entry(state, key, &%{&1 | operation: nil})}
+      _ -> {:ok, cancel(state, key, 0x10C)}
+    end
+  end
+
+  defp stop_endpoint(%{operations: nil}, _, _), do: :ok
+
+  defp stop_endpoint(state, key, reason) do
+    case state.streams[key] do
+      %{token: token, worker: worker} when token != nil ->
+        _ = Operations.cancel(state.operations, key, token, reason)
+        if is_pid(worker) and Process.alive?(worker), do: Process.exit(worker, :kill)
+        _ = Operations.remove(state.operations, key, token)
+        :ok
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp settle_cancel(%{operations: nil} = state, _), do: {:ok, state}
+
+  defp settle_cancel(state, key) do
+    Enum.reduce_while([:read, :write], {:ok, state}, fn kind, {:ok, acc} ->
+      case acc.pending[{key, kind}] do
+        nil ->
+          {:cont, {:ok, acc}}
+
+        {reference, deadline} ->
+          if now() >= deadline do
+            {:halt, fail(acc, 0x102, :uncertain_cancel_timeout)}
+          else
+            case QUIC.operation_status(acc.connection, reference) do
+              %{result: _} ->
+                {:cont, {:ok, %{acc | pending: Map.delete(acc.pending, {key, kind})}}}
+
+              :unknown ->
+                {:cont, {:ok, acc}}
+
+              failure ->
+                {:halt, fail(acc, 0x102, {:operation_status, failure})}
+            end
+          end
+      end
+    end)
+  end
+
+  defp observe(%{operations: nil} = state), do: state
+
+  defp observe(state) do
+    measurements =
+      Enum.reduce(
+        state.streams,
+        %{slot_count: 0, ingress_bytes: 0, output_bytes: 0, parser_bytes: 0},
+        fn {key, entry}, acc ->
+          parser = state.protocol.streams[key]
+
+          parser_bytes =
+            if parser == nil, do: 0, else: byte_size(parser.buffer) + byte_size(parser.payload)
+
+          %{
+            slot_count: acc.slot_count + if(entry.token == nil, do: 0, else: 1),
+            ingress_bytes: acc.ingress_bytes + byte_size(entry.input),
+            output_bytes: acc.output_bytes + byte_size(entry.out),
+            parser_bytes: acc.parser_bytes + parser_bytes
+          }
+        end
+      )
+
+    :telemetry.execute(
+      [:gaoxy, :http3, :queue],
+      measurements,
+      Map.put(Map.get(state.connection, :scope, %{}), :connection, self())
+    )
+
+    state
   end
 
   defp flush(state, key) do
@@ -496,6 +903,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   end
 
   defp cancel(state, key, code, commands \\ [:reset, :stop]) do
+    stop_endpoint(state, key, :cancelled)
+
     state = %{
       state
       | protocol: %{state.protocol | streams: Map.delete(state.protocol.streams, key)}
@@ -509,16 +918,36 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         | out: <<>>,
           send_fin: false,
           cancel: Enum.map(commands, fn kind -> {kind, code} end),
+          cancel_deadline:
+            if(state.operations == nil,
+              do: nil,
+              else:
+                &1.cancel_deadline ||
+                  min(
+                    &1.deadline + Gaoxy.Lifecycle.cleanup_headroom(),
+                    now() + state.options.http_limits.write_timeout
+                  )
+            ),
           output_deadline: &1.output_deadline || now() + state.options.http_limits.write_timeout
       }
     )
   end
 
+  defp cleanup_stream(%{operations: nil} = state, key), do: cleanup_command(state, key)
+
   defp cleanup_stream(state, key) do
+    with {:ok, state} <- settle_cancel(state, key) do
+      if Map.has_key?(state.pending, {key, :write}) or Map.has_key?(state.pending, {key, :read}),
+        do: {:ok, state},
+        else: cleanup_command(state, key)
+    end
+  end
+
+  defp cleanup_command(state, key) do
     entry = state.streams[key]
     [{kind, code} | rest] = entry.cancel
 
-    case operation(state, {key, kind}, entry.output_deadline, fn opts ->
+    case operation(state, {key, kind}, entry.cancel_deadline || entry.output_deadline, fn opts ->
            case kind do
              :reset -> QUIC.reset_stream(key, code, opts)
              :stop -> QUIC.stop_stream(key, code, opts)
@@ -615,6 +1044,15 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     end
   end
 
+  defp retire(%{operations: table} = state, key) when table != nil do
+    case state.streams[key] do
+      %{worker_finished: true, recv_fin: true, send_done: true} -> drop(state, key)
+      %{worker_finished: true, send_done: true, cancel: []} -> cancel(state, key, 0x10C, [:stop])
+      %{recv_fin: true, kind: :uni} -> drop(state, key)
+      _ -> state
+    end
+  end
+
   defp retire(state, key) do
     case state.streams[key] do
       %{recv_fin: true, send_done: true} -> drop(state, key)
@@ -623,13 +1061,16 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     end
   end
 
-  defp drop(state, key),
-    do: %{
+  defp drop(state, key) do
+    stop_endpoint(state, key, :closed)
+
+    %{
       state
       | streams: Map.delete(state.streams, key),
         pending:
           Map.reject(state.pending, fn {slot, _} -> is_tuple(slot) and elem(slot, 0) == key end)
     }
+  end
 
   defp update_entry(state, key, fun) do
     if Map.has_key?(state.streams, key),
@@ -646,8 +1087,13 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     {:stop, {:http3, code, reason}, clear(state)}
   end
 
-  defp clear(state),
-    do: %{
+  defp clear(state) do
+    Enum.each(state.streams, fn {key, _} -> stop_endpoint(state, key, :closed) end)
+
+    if state.operations != nil and :ets.info(state.operations) != :undefined,
+      do: :ets.delete(state.operations)
+
+    observe(%{
       state
       | streams: %{},
         protocol: %{state.protocol | streams: %{}},
@@ -656,7 +1102,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         control: nil,
         control_bytes: <<>>,
         closed: true
-    }
+    })
+  end
 
   defp now, do: System.monotonic_time(:millisecond)
 end

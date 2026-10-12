@@ -1,0 +1,97 @@
+{
+  "task_id": "/root/m4_spec_review/connection-stream-g2",
+  "status": "DONE",
+  "assignment": "direct independent specification and code/evidence review",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "source_dirty": true,
+  "specification_review": "PASS",
+  "code_quality_review": "PASS",
+  "independence": "Reviewer authored original G1 Connection but did not author new G2 Connection/Stream delta or its two repairs. This review is independent of the G2 delta author; whole G1 previously received separate independent review.",
+  "reviewed_contract": [
+    "Exact owner/table/key/token/deadline start and dispatch barriers bind the returned supervised PID before Admission acquisition and endpoint execution. Worker monitors owner immediately and is not linked to it.",
+    "Admission arms original D before ready; owner loss ends cooperative waits while busy Plug remains armed by independent Admission. Deterministic busy test never releases Plug or requests worker kill; observed worker DOWN, deleted ETS, and zero monitored pins/lease bytes by D+1000. Unit siblings are synthetic; live network siblings remain a separate gate.",
+    "At most eight response owners survive parser FIN; callback remains sole QUIC I/O owner. Header/trailer validation and bounded per-operation output/ingress preserve normalized limits.",
+    "Fixed D_io/D_op and unknown host references preserve original deadlines; write uncertainty fences parser/read progress; cancellation settles unresolved read/write before RESET/STOP cleanup.",
+    "Claimed read attempts reply CAS before draining retained ingress; CAS loss kills only associated worker and cancels visibly without retryable pending or lost bytes.",
+    "Output only completes after whole admitted frame/FIN, one final response, informational sequencing, early response cancellation and worker liveness/completion polling.",
+    "Unexpected worker death source liveness path selects request-local0x102; exact runtime error, no-late-DATA and network siblings will be verified by new shared /crash case."
+  ],
+  "resolved_findings": [
+    {
+      "finding": "Initial done body discarded validated zero-DATA repeated request trailers.",
+      "repair": "exchange/3 populates ordered trailers and Headers.bytes only when recv_fin and empty input establish done; queued DATA keeps trailer publication behind credited reads.",
+      "proof": "Validated pure QPACK HEADERS/trailers and Protocol.fin feed mapping regression; body_complete true, ordered repeated fields and bytes exact; pending DATA companion remains incomplete with no prematurely visible trailers. Red executed1/failure1, fresh scoped21/0."
+    },
+    {
+      "finding": "Accepted max_buffer=max_read_chunk16KiB stalls retained parser continuation before request HEADERS.",
+      "repair": "Shared receive_stream performs bounded retained empty feed before fresh-read credit check; positive short reads stay <=credit and public QUIC.read clamps <=min(max_packet,16KiB). Legacy minimal output quantum gate unchanged.",
+      "proof": "Twelve zero-length legal unknown frames exhaust32 transitions before HEADERS. New regression requires next bounded turn produces validated GET. Unknown pending write companion returns exact unchanged state. Red executed1/failure1, fresh scoped21/0."
+    }
+  ],
+  "verification": {
+    "execution_owner": "/root/m4_connection_integration",
+    "reviewer_reran_mix": false,
+    "author_hashes_confirmed": true,
+    "fresh_command": "nix develop -c env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs apps/gaoxy_http3/test/plug_test.exs apps/gaoxy_http3/test/lifecycle_race_test.exs",
+    "fresh_log": "connection-review-repair1-green.log",
+    "executed": 21,
+    "failures": 0,
+    "author_reported_exit": 0,
+    "strict_compile_exit": 0,
+    "format_check_exit": 0,
+    "runtime_acceptance": "NOT RUN by this review; source-frozen full shared gate remains required"
+  },
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "2c237a16b2cdf52c8b67110523f290cbd7ac238e15cc1fe99ef248526e5139f8",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "11309eba6daed70360297cee42a8f366fdb39ed3e5637af9981898b1f8b0558f",
+    "apps/gaoxy_http3/test/connection_test.exs": "60c035aacfccc1122363e44226244043206f74927e9cdeb599094a5b44005eb2",
+    "apps/gaoxy_http3/test/lifecycle_test.exs": "45c021fa6934d52d3fe18643e5edcc1d8cdb74d3a1310bdbc5820bd650111414",
+    "apps/gaoxy_http3/test/plug_test.exs": "6be765a0d9a20e2d67554b5b04a2e85d2134f27d16d1d0f2d4f72eafa9664ef9",
+    "apps/gaoxy_http3/test/lifecycle_race_test.exs": "6144ef229a0ad417beeb3dbcccc0c42fd6e06f47aed10586a822573d6d26f03f",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "a84e29f1703bc6182f4bcbd75eb4b76a940c13715a48a761b51ed0442cd1e9e8",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/connection-units.json": "aa3668d510554f332976c547a2f3c9ab20b60cfbb1f25b50ad1154e918281eda",
+    "docs/acceptance/evidence/m4/shared/connection-review-repair1-green.log": "ba76e0fcfad429c05f5474a2e0b04a0a177326c998e8b99100dadf397afaa1cb",
+    "docs/acceptance/evidence/m4/shared/connection-review-repair1-compile.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "docs/acceptance/evidence/m4/shared/connection-review-repair1-format.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "docs/acceptance/evidence/m4/shared/connection-zero-trailers-red.log": "c4c33d3ad7dd7754f1af99b7b612231665e144000fd06a892e18483c39b20d64",
+    "docs/acceptance/evidence/m4/shared/connection-parser-credit-red.log": "404ccd032ce98c523be9e642344a94cb14b60102616dfa68b931d4723b7d4984",
+    "docs/acceptance/evidence/m4/shared/connection-read-cas-red.log": "637d90f3bd9909813408f03ba74c11a58c5f385b5670c5f82df9d5a1f6ba2c0b",
+    "docs/acceptance/evidence/m4/shared/connection-initial-green-attempt.log": "7ac7a19b5e49e6c803ffad2e9ad972ec96a76ad029d44f4e3b082591e3ccd6c2",
+    "docs/acceptance/evidence/m4/shared/connection-final-green.log": "b1e90fba27de11c8431b4169d82de9c4571319c050052d374bcc9aab3cef6157"
+  },
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "peer_sol_repair_rounds": 0,
+    "connection_author_counter": {
+      "prior_connection_sol_repair_rounds": 2,
+      "prior_connection_unsuccessful_sol_rounds": 2,
+      "prior_connection_astra_rounds": 1,
+      "prior_connection_unsuccessful_astra_rounds": 0,
+      "g2_connection_initial_implementation": 1,
+      "g2_connection_sol_repair_rounds": 1,
+      "g2_connection_unsuccessful_sol_rounds": 0,
+      "note": "Expected TDD reds and root-owned Operations repair are not Connection repair rounds; parent owns cumulative recovery routing.",
+      "cumulative_connection_sol_repair_rounds": 3,
+      "cumulative_connection_unsuccessful_sol_rounds": 2
+    },
+    "root_counter": "Root-owned, not inferred or reset."
+  },
+  "unresolved_findings": [],
+  "remaining_risks": [
+    "Fresh whole scoped H3/H1/H2 verification and full shared peer gate remain parent-owned required acceptance.",
+    "Real /crash,/zero-trailers,/busy network assertions are source-complete but NOT RUN.",
+    "Phoenix/browser and upstream-H3/standalone slices remain separate M4 gates."
+  ],
+  "command_shutdown": "All reviewer read/hash/Python/standalone formatter commands finished; no reviewer Mix/live process or commit.",
+  "decisions_needed": []
+}

@@ -1,0 +1,102 @@
+{
+  "task_id": "/root/m4_spec_review/root-shared-components",
+  "status": "DONE",
+  "assignment": "direct independent read-only review; author root",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "branch": "codex/m4-http3",
+  "reviewed_sources_are_dirty": true,
+  "specification_review": "PASS",
+  "code_quality_review": "PASS",
+  "findings_resolved": [
+    "Fixed D_io retains bounded confirmation D_op while original request D remains authoritative; zero-wait publishes no destructive operation.",
+    "Owner reply and worker ACK retain/check D_op; submitted, claimed and completed-unacknowledged expiry states become terminal tombstones.",
+    "Paused-caller queued-notification, late-reply, late-ACK and owner-confirmed pending/read/output regressions preserve finite deadlines and assertions.",
+    "Immutable normalized metadata limits are bound by owner registration; accepted larger header/trailer configuration no longer fails default slot caps.",
+    "Transport read accounting reserves from newly retained body/trailers, preserves ordered trailers and sends Continue exactly once.",
+    "D_io documentation matches computation at read/poll entry before Continue; requested I/O wait does not claim total confirmation latency.",
+    "Missing pinned H2 peer environment is preserved as an earlier failed gate, then qualified with the exact h2/hpack/hyperframe versions and unchanged assertions."
+  ],
+  "extraction": {
+    "result": "PASS",
+    "comparison": "Exact HEAD H2 Response text after module rename, alias removal and transport.operation replacement equals FramedResponse; all other response behavior is unchanged."
+  },
+  "ownership_and_budgets": "Owner-only registration/bind/claim/reply/remove, exact worker identity and token/ref CAS, at most eight rows and one occupied operation per row, DATA <= 16384 bytes and owner-bound configured metadata limits. No QUIC dependency in shared HTTP module, no extra rendezvous process/timer and no callback-owner GenServer call.",
+  "verification": {
+    "execution_owner": "/root",
+    "reviewer_reran_mix": false,
+    "fresh_log": "docs/acceptance/evidence/m4/shared/transport/review-repair-1.log",
+    "actual_results": {
+      "gaoxy_http": {
+        "tests": 50,
+        "failures": 0
+      },
+      "gaoxy_http3": {
+        "tests": 25,
+        "failures": 0
+      },
+      "total_tests": 75,
+      "total_failures": 0
+    },
+    "gate": "PASS",
+    "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_http3/test/operations_test.exs apps/gaoxy_http3/test/transport_test.exs apps/gaoxy_http/test/http_contract_test.exs apps/gaoxy_http/test/native_proxy_seams_test.exs apps/gaoxy_http/test/http2_facade_test.exs apps/gaoxy_http/test/http2_network_test.exs",
+    "environment": {
+      "elixir": "1.18.5",
+      "otp": "28",
+      "independent_h2": {
+        "h2": "4.3.0",
+        "hpack": "4.2.0",
+        "hyperframe": "6.1.0"
+      }
+    },
+    "limits": "Observed author-run evidence and read-only source review. Reviewer did not rerun Mix, claim a fresh source-hashed live gate or claim Connection/Stream/network acceptance."
+  },
+  "retained_red_and_failure_evidence": [
+    "docs/acceptance/evidence/m4/shared/slots/red.log",
+    "docs/acceptance/evidence/m4/shared/slots/read-contract-red.log",
+    "docs/acceptance/evidence/m4/shared/slots/read-contract-red-corrected.log",
+    "docs/acceptance/evidence/m4/shared/slots/confirmation-race-red.log",
+    "docs/acceptance/evidence/m4/shared/slots/configured-limits-red.log",
+    "docs/acceptance/evidence/m4/shared/transport/red.log",
+    "docs/acceptance/evidence/m4/shared/transport/initial-green.log",
+    "docs/acceptance/evidence/m4/shared/transport/compatibility-green.log"
+  ],
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "520602bb8ba458f599f9c7ef3ac343051e6f06b12b3e033769a7cfb4fb222227",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "1a917457369bd5a0e5775ddd7056eb1f4d1251a19d509d32fed75fafba543199",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex": "6d4270b1cb48d33852c95c6ea9b74cf7f3c9915e86934a7a71caa72fbc57c9c3",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/response.ex": "a98372367bab0aebf65ec40a7be4aceb1d0b451b74b53b6520ef19bc6bb221cf",
+    "apps/gaoxy_http3/test/operations_test.exs": "49c9e3a34d63875135a7e3e903ba6603d598dfec3d845d8337d143dc5305ef65",
+    "apps/gaoxy_http3/test/transport_test.exs": "a0410834da17cf647fdd502c3b9d556a278b7b632189871696f0042bcef615b3",
+    "docs/designs/m4-shared-http.md": "61c687e74a9398f818489b67b2ccebf25a50ceb05f44a5ba36dee41c849fdd27",
+    "docs/plans/m4-shared-http.md": "9979835fbf5f9cc4f86a56550a8dde9a22846d2d684dd416973bb99e879d0ed6"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/shared/slots/red.log": "851e080e9f2e9adfd6706c644ee2730a22587fa83d8b9ab44941fb6549e7b515",
+    "docs/acceptance/evidence/m4/shared/slots/read-contract-red.log": "231944385f1511bd498bac18130c7f07b6db9a9dc074fd7754426473825f9a20",
+    "docs/acceptance/evidence/m4/shared/slots/read-contract-red-corrected.log": "14d075c4d352f450647fe3d16f117d82efe2e0fc9c5a8eeeab682eabd879b4af",
+    "docs/acceptance/evidence/m4/shared/slots/confirmation-race-red.log": "56138de5befb891901b79a388062b842c9a07c55923614070e0349912a21fbd8",
+    "docs/acceptance/evidence/m4/shared/slots/configured-limits-red.log": "648804ccff1a0546faf80730b8c5f68b220f0cc4999184e9c76c5730618f363e",
+    "docs/acceptance/evidence/m4/shared/transport/red.log": "fcdd93ea5e961155a522515722cd3d5ac52723ecf99bef0840c01bf0bb874418",
+    "docs/acceptance/evidence/m4/shared/transport/initial-green.log": "1ec5fb60037421172eceb4da947110d953fcfe6b4c330316ea3c4f183eaa2193",
+    "docs/acceptance/evidence/m4/shared/transport/compatibility-green.log": "7c15570971c24ee2a4002b2320482e8e953eacce0a258a16d34144716622288d",
+    "docs/acceptance/evidence/m4/shared/transport/repair-1.log": "e480456fcc73d9e983b64187f62bd30fb51943b9e5b69d5ecc953faa8162f8a6",
+    "docs/acceptance/evidence/m4/shared/transport/review-repair-1.log": "e88038a862bc05642cab7d0a5be3abbaef92aea6b119798d78754e27fe42ebdf"
+  },
+  "unresolved_findings": [],
+  "reviewer_sol_repair_rounds": 0,
+  "root_repair_counters": "Root-owned; not reset or inferred by this reviewer.",
+  "command_shutdown": "All reviewer commands finished; no reviewer Mix/live process remains.",
+  "runtime_acceptance": "NOT RUN by this review",
+  "remaining_risks": [
+    "Connection/Stream lifecycle review and source-frozen shared live gate remain required.",
+    "Formatting/strict compilation and fresh post-review source-bound verification remain parent-owned stage gates.",
+    "Phoenix/browser/upstream-H3/standalone/publication/deployment are separate."
+  ],
+  "decisions_needed": []
+}

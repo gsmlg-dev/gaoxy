@@ -1,0 +1,45 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_http3
+Running ExUnit with seed: 242959, max_cases: 4
+
+.
+
+  1) test caller expiry also fences a completed but unacknowledged reply (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:161
+     match (=) failed
+     code:  assert :ok = invoke(pid, :timeout, [table, key, token, ref])
+     left:  :ok
+     right: {:error, :closed}
+     stacktrace:
+       test/operations_test.exs:167: (test)
+
+
+
+  2) test finite read expiry permits owner-confirmed pending within the original request (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:150
+     match (=) failed
+     code:  assert {:ok, ref} = invoke(pid, :submit, [table, key, token, {operation, deadline}])
+     left:  {:ok, ref}
+     right: {:error, :operation_limit}
+     stacktrace:
+       test/operations_test.exs:153: (test)
+
+.....
+
+  3) test owner-confirmed pending reads permit later reads and output (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:133
+     match (=) failed
+     code:  assert {:ok, ref} = invoke(pid, :submit, [table, key, token, {operation, deadline}])
+     left:  {:ok, ref}
+     right: {:error, :operation_limit}
+     stacktrace:
+       test/operations_test.exs:141: anonymous fn/6 in Gaoxy.HTTP.HTTP3.OperationsTest."test owner-confirmed pending reads permit later reads and output"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/operations_test.exs:136: (test)
+
+..
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+11 tests, 3 failures

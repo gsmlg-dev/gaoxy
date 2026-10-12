@@ -1,6 +1,8 @@
 defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
   use ExUnit.Case, async: true
-  alias Gaoxy.HTTP.HTTP3.{Connection, Options}
+  alias Gaoxy.HTTP.Exchange
+  alias Gaoxy.HTTP.HTTP3.{Connection, Headers, Operations, Options, Protocol}
+  alias QuicHttp3.{Frame, Qpack}
 
   defmodule Endpoint do
     def init(options), do: {:ok, options}
@@ -93,5 +95,189 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
   test "arbitrary application events do not execute endpoints" do
     {:ok, state} = init()
     assert {:ok, ^state} = Connection.handle_event({:application_call, :payload}, state)
+  end
+
+  test "validated empty-body FIN before dispatch preserves repeated ordered request trailers" do
+    {:ok, spec} =
+      Options.normalize(endpoint: {Endpoint, %{}}, tls: %{certfile: "c", keyfile: "k"})
+
+    metadata = %{remote: {{127, 0, 0, 1}, 1234}, local: {{127, 0, 0, 1}, 4321}}
+
+    {:ok, state} =
+      Connection.init(%{gate: self(), limits: spec.limits}, metadata, spec.handler_options)
+
+    key = make_ref()
+    {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
+    trailers = [{"x-empty", "first"}, {"x-empty", "second"}]
+
+    {:ok, head} =
+      Qpack.encode_header_block([
+        {":method", "POST"},
+        {":scheme", "https"},
+        {":authority", "localhost"},
+        {":path", "/zero-trailers"},
+        {"content-length", "0"}
+      ])
+
+    {:ok, tail} = Qpack.encode_header_block(trailers)
+
+    {:ok, protocol, [{:headers, ^key, request}, {:trailers, ^key, ^trailers}]} =
+      Protocol.feed(
+        state.protocol,
+        key,
+        Frame.encode!(:headers, head) <> Frame.encode!(:headers, tail)
+      )
+
+    {:ok, protocol, [{:complete, ^key}]} = Protocol.fin(protocol, key)
+
+    entry = %{
+      state.streams[key]
+      | request: request,
+        input: "",
+        recv_fin: true,
+        trailers: trailers
+    }
+
+    state = %{state | protocol: protocol, streams: Map.put(state.streams, key, entry)}
+    lease = make_ref()
+
+    exchange = Connection.exchange(state, key, lease)
+    assert Exchange.body_complete?(exchange)
+    assert Exchange.request_trailers(exchange) == trailers
+    assert exchange.body.trailer_bytes == Headers.bytes(trailers)
+    assert exchange.body.total == 0
+    assert exchange.lease == lease
+    assert exchange.peer == metadata.remote
+    assert exchange.local == metadata.local
+
+    # Retained DATA still needs credited reads before trailers become visible.
+    state = %{state | streams: Map.put(state.streams, key, %{entry | input: "body"})}
+    exchange = Connection.exchange(state, key, lease)
+    refute Exchange.body_complete?(exchange)
+    assert Exchange.request_trailers(exchange) == []
+    assert exchange.body.trailer_bytes == 0
+    :ok = Connection.terminate(:test_complete, state)
+  end
+
+  test "retained parser input resumes before shared new-read credit with an accepted single-quantum buffer" do
+    {:ok, spec} =
+      Options.normalize(
+        endpoint: {Endpoint, %{}},
+        http_limits: %{max_buffer_bytes: 16_384},
+        tls: %{certfile: "c", keyfile: "k"}
+      )
+
+    gate =
+      start_supervised!(
+        {Gaoxy.Admission, {spec.limits, %{instance: make_ref(), service: :resume}}}
+      )
+
+    {:ok, state} = Connection.init(%{gate: gate, limits: spec.limits}, %{}, spec.handler_options)
+    key = make_ref()
+    {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
+
+    {:ok, head} =
+      Qpack.encode_header_block([
+        {":method", "GET"},
+        {":scheme", "https"},
+        {":authority", "localhost"},
+        {":path", "/ok"}
+      ])
+
+    bytes = :binary.copy(<<0x21, 0>>, 12) <> Frame.encode!(:headers, head)
+    {:ok, protocol, []} = Protocol.feed(state.protocol, key, bytes)
+    assert byte_size(protocol.streams[key].buffer) > 0
+    state = %{state | protocol: protocol}
+
+    fenced = %{state | pending: %{{key, :write} => {make_ref(), Gaoxy.Lifecycle.deadline(1_000)}}}
+    assert {:ok, ^fenced} = Connection.receive_stream(fenced, key)
+
+    assert {:ok, resumed} = Connection.receive_stream(state, key)
+    assert resumed.streams[key].request.method == "GET"
+    assert resumed.protocol.streams[key].buffer == ""
+    worker = resumed.streams[key].worker
+    assert is_pid(worker)
+    monitor = Process.monitor(worker)
+    :ok = Connection.terminate(:test_complete, resumed)
+    assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 1_000
+    assert :ets.info(state.operations) == :undefined
+  end
+
+  test "a claimed read losing its reply CAS retains ingress and visibly cancels its worker" do
+    {:ok, spec} =
+      Options.normalize(endpoint: {Endpoint, %{}}, tls: %{certfile: "c", keyfile: "k"})
+
+    {:ok, state} =
+      Connection.init(%{gate: self(), limits: spec.limits}, %{}, spec.handler_options)
+
+    key = make_ref()
+    token = make_ref()
+    deadline = Gaoxy.Lifecycle.deadline(1_000)
+    {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
+    table = state.operations
+    :ok = Operations.register(table, key, token, deadline)
+    observer = self()
+
+    worker =
+      spawn(fn ->
+        receive do
+          :bound -> :ok
+        end
+
+        :ok = Operations.ready(table, key, token, make_ref())
+        send(observer, {:read_ready, self()})
+
+        receive do
+          :activated -> :ok
+        end
+
+        operation = {:read, 3, {:until, deadline}}
+        {:ok, ref} = Operations.submit(table, key, token, {operation, deadline})
+        send(observer, {:read_submitted, self(), ref, operation})
+
+        receive do
+          :expire_caller -> :ok
+        end
+
+        :ok = Operations.timeout(table, key, token, ref)
+        send(observer, {:read_tombstoned, self(), ref})
+
+        receive do
+          :unreleased -> :ok
+        end
+      end)
+
+    on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
+    monitor = Process.monitor(worker)
+    :ok = Operations.bind(table, key, token, worker)
+    send(worker, :bound)
+    assert_receive {:read_ready, ^worker}, 1_000
+    :ok = Operations.activate(table, key, token, worker)
+    send(worker, :activated)
+    assert_receive {:read_submitted, ^worker, ref, operation}, 1_000
+    assert {:ok, ^worker, ^ref, ^operation, ^deadline} = Operations.claim(table, key, token)
+    send(worker, :expire_caller)
+    assert_receive {:read_tombstoned, ^worker, ^ref}, 1_000
+
+    entry = %{
+      state.streams[key]
+      | token: token,
+        worker: worker,
+        deadline: deadline,
+        operation: {ref, operation, deadline},
+        input: "retained",
+        recv_fin: true
+    }
+
+    state = %{state | streams: Map.put(state.streams, key, entry)}
+
+    assert {:ok, cancelled} = Connection.reply_read(state, key, 3)
+    assert cancelled.streams[key].input == "retained"
+    assert cancelled.streams[key].cancel == [{:reset, 0x10C}, {:stop, 0x10C}]
+    assert {:error, :closed} = Operations.status(table, key, token)
+    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}, 1_000
+    refute_received {:http3_operation, _, _, :pending}
+    :ok = Connection.terminate(:test_complete, cancelled)
+    assert :ets.info(table) == :undefined
   end
 end
