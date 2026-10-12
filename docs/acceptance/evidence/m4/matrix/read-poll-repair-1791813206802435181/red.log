@@ -1,0 +1,45 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 725574, max_cases: 4
+
+...
+
+  1) test a short read poll consumes buffered "" and FIN after its soft wait (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:295
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       worker = #PID<0.324.0>
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:short_read_result, ^worker, {:ok, "", true, [{"x-final", "seen"}]}}
+     mailbox:
+       pattern: {:short_read_result, ^worker, {:ok, "", true, [{"x-final", "seen"}]}}
+       value:   {:short_read_result, #PID<0.324.0>, :pending}
+
+       pattern: {:short_read_result, ^worker, {:ok, "", true, [{"x-final", "seen"}]}}
+       value:   {:DOWN, #Reference<0.3629513624.2305294337.254863>, :process,
+                 #PID<0.324.0>, :normal}
+     stacktrace:
+       test/connection_test.exs:361: (test)
+
+...
+
+  2) test a short read poll consumes buffered "ready" and FIN after its soft wait (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:295
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       worker = #PID<0.330.0>
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:short_read_result, ^worker, {:ok, "ready", true, [{"x-final", "seen"}]}}
+     mailbox:
+       pattern: {:short_read_result, ^worker, {:ok, "ready", true, [{"x-final", "seen"}]}}
+       value:   {:short_read_result, #PID<0.330.0>, :pending}
+
+       pattern: {:short_read_result, ^worker, {:ok, "ready", true, [{"x-final", "seen"}]}}
+       value:   {:DOWN, #Reference<0.3629513624.2305294337.254919>, :process,
+                 #PID<0.330.0>, :normal}
+     stacktrace:
+       test/connection_test.exs:361: (test)
+
+....
+Finished in 3.0 seconds (3.0s async, 0.00s sync)
+12 tests, 2 failures

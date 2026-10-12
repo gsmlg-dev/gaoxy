@@ -551,7 +551,6 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   def exchange(state, key, lease) do
     entry = state.streams[key]
     request = %{entry.request | peer: state.metadata[:remote], local: state.metadata[:local]}
-    scope = Map.get(state.connection, :scope, %{})
     ended = entry.recv_fin and entry.input == <<>>
     trailers = if ended, do: entry.trailers, else: []
 
@@ -575,8 +574,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       secure: true,
       ssl: nil,
       peer_cert: nil,
-      service: scope[:service],
-      instance: scope[:instance],
+      service: Map.get(state.connection, :service),
+      instance: Map.get(state.connection, :instance),
       protocol_bytes: Options.reservation(state.options).request
     }
   end
@@ -684,11 +683,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
           now() >= deadline ->
             {:ok, cancel(state, key, 0x10C)}
 
-          now() >= io_deadline ->
-            reply_operation(state, key, :pending)
-
           entry.input != <<>> or entry.recv_fin ->
             reply_read(state, key, credit)
+
+          now() >= io_deadline ->
+            reply_operation(state, key, :pending)
 
           true ->
             {:ok, state}

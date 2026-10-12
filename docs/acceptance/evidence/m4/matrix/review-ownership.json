@@ -1,0 +1,59 @@
+{
+  "task_id": "/root/m4_spec_review/g3-ownership",
+  "status": "DONE",
+  "assignment": "direct independent specification/code review; sources and evidence read-only; owned receipt",
+  "reviewer": "/root/m4_spec_review",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "source_sha256": {
+    "apps/gaoxy/lib/gaoxy/quic.ex": "937e5274c61e8f03cf61c64ce8f1c2ed0bd75d380924f71ed974195bdcdde8da",
+    "apps/gaoxy/lib/gaoxy/quic_bridge.ex": "facf9a6d9da569f0276715c051988b2bb7132b6588f07830f7d65fa3344e9aa5",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "a8eb37363b760a2be78cbac14caf3e96bdddc918d5abe237e950e14e2f6dd678",
+    "apps/gaoxy/test/quic_context_test.exs": "e9bd176c8d3c5c41da3d159d6ba55d73dcd3e8aedde0e265680fda31588ab3e4",
+    "apps/gaoxy_http3/test/connection_test.exs": "089d63730a9abc11d0137d39d560ad422f328f24211e85c566ec1e1820941dee"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/format.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/green.json": "97ef0dad44d455bd8549d161815fe0119e257b00f9dfe806eada1c57f6f465f0",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/green.log": "e4baabc8eab79e0a10700a9af3edcacf1ae88ee24a2b50f49b29a1b6ff611a05",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/red-corrected.json": "91568c133c9b1d0244988dbbd06f1c110edf8861a4a8987976ee36bf6d494b0a",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/red-corrected.log": "0a80803ddf280d97bee73e9a3f2cc5352448f4d2131aa58399ca653add49bb35",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/red.json": "e7f9c1672f1433f12f5f977f09be7d5a255772d19d530fce1985df1db95fba5a",
+    "docs/acceptance/evidence/m4/matrix/ownership-repair-1791812772211377050/red.log": "730acce587173a910bea45b8a8dedf98fa8e75b4426e8ea81aa4d766da33e4e1"
+  },
+  "root_cause": {
+    "runtime_context": "Service.init supplies actual service self PID and instance ETS-owner PID separately from telemetry scope service atom and instance reference.",
+    "prior_fault": "QUICBridge discarded both PIDs and H3 exchange reused scope identity. Session.init unconditionally Process.monitor/1 on the instance reference fails child startup before cleanup activation; generic HTTP.call failure maps to503. If Session started, attach_cleanup on the scope service atom would target an unregistered name and Lifecycle.call returns not_running.",
+    "live_failure_evidence": "matrix/run-1791812337049596183 preserves first request503, origin ready with no requests, zero completed checks, unchanged sources and terminated owned children.",
+    "lease_check": "H3 stream worker owns Admission.acquire with drain_notify true, begin_request deadline and endpoint execution. Service receives that same caller owner at attach_cleanup. No lease change required."
+  },
+  "reviewed_contracts": [
+    "QUIC.Connection retains all prior enforce_keys. Two lifecycle fields are optional and default nil; existing struct construction remains valid.",
+    "QUICBridge copies lifecycle service and instance directly from runtime context, retains telemetry scope unchanged and retains gate/lease/limits paths.",
+    "H3 Exchange reads lifecycle owners from Connection rather than telemetry scope; gate, lease, deadline, request, protocol reservation and transport unchanged.",
+    "Core regression supplies distinct atom/reference telemetry identities versus lifecycle PIDs and asserts both exact owners and unchanged scope.",
+    "H3 regression supplies distinct atom/reference scope and asserts actual lifecycle PIDs while preserving existing ordered trailers, completed FIN, lease and metadata assertions."
+  ],
+  "author_verification": {
+    "initial_red": "FAIL fixture omitted callback_timeout; original red.log/red.json retained, not treated as ownership proof.",
+    "corrected_red": "11 executed tests,2 expected failures,exit2; exact failures are missing Bridge service and Exchange scope atom instead of runtime PID.",
+    "green": "11 executed tests,0 failures,exit0; source hashes independently match all five current reviewed files.",
+    "format": "author recorded exit0; formatter log retained and hashed."
+  },
+  "runtime_by_reviewer": "NOT RUN; no Mix/live lease. Coordinator fresh G3 live acceptance required to demonstrate upstream activation and removal of503.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "ownership_author_counter": "Coordinator-owned; not independently supplied. No counter reset or inferred additional repair.",
+    "received_historical_counters": "ConnectionSol3/failed2/Astra1/failed0; OptionsSol4/failed1/Astra0; ProxySol3/failed1/Astra0; UP0Sol2/failed1/Astra0 retained."
+  },
+  "command_shutdown": "All reviewer read/hash/receipt commands completed; no owned runtime processes or outstanding sessions. Coordinator owns Mix/live.",
+  "remaining_requirements": [
+    "Fresh frozen-source G3 H3-to-independent-H1 live matrix and remaining compatibility/consumer/browser acceptance gates."
+  ],
+  "decisions_needed": [],
+  "reviewed_utc": "2026-10-12T13:49:10.421583+00:00"
+}

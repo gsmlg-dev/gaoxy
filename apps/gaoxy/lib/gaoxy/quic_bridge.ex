@@ -12,7 +12,9 @@ defmodule Gaoxy.QUICBridge do
         gate: gate,
         lease: lease,
         limits: spec.limits,
-        scope: scope
+        scope: scope,
+        service: Map.get(context, :service),
+        instance: Map.get(context, :instance)
       }
 
       with {:ok, app} <- spec.handler.init(connection, metadata, spec.handler_options),

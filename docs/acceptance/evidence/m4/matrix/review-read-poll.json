@@ -1,0 +1,59 @@
+{
+  "task_id": "/root/m4_spec_review/g3-read-poll",
+  "status": "DONE",
+  "assignment": "direct independent specification/code review; sources read-only, owned receipt",
+  "reviewer": "/root/m4_spec_review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "85245a479843eadd61409bcf6b649178e72ac9e115f65aa704efe2ffadc6af6a",
+    "apps/gaoxy_http3/test/connection_test.exs": "375f1b5fa716d8a390c0264fd264c5491bffa655b27993a8c0a5b6f840d83ec7",
+    "integration/http3/matrix.py": "c1d6fe1e1dc639ca068484af21a006d41d904cbb1755071d58a00720b5f34831"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/matrix/read-poll-repair-1791813206802435181/format.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "docs/acceptance/evidence/m4/matrix/read-poll-repair-1791813206802435181/green.json": "88884e0c2caec12d9ff64fd899230568ee3887bbc4927b0607099e88b23ba899",
+    "docs/acceptance/evidence/m4/matrix/read-poll-repair-1791813206802435181/green.log": "7f9652a3bb77e2b71423ff516249061bf5044ca77aec2aa53e3b6e57e6efad36",
+    "docs/acceptance/evidence/m4/matrix/read-poll-repair-1791813206802435181/red.json": "f08caca2556ee95a0a998b1e3456d5e7f80097b533cb927bed0cad33180a4425",
+    "docs/acceptance/evidence/m4/matrix/read-poll-repair-1791813206802435181/red.log": "bc1bce4960c4658407f89cc49d7b8143b80ff47e60f15e0ec7aa58e21cfccd80"
+  },
+  "root_cause": "Proxy5ms read waits can expire before Abyss10ms polling claims them. Prior read-completion ordering returned pending even with buffered DATA or received FIN. G2 Plug4000ms wait did not expose this boundary; prior live failure origin recorded213009/245760bytes, incomplete/cancelled.",
+  "reviewed_contracts": [
+    "Only read-operation cond ordering changes: hard confirmation deadline remains first; available input or FIN is replied before soft I/O deadline pending. Request deadlines, confirmation slack, credit bound, atomic reply/ack and poll behavior unchanged.",
+    "Two regressions use actual owner-created Operations ETS, bound distinct worker, submit/claim/reply/ack and real Connection tick. Explicitly expired soft wait has finite still-live original deadline. Ready payload and empty FIN preserve repeated trailer result, fully drain credited input, clear operation and require normal worker DOWN.",
+    "Prior read-losing-CAS ingress preservation and cancellation assertion remains present and green; new tests do not weaken old assertions.",
+    "Matrix Child.cases writes observed case JSON in finally even when wait/assert fails. Set/count/allPASS validations remain mandatory for successful return; partial evidence cannot turn failed run into PASS.",
+    "Matrix failure handler obtains bounded origin snapshot when owned origin is alive, records diagnostic error separately and preserves original exception/status. Source freeze, total deadline, cleanup/forced-cleanup failure rules remain unchanged."
+  ],
+  "author_verification": {
+    "red": "12 executed tests,2 expected failures,exit2. Both receive actualpending rather than expected creditedDATA/FIN. Original logs retained.",
+    "green": "12 executed tests,0 failures,exit0; reviewed runtime/test source hashes independently match all executed green hashes.",
+    "format": "Author format_exit0, retained log hashed."
+  },
+  "reviewer_verification": "Python matrix AST parses successfully; no Mix or live execution.",
+  "runtime_status": "NOT RUN by reviewer; coordinator fresh G3 live and compatibility gates required.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "read_poll_sol_rounds": 1,
+    "read_poll_unsuccessful_scoped": 0,
+    "read_poll_astra_rounds": 0,
+    "ownership_sol_rounds": 1,
+    "ownership_unsuccessful": 0,
+    "historical_connection_sol_rounds": 3,
+    "historical_connection_unsuccessful": 2,
+    "historical_connection_astra_rounds": 1,
+    "historical_connection_astra_unsuccessful": 0,
+    "note": "Distinct root-authorized ownership/read-poll chains; historical counters retained without reset. Live validation pending."
+  },
+  "command_shutdown": "All reviewer reads, hash, AST and receipt commands completed; no owned runtime processes or sessions; coordinator owns Mix/live.",
+  "remaining_requirements": [
+    "Fresh G3 live matrix after independent review, retained failures and unchanged assertions.",
+    "Remaining browser, clean-consumer, compatibility and standalone prescribed stage gates."
+  ],
+  "decisions_needed": [],
+  "reviewed_utc": "2026-10-12T13:55:33.354551+00:00"
+}

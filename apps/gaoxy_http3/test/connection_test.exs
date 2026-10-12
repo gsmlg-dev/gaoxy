@@ -103,8 +103,16 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
 
     metadata = %{remote: {{127, 0, 0, 1}, 1234}, local: {{127, 0, 0, 1}, 4321}}
 
+    connection = %{
+      gate: self(),
+      limits: spec.limits,
+      service: self(),
+      instance: self(),
+      scope: %{service: :listener, instance: make_ref()}
+    }
+
     {:ok, state} =
-      Connection.init(%{gate: self(), limits: spec.limits}, metadata, spec.handler_options)
+      Connection.init(connection, metadata, spec.handler_options)
 
     key = make_ref()
     {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
@@ -147,6 +155,8 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
     assert exchange.body.trailer_bytes == Headers.bytes(trailers)
     assert exchange.body.total == 0
     assert exchange.lease == lease
+    assert exchange.service == self()
+    assert exchange.instance == self()
     assert exchange.peer == metadata.remote
     assert exchange.local == metadata.local
 
@@ -279,5 +289,84 @@ defmodule Gaoxy.HTTP.HTTP3.ConnectionTest do
     refute_received {:http3_operation, _, _, :pending}
     :ok = Connection.terminate(:test_complete, cancelled)
     assert :ets.info(table) == :undefined
+  end
+
+  for bytes <- ["ready", ""] do
+    test "a short read poll consumes buffered #{inspect(bytes)} and FIN after its soft wait" do
+      {:ok, spec} =
+        Options.normalize(endpoint: {Endpoint, %{}}, tls: %{certfile: "c", keyfile: "k"})
+
+      {:ok, state} =
+        Connection.init(%{gate: self(), limits: spec.limits}, %{}, spec.handler_options)
+
+      key = make_ref()
+      token = make_ref()
+      deadline = Gaoxy.Lifecycle.deadline(2_000)
+      {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
+      table = state.operations
+      :ok = Operations.register(table, key, token, deadline)
+      observer = self()
+
+      {worker, monitor} =
+        spawn_monitor(fn ->
+          receive do
+            :bound -> :ok
+          end
+
+          :ok = Operations.ready(table, key, token, make_ref())
+          send(observer, {:short_read_ready, self()})
+
+          receive do
+            :activated -> :ok
+          end
+
+          operation = {:read, 16_384, {:until, Gaoxy.Lifecycle.now() - 1}}
+          {:ok, ref} = Operations.submit(table, key, token, {operation, deadline})
+          send(observer, {:short_read_submitted, self(), ref})
+
+          receive do
+            {:http3_operation, ^token, ^ref, result} ->
+              :ok = Operations.ack(table, key, token, ref)
+              send(observer, {:short_read_result, self(), result})
+          end
+        end)
+
+      on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
+      :ok = Operations.bind(table, key, token, worker)
+      send(worker, :bound)
+      assert_receive {:short_read_ready, ^worker}, 1_000
+      :ok = Operations.activate(table, key, token, worker)
+      send(worker, :activated)
+      assert_receive {:short_read_submitted, ^worker, _}, 1_000
+
+      entry = %{
+        state.streams[key]
+        | token: token,
+          worker: worker,
+          deadline: deadline,
+          input: unquote(bytes),
+          recv_fin: true,
+          trailers: [{"x-final", "seen"}]
+      }
+
+      state = %{
+        state
+        | ready: true,
+          control: :opened_control,
+          control_bytes: <<>>,
+          streams: Map.put(state.streams, key, entry)
+      }
+
+      assert {:ok, next} = Connection.handle_event(:tick, state)
+
+      assert_receive {:short_read_result, ^worker,
+                      {:ok, unquote(bytes), true, [{"x-final", "seen"}]}},
+                     1_000
+
+      assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}, 1_000
+      assert next.streams[key].input == <<>>
+      assert next.streams[key].operation == nil
+      :ok = Connection.terminate(:test_complete, next)
+    end
   end
 end

@@ -1,0 +1,35 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy
+Running ExUnit with seed: 68861, max_cases: 4
+
+
+21:46:23.249 [error] GenServer #PID<0.318.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.317.0>, :killed}
+State: {:state, {#PID<0.318.0>, ExUnit.OnExitHandler.Supervisor}, :one_for_one, {[Gaoxy.Admission], %{Gaoxy.Admission => {:child, #PID<0.319.0>, Gaoxy.Admission, {Gaoxy.Admission, :start_link, [{%{max_bytes: 1048576, max_active: 4, max_state: 65536}, %{instance: #Reference<0.850768704.1767374849.247542>, service: :listener, generation: #Reference<0.850768704.1767374849.247543>, service_pid: #PID<0.317.0>}}]}, :permanent, false, 5000, :worker, [Gaoxy.Admission]}}}, :undefined, 1000000, 1, [], 0, 0, :never, 1000, #Reference<0.850768704.1767374849.247553>, ExUnit.OnExitHandler.Supervisor, {[], [#PID<0.317.0>]}}
+
+
+  1) test QUIC callback receives runtime owners separately from telemetry identity (Gaoxy.QUICContextTest)
+     apps/gaoxy/test/quic_context_test.exs:12
+     ** (EXIT from #PID<0.317.0>) killed
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+1 test, 1 failure
+==> gaoxy_http3
+Running ExUnit with seed: 68861, max_cases: 4
+
+........
+
+  1) test validated empty-body FIN before dispatch preserves repeated ordered request trailers (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:100
+     Assertion with == failed
+     code:  assert exchange.service == self()
+     left:  :listener
+     right: #PID<0.352.0>
+     stacktrace:
+       test/connection_test.exs:158: (test)
+
+.
+Finished in 0.7 seconds (0.7s async, 0.00s sync)
+10 tests, 1 failure

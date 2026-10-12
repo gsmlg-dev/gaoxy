@@ -1,0 +1,35 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy
+Running ExUnit with seed: 191068, max_cases: 4
+
+
+
+  1) test QUIC callback receives runtime owners separately from telemetry identity (Gaoxy.QUICContextTest)
+     apps/gaoxy/test/quic_context_test.exs:12
+     Assertion with == failed
+     code:  assert Map.get(connection, :service) == self()
+     left:  nil
+     right: #PID<0.317.0>
+     stacktrace:
+       test/quic_context_test.exs:27: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+1 test, 1 failure
+==> gaoxy_http3
+Running ExUnit with seed: 191068, max_cases: 4
+
+.....
+
+  1) test validated empty-body FIN before dispatch preserves repeated ordered request trailers (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:100
+     Assertion with == failed
+     code:  assert exchange.service == self()
+     left:  :listener
+     right: #PID<0.346.0>
+     stacktrace:
+       test/connection_test.exs:158: (test)
+
+....
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+10 tests, 1 failure
