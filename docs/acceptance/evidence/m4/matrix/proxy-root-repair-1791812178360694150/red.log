@@ -1,0 +1,264 @@
+==> gaoxy_http3
+Running ExUnit with seed: 161462, max_cases: 4
+
+..
+
+  1) test a completed nil upload rejects undeclared trailers without reading or finishing (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:211
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.390.0>
+       deadline = -576460747046
+     Showing 10 of 13 messages in the mailbox
+     code: assert_receive {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+     mailbox:
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send, {:ready_held, #PID<0.390.0>},
+                 #PID<0.376.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send,
+                 {:gaoxy_proxy_http, #PID<0.391.0>,
+                  {:ready, nil,
+                   %{
+                     idle_timeout: 60000,
+                     max_lifetime: 5000,
+                     write_timeout: 5000,
+                     max_chunk_bytes: 65536,
+                     opening_timeout: 5000
+                   }, -576460747046}}, #PID<0.390.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send, {:"$gen_cast", :cancel},
+                 #PID<0.391.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send, {:plug_conn, :sent},
+                 #PID<0.390.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send,
+                 {:response_operation, #PID<0.390.0>,
+                  {:head, 504, [{"content-length", "0"}], true},
+                  -576460747046}, #PID<0.376.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:response_operation, #PID<0.390.0>,
+                 {:head, 504, [{"content-length", "0"}], true},
+                 -576460747046}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:trace, #PID<0.390.0>, :send,
+                 {:proxy_finished, #PID<0.390.0>,
+                  {:ok,
+                   %Gaoxy.HTTP.Exchange{
+                     request: %Gaoxy.HTTP.Request{
+                       method: "POST",
+                       target: "/wire?",
+                       target_form: :origin,
+                       version: :"HTTP/3",
+                       path: "/wire",
+                       query_string: "",
+                       host: "downstream.test",
+                       port: nil,
+                       scheme: nil,
+                       peer: nil,
+                       local: nil,
+                       head_bytes: 0,
+                       headers: [{"content-length", "0"}],
+                       body: {:length, 0},
+                       keep_alive: false,
+                       expect_continue: false
+                     },
+                     socket: %ThousandIsland.Socket{
+                       socket: #Port<0.34>,
+                       transport_module: ThousandIsland.Transports.TCP,
+                       read_timeout: 30000,
+                       handshake_timeout: 5000,
+                       silent_terminate_on_error: false,
+                       span: %ThousandIsland.Telemetry{
+                         span_name: :connection,
+                         telemetry_span_context: #Reference<0.390282702.3108241409.240700>,
+                         start_time: -576460749045909954,
+                         start_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           remote_address: {127, 0, 0, 1},
+                           remote_port: 50648,
+                           telemetry_span_context: #Reference<0.390282702.3108241409.240700>,
+                           parent_telemetry_span_context: #Reference<0.390282702.3108241409.240694>
+                         },
+                         handler: Gaoxy.HTTP.Connection,
+                         span_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           telemetry_span_context: #Reference<0.390282702.3108241409.240700>
+                         }
+                       },
+                       read_timer: #Reference<0.390282702.3108241409.240704>,
+                       read_deadline: -576460719046,
+                       timer_deadline: -576460719046
+                     },
+                     gate: #PID<0.381.0>,
+                     lease: #Reference<0.390282702.3108241409.240702>,
+                     deadline: -576460747046,
+                     limits: %{
+                       request_timeout: 2000,
+                       max_read_chunk: 16384,
+                       max_buffer_bytes: 65536,
+                       header_timeout: 5000,
+                       max_body_bytes: 8388608,
+                       max_chunk_line: 1024,
+                       max_header_bytes: 32768,
+                       max_headers: 100,
+                       max_request_line: 8192,
+                       max_trailer_bytes: 8192,
+                       max_trailers: 32,
+                       read_timeout: 5000,
+                       write_timeout: 5000,
+                       max_write_chunk: 16384
+                     },
+                     body: %{
+                       total: 0,
+                       phase: :done,
+                       trailers: [
+                         {"x-trace", "first"},
+                         {"x-trace", "second"}
+                       ],
+                       trailer_bytes: 0
+                     },
+                     buffer: "",
+                     peer: {{127, 0, 0, 1}, 50648},
+                     local: {{127, 0, 0, 1}, 42475},
+                     service: #PID<0.380.0>,
+                     instance: #PID<0.378.0>,
+                     response: :sent,
+                     response_trailers: [],
+                     close: true,
+                     route_bytes: 0,
+                     resource_pins: [],
+                     protocol_bytes: 0,
+                     transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                     transport_state: %{
+                       observer: #PID<0.376.0>,
+                       pieces: ["a", "bc"],
+                       hold_ready: false,
+                       reorder: false
+                     },
+                     secure: true,
+                     ssl: nil,
+                     peer_cert: nil,
+                     expect_sent: false
+                   }}}, #PID<0.376.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:proxy_finished, #PID<0.390.0>,
+                 {:ok,
+                  %Gaoxy.HTTP.Exchange{
+                    request: %Gaoxy.HTTP.Request{
+                      method: "POST",
+                      target: "/wire?",
+                      target_form: :origin,
+                      version: :"HTTP/3",
+                      path: "/wire",
+                      query_string: "",
+                      host: "downstream.test",
+                      port: nil,
+                      scheme: nil,
+                      peer: nil,
+                      local: nil,
+                      head_bytes: 0,
+                      headers: [{"content-length", "0"}],
+                      body: {:length, 0},
+                      keep_alive: false,
+                      expect_continue: false
+                    },
+                    socket: %ThousandIsland.Socket{
+                      socket: #Port<0.34>,
+                      transport_module: ThousandIsland.Transports.TCP,
+                      read_timeout: 30000,
+                      handshake_timeout: 5000,
+                      silent_terminate_on_error: false,
+                      span: %ThousandIsland.Telemetry{
+                        span_name: :connection,
+                        telemetry_span_context: #Reference<0.390282702.3108241409.240700>,
+                        start_time: -576460749045909954,
+                        start_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          remote_address: {127, 0, 0, 1},
+                          remote_port: 50648,
+                          telemetry_span_context: #Reference<0.390282702.3108241409.240700>,
+                          parent_telemetry_span_context: #Reference<0.390282702.3108241409.240694>
+                        },
+                        handler: Gaoxy.HTTP.Connection,
+                        span_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          telemetry_span_context: #Reference<0.390282702.3108241409.240700>
+                        }
+                      },
+                      read_timer: #Reference<0.390282702.3108241409.240704>,
+                      read_deadline: -576460719046,
+                      timer_deadline: -576460719046
+                    },
+                    gate: #PID<0.381.0>,
+                    lease: #Reference<0.390282702.3108241409.240702>,
+                    deadline: -576460747046,
+                    limits: %{
+                      request_timeout: 2000,
+                      max_read_chunk: 16384,
+                      max_buffer_bytes: 65536,
+                      header_timeout: 5000,
+                      max_body_bytes: 8388608,
+                      max_chunk_line: 1024,
+                      max_header_bytes: 32768,
+                      max_headers: 100,
+                      max_request_line: 8192,
+                      max_trailer_bytes: 8192,
+                      max_trailers: 32,
+                      read_timeout: 5000,
+                      write_timeout: 5000,
+                      max_write_chunk: 16384
+                    },
+                    body: %{
+                      total: 0,
+                      phase: :done,
+                      trailers: [
+                        {"x-trace", "first"},
+                        {"x-trace", "second"}
+                      ],
+                      trailer_bytes: 0
+                    },
+                    buffer: "",
+                    peer: {{127, 0, 0, 1}, 50648},
+                    local: {{127, 0, 0, 1}, 42475},
+                    service: #PID<0.380.0>,
+                    instance: #PID<0.378.0>,
+                    response: :sent,
+                    response_trailers: [],
+                    close: true,
+                    route_bytes: 0,
+                    resource_pins: [],
+                    protocol_bytes: 0,
+                    transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                    transport_state: %{
+                      observer: #PID<0.376.0>,
+                      pieces: ["a", "bc"],
+                      hold_ready: false,
+                      reorder: false
+                    },
+                    secure: true,
+                    ssl: nil,
+                    peer_cert: nil,
+                    expect_sent: false
+                  }}}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:origin_done, #PID<0.377.0>}
+
+       pattern: {:response_operation, ^worker, {:head, 502, _, _}, ^deadline}
+       value:   {:DOWN, #Reference<0.390282702.3108241409.240646>, :process,
+                 #PID<0.377.0>, :normal}
+     stacktrace:
+       test/proxy_test.exs:224: (test)
+
+....
+Finished in 4.4 seconds (4.4s async, 0.00s sync)
+7 tests, 1 failure

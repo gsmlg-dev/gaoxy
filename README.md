@@ -20,7 +20,13 @@ TCP/TLS relays, bounded UDP unicast associations, immutable route generations,
 standalone HTTP configuration and supervised dedicated-H1 upstream groups.
 See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
 [M3 acceptance](docs/acceptance/m3.md). The v0.2.0 gateway beta covers this
-implemented subset. Upstream pools, upstream H2 and HTTP/3 are not implemented.
+implemented subset. Upstream pools and upstream H2 are not implemented. Native
+downstream [HTTP/3](docs/http3.md) is implemented in the M4 worktree; the M4
+upstream matrix remains blocked by [HTTP Fetch #101](https://github.com/gsmlg-dev/http_fetch/issues/101).
+M4 is incomplete and has not been merged, pushed or released.
+Its local downstream/browser, standalone static/H1-origin and clean-consumer
+gates pass; [M4 acceptance](docs/acceptance/m4.md) records274 passing affected
+tests and the remaining upstream task queue.
 Installed HTTP Fetch0.21.3 passes compatibility486/0, public managed39/39,
 H1 baseline20/0, B21, supplemental TLS5/5 and the public H2 supplement8/8.
 Negative probes retain their genuine failures and expected outcomes.
@@ -167,9 +173,9 @@ explicitly unsupported and tested for absence of delivery.
 The standalone core dependency graph contains no QUIC engine. The umbrella
 proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.3 through
 HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
-dependency selection does not enable upstream H2/H3 or qualify generic QUIC against
-that version. The historical opt-in consumer locks `elixir_quic` and `ex_ssl`
-==0.17.0 separately:
+dependency selection does not enable upstream H2/H3. The separately locked
+opt-in consumer now selects `elixir_quic` and `ex_ssl` ==0.21.3, qualified by
+M4's independent public-host gate. Older 0.17.0 evidence remains historical:
 
 ```sh
 cd integration/quic_consumer
@@ -185,7 +191,8 @@ state, flow control and generations. Facade reads/writes are at most16KiB and
 also obey configured limits. Native operation references and unknown receipts
 are preserved; a write receipt means admission. QUIC pause and full protocol
 drain are unavailable; local host cleanup is reported explicitly. IPv6/wildcard
-QUIC, DATAGRAM, migration, mTLS,0-RTT,HTTP/3 and WebTransport are unsupported.
+QUIC, DATAGRAM, migration, mTLS,0-RTT and WebTransport are unsupported. Native
+H3 is an explicit optional application with [its own limits and gates](docs/http3.md).
 The independent custom-ALPN wire gate passed. Test handlers can log
 `invalid_operation` after peer-requested close because polling races the native
 closing phase; clean/no-error fixture teardown is not established.

@@ -1,0 +1,61 @@
+{
+  "task_id": "/root/m4_spec_review/g3-proxy-resolution",
+  "status": "DONE",
+  "assignment": "direct independent specification/quality re-review; read-only sources/evidence, own receipt",
+  "reviewer": "/root/m4_spec_review",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "previous_receipt": "matrix/review-proxy.json retained unchanged with initial source-bound findings",
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "4d74d20f72e105e33c23a765400270832c6c290dad1b0d1713997254fa2733a5",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "9ceb14c46f1c676fd26d4e2b3957786c630304e29d5827c3c7bba8e78a5d307c",
+    "apps/gaoxy_proxy/test/http_headers_test.exs": "7312458df543cd09b39274abe41f09150b315fc972a49d48ee90fcf3be25cc52",
+    "apps/gaoxy_http3/test/proxy_test.exs": "d32a37963d6c33741498b7050cc83ab0d3603a096157ddb6805d9f325b10c0ec",
+    "integration/http3/h1_origin.py": "c3631d80dd0544841cb47dc008c55390f1f4044b1c73613fb1740773f91e5e60",
+    "integration/http3/proxy_peer.py": "b9507b1db5f02a83e46bc652254aea90e2b7f514d7fb1b5a6a6b803332333d2f"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/matrix/proxy-root-repair-1791812178360694150/red.json": "c18cbe79b718951f157a24b611a616d71d9021e2988cc8f0918ca61c36187179",
+    "docs/acceptance/evidence/m4/matrix/proxy-root-repair-1791812178360694150/red.log": "e0273f324c9f417ec5b4ab40e67342d7cc51a77d14c7dbc9ed71d32a3e4347c7",
+    "docs/acceptance/evidence/m4/matrix/proxy-root-repair-1791812178360694150/green.json": "04a6204623b95cfdec6753d6ed3e7ab90d95f25b99162dda868833b49d189dcb",
+    "docs/acceptance/evidence/m4/matrix/proxy-root-repair-1791812178360694150/green.log": "35a66a8a11a94116cf5e57a76693152acd89495fb193b057195d4bf68adc4576"
+  },
+  "resolved_findings": [
+    {
+      "id": "G3-P1",
+      "result": "PASS",
+      "source": "finish_upload now validates actual request trailers against existing policy before nil-versus-stream conditional. Nil still never invokes public finish or reads body; completed valid upload finishes exactly once; unchanged originalD/min narrowed readydeadline.",
+      "regression": "New held-ready completed CL0/undeclared-trailer case waits actualoriginhead and requires502/noRead/noFinish/sameD plus realguardiancleanup. Before implementation7tests/1intendedfailure retained (observed504 instead502); postrepair7/0+headers16/0, exit0."
+    },
+    {
+      "id": "G3-P2",
+      "result": "PASS",
+      "source": "Every real-origin fixture case obtains spawn_monitor ref, awaits PID-matched origin_done or flunks PID-matched origin_error, then requires normalDOWN. Actual socketclosed assertion and all priorwire/framing/body/trailer assertions retained; on_exit kill cannot turn an uncompleted origin into success.",
+      "regression": "All seven proxycases now call assert_origin before cleanup; green7/0 substantiates retained realoracle success. No Session replacement or testdouble replacing actualpublic H1client."
+    }
+  ],
+  "unchanged_sources": "Other four of six assignedsources match initialreview hash exactly. Python origin/peer and Headers policy/negative assertions retain original reviewedbehavior.",
+  "author_verification": {
+    "red": "7tests/1expectedfailure, recordedexit2; originalfailurelog retained",
+    "green": "proxy7/0+headers16/0=23tests/0failures, recordedexit0",
+    "format": "exact threefile root formatterexit0 in green.json"
+  },
+  "runtime_by_reviewer": "NOT RUN; reviewer no Mix/livelease. Fresh postreview fullscopedcompatibility and independent H3/H1/browser/consumer evidence remain coordinatoracceptance gates.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "received_proxy_sol_rounds": 3,
+    "received_proxy_unsuccessful": 1,
+    "received_proxy_astra_recovery_rounds": 0,
+    "note": "Root-authorized additionalrepair retained total3 with no reset; historical ConnectionSol3/failed2/Astra1, OptionsSol4/failed1 and UP0Sol2/failed1/Astra0 unchanged."
+  },
+  "command_shutdown": "Reviewer reads/hash/receipt commands all exited; no owned runtimeprocess; coordinator owns Mix/livelease.",
+  "remaining_requirements": [
+    "Coordinator fresh source-frozenG3 affectedcompatibility/strictcompile/format checks",
+    "Real H3-to-independentH1+Phoenix/browser+cleanconsumer gates and independent evidence review"
+  ],
+  "decisions_needed": []
+}

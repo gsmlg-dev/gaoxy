@@ -1,0 +1,134 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_http3
+Running ExUnit with seed: 538442, max_cases: 4
+
+
+
+  1) test ready after an early final head never reopens a completed upload (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:123
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.363.0>
+     Showing 10 of 23 messages in the mailbox
+     code: assert_receive {:proxy_finished, ^worker, {:ok, result}}
+     mailbox:
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:code_call, #PID<0.363.0>,
+                  {:load_ok,
+                   #Reference<0.77771772.908197889.75874>,
+                   Gaoxy.HTTP.FramedResponse,
+                   ~c"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/_build/test/lib/gaoxy_http/ebin/Elixir.Gaoxy.HTTP.FramedResponse.beam",
+                   #Reference<0.77771772.908066818.66036>}},
+                 :code_server}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:code_call, #PID<0.363.0>,
+                  {:get_object_code_for_loading,
+                   Gaoxy.HTTP.HTTP2.Headers}}, :code_server}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:code_call, #PID<0.363.0>,
+                  {:load_ok,
+                   #Reference<0.77771772.908197889.75890>,
+                   Gaoxy.HTTP.HTTP2.Headers,
+                   ~c"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/_build/test/lib/gaoxy_http/ebin/Elixir.Gaoxy.HTTP.HTTP2.Headers.beam",
+                   #Reference<0.77771772.908066817.75889>}},
+                 :code_server}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:code_call, #PID<0.363.0>,
+                  {:get_object_code_for_loading,
+                   Plug.Conn.Adapter}}, :code_server}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:code_call, #PID<0.363.0>,
+                  {:load_ok,
+                   #Reference<0.77771772.908197890.66044>,
+                   Plug.Conn.Adapter,
+                   ~c"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/_build/test/lib/plug/ebin/Elixir.Plug.Conn.Adapter.beam",
+                   #Reference<0.77771772.908066818.66043>}},
+                 :code_server}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send, {:plug_conn, :sent},
+                 #PID<0.363.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:response_operation, #PID<0.363.0>,
+                  {:head, 413, [{"content-length", "0"}], false},
+                  -576460746872}, #PID<0.349.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send,
+                 {:response_operation, #PID<0.363.0>,
+                  {:data, "", true}, -576460746872},
+                 #PID<0.349.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:response_operation, #PID<0.363.0>, {:data, "", true},
+                 -576460746872}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.363.0>, :send, {:"$gen_cast", :consumed},
+                 #PID<0.364.0>}
+     stacktrace:
+       test/proxy_test.exs:133: (test)
+
+
+
+  2) test a completed nil upload does not finish a stream or read the body (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:105
+     %{active: 1, state: :ready, rejected: 0, retained_bytes: 0, cleanup_failed: nil, retained_high_water: 7750064, backend: :stream, cleanup_pending: 0, queued_bytes: 0, queued_items: 0}
+     stacktrace:
+       test/proxy_test.exs:162: Gaoxy.HTTP.HTTP3.ProxyTest.assert_cleanup/2
+
+
+
+  3) test HTTP/3 fixed 3 trailers use real H1 chunk framing and one finish (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:73
+     %{active: 1, state: :ready, rejected: 0, retained_bytes: 0, cleanup_failed: nil, retained_high_water: 7750116, backend: :stream, cleanup_pending: 0, queued_bytes: 0, queued_items: 0}
+     stacktrace:
+       test/proxy_test.exs:162: Gaoxy.HTTP.HTTP3.ProxyTest.assert_cleanup/2
+
+
+
+  4) test HTTP/2 fixed 0 trailers use real H1 chunk framing and one finish (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:73
+     %{active: 1, state: :ready, rejected: 0, retained_bytes: 0, cleanup_failed: nil, retained_high_water: 7750116, backend: :stream, cleanup_pending: 0, queued_bytes: 0, queued_items: 0}
+     stacktrace:
+       test/proxy_test.exs:162: Gaoxy.HTTP.HTTP3.ProxyTest.assert_cleanup/2
+
+
+
+  5) test HTTP/2 fixed 3 trailers use real H1 chunk framing and one finish (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:73
+     %{active: 1, state: :ready, rejected: 0, retained_bytes: 0, cleanup_failed: nil, retained_high_water: 7750116, backend: :stream, cleanup_pending: 0, queued_bytes: 0, queued_items: 0}
+     stacktrace:
+       test/proxy_test.exs:162: Gaoxy.HTTP.HTTP3.ProxyTest.assert_cleanup/2
+
+
+
+  6) test HTTP/3 fixed 0 trailers use real H1 chunk framing and one finish (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:73
+     %{active: 1, state: :ready, rejected: 0, retained_bytes: 0, cleanup_failed: nil, retained_high_water: 7750116, backend: :stream, cleanup_pending: 0, queued_bytes: 0, queued_items: 0}
+     stacktrace:
+       test/proxy_test.exs:162: Gaoxy.HTTP.HTTP3.ProxyTest.assert_cleanup/2
+
+
+Finished in 19.1 seconds (19.1s async, 0.00s sync)
+6 tests, 6 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 538442, max_cases: 4
+
+................
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+16 tests, 0 failures

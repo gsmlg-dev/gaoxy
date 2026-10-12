@@ -1,0 +1,24 @@
+GAOXY_HTTP3_MATRIX {"name": "proxy_escaped", "result": "PASS", "target": "/proxy/a%2Fb?q=%2F&x=1", "response_trailers": []}
+GAOXY_HTTP3_MATRIX {"name": "proxy_empty-query", "result": "PASS", "target": "/proxy/query?", "response_trailers": []}
+GAOXY_HTTP3_MATRIX {"name": "proxy_fixed_host_forwarding_identity_hop_filter", "result": "PASS", "origin_headers": [["content-type", "application/octet-stream"], ["host", "127.0.0.1:32973"], ["user-agent", "Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.6 Elixir/1.18.5 http_fetch/0.21.3"], ["x-matrix-id", "wire-identity"], ["x-trace", "first"], ["x-trace", "second"], ["x-forwarded-for", "127.0.0.1"], ["x-forwarded-host", "localhost"], ["x-forwarded-proto", "https"], ["connection", "close"], ["transfer-encoding", "chunked"]]}
+GAOXY_HTTP3_MATRIX {"name": "proxy_fixed-trailers-0", "result": "PASS", "request_bytes": 0, "upstream_framing": "chunked", "request_trailers": [["x-trace", "first"], ["x-trace", "second"]], "response_trailers": ["first", "second"]}
+GAOXY_HTTP3_MATRIX {"name": "proxy_fixed-trailers-3", "result": "PASS", "request_bytes": 3, "upstream_framing": "chunked", "request_trailers": [["x-trace", "first"], ["x-trace", "second"]], "response_trailers": ["first", "second"]}
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/proxy_peer.py", line 177, in <module>
+    asyncio.run(run(args))
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/proxy_peer.py", line 116, in run
+    report = await result(peer, sid)
+             ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/proxy_peer.py", line 48, in result
+    assert peer.headers[sid][0].count((b":status", b"200")) == 1, peer.headers[sid]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: [[(b':status', b'504'), (b'content-length', b'0')]]

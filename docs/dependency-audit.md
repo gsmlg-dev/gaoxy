@@ -1,5 +1,49 @@
 # Dependency audit
 
+## M4 upstream H3 qualification — 2026-10-12
+
+The root dependency cohort remains **0.21.3**; `mix.lock` is unchanged
+(SHA256 `16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25`).
+Installed `http_fetch` and `elixir_quic_http3` package manifests both identify
+`gsmlg-dev/http_fetch` as their source. No dependency source was patched.
+
+The public Fetch/Promise/Stream/AbortController diagnostic against two independent
+aioquic 1.2.0 origins executed **7 rows: 5 PASS, 2 BLOCKED**. The
+[captured run](acceptance/evidence/m4/upstream-contract/run-1791811050964927834/result.json)
+and [independent review](acceptance/evidence/m4/upstream-contract/review-up0.json)
+confirm ordinary progressive upload, streamed downloads with ordered repeated
+response trailers on two separately certified authorities, and cancellation
+before headers and during an unacknowledged response chunk. The cancellation
+rows observed public process termination and independent origin RESET events.
+Both owned children exited 0 and both origin UDP ports rebound. Credentials
+were disposable P-256 CA/leaf fixtures with peer and hostname verification.
+
+The two required request-trailer rows remain blocked: public
+`HTTP.Stream.finish/2` returns `:ok`, then the Promise returns
+`{:error, :request_trailers_unsupported}`. The independent origin received
+exactly `abc` or zero DATA bytes, with no trailing fields or request FIN.
+[gsmlg-dev/http_fetch#101](https://github.com/gsmlg-dev/http_fetch/issues/101)
+is **OPEN**, type **Feature**, label **internal request**, severity **blocker**
+for upstream-H3 request-trailer support. The
+[request record](dependency-requests/http-fetch-h3-request-trailers.md)
+links the reproduction and preserved historical failures. The only current
+harness delta from its captured execution is the issue's TODO comment;
+executable source and all other 179 captured source hashes match that historical
+run. A [fresh diagnostic repeat](acceptance/evidence/m4/upstream-contract/run-1791815367697333596/result.json)
+again returned exit2,5PASS/2BLOCKED, with all180 source hashes matching before,
+after and the checkout; [fresh independent review](acceptance/evidence/m4/upstream-contract/review-up0-fresh.json)
+passed. The [current state check](acceptance/evidence/m4/upstream-contract/dependency-state-1791814663418733829.json)
+confirmed #101 OPEN and Hex latest0.21.3.
+
+This is a functional dependency block, not full UP0 acceptance. Wrong-CA,
+wrong-hostname, absent-trust and `connect_address` negative probes, plus
+blocked-upload and owner-loss cancellation, remain **NOT RUN**. The production
+H3 upstream adapter (UP1) and upstream proxy matrix (UP2) remain **unimplemented**;
+they require a compatible published fix, dependency update and their prescribed
+qualification. No trailer-dropping workaround is enabled. Independent downstream
+H3 and standalone work can continue. The reviewed exclusion of `http_fetch#97`
+continues to apply; it supplies no M4 requirement or blocker.
+
 ## Current M3 cohort — 2026-10-11
 
 The proxy directly pins Fetch/WebSocket to `== 0.21.3`; all seven coordinated

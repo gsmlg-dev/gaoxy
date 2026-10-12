@@ -1,0 +1,42 @@
+{
+  "status": "DONE",
+  "assignment": "direct independent read-only specification then code-quality review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "Proxy Sol2/failed1; historical Connection Sol3/failed2/Astra1 unchanged. Root reports Sol repair1/unsuccessful0; not modified by review.",
+  "command_shutdown": "All review reads/hash/AST/receipt commands finished; no Mix/live/child process started.",
+  "runtime_verification": "NOT RUN: source review only",
+  "decisions_needed": [],
+  "task_id": "/root/m4_downstream_proxy/g3-consumer-source-review",
+  "review_scope": [
+    "scripts/h3-consumer.sh",
+    "integration/h3_consumer/mix.exs",
+    "integration/h3_consumer/test/consumer_test.exs",
+    "integration/h3_consumer/test/test_helper.exs",
+    "integration/h3_consumer/peer.py"
+  ],
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "unresolved_findings": [],
+  "source_sha256": {
+    "scripts/h3-consumer.sh": "1ea5e4486db411197a74a6167d5e35c09b5d5b67fdabc60070e46366b8b2fcd7",
+    "integration/h3_consumer/mix.exs": "4f1c984efebc7a56fc3521c3fbd515f33f6a35f7c82ba3818ded1290d4b9ace9",
+    "integration/h3_consumer/test/consumer_test.exs": "866c099340aa6fbd9d0ad35633af4031c0f64321c035851f6f3b29e1e29d96ca",
+    "integration/h3_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/h3_consumer/peer.py": "3ceac4faa77e4f55f18ecca2f75e53947273d0d09f7d533827483e2615af423b"
+  },
+  "assessments": [
+    "Separate mktemp consumer copies only Gaoxy core/HTTP/H3 and vendored websock adapter, uses exact umbrella lock with --check-locked, strict compilation and nonzero check-tests.py.",
+    "Consumer explicitly opts into Gaoxy H3 and QUIC/ex_ssl 0.21.3 cohort; test requires resolved/running H3/QUIC apps and excludes proxy, standalone, HTTP Fetch, Phoenix/LiveView/Bandit from resolved/running/library/deps paths.",
+    "aioquic1.2.0 independent peer loads fixture CA with localhost identity, requires negotiated h3, exactly one200 status and exact ordinary/DATA upload response bytes across two real requests; total20s deadline and perresponse8s.",
+    "Runtime cleanup checks active/retained/cleanup baseline, observes runtime DOWN after bounded stop, and requires actual UDP listener port rebind; fresh temporary certificate credentials only."
+  ],
+  "checks": "Peer AST parse PASS; no Mix/consumer/live command executed in this review.",
+  "remaining_risks": [
+    "Clean dependency resolution/strictcompile/nonzero ExUnit and verified-CA live peer remain NOT RUN until root executes consumer gate."
+  ]
+}

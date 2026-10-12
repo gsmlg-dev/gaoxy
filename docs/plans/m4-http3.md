@@ -261,30 +261,30 @@ Owner: integration worker. Files:
   and matching scoped tests after inspecting current callsites.
 - Update `docs/acceptance/m4.md` and `docs/acceptance/evidence/m4/matrix/`.
 
-- [ ] Exercise H3 downstream -> local endpoint/Plug/Phoenix and H3 -> existing
+- [x] Exercise H3 downstream -> local endpoint/Plug/Phoenix and H3 -> existing
   dedicated H1 origin with streaming upload/download, trailers, escaped and empty
   query, early origin response, cancellation and two concurrent requests.
-- [ ] Preserve authentication/destination policy. No open forward proxy, CONNECT
+- [x] Preserve authentication/destination policy. No open forward proxy, CONNECT
   extension, automatic upstream protocol selection or reusable pool activation.
-- [ ] Create a local trusted browser fixture profile with explicit H3 discovery
+- [x] Create a local trusted browser fixture profile with explicit H3 discovery
   (local Alt-Svc or a documented browser test-origin mapping). Use pinned installed
   Chromium/Playwright and record exact versions. Assert the network's negotiated
   protocol is `h3`, correlate server request evidence, and check the rendered
   Phoenix HTTP page. H2 fallback alone fails the H3 assertion.
-- [ ] Run `python scripts/check-tests.py apps/gaoxy_http3/test/proxy_test.exs`,
-  then `python integration/http3/run.py --gate matrix --evidence docs/acceptance/evidence/m4/matrix`.
-- [ ] Record H1/H2 -> H3 origin, H3 -> H3 origin and H3 -> H2 origin rows as
+- [x] Run `python scripts/check-tests.py apps/gaoxy_http3/test/proxy_test.exs`,
+  then `python integration/http3/matrix.py --evidence docs/acceptance/evidence/m4/matrix`.
+- [x] Record H1/H2 -> H3 origin, H3 -> H3 origin and H3 -> H2 origin rows as
   NOT IMPLEMENTED / NOT RUN until their separate upstream adapter slices exist.
   This is an explicit boundary, not a full-matrix PASS. H3 WebSocket is UNSUPPORTED.
-- [ ] Run `scripts/external-consumer.sh` for core isolation and create/run an
+- [x] Run `scripts/external-consumer.sh` for core isolation and create/run an
   analogous clean H1/H2-only consumer selecting only `gaoxy_http`; assert its
   resolved/started apps exclude `elixir_quic`, `elixir_quic_http3`, `ex_ssl` and
   `http_fetch`. A separate H3 consumer must include its declared runtime cohort.
-- [ ] Run all `apps/gaoxy_http3/test` cases through the nonzero-count wrapper;
+- [x] Run all `apps/gaoxy_http3/test` cases through the nonzero-count wrapper;
   format-check exact changed Elixir files and compile with warnings-as-errors.
   Run affected core/H1/H2/proxy compatibility suites, not unrelated repository
   suites. Independently review code, evidence and advertised capability rows.
-- [ ] Synchronize `docs/capabilities.md`, `docs/implementation-status.md`, the
+- [x] Synchronize `docs/capabilities.md`, `docs/implementation-status.md`, the
   dependency audit and public H3 usage documentation with executed evidence.
 
 **G3 pass:** only executed downstream/browser/isolation rows pass. If browser
@@ -304,8 +304,9 @@ Prove H1/H2 -> H3 and H3 -> H3 with independent origins, plus a standalone
 data-only H3 service using local test credentials and bounded shutdown. Write
 the exact file ownership, regressions and commands in their own plans before
 implementation. These required rows remain NOT IMPLEMENTED / NOT RUN until
-verified; G0-G3 do not substitute for full M4 acceptance. No release or deployment
-is authorized by this task.
+verified; G0-G3 do not substitute for full M4 acceptance. The separate user
+authorization permits main integration, push and release only after full M4
+verification and independent review. Deployment remains excluded.
 
 ## Handoff / stopping rules
 
@@ -320,3 +321,12 @@ this document does not authorize a third Astra recovery.
 Before any final result, record commands completed/stopped, precise diff ownership,
 PASS/FAIL/BLOCKED/NOT RUN per gate and residual capability rows. Local tests do
 not establish hosted CI, release artifacts, deployment or production acceptance.
+
+2026-10-12 checkpoint: fresh shared/downstream gates passed59/19 checks;
+clean core1/0, H1/H2 2/0 and H3 2/0 passed independent review. Final affected
+tests passed274/0, exact53-file format and strict umbrella/Phoenix H3 builds.
+UP0 reports5PASS/2BLOCKED on request trailers (HTTP Fetch#101), so UP1/UP2
+remain unimplemented. Standalone ST1 passed review and58/0; ST2 static/H1-origin
+passed11 checks and its fresh repeat. The standalone H3-origin row remains
+blocked. See [the supplement](m4-upstream-standalone.md),
+[acceptance](../acceptance/m4.md) and [remaining queue](m4-upstream-resume.md).

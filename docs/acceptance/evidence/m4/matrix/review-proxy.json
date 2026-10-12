@@ -1,0 +1,71 @@
+{
+  "task_id": "/root/m4_spec_review/g3-proxy-independent-review",
+  "status": "DONE",
+  "assignment": "direct independent read-only specification and code review; receipt only",
+  "source_review": "ACTIONABLE_FINDINGS; not accepted for G3 advancement",
+  "reviewer": "/root/m4_spec_review",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "426d3fe22f47cb849597dfc73d8eff1b8eab43e8a90e26b87c355d1bc2ac7615",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "9ceb14c46f1c676fd26d4e2b3957786c630304e29d5827c3c7bba8e78a5d307c",
+    "apps/gaoxy_proxy/test/http_headers_test.exs": "7312458df543cd09b39274abe41f09150b315fc972a49d48ee90fcf3be25cc52",
+    "apps/gaoxy_http3/test/proxy_test.exs": "ff0de2a3bb70fe700113c59bb3cf39040056abf6447f33c94b00d83b413593c1",
+    "integration/http3/h1_origin.py": "c3631d80dd0544841cb47dc008c55390f1f4044b1c73613fb1740773f91e5e60",
+    "integration/http3/proxy_peer.py": "b9507b1db5f02a83e46bc652254aea90e2b7f514d7fb1b5a6a6b803332333d2f"
+  },
+  "specification_sha256": {
+    "docs/designs/m4-downstream-matrix.md": "98f4ceca5e2b139c93da3eeb1c03d111089a441bb70b7d490c5b443e08fee03f",
+    "docs/plans/m4-downstream-matrix.md": "07f99ab186ac19d70ecf817a831b8eb98ed242e29b80d68dd5cf487192afc9dd"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/matrix/proxy/implementation.json": "b9e0ab42269d0fdbe837f2fc96884add07f13731a75db50e25fb968935ffbd2f",
+    "docs/acceptance/evidence/m4/matrix/proxy/green-3.log": "b8233943f348ef2ac58b024cdfa2fa8c52924ae3ac9cc8d8231d96439d49adf8",
+    "docs/acceptance/evidence/m4/matrix/proxy/compatibility.log": "e58c017fea022e5bede32d2db6fbbad8883d9f685db35a9d44f171429cc83024",
+    "docs/acceptance/evidence/m4/matrix/proxy/origin-smoke.json": "470a7c2009ff158c7c84187a6f45c1d8001ceac7dc8ba08e8d70f73bd573432f"
+  },
+  "findings": [
+    {
+      "id": "G3-P1",
+      "severity": "medium",
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "line": 314,
+      "title": "Nil upload skips proxy request-trailer validation",
+      "trigger": "Framed CL:0 request completes with undeclared ordinary trailer x-trace and no Trailer declaration. Native H3 protocol Headers permits this field; Connection.exchange may expose completed trailers. HTTPFetchClient.open picks nil for length0.",
+      "before_after": "The new nil-upload finish clause accepts/drops those trailers without calling Headers.trailers. Existing proxy policy requires fields be declared/allowed even when there is no upstream stream to finish.",
+      "required_change": "Validate actual request trailers against policy before branching nil vs stream. Nil must still cause no Stream.finish/no body read; preserve original deadline. Add deterministic nil/undeclared-trailer rejection regression.",
+      "evidence": "Static end-to-end trace: H3.Headers delegates structural trailer validation; H3.Connection.exchange carries ended entry.trailers; HTTPFetchClient.open nil for length0; HTTP.finish_upload nil bypasses Headers.trailers. No live reproduction run by reviewer."
+    },
+    {
+      "id": "G3-P2",
+      "severity": "medium",
+      "file": "apps/gaoxy_http3/test/proxy_test.exs",
+      "line": 276,
+      "title": "Origin process can swallow terminal wire assertion failures",
+      "trigger": "origin/1 spawns unlinked process and rescues any assertion to {:origin_error,...}. Tests never receive/assert its terminal result or monitor successful origin completion.",
+      "before_after": "For example post-response socket-closed assertion at line143 can fail after proxy response/cleanup while ExUnit still passes; on_exit may kill pending origin.",
+      "required_change": "Await finite actual origin terminal result and propagate assertion failures into each ExUnit case. Retain wire byte/framing/trailer/closed assertions and exactly-one finish; do not replace real Session or weaken conditions.",
+      "evidence": "Origin helper rescue lines291-293 plus all six cases: no consumer of origin_error or origin success/down event."
+    }
+  ],
+  "positive_assessment": [
+    "H2/H3 declared fixed/zero trailer uploads remove upstream Content-Length and force chunked public upload source; ordinary H1 framing unchanged.",
+    "H3 response trailers extend existing proxy allowlist, retaining fixed-length/bodyless/HEAD restrictions. Ordered repeated trailers and forwarding/hop distrust retain existing policy.",
+    "Completion-before-ready pump uses existing public HTTPFetchClient/Session path and original bounded deadline; early final head sets upload_stopped and late ready cannot reopen upload.",
+    "Real independent H1/Python peer sources preserve exact target/body/trailers, fixed authority/forwarding identity, separate progress barriers, early413/input-stop, forbidden auth declaration before upstream and sibling isolation."
+  ],
+  "author_evidence_assessment": "Inspected immutable logs: green3 proxy6/0+headers16/0; compatibility H2integration10/0+proxy6/0+proxy suites56/0=72/0. Origin smoke byte/trailer/emptyquery and stopped active0/exit0. Those scoped successes do not resolve findings or constitute real H3/browser/consumer matrix acceptance.",
+  "runtime_by_reviewer": "NOT RUN: no Mix/live lease; coordinator runs live/browser/consumer gate separately. Strict compile/format author receipt has exit0, fresh post-review checks required.",
+  "reviewer_sol_repair_rounds": 0,
+  "received_counters": "Proxy Sol2/failed1; UP0 Sol2/failed1/Astra0; historical Connection/Options/Astra counters preserved, no reset or reviewer repair.",
+  "command_shutdown": "All reviewer read/hash/receipt commands exited; no owned Mix/live process; coordinator owns current lease.",
+  "remaining_requirements": [
+    "Resolve G3-P1/P2 through implementation owner",
+    "Fresh affected scoped tests and independent re-review",
+    "Real H3-to-H1/browser/clean-consumer source-bound matrix and independent evidence review"
+  ],
+  "decisions_needed": []
+}

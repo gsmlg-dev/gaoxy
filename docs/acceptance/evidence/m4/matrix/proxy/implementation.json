@@ -1,0 +1,58 @@
+{
+  "task_id": "/root/m4_downstream_proxy",
+  "status": "SCOPED_VERIFICATION_PASS_LIVE_NOT_RUN",
+  "assignment": "direct G3 proxy implementation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "root_cause": "Framed H3 trailers rejected; framed fixed-length trailer uploads retained Content-Length/zero-length nil upload; completed Exchange never finished an existing upload because pump only read incomplete bodies.",
+  "owned_files": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex",
+    "apps/gaoxy_proxy/test/http_headers_test.exs",
+    "apps/gaoxy_http3/test/proxy_test.exs",
+    "integration/http3/h1_origin.py",
+    "integration/http3/proxy_peer.py"
+  ],
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "426d3fe22f47cb849597dfc73d8eff1b8eab43e8a90e26b87c355d1bc2ac7615",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "9ceb14c46f1c676fd26d4e2b3957786c630304e29d5827c3c7bba8e78a5d307c",
+    "apps/gaoxy_proxy/test/http_headers_test.exs": "7312458df543cd09b39274abe41f09150b315fc972a49d48ee90fcf3be25cc52",
+    "apps/gaoxy_http3/test/proxy_test.exs": "ff0de2a3bb70fe700113c59bb3cf39040056abf6447f33c94b00d83b413593c1",
+    "integration/http3/h1_origin.py": "c3631d80dd0544841cb47dc008c55390f1f4044b1c73613fb1740773f91e5e60",
+    "integration/http3/proxy_peer.py": "b9507b1db5f02a83e46bc652254aea90e2b7f514d7fb1b5a6a6b803332333d2f"
+  },
+  "checks": {
+    "red": "red-2.log: header16 tests/5 failures for intended missing behavior; proxy6 tests/6 failures including fixture cleanup/setup limitations preserved",
+    "green": "green-3.log: proxy6/0, headers16/0",
+    "compatibility": "compatibility.log: H2 integration10/0, proxy6/0, proxy headers/wire/runtime/public client contract56/0; total72/0",
+    "strict_compile": "mix compile --warnings-as-errors: exit0",
+    "exact_format": "mix format --check-formatted on four owned Elixir files: exit0",
+    "python_syntax": "ast.parse on two owned Python scripts: PASS",
+    "origin_smoke": "origin-smoke.json: actual H1 framing/ordered trailers/empty query, stopped active0/exit0",
+    "H3_live_matrix": "NOT RUN; root-owned matrix runner required",
+    "independent_review": "NOT RUN; source ready for read-only review"
+  },
+  "proxy_sol_repair_rounds": 2,
+  "proxy_sol_failed_rounds": 1,
+  "historical_counters": "Connection Sol3/failed2/Astra1 unchanged",
+  "repair_evidence": [
+    {
+      "round": 1,
+      "failure": "green-2.log: 5/6 proxy tests pass; synthetic early response ended while real guardian still awaited origin",
+      "changes": "Test Connection:close avoids idle admission; ready barrier synchronizes origin wire receipt"
+    },
+    {
+      "round": 2,
+      "result": "PASS green-3.log",
+      "changes": "Reorder actual real-origin413 guardian headers/end around actual held ready, then verify real guardian cleanup"
+    }
+  ],
+  "command_shutdown": "All own Mix and smoke-origin commands exited; no child remains.",
+  "remaining_risks": [
+    "Independent H3 live peer/browser/consumer source-bound matrix evidence remains root-owned acceptance."
+  ],
+  "decisions_needed": []
+}

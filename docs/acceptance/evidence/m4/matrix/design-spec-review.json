@@ -1,0 +1,61 @@
+{
+  "task_id": "/root/m4_spec_review/g3-design-spec-review",
+  "status": "DONE",
+  "review_result": "ACTIONABLE_PLAN_CLARIFICATIONS",
+  "assignment": "direct independent read-only design/specification review; receipt-only mutation",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "selected_approach": "ACCEPTABLE subject to narrow documented clarifications below. No architecture redesign or product decision required.",
+  "reviewed_sources_sha256": {
+    "docs/designs/m4-downstream-matrix.md": "6abe6a47392c18ab2d2661d50e4096b0d9407e8bdd0a96890c5b801b5586d38e",
+    "docs/plans/m4-downstream-matrix.md": "73f5003f8f9b1f2cee58eb8dedad952093ac07c0245288965c2ece3417edc456"
+  },
+  "scope_findings": [
+    "G3 explicitly depends on reviewed passing G2; documentation work can proceed before live G2, runtime writer dispatch follows its gate.",
+    "Dedicated H1 origin adapter only; no pools, upstream H2, auto protocol selection, open forward proxy or CONNECT extensions.",
+    "Public Exchange/Response and client Stream/RequestCompletion remain ownership boundary; original request D and guardian cleanup receipts retained.",
+    "Independent Python H1 origin and aioquic peer provide body/target/trailer/progress/reset/sibling evidence. Fixed and zero-length downstream request trailers translate to H1 chunked upload.",
+    "Phoenix Endpoint server:false before application startup prevents duplicate H1/H2 listeners; Gaoxy alone serves existing Phoenix Plug/page/static through explicit H3 listener.",
+    "Fresh Chromium context with process-local fixture SPKI, forced loopback QUIC test mapping, CDP exact document h3 and unique server marker provides bounded browser proof without trust-store mutation.",
+    "Clean core/H1/H2 consumers preserve QUIC/HTTP-fetch exclusion; explicit optional H3 consumer executes verified-CA real H3 and records cohort identity.",
+    "Source-bound runner requires finite children, nonzero cases, source unchanged, Admission/resource baseline and port rebind. Browser/environment absence is BLOCKED_ENV, not PASS.",
+    "G3 does not complete separately required upstream-H3 and standalone M4 slices; Vault/E2E/publication/deployment/production restrictions persist."
+  ],
+  "actionable_findings": [
+    {
+      "id": "G3-1",
+      "severity": "needed",
+      "location": "docs/designs/m4-downstream-matrix.md:17; docs/plans/m4-downstream-matrix.md:25",
+      "problem": "Design states framed downstream trailers are independent of Content-Length while preserving H1/H2 restrictions, but the task list does not explicitly select/test H3 fixed-length response trailers. Existing trailers_supported? rejects Content-Length for all versions. Adding H3 to allowed versions alone does not resolve this distinction.",
+      "recommended_resolution": "State explicitly whether H3 response Content-Length plus declared safe trailers is accepted, and add the exact H3 Headers.response and actual wire regression while retaining unchanged H1/H2 rejection assertions. Existing framed response semantics already support fixed-stream finish with trailers."
+    },
+    {
+      "id": "G3-2",
+      "severity": "needed",
+      "location": "docs/plans/m4-downstream-matrix.md:25",
+      "problem": "Completed-before-ready task omits explicit terminal-operation/race assertions from its design invariant. A read-only source trace shows ready currently sets upload then pump skips read whenever body_complete?; ordering repairs could also accidentally reopen upload after an early origin final head.",
+      "recommended_resolution": "Add deterministic ready-before/after-done scenarios requiring exactly-one public finish_body with ordered trailers at original D, nil-upload zero finish, and ready after early final head never reopens/finishes a stopped upload. Avoid scheduler timing as readiness proof."
+    },
+    {
+      "id": "G3-3",
+      "severity": "needed",
+      "location": "docs/plans/m4-downstream-matrix.md:32; docs/designs/m4-downstream-matrix.md:11",
+      "problem": "Plan preserves authentication/destination policy and records upstream headers, but does not identify exact origin policy assertions. Without them source/wire proof could show body translation while missing identity/header-policy regressions.",
+      "recommended_resolution": "Require independent origin fixed Host, regenerated X-Forwarded-* and absence of spoofed Forwarded/X-Real-IP/hop values. Preserve and execute current forbidden/auth-sensitive trailer-declaration rejection and destination/authentication regressions. Dropped forwarding/hop fields and rejected forbidden declarations remain distinct; no forward-proxy expansion."
+    }
+  ],
+  "optional_implementation_note": "For static browser content, capture exact URL/status/body and CDP protocol with cache/service-worker provenance alongside document evidence; no extra product route/controller needed.",
+  "runtime_verification": "NOT RUN: this is a design/specification review, no Mix or live command authorized or executed.",
+  "commands": "Read-only cat/rg/source inspections and Python receipt/hash write; all completed.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/matrix/design-spec-review.json"
+  ],
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "Existing root/Connection/Astra counters preserved; no inference or reset.",
+  "source_freeze": "No runtime, dependency, integration or reviewed design/plan file modified by reviewer.",
+  "decisions_needed": [],
+  "next_step": "Root clarifies the three bounded plan items under continuing authorization, then reviewer checks resolution before runtime implementation."
+}

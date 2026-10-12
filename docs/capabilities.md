@@ -59,7 +59,7 @@ route generations and dedicated-H1 upstream groups. Installed HTTP Fetch0.21.3
 passes compatibility486/0, public managed39/39, H1 baseline20/0, B21,
 supplemental TLS5/5 and the public H2 supplement8/8. Negative-oracle receipts keep
 their actual failure exits. See [M3 acceptance](acceptance/m3.md) and
-[ADR007](adr/007-m3-beta-and-m4.md). Upstream pools, upstream H2 and HTTP/3 are not
+[ADR007](adr/007-m3-beta-and-m4.md). Upstream pools and upstream H2 are not
 implemented; deferred fixtures do not block this release or M4 preparation.
 Hosted execution, publication and deployment retain separate evidence.
 
@@ -79,6 +79,32 @@ profile covers local echo and a fixed dedicated-H1 proxy; all199 recorded source
 hashes identify that candidate. Separate independent specification and quality reviews
 pass. These historical gates do not establish the deferred upstream features or
 production acceptance; current release verification has its own receipt.
+
+## M4 HTTP/3 worktree
+
+The optional native `gaoxy_http3` application implements the bounded IPv4/QUICv1/
+ALPNh3 profile, shared endpoints/Plug, native framing and zero-dynamic QPACK.
+Independent G0/G1/G2 gates passed; the downstream G3 network/browser matrix
+passes19checks with independent review. [M4 acceptance](acceptance/m4.md) records
+exact candidate/evidence identities and pending gates. This worktree is not yet
+a published M4 release.
+
+| Capability | Executed local evidence | Boundary |
+| --- | --- | --- |
+| H3 endpoints/Plug | Independent shared-facade tests and59live checks | Original finite stream/operation/Admission ownership; no H3 WebSocket |
+| H3 downstream to fixed H1 origin | 11 real proxy cases: escaped/empty query, identities, ordered request/response trailers, progressive upload/download, early final/reset/siblings | Dedicated H1 only; no reusable pool, automatic protocol selection or replay |
+| Phoenix H3 browser | Chromium152.0.7977.64/Playwright1.56.0 exact document/static CDPh3 and matching server markers | Process-local fixture trust/IPv4 mapping; ordinary HTTP page, no WebSocket claim; automatic favicon500 retained |
+| Standalone H3 configuration | Explicit JSON, strict fields/budgets and58 scoped tests; real startup/progressive proxy/reload/rollback/stop passed11 checks and a fresh repeat | Static/fixed H1-origin routes; H3-origin row blocked; no public management |
+| Upstream H3 | Public diagnostic5PASS/2BLOCKED | Required request trailers blocked by [#101](dependency-requests/http-fetch-h3-request-trailers.md); Gaoxy upstream adapter/matrix unimplemented |
+| Fresh consumer isolation | Clean core1/0, H1/H2 2/0 and H3 2/0, all exit0 and independently reviewed | Core/H1H2 exclude QUIC/client runtime; explicit H3 consumer includes its declared cohort; omitted peer hash supplied by independent pre/post observations |
+
+Dynamic QPACK, push, extended CONNECT, WebTransport, DATAGRAM,0-RTT,resumption,
+migration,mTLS,IPv6/wildcard bindings and graceful H3 GOAWAY drain remain
+unsupported. [Public usage](http3.md) documents embedded and standalone opt-in.
+Final affected tests passed274/0, exact-file format and strict builds passed;
+fresh shared/downstream gates passed59/19 checks. Full M4 acceptance awaits
+required upstream qualification; hosted
+CI, release, deployment and production acceptance remain separate.
 
 ## Resource accounting scope
 

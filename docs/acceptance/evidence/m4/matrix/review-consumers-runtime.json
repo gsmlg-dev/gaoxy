@@ -1,0 +1,154 @@
+{
+  "task_id": "/root/m4_downstream_proxy/consumer-independent-review",
+  "assignment": "direct bounded independent read-only source/evidence review; no review of own proxy/ST1 implementation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "reviewer_sol_repair_rounds": 0,
+  "reviewer_astra_recovery_rounds": 0,
+  "runtime_by_reviewer": "NOT RUN; coordinator session69763 executed scripts under exclusive Mix/live lease",
+  "status": "DONE",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "evidence_review": "PASS with explicitly supplemental independent peer source capture",
+  "run": "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580",
+  "results": {
+    "core": {
+      "result": "PASS",
+      "tests": 1,
+      "failures": 0,
+      "command_exit": 0,
+      "timeout": false,
+      "elapsed_ms": 246449,
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "MIX_ENV=test",
+        "ERL_FLAGS=+S 2:2",
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "executed_source_hashes": 216,
+      "before_after_equal": true,
+      "current_consumer_library_hashes_checked": 124,
+      "current_template_hashes_checked": 5
+    },
+    "http": {
+      "result": "PASS",
+      "tests": 2,
+      "failures": 0,
+      "command_exit": 0,
+      "timeout": false,
+      "elapsed_ms": 245218,
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "MIX_ENV=test",
+        "ERL_FLAGS=+S 2:2",
+        "bash",
+        "scripts/http-consumer.sh"
+      ],
+      "executed_source_hashes": 216,
+      "before_after_equal": true,
+      "current_consumer_library_hashes_checked": 124,
+      "current_template_hashes_checked": 4
+    },
+    "h3": {
+      "result": "PASS",
+      "tests": 2,
+      "failures": 0,
+      "command_exit": 0,
+      "timeout": false,
+      "elapsed_ms": 207284,
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "MIX_ENV=test",
+        "ERL_FLAGS=+S 2:2",
+        "bash",
+        "scripts/h3-consumer.sh"
+      ],
+      "executed_source_hashes": 216,
+      "before_after_equal": true,
+      "current_consumer_library_hashes_checked": 124,
+      "current_template_hashes_checked": 4
+    }
+  },
+  "source_sha256": {
+    "scripts/h3-consumer.sh": "1ea5e4486db411197a74a6167d5e35c09b5d5b67fdabc60070e46366b8b2fcd7",
+    "integration/h3_consumer/mix.exs": "4f1c984efebc7a56fc3521c3fbd515f33f6a35f7c82ba3818ded1290d4b9ace9",
+    "integration/h3_consumer/test/consumer_test.exs": "6da360daa3cb8c06556d186b2ab30da8bdf0d42bcc8331012a47f8d173f85f1b",
+    "integration/h3_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/h3_consumer/peer.py": "3ceac4faa77e4f55f18ecca2f75e53947273d0d09f7d533827483e2615af423b"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/core.json": "4c77262cadfd5bed0ba3ce0c15a321681fcb9c1ea965a4e084edbe46c2321d25",
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/core.log": "8f8ab401d9ee0f77876e3055a6fb136ec559e68b539ed86a1e80495641a18881",
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/http.json": "150ae596357d1142b5a7ed901ed56db23c380570d41be39a8ab94c7372e9addd",
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/http.log": "41c1f20472787ffb864573514f6ee04d15cabded401d99e82b655ad23d323bb5",
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/h3.json": "9a73cd25771768d8ed521a2a8abd12ea2a7082db9d9d8319603649a1fa5186ab",
+    "docs/acceptance/evidence/m4/matrix/consumers-1791813969764692580/h3.log": "9fd44c1144c0a7ff3b7938e346fa4e02feaa3ea1ede167005bc2c4f13f752b24"
+  },
+  "resolved_findings": [
+    {
+      "id": "CONSUMER-EVIDENCE-1",
+      "initial_receipt": "review-consumers-initial.json",
+      "resolution": "Genuine independent pre/post peer observation plus confirmed serialized execution/source freeze; author receipt preserved unchanged",
+      "supplement": {
+        "kind": "independent observer capture; not author runner original capture",
+        "file": "integration/h3_consumer/peer.py",
+        "independently_verified_before_sha256": "3ceac4faa77e4f55f18ecca2f75e53947273d0d09f7d533827483e2615af423b",
+        "independently_verified_after_sha256": "3ceac4faa77e4f55f18ecca2f75e53947273d0d09f7d533827483e2615af423b",
+        "prior_independent_source_receipt": "docs/acceptance/evidence/m4/matrix/review-root-formatted.json",
+        "pre_execution_observation": {
+          "phase": "HTTP consumer still compiling; H3 had not started",
+          "tool_trace_anchor": "Initial consumer review batch read http.log ending at ==> abyss / Compiling crate dhcp_socket in release mode and independently compared every H3 template/peer hash against review-root-formatted.json; peer printed SAME and Peer AST PASS. Earlier file-list batch contained core.log/core.json/http.log only.",
+          "actual_check": "hashlib.sha256(Path(name).read_bytes()).hexdigest() == receipt[\"source_sha256\"][name]",
+          "result": "SAME for peer.py and all five H3 reviewed sources"
+        },
+        "execution_start_order_anchor": "Next reviewer hash/count call first observed http.json and h3.log; coordinator confirms consumer loop in session69763 strictly serial: H3 starts only after HTTP script exit0.",
+        "post_execution_observation": {
+          "phase": "h3.json completed, log2/0, coordinator session69763 exit0",
+          "result": "Current peer SHA matches independently verified pre-execution SHA exactly."
+        },
+        "coordinator_confirmation": "Root message confirmed HTTP compilation preceded H3 start and every peer/lib/template stayed frozen throughout loop; only evidence and ignored temporary execution scripts were written. Root confirms session69763 fully exited0.",
+        "preservation": "Original h3.json is unchanged; no missing author field backfilled. The independent observation supplies the omitted peer identity.",
+        "limits": "Phase ordering is established by actual tool trace and coordinator serialization, not an invented wall-clock timestamp. Subsequent ST2 runner edits are outside consumer execution closure."
+      }
+    }
+  ],
+  "unresolved_findings": [],
+  "assessments": [
+    "Each script creates a separate mktemp project and copies only its selected app closure; actual logs show clean /tmp compile paths. Root lock is reused with --check-locked and strict compilation; each command executed nonzero tests and exited0.",
+    "Core positive TCP/UDP exchanges run without optional HTTP/Plug/Phoenix/Fetch/QUIC/TLS libraries installed or started. H1/H2 consumer separately checks resolved/running/library/deps exclusions for H3/QUIC/TLS/Fetch/Bandit and serves actual native H1 and H2 bytes.",
+    "H3 consumer explicitly resolves/starts H3 and QUIC apps and excludes proxy/standalone/HTTPFetch/Phoenix/LiveView/Bandit from resolved/running/library/deps paths. Shared lock entries alone do not imply activation; tests exercise the actual clean closure.",
+    "Independent aioquic1.2.0 peer uses loaded fixture CA, localhost server name and default peer verification, with no verify_none override. It requires negotiated h3, one200 status and exact ordinary consumer body and73728-byte DATA echo across two real requests.",
+    "The successful ExUnit wire test asserts independent peer command exit0 and exact two-case success marker. Successful peer stdout is consumed by System.cmd rather than separately logged; captured source plus passing assertions establish the nested checks.",
+    "H3 wire peer has20s total/8s response deadlines; ExUnit timeout30s. Admission active/retained/cleanup baseline, bounded Gaoxy.stop, runtimeDOWN and real UDP port rebind must pass. All three outer owned commands exited normally; root session69763 ended0."
+  ],
+  "verification": [
+    {
+      "command": "Python compare recorded counts with completed ExUnit logs, captured before/after source equality, current library/template hashes, printed H3 root lock hash and peer AST",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "Independent pre/post peer identity and actual review/execution phase ordering; coordinator serialization/shutdown confirmation",
+      "result": "PASS supplemental capture"
+    }
+  ],
+  "counters": "Reviewer Sol0/Astra0; consumer run no implementation repair by this worker; historical Proxy/Connection/Options/UP0/Astra counters unchanged.",
+  "command_shutdown": "All reviewer read/hash/AST/count/receipt commands exited. No Mix/live/child processes started by reviewer. Coordinator confirms serialized consumer session69763 exit0; root now owns separate ST2 execution.",
+  "remaining_risks": [
+    "This consumer review does not qualify UP1/UP2, standaloneST2, deployment or fullM4.",
+    "Original author H3 hash map omitted peer.py; independent supplemental identity is explicit and must remain attached to acceptance."
+  ],
+  "decisions_needed": []
+}

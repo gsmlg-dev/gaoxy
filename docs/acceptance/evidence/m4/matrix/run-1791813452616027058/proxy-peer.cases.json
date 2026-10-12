@@ -1,0 +1,147 @@
+[
+  {
+    "name": "proxy_escaped",
+    "result": "PASS",
+    "target": "/proxy/a%2Fb?q=%2F&x=1",
+    "response_trailers": []
+  },
+  {
+    "name": "proxy_empty-query",
+    "result": "PASS",
+    "target": "/proxy/query?",
+    "response_trailers": []
+  },
+  {
+    "name": "proxy_fixed_host_forwarding_identity_hop_filter",
+    "result": "PASS",
+    "origin_headers": [
+      [
+        "content-type",
+        "application/octet-stream"
+      ],
+      [
+        "host",
+        "127.0.0.1:36587"
+      ],
+      [
+        "user-agent",
+        "Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.6 Elixir/1.18.5 http_fetch/0.21.3"
+      ],
+      [
+        "x-matrix-id",
+        "wire-identity"
+      ],
+      [
+        "x-trace",
+        "first"
+      ],
+      [
+        "x-trace",
+        "second"
+      ],
+      [
+        "x-forwarded-for",
+        "127.0.0.1"
+      ],
+      [
+        "x-forwarded-host",
+        "localhost"
+      ],
+      [
+        "x-forwarded-proto",
+        "https"
+      ],
+      [
+        "connection",
+        "close"
+      ],
+      [
+        "transfer-encoding",
+        "chunked"
+      ]
+    ]
+  },
+  {
+    "name": "proxy_fixed-trailers-0",
+    "result": "PASS",
+    "request_bytes": 0,
+    "upstream_framing": "chunked",
+    "request_trailers": [
+      [
+        "x-trace",
+        "first"
+      ],
+      [
+        "x-trace",
+        "second"
+      ]
+    ],
+    "response_trailers": [
+      "first",
+      "second"
+    ]
+  },
+  {
+    "name": "proxy_fixed-trailers-3",
+    "result": "PASS",
+    "request_bytes": 3,
+    "upstream_framing": "chunked",
+    "request_trailers": [
+      [
+        "x-trace",
+        "first"
+      ],
+      [
+        "x-trace",
+        "second"
+      ]
+    ],
+    "response_trailers": [
+      "first",
+      "second"
+    ]
+  },
+  {
+    "name": "proxy_progressive_upload_before_request_fin",
+    "result": "PASS",
+    "bytes": 245760,
+    "before_fin_origin_bytes": 17,
+    "origin_chunk_count": 73
+  },
+  {
+    "name": "proxy_progressive_download_before_origin_fin",
+    "result": "PASS",
+    "bytes": 57359,
+    "before_fin_bytes": 15,
+    "response_trailers": [
+      "first",
+      "second"
+    ],
+    "response_hop_dropped": true
+  },
+  {
+    "name": "proxy_forbidden_authentication_trailer_before_upstream",
+    "result": "PASS",
+    "status": 400,
+    "upstream_requests": 0
+  },
+  {
+    "name": "proxy_early_final_stops_open_upload",
+    "result": "PASS",
+    "status": 413,
+    "request_fin_sent": false,
+    "origin_cancelled": true,
+    "same_connection_sibling": true
+  },
+  {
+    "name": "proxy_reset_cancels_origin_keeps_connection_siblings",
+    "result": "PASS",
+    "origin_cancelled": true,
+    "siblings": 2
+  },
+  {
+    "name": "proxy_separate_listener_sibling",
+    "result": "PASS",
+    "separate_listener": true
+  }
+]

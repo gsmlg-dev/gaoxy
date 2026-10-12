@@ -1,0 +1,81 @@
+{
+  "task_id": "/root/m4_downstream_proxy/g3-root-initial-review",
+  "status": "DONE",
+  "assignment": "direct independent read-only specification then code-quality review of root-owned G3 fixture/runner sources",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "branch": "codex/m4-http3",
+  "review_scope": [
+    "integration/http3/matrix.py",
+    "integration/http3/browser.py",
+    "integration/http3/matrix_fixture.exs",
+    "examples/phoenix_native/h3_gateway.exs",
+    "examples/phoenix_native/mix.exs"
+  ],
+  "excluded_scope": "Proxy implementation/test/Python origin/peer written by this reviewer; upstream/standalone/consumer slices excluded.",
+  "specification_review": "FAIL: static server marker path and required queue baseline are not satisfied; missing prerequisites classified contrary to plan.",
+  "code_review": "FAIL: three actionable findings; no runtime claim.",
+  "findings": [
+    {
+      "id": "G3-ROOT-1",
+      "priority": "P1",
+      "title": "Static marker receipt cannot be emitted by current Phoenix telemetry hook",
+      "file": "examples/phoenix_native/h3_gateway.exs",
+      "line": 13,
+      "evidence": "Gateway attaches only [:phoenix,:endpoint,:stop]. Existing Endpoint serves /static via Plug.Static at endpoint.ex:16 before Plug.Telemetry at39. Plug.Static successfully serves and halts the conn before telemetry is installed. matrix.py:242-246 requires exactly one matching /static/hello.txt receipt, so the browser gate fails even if CDP observes real h3 and exact body.",
+      "requested_change": "Capture returned document/static conn in a test-only wrapper Plug around the existing Endpoint, then retain exact marker/protocol/status assertions. Keep server:false before application startup; preserve Endpoint/controller/static source."
+    },
+    {
+      "id": "G3-ROOT-2",
+      "priority": "P2",
+      "title": "Prescribed queue baseline omitted from fixtures and runner assertions",
+      "file": "integration/http3/matrix.py",
+      "line": 134,
+      "evidence": "Reviewed plan requires queue/Admission baseline. matrix_fixture.exs:49-52 and h3_gateway.exs:70-72 omit public queued_items/queued_bytes, while matrix.baseline asserts only active, retained_bytes, cleanup_pending and cleanup_failed. Gaoxy.status exposes queued fields via Admission.status.",
+      "requested_change": "Record and require queued_items==queued_bytes==0 alongside existing cleanup/Admission assertions for both proxy services and Phoenix."
+    },
+    {
+      "id": "G3-ROOT-3",
+      "priority": "P2",
+      "title": "Unexecuted prerequisite failures classified as runtime FAIL",
+      "file": "integration/http3/matrix.py",
+      "line": 257,
+      "evidence": "Reviewed plan distinguishes missing environment prerequisites as BLOCKED_ENV. Runner starts report.status FAIL and exception handler never distinguishes absent configured Python/Chromium/Playwright/aioquic prerequisites. A missing --browser-python executable fails Popen before a browser case executes but is reported FAIL.",
+      "requested_change": "Classify concrete missing environment prerequisite detection as BLOCKED_ENV and preserve executed assertion/protocol/cleanup/source-drift errors as FAIL. Do not infer PASS from missing rows."
+    }
+  ],
+  "source_sha256": {
+    "integration/http3/matrix.py": "8954324f4159919a000bd45567f0e145127c289c382ac3c190cb10219b6c4afd",
+    "integration/http3/browser.py": "053c2b26fda48fbee318cdf866c31cdd563927b85cfbf2018609b679f2d0f964",
+    "integration/http3/matrix_fixture.exs": "7f3b1316b55438c027df7fd895dd34440a3e35a7db770043d7a2c1984a4aa54b",
+    "examples/phoenix_native/h3_gateway.exs": "a505d04b7d2891e777df6aa550141f7d090c4e890709772ec20eda9f82cfb0f5",
+    "examples/phoenix_native/mix.exs": "540f1b9e947c5054844a4cb5a6c99086d409762ad3457700c53af47e44438efd"
+  },
+  "specification_sha256": {
+    "docs/designs/m4-downstream-matrix.md": "98f4ceca5e2b139c93da3eeb1c03d111089a441bb70b7d490c5b443e08fee03f",
+    "docs/plans/m4-downstream-matrix.md": "07f99ab186ac19d70ecf817a831b8eb98ed242e29b80d68dd5cf487192afc9dd"
+  },
+  "positive_assessments": [
+    "Fresh Chromium launch/context; fixture leaf SPKI process-local trust plus exact CDP document/static h3 assertions reject H1/H2 fallback.",
+    "Endpoint server:false is applied before Application.ensure_all_started under mix run --no-start; explicit H3 optional dependency is fixture-gated.",
+    "Fixed reverse-proxy authorities, two IPv4 loopback ephemeral H3 listeners, finite request/teardown and port-rebind checks preserve narrow dedicated-H1 profile.",
+    "Source hashes capture selected applications/tests, root integration fixture scripts, Phoenix source/config/static and lockfiles before/after live gate; exact peer/browser case sets require nonzero executed cases.",
+    "Owned sessions/process groups are tracked and bounded forced cleanup prevents passing a force-stopped gate."
+  ],
+  "verification": {
+    "read_only_source_trace": "PASS; exact Endpoint Plug.Static/Plug.Telemetry order traced through pinned Plug.Static halt and Plug.Telemetry register_before_send source.",
+    "python_ast": "PASS matrix.py and browser.py parse; no module imported/executed.",
+    "Mix_compile_tests": "NOT RUN per read-only assignment",
+    "live_browser_matrix": "NOT RUN"
+  },
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "Own earlier proxy implementation Sol2/failed1 and historical Connection Sol3/failed2/Astra1 unchanged. No root repair counter inferred/reset.",
+  "command_shutdown": "All review read/hash/AST/receipt commands completed; no Mix/live/child process started.",
+  "changes": "Only docs/acceptance/evidence/m4/matrix/review-root-initial.json receipt written.",
+  "decisions_needed": [],
+  "remaining_risks": [
+    "Root must resolve findings, then source-bound independent re-review and executed matrix evidence remain required."
+  ]
+}

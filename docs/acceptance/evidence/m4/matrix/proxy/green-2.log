@@ -1,0 +1,87 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 420973, max_cases: 4
+
+....
+
+  1) test ready after an early final head never reopens a completed upload (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:129
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.443.0>
+     Showing 10 of 12 messages in the mailbox
+     code: assert_receive {:proxy_finished, ^worker, {:ok, result}}
+     mailbox:
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.443.0>,
+                   [:alias |
+                    #Reference<0.0.56707.3114146033.3056140289.186288>]},
+                  {:attach_cleanup, #PID<0.434.0>,
+                   #Reference<0.3114146033.3056074753.186253>,
+                   #PID<0.444.0>, 7750034, -576460747023}},
+                 #PID<0.433.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send, {:ready_held, #PID<0.443.0>},
+                 #PID<0.429.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:gaoxy_proxy_http, #PID<0.444.0>,
+                  {:headers, 413, [{"content-length", "0"}]}},
+                 #PID<0.443.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:gaoxy_proxy_http, #PID<0.444.0>,
+                  {:ready, #PID<0.445.0>,
+                   %{
+                     idle_timeout: 60000,
+                     max_lifetime: 5000,
+                     write_timeout: 5000,
+                     max_chunk_bytes: 65536,
+                     opening_timeout: 5000
+                   }, -576460747023}}, #PID<0.443.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:gaoxy_proxy_http, #PID<0.444.0>, {:end, []}},
+                 #PID<0.443.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send, {:plug_conn, :sent},
+                 #PID<0.443.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:response_operation, #PID<0.443.0>,
+                  {:head, 413, [{"content-length", "0"}], false},
+                  -576460747023}, #PID<0.429.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send,
+                 {:response_operation, #PID<0.443.0>,
+                  {:data, "", true}, -576460747023},
+                 #PID<0.429.0>}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:response_operation, #PID<0.443.0>, {:data, "", true},
+                 -576460747023}
+
+       pattern: {:proxy_finished, ^worker, {:ok, result}}
+       value:   {:trace, #PID<0.443.0>, :send, {:"$gen_cast", :consumed},
+                 #PID<0.444.0>}
+     stacktrace:
+       test/proxy_test.exs:141: (test)
+
+.
+Finished in 4.3 seconds (4.3s async, 0.00s sync)
+6 tests, 1 failure
+==> gaoxy_proxy
+Running ExUnit with seed: 420973, max_cases: 4
+
+................
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+16 tests, 0 failures

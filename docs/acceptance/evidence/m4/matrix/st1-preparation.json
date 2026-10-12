@@ -1,0 +1,72 @@
+{
+  "task_id": "/root/m4_downstream_proxy/ST1-preparation",
+  "status": "SOURCE_PREPARATION_TESTS_NOT_RUN",
+  "assignment": "direct standalone ST1 scoped preparation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "owned_scope": [
+    "apps/gaoxy_server/mix.exs",
+    "apps/gaoxy_server/lib/gaoxy/server/config.ex",
+    "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex",
+    "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex",
+    "apps/gaoxy_server/test/http3_config_test.exs",
+    "apps/gaoxy_server/test/http3_generation_test.exs"
+  ],
+  "changed_files": [
+    "apps/gaoxy_server/test/http3_config_test.exs",
+    "apps/gaoxy_server/test/http3_generation_test.exs"
+  ],
+  "source_sha256": {
+    "apps/gaoxy_server/test/http3_config_test.exs": "5e5672ee201d4b5b852c4fb02d65a9c94a74e1b355091da809a660726edb0e83",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "ab3ef19cf2d58fc06b5ff90e031705fdb2ad389fbb2754000ba262b0cb803882"
+  },
+  "checklist": [
+    {
+      "task": "Witness explicit H3 strict decode and framed static validation failures before production edits",
+      "status": "TODO_MIX_LEASE"
+    },
+    {
+      "task": "Add existing umbrella gaoxy_http3 dependency only",
+      "status": "TODO_AFTER_RED"
+    },
+    {
+      "task": "Decode exact explicit HTTP3 QUIC selection, allowlisted H3 limits and certificate keys via HTTP3.service_spec; keep H1 default and H3-origin route rejection",
+      "status": "TODO_AFTER_RED"
+    },
+    {
+      "task": "Enforce native connection + max_streams*(request+2MiB snapshots)+writer byte boundary, native state/active/output constraints unchanged",
+      "status": "TODO_AFTER_RED"
+    },
+    {
+      "task": "Recognize both concrete HTTP handlers and initialize registered H3 Generation after Registry/stores start on every runtime restart",
+      "status": "TODO_AFTER_RED"
+    },
+    {
+      "task": "Validate H3 static framed status/count/UTF8 byte budgets during initial decode and local reload",
+      "status": "TODO_AFTER_RED"
+    },
+    {
+      "task": "Run exact authored formatting/strict compile/six prescribed scoped server test files and independent review",
+      "status": "TODO_MIX_LEASE"
+    },
+    {
+      "task": "Root executes real standalone ST2 independent peer/H1 origin startup/reload/rollback/shutdown gate",
+      "status": "ROOT_OWNED_NOT_RUN"
+    }
+  ],
+  "prepared_red_tests": [
+    "Explicit H3 fixed ALPN/static; retained H1 default and H1 reverse route/H3 upstream option rejection",
+    "Wrong/mixed/omitted protocols; wrong transport/legacy handler; wildcard/IPv6; module/H2/UDP/TLS overrides; missing credentials; nonunicast; H3 bounds; no input atoms or owners",
+    "Exact default20458496 and custom4854784 service byte boundaries; one byte below rejects; independent native max_state rejection",
+    "H3 framed status/generated Content-Length/UTF8 field count+byte exact boundaries at initial decode and reload",
+    "Registered H3 Generation framed profile; public semantic initial route call; store crash recreates runtime and resolves new PID",
+    "Stable listener and old in-flight/new request snapshots across local reload; invalid static rollback; bounded Admission snapshot-byte and public resource-pin cleanup on worker death"
+  ],
+  "ST1_sol_repair_rounds": 0,
+  "verification": "NOT RUN: root/upstream own Mix/live lease; no production files changed before witnessed red.",
+  "command_shutdown": "All source edits/read/receipt commands complete; no Mix/live/child process started for ST1.",
+  "remaining_risks": [
+    "Prepared tests have not been parsed by Elixir or executed; acceptance count unknown.",
+    "Separate upstream H3 feature blocked on http_fetch#101; H3-origin RouteConfig/HTTP clients untouched and remain rejected."
+  ]
+}

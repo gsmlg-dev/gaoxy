@@ -1,5 +1,30 @@
 # Implementation status
 
+## M4 checkpoint — 2026-10-12
+
+M4 runs in `.trees/m4-http3` on `codex/m4-http3`, from main78de9d0. Continuing
+development and conditional completed-M4 publication authorization are recorded
+in AGENTS.md and implement-plan.md. Native H3 host/profile/protocol/shared facade
+(G0–G2) passed independent review and local gates. Fresh G2/G3 shared and
+downstream proxy/real Phoenix browser gates pass59/19 checks. Clean core1/0,
+H1/H2 2/0 and H3 2/0 passed independent review; final affected tests passed274/0,
+exact-file format and strict umbrella/Phoenix H3 builds. Standalone ST1 strict
+JSON/generation passed58/0; ST2 static/H1-origin startup, streaming, reload,
+rollback and shutdown passed11 checks and a post-review repeat. Its H3-origin
+row remains blocked. [M4 acceptance](acceptance/m4.md) preserves exact identities,
+failed history and the consumer peer-identity supplement.
+
+The required upstream-H3 contract is **BLOCKED DEPENDENCY** on
+[HTTP Fetch #101](dependency-requests/http-fetch-h3-request-trailers.md): five
+ordinary public API rows pass, but both request-trailer rows return the public
+unsupported error and no origin trailers/FIN. UP1/UP2 are unimplemented; no
+trailer-dropping workaround is allowed. The root0.21.3 cohort/lock is unchanged.
+M4 is incomplete; no merge, push, version bump or release has occurred.
+The [remaining task queue](plans/m4-upstream-resume.md) continues the existing
+product scope after the compatible published upstream fix. Deployment, Vault,
+production data/certificates, public management and disabled release-artifact
+E2E restrictions remain intact. Historical records below retain their own scope.
+
 > Historical M1 snapshot. M1.1 revalidation and the current hardening verdict are
 > recorded in [M1.1 acceptance](m1-1-hardening-acceptance.md); this historical PASS is not evidence for the changed candidate.
 
