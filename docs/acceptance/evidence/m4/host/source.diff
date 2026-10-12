@@ -1,0 +1,509 @@
+diff --git i/integration/quic_consumer/mix.exs w/integration/quic_consumer/mix.exs
+index e884137..a5d3068 100644
+--- i/integration/quic_consumer/mix.exs
++++ w/integration/quic_consumer/mix.exs
+@@ -8,8 +8,8 @@ defmodule GaoxyQUICConsumer.MixProject do
+       elixir: "~> 1.18",
+       deps: [
+         {:gaoxy, path: "../../apps/gaoxy"},
+-        {:elixir_quic, "== 0.17.0"},
+-        {:ex_ssl, "== 0.17.0", override: true}
++        {:elixir_quic, "== 0.21.3"},
++        {:ex_ssl, "== 0.21.3", override: true}
+       ]
+     ]
+   end
+diff --git i/integration/quic_consumer/mix.lock w/integration/quic_consumer/mix.lock
+index 7ce92c8..49bbf21 100644
+--- i/integration/quic_consumer/mix.lock
++++ w/integration/quic_consumer/mix.lock
+@@ -1,9 +1,9 @@
+ %{
+   "abyss": {:git, "https://github.com/gsmlg-dev/abyss.git", "9b710e6480900e16e304f40e63623aff8c922e19", [ref: "9b710e6480900e16e304f40e63623aff8c922e19"]},
+   "earmark_parser": {:hex, :earmark_parser, "1.4.46", "67607a0532e810c6f630a515c548d0b24949643f168cc556303bee4cf96105c7", [:mix], [], "hexpm", "9c44636e8a1c68c62f526b2dcd85d941dbbcee7ab82cf64ba06ce28bef8e89f5"},
+-  "elixir_quic": {:hex, :elixir_quic, "0.17.0", "ca0b194046c9b8bc0f1b97704108b696808fa149cce0d583687659b9220576d0", [:mix], [{:ex_ssl, "0.17.0", [hex: :ex_ssl, repo: "hexpm", optional: false]}], "hexpm", "09bdf0ddc54da37fc5264151110c547fc5d28188b1d34961d98081d95f6d81ba"},
++  "elixir_quic": {:hex, :elixir_quic, "0.21.3", "8983584c8d2c5915c1b758b9d8b1db24a49f3e24228e5ba92cd4b74a3492afc0", [:mix], [{:ex_ssl, "0.21.3", [hex: :ex_ssl, repo: "hexpm", optional: false]}], "hexpm", "ac8ec5c5d3f0c1d6521b0836681aa616863599cf071b82ffd08d6b2d2f3024d5"},
+   "ex_doc": {:hex, :ex_doc, "0.40.4", "66f2e42bf588594d5a8aab31cad87f2ddad09d0da1b1a2f379340ec2c2e497cb", [:mix], [{:earmark_parser, "~> 1.4.46", [hex: :earmark_parser, repo: "hexpm", optional: false]}, {:makeup_c, ">= 0.1.0", [hex: :makeup_c, repo: "hexpm", optional: true]}, {:makeup_elixir, "~> 0.14 or ~> 1.0", [hex: :makeup_elixir, repo: "hexpm", optional: false]}, {:makeup_erlang, "~> 0.1 or ~> 1.0", [hex: :makeup_erlang, repo: "hexpm", optional: false]}, {:makeup_html, ">= 0.1.0", [hex: :makeup_html, repo: "hexpm", optional: true]}], "hexpm", "6222b9e423d76584ee34df2c82a5ed72c2d53dc153f7f483ad28b378694186cc"},
+-  "ex_ssl": {:hex, :ex_ssl, "0.17.0", "a152cc1c9f31b437789de865535e8b244eccacc06d8de5f895d553d160806849", [:mix], [], "hexpm", "253b90f7304f09402869d814cf75bd76eb2fbf34bfaf4284822c407312fae095"},
++  "ex_ssl": {:hex, :ex_ssl, "0.21.3", "beaf03d08b91f838fadfb43d35bb35239092d6639c48180c58a95ffe99889180", [:mix], [], "hexpm", "49af4edbbd94f1b399c7154efa62afc74b2941800165c6c981382c91aabdf2e0"},
+   "jason": {:hex, :jason, "1.4.5", "2e3a008590b0b8d7388c20293e9dcc9cf3e5d642fd2a114e4cbbb52e595d940a", [:mix], [{:decimal, "~> 1.0 or ~> 2.0 or ~> 3.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684"},
+   "makeup": {:hex, :makeup, "1.2.3", "c3ef0ff83acf305384acba0f70bff87d8732502baa1eb3eb081d8c154fbe18f5", [:mix], [{:nimble_parsec, "~> 1.4", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm", "15970751b7021c2bcd7ed56a54b3def23affd3969fb7c214dffdf28e97ce6f76"},
+   "makeup_elixir": {:hex, :makeup_elixir, "1.0.1", "e928a4f984e795e41e3abd27bfc09f51db16ab8ba1aebdba2b3a575437efafc2", [:mix], [{:makeup, "~> 1.0", [hex: :makeup, repo: "hexpm", optional: false]}, {:nimble_parsec, "~> 1.2.3 or ~> 1.3", [hex: :nimble_parsec, repo: "hexpm", optional: false]}], "hexpm", "7284900d412a3e5cfd97fdaed4f5ed389b8f2b4cb49efc0eb3bd10e2febf9507"},
+diff --git i/integration/quic_consumer/peer.py w/integration/quic_consumer/peer.py
+index 0963f34..0a29f3b 100644
+--- i/integration/quic_consumer/peer.py
++++ w/integration/quic_consumer/peer.py
+@@ -8,7 +8,7 @@ from aioquic.asyncio import connect
+ from aioquic.asyncio.protocol import QuicConnectionProtocol
+ from aioquic.quic.configuration import QuicConfiguration
+ from aioquic.quic.events import (
+-    ConnectionTerminated, StopSendingReceived, StreamDataReceived, StreamReset,
++    ConnectionTerminated, ProtocolNegotiated, StopSendingReceived, StreamDataReceived, StreamReset,
+ )
+ 
+ 
+@@ -17,10 +17,13 @@ class Peer(QuicConnectionProtocol):
+         super().__init__(*args, **kwargs)
+         self.data, self.fins, self.resets, self.stops = {}, set(), {}, {}
+         self.terminated = None
++        self.negotiated = None
+         self.changed = asyncio.Event()
+ 
+     def quic_event_received(self, event):
+-        if isinstance(event, StreamDataReceived):
++        if isinstance(event, ProtocolNegotiated):
++            self.negotiated = event.alpn_protocol
++        elif isinstance(event, StreamDataReceived):
+             sid = event.stream_id
+             self.data[sid] = self.data.get(sid, b"") + event.data
+             if event.end_stream:
+@@ -50,10 +53,16 @@ class Peer(QuicConnectionProtocol):
+ 
+ 
+ async def exchange(peer, value):
+-    peer.send(0, value)
+-    await peer.until(lambda: 0 in peer.fins and 1 in peer.fins)
++    assert peer.negotiated == "h3", peer.negotiated
++    peer.send(2, b"peer-uni-", False)
++    peer.send(0, value[:17], False)
++    await peer.until(lambda: len(peer.data.get(0, b"")) >= 17)
++    peer.send(2, b"fragment", True)
++    peer.send(0, value[17:], True)
++    await peer.until(lambda: 0 in peer.fins and 1 in peer.fins and 3 in peer.fins)
+     assert peer.data[0] == value
+-    assert peer.data[1] == b"server-fin"
++    assert peer.data[1] == b"x" * 4096 + b"server-fin"
++    assert peer.data[3] == b"server-uni-fin"
+ 
+ 
+ async def run(args):
+@@ -61,7 +70,7 @@ async def run(args):
+         is_client=True, alpn_protocols=[args.alpn], max_data=4096,
+         max_stream_data=2048, idle_timeout=20,
+     )
+-    config.server_name = "localhost"
++    config.server_name = args.server_name
+     config.load_verify_locations(args.ca)
+     async with connect("127.0.0.1", args.port, configuration=config, create_protocol=Peer) as peer:
+         if args.mode == "echo":
+@@ -70,7 +79,8 @@ async def run(args):
+             await peer.until(lambda: 4 in peer.fins)
+             assert peer.data[4] == b"second-stream"
+             print(json.dumps({"result": "PASS", "gate": "stream_flow_control_fin",
+-                              "bytes": len(peer.data[0]), "streams": 3}), flush=True)
++                              "bytes": len(peer.data[0]), "streams": 5, "alpn": peer.negotiated,
++                              "verified_name": config.server_name, "local_uni_id": 3, "peer_uni_id": 2}), flush=True)
+         elif args.mode == "isolation":
+             async with connect("127.0.0.1", args.port, configuration=config, create_protocol=Peer) as sibling:
+                 peer.close(error_code=0x9876, reason_phrase="one connection")
+@@ -86,6 +96,31 @@ async def run(args):
+             assert peer.stops[4] == 0x54321
+             print(json.dumps({"result": "PASS", "gate": "directional_reset_stop",
+                               "reset": peer.resets[0], "stop": peer.stops[4]}), flush=True)
++        elif args.mode == "peer-controls":
++            await peer.until(lambda: len(peer.data.get(1, b"")) >= 1024)
++            assert 1 not in peer.fins, "STOP must precede server FIN"
++            peer.send(0, b"cancel", False)
++            peer._quic.reset_stream(0, error_code=0x111)
++            peer._quic.stop_stream(1, error_code=0x222)
++            peer.transmit()
++            peer.send(4, b"surviving-stream")
++            await peer.until(lambda: 1 in peer.resets and 4 in peer.fins)
++            assert peer.resets[1] == 0x222
++            assert peer.data[4] == b"surviving-stream"
++            print(json.dumps({"result": "PASS", "gate": "peer_reset_stop_sibling_isolation",
++                              "reset_code": 0x111, "stop_code": 0x222,
++                              "sibling_bytes": len(peer.data[4])}), flush=True)
++        elif args.mode == "listener":
++            assert args.sibling_port is not None
++            async with connect("127.0.0.1", args.sibling_port, configuration=config,
++                               create_protocol=Peer) as sibling:
++                peer.send(0, b"listener-remove")
++                await asyncio.wait_for(peer.wait_closed(), 10)
++                assert peer.terminated == 0, peer.terminated
++                await exchange(sibling, b"surviving-listener-" * 4096)
++                print(json.dumps({"result": "PASS", "gate": "live_listener_stop_isolation",
++                                  "close_code": peer.terminated,
++                                  "bytes": len(sibling.data[0])}), flush=True)
+         elif args.mode == "negative":
+             raise AssertionError("unsupported ALPN / untrusted CA unexpectedly connected")
+ 
+@@ -94,15 +129,18 @@ def main():
+     parser = argparse.ArgumentParser()
+     parser.add_argument("--port", required=True, type=int)
+     parser.add_argument("--ca", required=True)
+-    parser.add_argument("--alpn", default="gaoxy-stream-v1")
+-    parser.add_argument("--mode", required=True, choices=["echo", "isolation", "controls", "negative"])
++    parser.add_argument("--alpn", default="h3")
++    parser.add_argument("--server-name", default="localhost")
++    parser.add_argument("--sibling-port", type=int)
++    parser.add_argument("--mode", required=True, choices=["echo", "isolation", "controls", "peer-controls", "listener", "negative"])
+     args = parser.parse_args()
+     try:
+         asyncio.run(run(args))
+     except ConnectionError:
+         if args.mode != "negative":
+             raise
+-        print(json.dumps({"result": "PASS", "gate": "handshake_rejected", "alpn": args.alpn}), flush=True)
++        print(json.dumps({"result": "PASS", "gate": "handshake_rejected", "alpn": args.alpn,
++                          "server_name": args.server_name}), flush=True)
+ 
+ 
+ if __name__ == "__main__":
+diff --git i/integration/quic_consumer/test/quic_test.exs w/integration/quic_consumer/test/quic_test.exs
+index 294eb40..e7e9d76 100644
+--- i/integration/quic_consumer/test/quic_test.exs
++++ w/integration/quic_consumer/test/quic_test.exs
+@@ -14,17 +14,37 @@ defmodule GaoxyQUICConsumerTest do
+          connection: connection,
+          ready: false,
+          local: false,
++         local_uni: false,
++         ids: MapSet.new(),
++         uni_bytes: %{},
+          streams: %{},
+          pending: %{},
+          observer: observer
+        }}
+     end
+ 
+-    def handle_event({:ready, _metadata}, state), do: progress(%{state | ready: true})
++    def handle_event({:ready, metadata}, state) do
++      send(state.observer, {:ready_metadata, metadata})
++      progress(%{state | ready: true})
++    end
+ 
+     def handle_event({:stream_open, stream, :bidi}, state),
+       do: {:ok, %{state | streams: Map.put_new(state.streams, stream, :echo)}}
+ 
++    def handle_event({:stream_open, stream, :uni}, state),
++      do: {:ok, %{state | streams: Map.put_new(state.streams, stream, :uni)}}
++
++    def handle_event({:stopped, stream, code}, state) do
++      send(state.observer, {:peer_stopped, code})
++
++      {:ok,
++       %{
++         state
++         | streams: Map.delete(state.streams, stream),
++           pending: Map.delete(state.pending, stream)
++       }}
++    end
++
+     def handle_event(event, state) when event in [:tick, :writable], do: progress(state)
+     def handle_event({:readable, _}, state), do: progress(state)
+     def handle_event(_, state), do: {:ok, state}
+@@ -33,7 +53,7 @@ defmodule GaoxyQUICConsumerTest do
+     defp progress(%{ready: false} = state), do: {:ok, state}
+ 
+     defp progress(state) do
+-      with {:ok, state} <- open_local(state) do
++      with {:ok, state} <- open_local(state), {:ok, state} <- open_local_uni(state) do
+         Enum.reduce_while(state.streams, {:ok, state}, fn {stream, kind}, {:ok, acc} ->
+           with {:ok, next} <- read(acc, stream, kind), {:ok, next} <- flush(next, stream) do
+             {:cont, {:ok, next}}
+@@ -62,7 +82,8 @@ defmodule GaoxyQUICConsumerTest do
+              state
+              | local: true,
+                streams: Map.put(state.streams, stream, :local),
+-               pending: Map.put(state.pending, stream, {"server-fin", true})
++               pending:
++                 Map.put(state.pending, stream, {:binary.copy("x", 4096) <> "server-fin", true})
+            }}
+ 
+         {:blocked, _} ->
+@@ -73,6 +94,29 @@ defmodule GaoxyQUICConsumerTest do
+       end
+     end
+ 
++    defp open_local_uni(%{local_uni: true} = state), do: {:ok, state}
++
++    defp open_local_uni(state) do
++      case QUIC.open_stream(state.connection, :uni) do
++        {:ok, stream} ->
++          {:ok,
++           %{
++             state
++             | local_uni: true,
++               streams: Map.put(state.streams, stream, :local_uni),
++               pending: Map.put(state.pending, stream, {"server-uni-fin", true})
++           }}
++
++        {:blocked, _} ->
++          {:ok, state}
++
++        failure ->
++          {:stop, {:open_uni_failed, failure}, state}
++      end
++    end
++
++    defp read(state, _stream, :local_uni), do: {:ok, state}
++
+     defp read(state, stream, kind) do
+       if Map.has_key?(state.pending, stream) do
+         {:ok, state}
+@@ -80,8 +124,23 @@ defmodule GaoxyQUICConsumerTest do
+         case QUIC.read(stream, 1024) do
+           {:ok, items} ->
+             {:ok,
+-             Enum.reduce(items, state, fn
++             Enum.reduce(items, record_ids(state, items, kind), fn
++               {:data, id, bytes}, s when kind == :uni ->
++                 %{s | uni_bytes: Map.update(s.uni_bytes, id, bytes, &(&1 <> bytes))}
++
++               {:fin, id}, s when kind == :uni ->
++                 send(s.observer, {:uni_received, id, Map.get(s.uni_bytes, id, <<>>)})
++
++                 %{
++                   s
++                   | streams: Map.delete(s.streams, stream),
++                     uni_bytes: Map.delete(s.uni_bytes, id)
++                 }
++
+                {:data, _, bytes}, s when kind == :echo ->
++                 if bytes == "listener-remove",
++                   do: send(s.observer, {:remove_ready, s.connection})
++
+                  pending(s, stream, bytes, false)
+ 
+                {:fin, _}, s when kind == :echo ->
+@@ -94,8 +153,14 @@ defmodule GaoxyQUICConsumerTest do
+                {:fin, _}, s ->
+                  %{s | streams: Map.delete(s.streams, stream)}
+ 
+-               {:reset, _, _, _}, s ->
+-                 %{s | streams: Map.delete(s.streams, stream)}
++               {:reset, id, code, final_size}, s ->
++                 send(s.observer, {:peer_reset, id, code, final_size})
++
++                 %{
++                   s
++                   | streams: Map.delete(s.streams, stream),
++                     pending: Map.delete(s.pending, stream)
++                 }
+              end)}
+ 
+           error ->
+@@ -104,6 +169,19 @@ defmodule GaoxyQUICConsumerTest do
+       end
+     end
+ 
++    defp record_ids(state, items, kind) do
++      Enum.reduce(items, state, fn item, acc ->
++        id = elem(item, 1)
++
++        if MapSet.member?(acc.ids, id) do
++          acc
++        else
++          send(acc.observer, {:numeric_read_id, kind, id})
++          %{acc | ids: MapSet.put(acc.ids, id)}
++        end
++      end)
++    end
++
+     defp pending(state, stream, bytes, fin) do
+       {previous, _} = Map.get(state.pending, stream, {<<>>, false})
+       %{state | pending: Map.put(state.pending, stream, {previous <> bytes, fin})}
+@@ -115,7 +193,11 @@ defmodule GaoxyQUICConsumerTest do
+           {:ok, state}
+ 
+         {bytes, fin} ->
+-          case QUIC.send_stream(stream, bytes, fin) do
++          size = min(byte_size(bytes), 1024)
++          <<chunk::binary-size(^size), rest::binary>> = bytes
++          final = fin and rest == <<>>
++
++          case QUIC.send_stream(stream, chunk, final) do
+             {:ok, operation} ->
+               send(
+                 state.observer,
+@@ -123,16 +205,31 @@ defmodule GaoxyQUICConsumerTest do
+               )
+ 
+               streams =
+-                if fin and state.streams[stream] == :echo,
++                if final and state.streams[stream] in [:echo, :local_uni],
+                   do: Map.delete(state.streams, stream),
+                   else: state.streams
+ 
+-              {:ok, %{state | streams: streams, pending: Map.delete(state.pending, stream)}}
++              pending =
++                if rest == <<>>,
++                  do: Map.delete(state.pending, stream),
++                  else: Map.put(state.pending, stream, {rest, fin})
++
++              {:ok, %{state | streams: streams, pending: pending}}
+ 
+             {:blocked, reason} ->
+               send(state.observer, {:blocked, reason})
+               {:ok, state}
+ 
++            {:error, :stopped} ->
++              # STOP may change the engine between this batch's poll and write.
++              # Its queued event still reports the peer code on the next poll.
++              {:ok,
++               %{
++                 state
++                 | streams: Map.delete(state.streams, stream),
++                   pending: Map.delete(state.pending, stream)
++               }}
++
+             failure ->
+               {:stop, {:write_failed, failure}, state}
+           end
+@@ -172,13 +269,37 @@ defmodule GaoxyQUICConsumerTest do
+     assert {:ok, ^state} = Echo.handle_event({:stream_open, stream, :bidi}, state)
+   end
+ 
++  test "peer unidirectional streams are retained for explicit pull consumption" do
++    stream = %QUIC.Stream{handle: make_ref(), connection: nil}
++    state = %{streams: %{}}
++
++    assert {:ok, %{streams: %{^stream => :uni}}} =
++             Echo.handle_event({:stream_open, stream, :uni}, state)
++  end
++
++  test "peer STOP removes queued bytes from only its send direction" do
++    stream = %QUIC.Stream{handle: make_ref(), connection: nil}
++    sibling = %QUIC.Stream{handle: make_ref(), connection: nil}
++
++    state = %{
++      streams: %{stream => :local, sibling => :echo},
++      pending: %{stream => {"queued", true}},
++      observer: self()
++    }
++
++    assert {:ok, next} = Echo.handle_event({:stopped, stream, 0x222}, state)
++    assert next.streams == %{sibling => :echo}
++    assert next.pending == %{}
++    assert_receive {:peer_stopped, 0x222}
++  end
++
+   test "public optional host: verified streams, directional controls, bounds and isolation", %{
+     tmp_dir: directory
+   } do
+     {_, 0} = System.cmd("bash", ["../../scripts/generate-fixtures.sh", directory])
+ 
+     services =
+-      for {id, handler} <- [{"echo", Echo}, {"controls", Controls}] do
++      for {id, handler} <- [{"echo", Echo}, {"sibling", Echo}, {"controls", Controls}] do
+         %{
+           id: id,
+           transport: :quic,
+@@ -188,7 +309,7 @@ defmodule GaoxyQUICConsumerTest do
+             certfile: Path.join(directory, "cert.pem"),
+             keyfile: Path.join(directory, "key.pem")
+           },
+-          quic: %{alpn: ["gaoxy-stream-v1"]},
++          quic: %{alpn: ["h3"]},
+           limits: %{max_active: 4, max_packet: 4096, max_output: 4096, max_bytes: 262_144}
+         }
+       end
+@@ -200,6 +321,7 @@ defmodule GaoxyQUICConsumerTest do
+ 
+     {:ok, {_, echo}} = Gaoxy.info(runtime, "echo").local
+     {:ok, {_, controls}} = Gaoxy.info(runtime, "controls").local
++    {:ok, {_, sibling}} = Gaoxy.info(runtime, "sibling").local
+     assert %{pause: :unsupported, drain: :local_host_cleanup} = Gaoxy.info(runtime, "echo")
+     assert {:error, {:unsupported_capability, :quic_pause}} = Gaoxy.pause(runtime, "echo")
+     assert {:error, {:unsupported_capability, :quic_pause}} = Gaoxy.resume(runtime, "echo")
+@@ -233,6 +355,13 @@ defmodule GaoxyQUICConsumerTest do
+                     {:error, :invalid_operation_options}},
+                    2000
+ 
++    assert_receive {:ready_metadata, %{alpn: "h3", tls_complete: true, parameters_valid: true}},
++                   2000
++
++    assert_receive {:numeric_read_id, :echo, 0}, 2000
++    assert_receive {:numeric_read_id, :local, 1}, 2000
++    assert_receive {:numeric_read_id, :uni, 2}, 2000
++    assert_receive {:uni_received, 2, "peer-uni-fragment"}, 2000
+     assert_receive {:after_fin, "after-server-fin"}, 2000
+     assert_receive {:flow_control, {:blocked, %{type: :data_blocked}}}, 2000
+     assert_receive {:send_outcome, blocked, {:blocked, %{type: :data_blocked}}}, 2000
+@@ -243,6 +372,9 @@ defmodule GaoxyQUICConsumerTest do
+     assert_receive {:send_outcome, ^operation, {:admitted, ^operation}}, 2000
+     peer(echo, directory, "isolation")
+     peer(controls, directory, "controls")
++    peer(echo, directory, "peer-controls")
++    assert_receive {:peer_reset, 0, 0x111, 6}, 2000
++    assert_receive {:peer_stopped, 0x222}, 2000
+     assert_receive {:reset_result, {:ok, reset}}, 2000
+     assert_receive {:stop_result, {:ok, stop}}, 2000
+     assert is_reference(reset) and is_reference(stop)
+@@ -250,6 +382,7 @@ defmodule GaoxyQUICConsumerTest do
+     wrong = Path.join(directory, "wrong-ca")
+     {_, 0} = System.cmd("bash", ["../../scripts/generate-fixtures.sh", wrong])
+     peer(echo, wrong, "negative")
++    peer(echo, directory, "negative", "h3", nil, "invalid.example")
+ 
+     {:ok, {ip, port}} = Gaoxy.info(runtime, "tcp").local
+     {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 2000)
+@@ -258,22 +391,45 @@ defmodule GaoxyQUICConsumerTest do
+     :gen_tcp.close(socket)
+     assert %{retained_high_water: high} = Gaoxy.status(runtime, "echo")
+     assert high <= 262_144
+-    :ok = Gaoxy.remove(runtime, "echo", 1000)
++
++    IO.inspect(
++      %{
++        retained_high_water: high,
++        callback_timeout_ms: 5000,
++        public_read_ids: [0, 1, 2],
++        readiness_before_reads: true
++      },
++      label: "QUIC_HOST_OBSERVATIONS"
++    )
++
++    holding = Task.async(fn -> peer(echo, directory, "listener", "h3", sibling) end)
++    assert_receive {:remove_ready, connection}, 5000
++    gate_monitor = Process.monitor(connection.gate)
++    started = System.monotonic_time(:millisecond)
++    :ok = Gaoxy.remove(runtime, "echo", 2000)
++    elapsed = System.monotonic_time(:millisecond) - started
++    assert elapsed <= 2000
++    IO.inspect(%{remove_elapsed_ms: elapsed, deadline_ms: 2000}, label: "QUIC_LOCAL_CLEANUP")
++    assert_receive {:DOWN, ^gate_monitor, :process, _, _}, 1000
+     assert "echo" not in Gaoxy.services(runtime)
++    Task.await(holding, 20_000)
++
++    assert {:ok, %{id: "echo", generation: _}} =
++             Gaoxy.add(runtime, Map.put(hd(services), :port, echo))
++
++    assert {:ok, {_, ^echo}} = Gaoxy.info(runtime, "echo").local
++    assert Gaoxy.handle(runtime, "echo").generation != generation
++    peer(echo, directory, "echo")
++    :ok = Gaoxy.remove(runtime, "echo", 2000)
++    IO.puts("PASS QUIC_LIVE_LISTENER_STOP_SIBLING_REBIND")
+     IO.puts("PASS QUIC_FACADE_WIRE_BOUNDS_LIFECYCLE")
+   end
+ 
+-  defp peer(port, directory, mode, alpn \\ "gaoxy-stream-v1") do
++  defp peer(port, directory, mode, alpn \\ "h3", sibling \\ nil, server_name \\ "localhost") do
+     {output, exit} =
+       System.cmd(
+-        "uv",
++        System.get_env("GAOXY_QUIC_PYTHON", Path.expand(".venv/bin/python")),
+         [
+-          "run",
+-          "--python",
+-          "3.12",
+-          "--with",
+-          "aioquic==1.2.0",
+-          "python",
+           "peer.py",
+           "--port",
+           Integer.to_string(port),
+@@ -282,8 +438,10 @@ defmodule GaoxyQUICConsumerTest do
+           "--mode",
+           mode,
+           "--alpn",
+-          alpn
+-        ],
++          alpn,
++          "--server-name",
++          server_name
++        ] ++ if(sibling, do: ["--sibling-port", Integer.to_string(sibling)], else: []),
+         stderr_to_stdout: true
+       )
+ 

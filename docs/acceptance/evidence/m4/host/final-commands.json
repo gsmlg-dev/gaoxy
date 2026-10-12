@@ -1,0 +1,111 @@
+[
+  {
+    "name": "final-format",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"\ncd integration/quic_consumer\nunbuffer mix format --check-formatted mix.exs test/quic_test.exs"
+    ],
+    "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+    "exit": 0,
+    "seconds": 2.741674281656742
+  },
+  {
+    "name": "final-compile",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"\ncd integration/quic_consumer\nunbuffer mix compile --warnings-as-errors"
+    ],
+    "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+    "exit": 0,
+    "seconds": 3.1031500808894634
+  },
+  {
+    "name": "final-tests",
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "bash",
+      "-c",
+      "export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"\ncd integration/quic_consumer\nunbuffer mix test --warnings-as-errors"
+    ],
+    "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+    "exit": 0,
+    "seconds": 40.15240085683763,
+    "tests": 4,
+    "failures": 0,
+    "nonzero_executed": true,
+    "peer_cases": [
+      {
+        "result": "PASS",
+        "gate": "stream_flow_control_fin",
+        "bytes": 344064,
+        "streams": 5,
+        "alpn": "h3",
+        "verified_name": "localhost",
+        "local_uni_id": 3,
+        "peer_uni_id": 2
+      },
+      {
+        "result": "PASS",
+        "gate": "connection_close_isolation",
+        "bytes": 86016
+      },
+      {
+        "result": "PASS",
+        "gate": "directional_reset_stop",
+        "reset": 74565,
+        "stop": 344865
+      },
+      {
+        "result": "PASS",
+        "gate": "peer_reset_stop_sibling_isolation",
+        "reset_code": 273,
+        "stop_code": 546,
+        "sibling_bytes": 16
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "gaoxy-unsupported-v1",
+        "server_name": "localhost"
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "h3",
+        "server_name": "localhost"
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "h3",
+        "server_name": "invalid.example"
+      },
+      {
+        "result": "PASS",
+        "gate": "live_listener_stop_isolation",
+        "close_code": 0,
+        "bytes": 77824
+      },
+      {
+        "result": "PASS",
+        "gate": "stream_flow_control_fin",
+        "bytes": 344064,
+        "streams": 5,
+        "alpn": "h3",
+        "verified_name": "localhost",
+        "local_uni_id": 3,
+        "peer_uni_id": 2
+      }
+    ]
+  }
+]

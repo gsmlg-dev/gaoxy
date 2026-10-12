@@ -8,8 +8,8 @@ defmodule GaoxyQUICConsumer.MixProject do
       elixir: "~> 1.18",
       deps: [
         {:gaoxy, path: "../../apps/gaoxy"},
-        {:elixir_quic, "== 0.17.0"},
-        {:ex_ssl, "== 0.17.0", override: true}
+        {:elixir_quic, "== 0.21.3"},
+        {:ex_ssl, "== 0.21.3", override: true}
       ]
     ]
   end

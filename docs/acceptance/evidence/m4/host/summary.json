@@ -1,0 +1,95 @@
+{
+  "task": "m4_host_g0",
+  "implementation_status": "PASS",
+  "independent_review": "PENDING_PARENT",
+  "live_http3_protocol": "NOT_RUN",
+  "host_tests": 4,
+  "host_failures": 0,
+  "independent_peer_cases": [
+    {
+      "result": "PASS",
+      "gate": "stream_flow_control_fin",
+      "bytes": 344064,
+      "streams": 5,
+      "alpn": "h3",
+      "verified_name": "localhost",
+      "local_uni_id": 3,
+      "peer_uni_id": 2
+    },
+    {
+      "result": "PASS",
+      "gate": "connection_close_isolation",
+      "bytes": 86016
+    },
+    {
+      "result": "PASS",
+      "gate": "directional_reset_stop",
+      "reset": 74565,
+      "stop": 344865
+    },
+    {
+      "result": "PASS",
+      "gate": "peer_reset_stop_sibling_isolation",
+      "reset_code": 273,
+      "stop_code": 546,
+      "sibling_bytes": 16
+    },
+    {
+      "result": "PASS",
+      "gate": "handshake_rejected",
+      "alpn": "gaoxy-unsupported-v1",
+      "server_name": "localhost"
+    },
+    {
+      "result": "PASS",
+      "gate": "handshake_rejected",
+      "alpn": "h3",
+      "server_name": "localhost"
+    },
+    {
+      "result": "PASS",
+      "gate": "handshake_rejected",
+      "alpn": "h3",
+      "server_name": "invalid.example"
+    },
+    {
+      "result": "PASS",
+      "gate": "live_listener_stop_isolation",
+      "close_code": 0,
+      "bytes": 77824
+    },
+    {
+      "result": "PASS",
+      "gate": "stream_flow_control_fin",
+      "bytes": 344064,
+      "streams": 5,
+      "alpn": "h3",
+      "verified_name": "localhost",
+      "local_uni_id": 3,
+      "peer_uni_id": 2
+    }
+  ],
+  "sol_repair_rounds": 2,
+  "sol_unsuccessful_repairs": 1,
+  "astra_recovery_rounds": 0,
+  "cleanup": {
+    "deadline_ms": 2000,
+    "remove_elapsed_ms": 2,
+    "old_admission_gate_down": true,
+    "same_port_rebound_with_new_generation": true,
+    "established_sibling_listener_bytes": 77824
+  },
+  "memory_observation": {
+    "fixture_retained_high_water_bytes": 8938,
+    "configured_service_max_bytes": 262144,
+    "scope": "application retention; no total VM/native accounting claim"
+  },
+  "operation_receipts": {
+    "blocked_and_admitted_asserted": true,
+    "admitted_status_asserted": true,
+    "peer_bytes_separately_asserted": true,
+    "controlled_unknown_probe": "NOT_RUN",
+    "unknown_receipts_observed": false
+  },
+  "closure_noise": "Retained peer-close phase errors in raw logs; supported public reads become invalid_operation outside established and writes become not_established. Active peer STOP write :stopped is handled only for that stream; other failures and unknowns remain fatal."
+}
