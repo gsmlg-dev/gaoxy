@@ -34,6 +34,17 @@ defmodule Gaoxy.CleanupAttachmentTest do
       do: {:stop, :normal, {socket, state}}
   end
 
+  defmodule ExternalOwner do
+    def init(observer, options) do
+      {:ok, runtime} = Gaoxy.start_link(options)
+      :proc_lib.init_ack(observer, {:ok, self(), runtime})
+
+      receive do
+        :finish -> :ok
+      end
+    end
+  end
+
   defp guardian do
     observer = self()
     supervisor = start_supervised!({Task.Supervisor, []}, id: make_ref())
@@ -341,32 +352,25 @@ defmodule Gaoxy.CleanupAttachmentTest do
   end
 
   test "external instance owner death cancels but does not kill a pending guardian" do
-    observer = self()
+    options = [
+      services: [
+        %{
+          id: "native",
+          transport: :tcp,
+          handler_mode: :native,
+          handler: Native,
+          handler_options: %{owner: self()},
+          limits: %{drain_timeout: 30, max_bytes: 100}
+        }
+      ]
+    ]
 
-    external_owner =
-      spawn(fn ->
-        {:ok, runtime} =
-          Gaoxy.start_link(
-            services: [
-              %{
-                id: "native",
-                transport: :tcp,
-                handler_mode: :native,
-                handler: Native,
-                handler_options: %{owner: observer},
-                limits: %{drain_timeout: 30, max_bytes: 100}
-              }
-            ]
-          )
+    # Exercise owner death after synchronous readiness, as in connected/0.
+    {:ok, external_owner, runtime} =
+      :proc_lib.start(ExternalOwner, :init, [self(), options], 1000)
 
-        send(observer, {:runtime, runtime})
-
-        receive do
-          :finish -> :ok
-        end
-      end)
-
-    assert_receive {:runtime, runtime}
+    owner_monitor = Process.monitor(external_owner)
+    on_exit(fn -> if Process.alive?(external_owner), do: send(external_owner, :finish) end)
     {:ok, {ip, port}} = Gaoxy.info(runtime, "native").local
     {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1000)
     on_exit(fn -> :gen_tcp.close(socket) end)
@@ -378,6 +382,7 @@ defmodule Gaoxy.CleanupAttachmentTest do
     assert_receive {:attached, {:ok, token}}, 1000
     assert_receive {:activated, ^guardian, ^token}, 1000
     send(external_owner, :finish)
+    assert_receive {:DOWN, ^owner_monitor, :process, ^external_owner, :normal}, 1000
     assert_receive {:cancelled, ^guardian, ^token, _, _}, 1000
     eventually(fn -> not Process.alive?(runtime) end, Lifecycle.deadline(3000))
     assert Process.alive?(guardian)
