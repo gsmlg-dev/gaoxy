@@ -1,0 +1,139 @@
+{
+  "task": "m4_pure_protocol",
+  "assignment": "direct",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex": "87fedd6a097542d810cc6c49fb6b9dc0a7aac47d6fc7522333212936ceeaa84d",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex": "0e7c588075ebccb16e6d3d6dde32c0ad2cb8a65dc04a4010e6d0fbdffcb9194f",
+    "apps/gaoxy_http3/test/headers_test.exs": "e1198a89ef77d482e6535857757e5f7b0447c462fdd850e8d3e22e02b66e0676",
+    "apps/gaoxy_http3/test/qpack_test.exs": "95f8b04c5b46e0501bd1fbea3ae2e4653c8813935d46138afe4dc19846951d77",
+    "apps/gaoxy_http3/test/protocol_test.exs": "c36144672061ad67b3891917b0985012948a1ad9e3758bc220a94c9e640031ab"
+  },
+  "root_lock_sha256": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25",
+  "flake_lock_sha256": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+  "workspace_tracked_diff_sha256": "d37a3fa57656664f5dad5cd26c625e679c4555fa909e8e5c538a9c28855cd5b7",
+  "verification": [
+    {
+      "log": "red.log",
+      "exit": 2,
+      "tests": 37,
+      "failures": 37,
+      "status": "EXPECTED_RED",
+      "reason": "New modules absent before implementation"
+    },
+    {
+      "log": "initial-green.log",
+      "exit": 0,
+      "tests": 37,
+      "failures": 0,
+      "status": "PASS"
+    },
+    {
+      "log": "missing-authority-red.log",
+      "exit": 2,
+      "tests": 46,
+      "failures": 1,
+      "status": "FAIL",
+      "reason": "Missing authority reached :binary.split(nil)"
+    },
+    {
+      "log": "review-regressions-red.log",
+      "exit": 2,
+      "tests": 47,
+      "failures": 3,
+      "status": "FAIL",
+      "reason": "Missing authority; fragmented payload exceeds reservation; test correction accidentally changed duplicate identifier expectation before being corrected"
+    },
+    {
+      "log": "review-regressions-corrected-red.log",
+      "exit": 2,
+      "tests": 47,
+      "failures": 3,
+      "status": "EXPECTED_REGRESSION_RED",
+      "reason": "Missing authority; fragmented payload192560bytes exceeds81920reservation; second SETTINGS classified265 instead261"
+    },
+    {
+      "log": "repair-1-green.log",
+      "exit": 0,
+      "tests": 47,
+      "failures": 0,
+      "status": "PASS"
+    },
+    {
+      "log": "final-verification.log",
+      "exit": 0,
+      "tests": 47,
+      "failures": 0,
+      "status": "PASS",
+      "checks": [
+        "exact changed Elixir files formatted",
+        "MIX_ENV=test compile warnings-as-errors",
+        "nonzero-count test wrapper"
+      ]
+    },
+    {
+      "log": "cancellation-red.log",
+      "exit": 2,
+      "tests": 50,
+      "failures": 2,
+      "status": "EXPECTED_REGRESSION_RED",
+      "reason": "Legal decoder cancellation wrongly rejected"
+    },
+    {
+      "log": "repair-2-all-findings-red.log",
+      "exit": 2,
+      "tests": 52,
+      "failures": 4,
+      "status": "EXPECTED_REGRESSION_RED",
+      "reason": "Cancellation and fragmentation; matching CONNECT Host; valid Content-Length above body ceiling"
+    },
+    {
+      "log": "repair-2-green.log",
+      "exit": 0,
+      "tests": 52,
+      "failures": 0,
+      "status": "PASS",
+      "checks": [
+        "exact changed files format check",
+        "compile warnings-as-errors",
+        "nonzero-count scoped tests"
+      ]
+    }
+  ],
+  "final_command": "nix develop --command sh -c 'export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; mix format apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex apps/gaoxy_http3/test/headers_test.exs apps/gaoxy_http3/test/qpack_test.exs apps/gaoxy_http3/test/protocol_test.exs && mix format --check-formatted apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex apps/gaoxy_http3/test/headers_test.exs apps/gaoxy_http3/test/qpack_test.exs apps/gaoxy_http3/test/protocol_test.exs && mix compile --warnings-as-errors && python scripts/check-tests.py apps/gaoxy_http3/test/headers_test.exs apps/gaoxy_http3/test/qpack_test.exs apps/gaoxy_http3/test/protocol_test.exs'",
+  "sol_repair_rounds": 2,
+  "sol_unsuccessful_repairs": 0,
+  "astra_recovery_rounds": 0,
+  "independent_review": "PASS",
+  "live_http3_acceptance": "NOT_RUN",
+  "log_sha256": {
+    "review-regressions-red.log": "871160568af006be60d97ff8c50d0777e8977fe424b6c05b438978267d1f63bb",
+    "cancellation-red.log": "4bcee82ee39d45e34fea04c62054a0d738a6c49a1f8e5562c60d1e45f6742cb5",
+    "review-regressions-corrected-red.log": "ef0e30604213b07e87338e19587dc5633dc7bf5a040259080bba485c8beb1bf5",
+    "environment.log": "c4803d88e6a1854ae5e322d9e419bd6791ea07d2fb99d616175b18ddda536a3e",
+    "missing-authority-red.log": "f6c3d5d8cf62899747c7d998727bc440fba71c9c55fe38bf765dc4bf38e5997c",
+    "repair-1-green.log": "3aea98e1500f842e4ec4debd449798998ed31e88eaa2e4d604fa614d27cddc76",
+    "repair-2-all-findings-red.log": "06b7957c45840afe30e98f82118f037ba1fbe23de4d3dc1d3fa8bdbe480b55d5",
+    "final-verification.log": "4a54c02506bb6208e4c5073ee66948af8bb4ad6100c150412ee6d66f9b5465a1",
+    "initial-green.log": "cc51211f77ff4873e6a6b0b228372c0101ed04f6b87057ed81d4ca60beff2805",
+    "red.log": "76161f23fee5903700f247c537d002b0a33cc2a56afef32169bfb5dd8b4327f3",
+    "repair-2-green.log": "4a6dd420e25158f99ae585a18cb5b2192db506079d3c173ffb68d60054356f2a"
+  },
+  "source_snapshots": [
+    {
+      "stage": "repair1_final_47_tests",
+      "source_sha256": {
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex": "f118a7ff8213853a1d2407dbfed9d6018a2348f40cd6d2446502a08e6f0dd606",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex": "b1b8bc900f009caa7e7898784f6927bb9ca41a1b12e3e08b51897ff60aa996f8",
+        "apps/gaoxy_http3/test/headers_test.exs": "641cc6c5910f75c27e0c2eef5689e638e74a2fc7f02eae9549b822124d2405f9",
+        "apps/gaoxy_http3/test/qpack_test.exs": "95f8b04c5b46e0501bd1fbea3ae2e4653c8813935d46138afe4dc19846951d77",
+        "apps/gaoxy_http3/test/protocol_test.exs": "4df7d38e2bf51bc2735dbd4573437209980aa10beb2e291fc3e106c1e0791ad2"
+      }
+    }
+  ],
+  "latest_verification_log": "repair-2-green.log",
+  "independent_reviewer": "m4_dependency_audit",
+  "unresolved_review_findings": []
+}

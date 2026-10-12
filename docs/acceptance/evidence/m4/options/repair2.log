@@ -1,0 +1,72 @@
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_http3
+Running ExUnit with seed: 678580, max_cases: 4
+
+.......
+
+  1) test the connection reservation includes independent unidirectional parser carry (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:117
+     match (=) failed
+     code:  assert {:error, :http3_byte_budget} =
+              Options.normalize(Keyword.put(options(), :limits, %{max_state: 2_097_152}))
+     left:  {:error, :http3_byte_budget}
+     right: {:ok,
+             %{
+               id: :http3,
+               port: 0,
+               ip: {127, 0, 0, 1},
+               tls: %{
+                 certfile: "fixture.pem",
+                 keyfile: "fixture-key.pem"
+               },
+               transport: :quic,
+               quic: %{alpn: ["h3"]},
+               limits: %{
+                 max_active: 64,
+                 max_bytes: 16777216,
+                 max_packet: 16384,
+                 max_output: 16384,
+                 max_state: 2097152,
+                 callback_timeout: 5000,
+                 idle_timeout: 30000,
+                 drain_timeout: 5000,
+                 max_memberships: 64
+               },
+               handler_options: %{
+                 initialized: true,
+                 http_limits: %{
+                   max_buffer_bytes: 65536,
+                   max_header_bytes: 32768,
+                   max_read_chunk: 16384,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32,
+                   read_timeout: 5000,
+                   request_timeout: 30000,
+                   write_timeout: 5000
+                 },
+                 h3_limits: %{
+                   max_streams: 8,
+                   max_header_block: 32768,
+                   max_pending_output: 65536,
+                   control_turn: 32,
+                   control_quantum: 16384,
+                   dynamic_table_capacity: 0,
+                   blocked_streams: 0
+                 },
+                 endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint,
+                  #PID<0.337.0>}
+               }
+             }}
+     stacktrace:
+       test/options_test.exs:127: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+8 tests, 1 failure

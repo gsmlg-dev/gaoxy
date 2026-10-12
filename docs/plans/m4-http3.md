@@ -56,25 +56,30 @@ Owner: one Sol host/fixture worker. Files:
 - Necessary proven compatibility fixes may touch `apps/gaoxy/lib/gaoxy/quic.ex`,
   `quic_bridge.ex`, `service.ex` and matching scoped tests. Do not patch deps.
 
-- [ ] Verify root lock and installed public APIs from the design. Update the
+- [x] Verify root lock and installed public APIs from the design. Update the
   independent generic QUIC consumer's exact `elixir_quic`/`ex_ssl` pins from
   0.17.0 to 0.21.3 and regenerate only its dependency lock. Preserve root cohort.
-- [ ] Pin `aioquic==1.2.0` as the initial independent peer in the new requirements
+- [x] Pin `aioquic==1.2.0` as the initial independent peer in the new requirements
   file; use a task-local virtual environment and record its resolved environment.
   Reuse fixture-generation conventions from `scripts/generate-fixtures.sh`.
-- [ ] Add host regressions: `h3` ALPN and verified CA/hostname; peer/local uni and
+- [x] Add host regressions: `h3` ALPN and verified CA/hostname; peer/local uni and
   bidi streams; fragmented data; FIN/reset/stop; definitely blocked writes and
   eventual progress; connection close isolation; explicit stop/restart cleanup.
   Assert operation admission separately from received peer bytes.
-- [ ] Run the consumer in its own directory: `mix deps.get --check-locked`,
+- [x] Run the consumer in its own directory: `mix deps.get --check-locked`,
   `mix compile --warnings-as-errors`, `mix test --warnings-as-errors`.
   This run is separate from umbrella tests; assert nonzero executed cases.
-- [ ] Verify read items expose numeric stream IDs as documented while handles
+- [x] Verify read items expose numeric stream IDs as documented while handles
   remain opaque; record event ordering, metadata and callback deadlines.
-- [ ] Validate `Gaoxy.QUIC.operation_status/2` usage for any controlled uncertain
+- [x] Validate `Gaoxy.QUIC.operation_status/2` usage for any controlled uncertain
   operation probe. No exact VM/native accounting or unexposed receipt requirement
   is added. Fail visibly on blind retry or duplicated peer bytes.
-- [ ] Independent Sol review of source/API compatibility and network evidence.
+- [x] Independent Sol review of source/API compatibility and network evidence.
+
+**G0 verified, 2026-10-12:** independent consumer 4/0 and nine peer cases;
+independent review and post-review fresh repeat passed. The conditional controlled
+uncertain-operation probe was NOT RUN; no uncertain receipt was observed. See
+[execution record](../acceptance/m4.md).
 
 **G0 pass:** actual 0.21.3 host exchange, critical directional operations and
 bounded cleanup work through public Gaoxy/Abyss APIs. Old 0.17.0 success is not
@@ -90,46 +95,51 @@ Owner: protocol worker. Parallel with G0's independent fixture work. Files:
 - Create its `test/test_helper.exs`, `test/options_test.exs`,
   `test/protocol_test.exs`, `test/headers_test.exs`, `test/qpack_test.exs`.
 
-- [ ] Declare `:gaoxy_http3`, shared umbrella paths, `{:gaoxy_http, in_umbrella:
+- [x] Declare `:gaoxy_http3`, shared umbrella paths, `{:gaoxy_http, in_umbrella:
   true}` and `{:elixir_quic_http3, "== 0.21.3"}`. Keep root cohort unchanged.
-- [ ] Write option failures before activation: missing credentials, wildcard or
+- [x] Write option failures before activation: missing credentials, wildcard or
   IPv6, wrong ALPN, mixed H1/H2/H3 protocol lists, unknown options, nonzero local
   dynamic capacity and inconsistent byte/stream limits. Verify no socket binds.
 - [ ] Implement `HTTP3.service_spec/1` with exactly one endpoint or Plug tuple,
   `transport: :quic`, `handler: HTTP3.Connection`, `quic: %{alpn: ["h3"]}` and
   the existing `tls: %{certfile: path, keyfile: path}` contract. Initialize endpoint
   once. H1/H2 APIs keep their behavior; H3 is explicitly selected through this API.
-- [ ] Define the pure interface `Protocol.new(limits)`,
+- [x] Define the pure interface `Protocol.new(limits)`,
   `Protocol.open(state, stream_key, :bidi | :uni)`,
   `Protocol.feed(state, stream_key, bytes)`, `Protocol.fin(state, stream_key)`.
   Successful transitions return `{:ok, next, actions}`; failures return
   `{:error, :stream | :connection, code, reason, next}`. Actions describe fields,
   DATA, trailers, settings, discard, and completion without doing I/O.
-- [ ] Use public dependency codecs. Test every split point in type/frame varints
+- [x] Use public dependency codecs. Test every split point in type/frame varints
   and representative HEADERS/DATA; length limits apply before accumulating data.
   Stream DATA incrementally; discard unknown frames without buffering their body.
-- [ ] Test control SETTINGS-first/duplicates/reserved IDs, missing/duplicate
+- [x] Test control SETTINGS-first/duplicates/reserved IDs, missing/duplicate
   critical streams, closure, push-ID rules, unknown types, and exact scoped error
   codes from the design. Permit requests arriving before control SETTINGS on a
   different QUIC stream.
-- [ ] Test static/literal/Huffman headers using independent known wire vectors,
+- [x] Test static/literal/Huffman headers using independent known wire vectors,
   zero-capacity QPACK streams, dynamic-reference/instruction rejection, decoded
   field size/count, malformed pseudo-fields/content-length and trailer ordering.
   Include empty query delimiters and HEAD/bodyless semantics.
-- [ ] Accept/ignore legal decoder Stream Cancellation with zero dynamic
+- [x] Accept/ignore legal decoder Stream Cancellation with zero dynamic
   capacity; test fragmented prefix-6 integers, QUIC stream-ID bounds, malformed
   cancellation and sibling continuation. Retain QPACK_DECODER_STREAM_ERROR for
   Section Acknowledgement/Insert Count Increment without dynamic references.
-- [ ] Permit ordinary CONNECT with a matching Host and reject mismatches or
+- [x] Permit ordinary CONNECT with a matching Host and reject mismatches or
   duplicates. Distinguish invalid length syntax (H3_MESSAGE_ERROR) from a valid
   declared body above its ceiling (H3_EXCESSIVE_LOAD).
-- [ ] Map codec `:invalid_fields` to stream H3_MESSAGE_ERROR and `:field_limit`
+- [x] Map codec `:invalid_fields` to stream H3_MESSAGE_ERROR and `:field_limit`
   to resource H3_EXCESSIVE_LOAD; only malformed compression closes the
   connection with QPACK_DECOMPRESSION_FAILED. Test content-length against
   aggregate DATA bytes at FIN, including underflow and overflow.
-- [ ] Run `python scripts/check-tests.py apps/gaoxy_http3/test/options_test.exs
+- [x] Run `python scripts/check-tests.py apps/gaoxy_http3/test/options_test.exs
   apps/gaoxy_http3/test/protocol_test.exs apps/gaoxy_http3/test/headers_test.exs
   apps/gaoxy_http3/test/qpack_test.exs` (one command, paths separated by spaces).
+
+**Task 1 pure/options verified, 2026-10-12:** 60 tests/0 failures after
+independent review, with exact-file format and strict compile. The public service
+activation test awaits the real Task 2 Connection module; no placeholder handler
+is accepted.
 
 **Exit:** pure transitions and strict options pass. This is not live H3 acceptance.
 

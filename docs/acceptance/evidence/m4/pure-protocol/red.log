@@ -1,0 +1,575 @@
+==> gaoxy_http3
+Running ExUnit with seed: 630236, max_cases: 4
+
+
+
+  1) test host can supply authority and default-port comparison is semantic (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:22
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:ok, %{host: "example.test"}} = Headers.request(fields ++ [{"host", "example.test"}], @limits)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.request([{":method", "POST"}, {":scheme", "https"}, {":path", "/a%2Fb?"}, {"host", "example.test"}], %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:24: (test)
+
+
+
+  2) test response validation keeps the shared facade contract (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:61
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.response/3 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert :ok = Headers.response([{"content-type", "text/plain"}], 100, 32_768)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.response([{"content-type", "text/plain"}], 100, 32768)
+       test/headers_test.exs:62: (test)
+
+
+
+  3) test request conversion preserves escaped path and empty query delimiter (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:10
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:ok, request} = Headers.request(@fields ++ [{"content-length", "3"}], @limits)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.request([{":method", "POST"}, {":scheme", "https"}, {":authority", "example.test"}, {":path", "/a%2Fb?"}, {"content-length", "3"}], %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:11: (test)
+
+
+
+  4) test field resource ceilings have excessive-load classification (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:48
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:error, :stream, 0x107, _} = Headers.request(@fields, %{@limits | max_headers: 3})
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.request([{":method", "POST"}, {":scheme", "https"}, {":authority", "example.test"}, {":path", "/a%2Fb?"}], %{max_headers: 3, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:49: (test)
+
+
+
+  5) test ordinary CONNECT remains parseable for the explicit 501 policy (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:17
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: Headers.request([{":method", "CONNECT"}, {":authority", "example.test:443"}], @limits)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.request([{":method", "CONNECT"}, {":authority", "example.test:443"}], %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:19: (test)
+
+
+
+  6) test rejects invalid pseudo fields, connection fields and target forms (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:29
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: for fields <- bad, do: assert({:error, :stream, 0x10E, _} = Headers.request(fields, @limits))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.request([{":method", "GET"}, {":method", "POST"}, {":scheme", "https"}, {":authority", "example.test"}, {":path", "/a%2Fb?"}], %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:45: anonymous fn/1 in Gaoxy.HTTP.HTTP3.HeadersTest."test rejects invalid pseudo fields, connection fields and target forms"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/headers_test.exs:45: (test)
+
+
+
+  7) test trailers forbid pseudo and framing fields (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:54
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.trailers/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert :ok = Headers.trailers([{"x-checksum", "ok"}], @limits)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.trailers([{"x-checksum", "ok"}], %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192})
+       test/headers_test.exs:55: (test)
+
+
+
+  8) test literal codec semantic failures are stream errors (Gaoxy.HTTP.HTTP3.QpackTest)
+     apps/gaoxy_http3/test/qpack_test.exs:19
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:error, :stream, 0x10E, :invalid_fields} = Headers.decode(<<0, 0, 0x21, ?X, 1, ?y>>, 100)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.decode(<<0, 0, 33, 88, 1, 121>>, 100)
+       test/qpack_test.exs:20: (test)
+
+
+
+  9) test independent static QPACK vector (Gaoxy.HTTP.HTTP3.QpackTest)
+     apps/gaoxy_http3/test/qpack_test.exs:6
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: Headers.decode(<<0, 0, 0xD1, 0xD7, 0xC1>>, 100)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.decode(<<0, 0, 209, 215, 193>>, 100)
+       test/qpack_test.exs:9: (test)
+
+
+
+ 10) test literal codec output can be decoded without dynamic state (Gaoxy.HTTP.HTTP3.QpackTest)
+     apps/gaoxy_http3/test/qpack_test.exs:30
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:ok, [{"x-long-name", "value"}]} = Headers.decode(bytes, 100)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.decode(<<0, 0, 55, 4, 120, 45, 108, 111, 110, 103, 45, 110, 97, 109, 101, 5, 118, 97, 108, 117, 101>>, 100)
+       test/qpack_test.exs:32: (test)
+
+
+
+ 11) test independent literal and Huffman vectors (Gaoxy.HTTP.HTTP3.QpackTest)
+     apps/gaoxy_http3/test/qpack_test.exs:12
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: assert {:ok, [{"x", "y"}]} = Headers.decode(<<0, 0, 0x21, ?x, 1, ?y>>, 100)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.decode(<<0, 0, 33, 120, 1, 121>>, 100)
+       test/qpack_test.exs:13: (test)
+
+
+
+ 12) test malformed compression and dynamic references close the connection (Gaoxy.HTTP.HTTP3.QpackTest)
+     apps/gaoxy_http3/test/qpack_test.exs:24
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available)
+     code: for block <- [<<>>, <<0>>, <<1, 0>>, <<0, 0, 0x80>>, <<0, 0, 0xFF, 0x7F>>, <<0, 0, 0x50, 0x81, 0xFF>>] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Headers.decode("", 100)
+       test/qpack_test.exs:26: anonymous fn/2 in Gaoxy.HTTP.HTTP3.QpackTest."test malformed compression and dynamic references close the connection"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/qpack_test.exs:25: (test)
+
+
+
+ 13) test critical stream FIN and RESET are connection errors (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:164
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for type <- [0, 2, 3] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:166: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test critical stream FIN and RESET are connection errors"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:165: (test)
+
+
+
+ 14) test unknown uni streams are stopped and push streams forbidden (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:172
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, [{:discard, :u}]} = Protocol.feed(open(fresh(), :u, :uni), :u, <<0x21>>)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:173: (test)
+
+
+
+ 15) test DATA streams without retaining a whole large frame (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:98
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, _} = Protocol.feed(open(fresh(), :r), :r, head() <> <<0>> <> Varint.encode!(100_000))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:99: (test)
+
+
+
+ 16) test decoder instructions inconsistent with static encoding fail (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:217
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for instruction <- [<<0x80>>, <<0x40>>, <<1>>, <<0>>] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:219: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test decoder instructions inconsistent with static encoding fail"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:218: (test)
+
+
+
+ 17) test multi-byte frame varints survive each split (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:50
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for split <- 0..byte_size(bytes) do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:54: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test multi-byte frame varints survive each split"/1
+       (elixir 1.18.5) lib/enum.ex:4484: Enum.map/2
+       test/protocol_test.exs:52: (test)
+
+
+
+ 18) test control type and SETTINGS survive every split (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:138
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for split <- 0..byte_size(bytes) do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:142: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test control type and SETTINGS survive every split"/1
+       (elixir 1.18.5) lib/enum.ex:4484: Enum.map/2
+       test/protocol_test.exs:140: (test)
+
+
+
+ 19) test content-length checks overflow immediately and underflow at FIN (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:84
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, _} = Protocol.feed(open(fresh(), :r), :r, head(@fields ++ [{"content-length", "3"}]))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:85: (test)
+
+
+
+ 20) test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:192
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, [{:settings, []}]} = Protocol.feed(open(fresh(), :c, :uni), :c, bytes)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:194: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Headers.decode/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available or is yet to be defined)
+    │
+  9 │              Headers.decode(<<0, 0, 0xD1, 0xD7, 0xC1>>, 100)
+    │                      ~
+    │
+    └─ test/qpack_test.exs:9:22: Gaoxy.HTTP.HTTP3.QpackTest."test independent static QPACK vector"/1
+    └─ test/qpack_test.exs:13:42: Gaoxy.HTTP.HTTP3.QpackTest."test independent literal and Huffman vectors"/1
+    └─ test/qpack_test.exs:16:65: Gaoxy.HTTP.HTTP3.QpackTest."test independent literal and Huffman vectors"/1
+    └─ test/qpack_test.exs:20:64: Gaoxy.HTTP.HTTP3.QpackTest."test literal codec semantic failures are stream errors"/1
+    └─ test/qpack_test.exs:21:61: Gaoxy.HTTP.HTTP3.QpackTest."test literal codec semantic failures are stream errors"/1
+    └─ test/qpack_test.exs:26:56: Gaoxy.HTTP.HTTP3.QpackTest."test malformed compression and dynamic references close the connection"/1
+    └─ test/qpack_test.exs:32:56: Gaoxy.HTTP.HTTP3.QpackTest."test literal codec output can be decoded without dynamic state"/1
+
+
+
+ 21) test turn bound keeps remainder for empty-input continuation (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:116
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: state = open(fresh(@http, %{@h3 | control_turn: 2}), :r)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 2, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:117: (test)
+
+
+
+ 22) test unknown large control extension is skipped after SETTINGS (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:178
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, [{:settings, []}]} = Protocol.feed(open(fresh(), :c, :uni), :c, bytes)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:180: (test)
+
+
+
+ 23) test huge unknown frames discard incrementally without retaining payload (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:109
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: state = open(fresh(), :r)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:110: (test)
+
+
+
+ 24) test requests are accepted before peer control SETTINGS (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:32
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: state = open(fresh(), :request)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:33: (test)
+
+
+
+ 25) test DATA before initial HEADERS and control frames on requests are forbidden (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:70
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for bytes <- [Frame.encode!(:data, "x"), Frame.encode!(:settings, ""), Frame.encode!(:push_promise, "")] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:72: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test DATA before initial HEADERS and control frames on requests are forbidden"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:71: (test)
+
+
+
+ 26) test duplicate critical uni streams are connection errors (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:156
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for type <- [0, 2, 3] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:158: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test duplicate critical uni streams are connection errors"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:157: (test)
+
+
+
+ 27) test client GOAWAY push identifier decreases and does not ban requests (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:201
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:ok, state, [{:settings, []}, {:goaway, 3}]} = Protocol.feed(open(fresh(), :c, :uni), :c, control() <> Frame.encode!(:goaway, <<3>>))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:202: (test)
+
+
+
+ 28) test every split point in request framing and DATA preserves actions (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:38
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for split <- 0..byte_size(bytes) do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:42: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test every split point in request framing and DATA preserves actions"/1
+       (elixir 1.18.5) lib/enum.ex:4484: Enum.map/2
+       test/protocol_test.exs:40: (test)
+
+
+
+ 29) test zero capacity encoder instructions work at every split point (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:208
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:error, :connection, 0x201, _, _} = Protocol.feed(open(fresh(), :q, :uni), :q, bytes)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:210: (test)
+
+
+
+ 30) test trailers end DATA and can occur once (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:61
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: Protocol.feed(open(fresh(), :r), :r, bytes)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:65: (test)
+
+
+
+ 31) test HTTP2-reserved frame types are forbidden on control and request streams (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:185
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for type <- [2, 6, 8, 9] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:187: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test HTTP2-reserved frame types are forbidden on control and request streams"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:186: (test)
+
+
+
+ 32) test SETTINGS first, uniqueness and reserved identifiers have precise errors (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:148
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:error, :connection, 0x10A, _, _} = Protocol.feed(open(fresh(), :c, :uni), :c, <<0>> <> Frame.encode!(0x21, ""))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:149: (test)
+
+
+
+ 33) test request state slots are bounded and recovered on FIN/reset (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:123
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: state = open(fresh(@http, %{@h3 | max_streams: 1}), :one)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 1, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:124: (test)
+
+
+
+ 34) test FIN inside a frame fails and missing request headers is a message error (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:76
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for bytes <- [<<0x40>>, <<1>>, <<1, 3, 0>>, head() <> <<0, 2, ?x>>] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:78: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test FIN inside a frame fails and missing request headers is a message error"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:77: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Headers.request/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available or is yet to be defined)
+    │
+ 11 │     assert {:ok, request} = Headers.request(@fields ++ [{"content-length", "3"}], @limits)
+    │                                     ~
+    │
+    └─ test/headers_test.exs:11:37: Gaoxy.HTTP.HTTP3.HeadersTest."test request conversion preserves escaped path and empty query delimiter"/1
+    └─ test/headers_test.exs:19:22: Gaoxy.HTTP.HTTP3.HeadersTest."test ordinary CONNECT remains parseable for the explicit 501 policy"/1
+    └─ test/headers_test.exs:24:53: Gaoxy.HTTP.HTTP3.HeadersTest."test host can supply authority and default-port comparison is semantic"/1
+    └─ test/headers_test.exs:25:31: Gaoxy.HTTP.HTTP3.HeadersTest."test host can supply authority and default-port comparison is semantic"/1
+    └─ test/headers_test.exs:26:50: Gaoxy.HTTP.HTTP3.HeadersTest."test host can supply authority and default-port comparison is semantic"/1
+    └─ test/headers_test.exs:45:73: Gaoxy.HTTP.HTTP3.HeadersTest."test rejects invalid pseudo fields, connection fields and target forms"/1
+    └─ test/headers_test.exs:49:50: Gaoxy.HTTP.HTTP3.HeadersTest."test field resource ceilings have excessive-load classification"/1
+    └─ test/headers_test.exs:50:50: Gaoxy.HTTP.HTTP3.HeadersTest."test field resource ceilings have excessive-load classification"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Headers.bytes/1 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available or is yet to be defined)
+    │
+ 51 │     assert Headers.bytes(@fields) == Enum.reduce(@fields, 0, fn {n, v}, acc -> acc + byte_size(n) + byte_size(v) + 32 end)
+    │                    ~
+    │
+    └─ test/headers_test.exs:51:20: Gaoxy.HTTP.HTTP3.HeadersTest."test field resource ceilings have excessive-load classification"/1
+
+
+
+ 35) test QPACK semantic/resource/compression errors retain their scope (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:223
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: for {block, scope, code} <- [{<<0, 0, 0x21, ?X, 1, ?y>>, :stream, 0x10E},
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 1, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:227: anonymous fn/2 in Gaoxy.HTTP.HTTP3.ProtocolTest."test QPACK semantic/resource/compression errors retain their scope"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/protocol_test.exs:224: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Headers.trailers/2 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available or is yet to be defined)
+    │
+ 55 │     assert :ok = Headers.trailers([{"x-checksum", "ok"}], @limits)
+    │                          ~
+    │
+    └─ test/headers_test.exs:55:26: Gaoxy.HTTP.HTTP3.HeadersTest."test trailers forbid pseudo and framing fields"/1
+    └─ test/headers_test.exs:57:56: Gaoxy.HTTP.HTTP3.HeadersTest."test trailers forbid pseudo and framing fields"/1
+    └─ test/headers_test.exs:58:50: Gaoxy.HTTP.HTTP3.HeadersTest."test trailers forbid pseudo and framing fields"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Headers.response/3 is undefined (module Gaoxy.HTTP.HTTP3.Headers is not available or is yet to be defined)
+    │
+ 62 │     assert :ok = Headers.response([{"content-type", "text/plain"}], 100, 32_768)
+    │                          ~
+    │
+    └─ test/headers_test.exs:62:26: Gaoxy.HTTP.HTTP3.HeadersTest."test response validation keeps the shared facade contract"/1
+    └─ test/headers_test.exs:63:58: Gaoxy.HTTP.HTTP3.HeadersTest."test response validation keeps the shared facade contract"/1
+    └─ test/headers_test.exs:64:58: Gaoxy.HTTP.HTTP3.HeadersTest."test response validation keeps the shared facade contract"/1
+
+
+
+ 36) test stream message failure preserves a sibling request (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:91
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: state = fresh() |> open(:bad) |> open(:good)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:92: (test)
+
+
+
+ 37) test compressed HEADERS and incoming retained bytes are bounded before buffering (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:133
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available)
+     code: assert {:error, :stream, 0x107, _, _} = Protocol.feed(open(fresh(), :r), :r, <<1>> <> Varint.encode!(32_769))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Protocol.new(%{http_limits: %{max_headers: 100, max_header_bytes: 32768, max_request_line: 8192, max_body_bytes: 8388608, max_trailers: 32, max_trailer_bytes: 8192, max_buffer_bytes: 65536}, h3_limits: %{max_streams: 8, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0}})
+       test/protocol_test.exs:14: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+       test/protocol_test.exs:134: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Protocol.new/1 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available or is yet to be defined)
+    │
+ 14 │     {:ok, state} = Protocol.new(%{http_limits: http, h3_limits: h3})
+    │                             ~
+    │
+    └─ test/protocol_test.exs:14:29: Gaoxy.HTTP.HTTP3.ProtocolTest.fresh/2
+
+    warning: Gaoxy.HTTP.HTTP3.Protocol.open/3 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available or is yet to be defined)
+    │
+ 19 │     {:ok, state, []} = Protocol.open(state, key, kind)
+    │                                 ~
+    │
+    └─ test/protocol_test.exs:19:33: Gaoxy.HTTP.HTTP3.ProtocolTest.open/3
+    └─ test/protocol_test.exs:125:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+    └─ test/protocol_test.exs:127:36: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+    └─ test/protocol_test.exs:130:36: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+    └─ test/protocol_test.exs:204:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test client GOAWAY push identifier decreases and does not ban requests"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Protocol.feed/3 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available or is yet to be defined)
+    │
+ 34 │     assert {:ok, state, [{:headers, :request, %{version: :"HTTP/3"}}]} = Protocol.feed(state, :request, head())
+    │                                                                                   ~
+    │
+    └─ test/protocol_test.exs:34:83: Gaoxy.HTTP.HTTP3.ProtocolTest."test requests are accepted before peer control SETTINGS"/1
+    └─ test/protocol_test.exs:42:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test every split point in request framing and DATA preserves actions"/1
+    └─ test/protocol_test.exs:43:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test every split point in request framing and DATA preserves actions"/1
+    └─ test/protocol_test.exs:54:44: Gaoxy.HTTP.HTTP3.ProtocolTest."test multi-byte frame varints survive each split"/1
+    └─ test/protocol_test.exs:55:45: Gaoxy.HTTP.HTTP3.ProtocolTest."test multi-byte frame varints survive each split"/1
+    └─ test/protocol_test.exs:65:23: Gaoxy.HTTP.HTTP3.ProtocolTest."test trailers end DATA and can occur once"/1
+    └─ test/protocol_test.exs:66:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test trailers end DATA and can occur once"/1
+    └─ test/protocol_test.exs:67:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test trailers end DATA and can occur once"/1
+    └─ test/protocol_test.exs:72:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test DATA before initial HEADERS and control frames on requests are forbidden"/1
+    └─ test/protocol_test.exs:78:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test FIN inside a frame fails and missing request headers is a message error"/1
+    └─ test/protocol_test.exs:85:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test content-length checks overflow immediately and underflow at FIN"/1
+    └─ test/protocol_test.exs:86:68: Gaoxy.HTTP.HTTP3.ProtocolTest."test content-length checks overflow immediately and underflow at FIN"/1
+    └─ test/protocol_test.exs:87:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test content-length checks overflow immediately and underflow at FIN"/1
+    └─ test/protocol_test.exs:93:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test stream message failure preserves a sibling request"/1
+    └─ test/protocol_test.exs:94:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test stream message failure preserves a sibling request"/1
+    └─ test/protocol_test.exs:99:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test DATA streams without retaining a whole large frame"/1
+    └─ test/protocol_test.exs:102:61: Gaoxy.HTTP.HTTP3.ProtocolTest."test DATA streams without retaining a whole large frame"/1
+    └─ test/protocol_test.exs:111:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test huge unknown frames discard incrementally without retaining payload"/1
+    └─ test/protocol_test.exs:112:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test huge unknown frames discard incrementally without retaining payload"/1
+    └─ test/protocol_test.exs:118:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test turn bound keeps remainder for empty-input continuation"/1
+    └─ test/protocol_test.exs:120:53: Gaoxy.HTTP.HTTP3.ProtocolTest."test turn bound keeps remainder for empty-input continuation"/1
+    └─ test/protocol_test.exs:128:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+    └─ test/protocol_test.exs:134:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test compressed HEADERS and incoming retained bytes are bounded before buffering"/1
+    └─ test/protocol_test.exs:135:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test compressed HEADERS and incoming retained bytes are bounded before buffering"/1
+    └─ test/protocol_test.exs:142:44: Gaoxy.HTTP.HTTP3.ProtocolTest."test control type and SETTINGS survive every split"/1
+    └─ test/protocol_test.exs:143:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test control type and SETTINGS survive every split"/1
+    └─ test/protocol_test.exs:149:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test SETTINGS first, uniqueness and reserved identifiers have precise errors"/1
+    └─ test/protocol_test.exs:150:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test SETTINGS first, uniqueness and reserved identifiers have precise errors"/1
+    └─ test/protocol_test.exs:152:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test SETTINGS first, uniqueness and reserved identifiers have precise errors"/1
+    └─ test/protocol_test.exs:159:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test duplicate critical uni streams are connection errors"/1
+    └─ test/protocol_test.exs:160:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test duplicate critical uni streams are connection errors"/1
+    └─ test/protocol_test.exs:166:41: Gaoxy.HTTP.HTTP3.ProtocolTest."test critical stream FIN and RESET are connection errors"/1
+    └─ test/protocol_test.exs:173:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test unknown uni streams are stopped and push streams forbidden"/1
+    └─ test/protocol_test.exs:175:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test unknown uni streams are stopped and push streams forbidden"/1
+    └─ test/protocol_test.exs:180:55: Gaoxy.HTTP.HTTP3.ProtocolTest."test unknown large control extension is skipped after SETTINGS"/1
+    └─ test/protocol_test.exs:181:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test unknown large control extension is skipped after SETTINGS"/1
+    └─ test/protocol_test.exs:187:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test HTTP2-reserved frame types are forbidden on control and request streams"/1
+    └─ test/protocol_test.exs:188:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test HTTP2-reserved frame types are forbidden on control and request streams"/1
+    └─ test/protocol_test.exs:194:55: Gaoxy.HTTP.HTTP3.ProtocolTest."test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push"/1
+    └─ test/protocol_test.exs:195:40: Gaoxy.HTTP.HTTP3.ProtocolTest."test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push"/1
+    └─ test/protocol_test.exs:196:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push"/1
+    └─ test/protocol_test.exs:197:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push"/1
+    └─ test/protocol_test.exs:198:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test MAX_PUSH_ID is monotonic and CANCEL_PUSH cannot refer to an unissued push"/1
+    └─ test/protocol_test.exs:202:69: Gaoxy.HTTP.HTTP3.ProtocolTest."test client GOAWAY push identifier decreases and does not ban requests"/1
+    └─ test/protocol_test.exs:203:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test client GOAWAY push identifier decreases and does not ban requests"/1
+    └─ test/protocol_test.exs:205:53: Gaoxy.HTTP.HTTP3.ProtocolTest."test client GOAWAY push identifier decreases and does not ban requests"/1
+    └─ test/protocol_test.exs:210:58: Gaoxy.HTTP.HTTP3.ProtocolTest."test zero capacity encoder instructions work at every split point"/1
+    └─ test/protocol_test.exs:211:36: Gaoxy.HTTP.HTTP3.ProtocolTest."test zero capacity encoder instructions work at every split point"/1
+    └─ test/protocol_test.exs:213:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test zero capacity encoder instructions work at every split point"/1
+    └─ test/protocol_test.exs:219:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test decoder instructions inconsistent with static encoding fail"/1
+    └─ test/protocol_test.exs:228:55: Gaoxy.HTTP.HTTP3.ProtocolTest."test QPACK semantic/resource/compression errors retain their scope"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Protocol.fin/2 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available or is yet to be defined)
+    │
+ 35 │     assert {:ok, _, [{:complete, :request}]} = Protocol.fin(state, :request)
+    │                                                         ~
+    │
+    └─ test/protocol_test.exs:35:57: Gaoxy.HTTP.HTTP3.ProtocolTest."test requests are accepted before peer control SETTINGS"/1
+    └─ test/protocol_test.exs:46:53: Gaoxy.HTTP.HTTP3.ProtocolTest."test every split point in request framing and DATA preserves actions"/1
+    └─ test/protocol_test.exs:57:53: Gaoxy.HTTP.HTTP3.ProtocolTest."test multi-byte frame varints survive each split"/1
+    └─ test/protocol_test.exs:79:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test FIN inside a frame fails and missing request headers is a message error"/1
+    └─ test/protocol_test.exs:81:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test FIN inside a frame fails and missing request headers is a message error"/1
+    └─ test/protocol_test.exs:88:68: Gaoxy.HTTP.HTTP3.ProtocolTest."test content-length checks overflow immediately and underflow at FIN"/1
+    └─ test/protocol_test.exs:95:54: Gaoxy.HTTP.HTTP3.ProtocolTest."test stream message failure preserves a sibling request"/1
+    └─ test/protocol_test.exs:129:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+    └─ test/protocol_test.exs:167:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test critical stream FIN and RESET are connection errors"/1
+
+     warning: Gaoxy.HTTP.HTTP3.Protocol.reset/2 is undefined (module Gaoxy.HTTP.HTTP3.Protocol is not available or is yet to be defined)
+     │
+ 126 │     assert {:ok, state, _} = Protocol.reset(state, :one)
+     │                                       ~
+     │
+     └─ test/protocol_test.exs:126:39: Gaoxy.HTTP.HTTP3.ProtocolTest."test request state slots are bounded and recovered on FIN/reset"/1
+     └─ test/protocol_test.exs:168:60: Gaoxy.HTTP.HTTP3.ProtocolTest."test critical stream FIN and RESET are connection errors"/1
+
+
+Finished in 3.2 seconds (3.2s async, 0.00s sync)
+37 tests, 37 failures

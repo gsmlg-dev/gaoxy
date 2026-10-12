@@ -1,0 +1,22 @@
+==> gaoxy_http3
+Running ExUnit with seed: 93791, max_cases: 4
+
+....
+
+  1) test missing authority and Host is a stream error rather than a parser exception (Gaoxy.HTTP.HTTP3.HeadersTest)
+     apps/gaoxy_http3/test/headers_test.exs:107
+     ** (ArgumentError) errors were found at the given arguments:
+
+       * 1st argument: not a binary
+
+     code: assert {:error, :stream, 0x10E, :request_target} = Headers.request(fields, @limits)
+     stacktrace:
+       (stdlib 7.3.0.3) :binary.split(nil, ":")
+       (gaoxy_http 0.2.0) lib/gaoxy/http/http1/parser.ex:215: Gaoxy.HTTP.HTTP1.Parser.parse_authority/1
+       (gaoxy_http3 0.2.0) lib/gaoxy/http/http3/headers.ex:118: Gaoxy.HTTP.HTTP3.Headers.target/4
+       (gaoxy_http3 0.2.0) lib/gaoxy/http/http3/headers.ex:25: Gaoxy.HTTP.HTTP3.Headers.request/2
+       test/headers_test.exs:109: (test)
+
+.........................................
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+46 tests, 1 failure

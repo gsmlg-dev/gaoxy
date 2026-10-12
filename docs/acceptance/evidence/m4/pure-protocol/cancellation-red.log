@@ -1,0 +1,158 @@
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_http3
+Running ExUnit with seed: 525817, max_cases: 4
+
+..........................
+
+  1) test Stream Cancellation identifier supports every split and finite continuations (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:316
+     match (=) failed
+     code:  assert {:ok, state, []} = Protocol.feed(state, :q, b)
+     left:  {:ok, state, []}
+     right: {:error, :connection, 514, :unexpected_decoder_instruction,
+             %Gaoxy.HTTP.HTTP3.Protocol{
+               http_limits: %{
+                 max_headers: 100,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_body_bytes: 8388608,
+                 max_trailers: 32,
+                 max_trailer_bytes: 8192,
+                 max_buffer_bytes: 65536
+               },
+               h3_limits: %{
+                 max_streams: 8,
+                 max_header_block: 32768,
+                 max_pending_output: 65536,
+                 control_turn: 32,
+                 control_quantum: 16384,
+                 dynamic_table_capacity: 0,
+                 blocked_streams: 0
+               },
+               control: %QuicHttp3.Control{
+                 role: :server,
+                 local_settings: [{1, 0}, {6, 32768}, {7, 0}],
+                 peer_settings: nil,
+                 buffer: "",
+                 control_stream_id: nil,
+                 peer_control_stream_id: nil,
+                 peer_type_buffer: "",
+                 local_open?: false,
+                 peer_open?: false,
+                 received_settings?: false,
+                 goaway_id: nil
+               },
+               streams: %{
+                 q: %{
+                   message: :initial_headers,
+                   request: nil,
+                   buffer: <<127, 192, 255, 255, 255, 255, 255, 255,
+                     255, 63>>,
+                   kind: :qpack_decoder,
+                   phase: :qpack,
+                   payload: "",
+                   frame_type: nil,
+                   body_bytes: 0,
+                   remaining: 0
+                 }
+               },
+               critical: %{qpack_decoder: :q},
+               max_push_id: nil
+             }}
+     stacktrace:
+       test/protocol_test.exs:322: anonymous fn/3 in Gaoxy.HTTP.HTTP3.ProtocolTest."test Stream Cancellation identifier supports every split and finite continuations"/1
+       (elixir 1.18.5) lib/enum.ex:4507: Enum.reduce/3
+       test/protocol_test.exs:319: (test)
+
+....................
+
+  2) test zero-capacity decoder Stream Cancellation is legal and preserves sibling requests (Gaoxy.HTTP.HTTP3.ProtocolTest)
+     apps/gaoxy_http3/test/protocol_test.exs:309
+     match (=) failed
+     code:  assert {:ok, state, []} = Protocol.feed(state, :decoder, <<3, 64>>)
+     left:  {:ok, state, []}
+     right: {:error, :connection, 514, :unexpected_decoder_instruction,
+             %Gaoxy.HTTP.HTTP3.Protocol{
+               http_limits: %{
+                 max_headers: 100,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_body_bytes: 8388608,
+                 max_trailers: 32,
+                 max_trailer_bytes: 8192,
+                 max_buffer_bytes: 65536
+               },
+               h3_limits: %{
+                 max_streams: 8,
+                 max_header_block: 32768,
+                 max_pending_output: 65536,
+                 control_turn: 32,
+                 control_quantum: 16384,
+                 dynamic_table_capacity: 0,
+                 blocked_streams: 0
+               },
+               control: %QuicHttp3.Control{
+                 role: :server,
+                 local_settings: [{1, 0}, {6, 32768}, {7, 0}],
+                 peer_settings: nil,
+                 buffer: "",
+                 control_stream_id: nil,
+                 peer_control_stream_id: nil,
+                 peer_type_buffer: "",
+                 local_open?: false,
+                 peer_open?: false,
+                 received_settings?: false,
+                 goaway_id: nil
+               },
+               streams: %{
+                 request: %{
+                   message: :body,
+                   request: %Gaoxy.HTTP.Request{
+                     method: "POST",
+                     target: "/",
+                     target_form: :origin,
+                     version: :"HTTP/3",
+                     path: "/",
+                     query_string: "",
+                     host: "example.test",
+                     port: 443,
+                     scheme: :https,
+                     peer: nil,
+                     local: nil,
+                     head_bytes: 179,
+                     headers: [],
+                     body: :chunked,
+                     keep_alive: true,
+                     expect_continue: false
+                   },
+                   buffer: "",
+                   kind: :request,
+                   phase: :type,
+                   payload: "",
+                   frame_type: nil,
+                   body_bytes: 0,
+                   remaining: 0
+                 },
+                 decoder: %{
+                   message: :initial_headers,
+                   request: nil,
+                   buffer: "@",
+                   kind: :qpack_decoder,
+                   phase: :qpack,
+                   payload: "",
+                   frame_type: nil,
+                   body_bytes: 0,
+                   remaining: 0
+                 }
+               },
+               critical: %{qpack_decoder: :decoder},
+               max_push_id: nil
+             }}
+     stacktrace:
+       test/protocol_test.exs:312: (test)
+
+..
+Finished in 1.1 seconds (1.1s async, 0.00s sync)
+50 tests, 2 failures

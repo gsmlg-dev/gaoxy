@@ -1,0 +1,185 @@
+{
+  "source_commit": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "branch": "codex/m4-http3",
+  "root_lock_sha256": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25",
+  "flake_lock_sha256": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+  "owned_files": {
+    "AGENTS.md": "343b7a27706f0547a1d42ea49628938017d21170d04cc4fe84cd9b76d5d99969",
+    "implement-plan.md": "83e491bd4dbf60d8c220346e5a6e41e5481c5683294ac362ef3f34c0dd150b9d",
+    "docs/designs/m4-http3.md": "372c3aaecd61fade255f8ddf8e81995a5d30f48e13e1e61248df3b7b5b440e89",
+    "docs/plans/m4-http3.md": "3372ea6bca4f20879396703ba541e32ff7809ce428ed5cebd6adea0f08f24c8e",
+    "apps/gaoxy_http3/mix.exs": "5391c790c0720e678f1a0ea99f4462df9069e89fb5536b97f03a317d5a86bc86",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "8c9d17c955373b16e12011fa2762e5fb7c1edc76ba564111e4ae625b0b826e0d",
+    "apps/gaoxy_http3/test/options_test.exs": "1dcf1942c3fe5f94e1bcd923ab131841d63f573ff97db3a3837932693061186c",
+    "apps/gaoxy_http3/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
+  },
+  "environment": {
+    "Elixir": "1.18.5",
+    "OTP": "28.5.0.7",
+    "ERTS": "16.4.0.6",
+    "Python": "3.13.15",
+    "ERL_FLAGS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "runs": [
+    {
+      "log": "baseline/scoped-tests.log",
+      "log_sha256": "56b06dc5173c163998b5c409f2601c7ed5bf49d4f5e484f6898eece97ff45a30",
+      "status": "PASS",
+      "exit": 0,
+      "executed_tests": 33,
+      "failures": 0,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/config_test.exs",
+        "apps/gaoxy_http/test/http_contract_test.exs",
+        "apps/gaoxy_http/test/http2_facade_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit"
+    },
+    {
+      "log": "options/red.log",
+      "log_sha256": "34ecedefca98857efe4b9c9ea6daecf268bd869f708b33880240bf4ef8dc9d00",
+      "status": "EXPECTED_RED",
+      "exit": 2,
+      "executed_tests": 7,
+      "failures": 7,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit"
+    },
+    {
+      "log": "options/green.log",
+      "log_sha256": "1e35469929d043ab3a3d86662d4ab120f08def129bc2a4cee2a7f35390911fc8",
+      "status": "FAIL",
+      "exit": 1,
+      "executed_tests": 0,
+      "failures": 0,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit",
+      "pre_test_command": [
+        "mix",
+        "format",
+        "apps/gaoxy_http3/mix.exs",
+        "apps/gaoxy_http3/test/test_helper.exs",
+        "apps/gaoxy_http3/test/options_test.exs",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex"
+      ]
+    },
+    {
+      "log": "options/repair1.log",
+      "log_sha256": "25adbd86310bfab17cdcb078115cff02432407411e8039490ee98ba52fb0b3fc",
+      "status": "PASS",
+      "exit": 0,
+      "executed_tests": 7,
+      "failures": 0,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit",
+      "pre_test_command": [
+        "mix",
+        "format",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex"
+      ]
+    },
+    {
+      "log": "options/review-red.log",
+      "log_sha256": "be01a129ca8391acc851094070a3b4060af2dfa60e31e28bb9eac0c6bc39f965",
+      "status": "EXPECTED_RED",
+      "exit": 2,
+      "executed_tests": 8,
+      "failures": 2,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit"
+    },
+    {
+      "log": "options/repair2.log",
+      "log_sha256": "d2427f64e9ef47648d7d725f6c267d4dcc93a80bed1e9443246ee562ed3ec107",
+      "status": "FAIL",
+      "exit": 2,
+      "executed_tests": 8,
+      "failures": 1,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit"
+    },
+    {
+      "log": "options/repair3.log",
+      "log_sha256": "c4b8c536dfbdf89ee805aa3578c5edc90f886e50c82f42c7d30772f198d548c7",
+      "status": "PASS",
+      "exit": 0,
+      "executed_tests": 8,
+      "failures": 0,
+      "test_command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http3/test/options_test.exs"
+      ],
+      "execution_wrapper": "nix develop --command sh -c; export MIX_ENV=test ERL_FLAGS='+S 2:2'; capture stdout/stderr in the indicated log; return the test exit"
+    }
+  ],
+  "repair_counters": {
+    "options": {
+      "Sol": 3,
+      "unsuccessful": 1,
+      "Astra": 0
+    },
+    "historical": {
+      "H1": {
+        "Sol": 3,
+        "unsuccessful": 2,
+        "Astra": 1
+      },
+      "TLS": {
+        "Sol": 4,
+        "unsuccessful": 2,
+        "Astra": 2
+      },
+      "model": {
+        "Sol": 2,
+        "unsuccessful": 1,
+        "Astra": 0
+      },
+      "H2": {
+        "Sol": 1,
+        "unsuccessful": 0,
+        "Astra": 0
+      }
+    }
+  },
+  "initial_owned_files": {
+    "AGENTS.md": "343b7a27706f0547a1d42ea49628938017d21170d04cc4fe84cd9b76d5d99969",
+    "implement-plan.md": "83e491bd4dbf60d8c220346e5a6e41e5481c5683294ac362ef3f34c0dd150b9d",
+    "docs/designs/m4-http3.md": "aefc6da0a5a38f061e8692665aa715fb0938faf8640a43cf408d9b6d3f9c4c84",
+    "docs/plans/m4-http3.md": "b197e51e1f9cbe97078674d438ebf0b6cbf7c8b2ba9e449cddae56741c08620e",
+    "apps/gaoxy_http3/mix.exs": "5391c790c0720e678f1a0ea99f4462df9069e89fb5536b97f03a317d5a86bc86",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "9a8437fa078c2d32157d20bd50a83d9f733fd9781a578d3c921435e73a1b639e",
+    "apps/gaoxy_http3/test/options_test.exs": "69bfdfd0c93b20699021217913b8db695a5283e9b5f1f375b3f970c2b49a373e",
+    "apps/gaoxy_http3/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
+  },
+  "latest_fresh_verification": "../pure-options-fresh/execution.json",
+  "review_repair_notes": [
+    "Reserve independent critical/unknown unidirectional parser carry as well as request/writer state.",
+    "Validate aggregate limits before invoking endpoint initialization.",
+    "repair2 preserved the new budget rejection assertion but used an incorrect 2 MiB boundary; repair3 corrected the authored test arithmetic to 2080768 below the actual reservation 2092032."
+  ]
+}

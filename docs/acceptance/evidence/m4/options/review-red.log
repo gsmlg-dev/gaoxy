@@ -1,0 +1,47 @@
+==> gaoxy_http3
+Running ExUnit with seed: 231427, max_cases: 4
+
+     warning: unknown key .unidirectional in expression:
+
+         reserve.unidirectional
+
+     the given type does not have the given key:
+
+         dynamic(%{connection: float() or integer(), request: float() or integer(), writer: integer()})
+
+     where "reserve" was given the type:
+
+         # type: dynamic(%{connection: float() or integer(), request: float() or integer(), writer: integer()})
+         # from: test/options_test.exs:120:13
+         reserve = Gaoxy.HTTP.HTTP3.Options.reservation(handler)
+
+     typing violation found at:
+     │
+ 122 │     assert reserve.unidirectional >=
+     │                    ~~~~~~~~~~~~~~
+     │
+     └─ test/options_test.exs:122:20: Gaoxy.HTTP.HTTP3.OptionsTest."test the connection reservation includes independent unidirectional parser carry"/1
+
+
+
+  1) test the connection reservation includes independent unidirectional parser carry (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:117
+     ** (KeyError) key :unidirectional not found in: %{request: 196608, connection: 1720320, writer: 16384}
+     code: assert reserve.unidirectional >=
+     stacktrace:
+       test/options_test.exs:122: (test)
+
+..
+
+  2) test aggregate connection/request reservations are validated (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:96
+     Unexpectedly received message :initialized (which matched :initialized)
+     code: for limits <- [
+     stacktrace:
+       test/options_test.exs:107: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OptionsTest."test aggregate connection/request reservations are validated"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/options_test.exs:97: (test)
+
+....
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+8 tests, 2 failures

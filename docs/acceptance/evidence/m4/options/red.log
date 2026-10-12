@@ -1,0 +1,118 @@
+==> gaoxy_http3
+Generated gaoxy_http3 app
+==> gaoxy_server
+Compiling 1 file (.ex)
+Generated gaoxy_server app
+==> gaoxy_http3
+Running ExUnit with seed: 489205, max_cases: 4
+
+
+
+  1) test zero-capacity QPACK and finite stream/output limits are enforced (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:77
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: for input <- [
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([h3_limits: %{dynamic_table_capacity: 1}, endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.357.0>}, tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}])
+       test/options_test.exs:88: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OptionsTest."test zero-capacity QPACK and finite stream/output limits are enforced"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/options_test.exs:78: (test)
+
+
+
+  2) test aggregate connection/request reservations are validated (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:94
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: for limits <- [
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([limits: %{max_state: 65536}, endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.358.0>}, tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}])
+       test/options_test.exs:103: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OptionsTest."test aggregate connection/request reservations are validated"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/options_test.exs:95: (test)
+
+
+
+  3) test requires exactly one endpoint or Plug tuple (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:70
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: assert {:error, :invalid_endpoint} = Options.normalize(Keyword.delete(options(), :endpoint))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}])
+       test/options_test.exs:71: (test)
+
+
+
+  4) test rejects invalid identity and TLS options (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:59
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: for entry <- [id: nil, port: 65_536, ip: {256, 0, 0, 1}, transport: :tcp] do
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.360.0>}, tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}, id: nil])
+       test/options_test.exs:61: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OptionsTest."test rejects invalid identity and TLS options"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/options_test.exs:60: (test)
+
+
+
+  5) test rejects unknown, duplicate and mixed protocol options (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:48
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: assert {:error, :invalid_http3_options} = Options.normalize(options() ++ [port: 0, port: 1])
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.361.0>}, tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}, port: 0, port: 1])
+       test/options_test.exs:49: (test)
+
+
+
+  6) test rejects absent credentials, unsupported bindings and ALPN before activation (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:30
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: assert {:error, :missing_credentials} = Options.normalize(Keyword.delete(options(), :tls))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.362.0>}])
+       test/options_test.exs:31: (test)
+
+
+
+  7) test H3 explicitly opts into QUIC and initializes its endpoint once (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:18
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available)
+     code: assert {:ok, service} = Options.normalize(options())
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Options.normalize([endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint, #PID<0.363.0>}, tls: %{certfile: "fixture.pem", keyfile: "fixture-key.pem"}])
+       test/options_test.exs:19: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Options.normalize/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available or is yet to be defined)
+    │
+ 19 │     assert {:ok, service} = Options.normalize(options())
+    │                                     ~
+    │
+    └─ test/options_test.exs:19:37: Gaoxy.HTTP.HTTP3.OptionsTest."test H3 explicitly opts into QUIC and initializes its endpoint once"/1
+    └─ test/options_test.exs:31:53: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects absent credentials, unsupported bindings and ALPN before activation"/1
+    └─ test/options_test.exs:34:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects absent credentials, unsupported bindings and ALPN before activation"/1
+    └─ test/options_test.exs:37:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects absent credentials, unsupported bindings and ALPN before activation"/1
+    └─ test/options_test.exs:40:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects absent credentials, unsupported bindings and ALPN before activation"/1
+    └─ test/options_test.exs:43:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects absent credentials, unsupported bindings and ALPN before activation"/1
+    └─ test/options_test.exs:49:55: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects unknown, duplicate and mixed protocol options"/1
+    └─ test/options_test.exs:50:55: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects unknown, duplicate and mixed protocol options"/1
+    └─ test/options_test.exs:53:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects unknown, duplicate and mixed protocol options"/1
+    └─ test/options_test.exs:55:55: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects unknown, duplicate and mixed protocol options"/1
+    └─ test/options_test.exs:61:36: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects invalid identity and TLS options"/1
+    └─ test/options_test.exs:65:22: Gaoxy.HTTP.HTTP3.OptionsTest."test rejects invalid identity and TLS options"/1
+    └─ test/options_test.exs:71:50: Gaoxy.HTTP.HTTP3.OptionsTest."test requires exactly one endpoint or Plug tuple"/1
+    └─ test/options_test.exs:74:22: Gaoxy.HTTP.HTTP3.OptionsTest."test requires exactly one endpoint or Plug tuple"/1
+    └─ test/options_test.exs:88:24: Gaoxy.HTTP.HTTP3.OptionsTest."test zero-capacity QPACK and finite stream/output limits are enforced"/1
+    └─ test/options_test.exs:103:24: Gaoxy.HTTP.HTTP3.OptionsTest."test aggregate connection/request reservations are validated"/1
+    └─ test/options_test.exs:107:22: Gaoxy.HTTP.HTTP3.OptionsTest."test aggregate connection/request reservations are validated"/1
+    └─ test/options_test.exs:110:22: Gaoxy.HTTP.HTTP3.OptionsTest."test aggregate connection/request reservations are validated"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Options.reservation/1 is undefined (module Gaoxy.HTTP.HTTP3.Options is not available or is yet to be defined)
+    │
+ 27 │     assert service.limits.max_state >= Options.reservation(handler).connection
+    │                                                ~
+    │
+    └─ test/options_test.exs:27:48: Gaoxy.HTTP.HTTP3.OptionsTest."test H3 explicitly opts into QUIC and initializes its endpoint once"/1
+
+
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+7 tests, 7 failures
