@@ -1,9 +1,9 @@
 defmodule Gaoxy.Proxy.HTTP.Session do
   @moduledoc false
   use GenServer, restart: :temporary
-  alias Gaoxy.{Lifecycle, Proxy.HTTPFetchClient}
+  alias Gaoxy.Lifecycle
+  alias Gaoxy.Proxy.HTTP
   alias Gaoxy.Proxy.UpstreamGroups
-  @client HTTPFetchClient
   @poll_ms 5
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
@@ -13,6 +13,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   @impl true
   def init(args) do
+    Process.flag(:trap_exit, true)
+
     monitors =
       for pid <- Enum.uniq([args.owner, args.service, args.instance, args.gate]),
           into: %{},
@@ -21,6 +23,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     {:ok,
      Map.merge(args, %{
        monitors: monitors,
+       client: HTTP.selected_client(args.config),
+       cleanup_deadline: nil,
+       cleanup_requested_deadline: nil,
+       cleanup_started: false,
        opening_timer: nil,
        activated_at: nil,
        opening_deadline: nil,
@@ -43,9 +49,14 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   def handle_cast(:consumed, %{cancelled: true} = state), do: settle(state)
   def handle_cast(:consumed, state), do: settle(%{state | consumed: true, outcome: :success})
 
-  def handle_cast({:acknowledge, ref}, %{delivery: ref} = state) do
-    :ok = @client.acknowledge(state.request, ref)
-    {:noreply, %{state | delivery: nil}}
+  def handle_cast(
+        {:acknowledge, ref},
+        %{delivery: ref, cancelled: false, consumed: false} = state
+      ) do
+    case state.client.acknowledge(state.request, ref) do
+      :ok -> {:noreply, %{state | delivery: nil}}
+      {:ok, request} -> {:noreply, %{state | request: request, delivery: nil}}
+    end
   end
 
   def handle_cast(_, state), do: {:noreply, state}
@@ -70,7 +81,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
       state.cancelled ->
         settle(state)
 
-      not @client.host_supported?() ->
+      not state.client.host_supported?() ->
         fail(state, :unsupported_http_proxy_host)
 
       Lifecycle.remaining(state.deadline) <= 0 ->
@@ -79,6 +90,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
       true ->
         with {:ok, state, config} <- select(state) do
           state = apply_limits(state, config.limits)
+          state = %{state | client: HTTP.selected_client(config)}
 
           options =
             Map.merge(state.request_options, %{
@@ -88,6 +100,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
                   | path: state.request_options.path,
                     query: state.request_options.query
                 }),
+              deadline: state.deadline,
+              opening_deadline: state.opening_deadline,
               timeout: Lifecycle.remaining(state.deadline),
               opening_timeout: Lifecycle.remaining(state.opening_deadline),
               write_timeout: state.config.limits.write_timeout,
@@ -99,7 +113,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
             cond do
               options.timeout <= 0 -> {:error, :request_timeout}
               options.opening_timeout <= 0 -> {:error, :timeout}
-              true -> @client.open(options)
+              true -> state.client.open(options)
             end
 
           case result do
@@ -109,7 +123,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
               case bind(state) do
                 :ok ->
                   notify(state, {:ready, upload, state.config.limits, state.deadline})
-                  schedule()
+                  schedule(state)
                   {:noreply, state}
 
                 {:error, reason} ->
@@ -129,8 +143,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     end
   end
 
-  def handle_info({:gaoxy_cleanup_cancel, token, _reason, _deadline}, %{token: token} = state),
-    do: settle(mark_cancelled(state))
+  def handle_info({:gaoxy_cleanup_cancel, token, _reason, deadline}, %{token: token} = state) do
+    state = %{state | cleanup_requested_deadline: deadline}
+    settle(mark_cancelled(state))
+  end
 
   def handle_info({:DOWN, ref, :process, _, _}, state) when is_map_key(state.monitors, ref),
     do: settle(mark_cancelled(state))
@@ -143,6 +159,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     do: upstream_fail(state, :timeout)
 
   def handle_info(:opening_expired, state), do: {:noreply, state}
+
+  def handle_info(:total_expired, %{client: Gaoxy.Proxy.HTTP3SessionClient} = state),
+    do: fail(state, :request_timeout)
+
   def handle_info(:total_expired, state), do: fail(state, :timeout)
 
   def handle_info(:poll, %{request: nil} = state), do: settle(state)
@@ -150,21 +170,24 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   def handle_info(:poll, %{consumed: true} = state), do: settle(state)
 
   def handle_info(:poll, state) do
-    {event, request} = @client.poll_headers(state.request)
+    {event, request} = state.client.poll_headers(state.request)
     dispatch(event, %{state | request: request})
   end
 
   def handle_info(message, %{request: request} = state) when not is_nil(request) do
-    {event, request} = @client.event(request, message)
+    {event, request} = state.client.event(request, message)
     dispatch(event, %{state | request: request})
   end
 
   def handle_info(_, state), do: {:noreply, state}
 
+  defp dispatch(_event, %{cancelled: true} = state), do: settle(state)
+  defp dispatch(_event, %{consumed: true} = state), do: settle(state)
+
   defp dispatch({:headers, status, fields}, state) do
     Process.cancel_timer(state.opening_timer)
     notify(state, {:headers, status, fields})
-    :ok = @client.subscribe(state.request)
+    :ok = state.client.subscribe(state.request)
     state = %{state | headers: true}
     if state.request.stream == nil, do: notify(state, {:end, []})
     {:noreply, state}
@@ -186,7 +209,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp dispatch({:error, reason}, state), do: upstream_fail(state, reason)
 
   defp dispatch(:none, state) do
-    if not state.headers, do: schedule()
+    if not state.headers, do: schedule(state)
     {:noreply, state}
   end
 
@@ -236,35 +259,70 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp settle(%{token: nil} = state), do: {:noreply, state}
 
   defp settle(state) do
-    result = if state.request, do: @client.cleanup(state.request, state.cancelled), else: :ok
+    state = begin_cleanup(state)
+    result = if state.request, do: state.client.cleanup(state.request, state.cancelled), else: :ok
 
     case result do
-      :ok ->
-        if state.consumed or state.cancelled do
-          case finish_selection(state) do
-            :ok ->
-              _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
-              {:stop, :normal, state}
-
-            {:error, reason} ->
-              {:stop, {:selection_cleanup_failed, reason}, state}
-          end
-        else
-          {:noreply, state}
-        end
-
-      {:error, :cleanup_pending} ->
-        if Lifecycle.remaining(state.deadline + 1_000) > 0 do
-          schedule()
-          {:noreply, state}
-        else
-          {:stop, :cleanup_unconfirmed, state}
-        end
-
-      {:error, reason} ->
-        notify(state, {:error, {:cleanup_failed, reason}})
-        {:stop, {:cleanup_failed, reason}, state}
+      :ok -> cleanup_complete(state)
+      {:ok, request} -> cleanup_complete(%{state | request: request})
+      {:pending, request} -> cleanup_pending(%{state | request: request})
+      {:error, :cleanup_pending} -> cleanup_pending(state)
+      {:error, reason, request} -> cleanup_failed(%{state | request: request}, reason)
+      {:error, reason} -> cleanup_failed(state, reason)
     end
+  end
+
+  defp begin_cleanup(%{cleanup_started: true} = state), do: state
+
+  defp begin_cleanup(state) do
+    deadline =
+      if state.client == Gaoxy.Proxy.HTTP3SessionClient do
+        deadline = min(Lifecycle.now() + 1_000, state.deadline + 1_000)
+
+        if is_integer(state.cleanup_requested_deadline),
+          do: min(deadline, state.cleanup_requested_deadline),
+          else: deadline
+      else
+        state.deadline + 1_000
+      end
+
+    state = %{state | cleanup_started: true, cleanup_deadline: deadline}
+
+    if state.request && function_exported?(state.client, :begin_cleanup, 3) do
+      {:ok, request} = state.client.begin_cleanup(state.request, state.cancelled, deadline)
+      %{state | request: request}
+    else
+      state
+    end
+  end
+
+  defp cleanup_complete(state) do
+    if state.consumed or state.cancelled do
+      case finish_selection(state) do
+        :ok ->
+          _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
+          {:stop, :normal, state}
+
+        {:error, reason} ->
+          {:stop, {:selection_cleanup_failed, reason}, state}
+      end
+    else
+      {:noreply, state}
+    end
+  end
+
+  defp cleanup_pending(state) do
+    if Lifecycle.remaining(state.cleanup_deadline) > 0 do
+      schedule(state)
+      {:noreply, state}
+    else
+      {:stop, :cleanup_unconfirmed, state}
+    end
+  end
+
+  defp cleanup_failed(state, reason) do
+    notify(state, {:error, {:cleanup_failed, reason}})
+    {:stop, {:cleanup_failed, reason}, state}
   end
 
   defp select(%{selector: {:fixed, config}} = state), do: {:ok, state, config}
@@ -284,8 +342,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp bind(%{selection: nil}), do: :ok
 
-  defp bind(%{selection: {handle, token}, request: request}),
-    do: UpstreamGroups.bind_completion(handle, token, @client.completion(request))
+  defp bind(%{selection: {handle, token}, request: request} = state),
+    do: UpstreamGroups.bind_completion(handle, token, state.client.completion(request))
 
   defp finish_selection(%{selection: nil}), do: :ok
 
@@ -293,5 +351,6 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     do: UpstreamGroups.finish(handle, token, state.outcome)
 
   defp notify(state, event), do: send(state.owner, {:gaoxy_proxy_http, self(), event})
-  defp schedule, do: Process.send_after(self(), :poll, @poll_ms)
+  defp schedule(%{client: Gaoxy.Proxy.HTTP3SessionClient}), do: :ok
+  defp schedule(_state), do: Process.send_after(self(), :poll, @poll_ms)
 end

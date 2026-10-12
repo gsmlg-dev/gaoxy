@@ -1,0 +1,393 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 888594, max_cases: 4
+
+
+
+  1) test protocol and client cannot be injected through options or a compiled struct (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:53
+     match (=) failed
+     code:  assert {:ok, config} = HTTP.init(h3(ca))
+     left:  {:ok, config}
+     right: {:error, :invalid_http_proxy_options}
+     stacktrace:
+       test/http3_proxy_test.exs:64: (test)
+
+
+
+  2) test explicit HTTPS H3 selects the Session client and bounds upload chunks (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:24
+     match (=) failed
+     code:  assert {:ok, config} = HTTP.init(h3(ca))
+     left:  {:ok, config}
+     right: {:error, :invalid_http_proxy_options}
+     stacktrace:
+       test/http3_proxy_test.exs:25: (test)
+
+.
+
+  3) test group compilation rejects H3 maps and precompiled H3 members (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:78
+     match (=) failed
+     code:  assert {:error, :invalid_group_member} = UpstreamGroups.compile(%{id: "api", members: [member]})
+     left:  {:error, :invalid_group_member}
+     right: {:error, :invalid_upstream_group}
+     stacktrace:
+       test/http3_proxy_test.exs:80: (test)
+
+
+
+  4) test default and explicit H1 preserve the dedicated client and upload default (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:13
+     match (=) failed
+     code:  assert {:ok, explicit} = HTTP.init(Map.put(options, :upstream_protocol, :http1))
+     left:  {:ok, explicit}
+     right: {:error, :invalid_http_proxy_options}
+     stacktrace:
+       test/http3_proxy_test.exs:16: (test)
+
+
+
+  5) test caller death fails the request and never starts a replacement caller (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:224
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:225: (test)
+
+
+
+  6) test actual Service retains its reservation while H3 endpoint cleanup is unconfirmed (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:510
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:512: (test)
+
+
+
+  7) test one stable caller executes connect request and poll with advanced Session values (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:143
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:144: (test)
+
+
+
+  8) test cleanup grace uses the earlier supplied deadline without restarting on repeated checks (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:318
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:319: (test)
+
+
+
+  9) test oversized DATA rejects before sending a guardian command (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:37
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:38: (test)
+
+
+
+ 10) test early final response fails a suspended writer once and never resumes its DATA (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:467
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:468: (test)
+
+
+
+ 11) test creator normal exit preserves the adopted endpoint before connect (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:84
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:85: (test)
+
+
+
+ 12) test normal guardian loss terminates the stable caller between finite polls (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:208
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:210: (test)
+
+
+
+ 13) test zero body keeps a finish token and emits exactly one DATA FIN when trailers are absent (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:390
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:391: (test)
+
+
+
+ 14) test cleanup grace is capped by original total deadline plus fixed headroom (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:335
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:336: (test)
+
+
+
+ 15) test unknown request admission resumes the same advanced operation without replay (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:156
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:157: (test)
+
+
+
+ 16) test endpoint stop failure never becomes successful cleanup (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:125
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:126: (test)
+
+
+
+ 17) test event queue bounds informational and control events at 256 entries (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:457
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:458: (test)
+
+
+
+ 18) test normal guardian loss during bootstrap does not wait forever for adoption (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:192
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:193: (test)
+
+
+
+ 19) test blocked DATA suspends once and resumes its continuation using the latest polled Session (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:348
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:349: (test)
+
+
+
+ 20) test oversized response fields fail visibly before a final head is exposed (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:500
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:501: (test)
+
+
+
+ 21) test a blocked public connect does not block guardian cancellation (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:107
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:108: (test)
+
+
+
+ 22) test cancellation before descriptor adoption waits for confirmed endpoint teardown (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:64
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:65: (test)
+
+
+
+ 23) test unknown DATA resumption keeps its original write deadline and rejects late success (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:301
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:302: (test)
+
+
+
+ 24) test event queue rejects more than 262144 retained payload bytes visibly (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:445
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:446: (test)
+
+
+
+ 25) test normal guardian loss leaves the stop task responsible for its one stop (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:236
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:238: (test)
+
+
+
+ 26) test an expired opening budget fails before allocating bootstrap work (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:21
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:22: (test)
+
+
+
+ 27) test reservation includes the configured upload allowance and complete input bytes (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:55
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:56: (test)
+
+
+
+ 28) test expired upload and finish calls never send work to the guardian (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:28
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:29: (test)
+
+
+
+ 29) test Session completion cannot be consumed by H1 group completion APIs (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:45
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:46: (test)
+
+
+
+ 30) test queued DATA splits at 16 KiB and trailers and done wait for the last matching ACK (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:410
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:411: (test)
+
+
+
+ 31) test late public success cannot acknowledge upload or revive terminal work (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:258
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:259: (test)
+
+
+
+ 32) test unknown trailing HEADERS preserves duplicate order and reconciles FIN without replay (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:369
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:370: (test)
+
+
+
+ 33) test a second upload cannot overlap the outstanding write or add a second continuation (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:488
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:551: Gaoxy.Proxy.HTTP3SessionClientTest.connected/2
+       test/http3_session_client_test.exs:565: Gaoxy.Proxy.HTTP3SessionClientTest.streaming/2
+       test/http3_session_client_test.exs:489: (test)
+
+
+
+ 34) test normal guardian loss during a public call stops caller after the call returns (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:172
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:173: (test)
+
+
+
+ 35) test bootstrap and connect retain original absolute opening and total deadlines (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:279
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:599: Gaoxy.Proxy.HTTP3SessionClientTest.guardian/2
+       test/http3_session_client_test.exs:281: (test)
+
+
+
+ 36) test an expired request fails before allocating bootstrap work (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:14
+     Expected truthy, got false
+     code: assert Code.ensure_loaded?(HTTP3SessionClient)
+     stacktrace:
+       test/http3_session_client_test.exs:15: (test)
+
+
+Finished in 3.0 seconds (3.0s async, 0.00s sync)
+37 tests, 36 failures

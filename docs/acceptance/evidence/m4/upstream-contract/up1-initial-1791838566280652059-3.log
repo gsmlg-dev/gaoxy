@@ -1,0 +1,44 @@
+FAIL: zero executed tests
+==> gaoxy_proxy
+Running ExUnit with seed: 505673, max_cases: 4
+
+
+
+  1) test explicit HTTPS H3 selects the Session client and bounds upload chunks (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:24
+     match (=) failed
+     The following variables were pinned:
+       config = %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "localhost:443", userinfo: nil, host: "localhost", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.HTTP3ProxyTest/test-explicit-HTTPS-H3-selects-the-Session-client-and-bounds-upload-chunks-e4a5c720/ca.pem", connect_address: nil, limits: %{idle_timeout: 60000, max_chunk_bytes: 16384, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http3, client: Gaoxy.Proxy.HTTP3SessionClient}
+     code:  assert {:ok, ^config} = HTTP.init(config)
+     left:  {:ok, ^config}
+     right: {:error, :invalid_http_proxy_options}
+     stacktrace:
+       test/http3_proxy_test.exs:29: (test)
+
+.
+
+  2) test group compilation rejects H3 maps and precompiled H3 members (Gaoxy.Proxy.HTTP3ProxyTest)
+     apps/gaoxy_proxy/test/http3_proxy_test.exs:79
+     match (=) failed
+     code:  assert {:error, :invalid_group_member} = UpstreamGroups.compile(%{id: "api", members: [member]})
+     left:  {:error, :invalid_group_member}
+     right: {:error, :invalid_upstream_group}
+     stacktrace:
+       test/http3_proxy_test.exs:82: (test)
+
+..     error: cannot find or invoke local when/2 inside a match. Only macros can be invoked inside a match and they must be defined before their invocation. Called as: {:trace, ^guardian, :send, {:"$gen_call", _, {:complete_cleanup, token}}, service}
+     when token == state.token and service == native.service
+     │
+ 365 │                      when token == state.token and service == native.service,
+     │                      ^
+     │
+     └─ test/http3_guardian_test.exs:365:22: Gaoxy.Proxy.HTTP3GuardianTest."test missing endpoint stop confirmation fails actual guardian without a Service receipt"/1
+
+
+== Compilation error in file test/http3_guardian_test.exs ==
+** (ArgumentError) invalid expression in match, and is not allowed in patterns such as function clauses, case clauses or on the left side of the = operator
+    (elixir 1.18.5) lib/kernel.ex:6864: Kernel.invalid_match!/1
+    (elixir 1.18.5) expanding macro: Kernel.and/2
+    test/http3_guardian_test.exs:365: Gaoxy.Proxy.HTTP3GuardianTest."test missing endpoint stop confirmation fails actual guardian without a Service receipt"/1
+    (ex_unit 1.18.5) expanding macro: ExUnit.Assertions.refute_receive/2
+    test/http3_guardian_test.exs:363: Gaoxy.Proxy.HTTP3GuardianTest."test missing endpoint stop confirmation fails actual guardian without a Service receipt"/1

@@ -12,6 +12,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
   @max_delivery 100 * @receive_buffer + 18_437
   @framing_carry 65_536
 
+  @impl true
   def host_supported? do
     backend = Application.get_env(:kernel, :inet_backend, :inet)
     active = Application.get_env(:ssl, :internal_active_n, 100)
@@ -29,6 +30,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
       8 * (@max_delivery + @framing_carry) + 8 * chunk_bytes +
         2 * :erlang.external_size({fields, url})
 
+  @impl true
   def reservation_bytes(fields, url_bytes, chunk_bytes),
     do: reservation(fields, "", chunk_bytes) + 2 * url_bytes
 

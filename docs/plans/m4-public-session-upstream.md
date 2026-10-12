@@ -113,11 +113,11 @@ Create `apps/gaoxy_proxy/test/http3_session_client_test.exs` and
 `apps/gaoxy_proxy/test/http3_proxy_test.exs`. Extend existing group/config tests
 only at their existing boundary. No wholesale H1 adapter refactor.
 
-- [ ] First red tests: explicit H3 chooses `HTTP3SessionClient`; default remains
+- [x] First red tests: explicit H3 chooses `HTTP3SessionClient`; default remains
   H1; reject HTTP/H3, missing CA, unknown protocol, oversized upload, module
   injection, address pinning and forged struct mismatch. Reject H3 group maps
   and structs; ForwardHTTP remains H1 after its existing policy checks.
-- [ ] First red lifecycle tests, using deterministic task/adoption barriers:
+- [x] First red lifecycle tests, using deterministic task/adoption barriers:
   bootstrap cancellation before and after adoption; connect fails before a
   Session connection exists; request returns advanced error/unknown; delayed
   task result after deadline; guardian remains responsive while operation blocks.
@@ -125,37 +125,37 @@ only at their existing boundary. No wholesale H1 adapter refactor.
   acceptor; guardian owner loss still enters the confirmed teardown contract.
   Assert endpoint-stop invocation and token completion/retention, not just an
   error tuple. A `cleanup_pending`/abnormal DOWN case must retain its reservation.
-- [ ] Implement the design's explicit map/upload token shape and phase machine
+- [x] Implement the design's explicit map/upload token shape and phase machine
   in `HTTP3SessionClient`. Define task runner helpers in that same module; one
   operation task and one exceptional stop task are sufficient. Every result is
   generation-correlated; store advanced Session before any subsequent operation.
-- [ ] Wire allowlisted selected client into endpoint reservation/write/finish
+- [x] Wire allowlisted selected client into endpoint reservation/write/finish
   and guardian open/poll/event/subscribe/ack/cleanup. Declare host/reservation and
   optional begin-cleanup callbacks; normalize legacy H1 and stateful H3 ACK/
   cleanup results exactly as the design. H1 stream/promise semantics stay local.
-- [ ] Add red semantics tests: every H3 request receives a finish token including
+- [x] Add red semantics tests: every H3 request receives a finish token including
   zero body; request opens `:stream`; DATA stays below 16 KiB; exactly one FIN;
   ordered duplicate trailers after accepted DATA; unknown trailer FIN resumes
   same operation without resending; early final head fails outstanding upload
   once and stops future reads; late/stale ACK cannot unlock another delivery.
-- [ ] Add red bounds tests: one pending write and one continuation maximum;
+- [x] Add red bounds tests: one pending write and one continuation maximum;
   one delivery before ACK; event bytes/count cap; paused polling consumes no new
   response DATA; queued trailers/end follow last ACK; original opening/total/
   write deadlines do not move on wakeup/resume; oversized fields fail visibly.
-- [ ] Implement minimum behavior to pass those tests. Strict TLS options and
+- [x] Implement minimum behavior to pass those tests. Strict TLS options and
   pseudo-header construction come from selected fixed authority and existing
   Headers policy. No caller options bypass protocol or TLS allowlists.
-- [ ] Run the entire explicit compatibility set (nonzero tests required):
+- [x] Run the entire explicit compatibility set (nonzero tests required):
 
   ```sh
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_proxy/test/http3_session_client_test.exs apps/gaoxy_proxy/test/http3_proxy_test.exs apps/gaoxy_proxy/test/http_fetch_contract_test.exs apps/gaoxy_proxy/test/http_fetch_completion_test.exs apps/gaoxy_proxy/test/http_proxy_runtime_test.exs apps/gaoxy_proxy/test/http_proxy_wire_test.exs apps/gaoxy_proxy/test/http_proxy_tls_test.exs apps/gaoxy_proxy/test/http_headers_test.exs apps/gaoxy_proxy/test/forward_http_test.exs apps/gaoxy_proxy/test/upstream_groups_test.exs apps/gaoxy_proxy/test/upstream_group_proxy_test.exs apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' mix compile --warnings-as-errors
   ```
 
-- [ ] Format-check exactly task-owned changed Elixir files with `mix format
+- [x] Format-check exactly task-owned changed Elixir files with `mix format
   --check-formatted <explicit changed paths>`; coordinator supplies the concrete
   audited path list in the receipt, never runs a repository-wide autofix.
-- [ ] Independent Sol specification and code review, resolve findings, fresh
+- [x] Independent Sol specification and code review, resolve findings, fresh
   affected checks, record counts/exits/source hashes; local conventional commit
   by coordinator only after those pass. Do not announce UP2 from unit tests.
 

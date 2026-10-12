@@ -24,7 +24,11 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Options do
   def compile(%__MODULE__{} = group) do
     members =
       for member <- group.members do
-        Map.merge(member.config.limits, %{
+        {:ok, config} = HTTP.init(member.config)
+        true = config.upstream_protocol == :http1
+        true = config.client == Gaoxy.Proxy.HTTPFetchClient
+
+        Map.merge(config.limits, %{
           id: member.id,
           upstream: URI.to_string(member.config.uri),
           cacertfile: member.config.cacertfile,
@@ -100,6 +104,9 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Options do
            max = Map.get(value, :max_inflight, 16),
            true <- is_integer(max) and max in 1..1024,
            {:ok, config} <- HTTP.init(Map.drop(value, [:id, :max_inflight])),
+           true <-
+             config.upstream_protocol == :http1 and
+               config.client == Gaoxy.Proxy.HTTPFetchClient,
            true <- byte_size(URI.to_string(config.uri)) <= 8192 do
         {:cont, {:ok, acc ++ [%{id: value.id, config: config, max_inflight: max}]}}
       else

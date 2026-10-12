@@ -1,0 +1,165 @@
+{
+  "task_id": "m4_up1_preparation_audit",
+  "status": "DONE_READ_ONLY_PREPARATION_HOLD_UP0",
+  "checked_utc": "2026-10-12T20:21:45.245243+00:00",
+  "assignment": "direct read-only preparation, no activation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "branch": "codex/m4-http3",
+  "source_sha256": {
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "docs/designs/m4-session-frame-fragmentation.md": "589965f36f67dbb1d78e4afd144351d472c2a4575fcfe884e81652c0c5cb4c78",
+    "docs/plans/m4-session-frame-fragmentation.md": "b0301b4eca4eda92b9ca279bd9e8543324e322b689dcdeaa1e6c1f7ab01ff8fe",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "d885c44eaf6ee1278947427f979024c3f7a573605268c064b5731b743ae1945a",
+    "apps/gaoxy_proxy/test/http3_proxy_test.exs": "f7594c9c5bf65e980673c266880844863f376ec4d50de82fc602958cbc8c0bf9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex": "37818df2d566b3c3f3cf67ff5d6de605b579f9b98ea9fee68037402ac2f37fc9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "c1e123186e089adfc8a86490227cb72d1545c1c7d169a1686549ba0fdb1c4375",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "4d74d20f72e105e33c23a765400270832c6c290dad1b0d1713997254fa2733a5",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "14d3f8cddd132bc434604680475bb784f1fbd11dc020548446bf528a7f9da1b8",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "3e768d161fe6f66ff3dd303a2ccbe8ba932587d1816eb1bd382c8c0391f7a4a8",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "4c4f216d609715b68e419ad75f3722aa4e982a42f6affbaecdeb644b54aef0ca",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/forward_http.ex": "41e84d5479796eab2170f175ce58e55528a76138dd8bfa8399247b14ecbd3f4c",
+    "apps/gaoxy/lib/gaoxy/lifecycle.ex": "2fc9c20f820cb8049bb950698cd6a5206c511b15e65b4228351e3699d08c0f82",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab"
+  },
+  "prepared_test_candidates": {
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": {
+      "count": 32,
+      "names": [
+        "an expired request fails before allocating bootstrap work",
+        "an expired opening budget fails before allocating bootstrap work",
+        "expired upload and finish calls never send work to the guardian",
+        "oversized DATA rejects before sending a guardian command",
+        "Session completion cannot be consumed by H1 group completion APIs",
+        "reservation includes the configured upload allowance and complete input bytes",
+        "cancellation before descriptor adoption waits for confirmed endpoint teardown",
+        "creator normal exit preserves the adopted endpoint before connect",
+        "a blocked public connect does not block guardian cancellation",
+        "endpoint stop failure never becomes successful cleanup",
+        "one stable caller executes connect request and poll with advanced Session values",
+        "unknown request admission resumes the same advanced operation without replay",
+        "normal guardian loss during a public call stops caller after the call returns",
+        "normal guardian loss during bootstrap does not wait forever for adoption",
+        "normal guardian loss terminates the stable caller between finite polls",
+        "caller death fails the request and never starts a replacement caller",
+        "normal guardian loss leaves the stop task responsible for its one stop",
+        "late public success cannot acknowledge upload or revive terminal work",
+        "bootstrap and connect retain original absolute opening and total deadlines",
+        "unknown DATA resumption keeps its original write deadline and rejects late success",
+        "cleanup grace uses the earlier supplied deadline without restarting on repeated checks",
+        "cleanup grace is capped by original total deadline plus fixed headroom",
+        "blocked DATA suspends once and resumes its continuation using the latest polled Session",
+        "unknown trailing HEADERS preserves duplicate order and reconciles FIN without replay",
+        "zero body keeps a finish token and emits exactly one DATA FIN when trailers are absent",
+        "queued DATA splits at 16 KiB and trailers and done wait for the last matching ACK",
+        "event queue rejects more than 262144 retained payload bytes visibly",
+        "event queue bounds informational and control events at 256 entries",
+        "early final response fails a suspended writer once and never resumes its DATA",
+        "a second upload cannot overlap the outstanding write or add a second continuation",
+        "oversized response fields fail visibly before a final head is exposed",
+        "actual Service retains its reservation while H3 endpoint cleanup is unconfirmed"
+      ],
+      "execution": "NOT RUN"
+    },
+    "apps/gaoxy_proxy/test/http3_proxy_test.exs": {
+      "count": 5,
+      "names": [
+        "default and explicit H1 preserve the dedicated client and upload default",
+        "explicit HTTPS H3 selects the Session client and bounds upload chunks",
+        "H3 requires fixed HTTPS and explicit regular trust without dial overrides",
+        "protocol and client cannot be injected through options or a compiled struct",
+        "group compilation rejects H3 maps and precompiled H3 members"
+      ],
+      "execution": "NOT RUN"
+    }
+  },
+  "production_http3_session_client_exists": false,
+  "precedence": [
+    "OriginalSessiondesign suppliescallback/semantics/bounds/TLS/cleanupcontract.",
+    "Consumer-affinityamendment replaces transienttasks+guardianconsumer withdistinctbootstrapcreator, stablecaller(consumer:self), independentstoptask; guardianownsopaqueadvancedSession/commands/deadlines.",
+    "Framefragmentamendment supersedesonlySessionmax_frame16384 with8192; applicationDATA/delivery16KiB, originaldeadlines/50rows remain. Qualified configuration must carry throughUP1 afterUP0passes."
+  ],
+  "recommended_sole_writer_split": [
+    {
+      "owner": "adapter implementation",
+      "required_files": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs"
+      ],
+      "responsibility": "Implement adapter-owned handle/uploadtoken, bootstrapadoption+stablecaller+hints+stop helpers in same module; one outstandingcommand/latestopaqueSession, continuation/admission/FIN, eventqueue+ACKs, originaldeadline/cleanupreceipts.32preparedcandidates are directadapter regressions. No newGenServer/supervisor."
+    },
+    {
+      "owner": "guardian and HTTP integration",
+      "required_files": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex",
+        "apps/gaoxy_proxy/test/http3_proxy_test.exs"
+      ],
+      "conditional_files": {
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "Only @implannotations on existinghost_supported?/0,reservation_bytes/3 if requiredby expandedbehavior; do not alterH1 semantics.",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "Can remainunchanged ifHTTPselectedclient helper explicitly forcesHTTPFetchClient for groupconfig(which lacksclient/protocolfields); editonlyifnecessaryfor fixedH1 declaration."
+      },
+      "responsibility": "Declarecallbacknormalization; useallowlistedconfigclient consistentlyforhost/reservation/open/write/finish/guardianevent/ACK/cleanup; preserveH1defaults+returns. Passoriginaltotal/openingdeadlines, trapownedlinkexits, preserveactualServicecleanupdeadline, initiatecleanup once, storeadvancedhandles and releaseServiceonlyafterconfirmedadaptercleanup. RejectrawH3groupmembers and forgedcompiledH3members beforeconfigreconstruction stripsfields.5policycandidates plusactualguardian/H1compatibilitycoverage."
+    }
+  ],
+  "serialize_only_dependencies": [
+    "FreezeUpstreamClientcallbacks/returnshapes and internaldriverprotocol before independentadapter/guardianwritersstart. No sharedfilewriters.",
+    "NeitherproductionHTTPconfigurationactivation norUP1 runtimeverification beforefullUP0+independentreview.",
+    "Afteradapter/integratorchanges exist, exclusiveMixlease for expectedred+scopedcompatibility/strictcompile/format, independentreview thenfreshgate. UP2/standalone separatelyrequireactualpeeracceptance."
+  ],
+  "required_contract_delta": {
+    "host_supported?/0": "boolean callback; existingH1helper alreadyexists",
+    "reservation_bytes/3": "nonnegative byteallowance callback; existingH1helper alreadyexists",
+    "acknowledge/2": ":ok or {:ok,advanced_handle}; matchingACK only",
+    "cleanup/2": "legacy :ok/{:error,reason}, plus {:pending,advanced_handle}, {:ok,advanced_handle}, {:error,reason,advanced_handle}",
+    "begin_cleanup/3": "optionalforlegacyH1; requiredforH3. RecordearlierServiceabsolute_deadline vs total+Lifecycle.cleanup_headroom once; immediate nonblockingtaskstart only.",
+    "HTTP configuration": "allowlistedclient derivedfrom :upstream_protocol; default: http1/H1client/65536chunk. FixedHTTPS+regularCA H3/client/<=16384. Revalidatecompiledstruct againstprotocol/client/TLS/chunk/address invariants; rejectmodule/transport/TLSoverride injection."
+  },
+  "fixture_contract_findings": [
+    {
+      "finding": "Internal deterministic public-call seam is implied but not explicitly named by accepted design.",
+      "evidence": "test guardian helper calls HTTP3SessionClient.open(options,driver); driver(module,function,args) supplies complete publiccalls, opaqueSessionmap and endpointdescriptor withpid. Existingdesign/plan already require deterministicboundarydoubles.",
+      "disposition": "Routine implementationdetail, notnewarchitecture/userdecision. Document @docfalse open/2 overload, production open/1 usesfixedpublicSDKdriver and HTTP options continue rejecting arbitrarymodule/driver injection. No globaltestenvironment/processdictionary bypass; callbackonlyatcompletepubliccalls."
+    },
+    {
+      "finding": "32adaptercandidates do not prove productionguardian integration.",
+      "evidence": "tests construct customguardian_loop which already storesupdatedACK/cleanuphandles and invokesbegin_cleanup; realService row connects thisfakeguardian toactualService/Admission, not Gaoxy.Proxy.HTTP.Session.",
+      "disposition": "Require concreteproductionguardian callback/integrationcoverage forselectedclient dispatch, statefulACK, no syntheticend onH3head, postheadtick, preservedServicecleanupdeadline and missing/errorreceipt reservationretention. Keep existingH1/group/forwardcompatibilityset; no newruntimepublicseam is necessitated."
+    },
+    {
+      "finding": "Fixture writable event includes requestref but actualSDK publicpoll uses atom :writable.",
+      "evidence": "blockedDATAcandidate returns {:writable,request_ref}; deps/elixir_quic_http3/lib/quic_http3/session.ex723 records atom :writable. Header/DATA/trailer/done eventshapes otherwise match publicresponse_event/2.",
+      "disposition": "Add/retain literal :writablecoverage; do not implementonly a fixturetuple. Existingboundedresume-afterpoll scheduling can support realwakeups withoutnewAPI."
+    },
+    {
+      "finding": "Groupcompiledstruct path needs rejection before flattening.",
+      "evidence": "UpstreamGroups.Options.compile(struct) currently reconstitutes members from uri/cert/address/limits and loses config.client/upstream_protocol; rawmapchecks alone cannotrejectforgedH3config.",
+      "disposition": "ExplicitH1validation beforeflattening and rawmembercompilation. KeepGroupEndpoint/ForwardHTTP dedicatedH1."
+    }
+  ],
+  "missing_architecture_or_product_decision": "NONE identified. Existing acceptedadaptercallback seam coversimplementation. Documentinternaltestdriver and complete missingproductionguardianverification; do not restartarchitecture.",
+  "counters_unchanged": {
+    "sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator": 3,
+    "unsuccessful_coordinator": 3,
+    "candidate4": "UNVERIFIED inherited status; audit doesnotexecute it",
+    "preparation_added_repairs": 0
+  },
+  "validation": {
+    "candidatecount": "32+5=37 staticenumeration only",
+    "source_reads": "completed",
+    "mix_elixir_live_tests": "NOT RUN",
+    "UP1": "HOLD_UP0",
+    "commands_finished": true
+  },
+  "changes": "One new immutablepreparationreceipt only; no source/test edits oractivation."
+}

@@ -1,0 +1,171 @@
+{
+  "task_id": "/root/m4_session_affinity_review:UP1_REPAIR2_SPEC",
+  "assignment": "direct read-only independent SPEC review; CODE follows separately only after this PASS",
+  "status": "DONE_SPEC_REVIEW",
+  "spec_verdict": "PASS",
+  "code_verdict": "NOT_PERFORMED_YET",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "execution_receipt": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381.json",
+  "execution_receipt_sha256": "1b453e0a3809b96229f0520a8f3da1ff208cc03c20c1dffe93a8b427313b09d1",
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "edbef8db3373ca14e2c9258dd029aaf6e9343cd8b6c7b53bddd066292d459f82",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex": "56e116759509d4ea648b98a9a9b3cf643a1dc5c8cef76bf464c4f9d45d79b8c3",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1a6e2874098e76c56016989e076ea15854b9f04992f2ba3e4749a6f65cb6bb9d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "a79d24e1713728b50ddc10f463a742d206917916d4ecffdaf46042deb226dd0f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "991b78a48ca4e1ac21a1c2da160e51a7c87adc86dad01facc3ff9cef79d138e1",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "28092b71ac8cde87b2f6c6cbfdcc333e2fe234d1dd74d4a67154e34853742a1f",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "f92d6471048f26fa9eae298840e775798142f06c2722bf2e98bae894cb2f15a6",
+    "apps/gaoxy_proxy/test/http3_proxy_test.exs": "b107014744298d0d9410d9f0581a32c3ac960616c23fbffe74a9312b38aafce1",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "5fe74f93ff4d01195b519d0c781284a560179be6829d8ec41bcc28fcffbbe050"
+  },
+  "spec_sha256": {
+    "docs/designs/m4-public-session-upstream.md": "8631e846f6985b5b07b2a50f23bcc9d83c8fb20e208ece9d5f34a6b63e9b982b",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/designs/m4-session-frame-fragmentation.md": "589965f36f67dbb1d78e4afd144351d472c2a4575fcfe884e81652c0c5cb4c78",
+    "docs/designs/m4-session-response-scheduling.md": "820d963be3e2c83e2c838df1375aac0474d95c603f760a3767885e7c011a7565",
+    "docs/designs/m4-session-observation-overhead.md": "bd04f4440a067e1e1537ec3b3ca98dffe7512519e7f8ca28919a2be611016cb9",
+    "docs/designs/m4-session-tls-rejection-observation.md": "bc528718a108f828c33df2447a9d6f1606296d992ee75a9036244e9a6dd97d29",
+    "docs/designs/m4-session-abort-stop-order.md": "64b4808790b36f4af85081bb8049838c7da998cea52793bffab75c4abb390297",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "docs/plans/m4-session-abort-stop-order.md": "7e24c79482cea2beee01aa1842c463bf5ffacb2b8205e96eb6fb41a01d1e7bf6"
+  },
+  "prior_FAIL_receipt": "docs/acceptance/evidence/m4/upstream-contract/review-up1-spec-coverage-repair1-1791839003859396218.json",
+  "prior_FAIL_receipt_sha256": "b7a88be453e595959e606255bd1d472ffcfc4981867b7701423db0e798d3a432",
+  "L1_L8_disposition": [
+    {
+      "finding": "L1",
+      "tests": "http3_session_client_test.exs:697,723,770",
+      "resolution": "Actual descriptor/adoption ACK held before creator normal DOWN; actual matching creator DOWN held before caller scheduling; terminal cancellation launches no connect. Creator before-descriptor loss records explicit uncertainty; adopted descriptor after creator crash has full public stop/normal endpoint/all task DOWN. Normal guardian loss after ACK separately tested. Real Service uncertainty common path covered by L6 plus original stop-error Service case."
+    },
+    {
+      "finding": "L2",
+      "tests": "http3_session_client_test.exs:789,1114",
+      "resolution": "Caller loss before actual connect admission plus caller idle after correlated connect result establish no replacement/replay and full cleanup receipts. Pre-connect idle is not externally exposed because caller creation+connect command occur in one callback; test is honestly labeled pre-admission whole-call boundary. Caller loss during pending idle abort triggers immediate independent stop."
+    },
+    {
+      "finding": "L3",
+      "tests": "http3_session_client_test.exs:835",
+      "resolution": "Wrong generation result/command and repeated sequence ignored; duplicate old result cannot overwrite Session/unlock ACK/emit done/admit DATA."
+    },
+    {
+      "finding": "L4",
+      "tests": "http3_session_client_test.exs:890",
+      "resolution": "Paused request ref verified; unrelated monitor DOWN leaves delivery and caller live; normal guardian DOWN terminates endpoint/caller without Service or cleanup receipt, including possible already-authorized poll barrier."
+    },
+    {
+      "finding": "L5",
+      "tests": "http3_session_client_test.exs:923",
+      "resolution": "12 unknown-connect reconciliations retain same opaque identity/current advanced Session/deadlines and caller; repeated finite16 supported ready hints and12 paused polls show sampled queue<=16 and drained0 without payload/iteration growth. Test is a whole-public-call double, not peer/native or arbitrary message bound."
+    },
+    {
+      "finding": "L6",
+      "tests": "http3_session_client_test.exs:1001,1014,1041; original656",
+      "resolution": "Advanced error value retained; endpoint DOWN then caller DOWN cannot complete before deferred stop result/stopper DOWN; abnormal endpoint DOWN retains actual Service/Admission reservation and emits no Service receipt. Original stop-error reservation test remains."
+    },
+    {
+      "finding": "L7",
+      "tests": "http3_session_client_test.exs:1072; http3_guardian_test.exs:165",
+      "resolution": "Public done leaves caller/endpoint alive and real Service reservation retained before consumption; no public stop or Service receipt before cleanup. Normal close receipt and full cleanup/token completion then baseline confirmed. Production guardian integration complements deterministic boundary."
+    },
+    {
+      "finding": "L8",
+      "tests": "http3_session_client_test.exs:1114",
+      "resolution": "Released/blocked/caller-loss idle abort paths assert executing adapter first stop_trigger public_result/fallback/caller_down, <=100ms original-grace cap, retained cleanup deadline, no fabricated blocked-abort ACK and all teardown receipts."
+    }
+  ],
+  "declared_case_counts": {
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": 49,
+    "apps/gaoxy_proxy/test/http3_proxy_test.exs": 5,
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": 6
+  },
+  "findings": [],
+  "contract_assessment": [
+    "Six implementation paths preserve fixed H1 default and explicit authenticated HTTPS/H3, strict option/forged-config/group rejection and configured16KiB allowance.",
+    "Full advanced public Session stored before any next operation; one request-lived consumer/caller, guardian monitor checks, fresh command ref/generation/sequence, no autonomous poll/replay or replacement.",
+    "Guardian acceptor descriptor adoption, creator unlink/normal DOWN before caller; source/test loss races retain uncertainty honestly.",
+    "Requests open stream and all receive finish tokens; exactly one DATA FIN or ordered trailing HEADERS, unknown reconciliation and blocked continuation preserve originals; early final head stops writer/reset once, stream_reset propagated, done does not kill caller.",
+    "One waiter/continuation and ACK delivery; retained byte/event caps262144/256; max16/max_read_batches1/paused ref,16KiB delivery, trailers/end after last ACK.",
+    "Current-batch target progress sets poll_due now, idle/control-only+5; single deduplicated tick and original absolute opening/total/write budgets preserved.",
+    "Cleanup begins once; idle abort precedes stop on public result/fallback100ms capped original grace; outstanding/lost caller/bootstrap stop independently; first stop trigger never overwritten.",
+    "Cleanup success requires public stop+monitored normal endpoint DOWN or permitted prior normal-DOWN case and all owned task DOWN; errors/missing/abnormal/expired/adoption uncertainty suppress Service completion.",
+    "Production H3 total timer uses request_timeout and H1 remains timeout; exact endpoint process suspension fixtures now exercise actual stop-blocking within finite bounds."
+  ],
+  "evidence": {
+    "reviewer_execution": "NOT_RUN",
+    "supplied_format_exit": 0,
+    "supplied_strict_compile_exit": 0,
+    "focused_tests": 60,
+    "focused_failures": 0,
+    "compatibility_tests": 150,
+    "compatibility_failures": 0,
+    "exclusions_skips": 0,
+    "logs_sha256_verified": [
+      {
+        "log": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381-0.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit": 0,
+        "tests": null,
+        "failures": null,
+        "excluded_or_skipped": null
+      },
+      {
+        "log": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381-1.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "exit": 0,
+        "tests": null,
+        "failures": null,
+        "excluded_or_skipped": null
+      },
+      {
+        "log": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381-2.log",
+        "sha256": "d60d25d8014111693928f17bd5bf71f54c27974b30c3ae8b409d4b1052dbf090",
+        "exit": 0,
+        "tests": null,
+        "failures": null,
+        "excluded_or_skipped": null
+      },
+      {
+        "log": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381-3.log",
+        "sha256": "2ca7e80ce9968758825cec8b64dc7f9fc17035e4c69c87ba28cb8d2f7d5aeaf0",
+        "exit": 0,
+        "tests": 60,
+        "failures": 0,
+        "excluded_or_skipped": 0
+      },
+      {
+        "log": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381-4.log",
+        "sha256": "4995ba0845f1128d14e3a4b5358d18980d3b5e13d44ab837c3b4dcd9cd28a57c",
+        "exit": 0,
+        "tests": 150,
+        "failures": 0,
+        "excluded_or_skipped": 0
+      }
+    ],
+    "nine_sources_match_freeze": true,
+    "actual_scope": "Supplied root execution, verified log hashes and summaries; reviewer did not execute test commands. Six production guardian integration cases remain distinct from independent UP2 protocol matrix."
+  },
+  "limits": [
+    "This PASS is UP1 SPEC source/test-contract review, not separate CODE verdict, UP2/standalone/browser/core-consumer/packaged artifact or M4 completion.",
+    "Only nine assigned files form executable pre/post immutability set. Concurrent future UP2/server/standalone changes excluded as instructed.",
+    "Original failed receipts preserved. No assertions weakened, skips claimed or zero-test qualification substituted."
+  ],
+  "counters": {
+    "UP0_sol": 2,
+    "UP0_failed_sol": 2,
+    "astra": 2,
+    "failed_astra": 2,
+    "UP0_coordinator": 5,
+    "UP0_failed_coordinator": 4,
+    "UP1_initial": "unsuccessful",
+    "UP1_repair1": "unsuccessful",
+    "UP1_repair2": "success",
+    "reviewer_added_repairs": 0,
+    "reset": false
+  },
+  "reviewer_changes": "Only this unique immutable receipt. No implementation/test/doc/old evidence edits, no runtime commands.",
+  "shutdown": "All read-only/hash commands finished; no owned long-running reviewer process. Others processes untouched.",
+  "decisions_needed": "None for SPEC; proceed separate CODE review of same frozen nine sources."
+}

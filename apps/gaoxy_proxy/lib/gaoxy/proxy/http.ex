@@ -1,6 +1,7 @@
 defmodule Gaoxy.Proxy.HTTP do
   @moduledoc """
-  Native HTTP/1 reverse proxy to one fixed HTTP or verified HTTPS authority.
+  Native reverse proxy to one fixed HTTP or verified HTTPS authority.
+  HTTP/1 is the default; explicit HTTP/3 requires HTTPS and an explicit trust file.
 
   Paths and queries retain their wire escaping, including a present empty query.
   Uploads and raw responses stream
@@ -16,7 +17,8 @@ defmodule Gaoxy.Proxy.HTTP do
   rejected without changing global configuration or transport providers.
   """
   @behaviour Gaoxy.HTTP.Endpoint
-  alias Gaoxy.{Lifecycle, Proxy.HTTPFetchClient}
+  alias Gaoxy.Lifecycle
+  alias Gaoxy.Proxy.{HTTPFetchClient, HTTP3SessionClient}
   alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.Proxy.HTTP.{Headers, Session}
 
@@ -37,40 +39,79 @@ defmodule Gaoxy.Proxy.HTTP do
     "OPTIONS" => :options
   }
   @poll_ms 5
-  defstruct [:uri, :cacertfile, :connect_address, :limits]
+  defstruct [
+    :uri,
+    :cacertfile,
+    :connect_address,
+    :limits,
+    upstream_protocol: :http1,
+    client: HTTPFetchClient
+  ]
 
   @impl true
   def init(%__MODULE__{} = config) do
-    if HTTPFetchClient.host_supported?(),
-      do: {:ok, config},
-      else: {:error, :unsupported_http_proxy_host}
+    with true <- Map.keys(config) -- Map.keys(%__MODULE__{}) == [],
+         true <- is_struct(config.uri, URI) and is_map(config.limits),
+         options =
+           Map.merge(config.limits, %{
+             upstream: URI.to_string(config.uri),
+             upstream_protocol: config.upstream_protocol,
+             cacertfile: config.cacertfile,
+             connect_address: config.connect_address
+           }),
+         {:ok, validated} <- init(options),
+         true <- validated == config do
+      {:ok, validated}
+    else
+      _ -> {:error, :invalid_http_proxy_options}
+    end
+  rescue
+    _ -> {:error, :invalid_http_proxy_options}
   end
 
   def init(%{upstream: upstream} = options) when is_binary(upstream) do
     uri = URI.parse(upstream)
-    limits = Map.merge(@defaults, Map.take(options, Map.keys(@defaults)))
+    protocol = Map.get(options, :upstream_protocol, :http1)
+    chunk_limit = if protocol == :http3, do: 16_384, else: 65_536
+
+    limits =
+      Map.merge(
+        %{@defaults | max_chunk_bytes: chunk_limit},
+        Map.take(options, Map.keys(@defaults))
+      )
 
     with true <-
-           Map.keys(options) -- [:upstream, :cacertfile, :connect_address | Map.keys(@defaults)] ==
+           Map.keys(options) --
+             [:upstream, :upstream_protocol, :cacertfile, :connect_address | Map.keys(@defaults)] ==
              [],
+         true <- protocol in [:http1, :http3],
          true <- uri.scheme in ["http", "https"] and is_binary(uri.host) and uri.host != "",
          true <- is_integer(uri.port) and uri.port in 1..65_535,
          true <-
            uri.userinfo == nil and uri.path in [nil, "", "/"] and uri.query == nil and
              uri.fragment == nil,
          true <- Enum.all?(limits, fn {_, value} -> is_integer(value) and value > 0 end),
-         true <- limits.max_chunk_bytes <= 65_536,
+         true <- limits.max_chunk_bytes <= chunk_limit,
          true <-
            is_nil(options[:cacertfile]) or
              (is_binary(options[:cacertfile]) and File.regular?(options[:cacertfile])),
+         true <-
+           protocol != :http3 or
+             (uri.scheme == "https" and is_binary(options[:cacertfile]) and
+                is_nil(options[:connect_address])),
          {:ok, address} <- connect_address(options[:connect_address]),
-         true <- HTTPFetchClient.host_supported?() do
+         client = if(protocol == :http3, do: HTTP3SessionClient, else: HTTPFetchClient),
+         true <- client.host_supported?() do
+      uri = URI.parse(URI.to_string(%{uri | path: nil}))
+
       {:ok,
        %__MODULE__{
-         uri: %{uri | path: nil},
+         uri: uri,
          cacertfile: options[:cacertfile],
          connect_address: address,
-         limits: limits
+         limits: limits,
+         upstream_protocol: protocol,
+         client: client
        }}
     else
       _ -> {:error, :invalid_http_proxy_options}
@@ -80,6 +121,15 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   def init(_), do: {:error, :invalid_http_proxy_options}
+
+  @doc false
+  def selected_client(%{group: _}), do: HTTPFetchClient
+
+  def selected_client(%__MODULE__{upstream_protocol: :http1, client: HTTPFetchClient}),
+    do: HTTPFetchClient
+
+  def selected_client(%__MODULE__{upstream_protocol: :http3, client: HTTP3SessionClient}),
+    do: HTTP3SessionClient
 
   @doc false
   def group_limits(options) when is_map(options) do
@@ -102,7 +152,9 @@ defmodule Gaoxy.Proxy.HTTP do
 
   @impl true
   def call(exchange, config) do
-    with true <- HTTPFetchClient.host_supported?() || {:error, :unsupported_http_proxy_host},
+    client = selected_client(config)
+
+    with true <- client.host_supported?() || {:error, :unsupported_http_proxy_host},
          true <-
            exchange.request.target_form in [:origin, :absolute] || {:error, :unsupported_target},
          {:ok, method} <- method(exchange.request.method),
@@ -119,6 +171,7 @@ defmodule Gaoxy.Proxy.HTTP do
             }
         },
         config: config,
+        client: client,
         policy: policy,
         response_policy: nil,
         session: session,
@@ -181,7 +234,9 @@ defmodule Gaoxy.Proxy.HTTP do
           else: exchange.request.body
         ),
       path: exchange.request.path,
-      query: query
+      query: query,
+      limits: exchange.limits,
+      max_upload_bytes: config.limits.max_chunk_bytes
     }
 
     args = %{
@@ -206,7 +261,8 @@ defmodule Gaoxy.Proxy.HTTP do
           byte_size(URI.to_string(%{fixed.uri | path: exchange.request.path, query: query}))
       end
 
-    reserve = HTTPFetchClient.reservation_bytes(headers, url_bytes, config.limits.max_chunk_bytes)
+    client = selected_client(config)
+    reserve = client.reservation_bytes(headers, url_bytes, config.limits.max_chunk_bytes)
 
     with {:ok, session} <-
            DynamicSupervisor.start_child(Gaoxy.Proxy.SessionSupervisor, {Session, args}) do
@@ -290,7 +346,7 @@ defmodule Gaoxy.Proxy.HTTP do
           cond do
             timeout <= 0 -> {:error, :timeout}
             bytes == "" -> :ok
-            true -> HTTPFetchClient.write_body(state.upload, bytes, timeout)
+            true -> state.client.write_body(state.upload, bytes, timeout)
           end
 
         case result do
@@ -317,7 +373,7 @@ defmodule Gaoxy.Proxy.HTTP do
          :ok <-
            if(is_nil(state.upload),
              do: :ok,
-             else: HTTPFetchClient.finish_body(state.upload, trailers)
+             else: state.client.finish_body(state.upload, trailers)
            ) do
       pump(%{state | upload_stopped: true})
     else

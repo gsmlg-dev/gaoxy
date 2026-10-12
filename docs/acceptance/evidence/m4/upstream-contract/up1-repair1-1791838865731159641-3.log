@@ -1,0 +1,476 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 802961, max_cases: 4
+
+.......
+
+  1) test actual Service cancellation keeps its earlier absolute cleanup deadline (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:301
+     Unexpectedly received message {:DOWN, #Reference<0.1684642099.4250927106.7661>, :process, #PID<0.456.0>, :normal} (which matched {:DOWN, ^monitor, :process, ^guardian, _})
+     code: refute_receive {:DOWN, ^monitor, :process, ^guardian, _}, 30
+     stacktrace:
+       test/http3_guardian_test.exs:326: (test)
+
+.....................................
+
+  2) test missing endpoint stop confirmation fails actual guardian without a Service receipt (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:336
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       monitor = #Reference<0.1684642099.4250927105.18331>
+       guardian = #PID<0.504.0>
+     Showing 8 of 8 messages in the mailbox
+     code: assert_receive {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+     mailbox:
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:origin_request, #PID<0.514.0>, "/held"}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:trace, #PID<0.504.0>, :send,
+                 {:h3_command, #PID<0.504.0>,
+                  #Reference<0.1684642099.4250927105.18345>,
+                  #Reference<0.1684642099.4250927105.18348>,
+                  #Reference<0.1684642099.4250927105.18950>, 13,
+                  :abort,
+                  [
+                    %QuicHttp3.Session{
+                      transport: QuicHttp3.Transport.Quic,
+                      connection: %QuicHttp3.Transport.Quic{
+                        endpoint: #PID<0.507.0>,
+                        handle: %Quic.Runtime.ConnectionHandle{
+                          id: #PID<0.511.0>,
+                          generation: #Reference<0.1684642099.4250927105.18385>
+                        },
+                        ops: Quic,
+                        consumer: #PID<0.509.0>,
+                        connect_ref: #Reference<0.1684642099.4250927105.18377>,
+                        endpoint_owned?: false
+                      },
+                      control: %QuicHttp3.Control{
+                        role: :client,
+                        local_settings: [
+                          {1, 0},
+                          {6, 65536},
+                          {7, 0}
+                        ],
+                        peer_settings: [
+                          {1, 0},
+                          {6, 32768},
+                          {7, 0}
+                        ],
+                        buffer: "",
+                        control_stream_id: nil,
+                        peer_control_stream_id: %QuicHttp3.Transport.Quic.Stream{
+                          handle: %Quic.Runtime.StreamHandle{
+                            connection: %Quic.Runtime.ConnectionHandle{
+                              id: #PID<0.511.0>,
+                              generation: #Reference<0.1684642099.4250927105.18385>
+                            },
+                            id: 3
+                          },
+                          ops: Quic
+                        },
+                        peer_type_buffer: "",
+                        local_open?: false,
+                        peer_open?: true,
+                        received_settings?: true,
+                        goaway_id: nil
+                      },
+                      control_stream: %QuicHttp3.Transport.Quic.Stream{
+                        handle: %Quic.Runtime.StreamHandle{
+                          connection: %Quic.Runtime.ConnectionHandle{
+                            id: #PID<0.511.0>,
+                            generation: #Reference<0.1684642099.4250927105.18385>
+                          },
+                          id: 2
+                        },
+                        ops: Quic
+                      },
+                      peer_streams: %{
+                        %QuicHttp3.Transport.Quic.Stream{
+                          handle: %Quic.Runtime.StreamHandle{
+                            connection: %Quic.Runtime.ConnectionHandle{
+                              id: #PID<0.511.0>,
+                              generation: #Reference<0.1684642099.4250927105.18385>
+                            },
+                            id: 3
+                          },
+                          ops: Quic
+                        } => %{type: :control, buffer: ""}
+                      },
+                      requests: %{
+                        #Reference<0.1684642099.4250927105.18659> => %{
+                          stream: %QuicHttp3.Transport.Quic.Stream{
+                            handle: %Quic.Runtime.StreamHandle{
+                              connection: %Quic.Runtime.ConnectionHandle{
+                                id: #PID<0.511.0>,
+                                generation: #Reference<0.1684642099.4250927105.18385>
+                              },
+                              id: 0
+                            },
+                            ops: Quic
+                          },
+                          ref: #Reference<0.1684642099.4250927105.18659>,
+                          upload: :closed,
+                          decoder: %QuicHttp3.Response{
+                            phase: :final,
+                            method: "GET",
+                            status: 200,
+                            content_length: nil,
+                            received: 0,
+                            prefix: "",
+                            frame: nil,
+                            max_encoded_headers: 65536,
+                            max_header_bytes: 65536,
+                            max_fields: 128
+                          }
+                        }
+                      },
+                      next_request: 2,
+                      next_stream_id: 4,
+                      max_fields: 128,
+                      max_encoded_headers: 65536,
+                      max_header_bytes: 65536,
+                      max_retained_bytes: 262144,
+                      qpack_streams: %{},
+                      continuations: %{},
+                      max_frame: 8192,
+                      timeout: 4999,
+                      pending: nil,
+                      work: nil,
+                      runnable: [
+                        %QuicHttp3.Transport.Quic.Stream{
+                          handle: %Quic.Runtime.StreamHandle{
+                            connection: %Quic.Runtime.ConnectionHandle{
+                              id: #PID<0.511.0>,
+                              generation: #Reference<0.1684642099.4250927105.18385>
+                            },
+                            id: 0
+                          },
+                          ops: Quic
+                        }
+                      ],
+                      retired: MapSet.new([]),
+                      aborted_operation: nil,
+                      open?: true
+                    }
+                  ], -576460747218}, #PID<0.509.0>}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:trace, #PID<0.504.0>, :send,
+                 {[:alias |
+                   #Reference<0.0.60931.1684642099.4250992641.18948>],
+                  {:ok,
+                   %{
+                     monitors: %{
+                       #Reference<0.1684642099.4250927105.18326> => #PID<0.476.0>,
+                       #Reference<0.1684642099.4250927105.18327> => #PID<0.493.0>,
+                       #Reference<0.1684642099.4250927105.18328> => #PID<0.491.0>,
+                       #Reference<0.1684642099.4250927105.18329> => #PID<0.494.0>
+                     },
+                     owner: #PID<0.476.0>,
+                     request: %{
+                       phase: :streaming,
+                       poll_due: -576460747314,
+                       events: [],
+                       terminal: true,
+                       transport: [
+                         host: "127.0.0.1",
+                         tls: [
+                           cacertfile: "/tmp/nix-shell.7UPwgv/gaoxy-h3-guardian-355/ca.pem",
+                           verify: :verify_peer
+                         ],
+                         streams: [
+                           max_data: 262144,
+                           max_buffer: 262144,
+                           max_ready_bytes: 262144,
+                           max_stream_data_bidi_local: 65536,
+                           max_stream_data_uni: 65536,
+                           max_streams_bidi: 1,
+                           max_streams_uni: 3,
+                           max_stream_records: 16
+                         ],
+                         timeout: 4999
+                       ],
+                       caller_stop_sent: false,
+                       fields: [
+                         {":method", "GET"},
+                         {":scheme", "https"},
+                         {":authority", "127.0.0.1:46146"},
+                         {":path", "/held"}
+                       ],
+                       upload_waiter: nil,
+                       pending: nil,
+                       driver: &:erlang.apply/3,
+                       generation: #Reference<0.1684642099.4250927105.18348>,
+                       reset_pending: false,
+                       owner: #PID<0.504.0>,
+                       operation: %{
+                         deadline: -576460747218,
+                         kind: :abort,
+                         action: :abort,
+                         ref: #Reference<0.1684642099.4250927105.18950>
+                       },
+                       tick: #Reference<0.1684642099.4250927105.18920>,
+                       delivery: nil,
+                       event_bytes: 0,
+                       error_reported: false,
+                       limits: %{
+                         request_timeout: 30000,
+                         read_timeout: 5000,
+                         write_timeout: 5000,
+                         max_trailer_bytes: 8192,
+                         max_header_bytes: 32768,
+                         max_trailers: 32,
+                         max_headers: 100,
+                         max_buffer_bytes: 65536,
+                         max_read_chunk: 16384,
+                         header_timeout: 5000,
+                         max_body_bytes: 8388608,
+                         max_chunk_line: 1024,
+                         max_request_line: 8192
+                       },
+                       upload_finished: true,
+                       stop_result: nil,
+                       cleanup_session_result: nil,
+                       upload_stopped: true,
+                       max_upload_bytes: 16384,
+                       endpoint: %QuicHttp3.Transport.Quic.Endpoint{
+                         pid: #PID<0.507.0>,
+                         tls: [
+                           alpn: ["h3"],
+                           cacerts: [
+                             <<48, 130, 1, 170, 48, 130, 1, 80,
+                               160, ...>>
+                           ],
+                           reference_identity: {:ip,
+                            {127, 0, 0, 1}}
+                         ],
+                         profile: %{
+                           name: :ordered,
+                           tls: %SSL.ClientHello.WireProfile{
+                             name: nil,
+                             legacy_version: 771,
+                             session_id: :empty,
+                             cipher_suites: [4865, 4866],
+                             compression_methods: [0],
+                             extensions: [
+                               {:supported_versions, [...]},
+                               {:supported_groups, ...},
+                               {...},
+                               ...
+                             ],
+                             grease: %SSL.ClientHello.GreasePolicy{
+                               mode: :disabled
+                             },
+                             record: %SSL.ClientHello.RecordPolicy{
+                               mode: :none
+                             }
+                           },
+                           max_packet_size: 1350,
+                           transport_parameters: "",
+                           cid_length: 8
+                         },
+                         ops: Quic,
+                         host: "127.0.0.1",
+                         streams: %{
+                           delivery: :manual,
+                           max_data: 262144,
+                           max_buffer: 262144,
+                           max_ready_bytes: 262144,
+                           max_stream_data_bidi_local: 65536,
+                           max_stream_data_uni: 65536,
+                           max_streams_bidi: 1,
+                           max_streams_uni: 3,
+                           ...
+                         }
+                       },
+                       deadline: -576460742370,
+                       cleanup_deadline: -576460747218,
+                       bootstrap: %{
+                         monitor: #Reference<0.1684642099.4250927105.18349>,
+                         pid: #PID<0.505.0>,
+                         down: :normal,
+                         result: :ok
+                       },
+                       cleanup_cancelled: true,
+                       endpoint_down: nil,
+                       request_ref: #Reference<0.1684642099.4250927105.18659>,
+                       uri: %URI{
+                         scheme: "https",
+                         authority: "127.0.0.1:46146",
+                         userinfo: nil,
+                         host: "127.0.0.1",
+                         port: 46146,
+                         path: "/held",
+                         query: nil,
+                         ...
+                       },
+                       continuation: nil,
+                       closed_reason: nil,
+                       stream: {:http3_session,
+                        #Reference<0.1684642099.4250927105.18345>},
+                       abandoned_operation_identity: nil,
+                       cleanup_stop_due: -576460747218,
+                       endpoint_monitor: #Reference<0.1684642099.4250927105.18373>,
+                       stop_task: nil,
+                       ...
+                     },
+                     config: %Gaoxy.Proxy.HTTP{
+                       uri: %URI{
+                         scheme: "https",
+                         authority: "127.0.0.1:46146",
+                         userinfo: nil,
+                         host: "127.0.0.1",
+                         port: 46146,
+                         path: nil,
+                         query: nil,
+                         fragment: nil
+                       },
+                       cacertfile: "/tmp/nix-shell.7UPwgv/gaoxy-h3-guardian-355/ca.pem",
+                       connect_address: nil,
+                       limits: %{
+                         idle_timeout: 60000,
+                         max_chunk_bytes: 16384,
+                         opening_timeout: 5000,
+                         max_lifetime: 30000,
+                         write_timeout: 5000
+                       },
+                       upstream_protocol: :http3,
+                       client: Gaoxy.Proxy.HTTP3SessionClient
+                     },
+                     instance: #PID<0.491.0>,
+                     cancelled: true,
+                     service: #PID<0.493.0>,
+                     started_at: -576460747369,
+                     deadline: -576460742370,
+                     token: #Reference<0.1684642099.4250927105.18333>,
+                     client: Gaoxy.Proxy.HTTP3SessionClient,
+                     request_options: %{
+                       path: "/held",
+                       body: :none,
+                       query: nil,
+                       headers: [],
+                       limits: %{
+                         request_timeout: 30000,
+                         read_timeout: 5000,
+                         write_timeout: 5000,
+                         max_trailer_bytes: 8192,
+                         max_header_bytes: 32768,
+                         max_trailers: 32,
+                         max_headers: 100,
+                         max_buffer_bytes: 65536,
+                         max_read_chunk: 16384,
+                         header_timeout: 5000,
+                         max_body_bytes: 8388608,
+                         max_chunk_line: 1024,
+                         max_request_line: 8192
+                       },
+                       method: :get,
+                       max_upload_bytes: 16384
+                     },
+                     headers: true,
+                     gate: #PID<0.494.0>,
+                     delivery: nil,
+                     opening_deadline: -576460742370,
+                     consumed: true,
+                     cleanup_started: true,
+                     cleanup_deadline: -576460747218,
+                     trailers: [],
+                     selector: {:fixed,
+                      %Gaoxy.Proxy.HTTP{
+                        uri: %URI{
+                          scheme: "https",
+                          authority: "127.0.0.1:46146",
+                          userinfo: nil,
+                          host: "127.0.0.1",
+                          port: 46146,
+                          path: nil,
+                          query: nil,
+                          fragment: nil
+                        },
+                        cacertfile: "/tmp/nix-shell.7UPwgv/gaoxy-h3-guardian-355/ca.pem",
+                        connect_address: nil,
+                        limits: %{
+                          idle_timeout: 60000,
+                          max_chunk_bytes: 16384,
+                          opening_timeout: 5000,
+                          max_lifetime: 30000,
+                          write_timeout: 5000
+                        },
+                        upstream_protocol: :http3,
+                        client: Gaoxy.Proxy.HTTP3SessionClient
+                      }},
+                     selection: nil,
+                     outcome: :cancelled,
+                     activated_at: -576460747369,
+                     opening_timer: #Reference<0.1684642099.4250927105.18339>,
+                     total_timer: #Reference<0.1684642099.4250927105.18340>,
+                     cleanup_requested_deadline: -576460747218
+                   }}},
+                 #Reference<0.0.60931.1684642099.4250992641.18948>}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:DOWN, #Reference<0.1684642099.4250927105.18939>, :process,
+                 #PID<0.507.0>, :normal}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:trace, #PID<0.504.0>, :send,
+                 {:h3_stop_caller, #PID<0.504.0>,
+                  #Reference<0.1684642099.4250927105.18345>,
+                  #Reference<0.1684642099.4250927105.18348>},
+                 #PID<0.509.0>}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:DOWN, #Reference<0.1684642099.4250927105.18940>, :process,
+                 #PID<0.509.0>, :normal}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:trace, #PID<0.504.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.504.0>,
+                   [:alias |
+                    #Reference<0.0.64515.1684642099.4250992641.18974>]},
+                  {:complete_cleanup,
+                   #Reference<0.1684642099.4250927105.18333>}},
+                 #PID<0.493.0>}
+
+       pattern: {:DOWN, ^monitor, :process, ^guardian, :cleanup_unconfirmed}
+       value:   {:DOWN, #Reference<0.1684642099.4250927105.18331>, :process,
+                 #PID<0.504.0>, :normal}
+     stacktrace:
+       test/http3_guardian_test.exs:361: (test)
+
+
+
+  3) test actual guardian total timer survives headers and paused downstream delivery (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:283
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       guardian = #PID<0.830.0>
+     Showing 3 of 3 messages in the mailbox
+     code: assert_receive {:gaoxy_proxy_http, ^guardian, {:error, :timeout}}
+     mailbox:
+       pattern: {:gaoxy_proxy_http, ^guardian, {:error, :timeout}}
+       value:   {:origin_request, #PID<0.840.0>, "/stream"}
+
+       pattern: {:gaoxy_proxy_http, ^guardian, {:error, :timeout}}
+       value:   {:gaoxy_proxy_http, #PID<0.830.0>, {:error, :request_timeout}}
+
+       pattern: {:gaoxy_proxy_http, ^guardian, {:error, :timeout}}
+       value:   {:DOWN, #Reference<0.1684642099.4250927106.10871>, :process,
+                 #PID<0.830.0>, :normal}
+     stacktrace:
+       test/http3_guardian_test.exs:296: (test)
+
+
+
+  4) test actual guardian retains stateful ACKs and Service bytes until owned H3 cleanup (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:165
+     Unexpectedly received message {:DOWN, #Reference<0.1684642099.4250927105.23415>, :process, #PID<0.877.0>, :normal} (which matched {:DOWN, ^monitor, :process, ^guardian, _})
+     code: refute_receive {:DOWN, ^monitor, :process, ^guardian, _}, 30
+     stacktrace:
+       test/http3_guardian_test.exs:216: (test)
+
+
+Finished in 9.4 seconds (9.4s async, 0.00s sync)
+48 tests, 4 failures

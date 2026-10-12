@@ -1,0 +1,101 @@
+{
+  "task_id": "/root/m4_session_affinity_review:UP1_REPAIR2_CODE",
+  "assignment": "direct read-only independent CODE/quality review after SPEC PASS",
+  "status": "DONE_CODE_REVIEW",
+  "code_verdict": "PASS",
+  "actionable_findings": [],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "preceding_SPEC_receipt": "docs/acceptance/evidence/m4/upstream-contract/review-up1-repair2-spec-1791840034352954214.json",
+  "preceding_SPEC_receipt_sha256": "60365f7438efe2fbe0da2487a608d591e76e88cf2698b33f7637bf03e21049a4",
+  "review_order": "SPEC PASS receipt written before this separate CODE review/receipt",
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "edbef8db3373ca14e2c9258dd029aaf6e9343cd8b6c7b53bddd066292d459f82",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex": "56e116759509d4ea648b98a9a9b3cf643a1dc5c8cef76bf464c4f9d45d79b8c3",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1a6e2874098e76c56016989e076ea15854b9f04992f2ba3e4749a6f65cb6bb9d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "a79d24e1713728b50ddc10f463a742d206917916d4ecffdaf46042deb226dd0f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "991b78a48ca4e1ac21a1c2da160e51a7c87adc86dad01facc3ff9cef79d138e1",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "28092b71ac8cde87b2f6c6cbfdcc333e2fe234d1dd74d4a67154e34853742a1f",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "f92d6471048f26fa9eae298840e775798142f06c2722bf2e98bae894cb2f15a6",
+    "apps/gaoxy_proxy/test/http3_proxy_test.exs": "b107014744298d0d9410d9f0581a32c3ac960616c23fbffe74a9312b38aafce1",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "5fe74f93ff4d01195b519d0c781284a560179be6829d8ec41bcc28fcffbbe050"
+  },
+  "sdk_context_sha256": {
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "apps/gaoxy/lib/gaoxy/service.ex": "c0fa0549815500dad5f50779b05777880b008276540bae58d47a4cccd061037b",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab"
+  },
+  "execution_receipt": "docs/acceptance/evidence/m4/upstream-contract/up1-repair2-1791839854836894381.json",
+  "execution_receipt_sha256": "1b453e0a3809b96229f0520a8f3da1ff208cc03c20c1dffe93a8b427313b09d1",
+  "code_review_evidence": [
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:32-79,139-185",
+      "assessment": "Production open/1 fixes apply/3 and Session/Transport modules; test-only whole-call open/2 driver not injectable by config. HTTPS/explicit regular CA/address/TLS/module options validated before Session/bootstrap. Pseudo-fields use fixed host/port/IPv6 syntax plus escaped path/empty query; Host removed. Endpoint/client/connect stream options align and Session max_frame8192 retains16KiB application allowance."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:250-407,448-467,1075-1147",
+      "assessment": "Descriptor correlation/adoption link+monitor+ACK then creator normal DOWN required before caller launch. One caller generation and increasing command sequence; results require matching request/generation/PID/ref. Caller monitors guardian before allocation/commands, before/after calls and finite hint drains; normal matching DOWN stops operation acceptance. Guardian loss cannot fake Service completion. Caller never replaces itself or polls autonomously."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:473-605,605-683",
+      "assessment": "No Session internals extracted. Full ok/error/blocked/unknown advanced result stored before transition. While outstanding the old Session is not reused. Unknown selects only resume/1, retaining identity/original action/deadline; blocked upload suspend/poll/resume2 retains opaque continuation/latest Session and original budget. Fresh ready after open:not_ready is bounded by original opening deadline."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:194-236,320-366,537-577,685-858",
+      "assessment": "One upload waiter and finish token every stream request; input <=configured16KiB, no resend, one terminal FIN or ordered trailers. Early final head fails waiter once, discards continuation and resets send; same-batch done suppresses redundant reset of retired request; actual public stream_reset terminally propagates. Poll16/readbatches1/paused ref prevents new response DATA while delivery awaits ACK. Byte/event limits and split16KiB deliveries enforce bounded queue; stale ACK cannot unlock current delivery; queued trailers/end follow final ACK."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:423-442,673-683,897-1072",
+      "assessment": "Original absolute total/opening/write deadlines checked before scheduling and after result. Current-batch target progress due-now, idle due+5 without dropping events. One deduplicated tick. Once-only cleanup preserves earlier supplied/total+1000 grace. Idle abort/close result or<=100ms fallback launches independent stop; outstanding/lost caller/unresolved bootstrap stop immediately. First executing stop_trigger only recorded at spawn and cannot be overwritten. Stop result+monitored normal endpoint DOWN (or specified prior-normal case)+all task DOWN required; missing/abnormal/error/expired/adoption-loss stays cleanup_unconfirmed. Only owned Gaoxy tasks killed; dependency endpoint normal DOWN not manufactured."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:52-132,153-166,214-271,347-382",
+      "assessment": "Canonical recompilation validates forged structs, URI/limit equality, unknown keys and fixed protocol/client pair. H1 default65KiB and H3 max16KiB stay separate. Selected client used by reservation/upload/finish and guardian. Group endpoint fixes H1; no module/driver/TLS/connect address injected into H3 production config."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:14-59,91-138,146-175,183-213,261-355",
+      "assessment": "Guardian retains advanced open/event/ACK/cleanup handles. H3 stream marker prevents synthetic response end. Opening timer ends only on valid final headers; H3 total expiry request_timeout distinct from H1 timeout. Monitored cancellation begins cleanup once and clamps supplied grace; no header-only H3 polling timer duplicates adapter tick. Service receipt follows confirmed adapter cleanup plus consumed/cancelled state; uncertain cleanup fails guardian without complete_cleanup."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex; apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex; apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex:24-47,101-115",
+      "assessment": "Behavior explicitly declares host/reservation and stateful ACK/cleanup shapes, optional begin_cleanup preserves H1. HTTPFetch changes only behavior annotations. Group maps/compiled member configs revalidated and reject H3/client mismatch with public normalized error. No unrelated adapter redesign or dependency patch."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/http3_session_client_test.exs:697-1170,1341-1387; apps/gaoxy_proxy/test/http3_guardian_test.exs:165-376; apps/gaoxy_proxy/test/http3_proxy_test.exs",
+      "assessment": "12 new public-boundary lifecycle tests use deterministic owned PID/message barriers and finite observation deadlines. Adoption scheduler suspensions resumed in try/after; actual endpoint suspend_process fixtures block public stop rather than assuming sys.suspend. Original37+5+6 assertions remain, now49+5+6. Real Service completion/retention and production guardian/network integration complement boundary doubles. No skips/test weakening found."
+    }
+  ],
+  "actual_verification": {
+    "reviewer_test_execution": "NOT_RUN as assigned",
+    "root_execution": "Format check and strict compile exit0; focused60tests0failures and full13-file compatibility150tests0failures, exclusions/skips0; source before/after unchanged",
+    "log_hash_and_summary_review": "Verified independently in preceding SPEC review, preserved exact execution receipt hash",
+    "nonzero_execution_confirmed": true,
+    "nine_frozen_sources_current_match": true
+  },
+  "limits": [
+    "CODE PASS is for the frozen9-file UP1 implementation and test suite. Does not establish UP2 independent downstream/upstream matrix, standalone H3 origin, browser/core-consumer gates, packaged release or M4 completion.",
+    "Direct Session qualification history is separate; no Service completion inferred from UP0 probe receipts.",
+    "Scheduler progress/performance is source-aligned but original5s1MiB tiny-window remains an actual required UP2 gate; no deadline enlargement or historical-count substitution accepted.",
+    "Concurrent future harness/server/standalone work excluded from executable immutability set as assigned."
+  ],
+  "counters": {
+    "UP0_sol": 2,
+    "UP0_failed_sol": 2,
+    "astra": 2,
+    "failed_astra": 2,
+    "UP0_coordinator": 5,
+    "UP0_failed_coordinator": 4,
+    "UP1_initial": "unsuccessful",
+    "UP1_repair1": "unsuccessful",
+    "UP1_repair2": "success",
+    "reviewer_added_repairs": 0,
+    "reset": false
+  },
+  "changes": "Only this new unique immutable CODE receipt; earlier SPEC receipt and all history preserved. No implementation/tests/docs edits, no commit or live/format/build commands.",
+  "shutdown": "All reviewer commands finished; no owned pending session/process. Others writers/processes untouched.",
+  "remaining_decisions": "No review decision outstanding. Coordinator owns fresh affected verification before advancing planned UP2/standalone work and subsequent acceptance; publication retains conditional gate."
+}
