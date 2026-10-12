@@ -1,0 +1,61 @@
+{
+  "task_id": "/root/m4_spec_review/upstream-standalone-design",
+  "status": "DONE",
+  "assignment": "direct independent read-only architecture/design/specification review; Astra architecture author, no recovery escalation",
+  "reviewer": "/root/m4_spec_review",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "architecture_inspected_commit": "42f0c0569ba556f8b08e5e2bbc1bc1d3acf0261e",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS",
+  "architecture_review": "PASS bounded selected approach; source findings remain qualification prerequisites",
+  "source_sha256": {
+    "docs/designs/m4-upstream-standalone.md": "8381f1cf2bce7f31420ecf47e5c5b76fece6c0d8d4e214844ee39fd69014a12b",
+    "docs/plans/m4-upstream-standalone.md": "7b6f326865ea11657ce065db59d8319c33cd849d619d9e374c3d7abba82707e8",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "dependency_audit_hashes_verified": {
+    "deps/http_fetch/lib/http/request_completion.ex": "2579b9bbae473603227bcf0edc9509adb8c070927d44fb4e141e7d11160bcb9f",
+    "deps/http_fetch/lib/http/abort_controller.ex": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+    "deps/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+    "deps/http_fetch/lib/http/fetch_options.ex": "8e035e1ec4a8c3afb68731ceb325ddf1cd1b5a780bd1b2a063e3f417241b6061",
+    "deps/http_runtime/lib/http/http3/body_bridge.ex": "7e8111e37f1aab2074878f70efbdd95620dffa2883edca3b49ff6b799aea9f94",
+    "deps/http_core/lib/http/quic/tls_options.ex": "43f9309449c14be7b10fb1eb6a2b51f6b8b0431d624b26de9f25d74a8c17763e"
+  },
+  "reviewed_decisions": [
+    "Explicit fixed-authority upstream H3 through allowlisted separate HTTP3FetchClient; H1 default unchanged, no forward/CONNECT/group/reuse/pool/auto/fallback expansion. Protocol/client consistency revalidated for precompiled configs, groups rejectH3 before activation, forward path retains H1 auth and address policy.",
+    "UP0 public functional qualification precedes production client activation. Source confirms RequestCompletion unsupportedH3, AbortController abort only acknowledges Agent update, and Stream.finish/2 asynchronous H3 request-trailer rejection. Promise Task identity is public typed state; private owner/session lookup forbidden. Ordinary observable stream/task completion is recorded separately and supported equivalent lifecycle APIs may qualify; no native-ledger/#97 proof recreated.",
+    "Public Session alternative considered but not selected; it exposes abort/close and DATA but no upload-trailingHEADERS. Actual required functional trailer reproduction/issue routing belongs to coordinator, not source audit.",
+    "Adapter requires HTTPS plus explicit CA, correct CA/hostname verification, no connect_address/H3, correct returnedH3 protocol, bounded one outstanding upload and acknowledged response delivery, no replay after uncertainty, finite originalD narrowed limits.",
+    "Conservative perrequest reservation is documented as application budget, not total native/VM memory. No complete_cleanup on uncertainty; no permanent unqualified adapter. Blocked client work does not stop independent G3/standalone work.",
+    "Data-only standalone handler/protocol/transport strict branch fixes ALPN and credentials, rejects unknown module/TLS-provider/QUIC knobs/unsupported bindings before startup, with no atom creation from input. Optional app added only to standalone, clean core/H1H2 closure remains separately verified.",
+    "Existing Generation init requires live storePID; runtime child start after registered stores initializes H3 options via public init on each restart. Store crash rest_for_one reinitializes newPID instead of retaining stale capturedPID. Core handler contract and H1 behavior unchanged.",
+    "Exact H3 capacity uses max_streams*(request+2max_config_bytes) plus connection/writer, preserves independentH3 byte/state/activity limits and perrequest guardian reservations. Initial config/reload static framing including:status is validated.",
+    "UP2 independent two-origin TLS/authority identities and actualH1H2H3 downstream rows preserve queries/headers/compression/bodyless/trailers/cancellation/isolation. ST2 real Config/Supervisor startup, generationreload/rollback, mixed-service startuprollback, finite owners and UDPportrebind; sourcebound nonzero gates and independent reviews required."
+  ],
+  "resolved_findings": [
+    {
+      "finding": "ST2 initially made all streamed/proxy routes conditional on UP1 despite independently supported standaloneH3\u2192dedicatedH1 routes.",
+      "resolution": "Final plan now unconditionally requires independent dedicatedH1 streamed/proxy route after G3 compatibility; only H3-origin route depends onUP1. ExistingH1 row cannot be skipped while H3 upstream blocked.",
+      "result": "PASS"
+    }
+  ],
+  "unresolved_findings": [],
+  "runtime_status": "NOT RUN by architecture or reviewer; UP0/UP1/UP2/ST1/ST2 are future qualification/implementation gates, not accepted runtime capability.",
+  "permissions": "No stage publication authorized by this review. Parent-recorded conditional main/push/newversion authorization applies only after completeM4 prescribed gates; Vault/production/deployment/artifactE2E restrictions persist.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "astra_architecture_recovery_rounds": 0,
+    "received_connection": "Sol3/unsuccessful2/Astra1/unsuccessful0",
+    "received_options": "Sol4/unsuccessful1/Astra0",
+    "note": "Architecture drafting/review adds no recovery round and resets none."
+  },
+  "command_shutdown": "Read-only document/source/hash checks and this owned receipt write finished; no code/dependency/hashed integration source edit, Mix/live/network process or commit.",
+  "remaining_risks": [
+    "Pinned public lifecycle and request-trailer functional gaps require real independent qualification; adapter may be blocked externally after confirmed routing.",
+    "G3browser/consumer and separateupstream/standalone acceptance remain required for fullM4.",
+    "Schema/publicAPI behavior must be tied to exact updated cohort if upstream releases required support."
+  ],
+  "decisions_needed": [],
+  "next_step": "Proceed UP0 and independentST1/ST2 after G2, respecting G3 compatibility dependency and no production client activation before qualified lifecycle/trailers."
+}

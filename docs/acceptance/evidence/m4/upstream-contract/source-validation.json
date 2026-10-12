@@ -1,0 +1,34 @@
+{
+  "task_id": "/root/m4_spec_review/public-upstream-qualification",
+  "assignment": "direct initial implementation",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "source_status": "ready for initial live validation",
+  "runtime_status": "NOT RUN; Mix/live lease retained by proxy worker",
+  "checks": [
+    {
+      "command": "python -m py_compile integration/http3/upstream/origin.py integration/http3/upstream/run.py",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "elixir standalone Code.string_to_quoted!/Code.format_string! on integration/http3/upstream/probe.exs",
+      "result": "PASS",
+      "exit": 0
+    }
+  ],
+  "source_sha256": {
+    "integration/http3/upstream/origin.py": "86ea2f2b66769337400ef422dc80e1dccbd49e449eb9bdeb8b63456560c38165",
+    "integration/http3/upstream/run.py": "a5c219fe3fe911d3d7d4c96a4d56200c375516a9403d60696d94c3a6be93b651",
+    "integration/http3/upstream/probe.exs": "e222e7899fd677907d615d31a8b055e610061af35e8f0124510fbc053802cb89",
+    "integration/http3/upstream/README.md": "a6838203b83b0e1a63bd180cbd40e861e5867c03fb609dd8d0d196cbb19ae2d0"
+  },
+  "sol_repair_rounds": 0,
+  "received_astra_recovery_rounds": 0,
+  "command_shutdown": "All syntax/format commands exited; no owned Mix/live processes",
+  "remaining_checks": [
+    "Run bounded contract gate after coordinator grants lease",
+    "Independently review source/evidence before acceptance",
+    "TLS negative variants, blocked upload/owner-loss alternatives and production matrix remain NOT RUN"
+  ],
+  "decisions_needed": []
+}

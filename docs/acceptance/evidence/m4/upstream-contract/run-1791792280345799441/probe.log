@@ -1,0 +1,12 @@
+GAOXY_UPSTREAM_PROBE {"elixir":"1.18.5","event":"environment","http_fetch":"0.21.3","otp":"28","public_session_functions":["__struct__/0","__struct__/1","abort/1","cancel/2","close/1","connect/4","new/0","new/1","open/1","poll/2","poll/3","ready/1","request/4","reset_send/2","resume/1","resume/2","send_data/5","suspend_blocked/1"]}
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert %HTTP.Response{status: 200, http_version: :http3, body: stream} = await({promise, monitor})
+left:  %HTTP.Response{status: 200, http_version: :http3, body: stream}
+right: {:error, {:http3_not_established, {:owner_down, {:shutdown, {:tls, :tls, :bad_certificate, :certificate_signature_scheme_not_allowed}}}}}
+
+    integration/http3/upstream/probe.exs:50: Gaoxy.UpstreamPublicProbe.response/1
+    integration/http3/upstream/probe.exs:77: Gaoxy.UpstreamPublicProbe.ordinary/1
+    integration/http3/upstream/probe.exs:202: Gaoxy.UpstreamPublicProbe.run/0
+    integration/http3/upstream/probe.exs:219: (file)

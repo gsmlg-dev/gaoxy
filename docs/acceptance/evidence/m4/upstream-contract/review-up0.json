@@ -1,0 +1,129 @@
+{
+  "task_id": "/root/m4_downstream_proxy/UP0-independent-review",
+  "status": "DONE independent source/evidence review; required upstream-H3 trailer feature remains BLOCKED_DEPENDENCY",
+  "assignment": "direct bounded independent read-only review; reviewer did not author UP0 harness",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS bounded diagnostic scope",
+  "code_review": "PASS",
+  "evidence_review": "PASS 5 supported rows and 2 required BLOCKED rows; no full UP0 acceptance",
+  "unresolved_findings": [],
+  "review_source_sha256": {
+    "integration/http3/upstream/README.md": "9b113af3a029b41f995e2b6f7f3dd7d17eb3a9a04c14162816739c61a3ccb176",
+    "integration/http3/upstream/origin.py": "86ea2f2b66769337400ef422dc80e1dccbd49e449eb9bdeb8b63456560c38165",
+    "integration/http3/upstream/run.py": "54c53b4f9f1fbae804e09812478bd646b9d402f837aedee02061e85d2868dd96",
+    "integration/http3/upstream/probe.exs": "cbd19a35cfbf8c7bce3b37743714b83128e203637ff7d7494490e6f8fd70439e",
+    "deps/http_fetch/mix.exs": "9dd388aa4e940c4cdc18767aeb92996e1aefae3c4aef8809d44ebf8008b149d0",
+    "deps/elixir_quic_http3/mix.exs": "54bc08d3817ba3dc3c9b9018fe35796946ee725fff0a0391026ad8188420fb6f",
+    "deps/http_fetch/lib/http/stream.ex": "552c5951d30c21ce864a77c1a61dc5e8bcda038559040028e4f3282074325d05",
+    "deps/http_runtime/lib/http/http3/body_bridge.ex": "7e8111e37f1aab2074878f70efbdd95620dffa2883edca3b49ff6b799aea9f94",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791811050964927834/result.json": "d4826f3349f3e98cf34309460aa3d014a27ce750e56c28788e4253983827a569",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791811050964927834/probe.log": "e454d273bae95778a7bb4180c54728d416b59857a2a7a832477da250990d9eb7",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791811050964927834/origin.log": "cc5fbe49fcc6596049fd7639c7c509b2858128d4865abd7018b33448360f859d",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791811050964927834/certificates-a.log": "39e02efdadcbf8fea6040bfdfea21db1b41f7dcd21dabfbb697275a308da0a4b",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791811050964927834/certificates-b.log": "cc014d94b680edeea1be7609cab9fbdba6cf0e5095a9513bdf9d40595ba02ac1",
+    "docs/acceptance/evidence/m4/upstream-contract/functional-disposition.json": "a000ac4989bb320dc993fbdb44f6491d406beb9a9d4cac6bf87fa84b47c2fc94",
+    "docs/acceptance/evidence/m4/upstream-contract/issue-submitted.json": "1b016802ce51cd5e4ac7b33a131af07e0be4973d08b0da4b2b2de723434406e6",
+    "docs/acceptance/evidence/m4/upstream-contract/issue-request.md": "bddd3b088a013215a84a4cb18deb213fd79a869ab727675aa362fdb3cd8acb2f",
+    "docs/acceptance/evidence/m4/upstream-contract/latest.json": "8191b81c2c0d806a14e2cccc22a2cd13b0823c534772b7fc27b0bd4fa0135da6"
+  },
+  "executed_run": "run-1791811050964927834",
+  "executed_rows": 7,
+  "supported_pass": 5,
+  "required_blocked": 2,
+  "supported_rows": [
+    "ordinary_stream_a",
+    "ordinary_stream_b",
+    "ordinary_upload",
+    "abort_pending_headers",
+    "abort_unacknowledged_response"
+  ],
+  "blocked_rows": [
+    "request_trailers_three",
+    "request_trailers_zero"
+  ],
+  "root_cause": {
+    "dependency": "HTTP Fetch/runtime and QUIC/H3 cohort 0.21.3",
+    "public_contract": "HTTP.Stream.finish/2 validates and enqueues trailers, returning :ok. H3 BodyBridge then emits :request_trailers_unsupported, received as public Promise error.",
+    "references": [
+      "deps/http_fetch/lib/http/stream.ex:131",
+      "deps/http_fetch/lib/http/stream.ex:135",
+      "deps/http_runtime/lib/http/http3/body_bridge.ex:116",
+      "integration/http3/upstream/probe.exs:121"
+    ]
+  },
+  "wire_review": [
+    "Probe check rows match probe.log exactly and origin snapshot equals captured result origin_requests. Seven unique origin/path pairs each occur once.",
+    "Three-byte trailer row has exactly abc SHA256 ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad; zero row has the empty body SHA256. Each has no Trailer declaration, trailing fields or request FIN, confirmed by independent aioquic snapshot and runner assertions at run.py:213-220.",
+    "Wire HEADERS/DATA barriers precede finish; ordinary upload records abc before request FIN then exact abcdef response. Ordinary response prefix is acknowledged before origin releases suffix and repeated ordered response trailers.",
+    "Both cancellation rows receive explicit public aborted errors and normal public process DOWN. Captured independent RESET0x10c events match each exact connection/stream/path. RequestCompletion unsupported is diagnostic only; no cleanup-completion claim inferred from abort return alone.",
+    "Distinct certificate CA/leaf hashes and different ports bind two origin identities with verify_peer and hostname trust. Session export enumeration is honestly marked audit, not another executed row.",
+    "Both children exit0, independent origin emits stopped and both advertised ports rebind. Captured before/after source hashes are identical; failures/RSA fixture/declaration runs remain FAIL and preserved."
+  ],
+  "issue_review": {
+    "number": 101,
+    "repo": "gsmlg-dev/http_fetch",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/101",
+    "live_state": "OPEN",
+    "live_type": "Feature",
+    "live_label": "internal request",
+    "provenance": "Both http_fetch and elixir_quic_http3 mix.exs source_url resolve to gsmlg-dev/http_fetch.",
+    "body": "Requesting repo/branch, minimal public reproduction, expected ordered trailing HEADERS, zero/nonempty body, independent evidence and severity blocker all present.",
+    "callsite": "integration/http3/upstream/probe.exs:120"
+  },
+  "source_identity": {
+    "executed_hashes_compared": 180,
+    "exact_current_matches": 179,
+    "deltas": {
+      "integration/http3/upstream/probe.exs": {
+        "executed": "20f54a086d089df4ccbe9f6fb4f24b4f6bbbf9301716618e09ff3c5434b88f3c",
+        "current": "cbd19a35cfbf8c7bce3b37743714b83128e203637ff7d7494490e6f8fd70439e"
+      }
+    },
+    "delta_proof": "Removing only exact TODO(upstream): gsmlg-dev/http_fetch#101 comment recreates captured probe SHA256. No executable source drift."
+  },
+  "verification_commands": [
+    {
+      "command": "Python AST parse origin.py/run.py and log/JSON/count/body/hash/cancellation/exit/rebind assertions",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "Compare all captured source SHA256 values against current files and reconstruct exact pre-TODO probe hash",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "gh issue view 101 --repo gsmlg-dev/http_fetch --json number,title,body,state,url,labels",
+      "result": "PASS live issue attribution",
+      "exit": 0
+    },
+    {
+      "command": "gh api repos/gsmlg-dev/http_fetch/issues/101 --jq issue summary",
+      "result": "PASS live Feature type",
+      "exit": 0
+    }
+  ],
+  "runtime_execution_by_reviewer": "NOT RUN: no Mix/live command started; captured owner run reviewed independently. Root retains execution lease.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "reviewer_astra_recovery_rounds": 0,
+    "received_up0_sol_repair_rounds": 2,
+    "received_up0_unsuccessful_overall_rounds": 1,
+    "received_up0_astra_recovery_rounds": 0,
+    "note": "No implementation/repair performed; cumulative counters unchanged."
+  },
+  "astra_gate": null,
+  "command_shutdown": "All owned read/AST/hash/JSON/gh commands exited; no process started by reviewer remains. Only review-up0.json receipt written; concurrent changes preserved.",
+  "remaining_risks": [
+    "UP0 broader wrong-CA/hostname/absent-trust/connect_address probes and blocked-upload/owner-loss alternatives are explicitly NOT RUN.",
+    "Production adapter and UP2 remain blocked pending a compatible published trailer feature and dependency update; existing independent downstream/standalone work may continue.",
+    "No full UP0/M4 or production acceptance follows from these supported diagnostic rows."
+  ],
+  "decisions_needed": []
+}

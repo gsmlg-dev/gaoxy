@@ -1,0 +1,28 @@
+GAOXY_UPSTREAM_PROBE {"elixir":"1.18.5","event":"environment","http_fetch":"0.21.3","otp":"28","public_session_functions":["__struct__/0","__struct__/1","abort/1","cancel/2","close/1","connect/4","new/0","new/1","open/1","poll/2","poll/3","ready/1","request/4","reset_send/2","resume/1","resume/2","send_data/5","suspend_blocked/1"]}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"ordinary_progress","origin":"a","path":"/ordinary"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_stream_a","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"ordinary_progress","origin":"b","path":"/ordinary"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_stream_b","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"upload_progress","origin":"a","path":"/upload"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_upload","status":"PASS"}
+
+16:07:35.309 [error] Task #PID<0.280.0> started from #PID<0.279.0> terminating
+** (ArgumentError) Trailer request headers are not supported
+    (http_core 0.21.3) lib/http/request.ex:241: HTTP.Request.reject_unsupported_request_framing!/1
+    (http_core 0.21.3) lib/http/http2.ex:881: HTTP.HTTP2.base_request_headers/1
+    (http_core 0.21.3) lib/http/http2.ex:117: HTTP.HTTP2.request_headers/3
+    (http_runtime 0.21.3) lib/http/http3/stream.ex:267: HTTP.HTTP3.Stream.headers/1
+    (http_runtime 0.21.3) lib/http/http3/stream.ex:29: HTTP.HTTP3.Stream.run/4
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<12.77000075/0 in HTTP.HTTP3.Stream.start/3>
+    Args: []
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert :ok = HTTP.Stream.chunk(source, "abc", 1000)
+left:  :ok
+right: {:error, {:http3_stream_down, {%ArgumentError{message: "Trailer request headers are not supported"}, [{HTTP.Request, :reject_unsupported_request_framing!, 1, [file: ~c"lib/http/request.ex", line: 241]}, {HTTP.HTTP2, :base_request_headers, 1, [file: ~c"lib/http/http2.ex", line: 881]}, {HTTP.HTTP2, :request_headers, 3, [file: ~c"lib/http/http2.ex", line: 117]}, {HTTP.HTTP3.Stream, :headers, 1, [file: ~c"lib/http/http3/stream.ex", line: 267]}, {HTTP.HTTP3.Stream, :run, 4, [file: ~c"lib/http/http3/stream.ex", line: 29]}, {Task.Supervised, :invoke_mfa, 2, [file: ~c"lib/task/supervised.ex", line: 101]}]}}}
+
+    integration/http3/upstream/probe.exs:122: Gaoxy.UpstreamPublicProbe.trailers/1
+    integration/http3/upstream/probe.exs:205: Gaoxy.UpstreamPublicProbe.run/0
+    integration/http3/upstream/probe.exs:219: (file)
