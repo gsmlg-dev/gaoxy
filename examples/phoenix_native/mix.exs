@@ -18,7 +18,7 @@ defmodule PhoenixNative.MixProject do
   end
 
   defp deps do
-    [
+    base = [
       {:gaoxy, path: "../../apps/gaoxy", override: true},
       {:gaoxy_http, path: "../../apps/gaoxy_http"},
       {:websock_adapter, path: "../../vendor/websock_adapter", override: true},
@@ -28,5 +28,9 @@ defmodule PhoenixNative.MixProject do
       {:phoenix_pubsub, "~> 2.1"},
       {:jason, "~> 1.4"}
     ]
+
+    if System.get_env("PHOENIX_NATIVE_H3") == "1",
+      do: base ++ [{:gaoxy_http3, path: "../../apps/gaoxy_http3"}],
+      else: base
   end
 end

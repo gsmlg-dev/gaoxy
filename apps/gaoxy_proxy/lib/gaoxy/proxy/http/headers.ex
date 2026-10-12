@@ -15,11 +15,13 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
          policy = distrust_forwarding_trailers(policy),
          true <-
            (policy.allowed == [] or exchange.request.body == :chunked or
-              exchange.request.version == :"HTTP/2") ||
+              exchange.request.version in [:"HTTP/2", :"HTTP/3"]) ||
              {:error, :invalid_proxy_trailers} do
       fields =
         Enum.reject(fields, fn {name, _} ->
-          name in policy.dropped or name in ["host", "expect"] or forwarding_field?(name)
+          name in policy.dropped or name in ["host", "expect"] or forwarding_field?(name) or
+            (name == "content-length" and policy.allowed != [] and
+               exchange.request.version in [:"HTTP/2", :"HTTP/3"])
         end)
         |> declare_trailers(policy.allowed)
 
@@ -87,7 +89,8 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
   end
 
   defp trailers_supported?(exchange, status, fields) do
-    exchange.request.version in [:"HTTP/1.1", :"HTTP/2"] and exchange.request.method != "HEAD" and
+    exchange.request.version in [:"HTTP/1.1", :"HTTP/2", :"HTTP/3"] and
+      exchange.request.method != "HEAD" and
       status not in [204, 205, 304] and
       not Enum.any?(fields, fn {name, _} -> name == "content-length" end)
   end

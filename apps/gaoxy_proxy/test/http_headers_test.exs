@@ -138,6 +138,54 @@ defmodule Gaoxy.Proxy.HTTPHeadersTest do
     assert {:error, _} = Headers.trailers(List.duplicate({"x-trace", "x"}, 9), policy)
   end
 
+  for version <- [:"HTTP/2", :"HTTP/3"], size <- [0, 3] do
+    test "#{version} fixed #{size} request trailers remove forwarded length" do
+      request =
+        exchange(
+          [{"content-length", "#{unquote(size)}"}, {"trailer", "x-trace"}],
+          {:length, unquote(size)}
+        )
+
+      request = %{request | request: %{request.request | version: unquote(version)}}
+      assert {:ok, fields, policy} = Headers.request(request)
+      refute Enum.any?(fields, fn {name, _} -> name == "content-length" end)
+      assert {"trailer", "x-trace"} in fields
+
+      assert {:ok, [{"x-trace", "first"}, {"x-trace", "second"}]} =
+               Headers.trailers([{"x-trace", "first"}, {"x-trace", "second"}], policy)
+    end
+  end
+
+  test "HTTP/3 response trailers retain ordered fields from a chunked origin" do
+    request = exchange()
+    request = %{request | request: %{request.request | version: :"HTTP/3"}}
+
+    assert {:ok, [{"trailer", "x-trace"}], policy} =
+             Headers.response(request, 200, [
+               {"transfer-encoding", "chunked"},
+               {"trailer", "x-trace"}
+             ])
+
+    assert {:ok, [{"x-trace", "first"}, {"x-trace", "second"}]} =
+             Headers.trailers([{"x-trace", "first"}, {"x-trace", "second"}], policy)
+  end
+
+  for version <- [:"HTTP/1.1", :"HTTP/2", :"HTTP/3"] do
+    test "#{version} fixed response cannot declare trailers" do
+      request = exchange()
+      request = %{request | request: %{request.request | version: unquote(version)}}
+
+      assert {:error, :invalid_proxy_trailers} =
+               Headers.response(request, 200, [{"content-length", "3"}, {"trailer", "x-trace"}])
+
+      assert {:error, :invalid_proxy_trailers} =
+               Headers.request(%{
+                 request
+                 | request: %{request.request | headers: [{"trailer", "authorization"}]}
+               })
+    end
+  end
+
   defp exchange(headers \\ [], framing \\ :none) do
     %Exchange{
       request: %Request{

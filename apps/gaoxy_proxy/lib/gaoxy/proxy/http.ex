@@ -107,7 +107,8 @@ defmodule Gaoxy.Proxy.HTTP do
            exchange.request.target_form in [:origin, :absolute] || {:error, :unsupported_target},
          {:ok, method} <- method(exchange.request.method),
          {:ok, headers, policy} <- Headers.request(exchange),
-         {:ok, session, monitor, deadline} <- start_session(exchange, config, method, headers) do
+         {:ok, session, monitor, deadline} <-
+           start_session(exchange, config, method, headers, policy) do
       pump(%{
         exchange: %{
           exchange
@@ -156,7 +157,7 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
-  defp start_session(exchange, config, method, headers) do
+  defp start_session(exchange, config, method, headers, policy) do
     query =
       if String.contains?(exchange.request.target, "?"),
         do: exchange.request.query_string,
@@ -174,7 +175,11 @@ defmodule Gaoxy.Proxy.HTTP do
     request_options = %{
       method: method,
       headers: headers,
-      body: exchange.request.body,
+      body:
+        if(policy.allowed != [] and exchange.request.version in [:"HTTP/2", :"HTTP/3"],
+          do: :chunked,
+          else: exchange.request.body
+        ),
       path: exchange.request.path,
       query: query
     }
@@ -254,7 +259,10 @@ defmodule Gaoxy.Proxy.HTTP do
       remaining <= 0 ->
         fail(state, :timeout)
 
-      state.ready and not state.upload_stopped and not Exchange.body_complete?(state.exchange) ->
+      state.ready and not state.upload_stopped and Exchange.body_complete?(state.exchange) ->
+        finish_upload(state)
+
+      state.ready and not state.upload_stopped ->
         read_upload(state, min(@poll_ms, remaining))
 
       true ->
@@ -287,13 +295,7 @@ defmodule Gaoxy.Proxy.HTTP do
 
         case result do
           :ok when kind == :ok ->
-            with {:ok, trailers} <-
-                   Headers.trailers(Exchange.request_trailers(exchange), state.policy),
-                 :ok <- HTTPFetchClient.finish_body(state.upload, trailers) do
-              pump(%{state | upload_stopped: true})
-            else
-              {:error, reason} -> fail(state, reason)
-            end
+            finish_upload(state)
 
           :ok ->
             pump(state)
@@ -306,6 +308,20 @@ defmodule Gaoxy.Proxy.HTTP do
             # Wait for that head rather than rewriting a valid response to 502.
             pump(%{state | upload_stopped: true, exchange: %{exchange | close: true}})
         end
+    end
+  end
+
+  defp finish_upload(state) do
+    with {:ok, trailers} <-
+           Headers.trailers(Exchange.request_trailers(state.exchange), state.policy),
+         :ok <-
+           if(is_nil(state.upload),
+             do: :ok,
+             else: HTTPFetchClient.finish_body(state.upload, trailers)
+           ) do
+      pump(%{state | upload_stopped: true})
+    else
+      {:error, reason} -> fail(state, reason)
     end
   end
 
