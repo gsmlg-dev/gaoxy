@@ -1,6 +1,11 @@
 # M4 native HTTP/3 architecture
 
-Date: 2026-10-11. Status: **PLANNED; implementation and runtime gates NOT RUN**.
+Date: 2026-10-11. Status: **IN PROGRESS; Options/pure protocol passed,
+live HTTP/3 gates pending**. Current results are in [M4 execution](../acceptance/m4.md).
+Execution authorized 2026-10-12 on `codex/m4-http3` from `78de9d0`; the original
+architecture baseline below is retained as history. Remaining upstream-H3 and
+standalone slices are required M4 work and will be designed and executed under
+continuing authorization after the relevant server gates pass.
 Architecture assignment: `PROJECT_ARCHITECTURE`, architecture mode. Inspected
 baseline: `codex/m3-gateway`, `32408c8054ba485f2a15c0fd244ae4b8d1615c5e`.
 The initial worktree was clean. This document and
@@ -122,8 +127,12 @@ Maintain unique peer control, QPACK encoder and QPACK decoder handles. QPACK
 streams may be absent with static compression; if opened they become critical.
 Opening local QPACK streams is unnecessary when no instructions are sent.
 Accept legal zero-capacity encoder instructions, reject inserts/capacity above
-zero, and reject decoder instructions inconsistent with never having sent a
-dynamic reference. Use public Qpack integer decoding for fragmented instruction
+zero. Accept and ignore legal decoder Stream Cancellation instructions even
+with zero dynamic capacity: RFC 9204 section 2.2.2 permits omitting them, and
+does not forbid sending them. Reject Section Acknowledgements and Insert Count
+Increments because Gaoxy sends no dynamic references or inserts. Bound
+cancellation identifiers to QUIC stream IDs and map malformed instructions to
+QPACK_DECODER_STREAM_ERROR. Use public Qpack integer decoding for fragmented instruction
 parsing. A peer advertising its own nonzero decoder capacity is legal; Gaoxy
 still encodes statically. Dynamic references against Gaoxy's zero capacity fail.
 
@@ -147,6 +156,9 @@ inside an incomplete frame fails. Field sections validate lowercase names,
 pseudo-field order/uniqueness/required fields, authority/host agreement,
 connection-specific field exclusions, TE=trailers, content-length and trailer
 restrictions. Preserve escaped path and the distinction between `/x` and `/x?`.
+Ordinary CONNECT permits a matching regular Host field; reject duplicates and
+authority disagreement. Invalid content-length syntax is a message error;
+a valid declared length above the configured body ceiling is excessive load.
 Use `Request.version = :"HTTP/3"`, HTTPS and real peer/local addresses. Never
 invent client certificate or TLS metadata absent from the public host.
 
@@ -163,6 +175,8 @@ H3_EXCESSIVE_LOAD (0x107); application cancellation uses H3_REQUEST_CANCELLED
 (0x10c). Test exact error scope as well as the numeric code. Requests on another
 stream may arrive before peer SETTINGS because streams are independently ordered;
 do not make arrival ordering a connection error.
+Duplicate SETTINGS is H3_FRAME_UNEXPECTED (0x105), as required by RFC 9114
+section 7.2.4, rather than an invalid setting value (0x109).
 
 ### Credit, memory and uncertain operations
 
@@ -192,6 +206,11 @@ means admission. `{:unknown, ref}` freezes that operation; resolve with
 opens, or retry of that write. Unresolvable outcomes terminate the affected
 operation/connection by its deadline and remain reported as uncertain. Never
 blindly replay. No receipt is described as peer delivery.
+
+The engine's public operation `:deadline` option is a relative millisecond
+duration. Convert each Gaoxy absolute deadline to remaining time before calling
+the host; do not pass monotonic timestamps as durations. The fixed timeout of
+`operation_status/2` is also subject to the existing callback watchdog.
 
 ### Plug rendezvous and cleanup
 

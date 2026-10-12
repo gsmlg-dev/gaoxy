@@ -14,7 +14,7 @@ restrictions remain. See [ADR007](docs/adr/007-m3-beta-and-m4.md).
 **Initial execution scope (historical kickoff):** M0 + M1, the transport-runtime foundation
 **Companion:** `codex-prompt.md`
 
-**Current execution authorization (2026-10-10):** Begin M3 and continue through
+**Current execution authorization (renewed 2026-10-12):** Execute M4 and continue through
 the existing milestone plan after each stage passes its prescribed verification
 and independent review. Automatically choose recommended designs, write stage
 designs/plans, implement, repair, document, test, review, and commit locally;
@@ -23,6 +23,10 @@ compatibility fixes and test/documentation updates are authorized beyond older
 file lists. Historical M0/M1 stop rules below apply only to the kickoff.
 Product scope and explicit Vault, E2E, publication/deployment, and production
 data restrictions remain in force. See `AGENTS.md` for the continuing workflow.
+The 2026-10-11 instruction to prepare M4's design/plan is superseded by this
+explicit implementation start; retain that dated release disposition as history.
+Full M4 acceptance includes the remaining upstream-H3 proxy matrix and explicit
+standalone H3 opt-in, following their bounded written designs and verification.
 
 ## 1. Product and success criteria
 
@@ -66,8 +70,9 @@ Use one umbrella repository with the following logical applications:
 |---|---|---|
 | `gaoxy` | Service/listener specifications, runtime supervision, lifecycle, capabilities, admission, telemetry, transport/handler bridges | None of the other Gaoxy applications |
 | `gaoxy_http` | Native HTTP server, WebSocket, Plug adapter, Phoenix adapter, HTTP route/endpoint contracts | `gaoxy` |
+| `gaoxy_http3` (M4, optional) | Native HTTP/3 server over the public QUIC host and role-neutral H3/QPACK codecs | `gaoxy`, `gaoxy_http` |
 | `gaoxy_proxy` | HTTP upstream client integration, reverse/forward proxy policies, stream/datagram relays, upstream pools | `gaoxy`, `gaoxy_http` |
-| `gaoxy_server` | Standalone release, data-only configuration loader, validation commands, later management interface | The three applications above, as needed |
+| `gaoxy_server` | Standalone release, data-only configuration loader, validation commands, later management interface | Applications above, as needed; explicit H3 opt-in |
 
 `gaoxy_http` defines an extensible HTTP endpoint/action contract. A proxy endpoint implements it in `gaoxy_proxy`; the HTTP application must not depend back on the proxy application.
 

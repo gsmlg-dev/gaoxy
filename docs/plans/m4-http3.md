@@ -15,10 +15,9 @@ APIs. Gaoxy's existing QUIC bridge remains the attached I/O owner boundary.
 **Stack:** Elixir 1.18 / locked OTP 28 Nix shell, selected Abyss Git revision,
 HTTP cohort 0.21.3, independent Python aioquic, local Chromium/Playwright.
 
-**Status:** every execution checkbox below is PLANNED / NOT RUN. These files are
-not runtime acceptance. Baseline inspected: `32408c8054ba485f2a15c0fd244ae4b8d1615c5e`
-in `.trees/m3-gateway`; re-read actual branch/SHA/diff before execution because
-M3 release work may advance it. No routine user approval is required between
+**Execution start, 2026-10-12:** baseline `78de9d0f3bba5a4662717359438eb3d0853a79b4`,
+branch `codex/m4-http3`, worktree `.trees/m4-http3`. Gates remain NOT RUN until
+source-bound execution evidence is recorded. No routine user approval is required between
 passing gates. Preserve unrelated edits, Vault freeze, disabled release-artifact
 E2E, production exclusions and existing repair counters.
 
@@ -117,6 +116,17 @@ Owner: protocol worker. Parallel with G0's independent fixture work. Files:
   zero-capacity QPACK streams, dynamic-reference/instruction rejection, decoded
   field size/count, malformed pseudo-fields/content-length and trailer ordering.
   Include empty query delimiters and HEAD/bodyless semantics.
+- [ ] Accept/ignore legal decoder Stream Cancellation with zero dynamic
+  capacity; test fragmented prefix-6 integers, QUIC stream-ID bounds, malformed
+  cancellation and sibling continuation. Retain QPACK_DECODER_STREAM_ERROR for
+  Section Acknowledgement/Insert Count Increment without dynamic references.
+- [ ] Permit ordinary CONNECT with a matching Host and reject mismatches or
+  duplicates. Distinguish invalid length syntax (H3_MESSAGE_ERROR) from a valid
+  declared body above its ceiling (H3_EXCESSIVE_LOAD).
+- [ ] Map codec `:invalid_fields` to stream H3_MESSAGE_ERROR and `:field_limit`
+  to resource H3_EXCESSIVE_LOAD; only malformed compression closes the
+  connection with QPACK_DECOMPRESSION_FAILED. Test content-length against
+  aggregate DATA bytes at FIN, including underflow and overflow.
 - [ ] Run `python scripts/check-tests.py apps/gaoxy_http3/test/options_test.exs
   apps/gaoxy_http3/test/protocol_test.exs apps/gaoxy_http3/test/headers_test.exs
   apps/gaoxy_http3/test/qpack_test.exs` (one command, paths separated by spaces).
@@ -201,6 +211,8 @@ Owner: HTTP integration worker. Files:
 - [ ] Construct Exchange with `transport: HTTP3.Transport`, H3 request version,
   HTTPS, actual peer/local metadata and nil for unavailable certificate metadata.
   Implement the existing facade's return contracts, not an H3-specific Plug API.
+- [ ] Reject H3 WebSocket upgrades explicitly in the shared Plug adapter and
+  verify `:not_supported` without entering the H1 upgrade path; preserve H1/H2.
 - [ ] Test request streaming/trailers, response streaming/file/trailers,
   informational responses/100-continue, HEAD/204/304, early response with unread
   request data, output deadlines and simultaneous unrelated streams.
@@ -249,12 +261,28 @@ Owner: integration worker. Files:
   format-check exact changed Elixir files and compile with warnings-as-errors.
   Run affected core/H1/H2/proxy compatibility suites, not unrelated repository
   suites. Independently review code, evidence and advertised capability rows.
+- [ ] Synchronize `docs/capabilities.md`, `docs/implementation-status.md`, the
+  dependency audit and public H3 usage documentation with executed evidence.
 
 **G3 pass:** only executed downstream/browser/isolation rows pass. If browser
 support is unavailable, record BLOCKED_ENV and keep that gate incomplete.
 The remaining upstream-H3 adapter/matrix work needs its own written bounded
 architecture and implementation plan under continuing authorization; it must
 not be silently omitted from a claim of full M4 completion.
+
+## Task 5 — remaining M4 product coverage
+
+After G2, design and independently review the public upstream-H3 client adapter
+and explicit standalone H3 configuration. Execute those slices automatically
+under the 2026-10-12 authorization. The client adapter must use public supported
+client APIs, preserve authentication/destination policy and expose bounded
+streaming/cancellation without enabling the unimplemented reusable H1/H2 pools.
+Prove H1/H2 -> H3 and H3 -> H3 with independent origins, plus a standalone
+data-only H3 service using local test credentials and bounded shutdown. Write
+the exact file ownership, regressions and commands in their own plans before
+implementation. These required rows remain NOT IMPLEMENTED / NOT RUN until
+verified; G0-G3 do not substitute for full M4 acceptance. No release or deployment
+is authorized by this task.
 
 ## Handoff / stopping rules
 

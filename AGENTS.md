@@ -20,17 +20,24 @@ Do not re-raise account spending/quota-increase requests for this work. If a
 hosted job cannot start, preserve its unexecuted status and use a separately
 qualified local release build without changing account or repository settings.
 
-## Continuing development authorization
+## Continuing development authorization — renewed 2026-10-12 for M4
 
 The user granted continuing authorization on 2026-10-10 for the existing product
 goals in `implement-plan.md`, beginning with M3. This authorization supersedes
 older routine development approval and phase-stop rules, including historical
 kickoff instructions limited to M0/M1 and old per-file scope lists.
-The user renewed this authorization on 2026-10-11: ordinary implementation or
+The user renewed this authorization on 2026-10-11 and 2026-10-12, explicitly
+starting M4 development: ordinary implementation or
 test failures enter diagnosis and repair rather than a user-approval pause.
 Cumulative Sol/Astra counters remain recorded; this renewal does not reset them
 or authorize a third Astra recovery round. Necessary additional local Sol
 repairs are authorized, with fresh independent review and unchanged assertions.
+M4 authorization covers executing its HTTP/3 design and plan, including the
+required downstream/upstream matrix and necessary standalone compatibility;
+the earlier instruction to prepare M4's documents is not an implementation
+stop. Automatically design and execute any remaining bounded M4 slices after
+their preceding gates pass. This grants no new publication or deployment
+authorization beyond the already completed v0.2.0 exception.
 
 - Choose the recommended design and execution approach automatically. Complete
   design, plans, implementation, necessary compatibility repairs, test-contract
