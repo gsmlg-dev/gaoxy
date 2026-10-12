@@ -1,0 +1,87 @@
+{
+  "task": "m4_task2_connection",
+  "assignment": "direct",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "head_at_unit_validation": "2b4a5e58bf3044baf289c266b96ee9a979f61309",
+  "unit_gate": "PASS",
+  "live_gate": "FAIL",
+  "independent_review": "SOURCE_FIXES_REVIEWED_WIRE_GATE_FAIL",
+  "tests": 10,
+  "failures": 0,
+  "sol_repair_rounds": 2,
+  "sol_unsuccessful_repairs": 2,
+  "astra_recovery_rounds": 0,
+  "input_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "975b4fb5350d23bf07e56b75a50ced1699ce622611ea304ae00b8ca64cf542a3",
+    "apps/gaoxy_http3/test/connection_test.exs": "63e110336373501259a4b3b2f1ae35a508b0164094bbe969cd78fb1cc647361b",
+    "apps/gaoxy_http3/test/lifecycle_test.exs": "5ae51ced3616882a88e75bdb9419038f7b8a5702298dc219ee023cffd48612a3"
+  },
+  "commands": [
+    {
+      "command": "nix develop --command sh -c export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs",
+      "log": "red.log",
+      "exit": 2,
+      "tests": 8,
+      "failures": 8,
+      "classification": "EXPECTED_RED missing Connection"
+    },
+    {
+      "command": "same scoped unit command before local-control fix",
+      "log": "local-control-red.log",
+      "exit": 2,
+      "tests": 9,
+      "failures": 1,
+      "classification": "EXPECTED_RED local control classified as peer"
+    },
+    {
+      "command": "nix develop --command sh -c export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; python integration/http3/run.py --gate minimal --evidence docs/acceptance/evidence/m4/minimal-red",
+      "log": "live-red.log",
+      "exit": 1,
+      "cases_passed": 0,
+      "classification": "EXPECTED_RED public relative deadline contract mismatch; control_open deadline_expired"
+    },
+    {
+      "command": "nix develop --command sh -c export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; unbuffer mix format <three owned Elixir paths>; unbuffer mix compile --warnings-as-errors; python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs",
+      "log": "repair1-units.log",
+      "exit": 0,
+      "tests": 9,
+      "failures": 0
+    },
+    {
+      "command": "nix develop --command sh -c 'export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs'",
+      "log": "response-limit-red.log",
+      "exit": 2,
+      "tests": 10,
+      "failures": 1,
+      "classification": "EXPECTED_RED response-owner contexts exceed max_streams after receive FIN"
+    },
+    {
+      "command": "nix develop --command sh -c 'export MIX_ENV=test ERL_FLAGS=\"+S 2:2\"; unbuffer mix format apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs; unbuffer mix compile --warnings-as-errors; python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs apps/gaoxy_http3/test/lifecycle_test.exs'",
+      "log": "repair2-units.log",
+      "exit": 0,
+      "tests": 10,
+      "failures": 0
+    }
+  ],
+  "repair1_wire": {
+    "status": "FAIL",
+    "run": "../minimal/run-1791780283838403213",
+    "observed_pass_cases": 3,
+    "failing_case": "fragmented streaming POST tiny windows timed out",
+    "evidence": "ordinary.log confirms 3 PASS; original runner summary counted 0 checks after mode error; preserved unchanged",
+    "root_cause": "quantum shrank to one byte during temporarily exhausted credit and never recovered",
+    "owned_children_exited": true
+  },
+  "status": "ESCALATE_TO_ASTRA",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "repair2_wire": {
+    "status": "FAIL",
+    "run": "../minimal/run-1791780656197652152",
+    "observed_pass_cases": 31,
+    "failing_case": "duplicate_pseudo waits for both RESET and STOP code0x10e on peer-FIN request; peer deadline expires",
+    "owned_children_exited": true,
+    "finished_utc": "2026-10-12T04:51:22Z"
+  }
+}

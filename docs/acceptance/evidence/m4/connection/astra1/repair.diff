@@ -1,0 +1,96 @@
+--- before/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
++++ after/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
+@@ -91,12 +91,7 @@
+   def handle_event({:stopped, key, _code}, %{control: key} = state),
+     do: fail(state, 0x104, :closed_local_control)
+ 
+-  def handle_event({:stopped, key, code}, state) do
+-    case transition(state, key, Protocol.reset(state.protocol, key)) do
+-      {:ok, next} -> {:ok, cancel(next, key, code)}
+-      failure -> failure
+-    end
+-  end
++  def handle_event({:stopped, key, code}, state), do: peer_cancel(state, key, code)
+ 
+   def handle_event({:closed, _}, state), do: {:stop, :normal, clear(state)}
+   def handle_event(event, state) when event in [:tick, :writable], do: progress(state)
+@@ -314,12 +309,8 @@
+     {:ok, update_entry(state, key, &%{&1 | fin_pending: true})}
+   end
+ 
+-  defp read_item(state, key, {:reset, _id, code, _final_size}) do
+-    case transition(state, key, Protocol.reset(state.protocol, key)) do
+-      {:ok, state} -> {:ok, cancel(state, key, code)}
+-      failure -> failure
+-    end
+-  end
++  defp read_item(state, key, {:reset, _id, code, _final_size}),
++    do: peer_cancel(state, key, code)
+ 
+   defp finish_receive(state, key) do
+     with {:ok, state} <- transition(state, key, Protocol.fin(state.protocol, key)) do
+@@ -489,6 +480,21 @@
+     end
+   end
+ 
++  defp peer_cancel(state, key, code) do
++    case state.streams[key] do
++      # A reflexive peer event must not replace the first terminal decision or
++      # requeue an admitted command while its remaining cleanup is unresolved.
++      %{cancel: [_ | _]} ->
++        {:ok, state}
++
++      _ ->
++        case transition(state, key, Protocol.reset(state.protocol, key)) do
++          {:ok, next} -> {:ok, cancel(next, key, code)}
++          failure -> failure
++        end
++    end
++  end
++
+   defp cancel(state, key, code, commands \\ [:reset, :stop]) do
+     state = %{
+       state
+--- before/apps/gaoxy_http3/test/lifecycle_test.exs
++++ after/apps/gaoxy_http3/test/lifecycle_test.exs
+@@ -34,6 +34,40 @@
+     assert :ok = Connection.terminate(:normal, state)
+   end
+ 
++  test "peer STOP preserves an existing cancellation and sibling ownership" do
++    state = state()
++
++    state =
++      Enum.reduce(1..8, state, fn _, acc ->
++        {:ok, next} = Connection.handle_event({:stream_open, make_ref(), :bidi}, acc)
++        next
++      end)
++
++    key = make_ref()
++    {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
++    assert state.streams[key].cancel == [{:reset, 0x107}, {:stop, 0x107}]
++    assert {:ok, ^state} = Connection.handle_event({:stopped, key, 0x10C}, state)
++  end
++
++  test "peer STOP cannot replay an admitted reset or replace an uncertain cleanup" do
++    key = make_ref()
++    {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state())
++    {:ok, state} = Connection.handle_event({:stopped, key, 0x10E}, state)
++    assert state.streams[key].cancel == [{:reset, 0x10E}, {:stop, 0x10E}]
++
++    # RESET has been admitted; STOP has an unresolved public operation reference.
++    entry = %{state.streams[key] | cancel: [{:stop, 0x10E}]}
++    reference = make_ref()
++
++    state = %{
++      state
++      | streams: Map.put(state.streams, key, entry),
++        pending: %{{key, :stop} => {reference, entry.output_deadline}}
++    }
++
++    assert {:ok, ^state} = Connection.handle_event({:stopped, key, 0x10C}, state)
++  end
++
+   test "minimal gate rejects ordinary endpoint execution until shared adapter exists" do
+     {:ok, spec} =
+       Options.normalize(

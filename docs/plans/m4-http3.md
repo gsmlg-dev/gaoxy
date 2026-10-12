@@ -100,7 +100,7 @@ Owner: protocol worker. Parallel with G0's independent fixture work. Files:
 - [x] Write option failures before activation: missing credentials, wildcard or
   IPv6, wrong ALPN, mixed H1/H2/H3 protocol lists, unknown options, nonzero local
   dynamic capacity and inconsistent byte/stream limits. Verify no socket binds.
-- [ ] Implement `HTTP3.service_spec/1` with exactly one endpoint or Plug tuple,
+- [x] Implement `HTTP3.service_spec/1` with exactly one endpoint or Plug tuple,
   `transport: :quic`, `handler: HTTP3.Connection`, `quic: %{alpn: ["h3"]}` and
   the existing `tls: %{certfile: path, keyfile: path}` contract. Initialize endpoint
   once. H1/H2 APIs keep their behavior; H3 is explicitly selected through this API.
@@ -137,9 +137,10 @@ Owner: protocol worker. Parallel with G0's independent fixture work. Files:
   apps/gaoxy_http3/test/qpack_test.exs` (one command, paths separated by spaces).
 
 **Task 1 pure/options verified, 2026-10-12:** 60 tests/0 failures after
-independent review, with exact-file format and strict compile. The public service
-activation test awaits the real Task 2 Connection module; no placeholder handler
-is accepted.
+independent review, with exact-file format and strict compile. Task 2 adds the
+real Connection-backed public service specification (3/0), H3 upgrade guard
+(2/0), and the independently reviewed read-credit budget correction (Options
+9/0). Post-review affected verification passes 78/0; production dispatch is G2.
 
 **Exit:** pure transitions and strict options pass. This is not live H3 acceptance.
 
@@ -153,30 +154,37 @@ only integration fixture/peer files. Files:
 - Create `integration/http3/{fixture.exs,peer.py,run.py}`.
 - Extend `docs/acceptance/m4.md` and `docs/acceptance/evidence/m4/minimal/`.
 
-- [ ] Implement bounded QUIC callbacks and public `Control.new(:server, ...)`,
+- [x] Implement bounded QUIC callbacks and public `Control.new(:server, ...)`,
   `local_payload/1`, `receive_peer/3`. Keep the type prefix on the first control
   feed. Track local send/open state in Gaoxy, never by changing Control internals.
-- [ ] Store opaque stream handles; derive IDs only from public read results.
+- [x] Store opaque stream handles; derive IDs only from public read results.
   Perform fair, finite work on `:tick`/`:writable`; reserve control progress.
   Implement deadline-bound pending operations and uncertain-reference resolution.
-- [ ] Use a fixture-only endpoint action for GET `/ok` and streaming POST `/echo`;
+- [x] Use a fixture-only endpoint action for GET `/ok` and streaming POST `/echo`;
   no new public application endpoint contract. The production shared endpoint
   mapping arrives in Task 3. No blocking Plug execution inside callbacks.
-- [ ] Build a runner with `--gate minimal --evidence <path>`; it starts an ephemeral
+- [x] Build a runner with `--gate minimal --evidence <path>`; it starts an ephemeral
   loopback fixture, reports bound port/readiness, runs aioquic cases, tears down
   its own children and returns nonzero if any case fails or none execute.
-- [ ] Peer cases: GET/HEAD, POST fragmented payload and FIN, two concurrent requests,
+- [x] Peer cases: GET/HEAD, POST fragmented payload and FIN, two concurrent requests,
   static/Huffman fields, trailers, control/QPACK stream setup, invalid ordering,
   duplicate SETTINGS/critical stream, critical reset/FIN, header limits, request
   reset/STOP_SENDING isolation, tiny receive windows with eventual progress, and
   listener shutdown with another listener still exchanging bytes.
-- [ ] For each malformed case, independently assert error code and connection vs
+- [x] For each malformed case, independently assert error code and connection vs
   stream scope. For resets, assert sibling completion and no late response bytes.
   For shutdown, assert bounded local cleanup, not unsupported graceful drain.
-- [ ] Run `python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs
+- [x] Run `python scripts/check-tests.py apps/gaoxy_http3/test/connection_test.exs
   apps/gaoxy_http3/test/lifecycle_test.exs`, then
   `python integration/http3/run.py --gate minimal --evidence docs/acceptance/evidence/m4/minimal`.
-- [ ] Independent Sol review, resolve findings and rerun affected cases.
+- [x] Independent Sol review, resolve findings and rerun affected cases.
+
+**G1 verified, 2026-10-12:** independent whole-source review and resolution
+review passed; post-review fresh 78/0 affected tests and 47 live checks passed.
+Retained failures, concrete FIN-callback diagnostic and bounded Astra1 recovery
+remain in the acceptance evidence. Connection Sol2/failed2/Astra1/failed0;
+Options Sol4/failed1/Astra0. Automatically execute the independently reviewed
+[shared integration supplement](m4-shared-http.md) for Task 3 next.
 
 **G1 pass:** real independently decoded H3 ordinary/control/malformed/reset/
 flow-control/shutdown behavior. Publish only the bounded profile in local docs.

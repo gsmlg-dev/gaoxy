@@ -1,0 +1,58 @@
+==> gaoxy_http3
+Running ExUnit with seed: 343202, max_cases: 4
+
+
+
+  1) test child spec uses explicit H3 selection and preserves the service identity (Gaoxy.HTTP.HTTP3.ServiceTest)
+     apps/gaoxy_http3/test/service_test.exs:42
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.child_spec/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available)
+     code: HTTP3.child_spec(Keyword.put(options(), :id, :test_h3))
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.child_spec([id: :test_h3, endpoint: {Gaoxy.HTTP.HTTP3.ServiceTest.Endpoint, #PID<0.317.0>}, tls: %{certfile: "fixture.pem", keyfile: "key.pem"}])
+       test/service_test.exs:44: (test)
+
+
+
+  2) test invalid activation leaves the requested UDP endpoint available (Gaoxy.HTTP.HTTP3.ServiceTest)
+     apps/gaoxy_http3/test/service_test.exs:18
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.start_link/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available)
+     code: HTTP3.start_link(endpoint: {Endpoint, self()}, ip: ip, port: port)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.start_link([endpoint: {Gaoxy.HTTP.HTTP3.ServiceTest.Endpoint, #PID<0.318.0>}, ip: {127, 0, 0, 1}, port: 53641])
+       test/service_test.exs:24: (test)
+
+
+
+  3) test H3 service specification selects the Gaoxy QUIC connection owner (Gaoxy.HTTP.HTTP3.ServiceTest)
+     apps/gaoxy_http3/test/service_test.exs:31
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.service_spec/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available)
+     code: assert {:ok, spec} = HTTP3.service_spec(options())
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.service_spec([endpoint: {Gaoxy.HTTP.HTTP3.ServiceTest.Endpoint, #PID<0.319.0>}, tls: %{certfile: "fixture.pem", keyfile: "key.pem"}])
+       test/service_test.exs:32: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.start_link/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available or is yet to be defined)
+    │
+ 24 │              HTTP3.start_link(endpoint: {Endpoint, self()}, ip: ip, port: port)
+    │                    ~
+    │
+    └─ test/service_test.exs:24:20: Gaoxy.HTTP.HTTP3.ServiceTest."test invalid activation leaves the requested UDP endpoint available"/1
+
+    warning: Gaoxy.HTTP.HTTP3.service_spec/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available or is yet to be defined)
+    │
+ 32 │     assert {:ok, spec} = HTTP3.service_spec(options())
+    │                                ~
+    │
+    └─ test/service_test.exs:32:32: Gaoxy.HTTP.HTTP3.ServiceTest."test H3 service specification selects the Gaoxy QUIC connection owner"/1
+    └─ test/service_test.exs:47:53: Gaoxy.HTTP.HTTP3.ServiceTest."test child spec uses explicit H3 selection and preserves the service identity"/1
+
+    warning: Gaoxy.HTTP.HTTP3.child_spec/1 is undefined (module Gaoxy.HTTP.HTTP3 is not available or is yet to be defined)
+    │
+ 44 │              HTTP3.child_spec(Keyword.put(options(), :id, :test_h3))
+    │                    ~
+    │
+    └─ test/service_test.exs:44:20: Gaoxy.HTTP.HTTP3.ServiceTest."test child spec uses explicit H3 selection and preserves the service identity"/1
+
+
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+3 tests, 3 failures

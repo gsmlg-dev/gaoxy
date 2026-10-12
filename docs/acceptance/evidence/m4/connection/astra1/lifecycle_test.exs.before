@@ -1,0 +1,51 @@
+defmodule Gaoxy.HTTP.HTTP3.LifecycleTest do
+  use ExUnit.Case, async: true
+  alias Gaoxy.HTTP.HTTP3.{Connection, Options}
+
+  defmodule Endpoint do
+    def init(options), do: {:ok, options}
+    def call(_, _), do: raise("unexpected application execution")
+  end
+
+  defp state do
+    {:ok, spec} =
+      Options.normalize(
+        endpoint: {Endpoint, %{profile: :minimal}},
+        tls: %{certfile: "fixture.pem", keyfile: "key.pem"}
+      )
+
+    opts = %{spec.handler_options | endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{profile: :minimal}}}
+    {:ok, state} = Connection.init(%{gate: nil, limits: spec.limits}, %{alpn: "h3"}, opts)
+    state
+  end
+
+  test "closed notification releases retained parser and output ownership" do
+    state = state()
+    {:ok, state} = Connection.handle_event({:stream_open, make_ref(), :bidi}, state)
+    assert {:stop, :normal, next} = Connection.handle_event({:closed, :peer_close}, state)
+    assert next.streams == %{}
+    assert next.protocol.streams == %{}
+    assert next.pending == %{}
+    assert next.control == nil
+  end
+
+  test "termination after closure does not attempt further capability I/O" do
+    {:stop, :normal, state} = Connection.handle_event({:closed, :peer_close}, state())
+    assert :ok = Connection.terminate(:normal, state)
+  end
+
+  test "minimal gate rejects ordinary endpoint execution until shared adapter exists" do
+    {:ok, spec} =
+      Options.normalize(
+        endpoint: {Endpoint, %{}},
+        tls: %{certfile: "fixture.pem", keyfile: "key.pem"}
+      )
+
+    assert {:error, :http3_endpoint_not_implemented} =
+             Connection.init(
+               %{gate: nil, limits: spec.limits},
+               %{alpn: "h3"},
+               spec.handler_options
+             )
+  end
+end

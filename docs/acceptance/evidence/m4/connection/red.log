@@ -1,0 +1,133 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 745103, max_cases: 4
+
+
+
+  1) test init and ticks do not perform I/O before authenticated readiness (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:19
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: assert {:ok, state} = init()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: #PID<0.326.0>, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3", tls_complete: false, parameters_valid: false}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.326.0>}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/connection_test.exs:20: (test)
+
+
+
+  2) test closed notification releases retained parser and output ownership (Gaoxy.HTTP.HTTP3.LifecycleTest)
+     apps/gaoxy_http3/test/lifecycle_test.exs:18
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: state = state()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: nil, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3"}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{profile: :minimal}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/lifecycle_test.exs:14: Gaoxy.HTTP.HTTP3.LifecycleTest.state/0
+       test/lifecycle_test.exs:19: (test)
+
+
+
+  3) test arbitrary application events do not execute endpoints (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:47
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: {:ok, state} = init()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: #PID<0.328.0>, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3", tls_complete: false, parameters_valid: false}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.328.0>}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/connection_test.exs:48: (test)
+
+
+
+  4) test termination after closure does not attempt further capability I/O (Gaoxy.HTTP.HTTP3.LifecycleTest)
+     apps/gaoxy_http3/test/lifecycle_test.exs:28
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: {:stop, :normal, state} = Connection.handle_event({:closed, :peer_close}, state())
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: nil, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3"}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{profile: :minimal}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/lifecycle_test.exs:14: Gaoxy.HTTP.HTTP3.LifecycleTest.state/0
+       test/lifecycle_test.exs:29: (test)
+
+
+
+  5) test pre-ready peer streams retain opaque keys without reading or assigning IDs (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:27
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: {:ok, state} = init()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: #PID<0.330.0>, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3", tls_complete: false, parameters_valid: false}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.330.0>}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/connection_test.exs:28: (test)
+
+
+
+  6) test minimal gate rejects ordinary endpoint execution until shared adapter exists (Gaoxy.HTTP.HTTP3.LifecycleTest)
+     apps/gaoxy_http3/test/lifecycle_test.exs:33
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: Connection.init(%{gate: nil, limits: spec.limits}, %{alpn: "h3"}, spec.handler_options)
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: nil, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3"}, %{initialized: true, endpoint: {Gaoxy.HTTP.HTTP3.LifecycleTest.Endpoint, %{}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/lifecycle_test.exs:37: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available or is yet to be defined)
+    │
+ 14 │     {:ok, state} = Connection.init(%{gate: nil, limits: spec.limits}, %{alpn: "h3"}, opts)
+    │                               ~
+    │
+    └─ test/lifecycle_test.exs:14:31: Gaoxy.HTTP.HTTP3.LifecycleTest.state/0
+    └─ test/lifecycle_test.exs:37:18: Gaoxy.HTTP.HTTP3.LifecycleTest."test minimal gate rejects ordinary endpoint execution until shared adapter exists"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Connection.handle_event/2 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available or is yet to be defined)
+    │
+ 20 │     {:ok, state} = Connection.handle_event({:stream_open, make_ref(), :bidi}, state)
+    │                               ~
+    │
+    └─ test/lifecycle_test.exs:20:31: Gaoxy.HTTP.HTTP3.LifecycleTest."test closed notification releases retained parser and output ownership"/1
+    └─ test/lifecycle_test.exs:21:48: Gaoxy.HTTP.HTTP3.LifecycleTest."test closed notification releases retained parser and output ownership"/1
+    └─ test/lifecycle_test.exs:29:42: Gaoxy.HTTP.HTTP3.LifecycleTest."test termination after closure does not attempt further capability I/O"/1
+
+    warning: Gaoxy.HTTP.HTTP3.Connection.terminate/2 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available or is yet to be defined)
+    │
+ 30 │     assert :ok = Connection.terminate(:normal, state)
+    │                             ~
+    │
+    └─ test/lifecycle_test.exs:30:29: Gaoxy.HTTP.HTTP3.LifecycleTest."test termination after closure does not attempt further capability I/O"/1
+
+
+
+  7) test incomplete authentication cannot activate the owner (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:41
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: {:ok, state} = init()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: #PID<0.332.0>, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3", tls_complete: false, parameters_valid: false}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.332.0>}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/connection_test.exs:42: (test)
+
+    warning: Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available or is yet to be defined)
+    │
+ 16 │     Connection.init(connection, %{alpn: "h3", tls_complete: false, parameters_valid: false}, options)
+    │                ~
+    │
+    └─ test/connection_test.exs:16:16: Gaoxy.HTTP.HTTP3.ConnectionTest.init/0
+
+    warning: Gaoxy.HTTP.HTTP3.Connection.handle_event/2 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available or is yet to be defined)
+    │
+ 23 │     assert {:ok, ^state} = Connection.handle_event(:tick, state)
+    │                                       ~
+    │
+    └─ test/connection_test.exs:23:39: Gaoxy.HTTP.HTTP3.ConnectionTest."test init and ticks do not perform I/O before authenticated readiness"/1
+    └─ test/connection_test.exs:24:39: Gaoxy.HTTP.HTTP3.ConnectionTest."test init and ticks do not perform I/O before authenticated readiness"/1
+    └─ test/connection_test.exs:30:38: Gaoxy.HTTP.HTTP3.ConnectionTest."test pre-ready peer streams retain opaque keys without reading or assigning IDs"/1
+    └─ test/connection_test.exs:32:39: Gaoxy.HTTP.HTTP3.ConnectionTest."test pre-ready peer streams retain opaque keys without reading or assigning IDs"/1
+    └─ test/connection_test.exs:38:18: Gaoxy.HTTP.HTTP3.ConnectionTest."test wrong negotiated ALPN is rejected before control stream activation"/1
+    └─ test/connection_test.exs:44:18: Gaoxy.HTTP.HTTP3.ConnectionTest."test incomplete authentication cannot activate the owner"/1
+    └─ test/connection_test.exs:49:39: Gaoxy.HTTP.HTTP3.ConnectionTest."test arbitrary application events do not execute endpoints"/1
+
+
+
+  8) test wrong negotiated ALPN is rejected before control stream activation (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:35
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP3.Connection.init/3 is undefined (module Gaoxy.HTTP.HTTP3.Connection is not available)
+     code: {:ok, state} = init()
+     stacktrace:
+       Gaoxy.HTTP.HTTP3.Connection.init(%{gate: #PID<0.333.0>, limits: %{max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_output: 16384, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000}}, %{alpn: "h3", tls_complete: false, parameters_valid: false}, %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.333.0>}}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, max_header_bytes: 32768, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, h3_limits: %{max_streams: 8, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768, max_pending_output: 65536, control_turn: 32, control_quantum: 16384}})
+       test/connection_test.exs:36: (test)
+
+
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+8 tests, 8 failures

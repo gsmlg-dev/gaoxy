@@ -1,0 +1,36 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 162227, max_cases: 4
+
+........
+
+  1) test response owners remain bounded after receive FIN frees parser slots (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:55
+     Expected false or nil, got true
+     code: refute Map.has_key?(next.protocol.streams, key)
+     arguments:
+
+         # 1
+         %{
+           #Reference<0.778375997.1952448514.260869> => %{
+             message: :initial_headers,
+             request: nil,
+             buffer: "",
+             kind: :request,
+             phase: :type,
+             payload: "",
+             frame_type: nil,
+             body_bytes: 0,
+             remaining: 0
+           }
+         }
+
+         # 2
+         #Reference<0.778375997.1952448514.260869>
+
+     stacktrace:
+       test/connection_test.exs:65: (test)
+
+.
+Finished in 0.2 seconds (0.2s async, 0.00s sync)
+10 tests, 1 failure

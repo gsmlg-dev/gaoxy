@@ -187,6 +187,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
     if service.max_state >= reserves.connection and
          service.max_bytes >=
            reserves.connection + h3.max_streams * reserves.request + reserves.writer and
+         h3.max_pending_output >= http.max_read_chunk + 32 and
          service.max_active >= h3.max_streams + 1 and
          service.max_packet >= min(http.max_read_chunk, 16_384) and
          service.max_output >= min(http.max_read_chunk, 16_384),

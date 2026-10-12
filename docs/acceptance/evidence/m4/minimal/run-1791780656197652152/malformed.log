@@ -1,0 +1,53 @@
+GAOXY_HTTP3_PEER {"name": "data_before_headers", "result": "PASS", "scope": "connection", "code": 261, "sibling_completed": true, "error_elapsed_ms": 127, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "control_frame_on_request", "result": "PASS", "scope": "connection", "code": 261, "sibling_completed": true, "error_elapsed_ms": 123, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "duplicate_settings", "result": "PASS", "scope": "connection", "code": 261, "sibling_completed": true, "error_elapsed_ms": 130, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "settings_first", "result": "PASS", "scope": "connection", "code": 266, "sibling_completed": true, "error_elapsed_ms": 157, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "invalid_settings", "result": "PASS", "scope": "connection", "code": 265, "sibling_completed": true, "error_elapsed_ms": 157, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "duplicate_critical_0", "result": "PASS", "scope": "connection", "code": 259, "sibling_completed": true, "error_elapsed_ms": 141, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_fin_0", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 122, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_reset_0", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 125, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "duplicate_critical_2", "result": "PASS", "scope": "connection", "code": 259, "sibling_completed": true, "error_elapsed_ms": 135, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_fin_2", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 150, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_reset_2", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 146, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "duplicate_critical_3", "result": "PASS", "scope": "connection", "code": 259, "sibling_completed": true, "error_elapsed_ms": 141, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_fin_3", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 125, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "critical_reset_3", "result": "PASS", "scope": "connection", "code": 260, "sibling_completed": true, "error_elapsed_ms": 120, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "client_push_stream", "result": "PASS", "scope": "connection", "code": 259, "sibling_completed": true, "error_elapsed_ms": 127, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "qpack_encoder_capacity", "result": "PASS", "scope": "connection", "code": 513, "sibling_completed": true, "error_elapsed_ms": 134, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "qpack_decoder_invalid_ack", "result": "PASS", "scope": "connection", "code": 514, "sibling_completed": true, "error_elapsed_ms": 127, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "incomplete_extension_discard_deadline", "result": "PASS", "scope": "connection", "code": 263, "sibling_completed": true, "error_elapsed_ms": 5137, "error_deadline_ms": 6000}
+GAOXY_HTTP3_PEER {"name": "qpack_dynamic_reference", "result": "PASS", "scope": "connection", "code": 512, "sibling_completed": true, "error_elapsed_ms": 119, "error_deadline_ms": null}
+GAOXY_HTTP3_PEER {"name": "qpack_invalid_huffman", "result": "PASS", "scope": "connection", "code": 512, "sibling_completed": true, "error_elapsed_ms": 134, "error_deadline_ms": null}
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 104, in until
+    await self.changed.wait()
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/locks.py", line 212, in wait
+    await fut
+asyncio.exceptions.CancelledError
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 342, in <module>
+    main()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 338, in main
+    asyncio.run(globals()[args.mode](args))
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 289, in malformed
+    await case("duplicate_pseudo", request_bytes(head(0, FIELDS + [(b":method", b"GET")])), 0x10E, "stream")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 250, in case
+    await peer.until(lambda: sid in peer.resets and sid in peer.stops)
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/peer.py", line 99, in until
+    async with asyncio.timeout(10):
+               ^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/timeouts.py", line 115, in __aexit__
+    raise TimeoutError from exc_val
+TimeoutError

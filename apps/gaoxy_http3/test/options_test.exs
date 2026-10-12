@@ -127,4 +127,25 @@ defmodule Gaoxy.HTTP.HTTP3.OptionsTest do
     assert {:error, :http3_byte_budget} =
              Options.normalize(Keyword.put(options(), :limits, %{max_state: 2_080_768}))
   end
+
+  test "read credit includes framing space before endpoint initialization" do
+    for input <- [
+          [h3_limits: %{max_pending_output: 16_384}],
+          [http_limits: %{max_read_chunk: 65_536}]
+        ] do
+      assert {:error, :http3_byte_budget} = Options.normalize(Keyword.merge(options(), input))
+      refute_received :initialized
+    end
+
+    assert {:ok, service} =
+             Options.normalize(
+               Keyword.put(options(), :h3_limits, %{max_pending_output: 16_384 + 32})
+             )
+
+    assert service.handler_options.h3_limits.max_pending_output ==
+             service.handler_options.http_limits.max_read_chunk + 32
+
+    assert_receive :initialized
+    refute_received :initialized
+  end
 end

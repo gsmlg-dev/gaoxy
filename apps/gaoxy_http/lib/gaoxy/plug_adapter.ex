@@ -51,7 +51,8 @@ defmodule Gaoxy.PlugAdapter do
 
   def inform(exchange, status, headers), do: Response.inform(exchange, status, headers)
 
-  def upgrade(%{request: %{version: :"HTTP/2"}}, _, _), do: {:error, :not_supported}
+  def upgrade(%{request: %{version: version}}, _, _) when version in [:"HTTP/2", :"HTTP/3"],
+    do: {:error, :not_supported}
 
   def upgrade(exchange, :websocket, arguments) do
     case Gaoxy.HTTP.WebSocket.prepare(exchange, arguments) do

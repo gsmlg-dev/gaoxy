@@ -1,0 +1,156 @@
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_http3
+Running ExUnit with seed: 465603, max_cases: 4
+
+.....
+
+  1) test late open event for the local control stream never enters the peer parser (Gaoxy.HTTP.HTTP3.ConnectionTest)
+     apps/gaoxy_http3/test/connection_test.exs:47
+     match (=) failed
+     The following variables were pinned:
+       state = %{closed: false, control: #Reference<0.201891696.1414266881.153956>, pending: %{}, options: %{initialized: true, endpoint: {Gaoxy.HTTP3Fixture.Endpoint, %{id: :main, profile: :minimal, observer: #PID<0.345.0>}}, h3_limits: %{max_streams: 8, control_turn: 32, max_pending_output: 65536, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768}, http_limits: %{request_timeout: 30000, header_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_buffer_bytes: 65536, max_header_bytes: 32768, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32}}, protocol: %Gaoxy.HTTP.HTTP3.Protocol{http_limits: %{request_timeout: 30000, header_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_buffer_bytes: 65536, max_header_bytes: 32768, max_body_bytes: 8388608, max_chunk_line: 1024, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32}, h3_limits: %{max_streams: 8, control_turn: 32, max_pending_output: 65536, control_quantum: 16384, dynamic_table_capacity: 0, blocked_streams: 0, max_header_block: 32768}, control: %QuicHttp3.Control{role: :server, local_settings: [{1, 0}, {6, 32768}, {7, 0}], peer_settings: nil, buffer: "", control_stream_id: nil, peer_control_stream_id: nil, peer_type_buffer: "", local_open?: false, peer_open?: false, received_settings?: false, goaway_id: nil}, streams: %{}, critical: %{}, max_push_id: nil}, metadata: %{alpn: "h3", tls_complete: false, parameters_valid: false}, connection: %{gate: #PID<0.345.0>, limits: %{callback_timeout: 5000, max_output: 16384, max_bytes: 16777216, idle_timeout: 30000, max_state: 3145728, max_active: 64, max_packet: 16384, max_memberships: 64, drain_timeout: 5000}}, ready: false, control_bytes: <<0, 4, 9, 1, 0, 6, 128, 0, 128, 0, 7, 0>>, control_deadline: nil, streams: %{}, order: {[], []}, turn_deadline: nil}
+     code:  assert {:ok, ^state} = Connection.handle_event({:stream_open, key, :uni}, state)
+     left:  {:ok, ^state}
+     right: {:ok,
+             %{
+               closed: false,
+               control: #Reference<0.201891696.1414266881.153956>,
+               pending: %{},
+               options: %{
+                 initialized: true,
+                 endpoint: {Gaoxy.HTTP3Fixture.Endpoint,
+                  %{
+                    id: :main,
+                    profile: :minimal,
+                    observer: #PID<0.345.0>
+                  }},
+                 h3_limits: %{
+                   max_streams: 8,
+                   control_turn: 32,
+                   max_pending_output: 65536,
+                   control_quantum: 16384,
+                   dynamic_table_capacity: 0,
+                   blocked_streams: 0,
+                   max_header_block: 32768
+                 },
+                 http_limits: %{
+                   request_timeout: 30000,
+                   header_timeout: 5000,
+                   write_timeout: 5000,
+                   max_read_chunk: 16384,
+                   read_timeout: 5000,
+                   max_buffer_bytes: 65536,
+                   max_header_bytes: 32768,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32
+                 }
+               },
+               protocol: %Gaoxy.HTTP.HTTP3.Protocol{
+                 http_limits: %{
+                   request_timeout: 30000,
+                   header_timeout: 5000,
+                   write_timeout: 5000,
+                   max_read_chunk: 16384,
+                   read_timeout: 5000,
+                   max_buffer_bytes: 65536,
+                   max_header_bytes: 32768,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32
+                 },
+                 h3_limits: %{
+                   max_streams: 8,
+                   control_turn: 32,
+                   max_pending_output: 65536,
+                   control_quantum: 16384,
+                   dynamic_table_capacity: 0,
+                   blocked_streams: 0,
+                   max_header_block: 32768
+                 },
+                 control: %QuicHttp3.Control{
+                   role: :server,
+                   local_settings: [{1, 0}, {6, 32768}, {7, 0}],
+                   peer_settings: nil,
+                   buffer: "",
+                   control_stream_id: nil,
+                   peer_control_stream_id: nil,
+                   peer_type_buffer: "",
+                   local_open?: false,
+                   peer_open?: false,
+                   received_settings?: false,
+                   goaway_id: nil
+                 },
+                 streams: %{
+                   #Reference<0.201891696.1414266881.153956> => %{
+                     message: :initial_headers,
+                     request: nil,
+                     buffer: "",
+                     kind: :uni,
+                     phase: :uni_type,
+                     remaining: 0,
+                     payload: "",
+                     frame_type: nil,
+                     body_bytes: 0
+                   }
+                 },
+                 critical: %{},
+                 max_push_id: nil
+               },
+               metadata: %{
+                 alpn: "h3",
+                 tls_complete: false,
+                 parameters_valid: false
+               },
+               connection: %{
+                 gate: #PID<0.345.0>,
+                 limits: %{
+                   callback_timeout: 5000,
+                   max_output: 16384,
+                   max_bytes: 16777216,
+                   idle_timeout: 30000,
+                   max_state: 3145728,
+                   max_active: 64,
+                   max_packet: 16384,
+                   max_memberships: 64,
+                   drain_timeout: 5000
+                 }
+               },
+               ready: false,
+               control_bytes: <<0, 4, 9, 1, 0, 6, 128, 0, 128, 0, 7,
+                 0>>,
+               control_deadline: nil,
+               streams: %{
+                 #Reference<0.201891696.1414266881.153956> => %{
+                   out: "",
+                   request: nil,
+                   mode: nil,
+                   cancel: [],
+                   deadline: -576460719643,
+                   kind: :uni,
+                   send_fin: false,
+                   send_done: false,
+                   recv_fin: false,
+                   fin_pending: false,
+                   header_deadline: -576460744643,
+                   output_deadline: nil
+                 }
+               },
+               order: {[#Reference<0.201891696.1414266881.153956>],
+                []},
+               turn_deadline: nil
+             }}
+     stacktrace:
+       test/connection_test.exs:51: (test)
+
+...
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+9 tests, 1 failure

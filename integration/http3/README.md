@@ -38,3 +38,28 @@ E2E workflow remains disabled.
 
 Source-bound host results are recorded under
 `docs/acceptance/evidence/m4/host/`.
+
+## Minimal HTTP/3 server gate
+
+From the worktree root in the locked Nix shell:
+
+```sh
+export MIX_ENV=test ERL_FLAGS='+S 2:2'
+mix compile --warnings-as-errors
+python integration/http3/run.py --gate minimal --evidence docs/acceptance/evidence/m4/minimal
+```
+
+The runner uses temporary loopback credentials and ephemeral listeners, runs the
+pinned independent peer and removes its own children. Each run has an immutable
+source-hashed directory; `latest.json` points to the latest result. Nonzero exit,
+missing cases or changed source fails the gate. The fixture-only minimal profile
+covers ordinary/control/malformed, exact stream/connection errors, slow-window
+streaming, cancellation and bounded shutdown. It does not qualify arbitrary
+production Endpoint/Plug execution; that is the shared integration gate.
+
+FIN-completed malformed requests require exact RESET and sibling/no-late-DATA
+checks. Additional open-direction variants require both exact RESET and STOP
+callbacks. Diagnostic qlog proves the server's two exact wire frames even when
+aioquic retires a FIN-completed stream before its STOP callback; see the retained
+`peer-diagnostic` evidence. This distinction changes the observable callback
+contract without dropping protocol-code or isolation requirements.

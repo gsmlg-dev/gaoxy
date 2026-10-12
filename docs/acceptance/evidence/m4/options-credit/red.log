@@ -1,0 +1,71 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_http3
+Running ExUnit with seed: 965659, max_cases: 4
+
+.......
+
+  1) test read credit includes framing space before endpoint initialization (Gaoxy.HTTP.HTTP3.OptionsTest)
+     apps/gaoxy_http3/test/options_test.exs:131
+     match (=) failed
+     code:  assert {:error, :http3_byte_budget} = Options.normalize(Keyword.merge(options(), input))
+     left:  {:error, :http3_byte_budget}
+     right: {:ok,
+             %{
+               id: :http3,
+               port: 0,
+               ip: {127, 0, 0, 1},
+               tls: %{
+                 certfile: "fixture.pem",
+                 keyfile: "fixture-key.pem"
+               },
+               transport: :quic,
+               quic: %{alpn: ["h3"]},
+               handler_options: %{
+                 initialized: true,
+                 endpoint: {Gaoxy.HTTP.HTTP3.OptionsTest.Endpoint,
+                  #PID<0.324.0>},
+                 h3_limits: %{
+                   max_streams: 8,
+                   dynamic_table_capacity: 0,
+                   blocked_streams: 0,
+                   max_pending_output: 16384,
+                   max_header_block: 32768,
+                   control_turn: 32,
+                   control_quantum: 16384
+                 },
+                 http_limits: %{
+                   max_read_chunk: 16384,
+                   max_buffer_bytes: 65536,
+                   max_header_bytes: 32768,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32,
+                   read_timeout: 5000,
+                   request_timeout: 30000,
+                   write_timeout: 5000
+                 }
+               },
+               limits: %{
+                 max_bytes: 16777216,
+                 idle_timeout: 30000,
+                 max_state: 3145728,
+                 max_active: 64,
+                 max_packet: 16384,
+                 max_output: 16384,
+                 max_memberships: 64,
+                 callback_timeout: 5000,
+                 drain_timeout: 5000
+               }
+             }}
+     stacktrace:
+       test/options_test.exs:136: anonymous fn/2 in Gaoxy.HTTP.HTTP3.OptionsTest."test read credit includes framing space before endpoint initialization"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/options_test.exs:132: (test)
+
+.
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+9 tests, 1 failure
