@@ -1,0 +1,7 @@
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_static_and_legacy_h1", "result": "PASS", "protocols": ["h3", "HTTP/1.1"]}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_proxy_progressive_upload", "result": "PASS", "bytes": 73728, "before_fin_bytes": 17}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_proxy_failure_isolates_h3_and_h1_siblings", "result": "PASS", "status": 400, "upstream_requests": 0}
+GAOXY_STANDALONE_PEER {"event": "barrier", "command": "reload"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_reload_keeps_listener_and_inflight_generation", "result": "PASS", "old_bytes": 57359, "before_origin_fin_bytes": 15, "new_body": "new", "response_trailers": ["first", "second"]}
+GAOXY_STANDALONE_PEER {"event": "barrier", "command": "invalid-reload"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_invalid_reload_preserves_current_generation", "result": "PASS", "body": "new"}

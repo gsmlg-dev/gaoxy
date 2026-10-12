@@ -1,0 +1,110 @@
+{
+  "task_id": "/root/m4_downstream_proxy/standalone-ST1",
+  "status": "DONE implementation and scoped checks; independent review and ST2 remain coordinator-owned",
+  "assignment": "direct bounded implementation",
+  "date": "2026-10-12",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "source_sha256": {
+    "apps/gaoxy_server/mix.exs": "ce7e6ab81adbd357b749351d6ee73884c1ab87d7763c15542ccc16794bd73464",
+    "apps/gaoxy_server/lib/gaoxy/server/config.ex": "b81b9ba843cf63dbc1a7b80c0377807bca2795fc0d18a6c49b814c5c9b776f58",
+    "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex": "e2505a27e7cd9487fb7d8f54cee2bbdcff4bcba4a269ac3529107c0b0d1ebbf1",
+    "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex": "83d2422c373d38e206dc4657cfacec72a820209b8128e180220475376f0ce6ee",
+    "apps/gaoxy_server/test/http3_config_test.exs": "e44cf51b8ec5c938bdba387879f14a9a2d0426e4fa252faa31d262be0f5afc5d",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "37ae09f67848b3076115cee846da6d713555463b481362e8ff68ea18f88bacf7",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25",
+    "docs/designs/m4-upstream-standalone.md": "8381f1cf2bce7f31420ecf47e5c5b76fece6c0d8d4e214844ee39fd69014a12b",
+    "docs/plans/m4-upstream-standalone.md": "7b6f326865ea11657ce065db59d8319c33cd849d619d9e374c3d7abba82707e8"
+  },
+  "evidence_sha256": {
+    "red.log": "85d3e9515ff6eec6521196598454fe582d3554c49d3edc7e101533a077999f2e",
+    "green.log": "62417690ae95ed544590f34f2db619346870cc4cf71721fd68282ad834cd595a",
+    "compatibility.log": "bd42870c2c44c82e14a091df3eaf6a31d0e8fa1b21f4a91a401e748192c90e77",
+    "compile.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "format.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f"
+  },
+  "root_cause": "Standalone previously recognized H1/H2 only; H3 requires strict data-only decode, framed static validation, per-stream generation snapshot admission and public Generation initialization after route stores exist.",
+  "changes": [
+    "Existing optional gaoxy_http3 umbrella application added only to standalone dependency closure; core-only closure unchanged by these files.",
+    "Explicit handler/http3 transport/quic protocols/http3 branch with allowlisted H3/HTTP/service limits, credential keys, strict bindings and no input atom creation; H1 remains default and H3-origin route selection remains rejected.",
+    "Exact standalone snapshot budget is connection + max_streams * (request + 2 * 1048576) + writer; default boundary 20458496 and custom tested boundary 4854784.",
+    "Generation stores/profile recognize H3; internal runtime child MFA initializes current store PID through public Generation.init/1 on every restart, retaining rest_for_one and runtime child policies.",
+    "Static framed response validation covers HTTP/3 status pseudoheader, generated content-length and UTF-8 field byte/count limits."
+  ],
+  "verification": [
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_server/test/http3_config_test.exs apps/gaoxy_server/test/http3_generation_test.exs",
+      "log": "docs/acceptance/evidence/m4/standalone/st1/red.log",
+      "result": "EXPECTED RED before production implementation",
+      "tests": 40,
+      "failures": 11,
+      "exit": null,
+      "note": "Historical preimplementation red log and 40/11 count are preserved; exact process exit was not carried into this resumed worker summary and is unknown. No assertions weakened."
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_server/test/http3_config_test.exs apps/gaoxy_server/test/http3_generation_test.exs",
+      "log": "docs/acceptance/evidence/m4/standalone/st1/green.log",
+      "result": "PASS initial implementation",
+      "tests": 40,
+      "failures": 0,
+      "exit": 0
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_server/test/http3_config_test.exs apps/gaoxy_server/test/http3_generation_test.exs apps/gaoxy_server/test/config_test.exs apps/gaoxy_server/test/route_config_test.exs apps/gaoxy_server/test/standalone_generation_test.exs apps/gaoxy_server/test/standalone_independent_review_test.exs",
+      "log": "docs/acceptance/evidence/m4/standalone/st1/compatibility.log",
+      "result": "PASS after exact-file formatting",
+      "tests": 58,
+      "failures": 0,
+      "exit": 0
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' mix compile --warnings-as-errors",
+      "log": "docs/acceptance/evidence/m4/standalone/st1/compile.log",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' mix format --check-formatted apps/gaoxy_server/mix.exs apps/gaoxy_server/lib/gaoxy/server/config.ex apps/gaoxy_server/lib/gaoxy/server/supervisor.ex apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex apps/gaoxy_server/test/http3_config_test.exs apps/gaoxy_server/test/http3_generation_test.exs",
+      "log": "docs/acceptance/evidence/m4/standalone/st1/format.log",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "git diff --check -- apps/gaoxy_server/mix.exs apps/gaoxy_server/lib/gaoxy/server/config.ex apps/gaoxy_server/lib/gaoxy/server/supervisor.ex apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex apps/gaoxy_server/test/http3_config_test.exs apps/gaoxy_server/test/http3_generation_test.exs",
+      "result": "PASS",
+      "exit": 0
+    }
+  ],
+  "test_contract": "Strict decode rejection/no owners/no atoms, exact default/custom admission boundaries, static framing limits, actual H3 listener startup with generated disposable credentials, generation call/profile, route-store/runtime restart, stable-listener reload old/new snapshot isolation and invalid rollback, Admission snapshot and public resource-pin cleanup after request worker death. Semantic Generation calls are not independent ST2 wire acceptance.",
+  "counters": {
+    "st1_sol_repair_rounds": 0,
+    "st1_sol_unsuccessful_repairs": 0,
+    "st1_astra_recovery_rounds": 0,
+    "proxy_historical": "Sol2/unsuccessful1 at worker transfer; root owns subsequent Sol3 repair",
+    "connection_received": "Sol3/unsuccessful2/Astra1/unsuccessful0",
+    "options_received": "Sol4/unsuccessful1/Astra0"
+  },
+  "astra_gate": null,
+  "command_shutdown": "All owned formatter/test/compile commands exited; ExUnit supervised runtime/provider/gates and generated listeners ended with suite. No owned background process remains; no commit or publication.",
+  "remaining_risks": [
+    "Independent specification/code review and coordinator fresh affected check remain required before ST1 acceptance/commit.",
+    "ST2 independent standalone wire/startup-rollback/UDP-rebind acceptance remains NOT RUN by this worker.",
+    "Unsupported H3-origin options remain rejected pending upstream issue http_fetch#101; standalone static and existing H1-origin routes proceed independently.",
+    "Clean core/H1H2/H3 consumer closure checks remain separate coordinator gates."
+  ],
+  "decisions_needed": [],
+  "ownership": {
+    "files": [
+      "apps/gaoxy_server/mix.exs",
+      "apps/gaoxy_server/lib/gaoxy/server/config.ex",
+      "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex",
+      "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex",
+      "apps/gaoxy_server/test/http3_config_test.exs",
+      "apps/gaoxy_server/test/http3_generation_test.exs"
+    ],
+    "other_changes": "Concurrent root proxy/fixture/docs and other worker changes preserved; task receipt/logs added only under standalone/st1."
+  },
+  "next_step": "Freeze these six source files and return exclusive umbrella Mix lease to root for independent review, proxy compatibility repair and live gates."
+}

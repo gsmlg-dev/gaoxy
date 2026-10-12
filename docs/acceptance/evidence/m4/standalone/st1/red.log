@@ -1,0 +1,144 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_server
+Running ExUnit with seed: 316845, max_cases: 4
+
+
+
+  1) test H3 standalone starts its generation before runtime and retains a framed profile (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:76
+     match (=) failed
+     code:  assert {:ok, [services: [spec]] = options} = Config.decode(data)
+     left:  {:ok, [services: [spec]] = options}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_generation_test.exs:164: Gaoxy.Server.HTTP3GenerationTest.runtime/2
+       test/http3_generation_test.exs:77: (test)
+
+
+
+  2) test H3 local reload retains listener and in-flight old snapshot and rejects invalid framing (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:108
+     match (=) failed
+     code:  assert {:ok, [services: [spec]] = options} = Config.decode(data)
+     left:  {:ok, [services: [spec]] = options}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_generation_test.exs:164: Gaoxy.Server.HTTP3GenerationTest.runtime/2
+       test/http3_generation_test.exs:109: (test)
+
+
+
+  3) test H3 generation request death releases its snapshot reservation and resource pin (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:132
+     match (=) failed
+     code:  assert {:ok, [services: [spec]] = options} = Config.decode(data)
+     left:  {:ok, [services: [spec]] = options}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_generation_test.exs:164: Gaoxy.Server.HTTP3GenerationTest.runtime/2
+       test/http3_generation_test.exs:133: (test)
+
+
+
+  4) test route-store restart initializes the new H3 runtime against the new PID (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:88
+     match (=) failed
+     code:  assert {:ok, [services: [spec]] = options} = Config.decode(data)
+     left:  {:ok, [services: [spec]] = options}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_generation_test.exs:164: Gaoxy.Server.HTTP3GenerationTest.runtime/2
+       test/http3_generation_test.exs:89: (test)
+
+....
+
+  5) test explicit data-only H3 config fixes QUIC ALPN and keeps static routing (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:6
+     match (=) failed
+     code:  assert {:ok, services: [spec]} = Config.decode(config())
+     left:  {:ok, services: [spec]}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:7: (test)
+
+......
+
+  6) test initial H3 config rejects static count and byte overflow (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:97
+     match (=) failed
+     code:  assert {:ok, _} =
+              Config.decode(
+                put_service(data, "http_limits", %{"max_headers" => 3, "max_header_bytes" => 124})
+              )
+     left:  {:ok, _}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:99: (test)
+
+..........
+
+  7) test H1 default remains available and H3 origin options remain rejected (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:17
+     match (=) failed
+     code:  assert {:ok, _} = Config.decode(put_target(config(), upstream))
+     left:  {:ok, _}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:24: (test)
+
+....
+
+  8) test binary configuration input cannot create handler, option or identity atoms (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:59
+     match (=) failed
+     The following variables were pinned:
+       value = "gaoxy_h3_untrusted_259"
+     code:  assert {:ok, services: [%{id: ^value}]} = Config.decode(put_service(config(), "id", value))
+     left:  {:ok, services: [%{id: ^value}]}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:64: (test)
+
+.
+
+  9) test custom H3 stream and HTTP bounds retain the exact per-stream snapshot budget (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:77
+     match (=) failed
+     code:  assert {:ok, _} = Config.decode(put_service(data, "limits", %{"max_bytes" => required}))
+     left:  {:ok, _}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:82: (test)
+
+
+
+ 10) test H3 static count and UTF-8 byte boundaries include status and generated length (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:87
+     ** (FunctionClauseError) no function clause matching in anonymous fn/1 in Gaoxy.Server.StaticEndpoint.validate_limits/2
+
+     The following arguments were given to anonymous fn/1 in Gaoxy.Server.StaticEndpoint.validate_limits/2:
+
+         # 1
+         :http3
+
+     code: assert :ok = StaticEndpoint.validate_limits(options, profile)
+     stacktrace:
+       (gaoxy_server 0.2.0) lib/gaoxy/server/static_endpoint.ex:27: anonymous fn/1 in Gaoxy.Server.StaticEndpoint.validate_limits/2
+       (elixir 1.18.5) lib/enum.ex:4315: Enum.predicate_list/3
+       (gaoxy_server 0.2.0) lib/gaoxy/server/static_endpoint.ex:27: Gaoxy.Server.StaticEndpoint.validate_limits/2
+       test/http3_config_test.exs:90: (test)
+
+...
+
+ 11) test standalone H3 budget includes two snapshots for each of eight admitted streams (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:68
+     match (=) failed
+     code:  assert {:ok, _} = Config.decode(put_service(config(), "limits", %{"max_bytes" => required}))
+     left:  {:ok, _}
+     right: {:error, :unknown_configuration_keys}
+     stacktrace:
+       test/http3_config_test.exs:72: (test)
+
+.
+Finished in 2.3 seconds (0.00s async, 2.3s sync)
+40 tests, 11 failures

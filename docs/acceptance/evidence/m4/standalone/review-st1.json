@@ -1,0 +1,64 @@
+{
+  "task_id": "/root/m4_spec_review/st1-independent-review",
+  "status": "DONE",
+  "assignment": "direct independent specification then quality review; read-only sources/evidence, own receipt",
+  "reviewer": "/root/m4_spec_review",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "specification_review": "PASS bounded standalone static/H1-origin slice",
+  "code_review": "PASS",
+  "findings": [],
+  "source_sha256": {
+    "apps/gaoxy_server/mix.exs": "ce7e6ab81adbd357b749351d6ee73884c1ab87d7763c15542ccc16794bd73464",
+    "apps/gaoxy_server/lib/gaoxy/server/config.ex": "b81b9ba843cf63dbc1a7b80c0377807bca2795fc0d18a6c49b814c5c9b776f58",
+    "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex": "e2505a27e7cd9487fb7d8f54cee2bbdcff4bcba4a269ac3529107c0b0d1ebbf1",
+    "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex": "83d2422c373d38e206dc4657cfacec72a820209b8128e180220475376f0ce6ee",
+    "apps/gaoxy_server/test/http3_config_test.exs": "e44cf51b8ec5c938bdba387879f14a9a2d0426e4fa252faa31d262be0f5afc5d",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "37ae09f67848b3076115cee846da6d713555463b481362e8ff68ea18f88bacf7",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25",
+    "docs/designs/m4-upstream-standalone.md": "8381f1cf2bce7f31420ecf47e5c5b76fece6c0d8d4e214844ee39fd69014a12b",
+    "docs/plans/m4-upstream-standalone.md": "7b6f326865ea11657ce065db59d8319c33cd849d619d9e374c3d7abba82707e8"
+  },
+  "source_matches_author_receipt": true,
+  "evidence_sha256": {
+    "implementation.json": "309bbc4e879f90211813aff4b4e9cf13d0ea133791e6e0da3ed6b059947e8a69",
+    "red.log": "85d3e9515ff6eec6521196598454fe582d3554c49d3edc7e101533a077999f2e",
+    "green.log": "62417690ae95ed544590f34f2db619346870cc4cf71721fd68282ad834cd595a",
+    "compatibility.log": "bd42870c2c44c82e14a091df3eaf6a31d0e8fa1b21f4a91a401e748192c90e77",
+    "compile.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+    "format.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f"
+  },
+  "assessment": [
+    "Standalone dependency addition is only optional gaoxy_http3 umbrella app; core and ordinaryHTTP app manifests and root lock remain unchanged. Separate clean consumer qualification still required.",
+    "Data-only http3/quic/protocols=[http3] branch reuses public service_spec and strict normalized limits/credentials. handler_options/udp are rejected by key presence even when empty. H2knobs/arbitrary module/endpoint/quic overrides reject from allowed-key sets; explicit TLS provider/ALPN keys are rejected by native credentials map keys even if empty/default. Missing protocols/credentials and wildcard/IPv6/invalidlimits reject before ownerstartup.",
+    "Only fixed allowlist string\u2192atom mappings are used, identity remains binary. New tests exercise unknowninput/identity atom preservation, no registered owners on invaliddecode and defaultH1 preservation.",
+    "Native H3 connection/request/writer reservation plus max_streams*(request+2*max_config_bytes) exactly charges all admitted snapshots. Hardcoded independent default20458496/custom4854784 and onebytebelow boundaries match public reservation formula; native max_state/output/ingress/activity gates retained.",
+    "Runtime child spec retains original policy and changes only start MFA. Stores+registry precede runtime under rest_for_one. MFA resolves Generation.init via registered store every restart, never captures original PID; concrete H3 endpoint initialized only after store exists. H1 initializer path remains unchanged.",
+    "H3 Generation registry profile explicitly carries protocols/http_limits without passing H2TCP options into nativeH3. StaticEndpoint uses framed field counting/byte sizing including status, generated content-length and UTF8; initialdecode and reload use same validate_routes path. Exact124/123bytes and3/2fields regressions substantiate boundary.",
+    "Generation semantic tests use real standaloneSupervisor/listener/startup, generated credentials, actual store/runtime death/restart, listener-stable reload, held oldsnapshot versus freshnewsnapshot, invalid headercount/byte rollback and monitored workerdeath Admission/resource-pin return. Public finitebarriers retained. Semantic transport cases do not substitute for ST2 independent wireproof.",
+    "H3-origin selection remains rejected at existing RouteConfig allowlist; independently supported static/H1proxy proceeds while http_fetch#101 trailers are blocked. No nonfunctional upstreamH3 adapter/config activated."
+  ],
+  "author_verification": {
+    "red": "40tests/11expectedfailures retained; historical exactexit unknown and not invented",
+    "focused_green": "40tests/0failures, author exit0",
+    "compatibility": "58tests/0failures including existingconfig/routes/generation/independentreview suites, author exit0",
+    "strict_compile": "author exact command exit0",
+    "exact_format": "author sixfile format-check exit0",
+    "hash_check": "all nine declared sourcehashes and five loghashes match current files"
+  },
+  "runtime_by_reviewer": "NOT RUN; no Mix/live lease. Read-only review accepts implementation source and recorded scoped evidence, not ST2/M4 completion. Coordinator fresh postreview checks required.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "received_st1_sol_repairs": 0,
+    "received_st1_astra_recovery_rounds": 0,
+    "others": "Proxy root repair/cumulative Connection/Options/UP0/Astra counts preserved; no reset or inferred root outcome"
+  },
+  "command_shutdown": "All reviewer read/hash/receipt commands exited; no owned process; root owns Mix/live lease.",
+  "remaining_requirements": [
+    "Coordinator fresh exact-file formatting/strictcompile/affectedtests after independent review",
+    "ST2 actualsourcefrozenwire/startuprollback/stop acceptance and independent evidence review",
+    "Clean core/H1H2/H3 consumer closure checks separately qualified"
+  ],
+  "decisions_needed": []
+}

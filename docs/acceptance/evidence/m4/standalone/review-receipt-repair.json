@@ -1,0 +1,56 @@
+{
+  "task_id": "/root/m4_spec_review/st2-receipt-repair",
+  "status": "DONE",
+  "assignment": "direct independent read-only diagnosis and minimalpatch review; ownreceipt",
+  "reviewer": "/root/m4_spec_review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "live_status": "NOT RUN afterrepair",
+  "findings": [],
+  "source_sha256": {
+    "integration/http3/standalone/run.py": "32c1bdc7e042b58c7a1961b5ea7352f7c598412365e4f6373ad9a6de9fdbdfd5",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b"
+  },
+  "original_failure": {
+    "run": "run-1791814742938070219",
+    "status": "FAIL",
+    "error": "TypeError: dict() got multiple values for keyword argument 'result'",
+    "summary_checks": 0,
+    "wire_checks_before_aggregation_failure": 3,
+    "source_unchanged": true,
+    "cleanup": "Allthreechildrenterminatedwithforcedcleanup; originalfailureunchanged."
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/standalone/run-1791814742938070219/certificates.log": "12aca77f92f7aadc6c96a7ddc1c3b8c14c381e0923a7bb3ea56e900e6fcacede",
+    "docs/acceptance/evidence/m4/standalone/run-1791814742938070219/origin.log": "063b68d2f29dbb7fd15e238b4001e4a63087d82df25e5a584a64b8f9bda4922f",
+    "docs/acceptance/evidence/m4/standalone/run-1791814742938070219/peer.log": "101aa08518da49b39957a9cfb0d8578f03f5ce5ee07f52d23abcba858d63d45d",
+    "docs/acceptance/evidence/m4/standalone/run-1791814742938070219/result.json": "82d321cd74f367457f31ab269b6d33f6e1df7d2f6efccf219d40d629e9afe1e4",
+    "docs/acceptance/evidence/m4/standalone/run-1791814742938070219/standalone.log": "1b61092bf12e7429fd6c18667137a79952890a7eca02822e0bb28912ab7c5858"
+  },
+  "root_cause": "Fixture validreloadreceipt includes actual publicresult inspect string underresult. Aggregating dict(result=PASS,**receipt) duplicates keywordresult and raisesTypeError afterrealactivation, beforepeercontinue and finalcasesaggregation.",
+  "repair": "Exactlyone runnerline now wraps completeactivationreceipt underreceipt and keeps checkresultPASS separate. Reversingonlythatline reproduces originalexecutedrun.pyhash.",
+  "assertions_preserved": [
+    "Barriercommandsallowlist unchanged.",
+    "Actualreceipt event==command and listenerunchanged required.",
+    "Generationchanged iffvalidreload required.",
+    "Fixture itself asserts realreloadresult/newgeneration or actualerror/unchangedgeneration.",
+    "Peercontinuation, fiveuniquepeerchecks, originstrictreceipts, baselines, rollback, deadline/sourcefreeze and cleanup assertions unchanged."
+  ],
+  "reviewer_verification": "PythonASTparsePASS; independently used exactcapturedactivationreceipt to reproduce originalTypeError and verify nestedreceipt retains actual{:ok,reference} result. NoMix/live.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "st2_sol_repair_rounds": 1,
+    "st2_repair_validation": "Livepending; no pass/failureoutcome inferred.",
+    "st2_astra_rounds": 0,
+    "note": "NewST2chain initialfailure retained; historicalConnection and distinctownership/readpoll/browser/proxy/UP0counters not reset."
+  },
+  "remaining_requirements": [
+    "Coordinatorrerun actualsourcefrozenST2gate; independentruntimeevidencereview afterresult."
+  ],
+  "command_shutdown": "Allreviewerread/reproduction/AST/hash/receiptcommandscompleted; no ownedprocesses/sessions; rootownsMix/live.",
+  "decisions_needed": [],
+  "reviewed_utc": "2026-10-12T14:22:27.839850+00:00"
+}

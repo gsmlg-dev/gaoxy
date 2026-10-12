@@ -1,0 +1,49 @@
+{
+  "task_id": "/root/m4_spec_review/st2-harness-independent-source-review",
+  "status": "DONE",
+  "assignment": "direct independent specification then quality review; read-only sources, own receipt",
+  "reviewer": "/root/m4_spec_review",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "specification_review": "PASS selected functional cases and lifecycle structure; actual acceptance NOT RUN",
+  "code_review": "ACTIONABLE_EVIDENCE_OMISSION",
+  "runtime_status": "NOT RUN by reviewer; no Mix/live lease, source gate only",
+  "source_sha256": {
+    "integration/http3/standalone/fixture.exs": "5a60ea18ccd40075adf154fe12bcbaa0fa7947a854bca03fb7a33acbf727b956",
+    "integration/http3/standalone/peer.py": "a8f733f73babb1b2e6099ab49e6249edf0003a6d985d515c5ad4c9a7079088b2",
+    "integration/http3/standalone/run.py": "0e74530256737e01b3b07a3d4742a952c9a5b9aaf80e0c10fee316fba40c21b4",
+    "integration/http3/standalone/README.md": "ed66b2c07da20113083bf11de715b53eda445514c757ba3d49fbbafb4e1572aa",
+    "integration/http3/matrix.py": "f0097a5b87cf5c46d8f4b52836260b0c7b42b8d070e97241331229ac2c2af757",
+    "integration/http3/h1_origin.py": "c3631d80dd0544841cb47dc008c55390f1f4044b1c73613fb1740773f91e5e60",
+    "integration/http3/proxy_peer.py": "b9507b1db5f02a83e46bc652254aea90e2b7f514d7fb1b5a6a6b803332333d2f"
+  },
+  "findings": [
+    {
+      "id": "ST2-S1",
+      "severity": "medium",
+      "file": "integration/http3/standalone/run.py",
+      "title": "Peer environment identity and pinned aioquic qualification missing",
+      "evidence": "Standalone imports Child/baseline/source_hashes from matrix but never executes matrix.main version checks. args.python override executes without importlib.metadata.version(aioquic) or sys.version evidence; origin Python uses separate sys.executable.",
+      "required_change": "Before live gate, record peer Python and actual aioquic version, require the reviewed1.2.0 cohort, and record origin/runner Python. Retain explicit BLOCKED_ENV/FAIL on unexecuted prerequisite or unexpected version; do not infer installed identity from requirements text."
+    }
+  ],
+  "assessment": [
+    "Actual normal standalone Application.ensure_all_started resolves GAOXY_CONFIG via Config.load and starts real Supervisor/Runtime; static/H1proxy does not depend on blockedH3origin.",
+    "Independent H3static plus H1legacy, progressive upload with actual origin17bytes before FIN, sibling400 isolation before upstream, and progressive download/old generation across live reload are explicit finite cases.",
+    "Reload uses real local API+Generation.snapshot before/after and requires actual listenerports unchanged; peer old route continues body/trailers while newrequests see newstatic, invalid config retains generation.",
+    "Rollback occupies laterUDPport; earlierH3port and topSupervisor/Runtime/Registry names must be absent/rebound. Separate missingcert input must fail without those owners and permit sameUDP rebind.",
+    "Normal stop monitors actual runtime/supervisor/registry/twoGenerationstore PIDs under one5000ms deadline, invokes Application.stop\u2192Gaoxy.stop, verifiesDOWN and UDP/TCP rebind, followed by childexit0.",
+    "Sourcefreeze includes standalone libraries/tests and common matrix+peer+H1origin; nonzero namedcases/uniquecounts, twoexactcompleteclosedoriginreceipts, Admissionbaseline, ownchildexits/forcedcleanup are retained.",
+    "Pure Python AST validation PASS for all reviewedPythonfiles. Reused Child helpers enforce total event/processdeadlines and fail normal acceptance on forcedchildcleanup."
+  ],
+  "remaining_requirements": [
+    "Resolve ST2-S1 and independently verify updated source",
+    "ST1 production/config/generation/scopedchecks and G3 compatibility must pass before live gate",
+    "Run actual source-frozenST2, independently review nonzero results/cleanup/hash evidence and fresh affected checks"
+  ],
+  "reviewer_sol_repair_rounds": 0,
+  "other_counters": "UP0 Sol2/failed1/Astra0; existing Proxy/Connection/Options/Astra counts preserved. Source review adds no repair.",
+  "command_shutdown": "Only read/AST/hash/receiptcommands, all exited. No owned runtimeprocess or Mix/livelease.",
+  "decisions_needed": []
+}

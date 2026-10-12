@@ -13,6 +13,7 @@ defmodule GaoxyServer.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:gaoxy_http, in_umbrella: true},
+        {:gaoxy_http3, in_umbrella: true},
         {:gaoxy_proxy, in_umbrella: true}
       ]
     ]

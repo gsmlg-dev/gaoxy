@@ -1,0 +1,110 @@
+{
+  "task_id": "/root/m4_spec_review/st2-runtime",
+  "status": "DONE",
+  "assignment": "direct independent fixtureprotocolrepair and standaloneactualruntime/evidencereview; ownedreceipt",
+  "reviewer": "/root/m4_spec_review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_commit": "29d79f95b78d112a1d8e1661d108b788f7780f3f",
+  "baseline": "78de9d0f3bba5a4662717359438eb3d0853a79b4",
+  "specification_review": "PASS",
+  "code_review": "PASS",
+  "gate_review": "PASS initialcorrectedST2",
+  "gate": "ST2 standaloneactualApplication/Config/Supervisor",
+  "findings": [],
+  "run": "run-1791815332630337726",
+  "executed_checks": 11,
+  "peer_cases": 5,
+  "activation_receipts": 2,
+  "baseline_and_shutdown_checks": 2,
+  "rollback_checks": 2,
+  "source_binding": "All216 capturedcurrent/finalsourcehashes independentlymatch; unchangedduringactualexecution.",
+  "source_sha256": {
+    "integration/http3/h1_origin.py": "df5040976e9327b014f3eb27a0aca5fae3b6807c637ec3db989d2130ed21bfa5",
+    "integration/http3/standalone/run.py": "e17c4915d38551f2d0db9a3e5ba7d2584d38e05f08629d5cdf8f38a03b3d4b5f",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b",
+    "integration/http3/standalone/peer.py": "a8f733f73babb1b2e6099ab49e6249edf0003a6d985d515c5ad4c9a7079088b2",
+    "integration/http3/matrix.py": "c1d6fe1e1dc639ca068484af21a006d41d904cbb1755071d58a00720b5f34831",
+    "apps/gaoxy_server/mix.exs": "ce7e6ab81adbd357b749351d6ee73884c1ab87d7763c15542ccc16794bd73464",
+    "apps/gaoxy_server/lib/gaoxy/server/config.ex": "b81b9ba843cf63dbc1a7b80c0377807bca2795fc0d18a6c49b814c5c9b776f58",
+    "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex": "e2505a27e7cd9487fb7d8f54cee2bbdcff4bcba4a269ac3529107c0b0d1ebbf1",
+    "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex": "83d2422c373d38e206dc4657cfacec72a820209b8128e180220475376f0ce6ee",
+    "mix.lock": "16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25"
+  },
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/certificates.log": "e8c90b6b85717cb9cdf04c9093c5ad26e41052d3c47a116d8f58aff7806e0e34",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/origin.log": "075f1df8a967effa86b569288299483e84fca1ae5bdf1b8a85ea9167a1d2c07c",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/peer.log": "3c36d48b56078b7daf1e34c76ecae169c92865b6d0c90d5466fa2eebd6445e9a",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/result.json": "87a08ad6ee1d7901304df7a4d9f8cda69166bc942fa82c0822757836b875d8d1",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/rollback.cases.json": "9921d85004113a16a03a88755e2898973b5935eb3166fcedda96d1c8985bc8e6",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/rollback.log": "193b96fc751d61e8c4da28ba32bf80901acd17e65ae923d5bed6e8ed8f0b29bf",
+    "docs/acceptance/evidence/m4/standalone/run-1791815332630337726/standalone.log": "9c84f0c3fc28906ca46386461d1414f5eb7b117bef604aa62d30c95f7fff2124"
+  },
+  "repair_diagnosis": "Phase-onlyrun1791815176945170196 preserves error_phaserequest_eof afterterminalchunk/repeatedtrailers andresponse_drain. Exact73728upload/response200/downstreamFIN peerpassed; priornormalfixture waitedforclientEOF despiteConnectioncloserequest. Thisis fixtureclosecontract defect, notpermission toignoreRST orrequest#97proof.",
+  "fixture_repair_review": [
+    "Normalresponse nowadvertisesConnectionclose; downloadalso retainsX-Origin-Hop token andsamehopfilteroracle. Originwrites/drainsunchangedterminalchunk/orderedtrailers then initiateswriter.close/awaitwait_closed beforeunchangedassertreader.read()==empty.",
+    "PythonStreamReaderProtocol ownnormalconnection_lost feedsEOF withoutclearingbuffer. Independentin-memorycheck withbuffered extraHTTPbytes+feedEOF confirms retainedemptyreadassert rejectsextra receivedbytes. Thischecksbufferedinputatoriginclose; notTCPclientFIN semantics orarbitraryfutureinput.",
+    "Anyexceptionin newresponse_close wait remainsrecordedaserror/error_phase; strictST2noerrorrejects it. NoRSTexceptionwasdeleted/suppressedforthecompletedrequestacceptance. Existingfinallysecondcleanupdoesnoterase alreadyrecordederror.",
+    "Early413 and resetresponsebranches unchanged. Originalexactbody/request/responseframing/orderedtrailers/deadlines remain. Runner retains exactlytwo closedcomplete/noerrorrequests and strengthens exactidentityset; forbiddenrequest stillabsent.",
+    "Nestedactivationresultrepair preservesactualvalid{:ok,reference} andinvalid{:error,:unregistered_route_target}; fixture/runner actualgeneration/listenerassertions unchanged."
+  ],
+  "runtime_verification": {
+    "actual_startup": "GAOXY_CONFIGdataonlyJSON loadedviaactualApplication.ensure_all_started(:gaoxy_server), ConfigandSupervisor; readyH3port58574 andH1legacy35523, Elixir1.18.5/OTP28/ERTS16.4.0.6.",
+    "peer": "StaticH3old andlegacyH1,73728byteprogressiveupload with17beforeFIN,400forbiddentrailernooriginwork plusconcurrentH3/H1siblings,57359byteoldhelddownload acrossvalidreload withnewroutesandstablelisteners, invalidreload retainsnewgeneration.",
+    "origin": "Exactlystandalone-upload andstandalone-old-generation; complete/closedtrue,cancelledfalse,noerror,noerror_phase; active0. Uploadbodyexactbstandalone-upload repeated4096, SHA256644e4a8d52cac95a52d688b6a6142204157aa7cfcb457f7156aa446dd4302f28. DownloadrequestemptySHA standardempty.",
+    "admission": "Bothservicesactive/retainedbytes/cleanuppending/queueditems/queuedbytes0 andcleanupfailednull.",
+    "shutdown": "21ms, allfiveactualruntime/supervisor/registry/twostoreownersDOWN andH3UDP/H1TCPrebind; independentPythonH3rebindalsoexecuted.",
+    "rollback": "Lateroccupiedportactualeaddrinuse with earlierH3port59761rebound andownersabsent. Missingcertificate actualenoent, ownersabsent, portrebound. BothstrictnegativechecksPASS.",
+    "children": "origin,standalone,peer,rollbackallfourexit0/noforcedcleanup;7059mswithin180000mstotaldeadline.",
+    "peer_environment": "SelectedPython3.12.13/aioquic1.2.0; originrunnerPython3.13.15; exactcommands/exitsandfixtureconfig inresult.json."
+  },
+  "prior_failures": [
+    {
+      "run": "run-1791814742938070219",
+      "status": "FAIL",
+      "checks": 0,
+      "result_sha256": "82d321cd74f367457f31ab269b6d33f6e1df7d2f6efccf219d40d629e9afe1e4",
+      "failure": "TypeError duplicate result"
+    },
+    {
+      "run": "run-1791814913519606909",
+      "status": "FAIL",
+      "checks": 8,
+      "result_sha256": "bc3e44be4ef5057b26b523c17f503227959ce000527307b73f6437d5b0e905f2",
+      "failure": "strictorigin noerror failed afterresponse complete; originalfullsnapshot retained"
+    },
+    {
+      "run": "run-1791815036312693704",
+      "status": "FAIL",
+      "checks": 8,
+      "result_sha256": "c7dc7ef3f74d48ca12ea4fed432d4f8e902b4d791886f7d1927f8ff3e179fdc9",
+      "failure": "strictorigin noerror failed afterresponse complete; originalfullsnapshot retained"
+    },
+    {
+      "run": "run-1791815176945170196",
+      "status": "FAIL",
+      "checks": 8,
+      "result_sha256": "82e3eb563306f30776db1481093b8acda65da43c9e919c008c286a95f8956706",
+      "failure": "strictorigin noerror failed afterresponse complete; originalfullsnapshot retained"
+    }
+  ],
+  "prior_failure_assertions": "OriginalTypeErrorzeroaggregatedchecks, twosame-sourceRST8checkfailures andphaseRST8checkfailure remainimmutableFAIL; nohistoricalfailurestatus orassertionweakened.",
+  "reviewer_verification": "Source/evidencehashchecks, PythonASTparse and in-memorybufferEOFsemanticcheck only; noMix/live/networkgate executedbyreviewer.",
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "st2_sol_repair_rounds": 2,
+    "st2_unsuccessful": 1,
+    "st2_astra_rounds": 0,
+    "note": "Rootreportedrepair1fullgatefailed; repair2PASS. Initialfailure andsame-source/phaseonlydiagnostics retainedseparately; historical/disjointchainsnotreset."
+  },
+  "limitations": [
+    "Originownclose/localhostteardown doesnotproveclientTCPFIN, gracefulH3GOAWAY orproductionoperations.",
+    "FreshG3 required aftersharedh1_origin fixturechange; oldG3receiptbindsolderoriginhash.",
+    "ThisST2doesnotactivateblockedH3upstreamadapter."
+  ],
+  "remaining_requirements": [
+    "CoordinatorfreshST2repeat afterindependentreview, freshG3/sharedaffectedchecks and finaldocumentationstatussync."
+  ],
+  "command_shutdown": "Allreviewerreads/hash/AST/semanticcheck/receiptcommandscompleted; noownedprocesses/sessions; rootownsMix/live.",
+  "decisions_needed": [],
+  "reviewed_utc": "2026-10-12T14:31:24.165952+00:00"
+}

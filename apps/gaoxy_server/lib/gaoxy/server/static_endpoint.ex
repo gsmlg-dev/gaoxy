@@ -25,7 +25,7 @@ defmodule Gaoxy.Server.StaticEndpoint do
 
     valid =
       Enum.all?(protocols, fn
-        :http2 ->
+        version when version in [:http2, :http3] ->
           encoded = [{":status", Integer.to_string(status)} | fields]
 
           length(encoded) <= limits.max_headers and

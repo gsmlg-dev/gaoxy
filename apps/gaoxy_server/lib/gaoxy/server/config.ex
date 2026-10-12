@@ -3,12 +3,14 @@ defmodule Gaoxy.Server.Config do
   @handlers %{
     "stream_echo" => Gaoxy.Server.StreamEcho,
     "datagram_echo" => Gaoxy.Server.DatagramEcho,
-    "http" => Gaoxy.HTTP.Connection
+    "http" => Gaoxy.HTTP.Connection,
+    "http3" => Gaoxy.HTTP.HTTP3.Connection
   }
   @service_keys %{"id" => :id, "port" => :port, "handler_options" => :handler_options}
   @limits ~w(max_active max_bytes max_packet max_output max_state callback_timeout idle_timeout drain_timeout max_memberships)a
   @http_limits ~w(max_request_line max_header_bytes max_headers max_body_bytes max_chunk_line max_trailer_bytes max_trailers max_read_chunk max_buffer_bytes request_timeout header_timeout read_timeout write_timeout)a
   @h2_limits ~w(max_streams max_frame max_header_block table_size receive_window frame_timeout control_turn control_rate)a
+  @h3_limits ~w(max_streams max_header_block max_pending_output control_turn control_quantum dynamic_table_capacity blocked_streams)a
   @max_bytes 1_048_576
 
   def load(path) do
@@ -52,9 +54,11 @@ defmodule Gaoxy.Server.Config do
 
   defp service(data) when is_map(data) do
     http_keys =
-      if data["handler"] == "http",
-        do: ["routes", "protocols", "h2c", "http_limits", "h2_limits"],
-        else: []
+      case data["handler"] do
+        "http" -> ["routes", "protocols", "h2c", "http_limits", "h2_limits"]
+        "http3" -> ["routes", "protocols", "http_limits", "h3_limits"]
+        _ -> []
+      end
 
     with :ok <-
            keys(
@@ -103,13 +107,57 @@ defmodule Gaoxy.Server.Config do
           udp: udp
         })
 
-      if handler == Gaoxy.HTTP.Connection,
-        do: http_service(data, spec),
-        else: {:ok, spec}
+      case handler do
+        Gaoxy.HTTP.Connection -> http_service(data, spec)
+        Gaoxy.HTTP.HTTP3.Connection -> http3_service(data, spec)
+        _ -> {:ok, spec}
+      end
     end
   end
 
   defp service(_), do: {:error, :invalid_service}
+
+  defp http3_service(data, spec) do
+    with true <-
+           (data["protocols"] == ["http3"] and spec.mode == :unicast and
+              not Map.has_key?(data, "handler_options") and not Map.has_key?(data, "udp")) ||
+             {:error, :invalid_http3_options},
+         true <-
+           (is_binary(spec[:id]) and byte_size(spec.id) in 1..128) ||
+             {:error, :invalid_identity_or_binding},
+         {:ok, routes} <- Gaoxy.Server.RouteConfig.decode(data["routes"]),
+         {:ok, router} <- Gaoxy.HTTP.Router.compile(routes),
+         :ok <-
+           Gaoxy.HTTP.Generation.Store.compiled_bound(router, %{
+             max_routes: 1024,
+             max_config_bytes: @max_bytes
+           }),
+         {:ok, http_limits} <-
+           named(
+             Map.get(data, "http_limits", %{}),
+             Map.new(@http_limits, &{Atom.to_string(&1), &1})
+           ),
+         {:ok, h3_limits} <-
+           named(Map.get(data, "h3_limits", %{}), Map.new(@h3_limits, &{Atom.to_string(&1), &1})),
+         options = Map.take(spec, [:id, :ip, :port, :transport, :tls, :limits]) |> Map.to_list(),
+         {:ok, spec} <-
+           Gaoxy.HTTP.HTTP3.service_spec(
+             options ++
+               [
+                 endpoint: {Gaoxy.HTTP.Router, router},
+                 http_limits: http_limits,
+                 h3_limits: h3_limits
+               ]
+           ),
+         :ok <-
+           Gaoxy.Server.RouteConfig.validate_routes(
+             router,
+             Map.put(spec.handler_options, :protocols, [:http3])
+           ),
+         :ok <- snapshot_budget(spec) do
+      {:ok, spec}
+    end
+  end
 
   defp http_service(data, spec) do
     with true <-
@@ -159,6 +207,20 @@ defmodule Gaoxy.Server.Config do
          :ok <- snapshot_budget(spec) do
       {:ok, spec}
     end
+  end
+
+  defp snapshot_budget(%{
+         handler: Gaoxy.HTTP.HTTP3.Connection,
+         handler_options: options,
+         limits: limits
+       }) do
+    reserves = Gaoxy.HTTP.HTTP3.Options.reservation(options)
+
+    required =
+      reserves.connection + options.h3_limits.max_streams * (reserves.request + 2 * @max_bytes) +
+        reserves.writer
+
+    if limits.max_bytes >= required, do: :ok, else: {:error, :route_snapshot_byte_budget}
   end
 
   defp snapshot_budget(%{handler_options: options, limits: limits}) do
