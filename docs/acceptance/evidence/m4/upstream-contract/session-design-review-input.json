@@ -1,0 +1,167 @@
+{
+  "task_id": "/root/m4_session_design",
+  "assignment_mode": "architecture",
+  "astra_gate": "PROJECT_ARCHITECTURE",
+  "gate_evidence": "Parent explicitly confirmed gate and mode; bounded design of caller-owned public Session alternative after 0.21.4 supplied trailers but Fetch H3 completion remained unsupported. Architecture only, no recovery/implementation.",
+  "status": "DONE architecture deliverable; independent Sol review and implementation acceptance pending",
+  "created_utc": "2026-10-12T17:27:22.676840+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "ed6ac187f052063fe2c0695c1343cb2980214b62",
+  "approved_scope": [
+    "docs/designs/m4-public-session-upstream.md",
+    "docs/plans/m4-public-session-upstream.md",
+    "docs/acceptance/evidence/m4/upstream-contract/session-design-review-input.json"
+  ],
+  "preexisting_edits": "Coordinator pins/locks and peer integration/http3/upstream harness/evidence existed at entry. Phoenix lock and additional evidence appeared concurrently. No existing tracked file modified by this assignment.",
+  "task_diff": "Two new architecture/plan Markdown files plus this unique architecture receipt; no implementation, dependency, existing fixture or evidence changes.",
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex": "37818df2d566b3c3f3cf67ff5d6de605b579f9b98ea9fee68037402ac2f37fc9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "4d74d20f72e105e33c23a765400270832c6c290dad1b0d1713997254fa2733a5",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "c1e123186e089adfc8a86490227cb72d1545c1c7d169a1686549ba0fdb1c4375",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "14d3f8cddd132bc434604680475bb784f1fbd11dc020548446bf528a7f9da1b8",
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "5db93701da755bd1ca977c191e79e650bd9e58108ed28842491f4031dc8b95fc",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "deps/elixir_quic/lib/quic/streams.ex": "2ddf17fe7372796f21b65c2e4fd54e5d36f28071ee59d615c11e43029c163145",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab"
+  },
+  "deliverable_sha256": {
+    "docs/designs/m4-public-session-upstream.md": "a33210a918b33f95416f146a24c9f5de5b607137c28f30ee6a99c6e6578892e8",
+    "docs/plans/m4-public-session-upstream.md": "df3cf5c6f1409635760e8e706e8a64429608d718c3273ab7cb5ef3e63375ba39"
+  },
+  "audit_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/source-audit-0.21.4-1791825360661362396.json",
+    "sha256": "ce664b0109f7236e8e84fa25de4c2d20510949c8d6bfe81e233cd9927660d3fc"
+  },
+  "decisions": [
+    "HTTP3SessionClient selects public caller-owned Session with one dedicated public endpoint per fixed HTTPS/H3 request; H1 defaults/groups/forwarding preserved.",
+    "Existing guardian owns scheduler and advanced Session state; one blocking operation task plus one exceptional endpoint-stop task preserves deadline/owner-loss responsiveness.",
+    "Bootstrap adoption handshake retains public endpoint descriptor before connect; all failures preserve ownership or cleanup uncertainty.",
+    "Borrowed Session cleanup does not close endpoint: explicit stop success plus observed normal endpoint DOWN and all owned task DOWN precede Service token completion; independent own UDP rebind qualifies transport closure.",
+    "Advanced blocked/unknown/error state is retained; unknown is resumed by operation identity without replay; definite blocked continuation permits early-response polling.",
+    "All H3 requests open streamed, including zero-body, with one finish token; zero/data ordered trailers and exactly one FIN are required.",
+    "Separate Session contract gate preserves Fetch diagnostic receipts. UP0 Session then UP1, UP2 and standalone H3-origin remain required."
+  ],
+  "verification": [
+    {
+      "command": "git status --short; git rev-parse HEAD; scoped rg/sed/cat source/design/plan reads",
+      "status": "PASS",
+      "exit": 0,
+      "outcome": "Inspected baseline, concurrent edits, installed public contracts and existing implementation boundaries. One optional zsh glob search had no matching standalone path; explicit rg then found apps/gaoxy_server route_config.ex."
+    },
+    {
+      "command": "Python inline document checks: newline, trailing whitespace, balanced fenced blocks, local link existence, no TODO/TBD, SHA256",
+      "status": "PASS",
+      "exit": 0,
+      "outcome": "Both documents pass, 325 design lines and 226 plan lines."
+    },
+    {
+      "command": "Mix compile/test, live Session qualification, UP1/UP2/standalone runtime",
+      "status": "NOT RUN",
+      "outcome": "Architecture-only scope; live/Mix lease held by peer/coordinator. No runtime acceptance claimed."
+    },
+    {
+      "command": "Independent Sol specification and code review",
+      "status": "NOT RUN",
+      "outcome": "Parent owns subsequent review and activation decision."
+    }
+  ],
+  "received_historical_counters": {
+    "connection": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1,
+      "unsuccessful_astra": 0
+    },
+    "options": {
+      "sol": 4,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "proxy": {
+      "sol": 3,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "up0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st2": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "browser": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "ownership": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "read_poll": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "pure_protocol": {
+      "sol": 2,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st1": {
+      "sol": 0,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "historical_h1": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1
+    },
+    "historical_tls": {
+      "sol": 4,
+      "unsuccessful_sol": 2,
+      "astra": 2
+    },
+    "historical_model": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "historical_h2": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g2_peer_informational": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    }
+  },
+  "counter_source": "docs/acceptance/evidence/m4/checkpoint-2026-10-12.json; subsequent parent counter additions remain parent-owned",
+  "astra_architecture_repair_rounds_added": 0,
+  "cumulative_astra_recovery": "Unchanged per received historical per-task counters. Architecture does not reset existing budgets.",
+  "received_current_parent_failure": "Parent reports cohort compatibility 274 executed with 1 failure at cleanup_attachment_test.exs:343 bare assert_receive startup timeout; outside this assignment, parent diagnosing. Not reclassified or repaired here.",
+  "command_shutdown": "All owned read/static-validation/write commands finished. No live service, Mix process, subagent or background process started; no others processes stopped.",
+  "residual_risks": [
+    "Independent Sol specification review pending before activation.",
+    "Direct Session bounds, strict TLS, cancellation, endpoint stop and peer behavior still require scoped live qualification.",
+    "Public native/DNS calls and endpoint stop retain transport timeout bounds; guardian deadlines cannot be implemented by synchronous calls in guardian.",
+    "No native allocation ledger or remote receipt claim follows from local cleanup; failed teardown retains uncertainty."
+  ],
+  "decisions_needed": [],
+  "handoff": "Return to Sol coordinator for independent review, qualification/implementation delegation and final acceptance; Astra stops writing after handoff."
+}

@@ -1,6 +1,22 @@
 # HTTP Fetch H3 request trailers
 
-## Current disposition — 2026-10-12
+## Current disposition — 2026-10-13
+
+[gsmlg-dev/http_fetch#101](https://github.com/gsmlg-dev/http_fetch/issues/101) is
+**CLOSED**. PR #102's fix is published and installed in the compatible 0.21.4
+cohort. [Source/provenance audit](../acceptance/evidence/m4/upstream-contract/source-audit-0.21.4-1791825360661362396.json)
+and [independent real-peer retry](../acceptance/evidence/m4/upstream-contract/run-1791825893238138190/result.json)
+confirm ordered duplicate trailers and terminal FIN for zero/three DATA bytes,
+with/without a Trailer declaration. All15functional diagnostic rows pass.
+[Independent review](../acceptance/evidence/m4/upstream-contract/review-fetch-functional-1791826076183654653.json)
+accepts this functionality. The request-trailer dependency block is resolved.
+
+The Fetch diagnostic's actual overall exit remains2 because H3 cleanup completion
+is unsupported. The selected [public Session plan](../plans/m4-public-session-upstream.md)
+qualifies its explicit endpoint boundary; M4 is still incomplete. This separate
+limit does not reopen #101. Original failures and prior issue disposition follow.
+
+## Historical disposition — 2026-10-12
 
 **Requesting repo:** `gsmlg-opt/gaoxy` on branch `codex/m4-http3`.
 

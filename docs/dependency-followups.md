@@ -1,5 +1,15 @@
 # Dependency follow-ups
 
+## M4 request-trailer resolution — 2026-10-13
+
+HTTP Fetch#101 is closed; the containing compatible0.21.4cohort is installed.
+[The request record](dependency-requests/http-fetch-h3-request-trailers.md)
+preserves prior failures and links the source audit and15functional real-peer
+PASS rows. Fetch cleanup completion remains unsupported. The selected
+[public Session plan](plans/m4-public-session-upstream.md) qualifies an explicit
+dedicated endpoint lifecycle before enabling the Gaoxy H3 upstream adapter.
+M4 remains incomplete; the dated M3 evidence below retains its original cohort.
+
 ## Proposed feature: ex_ssl TCP server transport
 
 Target: `gsmlg-dev/http_fetch`, `apps/ex_ssl`, inspected at
@@ -25,7 +35,7 @@ upstream issue-routing instructions in `AGENTS.md`; routine issue creation is
 authorized there. Upstream source changes and publication still require their
 own authorization.
 
-## Current M3 managed transport disposition — 2026-10-11
+## Historical M3 managed transport disposition — 2026-10-11
 
 Installed coordinated HTTP packages are0.21.3. Fixes#66/#67/#78/#79/#86–#89/#95/#98/#100
 are present. Compatibility486/0, finite public driver39/39 with canonical MATCH

@@ -1,0 +1,127 @@
+{
+  "task_id": "/root/m4_up0_review/Session-design-independent-spec-review",
+  "status": "DONE independent specification and public SDK feasibility review; Task 1 PASS only",
+  "assignment": "direct read-only source/design review; new unique review receipt only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "source_commit": "ed6ac187f052063fe2c0695c1343cb2980214b62",
+  "baseline": "ed6ac187f052063fe2c0695c1343cb2980214b62",
+  "specification_review": "PASS corrected frozen design and plan; specification read before implementation boundary/source assessment",
+  "public_SDK_feasibility_review": "PASS source-supported bounded caller-owned Session alternative using installed 0.21.4 APIs; runtime qualification NOT RUN",
+  "deliverable_sha256": {
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272"
+  },
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex": "37818df2d566b3c3f3cf67ff5d6de605b579f9b98ea9fee68037402ac2f37fc9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "4d74d20f72e105e33c23a765400270832c6c290dad1b0d1713997254fa2733a5",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "c1e123186e089adfc8a86490227cb72d1545c1c7d169a1686549ba0fdb1c4375",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "14d3f8cddd132bc434604680475bb784f1fbd11dc020548446bf528a7f9da1b8",
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "5db93701da755bd1ca977c191e79e650bd9e58108ed28842491f4031dc8b95fc",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "deps/elixir_quic/lib/quic/streams.ex": "2ddf17fe7372796f21b65c2e4fd54e5d36f28071ee59d615c11e43029c163145",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "deps/elixir_quic/lib/quic.ex": "7791050053a16acdb9c8329a9a23034335d423c574adbc77d6215b8231d5500d",
+    "apps/gaoxy/lib/gaoxy/service.ex": "c0fa0549815500dad5f50779b05777880b008276540bae58d47a4cccd061037b",
+    "deps/http_core/lib/http/quic/tls_options.ex": "43f9309449c14be7b10fb1eb6a2b51f6b8b0431d624b26de9f25d74a8c17763e",
+    "deps/elixir_quic_http3/lib/quic_http3/tls_options.ex": "157e44db5f9c3be3a345f9b1f42e34661fbcbed9901375280676060cabc58888"
+  },
+  "candidate_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/session-design-review-input.json",
+    "sha256": "c12a3033f0d7272ecf1b77a8b574d75e982ce969ecc6a4d66a35a8edc494acd1",
+    "original_candidate_hashes": {
+      "docs/designs/m4-public-session-upstream.md": "a33210a918b33f95416f146a24c9f5de5b607137c28f30ee6a99c6e6578892e8",
+      "docs/plans/m4-public-session-upstream.md": "df3cf5c6f1409635760e8e706e8a64429608d718c3273ab7cb5ef3e63375ba39"
+    },
+    "disposition": "Original Astra architecture candidate retained unchanged; corrected document hashes above bind this review."
+  },
+  "unresolved_findings": [],
+  "resolved_finding": {
+    "id": "SESSION-OWNER-1",
+    "severity": "required architecture correction before Task 1 PASS",
+    "original_issue": "Bootstrap task calling Transport.Quic.client/1 without explicit acceptor leaves Quic.client default acceptor=self(); endpoint monitors bootstrap task and normal task exit closes adopted endpoint. Guardian link adoption does not transfer acceptor ownership.",
+    "source_evidence": [
+      "deps/elixir_quic/lib/quic.ex:22",
+      "deps/elixir_quic/lib/quic/endpoint.ex:76",
+      "deps/elixir_quic/lib/quic/endpoint.ex:232",
+      "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:362"
+    ],
+    "correction": "Public endpoint creation explicitly supplies acceptor: guardian_pid while preserving creator link/adoption handshake; design and UP0/UP1 plan require deterministic creator normal DOWN followed by adopted endpoint survival and usable connection.",
+    "resolution": "PASS source-supported option pass-through; no product/dependency implementation edited."
+  },
+  "contract_assessment": [
+    {
+      "boundary": "product scope",
+      "result": "PASS",
+      "evidence": "Fixed explicit HTTPS/H3 reverse origins only; H1 default/groups/forward policy retained; no pools/reuse/fallback/replay/new dependency/private frames or excluded issue97 requirement."
+    },
+    {
+      "boundary": "public API adequacy",
+      "result": "PASS source support; NOT RUN live",
+      "evidence": "Session send_trailers/4 handles ordered zero/nonzero terminal HEADERS+FIN; request/data/poll/ready/open, resumable unknown/blocked operations, reset_send, close/abort and public dedicated endpoint descriptor/stop exist. No private Fetch/session/transport fields mined."
+    },
+    {
+      "boundary": "ownership/cleanup",
+      "result": "PASS design",
+      "evidence": "Descriptor retained and guardian acceptor/link/monitor adopted before connect; every partial-connect branch retains explicit endpoint stop. Borrowed Session cleanup is no-op, so Session close/abort result alone never releases Service token. Public stop success plus monitored normal endpoint DOWN and all owned task termination precede completion; uncertain/error/abnormal/deadline retains reservation. Owner loss separate peer receipts required."
+    },
+    {
+      "boundary": "guardian/callback seam",
+      "result": "PASS bounded authorized integration",
+      "evidence": "Existing guardian schedules one isolated operation task, exceptional independent stop task only; generation/ref correlates results and all advanced handles stored. Required host/reservation and optional begin_cleanup callback, H3 stateful acknowledgment/cleanup normalization preserve legacy H1 interfaces. Explicit H3 upload marker every request keeps zero-body finish path; actual end uses Session done rather than synthetic header end. Existing Service guardian identity/receipt/normal-DOWN invariant unchanged."
+    },
+    {
+      "boundary": "deadlines and operation outcomes",
+      "result": "PASS design",
+      "evidence": "Original absolute total/opening/write deadlines retained; guardian responsive during DNS/native call tasks. Cleanup bounded by earlier Service deadline/total+1000. Advanced error/blocked/unknown state retained; unknown only resume same identity, definitely blocked upload suspend/poll/resume latest state; early head public reset drops continuation, never replay; endpoint stop independent of stuck operation."
+    },
+    {
+      "boundary": "bounds and ordered delivery",
+      "result": "PASS design; NOT RUN live",
+      "evidence": "One pending upload/continuation, one downstream delivery per ACK; poll max16/batches1 with paused request ref; 262144-byte/256-event queue, 16384-byte delivery; trailers/end behind last DATA ACK. Stream max_records16 minus peer bidi1/uni3 derives12local; literal H3 control capacity must be real-peer qualified. Conservative prior reservation retained, no native memory claim."
+    },
+    {
+      "boundary": "qualification and activation gates",
+      "result": "PASS plan",
+      "evidence": "Separate session-contract gate, deterministic unknown/adoption/teardown doubles labelled apart from network cases; public endpoint/client port rebind, exact TLS and trailer rows, tiny-window 1MiB, four cancellation stages and sibling survival precede UP1. UP2 downstream matrix/standalone/runtime/consumer/browser gates remain required; architecture review does not activate implementation or complete UP0/M4."
+    }
+  ],
+  "verification_commands": [
+    {
+      "command": "Python current source/hash checks against architecture candidate and corrected frozen document hashes; Markdown newlines/whitespace/fence/local-link validation",
+      "exit": 0,
+      "result": "PASS 10 candidate SDK/product/lock hashes plus 4 additional ownership/Service/TLS source hashes; 2 corrected documents"
+    },
+    {
+      "command": "Read public 0.21.4 Session advanced return shapes, suspend/resume/reset_send, Transport endpoint/adoption/acceptor option path, Quic endpoint lifetime and Service guardian cleanup",
+      "exit": 0,
+      "result": "PASS source feasibility review; no live assertions claimed"
+    }
+  ],
+  "runtime_execution_by_reviewer": "NOT RUN; no Mix/live or process launch. Required direct Session qualification, implementation, unit/matrix/standalone commands are NOT RUN by this reviewer.",
+  "task_diff": "Only docs/acceptance/evidence/m4/upstream-contract/session-design-spec-review.json added; existing Fetch review and old/candidate receipts remain unchanged; parent authored bounded corrections to two design documents.",
+  "counters": {
+    "received_UP0Sol": 2,
+    "received_UP0failed": 1,
+    "received_UP0Astra": 0,
+    "received_ConnectionSol": 3,
+    "received_ConnectionFailed": 2,
+    "received_ConnectionAstra": 1,
+    "received_ProxySol": 3,
+    "received_ProxyFailed": 1,
+    "received_ProxyAstra": 0,
+    "parent_bounded_Sol_document_repair": 1,
+    "parent_document_repair_unsuccessful": 0,
+    "reviewer_repair_rounds": 0,
+    "Astra_recovery_rounds_added_by_architecture": 0
+  },
+  "astra_gate": null,
+  "command_shutdown": "All reviewer read/hash/static-validation commands finished; no owned child/background/Mix/live process; only unique review receipt written; concurrent test-only coordinator edits preserved.",
+  "remaining_risks": [
+    "Source feasibility does not replace prescribed direct Session real-peer qualification and deterministic lifecycle tests.",
+    "No UP1 activation or full UP0/M4/deployment/publication acceptance from this review."
+  ],
+  "decisions_needed": []
+}

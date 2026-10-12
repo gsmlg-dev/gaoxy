@@ -1,5 +1,22 @@
 # M4 upstream continuation implementation plan
 
+## Current execution route — 2026-10-13
+
+HTTP Fetch #101 is closed and the containing coordinated **0.21.4** cohort is
+installed/locally committed as `b43a8eb`; affected post-review tests pass274/0.
+Fetch now passes15functional diagnostics, but its H3 cleanup completion remains
+unsupported. The reviewed [public Session design](../designs/m4-public-session-upstream.md)
+and [implementation plan](m4-public-session-upstream.md) supersede this queue's
+Fetch-specific UP0/UP1 mechanism. Apply the reviewed
+[consumer-affinity task delta](m4-public-session-consumer-affinity.md) to preserve
+the required fixed public caller identity. Direct Session qualification precedes its
+production activation. UP2, standalone H3-origin and final acceptance/publication
+conditions remain required. Follow the new plan; retain the starting evidence,
+original task list and counters below as history, without reusing #101 as a
+current blocker. [Current acceptance](../acceptance/m4.md) records progress.
+
+## Historical Fetch-specific continuation queue
+
 > For agentic workers: execute the existing reviewed plans task by task using
 > `executing-plans` or `subagent-driven-development`. The coordinator assigns
 > disjoint writers and independent Sol reviewers; serialize Mix/live execution.

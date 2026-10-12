@@ -1,5 +1,15 @@
 # M4 upstream HTTP/3 and standalone integration
 
+**Selected-client update, 2026-10-13:** The
+[public Session design](m4-public-session-upstream.md) supersedes this document's
+Fetch-specific upstream mechanism and qualification boundary. HTTP Fetch #101
+is closed and 0.21.4 passes request-trailer diagnostics, but Fetch cleanup
+completion remains unsupported. The original standalone scope, HTTP policy and
+matrix remain required. The dated architecture and source identity below are
+preserved as history; follow the [selected plan](../plans/m4-public-session-upstream.md)
+with its reviewed [consumer-affinity amendment](m4-public-session-consumer-affinity.md)
+and [task delta](../plans/m4-public-session-consumer-affinity.md).
+
 Architecture candidate for independent Sol review, 2026-10-12. This supplements
 [M4](m4-http3.md) and [shared HTTP integration](m4-shared-http.md); it does not
 declare runtime acceptance. Implementation starts after G2 passes. Standalone

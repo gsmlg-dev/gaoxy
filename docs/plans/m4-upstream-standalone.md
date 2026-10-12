@@ -1,5 +1,14 @@
 # M4 upstream HTTP/3 and standalone implementation plan
 
+**Execution update, 2026-10-13:** Use the reviewed
+[public Session plan](m4-public-session-upstream.md) for UP0/UP1. It replaces the
+Fetch-specific adapter below with an explicit dedicated endpoint lifecycle.
+#101 is closed and cohort 0.21.4 is installed; Fetch functional diagnostics pass,
+while Fetch cleanup remains unsupported. UP2, standalone and final acceptance
+scope stay required. Apply the reviewed
+[consumer-affinity task delta](m4-public-session-consumer-affinity.md) as well;
+the original dated plan and failed receipts remain history.
+
 For Sol implementation workers: execute the independently reviewed
 [design](../designs/m4-upstream-standalone.md) under continuing authorization,
 using the executing-plans workflow. Implementation depends on G2 acceptance;

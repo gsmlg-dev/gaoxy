@@ -1,0 +1,156 @@
+{
+  "task_id": "/root/m4_up0_review/source-audit-0.21.4",
+  "status": "DONE bounded source audit; runtime acceptance NOT RUN",
+  "assignment": "direct independent source audit; receipt only; no product/deps/harness edits",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "source_commit": "ed6ac187f052063fe2c0695c1343cb2980214b62",
+  "baseline": "ed6ac187f052063fe2c0695c1343cb2980214b62",
+  "concurrent_changes": "Coordinator owns exact pins/locks and dependency evidence; UP0 implementer owns harness. Initial checkout clean; concurrent edits preserved.",
+  "source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "deps/http_fetch/mix.exs": "f09e5a9a84d642a9b163cec9c822504df81555e6ac08823579b77bf29164b9f1",
+    "deps/http_fetch/lib/http.ex": "b86d8cc723cbab453e04dee8cf2a8bd99ca5a08d638c07a1d677ef501a495f7b",
+    "deps/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+    "deps/http_fetch/lib/http/stream.ex": "d67a6ba36851dc255376ba93131e84dd003c9da2497fc0bb6e7d6c721c4be77b",
+    "deps/http_fetch/lib/http/abort_controller.ex": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+    "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+    "deps/http_fetch/lib/http/socket_client.ex": "3bfd24c17fb9f3237c2c259fdc366c2df48304a0f58faf308ee87d0523519f88",
+    "deps/http_fetch/lib/http/fetch_options.ex": "8e035e1ec4a8c3afb68731ceb325ddf1cd1b5a780bd1b2a063e3f417241b6061",
+    "deps/http_runtime/lib/http/http3/body_bridge.ex": "8ba5ffac5f3af8d1bdc26cbdc76b5268ce9de764fa424e02e93f96e22b524f05",
+    "deps/http_runtime/lib/http/http3/stream.ex": "2cb49934860ccf4c3c620f0c0c065d29290304746404c7b30c38ef4b81d6a7e6",
+    "deps/http_runtime/lib/http/http3.ex": "47b353a3d17f907dcd52b4a2b51f3dc6d93ad83859f70c3a3b5d92e08369c3f4",
+    "deps/http_runtime/lib/http/http3/pool_key.ex": "b56ee1759170d6abb96373e0a484bb039dd03bdea0b361a2cf29000502b72c2e",
+    "deps/elixir_quic_http3/mix.exs": "ccf1c54daa1460a96662d742a435c2d74f3ef512a6a0f92b72f0666854d79982",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/http_core/lib/http/quic/tls_options.ex": "43f9309449c14be7b10fb1eb6a2b51f6b8b0431d624b26de9f25d74a8c17763e"
+  },
+  "provenance": {
+    "source_repository": "gsmlg-dev/http_fetch",
+    "issue101": "closed 2026-10-12T16:30:50Z",
+    "pr102_merge_sha": "4eda50c6c6f3281610d40fd82ceff51e9c0670f7",
+    "v0.21.4_tag_commit": "264fb3e4388b98f34b26f16199a0ad4fb278a4fc",
+    "compare": "tag ahead3 behind0; merge base equals PR102 merge SHA",
+    "published_http_fetch_checksum": "f1a9b9b9e64eb34b7d917425f4473a8d2e4518f09c09443b80ce107ced59ed85",
+    "published_http_fetch_inserted_at": "2026-10-12T17:04:57.544800Z",
+    "cohort": "http_fetch,http_runtime,http_core,http_web_socket,elixir_quic_http3,elixir_quic,ex_ssl all0.21.4; each live Hex outer checksum matches root lock; none retired",
+    "resolution_receipt": "docs/acceptance/evidence/m4/dependency-resume/run-1791824981886130828/resolution.json"
+  },
+  "findings": [
+    {
+      "topic": "Fetch trailers",
+      "references": [
+        "deps/http_fetch/lib/http/stream.ex:150",
+        "deps/http_runtime/lib/http/http3/body_bridge.ex:116",
+        "deps/http_runtime/lib/http/http3/stream.ex:267",
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:147"
+      ],
+      "finding": "Public finish/2 validates128 fields/65536 serialized bytes and enqueues ordered trailers; asynchronous accepted return :ok alone is insufficient. BodyBridge waits pending/inflight DATA before body_trailers. H3 validates optional Trailer declaration, strips it for H2 field builder and restores declarations. Session.send_trailers/4 QPACK-encodes ordered repeated normalized fields, emits HEADERS fragments terminal FIN, closes upload when FIN accepted."
+    },
+    {
+      "topic": "Fetch lifecycle",
+      "references": [
+        "deps/http_fetch/lib/http/request_completion.ex:39",
+        "deps/http_fetch/lib/http/promise.ex:54",
+        "deps/http_fetch/lib/http/abort_controller.ex:133",
+        "deps/http_runtime/lib/http/http3.ex:18",
+        "deps/http_runtime/lib/http/http3/stream.ex:74"
+      ],
+      "finding": "H3 RequestCompletion remains unsupported:http_version. Promise exposes only task/completion, resolves before response-body completion. AbortController :ok confirms Agent update. Public Stream termination has no documented H3 runtime-close barrier. HTTP.HTTP3.request sends relay :abort in after without waiting; inner relay cleanup calls are guarded/swallowed. Visible task/stream DOWN and peer reset therefore recorded separately, not transport cleanup confirmation."
+    },
+    {
+      "topic": "Session supported alternative",
+      "references": [
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:147",
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:263",
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:266",
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:386",
+        "deps/elixir_quic_http3/lib/quic_http3/session.ex:645",
+        "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:234",
+        "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:249"
+      ],
+      "finding": "Caller-owned Session now supports required send_trailers/4 and public close/1/abort/1. close returns :ok only after connection-close acceptance then transport.cleanup success. abort abandons pending application work without replay; docs promise termination of transport resources, retains abandoned operation identity, returns {:ok,cleared_session} on success. Automatically owned endpoint abort calls synchronous cleanup/GenServer.stop(endpoint,:normal,5000). Both operations can return error/blocked/unknown advanced Session and must preserve uncertainty; success does not prove remote receipt or an indeterminate request was unsent."
+    },
+    {
+      "topic": "Explicit launch ownership variant",
+      "references": [
+        "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:36",
+        "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:93",
+        "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:381",
+        "deps/elixir_quic/lib/quic/endpoint.ex:637"
+      ],
+      "finding": "Prefer architecture assessment of a dedicated caller-owned public Transport.Quic.client/1 Endpoint descriptor retained as cleanup token before Session.connect/4. Pass matching descriptor via public endpoint option; connect borrows it. Public stop_endpoint/1 gives synchronous endpoint stop even if connect is unresolved. This avoids automatic connect-failure cleanup result being ignored and losing returned endpoint ownership. Explicit endpoint stop shuts socket and sends descendant shutdown; endpoint DOWN/rebind are transport closure observations, not total native/VM memory proof. Retain linking/ownership/cancellation design and finite error propagation for independent architecture review."
+    },
+    {
+      "topic": "TLS/fixed options",
+      "references": [
+        "deps/http_core/lib/http/quic/tls_options.ex:73",
+        "deps/http_core/lib/http/quic/tls_options.ex:81",
+        "deps/http_fetch/lib/http/fetch_options.ex:447",
+        "deps/http_runtime/lib/http/http3/pool_key.ex:91"
+      ],
+      "finding": "Explicit trust and verify_peer mandatory; absent trust=>:ca_trust_required, verify_none rejected. H3 address pinning raises ArgumentError exact connect_address is unsupported with HTTP/3, Unix sockets or proxies. Omit TLS backend/socket_opts; explicit false reuse yields unique key but does not establish immediate closure. Wrong CA/hostname exact runtime rejection NOT RUN; require authentication failure category, not arbitrary error/timeout."
+    }
+  ],
+  "recommended_qualification": [
+    "Fetch functional diagnostic: all4 zero/3byte undeclared/valid declaration trailer variants, exact ordered repeated fields in independent trailing HEADERS plus terminal request FIN exactly once; normal public Promise/upload/response termination separately.",
+    "Retain progressive upload/download, duplicate response trailers, two distinct certified authorities, exact request identity/count and no replay.",
+    "Wrong CA/hostname require TLS authentication failure and no origin request; absent trust/address-pin require exact public rejection and unchanged independent snapshots.",
+    "Pending-header, unacknowledged response, truly credit-blocked upload and owner-loss cancellations require public outcomes/DOWN and separate exact peer cancellation receipt.",
+    "Independent live Session qualification before UP1: public endpoint/session creation, trailer0/3byte FIN, request/download bounds and resumable blocked/unknown handling without replay, close/abort success under ordinary/pending-header/blocked upload/unacknowledged response/owner-loss, finite endpoint DOWN and own UDP rebind, sibling survival. No private Fetch owner/state access or exact native ledger."
+  ],
+  "architecture_disposition": "Parent commissioning bounded independently reviewed caller-owned Session design. Missing Fetch-specific completion is a source limitation, not whole-M4 external blocker because public Session lifecycle/trailer APIs exist. No upstream issue created by reviewer.",
+  "pre_runtime_harness_review": {
+    "status": "two actionable findings sent to implementer; runtime NOT RUN",
+    "findings": [
+      "blocked_write100ms missing acknowledgment is scheduling heuristic, not deterministic credit-block proof; require public bounded pending write timeout/error or controlled outstanding proof, and assert diagnostic occurrence.",
+      "wrongCA/hostname match any error may falsely PASS timeout/runtime/unsupported; require actual TLS authentication rejection category and exclude other errors."
+    ]
+  },
+  "verification_commands": [
+    {
+      "command": "read installed public APIs and current harness diff",
+      "exit": 0,
+      "result": "source audit completed; normal no-match and unavailable packaged doc paths recorded without product edits"
+    },
+    {
+      "command": "gh api issue101/pull102/tagv0.21.4 plus compare PR102merge...tag",
+      "exit": 0,
+      "result": "closed issue, merged fix, immutable containing tag verified"
+    },
+    {
+      "command": "Python urllib Hex0.21.4 metadata seven packages",
+      "exit": 0,
+      "result": "published checksums and nonretirement verified against root lock"
+    },
+    {
+      "command": "Python AST parse current origin.py/run.py",
+      "exit": 0,
+      "result": "PASS parse only; not runtime proof"
+    }
+  ],
+  "runtime_execution_by_reviewer": "NOT RUN; no Mix/live/exclusive lease used",
+  "counters": {
+    "UP0Sol": 2,
+    "UP0unsuccessful": 1,
+    "UP0Astra": 0,
+    "ConnectionSol": 3,
+    "ConnectionFailed": 2,
+    "ConnectionAstra": 1,
+    "ProxySol": 3,
+    "ProxyFailed": 1,
+    "ProxyAstra": 0,
+    "reviewer_repairs": 0,
+    "reviewer_Astra": 0
+  },
+  "astra_gate": null,
+  "remaining_risks": [
+    "Session architecture and independent live qualification required before upstream activation.",
+    "No complete UP0/UP1/UP2/M4 or production acceptance claimed."
+  ],
+  "decisions_needed": [],
+  "command_shutdown": "All owned read/gh/urllib/AST/hash commands finished; no owned child or live process. Unique source-audit receipt only written."
+}

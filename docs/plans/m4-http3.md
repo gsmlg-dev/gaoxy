@@ -1,5 +1,16 @@
 # M4 native HTTP/3 implementation plan
 
+**Dependency/execution update, 2026-10-13:** Coordinated0.21.4 is installed and
+post-review affected tests pass274/0. HTTP Fetch#101 is closed; the selected
+[public Session continuation](m4-public-session-upstream.md) supersedes the
+Fetch-specific upstream mechanism. Its initial network poll exposed fixed SDK
+consumer affinity; the bounded
+[architecture/task amendment](m4-public-session-consumer-affinity.md) passed
+independent review and now requires runtime qualification before activation.
+[Current acceptance](../acceptance/m4.md) records those actual
+failures and all remaining gates. Earlier0.21.3 task receipts remain historical;
+final runtime/browser/consumer verification must use the updated closure.
+
 > For Sol execution: use `executing-plans` or `subagent-driven-development`
 > task by task under AGENTS.md. Give parallel writers disjoint ownership;
 > serialize dependent host/protocol/Plug integration. Astra owns architecture,

@@ -1,0 +1,41 @@
+GAOXY_UPSTREAM_PROBE {"otp":"28","selected":"public Session dedicated endpoint","elixir":"1.18.5","http_fetch":"0.21.4","event":"environment"}
+GAOXY_UPSTREAM_PROBE {"name":"unknown_connect_reconciled","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"unknown_data_no_replay","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"unknown_trailers_no_replay","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"advanced_error_retained","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"blocked_suspend_poll_resume","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"before_adoption","endpoint_down":":normal","creator_down":":normal","allocation_owner":"creator","event":"double_receipt"}
+GAOXY_UPSTREAM_PROBE {"name":"ownership_before_adoption","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"after_adoption","endpoint_down":":normal","creator_down":":normal","allocation_owner":"guardian","event":"double_receipt"}
+GAOXY_UPSTREAM_PROBE {"name":"ownership_after_adoption","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"name":"stop_error","stop_result":"{:error, :invalid_endpoint}","cleanup_token":"retained","event":"double_receipt"}
+GAOXY_UPSTREAM_PROBE {"name":"ownership_stop_error","status":"PASS","kind":"boundary_double","event":"check"}
+
+01:44:02.382 [error] GenServer #PID<0.260.0> terminating
+** (stop) :injected_abnormal
+Last message: []
+State: #Reference<0.4241057583.2341208065.177722>
+GAOXY_UPSTREAM_PROBE {"name":"abnormal_down","stop_result":":ok","endpoint_down":":injected_abnormal","cleanup_token":"retained","event":"double_receipt"}
+GAOXY_UPSTREAM_PROBE {"name":"ownership_abnormal_down","status":"PASS","kind":"boundary_double","event":"check"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","acceptor":"#PID<0.261.0>","endpoint":"#PID<0.264.0>","bind_port":46375,"creator_down":":normal","alive_after_creator_down":true,"event":"adoption"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":"{:ok, %QuicHttp3.Session{transport: QuicHttp3.Transport.Quic, connection: %QuicHttp3.Transport.Quic{endpoint: #PID<0.264.0>, handle: %Quic.Runtime.ConnectionHandle{id: #PID<0.270.0>, generation: #Reference<0.4241057583.2341208065.177852>}, ops: Quic, consumer: #PID<0.261.0>, ...}, control: nil, control_stream: nil, peer_streams: %{}, requests: %{}, ...}}","operation":"connect","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":":pending","operation":"ready","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":":ready","operation":"ready","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":"{:ok, %QuicHttp3.Session{transport: QuicHttp3.Transport.Quic, connection: %QuicHttp3.Transport.Quic{endpoint: #PID<0.264.0>, handle: %Quic.Runtime.ConnectionHandle{id: #PID<0.270.0>, generation: #Reference<0.4241057583.2341208065.177852>}, ops: Quic, consumer: #PID<0.261.0>, ...}, control: %QuicHttp3.Control{role: :client, local_settings: [{...}, ...], peer_settings: nil, ...}, control_stream: %QuicHttp3.Transport.Quic.Stream{handle: %Quic.Runtime.StreamHandle{connection: %Quic.Runtime.ConnectionHandle{...}, ...}, ops: Quic}, peer_streams: %{}, requests: %{}, ...}}","operation":"open","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":{"pending":"nil","status":"ok","value":"#Reference<0.4241057583.2341208065.178096>","requests":1},"operation":"request","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","ref":"#Reference<0.4241057583.2341208065.178096>","event":"request_ref"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","result":{"pending":"nil","status":"error","value":":not_consumer","requests":1},"operation":"poll","event":"public_result"}
+GAOXY_UPSTREAM_PROBE {"path":"/ordinary","origin":"a","cancelled":true,"bind_address":"127.0.0.1","tasks":[{"pid":"#PID<0.262.0>","down":":normal","kind":"bootstrap"},{"pid":"#PID<0.266.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.271.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.272.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.273.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.274.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.275.0>","down":":normal","kind":"operation"},{"pid":"#PID<0.276.0>","down":":normal","kind":"session_cleanup"}],"session_result":"{:ok, %QuicHttp3.Session{transport: QuicHttp3.Transport.Quic, connection: nil, control: nil, control_stream: nil, peer_streams: %{}, requests: %{}, next_request: 2, next_stream_id: 4, max_fields: 128, max_encoded_headers: 65536, max_header_bytes: 65536, max_retained_bytes: 262144, qpack_streams: %{}, continuations: %{}, max_frame: 16384, timeout: 5000, pending: nil, work: nil, runnable: [], retired: MapSet.new([]), aborted_operation: nil, open?: false}}","endpoint_down":":normal","endpoint_stop":":ok","stop_task_down":":normal","bind_port":46375,"rebound_port":46375,"guardian_down":":normal","event":"cleanup_result"}
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert {:ok, _, events} = call(handle, "poll", &Session.poll(&1, 16, opts)) |> then(&settle(handle, &1))
+left:  {:ok, _, events}
+right: {:error, %QuicHttp3.Session{transport: QuicHttp3.Transport.Quic, connection: %QuicHttp3.Transport.Quic{endpoint: #PID<0.264.0>, handle: %Quic.Runtime.ConnectionHandle{id: #PID<0.270.0>, generation: #Reference<0.4241057583.2341208065.177852>}, ops: Quic, consumer: #PID<0.261.0>, connect_ref: #Reference<0.4241057583.2341208065.177808>, endpoint_owned?: false}, control: %QuicHttp3.Control{role: :client, local_settings: [{1, 0}, {6, 65536}, {7, 0}], peer_settings: nil, buffer: "", control_stream_id: nil, peer_control_stream_id: nil, peer_type_buffer: "", local_open?: false, peer_open?: false, received_settings?: false, goaway_id: nil}, control_stream: %QuicHttp3.Transport.Quic.Stream{handle: %Quic.Runtime.StreamHandle{connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.270.0>, generation: #Reference<0.4241057583.2341208065.177852>}, id: 2}, ops: Quic}, peer_streams: %{}, requests: %{#Reference<0.4241057583.2341208065.178096> => %{stream: %QuicHttp3.Transport.Quic.Stream{handle: %Quic.Runtime.StreamHandle{connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.270.0>, generation: #Reference<0.4241057583.2341208065.177852>}, id: 0}, ops: Quic}, ref: #Reference<0.4241057583.2341208065.178096>, upload: :closed, decoder: %QuicHttp3.Response{phase: :initial, method: "GET", status: nil, content_length: nil, received: 0, prefix: "", frame: nil, max_encoded_headers: 65536, max_header_bytes: 65536, max_fields: 128}}}, next_request: 2, next_stream_id: 4, max_fields: 128, max_encoded_headers: 65536, max_header_bytes: 65536, max_retained_bytes: 262144, qpack_streams: %{}, continuations: %{}, max_frame: 16384, timeout: 5000, pending: nil, work: %{bytes: 16384, deadline: -576460743740, acc: [], kind: :poll, paused: MapSet.new([]), steps: [{:events, 16}, :drain], reads: 1}, runnable: [], retired: MapSet.new([]), aborted_operation: nil, open?: true}, :not_consumer}
+
+    integration/http3/upstream/session_probe.exs:508: Gaoxy.SessionPublicProbe.poll/2
+    integration/http3/upstream/session_probe.exs:517: Gaoxy.SessionPublicProbe.response/4
+    integration/http3/upstream/session_probe.exs:556: anonymous fn/2 in Gaoxy.SessionPublicProbe.ordinary/1
+    integration/http3/upstream/session_probe.exs:495: Gaoxy.SessionPublicProbe.with_request/5
+    integration/http3/upstream/session_probe.exs:977: Gaoxy.SessionPublicProbe.run/0
+    integration/http3/upstream/session_probe.exs:995: (file)

@@ -7,7 +7,7 @@ service lifecycle, finite admission, telemetry and custom protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
 message-level [WebSocket reverse proxying](docs/websocket-proxy.md).
-HTTP Fetch 0.21.3 supplies request-owned cleanup and preserves present empty
+HTTP Fetch 0.21.4 supplies H1 request-owned cleanup and preserves present empty
 queries (`/upload?` remains `/upload?`), resolving the former
 [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker.
 **M2 local completion gates pass**: all 255 scoped tests and refreshed native
@@ -21,13 +21,19 @@ standalone HTTP configuration and supervised dedicated-H1 upstream groups.
 See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
 [M3 acceptance](docs/acceptance/m3.md). The v0.2.0 gateway beta covers this
 implemented subset. Upstream pools and upstream H2 are not implemented. Native
-downstream [HTTP/3](docs/http3.md) is implemented in the M4 worktree; the M4
-upstream matrix remains blocked by [HTTP Fetch #101](https://github.com/gsmlg-dev/http_fetch/issues/101).
-M4 is incomplete and has not been merged, pushed or released.
-Its local downstream/browser, standalone static/H1-origin and clean-consumer
-gates pass; [M4 acceptance](docs/acceptance/m4.md) records274 passing affected
-tests and the remaining upstream task queue.
-Installed HTTP Fetch0.21.3 passes compatibility486/0, public managed39/39,
+downstream [HTTP/3](docs/http3.md) is implemented in the M4 worktree.
+[HTTP Fetch #101](https://github.com/gsmlg-dev/http_fetch/issues/101) is closed;
+0.21.4 passes all 15 Fetch functional diagnostic rows, including request trailers.
+Fetch H3 cleanup completion remains unsupported. The independently reviewed
+[public Session design](docs/designs/m4-public-session-upstream.md) is selected
+for upstream H3, with the reviewed
+[consumer-affinity amendment](docs/designs/m4-public-session-consumer-affinity.md).
+Its runtime qualification and proxy integration are in progress.
+M4 is incomplete and has not been merged, pushed or released. The updated cohort
+passes 274 affected tests. Earlier downstream/browser, standalone static/H1-origin
+and clean-consumer gates retain their 0.21.3 source identities and require the
+prescribed final refresh. [M4 acceptance](docs/acceptance/m4.md) records both.
+The released 0.21.3 M3 cohort passed compatibility486/0, public managed39/39,
 H1 baseline20/0, B21, supplemental TLS5/5 and the public H2 supplement8/8.
 Negative probes retain their genuine failures and expected outcomes.
 [ADR007](docs/adr/007-m3-beta-and-m4.md) records the reviewed scope and authorizes
@@ -171,11 +177,12 @@ explicitly unsupported and tested for absence of delivery.
 ## Optional QUIC
 
 The standalone core dependency graph contains no QUIC engine. The umbrella
-proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.3 through
+proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.4 through
 HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
 dependency selection does not enable upstream H2/H3. The separately locked
-opt-in consumer now selects `elixir_quic` and `ex_ssl` ==0.21.3, qualified by
-M4's independent public-host gate. Older 0.17.0 evidence remains historical:
+opt-in consumer now selects `elixir_quic` and `ex_ssl` ==0.21.4. M4's independent
+public-host gate passed on 0.21.3; its updated-cohort refresh remains required.
+Older 0.17.0 evidence remains historical:
 
 ```sh
 cd integration/quic_consumer

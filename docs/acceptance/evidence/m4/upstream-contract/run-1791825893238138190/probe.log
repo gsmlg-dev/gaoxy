@@ -1,0 +1,51 @@
+GAOXY_UPSTREAM_PROBE {"elixir":"1.18.5","event":"environment","http_fetch":"0.21.4","otp":"28","public_session_functions":["__struct__/0","__struct__/1","abort/1","cancel/2","close/1","connect/4","new/0","new/1","open/1","poll/2","poll/3","ready/1","request/4","reset_send/2","resume/1","resume/2","send_data/5","send_trailers/4","suspend_blocked/1"]}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"ordinary_progress","origin":"a","path":"/ordinary"}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/ordinary","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_stream_a","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"ordinary_progress","origin":"b","path":"/ordinary"}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"b","path":"/ordinary","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_stream_b","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"upload_progress","origin":"a","path":"/upload"}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/upload","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"ordinary_upload","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"trailer_before_finish","origin":"a","path":"/echo-three-undeclared","zero":false}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/echo-three-undeclared","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","finish_return":":ok","name":"request_trailers_three_undeclared","path":"/echo-three-undeclared","public_task_down":true,"response_stream_down":true,"status":"PASS","upload_stream_down":true}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"trailer_before_finish","origin":"a","path":"/echo-three-declared","zero":false}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/echo-three-declared","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","finish_return":":ok","name":"request_trailers_three_declared","path":"/echo-three-declared","public_task_down":true,"response_stream_down":true,"status":"PASS","upload_stream_down":true}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"trailer_before_finish","origin":"a","path":"/echo-zero-undeclared","zero":true}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/echo-zero-undeclared","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","finish_return":":ok","name":"request_trailers_zero_undeclared","path":"/echo-zero-undeclared","public_task_down":true,"response_stream_down":true,"status":"PASS","upload_stream_down":true}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"trailer_before_finish","origin":"a","path":"/echo-zero-declared","zero":true}
+GAOXY_UPSTREAM_PROBE {"event":"normal_completion_result","origin":"a","path":"/echo-zero-declared","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","finish_return":":ok","name":"request_trailers_zero_declared","path":"/echo-zero-declared","public_task_down":true,"response_stream_down":true,"status":"PASS","upload_stream_down":true}
+GAOXY_UPSTREAM_PROBE {"case":"wrong_ca","event":"barrier","name":"negative_before"}
+GAOXY_UPSTREAM_PROBE {"case":"wrong_ca","event":"barrier","name":"negative_after","result":"{:error, {:http3_not_established, {:owner_down, {:shutdown, {:tls, :tls, :unknown_ca, :path_validation_failed}}}}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"wrong_ca","result":"{:error, {:http3_not_established, {:owner_down, {:shutdown, {:tls, :tls, :unknown_ca, :path_validation_failed}}}}}","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"case":"wrong_hostname","event":"barrier","name":"negative_before"}
+GAOXY_UPSTREAM_PROBE {"case":"wrong_hostname","event":"barrier","name":"negative_after","result":"{:error, {:http3_not_established, {:owner_down, {:shutdown, {:tls, :tls, :certificate_unknown, :hostname_mismatch}}}}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"wrong_hostname","result":"{:error, {:http3_not_established, {:owner_down, {:shutdown, {:tls, :tls, :certificate_unknown, :hostname_mismatch}}}}}","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"case":"absent_trust","event":"barrier","name":"negative_before"}
+GAOXY_UPSTREAM_PROBE {"case":"absent_trust","event":"barrier","name":"negative_after","result":"{:error, :ca_trust_required}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"absent_trust","result":"{:error, :ca_trust_required}","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"case":"connect_address","event":"barrier","name":"negative_before"}
+GAOXY_UPSTREAM_PROBE {"case":"connect_address","event":"barrier","name":"negative_after","result":"{:argument_error, \"connect_address is unsupported with HTTP/3, Unix sockets or proxies\"}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"connect_address","result":"{:argument_error, \"connect_address is unsupported with HTTP/3, Unix sockets or proxies\"}","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"completion_diagnostic","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"pending_headers","origin":"a","path":"/delayed-headers"}
+GAOXY_UPSTREAM_PROBE {"event":"cleanup_result","path":"/delayed-headers","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"completion_diagnostic":"{:error, {:unsupported_completion, :http_version}}","controller_down":true,"event":"check","name":"abort_pending_headers","public_task_down":true,"status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"cleanup_result","path":"/stalled-response","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"controller_down":true,"event":"check","name":"abort_unacknowledged_response","response_stream_down":true,"result":"{:error, :aborted}","status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"pause_upload","origin":"a","path":"/blocked-upload"}
+GAOXY_UPSTREAM_PROBE {"chunk_bytes":16384,"event":"blocked_write","index":1,"result":"{:error, :timeout}"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"blocked_upload","origin":"a","path":"/blocked-upload"}
+GAOXY_UPSTREAM_PROBE {"event":"cleanup_result","path":"/blocked-upload","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"resume_upload","origin":"a","path":"/blocked-upload"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"abort_blocked_upload","producer_down":true,"public_task_down":true,"status":"PASS","upload_stream_down":true}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"owner_loss","origin":"a","path":"/owner-loss"}
+GAOXY_UPSTREAM_PROBE {"event":"cleanup_result","path":"/owner-loss","result":"{:error, {:unsupported_completion, :http_version}}"}
+GAOXY_UPSTREAM_PROBE {"event":"check","name":"downstream_owner_loss","owner_down":true,"response_stream_down":true,"status":"PASS"}
+GAOXY_UPSTREAM_PROBE {"event":"barrier","name":"final_snapshot"}
+GAOXY_UPSTREAM_PROBE {"checks":15,"event":"done","status":"PASS"}

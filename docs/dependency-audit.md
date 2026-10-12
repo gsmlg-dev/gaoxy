@@ -1,6 +1,44 @@
 # Dependency audit
 
-## M4 upstream H3 qualification — 2026-10-12
+## Current M4 cohort and upstream selection — 2026-10-13
+
+The seven coordinated HTTP/QUIC packages are installed at **0.21.4**.
+Root `mix.lock` SHA256 is
+`aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab`.
+Four direct-pin files and three locks were updated; unrelated lock entries are
+preserved. [Cohort/fixture review](acceptance/evidence/m4/dependency-resume/run-1791824981886130828/review-core-cohort.json)
+and strict compilation passed, then fresh affected tests passed **274/0**.
+[Published-source audit](acceptance/evidence/m4/upstream-contract/source-audit-0.21.4-1791825360661362396.json)
+binds the containing release, seven checksums and inspected installed sources.
+No dependency source was patched.
+
+[HTTP Fetch #101](https://github.com/gsmlg-dev/http_fetch/issues/101) is **CLOSED**;
+PR #102's request-trailer fix is included. The
+[0.21.4 Fetch retry](acceptance/evidence/m4/upstream-contract/run-1791825893238138190/result.json)
+executed **15/15 functional PASS** rows: zero/three DATA bytes with/without a
+Trailer declaration, ordered duplicates and terminal FIN, progressive transfer,
+two distinct certified authorities, strict TLS negatives and four cancellations.
+Its actual overall exit remains **2 / BLOCKED** because all seven ordinary and
+four cancelled Fetch requests report unsupported cleanup completion.
+[Independent review](acceptance/evidence/m4/upstream-contract/review-fetch-functional-1791826076183654653.json)
+accepts the functional diagnostic only.
+
+Use the reviewed [public Session design](designs/m4-public-session-upstream.md)
+and [plan](plans/m4-public-session-upstream.md) for selected upstream qualification
+and implementation. The dedicated public endpoint supplies an explicit local
+teardown boundary; no private Fetch owners or native ledger are required.
+Architecture review passed; runtime qualification and production activation have
+not yet passed. The initial direct Session gate exposed
+[fixed consumer affinity](acceptance/evidence/m4/upstream-contract/session-consumer-affinity-diagnosis-1791827196294978658.json)
+after its compile repair: per-call workers cannot poll as the guardian consumer.
+The bounded [consumer-affinity amendment](designs/m4-public-session-consumer-affinity.md)
+and [task delta](plans/m4-public-session-consumer-affinity.md) passed
+[independent review](acceptance/evidence/m4/upstream-contract/session-consumer-affinity-spec-review-1791828021439137088.json)
+without private handle access or dependency patches. Its stable caller and explicit
+guardian-loss monitor still require runtime qualification. Historical 0.21.3
+failures below retain their original status.
+
+## Historical M4 upstream H3 qualification — 2026-10-12
 
 The root dependency cohort remains **0.21.3**; `mix.lock` is unchanged
 (SHA256 `16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25`).
@@ -44,7 +82,7 @@ qualification. No trailer-dropping workaround is enabled. Independent downstream
 H3 and standalone work can continue. The reviewed exclusion of `http_fetch#97`
 continues to apply; it supplies no M4 requirement or blocker.
 
-## Current M3 cohort — 2026-10-11
+## Historical M3 cohort — 2026-10-11
 
 The proxy directly pins Fetch/WebSocket to `== 0.21.3`; all seven coordinated
 HTTP packages resolve to0.21.3. Verified tag is

@@ -1,0 +1,49 @@
+{
+  "task_id": "/root/m4_session_qualification",
+  "assignment": "direct",
+  "status": "BLOCKED_DESIGN",
+  "head": "b43a8ebc06fb13caf62fa9320f039b8bdd446023",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "initial_run": {
+    "path": "run-1791826957389704425",
+    "actual_exit": 1,
+    "executed": 0,
+    "cause": "unqualified Elixir spawn_opt compile call"
+  },
+  "repair_round_1": {
+    "path": "run-1791827038372979204",
+    "actual_exit": 1,
+    "executed_boundary_doubles": 9,
+    "network_PASS": 0,
+    "cause": "Session.poll from temporary worker returns advanced error :not_consumer"
+  },
+  "root_cause_evidence": {
+    "Quic.Connection.events": "connection.ex:298 caller == data.consumer",
+    "Quic.Connection.read": "connection.ex:323 caller == data.consumer",
+    "Quic.Connection.operation_events": "connection.ex:376 caller != data.consumer",
+    "Quic.Connection.attach": "connection.ex:265 caller must current consumer or owner",
+    "Quic.Connection.consumer_down": "connection.ex:637 consumer monitor DOWN closes connection",
+    "design": "Guardian consumer plus fresh per-call worker conflicts with public consumer affinity. Session internals handles cannot be mined for reattach."
+  },
+  "decision_needed": "Parent architecture amendment for public caller lifetime before further qualification; recommended one request-lived sole caller task scheduled by guardian",
+  "sol_repair_rounds": 1,
+  "sol_unsuccessful_repair_rounds": 1,
+  "astra_recovery_rounds": 0,
+  "historical_UP0": {
+    "sol_repair_rounds": 2,
+    "failed": 1,
+    "astra_recovery_rounds": 0
+  },
+  "shutdown": "All own commands completed; both run children exited, origin ports rebound, first network adopted endpoint normal DOWN/task normal DOWN/rebind receipt preserved",
+  "source_sha256": {
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/elixir_quic/lib/quic.ex": "7791050053a16acdb9c8329a9a23034335d423c574adbc77d6215b8231d5500d",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "integration/http3/upstream/session_probe.exs": "50dc78b7082069cb3031ea233ca0897b6cb0657fe2bf648f31a9506b222a4efa",
+    "integration/http3/upstream/run.py": "d6c0de082a5c14130ac737670f533a3d07ba7a0201adaaf079b9cd1dd50bd144",
+    "integration/http3/upstream/origin.py": "644b8e0ea7e53e65e4dfec7b3a6c36aa7b4f510c078ac9aef6c391d6936e1c7b",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab"
+  }
+}

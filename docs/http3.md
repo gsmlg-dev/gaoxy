@@ -3,7 +3,7 @@
 Select the optional `gaoxy_http3` application explicitly. It serves the existing
 Endpoint/Exchange/Response and Plug APIs over native QUIC; H1/H2 consumers keep
 their existing dependency closure. [M4 acceptance](acceptance/m4.md) records
-local qualification and the remaining upstream block.
+local qualification and the remaining upstream Session integration.
 
 ## Embedded service
 
@@ -90,10 +90,12 @@ Chromium are required; missing prerequisites are BLOCKED_ENV. Each gate freezes
 source hashes, retains finite deadlines and verifies owned teardown/port rebind.
 The separate release-artifact E2E workflow stays disabled.
 
-Upstream H3 request trailers are blocked by
-[HTTP Fetch #101](dependency-requests/http-fetch-h3-request-trailers.md) on
-0.21.3. The H3 upstream adapter and H1/H2/H3-to-H3 origin matrix are unimplemented;
-full M4 completion and publication await that compatible published fix and the
-remaining qualification. Dynamic QPACK, push, extended CONNECT, WebTransport,
+The [request-trailer dependency](dependency-requests/http-fetch-h3-request-trailers.md)
+is resolved in installed0.21.4; all15Fetch functional diagnostics pass. Fetch H3
+cleanup completion remains unsupported. The selected
+[public Session plan](plans/m4-public-session-upstream.md) is undergoing direct
+qualification before Gaoxy integration. The H3 upstream adapter and
+H1/H2/H3-to-H3 origin matrix remain unimplemented; full M4 completion and
+publication require those remaining gates. Dynamic QPACK, push, extended CONNECT, WebTransport,
 DATAGRAM, 0-RTT, migration, mTLS, IPv6/wildcard bindings and graceful H3 GOAWAY
 drain remain unsupported. Stop qualifies bounded local host cleanup.
