@@ -315,7 +315,7 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --wa
   exits, review identities and owned shutdown. Distinguish PASS, FAIL, BLOCKED,
   NOT RUN and hosted/publication/deployment states. No source-only acceptance
   replaces the prescribed real endpoint/TLS runs.
-- [ ] Stage only task-owned files and make a local conventional commit after
+- [x] Stage only task-owned files and make a local conventional commit after
   accepted fresh checks. No AI trailers. Do not push/publish/deploy or change
   disabled E2E. Report this fixed-endpoint slice DONE; remaining Task 5 groups,
   probes/Generation and other protocol packages remain separate and unexecuted.
@@ -452,3 +452,5 @@ implementation3, diagnostic harness1, SPEC rejection1; inherited counters and
 Astra2/2 unchanged. Stage only owned files for the authorized local commit.
 Advance to the separately reviewed groups/probes plan, then Generation; no
 publication/deployment or disabled E2E change is included.
+
+Local implementation commit: `2bf0883cea1dce1a031016700bb012fb3faac8b5` (`feat(proxy): activate managed H1 fixed endpoints`). Source hashes match the final fresh178/0 receipt; see the [commit receipt](../acceptance/evidence/m3/managed-h1-fixed-endpoint/1791891933896/fixed-local-commit.json).

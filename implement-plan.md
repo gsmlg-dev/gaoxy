@@ -48,7 +48,7 @@ fresh proxy77/0, core36/0, external core consumer1/0, complete independent
 TCP/TLS8/0, strict compile and format PASS. Historical failed/rejected rounds
 remain in its [acceptance](docs/acceptance/m3-h1-resource-foundation.md).
 Task5 [fixed endpoint activation](docs/plans/m3-managed-h1-fixed-endpoint.md)
-is now **DONE locally**: independent SPEC/CODE and fresh178/0, strict compile
+is now **DONE locally** at `2bf0883cea1dce1a031016700bb012fb3faac8b5`: independent SPEC/CODE and fresh178/0, strict compile
 and formatcheck PASS; all historical failures remain preserved. The separately
 reviewed groups/probes and Generation designs/plans follow automatically under
 continuing authorization. No production pool

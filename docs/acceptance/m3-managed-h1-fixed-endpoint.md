@@ -10,6 +10,8 @@ prove reuse, wire fidelity, public cleanup, EOF and actor joins; rejected TLS
 setup proves strict cleanup uncertainty and retained accounting, without claiming
 cleanup success. Read the [local acceptance receipt](evidence/m3/managed-h1-fixed-endpoint/1791891933896/fixed-local-acceptance-summary.json).
 
+Local implementation commit: `2bf0883cea1dce1a031016700bb012fb3faac8b5`; [commit receipt](evidence/m3/managed-h1-fixed-endpoint/1791891933896/fixed-local-commit.json).
+
 Execution checkout: `.trees/m3-h1-resource-foundation`, branch
 `codex/m3-h1-resource-foundation`. The [kickoff receipt](evidence/m3/managed-h1-fixed-endpoint/1791891933896/kickoff.json)
 records the clean baseline/tree, source and cohort hashes, scope and writers.
