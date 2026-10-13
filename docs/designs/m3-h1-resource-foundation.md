@@ -1,7 +1,7 @@
 # M3 H1 transport resource foundation
 
-Date: 2026-10-13 Asia/Shanghai. Status: **DESIGN ONLY; implementation and runtime
-acceptance NOT RUN**. This is the next bounded package of existing
+Date: 2026-10-13 Asia/Shanghai. Status: **IMPLEMENTATION IN PROGRESS;
+Steps 1–4 accepted; complete resource/runtime acceptance NOT RUN**. This is the next bounded package of existing
 [M3 upstream-transport Task 4](../plans/m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional),
 after the M4 release closure. It is not a new milestone.
 
@@ -239,7 +239,8 @@ finite counts; the scope of these bounds must be stated in status/evidence.
 
 Each admitted record gets one persistent custodian that calls public `open/1`
 and remains alive through retirement. A short-lived preparer must never be the
-scope creator. A timed-out/dying preparer cannot publish a handle; a late open
+scope creator. Preparation authenticates the caller as the supplied preparer;
+the preparation metadata pin belongs to that process. A timed-out/dying preparer cannot publish a handle; a late open
 result is retired and its reservation stays held until public confirmation.
 Open/retire initiation may outlive a short D because the public calls use fixed
 5,000 ms timeouts. Run them outside the ledger, retain their ownership and
@@ -340,5 +341,9 @@ Record source/cohort identities, commands, counts, exits and receipts with PASS,
 FAIL, BLOCKED and NOT RUN distinct. Require independent specification and code
 review plus fresh scoped verification before each local commit. This package
 does not establish production endpoint pooling, upstream H2, total native-memory
-bounds, full M3 acceptance or publication/deployment. Its implementation,
-tests, independent review and real-peer acceptance are currently **NOT RUN**.
+bounds, full M3 acceptance or publication/deployment. Core/pure-options implementation, scoped tests and independent review PASS;
+ledger initial GREEN did not pass independent review. Repair 1 corrected
+helper/creator joins and actual admitted failed-open accounting: four deterministic
+RED regressions, then 44/0 GREEN and fresh verification, with independent
+SPEC/CODE review PASS. Peer source repair passed independent SPEC/CODE review;
+request/retirement and real-peer acceptance remain **NOT RUN**.

@@ -1,0 +1,78 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 471812, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test an admitted real public open error retains failed resource connection and payload holds (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:312[0m
+     [31mAssertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       owner = #PID<0.385.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:ready_barrier, ^owner, custodian}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:ready_barrier[0m, [31m^owner[0m, [31mcustodian[0m}
+       [36mvalue:   [0m{
+                  [32m:failed_open[0m,
+                  [32m{:ok, %{owner: #PID<0.385.0>, resource: #Reference<0.32335694.1402732546.34847>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.32335694.1402732546.34840>}, [%{owner: #PID<0.385.0>, handles: [%{owner: #PID<0.385.0>, resource: #Reference<0.32335694.1402732546.34847>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.32335694.1402732546.34840>}], kind: :preparation, ref: #Reference<0.32335694.1402732546.34849>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.32335694.1402732546.34840>, operation: #Reference<0.32335694.1402732546.34850>, holder: #PID<0.386.0>}]}[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:326: (test)
+
+[32m.[0m[32m.[0m
+
+  2) test helper DOWN before its relayed public result remains provisional and joinable (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:283[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{helpers: 1}} = Transports.status(owner)
+     [36mleft:  [0m{:ok, %{helpers: [31m1[0m}}
+     [36mright: [0m{
+              :ok,
+              %{
+                helpers: [32m0[0m,
+                failed_resources: 0,
+                lifecycle: :running,
+                limits: %{
+                  max_resources: 2,
+                  max_pins: 8,
+                  max_request_tokens: 64,
+                  max_owned_payload_bytes: 131072
+                },
+                owned_serialized_payload_bytes: 1360,
+                pins: 1,
+                request_tokens: 0,
+                reserved_connections: 2,
+                resources: 1
+              }
+            }
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:301: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  3) test creator retirement receipt keeps its record and payload until creator DOWN (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:242[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert held.resources == 1
+     [36mleft:  [0m[31m0[0m
+     [36mright: [0m[32m1[0m
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:267: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransportsTest."test creator retirement receipt keeps its record and payload until creator DOWN"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_test.exs:243: (test)
+
+[32m.[0m
+
+  4) test a retirement helper result keeps its slot and payload until helper DOWN (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:202[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert before.helpers == 1
+     [36mleft:  [0m[31m0[0m
+     [36mright: [0m[32m1[0m
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:228: (test)
+
+
+Finished in 15.6 seconds (15.6s async, 0.00s sync)
+[31m44 tests, 4 failures[0m

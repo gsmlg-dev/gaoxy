@@ -43,7 +43,10 @@ BLOCKED_ENV with zero executed steps; deployment/production/E2E remain NOT RUN.
 The next prepared existing package is M3 Task4 H1 resource foundation:
 [design](docs/designs/m3-h1-resource-foundation.md) and
 [plan](docs/plans/m3-h1-resource-foundation.md); execution kickoff verified,
-execution in progress under renewed continuing authorization; implementation/runtime NOT RUN.
+implementation in progress under renewed continuing authorization; core participant,
+pure-options and Step4 ledger/custodian gates PASS. The ledger's rejected initial
+review and repair1 RED/44-test GREEN/fresh review evidence remain recorded;
+complete request/retirement/runtime acceptance NOT RUN.
 Task5 production pool activation remains separate; the roadmap still ends at M4.
 
 ## 1. Product and success criteria

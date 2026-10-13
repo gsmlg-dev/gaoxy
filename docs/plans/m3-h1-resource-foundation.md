@@ -17,8 +17,10 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Execution kickoff and independent specification review PASS.
-Implementation execution started; test/code-review gates remain **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
+**Status:** Execution kickoff and Steps 1–4 verification/independent reviews PASS.
+Step 4 initial GREEN was rejected by independent SPEC review; repair 1 passed
+44/0 GREEN, independent SPEC/CODE review and fresh 44/0 verification. Steps 5–7 runtime gates remain
+**NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
 [existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
 
 **Historical planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
@@ -92,8 +94,13 @@ failures enter local Sol diagnosis and repair. Renewed continuing authorization
 supersedes routine approval/phase-stop rules; product, publication/deployment,
 Vault, production and disabled-E2E boundaries remain. Independent specification review PASS. Initial core/options verification: 66 tests/0 failures;
 Options independent SPEC/CODE review PASS. Core SPEC/CODE review PASS, core-only consumer 1/0 PASS and fresh post-review
-format/strict compile/66 tests PASS. Steps 1–3 are accepted; resource-ledger and
-live-peer gates remain NOT RUN.
+format/strict compile/66 tests PASS. Steps 1–3 are accepted. Step 4 initial
+40/0 GREEN did not satisfy its independent review: helper/creator joins and
+actual failed-open accounting needed repair. Repair 1 RED is 44 tests/four
+expected failures, exit 2, source stable; the earlier 40/0 result remains
+preserved. [Repair review](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/ledger-review-repair1.json)
+and fresh post-review 44/0 verification accept Step 4. Peer source repair 1 independently passed SPEC/CODE review; network
+acceptance remains NOT RUN.
 
 ## Scope and ownership
 
@@ -107,7 +114,7 @@ freeze has been released.
 | A: core participant | Modify `apps/gaoxy/lib/gaoxy.ex`, `gaoxy/instance.ex`, `gaoxy/lifecycle.ex`; create `apps/gaoxy/test/lifecycle_participant_test.exs` | Parent releases freeze; specification review |
 | B: pure options | Create `apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex`; reuse `managed_h1_preparation.ex`; create `apps/gaoxy_proxy/test/upstream_transports_options_test.exs` | Independent of A's source edits; resource startup waits for A acceptance |
 | B/C: ledger/custodian | Create `apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex` and `upstream_transports/custodian.ex`; create `apps/gaoxy_proxy/test/upstream_transports_test.exs` | A accepted; pure options accepted |
-| C: real public contract | Create `integration/http_fetch_contract/h1_resource_foundation_peer.py` and `h1_resource_foundation_probe.exs`; add scoped tests to `upstream_transports_test.exs` | Ledger/custodian and request-hold behavior accepted |
+| C: real public contract | Create `integration/http_fetch_contract/h1_resource_foundation_peer.py` and `h1_resource_foundation_probe.exs`; add scoped tests to `upstream_transports_test.exs` | Independent peer source can be prepared alongside the ledger; probe/resource integration and execution wait for ledger/custodian/request-hold acceptance |
 | Evidence/review | New `docs/acceptance/evidence/m3/h1-resource-foundation/<run-id>/` receipts and these two docs | Parent assigns writer; no historical evidence overwrite |
 
 Start the owner explicitly under the embedding supervisor using its child spec;
@@ -190,19 +197,19 @@ writers are disjoint; runtime commands remain parent-serialized.
 Owned files: UpstreamTransports, Custodian and resource test. Depends on Steps
 2 and 3 acceptance.
 
-- [ ] Write RED tests proving registration success and capacity reservation
+- [x] Write RED tests proving registration success and capacity reservation
   precede all resource effects, limit exhaustion has no queue/effects, and
   opening/retiring/failed records plus helpers remain counted.
-- [ ] Implement explicit owner startup and temporary supervision, instance
+- [x] Implement explicit owner startup and temporary supervision, instance
   monitoring, redacted bounded status, and `prepare/4`. Each record's persistent
   custodian calls public `ManagedTransport.open/1`; use no opaque-field access.
-- [ ] Use test-owned receive barriers for preparer death, deadline before open
+- [x] Use test-owned receive barriers for preparer death, deadline before open
   result, late success, open failure and custodian death. Assert no late handle
   publication, retained uncertain holds and public retirement of late scopes.
-- [ ] Bound control helpers per record, keep open/retire fixed-call waits outside
+- [x] Bound control helpers per record, keep open/retire fixed-call waits outside
   the ledger, and preserve the caller's absolute deadline independently of their
   5,000 ms control-call duration.
-- [ ] Parent runs resource/option tests, then independent code review and fresh
+- [x] Parent runs resource/option tests, then independent code review and fresh
   verification. Commit only the assigned source/test/doc changes.
 
 ## Step 5: provide metadata pins and separate request completion holds
