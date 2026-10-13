@@ -104,6 +104,46 @@ defmodule Gaoxy.HTTP.NetworkTest do
     end
   end
 
+  defmodule TLSChunkedUpload do
+    @behaviour Gaoxy.HTTP.Endpoint
+    alias Gaoxy.HTTP.Exchange
+    alias Gaoxy.HTTP.HTTP1.Response
+
+    def init(owner), do: {:ok, owner}
+
+    def call(exchange, owner) do
+      read_upload(exchange, owner, :crypto.hash_init(:sha256), 0, 0, exchange.deadline)
+    end
+
+    defp read_upload(exchange, owner, digest, bytes, largest_read, deadline) do
+      case Exchange.read_body_step(exchange, 16_384, 5) do
+        {status, piece, next} when status in [:more, :ok] ->
+          digest = :crypto.hash_update(digest, piece)
+          bytes = bytes + byte_size(piece)
+          largest_read = max(largest_read, byte_size(piece))
+
+          if status == :ok do
+            hash = Base.encode16(:crypto.hash_final(digest), case: :lower)
+
+            send(
+              owner,
+              {:upload_eof, bytes, largest_read, hash, next.body.phase, deadline, next.deadline}
+            )
+
+            Response.send_resp(next, 200, [], "#{bytes}:#{hash}")
+          else
+            read_upload(next, owner, digest, bytes, largest_read, deadline)
+          end
+
+        {:pending, next} ->
+          read_upload(next, owner, digest, bytes, largest_read, deadline)
+
+        {:error, reason, _next} ->
+          {:error, reason}
+      end
+    end
+  end
+
   test "fragmented request and a pipelined request use one native connection" do
     {:ok, server} = Gaoxy.HTTP.start_link(plug: {Echo, []})
     on_exit(fn -> Gaoxy.stop(server) end)
@@ -524,6 +564,92 @@ defmodule Gaoxy.HTTP.NetworkTest do
     assert tls_receive_all(socket, "") =~ "\r\n\r\nsecure"
   end
 
+  @tag :tmp_dir
+  test "TLS chunked 1 MiB upload completes within its original bounded read budget", %{
+    tmp_dir: dir
+  } do
+    script = Path.expand("../../../scripts/generate-fixtures.sh", __DIR__)
+    assert {_, 0} = System.cmd("bash", [script, dir], stderr_to_stdout: true)
+
+    {:ok, server} =
+      Gaoxy.HTTP.start_link(
+        endpoint: {TLSChunkedUpload, self()},
+        transport: :tls,
+        tls: %{certfile: Path.join(dir, "cert.pem"), keyfile: Path.join(dir, "key.pem")},
+        http_limits: %{request_timeout: 5_000}
+      )
+
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {_, port}} = Gaoxy.info(server, :http).local
+
+    peer = ~S"""
+    import hashlib
+    import socket
+    import ssl
+    import sys
+    import time
+
+    deadline = time.monotonic() + 5
+    def remaining():
+        left = deadline - time.monotonic()
+        assert left > 0, "original five-second upload deadline expired"
+        return left
+
+    context = ssl.create_default_context(cafile=sys.argv[2])
+    context.set_alpn_protocols(["http/1.1"])
+    digest = hashlib.sha256()
+    with socket.create_connection(("127.0.0.1", int(sys.argv[1])), timeout=remaining()) as raw:
+        raw.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        raw.settimeout(remaining())
+        with context.wrap_socket(raw, server_hostname="localhost") as connection:
+            assert connection.selected_alpn_protocol() == "http/1.1"
+            connection.settimeout(remaining())
+            connection.sendall(b"POST /upload HTTP/1.1\r\nHost: localhost\r\n"
+                               b"Transfer-Encoding: chunked\r\nConnection: close\r\n\r\n")
+            for index in range(64):
+                piece = bytes([index]) * 16384
+                digest.update(piece)
+                connection.settimeout(remaining())
+                connection.sendall(b"4000\r\n" + piece + b"\r\n")
+            connection.settimeout(remaining())
+            connection.sendall(b"0\r\n\r\n")
+            response = b""
+            while True:
+                connection.settimeout(remaining())
+                piece = connection.recv(4096)
+                if not piece:
+                    break
+                response += piece
+                assert len(response) <= 4096, "unexpected response size"
+            head, body = response.split(b"\r\n\r\n", 1)
+            assert head.startswith(b"HTTP/1.1 200 OK\r\n"), head
+            expected = b"1048576:" + digest.hexdigest().encode()
+            assert body == expected, (body, expected)
+            assert b"content-length: " + str(len(expected)).encode() in head.lower(), head
+    print("PASS TLS chunked 1048576 bytes, SHA256, response EOF within five seconds")
+    """
+
+    assert {output, 0} =
+             System.cmd(
+               "python3",
+               ["-c", peer, Integer.to_string(port), Path.join(dir, "ca.pem")],
+               stderr_to_stdout: true
+             )
+
+    assert output =~ "PASS TLS chunked 1048576 bytes, SHA256, response EOF within five seconds"
+
+    expected_body = for index <- 0..63, do: :binary.copy(<<index>>, 16_384)
+    expected_hash = Base.encode16(:crypto.hash(:sha256, expected_body), case: :lower)
+
+    assert_receive {:upload_eof, 1_048_576, largest_read, ^expected_hash, :done,
+                    original_deadline, final_deadline}
+
+    assert largest_read > 0 and largest_read <= 16_384
+    assert final_deadline == original_deadline
+    assert_http_released(server, Gaoxy.Lifecycle.deadline(1_000))
+    assert :ok = Gaoxy.stop(server, 1_000)
+  end
+
   test "drain closes an idle admitted HTTP connection" do
     {:ok, server} = Gaoxy.HTTP.start_link(plug: {Echo, []})
     on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
@@ -561,6 +687,23 @@ defmodule Gaoxy.HTTP.NetworkTest do
       if deadline > 5,
         do: assert_active(server, deadline - 5),
         else: flunk("HTTP lease not active")
+    end
+  end
+
+  defp assert_http_released(server, deadline) do
+    case Gaoxy.status(server, :http) do
+      %{active: 0, retained_bytes: 0} ->
+        :ok
+
+      _ ->
+        assert Gaoxy.Lifecycle.remaining(deadline) > 0
+
+        receive do
+        after
+          5 -> :ok
+        end
+
+        assert_http_released(server, deadline)
     end
   end
 end

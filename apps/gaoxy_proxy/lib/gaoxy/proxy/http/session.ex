@@ -8,6 +8,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
   def cancel(pid), do: GenServer.cast(pid, :cancel)
+  def expire(pid), do: GenServer.cast(pid, :expire)
   def consumed(pid), do: GenServer.cast(pid, :consumed)
   def acknowledge(pid, ref), do: GenServer.cast(pid, {:acknowledge, ref})
 
@@ -45,6 +46,19 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   @impl true
   def handle_cast(:cancel, state), do: settle(mark_cancelled(state))
+
+  def handle_cast(:expire, %{cancelled: true} = state), do: settle(state)
+  def handle_cast(:expire, %{consumed: true} = state), do: settle(state)
+
+  def handle_cast(:expire, state) do
+    reason =
+      if state.client == Gaoxy.Proxy.HTTP3SessionClient and
+           Lifecycle.remaining(state.deadline) == 0,
+         do: :request_timeout,
+         else: :timeout
+
+    fail(state, reason)
+  end
 
   def handle_cast(:consumed, %{cancelled: true} = state), do: settle(state)
   def handle_cast(:consumed, state), do: settle(%{state | consumed: true, outcome: :success})
@@ -152,6 +166,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     do: settle(mark_cancelled(state))
 
   def handle_info(event, %{cancelled: true} = state)
+      when event in [:opening_expired, :total_expired],
+      do: settle(state)
+
+  def handle_info(event, %{consumed: true} = state)
       when event in [:opening_expired, :total_expired],
       do: settle(state)
 

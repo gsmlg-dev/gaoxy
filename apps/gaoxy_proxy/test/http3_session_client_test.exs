@@ -11,6 +11,189 @@ defmodule Gaoxy.Proxy.HTTP3SessionClientTest do
     {:ok, ca: ca}
   end
 
+  test "matching response ACK wakes its owner ahead of a pending idle tick" do
+    id = make_ref()
+    ref = make_ref()
+    timer = Process.send_after(self(), {:h3_tick, id}, 60_000)
+    on_exit(fn -> Process.cancel_timer(timer) end)
+
+    handle = %{
+      id: id,
+      owner: self(),
+      tick: timer,
+      cleanup: :not_started,
+      poll_due: Lifecycle.deadline(60_000),
+      delivery: ref
+    }
+
+    assert {:ok, ^handle} = HTTP3SessionClient.acknowledge(handle, make_ref())
+    assert is_integer(Process.read_timer(timer))
+    refute_received {:h3_tick, ^id}
+
+    assert {:ok, %{delivery: nil} = acknowledged} = HTTP3SessionClient.acknowledge(handle, ref)
+    assert acknowledged.poll_due <= Lifecycle.now()
+    assert_receive {:h3_tick, ^id}, 1_000
+    assert Process.read_timer(timer) == false
+    assert {:ok, ^acknowledged} = HTTP3SessionClient.acknowledge(acknowledged, ref)
+    refute_received {:h3_tick, ^id}
+  end
+
+  test "matching ACK retains an already queued wakeup without scheduling a replacement" do
+    id = make_ref()
+    ref = make_ref()
+    timer = Process.send_after(self(), {:h3_tick, id}, 0)
+    assert_receive {:h3_tick, ^id}, 1_000
+    assert Process.read_timer(timer) == false
+    send(self(), {:h3_tick, id})
+
+    handle = %{
+      id: id,
+      owner: self(),
+      tick: timer,
+      cleanup: :not_started,
+      poll_due: Lifecycle.deadline(60_000),
+      delivery: ref
+    }
+
+    assert {:ok, %{delivery: nil, tick: ^timer} = acknowledged} =
+             HTTP3SessionClient.acknowledge(handle, ref)
+
+    assert acknowledged.poll_due <= Lifecycle.now()
+    assert_receive {:h3_tick, ^id}, 1_000
+    assert {:ok, ^acknowledged} = HTTP3SessionClient.acknowledge(acknowledged, ref)
+    refute_received {:h3_tick, ^id}
+  end
+
+  test "nil ACK with no delivery preserves idle polling credit and its timer" do
+    id = make_ref()
+    timer = Process.send_after(self(), {:h3_tick, id}, 60_000)
+    on_exit(fn -> Process.cancel_timer(timer) end)
+
+    handle = %{
+      id: id,
+      owner: self(),
+      tick: timer,
+      cleanup: :not_started,
+      poll_due: Lifecycle.deadline(60_000),
+      delivery: nil
+    }
+
+    assert {:ok, ^handle} = HTTP3SessionClient.acknowledge(handle, nil)
+    assert is_integer(Process.read_timer(timer))
+    refute_received {:h3_tick, ^id}
+  end
+
+  test "a paused poll retains ACK credit through an uncertain result and resumption", %{ca: ca} do
+    {guardian, monitor, caller, endpoint, session, request_ref, _upload} = streaming(ca)
+    assert [^session, 16, _] = await_operation(caller, :poll)
+
+    send(
+      caller,
+      {:public_return,
+       {:ok, session,
+        [
+          {:headers, request_ref, [{":status", "200"}]},
+          {:data, request_ref, "credit"}
+        ]}}
+    )
+
+    assert_receive {:adapter_event, ^guardian, {:headers, 200, []}}, 1_000
+    assert_receive {:adapter_event, ^guardian, {:chunk, "credit", ref}}, 1_000
+    assert [^session, ^request_ref] = await_operation(caller, :reset_send)
+    send(caller, {:public_return, {:ok, session}})
+    assert [^session, 16, paused] = await_operation(caller, :poll)
+    assert paused[:paused] == MapSet.new([request_ref])
+    actual = snapshot(guardian)
+    assert actual.operation.action == {:poll, ref}
+
+    # Advance the actual adapter state deterministically with a controlled caller.
+    # Commands are retained in this test mailbox; no scheduler timing is assumed.
+    Process.cancel_timer(actual.tick)
+
+    controlled = %{
+      actual
+      | owner: self(),
+        caller: %{actual.caller | pid: self()},
+        tick: nil,
+        poll_due: Lifecycle.deadline(60_000)
+    }
+
+    # An empty paused result preceding the ACK retains idle backoff until credit
+    # is actually released, then one unpaused poll is immediately authorized.
+    {:none, held} =
+      HTTP3SessionClient.event(
+        controlled,
+        {:h3_result, actual.id, actual.generation, self(), actual.operation.ref,
+         {:ok, session, []}}
+      )
+
+    assert held.operation == nil
+    assert held.delivery == ref
+    assert held.poll_due > Lifecycle.now()
+    assert {:ok, ready} = HTTP3SessionClient.acknowledge(held, ref)
+    assert_receive {:h3_tick, ready_id}, 1_000
+    assert ready_id == actual.id
+    {:none, following} = HTTP3SessionClient.event(ready, {:h3_tick, actual.id})
+    assert_receive {:h3_command, _, _, _, _, _, :poll, [^session, 16, unpaused], _}, 1_000
+    assert unpaused[:paused] == MapSet.new()
+    Process.cancel_timer(following.tick)
+
+    assert {:ok, acknowledged} = HTTP3SessionClient.acknowledge(controlled, ref)
+    assert_receive {:h3_tick, id}, 1_000
+    assert id == actual.id
+    operation = actual.operation
+    identity = make_ref()
+
+    {:none, pending} =
+      HTTP3SessionClient.event(
+        acknowledged,
+        {:h3_result, actual.id, actual.generation, self(), operation.ref,
+         {:unknown, session, identity}}
+      )
+
+    assert pending.pending.action == {:poll, ref}
+    assert pending.pending.identity == identity
+
+    resume = pending.pending
+    Process.cancel_timer(pending.tick)
+    controlled = %{pending | tick: nil, pending: %{resume | due: Lifecycle.now()}}
+    {:none, resumed} = HTTP3SessionClient.event(controlled, {:h3_tick, actual.id})
+
+    assert_receive {:h3_command, _, _, _, command_ref, _, :resume, [^session], _},
+                   1_000
+
+    assert resumed.operation.ref == command_ref
+    assert resumed.operation.action == {:poll, ref}
+    assert resumed.operation.public_identity == identity
+    Process.cancel_timer(resumed.tick)
+    resumed = %{resumed | tick: nil, poll_due: Lifecycle.deadline(60_000)}
+
+    {:none, released} =
+      HTTP3SessionClient.event(
+        resumed,
+        {:h3_result, actual.id, actual.generation, self(), command_ref, {:ok, session, []}}
+      )
+
+    assert_receive {:h3_command, _, _, _, poll_ref, _, :poll, [^session, 16, opts], _}, 1_000
+    assert opts[:paused] == MapSet.new()
+    assert released.operation.action == {:poll, nil}
+    Process.cancel_timer(released.tick)
+    released = %{released | tick: nil}
+
+    {:none, idle} =
+      HTTP3SessionClient.event(
+        released,
+        {:h3_result, actual.id, actual.generation, self(), poll_ref,
+         {:ok, session, [{:writable, request_ref}]}}
+      )
+
+    assert idle.operation == nil
+    assert idle.poll_due > Lifecycle.now()
+    refute_received {:h3_command, _, _, _, _, _, :poll, _, _}
+    Process.cancel_timer(idle.tick)
+    cleanup(guardian, monitor, endpoint)
+  end
+
   test "an expired request fails before allocating bootstrap work", %{ca: ca} do
     assert Code.ensure_loaded?(HTTP3SessionClient)
     options = options(ca)
@@ -533,6 +716,87 @@ defmodule Gaoxy.Proxy.HTTP3SessionClientTest do
     assert_receive {:acknowledged, ^guardian}, 1_000
     assert {:trailers, ^trailers} = await_event(caller, guardian)
     assert :end = await_event(caller, guardian)
+    cleanup(guardian, monitor, endpoint)
+  end
+
+  test "retained DATA combines within 16 KiB and preserves its exact tail and final ACK", %{
+    ca: ca
+  } do
+    {guardian, monitor, caller, endpoint, session, request_ref, _upload} = streaming(ca)
+    assert [^session, 16, _] = await_operation(caller, :poll)
+    parts = Enum.map(0..11, &:binary.copy(<<&1>>, 1_536))
+    body = IO.iodata_to_binary(parts)
+    <<expected_first::binary-size(16_384), expected_tail::binary>> = body
+    trailers = [{"x-check", "one"}, {"x-check", "two"}]
+
+    send(
+      caller,
+      {:public_return,
+       {:ok, session,
+        [{:headers, request_ref, [{":status", "200"}]}] ++
+          Enum.map(parts, &{:data, request_ref, &1}) ++
+          [{:trailers, request_ref, trailers}, {:done, request_ref}]}}
+    )
+
+    assert_receive {:adapter_event, ^guardian, {:headers, 200, []}}, 1_000
+    assert_receive {:adapter_event, ^guardian, {:chunk, first, first_ack}}, 1_000
+    assert first == expected_first
+    assert byte_size(first) == 16_384
+    held = snapshot(guardian)
+    assert held.delivery == first_ack
+    assert held.event_bytes == 2_078
+
+    assert held.events == [
+             {:data, :binary.copy(<<10>>, 512)},
+             {:data, List.last(parts)},
+             {:trailers, trailers},
+             :end
+           ]
+
+    assert [_, 16, paused_opts] = await_operation(caller, :poll)
+    assert paused_opts[:paused] == MapSet.new([request_ref])
+    assert paused_opts[:max_read_batches] == 1
+    send(guardian, {:ack, make_ref()})
+    assert_receive {:acknowledged, ^guardian}, 1_000
+    refute_receive {:adapter_event, ^guardian, {:chunk, _, _}}, 0
+    send(guardian, {:ack, first_ack})
+    assert_receive {:acknowledged, ^guardian}, 1_000
+    send(caller, {:public_return, {:ok, session, []}})
+    assert_receive {:adapter_event, ^guardian, {:chunk, tail, last_ack}}, 1_000
+    assert tail == expected_tail
+    assert first <> tail == body
+    assert snapshot(guardian).event_bytes == 30
+    send(guardian, {:ack, first_ack})
+    assert_receive {:acknowledged, ^guardian}, 1_000
+    refute_receive {:adapter_event, ^guardian, {:trailers, _}}, 0
+    refute_receive {:adapter_event, ^guardian, :end}, 0
+    send(guardian, {:ack, last_ack})
+    assert_receive {:acknowledged, ^guardian}, 1_000
+    assert {:trailers, ^trailers} = await_event(caller, guardian)
+    assert :end = await_event(caller, guardian)
+    assert snapshot(guardian).event_bytes == 0
+    cleanup(guardian, monitor, endpoint)
+  end
+
+  test "a partial retained DATA batch is delivered immediately through empty events", %{ca: ca} do
+    {guardian, monitor, caller, endpoint, session, request_ref, _upload} = streaming(ca)
+    assert [^session, 16, _] = await_operation(caller, :poll)
+
+    send(
+      caller,
+      {:public_return,
+       {:ok, session,
+        [{:headers, request_ref, [{":status", "200"}]}] ++
+          Enum.map([<<>>, "abc", <<>>, "def", <<>>], &{:data, request_ref, &1})}}
+    )
+
+    assert_receive {:adapter_event, ^guardian, {:headers, 200, []}}, 1_000
+    assert_receive {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}, 1_000
+    held = snapshot(guardian)
+    assert held.delivery == ack
+    assert held.events == []
+    assert held.event_bytes == 0
+    refute_receive {:adapter_event, ^guardian, :end}, 0
     cleanup(guardian, monitor, endpoint)
   end
 
@@ -1167,6 +1431,105 @@ defmodule Gaoxy.Proxy.HTTP3SessionClientTest do
       assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}, 1_000
       if stage == :released, do: assert(receipt.cleanup_session_result == {:ok, session})
       if stage == :blocked, do: assert(receipt.cleanup_session_result == nil)
+    end
+  end
+
+  test "cleanup waits for the correlated poll then aborts its advanced Session without replay", %{
+    ca: ca
+  } do
+    observer = self()
+
+    for outcome <- [:ok, :unknown] do
+      base = driver(observer, :deferred)
+
+      controlled = fn
+        QuicHttp3.Session, :abort, [session] ->
+          send(observer, {:abort_entered, self(), session})
+          public_reply()
+
+        module, operation, arguments ->
+          base.(module, operation, arguments)
+      end
+
+      {guardian, monitor, caller, endpoint, session, request_ref, _upload} =
+        finished_streaming(ca, controlled)
+
+      assert [^session, 16, _] = await_operation(caller, :poll)
+      before_cleanup = snapshot(guardian)
+      supplied = Lifecycle.deadline(500)
+      send(guardian, {:begin_cleanup, true, supplied})
+      assert_receive {:cleanup_started, ^guardian}, 1_000
+      waiting = snapshot(guardian)
+      assert waiting.operation.ref == before_cleanup.operation.ref
+      assert waiting.stop_task == nil
+      assert waiting.cleanup_deadline == min(supplied, waiting.deadline + 1_000)
+      assert waiting.cleanup_stop_due <= Lifecycle.now() + 100
+      refute_receive {:endpoint_stop, _, _}, 0
+
+      send(
+        guardian,
+        {:h3_result, waiting.id, make_ref(), caller, waiting.operation.ref, {:ok, session, []}}
+      )
+
+      assert snapshot(guardian).operation.ref == waiting.operation.ref
+      refute_receive {:abort_entered, _, _}, 0
+      advanced = %{session | test_session: make_ref()}
+      identity = make_ref()
+
+      result =
+        if outcome == :ok,
+          do: {:ok, advanced, [{:data, request_ref, "late"}, {:done, request_ref}]},
+          else: {:unknown, advanced, identity}
+
+      send(caller, {:public_return, result})
+      assert_receive {:abort_entered, ^caller, ^advanced}, 1_000
+      aborting = snapshot(guardian)
+      assert aborting.operation.kind == :abort
+      assert aborting.cleanup_stop_due == waiting.cleanup_stop_due
+      assert aborting.cleanup_deadline == waiting.cleanup_deadline
+      if outcome == :unknown, do: assert(aborting.abandoned_operation_identity == identity)
+      refute_receive {:adapter_event, ^guardian, {:chunk, _, _}}, 0
+      refute_receive {:adapter_event, ^guardian, :end}, 0
+      refute_receive {:public_operation, _, :resume, _}, 0
+      refute_receive {:public_operation, _, :poll, _}, 0
+      send(caller, {:public_return, {:ok, advanced}})
+      assert_receive {:endpoint_stop, stopper, ^endpoint}, 1_000
+      assert snapshot(guardian).stop_trigger == :public_result
+      send(stopper, {:public_return, :ok})
+      assert_receive {:cleanup_complete, ^guardian}, 1_000
+      assert_receive {:cleanup_receipt, ^guardian, receipt}, 1_000
+      assert_cleanup_receipt(receipt)
+      assert receipt.cleanup_session_result == {:ok, advanced}
+      assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}, 1_000
+    end
+  end
+
+  test "a held cleanup poll retains the original fallback bound and caller-loss stop", %{ca: ca} do
+    for stage <- [:held, :caller_loss] do
+      {guardian, monitor, caller, endpoint, session, _request_ref, _upload} =
+        finished_streaming(ca, driver(self(), :deferred))
+
+      assert [^session, 16, _] = await_operation(caller, :poll)
+      send(guardian, {:begin_cleanup, true, Lifecycle.deadline(500)})
+      assert_receive {:cleanup_started, ^guardian}, 1_000
+      waiting = snapshot(guardian)
+      assert waiting.stop_task == nil
+      assert waiting.cleanup_stop_due <= Lifecycle.now() + 100
+      if stage == :caller_loss, do: Process.exit(caller, :kill)
+      assert_receive {:endpoint_stop, stopper, ^endpoint}, 250
+      stopped = snapshot(guardian)
+      assert stopped.stop_trigger == if(stage == :held, do: :fallback, else: :caller_down)
+      assert stopped.cleanup_deadline == waiting.cleanup_deadline
+      send(caller, {:public_return, {:ok, session, []}})
+      _ = snapshot(guardian)
+      refute_receive {:public_operation, _, :abort, _}, 0
+      refute_receive {:public_operation, _, :poll, _}, 0
+      refute_receive {:cleanup_complete, ^guardian}, 0
+      send(stopper, {:public_return, :ok})
+      assert_receive {:cleanup_complete, ^guardian}, 1_000
+      assert_receive {:cleanup_receipt, ^guardian, receipt}, 1_000
+      assert_cleanup_receipt(receipt)
+      assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}, 1_000
     end
   end
 

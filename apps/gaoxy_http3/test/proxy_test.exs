@@ -34,7 +34,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProxyTest do
       {if(done, do: :ok, else: :more), bytes, %{exchange | body: body, transport_state: state}}
     end
 
-    def poll_connection(%{transport_state: %{hold_ready: true}} = exchange, wait) do
+    def poll_connection(%{transport_state: %{hold_ready: true}} = exchange, _wait) do
       receive do
         {:gaoxy_proxy_http, session, {:ready, _, _, _} = ready} ->
           send(exchange.transport_state.observer, {:ready_held, self()})
@@ -50,7 +50,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProxyTest do
           {:pending,
            %{exchange | transport_state: %{exchange.transport_state | hold_ready: false}}}
       after
-        wait -> {:pending, exchange}
+        Gaoxy.Lifecycle.remaining(exchange.deadline) -> raise "missing held ready barrier"
       end
     end
 
@@ -88,7 +88,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProxyTest do
             {:pending,
              %{exchange | transport_state: %{exchange.transport_state | reorder: false}}}
         after
-          wait -> {:pending, exchange}
+          Gaoxy.Lifecycle.remaining(exchange.deadline) -> raise "missing reordered ready barrier"
         end
       else
         receive do

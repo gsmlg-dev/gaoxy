@@ -76,6 +76,27 @@ defmodule Gaoxy.HTTP2NetworkTest do
                {:ok, exchange} <- Response.finish(exchange, [{"x-check", "value"}]),
                do: {:ok, exchange}
 
+        "/returned-error" ->
+          {:ok, committed} = Response.send_chunked(exchange, 200, [])
+          {:ok, committed} = Response.chunk(committed, "progress-prefix")
+          send(options[:owner], {:returned_error_ready, self()})
+
+          receive do
+            :return_error ->
+              send(options[:owner], {:returned_error_released, self()})
+              {:error, :intentional_endpoint_error, committed}
+          after
+            1_000 -> {:error, :release_timeout, committed}
+          end
+
+        "/prehead-error" ->
+          {:error, :intentional_endpoint_error, exchange}
+
+        path when path in ["/completed-502", "/completed-504"] ->
+          status = if path == "/completed-502", do: 502, else: 504
+          {:ok, sent} = Response.send_resp(exchange, status, [], "completed-#{status}")
+          {:error, :intentional_endpoint_error, sent}
+
         _ ->
           Response.send_resp(exchange, 200, [], exchange.request.path)
       end
@@ -153,6 +174,51 @@ defmodule Gaoxy.HTTP2NetworkTest do
     assert result.body == "onetwo"
     assert {"x-check", "value"} in result.headers
     refute {"transfer-encoding", "chunked"} in result.headers
+  end
+
+  test "a returned endpoint error resets its committed response without success END_STREAM" do
+    {socket, server} = connect(owner: self())
+    send_headers(socket, 1, "/returned-error", true)
+    assert_receive {:returned_error_ready, worker}, 1_000
+    monitor = Process.monitor(worker)
+    assert_status(socket, 1, "200")
+    assert {0, 0, 1, "progress-prefix"} = recv_frame(socket)
+
+    send(worker, :return_error)
+    assert_receive {:returned_error_released, ^worker}, 1_000
+    assert_reset(socket, 1, 0x8)
+    assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 1_000
+    send_headers(socket, 3, "/sibling-after-error", true)
+    sibling = responses(socket, [3], %{}, [1])[3]
+    assert sibling.body == "/sibling-after-error"
+    assert Enum.filter(sibling.headers, &(elem(&1, 0) == ":status")) == [{":status", "200"}]
+    await_stream_completion(server, Gaoxy.Lifecycle.deadline(1_000))
+  end
+
+  test "a returned endpoint error before headers produces a complete 500 and keeps its sibling live" do
+    {socket, _} = connect()
+    send_headers(socket, 1, "/prehead-error", true)
+    result = responses(socket, [1], %{}, [1])[1]
+    assert result.body == ""
+    assert Enum.filter(result.headers, &(elem(&1, 0) == ":status")) == [{":status", "500"}]
+    send_headers(socket, 3, "/sibling-after-prehead-error", true)
+    assert responses(socket, [3], %{}, [1])[3].body == "/sibling-after-prehead-error"
+  end
+
+  test "a returned endpoint error preserves already completed 502 and 504 responses" do
+    {socket, _} = connect()
+
+    for {status, id} <- [{502, 1}, {504, 5}] do
+      send_headers(socket, id, "/completed-#{status}", true)
+      result = responses(socket, [id], %{}, [id])[id]
+      assert result.body == "completed-#{status}"
+
+      assert Enum.filter(result.headers, &(elem(&1, 0) == ":status")) ==
+               [{":status", Integer.to_string(status)}]
+
+      send_headers(socket, id + 2, "/sibling-after-#{status}", true)
+      assert responses(socket, [id + 2], %{}, [id])[id + 2].body == "/sibling-after-#{status}"
+    end
   end
 
   test "continuation exclusivity is a connection error" do
@@ -517,12 +583,17 @@ defmodule Gaoxy.HTTP2NetworkTest do
     {type, flags, id, payload}
   end
 
-  defp responses(socket, pending, result \\ %{}) do
+  defp responses(socket, pending, result \\ %{}, forbidden_resets \\ []) do
     if pending == [] do
       result
     else
       {type, flags, id, payload} = recv_frame(socket)
       current = Map.get(result, id, %{body: "", headers: []})
+      done = type in [0, 1] and Bitwise.band(flags, 1) == 1
+
+      if done and id in forbidden_resets and id not in pending do
+        flunk("unexpected successful END_STREAM on a settled response: #{inspect(id)}")
+      end
 
       current =
         case type do
@@ -537,16 +608,21 @@ defmodule Gaoxy.HTTP2NetworkTest do
             :ok = :gen_tcp.send(socket, frame(4, 1, 0, ""))
             current
 
+          3 ->
+            refute id in forbidden_resets,
+                   "completed response was reset: #{inspect({id, payload})}"
+
+            current
+
           _ ->
             current
         end
 
-      done = type in [0, 1] and Bitwise.band(flags, 1) == 1
-
       responses(
         socket,
         if(done, do: List.delete(pending, id), else: pending),
-        Map.put(result, id, current)
+        Map.put(result, id, current),
+        forbidden_resets
       )
     end
   end

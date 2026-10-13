@@ -66,12 +66,24 @@ defmodule Gaoxy.HTTP.HTTP3.Stream do
       end
 
     completed =
-      if final.response == :unset,
-        do: Response.send_resp(final, 500, [], ""),
-        else: Response.finish(final)
+      case {result, final.response} do
+        {{:error, _, _}, :chunked} ->
+          {:error, :endpoint_failed}
+
+        {{:error, _, _}, {:fixed_stream, remaining}}
+        when is_integer(remaining) and remaining >= 0 ->
+          {:error, :endpoint_failed}
+
+        {_, :unset} ->
+          Response.send_resp(final, 500, [], "")
+
+        _ ->
+          Response.finish(final)
+      end
 
     case completed do
       {:ok, _} -> :ok
+      {:error, :endpoint_failed} -> {:error, :endpoint_failed}
       _ -> {:error, :response_failed}
     end
   end

@@ -109,6 +109,112 @@ defmodule Gaoxy.Proxy.HTTPRuntimeTest do
     assert_ready(server)
   end
 
+  @tag :tmp_dir
+  test "TLS abort after an observed streaming prefix promptly cancels the idle upstream", %{
+    tmp_dir: directory
+  } do
+    script = Path.expand("../../../scripts/generate-fixtures.sh", __DIR__)
+    assert {_, 0} = System.cmd("bash", [script, directory], stderr_to_stdout: true)
+
+    {url, peer} =
+      peer(fn socket, _owner, _index ->
+        recv_head(socket)
+
+        :ok =
+          :gen_tcp.send(
+            socket,
+            "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\n\r\n9\r\nprogress-\r\n"
+          )
+
+        :gen_tcp.recv(socket, 0, @timeout)
+      end)
+
+    {:ok, server} =
+      Gaoxy.HTTP.start_link(
+        endpoint: {ObservedEndpoint, {%{upstream: url, max_lifetime: 5_000}, self()}},
+        transport: :tls,
+        tls: %{
+          certfile: Path.join(directory, "cert.pem"),
+          keyfile: Path.join(directory, "key.pem")
+        },
+        http_limits: %{request_timeout: 5_000},
+        limits: %{max_bytes: 16_777_216}
+      )
+
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {_, port}} = Gaoxy.info(server, :http).local
+
+    python = ~S"""
+    import asyncio
+    import ssl
+    import sys
+
+    async def main():
+        context = ssl.create_default_context(cafile=sys.argv[2])
+        context.set_alpn_protocols(["http/1.1"])
+        async with asyncio.timeout(3):
+            reader, writer = await asyncio.open_connection(
+                "127.0.0.1", int(sys.argv[1]), ssl=context, server_hostname="localhost")
+            assert writer.get_extra_info("ssl_object").selected_alpn_protocol() == "http/1.1"
+            writer.write(b"GET /events HTTP/1.1\r\nHost: localhost\r\n\r\n")
+            await writer.drain()
+            head = await reader.readuntil(b"\r\n\r\n")
+            assert head.startswith(b"HTTP/1.1 200 OK\r\n"), head
+            assert b"transfer-encoding: chunked\r\n" in head.lower(), head
+            assert await reader.readuntil(b"\r\n") == b"9\r\n"
+            assert await reader.readexactly(9) == b"progress-"
+            assert await reader.readexactly(2) == b"\r\n"
+            print("TLS_PREFIX_OBSERVED", flush=True)
+            assert sys.stdin.readline() == "abort\n", "missing TLS abort release"
+            writer.transport.abort()
+            print("TLS_TRANSPORT_ABORTED", flush=True)
+            await writer.wait_closed()
+
+    asyncio.run(main())
+    """
+
+    executable = System.get_env("GAOXY_QUIC_PYTHON") || System.find_executable("python3")
+
+    client =
+      Port.open({:spawn_executable, executable}, [
+        :binary,
+        :exit_status,
+        :stderr_to_stdout,
+        args: ["-u", "-c", python, Integer.to_string(port), Path.join(directory, "ca.pem")]
+      ])
+
+    await_marker = fn recur, output, marker, deadline ->
+      if String.contains?(output, marker) do
+        output
+      else
+        receive do
+          {^client, {:data, bytes}} -> recur.(recur, output <> bytes, marker, deadline)
+          {^client, {:exit_status, status}} -> flunk("TLS peer exit #{status}: #{output}")
+        after
+          Gaoxy.Lifecycle.remaining(deadline) -> flunk("missing #{marker}: #{output}")
+        end
+      end
+    end
+
+    output =
+      await_marker.(await_marker, "", "TLS_PREFIX_OBSERVED\n", Gaoxy.Lifecycle.deadline(@timeout))
+
+    assert_receive {:native_owner, native}, @timeout
+    guardian = guardian(native)
+    monitor = Process.monitor(guardian)
+    assert %{active: 1, cleanup_pending: 1} = Gaoxy.status(server, :http)
+    deadline = Gaoxy.Lifecycle.deadline(1_000)
+    assert Port.command(client, "abort\n")
+    await_marker.(await_marker, output, "TLS_TRANSPORT_ABORTED\n", deadline)
+    assert_receive {^client, {:exit_status, 0}}, Gaoxy.Lifecycle.remaining(deadline)
+    assert_receive {:peer_done, ^peer, [{:error, :closed}]}, Gaoxy.Lifecycle.remaining(deadline)
+
+    assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal},
+                   Gaoxy.Lifecycle.remaining(deadline)
+
+    assert_ready(server, deadline)
+  end
+
   test "owner kill before headers leaves independently owned upstream cleanup" do
     {url, peer} =
       peer(fn socket, owner, _index ->

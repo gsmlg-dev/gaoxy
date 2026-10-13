@@ -145,7 +145,7 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
         {:error, :timeout, exchange}
 
       wait == 0 ->
-        {:pending, exchange}
+        poll_now(exchange)
 
       true ->
         deadline = min(exchange.deadline, Lifecycle.deadline(wait))
@@ -154,6 +154,20 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
           result when result in [:ok, :pending] -> {:pending, exchange}
           {:error, reason} -> {:error, reason, exchange}
         end
+    end
+  end
+
+  defp poll_now(exchange) do
+    {owner, table, key, token} = exchange.transport_state
+
+    with true <- Process.alive?(owner) and :ets.info(table, :owner) == owner,
+         {:ok, %{worker: worker, status: :idle, deadline: deadline}} when worker == self() <-
+           Operations.status(table, key, token) do
+      if Lifecycle.remaining(deadline) == 0,
+        do: {:error, :timeout, exchange},
+        else: {:pending, exchange}
+    else
+      _ -> {:error, :closed, exchange}
     end
   end
 

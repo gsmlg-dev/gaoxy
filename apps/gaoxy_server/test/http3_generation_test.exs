@@ -2,7 +2,7 @@ defmodule Gaoxy.Server.HTTP3GenerationTest do
   use ExUnit.Case, async: false
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, Generation, Request, Router}
-  alias Gaoxy.Server.Config
+  alias Gaoxy.Server.{Config, RouteConfig}
   @moduletag :tmp_dir
   @timeout 3_000
 
@@ -197,6 +197,112 @@ defmodule Gaoxy.Server.HTTP3GenerationTest do
     assert :ok =
              wait_until(fn -> if GenServer.call(provider, :count) == 0, do: :ok, else: false end)
   end
+
+  test "data-only routes default to H1 and accept its explicit enum" do
+    target = %{"type" => "reverse_proxy", "upstream" => "http://localhost:1234"}
+
+    assert {:ok, [%{target: {Gaoxy.Proxy.HTTP, default}}]} =
+             RouteConfig.decode(proxy_routes(target))
+
+    assert {:ok, [%{target: {Gaoxy.Proxy.HTTP, explicit}}]} =
+             RouteConfig.decode(proxy_routes(Map.put(target, "upstream_protocol", "http1")))
+
+    assert default == explicit
+    assert default.upstream_protocol == :http1
+    assert default.client == Gaoxy.Proxy.HTTPFetchClient
+  end
+
+  test "data-only H3 route selects the fixed Session client and preserves compiled options", %{
+    directory: directory
+  } do
+    assert {:ok, [%{target: {Gaoxy.Proxy.HTTP, config}}]} =
+             RouteConfig.decode(proxy_routes(h3_target(directory)))
+
+    assert config.upstream_protocol == :http3
+    assert config.client == Gaoxy.Proxy.HTTP3SessionClient
+    assert config.cacertfile == Path.join(directory, "ca.pem")
+    assert config.limits.max_chunk_bytes == 16_384
+    assert {:ok, ^config} = Gaoxy.Proxy.HTTP.init(config)
+  end
+
+  test "data-only upstream protocol rejects all values outside the two fixed strings", %{
+    directory: directory
+  } do
+    for value <- [nil, "http2", "HTTP3", "Elixir.Gaoxy.Proxy.HTTP3SessionClient", :http3, %{}] do
+      target = Map.put(h3_target(directory), "upstream_protocol", value)
+
+      assert {:error, :invalid_upstream_protocol} = RouteConfig.decode(proxy_routes(target))
+    end
+  end
+
+  test "data-only H3 routes require HTTPS and a regular explicit trust file", %{
+    directory: directory
+  } do
+    target = h3_target(directory)
+
+    for invalid <- [
+          Map.put(target, "upstream", "http://localhost:443"),
+          Map.delete(target, "cacertfile"),
+          Map.put(target, "cacertfile", directory),
+          Map.put(target, "cacertfile", Path.join(directory, "missing.pem"))
+        ] do
+      assert {:error, :invalid_http_proxy_options} = RouteConfig.decode(proxy_routes(invalid))
+    end
+  end
+
+  test "data-only H3 routes reject injected clients and dial or TLS overrides", %{
+    directory: directory
+  } do
+    for {key, value} <- [
+          {"client", "Elixir.Gaoxy.Proxy.HTTPFetchClient"},
+          {"connect_address", "127.0.0.1"},
+          {"tls", %{"verify" => "verify_none"}}
+        ] do
+      target = Map.put(h3_target(directory), key, value)
+      assert {:error, :invalid_route_configuration} = RouteConfig.decode(proxy_routes(target))
+    end
+  end
+
+  test "invalid H3 origin reload preserves the listener and complete current generation", %{
+    directory: directory
+  } do
+    {_, store, _} = runtime(directory)
+    listener = Gaoxy.info(Gaoxy.Server.Runtime, "h3").local
+    assert {:ok, initial, original} = Generation.snapshot(store)
+    path = Path.join(directory, "h3-origin-routes.json")
+
+    for {target, reason} <- [
+          {Map.put(h3_target(directory), "upstream_protocol", "http2"),
+           :invalid_upstream_protocol},
+          {Map.delete(h3_target(directory), "cacertfile"), :invalid_http_proxy_options}
+        ] do
+      File.write!(path, JSON.encode!(proxy_routes(target)))
+      assert {:error, ^reason} = Gaoxy.Server.reload_routes("h3", path, 1_000)
+      assert {:ok, ^initial, ^original} = Generation.snapshot(store)
+      assert Gaoxy.info(Gaoxy.Server.Runtime, "h3").local == listener
+    end
+
+    File.write!(path, JSON.encode!(proxy_routes(h3_target(directory))))
+    assert {:ok, current} = Gaoxy.Server.reload_routes("h3", path, 1_000)
+    assert current != initial
+
+    assert {:ok, ^current, %Router{routes: [%{target: {Gaoxy.Proxy.HTTP, config}}]}} =
+             Generation.snapshot(store)
+
+    assert config.upstream_protocol == :http3
+    assert config.client == Gaoxy.Proxy.HTTP3SessionClient
+    assert Gaoxy.info(Gaoxy.Server.Runtime, "h3").local == listener
+  end
+
+  defp h3_target(directory),
+    do: %{
+      "type" => "reverse_proxy",
+      "upstream" => "https://localhost:443",
+      "upstream_protocol" => "http3",
+      "cacertfile" => Path.join(directory, "ca.pem")
+    }
+
+  defp proxy_routes(target), do: %{"version" => 1, "routes" => [%{"target" => target}]}
 
   defp runtime(directory, http_limits \\ %{}) do
     data = %{

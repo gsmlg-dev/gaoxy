@@ -191,9 +191,19 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       Frame.flag?(flags, 1) and payload != "" ->
         failure(state, :frame_size_error)
 
+      Frame.flag?(flags, 1) and state.settings_ack ->
+        state
+
       Frame.flag?(flags, 1) ->
         Process.cancel_timer(state.start_timer)
-        %{state | settings_ack: true}
+        delta = state.h2.receive_window - 65_535
+
+        streams =
+          Map.new(state.streams, fn {id, stream} ->
+            {id, %{stream | recv_window: stream.recv_window + delta}}
+          end)
+
+        %{state | settings_ack: true, streams: streams}
 
       true ->
         case Settings.apply(state.settings, payload) do
@@ -357,7 +367,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           size
         )
 
-      size > state.streams[id].recv_window ->
+      size > 0 and size > state.streams[id].recv_window ->
         credit_connection(
           reset(%{state | recv_window: state.recv_window - size}, id, :flow_control_error),
           size
@@ -499,7 +509,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
                 eof: ended,
                 initial_eof: ended,
                 trailers: [],
-                recv_window: state.h2.receive_window,
+                recv_window: if(state.settings_ack, do: state.h2.receive_window, else: 65_535),
                 pending_credit: 0,
                 send_window: state.settings.initial_window,
                 read: nil,
@@ -916,7 +926,14 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
-  defp message(state, {:h2_stream_done, worker, id, token}) do
+  defp message(state, {:h2_stream_done, worker, id, token, {:error, :endpoint_failed}}) do
+    case state.streams[id] do
+      %{worker: ^worker, token: ^token} -> reset(state, id, :cancel)
+      _ -> state
+    end
+  end
+
+  defp message(state, {:h2_stream_done, worker, id, token, _outcome}) do
     case state.streams[id] do
       %{worker: ^worker, token: ^token, local_closed: true, eof: true} ->
         discard(state, id, false)

@@ -31,13 +31,30 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
               _ -> exchange
             end
 
-          if final.response == :unset do
-            _ = Response.send_resp(final, 500, [], "")
-          else
-            _ = Response.finish(final)
-          end
+          completed =
+            case {result, final.response} do
+              {{:error, _, _}, :chunked} ->
+                {:error, :endpoint_failed}
 
-          send(owner, {:h2_stream_done, self(), id, token})
+              {{:error, _, _}, {:fixed_stream, remaining}}
+              when is_integer(remaining) and remaining >= 0 ->
+                {:error, :endpoint_failed}
+
+              {_, :unset} ->
+                Response.send_resp(final, 500, [], "")
+
+              _ ->
+                Response.finish(final)
+            end
+
+          outcome =
+            case completed do
+              {:ok, _} -> :ok
+              {:error, :endpoint_failed} -> {:error, :endpoint_failed}
+              _ -> {:error, :response_failed}
+            end
+
+          send(owner, {:h2_stream_done, self(), id, token, outcome})
 
         {:DOWN, ^monitor, :process, ^owner, _} ->
           :ok

@@ -100,8 +100,9 @@ defmodule Gaoxy.Server.RouteConfig do
   end
 
   defp target(%{"type" => "reverse_proxy"} = data) do
-    with :ok <- keys(data, ["type", "upstream", "cacertfile"]),
-         options = %{upstream: data["upstream"]},
+    with :ok <- keys(data, ["type", "upstream", "cacertfile", "upstream_protocol"]),
+         {:ok, protocol} <- upstream_protocol(Map.get(data, "upstream_protocol", "http1")),
+         options = %{upstream: data["upstream"], upstream_protocol: protocol},
          options =
            if(Map.has_key?(data, "cacertfile"),
              do: Map.put(options, :cacertfile, data["cacertfile"]),
@@ -112,6 +113,10 @@ defmodule Gaoxy.Server.RouteConfig do
   end
 
   defp target(_), do: {:error, :unregistered_route_target}
+
+  defp upstream_protocol("http1"), do: {:ok, :http1}
+  defp upstream_protocol("http3"), do: {:ok, :http3}
+  defp upstream_protocol(_), do: {:error, :invalid_upstream_protocol}
 
   defp headers(headers) when is_list(headers) and length(headers) <= 100 do
     traverse(headers, fn

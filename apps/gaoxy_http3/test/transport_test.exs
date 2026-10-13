@@ -198,6 +198,34 @@ defmodule Gaoxy.HTTP.HTTP3.TransportTest do
     assert {:ok, _} = Response.send_resp(exchange, 200, [], "later")
   end
 
+  test "zero-wait polling rejects stale tokens, workers and table owners" do
+    {exchange, owner} = exchange()
+    {^owner, table, key, token} = exchange.transport_state
+
+    for state <- [
+          {owner, table, key, make_ref()},
+          {owner, table, make_ref(), token},
+          {self(), table, key, token}
+        ] do
+      stale = %{exchange | transport_state: state}
+      assert {:error, :closed, ^stale} = Exchange.poll_connection(stale, 0)
+    end
+
+    task = Task.async(fn -> Exchange.poll_connection(exchange, 0) end)
+    assert {:error, :closed, ^exchange} = Task.await(task, 1_000)
+    assert {:ok, %{status: :idle}} = Operations.status(table, key, token)
+    refute_received {:operation, ^owner, _, _}
+  end
+
+  test "zero-wait polling rejects finished slots without submitting an operation" do
+    {exchange, owner} = exchange()
+    {^owner, table, key, token} = exchange.transport_state
+    assert :ok = Operations.finish(table, key, token, :ok)
+    assert {:error, :closed, ^exchange} = Exchange.poll_connection(exchange, 0)
+    assert {:ok, %{status: {:finished, :ok}}} = Operations.status(table, key, token)
+    refute_received {:operation, ^owner, _, _}
+  end
+
   test "finite five millisecond polling confirms pending and keeps the original deadline" do
     {exchange, owner} = exchange([:pending, {:ok, "later", true, []}])
     assert {:pending, ^exchange} = Exchange.read_body_step(exchange, 5, 5)
@@ -243,5 +271,6 @@ defmodule Gaoxy.HTTP.HTTP3.TransportTest do
     assert_receive {:DOWN, ^monitor, :process, ^owner, :killed}
     assert {:error, :closed} = Response.send_resp(exchange, 200, [], "late")
     assert {:error, :closed, ^exchange} = Exchange.read_body_step(exchange, 1, 100)
+    assert {:error, :closed, ^exchange} = Exchange.poll_connection(exchange, 0)
   end
 end

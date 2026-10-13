@@ -528,6 +528,9 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
               {:ok, cancel(state, key, 0x107)}
             end
 
+          {:ok, %{status: {:finished, {:error, :endpoint_failed}}}} ->
+            {:ok, cancel(state, key, 0x10C)}
+
           {:ok, %{status: {:finished, _}}} ->
             if entry.send_done,
               do: {:ok, update_entry(state, key, &%{&1 | worker_finished: true})},

@@ -895,6 +895,7 @@ defmodule Gaoxy.Service do
         ip: spec.ip,
         port: spec.port,
         alpn: spec.quic.alpn,
+        poll_interval: spec.quic.poll_interval,
         tls: tls,
         max_connections: spec.limits.max_active,
         init_timeout: spec.limits.callback_timeout,

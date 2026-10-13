@@ -2,7 +2,7 @@ defmodule Gaoxy.Proxy.HTTP3GuardianTest do
   use ExUnit.Case, async: true
   alias Gaoxy.{Admission, Lifecycle, Service}
   alias Gaoxy.HTTP.{Exchange, Response}
-  alias Gaoxy.Proxy.{HTTP, HTTP3SessionClient}
+  alias Gaoxy.Proxy.{HTTP, HTTP3SessionClient, HTTPFetchClient}
   alias Gaoxy.Proxy.HTTP.Session
 
   @moduletag :capture_log
@@ -280,6 +280,67 @@ defmodule Gaoxy.Proxy.HTTP3GuardianTest do
     assert_baseline(runtime, owner, native)
   end
 
+  for first <- [:owner, :timer] do
+    test "#{first} expiry first emits exactly one H3 total timeout without changing its deadline" do
+      deadline = Lifecycle.now() - 1
+      state = expiry_state(HTTP3SessionClient, deadline)
+      guardian = self()
+
+      first =
+        case unquote(first) do
+          :owner -> Session.handle_cast(:expire, state)
+          :timer -> Session.handle_info(:total_expired, state)
+        end
+
+      assert {:stop, :normal, settled} = first
+      assert settled == %{state | cancelled: true, consumed: true}
+      assert settled.deadline == deadline
+      assert_received {:gaoxy_proxy_http, ^guardian, {:error, :request_timeout}}
+      refute_received {:gaoxy_proxy_http, ^guardian, _}
+
+      assert {:stop, :normal, ^settled} = Session.handle_cast(:expire, settled)
+      assert {:stop, :normal, ^settled} = Session.handle_info(:total_expired, settled)
+      assert {:stop, :normal, ^settled} = Session.handle_cast(:expire, settled)
+      refute_received {:gaoxy_proxy_http, ^guardian, _}
+    end
+  end
+
+  test "owner expiry preserves H1 timeout and an earlier H3 owner timeout category" do
+    guardian = self()
+
+    for {client, deadline} <- [
+          {HTTPFetchClient, Lifecycle.now() - 1},
+          {HTTP3SessionClient, Lifecycle.deadline(60_000)}
+        ] do
+      state = expiry_state(client, deadline)
+      assert {:stop, :normal, settled} = Session.handle_cast(:expire, state)
+      assert settled == %{state | cancelled: true, consumed: true}
+      assert settled.deadline == deadline
+      assert_received {:gaoxy_proxy_http, ^guardian, {:error, :timeout}}
+      refute_received {:gaoxy_proxy_http, ^guardian, _}
+      assert {:stop, :normal, ^settled} = Session.handle_info(:total_expired, settled)
+      refute_received {:gaoxy_proxy_http, ^guardian, _}
+    end
+  end
+
+  test "owner expiry and timer replay never notify cancelled or consumed requests" do
+    state = expiry_state(HTTP3SessionClient, Lifecycle.now() - 1)
+    guardian = self()
+    assert {:stop, :normal, cancelled} = Session.handle_cast(:cancel, state)
+    assert cancelled == %{state | cancelled: true, consumed: true}
+    assert {:stop, :normal, ^cancelled} = Session.handle_cast(:expire, cancelled)
+    assert {:stop, :normal, ^cancelled} = Session.handle_info(:total_expired, cancelled)
+    refute_received {:gaoxy_proxy_http, ^guardian, _}
+
+    assert {:noreply, consumed} = Session.handle_cast(:consumed, state)
+    assert consumed == %{state | consumed: true, outcome: :success}
+    assert {:noreply, ^consumed} = Session.handle_cast(:expire, consumed)
+    assert {:noreply, ^consumed} = Session.handle_info(:total_expired, consumed)
+    assert {:noreply, ^consumed} = Session.handle_info(:opening_expired, consumed)
+    assert consumed.deadline == state.deadline
+    refute_received {:gaoxy_proxy_http, ^guardian, _}
+  end
+
   test "actual guardian total timer survives headers and paused downstream delivery", context do
     {url, _origin} = origin(context)
 
@@ -450,6 +511,21 @@ defmodule Gaoxy.Proxy.HTTP3GuardianTest do
     send(owner, {:attach, guardian, reservation})
     assert_receive {:attached, {:ok, _}}, @timeout
     {runtime, owner, native, guardian, monitor, deadline, reservation}
+  end
+
+  defp expiry_state(client, deadline) do
+    %{
+      owner: self(),
+      client: client,
+      deadline: deadline,
+      token: nil,
+      request: nil,
+      headers: true,
+      delivery: make_ref(),
+      outcome: :cancelled,
+      cancelled: false,
+      consumed: false
+    }
   end
 
   defp receive_body(guardian, bytes) do

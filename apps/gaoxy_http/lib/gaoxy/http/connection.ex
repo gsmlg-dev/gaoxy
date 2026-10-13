@@ -75,8 +75,8 @@ defmodule Gaoxy.HTTP.Connection do
 
     with :ok <-
            ThousandIsland.Socket.setopts(socket,
-             recbuf: limits.max_read_chunk,
-             buffer: limits.max_read_chunk,
+             recbuf: limits.max_buffer_bytes,
+             buffer: limits.max_buffer_bytes,
              send_timeout: limits.write_timeout,
              send_timeout_close: true
            ),

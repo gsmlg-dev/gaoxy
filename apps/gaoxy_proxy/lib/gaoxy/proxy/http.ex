@@ -287,10 +287,12 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
-  defp pump(state) do
+  defp pump(state, wait \\ 0) do
     receive do
       {:gaoxy_proxy_http, session, event} when session == state.session ->
-        dispatch(event, state)
+        if total_expired?(state) and not match?({:error, _}, event),
+          do: timeout(state),
+          else: dispatch(event, state)
 
       {:DOWN, monitor, :process, _, reason} when monitor == state.monitor ->
         fail(state, {:guardian_down, reason})
@@ -300,20 +302,16 @@ defmodule Gaoxy.Proxy.HTTP do
         deadline = min(state.deadline, deadline)
         pump(%{state | deadline: deadline, exchange: %{state.exchange | deadline: deadline}})
     after
-      0 -> progress(state)
+      wait -> progress(state, wait > 0)
     end
   end
 
-  defp progress(state) do
-    remaining =
-      min(
-        Lifecycle.remaining(state.deadline),
-        max(0, state.config.limits.idle_timeout - (Lifecycle.now() - state.last_activity))
-      )
+  defp progress(state, idle_wait_expired) do
+    remaining = remaining(state)
 
     cond do
       remaining <= 0 ->
-        fail(state, :timeout)
+        timeout(state)
 
       state.ready and not state.upload_stopped and Exchange.body_complete?(state.exchange) ->
         finish_upload(state)
@@ -322,12 +320,29 @@ defmodule Gaoxy.Proxy.HTTP do
         read_upload(state, min(@poll_ms, remaining))
 
       true ->
-        case Exchange.poll_connection(state.exchange, min(@poll_ms, remaining)) do
-          {:pending, exchange} -> pump(%{state | exchange: exchange})
-          {:more, exchange} -> pump(%{state | exchange: exchange})
-          {:error, reason, exchange} -> fail(%{state | exchange: exchange}, reason)
+        # Passive TLS needs a waiting receive to settle an abrupt transport close.
+        # Give it a finite turn only after idle, keeping data deliveries on poll0.
+        poll_wait =
+          if idle_wait_expired and state.exchange.transport == nil and
+               Exchange.secure?(state.exchange),
+             do: min(1, remaining),
+             else: 0
+
+        case Exchange.poll_connection(state.exchange, poll_wait) do
+          {kind, exchange} when kind in [:pending, :more] ->
+            pump(%{state | exchange: exchange}, min(@poll_ms, remaining(state)))
+
+          {:error, reason, exchange} ->
+            local_fail(%{state | exchange: exchange}, reason)
         end
     end
+  end
+
+  defp remaining(state) do
+    min(
+      Lifecycle.remaining(state.deadline),
+      max(0, state.config.limits.idle_timeout - (Lifecycle.now() - state.last_activity))
+    )
   end
 
   defp read_upload(state, wait) do
@@ -336,7 +351,7 @@ defmodule Gaoxy.Proxy.HTTP do
         pump(%{state | exchange: exchange})
 
       {:error, reason, exchange} ->
-        fail(%{state | exchange: exchange}, reason)
+        local_fail(%{state | exchange: exchange}, reason)
 
       {kind, bytes, exchange} when kind in [:ok, :more] ->
         state = %{state | exchange: exchange, last_activity: Lifecycle.now()}
@@ -357,7 +372,7 @@ defmodule Gaoxy.Proxy.HTTP do
             pump(state)
 
           {:error, :timeout} ->
-            fail(state, :timeout)
+            timeout(state)
 
           {:error, _} ->
             # An early final response stops the source before its Promise resolves.
@@ -377,7 +392,7 @@ defmodule Gaoxy.Proxy.HTTP do
            ) do
       pump(%{state | upload_stopped: true})
     else
-      {:error, reason} -> fail(state, reason)
+      {:error, reason} -> local_fail(state, reason)
     end
   end
 
@@ -422,12 +437,16 @@ defmodule Gaoxy.Proxy.HTTP do
             })
 
           {:error, reason} ->
-            Session.cancel(state.session)
-            {:error, reason, %{exchange | close: true}}
+            if reason == :timeout and total_expired?(state) do
+              timeout(%{state | exchange: exchange})
+            else
+              Session.cancel(state.session)
+              {:error, reason, %{exchange | close: true}}
+            end
         end
 
       {:error, reason} ->
-        fail(state, reason)
+        local_fail(state, reason)
     end
   end
 
@@ -442,7 +461,7 @@ defmodule Gaoxy.Proxy.HTTP do
         pump(%{state | exchange: exchange, last_activity: Lifecycle.now()})
 
       {:error, reason} ->
-        fail(state, reason)
+        local_fail(state, reason)
     end
   end
 
@@ -452,7 +471,7 @@ defmodule Gaoxy.Proxy.HTTP do
       Session.consumed(state.session)
       await_cleanup(%{state | exchange: exchange})
     else
-      {:error, reason} -> fail(state, reason)
+      {:error, reason} -> local_fail(state, reason)
     end
   end
 
@@ -469,7 +488,38 @@ defmodule Gaoxy.Proxy.HTTP do
       {:gaoxy_proxy_http, session, {:error, reason}} when session == state.session ->
         fail(state, reason)
     after
-      Lifecycle.remaining(state.deadline) -> fail(state, :timeout)
+      Lifecycle.remaining(state.deadline) -> timeout(state)
+    end
+  end
+
+  defp total_expired?(state),
+    do: state.client == HTTP3SessionClient and Lifecycle.remaining(state.deadline) == 0
+
+  defp local_fail(state, :timeout), do: timeout(state)
+  defp local_fail(state, reason), do: fail(state, reason)
+
+  defp timeout(state) do
+    if total_expired?(state) do
+      Session.expire(state.session)
+
+      deadline =
+        min(
+          state.deadline + Lifecycle.cleanup_headroom(),
+          Lifecycle.now() + Lifecycle.cleanup_headroom()
+        )
+
+      receive do
+        {:gaoxy_proxy_http, session, {:error, reason}} when session == state.session ->
+          fail(state, reason)
+
+        {:DOWN, monitor, :process, session, reason}
+        when monitor == state.monitor and session == state.session ->
+          fail(state, {:guardian_down, reason})
+      after
+        Lifecycle.remaining(deadline) -> fail(state, :guardian_expiry_unconfirmed)
+      end
+    else
+      fail(state, :timeout)
     end
   end
 
@@ -477,7 +527,7 @@ defmodule Gaoxy.Proxy.HTTP do
     Session.cancel(state.session)
     Process.demonitor(state.monitor, [:flush])
 
-    if state.exchange.response == :unset do
+    if state.exchange.response == :unset and not total_expired?(state) do
       status =
         case reason do
           {:request_error, status, _} -> status

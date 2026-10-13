@@ -233,7 +233,17 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
   end
 
   @impl true
-  def acknowledge(%{delivery: ref} = handle, ref), do: {:ok, tick(%{handle | delivery: nil}, 0)}
+  def acknowledge(%{delivery: ref} = handle, ref) when is_reference(ref) do
+    handle = %{handle | delivery: nil, poll_due: Lifecycle.now()}
+
+    handle =
+      if handle.tick != nil and Process.cancel_timer(handle.tick) == false,
+        do: handle,
+        else: tick(%{handle | tick: nil}, 0)
+
+    {:ok, handle}
+  end
+
   def acknowledge(handle, _), do: {:ok, handle}
 
   @impl true
@@ -282,15 +292,7 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
 
     cond do
       handle.cleanup != :not_started ->
-        handle =
-          if operation.kind in [:abort, :close],
-            do: %{handle | cleanup_session_result: result},
-            else: handle
-
-        begin_stop(
-          handle,
-          if(operation.kind in [:abort, :close], do: :public_result, else: :immediate)
-        )
+        cleanup_operation_result(handle, operation, result)
 
       handle.terminal ->
         handle
@@ -573,7 +575,8 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
           16,
           [timeout: Lifecycle.remaining(deadline), max_read_batches: 1, paused: paused]
         ],
-        deadline
+        deadline,
+        {:poll, handle.delivery}
       )
     else
       handle
@@ -670,7 +673,8 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
   defp operation_result(handle, %{action: :request}, {:ok, _, ref}),
     do: %{handle | phase: :streaming, request_ref: ref}
 
-  defp operation_result(handle, %{action: :poll}, {:ok, _, events}) when is_list(events) do
+  defp operation_result(handle, %{action: {:poll, delivery}}, {:ok, _, events})
+       when is_list(events) do
     progress =
       Enum.any?(events, fn
         {kind, ref, _} when kind in [:headers, :data, :trailers] -> ref == handle.request_ref
@@ -678,7 +682,8 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
         _ -> false
       end)
 
-    due = if progress, do: Lifecycle.now(), else: Lifecycle.deadline(5)
+    released = is_reference(delivery) and handle.delivery != delivery
+    due = if progress or released, do: Lifecycle.now(), else: Lifecycle.deadline(5)
     queue_events(%{handle | poll_due: due}, events)
   end
 
@@ -830,14 +835,12 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
   defp delivery(%{terminal: true} = handle), do: {:none, handle}
   defp delivery(%{delivery: ref} = handle) when not is_nil(ref), do: {:none, handle}
 
-  defp delivery(%{events: [{:data, bytes} | rest]} = handle) do
-    size = min(byte_size(bytes), @chunk)
-    <<chunk::binary-size(size), tail::binary>> = bytes
-    events = if tail == <<>>, do: rest, else: [{:data, tail} | rest]
+  defp delivery(%{events: [{:data, _} | _]} = handle) do
+    {chunk, events} = retained_data(handle.events, @chunk, [])
     ref = make_ref()
 
     {{:chunk, chunk, ref},
-     %{handle | events: events, event_bytes: handle.event_bytes - size, delivery: ref}}
+     %{handle | events: events, event_bytes: handle.event_bytes - byte_size(chunk), delivery: ref}}
   end
 
   defp delivery(%{events: [event | rest]} = handle) do
@@ -918,19 +921,42 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
     }
 
     handle =
-      if handle.operation == nil and handle.caller != nil and handle.caller.down == nil and
+      if handle.caller != nil and handle.caller.down == nil and
            handle.session != nil and handle.endpoint_down == nil do
-        kind = if cancelled, do: :abort, else: :close
-        handle = command(handle, kind, [handle.session], deadline)
-        %{handle | cleanup_stop_due: min(deadline, Lifecycle.deadline(100))}
+        handle = %{handle | cleanup_stop_due: min(deadline, Lifecycle.deadline(100))}
+        if handle.operation == nil, do: cleanup_command(handle), else: handle
       else
         begin_stop(handle)
       end
 
-    {:ok, tick(handle)}
+    {:ok, tick(cancel_tick(handle))}
   end
 
   def begin_cleanup(handle, _, _), do: {:ok, handle}
+
+  defp cleanup_command(handle) do
+    kind = if handle.cleanup_cancelled, do: :abort, else: :close
+    command(handle, kind, [handle.session], handle.cleanup_deadline)
+  end
+
+  defp cleanup_operation_result(handle, %{kind: kind}, result) when kind in [:abort, :close],
+    do: begin_stop(%{handle | cleanup_session_result: result}, :public_result)
+
+  defp cleanup_operation_result(handle, _operation, result) do
+    handle =
+      case result do
+        {:unknown, _, identity} -> %{handle | abandoned_operation_identity: identity}
+        _ -> handle
+      end
+
+    if handle.stop_task == nil and handle.cleanup_stop_due != nil and
+         Lifecycle.remaining(handle.cleanup_stop_due) > 0 and handle.caller.down == nil and
+         handle.endpoint_down == nil and not handle.caller_stop_sent do
+      cleanup_command(handle)
+    else
+      begin_stop(handle, :fallback)
+    end
+  end
 
   @impl true
   def cleanup(%{cleanup: :not_started} = handle, cancelled) do
@@ -1058,6 +1084,18 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
 
   defp cleanup_reason(handle),
     do: handle.stop_result || handle.endpoint_down || :termination_unconfirmed
+
+  # Combine only bytes already retained; partial batches never wait for input.
+  defp retained_data([{:data, bytes} | rest], credit, chunks) when byte_size(bytes) <= credit,
+    do: retained_data(rest, credit - byte_size(bytes), [bytes | chunks])
+
+  defp retained_data([{:data, bytes} | rest], credit, chunks) do
+    <<chunk::binary-size(credit), tail::binary>> = bytes
+    {IO.iodata_to_binary(Enum.reverse([chunk | chunks])), [{:data, tail} | rest]}
+  end
+
+  defp retained_data(events, _credit, chunks),
+    do: {IO.iodata_to_binary(Enum.reverse(chunks)), events}
 
   defp tick(handle, delay \\ 5)
   defp tick(%{cleanup: cleanup} = handle, _) when cleanup in [:complete, :failed], do: handle

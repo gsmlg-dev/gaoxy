@@ -7,7 +7,7 @@ defmodule Gaoxy.Server.HTTP3ConfigTest do
     assert {:ok, [services: [spec]]} = Config.decode(config())
     assert spec.handler == Connection
     assert spec.transport == :quic
-    assert spec.quic == %{alpn: ["h3"]}
+    assert spec.quic == %{alpn: ["h3"], poll_interval: 10}
     assert spec.handler_options.endpoint |> elem(0) == Gaoxy.HTTP.Router
     assert {:ok, %{services: [%{handler: Connection}]}} = Gaoxy.Config.validate(services: [spec])
     refute Process.whereis(Gaoxy.Server.RouteStores)
@@ -50,6 +50,7 @@ defmodule Gaoxy.Server.HTTP3ConfigTest do
         {"h2_limits", %{}},
         {"udp", %{}},
         {"quic", %{"alpn" => ["h3"]}},
+        {"quic", %{"alpn" => ["h3"], "poll_interval" => 1}},
         {"endpoint", "System.cmd"},
         {"plug", "System"},
         {"tls", %{"certfile" => "cert", "keyfile" => "key", "provider" => "ex_ssl"}},

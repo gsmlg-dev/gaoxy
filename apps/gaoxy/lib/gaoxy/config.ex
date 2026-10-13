@@ -67,7 +67,12 @@ defmodule Gaoxy.Config do
          :ok <- handler(spec),
          :ok <- requested(spec),
          {:ok, options} <- handler_options(spec) do
-      {:ok, %{spec | handler_options: options}}
+      quic =
+        if spec.transport == :quic,
+          do: Map.put_new(spec.quic, :poll_interval, 10),
+          else: spec.quic
+
+      {:ok, %{spec | handler_options: options, quic: quic}}
     end
   rescue
     BadMapError -> {:error, :invalid_options}
@@ -151,9 +156,13 @@ defmodule Gaoxy.Config do
 
   defp transport(%{transport: :quic} = spec) do
     with true <- Code.ensure_loaded?(Quic) || {:error, {:unsupported_capability, :quic}},
-         :ok <- known(spec.quic, [:alpn]),
+         :ok <- known(spec.quic, [:alpn, :poll_interval]),
          true <-
            (valid_alpn?(spec.quic[:alpn]) and spec.quic[:alpn] != []) || {:error, :invalid_alpn},
+         poll_interval = Map.get(spec.quic, :poll_interval, 10),
+         true <-
+           (is_integer(poll_interval) and poll_interval in 1..1_000) ||
+             {:error, :invalid_quic_poll_interval},
          :ok <- known(spec.tls, [:certfile, :keyfile]),
          true <-
            (is_binary(spec.tls[:certfile]) and is_binary(spec.tls[:keyfile])) ||
