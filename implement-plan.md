@@ -34,6 +34,17 @@ publish a new version and prepare the next planned stage. An incomplete/blocked
 gate is not completion. Deployment, production data/certificates, Vault, public
 management and disabled release-artifact E2E restrictions remain.
 
+**Completed M4 and publication, 2026-10-13:** All prescribed M4 gates and
+independent acceptance PASS. [v0.3.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.3.0) is published from
+immutable source `4931982cff7b07c8e9f42a5e4561d22854d418bd`; portable builder757/0, fresh offline core/H1/H2/H3
+runtime,21 ELF and all three fresh downloads PASS. [Release acceptance](docs/acceptance/release-0.3.0.md)
+records actual identities and unchanged historical failures. Hosted CI is
+BLOCKED_ENV with zero executed steps; deployment/production/E2E remain NOT RUN.
+The next prepared existing package is M3 Task4 H1 resource foundation:
+[design](docs/designs/m3-h1-resource-foundation.md) and
+[plan](docs/plans/m3-h1-resource-foundation.md); implementation NOT RUN.
+Task5 production pool activation remains separate; the roadmap still ends at M4.
+
 ## 1. Product and success criteria
 
 Gaoxy is an Elixir/OTP multi-protocol server runtime, native HTTP server, and programmable proxy gateway. It must support embedded use in an application's supervision tree and standalone use as a release, with the same service model and data paths.

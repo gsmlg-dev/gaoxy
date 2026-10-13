@@ -3,13 +3,77 @@
 Date: 2026-10-13 Asia/Shanghai. Status: **DESIGN ONLY; implementation and runtime
 acceptance NOT RUN**. This is the next bounded package of existing
 [M3 upstream-transport Task 4](../plans/m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional),
-after the current M4 verification completes. It is not a new milestone.
+after the M4 release closure. It is not a new milestone.
 
-Source checkpoint: `.trees/m4-http3`, branch `codex/m4-http3`, HEAD
+Historical planning checkpoint: `.trees/m4-http3`, branch `codex/m4-http3`, HEAD
 `d5831d7613e8c8edd2adf76fbd7b86b408e62de6`, with concurrent uncommitted M4 work.
 Recheck the execution checkout and installed cohort before implementation.
 Continuing authorization permits routine design, implementation and local
 review; the parent releases source freezes and assigns exclusive file ownership.
+
+## Release identity and execution handoff — 2026-10-13
+
+The published [v0.3.0 release](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.3.0)
+and qualified M4 artifact source is
+`4931982cff7b07c8e9f42a5e4561d22854d418bd`; annotated tag object
+`ba9ce0b8e124ac6b819488c8ebe074d53d5a581d` peels to that source. The
+[publication and fresh-download receipt](../acceptance/evidence/release-0.3.0/publication-1791863800600551728/publication-verification.json),
+SHA256 `2c04e39cd566469072006b4b13c5be2542e8305f791d5bae3e6cc4e000db5e89`,
+is **PASS_PUBLICATION_AND_FRESH_DOWNLOAD**: all three downloads match qualified
+bytes, archive inventory is safe with 1,420 entries, all five applications are
+0.3.0 and both checksum entries pass. Downloaded bytes were not rerun; their
+identity binds the completed local qualification. Publication independent review
+is [PASS with no findings](../acceptance/evidence/release-0.3.0/review-actual-publication-fresh-download-1791864019336220804.json),
+SHA256 `0984f58011c98e69232e3db0cc87d8f7a8572cea5fac6618b87a1bb8fe991357`.
+The GitHub API reports `immutable: false`; the fixed annotated tag/source and
+verified bytes do not imply a GitHub immutable-release setting. Final
+documentation main push remains pending at this handoff snapshot.
+Final main documentation is a separate descendant identity, not artifact/tag
+source. Deployment and production acceptance remain **NOT RUN**.
+
+The [final M4 implementation acceptance](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json)
+is **PASS_M4_IMPLEMENTATION_ACCEPTANCE**, with no findings. The source identity
+review below confirms that its accepted M4 inputs remain unchanged.
+
+The [final portable manifest](../acceptance/evidence/release-0.3.0/portable-final-1791863003049561405/manifest.json)
+records build 3, finalize and offline runtime 2 **PASS**: 757 compatibility tests,
+zero failures, three core transports, two gateway exchanges, three H3 checks
+and 21 ELF objects on Debian bookworm glibc x86_64 (`linux/amd64`); broader
+platforms remain unqualified. Owned child and normal container removal exited
+zero; final owned-container absence was confirmed. The [source identity review](../acceptance/evidence/release-0.3.0/review-final-portable-source-identity-1791862259192884557.json)
+binds the exact archive/recipe and unchanged accepted M4 inputs; its SHA256 is
+`a586b0083c1accacf94e5fb96a81ce524bfbe4f0fc2f89d474bb7a5c23f8a8f7`.
+The [artifact/runtime review](../acceptance/evidence/release-0.3.0/review-actual-portable-artifact-runtime-1791863376221811603.json)
+is **PASS_ARTIFACT_RUNTIME_AND_NOTES**, with no findings. These are M4 release
+checks, not managed-H1 resource-foundation execution. The manifest's preserved
+`PENDING_FINAL_REVIEW` snapshot precedes that separate completed review.
+
+The [exact-source hosted audit](../acceptance/evidence/release-0.3.0/hosted-status-4931982-1791862228293.json),
+SHA256 `0d5e60489e4957961f634c7a257b7e23d265a6ab04bf1491682957ba09de76d3`,
+records **BLOCKED_ENV**: three failure runs, ten billing no-start jobs and zero
+executed steps. Release-artifact E2E remains manual-only, disabled and **NOT RUN**.
+Earlier source/build/runtime failures and hosted receipts remain immutable.
+
+Carry unsuccessful UP2 counts **20 live / 8 production / 3 harness** and
+**two exhausted Astra recovery rounds**. This preparation adds zero rounds,
+does not reset history and does not authorize a third Astra recovery. Portable
+harness repairs remain separately recorded.
+
+The parent created `.trees/m3-h1-resource-foundation`, branch
+`codex/m3-h1-resource-foundation`, at released source
+`4931982cff7b07c8e9f42a5e4561d22854d418bd`. The [clean bootstrap receipt](../acceptance/evidence/release-0.3.0/next-task4-bootstrap-1791864162247441315.json),
+SHA256 `b541d7f1b1fe05cad357a06262ffb9fe91e24e80688342736b00be6e4606746a`,
+is **PASS_CLEAN_BOOTSTRAP_FROM_VERIFIED_RELEASE_SOURCE**, with no tracked changes
+or untracked files. The docs-only fast forward to final documentation main and
+execution kickoff remain pending. Before executable edits, a separate parent
+kickoff receipt records actual branch/HEAD/tree after that fast forward, a
+docs/evidence only diff from the released source, current diff/untracked inventory and exclusive
+implementation writers; no self-referential documentation commit SHA is assumed.
+The M4 executable freeze remains in force at this preparation snapshot.
+Only the parent releases it and assigns disjoint files; the parent serializes
+Mix/build/live commands. Preparation [review](../acceptance/evidence/release-0.3.0/next-m3-task4-preparation-review-1791857828008.json)
+passed for readiness only. Task 4 implementation, code review and runtime
+acceptance remain **NOT RUN**, and Step 0 remains unchecked.
 
 ## Decision and boundary
 
@@ -44,6 +108,13 @@ The installed pins are `http_fetch == 0.21.4` and `http_runtime 0.21.4` in
 `apps/gaoxy_proxy/mix.exs:16` and `mix.lock:10`. Both package `mix.exs` files
 identify `https://github.com/gsmlg-dev/http_fetch` as their source. These are
 source observations, not fresh managed-H1 runtime qualification.
+
+At the release-source handoff, the locked seven-package cohort is
+`elixir_quic`, `elixir_quic_http3`, `ex_ssl`, `http_core`, `http_fetch`,
+`http_runtime` and `http_web_socket`, all **0.21.4**. The root `mix.lock` SHA256 is
+`aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab`.
+The installed public facade hash below was rechecked unchanged. Recheck these
+identities in the actual Task 4 execution checkout before any implementation.
 
 | Source | Verified contract and implication |
 | --- | --- |

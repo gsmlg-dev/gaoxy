@@ -16,8 +16,12 @@ of development-host evidence.
 
 **Tech stack:** existing Elixir/OTP umbrella, locked HTTP/QUIC cohort, independent
 aioquic/H2 peers, Git and GitHub CLI, existing isolated portable build/runtime
-recipe. M4 implementation acceptance is complete; remaining artifact/publication steps
-are pending. This checklist links execution evidence without substituting for it.
+recipe. M4 implementation acceptance, portable qualification and publication PASS.
+Immutable tag/artifact source is `4931982cff7b07c8e9f42a5e4561d22854d418bd`; final main documentation follows
+separately. [Actual publication/download receipt](../acceptance/evidence/release-0.3.0/publication-1791863800600551728/publication-verification.json)
+binds all three assets to qualified bytes. Hosted CI remains BLOCKED_ENV with
+zero executed steps; deployment/E2E are NOT RUN. This checklist links execution
+evidence without substituting for it.
 
 ## 1. Establish release eligibility
 
@@ -54,23 +58,23 @@ are pending. This checklist links execution evidence without substituting for it
   existing finite shutdown/rebind assertions. These checks qualify the local
   candidate, not a portable downloadable artifact.
 - [x] Independently review candidate source, release notes, plan and local evidence.
-- [ ] Commit only task-owned paths with conventional messages.
+- [x] Commit only task-owned paths with conventional messages.
 
 ## 3. Qualify and publish exact bytes
 
 - [x] Fetch origin and inspect divergence. Confirm the completed release branch
   can be integrated without losing remote or user work. Preserve the root
   untracked `gaoxy-m1.1-fix-prompt.md` byte-for-byte; stage explicit paths only.
-- [ ] Fast-forward or integrate the reviewed release candidate into `main`,
+- [x] Fast-forward or integrate the reviewed release candidate into `main`,
   run affected verification if integration changes source, push `main`, and
   verify `git ls-remote origin refs/heads/main` equals the intended commit.
-- [ ] Use the separately qualified local portable build as the authoritative
+- [x] Use the separately qualified local portable build as the authoritative
   publication route. The current `release.yml` publishes automatically before
   packaged H3, fresh portable runtime, ELF and immutable metadata checks; do not
   dispatch that publisher for this release. Record hosted CI independently;
   preserve any no-start result as `BLOCKED_ENV` without changing account or
   repository settings. Local M4 evidence never qualifies hosted artifact bytes.
-- [ ] For the required local portable build, copy the final corrected
+- [x] For the required local portable build, copy the final corrected
   `docs/acceptance/evidence/release-0.2.0/portable/recipe/` into a new release
   evidence directory; preserve the old recipe. Bind the new build/runtime to
   the actual `0.3.0` source archive, replace old version/source constants, include
@@ -85,20 +89,24 @@ are pending. This checklist links execution evidence without substituting for it
   identities afterward, and repeat affected qualification if sources change.
   Carry historical recovery counters forward; old successful artifacts never
   qualify new bytes.
-- [ ] Bind the archive, `build-info.json` and `SHA256SUMS` to the exact source
+- [x] Bind the archive, `build-info.json` and `SHA256SUMS` to the exact source
   commit. Verify both archive and build-info checksums, all application versions
   and archive inventory. With qualified bytes, push the immutable `v0.3.0` tag
   and create the GitHub release using `gh release create --verify-tag` and
-  `--notes-file docs/releases/0.3.0.md`. All packaged H3, portable runtime, ELF,
+  `--notes-file /tmp/gaoxy-0.3.0-reviewed-release-notes.md`. All packaged H3, portable runtime, ELF,
   metadata and independent-review gates must pass before tag/release publication.
-- [ ] Freshly download every published asset; verify bytes/checksums, source,
+- [x] Freshly download every published asset; verify bytes/checksums, source,
   application versions, archive inventory, remote tag and main. Save a unique
-  publication receipt and independent completion review. Commit/push the
-  resulting evidence and verify remote main again.
+  publication receipt and independent completion review:
+  [actual review](../acceptance/evidence/release-0.3.0/review-actual-publication-fresh-download-1791864019336220804.json).
+  The coordinator then commits/pushes the resulting documentation/evidence,
+  verifies remote main and fast-forwards the clean prepared Task4 branch.
+  Record that final commit identity separately in the parent handoff receipt;
+  do not put this documentation commit's SHA inside itself.
 
 ## 4. Prepare established remaining work
 
-- [ ] Reconcile `implement-plan.md` and capability records against completed
+- [x] Reconcile `implement-plan.md` and capability records against completed
   milestones. The roadmap currently ends at M4: do not invent an M5 or advertise
   upstream pools/H2 from the H3 release. Prepare design/plan for the next existing
   incomplete work package and its exact verification boundaries under continuing
@@ -112,5 +120,12 @@ specified external-permission, unavoidable product-decision or external-blocker
 conditions. No routine approval is requested by this plan.
 
 M4/source/local candidate closure: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json).
-Portable preparation has independent review; actual artifact/runtime/publication
-steps above remain pending until their executions complete.
+Portable preparation and actual artifact/runtime/notes have independent review:
+[final review](../acceptance/evidence/release-0.3.0/review-actual-portable-artifact-runtime-1791863376221811603.json).
+Build3/finalize/runtime2 and tag/publication/download all PASS. Independent
+publication/download review PASS with no findings. Final documentation review
+precedes its commit/push and the prepared branch's documentation-only FF;
+the parent final handoff receipt records those identities. The reviewed release
+notes bytes were copied unchanged to `docs/releases/0.3.0.md`. GitHub API reports
+`immutable: false`; no immutable-release repository setting was enabled.
+Earlier FAIL evidence remains immutable.

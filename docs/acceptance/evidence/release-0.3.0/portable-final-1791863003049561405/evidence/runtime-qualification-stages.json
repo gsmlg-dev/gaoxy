@@ -1,0 +1,73 @@
+{
+  "bound_seconds": 600,
+  "cleanup_reserve_seconds": 40,
+  "owned_name": "gaoxy-release-030-portable-b9ebb66e9638459bbe872e9e5a953f30",
+  "started_utc": "2026-10-13T03:40:12.719281+00:00",
+  "status": "PASS",
+  "stages": [
+    {
+      "name": "runtime-image",
+      "command": [
+        "docker",
+        "buildx",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress",
+        "plain",
+        "--target",
+        "runtime",
+        "--load",
+        "-t",
+        "gaoxy-release-030-portable-runtime:local",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791862119274043399/context"
+      ],
+      "timeout_seconds": 557.9995887111872,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 31.940809298306704
+    },
+    {
+      "name": "runtime-image-inspect",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "gaoxy-release-030-portable-runtime:local"
+      ],
+      "timeout_seconds": 8,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 0.16482648625969887
+    },
+    {
+      "name": "fresh-runtime",
+      "command": [
+        "/run/current-system/sw/bin/python",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791862119274043399/context/run_runtime.py",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791862119274043399",
+        "gaoxy-release-030-portable-b9ebb66e9638459bbe872e9e5a953f30",
+        "11357284.835728724"
+      ],
+      "timeout_seconds": 299.99994773976505,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 29.13705217652023
+    },
+    {
+      "name": "owned-container-absence",
+      "command": [
+        "docker",
+        "inspect",
+        "gaoxy-release-030-portable-b9ebb66e9638459bbe872e9e5a953f30"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.06460942886769772
+    }
+  ],
+  "elapsed_seconds": 61.407338785007596,
+  "owned_container_absent": true,
+  "completed_utc": "2026-10-13T03:41:14.126487+00:00"
+}

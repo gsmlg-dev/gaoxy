@@ -80,12 +80,16 @@ hashes identify that candidate. Separate independent specification and quality r
 pass. These historical gates do not establish the deferred upstream features or
 production acceptance; current release verification has its own receipt.
 
-## M4 HTTP/3 candidate
+## M4 HTTP/3 published qualified subset
 
 The optional native `gaoxy_http3` application implements concrete IPv4/QUICv1/
 ALPNh3, shared endpoints/Plug and static/literal QPACK with zero dynamic capacity.
 All prescribed implementation checks and final independent acceptance PASS on
-the final repair12 source. Portable qualification and publication remain pending.
+the final repair12 source. v0.3.0 portable qualification, publication and fresh
+download verification PASS from immutable source4931982. The builder runs757/0
+tests and the offline runtime passes core/H1/H2/H3 plus all21 ELF checks.
+[Release acceptance](acceptance/release-0.3.0.md) binds the actual bytes and reviews;
+hosted CI remains BLOCKED_ENV with zero steps, deployment/E2E NOT RUN.
 [The final gate ledger](acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
 binds530/0 source checks, strict builds and every native/Session/browser/standalone/
 consumer execution. UP2 first and fresh complete repeat both pass68/68 with

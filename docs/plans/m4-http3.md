@@ -13,8 +13,10 @@ binds each result to its command, source hashes, counts, exits and review.
 
 All six local source versions are0.3.0; fresh candidate530/0,34-file formatting
 and strict umbrella/Phoenix/production compilation PASS as linked in the ledger.
-Final independent M4 acceptance/documentation review PASS, with no unresolved findings. Portable
-build, packaged runtime qualification and publication are **NOT RUN**.
+Final independent M4 acceptance/documentation review PASS, with no unresolved findings.
+Portable builder757/0 and fresh offline core/H1/H2/H3/21-ELF runtime PASS;
+v0.3.0 publication and all three fresh downloads PASS from immutable source4931982.
+Hosted CI remains BLOCKED_ENV with zero steps; deployment/E2E are NOT RUN.
 The selected tiny-window profile uses public H3 host polling1ms and finite H2
 control2048/s; defaults10ms/256controls/s are unchanged. H3 tiny-window completion
 was4985ms first/4567ms fresh within the original5s bound; no throughput margin or
@@ -29,8 +31,9 @@ application ceiling; #105 is closed in main, but no containing fix is installed.
 The next prepared package is existing
 [M3 Task4 H1 resource foundation](m3-h1-resource-foundation.md) and its
 [design](../designs/m3-h1-resource-foundation.md): design/plan only, implementation
-**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) remains conditional on final
-acceptance and separate artifact qualification. Operational restrictions remain.
+**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) has completed its final
+acceptance, separate artifact qualification and fresh-download verification.
+Operational restrictions remain.
 
 > For Sol execution: use `executing-plans` or `subagent-driven-development`
 > task by task under AGENTS.md. Give parallel writers disjoint ownership;
@@ -376,4 +379,5 @@ blocked. See [the supplement](m4-upstream-standalone.md),
 [acceptance](../acceptance/m4.md) and [remaining queue](m4-upstream-resume.md).
 
 Final M4 implementation acceptance: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
-PASS with no unresolved findings. Portable qualification/publication stay separate.
+PASS with no unresolved findings. Separate portable qualification and publication
+now PASS; see [release acceptance](../acceptance/release-0.3.0.md).

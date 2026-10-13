@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "source_sha": "4931982cff7b07c8e9f42a5e4561d22854d418bd",
+  "archive_sha256": "257b91c9b97fa5c73b9718744249a3fc00511833aa81142e36924083a58cd902",
+  "platform": "linux/amd64",
+  "network": "none",
+  "core_transports": 3,
+  "gateway_exchanges": 2,
+  "h3_checks": 3,
+  "elf_objects_checked": 21,
+  "missing_libraries": 0,
+  "nix_elf_dependencies": 0,
+  "completed_utc": "2026-10-13T03:41:08.773463+00:00",
+  "checks": [
+    {
+      "name": "runtime-system",
+      "command": [
+        "bash",
+        "-ec",
+        "cat /etc/os-release; uname -m; ldd --version; python3 --version; openssl version; dpkg-query -W"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-core-smoke",
+      "command": [
+        "python3",
+        "scripts/release-smoke.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-gateway-smoke",
+      "command": [
+        "/work/.audit/h2peer/bin/python",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-h3-smoke",
+      "command": [
+        "/work/.audit/h2peer/bin/python",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--evidence",
+        "/evidence/h3"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

@@ -1,0 +1,1365 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 2.22kB done
+#1 DONE 0.2s
+
+#2 [internal] load metadata for docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context:
+#4 transferring context: 2B done
+#4 DONE 0.2s
+
+#5 [builder  1/13] FROM docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#5 DONE 0.0s
+
+#6 [rust 1/1] FROM docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 404.73MB 4.7s
+#7 transferring context: 423.24MB 4.9s done
+#7 DONE 5.1s
+
+#8 [builder  5/13] RUN git init /opt/elixir && cd /opt/elixir && git remote add origin https://github.com/elixir-lang/elixir.git && git fetch --depth 1 origin dfe6612e546cec6557900e67651f7d21805472ef && git checkout --detach FETCH_HEAD && test "$(git rev-parse HEAD)" = dfe6612e546cec6557900e67651f7d21805472ef && make compile
+#8 CACHED
+
+#9 [builder  2/13] COPY --from=rust /usr/local/cargo /usr/local/cargo
+#9 CACHED
+
+#10 [builder  3/13] COPY --from=rust /usr/local/rustup /usr/local/rustup
+#10 CACHED
+
+#11 [builder  4/13] RUN apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates git curl openssl pkg-config python3 python3-venv file binutils && rm -rf /var/lib/apt/lists/*
+#11 CACHED
+
+#12 [builder  6/13] WORKDIR /work
+#12 CACHED
+
+#13 [builder  7/13] COPY source.tar /tools/source.tar
+#13 DONE 14.6s
+
+#14 [builder  8/13] COPY source-identity.json /tools/source-identity.json
+#14 DONE 3.1s
+
+#15 [builder  9/13] RUN tar -xf /tools/source.tar -C /work
+#15 DONE 14.9s
+
+#16 [builder 10/13] COPY build.py /tools/build.py
+#16 DONE 2.6s
+
+#17 [builder 11/13] RUN python3 /tools/build.py prepare
+#17 6.500 START toolchain: ['bash', '-ec', 'elixir --version; erl -noshell -eval \'io:format("OTP_RELEASE=~s OTP_VERSION=~s~n", [erlang:system_info(otp_release), element(2, file:read_file(filename:join([code:root_dir(), "releases", erlang:system_info(otp_release), "OTP_VERSION"])))]), halt().\'; rustc --version; cargo --version; python3 --version; openssl version; ldd --version; dpkg-query -W']
+#17 7.734 Erlang/OTP 28 [erts-16.4.0.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+#17 7.734 
+#17 7.734 Elixir 1.18.5 (compiled with Erlang/OTP 28)
+#17 7.734 OTP_RELEASE=28 OTP_VERSION=28.5.0.5
+#17 7.734 
+#17 7.734 rustc 1.97.1 (8bab26f4f 2026-07-14)
+#17 7.734 cargo 1.97.1 (c980f4866 2026-06-30)
+#17 7.734 Python 3.11.2
+#17 7.734 OpenSSL 3.0.22 25 Aug 2026 (Library: OpenSSL 3.0.22 25 Aug 2026)
+#17 7.734 ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+#17 7.734 Copyright (C) 2022 Free Software Foundation, Inc.
+#17 7.734 This is free software; see the source for copying conditions.  There is NO
+#17 7.734 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#17 7.734 Written by Roland McGrath and Ulrich Drepper.
+#17 7.734 adduser	3.134
+#17 7.734 apt	2.6.1
+#17 7.734 base-files	12.4+deb12u15
+#17 7.734 base-passwd	3.6.1
+#17 7.734 bash	5.2.15-2+b13
+#17 7.734 binutils	2.40-2
+#17 7.734 binutils-common:amd64	2.40-2
+#17 7.734 binutils-x86-64-linux-gnu	2.40-2
+#17 7.734 bsdutils	1:2.38.1-5+deb12u3
+#17 7.734 build-essential	12.9
+#17 7.734 bzip2	1.0.8-5+b1
+#17 7.734 ca-certificates	20250419~deb12u1
+#17 7.734 coreutils	9.1-1
+#17 7.734 cpp	4:12.2.0-3
+#17 7.734 cpp-12	12.2.0-14+deb12u1
+#17 7.734 curl	7.88.1-10+deb12u15
+#17 7.734 dash	0.5.12-2
+#17 7.734 debconf	1.5.82
+#17 7.734 debian-archive-keyring	2023.3+deb12u2
+#17 7.734 debianutils	5.7-0.5~deb12u1
+#17 7.734 diffutils	1:3.8-4
+#17 7.734 dpkg	1.21.23
+#17 7.734 dpkg-dev	1.21.23
+#17 7.734 e2fsprogs	1.47.0-2+b2
+#17 7.734 file	1:5.44-3
+#17 7.734 findutils	4.9.0-4
+#17 7.734 g++	4:12.2.0-3
+#17 7.734 g++-12	12.2.0-14+deb12u1
+#17 7.734 gcc	4:12.2.0-3
+#17 7.734 gcc-12	12.2.0-14+deb12u1
+#17 7.734 gcc-12-base:amd64	12.2.0-14+deb12u1
+#17 7.734 git	1:2.39.5-0+deb12u3
+#17 7.734 git-man	1:2.39.5-0+deb12u3
+#17 7.734 gpgv	2.2.40-1.1+deb12u2
+#17 7.734 grep	3.8-5
+#17 7.734 gzip	1.12-1
+#17 7.734 hostname	3.23+nmu1
+#17 7.734 init-system-helpers	1.65.2+deb12u1
+#17 7.734 libacl1:amd64	2.3.1-3
+#17 7.734 libapt-pkg6.0:amd64	2.6.1
+#17 7.734 libasan8:amd64	12.2.0-14+deb12u1
+#17 7.734 libatomic1:amd64	12.2.0-14+deb12u1
+#17 7.734 libattr1:amd64	1:2.5.1-4
+#17 7.734 libaudit-common	1:3.0.9-1
+#17 7.734 libaudit1:amd64	1:3.0.9-1
+#17 7.734 libbinutils:amd64	2.40-2
+#17 7.734 libblkid1:amd64	2.38.1-5+deb12u3
+#17 7.734 libbrotli1:amd64	1.0.9-2+b6
+#17 7.734 libbz2-1.0:amd64	1.0.8-5+b1
+#17 7.734 libc-bin	2.36-9+deb12u14
+#17 7.734 libc-dev-bin	2.36-9+deb12u14
+#17 7.734 libc6:amd64	2.36-9+deb12u14
+#17 7.734 libc6-dev:amd64	2.36-9+deb12u14
+#17 7.734 libcap-ng0:amd64	0.8.3-1+b3
+#17 7.734 libcap2:amd64	1:2.66-4+deb12u3+b1
+#17 7.734 libcc1-0:amd64	12.2.0-14+deb12u1
+#17 7.734 libcom-err2:amd64	1.47.0-2+b2
+#17 7.734 libcrypt-dev:amd64	1:4.4.33-2
+#17 7.734 libcrypt1:amd64	1:4.4.33-2
+#17 7.734 libctf-nobfd0:amd64	2.40-2
+#17 7.734 libctf0:amd64	2.40-2
+#17 7.734 libcurl3-gnutls:amd64	7.88.1-10+deb12u15
+#17 7.734 libcurl4:amd64	7.88.1-10+deb12u15
+#17 7.734 libdb5.3:amd64	5.3.28+dfsg2-1
+#17 7.734 libdebconfclient0:amd64	0.270
+#17 7.734 libdpkg-perl	1.21.23
+#17 7.734 liberror-perl	0.17029-2
+#17 7.734 libexpat1:amd64	2.5.0-1+deb12u4
+#17 7.734 libext2fs2:amd64	1.47.0-2+b2
+#17 7.734 libffi8:amd64	3.4.4-1
+#17 7.734 libgcc-12-dev:amd64	12.2.0-14+deb12u1
+#17 7.734 libgcc-s1:amd64	12.2.0-14+deb12u1
+#17 7.734 libgcrypt20:amd64	1.10.1-3+deb12u1
+#17 7.734 libgdbm-compat4:amd64	1.23-3
+#17 7.734 libgdbm6:amd64	1.23-3
+#17 7.734 libgmp10:amd64	2:6.2.1+dfsg1-1.1
+#17 7.734 libgnutls30:amd64	3.7.9-2+deb12u7
+#17 7.734 libgomp1:amd64	12.2.0-14+deb12u1
+#17 7.734 libgpg-error0:amd64	1.46-1
+#17 7.734 libgprofng0:amd64	2.40-2
+#17 7.734 libgssapi-krb5-2:amd64	1.20.1-2+deb12u5
+#17 7.734 libhogweed6:amd64	3.8.1-2
+#17 7.734 libidn2-0:amd64	2.3.3-1+b1
+#17 7.734 libisl23:amd64	0.25-1.1
+#17 7.734 libitm1:amd64	12.2.0-14+deb12u1
+#17 7.734 libjansson4:amd64	2.14-2
+#17 7.734 libk5crypto3:amd64	1.20.1-2+deb12u5
+#17 7.734 libkeyutils1:amd64	1.6.3-2
+#17 7.734 libkrb5-3:amd64	1.20.1-2+deb12u5
+#17 7.734 libkrb5support0:amd64	1.20.1-2+deb12u5
+#17 7.734 libldap-2.5-0:amd64	2.5.13+dfsg-5
+#17 7.734 liblsan0:amd64	12.2.0-14+deb12u1
+#17 7.734 libltdl7:amd64	2.4.7-7~deb12u1
+#17 7.734 liblz4-1:amd64	1.9.4-1
+#17 7.734 liblzma5:amd64	5.4.1-1+deb12u2
+#17 7.734 libmagic-mgc	1:5.44-3
+#17 7.734 libmagic1:amd64	1:5.44-3
+#17 7.734 libmd0:amd64	1.0.4-2
+#17 7.734 libmount1:amd64	2.38.1-5+deb12u3
+#17 7.734 libmpc3:amd64	1.3.1-1
+#17 7.734 libmpfr6:amd64	4.2.0-1
+#17 7.734 libncursesw6:amd64	6.4-4
+#17 7.734 libnettle8:amd64	3.8.1-2
+#17 7.734 libnghttp2-14:amd64	1.52.0-1+deb12u3
+#17 7.734 libnsl-dev:amd64	1.3.0-2
+#17 7.734 libnsl2:amd64	1.3.0-2
+#17 7.734 libodbc1:amd64	2.3.11-2+deb12u1
+#17 7.734 libodbc2:amd64	2.3.11-2+deb12u1
+#17 7.734 libodbccr2:amd64	2.3.11-2+deb12u1
+#17 7.734 libp11-kit0:amd64	0.24.1-2
+#17 7.734 libpam-modules:amd64	1.5.2-6+deb12u2
+#17 7.734 libpam-modules-bin	1.5.2-6+deb12u2
+#17 7.734 libpam-runtime	1.5.2-6+deb12u2
+#17 7.734 libpam0g:amd64	1.5.2-6+deb12u2
+#17 7.734 libpcre2-8-0:amd64	10.42-1
+#17 7.734 libperl5.36:amd64	5.36.0-7+deb12u4
+#17 7.734 libpkgconf3:amd64	1.8.1-1
+#17 7.734 libpsl5:amd64	0.21.2-1
+#17 7.734 libpython3-stdlib:amd64	3.11.2-1+b1
+#17 7.734 libpython3.11-minimal:amd64	3.11.2-6+deb12u9
+#17 7.734 libpython3.11-stdlib:amd64	3.11.2-6+deb12u9
+#17 7.734 libquadmath0:amd64	12.2.0-14+deb12u1
+#17 7.734 libreadline8:amd64	8.2-1.3
+#17 7.734 librtmp1:amd64	2.4+20151223.gitfa8646d.1-2+b2
+#17 7.734 libsasl2-2:amd64	2.1.28+dfsg-10
+#17 7.734 libsasl2-modules-db:amd64	2.1.28+dfsg-10
+#17 7.734 libsctp1:amd64	1.0.19+dfsg-2
+#17 7.734 libseccomp2:amd64	2.5.4-1+deb12u1
+#17 7.734 libselinux1:amd64	3.4-1+b6
+#17 7.734 libsemanage-common	3.4-1
+#17 7.734 libsemanage2:amd64	3.4-1+b5
+#17 7.734 libsepol2:amd64	3.4-2.1
+#17 7.734 libsmartcols1:amd64	2.38.1-5+deb12u3
+#17 7.734 libsqlite3-0:amd64	3.40.1-2+deb12u2
+#17 7.734 libss2:amd64	1.47.0-2+b2
+#17 7.734 libssh2-1:amd64	1.10.0-3+deb12u1
+#17 7.734 libssl3:amd64	3.0.22-1~deb12u1
+#17 7.734 libstdc++-12-dev:amd64	12.2.0-14+deb12u1
+#17 7.734 libstdc++6:amd64	12.2.0-14+deb12u1
+#17 7.734 libsystemd0:amd64	252.39-1~deb12u2
+#17 7.734 libtasn1-6:amd64	4.19.0-2+deb12u1
+#17 7.734 libtinfo6:amd64	6.4-4
+#17 7.734 libtirpc-common	1.3.3+ds-1
+#17 7.734 libtirpc-dev:amd64	1.3.3+ds-1
+#17 7.734 libtirpc3:amd64	1.3.3+ds-1
+#17 7.734 libtsan2:amd64	12.2.0-14+deb12u1
+#17 7.734 libubsan1:amd64	12.2.0-14+deb12u1
+#17 7.734 libudev1:amd64	252.39-1~deb12u2
+#17 7.734 libunistring2:amd64	1.0-2
+#17 7.734 libuuid1:amd64	2.38.1-5+deb12u3
+#17 7.734 libxxhash0:amd64	0.8.1-1
+#17 7.734 libzstd1:amd64	1.5.4+dfsg2-5
+#17 7.734 linux-libc-dev:amd64	6.1.187-1
+#17 7.734 login	1:4.13+dfsg1-1+deb12u2
+#17 7.734 logsave	1.47.0-2+b2
+#17 7.734 make	4.3-4.1
+#17 7.734 mawk	1.3.4.20200120-3.1
+#17 7.734 media-types	10.0.0
+#17 7.734 mount	2.38.1-5+deb12u3
+#17 7.734 ncurses-base	6.4-4
+#17 7.734 ncurses-bin	6.4-4
+#17 7.734 netbase	6.4
+#17 7.734 openssl	3.0.22-1~deb12u1
+#17 7.734 passwd	1:4.13+dfsg1-1+deb12u2
+#17 7.734 patch	2.7.6-7
+#17 7.734 perl	5.36.0-7+deb12u4
+#17 7.734 perl-base	5.36.0-7+deb12u4
+#17 7.734 perl-modules-5.36	5.36.0-7+deb12u4
+#17 7.734 pkg-config:amd64	1.8.1-1
+#17 7.734 pkgconf:amd64	1.8.1-1
+#17 7.734 pkgconf-bin	1.8.1-1
+#17 7.734 python3	3.11.2-1+b1
+#17 7.734 python3-distutils	3.11.2-3
+#17 7.734 python3-lib2to3	3.11.2-3
+#17 7.734 python3-minimal	3.11.2-1+b1
+#17 7.734 python3-pip-whl	23.0.1+dfsg-1
+#17 7.734 python3-setuptools-whl	66.1.1-1+deb12u2
+#17 7.734 python3-venv	3.11.2-1+b1
+#17 7.734 python3.11	3.11.2-6+deb12u9
+#17 7.734 python3.11-minimal	3.11.2-6+deb12u9
+#17 7.734 python3.11-venv	3.11.2-6+deb12u9
+#17 7.734 readline-common	8.2-1.3
+#17 7.734 rpcsvc-proto	1.4.3-1
+#17 7.734 sed	4.9-1+deb12u1
+#17 7.734 sysvinit-utils	3.06-4
+#17 7.734 tar	1.34+dfsg-1.2+deb12u1
+#17 7.734 tzdata	2026b-0+deb12u1
+#17 7.734 usr-is-merged	37~deb12u1
+#17 7.734 util-linux	2.38.1-5+deb12u3
+#17 7.734 util-linux-extra	2.38.1-5+deb12u3
+#17 7.734 xz-utils	5.4.1-1+deb12u2
+#17 7.734 zlib1g:amd64	1:1.2.13.dfsg-1
+#17 7.735 START hex: ['mix', 'local.hex', '--force']
+#17 13.88 * creating /root/.mix/archives/hex-2.5.2
+#17 13.88 START rebar: ['mix', 'local.rebar', '--force']
+#17 17.64 * creating /root/.mix/elixir/1-18-otp-28/rebar3
+#17 17.64 START test-dependencies: ['mix', 'deps.get', '--check-locked']
+#17 67.54 * Getting thousand_island (https://github.com/mtrudel/thousand_island.git - 6146e1bfdd1a85c5c16c3c92ad98ff5f11066820)
+#17 67.54 remote: Enumerating objects: 2651, done.        
+#17 67.54 remote: Counting objects:   0% (1/970)        
+#17 67.54 remote: Counting objects:   1% (10/970)        
+#17 67.54 remote: Counting objects:   2% (20/970)        
+#17 67.54 remote: Counting objects:   3% (30/970)        
+#17 67.54 remote: Counting objects:   4% (39/970)        
+#17 67.54 remote: Counting objects:   5% (49/970)        
+#17 67.54 remote: Counting objects:   6% (59/970)        
+#17 67.54 remote: Counting objects:   7% (68/970)        
+#17 67.54 remote: Counting objects:   8% (78/970)        
+#17 67.54 remote: Counting objects:   9% (88/970)        
+#17 67.54 remote: Counting objects:  10% (97/970)        
+#17 67.54 remote: Counting objects:  11% (107/970)        
+#17 67.54 remote: Counting objects:  12% (117/970)        
+#17 67.54 remote: Counting objects:  13% (127/970)        
+#17 67.54 remote: Counting objects:  14% (136/970)        
+#17 67.54 remote: Counting objects:  15% (146/970)        
+#17 67.54 remote: Counting objects:  16% (156/970)        
+#17 67.54 remote: Counting objects:  17% (165/970)        
+#17 67.54 remote: Counting objects:  18% (175/970)        
+#17 67.54 remote: Counting objects:  19% (185/970)        
+#17 67.54 remote: Counting objects:  20% (194/970)        
+#17 67.54 remote: Counting objects:  21% (204/970)        
+#17 67.54 remote: Counting objects:  22% (214/970)        
+#17 67.54 remote: Counting objects:  23% (224/970)        
+#17 67.54 remote: Counting objects:  24% (233/970)        
+#17 67.54 remote: Counting objects:  25% (243/970)        
+#17 67.54 remote: Counting objects:  26% (253/970)        
+#17 67.54 remote: Counting objects:  27% (262/970)        
+#17 67.54 remote: Counting objects:  28% (272/970)        
+#17 67.54 remote: Counting objects:  29% (282/970)        
+#17 67.54 remote: Counting objects:  30% (291/970)        
+#17 67.54 remote: Counting objects:  31% (301/970)        
+#17 67.54 remote: Counting objects:  32% (311/970)        
+#17 67.54 remote: Counting objects:  33% (321/970)        
+#17 67.54 remote: Counting objects:  34% (330/970)        
+#17 67.54 remote: Counting objects:  35% (340/970)        
+#17 67.54 remote: Counting objects:  36% (350/970)        
+#17 67.54 remote: Counting objects:  37% (359/970)        
+#17 67.54 remote: Counting objects:  38% (369/970)        
+#17 67.54 remote: Counting objects:  39% (379/970)        
+#17 67.54 remote: Counting objects:  40% (388/970)        
+#17 67.54 remote: Counting objects:  41% (398/970)        
+#17 67.54 remote: Counting objects:  42% (408/970)        
+#17 67.54 remote: Counting objects:  43% (418/970)        
+#17 67.54 remote: Counting objects:  44% (427/970)        
+#17 67.54 remote: Counting objects:  45% (437/970)        
+#17 67.54 remote: Counting objects:  46% (447/970)        
+#17 67.54 remote: Counting objects:  47% (456/970)        
+#17 67.54 remote: Counting objects:  48% (466/970)        
+#17 67.54 remote: Counting objects:  49% (476/970)        
+#17 67.54 remote: Counting objects:  50% (485/970)        
+#17 67.54 remote: Counting objects:  51% (495/970)        
+#17 67.54 remote: Counting objects:  52% (505/970)        
+#17 67.54 remote: Counting objects:  53% (515/970)        
+#17 67.54 remote: Counting objects:  54% (524/970)        
+#17 67.54 remote: Counting objects:  55% (534/970)        
+#17 67.54 remote: Counting objects:  56% (544/970)        
+#17 67.54 remote: Counting objects:  57% (553/970)        
+#17 67.54 remote: Counting objects:  58% (563/970)        
+#17 67.54 remote: Counting objects:  59% (573/970)        
+#17 67.54 remote: Counting objects:  60% (582/970)        
+#17 67.54 remote: Counting objects:  61% (592/970)        
+#17 67.54 remote: Counting objects:  62% (602/970)        
+#17 67.54 remote: Counting objects:  63% (612/970)        
+#17 67.54 remote: Counting objects:  64% (621/970)        
+#17 67.54 remote: Counting objects:  65% (631/970)        
+#17 67.54 remote: Counting objects:  66% (641/970)        
+#17 67.54 remote: Counting objects:  67% (650/970)        
+#17 67.54 remote: Counting objects:  68% (660/970)        
+#17 67.54 remote: Counting objects:  69% (670/970)        
+#17 67.54 remote: Counting objects:  70% (679/970)        
+#17 67.54 remote: Counting objects:  71% (689/970)        
+#17 67.54 remote: Counting objects:  72% (699/970)        
+#17 67.54 remote: Counting objects:  73% (709/970)        
+#17 67.54 remote: Counting objects:  74% (718/970)        
+#17 67.54 remote: Counting objects:  75% (728/970)        
+#17 67.54 remote: Counting objects:  76% (738/970)        
+#17 67.54 remote: Counting objects:  77% (747/970)        
+#17 67.54 remote: Counting objects:  78% (757/970)        
+#17 67.54 remote: Counting objects:  79% (767/970)        
+#17 67.54 remote: Counting objects:  80% (776/970)        
+#17 67.54 remote: Counting objects:  81% (786/970)        
+#17 67.54 remote: Counting objects:  82% (796/970)        
+#17 67.54 remote: Counting objects:  83% (806/970)        
+#17 67.54 remote: Counting objects:  84% (815/970)        
+#17 67.54 remote: Counting objects:  85% (825/970)        
+#17 67.54 remote: Counting objects:  86% (835/970)        
+#17 67.54 remote: Counting objects:  87% (844/970)        
+#17 67.54 remote: Counting objects:  88% (854/970)        
+#17 67.54 remote: Counting objects:  89% (864/970)        
+#17 67.54 remote: Counting objects:  90% (873/970)        
+#17 67.54 remote: Counting objects:  91% (883/970)        
+#17 67.54 remote: Counting objects:  92% (893/970)        
+#17 67.54 remote: Counting objects:  93% (903/970)        
+#17 67.54 remote: Counting objects:  94% (912/970)        
+#17 67.54 remote: Counting objects:  95% (922/970)        
+#17 67.54 remote: Counting objects:  96% (932/970)        
+#17 67.54 remote: Counting objects:  97% (941/970)        
+#17 67.54 remote: Counting objects:  98% (951/970)        
+#17 67.54 remote: Counting objects:  99% (961/970)        
+#17 67.54 remote: Counting objects: 100% (970/970)        
+#17 67.54 remote: Counting objects: 100% (970/970), done.        
+#17 67.54 remote: Compressing objects:   0% (1/298)        
+#17 67.54 remote: Compressing objects:   1% (3/298)        
+#17 67.54 remote: Compressing objects:   2% (6/298)        
+#17 67.54 remote: Compressing objects:   3% (9/298)        
+#17 67.54 remote: Compressing objects:   4% (12/298)        
+#17 67.54 remote: Compressing objects:   5% (15/298)        
+#17 67.54 remote: Compressing objects:   6% (18/298)        
+#17 67.54 remote: Compressing objects:   7% (21/298)        
+#17 67.54 remote: Compressing objects:   8% (24/298)        
+#17 67.54 remote: Compressing objects:   9% (27/298)        
+#17 67.54 remote: Compressing objects:  10% (30/298)        
+#17 67.54 remote: Compressing objects:  11% (33/298)        
+#17 67.54 remote: Compressing objects:  12% (36/298)        
+#17 67.54 remote: Compressing objects:  13% (39/298)        
+#17 67.54 remote: Compressing objects:  14% (42/298)        
+#17 67.54 remote: Compressing objects:  15% (45/298)        
+#17 67.54 remote: Compressing objects:  16% (48/298)        
+#17 67.54 remote: Compressing objects:  17% (51/298)        
+#17 67.54 remote: Compressing objects:  18% (54/298)        
+#17 67.54 remote: Compressing objects:  19% (57/298)        
+#17 67.54 remote: Compressing objects:  20% (60/298)        
+#17 67.54 remote: Compressing objects:  21% (63/298)        
+#17 67.54 remote: Compressing objects:  22% (66/298)        
+#17 67.54 remote: Compressing objects:  23% (69/298)        
+#17 67.54 remote: Compressing objects:  24% (72/298)        
+#17 67.54 remote: Compressing objects:  25% (75/298)        
+#17 67.54 remote: Compressing objects:  26% (78/298)        
+#17 67.54 remote: Compressing objects:  27% (81/298)        
+#17 67.54 remote: Compressing objects:  28% (84/298)        
+#17 67.54 remote: Compressing objects:  29% (87/298)        
+#17 67.54 remote: Compressing objects:  30% (90/298)        
+#17 67.54 remote: Compressing objects:  31% (93/298)        
+#17 67.54 remote: Compressing objects:  32% (96/298)        
+#17 67.54 remote: Compressing objects:  33% (99/298)        
+#17 67.54 remote: Compressing objects:  34% (102/298)        
+#17 67.54 remote: Compressing objects:  35% (105/298)        
+#17 67.54 remote: Compressing objects:  36% (108/298)        
+#17 67.54 remote: Compressing objects:  37% (111/298)        
+#17 67.54 remote: Compressing objects:  38% (114/298)        
+#17 67.54 remote: Compressing objects:  39% (117/298)        
+#17 67.54 remote: Compressing objects:  40% (120/298)        
+#17 67.54 remote: Compressing objects:  41% (123/298)        
+#17 67.54 remote: Compressing objects:  42% (126/298)        
+#17 67.54 remote: Compressing objects:  43% (129/298)        
+#17 67.54 remote: Compressing objects:  44% (132/298)        
+#17 67.54 remote: Compressing objects:  45% (135/298)        
+#17 67.54 remote: Compressing objects:  46% (138/298)        
+#17 67.54 remote: Compressing objects:  47% (141/298)        
+#17 67.54 remote: Compressing objects:  48% (144/298)        
+#17 67.54 remote: Compressing objects:  49% (147/298)        
+#17 67.54 remote: Compressing objects:  50% (149/298)        
+#17 67.54 remote: Compressing objects:  51% (152/298)        
+#17 67.54 remote: Compressing objects:  52% (155/298)        
+#17 67.54 remote: Compressing objects:  53% (158/298)        
+#17 67.54 remote: Compressing objects:  54% (161/298)        
+#17 67.54 remote: Compressing objects:  55% (164/298)        
+#17 67.54 remote: Compressing objects:  56% (167/298)        
+#17 67.54 remote: Compressing objects:  57% (170/298)        
+#17 67.54 remote: Compressing objects:  58% (173/298)        
+#17 67.54 remote: Compressing objects:  59% (176/298)        
+#17 67.54 remote: Compressing objects:  60% (179/298)        
+#17 67.54 remote: Compressing objects:  61% (182/298)        
+#17 67.54 remote: Compressing objects:  62% (185/298)        
+#17 67.54 remote: Compressing objects:  63% (188/298)        
+#17 67.54 remote: Compressing objects:  64% (191/298)        
+#17 67.54 remote: Compressing objects:  65% (194/298)        
+#17 67.54 remote: Compressing objects:  66% (197/298)        
+#17 67.54 remote: Compressing objects:  67% (200/298)        
+#17 67.54 remote: Compressing objects:  68% (203/298)        
+#17 67.54 remote: Compressing objects:  69% (206/298)        
+#17 67.54 remote: Compressing objects:  70% (209/298)        
+#17 67.54 remote: Compressing objects:  71% (212/298)        
+#17 67.54 remote: Compressing objects:  72% (215/298)        
+#17 67.54 remote: Compressing objects:  73% (218/298)        
+#17 67.54 remote: Compressing objects:  74% (221/298)        
+#17 67.54 remote: Compressing objects:  75% (224/298)        
+#17 67.54 remote: Compressing objects:  76% (227/298)        
+#17 67.54 remote: Compressing objects:  77% (230/298)        
+#17 67.54 remote: Compressing objects:  78% (233/298)        
+#17 67.54 remote: Compressing objects:  79% (236/298)        
+#17 67.54 remote: Compressing objects:  80% (239/298)        
+#17 67.54 remote: Compressing objects:  81% (242/298)        
+#17 67.54 remote: Compressing objects:  82% (245/298)        
+#17 67.54 remote: Compressing objects:  83% (248/298)        
+#17 67.54 remote: Compressing objects:  84% (251/298)        
+#17 67.54 remote: Compressing objects:  85% (254/298)        
+#17 67.54 remote: Compressing objects:  86% (257/298)        
+#17 67.54 remote: Compressing objects:  87% (260/298)        
+#17 67.54 remote: Compressing objects:  88% (263/298)        
+#17 67.54 remote: Compressing objects:  89% (266/298)        
+#17 67.54 remote: Compressing objects:  90% (269/298)        
+#17 67.54 remote: Compressing objects:  91% (272/298)        
+#17 67.54 remote: Compressing objects:  92% (275/298)        
+#17 67.54 remote: Compressing objects:  93% (278/298)        
+#17 67.54 remote: Compressing objects:  94% (281/298)        
+#17 67.54 remote: Compressing objects:  95% (284/298)        
+#17 67.54 remote: Compressing objects:  96% (287/298)        
+#17 67.54 remote: Compressing objects:  97% (290/298)        
+#17 67.54 remote: Compressing objects:  98% (293/298)        
+#17 67.54 remote: Compressing objects:  99% (296/298)        
+#17 67.54 remote: Compressing objects: 100% (298/298)        
+#17 67.54 remote: Compressing objects: 100% (298/298), done.        
+#17 67.54 remote: Total 2651 (delta 877), reused 672 (delta 672), pack-reused 1681 (from 3)        
+#17 67.54 * Getting abyss (https://github.com/gsmlg-dev/abyss.git - 9b710e6480900e16e304f40e63623aff8c922e19)
+#17 67.54 remote: Enumerating objects: 852, done.        
+#17 67.54 remote: Counting objects:   0% (1/266)        
+#17 67.54 remote: Counting objects:   1% (3/266)        
+#17 67.54 remote: Counting objects:   2% (6/266)        
+#17 67.54 remote: Counting objects:   3% (8/266)        
+#17 67.54 remote: Counting objects:   4% (11/266)        
+#17 67.54 remote: Counting objects:   5% (14/266)        
+#17 67.54 remote: Counting objects:   6% (16/266)        
+#17 67.54 remote: Counting objects:   7% (19/266)        
+#17 67.54 remote: Counting objects:   8% (22/266)        
+#17 67.54 remote: Counting objects:   9% (24/266)        
+#17 67.54 remote: Counting objects:  10% (27/266)        
+#17 67.54 remote: Counting objects:  11% (30/266)        
+#17 67.54 remote: Counting objects:  12% (32/266)        
+#17 67.54 remote: Counting objects:  13% (35/266)        
+#17 67.54 remote: Counting objects:  14% (38/266)        
+#17 67.54 remote: Counting objects:  15% (40/266)        
+#17 67.54 remote: Counting objects:  16% (43/266)        
+#17 67.54 remote: Counting objects:  17% (46/266)        
+#17 67.54 remote: Counting objects:  18% (48/266)        
+#17 67.54 remote: Counting objects:  19% (51/266)        
+#17 67.54 remote: Counting objects:  20% (54/266)        
+#17 67.54 remote: Counting objects:  21% (56/266)        
+#17 67.54 remote: Counting objects:  22% (59/266)        
+#17 67.54 remote: Counting objects:  23% (62/266)        
+#17 67.54 remote: Counting objects:  24% (64/266)        
+#17 67.54 remote: Counting objects:  25% (67/266)        
+#17 67.54 remote: Counting objects:  26% (70/266)        
+#17 67.54 remote: Counting objects:  27% (72/266)        
+#17 67.54 remote: Counting objects:  28% (75/266)        
+#17 67.54 remote: Counting objects:  29% (78/266)        
+#17 67.54 remote: Counting objects:  30% (80/266)        
+#17 67.54 remote: Counting objects:  31% (83/266)        
+#17 67.54 remote: Counting objects:  32% (86/266)        
+#17 67.54 remote: Counting objects:  33% (88/266)        
+#17 67.54 remote: Counting objects:  34% (91/266)        
+#17 67.54 remote: Counting objects:  35% (94/266)        
+#17 67.54 remote: Counting objects:  36% (96/266)        
+#17 67.54 remote: Counting objects:  37% (99/266)        
+#17 67.54 remote: Counting objects:  38% (102/266)        
+#17 67.54 remote: Counting objects:  39% (104/266)        
+#17 67.54 remote: Counting objects:  40% (107/266)        
+#17 67.54 remote: Counting objects:  41% (110/266)        
+#17 67.54 remote: Counting objects:  42% (112/266)        
+#17 67.54 remote: Counting objects:  43% (115/266)        
+#17 67.54 remote: Counting objects:  44% (118/266)        
+#17 67.54 remote: Counting objects:  45% (120/266)        
+#17 67.54 remote: Counting objects:  46% (123/266)        
+#17 67.54 remote: Counting objects:  47% (126/266)        
+#17 67.54 remote: Counting objects:  48% (128/266)        
+#17 67.54 remote: Counting objects:  49% (131/266)        
+#17 67.54 remote: Counting objects:  50% (133/266)        
+#17 67.54 remote: Counting objects:  51% (136/266)        
+#17 67.54 remote: Counting objects:  52% (139/266)        
+#17 67.54 remote: Counting objects:  53% (141/266)        
+#17 67.54 remote: Counting objects:  54% (144/266)        
+#17 67.54 remote: Counting objects:  55% (147/266)        
+#17 67.54 remote: Counting objects:  56% (149/266)        
+#17 67.54 remote: Counting objects:  57% (152/266)        
+#17 67.54 remote: Counting objects:  58% (155/266)        
+#17 67.54 remote: Counting objects:  59% (157/266)        
+#17 67.54 remote: Counting objects:  60% (160/266)        
+#17 67.54 remote: Counting objects:  61% (163/266)        
+#17 67.54 remote: Counting objects:  62% (165/266)        
+#17 67.54 remote: Counting objects:  63% (168/266)        
+#17 67.54 remote: Counting objects:  64% (171/266)        
+#17 67.54 remote: Counting objects:  65% (173/266)        
+#17 67.54 remote: Counting objects:  66% (176/266)        
+#17 67.54 remote: Counting objects:  67% (179/266)        
+#17 67.54 remote: Counting objects:  68% (181/266)        
+#17 67.54 remote: Counting objects:  69% (184/266)        
+#17 67.54 remote: Counting objects:  70% (187/266)        
+#17 67.54 remote: Counting objects:  71% (189/266)        
+#17 67.54 remote: Counting objects:  72% (192/266)        
+#17 67.54 remote: Counting objects:  73% (195/266)        
+#17 67.54 remote: Counting objects:  74% (197/266)        
+#17 67.54 remote: Counting objects:  75% (200/266)        
+#17 67.54 remote: Counting objects:  76% (203/266)        
+#17 67.54 remote: Counting objects:  77% (205/266)        
+#17 67.54 remote: Counting objects:  78% (208/266)        
+#17 67.54 remote: Counting objects:  79% (211/266)        
+#17 67.54 remote: Counting objects:  80% (213/266)        
+#17 67.54 remote: Counting objects:  81% (216/266)        
+#17 67.54 remote: Counting objects:  82% (219/266)        
+#17 67.54 remote: Counting objects:  83% (221/266)        
+#17 67.54 remote: Counting objects:  84% (224/266)        
+#17 67.54 remote: Counting objects:  85% (227/266)        
+#17 67.54 remote: Counting objects:  86% (229/266)        
+#17 67.54 remote: Counting objects:  87% (232/266)        
+#17 67.54 remote: Counting objects:  88% (235/266)        
+#17 67.54 remote: Counting objects:  89% (237/266)        
+#17 67.54 remote: Counting objects:  90% (240/266)        
+#17 67.54 remote: Counting objects:  91% (243/266)        
+#17 67.54 remote: Counting objects:  92% (245/266)        
+#17 67.54 remote: Counting objects:  93% (248/266)        
+#17 67.54 remote: Counting objects:  94% (251/266)        
+#17 67.54 remote: Counting objects:  95% (253/266)        
+#17 67.54 remote: Counting objects:  96% (256/266)        
+#17 67.54 remote: Counting objects:  97% (259/266)        
+#17 67.54 remote: Counting objects:  98% (261/266)        
+#17 67.54 remote: Counting objects:  99% (264/266)        
+#17 67.54 remote: Counting objects: 100% (266/266)        
+#17 67.54 remote: Counting objects: 100% (266/266), done.        
+#17 67.54 remote: Compressing objects:   0% (1/188)        
+#17 67.54 remote: Compressing objects:   1% (2/188)        
+#17 67.54 remote: Compressing objects:   2% (4/188)        
+#17 67.54 remote: Compressing objects:   3% (6/188)        
+#17 67.54 remote: Compressing objects:   4% (8/188)        
+#17 67.54 remote: Compressing objects:   5% (10/188)        
+#17 67.54 remote: Compressing objects:   6% (12/188)        
+#17 67.54 remote: Compressing objects:   7% (14/188)        
+#17 67.54 remote: Compressing objects:   8% (16/188)        
+#17 67.54 remote: Compressing objects:   9% (17/188)        
+#17 67.54 remote: Compressing objects:  10% (19/188)        
+#17 67.54 remote: Compressing objects:  11% (21/188)        
+#17 67.54 remote: Compressing objects:  12% (23/188)        
+#17 67.54 remote: Compressing objects:  13% (25/188)        
+#17 67.54 remote: Compressing objects:  14% (27/188)        
+#17 67.54 remote: Compressing objects:  15% (29/188)        
+#17 67.54 remote: Compressing objects:  16% (31/188)        
+#17 67.54 remote: Compressing objects:  17% (32/188)        
+#17 67.54 remote: Compressing objects:  18% (34/188)        
+#17 67.54 remote: Compressing objects:  19% (36/188)        
+#17 67.54 remote: Compressing objects:  20% (38/188)        
+#17 67.54 remote: Compressing objects:  21% (40/188)        
+#17 67.54 remote: Compressing objects:  22% (42/188)        
+#17 67.54 remote: Compressing objects:  23% (44/188)        
+#17 67.54 remote: Compressing objects:  24% (46/188)        
+#17 67.54 remote: Compressing objects:  25% (47/188)        
+#17 67.54 remote: Compressing objects:  26% (49/188)        
+#17 67.54 remote: Compressing objects:  27% (51/188)        
+#17 67.54 remote: Compressing objects:  28% (53/188)        
+#17 67.54 remote: Compressing objects:  29% (55/188)        
+#17 67.54 remote: Compressing objects:  30% (57/188)        
+#17 67.54 remote: Compressing objects:  31% (59/188)        
+#17 67.54 remote: Compressing objects:  32% (61/188)        
+#17 67.54 remote: Compressing objects:  33% (63/188)        
+#17 67.54 remote: Compressing objects:  34% (64/188)        
+#17 67.54 remote: Compressing objects:  35% (66/188)        
+#17 67.54 remote: Compressing objects:  36% (68/188)        
+#17 67.54 remote: Compressing objects:  37% (70/188)        
+#17 67.54 remote: Compressing objects:  38% (72/188)        
+#17 67.54 remote: Compressing objects:  39% (74/188)        
+#17 67.54 remote: Compressing objects:  40% (76/188)        
+#17 67.54 remote: Compressing objects:  41% (78/188)        
+#17 67.54 remote: Compressing objects:  42% (79/188)        
+#17 67.54 remote: Compressing objects:  43% (81/188)        
+#17 67.54 remote: Compressing objects:  44% (83/188)        
+#17 67.54 remote: Compressing objects:  45% (85/188)        
+#17 67.54 remote: Compressing objects:  46% (87/188)        
+#17 67.54 remote: Compressing objects:  47% (89/188)        
+#17 67.54 remote: Compressing objects:  48% (91/188)        
+#17 67.54 remote: Compressing objects:  49% (93/188)        
+#17 67.54 remote: Compressing objects:  50% (94/188)        
+#17 67.54 remote: Compressing objects:  51% (96/188)        
+#17 67.54 remote: Compressing objects:  52% (98/188)        
+#17 67.54 remote: Compressing objects:  53% (100/188)        
+#17 67.54 remote: Compressing objects:  54% (102/188)        
+#17 67.54 remote: Compressing objects:  55% (104/188)        
+#17 67.54 remote: Compressing objects:  56% (106/188)        
+#17 67.54 remote: Compressing objects:  57% (108/188)        
+#17 67.54 remote: Compressing objects:  58% (110/188)        
+#17 67.54 remote: Compressing objects:  59% (111/188)        
+#17 67.54 remote: Compressing objects:  60% (113/188)        
+#17 67.54 remote: Compressing objects:  61% (115/188)        
+#17 67.54 remote: Compressing objects:  62% (117/188)        
+#17 67.54 remote: Compressing objects:  63% (119/188)        
+#17 67.54 remote: Compressing objects:  64% (121/188)        
+#17 67.54 remote: Compressing objects:  65% (123/188)        
+#17 67.54 remote: Compressing objects:  66% (125/188)        
+#17 67.54 remote: Compressing objects:  67% (126/188)        
+#17 67.54 remote: Compressing objects:  68% (128/188)        
+#17 67.54 remote: Compressing objects:  69% (130/188)        
+#17 67.54 remote: Compressing objects:  70% (132/188)        
+#17 67.54 remote: Compressing objects:  71% (134/188)        
+#17 67.54 remote: Compressing objects:  72% (136/188)        
+#17 67.54 remote: Compressing objects:  73% (138/188)        
+#17 67.54 remote: Compressing objects:  74% (140/188)        
+#17 67.54 remote: Compressing objects:  75% (141/188)        
+#17 67.54 remote: Compressing objects:  76% (143/188)        
+#17 67.54 remote: Compressing objects:  77% (145/188)        
+#17 67.54 remote: Compressing objects:  78% (147/188)        
+#17 67.54 remote: Compressing objects:  79% (149/188)        
+#17 67.54 remote: Compressing objects:  80% (151/188)        
+#17 67.54 remote: Compressing objects:  81% (153/188)        
+#17 67.54 remote: Compressing objects:  82% (155/188)        
+#17 67.54 remote: Compressing objects:  83% (157/188)        
+#17 67.54 remote: Compressing objects:  84% (158/188)        
+#17 67.54 remote: Compressing objects:  85% (160/188)        
+#17 67.54 remote: Compressing objects:  86% (162/188)        
+#17 67.54 remote: Compressing objects:  87% (164/188)        
+#17 67.54 remote: Compressing objects:  88% (166/188)        
+#17 67.54 remote: Compressing objects:  89% (168/188)        
+#17 67.54 remote: Compressing objects:  90% (170/188)        
+#17 67.54 remote: Compressing objects:  91% (172/188)        
+#17 67.54 remote: Compressing objects:  92% (173/188)        
+#17 67.54 remote: Compressing objects:  93% (175/188)        
+#17 67.54 remote: Compressing objects:  94% (177/188)        
+#17 67.54 remote: Compressing objects:  95% (179/188)        
+#17 67.54 remote: Compressing objects:  96% (181/188)        
+#17 67.54 remote: Compressing objects:  97% (183/188)        
+#17 67.54 remote: Compressing objects:  98% (185/188)        
+#17 67.54 remote: Compressing objects:  99% (187/188)        
+#17 67.54 remote: Compressing objects: 100% (188/188)        
+#17 67.54 remote: Compressing objects: 100% (188/188), done.        
+#17 67.54 remote: Total 852 (delta 92), reused 194 (delta 74), pack-reused 586 (from 1)        
+#17 67.54 Resolving Hex dependencies...
+#17 67.54 Resolution completed in 0.131s
+#17 67.54 Unchanged:
+#17 67.54   earmark_parser 1.4.46
+#17 67.54   elixir_quic 0.21.4
+#17 67.54   elixir_quic_http3 0.21.4
+#17 67.54   ex_doc 0.40.4
+#17 67.54   ex_ssl 0.21.4
+#17 67.54   hpax 1.1.0
+#17 67.54   http_core 0.21.4
+#17 67.54   http_fetch 0.21.4
+#17 67.54   http_runtime 0.21.4
+#17 67.54   http_web_socket 0.21.4
+#17 67.54   jason 1.4.5
+#17 67.54   makeup 1.2.3
+#17 67.54   makeup_elixir 1.0.1
+#17 67.54   makeup_erlang 1.1.0
+#17 67.54   mime 2.0.7
+#17 67.54   nimble_parsec 1.4.2
+#17 67.54   plug 1.20.3
+#17 67.54   plug_crypto 2.2.0
+#17 67.54   rustler 0.38.0
+#17 67.54   telemetry 1.4.2
+#17 67.54   telemetry_metrics 1.2.0
+#17 67.54   websock 0.5.3
+#17 67.54 * Getting http_fetch (Hex package)
+#17 67.54 * Getting http_web_socket (Hex package)
+#17 67.54 * Getting http_core (Hex package)
+#17 67.54 * Getting http_runtime (Hex package)
+#17 67.54 * Getting telemetry (Hex package)
+#17 67.54 * Getting elixir_quic_http3 (Hex package)
+#17 67.54 * Getting elixir_quic (Hex package)
+#17 67.54 * Getting ex_ssl (Hex package)
+#17 67.54 * Getting plug (Hex package)
+#17 67.54 * Getting hpax (Hex package)
+#17 67.54 * Getting websock (Hex package)
+#17 67.54 * Getting mime (Hex package)
+#17 67.54 * Getting plug_crypto (Hex package)
+#17 67.54 * Getting telemetry_metrics (Hex package)
+#17 67.54 * Getting rustler (Hex package)
+#17 67.54 * Getting ex_doc (Hex package)
+#17 67.54 * Getting earmark_parser (Hex package)
+#17 67.54 * Getting makeup_elixir (Hex package)
+#17 67.54 * Getting makeup_erlang (Hex package)
+#17 67.54 * Getting makeup (Hex package)
+#17 67.54 * Getting nimble_parsec (Hex package)
+#17 67.54 * Getting jason (Hex package)
+#17 67.54 START peer-venv: ['python3', '-m', 'venv', '/work/.audit/h2peer']
+#17 74.30 START peer-dependencies: ['/work/.audit/h2peer/bin/python', '-m', 'pip', 'install', '-r', 'apps/gaoxy_http/test/support/h2-requirements.txt', '-r', 'integration/http3/requirements.txt']
+#17 97.86 Collecting h2==4.3.0
+#17 97.86   Downloading h2-4.3.0-py3-none-any.whl (61 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.8/61.8 kB 164.2 kB/s eta 0:00:00
+#17 97.86 Collecting hpack==4.2.0
+#17 97.86   Downloading hpack-4.2.0-py3-none-any.whl (34 kB)
+#17 97.86 Collecting hyperframe==6.1.0
+#17 97.86   Downloading hyperframe-6.1.0-py3-none-any.whl (13 kB)
+#17 97.86 Collecting aioquic==1.2.0
+#17 97.86   Downloading aioquic-1.2.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 1.9 MB/s eta 0:00:00
+#17 97.86 Collecting certifi
+#17 97.86   Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 2.2 MB/s eta 0:00:00
+#17 97.86 Collecting cryptography>=42.0.0
+#17 97.86   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 1.7 MB/s eta 0:00:00
+#17 97.86 Collecting pylsqpack<0.4.0,>=0.3.3
+#17 97.86   Downloading pylsqpack-0.3.24-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (250 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 250.3/250.3 kB 325.8 kB/s eta 0:00:00
+#17 97.86 Collecting pyopenssl>=24
+#17 97.86   Downloading pyopenssl-26.4.0-py3-none-any.whl (56 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.0/56.0 kB 951.1 kB/s eta 0:00:00
+#17 97.86 Collecting service-identity>=24.1.0
+#17 97.86   Downloading service_identity-26.1.0-py3-none-any.whl (11 kB)
+#17 97.86 Collecting cffi>=2.0.0
+#17 97.86   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 217.8/217.8 kB 2.3 MB/s eta 0:00:00
+#17 97.86 Collecting typing-extensions>=4.9
+#17 97.86   Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 915.1 kB/s eta 0:00:00
+#17 97.86 Collecting attrs>=19.1.0
+#17 97.86   Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 105.5 kB/s eta 0:00:00
+#17 97.86 Collecting pycparser
+#17 97.86   Downloading pycparser-3.11-py3-none-any.whl (51 kB)
+#17 97.86      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.2/51.2 kB 321.9 kB/s eta 0:00:00
+#17 97.86 Installing collected packages: typing-extensions, pylsqpack, pycparser, hyperframe, hpack, certifi, attrs, h2, cffi, cryptography, service-identity, pyopenssl, aioquic
+#17 97.86 Successfully installed aioquic-1.2.0 attrs-26.1.0 certifi-2026.7.22 cffi-2.1.1 cryptography-50.0.2 h2-4.3.0 hpack-4.2.0 hyperframe-6.1.0 pycparser-3.11 pylsqpack-0.3.24 pyopenssl-26.4.0 service-identity-26.1.0 typing-extensions-4.16.0
+#17 DONE 101.9s
+
+#18 [builder 12/13] RUN python3 /tools/build.py compile
+#18 6.617 START canonical-format: ['mix', 'format', '--check-formatted']
+#18 8.969 START changed-source-format: ['mix', 'format', '--check-formatted', 'apps/gaoxy/lib/gaoxy/config.ex', 'apps/gaoxy/lib/gaoxy/quic.ex', 'apps/gaoxy/lib/gaoxy/quic_bridge.ex', 'apps/gaoxy/lib/gaoxy/service.ex', 'apps/gaoxy/mix.exs', 'apps/gaoxy/test/cleanup_attachment_test.exs', 'apps/gaoxy/test/quic_context_test.exs', 'apps/gaoxy_http/lib/gaoxy/http/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/framed_response.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/response.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex', 'apps/gaoxy_http/lib/gaoxy/plug_adapter.ex', 'apps/gaoxy_http/mix.exs', 'apps/gaoxy_http/test/http2_control_rate_test.exs', 'apps/gaoxy_http/test/http2_network_test.exs', 'apps/gaoxy_http/test/http2_pre_settings_test.exs', 'apps/gaoxy_http/test/http3_upgrade_test.exs', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_http3/lib/gaoxy/http/http3.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex', 'apps/gaoxy_http3/mix.exs', 'apps/gaoxy_http3/test/connection_test.exs', 'apps/gaoxy_http3/test/headers_test.exs', 'apps/gaoxy_http3/test/host_poll_profile_test.exs', 'apps/gaoxy_http3/test/lifecycle_race_test.exs', 'apps/gaoxy_http3/test/lifecycle_test.exs', 'apps/gaoxy_http3/test/operations_test.exs', 'apps/gaoxy_http3/test/options_test.exs', 'apps/gaoxy_http3/test/plug_test.exs', 'apps/gaoxy_http3/test/protocol_test.exs', 'apps/gaoxy_http3/test/proxy_test.exs', 'apps/gaoxy_http3/test/qpack_test.exs', 'apps/gaoxy_http3/test/service_test.exs', 'apps/gaoxy_http3/test/test_helper.exs', 'apps/gaoxy_http3/test/transport_test.exs', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex', 'apps/gaoxy_proxy/mix.exs', 'apps/gaoxy_proxy/test/http3_guardian_test.exs', 'apps/gaoxy_proxy/test/http3_proxy_test.exs', 'apps/gaoxy_proxy/test/http3_session_client_test.exs', 'apps/gaoxy_proxy/test/http_headers_test.exs', 'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs', 'apps/gaoxy_server/lib/gaoxy/server/config.ex', 'apps/gaoxy_server/lib/gaoxy/server/route_config.ex', 'apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex', 'apps/gaoxy_server/lib/gaoxy/server/supervisor.ex', 'apps/gaoxy_server/mix.exs', 'apps/gaoxy_server/test/http3_config_test.exs', 'apps/gaoxy_server/test/http3_generation_test.exs', 'docs/acceptance/evidence/m4/upstream-matrix/gaoxy-up2-diagnostic2-fixture-original.exs', 'docs/acceptance/evidence/release-0.3.0/portable-build2-runtime1-failure-1791861327712037431/context/hostname-probe.exs', 'docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs', 'examples/phoenix_native/h3_gateway.exs', 'examples/phoenix_native/mix.exs', 'integration/h3_consumer/mix.exs', 'integration/h3_consumer/test/consumer_test.exs', 'integration/h3_consumer/test/test_helper.exs', 'integration/http3/fixture.exs', 'integration/http3/matrix_fixture.exs', 'integration/http3/standalone/fixture.exs', 'integration/http3/upstream/fixture.exs', 'integration/http3/upstream/probe.exs', 'integration/http3/upstream/session_probe.exs', 'integration/http_consumer/mix.exs', 'integration/http_consumer/test/consumer_test.exs', 'integration/http_consumer/test/test_helper.exs', 'integration/quic_consumer/mix.exs', 'integration/quic_consumer/test/quic_test.exs', 'mix.exs']
+#18 10.54 START strict-compile: ['mix', 'compile', '--warnings-as-errors']
+#18 137.8 ==> earmark_parser
+#18 137.8 Compiling 2 files (.xrl)
+#18 137.8 Compiling 1 file (.yrl)
+#18 137.8 Compiling 3 files (.erl)
+#18 137.8 Compiling 32 files (.ex)
+#18 137.8 Generated earmark_parser app
+#18 137.8 ==> mime
+#18 137.8 Compiling 1 file (.ex)
+#18 137.8 Generated mime app
+#18 137.8 ==> jason
+#18 137.8 Compiling 10 files (.ex)
+#18 137.8 Generated jason app
+#18 137.8 ==> plug_crypto
+#18 137.8 Compiling 5 files (.ex)
+#18 137.8 Generated plug_crypto app
+#18 137.8 ==> hpax
+#18 137.8 Compiling 4 files (.ex)
+#18 137.8 Generated hpax app
+#18 137.8 ==> ex_ssl
+#18 137.8 Compiling 58 files (.ex)
+#18 137.8 Generated ex_ssl app
+#18 137.8 ==> rustler
+#18 137.8 Compiling 7 files (.ex)
+#18 137.8 Generated rustler app
+#18 137.8 ==> elixir_quic
+#18 137.8 Compiling 23 files (.ex)
+#18 137.8 Generated elixir_quic app
+#18 137.8 ==> http_core
+#18 137.8 Compiling 32 files (.ex)
+#18 137.8 Generated http_core app
+#18 137.8 ==> elixir_quic_http3
+#18 137.8 Compiling 13 files (.ex)
+#18 137.8 Generated elixir_quic_http3 app
+#18 137.8 ==> nimble_parsec
+#18 137.8 Compiling 4 files (.ex)
+#18 137.8 Generated nimble_parsec app
+#18 137.8 ==> makeup
+#18 137.8 Compiling 15 files (.ex)
+#18 137.8 Generated makeup app
+#18 137.8 ==> makeup_elixir
+#18 137.8 Compiling 6 files (.ex)
+#18 137.8 Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+#18 137.8 Generated makeup_elixir app
+#18 137.8 ==> makeup_erlang
+#18 137.8 Compiling 4 files (.ex)
+#18 137.8 Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+#18 137.8 Generated makeup_erlang app
+#18 137.8 ==> ex_doc
+#18 137.8 Compiling 30 files (.ex)
+#18 137.8 Generated ex_doc app
+#18 137.8 ===> Analyzing applications...
+#18 137.8 ===> Compiling telemetry
+#18 137.8 ==> http_runtime
+#18 137.8 Compiling 22 files (.ex)
+#18 137.8 Generated http_runtime app
+#18 137.8 ==> http_fetch
+#18 137.8 Compiling 18 files (.ex)
+#18 137.8 Generated http_fetch app
+#18 137.8 ==> http_web_socket
+#18 137.8 Compiling 10 files (.ex)
+#18 137.8 Generated http_web_socket app
+#18 137.8 ==> thousand_island
+#18 137.8 Compiling 18 files (.ex)
+#18 137.8 Generated thousand_island app
+#18 137.8 ==> telemetry_metrics
+#18 137.8 Compiling 7 files (.ex)
+#18 137.8 Generated telemetry_metrics app
+#18 137.8 ==> abyss
+#18 137.8 Compiling 28 files (.ex)
+#18 137.8     Updating crates.io index
+#18 137.8  Downloading crates ...
+#18 137.8   Downloaded heck v0.5.0
+#18 137.8   Downloaded unreachable v1.0.0
+#18 137.8   Downloaded void v1.0.2
+#18 137.8   Downloaded rustler_sys v2.4.3
+#18 137.8   Downloaded windows-targets v0.52.6
+#18 137.8   Downloaded inventory v0.3.24
+#18 137.8   Downloaded rustler_codegen v0.34.0
+#18 137.8   Downloaded quote v1.0.46
+#18 137.8   Downloaded rustversion v1.0.22
+#18 137.8   Downloaded socket2 v0.5.10
+#18 137.8   Downloaded unicode-ident v1.0.24
+#18 137.8   Downloaded proc-macro2 v1.0.106
+#18 137.8   Downloaded rustler v0.34.0
+#18 137.8   Downloaded memchr v2.8.2
+#18 137.8   Downloaded regex v1.12.4
+#18 137.8   Downloaded aho-corasick v1.1.4
+#18 137.8   Downloaded syn v2.0.118
+#18 137.8   Downloaded regex-syntax v0.8.11
+#18 137.8   Downloaded windows_aarch64_gnullvm v0.52.6
+#18 137.8   Downloaded windows_x86_64_gnullvm v0.52.6
+#18 137.8   Downloaded windows_i686_gnullvm v0.52.6
+#18 137.8   Downloaded regex-automata v0.4.14
+#18 137.8   Downloaded windows_x86_64_msvc v0.52.6
+#18 137.8   Downloaded libc v0.2.186
+#18 137.8   Downloaded windows_aarch64_msvc v0.52.6
+#18 137.8   Downloaded windows_x86_64_gnu v0.52.6
+#18 137.8   Downloaded windows_i686_gnu v0.52.6
+#18 137.8   Downloaded windows_i686_msvc v0.52.6
+#18 137.8   Downloaded windows-sys v0.52.0
+#18 137.8 Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+#18 137.8 Compiling lib/abyss/dhcp_socket/native.ex (it's taking more than 10s)
+#18 137.8 Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+#18 137.8 Generated abyss app
+#18 137.8 ==> plug
+#18 137.8 Compiling 1 file (.erl)
+#18 137.8 Compiling 42 files (.ex)
+#18 137.8 Generated plug app
+#18 137.8 ==> websock
+#18 137.8 Compiling 1 file (.ex)
+#18 137.8 Generated websock app
+#18 137.8 ==> websock_adapter
+#18 137.8 Compiling 4 files (.ex)
+#18 137.8 Generated websock_adapter app
+#18 137.8 ==> gaoxy
+#18 137.8 Compiling 19 files (.ex)
+#18 137.8 Generated gaoxy app
+#18 137.8 ==> gaoxy_http
+#18 137.8 Compiling 32 files (.ex)
+#18 137.8 Generated gaoxy_http app
+#18 137.8 ==> gaoxy_http3
+#18 137.8 Compiling 9 files (.ex)
+#18 137.8 Generated gaoxy_http3 app
+#18 137.8 ==> gaoxy_proxy
+#18 137.8 Compiling 25 files (.ex)
+#18 137.8 Generated gaoxy_proxy app
+#18 137.8 ==> gaoxy_server
+#18 137.8 Compiling 9 files (.ex)
+#18 137.8 Generated gaoxy_server app
+#18 DONE 141.4s
+
+#19 [builder 13/13] RUN python3 /tools/build.py qualify
+#19 7.048 START compatibility: ['python3', 'scripts/check-tests.py', '--max-cases', '1', 'apps/gaoxy/test', 'apps/gaoxy_http/test', 'apps/gaoxy_http3/test', 'apps/gaoxy_proxy/test', 'apps/gaoxy_server/test']
+#19 238.0 ==> earmark_parser
+#19 238.0 Compiling 3 files (.erl)
+#19 238.0 Compiling 32 files (.ex)
+#19 238.0 Generated earmark_parser app
+#19 238.0 ==> mime
+#19 238.0 Compiling 1 file (.ex)
+#19 238.0 Generated mime app
+#19 238.0 ==> jason
+#19 238.0 Compiling 10 files (.ex)
+#19 238.0 Generated jason app
+#19 238.0 ==> plug_crypto
+#19 238.0 Compiling 5 files (.ex)
+#19 238.0 Generated plug_crypto app
+#19 238.0 ==> hpax
+#19 238.0 Compiling 4 files (.ex)
+#19 238.0 Generated hpax app
+#19 238.0 ==> ex_ssl
+#19 238.0 Compiling 58 files (.ex)
+#19 238.0 Generated ex_ssl app
+#19 238.0 ==> rustler
+#19 238.0 Compiling 7 files (.ex)
+#19 238.0 Generated rustler app
+#19 238.0 ==> elixir_quic
+#19 238.0 Compiling 23 files (.ex)
+#19 238.0 Generated elixir_quic app
+#19 238.0 ==> http_core
+#19 238.0 Compiling 32 files (.ex)
+#19 238.0 Generated http_core app
+#19 238.0 ==> elixir_quic_http3
+#19 238.0 Compiling 13 files (.ex)
+#19 238.0 Generated elixir_quic_http3 app
+#19 238.0 ==> nimble_parsec
+#19 238.0 Compiling 4 files (.ex)
+#19 238.0 Generated nimble_parsec app
+#19 238.0 ==> makeup
+#19 238.0 Compiling 15 files (.ex)
+#19 238.0 Generated makeup app
+#19 238.0 ==> makeup_elixir
+#19 238.0 Compiling 6 files (.ex)
+#19 238.0 Compiling lib/makeup/lexers/elixir_lexer.ex (it's taking more than 10s)
+#19 238.0 Generated makeup_elixir app
+#19 238.0 ==> makeup_erlang
+#19 238.0 Compiling 4 files (.ex)
+#19 238.0 Compiling lib/makeup/lexers/erlang_lexer.ex (it's taking more than 10s)
+#19 238.0 Generated makeup_erlang app
+#19 238.0 ==> ex_doc
+#19 238.0 Compiling 30 files (.ex)
+#19 238.0 Generated ex_doc app
+#19 238.0 ===> Analyzing applications...
+#19 238.0 ===> Compiling telemetry
+#19 238.0 ==> http_runtime
+#19 238.0 Compiling 22 files (.ex)
+#19 238.0 Generated http_runtime app
+#19 238.0 ==> http_fetch
+#19 238.0 Compiling 18 files (.ex)
+#19 238.0 Generated http_fetch app
+#19 238.0 ==> http_web_socket
+#19 238.0 Compiling 10 files (.ex)
+#19 238.0 Generated http_web_socket app
+#19 238.0 ==> thousand_island
+#19 238.0 Compiling 18 files (.ex)
+#19 238.0 Generated thousand_island app
+#19 238.0 ==> telemetry_metrics
+#19 238.0 Compiling 7 files (.ex)
+#19 238.0 Generated telemetry_metrics app
+#19 238.0 ==> abyss
+#19 238.0 Compiling 28 files (.ex)
+#19 238.0 Compiling crate dhcp_socket in release mode (native/dhcp_socket)
+#19 238.0 Copying /work/deps/abyss/native/dhcp_socket/target/release/libdhcp_socket.so to priv/native/dhcp_socket.so
+#19 238.0 Generated abyss app
+#19 238.0 ==> plug
+#19 238.0 Compiling 1 file (.erl)
+#19 238.0 Compiling 42 files (.ex)
+#19 238.0 Generated plug app
+#19 238.0 ==> websock
+#19 238.0 Compiling 1 file (.ex)
+#19 238.0 Generated websock app
+#19 238.0 ==> websock_adapter
+#19 238.0 Compiling 4 files (.ex)
+#19 238.0 Generated websock_adapter app
+#19 238.0 ==> gaoxy
+#19 238.0 Compiling 19 files (.ex)
+#19 238.0 Generated gaoxy app
+#19 238.0 ==> gaoxy_http
+#19 238.0 Compiling 32 files (.ex)
+#19 238.0 Generated gaoxy_http app
+#19 238.0 ==> gaoxy_http3
+#19 238.0 Compiling 9 files (.ex)
+#19 238.0 Generated gaoxy_http3 app
+#19 238.0 ==> gaoxy_proxy
+#19 238.0 Compiling 25 files (.ex)
+#19 238.0 Generated gaoxy_proxy app
+#19 238.0 ==> gaoxy_server
+#19 238.0 Compiling 9 files (.ex)
+#19 238.0 Generated gaoxy_server app
+#19 238.0 ==> gaoxy
+#19 238.0 Running ExUnit with seed: 653586, max_cases: 1
+#19 238.0 
+#19 238.0 ..............+......+.............+...+..+.+...........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+......+....+.....+.+..+...+....+...+...............+..+...+...+..................+..........+...........+.+..+.+............+.....+...+......+.+..+...+...+....+..+....+.....+......+.+.....+.............+..+....+......+...+.....+.+..............+.+.....+...+.+......+........+..........+...+...+.....+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+........+..........+.....+....+...+..+...+.............+........+.+......+...............+...+.....+......+.+...+..............+..........+.....+...+...+.........+......+......+....+......+.....+.+...............+...+..+...+....+...+.........+...........+...+....+.....+...+...+......+.........+.........+.+...........+...+.......+...+....................+.......+...+..+......+....+...+........+...+.........+............+....+..+....+..................+..+....+..+...+......+.+............+.....+...+.............+..+.........+.+..+............+...+.+..+.........+.+..+.......+......+........+.......+.........+...+.....+.+..+....+..............+........................+.+.....+.+.....+.+..+...+.........+......+.......+.....+.+..+....+.........+...............+.....+....+..+.+........+.+......+..+............+...+...+...+.+...+...+............+.................+...+.+..............+.......+......+..+.+....................+.+...+...........+.+.........+............+.....+....+...+......+.....+.........+............+....+.....+......+......+.......+..+...................+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ...........+..+......+.......+..+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+..+.......+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..........+.......+.....+.+......+........+.+..+...+....+...+............+...........+......+.+..+.......+...+..+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 .+......+.....+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...+.+.....+.+.....+....+..+............+..........+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+...+.........+...+.......+......+.....+.+.....+...+.+............+........+.+...+.....................+......+........+......+.+...+...+........+.+.....+...+.............+........+.+......+...............+.....+............+...+............+.+......+..............+.+...+..+..................+.+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ......+.+..+..........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+.........+...+..+.............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..........+..+...+.+......+............+......+.........+...+..+.+..+.........+......+....+...........+....+........+.+..............+......+......+.........+....+........+...+......+.+..............+.........+.+...+...+...+....................+.......+...+.....+.......+.........+...+..+......+...+......+......+....+...+...............+.....+...+...+.+...+...+..+.......+......+..+...+..........+.....+..........+........+....+...+.........+.....+....+............+..+...+...................+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 ......................+..+......+......+.+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..............+...+...+.......+.........+......+...+...........+.........+......+......+..........+...+..+....+.................................+...+..+.+.....+.+.....+...+...+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ....+...........+....+..+......+....+........+......+.+......+.....+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+..............+.+...........+...+.+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+...+.........+.+........+...........................+...+.+..................+...........+.......+...+.....+....+.................+....+.........+......+..+....+.....+....+..+...................+..............+.......+........+.+...+...+.........+.......................+.+..+.......+..+....+.....+............+............+.+......+.....+......+...+....+..+......+.......+...+...+.....................+...+.....+...+..........+..+.+.........+......+............+..............+...+.......+...+........+...+...................+.....+...+...+....+...........+.+......+..+......+......+......+...+............+..........+...+.....+......+.+...+..+....+........+.+..+.......+......+.....+....+..+..................+.+..+..........+.....+.........+....+.........+..+...............+.............+...+..+......+......+.+........+.......+.....+.........+.+........+....+...+...+.........+..+...+................+..+......................+..+...+.+.....+.+........+.+..+...+......+.+.....+.............+...........+...+............+..........+...+...+.....+............+.+.....+.+.....+....+..+...+.+......+..+.............+.....+...+......+......+....+...+..+..........+...+...........+.+...+...+..+.............+..+......+......+..........+...+...........+....+............+...+..+....+..+...+.+........+.+............+........+......+......+.......+..+...+..........+...+.....+.............+......+........+...+....+......+...+.....+.....................+...+......+.......+...............+.....+.......+....................+...+............+.+..+...+.+...+.....................+..+.......+...+..+.......+...+........+.......+..+...+..........+..+...+.+...............+..+.........+....+......+........+.......+.....+...+...+.........+.+........+.......+.................+......+.+........+.+..+.........+.+...+.....+.......+........+.......+........+.+...+..+...............+....+......+........+...+...+....+.....+.+.....+....+.....+...............+......+.+........+......+..........+..+...+............+.......+........+.......+.....+.......+.....+.+........+......+.+...+......+...+..+......+.........+.........+.......+.....+.......+...........+..........+.....+......+.+.........+.....+....+.....+.+...+...+..+...+..........+............+.....+............+..........+......+..+.+......+....................+...+...+....+...........+....+...+...+........+....+..+.+...+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 ..+........+.........+............+......+...+....+..+.+............+........+............+......+....+......+............+...+..+....+.....+...+...+.......+..+.............+..+...+.+..+..................+.+...+.....+.+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+.....+.+...+.........+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...........+.+..+.+..+.......+......+.....+...............+.+.....................+.....+....+........+...+...+...............+.......+..+...+..............................+....+...+............+........+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ..+.+..+.+.....+.+......+.........+......+...............+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+.+.....+.......+..+...+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 .............
+#19 238.0 03:36:32.721 [error] Task #PID<0.4945.0> started from #PID<0.4929.0> terminating
+#19 238.0 ** (stop) :injected
+#19 238.0     test/cleanup_attachment_test.exs:82: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+#19 238.0     (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+#19 238.0 Function: #Function<4.86947270/0 in Gaoxy.CleanupAttachmentTest.guardian/0>
+#19 238.0     Args: []
+#19 238.0 .
+#19 238.0 03:36:32.740 [info] The function passed as a handler with ID #Reference<0.2552693595.285212674.170627> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 .....
+#19 238.0 03:36:32.949 [error] GenServer #PID<0.5048.0> terminating
+#19 238.0 ** (stop) :fixture_init_error
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 59458}}}
+#19 238.0 Last message: {:continue, :handle_connection}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.271>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285212674.170966>, start_time: -576460614371944035, start_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212674.170966>, remote_address: {127, 0, 0, 1}, remote_port: 59458, parent_telemetry_span_context: #Reference<0.2552693595.285212674.170779>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212674.170966>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285212674.170740>, service: :init_error, generation: #Reference<0.2552693595.285212674.170745>}, instance: #PID<0.4991.0>, service: #PID<0.4993.0>, spec: %{id: :init_error, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, max_memberships: 64}, handler_options: %{owner: #PID<0.4989.0>, action: :init_error}, dispatcher: %{}, handler_mode: :stream}, gate: #PID<0.4994.0>, startup_token: #Reference<0.2552693595.285212674.170749>}}
+#19 238.0 
+#19 238.0 03:36:32.959 [error] GenServer #PID<0.5064.0> terminating
+#19 238.0 ** (stop) :output_limit
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 34528}}}
+#19 238.0 Last message: {:tcp, #Port<0.287>, "trigger"}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.287>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285212673.180755>, start_time: -576460614362649573, start_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212673.180755>, remote_address: {127, 0, 0, 1}, remote_port: 34528, parent_telemetry_span_context: #Reference<0.2552693595.285212673.180590>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212673.180755>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285212674.170740>, service: :output, generation: #Reference<0.2552693595.285212674.170895>}, instance: #PID<0.4991.0>, service: #PID<0.5029.0>, spec: %{id: :output, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, max_memberships: 64}, handler_options: %{owner: #PID<0.4989.0>, action: :output}, dispatcher: %{}, handler_mode: :stream}, app: %{owner: #PID<0.4989.0>, action: :output}, lease: #Reference<0.2552693595.285212673.180757>, gate: #PID<0.5030.0>, startup_token: #Reference<0.2552693595.285212674.170899>}}
+#19 238.0 
+#19 238.0 03:36:32.951 [error] GenServer #PID<0.5052.0> terminating
+#19 238.0 ** (RuntimeError) fixture callback crash
+#19 238.0     test/stream_isolation_test.exs:9: Gaoxy.StreamIsolationTest.Actions.handle_data/2
+#19 238.0     (gaoxy 0.3.0) lib/gaoxy/stream_bridge.ex:52: Gaoxy.StreamBridge.chunks/4
+#19 238.0     (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+#19 238.0     (gaoxy 0.3.0) lib/gaoxy/stream_bridge.ex:3: Gaoxy.StreamBridge.handle_info/2
+#19 238.0     (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+#19 238.0     (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+#19 238.0     (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 54146}}}
+#19 238.0 Last message: {:tcp, #Port<0.275>, "trigger"}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.275>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285212674.171026>, start_time: -576460614370175458, start_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212674.171026>, remote_address: {127, 0, 0, 1}, remote_port: 54146, parent_telemetry_span_context: #Reference<0.2552693595.285212674.170817>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212674.171026>}}, read_timer: #Reference<0.2552693595.285212674.171034>, read_deadline: -576460584370, timer_deadline: -576460584370}, %{scope: %{instance: #Reference<0.2552693595.285212674.170740>, service: :crash, generation: #Reference<0.2552693595.285212674.170783>}, instance: #PID<0.4991.0>, service: #PID<0.5002.0>, spec: %{id: :crash, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, max_memberships: 64}, handler_options: %{owner: #PID<0.4989.0>, action: :crash}, dispatcher: %{}, handler_mode: :stream}, app: %{owner: #PID<0.4989.0>, action: :crash}, lease: #Reference<0.2552693595.285212674.171028>, gate: #PID<0.5003.0>, startup_token: #Reference<0.2552693595.285212674.170787>}}
+#19 238.0 
+#19 238.0 03:36:32.957 [error] GenServer #PID<0.5060.0> terminating
+#19 238.0 ** (stop) :state_limit
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.StreamBridge, {{127, 0, 0, 1}, 60784}}}
+#19 238.0 Last message: {:tcp, #Port<0.283>, "trigger"}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.283>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285212673.180687>, start_time: -576460614364163556, start_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212673.180687>, remote_address: {127, 0, 0, 1}, remote_port: 60784, parent_telemetry_span_context: #Reference<0.2552693595.285212673.180562>}, handler: Gaoxy.StreamBridge, span_metadata: %{handler: Gaoxy.StreamBridge, telemetry_span_context: #Reference<0.2552693595.285212673.180687>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285212674.170740>, service: :state, generation: #Reference<0.2552693595.285212674.170859>}, instance: #PID<0.4991.0>, service: #PID<0.5020.0>, spec: %{id: :state, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.StreamIsolationTest.Actions, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 1024, max_state: 1024, max_memberships: 64}, handler_options: %{owner: #PID<0.4989.0>, action: :state}, dispatcher: %{}, handler_mode: :stream}, app: %{owner: #PID<0.4989.0>, action: :state, retained: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, lease: #Reference<0.2552693595.285212673.180689>, gate: #PID<0.5021.0>, startup_token: #Reference<0.2552693595.285212674.170863>}}
+#19 238.0 .
+#19 238.0 03:36:33.331 [info] The function passed as a handler with ID #Reference<0.2552693595.285212674.171479> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 .
+#19 238.0 03:36:33.799 [info] The function passed as a handler with ID #Reference<0.2552693595.285212674.171822> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 .......+......+........+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+........+.......+.....+.......+...+...+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+...+....+...........+....+..+.+...+.....+....+...+..+.........................+...+..+...+....+.....+...+......+.+......+..+.+..+.........+...+......+....+...+...+..+.......+..+....+...........+......+...+.......+...+..+.......+...........+.+.....+................+............+...+...+.....+....+..+....+.................+.......+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+................+.....+...+...+....+...........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.......+...+..+.+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+.........+...+..+...............+...+...+....+...+.....+..........+...+...+..+....+....................+.+..............+...+...+.........+....+...............+...........+.............+......+...............+.....+..........+..+...+....+...+..+...+....+...+......+.....+.........+.+..+.......+..+....+..+....+...+......+..+............+.+.....+.+......+..+......+.........+............+.+........+....+..+..................+......+.+...+.....+......+.......+.................+.......+......+........+......+....+..+...+....+..+..................+...+..........+..+.+......+......+..+.+.....................+...+...........+.+.....................+...+......+...........+...+............+...+.+.....+....+............+..+.+..............+...+...+......+......+.......+.....+.+..+.......+..+.............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 .+..+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+..+..........+...+........+....+...+.....+.......+..+....+.........+...........+....+..+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..........+.........+......+......+.+.....+.......+......+.....+.....................+...+...+....+...+.....+...+...+.+......+...+.....+.+......+...+......+...+...+.....+...+.......+............+............+.....+...+...............+.......+...+.....+............+...+...+.........+.........+....+..+.+.....+.......+.....+.+......+..........................+.......+..+.+..+.+...............+.........+.....+...+...+......+.+.................+...+....+...............+...+......+..+............+................+.....+.........+......+.+......+............+......+..+.........+...+..........+.....+...+.............+...........+.+...+..+...+.+.....+..........+..............+......+.+..+..........+........+............+............+....+............+........+.......+..+.......+...........+...+......+.+.........+........+.+..+............+...............+.+............+.....+.......+........+....+...+......+...........+....+..............+...+...+.......+..+.+.....+.+...+............+.....+....+.................+.........+....+.....+....+...+..+.+.........+.....+...+...+....+.....+.......+........................+..+...+.+...+..+......+..................+....+..+.+.....+....+........+..................+...+.+...+..+.........+.........+............+.+..+................+..+.......+..+....+..+.......+......+......+......+.................+......+.+.....+...+.............+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ..+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+.......+......+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*........+......+..+.+......+.....+.........+.+........+.......+...+......+.....+....+.....+...+..................+....+......+.........+..+.........+.+......+..+.+.........+..+.+........+.......+...+.....+.......+.....+....+........+.+......+...+...........+......+.....................+....+......+............+..+....+............+.........+........+...+..........+...+.....+......+.........+......+.+..+...+.........+.+..+......+...................+...+.....+............+...............+.+..+...+......+....+.................+....+......+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 
+#19 238.0 03:36:36.850 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+#19 238.0  - {:record_type_mismatch, 21}
+#19 238.0 
+#19 238.0 03:36:36.914 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+#19 238.0  - {:record_type_mismatch, 21}
+#19 238.0 .......
+#19 238.0 03:36:37.011 [error] GenServer #PID<0.5308.0> terminating
+#19 238.0 ** (RuntimeError) fixture crash
+#19 238.0     test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+#19 238.0     (gaoxy 0.3.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+#19 238.0     (gaoxy 0.3.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+#19 238.0     (stdlib 7.3.0.1) gen_server.erl:2424: :gen_server.try_handle_continue/3
+#19 238.0     (stdlib 7.3.0.1) gen_server.erl:2291: :gen_server.loop/4
+#19 238.0     (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+#19 238.0 Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 60373, "crash"}}}
+#19 238.0 State: %{broadcast: false, socket: #Port<0.325>, idle_deadline: :infinity, idle_timer: nil, idle_token: nil, read_timeout: 30000, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2552693595.285212674.173065>, service: "echo", generation: #Reference<0.2552693595.285212674.173070>}, instance: #PID<0.5292.0>, service: #PID<0.5294.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, capabilities: [], transport: :udp, quic: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 8, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: #PID<0.5290.0>, dispatcher: %{}, handler_mode: :stream}, gate: #PID<0.5295.0>, startup_token: #Reference<0.2552693595.285212674.173074>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285212674.173192>, start_time: -576460610309841766, start_metadata: %{handler: Gaoxy.DatagramBridge, local_info: {{127, 0, 0, 1}, 45234}, telemetry_span_context: #Reference<0.2552693595.285212674.173192>, server_pid: #PID<0.5296.0>, remote_address: {127, 0, 0, 1}, remote_port: 60373, parent_telemetry_span_context: #Reference<0.2552693595.285212674.173088>, ancillary: [], sampled: true}}, listener: #PID<0.5298.0>, memory_token: #Reference<0.2552693595.285212674.173198>, memory_timer: #Reference<0.2552693595.285212674.173199>, processing_times: [], adaptive_timeout: 30000, memory_check_interval: 10000}
+#19 238.0 ......
+#19 238.0 03:36:37.569 [info] The function passed as a handler with ID #Reference<0.2552693595.285212674.174119> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 ..
+#19 238.0 03:36:37.922 [info] The function passed as a handler with ID #Reference<0.2552693595.285212674.174669> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 ........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.......+...........+...+.........+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+.+.....+....+.......................+...+...+......+...............+....+.....+.+...+...+...............+........+.......+.....+....+.....+....+......+......+..+......+....+......+..............+.+..+...+.+.....+...+..........+........+..........+...+.........+..+......+....+....................+.........+......+....+..+....+.....+.+..+...+........................+...+.+....................+............+..........+...+.....+.........+...+...+.+...+..+................+...+.........+..+.+............+..+....+.....+..........+......+.....+.+..+............+...+............+...+...+..........+........+....+.....+...............+...+...+..........+..+.........+.+...+...........+....+...........+...+.............+............+..+.+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ...+....+...+.........+.....+...+......+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+................+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+....+...+..+.......+...+.....................+..+....+...+......+......+...........+...+....+..+....+.....+......+....+......+...+..+.+.....+...............+..........+..+...............+.+..+...+.+...+...+.........+...+....................+..........+...+............+..+................+..+.+...........+...+.+.....+....+.....+...+....+......+..+.+..............+..........+..+.........+....+...+...+..+.........+......+....+...+.....+.+............+..+.......+.....+.+........+...............+................+......+...+........................+..+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 ........+.....+.........+.+..................+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...........+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+.+...........+...+....+.....+.+....................+............+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+.+.....+.......+.....+................+..+...+............+....+........+.+.........+...+............+......+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+...+........+...............+..........+...+..+....+...+..+......+...+....+...+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+...+..+...............+......+.+......+...+.....+.+......+..+.......+.....+.........+.........+.+..+............+.......+...............+.........+.....+.........+.+..+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 ..+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.+...+.....+.............+.....+....+...+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+......+...+.............+..+...+.........+.+..............+.+..............+.+..............+.........+....+......+.....+.........+.............+.....+....+........+......+.......+........+......+.+.....+.......+......+......+.........+.....+......+.+...+..............+..........+...............+........+..........+...+..+...................+........+...+...+.+...+..+.+..+.......+.....+...+...+...............+...+....+......+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+...+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+...............+.+.....+...+............+.+...+..+...+......+..................+...+.......+...........+................+.....+.........................+.........+.........+............+...+..+...+...+...+............+....+.........+.....+............+...+.+...+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 .+.+.....+.......+..+....+.....+....+...............+..+....+.....+......+...+.+..+............+......+....+...........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...+.........+......+..+.......+...........+.......+............+...........+.+.....+.+..+.......+.....................+.....+...+....+.....+.+......+.....+....+.....+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+.....+..........+.........+..+...............+.+............+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.........+...+.......+...+......+.....+.......+..+.+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+........+.+.....................+...+..+....+......+......+...+..+.......+..+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 
+#19 238.0 03:36:39.518 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+#19 238.0  - {:record_type_mismatch, 21}
+#19 238.0 
+#19 238.0 03:36:39.524 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:223 generated SERVER ALERT: Fatal - Bad Record MAC
+#19 238.0  - {:record_type_mismatch, 21}
+#19 238.0 ...............
+#19 238.0 03:36:39.915 [error] GenServer Gaoxy.Registry.PIDPartition0 terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.5670.0>, :killed}
+#19 238.0 State: {#Reference<0.2552693595.285343746.175119>, %{}}
+#19 238.0 ..
+#19 238.0 03:36:39.945 [info] The function passed as a handler with ID #Reference<0.2552693595.285212673.184706> is a local function.
+#19 238.0 This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+#19 238.0 
+#19 238.0 https://hexdocs.pm/telemetry/telemetry.html#attach/4
+#19 238.0 ......................
+#19 238.0 Finished in 20.0 seconds (17.1s async, 2.8s sync)
+#19 238.0 91 tests, 0 failures
+#19 238.0 ==> gaoxy_http
+#19 238.0 Running ExUnit with seed: 653586, max_cases: 1
+#19 238.0 
+#19 238.0 ..................................................................................................................................................................................................................
+#19 238.0 Finished in 10.0 seconds (10.0s async, 0.02s sync)
+#19 238.0 210 tests, 0 failures
+#19 238.0 ==> gaoxy_http3
+#19 238.0 Running ExUnit with seed: 653586, max_cases: 1
+#19 238.0 
+#19 238.0 .....................................+.....+......+.+.........+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+......+...+..+.+..+......+......+.............+..+......+....+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+..+.+..+.+...........+.+.....+.......+.....+......+.+.....+......+...+............+....+........+..........+.....+......+....+...+.................+.......+...+...+..+............+....+..............+...+....+........+......+....+...+..+...+.......+...+.........+.....+.+...+...........+......+.........+.............+..+...+..................+.......+........+...+.+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+.+........+.+......+........+.+.....+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+...+.+...........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+....+.........+..+.......+.....+.+...........+......+.......+..+...+.............+..................+..+...............+.......+...+...+......+.....+.+..+.............+..+......+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 .....+....+.....+......+.+..+..........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...........+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+........+.........+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ..+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...+.+..+...+......+......+.........+.+.....+...+......+....+.........+..+......+...+.+...+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*......+........+.............+.....+.+......+.....+...+.+..............+.+.....................+.........+........+..........+.....+......+......+.+...............+.......................+.+.....+.........+....+...+............+..+...+.............+..+......+......+.+..+................+......+...+...+.....+...+.........................+..+.........+....+..+.......+......+..+...+................+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 .............................................................................................+.+.........+...+...+..+.........+.+...+...............+.....+....+..+.........+.+...+........+..........+..+...+....+.....+....+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+.........+....+..+.+...............+...+.....+..........+...........+......+..........+.........+...+..+...+......+.......+.....+...+.+...+.....+...+.......+........+...+....+...+...+....................+.+..............+......+.........+......+...+.+..+....+......+.........+.....+.+...+..+.......+.....+.+......+.........+......+........+...+.......+......+.....+......+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .+..+.........+.+..+.+..+.......+..+...+.......+..............+.+........+.............+...+...........+.+........+.......+...............+..+...+....+.....+...+...+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.............+.....+.+.....+..........+.........+......+.....+......+...+......+.+...+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+.+.....+.......+...+......+.....+..............................+.+...+......+........+...+....+...........+....+...+.....+......+.+........+.+.....+....+........+.............+..+..........+...+..+.............+.........+........+...+......+...+.......+......+...+..+.......+...........+.+...+..+.+............+..+.+..+.......+........+.......+...+...........+.+......+...+......+......+..+.+...........+.+.........+...+...+........+................+...+..+....+......+...+......+...........+...+...............+...+.......+...+..............+......+.......+..+....+..............+.+............+........+....+...+...+......+.....+.+..+............+.+........+......+....+..+.......+......+......+...+..+...+...+.......+.....+......+......+....+......+..............+....+...+..+......+..........+..............+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 ........+.+.........+.....+............+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+...............+..+......+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+............+...+...............+...............+..+.........+.......+..+.+..+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 .....+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+.+.....+.+.....+.+.....+.......+..+.........+..........+............+..+.+..+.......+........+...+.+...+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+.....+.+...+............+...+.....+....+..+...+...+..........+...+.....+....+..+......+....+.........+...............+......+..............+.+......+..+.......+...+...+..+.......+........................+..+.............+.....+....+.....+..........+...+........+.........+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 .....+..............+.+.....+...+......+.+............+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+.....+.........+.......+...+.....+.+......+......+..+...+............+.+...........+......+....+...+.....+...+..........+.....+..........+.....+.........+...+.+..+...+....+...........+....+...+..............+.+..+.......+......+.....+.........+.+...+..+.......+..+..........+.....+...+...+...+.........+...+...+.......+........+..........+.....+....+...+........+.+...+..+.+...+.........+.....+.+..+.......+......+.........+.....+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...............+.....+..........+...........+....+...+..+...+..........+..............+......+.......+.....+...+.......+......+...........+......+....+.........+..+.......+...+.....+...+.+...............+.........+..............+.......+.....+................+..+............+.........+....+...........+.+...+..+...+.............+........+.+......+...........................+......+..+....+...+.....+.+..............+.............+..............+...+.+...........+.+..+......+.+.....+....+..+............+.......+........+.......+......+..+......+.+......+..+.+.....+.......+...+..+...+.+....................+....+.........+..+...+.......+........+..........+...+........+................+.....+.+.........+.....+......+...+...............+....+..+...+..........+..+......+.......+......+..+..........+...+.....+......+...+...+....+...........+....+...+........+............+.+..+.........+......+...+....+.....+.......+...+...+..+......+.......+..+.+.....+....+...........+..........+.....+................+...+..+.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+..+...+......+.+.................+.+.....+.........+.+......+......+.........+.....+.+.........+.....+...+......+.+..............+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...............+......+...+.+.........+.....+......+....+...........+......+...+....+...+..+.+..+.......+.......................+..........+............+..+......+...+....+......+......+...........+..................+.+......+..+.+.................+.......+........+...+.+...+..+......+............+.+...........+..........+........+............+.+........................+...+...............+..+......+...............+....+.........+......+...+...+...+......+.....+....+............+...+.....+.+...+..+......+...............+.......+.....+.......+.....+....+.....+....+........+...+.......+....................+...+.+........+..........+...+..............+...............+.............+.....+.+......+....................+......+...+....+...........+....+..+.+.....+.........+......+.............+..+...+.+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 ..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+........+.......+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 ........+......+.+............+..+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+..+.+...+......+...+......+.....+.........+......+.+...............+........+...+.......+.....+.......+...........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.........+......+......+...+...+...+......+.+.....+....+..............+......+.+...+...........+....+.........+.....+.............+..+.......+........+...+...+.+.....+......+..................+..........+...........+....+.........+.....+.............+...+......+.....+......+....+...........+....+...........+.......+..+...+.+.........+...........+.+........+............+.+........+......+...+...+..................+.+.....+.+.....+...+....+......+..+....+...+..+...+.+......+.........+..+.......+...........+.........+.......+........+...+....+.....+.+...+..+............+...+..................+....+.....+...+.......+....................+...+.........+..........+.....+.+...+.........+..+...+.+...........+....+...............+.....+.+...............+.....+...+.+..+....+...+........+.......+...+.....+..........+..+.......+........+.......+...+...+.....+...+.+...+......+.....+.......+..+...............+..........+........+.........+...+..........+......+.....+.........+.+..+...+.+......+..............+.+..+......+.......+..+.........................+........+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 238.0 -----
+#19 238.0 Certificate request self-signature ok
+#19 238.0 subject=CN = localhost
+#19 238.0 .
+#19 238.0 Finished in 14.7 seconds (12.1s async, 2.5s sync)
+#19 238.0 128 tests, 0 failures
+#19 238.0 ==> gaoxy_proxy
+#19 238.0 Running ExUnit with seed: 653586, max_cases: 1
+#19 238.0 
+#19 238.0 ...................................
+#19 238.0 03:37:15.028 [error] GenServer #PID<0.10631.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10629.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10629.0>, socket: #Port<0.1125>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474818.55099>, generation: #Reference<0.2552693595.285474818.55090>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10630.0>, owns_admission: false, sending: false}
+#19 238.0 ..
+#19 238.0 03:37:15.256 [error] GenServer #PID<0.10658.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10656.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10656.0>, socket: #Port<0.1131>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474818.55241>, generation: #Reference<0.2552693595.285474818.55232>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10657.0>, owns_admission: false, sending: false}
+#19 238.0 ..
+#19 238.0 03:37:15.561 [error] GenServer #PID<0.10716.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10715.0>, :killed}
+#19 238.0 State: %DynamicSupervisor{args: {:ok, %{intensity: 0, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.10716.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 0, max_seconds: 5, children: %{#PID<0.10717.0> => {{Gaoxy.Proxy.UDPRelay.Association, :start_link, :undefined}, :temporary, 100, :worker, [Gaoxy.Proxy.UDPRelay.Association]}}, restarts: []}
+#19 238.0 ..
+#19 238.0 03:37:15.941 [error] GenServer #PID<0.10738.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10736.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10736.0>, socket: #Port<0.1145>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474818.56333>, generation: #Reference<0.2552693595.285474818.56323>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10737.0>, owns_admission: false, sending: false}
+#19 238.0 ....
+#19 238.0 03:37:16.200 [error] GenServer #PID<0.10810.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10808.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10808.0>, socket: #Port<0.1161>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.85274>, generation: #Reference<0.2552693595.285474817.85265>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10809.0>, owns_admission: false, sending: false}
+#19 238.0 
+#19 238.0 03:37:16.408 [error] GenServer #PID<0.10790.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10788.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10788.0>, socket: #Port<0.1157>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.85151>, generation: #Reference<0.2552693595.285474817.85142>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10789.0>, owns_admission: false, sending: false}
+#19 238.0 ..
+#19 238.0 03:37:16.917 [error] GenServer #PID<0.10844.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10842.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10842.0>, socket: #Port<0.1166>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474818.56777>, generation: #Reference<0.2552693595.285474818.56768>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10843.0>, owns_admission: false, sending: false}
+#19 238.0 .
+#19 238.0 03:37:17.179 [error] GenServer #PID<0.10879.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10877.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10877.0>, socket: #Port<0.1171>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.85897>, generation: #Reference<0.2552693595.285474817.85884>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10878.0>, owns_admission: false, sending: false}
+#19 238.0 ...
+#19 238.0 03:37:17.247 [error] GenServer #PID<0.10933.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10923.0>, :killed}
+#19 238.0 State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: 64, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.10933.0>, Supervisor.Default}, strategy: :one_for_one, max_children: 64, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+#19 238.0 
+#19 238.0 03:37:17.248 [error] GenServer #PID<0.10928.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10926.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10926.0>, socket: #Port<0.1182>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.86260>, generation: #Reference<0.2552693595.285474817.86251>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10927.0>, owns_admission: false, sending: false}
+#19 238.0 
+#19 238.0 03:37:17.249 [error] GenServer #PID<0.10935.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10923.0>, :killed}
+#19 238.0 State: %{timeout: 5000, server_pid: #PID<0.10923.0>}
+#19 238.0 
+#19 238.0 03:37:17.249 [error] GenServer #PID<0.10920.0> terminating
+#19 238.0 ** (stop) {:backend_failed, :killed}
+#19 238.0 Last message: {:EXIT, #PID<0.10923.0>, :killed}
+#19 238.0 State: %{control: nil, scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", generation: #Reference<0.2552693595.285474817.86230>}, table: #Reference<0.2552693595.285605889.86223>, mode: :ready, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, capabilities: [], transport: :udp, quic: %{}, limits: %{max_bytes: 4194304, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 42717}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, queue_bytes: 65536, max_packet: 65507, rate_packets: 64, rate_bytes: 65536, packet_ratio: 1, byte_ratio: 1, drain_grace: 200, queue_items: 8, max_associations: 256, reservation_timeout: 100}, reservation: %{worker: 200617, max_packet: 65507, infrastructure: 977746, max_associations: 11}, local_networks: [{{127, 0, 0, 1}, {255, 0, 0, 0}}, {{172, 17, 0, 2}, {255, 255, 0, 0}}]}, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher}, live: #Reference<0.2552693595.285605889.86224>, generation: #Reference<0.2552693595.285474817.86230>, drain: nil, backend: #PID<0.10923.0>, gate: #PID<0.10922.0>, cleanups: %{}, cleanup_failed: nil, dispatcher_owner: #PID<0.10930.0>, dispatcher_monitor: #Reference<0.2552693595.285474817.86276>, registry_policy: %{scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", generation: #Reference<0.2552693595.285474817.86230>}, recovery: nil, owners: %{#Reference<0.2552693595.285474817.86234> => #PID<0.5913.0>}, backend: #PID<0.10923.0>}, drain_fun: &Gaoxy.Lifecycle.drain/4, backend_control: #Function<18.93298660/3 in Gaoxy.Service.backend_control>}
+#19 238.0 
+#19 238.0 03:37:17.248 [error] GenServer #PID<0.10924.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10923.0>, :killed}
+#19 238.0 State: {:state, {#PID<0.10924.0>, Abyss.ListenerPool}, :one_for_one, {["listener-1"], %{"listener-1" => {:child, #PID<0.10925.0>, "listener-1", {Abyss.Listener, :start_link, [{"listener-1", #PID<0.10923.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", generation: #Reference<0.2552693595.285474817.86230>}, instance: #PID<0.10918.0>, service: #PID<0.10920.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, capabilities: [], transport: :udp, quic: %{}, limits: %{max_bytes: 4194304, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 42717}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, queue_bytes: 65536, max_packet: 65507, rate_packets: 64, rate_bytes: 65536, ...}, reservation: %{worker: 200617, max_packet: 65507, infrastructure: 977746, max_associations: 11}, local_networks: [{{127, 0, 0, ...}, {255, 0, ...}}, {{172, 17, ...}, {255, ...}}]}, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher}, gate: #PID<0.10922.0>, startup_token: #Reference<0.2552693595.285474817.86237>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", ...}, instance: #PID<0.10918.0>, service: #PID<0.10920.0>, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}]}, :transient, false, 5000, :worker, [Abyss.Listener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.2552693595.285474817.86245>, Abyss.ListenerPool, {#PID<0.10923.0>, %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", generation: #Reference<0.2552693595.285474817.86230>}, instance: #PID<0.10918.0>, service: #PID<0.10920.0>, spec: %{id: "relay", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.UDPRelay, tls: %{}, capabilities: [], transport: :udp, quic: %{}, limits: %{max_bytes: 4194304, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 5000, max_active: 64, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %Gaoxy.Proxy.UDPRelay.Options{upstream: {{127, 0, 0, 1}, 42717}, ingress: [{{127, 0, 0, 0}, 8}], destination: %{allow: [{{127, 0, 0, 1}, 32}], allow_reserved: true, deny: []}, limits: %{send_timeout: 1000, lifetime: 300000, idle_timeout: 30000, queue_bytes: 65536, max_packet: 65507, rate_packets: 64, rate_bytes: 65536, packet_ratio: 1, ...}, reservation: %{worker: 200617, max_packet: 65507, infrastructure: 977746, max_associations: 11}, local_networks: [{{127, 0, 0, 1}, {255, 0, 0, ...}}, {{172, 17, 0, ...}, {255, 255, ...}}]}, dispatcher: %{max_bytes: 262144, max_queue: 32, handoff_timeout: 50}, handler_mode: :datagram_dispatcher}, gate: #PID<0.10922.0>, startup_token: #Reference<0.2552693595.285474817.86237>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 65507, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: {Gaoxy.DatagramDispatcherBridge, [gaoxy: %{scope: %{instance: #Reference<0.2552693595.285474817.86225>, service: "relay", generation: #Reference<0.2552693595.285474817.86230>}, instance: #PID<0.10918.0>, service: #PID<0.10920.0>, spec: %{...}, ...}]}, dispatcher_options: [], dispatcher_max_queue: 32, dispatcher_max_queue_bytes: 262144, admission_start_timeout: 5000}}}
+#19 238.0 
+#19 238.0 03:37:17.463 [error] GenServer #PID<0.10946.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10944.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10944.0>, socket: #Port<0.1184>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.86327>, generation: #Reference<0.2552693595.285474817.86318>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10945.0>, owns_admission: false, sending: false}
+#19 238.0 
+#19 238.0 03:37:17.468 [error] GenServer #PID<0.10965.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.10963.0>, :killed}
+#19 238.0 State: %{owner: #PID<0.10963.0>, socket: #Port<0.1188>, queue: {[], []}, max_bytes: 262144, owner_monitor: #Reference<0.2552693595.285474817.86521>, generation: #Reference<0.2552693595.285474817.86492>, transport: Abyss.Transport.UDP.Unicast, max_queue: 32, queue_bytes: 0, admission: #PID<0.10964.0>, owns_admission: false, sending: false}
+#19 238.0 .....................................................................................................................................
+#19 238.0 03:37:22.527 [error] GenServer #PID<0.12116.0> terminating
+#19 238.0 ** (stop) killed
+#19 238.0 Last message: {:EXIT, #PID<0.12115.0>, :killed}
+#19 238.0 State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.12116.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.12117.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.2552693595.285605889.93614>, #Reference<0.2552693595.285605889.93615>, :http, #Reference<0.2552693595.285474817.93616>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+#19 238.0 ...........................
+#19 238.0 03:37:44.110 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Bad Certificate
+#19 238.0 
+#19 238.0 
+#19 238.0 03:37:44.110 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2220 generated CLIENT ALERT: Fatal - Bad Certificate
+#19 238.0  - {:bad_cert,
+#19 238.0  {:hostname_check_failed, {:requested, ~c"wrong.example"},
+#19 238.0   {:received, [dNSName: ~c"localhost", iPAddress: <<127, 0, 0, 1>>]}}}
+#19 238.0 
+#19 238.0 03:37:44.111 [error] GenServer #PID<0.13020.0> terminating
+#19 238.0 ** (stop) {:tls_alert, {:bad_certificate, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2220 generated CLIENT ALERT: Fatal - Bad Certificate\n {bad_cert,\n     {hostname_check_failed,\n         {requested,\"wrong.example\"},\n         {received,[{dNSName,\"localhost\"},{iPAddress,<<127,0,0,1>>}]}}}"}}
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 48186}}}
+#19 238.0 Last message: {:continue, :handle_connection}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.1565>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285474817.109775>, start_time: -576460543221622897, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474817.109775>, remote_address: {127, 0, 0, 1}, remote_port: 48186, parent_telemetry_span_context: #Reference<0.2552693595.285474817.109759>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474817.109775>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285474817.109719>, service: :relay, generation: #Reference<0.2552693595.285474817.109724>}, instance: #PID<0.13008.0>, service: #PID<0.13010.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 3000, max_active: 32, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, write_timeout: 1000, max_lifetime: 10000, idle_timeout: 30000, max_chunk_bytes: 16384, upstream: {{127, 0, 0, 1}, 60055}, upstream_tls: %{server_name: "wrong.example", cacertfile: "/work/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/ca.pem"}}, dispatcher: %{}, handler_mode: :native}, gate: #PID<0.13011.0>, startup_token: #Reference<0.2552693595.285474817.109728>}}
+#19 238.0 
+#19 238.0 03:37:44.132 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2212 generated CLIENT ALERT: Fatal - Unknown CA
+#19 238.0 
+#19 238.0 
+#19 238.0 03:37:44.132 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+#19 238.0 
+#19 238.0 
+#19 238.0 03:37:44.132 [error] GenServer #PID<0.13044.0> terminating
+#19 238.0 ** (stop) {:tls_alert, {:unknown_ca, ~c"TLS client: In state wait_cert_cr at ssl_handshake.erl:2212 generated CLIENT ALERT: Fatal - Unknown CA\n"}}
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 48590}}}
+#19 238.0 Last message: {:continue, :handle_connection}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.1571>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 3000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285474818.69029>, start_time: -576460543204402964, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.69029>, remote_address: {127, 0, 0, 1}, remote_port: 48590, parent_telemetry_span_context: #Reference<0.2552693595.285474818.69013>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.69029>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285474818.68973>, service: :relay, generation: #Reference<0.2552693595.285474818.68978>}, instance: #PID<0.13032.0>, service: #PID<0.13034.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, drain_timeout: 5000, callback_timeout: 3000, max_active: 32, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %{mode: :tls_upstream, connect_timeout: 5000, write_timeout: 1000, max_lifetime: 10000, idle_timeout: 30000, max_chunk_bytes: 16384, upstream: {{127, 0, 0, 1}, 36659}, upstream_tls: %{server_name: "localhost", cacertfile: "/work/apps/gaoxy_proxy/tmp/Gaoxy.Proxy.StreamRelayTLSTest/test-incorrect-upstream-TLS-hostname-or-trust-closes-without-sending-application-bytes-06002e8d/other/ca.pem"}}, dispatcher: %{}, handler_mode: :native}, gate: #PID<0.13035.0>, startup_token: #Reference<0.2552693595.285474818.68982>}}
+#19 238.0 .........
+#19 238.0 03:37:45.948 [error] GenServer #PID<0.13195.0> terminating
+#19 238.0 ** (stop) :byte_limit
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 36606}}}
+#19 238.0 Last message: {:continue, :handle_connection}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.1612>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285474818.70407>, start_time: -576460541373040019, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.70407>, remote_address: {127, 0, 0, 1}, remote_port: 36606, parent_telemetry_span_context: #Reference<0.2552693595.285474818.70401>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.70407>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285474817.110781>, service: :relay, generation: #Reference<0.2552693595.285474817.110786>}, instance: #PID<0.13183.0>, service: #PID<0.13185.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 1, idle_timeout: 30000, drain_timeout: 500, callback_timeout: 1000, max_active: 32, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %{mode: :tcp, connect_timeout: 5000, write_timeout: 5000, max_lifetime: 300000, idle_timeout: 30000, max_chunk_bytes: 16384, upstream: {{127, 0, 0, 1}, 54101}, upstream_tls: %{}}, dispatcher: %{}, handler_mode: :native}, gate: #PID<0.13186.0>, startup_token: #Reference<0.2552693595.285474818.70373>}}
+#19 238.0 ........
+#19 238.0 03:37:47.704 [error] GenServer #PID<0.13384.0> terminating
+#19 238.0 ** (stop) :active_limit
+#19 238.0 Process Label: {:thousand_island, :connection, {Gaoxy.Proxy.StreamRelay, {{127, 0, 0, 1}, 44980}}}
+#19 238.0 Last message: {:continue, :handle_connection}
+#19 238.0 State: {%ThousandIsland.Socket{socket: #Port<0.1664>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2552693595.285474818.71935>, start_time: -576460539618152967, start_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.71935>, remote_address: {127, 0, 0, 1}, remote_port: 44980, parent_telemetry_span_context: #Reference<0.2552693595.285474818.71917>}, handler: Gaoxy.Proxy.StreamRelay, span_metadata: %{handler: Gaoxy.Proxy.StreamRelay, telemetry_span_context: #Reference<0.2552693595.285474818.71935>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2552693595.285474818.71879>, service: :relay, generation: #Reference<0.2552693595.285474818.71884>}, instance: #PID<0.13372.0>, service: #PID<0.13374.0>, spec: %{id: :relay, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.Proxy.StreamRelay, tls: %{}, capabilities: [], transport: :tcp, quic: %{}, limits: %{max_bytes: 16777216, idle_timeout: 30000, drain_timeout: 500, callback_timeout: 1000, max_active: 2, max_packet: 65507, max_output: 65507, max_state: 65536, max_memberships: 64}, handler_options: %{mode: :tcp, connect_timeout: 5000, write_timeout: 5000, max_lifetime: 300000, idle_timeout: 30000, max_chunk_bytes: 16384, upstream: {{127, 0, 0, 1}, 40881}, upstream_tls: %{}}, dispatcher: %{}, handler_mode: :native}, gate: #PID<0.13375.0>, startup_token: #Reference<0.2552693595.285474818.71888>}}
+#19 238.0 ...................................
+#19 238.0 Finished in 45.6 seconds (15.8s async, 29.8s sync)
+#19 238.0 263 tests, 0 failures
+#19 238.0 ==> gaoxy_server
+#19 238.0 Running ExUnit with seed: 653586, max_cases: 1
+#19 238.0 
+#19 238.0 .................................................................
+#19 238.0 Finished in 12.4 seconds (1.1s async, 11.3s sync)
+#19 238.0 65 tests, 0 failures
+#19 238.1 START release: ['mix', 'release', 'gaoxy']
+#19 243.9 ==> gaoxy_http3
+#19 243.9 Compiling 2 files (.ex)
+#19 243.9 Generated gaoxy_http3 app
+#19 243.9 ==> gaoxy_server
+#19 243.9 Compiling 1 file (.ex)
+#19 243.9 Generated gaoxy_server app
+#19 243.9 * assembling gaoxy-0.3.0 on MIX_ENV=prod
+#19 243.9 * skipping runtime configuration (config/runtime.exs not found)
+#19 243.9 
+#19 243.9 Release created at _build/prod/rel/gaoxy
+#19 243.9 
+#19 243.9     # To start your system
+#19 243.9     _build/prod/rel/gaoxy/bin/gaoxy start
+#19 243.9 
+#19 243.9 Once the release is running:
+#19 243.9 
+#19 243.9     # To connect to it remotely
+#19 243.9     _build/prod/rel/gaoxy/bin/gaoxy remote
+#19 243.9 
+#19 243.9     # To stop it gracefully (you may also send SIGINT/SIGTERM)
+#19 243.9     _build/prod/rel/gaoxy/bin/gaoxy stop
+#19 243.9 
+#19 243.9 To list all commands:
+#19 243.9 
+#19 243.9     _build/prod/rel/gaoxy/bin/gaoxy
+#19 243.9 
+#19 243.9 START core-smoke: ['python3', 'scripts/release-smoke.py']
+#19 249.6 Certificate tool: /usr/bin/openssl; OpenSSL 3.0.22 25 Aug 2026 (Library: OpenSSL 3.0.22 25 Aug 2026)
+#19 249.6 .+..........+...........+...+.......+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+....+..........................+.+...+...+..............+.+.....+.......+............+.....+...+.+.....+.+......+.....+....+...+..+.+..+.+......+........+...+.........+.+..+......+....+..+.............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+.....+...+..........+...+..+...+.......+.....+............+.............+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 249.6 .+....+..+.......+........+.......+......+..+...............+.........+....+...........+.+..+..........+..+.+..+......+........................+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.+......+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...................+.+.....+.........+......+.........+.......+...+..+...+.............+.....+...+......+....+......+...+..+......+....+........+......+......+....+............+...+...........+.+..+..........+..+....+.....+....+..+......+.......+......+.....+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 249.6 -----
+#19 249.6 .......+......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.+..............+.........+......+......+...+.........+...+............+......+.+...+...+........+....+...+...+.....+.......+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*........+.....+....+.........+.....+....+..+..........+...+..+....+..+..........+..+...+...+.......+.................+...+....+........+.............+.....+.........+..........+.........+......+...+...+.....+....+........+.......+.....+.+...+...........+.........+.+.........+.....+....+......+.........+.....+...+....+........+......................+...........+....+......+........+......+.+.....+...+....+......+..+.......+..+.........+....+......+.....+.+.....+.+...+.....+...................+...+..+.......+......+.....+.........+...+.+......+........+.+.....+.+......+..+...............+......+.+......+..+............+.+.....+.............+.........+..+.+...+..+.......+.....+......+.+...+...+...+..+.........+..........+........+...+...+....+..+...+.............+........+....+..........................+....+.....+..........+...+.........+.....+.+...+..+.......+.....+............+.........+......+.+..+..........+........+...+....+......+..+.............+.....+.+......+..+.............+..+......+....+......+............+.........+...+..+...+......+.........+.+..............+.+......+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 249.6 ..+...+.+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*........+...+...............+..+..........+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#19 249.6 -----
+#19 249.6 Certificate request self-signature ok
+#19 249.6 subject=CN = localhost
+#19 249.6 /tmp/gaoxy-certificates.x3dyLf/cert.pem: OK
+#19 249.6 /tmp/gaoxy-certificates.x3dyLf/cert.pem: OK
+#19 249.6 PASS portable release TCP/TLS/UDP startup, traffic, admitted TCP/TLS replies after SIGTERM admission barrier, VM exit, UDP endpoint reuse; 3 transports
+#19 249.6 START gateway-smoke: ['/work/.audit/h2peer/bin/python', 'scripts/gateway-release-smoke.py']
+#19 253.3 PASS standalone gateway release readiness, native H1/H2 POST uploads and responses through dedicated H1 upstream, SIGTERM exit0 and gateway/upstream port reuse; 2 exchanges
+#19 253.3 START h3-smoke: ['/work/.audit/h2peer/bin/python', 'scripts/h3-release-smoke.py', '--evidence', '/output/evidence/h3']
+#19 257.9 {"status": "PASS", "checks": 3}
+#19 268.4 START package: ['tar', '-C', '_build/prod/rel/gaoxy', '-czf', '/output/gaoxy-0.3.0-linux-x86_64.tar.gz', '.']
+#19 273.4 PASS clean portable build:757 tests/0 failures; core3; gateway2; SHA256=257b91c9b97fa5c73b9718744249a3fc00511833aa81142e36924083a58cd902
+#19 DONE 277.9s
+
+#20 [artifact 1/1] COPY --from=builder /output/ /
+#20 DONE 2.4s
+
+#21 exporting to client directory
+#21 copying files 9.99MB 0.1s done
+#21 DONE 0.1s

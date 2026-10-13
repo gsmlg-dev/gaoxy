@@ -33,8 +33,11 @@ public Session50 checks, native/server/shared/browser47/59/19, standalone16,
 and clean core/H1-H2/H3 consumers1/2/2. The complete H1/H2/H3-to-H3 matrix
 passes66network+2policy checks in both its first execution and required fresh
 repeat, with independent evidence reviews. Final independent M4 acceptance
-passes. Portable artifact/runtime qualification and publication are
-not run. [M4 acceptance](docs/acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+passes. [v0.3.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.3.0) is published from source4931982:
+the portable builder passes757 tests/0 failures, fresh offline core/H1/H2/H3
+runtime and21-ELF inspection pass, and all three published downloads equal
+the qualified bytes. Hosted CI remains BLOCKED_ENV with zero executed steps;
+deployment and release-artifact E2E are NOT RUN. [M4 acceptance](docs/acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
 binds exact source identities, counts and limits and preserves historical FAILs.
 The released 0.21.3 M3 cohort passed compatibility486/0, public managed39/39,
 H1 baseline20/0, B21, supplemental TLS5/5 and the public H2 supplement8/8.
@@ -47,7 +50,8 @@ retains its recorded earlier source identity.
 isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
 [task status and repair counters](docs/implementation-status.md).
 Release execution and artifact verification are recorded separately in
-[the v0.2.0 release receipt](docs/acceptance/release-0.2.0.md).
+[the v0.3.0 release receipt](docs/acceptance/release-0.3.0.md).
+The next prepared existing task is [M3 Task4 H1 resource foundation](docs/plans/m3-h1-resource-foundation.md); implementation is NOT RUN.
 
 ## Development
 

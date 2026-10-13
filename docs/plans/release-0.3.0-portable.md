@@ -32,12 +32,12 @@ aioquic1.2.0/hyper-h2, Git and GitHub CLI.
   record actual test counts. Install the existing pinned H3 peer requirements.
   Copy only required Python fixtures into the runtime image and run packaged
   H3 smoke alongside existing core/gateway smoke.
-- [ ] Independently review design/recipe/smoke source. Before building, complete
+- [x] Independently review design/recipe/smoke source. Before building, complete
   M4 gates, update six version declarations and release documentation, verify
   source checks, independently review and commit the release candidate. Record
   `git rev-parse HEAD`, create `git archive --format=tar HEAD`, then generate the
   source-identity JSON from that exact commit/archive/lock.
-- [ ] Execute staged portable builder and export artifacts. Run safe metadata
+- [x] Execute staged portable builder and export artifacts. Run safe metadata
   and checksum finalization, then `python3 qualify_runtime.py <build directory>`
   for the fresh offline image. Require all stage exits0, nonzero tests without
   exclusions/skips, unchanged source hashes, three H3 checks, ELF inspection,
@@ -50,7 +50,7 @@ aioquic1.2.0/hyper-h2, Git and GitHub CLI.
   removal. Exercise inspection timeout, partial creation, child timeout and
   failed removal; require parent fallback cleanup of only the owned name and
   keep forced cleanup FAIL. PASS requires child exit 0 and observed removal.
-- [ ] Independently review actual artifact/runtime evidence and repeat affected
+- [x] Independently review actual artifact/runtime evidence and repeat affected
   checks after changes. Only then continue immutable tag/release publication and
   fresh asset downloads in the parent release plan.
 
@@ -74,5 +74,19 @@ that global IGNORECASE also affected the owned name; the corrected implementatio
 limits case-insensitivity to the diagnostic prefix. [Current42 regressions](../acceptance/evidence/release-0.3.0/docker-absence-boundary-green-1791861658805631265.json)
 PASS, including case-sensitive-name rejection. The [controlled RED](../acceptance/evidence/release-0.3.0/docker-absence-exact-name-controlled-red-1791861725492154292/result.json)
 reproduces the first-repair defect; the earlier yielded RED attempt remains FAIL
-and is not proof. These are harness checks, not artifact acceptance. A new committed
-archive/build/runtime and actual-evidence review remain required before publication.
+and is not proof. These are harness checks, not artifact acceptance.
+
+The final committed source4931982 archive, build3, finalization and offline
+runtime2 now PASS:757 tests/0 failures/zero skipped or excluded, 83 changed
+Elixir paths, strict compile, unchanged4207 regular files, safe1420 package entries,
+five apps0.3.0, core3/gateway2/H3three checks, all21 ELF with no missing/Nix
+dependencies, child exit0/normal rm0/exact owned-name absence. The final42-case
+post-review boundary repeat and26 independent pure vectors also PASS.
+[Final artifact/runtime/notes review](../acceptance/evidence/release-0.3.0/review-actual-portable-artifact-runtime-1791863376221811603.json)
+has no findings and preceded immutable tag/release publication. The raw
+[manifest](../acceptance/evidence/release-0.3.0/portable-final-1791863003049561405/manifest.json)
+keeps its historical capture-time PENDING_FINAL_REVIEW; the later review closes
+that snapshot without mutating it.
+[Actual publication and fresh downloads](../acceptance/evidence/release-0.3.0/publication-1791863800600551728/publication-verification.json)
+PASS for these exact bytes. See [release acceptance](../acceptance/release-0.3.0.md)
+for identities, durations, failures, commands and limits.

@@ -17,20 +17,69 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Written plan only. Every implementation/test/review task below is
+**Status:** Prepared execution handoff; final documentation main push and
+execution kickoff pending. Every implementation/test/code-review task below is
 **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
 [existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
 
-**Planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
+**Historical planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
 `d5831d7613e8c8edd2adf76fbd7b86b408e62de6`, concurrently modified for M4.
 Source review confirmed installed 0.21.4 APIs; no fresh managed-H1 execution is
 claimed. The parent provides the execution baseline and cumulative Sol/Astra
 counters at each handoff. This package does not reset them or authorize another
 Astra recovery round.
 
+## Release and execution handoff — 2026-10-13
+
+Published v0.3.0 and qualified artifact source:
+`4931982cff7b07c8e9f42a5e4561d22854d418bd`; annotated tag object
+`ba9ce0b8e124ac6b819488c8ebe074d53d5a581d` peels to that source.
+[Publication/download verification](../acceptance/evidence/release-0.3.0/publication-1791863800600551728/publication-verification.json)
+is **PASS_PUBLICATION_AND_FRESH_DOWNLOAD**, SHA256
+`2c04e39cd566469072006b4b13c5be2542e8305f791d5bae3e6cc4e000db5e89`:
+three downloads equal qualified bytes, safe inventory 1,420 entries, five
+applications at 0.3.0 and two checksums verified. The [publication independent review](../acceptance/evidence/release-0.3.0/review-actual-publication-fresh-download-1791864019336220804.json)
+is **PASS**, with no findings; API `immutable: false` is retained. Final main
+documentation push is pending at this snapshot. Final main
+documentation is a descendant identity, recorded separately from artifact/tag
+source. The [design handoff](../designs/m3-h1-resource-foundation.md#release-identity-and-execution-handoff--2026-10-13)
+links exact-source, artifact/runtime, hosted and prior preparation reviews.
+
+[Final portable evidence](../acceptance/evidence/release-0.3.0/portable-final-1791863003049561405/manifest.json)
+records build 3/finalize/runtime 2 **PASS**, 757 tests/zero failures, core 3,
+gateway 2, H3 three and ELF 21, with child/removal zero exits and owned-container
+absence confirmed. Hosted CI remains **BLOCKED_ENV**, ten no-start jobs/zero
+steps; disabled release-artifact E2E remains **NOT RUN**. These facts do not
+execute or accept this Task 4 package.
+
+The verified lock is seven HTTP/QUIC/TLS cohort packages at **0.21.4**, SHA256
+`aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab`;
+the public ManagedTransport facade remains
+`2f89d9535c116dfc129f7e64c36d54256271a24405d1f860d58911e2bc397e5a`.
+Carry **20 live / 8 production / 3 harness** unsuccessful UP2 outcomes and
+**Astra recovery 2 exhausted**, with zero rounds added here. Preserve earlier
+histories and the separate portable-harness repair ledger; no counter reset or
+third Astra recovery is authorized.
+
+Implementation checkout bootstrap: `.trees/m3-h1-resource-foundation`, branch
+`codex/m3-h1-resource-foundation`, actual HEAD
+`4931982cff7b07c8e9f42a5e4561d22854d418bd`. The [bootstrap receipt](../acceptance/evidence/release-0.3.0/next-task4-bootstrap-1791864162247441315.json)
+is **PASS_CLEAN_BOOTSTRAP_FROM_VERIFIED_RELEASE_SOURCE**, SHA256
+`b541d7f1b1fe05cad357a06262ffb9fe91e24e80688342736b00be6e4606746a`;
+tracked diff and untracked inventory are empty. After final documentation main
+push, the parent fast-forwards this checkout from the released source.
+A separate kickoff receipt records actual path/branch/HEAD/tree, docs/evidence
+only diff from released source and current diff/untracked inventory. Final fast
+forward and kickoff remain pending; no final SHA or executable ownership is
+assigned in advance. M4 executable freeze remains intact at this snapshot;
+its release and future disjoint writers are recorded by the parent kickoff.
+The parent retains serialized Mix/build/live command
+ownership. All Step 0 boxes remain unchecked, and no Task 5 activation starts.
+
 ## Scope and ownership
 
-During this planning assignment, the writer owns only these two new documents.
+During this handoff assignment, the writer owns only these two documents and
+one unique preparation review receipt.
 The following executable files are future Task 4 ownership, not permission to
 edit them during the M4 freeze.
 

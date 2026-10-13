@@ -15,8 +15,12 @@ The six local source versions are0.3.0. Fresh candidate verification passes530/0
 34 explicit formatting paths and strict umbrella/Phoenix/production compilation
 as recorded in the final ledger. Receipts remain precommit hash-bound.
 Whole-candidate SPEC/CODE preparation passes. Final independent acceptance of
-all evidence and synchronized documentation PASS. Portable build,
-packaged runtime and publication are NOT RUN. The selected H3 tiny-window1ms
+all evidence and synchronized documentation PASS. Portable build and packaged
+offline runtime now PASS at immutable source4931982:757 tests/0 failures,
+core3/gateway2/H3three exchanges and21 ELF with no missing/Nix dependencies.
+v0.3.0 is published; all three fresh downloads match qualified bytes. Hosted CI
+remains BLOCKED_ENV (3 runs/10 jobs, zero executed steps); deployment/E2E NOT RUN.
+The selected H3 tiny-window1ms
 profile completes4985ms first/4567ms fresh within original5s; no default10ms
 throughput-margin claim follows. Session lifecycle evidence is distinct from
 Fetch H3's unsupported cleanup diagnostic.
@@ -28,8 +32,9 @@ failed runs and uncertain causal findings remain in [M4 acceptance](acceptance/m
 UP2 counters remain20 unsuccessful live/8 failed production/3 failed harness;
 historical19/7/3,18/6/3,17/5/3 and exhausted Astra2 are preserved.
 
-[v0.3.0 release qualification](acceptance/release-0.3.0.md) has separate source,
-artifact/runtime and remote-download gates. Next existing M3 Task4
+[v0.3.0 release qualification](acceptance/release-0.3.0.md) records completed
+source, artifact/runtime and remote-download gates. The tag/artifact stay at
+4931982; final main documentation follows as a separate commit. Next existing M3 Task4
 [design](designs/m3-h1-resource-foundation.md)/[plan](plans/m3-h1-resource-foundation.md)
 are prepared only; implementation NOT RUN. Continuing authorization remains,
 with unchanged Vault, E2E, publication/deployment and production restrictions.
