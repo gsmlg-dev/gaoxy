@@ -1,0 +1,57 @@
+{
+  "kind": "INDEPENDENT_ALPN_SCOPE_AUDIT",
+  "reviewer": "/root/profile_review",
+  "status": "PASS_CONTRACT_CORRECTION_REQUIRED_NO_UPSTREAM_BLOCK",
+  "reference_commit": "a2296e2ca9f24b8fd0480b06a6728fc15d190520",
+  "evidence": [
+    {
+      "file": "docs/plans/m3-tls-tracking-qualification.md",
+      "lines": [
+        103,
+        104,
+        168
+      ],
+      "requirement": "Explicit managed H1 sends no ALPN; exact Python None / JSONnull"
+    },
+    {
+      "file": "docs/designs/m3-managed-h1-preparation.md",
+      "lines": [
+        163,
+        164,
+        165
+      ],
+      "requirement": "Exact HTTPS SSL tree omits ALPN"
+    },
+    {
+      "file": "docs/designs/m3-h1-resource-foundation.md",
+      "lines": [
+        227,
+        228,
+        229,
+        371,
+        389
+      ],
+      "requirement": "Fixed H1/verifiedTLS/reuse/lifecycle without negotiated H1 ALPN requirement"
+    },
+    {
+      "file": "docs/designs/m3-upstream-transport.md",
+      "lines": [
+        272,
+        273
+      ],
+      "requirement": "Negotiated ALPN required for H2 specifically"
+    }
+  ],
+  "finding": "Harness-added http/1.1 selected-ALPN expectation contradicted prior exact null contract. Parent and earlier review erroneously classified it as product blocker.",
+  "authorized_correction": [
+    "Restore original exact SSL constructor/canonical grammar",
+    "Require every connected selected ALPN exactly nil, reject every nonnil value; no alternatives",
+    "Preserve peer http/1.1 offer and exact H1 parser/request identities/body/trailers/CA/SNI/reuse/no-replay/deadlines/joins",
+    "Keep all failed live receipts unchanged; rerun complete8",
+    "Reclassify issue107 optional nice-to-have; no prerequisite for this product scope"
+  ],
+  "mutations_or_runtime_commands": false,
+  "step7_unsuccessful_repairs_before_contract_repair5": 4,
+  "astra_recovery_used": 2,
+  "astra_recovery_limit": 2
+}

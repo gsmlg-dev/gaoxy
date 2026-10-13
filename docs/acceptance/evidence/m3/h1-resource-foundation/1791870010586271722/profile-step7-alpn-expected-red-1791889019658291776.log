@@ -1,0 +1,120 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 529341, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test counts SNI, opaque trust and PID occurrences without asserting resource ownership (Gaoxy.Proxy.ManagedH1PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h1_preparation_test.exs:712[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert manifest.owned.cons_cells == 17 + 6 + 2 + 1 + 1 + 12
+     [36mleft:  [0m3[31m7[0m
+     [36mright: [0m3[32m9[0m
+     [36mstacktrace:[0m
+       test/managed_h1_preparation_test.exs:716: (test)
+
+[32m.[0m[32m.[0m[32m.[0m
+
+  2) test rejects absent, changed or duplicate H1 ALPN in canonical HTTPS policies (Gaoxy.Proxy.ManagedH1PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h1_preparation_test.exs:163[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_policy} = Preparation.prepare_request(modified, source)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_policy[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%Gaoxy.Proxy.ManagedH1Preparation.Request{
+                timeout: 1000,
+                fields: [{"X-Repeat", "first"}, {"x-repeat", "second"}],
+                target: "/upload?",
+                body: nil,
+                url: "https://example.test/upload?",
+                connect_timeout: 500,
+                method: :post,
+                trailers: []
+              }[0m,
+              [32m%{
+                transient: %{
+                  source_plus_owned_backing_upper: 118,
+                  pair_reversal_extra_cons: 2
+                },
+                source: %{
+                  maps: %{7 => 1},
+                  backing_bytes: 55,
+                  logical_bytes: 55,
+                  binary_occurrences: 5,
+                  cons_cells: 2,
+                  tuples: %{2 => 2},
+                  atom_occurrences: 9,
+                  integer_occurrences: 2,
+                  pid_occurrences: 0
+                },
+                kind: :request,
+                limits: %{
+                  fields: 256,
+                  trailers: 128,
+                  policy_source_backing_bytes: 1114112,
+                  request_source_backing_bytes: 196608,
+                  certificate_bytes: 65536,
+                  certificates: 128,
+                  field_bytes: 65536,
+                  trailer_bytes: 65536,
+                  trust_bytes: 1048576,
+                  url_bytes: 65536
+                },
+                owned: %{
+                  maps: %{9 => 1},
+                  backing_bytes: 63,
+                  logical_bytes: 63,
+                  binary_occurrences: 6,
+                  cons_cells: 2,
+                  tuples: %{2 => 2},
+                  atom_occurrences: 12,
+                  integer_occurrences: 2,
+                  pid_occurrences: 0
+                }
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/managed_h1_preparation_test.exs:182: anonymous fn/3 in Gaoxy.Proxy.ManagedH1PreparationTest."test rejects absent, changed or duplicate H1 ALPN in canonical HTTPS policies"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h1_preparation_test.exs:170: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  3) test uses explicit opaque HTTPS trust and fixed SSL values (Gaoxy.Proxy.ManagedH1PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h1_preparation_test.exs:124[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert [
+              verify: :verify_peer,
+              depth: 4,
+              versions: [:"tlsv1.3", :"tlsv1.2"],
+              cacerts: ["-----BEGIN CERTIFICATE-----"],
+              server_name_indication: ~c"example.test",
+              alpn_advertised_protocols: ["http/1.1"]
+            ] = policy.open_options[:ssl]
+     [36mleft:  [0m[
+              verify: :verify_peer,
+              depth: 4,
+              versions: [:"tlsv1.3", :"tlsv1.2"],
+              cacerts: ["-----BEGIN CERTIFICATE-----"],
+              server_name_indication: ~c"example.test",
+              [31malpn_advertised_protocols: ["http/1.1"][0m
+            ]
+     [36mright: [0m[
+              verify: :verify_peer,
+              depth: 4,
+              versions: [:"tlsv1.3", :"tlsv1.2"],
+              cacerts: ["-----BEGIN CERTIFICATE-----"],
+              server_name_indication: ~c"example.test"
+            ]
+     [36mstacktrace:[0m
+       test/managed_h1_preparation_test.exs:128: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+18:57:25.276 [error] GenServer #PID<0.672.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.671.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.672.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 18.4 seconds (18.4s async, 0.00s sync)
+[31m77 tests, 3 failures[0m

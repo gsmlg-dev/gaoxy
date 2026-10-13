@@ -1,7 +1,7 @@
 # M3 H1 transport resource foundation
 
-Date: 2026-10-13 Asia/Shanghai. Status: **IMPLEMENTATION IN PROGRESS;
-Steps 1–6 accepted after repairs; independent TCP/TLS acceptance NOT RUN**. This is the next bounded package of existing
+Date: 2026-10-13 Asia/Shanghai. Status: **IMPLEMENTED AND LOCALLY ACCEPTED;
+Steps 0–7, independent SPEC/CODE review and fresh verification PASS**. This is the next bounded package of existing
 [M3 upstream-transport Task 4](../plans/m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional),
 after the M4 release closure. It is not a new milestone.
 
@@ -146,7 +146,7 @@ identities in the actual Task 4 execution checkout before any implementation.
 | `apps/gaoxy_http/lib/gaoxy/http/resources.ex:5` | Existing provider callbacks are `pin_many/5`, `release/1`, `cancel/2`; facade calls remain `Resources.pin_many/4` and `Resources.release/1`. Handles are capped at 64 and 65,536 serialized bytes. |
 | `apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h1_preparation.ex:25` | Pure compact policy/request preparation already exists: H1, C2/R32/P0, explicit literal address, nil/PID upload, bounded DER trust, manual/raw streaming profile. It opens no scope. |
 | `apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex:65` | Current production Fetch adapter explicitly uses `:http1` and `http1_reuse: false`. |
-| `apps/gaoxy/lib/gaoxy.ex:40`, `gaoxy/instance.ex:115`, `gaoxy/lifecycle.ex:196` | Public stop has one absolute deadline and a service-drain coordinator. It currently has no external-resource participant registry. |
+| Release-source `apps/gaoxy/lib/gaoxy.ex:40`, `gaoxy/instance.ex:115`, `gaoxy/lifecycle.ex:196` | Baseline public stop has one absolute deadline and a service-drain coordinator. Steps 1–2 add the accepted generic participant registry and combined stop barrier. |
 
 The facade file SHA256 is
 `2f89d9535c116dfc129f7e64c36d54256271a24405d1f860d58911e2bc397e5a`.
@@ -225,7 +225,7 @@ ledger cannot replace uncertain live ownership.
 
 `Options` accepts a strict fixed-shape policy source and delegates compact
 construction to `ManagedH1Preparation`. Retain C2/R32/P0, explicit H1, literal
-address, OTP TLS, frozen DER trust, fixed finite socket/idle policy. Requests
+address, OTP TLS, frozen DER trust, fixed finite socket/idle policy. Retain the established exact SSL grammar without ALPN advertisement; callers cannot inject ALPN/SSL options. The independent peer must select exactly JSON `null`, as required by the existing managed H1 TLS qualification plan. Requests
 cannot override authority, address, trust, protocol or transport identity.
 No arbitrary upstream keyword passthrough, SSL callbacks, file-reader policy or
 client-certificate feature is introduced in this slice. New trust requires a
@@ -399,7 +399,7 @@ Keep a bounded complete peer event transcript for identities and no-replay proof
 Only genuine remote EOF observed before peer stop certifies client closure;
 fixture-owned shutdown does not. Each case attempts every cleanup after a
 primary failure and records zero peer threads/connections, temporary certificate
-removal and peer process exit. This profile is planned, not executed evidence.
+removal and peer process exit. The first live execution and cleanup are recorded separately in the acceptance receipts; this contract alone is not passing execution evidence.
 
 Record source/cohort identities, commands, counts, exits and receipts with PASS,
 FAIL, BLOCKED and NOT RUN distinct. Require independent specification and code
@@ -417,5 +417,67 @@ Owner/core retirement repair 1's 74/0 GREEN was rejected by independent SPEC
 review for returned-error recovery. Repair 2 covers that branch with a held real
 request: expected RED 75/1, GREEN and fresh 75/0, independent SPEC then CODE,
 canonical format and strict compile PASS. [Step 6 acceptance](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/retirement-step6-acceptance.json)
-preserves the rejected review and unsuccessful repair. Real-peer acceptance
-remains **NOT RUN**.
+preserves the rejected review and unsuccessful repair. Real-peer acceptance first executed **8/4**, exit 1: all four TCP cases PASS; all four TLS cases FAIL exact H1 ALPN identity with peer ALPN `null`. All cleanup PASS. The then-attempted Sol repair 3 tested and changed the owned immutable HTTPS policy with unchanged network assertions; no dependency defect is inferred.
+
+## Historical Step 7 repair 3 execution disposition
+
+Pure ALPN policy regression GREEN is **77/0**, exit 0. The unchanged eight-case
+network profile is **8/5 FAIL**, exit 1. Four TLS cases reject public open with
+`:invalid_transport_scope_tls_policy`; zero connections accepted, and admitted
+failed-open owner retirement/owner-DOWN cleanup is unconfirmed/failed, not PASS.
+The TCP held-upload one-shot finish check races the independently joined abort
+helper; completion success alone does not certify helper settlement. Ordinary
+Sol harness repair 4 retains strict final `:ok` with same-token finite polling.
+Public ALPN support requires a minimal public-API reproduction and upstream
+routing if confirmed; no assertion weakening or dependency patch is permitted.
+See the repair 3 live assessment receipt. Step 7 unsuccessful repairs: **3**;
+Astra **2/2 exhausted** unchanged. Full foundation and Task 5 activation are not
+accepted by the pure GREEN or source review.
+
+## Unsupported optional ALPN candidate — superseded assessment
+
+The public A/B diagnostic executes two rows without Fetch or a listener. Baseline
+scope creation and public abort retirement succeed; adding fixed
+`alpn_advertised_protocols: ["http/1.1"]` rejects with
+`:invalid_transport_scope_tls_policy`. Temporary certificates are removed.
+[Feature #107](https://github.com/gsmlg-dev/http_fetch/issues/107), type `Feature`,
+label `internal request`, severity `blocker`, requests a bounded supported public
+H1 ALPN contract and containing coordinated packages. The generic SSL wording
+does not promise arbitrary OTP option parity. This wire/policy request is
+unrelated to the excluded native-accounting certification.
+
+The subsequent independent scope audit identifies this as an optional future
+feature, not the established foundation prerequisite. Original TLS plan requires
+selected ALPN exactly null; original preparation grammar has no advertisement.
+Restore that exact policy and precise singleton assertion, rejecting every nonnil
+selection. Preserve all failed candidate receipts and conservative failed-open
+ownership; no local dependency workaround. Retain finite same-token finish,
+strict final `:ok` and all wire/TLS/resource/join assertions. Issue #107 severity
+is corrected to `nice-to-have`. Fresh complete-eight acceptance is required.
+
+## Repair 5 review and repair 6 explicit telemetry
+
+Repair 5 restores the original policy and passes pure77/0, but independent CODE
+review rejects a missing-field acceptance: map lookup returned nil for either
+JSONnull or an absent ALPN key. Repair 6 uses `Map.fetch!` so the key must be
+present and its value exactly nil. Every nonnil or missing selection fails.
+Other protocol/security/credit/deadline/join assertions remain unchanged. This
+review failure is preserved separately; Step7 unsuccessful attempts **5** before
+repair6 acceptance. Inherited counters and Astra2/2 exhausted remain unchanged.
+
+## Final local foundation acceptance
+
+Repair 6 and a fresh post-review independent TCP/TLS run each execute all eight
+cases with zero failures, zero skips/exclusions and exit 0. All primary/cleanup
+receipts pass; exact null ALPN telemetry, verified TLS and every H1/reuse/resource/
+deadline/cache/actor-join assertion remain enforced. Final independent SPEC then
+CODE review finds no actionable issue. Fresh proxy **77/0**, scoped canonical
+format and strict compile pass; unchanged core **36/0** and core-only consumer
+**1/0** evidence remain bound to identical sources. See the
+[final acceptance](../acceptance/m3-h1-resource-foundation.md#final-acceptance--repair-6)
+and [receipt](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/foundation-final-acceptance.json).
+Historical failed policy candidates/reviews remain preserved and superseded only
+as current assessments. Five unsuccessful Step 7 attempts and inherited counters
+remain recorded, Astra recovery **2/2 exhausted**. Foundation acceptance releases
+the next fixed-endpoint package; it does not certify unexecuted managed production
+paths, full M3, native-memory reclamation, hosted CI or publication/deployment.

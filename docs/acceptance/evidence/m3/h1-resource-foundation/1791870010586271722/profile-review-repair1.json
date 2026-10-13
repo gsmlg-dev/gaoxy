@@ -1,0 +1,28 @@
+{
+  "kind": "INDEPENDENT_STEP7_SPECIFICATION_AND_CODE_REVIEW",
+  "reviewer": "/root/profile_review",
+  "status": "PASS_SPEC_FAIL_CODE",
+  "head": "a2296e2ca9f24b8fd0480b06a6728fc15d190520",
+  "source": {
+    "integration/http_fetch_contract/h1_resource_foundation_probe.exs": "328f4fdb666d9455c8a3ab11d299003551357301a04f838b8da117a4e0b374e1",
+    "integration/http_fetch_contract/h1_resource_foundation_peer.py": "7739687d1d2de0f10e575a824aaed5c19ae0ecd65dcda0ccb7bd0c5009fd9b96"
+  },
+  "specification": "PASS exact owner tuple and mandatory completion/Gaoxy credit assertions",
+  "findings": [
+    {
+      "priority": "P1",
+      "file": "integration/http_fetch_contract/h1_resource_foundation_probe.exs",
+      "line": 788,
+      "title": "Core propagation incorrectly expects a shutdown wrapper",
+      "required_contract": "Core propagates the same bare {:error, {:deadline_exceeded, :cleanup_pending}}",
+      "detail": "Lifecycle.shutdown_result/2 collapses any participant pending_result into that same terminal result. The probe must compare exact cached expected_stop, not invent an aggregate shutdown wrapper."
+    }
+  ],
+  "runtime_verification": "NOT_RUN",
+  "step7_unsuccessful_repairs": 1,
+  "repair_assigned": 2,
+  "dependency_defect_established": false,
+  "astra_recovery_used": 2,
+  "astra_recovery_limit": 2,
+  "reviewer_mutations": false
+}

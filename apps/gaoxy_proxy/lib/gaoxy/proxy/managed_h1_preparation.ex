@@ -432,6 +432,9 @@ defmodule Gaoxy.Proxy.ManagedH1Preparation do
   defp ssl_options("http", _host, nil), do: []
 
   defp ssl_options("https", host, trust) do
+    # Explicit managed H1 retains the qualified profile without ALPN advertisement.
+    # Optional negotiated H1 ALPN support is separate from this profile.
+    # TODO(upstream): gsmlg-dev/http_fetch#107
     [
       verify: :verify_peer,
       depth: 4,

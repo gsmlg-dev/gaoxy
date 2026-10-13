@@ -17,17 +17,15 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Execution kickoff and Steps 1–6 verification/independent reviews PASS.
-Step 4 initial GREEN was rejected by independent SPEC review; repair 1 passed
-44/0 GREEN, independent SPEC/CODE review and fresh 44/0 verification. Step 5
-repair 1 passed 58/0 GREEN and independent SPEC/CODE review; fresh verification
-is recorded in its acceptance receipt. Step 6 design review and expected RED
-73/15 are recorded; all prior 58 tests pass. Combined edge execution is 74/2;
-repair 1 GREEN is 74/0 but independent SPEC review rejected returned-error
-recovery. Repair 2 passed 75/0 GREEN, independent SPEC then CODE and fresh 75/0,
-canonical format and strict compile. Steps 0–6 are accepted; Step 7 execution
-remains **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
-[existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
+**Status:** **DONE — Steps 0–7 locally accepted**. Final independent SPEC then
+CODE review passes with no findings. Fresh proxy **77/0**, scoped format and
+strict compile pass. Complete TCP/TLS execution passes **8/0**, exit 0, with zero
+skips/exclusions and all owned cleanup receipts passing. Unchanged core **36/0**
+and external consumer **1/0** remain source-bound. Historical REDs, failed GREEN
+reviews and 8/4, 8/5, 8/4 runs remain preserved below and in
+[acceptance](../acceptance/m3-h1-resource-foundation.md). Execute the
+[next fixed-endpoint package](m3-managed-h1-fixed-endpoint.md) under continuing
+authorization after the local foundation commit.
 
 **Historical planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
 `d5831d7613e8c8edd2adf76fbd7b86b408e62de6`, concurrently modified for M4.
@@ -256,21 +254,21 @@ Owned files: ledger/custodian/resource tests. Depends on Steps 2 and 5.
 Owned files: new peer/probe, resource tests and new evidence run directory.
 No production endpoint wiring. Depends on Step 6.
 
-- [ ] Implement an independent origin with bounded readiness/control pipes,
+- [x] Implement an independent origin with bounded readiness/control pipes,
   peer connection IDs and request IDs; CPython/OpenSSL verifies TLS CA/hostname.
   Keep finite deadlines, body hashes/trailers and owned process/socket joins.
-- [ ] For TCP and verified TLS, use only public managed scope + Fetch APIs to
+- [x] For TCP and verified TLS, use only public managed scope + Fetch APIs to
   send two sequential self-delimited requests on one accepted connection. Capture
   original completions immediately and assert no request replay.
-- [ ] Prove request completion succeeds while that connection remains idle and
+- [x] Prove request completion succeeds while that connection remains idle and
   its transport reservation remains held. Retire publicly, observe peer EOF,
   join the receipt and then assert transport capacity release.
-- [ ] Hold an unread response/upload at a peer barrier. Exercise request abort,
+- [x] Hold an unread response/upload at a peer barrier. Exercise request abort,
   retained request credit before confirmation, short-D pending stop, later
   cleanup and unchanged failed stop receipt. No private pool/process inspection.
-- [ ] Keep a second instance/scope to the same origin live while retiring the
+- [x] Keep a second instance/scope to the same origin live while retiring the
   first; a fresh request on the second must succeed with exact bytes.
-- [ ] Record actual nonzero executed cases, exits and source/cohort hashes.
+- [x] Record actual nonzero executed cases, exits and source/cohort hashes.
   Missing peer/environment tools are BLOCKED_ENV, never skips or PASS. A real
   dependency defect follows AGENTS upstream issue routing with a reproduction;
   no speculative dependency issue or local blocker workaround.
@@ -281,8 +279,9 @@ The parent alone executes commands in the qualified environment. The commands
 below were planned during the document assignment. Scoped core/proxy commands
 have now executed through Steps 1–6 acceptance after repairs; see the acceptance
 receipts for actual counts/exits. Step 6 repair 2 acceptance follows the preserved
-repair 1 review rejection and returned-error RED. Independent probe execution
-remains **NOT RUN**:
+repair 1 review rejection and returned-error RED. The first independent probe execution remains **FAIL (8/4, exit 1)** in its
+immutable receipt. Repair 6 and fresh post-review all-eight runs now **PASS
+(8/0, exit 0)** under the restored original policy/explicit-null contract:
 
 ```sh
 unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy/test/lifecycle_participant_test.exs apps/gaoxy/test/lifecycle_fault_test.exs apps/gaoxy/test/lifecycle_ownership_test.exs apps/gaoxy/test/lifecycle_acceptance_test.exs
@@ -290,15 +289,73 @@ unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstr
 unbuffer mix run --no-compile --no-start integration/http_fetch_contract/h1_resource_foundation_probe.exs
 ```
 
-- [ ] Execute existing core-only consumer isolation plus scoped canonical format
+- [x] Execute existing core-only consumer isolation plus scoped canonical format
   and strict compilation in the repository's qualified environment. Record exact
   wrappers, tools, source hashes, test counts, exits and all peer cleanup receipts.
-- [ ] Independent specification and code review: resolve actionable findings;
+- [x] Independent specification and code review: resolve actionable findings;
   run fresh affected checks after changes. Preserve original failing evidence.
-- [ ] Verify checklist against the design, distinguish source/functional bounds
+- [x] Verify checklist against the design, distinguish source/functional bounds
   from total VM/native memory, and stage only owned files for local conventional
   commits. No push/release follows automatically from foundation acceptance.
-- [ ] Stop this package when its in-scope gates pass. Report resource foundation
+- [x] Stop this package when its in-scope gates pass. Report resource foundation
   DONE while production managed-H1 activation/full M3 remain NOT RUN. Advance
   under continuing authorization to the existing M3 Task 5 fixed-endpoint
   activation package; groups/probes/upstream H2 remain separate later work.
+
+## Historical Step 7 repair 3 execution disposition
+
+Pure ALPN policy regression GREEN is **77/0**, exit 0. The unchanged eight-case
+network profile is **8/5 FAIL**, exit 1. Four TLS cases reject public open with
+`:invalid_transport_scope_tls_policy`; zero connections accepted, and admitted
+failed-open owner retirement/owner-DOWN cleanup is unconfirmed/failed, not PASS.
+The TCP held-upload one-shot finish check races the independently joined abort
+helper; completion success alone does not certify helper settlement. Ordinary
+Sol harness repair 4 retains strict final `:ok` with same-token finite polling.
+Public ALPN support requires a minimal public-API reproduction and upstream
+routing if confirmed; no assertion weakening or dependency patch is permitted.
+See the repair 3 live assessment receipt. Step 7 unsuccessful repairs: **3**;
+Astra **2/2 exhausted** unchanged. Full foundation and Task 5 activation are not
+accepted by the pure GREEN or source review.
+
+## Reviewed contract correction, not an external gate
+
+Public A/B diagnostic confirms only that optional H1 ALPN injection is unsupported.
+Independent scope audit traces the already accepted TLS plan's exact Python None /
+JSON null requirement and compact preparation's SSL grammar without advertisement.
+The harness's expected negotiated `http/1.1` was wrong. Parent and initial review
+incorrectly made optional Feature #107 a blocker; severity/body are corrected to
+`nice-to-have`, with initial assessment and failed evidence preserved.
+
+Repair 4 executed all8/4, exit1: all TCP4 primary/cleanup PASS, exact same-token
+finish pending then :ok; four TLS cases still reject the unsupported candidate.
+Four unsuccessful Step7 package attempts remain recorded; no Astra round added.
+Repair 5 restores exact original SSL grammar and requires every peer ALPN exactly
+null, rejecting every nonnil value. Keep all H1 framing/bytes/trailers/identity,
+CA/hostname/SNI/reuse/no-replay, credits/owned joins/cache/deadline assertions.
+Run pure contract RED/GREEN, independent SPEC then CODE, fresh complete8 plus
+affected scoped checks. No weaker/multi-protocol assertion, dependency patch or
+new product approval is needed. Advance Task5 only after actual foundation gates.
+
+## Repair 5 review and repair 6 explicit telemetry
+
+Repair 5 restores the original policy and passes pure77/0, but independent CODE
+review rejects a missing-field acceptance: map lookup returned nil for either
+JSONnull or an absent ALPN key. Repair 6 uses `Map.fetch!` so the key must be
+present and its value exactly nil. Every nonnil or missing selection fails.
+Other protocol/security/credit/deadline/join assertions remain unchanged. This
+review failure is preserved separately; Step7 unsuccessful attempts **5** before
+repair6 acceptance. Inherited counters and Astra2/2 exhausted remain unchanged.
+
+## Completed final gate
+
+The [final independent review](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/foundation-final-independent-review.json)
+and [final acceptance receipt](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/foundation-final-acceptance.json)
+record all prescribed gates. All eight independent cases and all primary/cleanup
+receipts pass; fresh proxy77/0, scoped format and strict compile pass with stable
+source. Relevant core/consumer sources equal their verified36/0 and1/0 receipts.
+All historical failed runs, the blank-line format failure and wrapper invocation
+failure remain unchanged. Five prior unsuccessful Step7 attempts and inherited
+UP2/Astra counters remain recorded. Parent stages only task-owned source/docs/
+evidence for a local conventional commit, then records its actual SHA in Task5
+kickoff; no future commit identity is invented here. Task5's fixed endpoint starts
+automatically, with its own RED/GREEN, independent review and acceptance gates.

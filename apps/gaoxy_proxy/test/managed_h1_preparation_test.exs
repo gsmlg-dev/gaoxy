@@ -134,6 +134,13 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
            ] =
              policy.open_options[:ssl]
 
+    source = %{request() | url: "https://example.test/upload?"}
+
+    for canonical <- [policy, struct(Preparation.Policy, Map.from_struct(policy))] do
+      assert {:ok, %Preparation.Request{target: "/upload?"}, _} =
+               Preparation.prepare_request(canonical, source)
+    end
+
     for trust <- [
           nil,
           [],
@@ -150,6 +157,53 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
 
     assert {:error, :invalid_trust} =
              Preparation.prepare_policy(%{policy_source() | trust: ["opaque"]})
+  end
+
+  test "rejects injected ALPN in canonical managed H1 HTTPS policies" do
+    assert {:ok, policy, _} = Preparation.prepare_policy(tls_source(["opaque"]))
+    source = %{request() | url: "https://example.test/upload?"}
+
+    ssl =
+      Keyword.delete(policy.open_options[:ssl], :alpn_advertised_protocols) ++
+        [alpn_advertised_protocols: ["http/1.1"]]
+
+    for modified_ssl <- [
+          Keyword.replace!(ssl, :alpn_advertised_protocols, nil),
+          ssl,
+          Keyword.replace!(ssl, :alpn_advertised_protocols, []),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, ["h2"]),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, ["http/1.1", "h2"]),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, ["h2", "http/1.1"]),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, ["http/1.1", "http/1.1"]),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, [~c"http/1.1"]),
+          Keyword.replace!(ssl, :alpn_advertised_protocols, "http/1.1"),
+          ssl ++ [alpn_advertised_protocols: ["http/1.1"]]
+        ] do
+      modified = %{
+        policy
+        | open_options: Keyword.replace!(policy.open_options, :ssl, modified_ssl)
+      }
+
+      assert {:error, :invalid_policy} = Preparation.prepare_request(modified, source)
+    end
+  end
+
+  test "rejects caller SSL and ALPN overrides for fixed HTTPS policy and requests" do
+    source = tls_source(["opaque"])
+    assert {:ok, policy, _} = Preparation.prepare_policy(source)
+    request_source = %{request() | url: "https://example.test/upload?"}
+
+    for {key, value} <- [
+          {:ssl, [alpn_advertised_protocols: ["http/1.1"]]},
+          {:ssl, [verify: :verify_none]},
+          {:alpn_advertised_protocols, ["http/1.1"]},
+          {:alpn_advertised_protocols, ["h2"]}
+        ] do
+      assert {:error, :invalid_policy} = Preparation.prepare_policy(Map.put(source, key, value))
+
+      assert {:error, :invalid_request} =
+               Preparation.prepare_request(policy, Map.put(request_source, key, value))
+    end
   end
 
   test "enforces trust count, per-leaf, aggregate and final ETF independently" do
@@ -662,8 +716,8 @@ defmodule Gaoxy.Proxy.ManagedH1PreparationTest do
 
   test "counts SNI, opaque trust and PID occurrences without asserting resource ownership" do
     assert {:ok, _, manifest} = Preparation.prepare_policy(tls_source(["opaque"]))
-    # The seven extra cons cells are five SSL pairs plus two version values;
-    # one certificate and the twelve SNI bytes add thirteen more cons cells.
+    # The eight extra cons cells are five SSL pairs, two version values and
+    # one certificate; the twelve SNI bytes add twelve more cons cells.
     assert manifest.owned.cons_cells == 17 + 5 + 2 + 1 + 12
     assert manifest.owned.integer_occurrences == 17 + 1 + 12
     assert {:ok, _, manifest} = Preparation.prepare_request(policy(), %{request() | body: self()})

@@ -418,9 +418,10 @@ adversarial-backlog gate.
 
 ## Task 4: Pure policy and bounded transport resource (conditional)
 
-**Current execution — 2026-10-13:** Execute the bounded
-[H1 resource foundation](m3-h1-resource-foundation.md) under renewed continuing
-authorization. Its verified public APIs and independent specification review
+**Accepted foundation — 2026-10-13:** The bounded
+[H1 resource foundation](m3-h1-resource-foundation.md) passes final independent
+SPEC/CODE review and fresh scoped/protocol gates under renewed continuing
+authorization. See [exact acceptance](../acceptance/m3-h1-resource-foundation.md). Its verified public APIs and independent specification review
 replace historical conditional/native-control proof prerequisites; the dismissed
 http_fetch#97 and P0–P6 certification are not foundation or activation gates.
 Historical source/accounting failures remain unchanged. Foundation uses explicit
@@ -437,23 +438,23 @@ Modify: `apps/gaoxy/lib/gaoxy.ex`, `apps/gaoxy/lib/gaoxy/instance.ex`,
 `apps/gaoxy/lib/gaoxy/lifecycle.ex`, and necessary proxy supervision helpers.
 These core edits implement the generic stop hook; no HTTP dependency enters core.
 
-- [ ] Write red tests for strict options, immutable protocol/authority/pin/TLS
+- [x] Write red tests for strict options, immutable protocol/authority/pin/TLS
   matching, finite limits, duplicate/unknown fields, stale epochs and bounded
-  handles. Freeze CA contents with bounded read/decode; capture default trust
-  without repeatedly reading mutable paths on checkout. No arbitrary SSL
-  callbacks or new client-certificate/Vault features.
-- [ ] Implement the design's `prepare/4`, `checkout/4`, `bind_completion/3`,
+  handles. This bounded package captures explicit DER trust during preparation;
+  immutable file/default trust capture remains a separate later slice as stated
+  above. No arbitrary SSL callbacks or new client-certificate/Vault features.
+- [x] Implement the design's `prepare/4`, `checkout/4`, `bind_completion/3`,
   `finish/2`, `retire/2`, `await_retirement/2`, `status/1`, and existing provider
   callbacks `pin_many/5`, `release/1`, `cancel/2`. Callers use unchanged public
   `Resources.pin_many/4` and `Resources.release/1`; there is no facade cancel.
   The proxy facade alone calls the newly verified upstream API; expose no sockets
   or client owners.
-- [ ] Add `Gaoxy.register_lifecycle_participant/2` and the instance-owned bounded
+- [x] Add `Gaoxy.register_lifecycle_participant/2` and the instance-owned bounded
   registry before any transport resource allocation. Test caller identity,
   duplicate registration, maximum 64 entries, stopping rejection and owner
   death with a controllable generic participant. Failed entries stay accounted;
   no dependency/provider modules or opaque HTTP values appear in core state.
-- [ ] Extend `Instance.operation` and the termination helper to fan out service
+- [x] Extend `Instance.operation` and the termination helper to fan out service
   drains and `:gaoxy_lifecycle_drain` messages under the original deadline,
   joining authenticated `:gaoxy_lifecycle_result` receipts. The instance server
   remains responsive and participants report directly to the coordinator.
@@ -461,31 +462,31 @@ These core edits implement the generic stop hook; no HTTP dependency enters core
   error and aggregate resource failure/uncertainty without converting DOWN to
   success. Supervisor termination reuses the combined helper and never replaces
   a failed resource result with service-only success.
-- [ ] Implement owner retirement as the public managed-resource close-and-await
+- [x] Implement owner retirement as the public managed-resource close-and-await
   operation. It immediately closes new preparation/pin/probe admission, permits
   already-admitted request pins until D, retires otherwise idle transports
   without waiting for baseline pins, and forces resource-local cancellation at
   D. Repeated waits use the same receipt and cannot extend D. After successful
   retirement the inert owner remains alive until instance DOWN so the shutdown
   coordinator can join its cached result reliably.
-- [ ] Test registration-before-allocation, unexpected instance DOWN, coordinator
+- [x] Test registration-before-allocation, unexpected instance DOWN, coordinator
   death and transport owner death. Unexpected DOWN uses the known deadline or
   finite emergency cleanup budget; it never retroactively supplies a successful
   instance-stop receipt. Explicit config-owner shutdown calls `Gaoxy.stop/2`
   before stopping the enclosing supervisor and participant siblings.
-- [ ] Reserve worst-case transport capacity before resource creation; reject
+- [x] Reserve worst-case transport capacity before resource creation; reject
   admission with no queue before effects. Include prepared/retiring/failed
   records in finite resource/pin/token/byte limits. Caller-created operation
   refs and holder monitors cancel late metadata acquisitions idempotently.
-- [ ] Write deterministic tests for caller death, open-to-bind uncertainty,
+- [x] Write deterministic tests for caller death, open-to-bind uncertainty,
   pending/unconfirmed retirement, repeated finish/release and cross-instance
   isolation. Public retirement confirmation is necessary before refunding
   connection capacity. No ledger restart that forgets old live transports.
-- [ ] Create each upstream scope from its persistent custodian, never from an
+- [x] Create each upstream scope from its persistent custodian, never from an
   exiting preparation worker. Bound custodians by admitted transport records;
   preparation timeout rejects publication while retaining uncertain allocation
   holds and retires late scopes. Test creator DOWN through the public contract.
-- [ ] Bound scope retirement initiation and abort-escalation helpers, preserving
+- [x] Bound scope retirement initiation and abort-escalation helpers, preserving
   D around fixed 5,000-ms upstream calls. Test short-D pending initiation,
   graceful-to-abort escalation, repeated public receipt recovery, late confirmed
   capacity release and unchanged failed stop results. Snapshot retirement errors
@@ -495,6 +496,14 @@ Run `mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstream_
 in the canonical environment; capture red then green with exact counts.
 
 ## Task 5: Endpoint, Session, group and generation integration (conditional)
+
+
+**Current bounded activation — 2026-10-13:** Task 4 is locally accepted. Execute
+[managed H1 fixed-endpoint design](../designs/m3-managed-h1-fixed-endpoint.md) and
+[plan](m3-managed-h1-fixed-endpoint.md) next. This first slice qualifies explicit
+fixed endpoints/Session/adapter while preserving dedicated defaults; group,
+probe/Generation and other protocol checklists below remain separate unexecuted
+gates. Continuing authorization replaces routine phase approval pauses.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,
 `http_fetch_client.ex`, `group_endpoint.ex`, `upstream_groups.ex`,
