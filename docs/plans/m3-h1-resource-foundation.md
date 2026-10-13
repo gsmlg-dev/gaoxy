@@ -17,9 +17,11 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Execution kickoff and Steps 1–4 verification/independent reviews PASS.
+**Status:** Execution kickoff and Steps 1–5 verification/independent reviews PASS.
 Step 4 initial GREEN was rejected by independent SPEC review; repair 1 passed
-44/0 GREEN, independent SPEC/CODE review and fresh 44/0 verification. Steps 5–7 runtime gates remain
+44/0 GREEN, independent SPEC/CODE review and fresh 44/0 verification. Step 5
+repair 1 passed 58/0 GREEN and independent SPEC/CODE review; fresh verification
+is recorded in its acceptance receipt. Steps 6–7 runtime gates remain
 **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
 [existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
 
@@ -216,17 +218,17 @@ Owned files: UpstreamTransports, Custodian and resource test. Depends on Steps
 
 Owned files: ledger/custodian/resource tests. Depends on Step 4.
 
-- [ ] Write RED tests for `Resources.pin_many/4` and `release/1` through provider
+- [x] Write RED tests for `Resources.pin_many/4` and `release/1` through provider
   `pin_many/5`, `release/1`, `cancel/2`: batch rollback, operation cancellation,
   holder death, duplicate release, stale owner epoch and exact bounded counts.
-- [ ] Implement provider behavior without changing Resources or Generation.
+- [x] Implement provider behavior without changing Resources or Generation.
   Serialize only same-owner metadata mutations; no nested provider calls.
-- [ ] Write/implement `checkout/4`, `bind_completion/3`, `finish/2` tests for an
+- [x] Write/implement `checkout/4`, `bind_completion/3`, `finish/2` tests for an
   authenticated guardian and request pin, separate request token, immediate
   binding, completion pending/unconfirmed, duplicate finish and guardian death.
-- [ ] Exercise open-to-bind uncertainty. Retain the request hold and retire the
+- [x] Exercise open-to-bind uncertainty. Retain the request hold and retire the
   associated scope; no DOWN/stream terminal event alone releases credit.
-- [ ] Assert request completion releases exactly the request hold and leaves
+- [x] Assert request completion releases exactly the request hold and leaves
   transport capacity intact for idle reuse. Parent records GREEN and review.
 
 ## Step 6: retire owned resources and join the core stop receipt

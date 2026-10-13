@@ -206,6 +206,10 @@ confirmed success records resource-tagged `:cleanup_unconfirmed`; known failures
 use the existing design's `{:error, {:shutdown, service_errors, resource_errors}}`.
 A coordinator crash cannot become success.
 
+Core's participant result is `:ok` or `{:error, reason}`, not `{:ok, owner_receipt}`.
+Re-envelope a cached owner result with each incoming operation/coordinator;
+termination after coordinator failure retries with the same D and a fresh operation.
+
 `Instance.terminate/2` uses the same combined helper: reuse explicit-stop D or
 the existing bounded shutdown deadline, and retain the earlier non-success
 result. Existing cleanup headroom permits cleanup after D, not a late successful
@@ -277,6 +281,16 @@ caller-created operation references and idempotent cancellation/release prevent
 late pin acquisitions from escaping the ledger. Checkout requires an admitted
 request pin held by the authenticated guardian and a live resource epoch.
 
+The Step 5 interface returns client policy as `%{policy: prepared_policy,
+transport_scope: public_opaque_scope, fetch_options: fixed_h1_profile}`. Pass the
+scope unchanged to public Fetch; never inspect or serialize it. The fixed profile
+selects H1/OTP TLS, manual raw streamed responses and proxy request mode. `pins`
+in status counts admitted per-handle metadata holds, rather than the grouped
+pin-map count. Own compact metadata/control slots count toward serialized payload;
+opaque transport/completion handles remain outside that counter. Same-caller
+FIFO cancellation and the original admission D prevent late acquisitions; the
+provider rechecks D before publishing a pin, without retaining an operation history.
+
 A request token is distinct from every metadata pin. Bind the original public
 request completion immediately after Fetch opens, before publishing request
 success. `finish/2` releases that request hold only after public completion;
@@ -346,4 +360,7 @@ ledger initial GREEN did not pass independent review. Repair 1 corrected
 helper/creator joins and actual admitted failed-open accounting: four deterministic
 RED regressions, then 44/0 GREEN and fresh verification, with independent
 SPEC/CODE review PASS. Peer source repair passed independent SPEC/CODE review;
-request/retirement and real-peer acceptance remain **NOT RUN**.
+Step 5 repair 1 passes 58/0 GREEN and independent SPEC/CODE review. Partial
+retirement conservatively retains grouped metadata capabilities until explicit
+release or holder DOWN; it cannot discard an unaffected member's holds.
+Owner/core retirement and real-peer acceptance remain **NOT RUN**.

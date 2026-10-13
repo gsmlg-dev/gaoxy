@@ -1,0 +1,34 @@
+{
+  "kind": "INDEPENDENT_REQUEST_HOLD_REVIEW",
+  "reviewer": "/root/peer_review",
+  "head": "6106147afa68205d6791c2f59ba5def24db4cc2d",
+  "spec_status": "FAIL",
+  "code_status": "WITHHELD",
+  "scope": "Step5 only",
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/upstream_transports_test.exs": "2255e866122a27b6be58c2e60c4d5d3249bdb3d9af134870dad340f30d3f54db",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "bb9c94d7a1a47ae20d720440e57e8b412939522c53605bd2498eeb3aa38d60a2",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/custodian.ex": "59823322268aa97c337440d198c9632241d14adcca344426dd9656920a0d8385"
+  },
+  "findings": [
+    {
+      "priority": 1,
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "line": 1012,
+      "reason": "Settling A removes entire grouped pin [A,B], releasing live B hold/count/payload without release or holder DOWN and bypassing close_unpinned(B).",
+      "reproduction": "Prepare A/B, baseline grouped pin, release individual preparation pins; request-pin/checkout/Fetch A, capture original completion, finish before binding, bind captured completion late and finish after public cleanup. A settlement drops B hold."
+    }
+  ],
+  "parent_initial_execution": {
+    "receipt": "holds-step5-green-1791881434361279523.json",
+    "tests": 57,
+    "failures": 1,
+    "exit": 2,
+    "failure": "Suspended caller resumed from different process than test-owned suspender; ArgumentError at test line530."
+  },
+  "repair_attempt_assigned": 1,
+  "unsuccessful_repair_attempts": 0,
+  "initial_implementation_execution_failures": 1,
+  "initial_implementation_review_failures": 1,
+  "astra_recovery_used": 2
+}

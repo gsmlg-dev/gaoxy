@@ -46,7 +46,8 @@ The next prepared existing package is M3 Task4 H1 resource foundation:
 implementation in progress under renewed continuing authorization; core participant,
 pure-options and Step4 ledger/custodian gates PASS. The ledger's rejected initial
 review and repair1 RED/44-test GREEN/fresh review evidence remain recorded;
-complete request/retirement/runtime acceptance NOT RUN.
+Step5 metadata pins/request holds repair1 passes 58/0 and independent SPEC/CODE
+review; owner/core retirement and independent runtime acceptance remain NOT RUN.
 Task5 production pool activation remains separate; the roadmap still ends at M4.
 
 ## 1. Product and success criteria
