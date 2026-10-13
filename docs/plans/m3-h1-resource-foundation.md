@@ -17,9 +17,8 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Prepared execution handoff; final documentation main push and
-execution kickoff pending. Every implementation/test/code-review task below is
-**NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
+**Status:** Execution kickoff and independent specification review PASS.
+Implementation execution started; test/code-review gates remain **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
 [existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
 
 **Historical planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
@@ -76,12 +75,29 @@ its release and future disjoint writers are recorded by the parent kickoff.
 The parent retains serialized Mix/build/live command
 ownership. All Step 0 boxes remain unchecked, and no Task 5 activation starts.
 
+## Execution kickoff — 2026-10-13
+
+The parent verified clean execution checkout `.trees/m3-h1-resource-foundation`
+on `codex/m3-h1-resource-foundation` at
+`449a4c4d470128d9e138564fe71b40e8fcebe358`, equal to remote main. The descendant
+diff from released source is documentation/evidence only. M4 acceptance/publication
+reviews are complete; the preparation freeze is released for assigned Task 4 files.
+The scope table now assigns executable ownership; its documentation-only limits
+describe the earlier handoff.
+
+[Kickoff receipt](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/kickoff.json) records
+source/cohort hashes, writer ownership and inherited counters. The parent owns
+all Mix/build/live commands. Astra recovery remains 2/2 exhausted; ordinary
+failures enter local Sol diagnosis and repair. Renewed continuing authorization
+supersedes routine approval/phase-stop rules; product, publication/deployment,
+Vault, production and disabled-E2E boundaries remain. Independent specification review PASS; implementation/runtime gates remain NOT RUN.
+
 ## Scope and ownership
 
-During this handoff assignment, the writer owns only these two documents and
-one unique preparation review receipt.
-The following executable files are future Task 4 ownership, not permission to
-edit them during the M4 freeze.
+Historical preparation ownership (superseded by the verified execution kickoff):
+the handoff writer owned only these two documents and a preparation review
+receipt. The table below now assigns Task 4 executable ownership; its earlier
+freeze has been released.
 
 | Slice | Files and responsibility | Dependency |
 | --- | --- | --- |
@@ -104,17 +120,17 @@ public management, deployment, Vault or disabled E2E work is included.
 
 ## Step 0: prepare a verified execution handoff
 
-- [ ] Parent completes the current M4 acceptance boundary and releases the
+- [x] Parent completes the current M4 acceptance boundary and releases the
   relevant source freeze; assign the implementation checkout and exclusive files.
-- [ ] Verify path, branch, HEAD, current diff and untracked files. Preserve the
+- [x] Verify path, branch, HEAD, current diff and untracked files. Preserve the
   pre-existing M4 changes. Use a `codex/` branch under the project's `.trees/`
   directory if isolation is needed.
-- [ ] Read current AGENTS, this design and existing Task 4. Treat old conditional
+- [x] Read current AGENTS, this design and existing Task 4. Treat old conditional
   native/control proof requirements as superseded by the reviewed disposition.
-- [ ] Recheck direct/lock versions and public facade source identity. Current
+- [x] Recheck direct/lock versions and public facade source identity. Current
   facade SHA256 is `2f89d9535c116dfc129f7e64c36d54256271a24405d1f860d58911e2bc397e5a`.
   Re-read the documented API if it changes; do not silently use old behavior.
-- [ ] Parent arranges independent specification review and resolves findings
+- [x] Parent arranges independent specification review and resolves findings
   before executable edits. Record received repair counters and command ownership.
 
 ## Step 1: register generic instance-lifetime participants

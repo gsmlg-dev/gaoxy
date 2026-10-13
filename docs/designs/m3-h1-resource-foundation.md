@@ -75,6 +75,23 @@ Mix/build/live commands. Preparation [review](../acceptance/evidence/release-0.3
 passed for readiness only. Task 4 implementation, code review and runtime
 acceptance remain **NOT RUN**, and Step 0 remains unchecked.
 
+## Execution kickoff — 2026-10-13
+
+The parent verified clean execution checkout `.trees/m3-h1-resource-foundation`
+on `codex/m3-h1-resource-foundation` at
+`449a4c4d470128d9e138564fe71b40e8fcebe358`, equal to remote main. The descendant
+diff from released source is documentation/evidence only. M4 acceptance/publication
+reviews are complete; the preparation freeze is released for assigned Task 4 files.
+The scope table now assigns executable ownership; its documentation-only limits
+describe the earlier handoff.
+
+[Kickoff receipt](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/kickoff.json) records
+source/cohort hashes, writer ownership and inherited counters. The parent owns
+all Mix/build/live commands. Astra recovery remains 2/2 exhausted; ordinary
+failures enter local Sol diagnosis and repair. Renewed continuing authorization
+supersedes routine approval/phase-stop rules; product, publication/deployment,
+Vault, production and disabled-E2E boundaries remain. Independent specification review PASS; implementation/runtime gates remain NOT RUN.
+
 ## Decision and boundary
 
 Implement the existing Task 4 contract in three dependent slices:
@@ -173,6 +190,14 @@ back into an instance already terminating. Receipt collection and monitor
 handling must accept either delivery order without discarding an already
 authenticated result.
 
+Registration and operation references are private capabilities: use a fresh
+operation reference for each participant, never the shared coordinator token.
+The PID field alone is not sender authentication. Match both capabilities and
+the registered PID. A DOWN-first entry remains provisional until D and can still
+accept its authenticated receipt; DOWN after an accepted result preserves that
+result. Tests inject incorrect capabilities with the correct PID field and both
+receipt/DOWN delivery orders.
+
 Use the original D for service drains, participant retirement and public waits.
 No timeout starts a new success budget. Preserve existing service-only result
 shapes when the participant set is empty. Pending at D remains
@@ -257,6 +282,13 @@ success. `finish/2` releases that request hold only after public completion;
 pending/unconfirmed cleanup keeps it accounted. Guardian death initiates bounded
 public abort/recovery. An open-to-bind failure retains the uncertain request
 hold and triggers resource retirement; it never refunds on guardian DOWN alone.
+
+If no original completion was bound, even confirmed whole-scope retirement
+refunds only transport capacity. The unresolved request token stays accounted
+as cleanup unconfirmed, and owner/instance retirement cannot return success.
+This deliberately retains uncertain request ownership rather than inventing
+a completion receipt. Tests cover public transport retirement success with an
+unbound token and the resulting non-success owner-stop receipt.
 
 A request completion releases no transport reservation. Physical transport
 capacity survives idle reuse and is released only after the public managed

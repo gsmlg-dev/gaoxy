@@ -418,6 +418,17 @@ adversarial-backlog gate.
 
 ## Task 4: Pure policy and bounded transport resource (conditional)
 
+**Current execution — 2026-10-13:** Execute the bounded
+[H1 resource foundation](m3-h1-resource-foundation.md) under renewed continuing
+authorization. Its verified public APIs and independent specification review
+replace historical conditional/native-control proof prerequisites; the dismissed
+http_fetch#97 and P0–P6 certification are not foundation or activation gates.
+Historical source/accounting failures remain unchanged. Foundation uses explicit
+bounded DER trust; file trust/default capture belongs to a later package. Older
+file lists and routine phase approval stops do not restrict necessary repairs.
+Production activation starts after foundation verification and review pass.
+
+
 Create: `apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex`,
 `apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex`,
 `apps/gaoxy_proxy/test/upstream_transports_test.exs`,

@@ -14,7 +14,7 @@ restrictions remain. See [ADR007](docs/adr/007-m3-beta-and-m4.md).
 **Initial execution scope (historical kickoff):** M0 + M1, the transport-runtime foundation
 **Companion:** `codex-prompt.md`
 
-**Current execution authorization (renewed 2026-10-12):** Execute M4 and continue through
+**Current execution authorization (renewed 2026-10-13):** Execute M3 H1 resources and continue through
 the existing milestone plan after each stage passes its prescribed verification
 and independent review. Automatically choose recommended designs, write stage
 designs/plans, implement, repair, document, test, review, and commit locally;
@@ -42,7 +42,8 @@ records actual identities and unchanged historical failures. Hosted CI is
 BLOCKED_ENV with zero executed steps; deployment/production/E2E remain NOT RUN.
 The next prepared existing package is M3 Task4 H1 resource foundation:
 [design](docs/designs/m3-h1-resource-foundation.md) and
-[plan](docs/plans/m3-h1-resource-foundation.md); implementation NOT RUN.
+[plan](docs/plans/m3-h1-resource-foundation.md); execution kickoff verified,
+execution in progress under renewed continuing authorization; implementation/runtime NOT RUN.
 Task5 production pool activation remains separate; the roadmap still ends at M4.
 
 ## 1. Product and success criteria
