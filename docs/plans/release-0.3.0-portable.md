@@ -61,4 +61,18 @@ does not qualify artifact bytes. The local assembled release passes its three
 Initial portable builder FAIL at exact82-file formatting; [failure diagnosis](../acceptance/evidence/release-0.3.0/portable-build1-failure-1791859105860499026/diagnosis.json)
 remains immutable. Formatting-only repair of the current0.3.0 TLS helper has
 [AST/exact82-file proof](../acceptance/evidence/release-0.3.0/portable-probe-format-proof-1791859263416674340.json).
-New committed-source build remains pending; offline runtime/publication NOT RUN.
+Build2 at49cb7ab passed757/0 and exported its artifact; runtime1 remained FAIL
+because both host coordinators rejected Docker29's lowercase absence message
+after child exit0 and normal removal. [Preserved diagnosis](../acceptance/evidence/release-0.3.0/portable-build2-runtime1-failure-1791861327712037431/diagnosis.json)
+and [independent failure review](../acceptance/evidence/release-0.3.0/review-original-portable-runtime1-failure-1791861403971008922.json)
+retain the original result. The current host-runner repair accepts known
+absence prefixes case-insensitively only with a nonzero exit and exact owned
+name. All deadlines, normal-removal requirements and forced-cleanup FAIL remain.
+[The initial40 regressions](../acceptance/evidence/release-0.3.0/docker-absence-boundary-green-1791861478003615836.json)
+PASS but omitted differently cased owned names. Independent review identified
+that global IGNORECASE also affected the owned name; the corrected implementation
+limits case-insensitivity to the diagnostic prefix. [Current42 regressions](../acceptance/evidence/release-0.3.0/docker-absence-boundary-green-1791861658805631265.json)
+PASS, including case-sensitive-name rejection. The [controlled RED](../acceptance/evidence/release-0.3.0/docker-absence-exact-name-controlled-red-1791861725492154292/result.json)
+reproduces the first-repair defect; the earlier yielded RED attempt remains FAIL
+and is not proof. These are harness checks, not artifact acceptance. A new committed
+archive/build/runtime and actual-evidence review remain required before publication.

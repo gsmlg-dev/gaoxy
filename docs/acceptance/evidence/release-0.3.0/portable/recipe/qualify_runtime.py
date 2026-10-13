@@ -3,6 +3,7 @@ import datetime
 import json
 import os
 from pathlib import Path
+import re
 import signal
 import subprocess
 import sys
@@ -61,6 +62,15 @@ def execute(stage, command, log, cleanup=False, maximum=600, require_zero=True):
 
 save()  # Parent ownership survives a child timeout or partial container creation.
 child_attempted = False
+
+
+def container_absent(code, output):
+    return code != 0 and re.search(
+        r"(?:^|\n)(?i:(?:error(?: response from daemon)?:\s*)?no such (?:object|container):\s*)"
+        + re.escape(name) + r"\s*$", output
+    ) is not None
+
+
 try:
     execute("runtime-image", ["docker", "buildx", "build", "--platform", "linux/amd64", "--progress", "plain", "--target", "runtime", "--load", "-t", "gaoxy-release-030-portable-runtime:local", str(root / "context")], evidence / "docker-runtime-build.log")
     execute("runtime-image-inspect", ["docker", "image", "inspect", "gaoxy-release-030-portable-runtime:local"], evidence / "runtime-image-inspect.json", maximum=10)
@@ -73,7 +83,7 @@ try:
     assert launch["owned_container_removed"] and launch["owned_container_absent"]
     code = execute("owned-container-absence", ["docker", "inspect", name], evidence / "owned-container-absence.log", maximum=5, require_zero=False)
     output = (evidence / "owned-container-absence.log").read_text()
-    assert code != 0 and ("No such object:" in output or "No such container:" in output), output
+    assert container_absent(code, output), output
     receipt["owned_container_absent"] = True
     receipt["status"] = "PASS"
 except BaseException as error:
@@ -93,7 +103,7 @@ finally:
             receipt["fallback_remove_exit_code"] = code
             code = execute("fallback-absence", ["docker", "inspect", name], evidence / "fallback-absence.log", cleanup=True, maximum=5, require_zero=False)
             output = (evidence / "fallback-absence.log").read_text()
-            receipt["owned_container_absent"] = code != 0 and ("No such object:" in output or "No such container:" in output)
+            receipt["owned_container_absent"] = container_absent(code, output)
         except BaseException as error:
             receipt["fallback_cleanup_error"] = repr(error)
     receipt["completed_utc"] = datetime.datetime.now(datetime.timezone.utc).isoformat()

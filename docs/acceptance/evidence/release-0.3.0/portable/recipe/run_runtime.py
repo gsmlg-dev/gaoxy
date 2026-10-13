@@ -61,6 +61,15 @@ def inspect(stage, cleanup=False):
 
 save()  # Persist ownership before image inspection or potentially partial create.
 qualified = cleanup_complete = False
+
+
+def container_absent(code, output):
+    return code != 0 and re.search(
+        r"(?:^|\n)(?i:(?:error(?: response from daemon)?:\s*)?no such (?:object|container):\s*)"
+        + re.escape(name) + r"\s*$", output
+    ) is not None
+
+
 try:
     image = docker("image-inspect", ["image", "inspect", "gaoxy-release-030-portable-runtime:local", "--format", "{{.Id}}"]).stdout.strip()
     receipt["image_id"] = image
@@ -113,8 +122,7 @@ finally:
             removed = docker("container-remove", arguments, cleanup=True, maximum=3, require_zero=False)
             receipt["owned_container_removed"] = removed.returncode == 0
             absent = docker("container-absence", ["inspect", name], cleanup=True, maximum=3, require_zero=False)
-            receipt["owned_container_absent"] = absent.returncode != 0 and (
-                "No such object:" in absent.stderr or "No such container:" in absent.stderr)
+            receipt["owned_container_absent"] = container_absent(absent.returncode, absent.stderr)
             if qualified and cleanup_complete and receipt["owned_container_removed"] and receipt["owned_container_absent"]:
                 receipt["status"] = "PASS"
         except BaseException as error:

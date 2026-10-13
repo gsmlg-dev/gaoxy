@@ -1,0 +1,126 @@
+{
+  "bound_seconds": 600,
+  "cleanup_reserve_seconds": 40,
+  "owned_name": "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009",
+  "started_utc": "2026-10-13T03:11:09.103878+00:00",
+  "status": "FAIL",
+  "stages": [
+    {
+      "name": "runtime-image",
+      "command": [
+        "docker",
+        "buildx",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress",
+        "plain",
+        "--target",
+        "runtime",
+        "--load",
+        "-t",
+        "gaoxy-release-030-portable-runtime:local",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791859654379217728/context"
+      ],
+      "timeout_seconds": 557.9995099473745,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 57.9634217992425
+    },
+    {
+      "name": "runtime-image-inspect",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "gaoxy-release-030-portable-runtime:local"
+      ],
+      "timeout_seconds": 8,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 0.16487943567335606
+    },
+    {
+      "name": "fresh-runtime",
+      "command": [
+        "/run/current-system/sw/bin/python",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791859654379217728/context/run_runtime.py",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/.audit/release-030-1791859654379217728",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009",
+        "11355567.288086256"
+      ],
+      "timeout_seconds": 299.9999430645257,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "error": "AssertionError(('fresh-runtime', 1))",
+      "timed_out": false,
+      "elapsed_seconds": 33.8037442881614
+    },
+    {
+      "name": "fallback-inspect-before-cleanup",
+      "command": [
+        "docker",
+        "inspect",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.06475544534623623
+    },
+    {
+      "name": "fallback-logs",
+      "command": [
+        "docker",
+        "logs",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.03310776874423027
+    },
+    {
+      "name": "fallback-inspect-final",
+      "command": [
+        "docker",
+        "inspect",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.06485447660088539
+    },
+    {
+      "name": "fallback-remove",
+      "command": [
+        "docker",
+        "rm",
+        "--force",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009"
+      ],
+      "timeout_seconds": 8,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 0.032487306743860245
+    },
+    {
+      "name": "fallback-absence",
+      "command": [
+        "docker",
+        "inspect",
+        "gaoxy-release-030-portable-771f4c9d94bf454eb7c6ad919ba01009"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.06524979881942272
+    }
+  ],
+  "elapsed_seconds": 92.40949935279787,
+  "error": "AssertionError(('fresh-runtime', 1))",
+  "fallback_remove_exit_code": 0,
+  "owned_container_absent": false,
+  "completed_utc": "2026-10-13T03:12:41.513245+00:00"
+}

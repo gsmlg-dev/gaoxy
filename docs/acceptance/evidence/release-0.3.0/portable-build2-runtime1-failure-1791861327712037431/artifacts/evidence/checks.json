@@ -1,0 +1,334 @@
+[
+  {
+    "name": "toolchain",
+    "command": [
+      "bash",
+      "-ec",
+      "elixir --version; erl -noshell -eval 'io:format(\"OTP_RELEASE=~s OTP_VERSION=~s~n\", [erlang:system_info(otp_release), element(2, file:read_file(filename:join([code:root_dir(), \"releases\", erlang:system_info(otp_release), \"OTP_VERSION\"])))]), halt().'; rustc --version; cargo --version; python3 --version; openssl version; ldd --version; dpkg-query -W"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:49:20.002845+00:00",
+    "completed_utc": "2026-10-13T02:49:21.654558+00:00",
+    "elapsed_seconds": 1.6518809124827385,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "cc885179f6e634bf6c7b117c2716ff23ecb94efcaf6449dcb3f582fa6c63e53e"
+  },
+  {
+    "name": "hex",
+    "command": [
+      "mix",
+      "local.hex",
+      "--force"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:49:21.655004+00:00",
+    "completed_utc": "2026-10-13T02:49:27.917619+00:00",
+    "elapsed_seconds": 6.262675080448389,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "2e2d2b2b3045ee4ae3c8e57a76fdcdb25e2bb7b843ea620783e3ab3e22dbc720"
+  },
+  {
+    "name": "rebar",
+    "command": [
+      "mix",
+      "local.rebar",
+      "--force"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:49:27.918486+00:00",
+    "completed_utc": "2026-10-13T02:49:31.938085+00:00",
+    "elapsed_seconds": 4.0196605660021305,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "bdd878a2bdd26fae2c97cf8a4d94f813ab90a85ab16dff2cded065978c7a8a82"
+  },
+  {
+    "name": "test-dependencies",
+    "command": [
+      "mix",
+      "deps.get",
+      "--check-locked"
+    ],
+    "environment": {
+      "MIX_ENV": "test"
+    },
+    "started_utc": "2026-10-13T02:49:31.938676+00:00",
+    "completed_utc": "2026-10-13T02:50:18.168400+00:00",
+    "elapsed_seconds": 46.22977798059583,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "3b301209a7222375409477da95ac996cc12be2c50c92dd9e860ae2ee8a614bad"
+  },
+  {
+    "name": "peer-venv",
+    "command": [
+      "python3",
+      "-m",
+      "venv",
+      "/work/.audit/h2peer"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:50:18.169172+00:00",
+    "completed_utc": "2026-10-13T02:50:26.959666+00:00",
+    "elapsed_seconds": 8.790544662624598,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "peer-dependencies",
+    "command": [
+      "/work/.audit/h2peer/bin/python",
+      "-m",
+      "pip",
+      "install",
+      "-r",
+      "apps/gaoxy_http/test/support/h2-requirements.txt",
+      "-r",
+      "integration/http3/requirements.txt"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:50:26.960779+00:00",
+    "completed_utc": "2026-10-13T02:50:44.140949+00:00",
+    "elapsed_seconds": 17.180239072069526,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "7bd61ed3a4e284e1f433679bb22574c7b1444b71671b16ba79f99b7f3763de1f"
+  },
+  {
+    "name": "canonical-format",
+    "command": [
+      "mix",
+      "format",
+      "--check-formatted"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:50:54.533868+00:00",
+    "completed_utc": "2026-10-13T02:50:57.311225+00:00",
+    "elapsed_seconds": 2.7774594016373158,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "changed-source-format",
+    "command": [
+      "mix",
+      "format",
+      "--check-formatted",
+      "apps/gaoxy/lib/gaoxy/config.ex",
+      "apps/gaoxy/lib/gaoxy/quic.ex",
+      "apps/gaoxy/lib/gaoxy/quic_bridge.ex",
+      "apps/gaoxy/lib/gaoxy/service.ex",
+      "apps/gaoxy/mix.exs",
+      "apps/gaoxy/test/cleanup_attachment_test.exs",
+      "apps/gaoxy/test/quic_context_test.exs",
+      "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/response.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+      "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex",
+      "apps/gaoxy_http/mix.exs",
+      "apps/gaoxy_http/test/http2_control_rate_test.exs",
+      "apps/gaoxy_http/test/http2_network_test.exs",
+      "apps/gaoxy_http/test/http2_pre_settings_test.exs",
+      "apps/gaoxy_http/test/http3_upgrade_test.exs",
+      "apps/gaoxy_http/test/http_network_test.exs",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex",
+      "apps/gaoxy_http3/mix.exs",
+      "apps/gaoxy_http3/test/connection_test.exs",
+      "apps/gaoxy_http3/test/headers_test.exs",
+      "apps/gaoxy_http3/test/host_poll_profile_test.exs",
+      "apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "apps/gaoxy_http3/test/lifecycle_test.exs",
+      "apps/gaoxy_http3/test/operations_test.exs",
+      "apps/gaoxy_http3/test/options_test.exs",
+      "apps/gaoxy_http3/test/plug_test.exs",
+      "apps/gaoxy_http3/test/protocol_test.exs",
+      "apps/gaoxy_http3/test/proxy_test.exs",
+      "apps/gaoxy_http3/test/qpack_test.exs",
+      "apps/gaoxy_http3/test/service_test.exs",
+      "apps/gaoxy_http3/test/test_helper.exs",
+      "apps/gaoxy_http3/test/transport_test.exs",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex",
+      "apps/gaoxy_proxy/mix.exs",
+      "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+      "apps/gaoxy_proxy/test/http3_proxy_test.exs",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+      "apps/gaoxy_proxy/test/http_headers_test.exs",
+      "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+      "apps/gaoxy_server/lib/gaoxy/server/config.ex",
+      "apps/gaoxy_server/lib/gaoxy/server/route_config.ex",
+      "apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex",
+      "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex",
+      "apps/gaoxy_server/mix.exs",
+      "apps/gaoxy_server/test/http3_config_test.exs",
+      "apps/gaoxy_server/test/http3_generation_test.exs",
+      "docs/acceptance/evidence/m4/upstream-matrix/gaoxy-up2-diagnostic2-fixture-original.exs",
+      "docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs",
+      "examples/phoenix_native/h3_gateway.exs",
+      "examples/phoenix_native/mix.exs",
+      "integration/h3_consumer/mix.exs",
+      "integration/h3_consumer/test/consumer_test.exs",
+      "integration/h3_consumer/test/test_helper.exs",
+      "integration/http3/fixture.exs",
+      "integration/http3/matrix_fixture.exs",
+      "integration/http3/standalone/fixture.exs",
+      "integration/http3/upstream/fixture.exs",
+      "integration/http3/upstream/probe.exs",
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http_consumer/mix.exs",
+      "integration/http_consumer/test/consumer_test.exs",
+      "integration/http_consumer/test/test_helper.exs",
+      "integration/quic_consumer/mix.exs",
+      "integration/quic_consumer/test/quic_test.exs",
+      "mix.exs"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:50:57.312177+00:00",
+    "completed_utc": "2026-10-13T02:50:58.928822+00:00",
+    "elapsed_seconds": 1.6167290210723877,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "name": "strict-compile",
+    "command": [
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    "environment": {
+      "MIX_ENV": "prod"
+    },
+    "started_utc": "2026-10-13T02:50:58.929661+00:00",
+    "completed_utc": "2026-10-13T02:53:02.982466+00:00",
+    "elapsed_seconds": 124.05286041460931,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "db5fdc27cf94ed5d89cd122111e5a30d2058291974f170e9f6f8123c0d582562"
+  },
+  {
+    "name": "compatibility",
+    "command": [
+      "python3",
+      "scripts/check-tests.py",
+      "--max-cases",
+      "1",
+      "apps/gaoxy/test",
+      "apps/gaoxy_http/test",
+      "apps/gaoxy_http3/test",
+      "apps/gaoxy_proxy/test",
+      "apps/gaoxy_server/test"
+    ],
+    "environment": {
+      "MIX_ENV": "test",
+      "HTTP_FETCH_PEER_PYTHON": "/work/.audit/h2peer/bin/python",
+      "GAOXY_QUIC_PYTHON": "/work/.audit/h2peer/bin/python",
+      "PYTHONDONTWRITEBYTECODE": "1"
+    },
+    "started_utc": "2026-10-13T02:53:17.917041+00:00",
+    "completed_utc": "2026-10-13T02:56:57.312287+00:00",
+    "elapsed_seconds": 219.39531462825835,
+    "timeout_seconds": 300,
+    "exit_code": 0,
+    "log_sha256": "d366535abc0b12e2728d9285839dd9ae5f3a2383702877929e9858d8e00d15ea"
+  },
+  {
+    "name": "release",
+    "command": [
+      "mix",
+      "release",
+      "gaoxy"
+    ],
+    "environment": {
+      "MIX_ENV": "prod"
+    },
+    "started_utc": "2026-10-13T02:56:57.321874+00:00",
+    "completed_utc": "2026-10-13T02:59:41.906792+00:00",
+    "elapsed_seconds": 164.58496451564133,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "a41e563a3f0704d97ba781692d2a6ca21005e2861aeaad5af1f0fd96393d534e"
+  },
+  {
+    "name": "core-smoke",
+    "command": [
+      "python3",
+      "scripts/release-smoke.py"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T02:59:41.907764+00:00",
+    "completed_utc": "2026-10-13T03:00:01.514368+00:00",
+    "elapsed_seconds": 19.606657763943076,
+    "timeout_seconds": 60,
+    "exit_code": 0,
+    "log_sha256": "993cf5256aa968606ed0e80865a7c65da4aff8d019a22b5166f22bbe505e1d20"
+  },
+  {
+    "name": "gateway-smoke",
+    "command": [
+      "/work/.audit/h2peer/bin/python",
+      "scripts/gateway-release-smoke.py"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T03:00:01.515577+00:00",
+    "completed_utc": "2026-10-13T03:00:09.412574+00:00",
+    "elapsed_seconds": 7.897061185911298,
+    "timeout_seconds": 60,
+    "exit_code": 0,
+    "log_sha256": "b826ff6b473e7b752be0414ae52c5ad14a8b0236b022f11ea7c3dc0dce555bae"
+  },
+  {
+    "name": "h3-smoke",
+    "command": [
+      "/work/.audit/h2peer/bin/python",
+      "scripts/h3-release-smoke.py",
+      "--evidence",
+      "/output/evidence/h3"
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T03:00:09.413923+00:00",
+    "completed_utc": "2026-10-13T03:00:20.237987+00:00",
+    "elapsed_seconds": 10.824137365445495,
+    "timeout_seconds": 100,
+    "exit_code": 0,
+    "log_sha256": "34d67fc2d978945aca6344e0afc87e634670a7b9f117128c33dcaf9fb2b6326c"
+  },
+  {
+    "name": "package",
+    "command": [
+      "tar",
+      "-C",
+      "_build/prod/rel/gaoxy",
+      "-czf",
+      "/output/gaoxy-0.3.0-linux-x86_64.tar.gz",
+      "."
+    ],
+    "environment": {},
+    "started_utc": "2026-10-13T03:03:21.329986+00:00",
+    "completed_utc": "2026-10-13T03:03:23.469558+00:00",
+    "elapsed_seconds": 2.1397027354687452,
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+]
