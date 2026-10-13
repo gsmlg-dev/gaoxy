@@ -1,0 +1,137 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 131931, max_cases: 1
+
+
+
+  1) test validation and preparation do not change caller links or send messages (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:158[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0massert {:ok, _, _} = Options.prepare_policy(policy_source())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "http://example.test", trust: nil, connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:160: (test)
+
+
+
+  2) test matches existing immutable H1 preparation and labels owned serialized payload (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:40[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0mfor source <- [policy_source(), tls_source(["opaque DER bytes"])] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "http://example.test", trust: nil, connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:43: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test matches existing immutable H1 preparation and labels owned serialized payload"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:41: (test)
+
+
+
+  3) test preserves compact request, ordered fields and empty query without policy mutation (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:80[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0m{:ok, policy, _} = Options.prepare_policy(policy_source())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "http://example.test", trust: nil, connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:81: (test)
+
+
+
+  4) test requires every finite owner budget and preserves accepted limits (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:7[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.normalize_limits/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0massert {:ok, accepted} = Options.normalize_limits(limits())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.normalize_limits(%{max_resources: 2, max_pins: 8, max_request_tokens: 64, max_owned_payload_bytes: 131072})
+       test/upstream_transports_options_test.exs:8: (test)
+
+
+
+  5) test bounds trust and source backing before compact construction (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:126[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0massert {:ok, policy, _} = Options.prepare_policy(tls_source([cert]))
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "https://example.test", trust: ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"], connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:129: (test)
+
+
+
+  6) test rejects request protocol, authority, address, trust and identity overrides (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:96[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0m{:ok, policy, _} = Options.prepare_policy(policy_source())
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "http://example.test", trust: nil, connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:97: (test)
+
+
+
+  7) test rejects missing, unknown, duplicate and arbitrary owner options (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:25[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.normalize_limits/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0mfor source <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.normalize_limits(%{})
+       test/upstream_transports_options_test.exs:36: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects missing, unknown, duplicate and arbitrary owner options"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:26: (test)
+
+
+
+  8) test rejects raw policy options, duplicate fields, SSL callbacks and mutable trust (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:59[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available)[0m
+     [36mcode: [0mfor source <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy(%{origin: "http://example.test", http_version: :http2, trust: nil, connect_address: {127, 0, 0, 1}})
+       test/upstream_transports_options_test.exs:69: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects raw policy options, duplicate fields, SSL callbacks and mutable trust"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:60: (test)
+
+    [33mwarning:[0m Gaoxy.Proxy.UpstreamTransports.Options.normalize_limits/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available or is yet to be defined)
+    │
+  8 │     assert {:ok, accepted} = Options.normalize_limits(limits())
+    │ [33m                                     ~[0m
+    │
+    └─ test/upstream_transports_options_test.exs:8:38: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test requires every finite owner budget and preserves accepted limits"/1
+    └─ test/upstream_transports_options_test.exs:18:38: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test requires every finite owner budget and preserves accepted limits"/1
+    └─ test/upstream_transports_options_test.exs:21:50: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test requires every finite owner budget and preserves accepted limits"/1
+    └─ test/upstream_transports_options_test.exs:36:50: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects missing, unknown, duplicate and arbitrary owner options"/1
+    └─ test/upstream_transports_options_test.exs:161:48: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test validation and preparation do not change caller links or send messages"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.UpstreamTransports.Options.prepare_policy/1 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available or is yet to be defined)
+    │
+ 43 │       assert {:ok, ^expected, accounting} = Options.prepare_policy(source)
+    │ [33m                                                    ~[0m
+    │
+    └─ test/upstream_transports_options_test.exs:43:53: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test matches existing immutable H1 preparation and labels owned serialized payload"/1
+    └─ test/upstream_transports_options_test.exs:69:50: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects raw policy options, duplicate fields, SSL callbacks and mutable trust"/1
+    └─ test/upstream_transports_options_test.exs:73:49: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects raw policy options, duplicate fields, SSL callbacks and mutable trust"/1
+    └─ test/upstream_transports_options_test.exs:77:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects raw policy options, duplicate fields, SSL callbacks and mutable trust"/1
+    └─ test/upstream_transports_options_test.exs:81:32: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test preserves compact request, ordered fields and empty query without policy mutation"/1
+    └─ test/upstream_transports_options_test.exs:92:40: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test preserves compact request, ordered fields and empty query without policy mutation"/1
+    └─ test/upstream_transports_options_test.exs:97:32: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects request protocol, authority, address, trust and identity overrides"/1
+    └─ test/upstream_transports_options_test.exs:129:39: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:134:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:137:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:140:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:143:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:145:32: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:160:34: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test validation and preparation do not change caller links or send messages"/1
+    └─ test/upstream_transports_options_test.exs:162:48: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test validation and preparation do not change caller links or send messages"/1
+
+    [33mwarning:[0m Gaoxy.Proxy.UpstreamTransports.Options.prepare_request/2 is undefined (module Gaoxy.Proxy.UpstreamTransports.Options is not available or is yet to be defined)
+    │
+ 83 │     assert {:ok, ^expected, accounting} = Options.prepare_request(policy, request_source())
+    │ [33m                                                  ~[0m
+    │
+    └─ test/upstream_transports_options_test.exs:83:51: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test preserves compact request, ordered fields and empty query without policy mutation"/1
+    └─ test/upstream_transports_options_test.exs:111:24: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects request protocol, authority, address, trust and identity overrides"/1
+    └─ test/upstream_transports_options_test.exs:115:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects request protocol, authority, address, trust and identity overrides"/1
+    └─ test/upstream_transports_options_test.exs:119:24: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects request protocol, authority, address, trust and identity overrides"/1
+    └─ test/upstream_transports_options_test.exs:123:48: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test rejects request protocol, authority, address, trust and identity overrides"/1
+    └─ test/upstream_transports_options_test.exs:148:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+    └─ test/upstream_transports_options_test.exs:152:22: Gaoxy.Proxy.UpstreamTransports.OptionsTest."test bounds trust and source backing before compact construction"/1
+
+
+Finished in 1.5 seconds (1.5s async, 0.00s sync)
+[31m8 tests, 8 failures[0m

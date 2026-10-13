@@ -90,7 +90,10 @@ source/cohort hashes, writer ownership and inherited counters. The parent owns
 all Mix/build/live commands. Astra recovery remains 2/2 exhausted; ordinary
 failures enter local Sol diagnosis and repair. Renewed continuing authorization
 supersedes routine approval/phase-stop rules; product, publication/deployment,
-Vault, production and disabled-E2E boundaries remain. Independent specification review PASS; implementation/runtime gates remain NOT RUN.
+Vault, production and disabled-E2E boundaries remain. Independent specification review PASS. Initial core/options verification: 66 tests/0 failures;
+Options independent SPEC/CODE review PASS. Core SPEC/CODE review PASS, core-only consumer 1/0 PASS and fresh post-review
+format/strict compile/66 tests PASS. Steps 1–3 are accepted; resource-ledger and
+live-peer gates remain NOT RUN.
 
 ## Scope and ownership
 
@@ -137,31 +140,31 @@ public management, deployment, Vault or disabled E2E work is included.
 
 Owned files: Slice A core files and new participant test.
 
-- [ ] Write RED tests for self-authenticated caller identity, one registration
+- [x] Write RED tests for self-authenticated caller identity, one registration
   per PID, 64 accepted registrations/65th rejected, failed-entry retention,
   stopping rejection and cross-instance isolation. Include registration timeout
   with no subsequent test-resource allocation.
-- [ ] Parent runs the new scoped test and records the actual expected RED result.
-- [ ] Implement `Gaoxy.register_lifecycle_participant(instance, timeout_ms)` and
+- [x] Parent runs the new scoped test and records the actual expected RED result.
+- [x] Implement `Gaoxy.register_lifecycle_participant(instance, timeout_ms)` and
   the instance-owned monitored registry; no transport/dependency terms in core.
   Use bounded failure metadata and no unregister/replacement API.
-- [ ] Parent runs GREEN. Inspect nonzero count/exit and source stability, then
+- [x] Parent runs GREEN. Inspect nonzero count/exit and source stability, then
   obtain independent code review and fresh verification before the local commit.
 
 ## Step 2: join services and participants under the original stop deadline
 
 Owned files: same Slice A files. Depends on Step 1.
 
-- [ ] Add receive-barrier RED tests proving every drain is dispatched before
+- [x] Add receive-barrier RED tests proving every drain is dispatched before
   any wait; services and participants observe identical D; Instance remains
   responsive; no receipt is accepted from wrong/stale/duplicate identities.
-- [ ] Cover held success, confirmed failure, pending at D, participant death,
+- [x] Cover held success, confirmed failure, pending at D, participant death,
   coordinator death, supervisor termination and both receipt/monitor delivery
   orders. Existing service-only result shapes must remain exact.
-- [ ] Implement the combined bounded coordinator and termination helper using
+- [x] Implement the combined bounded coordinator and termination helper using
   the design's message tuples and result shapes. Preserve failed explicit-stop
   results through termination and keep cleanup headroom outside success budget.
-- [ ] Run participant tests plus the listed core lifecycle compatibility tests.
+- [x] Run participant tests plus the listed core lifecycle compatibility tests.
   Parent also runs the existing core-only consumer isolation gate. Record
   actual counts/exits; resolve actionable independent review before committing.
 
@@ -170,16 +173,16 @@ Owned files: same Slice A files. Depends on Step 1.
 Owned files: Options module and its test. This can run in parallel with A when
 writers are disjoint; runtime commands remain parent-serialized.
 
-- [ ] Write RED tests for strict fields/duplicates, finite ledger limits,
+- [x] Write RED tests for strict fields/duplicates, finite ledger limits,
   resource count at most 64, protocol/authority/literal-address mismatch,
   bounded policy/trust backing, unknown request overrides and compact values.
-- [ ] Implement the smallest pure wrapper over `ManagedH1Preparation`; retain
+- [x] Implement the smallest pure wrapper over `ManagedH1Preparation`; retain
   fixed C2/R32/P0 H1 policy and explicit DER trust. Reject caller SSL callbacks,
   raw option passthrough, H2/H3 and mutable trust-path configuration.
-- [ ] Define required finite resource/pin/token/owned-payload limits. Label
+- [x] Define required finite resource/pin/token/owned-payload limits. Label
   owned-payload accounting accurately; no VM/native memory reservation constant
   or evaluator is introduced.
-- [ ] Test boundary refusal before scope/process/network creation and immutable
+- [x] Test boundary refusal before scope/process/network creation and immutable
   policy equality with existing preparation. Parent records GREEN and review.
 
 ## Step 4: create registered ledger records and persistent custodians
