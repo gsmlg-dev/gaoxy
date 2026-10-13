@@ -1,0 +1,217 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 709897, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/upstream_transport_proxy_test.exs", 326}]
+
+TLS_POST_GLOBAL_LEDGER_DIAGNOSTIC: %{
+  phase: :before_bounded_ledger,
+  observed_own_owner_events: [:custodian_retiring, :custodian_helper_started,
+   :custodian_helper_finished, :custodian_failed, :instance_down,
+   :custodian_retiring, :custodian_helper_started, :custodian_helper_finished],
+  public_status: {:ok,
+   %{
+     resources: 1,
+     pins: 0,
+     request_tokens: 1,
+     reserved_connections: 2,
+     helpers: 0,
+     failed_resources: 0,
+     limits: %{
+       max_resources: 2,
+       max_pins: 16,
+       max_request_tokens: 64,
+       max_owned_payload_bytes: 2097152
+     },
+     lifecycle: :retiring,
+     owned_serialized_payload_bytes: 2402
+   }},
+  own_record: %{
+    admission: :closed,
+    lifecycle: :failed,
+    transport_confirmed: false,
+    custodian_down: false,
+    opening: false
+  },
+  own_custodian: %{
+    mode: :abort,
+    failed: true,
+    confirmed: false,
+    control_calls: 2,
+    initial_mode: :graceful,
+    helper_down: false,
+    retry_down: false
+  },
+  own_custodian_helper_live: false,
+  own_custodian_retry_live: false
+}
+TLS_POST_GLOBAL_LEDGER_DIAGNOSTIC: %{
+  phase: :after_bounded_ledger_failure,
+  observed_own_owner_events: [],
+  public_status: {:ok,
+   %{
+     resources: 1,
+     pins: 0,
+     request_tokens: 1,
+     reserved_connections: 2,
+     helpers: 0,
+     failed_resources: 0,
+     limits: %{
+       max_resources: 2,
+       max_pins: 16,
+       max_request_tokens: 64,
+       max_owned_payload_bytes: 2097152
+     },
+     lifecycle: :retiring,
+     owned_serialized_payload_bytes: 2402
+   }},
+  own_record: %{
+    admission: :closed,
+    lifecycle: :retiring,
+    transport_confirmed: false,
+    custodian_down: false,
+    opening: false
+  },
+  own_custodian: %{
+    mode: :abort,
+    failed: true,
+    confirmed: false,
+    control_calls: 2,
+    initial_mode: :graceful,
+    helper_down: false,
+    retry_down: false
+  },
+  own_custodian_helper_live: false,
+  own_custodian_retry_live: false
+}
+
+
+  1) test TLS wrong_ca rejects without plaintext fallback or replay (Gaoxy.Proxy.UpstreamTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:326[0m
+     [31mbounded endpoint accounting did not settle[0m
+     [36mcode: [0meventually(fn ->
+     [36mstacktrace:[0m
+       test/upstream_transport_proxy_test.exs:1356: Gaoxy.Proxy.UpstreamTransportProxyTest.eventually/2
+       test/upstream_transport_proxy_test.exs:400: (test)
+
+     The following output was logged:
+     [22m
+     20:54:52.825 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m[22m
+     20:54:52.819 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m[31m
+     20:54:53.677 [error] GenServer #PID<0.347.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_unconfirmed}
+     Last message: {:gaoxy_cleanup_activate, #Reference<0.1850288300.103809026.12771>}
+     State: %{monitors: %{#Reference<0.1850288300.103809026.12765> => #PID<0.346.0>, #Reference<0.1850288300.103809026.12766> => #PID<0.336.0>, #Reference<0.1850288300.103809026.12767> => #PID<0.327.0>, #Reference<0.1850288300.103809026.12768> => #PID<0.337.0>}, owner: #PID<0.346.0>, request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.348.0>, latch: #Reference<0.1850288300.103940098.12855>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.347.0>, pid: #PID<0.349.0>, ref: #Reference<0.0.44419.1850288300.103874561.17704>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.348.0>, latch: #Reference<0.1850288300.103940098.12855>, unsupported: nil}}}, config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "localhost:34209", userinfo: nil, host: "localhost", port: 34209, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.329.0>, resource: #Reference<0.1850288300.103809026.12396>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809026.12375>}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, instance: #PID<0.327.0>, cancelled: true, service: #PID<0.336.0>, started_at: -576460745710, deadline: -576460715723, token: #Reference<0.1850288300.103809026.12771>, client: Gaoxy.Proxy.HTTPFetchClient, request_options: %{path: "/once", body: {:length, 0}, query: nil, headers: [{"content-length", "0"}, {"authorization", "secret"}, {"x-forwarded-for", "127.0.0.1"}, {"x-forwarded-host", "downstream.test"}, {"x-forwarded-proto", "http"}], limits: %{request_timeout: 30000, max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000, max_write_chunk: 16384}, method: :post, max_upload_bytes: 65536}, headers: false, transport_selection: {%{owner: #PID<0.329.0>, resource: #Reference<0.1850288300.103809026.12396>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809026.12375>}, #Reference<0.1850288300.103809026.12790>}, selection: nil, transport_pins: [%{owner: #PID<0.329.0>, handles: [%{owner: #PID<0.329.0>, resource: #Reference<0.1850288300.103809026.12396>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809026.12375>}], kind: :request, ref: #Reference<0.1850288300.103809026.12785>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809026.12375>, holder: #PID<0.347.0>, operation: #Reference<0.1850288300.103809026.12783>}], consumed: true, delivery: nil, gate: #PID<0.337.0>, selector: {:fixed, %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "localhost:34209", userinfo: nil, host: "localhost", port: 34209, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.329.0>, resource: #Reference<0.1850288300.103809026.12396>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809026.12375>}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}}, trailers: [], outcome: :cancelled, cleanup_deadline: -576460714723, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH1Preparation.Policy{origin: "https://localhost:34209", scheme: :https, host: "localhost", port: 34209, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://localhost:34209", connect_address: {127, 0, 0, 1}, http_version: :http1, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 130, 3, 36, ...>>], server_name_indication: ~c"localhost"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: #PID<0.332.0>, latch: #Reference<0.1850288300.103940098.12458>, identity: <<232, 151, 25, 52, 205, 158, 206, 190, 138, 148, 143, 47, 226, 222, 209, 197, 229, 77, 154, 16, 140, ...>>, ingress: #Reference<0.1850288300.103940098.12475>, configuration: #Reference<0.1850288300.103940098.12476>, gate: #Reference<0.1850288300.103940098.12477>, max_requests: 32}, fetch_options: [http_version: :http1, tls_backend: :ssl, http1_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: -576460740706, activated_at: -576460745706, opening_timer: #Reference<0.1850288300.103809026.12796>, total_timer: #Reference<0.1850288300.103809026.12797>, cleanup_started: true, cleanup_requested_deadline: nil, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.348.0>, latch: #Reference<0.1850288300.103940098.12855>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.347.0>, pid: #PID<0.349.0>, ref: #Reference<0.0.44419.1850288300.103874561.17704>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.348.0>, latch: #Reference<0.1850288300.103940098.12855>, unsupported: nil}}}}
+     [0m
+TLS_POST_GLOBAL_LEDGER_DIAGNOSTIC: %{
+  phase: :before_bounded_ledger,
+  observed_own_owner_events: [:custodian_retiring, :custodian_helper_started,
+   :custodian_helper_finished, :custodian_failed, :instance_down,
+   :custodian_retiring, :custodian_helper_started, :custodian_helper_finished],
+  public_status: {:ok,
+   %{
+     resources: 1,
+     pins: 0,
+     request_tokens: 1,
+     reserved_connections: 2,
+     helpers: 0,
+     failed_resources: 0,
+     limits: %{
+       max_resources: 2,
+       max_pins: 16,
+       max_request_tokens: 64,
+       max_owned_payload_bytes: 2097152
+     },
+     lifecycle: :retiring,
+     owned_serialized_payload_bytes: 2402
+   }},
+  own_record: %{
+    admission: :closed,
+    lifecycle: :retiring,
+    transport_confirmed: false,
+    custodian_down: false,
+    opening: false
+  },
+  own_custodian: %{
+    mode: :abort,
+    failed: true,
+    confirmed: false,
+    control_calls: 2,
+    initial_mode: :graceful,
+    helper_down: false,
+    retry_down: false
+  },
+  own_custodian_helper_live: false,
+  own_custodian_retry_live: false
+}
+TLS_POST_GLOBAL_LEDGER_DIAGNOSTIC: %{
+  phase: :after_bounded_ledger_failure,
+  observed_own_owner_events: [],
+  public_status: {:ok,
+   %{
+     resources: 1,
+     pins: 0,
+     request_tokens: 1,
+     reserved_connections: 2,
+     helpers: 0,
+     failed_resources: 0,
+     limits: %{
+       max_resources: 2,
+       max_pins: 16,
+       max_request_tokens: 64,
+       max_owned_payload_bytes: 2097152
+     },
+     lifecycle: :retiring,
+     owned_serialized_payload_bytes: 2402
+   }},
+  own_record: %{
+    admission: :closed,
+    lifecycle: :retiring,
+    transport_confirmed: false,
+    custodian_down: false,
+    opening: false
+  },
+  own_custodian: %{
+    mode: :abort,
+    failed: true,
+    confirmed: false,
+    control_calls: 2,
+    initial_mode: :graceful,
+    helper_down: false,
+    retry_down: false
+  },
+  own_custodian_helper_live: false,
+  own_custodian_retry_live: false
+}
+
+
+  2) test TLS wrong_host rejects without plaintext fallback or replay (Gaoxy.Proxy.UpstreamTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:326[0m
+     [31mbounded endpoint accounting did not settle[0m
+     [36mcode: [0meventually(fn ->
+     [36mstacktrace:[0m
+       test/upstream_transport_proxy_test.exs:1356: Gaoxy.Proxy.UpstreamTransportProxyTest.eventually/2
+       test/upstream_transport_proxy_test.exs:400: (test)
+
+     The following output was logged:
+     [22m
+     20:54:59.739 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Bad Certificate
+     
+     [0m[22m
+     20:54:59.739 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate
+      - {:bad_cert,
+      {:hostname_check_failed, {:requested, ~c"127.0.0.2"},
+       {:received, [dNSName: ~c"localhost", iPAddress: <<127, 0, 0, 1>>]}}}
+     [0m[31m
+     20:55:00.712 [error] GenServer #PID<0.398.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_unconfirmed}
+     Last message: {:gaoxy_cleanup_activate, #Reference<0.1850288300.103809025.22125>}
+     State: %{monitors: %{#Reference<0.1850288300.103809025.22119> => #PID<0.397.0>, #Reference<0.1850288300.103809025.22120> => #PID<0.387.0>, #Reference<0.1850288300.103809025.22121> => #PID<0.379.0>, #Reference<0.1850288300.103809025.22122> => #PID<0.388.0>}, owner: #PID<0.397.0>, request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.399.0>, latch: #Reference<0.1850288300.103940097.22167>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.398.0>, pid: #PID<0.400.0>, ref: #Reference<0.0.50947.1850288300.103874561.22174>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.399.0>, latch: #Reference<0.1850288300.103940097.22167>, unsupported: nil}}}, config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "127.0.0.2:39773", userinfo: nil, host: "127.0.0.2", port: 39773, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.381.0>, resource: #Reference<0.1850288300.103809025.21969>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809025.21964>}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, instance: #PID<0.379.0>, cancelled: true, service: #PID<0.387.0>, started_at: -576460738651, deadline: -576460708651, token: #Reference<0.1850288300.103809025.22125>, client: Gaoxy.Proxy.HTTPFetchClient, request_options: %{path: "/once", body: {:length, 0}, query: nil, headers: [{"content-length", "0"}, {"authorization", "secret"}, {"x-forwarded-for", "127.0.0.1"}, {"x-forwarded-host", "downstream.test"}, {"x-forwarded-proto", "http"}], limits: %{request_timeout: 30000, max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000, max_write_chunk: 16384}, method: :post, max_upload_bytes: 65536}, headers: false, transport_selection: {%{owner: #PID<0.381.0>, resource: #Reference<0.1850288300.103809025.21969>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809025.21964>}, #Reference<0.1850288300.103809025.22144>}, selection: nil, transport_pins: [%{owner: #PID<0.381.0>, handles: [%{owner: #PID<0.381.0>, resource: #Reference<0.1850288300.103809025.21969>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809025.21964>}], kind: :request, ref: #Reference<0.1850288300.103809025.22139>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809025.21964>, holder: #PID<0.398.0>, operation: #Reference<0.1850288300.103809025.22137>}], consumed: true, delivery: nil, gate: #PID<0.388.0>, selector: {:fixed, %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "127.0.0.2:39773", userinfo: nil, host: "127.0.0.2", port: 39773, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.381.0>, resource: #Reference<0.1850288300.103809025.21969>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1850288300.103809025.21964>}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}}, trailers: [], outcome: :cancelled, cleanup_deadline: -576460707651, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH1Preparation.Policy{origin: "https://127.0.0.2:39773", scheme: :https, host: "127.0.0.2", port: 39773, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://127.0.0.2:39773", connect_address: {127, 0, 0, 1}, http_version: :http1, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 130, 3, 36, ...>>], server_name_indication: ~c"127.0.0.2"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: #PID<0.383.0>, latch: #Reference<0.1850288300.103940097.21984>, identity: <<197, 67, 36, 72, 38, 254, 116, 94, 119, 238, 172, 161, 88, 38, 110, 176, 170, 111, 103, 82, 90, ...>>, ingress: #Reference<0.1850288300.103940097.21997>, configuration: #Reference<0.1850288300.103940097.21998>, gate: #Reference<0.1850288300.103940097.21999>, max_requests: 32}, fetch_options: [http_version: :http1, tls_backend: :ssl, http1_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: -576460733651, activated_at: -576460738651, opening_timer: #Reference<0.1850288300.103809025.22150>, total_timer: #Reference<0.1850288300.103809025.22151>, cleanup_started: true, cleanup_requested_deadline: nil, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.399.0>, latch: #Reference<0.1850288300.103940097.22167>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.398.0>, pid: #PID<0.400.0>, ref: #Reference<0.0.50947.1850288300.103874561.22174>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.399.0>, latch: #Reference<0.1850288300.103940097.22167>, unsupported: nil}}}}
+     [0m
+
+Finished in 18.9 seconds (0.00s async, 18.9s sync)
+[31m27 tests, 2 failures, 25 excluded[0m

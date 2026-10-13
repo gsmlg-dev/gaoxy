@@ -1,0 +1,67 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 767644, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/upstream_transport_proxy_test.exs", [107, 117]}]
+
+
+
+  1) test group compilation rejects managed config in a compiled group instead of erasing it (Gaoxy.Proxy.UpstreamTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:117[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_upstream_group} = UpstreamGroups.compile(tampered)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_upstream_group[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%Gaoxy.Proxy.UpstreamGroups.Options{
+                id: "dedicated-only",
+                members: [%{id: "a", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "example.test", userinfo: nil, host: "example.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 16}],
+                health: %{
+                  timeout: 2000,
+                  path: "/",
+                  interval: 5000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 500,
+                  stale_after: 15000
+                },
+                max_inflight: 64
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_proxy_test.exs:129: (test)
+
+
+
+  2) test group compilation rejects a raw managed member instead of activating it (Gaoxy.Proxy.UpstreamTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:107[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_upstream_group} =
+              UpstreamGroups.compile(%{
+                id: "dedicated-only",
+                members: [%{id: "a", upstream: "http://example.test", transport: handle}]
+              })
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_upstream_group[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%Gaoxy.Proxy.UpstreamGroups.Options{
+                id: "dedicated-only",
+                members: [%{id: "a", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "example.test", userinfo: nil, host: "example.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.326.0>, resource: #Reference<0.1696080770.368836610.34898>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1696080770.368836610.34897>}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 16}],
+                health: %{
+                  timeout: 2000,
+                  path: "/",
+                  interval: 5000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 500,
+                  stale_after: 15000
+                },
+                max_inflight: 64
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_proxy_test.exs:110: (test)
+
+
+Finished in 3.4 seconds (0.00s async, 3.4s sync)
+[31m27 tests, 2 failures, 25 excluded[0m

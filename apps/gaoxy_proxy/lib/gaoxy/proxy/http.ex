@@ -19,7 +19,8 @@ defmodule Gaoxy.Proxy.HTTP do
   @behaviour Gaoxy.HTTP.Endpoint
   alias Gaoxy.Lifecycle
   alias Gaoxy.Proxy.{HTTPFetchClient, HTTP3SessionClient}
-  alias Gaoxy.HTTP.{Exchange, Response}
+  alias Gaoxy.HTTP.{Exchange, Resources, Response}
+  alias Gaoxy.Proxy.UpstreamTransports
   alias Gaoxy.Proxy.HTTP.{Headers, Session}
 
   @defaults %{
@@ -43,6 +44,7 @@ defmodule Gaoxy.Proxy.HTTP do
     :uri,
     :cacertfile,
     :connect_address,
+    :transport,
     :limits,
     upstream_protocol: :http1,
     client: HTTPFetchClient
@@ -57,7 +59,8 @@ defmodule Gaoxy.Proxy.HTTP do
              upstream: URI.to_string(config.uri),
              upstream_protocol: config.upstream_protocol,
              cacertfile: config.cacertfile,
-             connect_address: config.connect_address
+             connect_address: config.connect_address,
+             transport: config.transport
            }),
          {:ok, validated} <- init(options),
          true <- validated == config do
@@ -70,8 +73,8 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   def init(%{upstream: upstream} = options) when is_binary(upstream) do
-    uri = URI.parse(upstream)
     protocol = Map.get(options, :upstream_protocol, :http1)
+    transport = Map.get(options, :transport)
     chunk_limit = if protocol == :http3, do: 16_384, else: 65_536
 
     limits =
@@ -80,10 +83,19 @@ defmodule Gaoxy.Proxy.HTTP do
         Map.take(options, Map.keys(@defaults))
       )
 
-    with true <-
+    with true <- managed_source?(transport, upstream),
+         uri = URI.parse(upstream),
+         true <-
            Map.keys(options) --
-             [:upstream, :upstream_protocol, :cacertfile, :connect_address | Map.keys(@defaults)] ==
+             [
+               :upstream,
+               :upstream_protocol,
+               :cacertfile,
+               :connect_address,
+               :transport | Map.keys(@defaults)
+             ] ==
              [],
+         true <- managed_options?(transport, uri, protocol, options),
          true <- protocol in [:http1, :http3],
          true <- uri.scheme in ["http", "https"] and is_binary(uri.host) and uri.host != "",
          true <- is_integer(uri.port) and uri.port in 1..65_535,
@@ -109,6 +121,7 @@ defmodule Gaoxy.Proxy.HTTP do
          uri: uri,
          cacertfile: options[:cacertfile],
          connect_address: address,
+         transport: transport,
          limits: limits,
          upstream_protocol: protocol,
          client: client
@@ -121,6 +134,69 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   def init(_), do: {:error, :invalid_http_proxy_options}
+
+  @impl true
+  def resources(%__MODULE__{transport: nil}), do: []
+  def resources(%__MODULE__{transport: transport}), do: [transport]
+
+  defp managed_source?(nil, _), do: true
+
+  defp managed_source?(_, origin),
+    do:
+      byte_size(origin) in 1..65_536 and :binary.referenced_byte_size(origin) <= 65_536 and
+        root_text?(origin)
+
+  defp managed_options?(nil, _, _, _), do: true
+
+  defp managed_options?(
+         %{provider: UpstreamTransports, owner: owner, owner_epoch: epoch, resource: resource} =
+           handle,
+         uri,
+         :http1,
+         options
+       )
+       when map_size(handle) == 4 and is_pid(owner) and is_reference(epoch) and
+              is_reference(resource) do
+    is_binary(uri.host) and byte_size(uri.host) in 1..253 and
+      is_integer(uri.port) and
+      root_authority?(uri.authority, uri.host, uri.port) and
+      is_nil(options[:cacertfile]) and is_nil(options[:connect_address])
+  end
+
+  defp managed_options?(_, _, _, _), do: false
+
+  defp root_authority?(authority, host, port) when is_binary(authority) do
+    host = if String.contains?(host, ":"), do: "[" <> host <> "]", else: host
+    prefix = host <> ":"
+
+    cond do
+      authority == host ->
+        true
+
+      String.starts_with?(authority, prefix) ->
+        suffix =
+          binary_part(authority, byte_size(prefix), byte_size(authority) - byte_size(prefix))
+
+        String.trim_leading(suffix, "0") == Integer.to_string(port)
+
+      true ->
+        false
+    end
+  end
+
+  defp root_authority?(_, _, _), do: false
+  defp root_text?(<<>>), do: true
+
+  defp root_text?(<<?%, a, b, rest::binary>>),
+    do: root_hex?(a) and root_hex?(b) and root_text?(rest)
+
+  defp root_text?(<<?%, _::binary>>), do: false
+
+  defp root_text?(<<char, rest::binary>>) when char in 33..126 and char not in [?#, ?\\],
+    do: root_text?(rest)
+
+  defp root_text?(_), do: false
+  defp root_hex?(char), do: char in ?0..?9 or char in ?a..?f or char in ?A..?F
 
   @doc false
   def selected_client(%{group: _}), do: HTTPFetchClient
@@ -151,7 +227,26 @@ defmodule Gaoxy.Proxy.HTTP do
   defp connect_address(address), do: Gaoxy.Proxy.DestinationPolicy.normalize_address(address)
 
   @impl true
-  def call(exchange, config) do
+  def call(exchange, %__MODULE__{transport: transport} = config) when not is_nil(transport) do
+    case Resources.pin_many([transport], self(), :request, exchange.deadline) do
+      {:ok, pins} ->
+        try do
+          dispatch_request(exchange, config)
+        after
+          case Resources.release(pins) do
+            :ok -> :ok
+            {:error, reason} -> exit({:transport_pin_release_failed, reason})
+          end
+        end
+
+      {:error, _} ->
+        error_response(exchange, 503)
+    end
+  end
+
+  def call(exchange, config), do: dispatch_request(exchange, config)
+
+  defp dispatch_request(exchange, config) do
     client = selected_client(config)
 
     with true <- client.host_supported?() || {:error, :unsupported_http_proxy_host},

@@ -37,6 +37,25 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     Lifecycle.call(owner, {:prepare, source, preparer, deadline}, deadline)
   end
 
+  def validate_endpoint(
+        %{provider: __MODULE__, owner: owner, owner_epoch: epoch, resource: resource} = handle,
+        identity,
+        deadline
+      )
+      when map_size(handle) == 4 and is_pid(owner) and is_reference(epoch) and
+             is_reference(resource) do
+    with {:ok, authority, instance} <- endpoint_identity(identity),
+         true <- valid_deadline?(deadline) || pending() do
+      Lifecycle.call(
+        owner,
+        {:validate_endpoint, handle, authority, instance, deadline},
+        deadline
+      )
+    end
+  end
+
+  def validate_endpoint(_, _, _), do: {:error, :invalid_resource}
+
   @fetch_options [
     http_version: :http1,
     tls_backend: :ssl,
@@ -197,6 +216,25 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
       {:ok, _} -> {:reply, {:ok, aggregate(state)}, state}
       error -> {:reply, error, state}
     end
+  end
+
+  def handle_call({:validate_endpoint, handle, authority, instance, deadline}, _, state) do
+    result =
+      with true <- state.lifecycle == :running || {:error, :retiring},
+           true <- valid_deadline?(deadline) || pending(),
+           {:ok, entry} <- record(state, handle),
+           true <-
+             (entry.lifecycle == :active and not entry.transport_confirmed) ||
+               {:error, :resource_unavailable},
+           true <- entry.admission == :open || {:error, :resource_admission_closed},
+           true <-
+             (instance == state.instance and
+                authority == {entry.policy.scheme, entry.policy.host, entry.policy.port}) ||
+               {:error, :transport_endpoint_mismatch} do
+        :ok
+      end
+
+    {:reply, result, state}
   end
 
   def handle_call({:prepare, _, _, _}, _, %{lifecycle: lifecycle} = state)
@@ -1086,6 +1124,71 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   defp record(_, _), do: {:error, :invalid_resource}
 
+  defp endpoint_identity(
+         %{origin: origin, upstream_protocol: :http1, instance: instance} = identity
+       )
+       when map_size(identity) == 3 and is_binary(origin) and
+              byte_size(origin) in 1..65_536 and is_pid(instance) do
+    with true <- :binary.referenced_byte_size(origin) <= 65_536 and endpoint_url_text?(origin),
+         %URI{
+           scheme: scheme,
+           authority: authority,
+           host: host,
+           port: port,
+           userinfo: nil,
+           fragment: nil,
+           query: nil,
+           path: path
+         } <- URI.parse(origin),
+         true <-
+           scheme in ["http", "https"] and is_binary(host) and byte_size(host) in 1..253 and
+             is_integer(port) and port in 1..65_535 and path in [nil, "", "/"],
+         true <- endpoint_authority?(authority, host, port) do
+      scheme = if scheme == "http", do: :http, else: :https
+      {:ok, {scheme, String.downcase(host), port}, instance}
+    else
+      _ -> {:error, :invalid_transport_endpoint}
+    end
+  rescue
+    ArgumentError -> {:error, :invalid_transport_endpoint}
+  end
+
+  defp endpoint_identity(_), do: {:error, :invalid_transport_endpoint}
+
+  defp endpoint_authority?(authority, host, port) when is_binary(authority) do
+    host = if String.contains?(host, ":"), do: "[" <> host <> "]", else: host
+    prefix = host <> ":"
+
+    cond do
+      authority == host ->
+        true
+
+      String.starts_with?(authority, prefix) ->
+        suffix =
+          binary_part(authority, byte_size(prefix), byte_size(authority) - byte_size(prefix))
+
+        String.trim_leading(suffix, "0") == Integer.to_string(port)
+
+      true ->
+        false
+    end
+  end
+
+  defp endpoint_authority?(_, _, _), do: false
+
+  defp endpoint_url_text?(<<>>), do: true
+
+  defp endpoint_url_text?(<<?%, a, b, rest::binary>>),
+    do: endpoint_hex?(a) and endpoint_hex?(b) and endpoint_url_text?(rest)
+
+  defp endpoint_url_text?(<<?%, _::binary>>), do: false
+
+  defp endpoint_url_text?(<<char, rest::binary>>) when char in 33..126 and char not in [?#, ?\\],
+    do: endpoint_url_text?(rest)
+
+  defp endpoint_url_text?(_), do: false
+  defp endpoint_hex?(char), do: char in ?0..?9 or char in ?a..?f or char in ?A..?F
+
   defp handle(state, resource),
     do: %{provider: __MODULE__, owner: self(), owner_epoch: state.epoch, resource: resource}
 
@@ -1101,6 +1204,12 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   defp update_custodian(state, resource, pid, capability, lifecycle) do
     case state.records do
+      %{^resource => %{custodian: ^pid, capability: ^capability, lifecycle: :failed}}
+      when lifecycle == :retiring ->
+        # Retry initiation cannot erase an unconfirmed failure. The separate
+        # custodian_retired handler still accepts real retirement confirmation.
+        {:noreply, state}
+
       %{^resource => %{custodian: ^pid, capability: ^capability} = entry} ->
         {:noreply, put_entry(state, %{entry | lifecycle: lifecycle, opening: false})}
 

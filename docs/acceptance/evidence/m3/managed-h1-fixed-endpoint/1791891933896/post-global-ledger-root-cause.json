@@ -1,0 +1,45 @@
+{
+  "kind": "CONFIRMED_GAOXY_LIFECYCLE_DEFECT",
+  "status": "RED_OBSERVED",
+  "diagnostic_receipt": "fixed-tls-post-global-diagnostic-syntax-repair-1791896084865371917.json",
+  "executed": 2,
+  "failures": 2,
+  "excluded": 25,
+  "actual_exit": 2,
+  "source_stable": true,
+  "observed_sequence": [
+    "custodian_retiring",
+    "custodian_helper_started",
+    "custodian_helper_finished",
+    "custodian_failed",
+    "instance_down",
+    "custodian_retiring",
+    "custodian_helper_started",
+    "custodian_helper_finished"
+  ],
+  "settled_owner_status": {
+    "resources": 1,
+    "pins": 0,
+    "request_tokens": 1,
+    "reserved_connections": 2,
+    "helpers": 0,
+    "failed_resources": 0,
+    "lifecycle": "retiring"
+  },
+  "settled_custodian": {
+    "failed": true,
+    "confirmed": false,
+    "control_calls": 2,
+    "initial_mode": "graceful",
+    "mode": "abort",
+    "live_helpers": 0
+  },
+  "root_cause": "Authenticated abort retry emits retiring after failed; own owner regresses resource lifecycle, while custodian already-failed flag suppresses duplicate failure notification",
+  "authorized_repair": "Keep authenticated failed state across later retiring events; leave public confirmation and physical accounting paths unchanged",
+  "regression": "Two actual rejected TLS setup cases preserve failed_resource1 and retained holds after helper joins",
+  "production_writer": "/root/fixed_endpoint",
+  "additional_file_ownership": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+  "fixed_unsuccessful_implementation_attempts": 3,
+  "fixed_diagnostic_harness_failures": 1,
+  "astra_recovery_rounds_used": 2
+}

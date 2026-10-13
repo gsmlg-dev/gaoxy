@@ -42,15 +42,18 @@ records actual identities and unchanged historical failures. Hosted CI is
 BLOCKED_ENV with zero executed steps; deployment/production/E2E remain NOT RUN.
 The next prepared existing package is M3 Task4 H1 resource foundation:
 [design](docs/designs/m3-h1-resource-foundation.md) and
-[plan](docs/plans/m3-h1-resource-foundation.md); execution kickoff verified,
-implementation in progress under renewed continuing authorization; core participant,
-pure-options and Step4 ledger/custodian gates PASS. The ledger's rejected initial
-review and repair1 RED/44-test GREEN/fresh review evidence remain recorded;
-Step5 metadata pins/request holds repair1 passes 58/0 and independent SPEC/CODE
-review; owner/core retirement repair2 passes 75/0 and independent SPEC/CODE plus
-fresh verification after repair1 review rejection. Independent TCP/TLS runtime
-acceptance remains NOT RUN.
-Task5 production pool activation remains separate; the roadmap still ends at M4.
+[plan](docs/plans/m3-h1-resource-foundation.md), now **DONE** at local commit
+`5b73f5a951d506f194d090a0083183a79d577d6e`: final independent SPEC/CODE and
+fresh proxy77/0, core36/0, external core consumer1/0, complete independent
+TCP/TLS8/0, strict compile and format PASS. Historical failed/rejected rounds
+remain in its [acceptance](docs/acceptance/m3-h1-resource-foundation.md).
+Task5 [fixed endpoint activation](docs/plans/m3-managed-h1-fixed-endpoint.md)
+is now **DONE locally**: independent SPEC/CODE and fresh178/0, strict compile
+and formatcheck PASS; all historical failures remain preserved. The separately
+reviewed groups/probes and Generation designs/plans follow automatically under
+continuing authorization. No production pool
+activation acceptance is inferred from the foundation; the roadmap still ends
+at M4.
 
 ## 1. Product and success criteria
 

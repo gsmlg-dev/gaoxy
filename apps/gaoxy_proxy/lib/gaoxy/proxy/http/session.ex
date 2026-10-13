@@ -4,6 +4,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   alias Gaoxy.Lifecycle
   alias Gaoxy.Proxy.HTTP
   alias Gaoxy.Proxy.UpstreamGroups
+  alias Gaoxy.Proxy.UpstreamTransports
+  alias Gaoxy.HTTP.Resources
   @poll_ms 5
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
@@ -33,6 +35,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
        opening_deadline: nil,
        total_timer: nil,
        selection: nil,
+       transport_pins: [],
+       transport_selection: nil,
+       managed_transport: nil,
+       original_request: nil,
        outcome: :cancelled,
        token: nil,
        request: nil,
@@ -120,7 +126,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
               opening_timeout: Lifecycle.remaining(state.opening_deadline),
               write_timeout: state.config.limits.write_timeout,
               cacertfile: config.cacertfile,
-              connect_address: config.connect_address
+              connect_address: config.connect_address,
+              managed_transport: state.managed_transport
             })
 
           result =
@@ -132,7 +139,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
           case result do
             {:ok, request, upload} ->
-              state = %{state | request: request}
+              state = %{state | request: request, original_request: request}
 
               case bind(state) do
                 :ok ->
@@ -145,13 +152,18 @@ defmodule Gaoxy.Proxy.HTTP.Session do
               end
 
             {:error, {:cleanup_unconfirmed, _} = reason} ->
-              notify(state, {:error, reason})
-              {:stop, reason, state}
+              if state.transport_selection == nil do
+                notify(state, {:error, reason})
+                {:stop, reason, state}
+              else
+                fail(state, reason)
+              end
 
             {:error, reason} ->
               upstream_fail(state, reason)
           end
         else
+          {:error, reason, state} -> fail(state, reason)
           {:error, reason} -> fail(state, reason)
         end
     end
@@ -278,7 +290,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp settle(state) do
     state = begin_cleanup(state)
-    result = if state.request, do: state.client.cleanup(state.request, state.cancelled), else: :ok
+    request = if state.managed_transport, do: state.original_request, else: state.request
+    result = if request, do: state.client.cleanup(request, state.cancelled), else: :ok
 
     case result do
       :ok -> cleanup_complete(state)
@@ -316,13 +329,24 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp cleanup_complete(state) do
     if state.consumed or state.cancelled do
-      case finish_selection(state) do
-        :ok ->
-          _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
-          {:stop, :normal, state}
+      case finish_transport(state) do
+        {:ok, state} ->
+          case finish_selection(state) do
+            :ok ->
+              case complete_service(state) do
+                :ok -> {:stop, :normal, state}
+                {:error, reason} -> cleanup_failed(state, {:service_cleanup_failed, reason})
+              end
 
-        {:error, reason} ->
-          {:stop, {:selection_cleanup_failed, reason}, state}
+            {:error, reason} ->
+              {:stop, {:selection_cleanup_failed, reason}, state}
+          end
+
+        {:pending, state} ->
+          cleanup_pending(state)
+
+        {:error, reason, state} ->
+          cleanup_failed(state, {:transport_cleanup_failed, reason})
       end
     else
       {:noreply, state}
@@ -343,7 +367,38 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     {:stop, {:cleanup_failed, reason}, state}
   end
 
-  defp select(%{selector: {:fixed, config}} = state), do: {:ok, state, config}
+  defp select(%{selector: {:fixed, %HTTP{transport: nil} = config}} = state),
+    do: {:ok, state, config}
+
+  defp select(%{selector: {:fixed, %HTTP{transport: handle} = config}} = state) do
+    deadline = min(state.deadline, state.opening_deadline)
+
+    identity = %{
+      origin: URI.to_string(config.uri),
+      upstream_protocol: :http1,
+      instance: state.instance
+    }
+
+    with :ok <- UpstreamTransports.validate_endpoint(handle, identity, deadline),
+         {:ok, pins} <- Resources.pin_many([handle], self(), :request, deadline) do
+      state = %{state | transport_pins: pins}
+
+      case UpstreamTransports.checkout(handle, pins, self(), deadline) do
+        {:ok, client, token} ->
+          state = %{state | transport_selection: {handle, token}, managed_transport: client}
+          {:ok, state, %{config | uri: URI.parse(client.policy.origin)}}
+
+        {:error, reason} ->
+          case Resources.release(pins) do
+            :ok ->
+              {:error, reason, %{state | transport_pins: []}}
+
+            {:error, release_reason} ->
+              {:error, {:transport_pin_release_failed, reason, release_reason}, state}
+          end
+      end
+    end
+  end
 
   defp select(%{selector: {:group, handle, pins}} = state) do
     case UpstreamGroups.checkout(
@@ -358,10 +413,42 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     end
   end
 
-  defp bind(%{selection: nil}), do: :ok
+  defp bind(%{transport_selection: nil} = state), do: bind_selection(state)
 
-  defp bind(%{selection: {handle, token}, request: request} = state),
+  defp bind(%{transport_selection: {handle, token}, original_request: request} = state) do
+    with :ok <-
+           UpstreamTransports.bind_completion(handle, token, state.client.completion(request)),
+         do: bind_selection(state)
+  end
+
+  defp bind_selection(%{selection: nil}), do: :ok
+
+  defp bind_selection(%{selection: {handle, token}, request: request} = state),
     do: UpstreamGroups.bind_completion(handle, token, state.client.completion(request))
+
+  defp finish_transport(%{transport_selection: nil} = state), do: release_transport_pins(state)
+
+  defp finish_transport(%{transport_selection: {handle, token}} = state) do
+    case UpstreamTransports.finish(handle, token) do
+      :ok -> release_transport_pins(%{state | transport_selection: nil})
+      {:error, :cleanup_pending} -> {:pending, state}
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  defp release_transport_pins(state) do
+    case Resources.release(state.transport_pins) do
+      :ok -> {:ok, %{state | transport_pins: []}}
+      {:error, reason} -> {:error, {:pin_release_failed, reason}, state}
+    end
+  end
+
+  defp complete_service(%{managed_transport: nil} = state) do
+    _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
+    :ok
+  end
+
+  defp complete_service(state), do: Gaoxy.Service.complete_cleanup(state.service, state.token)
 
   defp finish_selection(%{selection: nil}), do: :ok
 

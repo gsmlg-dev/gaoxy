@@ -2,6 +2,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
   @moduledoc false
   @behaviour Gaoxy.Proxy.UpstreamClient
   alias HTTP.{Promise, RequestCompletion, Response, Stream}
+  alias Gaoxy.Proxy.UpstreamTransports.Options
 
   # Pinned 0.19.0/default :inet receive bound: OTP SSL can combine at most
   # internal_active_n (<=100) receive buffers with one maximum TLS 1.2 record.
@@ -45,49 +46,90 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
         stream
       end
 
+    try do
+      case fetch(options, upload) do
+        {:ok, promise} ->
+          {:ok,
+           %{
+             promise: promise,
+             completion: Promise.completion(promise),
+             stream: nil,
+             resolved: false
+           }, upload}
+
+        {:error, reason} ->
+          open_failed(upload, options.timeout, reason)
+      end
+    catch
+      kind, reason -> open_failed(upload, options.timeout, {kind, reason})
+    end
+  end
+
+  defp fetch(%{managed_transport: client} = options, upload) when not is_nil(client) do
+    source = %{
+      url: options.url,
+      method: options.method,
+      fields: options.headers,
+      body: upload,
+      trailers: [],
+      timeout: options.timeout,
+      connect_timeout: min(options.timeout, options.opening_timeout)
+    }
+
+    with {:ok, request, _accounting} <- Options.prepare_request(client.policy, source) do
+      fetch_options =
+        Keyword.merge(client.fetch_options,
+          transport_scope: client.transport_scope,
+          method: request.method,
+          headers: request.fields,
+          body: request.body,
+          duplex: if(upload, do: :half, else: nil),
+          timeout: request.timeout,
+          connect_timeout: request.connect_timeout
+        )
+
+      {:ok, HTTP.fetch(request.url, fetch_options)}
+    end
+  end
+
+  defp fetch(options, upload) do
     # The dedicated-H1 adapter uses the caller's certificate file directly.
     ssl = if options.cacertfile, do: [cacertfile: options.cacertfile], else: []
 
-    try do
-      promise =
-        HTTP.fetch(options.url,
-          method: options.method,
-          headers: options.headers,
-          # Managed 0.21.2 charges normalized inputs and generated fields (#87).
-          # Keep URL strings, explicit fields and nil/PID body inputs here.
-          body: upload,
-          duplex: if(upload, do: :half, else: nil),
-          # v0.2.0 uses one dedicated H1 connection per request.
-          # Reusable H1 and upstream H2 adapters are not implemented.
-          http_version: :http1,
-          http1_reuse: false,
-          redirect: :manual,
-          request_mode: :proxy,
-          decode_body: false,
-          stream_response: true,
-          tls_backend: :ssl,
-          ssl: ssl,
-          connect_address: Map.get(options, :connect_address),
-          timeout: options.timeout,
-          connect_timeout: min(options.timeout, options.opening_timeout),
-          telemetry: false,
-          socket_opts: [
-            buffer: @receive_buffer,
-            recbuf: @receive_buffer,
-            send_timeout: min(options.timeout, options.write_timeout),
-            send_timeout_close: true
-          ]
-        )
+    {:ok,
+     HTTP.fetch(options.url,
+       method: options.method,
+       headers: options.headers,
+       # Managed 0.21.2 charges normalized inputs and generated fields (#87).
+       # Keep URL strings, explicit fields and nil/PID body inputs here.
+       body: upload,
+       duplex: if(upload, do: :half, else: nil),
+       # The default path keeps one dedicated H1 connection per request.
+       http_version: :http1,
+       http1_reuse: false,
+       redirect: :manual,
+       request_mode: :proxy,
+       decode_body: false,
+       stream_response: true,
+       tls_backend: :ssl,
+       ssl: ssl,
+       connect_address: Map.get(options, :connect_address),
+       timeout: options.timeout,
+       connect_timeout: min(options.timeout, options.opening_timeout),
+       telemetry: false,
+       socket_opts: [
+         buffer: @receive_buffer,
+         recbuf: @receive_buffer,
+         send_timeout: min(options.timeout, options.write_timeout),
+         send_timeout_close: true
+       ]
+     )}
+  end
 
-      {:ok,
-       %{promise: promise, completion: Promise.completion(promise), stream: nil, resolved: false},
-       upload}
-    catch
-      kind, reason ->
-        case stop_upload(upload, options.timeout) do
-          :ok -> {:error, {kind, reason}}
-          :unconfirmed -> {:error, {:cleanup_unconfirmed, {kind, reason}}}
-        end
+  defp open_failed(upload, timeout, reason) do
+    case stop_upload(upload, timeout) do
+      :ok -> {:error, reason}
+      :unconfirmed -> {:error, {:cleanup_unconfirmed, reason}}
     end
   end
 

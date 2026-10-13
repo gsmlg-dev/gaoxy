@@ -1,7 +1,8 @@
 # M3 managed H1 fixed-endpoint activation
 
-Date: 2026-10-13 Asia/Shanghai. Status: **DESIGN PREPARED; implementation,
-runtime verification and independent review NOT RUN**. This is the next bounded
+Date: preparation2026-10-13; acceptance2026-10-14 Asia/Shanghai.
+Status: **DONE — local fixed-endpoint implementation, independent SPEC/CODE and
+fresh178/0, strict compile and canonical formatcheck PASS**. This is the next bounded
 slice of [existing M3 upstream-transport Task 5](../plans/m3-upstream-transport.md#task-5-endpoint-session-group-and-generation-integration-conditional).
 It starts only after the entire [H1 resource foundation](m3-h1-resource-foundation.md)
 passes its prescribed gates. Accepted foundation Steps 1–6 alone do not release
@@ -55,7 +56,8 @@ Production changes are limited to:
   endpoint identity check; no modification of existing pin/token authentication,
   retirement joins, control-call limits or four-field handles.
 
-Create `apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs`. Existing
+Create `apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs` and a separate
+`upstream_transport_identity_test.exs` for disjoint test ownership. Existing
 `http_proxy_runtime_test.exs`, `http_proxy_wire_test.exs`, `http_proxy_tls_test.exs`
 and `http_fetch_completion_test.exs` are scoped compatibility checks; change
 them only if a necessary additional assertion cannot live in the new file.
@@ -220,6 +222,48 @@ Sequential reuse keeps the idle resource accounted. Only public scope retirement
 confirmation plus helper/creator joins can refund physical capacity and permit
 successful instance stop, as already implemented by the foundation.
 
+### Rejected TLS setup and unconfirmed cleanup
+
+The installed `HTTP.ManagedTransport` public documentation states: "If TLS
+setup fails without returning a socket, or its resource representation is
+unsupported, the generation retires with unconfirmed cleanup; open a new scope
+for subsequent requests." The wrong-CA and wrong-hostname runtime diagnostic
+confirms this outcome for both cases. The original completion repeatedly returns
+`{:error, :cleanup_unconfirmed}`; the public scope snapshot is retired, and its
+retirement receipt repeatedly returns the same unconfirmed error. This is a
+documented conservative outcome, with no upstream defect or replacement for
+the excluded `http_fetch#97` requirement.
+
+These rejected handshakes must still return 502 without plaintext fallback,
+replay, or application/credential bytes. They cannot use the successful-request
+zero-accounting oracle. Before global retirement, assert the exact retained
+ledger: one resource, one baseline pin, one request token, two reserved physical
+connections, zero live helpers. Session terminates with
+`{:cleanup_failed, :cleanup_unconfirmed}` and sends no Service cleanup receipt.
+Queue public stop behind a finite test-owned Service DOWN barrier so that its
+missing-receipt failure cannot disappear through automatic Service removal.
+Global retirement releases the baseline pin, while the request token and
+physical reservations remain, with one failed resource and an immutable
+unconfirmed retirement result. Public stop must report the Service failure and
+participant cleanup uncertainty, never `:ok`.
+
+After recording those exact failures and joining the peer and real helpers,
+explicitly dismantle the test-owned failed custodian/owner. This teardown is not
+a production cleanup confirmation and cannot refund the recorded ledger. All
+successful TCP/verified-TLS requests retain their complete zero-token,
+peer-EOF, actor-join and zero-owner-accounting assertions. Preserve the initial
+114/16 failure and the two diagnostic failures as immutable evidence; the
+contract clarification requires independent review before implementation.
+
+The subsequent post-global diagnostic identified a Gaoxy lifecycle defect:
+an authenticated second abort control helper emitted `custodian_retiring` after
+the first helper's `custodian_failed`, regressing the owner's resource record
+while the custodian remained failed. Preserve `:failed` when that same
+authenticated custodian later reports `:retiring`. Do not change the independent
+public retirement confirmation path or refund uncertain capacity. The two real
+rejected-TLS cases provide the failing end-to-end regression; full foundation
+compatibility and independent review must pass after this necessary local fix.
+
 ## Acceptance
 
 The new ExUnit file uses real TCP and independently observed OTP TLS peers.
@@ -256,6 +300,28 @@ The [independent document review](../acceptance/evidence/m3/h1-resource-foundati
 passed design SPEC and plan readiness against the exact preparation hashes. The
 historical preparation above records its initial unreviewed snapshot; this
 receipt records the subsequent review. Implementation and network acceptance
-remain **NOT RUN**. Full foundation is **IN PROGRESS** after an independent scope audit corrected a harness-added ALPN requirement to the original exact null contract. [http_fetch#107](https://github.com/gsmlg-dev/http_fetch/issues/107) is optional and no prerequisite. Do not release executable Task 5 ownership until foundation's
+remain **NOT RUN**. Full foundation is **DONE** after restoring the original exact null contract,
+independent final review and fresh all-eight verification. [http_fetch#107](https://github.com/gsmlg-dev/http_fetch/issues/107) is optional and no prerequisite. Do not release executable Task 5 ownership until foundation's
 prescribed TLS/profile and final review gates pass. Continuing authorization
 remains active; no approval pause or product-scope expansion is introduced.
+
+## Verified implementation kickoff
+
+Foundation commit `5b73f5a951d506f194d090a0083183a79d577d6e` is locally
+accepted after final review and fresh gates. The implementation plan records
+actual tree/source/cohort identity and explicit disjoint writers at kickoff.
+A separate identity regression file permits parallel ownership without removing
+any planned test. The reviewed contract is unchanged. Both writers provide RED
+tests before implementation; parent executes all runtime gates and local commits.
+This package does not reset counters or authorize Astra round3/publication.
+
+## Final implementation disposition — 2026-10-14
+
+**DONE — fixed endpoints locally accepted.** Exact original completion and
+separate ownership are exercised over real TCP/verified TLS. Rejected TLS setup
+retains its documented uncertainty, with authenticated failed-state monotonicity
+and immutable failed stop; successful requests retain full cleanup/EOF/joins.
+Independent SPEC then CODE review and fresh178/0, formatcheck and strict compile
+pass against frozen sources. Historical preparation and failed receipts remain
+unchanged. See the [acceptance](../acceptance/m3-managed-h1-fixed-endpoint.md).
+Groups/probes and Generation implementation remain separate and NOT RUN here.
