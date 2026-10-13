@@ -58,4 +58,7 @@ Recipe/source and deterministic Docker-boundary preparation are independently
 reviewed; [preparation review](../acceptance/evidence/release-0.3.0/review-portable-r1-exact-commit-coordinator-preparation-1791857437995376501.json)
 does not qualify artifact bytes. The local assembled release passes its three
 [H3 checks](../acceptance/evidence/release-0.3.0/local-h3-package-1791857824012345678/result.json).
-Portable build, offline runtime qualification and publication remain NOT RUN.
+Initial portable builder FAIL at exact82-file formatting; [failure diagnosis](../acceptance/evidence/release-0.3.0/portable-build1-failure-1791859105860499026/diagnosis.json)
+remains immutable. Formatting-only repair of the current0.3.0 TLS helper has
+[AST/exact82-file proof](../acceptance/evidence/release-0.3.0/portable-probe-format-proof-1791859263416674340.json).
+New committed-source build remains pending; offline runtime/publication NOT RUN.

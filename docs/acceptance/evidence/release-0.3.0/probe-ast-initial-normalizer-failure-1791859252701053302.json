@@ -1,0 +1,9 @@
+{
+  "kind": "AST_VALIDATOR_FAILURE",
+  "status": "FAIL",
+  "actual_exit": 1,
+  "normalizer_source": "normalize = fn code ->\n  code\n  |> Code.string_to_quoted!()\n  |> Macro.prewalk(fn\n    {name, metadata, args} when is_atom(name) and is_list(metadata) -> {name, [], args}\n    other -> other\n  end)\nend\nbefore = File.read!(\"/tmp/gaoxy-030-hostname-probe-before.exs\")\nafter_text = File.read!(\"docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs\")\ntrue = normalize.(before) == normalize.(after_text)\nIO.puts(\"PASS identical Elixir AST after removing source location metadata\")\n",
+  "diagnosis": "Initial AST walker strips metadata only for atom call heads; remote calls have a tuple head and retained differing source line metadata. Normalize every AST metadata tuple; retain full structure/arguments/literals and exact AST equality. No production or behavioral test failure.",
+  "output": "MatchError no match of right hand side value: false at initial AST comparison",
+  "UP2_counters_unchanged": "20/8/3; Astra2 exhausted"
+}

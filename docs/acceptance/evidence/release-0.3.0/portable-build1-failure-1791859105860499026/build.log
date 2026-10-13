@@ -1,0 +1,869 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 30B
+#1 transferring dockerfile: 2.22kB 0.0s done
+#1 DONE 0.1s
+
+#2 [internal] load metadata for docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#3 DONE 0.0s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [builder  1/13] FROM docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#5 DONE 0.0s
+
+#6 [rust 1/1] FROM docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#6 DONE 0.0s
+
+#7 [internal] load build context
+#7 transferring context: 422.21MB 4.9s done
+#7 DONE 4.9s
+
+#8 [builder  2/13] COPY --from=rust /usr/local/cargo /usr/local/cargo
+#8 CACHED
+
+#9 [builder  3/13] COPY --from=rust /usr/local/rustup /usr/local/rustup
+#9 CACHED
+
+#10 [builder  4/13] RUN apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates git curl openssl pkg-config python3 python3-venv file binutils && rm -rf /var/lib/apt/lists/*
+#10 CACHED
+
+#11 [builder  5/13] RUN git init /opt/elixir && cd /opt/elixir && git remote add origin https://github.com/elixir-lang/elixir.git && git fetch --depth 1 origin dfe6612e546cec6557900e67651f7d21805472ef && git checkout --detach FETCH_HEAD && test "$(git rev-parse HEAD)" = dfe6612e546cec6557900e67651f7d21805472ef && make compile
+#11 CACHED
+
+#12 [builder  6/13] WORKDIR /work
+#12 CACHED
+
+#13 [builder  7/13] COPY source.tar /tools/source.tar
+#13 DONE 7.7s
+
+#14 [builder  8/13] COPY source-identity.json /tools/source-identity.json
+#14 DONE 0.1s
+
+#15 [builder  9/13] RUN tar -xf /tools/source.tar -C /work
+#15 DONE 7.7s
+
+#16 [builder 10/13] COPY build.py /tools/build.py
+#16 DONE 0.1s
+
+#17 [builder 11/13] RUN python3 /tools/build.py prepare
+#17 5.909 START toolchain: ['bash', '-ec', 'elixir --version; erl -noshell -eval \'io:format("OTP_RELEASE=~s OTP_VERSION=~s~n", [erlang:system_info(otp_release), element(2, file:read_file(filename:join([code:root_dir(), "releases", erlang:system_info(otp_release), "OTP_VERSION"])))]), halt().\'; rustc --version; cargo --version; python3 --version; openssl version; ldd --version; dpkg-query -W']
+#17 7.492 Erlang/OTP 28 [erts-16.4.0.5] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]
+#17 7.492 
+#17 7.492 Elixir 1.18.5 (compiled with Erlang/OTP 28)
+#17 7.492 OTP_RELEASE=28 OTP_VERSION=28.5.0.5
+#17 7.492 
+#17 7.492 rustc 1.97.1 (8bab26f4f 2026-07-14)
+#17 7.492 cargo 1.97.1 (c980f4866 2026-06-30)
+#17 7.492 Python 3.11.2
+#17 7.492 OpenSSL 3.0.22 25 Aug 2026 (Library: OpenSSL 3.0.22 25 Aug 2026)
+#17 7.492 ldd (Debian GLIBC 2.36-9+deb12u14) 2.36
+#17 7.492 Copyright (C) 2022 Free Software Foundation, Inc.
+#17 7.492 This is free software; see the source for copying conditions.  There is NO
+#17 7.492 warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#17 7.492 Written by Roland McGrath and Ulrich Drepper.
+#17 7.492 adduser	3.134
+#17 7.492 apt	2.6.1
+#17 7.492 base-files	12.4+deb12u15
+#17 7.492 base-passwd	3.6.1
+#17 7.492 bash	5.2.15-2+b13
+#17 7.492 binutils	2.40-2
+#17 7.492 binutils-common:amd64	2.40-2
+#17 7.492 binutils-x86-64-linux-gnu	2.40-2
+#17 7.492 bsdutils	1:2.38.1-5+deb12u3
+#17 7.492 build-essential	12.9
+#17 7.492 bzip2	1.0.8-5+b1
+#17 7.492 ca-certificates	20250419~deb12u1
+#17 7.492 coreutils	9.1-1
+#17 7.492 cpp	4:12.2.0-3
+#17 7.492 cpp-12	12.2.0-14+deb12u1
+#17 7.492 curl	7.88.1-10+deb12u15
+#17 7.492 dash	0.5.12-2
+#17 7.492 debconf	1.5.82
+#17 7.492 debian-archive-keyring	2023.3+deb12u2
+#17 7.492 debianutils	5.7-0.5~deb12u1
+#17 7.492 diffutils	1:3.8-4
+#17 7.492 dpkg	1.21.23
+#17 7.492 dpkg-dev	1.21.23
+#17 7.492 e2fsprogs	1.47.0-2+b2
+#17 7.492 file	1:5.44-3
+#17 7.492 findutils	4.9.0-4
+#17 7.492 g++	4:12.2.0-3
+#17 7.492 g++-12	12.2.0-14+deb12u1
+#17 7.492 gcc	4:12.2.0-3
+#17 7.492 gcc-12	12.2.0-14+deb12u1
+#17 7.492 gcc-12-base:amd64	12.2.0-14+deb12u1
+#17 7.492 git	1:2.39.5-0+deb12u3
+#17 7.492 git-man	1:2.39.5-0+deb12u3
+#17 7.492 gpgv	2.2.40-1.1+deb12u2
+#17 7.492 grep	3.8-5
+#17 7.492 gzip	1.12-1
+#17 7.492 hostname	3.23+nmu1
+#17 7.492 init-system-helpers	1.65.2+deb12u1
+#17 7.492 libacl1:amd64	2.3.1-3
+#17 7.492 libapt-pkg6.0:amd64	2.6.1
+#17 7.492 libasan8:amd64	12.2.0-14+deb12u1
+#17 7.492 libatomic1:amd64	12.2.0-14+deb12u1
+#17 7.492 libattr1:amd64	1:2.5.1-4
+#17 7.492 libaudit-common	1:3.0.9-1
+#17 7.492 libaudit1:amd64	1:3.0.9-1
+#17 7.492 libbinutils:amd64	2.40-2
+#17 7.492 libblkid1:amd64	2.38.1-5+deb12u3
+#17 7.492 libbrotli1:amd64	1.0.9-2+b6
+#17 7.492 libbz2-1.0:amd64	1.0.8-5+b1
+#17 7.492 libc-bin	2.36-9+deb12u14
+#17 7.492 libc-dev-bin	2.36-9+deb12u14
+#17 7.492 libc6:amd64	2.36-9+deb12u14
+#17 7.492 libc6-dev:amd64	2.36-9+deb12u14
+#17 7.492 libcap-ng0:amd64	0.8.3-1+b3
+#17 7.492 libcap2:amd64	1:2.66-4+deb12u3+b1
+#17 7.492 libcc1-0:amd64	12.2.0-14+deb12u1
+#17 7.492 libcom-err2:amd64	1.47.0-2+b2
+#17 7.492 libcrypt-dev:amd64	1:4.4.33-2
+#17 7.492 libcrypt1:amd64	1:4.4.33-2
+#17 7.492 libctf-nobfd0:amd64	2.40-2
+#17 7.492 libctf0:amd64	2.40-2
+#17 7.492 libcurl3-gnutls:amd64	7.88.1-10+deb12u15
+#17 7.492 libcurl4:amd64	7.88.1-10+deb12u15
+#17 7.492 libdb5.3:amd64	5.3.28+dfsg2-1
+#17 7.492 libdebconfclient0:amd64	0.270
+#17 7.492 libdpkg-perl	1.21.23
+#17 7.492 liberror-perl	0.17029-2
+#17 7.492 libexpat1:amd64	2.5.0-1+deb12u4
+#17 7.492 libext2fs2:amd64	1.47.0-2+b2
+#17 7.492 libffi8:amd64	3.4.4-1
+#17 7.492 libgcc-12-dev:amd64	12.2.0-14+deb12u1
+#17 7.492 libgcc-s1:amd64	12.2.0-14+deb12u1
+#17 7.492 libgcrypt20:amd64	1.10.1-3+deb12u1
+#17 7.492 libgdbm-compat4:amd64	1.23-3
+#17 7.492 libgdbm6:amd64	1.23-3
+#17 7.492 libgmp10:amd64	2:6.2.1+dfsg1-1.1
+#17 7.492 libgnutls30:amd64	3.7.9-2+deb12u7
+#17 7.492 libgomp1:amd64	12.2.0-14+deb12u1
+#17 7.492 libgpg-error0:amd64	1.46-1
+#17 7.492 libgprofng0:amd64	2.40-2
+#17 7.492 libgssapi-krb5-2:amd64	1.20.1-2+deb12u5
+#17 7.492 libhogweed6:amd64	3.8.1-2
+#17 7.492 libidn2-0:amd64	2.3.3-1+b1
+#17 7.492 libisl23:amd64	0.25-1.1
+#17 7.492 libitm1:amd64	12.2.0-14+deb12u1
+#17 7.492 libjansson4:amd64	2.14-2
+#17 7.492 libk5crypto3:amd64	1.20.1-2+deb12u5
+#17 7.492 libkeyutils1:amd64	1.6.3-2
+#17 7.492 libkrb5-3:amd64	1.20.1-2+deb12u5
+#17 7.492 libkrb5support0:amd64	1.20.1-2+deb12u5
+#17 7.492 libldap-2.5-0:amd64	2.5.13+dfsg-5
+#17 7.492 liblsan0:amd64	12.2.0-14+deb12u1
+#17 7.492 libltdl7:amd64	2.4.7-7~deb12u1
+#17 7.492 liblz4-1:amd64	1.9.4-1
+#17 7.492 liblzma5:amd64	5.4.1-1+deb12u2
+#17 7.492 libmagic-mgc	1:5.44-3
+#17 7.492 libmagic1:amd64	1:5.44-3
+#17 7.492 libmd0:amd64	1.0.4-2
+#17 7.492 libmount1:amd64	2.38.1-5+deb12u3
+#17 7.492 libmpc3:amd64	1.3.1-1
+#17 7.492 libmpfr6:amd64	4.2.0-1
+#17 7.492 libncursesw6:amd64	6.4-4
+#17 7.492 libnettle8:amd64	3.8.1-2
+#17 7.492 libnghttp2-14:amd64	1.52.0-1+deb12u3
+#17 7.492 libnsl-dev:amd64	1.3.0-2
+#17 7.492 libnsl2:amd64	1.3.0-2
+#17 7.492 libodbc1:amd64	2.3.11-2+deb12u1
+#17 7.492 libodbc2:amd64	2.3.11-2+deb12u1
+#17 7.492 libodbccr2:amd64	2.3.11-2+deb12u1
+#17 7.492 libp11-kit0:amd64	0.24.1-2
+#17 7.492 libpam-modules:amd64	1.5.2-6+deb12u2
+#17 7.492 libpam-modules-bin	1.5.2-6+deb12u2
+#17 7.492 libpam-runtime	1.5.2-6+deb12u2
+#17 7.492 libpam0g:amd64	1.5.2-6+deb12u2
+#17 7.492 libpcre2-8-0:amd64	10.42-1
+#17 7.492 libperl5.36:amd64	5.36.0-7+deb12u4
+#17 7.492 libpkgconf3:amd64	1.8.1-1
+#17 7.492 libpsl5:amd64	0.21.2-1
+#17 7.492 libpython3-stdlib:amd64	3.11.2-1+b1
+#17 7.492 libpython3.11-minimal:amd64	3.11.2-6+deb12u9
+#17 7.492 libpython3.11-stdlib:amd64	3.11.2-6+deb12u9
+#17 7.492 libquadmath0:amd64	12.2.0-14+deb12u1
+#17 7.492 libreadline8:amd64	8.2-1.3
+#17 7.492 librtmp1:amd64	2.4+20151223.gitfa8646d.1-2+b2
+#17 7.492 libsasl2-2:amd64	2.1.28+dfsg-10
+#17 7.492 libsasl2-modules-db:amd64	2.1.28+dfsg-10
+#17 7.492 libsctp1:amd64	1.0.19+dfsg-2
+#17 7.492 libseccomp2:amd64	2.5.4-1+deb12u1
+#17 7.492 libselinux1:amd64	3.4-1+b6
+#17 7.492 libsemanage-common	3.4-1
+#17 7.492 libsemanage2:amd64	3.4-1+b5
+#17 7.492 libsepol2:amd64	3.4-2.1
+#17 7.492 libsmartcols1:amd64	2.38.1-5+deb12u3
+#17 7.492 libsqlite3-0:amd64	3.40.1-2+deb12u2
+#17 7.492 libss2:amd64	1.47.0-2+b2
+#17 7.492 libssh2-1:amd64	1.10.0-3+deb12u1
+#17 7.492 libssl3:amd64	3.0.22-1~deb12u1
+#17 7.492 libstdc++-12-dev:amd64	12.2.0-14+deb12u1
+#17 7.492 libstdc++6:amd64	12.2.0-14+deb12u1
+#17 7.492 libsystemd0:amd64	252.39-1~deb12u2
+#17 7.492 libtasn1-6:amd64	4.19.0-2+deb12u1
+#17 7.492 libtinfo6:amd64	6.4-4
+#17 7.492 libtirpc-common	1.3.3+ds-1
+#17 7.492 libtirpc-dev:amd64	1.3.3+ds-1
+#17 7.492 libtirpc3:amd64	1.3.3+ds-1
+#17 7.492 libtsan2:amd64	12.2.0-14+deb12u1
+#17 7.492 libubsan1:amd64	12.2.0-14+deb12u1
+#17 7.492 libudev1:amd64	252.39-1~deb12u2
+#17 7.492 libunistring2:amd64	1.0-2
+#17 7.492 libuuid1:amd64	2.38.1-5+deb12u3
+#17 7.492 libxxhash0:amd64	0.8.1-1
+#17 7.492 libzstd1:amd64	1.5.4+dfsg2-5
+#17 7.492 linux-libc-dev:amd64	6.1.187-1
+#17 7.492 login	1:4.13+dfsg1-1+deb12u2
+#17 7.492 logsave	1.47.0-2+b2
+#17 7.492 make	4.3-4.1
+#17 7.492 mawk	1.3.4.20200120-3.1
+#17 7.492 media-types	10.0.0
+#17 7.492 mount	2.38.1-5+deb12u3
+#17 7.492 ncurses-base	6.4-4
+#17 7.492 ncurses-bin	6.4-4
+#17 7.492 netbase	6.4
+#17 7.492 openssl	3.0.22-1~deb12u1
+#17 7.492 passwd	1:4.13+dfsg1-1+deb12u2
+#17 7.492 patch	2.7.6-7
+#17 7.492 perl	5.36.0-7+deb12u4
+#17 7.492 perl-base	5.36.0-7+deb12u4
+#17 7.492 perl-modules-5.36	5.36.0-7+deb12u4
+#17 7.492 pkg-config:amd64	1.8.1-1
+#17 7.492 pkgconf:amd64	1.8.1-1
+#17 7.492 pkgconf-bin	1.8.1-1
+#17 7.492 python3	3.11.2-1+b1
+#17 7.492 python3-distutils	3.11.2-3
+#17 7.492 python3-lib2to3	3.11.2-3
+#17 7.492 python3-minimal	3.11.2-1+b1
+#17 7.492 python3-pip-whl	23.0.1+dfsg-1
+#17 7.492 python3-setuptools-whl	66.1.1-1+deb12u2
+#17 7.492 python3-venv	3.11.2-1+b1
+#17 7.492 python3.11	3.11.2-6+deb12u9
+#17 7.492 python3.11-minimal	3.11.2-6+deb12u9
+#17 7.492 python3.11-venv	3.11.2-6+deb12u9
+#17 7.492 readline-common	8.2-1.3
+#17 7.492 rpcsvc-proto	1.4.3-1
+#17 7.492 sed	4.9-1+deb12u1
+#17 7.492 sysvinit-utils	3.06-4
+#17 7.492 tar	1.34+dfsg-1.2+deb12u1
+#17 7.492 tzdata	2026b-0+deb12u1
+#17 7.492 usr-is-merged	37~deb12u1
+#17 7.492 util-linux	2.38.1-5+deb12u3
+#17 7.492 util-linux-extra	2.38.1-5+deb12u3
+#17 7.492 xz-utils	5.4.1-1+deb12u2
+#17 7.492 zlib1g:amd64	1:1.2.13.dfsg-1
+#17 7.493 START hex: ['mix', 'local.hex', '--force']
+#17 13.86 * creating /root/.mix/archives/hex-2.5.2
+#17 13.86 START rebar: ['mix', 'local.rebar', '--force']
+#17 18.41 * creating /root/.mix/elixir/1-18-otp-28/rebar3
+#17 18.41 START test-dependencies: ['mix', 'deps.get', '--check-locked']
+#17 78.25 * Getting thousand_island (https://github.com/mtrudel/thousand_island.git - 6146e1bfdd1a85c5c16c3c92ad98ff5f11066820)
+#17 78.25 remote: Enumerating objects: 2651, done.        
+#17 78.25 remote: Counting objects:   0% (1/970)        
+#17 78.25 remote: Counting objects:   1% (10/970)        
+#17 78.25 remote: Counting objects:   2% (20/970)        
+#17 78.25 remote: Counting objects:   3% (30/970)        
+#17 78.25 remote: Counting objects:   4% (39/970)        
+#17 78.25 remote: Counting objects:   5% (49/970)        
+#17 78.25 remote: Counting objects:   6% (59/970)        
+#17 78.25 remote: Counting objects:   7% (68/970)        
+#17 78.25 remote: Counting objects:   8% (78/970)        
+#17 78.25 remote: Counting objects:   9% (88/970)        
+#17 78.25 remote: Counting objects:  10% (97/970)        
+#17 78.25 remote: Counting objects:  11% (107/970)        
+#17 78.25 remote: Counting objects:  12% (117/970)        
+#17 78.25 remote: Counting objects:  13% (127/970)        
+#17 78.25 remote: Counting objects:  14% (136/970)        
+#17 78.25 remote: Counting objects:  15% (146/970)        
+#17 78.25 remote: Counting objects:  16% (156/970)        
+#17 78.25 remote: Counting objects:  17% (165/970)        
+#17 78.25 remote: Counting objects:  18% (175/970)        
+#17 78.25 remote: Counting objects:  19% (185/970)        
+#17 78.25 remote: Counting objects:  20% (194/970)        
+#17 78.25 remote: Counting objects:  21% (204/970)        
+#17 78.25 remote: Counting objects:  22% (214/970)        
+#17 78.25 remote: Counting objects:  23% (224/970)        
+#17 78.25 remote: Counting objects:  24% (233/970)        
+#17 78.25 remote: Counting objects:  25% (243/970)        
+#17 78.25 remote: Counting objects:  26% (253/970)        
+#17 78.25 remote: Counting objects:  27% (262/970)        
+#17 78.25 remote: Counting objects:  28% (272/970)        
+#17 78.25 remote: Counting objects:  29% (282/970)        
+#17 78.25 remote: Counting objects:  30% (291/970)        
+#17 78.25 remote: Counting objects:  31% (301/970)        
+#17 78.25 remote: Counting objects:  32% (311/970)        
+#17 78.25 remote: Counting objects:  33% (321/970)        
+#17 78.25 remote: Counting objects:  34% (330/970)        
+#17 78.25 remote: Counting objects:  35% (340/970)        
+#17 78.25 remote: Counting objects:  36% (350/970)        
+#17 78.25 remote: Counting objects:  37% (359/970)        
+#17 78.25 remote: Counting objects:  38% (369/970)        
+#17 78.25 remote: Counting objects:  39% (379/970)        
+#17 78.25 remote: Counting objects:  40% (388/970)        
+#17 78.25 remote: Counting objects:  41% (398/970)        
+#17 78.25 remote: Counting objects:  42% (408/970)        
+#17 78.25 remote: Counting objects:  43% (418/970)        
+#17 78.25 remote: Counting objects:  44% (427/970)        
+#17 78.25 remote: Counting objects:  45% (437/970)        
+#17 78.25 remote: Counting objects:  46% (447/970)        
+#17 78.25 remote: Counting objects:  47% (456/970)        
+#17 78.25 remote: Counting objects:  48% (466/970)        
+#17 78.25 remote: Counting objects:  49% (476/970)        
+#17 78.25 remote: Counting objects:  50% (485/970)        
+#17 78.25 remote: Counting objects:  51% (495/970)        
+#17 78.25 remote: Counting objects:  52% (505/970)        
+#17 78.25 remote: Counting objects:  53% (515/970)        
+#17 78.25 remote: Counting objects:  54% (524/970)        
+#17 78.25 remote: Counting objects:  55% (534/970)        
+#17 78.25 remote: Counting objects:  56% (544/970)        
+#17 78.25 remote: Counting objects:  57% (553/970)        
+#17 78.25 remote: Counting objects:  58% (563/970)        
+#17 78.25 remote: Counting objects:  59% (573/970)        
+#17 78.25 remote: Counting objects:  60% (582/970)        
+#17 78.25 remote: Counting objects:  61% (592/970)        
+#17 78.25 remote: Counting objects:  62% (602/970)        
+#17 78.25 remote: Counting objects:  63% (612/970)        
+#17 78.25 remote: Counting objects:  64% (621/970)        
+#17 78.25 remote: Counting objects:  65% (631/970)        
+#17 78.25 remote: Counting objects:  66% (641/970)        
+#17 78.25 remote: Counting objects:  67% (650/970)        
+#17 78.25 remote: Counting objects:  68% (660/970)        
+#17 78.25 remote: Counting objects:  69% (670/970)        
+#17 78.25 remote: Counting objects:  70% (679/970)        
+#17 78.25 remote: Counting objects:  71% (689/970)        
+#17 78.25 remote: Counting objects:  72% (699/970)        
+#17 78.25 remote: Counting objects:  73% (709/970)        
+#17 78.25 remote: Counting objects:  74% (718/970)        
+#17 78.25 remote: Counting objects:  75% (728/970)        
+#17 78.25 remote: Counting objects:  76% (738/970)        
+#17 78.25 remote: Counting objects:  77% (747/970)        
+#17 78.25 remote: Counting objects:  78% (757/970)        
+#17 78.25 remote: Counting objects:  79% (767/970)        
+#17 78.25 remote: Counting objects:  80% (776/970)        
+#17 78.25 remote: Counting objects:  81% (786/970)        
+#17 78.25 remote: Counting objects:  82% (796/970)        
+#17 78.25 remote: Counting objects:  83% (806/970)        
+#17 78.25 remote: Counting objects:  84% (815/970)        
+#17 78.25 remote: Counting objects:  85% (825/970)        
+#17 78.25 remote: Counting objects:  86% (835/970)        
+#17 78.25 remote: Counting objects:  87% (844/970)        
+#17 78.25 remote: Counting objects:  88% (854/970)        
+#17 78.25 remote: Counting objects:  89% (864/970)        
+#17 78.25 remote: Counting objects:  90% (873/970)        
+#17 78.25 remote: Counting objects:  91% (883/970)        
+#17 78.25 remote: Counting objects:  92% (893/970)        
+#17 78.25 remote: Counting objects:  93% (903/970)        
+#17 78.25 remote: Counting objects:  94% (912/970)        
+#17 78.25 remote: Counting objects:  95% (922/970)        
+#17 78.25 remote: Counting objects:  96% (932/970)        
+#17 78.25 remote: Counting objects:  97% (941/970)        
+#17 78.25 remote: Counting objects:  98% (951/970)        
+#17 78.25 remote: Counting objects:  99% (961/970)        
+#17 78.25 remote: Counting objects: 100% (970/970)        
+#17 78.25 remote: Counting objects: 100% (970/970), done.        
+#17 78.25 remote: Compressing objects:   0% (1/298)        
+#17 78.25 remote: Compressing objects:   1% (3/298)        
+#17 78.25 remote: Compressing objects:   2% (6/298)        
+#17 78.25 remote: Compressing objects:   3% (9/298)        
+#17 78.25 remote: Compressing objects:   4% (12/298)        
+#17 78.25 remote: Compressing objects:   5% (15/298)        
+#17 78.25 remote: Compressing objects:   6% (18/298)        
+#17 78.25 remote: Compressing objects:   7% (21/298)        
+#17 78.25 remote: Compressing objects:   8% (24/298)        
+#17 78.25 remote: Compressing objects:   9% (27/298)        
+#17 78.25 remote: Compressing objects:  10% (30/298)        
+#17 78.25 remote: Compressing objects:  11% (33/298)        
+#17 78.25 remote: Compressing objects:  12% (36/298)        
+#17 78.25 remote: Compressing objects:  13% (39/298)        
+#17 78.25 remote: Compressing objects:  14% (42/298)        
+#17 78.25 remote: Compressing objects:  15% (45/298)        
+#17 78.25 remote: Compressing objects:  16% (48/298)        
+#17 78.25 remote: Compressing objects:  17% (51/298)        
+#17 78.25 remote: Compressing objects:  18% (54/298)        
+#17 78.25 remote: Compressing objects:  19% (57/298)        
+#17 78.25 remote: Compressing objects:  20% (60/298)        
+#17 78.25 remote: Compressing objects:  21% (63/298)        
+#17 78.25 remote: Compressing objects:  22% (66/298)        
+#17 78.25 remote: Compressing objects:  23% (69/298)        
+#17 78.25 remote: Compressing objects:  24% (72/298)        
+#17 78.25 remote: Compressing objects:  25% (75/298)        
+#17 78.25 remote: Compressing objects:  26% (78/298)        
+#17 78.25 remote: Compressing objects:  27% (81/298)        
+#17 78.25 remote: Compressing objects:  28% (84/298)        
+#17 78.25 remote: Compressing objects:  29% (87/298)        
+#17 78.25 remote: Compressing objects:  30% (90/298)        
+#17 78.25 remote: Compressing objects:  31% (93/298)        
+#17 78.25 remote: Compressing objects:  32% (96/298)        
+#17 78.25 remote: Compressing objects:  33% (99/298)        
+#17 78.25 remote: Compressing objects:  34% (102/298)        
+#17 78.25 remote: Compressing objects:  35% (105/298)        
+#17 78.25 remote: Compressing objects:  36% (108/298)        
+#17 78.25 remote: Compressing objects:  37% (111/298)        
+#17 78.25 remote: Compressing objects:  38% (114/298)        
+#17 78.25 remote: Compressing objects:  39% (117/298)        
+#17 78.25 remote: Compressing objects:  40% (120/298)        
+#17 78.25 remote: Compressing objects:  41% (123/298)        
+#17 78.25 remote: Compressing objects:  42% (126/298)        
+#17 78.25 remote: Compressing objects:  43% (129/298)        
+#17 78.25 remote: Compressing objects:  44% (132/298)        
+#17 78.25 remote: Compressing objects:  45% (135/298)        
+#17 78.25 remote: Compressing objects:  46% (138/298)        
+#17 78.25 remote: Compressing objects:  47% (141/298)        
+#17 78.25 remote: Compressing objects:  48% (144/298)        
+#17 78.25 remote: Compressing objects:  49% (147/298)        
+#17 78.25 remote: Compressing objects:  50% (149/298)        
+#17 78.25 remote: Compressing objects:  51% (152/298)        
+#17 78.25 remote: Compressing objects:  52% (155/298)        
+#17 78.25 remote: Compressing objects:  53% (158/298)        
+#17 78.25 remote: Compressing objects:  54% (161/298)        
+#17 78.25 remote: Compressing objects:  55% (164/298)        
+#17 78.25 remote: Compressing objects:  56% (167/298)        
+#17 78.25 remote: Compressing objects:  57% (170/298)        
+#17 78.25 remote: Compressing objects:  58% (173/298)        
+#17 78.25 remote: Compressing objects:  59% (176/298)        
+#17 78.25 remote: Compressing objects:  60% (179/298)        
+#17 78.25 remote: Compressing objects:  61% (182/298)        
+#17 78.25 remote: Compressing objects:  62% (185/298)        
+#17 78.25 remote: Compressing objects:  63% (188/298)        
+#17 78.25 remote: Compressing objects:  64% (191/298)        
+#17 78.25 remote: Compressing objects:  65% (194/298)        
+#17 78.25 remote: Compressing objects:  66% (197/298)        
+#17 78.25 remote: Compressing objects:  67% (200/298)        
+#17 78.25 remote: Compressing objects:  68% (203/298)        
+#17 78.25 remote: Compressing objects:  69% (206/298)        
+#17 78.25 remote: Compressing objects:  70% (209/298)        
+#17 78.25 remote: Compressing objects:  71% (212/298)        
+#17 78.25 remote: Compressing objects:  72% (215/298)        
+#17 78.25 remote: Compressing objects:  73% (218/298)        
+#17 78.25 remote: Compressing objects:  74% (221/298)        
+#17 78.25 remote: Compressing objects:  75% (224/298)        
+#17 78.25 remote: Compressing objects:  76% (227/298)        
+#17 78.25 remote: Compressing objects:  77% (230/298)        
+#17 78.25 remote: Compressing objects:  78% (233/298)        
+#17 78.25 remote: Compressing objects:  79% (236/298)        
+#17 78.25 remote: Compressing objects:  80% (239/298)        
+#17 78.25 remote: Compressing objects:  81% (242/298)        
+#17 78.25 remote: Compressing objects:  82% (245/298)        
+#17 78.25 remote: Compressing objects:  83% (248/298)        
+#17 78.25 remote: Compressing objects:  84% (251/298)        
+#17 78.25 remote: Compressing objects:  85% (254/298)        
+#17 78.25 remote: Compressing objects:  86% (257/298)        
+#17 78.25 remote: Compressing objects:  87% (260/298)        
+#17 78.25 remote: Compressing objects:  88% (263/298)        
+#17 78.25 remote: Compressing objects:  89% (266/298)        
+#17 78.25 remote: Compressing objects:  90% (269/298)        
+#17 78.25 remote: Compressing objects:  91% (272/298)        
+#17 78.25 remote: Compressing objects:  92% (275/298)        
+#17 78.25 remote: Compressing objects:  93% (278/298)        
+#17 78.25 remote: Compressing objects:  94% (281/298)        
+#17 78.25 remote: Compressing objects:  95% (284/298)        
+#17 78.25 remote: Compressing objects:  96% (287/298)        
+#17 78.25 remote: Compressing objects:  97% (290/298)        
+#17 78.25 remote: Compressing objects:  98% (293/298)        
+#17 78.25 remote: Compressing objects:  99% (296/298)        
+#17 78.25 remote: Compressing objects: 100% (298/298)        
+#17 78.25 remote: Compressing objects: 100% (298/298), done.        
+#17 78.25 remote: Total 2651 (delta 877), reused 672 (delta 672), pack-reused 1681 (from 3)        
+#17 78.25 * Getting abyss (https://github.com/gsmlg-dev/abyss.git - 9b710e6480900e16e304f40e63623aff8c922e19)
+#17 78.25 remote: Enumerating objects: 852, done.        
+#17 78.25 remote: Counting objects:   0% (1/266)        
+#17 78.25 remote: Counting objects:   1% (3/266)        
+#17 78.25 remote: Counting objects:   2% (6/266)        
+#17 78.25 remote: Counting objects:   3% (8/266)        
+#17 78.25 remote: Counting objects:   4% (11/266)        
+#17 78.25 remote: Counting objects:   5% (14/266)        
+#17 78.25 remote: Counting objects:   6% (16/266)        
+#17 78.25 remote: Counting objects:   7% (19/266)        
+#17 78.25 remote: Counting objects:   8% (22/266)        
+#17 78.25 remote: Counting objects:   9% (24/266)        
+#17 78.25 remote: Counting objects:  10% (27/266)        
+#17 78.25 remote: Counting objects:  11% (30/266)        
+#17 78.25 remote: Counting objects:  12% (32/266)        
+#17 78.25 remote: Counting objects:  13% (35/266)        
+#17 78.25 remote: Counting objects:  14% (38/266)        
+#17 78.25 remote: Counting objects:  15% (40/266)        
+#17 78.25 remote: Counting objects:  16% (43/266)        
+#17 78.25 remote: Counting objects:  17% (46/266)        
+#17 78.25 remote: Counting objects:  18% (48/266)        
+#17 78.25 remote: Counting objects:  19% (51/266)        
+#17 78.25 remote: Counting objects:  20% (54/266)        
+#17 78.25 remote: Counting objects:  21% (56/266)        
+#17 78.25 remote: Counting objects:  22% (59/266)        
+#17 78.25 remote: Counting objects:  23% (62/266)        
+#17 78.25 remote: Counting objects:  24% (64/266)        
+#17 78.25 remote: Counting objects:  25% (67/266)        
+#17 78.25 remote: Counting objects:  26% (70/266)        
+#17 78.25 remote: Counting objects:  27% (72/266)        
+#17 78.25 remote: Counting objects:  28% (75/266)        
+#17 78.25 remote: Counting objects:  29% (78/266)        
+#17 78.25 remote: Counting objects:  30% (80/266)        
+#17 78.25 remote: Counting objects:  31% (83/266)        
+#17 78.25 remote: Counting objects:  32% (86/266)        
+#17 78.25 remote: Counting objects:  33% (88/266)        
+#17 78.25 remote: Counting objects:  34% (91/266)        
+#17 78.25 remote: Counting objects:  35% (94/266)        
+#17 78.25 remote: Counting objects:  36% (96/266)        
+#17 78.25 remote: Counting objects:  37% (99/266)        
+#17 78.25 remote: Counting objects:  38% (102/266)        
+#17 78.25 remote: Counting objects:  39% (104/266)        
+#17 78.25 remote: Counting objects:  40% (107/266)        
+#17 78.25 remote: Counting objects:  41% (110/266)        
+#17 78.25 remote: Counting objects:  42% (112/266)        
+#17 78.25 remote: Counting objects:  43% (115/266)        
+#17 78.25 remote: Counting objects:  44% (118/266)        
+#17 78.25 remote: Counting objects:  45% (120/266)        
+#17 78.25 remote: Counting objects:  46% (123/266)        
+#17 78.25 remote: Counting objects:  47% (126/266)        
+#17 78.25 remote: Counting objects:  48% (128/266)        
+#17 78.25 remote: Counting objects:  49% (131/266)        
+#17 78.25 remote: Counting objects:  50% (133/266)        
+#17 78.25 remote: Counting objects:  51% (136/266)        
+#17 78.25 remote: Counting objects:  52% (139/266)        
+#17 78.25 remote: Counting objects:  53% (141/266)        
+#17 78.25 remote: Counting objects:  54% (144/266)        
+#17 78.25 remote: Counting objects:  55% (147/266)        
+#17 78.25 remote: Counting objects:  56% (149/266)        
+#17 78.25 remote: Counting objects:  57% (152/266)        
+#17 78.25 remote: Counting objects:  58% (155/266)        
+#17 78.25 remote: Counting objects:  59% (157/266)        
+#17 78.25 remote: Counting objects:  60% (160/266)        
+#17 78.25 remote: Counting objects:  61% (163/266)        
+#17 78.25 remote: Counting objects:  62% (165/266)        
+#17 78.25 remote: Counting objects:  63% (168/266)        
+#17 78.25 remote: Counting objects:  64% (171/266)        
+#17 78.25 remote: Counting objects:  65% (173/266)        
+#17 78.25 remote: Counting objects:  66% (176/266)        
+#17 78.25 remote: Counting objects:  67% (179/266)        
+#17 78.25 remote: Counting objects:  68% (181/266)        
+#17 78.25 remote: Counting objects:  69% (184/266)        
+#17 78.25 remote: Counting objects:  70% (187/266)        
+#17 78.25 remote: Counting objects:  71% (189/266)        
+#17 78.25 remote: Counting objects:  72% (192/266)        
+#17 78.25 remote: Counting objects:  73% (195/266)        
+#17 78.25 remote: Counting objects:  74% (197/266)        
+#17 78.25 remote: Counting objects:  75% (200/266)        
+#17 78.25 remote: Counting objects:  76% (203/266)        
+#17 78.25 remote: Counting objects:  77% (205/266)        
+#17 78.25 remote: Counting objects:  78% (208/266)        
+#17 78.25 remote: Counting objects:  79% (211/266)        
+#17 78.25 remote: Counting objects:  80% (213/266)        
+#17 78.25 remote: Counting objects:  81% (216/266)        
+#17 78.25 remote: Counting objects:  82% (219/266)        
+#17 78.25 remote: Counting objects:  83% (221/266)        
+#17 78.25 remote: Counting objects:  84% (224/266)        
+#17 78.25 remote: Counting objects:  85% (227/266)        
+#17 78.25 remote: Counting objects:  86% (229/266)        
+#17 78.25 remote: Counting objects:  87% (232/266)        
+#17 78.25 remote: Counting objects:  88% (235/266)        
+#17 78.25 remote: Counting objects:  89% (237/266)        
+#17 78.25 remote: Counting objects:  90% (240/266)        
+#17 78.25 remote: Counting objects:  91% (243/266)        
+#17 78.25 remote: Counting objects:  92% (245/266)        
+#17 78.25 remote: Counting objects:  93% (248/266)        
+#17 78.25 remote: Counting objects:  94% (251/266)        
+#17 78.25 remote: Counting objects:  95% (253/266)        
+#17 78.25 remote: Counting objects:  96% (256/266)        
+#17 78.25 remote: Counting objects:  97% (259/266)        
+#17 78.25 remote: Counting objects:  98% (261/266)        
+#17 78.25 remote: Counting objects:  99% (264/266)        
+#17 78.25 remote: Counting objects: 100% (266/266)        
+#17 78.25 remote: Counting objects: 100% (266/266), done.        
+#17 78.25 remote: Compressing objects:   0% (1/188)        
+#17 78.25 remote: Compressing objects:   1% (2/188)        
+#17 78.25 remote: Compressing objects:   2% (4/188)        
+#17 78.25 remote: Compressing objects:   3% (6/188)        
+#17 78.25 remote: Compressing objects:   4% (8/188)        
+#17 78.25 remote: Compressing objects:   5% (10/188)        
+#17 78.25 remote: Compressing objects:   6% (12/188)        
+#17 78.25 remote: Compressing objects:   7% (14/188)        
+#17 78.25 remote: Compressing objects:   8% (16/188)        
+#17 78.25 remote: Compressing objects:   9% (17/188)        
+#17 78.25 remote: Compressing objects:  10% (19/188)        
+#17 78.25 remote: Compressing objects:  11% (21/188)        
+#17 78.25 remote: Compressing objects:  12% (23/188)        
+#17 78.25 remote: Compressing objects:  13% (25/188)        
+#17 78.25 remote: Compressing objects:  14% (27/188)        
+#17 78.25 remote: Compressing objects:  15% (29/188)        
+#17 78.25 remote: Compressing objects:  16% (31/188)        
+#17 78.25 remote: Compressing objects:  17% (32/188)        
+#17 78.25 remote: Compressing objects:  18% (34/188)        
+#17 78.25 remote: Compressing objects:  19% (36/188)        
+#17 78.25 remote: Compressing objects:  20% (38/188)        
+#17 78.25 remote: Compressing objects:  21% (40/188)        
+#17 78.25 remote: Compressing objects:  22% (42/188)        
+#17 78.25 remote: Compressing objects:  23% (44/188)        
+#17 78.25 remote: Compressing objects:  24% (46/188)        
+#17 78.25 remote: Compressing objects:  25% (47/188)        
+#17 78.25 remote: Compressing objects:  26% (49/188)        
+#17 78.25 remote: Compressing objects:  27% (51/188)        
+#17 78.25 remote: Compressing objects:  28% (53/188)        
+#17 78.25 remote: Compressing objects:  29% (55/188)        
+#17 78.25 remote: Compressing objects:  30% (57/188)        
+#17 78.25 remote: Compressing objects:  31% (59/188)        
+#17 78.25 remote: Compressing objects:  32% (61/188)        
+#17 78.25 remote: Compressing objects:  33% (63/188)        
+#17 78.25 remote: Compressing objects:  34% (64/188)        
+#17 78.25 remote: Compressing objects:  35% (66/188)        
+#17 78.25 remote: Compressing objects:  36% (68/188)        
+#17 78.25 remote: Compressing objects:  37% (70/188)        
+#17 78.25 remote: Compressing objects:  38% (72/188)        
+#17 78.25 remote: Compressing objects:  39% (74/188)        
+#17 78.25 remote: Compressing objects:  40% (76/188)        
+#17 78.25 remote: Compressing objects:  41% (78/188)        
+#17 78.25 remote: Compressing objects:  42% (79/188)        
+#17 78.25 remote: Compressing objects:  43% (81/188)        
+#17 78.25 remote: Compressing objects:  44% (83/188)        
+#17 78.25 remote: Compressing objects:  45% (85/188)        
+#17 78.25 remote: Compressing objects:  46% (87/188)        
+#17 78.25 remote: Compressing objects:  47% (89/188)        
+#17 78.25 remote: Compressing objects:  48% (91/188)        
+#17 78.25 remote: Compressing objects:  49% (93/188)        
+#17 78.25 remote: Compressing objects:  50% (94/188)        
+#17 78.25 remote: Compressing objects:  51% (96/188)        
+#17 78.25 remote: Compressing objects:  52% (98/188)        
+#17 78.25 remote: Compressing objects:  53% (100/188)        
+#17 78.25 remote: Compressing objects:  54% (102/188)        
+#17 78.25 remote: Compressing objects:  55% (104/188)        
+#17 78.25 remote: Compressing objects:  56% (106/188)        
+#17 78.25 remote: Compressing objects:  57% (108/188)        
+#17 78.25 remote: Compressing objects:  58% (110/188)        
+#17 78.25 remote: Compressing objects:  59% (111/188)        
+#17 78.25 remote: Compressing objects:  60% (113/188)        
+#17 78.25 remote: Compressing objects:  61% (115/188)        
+#17 78.25 remote: Compressing objects:  62% (117/188)        
+#17 78.25 remote: Compressing objects:  63% (119/188)        
+#17 78.25 remote: Compressing objects:  64% (121/188)        
+#17 78.25 remote: Compressing objects:  65% (123/188)        
+#17 78.25 remote: Compressing objects:  66% (125/188)        
+#17 78.25 remote: Compressing objects:  67% (126/188)        
+#17 78.25 remote: Compressing objects:  68% (128/188)        
+#17 78.25 remote: Compressing objects:  69% (130/188)        
+#17 78.25 remote: Compressing objects:  70% (132/188)        
+#17 78.25 remote: Compressing objects:  71% (134/188)        
+#17 78.25 remote: Compressing objects:  72% (136/188)        
+#17 78.25 remote: Compressing objects:  73% (138/188)        
+#17 78.25 remote: Compressing objects:  74% (140/188)        
+#17 78.25 remote: Compressing objects:  75% (141/188)        
+#17 78.25 remote: Compressing objects:  76% (143/188)        
+#17 78.25 remote: Compressing objects:  77% (145/188)        
+#17 78.25 remote: Compressing objects:  78% (147/188)        
+#17 78.25 remote: Compressing objects:  79% (149/188)        
+#17 78.25 remote: Compressing objects:  80% (151/188)        
+#17 78.25 remote: Compressing objects:  81% (153/188)        
+#17 78.25 remote: Compressing objects:  82% (155/188)        
+#17 78.25 remote: Compressing objects:  83% (157/188)        
+#17 78.25 remote: Compressing objects:  84% (158/188)        
+#17 78.25 remote: Compressing objects:  85% (160/188)        
+#17 78.25 remote: Compressing objects:  86% (162/188)        
+#17 78.25 remote: Compressing objects:  87% (164/188)        
+#17 78.25 remote: Compressing objects:  88% (166/188)        
+#17 78.25 remote: Compressing objects:  89% (168/188)        
+#17 78.25 remote: Compressing objects:  90% (170/188)        
+#17 78.25 remote: Compressing objects:  91% (172/188)        
+#17 78.25 remote: Compressing objects:  92% (173/188)        
+#17 78.25 remote: Compressing objects:  93% (175/188)        
+#17 78.25 remote: Compressing objects:  94% (177/188)        
+#17 78.25 remote: Compressing objects:  95% (179/188)        
+#17 78.25 remote: Compressing objects:  96% (181/188)        
+#17 78.25 remote: Compressing objects:  97% (183/188)        
+#17 78.25 remote: Compressing objects:  98% (185/188)        
+#17 78.25 remote: Compressing objects:  99% (187/188)        
+#17 78.25 remote: Compressing objects: 100% (188/188)        
+#17 78.25 remote: Compressing objects: 100% (188/188), done.        
+#17 78.25 remote: Total 852 (delta 92), reused 194 (delta 74), pack-reused 586 (from 1)        
+#17 78.25 Resolving Hex dependencies...
+#17 78.25 Resolution completed in 0.184s
+#17 78.25 Unchanged:
+#17 78.25   earmark_parser 1.4.46
+#17 78.25   elixir_quic 0.21.4
+#17 78.25   elixir_quic_http3 0.21.4
+#17 78.25   ex_doc 0.40.4
+#17 78.25   ex_ssl 0.21.4
+#17 78.25   hpax 1.1.0
+#17 78.25   http_core 0.21.4
+#17 78.25   http_fetch 0.21.4
+#17 78.25   http_runtime 0.21.4
+#17 78.25   http_web_socket 0.21.4
+#17 78.25   jason 1.4.5
+#17 78.25   makeup 1.2.3
+#17 78.25   makeup_elixir 1.0.1
+#17 78.25   makeup_erlang 1.1.0
+#17 78.25   mime 2.0.7
+#17 78.25   nimble_parsec 1.4.2
+#17 78.25   plug 1.20.3
+#17 78.25   plug_crypto 2.2.0
+#17 78.25   rustler 0.38.0
+#17 78.25   telemetry 1.4.2
+#17 78.25   telemetry_metrics 1.2.0
+#17 78.25   websock 0.5.3
+#17 78.25 * Getting http_fetch (Hex package)
+#17 78.25 * Getting http_web_socket (Hex package)
+#17 78.25 * Getting http_core (Hex package)
+#17 78.25 * Getting http_runtime (Hex package)
+#17 78.25 * Getting telemetry (Hex package)
+#17 78.25 * Getting elixir_quic_http3 (Hex package)
+#17 78.25 * Getting elixir_quic (Hex package)
+#17 78.25 * Getting ex_ssl (Hex package)
+#17 78.25 * Getting plug (Hex package)
+#17 78.25 * Getting hpax (Hex package)
+#17 78.25 * Getting websock (Hex package)
+#17 78.25 * Getting mime (Hex package)
+#17 78.25 * Getting plug_crypto (Hex package)
+#17 78.25 * Getting telemetry_metrics (Hex package)
+#17 78.25 * Getting rustler (Hex package)
+#17 78.25 * Getting ex_doc (Hex package)
+#17 78.25 * Getting earmark_parser (Hex package)
+#17 78.25 * Getting makeup_elixir (Hex package)
+#17 78.25 * Getting makeup_erlang (Hex package)
+#17 78.25 * Getting makeup (Hex package)
+#17 78.25 * Getting nimble_parsec (Hex package)
+#17 78.25 * Getting jason (Hex package)
+#17 78.25 START peer-venv: ['python3', '-m', 'venv', '/work/.audit/h2peer']
+#17 84.66 START peer-dependencies: ['/work/.audit/h2peer/bin/python', '-m', 'pip', 'install', '-r', 'apps/gaoxy_http/test/support/h2-requirements.txt', '-r', 'integration/http3/requirements.txt']
+#17 108.8 Collecting h2==4.3.0
+#17 108.8   Downloading h2-4.3.0-py3-none-any.whl (61 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 61.8/61.8 kB 174.5 kB/s eta 0:00:00
+#17 108.8 Collecting hpack==4.2.0
+#17 108.8   Downloading hpack-4.2.0-py3-none-any.whl (34 kB)
+#17 108.8 Collecting hyperframe==6.1.0
+#17 108.8   Downloading hyperframe-6.1.0-py3-none-any.whl (13 kB)
+#17 108.8 Collecting aioquic==1.2.0
+#17 108.8   Downloading aioquic-1.2.0-cp38-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.2 MB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.2/2.2 MB 2.0 MB/s eta 0:00:00
+#17 108.8 Collecting certifi
+#17 108.8   Downloading certifi-2026.7.22-py3-none-any.whl (136 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 137.0/137.0 kB 18.2 MB/s eta 0:00:00
+#17 108.8 Collecting cryptography>=42.0.0
+#17 108.8   Downloading cryptography-50.0.2-cp311-abi3-manylinux_2_34_x86_64.whl (4.8 MB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 4.8/4.8 MB 12.7 MB/s eta 0:00:00
+#17 108.8 Collecting pylsqpack<0.4.0,>=0.3.3
+#17 108.8   Downloading pylsqpack-0.3.24-cp310-abi3-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (250 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 250.3/250.3 kB 46.9 MB/s eta 0:00:00
+#17 108.8 Collecting pyopenssl>=24
+#17 108.8   Downloading pyopenssl-26.4.0-py3-none-any.whl (56 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 56.0/56.0 kB 16.3 MB/s eta 0:00:00
+#17 108.8 Collecting service-identity>=24.1.0
+#17 108.8   Downloading service_identity-26.1.0-py3-none-any.whl (11 kB)
+#17 108.8 Collecting cffi>=2.0.0
+#17 108.8   Downloading cffi-2.1.1-cp311-cp311-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (217 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 217.8/217.8 kB 60.2 MB/s eta 0:00:00
+#17 108.8 Collecting typing-extensions>=4.9
+#17 108.8   Downloading typing_extensions-4.16.0-py3-none-any.whl (45 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 45.6/45.6 kB 9.3 MB/s eta 0:00:00
+#17 108.8 Collecting attrs>=19.1.0
+#17 108.8   Downloading attrs-26.1.0-py3-none-any.whl (67 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 67.5/67.5 kB 26.3 MB/s eta 0:00:00
+#17 108.8 Collecting pycparser
+#17 108.8   Downloading pycparser-3.11-py3-none-any.whl (51 kB)
+#17 108.8      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 51.2/51.2 kB 16.4 MB/s eta 0:00:00
+#17 108.8 Installing collected packages: typing-extensions, pylsqpack, pycparser, hyperframe, hpack, certifi, attrs, h2, cffi, cryptography, service-identity, pyopenssl, aioquic
+#17 108.8 Successfully installed aioquic-1.2.0 attrs-26.1.0 certifi-2026.7.22 cffi-2.1.1 cryptography-50.0.2 h2-4.3.0 hpack-4.2.0 hyperframe-6.1.0 pycparser-3.11 pylsqpack-0.3.24 pyopenssl-26.4.0 service-identity-26.1.0 typing-extensions-4.16.0
+#17 DONE 113.0s
+
+#18 [builder 12/13] RUN python3 /tools/build.py compile
+#18 6.459 START canonical-format: ['mix', 'format', '--check-formatted']
+#18 8.059 START changed-source-format: ['mix', 'format', '--check-formatted', 'apps/gaoxy/lib/gaoxy/config.ex', 'apps/gaoxy/lib/gaoxy/quic.ex', 'apps/gaoxy/lib/gaoxy/quic_bridge.ex', 'apps/gaoxy/lib/gaoxy/service.ex', 'apps/gaoxy/mix.exs', 'apps/gaoxy/test/cleanup_attachment_test.exs', 'apps/gaoxy/test/quic_context_test.exs', 'apps/gaoxy_http/lib/gaoxy/http/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/framed_response.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/response.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex', 'apps/gaoxy_http/lib/gaoxy/plug_adapter.ex', 'apps/gaoxy_http/mix.exs', 'apps/gaoxy_http/test/http2_control_rate_test.exs', 'apps/gaoxy_http/test/http2_network_test.exs', 'apps/gaoxy_http/test/http2_pre_settings_test.exs', 'apps/gaoxy_http/test/http3_upgrade_test.exs', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_http3/lib/gaoxy/http/http3.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/response.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex', 'apps/gaoxy_http3/mix.exs', 'apps/gaoxy_http3/test/connection_test.exs', 'apps/gaoxy_http3/test/headers_test.exs', 'apps/gaoxy_http3/test/host_poll_profile_test.exs', 'apps/gaoxy_http3/test/lifecycle_race_test.exs', 'apps/gaoxy_http3/test/lifecycle_test.exs', 'apps/gaoxy_http3/test/operations_test.exs', 'apps/gaoxy_http3/test/options_test.exs', 'apps/gaoxy_http3/test/plug_test.exs', 'apps/gaoxy_http3/test/protocol_test.exs', 'apps/gaoxy_http3/test/proxy_test.exs', 'apps/gaoxy_http3/test/qpack_test.exs', 'apps/gaoxy_http3/test/service_test.exs', 'apps/gaoxy_http3/test/test_helper.exs', 'apps/gaoxy_http3/test/transport_test.exs', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex', 'apps/gaoxy_proxy/mix.exs', 'apps/gaoxy_proxy/test/http3_guardian_test.exs', 'apps/gaoxy_proxy/test/http3_proxy_test.exs', 'apps/gaoxy_proxy/test/http3_session_client_test.exs', 'apps/gaoxy_proxy/test/http_headers_test.exs', 'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs', 'apps/gaoxy_server/lib/gaoxy/server/config.ex', 'apps/gaoxy_server/lib/gaoxy/server/route_config.ex', 'apps/gaoxy_server/lib/gaoxy/server/static_endpoint.ex', 'apps/gaoxy_server/lib/gaoxy/server/supervisor.ex', 'apps/gaoxy_server/mix.exs', 'apps/gaoxy_server/test/http3_config_test.exs', 'apps/gaoxy_server/test/http3_generation_test.exs', 'docs/acceptance/evidence/m4/upstream-matrix/gaoxy-up2-diagnostic2-fixture-original.exs', 'docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs', 'examples/phoenix_native/h3_gateway.exs', 'examples/phoenix_native/mix.exs', 'integration/h3_consumer/mix.exs', 'integration/h3_consumer/test/consumer_test.exs', 'integration/h3_consumer/test/test_helper.exs', 'integration/http3/fixture.exs', 'integration/http3/matrix_fixture.exs', 'integration/http3/standalone/fixture.exs', 'integration/http3/upstream/fixture.exs', 'integration/http3/upstream/probe.exs', 'integration/http3/upstream/session_probe.exs', 'integration/http_consumer/mix.exs', 'integration/http_consumer/test/consumer_test.exs', 'integration/http_consumer/test/test_helper.exs', 'integration/quic_consumer/mix.exs', 'integration/quic_consumer/test/quic_test.exs', 'mix.exs']
+#18 9.584 ** (Mix) mix format failed due to --check-formatted.
+#18 9.584 The following files are not formatted:
+#18 9.584 
+#18 9.584 [1m[31m/work/docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs
+#18 9.584 [0m
+#18 9.584  1  1  |Application.ensure_all_started(:ssl)
+#18 9.584  2  2  |certs = "/probe/probe-fixtures"
+#18 9.584  3    -|{:ok, listener} = :ssl.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}, certfile: String.to_charlist(certs <> "/cert.pem"), keyfile: String.to_charlist(certs <> "/key.pem"), verify: :verify_none])
+#18 9.584     3 +|
+#18 9.584     4 +|{:ok, listener} =
+#18 9.584     5 +|  :ssl.listen(0, [
+#18 9.584     6 +|    :binary,
+#18 9.584     7 +|    active: false,
+#18 9.584     8 +|    ip: {127, 0, 0, 1},
+#18 9.584     9 +|    certfile: String.to_charlist(certs <> "/cert.pem"),
+#18 9.584    10 +|    keyfile: String.to_charlist(certs <> "/key.pem"),
+#18 9.584    11 +|    verify: :verify_none
+#18 9.584    12 +|  ])
+#18 9.584    13 +|
+#18 9.584  4 14  |{:ok, {_, port}} = :ssl.sockname(listener)
+#18 9.584  5 15  |parent = self()
+#18 9.584    16 +|
+#18 9.584  6 17  |spawn(fn ->
+#18 9.584  7 18  |  {:ok, socket} = :ssl.transport_accept(listener, 5000)
+#18 9.584        |
+#18 9.584 10 21  |  :ssl.close(socket)
+#18 9.584 11 22  |end)
+#18 9.584 12    -|result = :ssl.connect({127, 0, 0, 1}, port, [:binary, active: false, verify: :verify_peer, cacertfile: String.to_charlist(certs <> "/ca.pem"), server_name_indication: ~c"wrong.example", customize_hostname_check: [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)]], 5000)
+#18 9.584    23 +|
+#18 9.584    24 +|result =
+#18 9.584    25 +|  :ssl.connect(
+#18 9.584    26 +|    {127, 0, 0, 1},
+#18 9.584    27 +|    port,
+#18 9.584    28 +|    [
+#18 9.584    29 +|      :binary,
+#18 9.584    30 +|      active: false,
+#18 9.584    31 +|      verify: :verify_peer,
+#18 9.584    32 +|      cacertfile: String.to_charlist(certs <> "/ca.pem"),
+#18 9.584    33 +|      server_name_indication: ~c"wrong.example",
+#18 9.584    34 +|      customize_hostname_check: [match_fun: :public_key.pkix_verify_hostname_match_fun(:https)]
+#18 9.584    35 +|    ],
+#18 9.584    36 +|    5000
+#18 9.584    37 +|  )
+#18 9.584    38 +|
+#18 9.584 13 39  |IO.inspect(result, label: "client")
+#18 9.584    40 +|
+#18 9.584 14 41  |receive do
+#18 9.584 15 42  |  {:peer_result, peer} -> IO.inspect(peer, label: "peer")
+#18 9.584        |
+#18 9.584 17 44  |  5000 -> raise "peer did not finish"
+#18 9.584 18 45  |end
+#18 9.584 19    -|IO.puts("OTP=" <> File.read!(Path.join([:code.root_dir(), "releases", :erlang.system_info(:otp_release), "OTP_VERSION"])) )
+#18 9.584    46 +|
+#18 9.584    47 +|IO.puts(
+#18 9.584    48 +|  "OTP=" <>
+#18 9.584    49 +|    File.read!(
+#18 9.584    50 +|      Path.join([:code.root_dir(), "releases", :erlang.system_info(:otp_release), "OTP_VERSION"])
+#18 9.584    51 +|    )
+#18 9.584    52 +|)
+#18 9.584    53 +|
+#18 9.584 20 54  |IO.inspect(Application.spec(:ssl, :vsn), label: "SSL")
+#18 9.584 21 55  |:ssl.close(listener)
+#18 9.584        |
+#18 9.584 
+#18 9.584 
+#18 9.584 
+#18 9.586 Traceback (most recent call last):
+#18 9.586   File "/tools/build.py", line 68, in <module>
+#18 9.586     run("changed-source-format", ["mix", "format", "--check-formatted", *changed_elixir])
+#18 9.586   File "/tools/build.py", line 45, in run
+#18 9.587     assert result.returncode == 0, f"{name}: exit {result.returncode}"
+#18 9.587            ^^^^^^^^^^^^^^^^^^^^^^
+#18 9.587 AssertionError: changed-source-format: exit 1
+#18 ERROR: process "/bin/sh -c python3 /tools/build.py compile" did not complete successfully: exit code: 1
+------
+ > [builder 12/13] RUN python3 /tools/build.py compile:
+9.584 
+9.584 
+9.584 
+9.586 Traceback (most recent call last):
+9.586   File "/tools/build.py", line 68, in <module>
+9.586     run("changed-source-format", ["mix", "format", "--check-formatted", *changed_elixir])
+9.586   File "/tools/build.py", line 45, in run
+9.587     assert result.returncode == 0, f"{name}: exit {result.returncode}"
+9.587            ^^^^^^^^^^^^^^^^^^^^^^
+9.587 AssertionError: changed-source-format: exit 1
+------
+Dockerfile:15
+--------------------
+  13 |     COPY build.py /tools/build.py
+  14 |     RUN python3 /tools/build.py prepare
+  15 | >>> RUN python3 /tools/build.py compile
+  16 |     RUN python3 /tools/build.py qualify
+  17 |     
+--------------------
+ERROR: failed to build: failed to solve: process "/bin/sh -c python3 /tools/build.py compile" did not complete successfully: exit code: 1
