@@ -162,42 +162,186 @@ defmodule Gaoxy.Lifecycle do
 
   # Dispatch every barrier before awaiting any service. Each service owns its
   # cleanup; caller death or a public timeout cannot abandon it.
-  def drain_services(services, deadline) do
-    requests =
-      for {id, pid, generation} <- services do
+  def drain_services(services, deadline), do: drain_all(services, %{}, deadline)
+
+  def drain_all(services, participants, deadline) do
+    services =
+      Map.new(services, fn {id, pid, generation} ->
         monitor = Process.monitor(pid)
         request = :gen_server.send_request(pid, {:drain, generation, deadline})
-        {id, pid, monitor, request}
-      end
 
-    results =
-      for {id, pid, monitor, request} <- requests do
-        result =
-          case :gen_server.receive_response(request, remaining(deadline)) do
-            {:reply, result} ->
-              receive do
-                {:DOWN, ^monitor, :process, ^pid, _} -> result
-              after
-                remaining(deadline) -> {:error, {:deadline_exceeded, :cleanup_pending}}
-              end
+        {id,
+         %{pid: pid, monitor: monitor, request: request, reply: nil, down: false, outcome: nil}}
+      end)
 
-            {:error, {:noproc, _}} ->
-              {:error, :not_running}
+    participants =
+      Map.new(participants, fn {registration, participant} ->
+        operation = make_ref()
+        monitor = Process.monitor(participant.pid)
 
-            {:error, reason} ->
-              {:error, {:cleanup_failed, reason}}
+        send(
+          participant.pid,
+          {:gaoxy_lifecycle_drain, registration, operation, self(), deadline}
+        )
 
-            :timeout ->
-              {:error, {:deadline_exceeded, :cleanup_pending}}
-          end
+        {registration,
+         Map.merge(participant, %{monitor: monitor, operation: operation, down: false})}
+      end)
 
-        Process.demonitor(monitor, [:flush])
-        {id, result}
-      end
+    {services, participants} = collect(services, participants, deadline)
 
-    case Enum.reject(results, fn {_, result} -> result == :ok end) do
-      [] -> :ok
-      errors -> {:error, {:services, errors}}
+    Enum.each(services, fn {_, service} ->
+      Process.demonitor(service.monitor, [:flush])
+      # Abandon any unanswered request alias after the original deadline.
+      if service.reply == nil, do: :gen_server.receive_response(service.request, 0)
+    end)
+
+    Enum.each(participants, fn {_, participant} ->
+      Process.demonitor(participant.monitor, [:flush])
+    end)
+
+    result = shutdown_result(services, participants)
+
+    if result == :ok && map_size(participants) > 0 && remaining(deadline) == 0,
+      do: pending_result(),
+      else: result
+  end
+
+  defp collect(services, participants, deadline) do
+    cond do
+      Enum.all?(services, fn {_, entry} -> entry.outcome != nil end) &&
+          Enum.all?(participants, fn {_, entry} -> entry.outcome != nil end) ->
+        {services, participants}
+
+      remaining(deadline) == 0 ->
+        expire(services, participants)
+
+      true ->
+        receive do
+          message ->
+            {services, participants} = collect_message(message, services, participants)
+            collect(services, participants, deadline)
+        after
+          remaining(deadline) -> expire(services, participants)
+        end
     end
   end
+
+  defp collect_message(
+         {:gaoxy_lifecycle_result, registration, operation, pid, result},
+         services,
+         participants
+       ) do
+    participants =
+      case participants do
+        %{^registration => %{pid: ^pid, operation: ^operation, outcome: nil} = participant} ->
+          Map.put(participants, registration, %{participant | outcome: participant_result(result)})
+
+        _ ->
+          participants
+      end
+
+    {services, participants}
+  end
+
+  defp collect_message({:DOWN, monitor, :process, pid, _} = message, services, participants) do
+    participants =
+      Map.new(participants, fn
+        {registration, %{monitor: ^monitor, pid: ^pid} = participant} ->
+          # DOWN is provisional: the private-capability receipt may follow it.
+          {registration, %{participant | down: true}}
+
+        entry ->
+          entry
+      end)
+
+    services =
+      Map.new(services, fn
+        {id, %{monitor: ^monitor, pid: ^pid} = service} ->
+          {id, settle_service(%{service | down: true})}
+
+        entry ->
+          entry
+      end)
+
+    {service_response(message, services), participants}
+  end
+
+  defp collect_message(message, services, participants),
+    do: {service_response(message, services), participants}
+
+  defp service_response(message, services) do
+    Map.new(services, fn
+      {id, %{reply: nil, outcome: nil} = service} ->
+        service =
+          case :gen_server.check_response(message, service.request) do
+            {:reply, result} -> settle_service(%{service | reply: {:received, result}})
+            {:error, {:noproc, _}} -> %{service | outcome: {:error, :not_running}}
+            {:error, reason} -> %{service | outcome: {:error, {:cleanup_failed, reason}}}
+            :no_reply -> service
+          end
+
+        {id, service}
+
+      entry ->
+        entry
+    end)
+  end
+
+  defp settle_service(%{reply: {:received, result}, down: true} = service),
+    do: %{service | outcome: result}
+
+  defp settle_service(service), do: service
+
+  defp participant_result(:ok), do: :ok
+
+  defp participant_result({:error, reason}) do
+    if :erlang.external_size(reason) <= 1_024 do
+      # Copy small terms so sub-binary backing cannot retain an oversized payload.
+      {:error, reason |> :erlang.term_to_binary() |> :erlang.binary_to_term()}
+    else
+      {:error, :cleanup_unconfirmed}
+    end
+  end
+
+  defp participant_result(_), do: {:error, :cleanup_unconfirmed}
+
+  defp expire(services, participants) do
+    services =
+      Map.new(services, fn {id, service} ->
+        {id, %{service | outcome: service.outcome || pending_result()}}
+      end)
+
+    participants =
+      Map.new(participants, fn {registration, participant} ->
+        result = if participant.down, do: {:error, :cleanup_unconfirmed}, else: pending_result()
+        {registration, %{participant | outcome: participant.outcome || result}}
+      end)
+
+    {services, participants}
+  end
+
+  defp shutdown_result(services, participants) do
+    service_errors = errors(services)
+    resource_errors = errors(participants)
+
+    cond do
+      map_size(participants) == 0 ->
+        if service_errors == [], do: :ok, else: {:error, {:services, service_errors}}
+
+      Enum.any?(service_errors ++ resource_errors, fn {_, error} -> error == pending_result() end) ->
+        pending_result()
+
+      service_errors == [] && resource_errors == [] ->
+        :ok
+
+      true ->
+        {:error, {:shutdown, service_errors, resource_errors}}
+    end
+  end
+
+  defp errors(entries),
+    do: for({id, %{outcome: result}} <- entries, result != :ok, do: {id, result})
+
+  defp pending_result, do: {:error, {:deadline_exceeded, :cleanup_pending}}
 end

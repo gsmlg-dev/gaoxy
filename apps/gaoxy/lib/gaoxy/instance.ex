@@ -49,6 +49,7 @@ defmodule Gaoxy.Instance do
       parent_monitor: Process.monitor(parent),
       registry_monitor: registry_monitor,
       drain_timeout: drain_timeout(plan.services),
+      participants: %{},
       operations: %{},
       stopping: nil
     }
@@ -73,6 +74,28 @@ defmodule Gaoxy.Instance do
     do: {:reply, Enum.map(:ets.tab2list(state.table), &elem(&1, 0)), state}
 
   def handle_call({:lookup, id}, _, state), do: {:reply, lookup(state, id), state}
+
+  def handle_call({:register_lifecycle_participant, _}, _, %{stopping: stopping} = state)
+      when not is_nil(stopping),
+      do: {:reply, {:error, :stopping}, state}
+
+  def handle_call({:register_lifecycle_participant, deadline}, {pid, _}, state) do
+    cond do
+      Lifecycle.remaining(deadline) == 0 ->
+        {:reply, {:error, {:deadline_exceeded, :cleanup_pending}}, state}
+
+      Enum.any?(state.participants, fn {_, participant} -> participant.pid == pid end) ->
+        {:reply, {:error, :already_registered}, state}
+
+      map_size(state.participants) >= 64 ->
+        {:reply, {:error, :participant_limit}, state}
+
+      true ->
+        registration = make_ref()
+        participant = %{pid: pid, monitor: Process.monitor(pid), outcome: nil}
+        {:reply, {:ok, registration}, put_in(state.participants[registration], participant)}
+    end
+  end
 
   def handle_call({:add, _}, _, %{stopping: stopping} = state) when not is_nil(stopping),
     do: {:reply, {:error, :stopping}, state}
@@ -113,7 +136,7 @@ defmodule Gaoxy.Instance do
     do: {:reply, {:error, :stopping}, state}
 
   def handle_call({:stop, deadline}, from, state) do
-    operation = operation(live_services(state), deadline, from, :instance)
+    operation = operation(live_services(state), deadline, from, :instance, state.participants)
     {:noreply, %{state | stopping: operation}}
   end
 
@@ -122,7 +145,9 @@ defmodule Gaoxy.Instance do
     cond do
       state.stopping && state.stopping.token == token ->
         Process.demonitor(state.stopping.monitor, [:flush])
-        {:stop, :normal, %{state | stopping: Map.put(state.stopping, :result, result)}}
+
+        {:stop, :normal,
+         %{state | stopping: Map.merge(state.stopping, %{result: result, completed: true})}}
 
       true ->
         case Enum.find(state.operations, fn {_, op} -> op.token == token end) do
@@ -169,7 +194,16 @@ defmodule Gaoxy.Instance do
                  )
            }}
         else
-          {:noreply, state}
+          participants =
+            Map.new(state.participants, fn
+              {registration, %{monitor: ^ref} = participant} ->
+                {registration, %{participant | outcome: {:error, :cleanup_unconfirmed}}}
+
+              entry ->
+                entry
+            end)
+
+          {:noreply, %{state | participants: participants}}
         end
     end
   end
@@ -182,12 +216,15 @@ defmodule Gaoxy.Instance do
   def terminate(_, state) do
     deadline =
       if state.stopping,
-        do: min(state.stopping.deadline, Lifecycle.deadline(state.drain_timeout)),
+        do: state.stopping.deadline,
         else: Lifecycle.deadline(state.drain_timeout)
 
     # Children still run their normal callback loops while the instance is in
     # terminate/2. No service needs a call to this instance to complete cleanup.
-    Lifecycle.drain_services(live_services(state), deadline)
+    unless state.stopping && Map.get(state.stopping, :completed, false) do
+      Lifecycle.drain_all(live_services(state), state.participants, deadline)
+    end
+
     cleanup_deadline = deadline + Lifecycle.cleanup_headroom()
 
     result =
@@ -251,14 +288,14 @@ defmodule Gaoxy.Instance do
         do: {id, pid, generation}
       )
 
-  defp operation(services, deadline, from, id) do
+  defp operation(services, deadline, from, id, participants \\ %{}) do
     owner = self()
     token = make_ref()
 
     {pid, monitor} =
       :erlang.spawn_opt(
         fn ->
-          result = Lifecycle.drain_services(services, deadline)
+          result = Lifecycle.drain_all(services, participants, deadline)
           send(owner, {:operation_done, token, result})
         end,
         [:link, :monitor]

@@ -18,6 +18,13 @@ defmodule Gaoxy do
   def services(instance),
     do: Gaoxy.Lifecycle.call(instance, :services, Gaoxy.Lifecycle.deadline(5_000))
 
+  @doc "Registers the calling process as an instance-lifetime cleanup participant before it allocates resources. A timeout does not authorize allocation."
+  def register_lifecycle_participant(instance, timeout_ms)
+      when is_integer(timeout_ms) and timeout_ms >= 0 do
+    deadline = Gaoxy.Lifecycle.deadline(timeout_ms)
+    Gaoxy.Lifecycle.call(instance, {:register_lifecycle_participant, deadline}, deadline)
+  end
+
   def handle(instance, id), do: service_call(instance, id, :handle)
   def info(instance, id), do: service_call(instance, id, :info)
   def status(instance, id), do: service_call(instance, id, :status)
@@ -37,7 +44,7 @@ defmodule Gaoxy do
     Gaoxy.Lifecycle.call(instance, {:remove, id, deadline}, deadline)
   end
 
-  @doc "Stops admission across all services, sharing one deadline. Service errors are aggregated."
+  @doc "Stops admission across all services and registered cleanup participants, sharing one deadline."
   def stop(instance, timeout \\ 5_000) when is_integer(timeout) and timeout >= 0 do
     deadline = Gaoxy.Lifecycle.deadline(timeout)
     monitor = Process.monitor(instance)
