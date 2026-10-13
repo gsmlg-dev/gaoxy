@@ -17,12 +17,16 @@ holds; all stop work shares one absolute deadline.
 0.21.4 public ManagedTransport and RequestCompletion APIs, independent raw
 TCP/CPython OpenSSL fixtures. No new production dependency.
 
-**Status:** Execution kickoff and Steps 1–5 verification/independent reviews PASS.
+**Status:** Execution kickoff and Steps 1–6 verification/independent reviews PASS.
 Step 4 initial GREEN was rejected by independent SPEC review; repair 1 passed
 44/0 GREEN, independent SPEC/CODE review and fresh 44/0 verification. Step 5
 repair 1 passed 58/0 GREEN and independent SPEC/CODE review; fresh verification
-is recorded in its acceptance receipt. Steps 6–7 runtime gates remain
-**NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
+is recorded in its acceptance receipt. Step 6 design review and expected RED
+73/15 are recorded; all prior 58 tests pass. Combined edge execution is 74/2;
+repair 1 GREEN is 74/0 but independent SPEC review rejected returned-error
+recovery. Repair 2 passed 75/0 GREEN, independent SPEC then CODE and fresh 75/0,
+canonical format and strict compile. Steps 0–6 are accepted; Step 7 execution
+remains **NOT RUN**. Read [the design](../designs/m3-h1-resource-foundation.md) and
 [existing Task 4](m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional).
 
 **Historical planning checkout:** `.trees/m4-http3`, `codex/m4-http3`, baseline
@@ -235,15 +239,15 @@ Owned files: ledger/custodian/resource tests. Depends on Step 4.
 
 Owned files: ledger/custodian/resource tests. Depends on Steps 2 and 5.
 
-- [ ] Write RED tests for immediate admission closure, idle retirement despite
+- [x] Write RED tests for immediate admission closure, idle retirement despite
   baseline pins, admitted-request drain, same receipt/repeated waits, D never
   extended, graceful-to-abort escalation and pending initiation at short D.
-- [ ] Implement `retire/2`, `await_retirement/2` and generic participant message
+- [x] Implement `retire/2`, `await_retirement/2` and generic participant message
   handling. Only public `await_retired/2 == :ok` refunds transport capacity.
-- [ ] Test lost initiation result recovery through repeated public `retire/2`,
+- [x] Test lost initiation result recovery through repeated public `retire/2`,
   pending/unconfirmed receipts, helper/owner/instance death and late confirmed
   refund without rewriting the earlier failed stop result.
-- [ ] Keep a successfully retired owner inert until instance DOWN. Test that
+- [x] Keep a successfully retired owner inert until instance DOWN. Test that
   stop success waits for its cached authenticated result and every resource
   receipt; no blank-ledger restart is permitted after uncertain ownership.
 
@@ -273,8 +277,12 @@ No production endpoint wiring. Depends on Step 6.
 
 ## Scoped verification and completion
 
-The parent alone executes commands in the qualified environment. These are
-planned commands, **NOT RUN** in this document assignment:
+The parent alone executes commands in the qualified environment. The commands
+below were planned during the document assignment. Scoped core/proxy commands
+have now executed through Steps 1–6 acceptance after repairs; see the acceptance
+receipts for actual counts/exits. Step 6 repair 2 acceptance follows the preserved
+repair 1 review rejection and returned-error RED. Independent probe execution
+remains **NOT RUN**:
 
 ```sh
 unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy/test/lifecycle_participant_test.exs apps/gaoxy/test/lifecycle_fault_test.exs apps/gaoxy/test/lifecycle_ownership_test.exs apps/gaoxy/test/lifecycle_acceptance_test.exs

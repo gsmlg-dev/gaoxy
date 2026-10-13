@@ -903,6 +903,744 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     end)
   end
 
+  test "retirement has one exact receipt and rejects stale or expanded identities" do
+    {instance, owner} = owner()
+    d = deadline()
+    assert {:ok, receipt} = retire_owner(owner, d)
+    assert Enum.sort(Map.keys(receipt)) == [:operation, :owner, :owner_epoch, :provider]
+
+    assert %{provider: Transports, owner: ^owner, owner_epoch: epoch, operation: operation} =
+             receipt
+
+    assert is_reference(epoch)
+    assert is_reference(operation)
+    assert {:ok, ^receipt} = retire_owner(owner, d + 1000)
+    assert :ok = await_owner(receipt, deadline())
+    assert :ok = await_owner(receipt, deadline())
+
+    for invalid <- [
+          %{receipt | owner_epoch: make_ref()},
+          %{receipt | operation: make_ref()},
+          Map.put(receipt, :extra, true),
+          nil
+        ] do
+      assert {:error, :invalid_retirement_receipt} = await_owner(invalid, deadline())
+    end
+
+    assert Process.alive?(owner)
+    assert {:ok, %{lifecycle: :retired, resources: 0}} = Transports.status(owner)
+    monitor = Process.monitor(owner)
+    assert :ok = Gaoxy.stop(instance, 1000)
+    assert_receive {:DOWN, ^monitor, :process, ^owner, :normal}, 1000
+  end
+
+  test "owner retirement invalidates every metadata kind and grouped idle hold" do
+    {_instance, owner} = owner()
+
+    {:ok, first, first_preparation} =
+      Transports.prepare(owner, policy_source(), self(), deadline())
+
+    {:ok, second, second_preparation} =
+      Transports.prepare(owner, policy_source(), self(), deadline())
+
+    {:ok, baseline} =
+      Gaoxy.HTTP.Resources.pin_many([first, second], self(), :baseline, deadline())
+
+    {:ok, requests} = Gaoxy.HTTP.Resources.pin_many([first, second], self(), :request, deadline())
+    assert {:ok, %{pins: 6, resources: 2, reserved_connections: 4}} = Transports.status(owner)
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    assert {:ok, %{pins: 0}} = Transports.status(owner)
+    assert {:error, :retiring} = Transports.prepare(owner, policy_source(), self(), deadline())
+
+    assert {:error, :retiring} =
+             Gaoxy.HTTP.Resources.pin_many([first], self(), :request, deadline())
+
+    assert {:error, :retiring} = Transports.checkout(first, requests, self(), deadline())
+    assert :ok = await_owner(receipt, deadline())
+
+    assert {:ok,
+            %{
+              resources: 0,
+              reserved_connections: 0,
+              pins: 0,
+              request_tokens: 0,
+              helpers: 0,
+              owned_serialized_payload_bytes: 0
+            }} = Transports.status(owner)
+
+    for pins <- [first_preparation, second_preparation, baseline, requests] do
+      assert :ok = Gaoxy.HTTP.Resources.release(pins)
+      assert :ok = Gaoxy.HTTP.Resources.release(pins)
+    end
+  end
+
+  test "a shorter receipt wait does not fail a gracefully draining original request" do
+    {source, peer} = completion_peer()
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert_receive {:completion_request, ^peer}, 1000
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} =
+             await_owner(receipt, System.monotonic_time(:millisecond) + 20)
+
+    assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(completion, 0)
+    assert {:ok, %{request_tokens: 1, reserved_connections: 2}} = Transports.status(owner)
+    send(peer, :respond)
+    assert %HTTP.Response{status: 200, stream: stream} = HTTP.Promise.await(promise, 1000)
+    assert read_public_stream(stream) == "ok"
+    assert :ok = HTTP.RequestCompletion.await(completion, 1000)
+    assert :ok = Transports.finish(handle, token)
+    assert :ok = await_owner(receipt, deadline())
+
+    assert {:ok, %{request_tokens: 0, resources: 0, reserved_connections: 0, helpers: 0}} =
+             Transports.status(owner)
+  end
+
+  test "retirement D only tightens and late abort cleanup cannot rewrite its failed receipt" do
+    {source, peer} = completion_peer()
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert_receive {:completion_request, ^peer}, 1000
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    tighter = System.monotonic_time(:millisecond) + 100
+    assert {:ok, ^receipt} = retire_owner(owner, tighter)
+    assert {:ok, ^receipt} = retire_owner(owner, tighter + 1000)
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = await_owner(receipt, deadline())
+    assert :ok = HTTP.RequestCompletion.await(completion, 1000)
+    assert {:error, :aborted} = HTTP.Promise.await(promise, 1000)
+
+    eventually(fn ->
+      match?(
+        {:ok, %{resources: 0, reserved_connections: 0, request_tokens: 0, helpers: 0}},
+        Transports.status(owner)
+      )
+    end)
+
+    assert {:ok, ^receipt} = retire_owner(owner, deadline())
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = await_owner(receipt, deadline())
+  end
+
+  test "a delayed public initiation retains credit at D and later settles only accounting" do
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    entry = :sys.get_state(owner).records[handle.resource]
+    barrier = retirement_input_barrier(entry.custodian)
+    d = System.monotonic_time(:millisecond) + 100
+    assert {:ok, receipt} = retire_owner(owner, d)
+    assert_receive {:retirement_input_held, custodian}, 1000
+    assert custodian == entry.custodian
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = await_owner(receipt, deadline())
+    assert {:ok, %{resources: 1, reserved_connections: 2}} = Transports.status(owner)
+    send(custodian, {:continue_retirement_input, barrier})
+
+    eventually(fn ->
+      match?({:ok, %{resources: 0, reserved_connections: 0}}, Transports.status(owner))
+    end)
+
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} = await_owner(receipt, deadline())
+  end
+
+  test "owner receipt joins retirement helper result and DOWN in both orders" do
+    for order <- [:result_first, :down_first] do
+      {_instance, owner} = owner()
+      {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+      {entry, helper, monitor} = controlled_retirement_helper(owner, handle, order)
+      assert {:ok, receipt} = retire_owner(owner, deadline())
+      send(helper, :retire)
+      assert_receive {:controlled_retire_result, ^helper, {:ok, _} = result}, 1000
+
+      if order == :result_first do
+        assert {:ok, %{resources: 1, helpers: 1}} = Transports.status(owner)
+        assert Process.alive?(helper)
+
+        assert {:error, {:deadline_exceeded, :cleanup_pending}} =
+                 await_owner(receipt, System.monotonic_time(:millisecond) + 20)
+
+        send(helper, :join)
+        assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+      else
+        assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+        assert :ok = HTTP.ManagedTransport.await_retired(elem(result, 1), 1000)
+        send(entry.custodian, {:retire_result, helper, result})
+      end
+
+      assert :ok = await_owner(receipt, deadline())
+
+      assert {:ok, %{resources: 0, helpers: 0, reserved_connections: 0}} =
+               Transports.status(owner)
+    end
+  end
+
+  test "lost initiation result recovers publicly after helper DOWN without its original return" do
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    {entry, helper, monitor} = controlled_retirement_helper(owner, handle, :lost_result)
+    parent = self()
+
+    :ok =
+      :sys.install(
+        owner,
+        {fn count, event, _ ->
+           case event do
+             {:in, {:custodian_helper_started, _, _, _, _}} ->
+               send(parent, {:recovery_helper_started, self(), count + 1})
+               count + 1
+
+             _ ->
+               count
+           end
+         end, 0}
+      )
+
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    send(helper, :retire)
+    assert_receive {:controlled_retire_result, ^helper, {:ok, public_receipt}}, 1000
+    assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+    assert :ok = HTTP.ManagedTransport.await_retired(public_receipt, 1000)
+    # Never deliver {:retire_result, helper, ...}: replacement confirmation,
+    # combined with genuine helper DOWN, must settle this provisional hold.
+    assert :ok = await_owner(receipt, deadline())
+    assert_receive {:recovery_helper_started, ^owner, 1}, 1000
+    refute_receive {:recovery_helper_started, ^owner, 2}, 0
+    assert {:ok, %{resources: 0, helpers: 0, reserved_connections: 0}} = Transports.status(owner)
+    refute Process.alive?(entry.custodian)
+    assert Process.alive?(owner)
+  end
+
+  test "a lost graceful initiation return uses its one replacement to abort a held real request" do
+    {source, peer} = completion_peer()
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert_receive {:completion_request, ^peer}, 1000
+    {_entry, helper, monitor} = controlled_retirement_helper(owner, handle, :lost_result)
+    parent = self()
+
+    :ok =
+      :sys.install(
+        owner,
+        {fn count, event, _ ->
+           case event do
+             {:in, {:custodian_helper_started, _, _, _, _}} ->
+               send(parent, {:held_recovery_started, self(), count + 1})
+               count + 1
+
+             _ ->
+               count
+           end
+         end, 0}
+      )
+
+    d = System.monotonic_time(:millisecond) + 1500
+    assert {:ok, receipt} = retire_owner(owner, d)
+    send(helper, :retire)
+    assert_receive {:controlled_retire_result, ^helper, {:ok, _}}, 1000
+    assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+    assert_receive {:held_recovery_started, ^owner, 1}, 1000
+    assert :ok = HTTP.RequestCompletion.await(completion, 500)
+    assert {:error, :aborted} = HTTP.Promise.await(promise, 1000)
+    assert :ok = Transports.finish(handle, token)
+    assert :ok = await_owner(receipt, d)
+    refute_receive {:held_recovery_started, ^owner, 2}, 0
+
+    assert {:ok, %{resources: 0, request_tokens: 0, helpers: 0, reserved_connections: 0}} =
+             Transports.status(owner)
+  end
+
+  test "a joined public initiation error uses its one replacement to abort a held real request" do
+    {source, peer} = completion_peer()
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert_receive {:completion_request, ^peer}, 1000
+
+    {entry, helper, monitor} =
+      controlled_retirement_helper(owner, handle, :result_first, :invalid)
+
+    creator_monitor = Process.monitor(entry.custodian)
+    parent = self()
+
+    :ok =
+      :sys.install(
+        owner,
+        {fn count, event, _ ->
+           case event do
+             {:in, {:custodian_helper_started, _, _, _, pid}} ->
+               send(parent, {:error_recovery_started, self(), count + 1, pid})
+               count + 1
+
+             {:in, {:custodian_helper_finished, _, _, _, pid}} ->
+               send(parent, {:error_helper_result_joined, self(), pid})
+               count
+
+             _ ->
+               count
+           end
+         end, 0}
+      )
+
+    :ok =
+      :sys.install(
+        entry.custodian,
+        {fn debug, event, _ ->
+           case event do
+             {:in, {:retire_result, pid, {:ok, public_receipt}}} ->
+               send(parent, {:error_recovery_public_receipt, pid, public_receipt})
+
+             _ ->
+               :ok
+           end
+
+           debug
+         end, make_ref()}
+      )
+
+    d = System.monotonic_time(:millisecond) + 1500
+    assert {:ok, receipt} = retire_owner(owner, d)
+    send(helper, :retire)
+
+    assert_receive {:controlled_retire_result, ^helper,
+                    {:error, :invalid_transport_scope_retirement}},
+                   1000
+
+    assert Process.alive?(helper)
+    assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(completion, 0)
+
+    assert {:ok, %{helpers: 1, request_tokens: 1, reserved_connections: 2}} =
+             Transports.status(owner)
+
+    refute_receive {:error_recovery_started, ^owner, _, _}, 0
+    send(helper, :join)
+    assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+    assert_receive {:error_helper_result_joined, ^owner, ^helper}, 1000
+    assert_receive {:error_recovery_started, ^owner, 1, replacement}, 1000
+    replacement_monitor = Process.monitor(replacement)
+    assert_receive {:error_recovery_public_receipt, ^replacement, public_receipt}, 1000
+    assert :ok = HTTP.RequestCompletion.await(completion, 500)
+    assert {:error, :aborted} = HTTP.Promise.await(promise, 1000)
+    assert :ok = HTTP.ManagedTransport.await_retired(public_receipt, 1000)
+    assert_receive {:DOWN, ^replacement_monitor, :process, ^replacement, _}, 1000
+    assert_receive {:error_helper_result_joined, ^owner, ^replacement}, 1000
+    assert_receive {:DOWN, ^creator_monitor, :process, _, :normal}, 1000
+    assert :ok = Transports.finish(handle, token)
+    assert :ok = await_owner(receipt, d)
+    refute_receive {:error_recovery_started, ^owner, 2, _}, 0
+
+    assert {:ok, %{resources: 0, request_tokens: 0, helpers: 0, reserved_connections: 0}} =
+             Transports.status(owner)
+  end
+
+  test "owner success still waits for a creator after its public retirement receipt" do
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    entry = :sys.get_state(owner).records[handle.resource]
+    scope = :sys.get_state(entry.custodian).scope
+    assert {:ok, public_receipt} = HTTP.ManagedTransport.retire(scope, mode: :abort)
+    assert :ok = HTTP.ManagedTransport.await_retired(public_receipt, 1000)
+
+    actor =
+      spawn(fn ->
+        receive do
+          :join -> :ok
+        after
+          2000 -> :ok
+        end
+      end)
+
+    actor_monitor = Process.monitor(actor)
+
+    on_exit(fn ->
+      monitor = Process.monitor(actor)
+      send(actor, :join)
+
+      receive do
+        {:DOWN, ^monitor, :process, ^actor, _} -> :ok
+      after
+        1000 -> flunk("controlled creator did not join")
+      end
+    end)
+
+    :sys.replace_state(owner, fn state ->
+      Process.demonitor(entry.custodian_monitor, [:flush])
+
+      put_in(state.records[entry.resource], %{
+        entry
+        | custodian: actor,
+          custodian_monitor: Process.monitor(actor)
+      })
+    end)
+
+    original_monitor = Process.monitor(entry.custodian)
+    send(entry.custodian, {:retire, entry.capability})
+    assert_receive {:DOWN, ^original_monitor, :process, _, :normal}, 1000
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    send(owner, {:custodian_retired, entry.resource, actor, entry.capability})
+    assert {:ok, %{resources: 1, reserved_connections: 0}} = Transports.status(owner)
+
+    assert {:error, {:deadline_exceeded, :cleanup_pending}} =
+             await_owner(receipt, System.monotonic_time(:millisecond) + 20)
+
+    assert Process.alive?(actor)
+    send(actor, :join)
+    assert_receive {:DOWN, ^actor_monitor, :process, ^actor, :normal}, 1000
+    assert :ok = await_owner(receipt, deadline())
+    assert {:ok, %{resources: 0, helpers: 0, reserved_connections: 0}} = Transports.status(owner)
+  end
+
+  test "unbound request remains unconfirmed after transport refund and rejects stop success" do
+    {instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, _, token} = Transports.checkout(handle, pins, self(), deadline())
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    assert {:error, :cleanup_unconfirmed} = await_owner(receipt, deadline())
+    eventually(fn -> match?({:ok, %{reserved_connections: 0}}, Transports.status(owner)) end)
+    assert {:ok, %{resources: 1, request_tokens: 1, pins: 0} = held} = Transports.status(owner)
+    assert held.owned_serialized_payload_bytes > 0
+    assert {:error, :cleanup_unconfirmed} = Transports.finish(handle, token)
+    assert {:error, :cleanup_unconfirmed} = await_owner(receipt, deadline())
+    registration = :sys.get_state(owner).registration
+
+    assert {:error, {:shutdown, [], [{^registration, {:error, :cleanup_unconfirmed}}]}} =
+             Gaoxy.stop(instance, 1000)
+  end
+
+  test "metadata invalidation preserves late binding rights without rewriting known uncertainty" do
+    {source, peer} = completion_peer()
+    {_instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert_receive {:completion_request, ^peer}, 1000
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    assert {:error, :cleanup_unconfirmed} = await_owner(receipt, deadline())
+    assert {:ok, %{pins: 0, request_tokens: 1}} = Transports.status(owner)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert :ok = HTTP.RequestCompletion.abort_and_await(completion, 1000)
+    assert :ok = Transports.finish(handle, token)
+
+    eventually(fn ->
+      match?({:ok, %{resources: 0, request_tokens: 0, helpers: 0}}, Transports.status(owner))
+    end)
+
+    assert {:error, :cleanup_unconfirmed} = await_owner(receipt, deadline())
+  end
+
+  test "actual core stop waits for every resource helper join" do
+    {instance, owner} = owner()
+    {:ok, first, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    {:ok, second, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    {_entry, helper, monitor} = controlled_retirement_helper(owner, second, :result_first)
+    stop = stop_async(instance, 1000)
+    assert_receive {:core_drain_observed, ^owner, _, _, _, _}, 1000
+    send(helper, :retire)
+    assert_receive {:controlled_retire_result, ^helper, {:ok, _}}, 1000
+    eventually(fn -> match?({:ok, %{resources: 1, helpers: 1}}, Transports.status(owner)) end)
+    assert {:error, :invalid_resource} = Transports.status(first)
+    refute_receive {:instance_stop_result, ^stop, _}, 0
+    send(helper, :join)
+    assert_receive {:DOWN, ^monitor, :process, ^helper, :normal}, 1000
+    assert_receive {:instance_stop_result, ^stop, :ok}, 1000
+    join_stop(stop)
+  end
+
+  test "forged registration cannot retire owner and cached success uses the real core envelope" do
+    {instance, owner} = owner()
+    send(owner, {:gaoxy_lifecycle_drain, make_ref(), make_ref(), self(), deadline()})
+    assert {:ok, %{lifecycle: :running}} = Transports.status(owner)
+    refute_receive {:gaoxy_lifecycle_result, _, _, ^owner, _}, 0
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    assert :ok = await_owner(receipt, deadline())
+    assert Process.alive?(owner)
+    registration = :sys.get_state(owner).registration
+    owner_monitor = Process.monitor(owner)
+    stop = stop_async(instance, 1000)
+    assert_receive {:core_drain_observed, ^owner, ^registration, operation, coordinator, _}, 1000
+    assert is_reference(operation)
+    assert is_pid(coordinator)
+    assert_receive {:instance_stop_result, ^stop, :ok}, 1000
+    assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 1000
+    join_stop(stop)
+  end
+
+  test "owner death before confirmation preserves failed core registration" do
+    {source, peer} = completion_peer()
+    {instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, source, self(), deadline())
+    {:ok, pins} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, deadline())
+    {:ok, client, token} = Transports.checkout(handle, pins, self(), deadline())
+    promise = fetch_public(client, source.origin <> "/")
+    completion = HTTP.Promise.completion(promise)
+    assert :ok = Transports.bind_completion(handle, token, completion)
+    assert_receive {:completion_request, ^peer}, 1000
+    registration = :sys.get_state(owner).registration
+    entry = :sys.get_state(owner).records[handle.resource]
+    custodian_monitor = Process.monitor(entry.custodian)
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    owner_monitor = Process.monitor(owner)
+    Process.exit(owner, :kill)
+    assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :killed}, 1000
+    assert {:error, :cleanup_unconfirmed} = await_owner(receipt, deadline())
+    assert :ok = HTTP.RequestCompletion.await(completion, 1000)
+    assert_receive {:DOWN, ^custodian_monitor, :process, _, :normal}, 1000
+    eventually(fn -> :sys.get_state(instance).participants[registration].outcome != nil end)
+
+    assert {:error, {:shutdown, [], [{^registration, {:error, :cleanup_unconfirmed}}]}} =
+             Gaoxy.stop(instance, 1000)
+  end
+
+  test "unexpected instance DOWN uses finite cleanup and joins its owner and creator" do
+    {instance, owner} = owner()
+    {:ok, handle, _} = Transports.prepare(owner, policy_source(), self(), deadline())
+    entry = :sys.get_state(owner).records[handle.resource]
+    creator_monitor = Process.monitor(entry.custodian)
+    owner_monitor = Process.monitor(owner)
+    instance_monitor = Process.monitor(instance)
+    Process.exit(instance, :kill)
+    assert_receive {:DOWN, ^instance_monitor, :process, ^instance, :killed}, 1000
+    assert_receive {:DOWN, ^creator_monitor, :process, _, :normal}, 1000
+    assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 1000
+  end
+
+  test "core coordinator retry uses fresh operation at same D and preserves its initial failure" do
+    {instance, owner} = owner()
+    assert {:ok, receipt} = retire_owner(owner, deadline())
+    assert :ok = await_owner(receipt, deadline())
+    barrier = core_input_barrier(owner)
+    stop = stop_async(instance, 1000)
+    assert_receive {:core_input_held, registration, first_operation, first_coordinator, d}, 1000
+    Process.exit(first_coordinator, :kill)
+    send(owner, {:continue_core_input, barrier})
+
+    assert_receive {:core_drain_observed, ^owner, ^registration, ^first_operation,
+                    ^first_coordinator, ^d},
+                   1000
+
+    assert_receive {:core_drain_observed, ^owner, ^registration, second_operation,
+                    second_coordinator, ^d},
+                   1000
+
+    refute first_operation == second_operation
+    refute first_coordinator == second_coordinator
+
+    assert_receive {:instance_stop_result, ^stop,
+                    {:error, {:cleanup_failed, {:coordinator_exit, :killed}}}},
+                   1000
+
+    join_stop(stop)
+  end
+
+  defp retire_owner(owner, d), do: apply(Transports, :retire, [owner, d])
+  defp await_owner(receipt, d), do: apply(Transports, :await_retirement, [receipt, d])
+
+  defp stop_async(instance, timeout) do
+    parent = self()
+    [{_, participant}] = Map.to_list(:sys.get_state(instance).participants)
+    owner = participant.pid
+    trace = make_ref()
+
+    :ok =
+      :sys.install(
+        owner,
+        {fn debug, event, _ ->
+           case event do
+             {:in, {:gaoxy_lifecycle_drain, registration, operation, coordinator, d}} ->
+               send(
+                 parent,
+                 {:core_drain_observed, self(), registration, operation, coordinator, d}
+               )
+
+             _ ->
+               :ok
+           end
+
+           debug
+         end, trace}
+      )
+
+    caller =
+      spawn(fn ->
+        send(parent, {:instance_stop_result, self(), Gaoxy.stop(instance, timeout)})
+      end)
+
+    on_exit(fn ->
+      monitor = Process.monitor(caller)
+
+      receive do
+        {:DOWN, ^monitor, :process, ^caller, _} -> :ok
+      after
+        2500 -> flunk("instance stop caller did not join")
+      end
+    end)
+
+    caller
+  end
+
+  defp join_stop(caller) do
+    monitor = Process.monitor(caller)
+    assert_receive {:DOWN, ^monitor, :process, ^caller, _}, 1000
+  end
+
+  defp retirement_input_barrier(custodian) do
+    parent = self()
+    barrier = make_ref()
+
+    debug = fn seen, event, _ ->
+      retirement =
+        case event do
+          {:in, message} when is_tuple(message) -> elem(message, 0) == :retire
+          _ -> false
+        end
+
+      if retirement and not seen do
+        send(parent, {:retirement_input_held, self()})
+
+        receive do
+          {:continue_retirement_input, ^barrier} -> :ok
+        after
+          2000 -> raise "test-owned retirement input barrier timed out"
+        end
+      end
+
+      seen or retirement
+    end
+
+    :ok = :sys.install(custodian, {debug, false})
+
+    on_exit(fn ->
+      send(custodian, {:continue_retirement_input, barrier})
+
+      if Process.alive?(custodian) do
+        try do
+          :sys.remove(custodian, debug)
+        catch
+          :exit, {:noproc, _} -> :ok
+          :exit, {:normal, _} -> :ok
+        end
+      end
+    end)
+
+    barrier
+  end
+
+  defp controlled_retirement_helper(owner, handle, delivery, mode \\ :graceful) do
+    entry = :sys.get_state(owner).records[handle.resource]
+    scope = :sys.get_state(entry.custodian).scope
+    parent = self()
+
+    helper =
+      spawn(fn ->
+        receive do
+          :retire ->
+            result = HTTP.ManagedTransport.retire(scope, mode: mode)
+
+            if delivery == :result_first,
+              do: send(entry.custodian, {:retire_result, self(), result})
+
+            send(parent, {:controlled_retire_result, self(), result})
+
+            if delivery == :result_first do
+              receive do
+                :join -> :ok
+              after
+                2000 -> :ok
+              end
+            end
+        after
+          2000 -> :ok
+        end
+      end)
+
+    monitor = Process.monitor(helper)
+
+    on_exit(fn ->
+      cleanup_monitor = Process.monitor(helper)
+      send(helper, :join)
+      send(helper, :retire)
+
+      receive do
+        {:DOWN, ^cleanup_monitor, :process, ^helper, _} -> :ok
+      after
+        6000 -> flunk("controlled retirement helper did not join")
+      end
+
+      # Cleanup also works during expected RED, before recovery exists. This
+      # fresh public result is delivered only after the test has finished.
+      if Process.alive?(entry.custodian) do
+        result = HTTP.ManagedTransport.retire(scope, mode: :abort)
+        send(entry.custodian, {:retire_result, helper, result})
+      end
+    end)
+
+    :sys.replace_state(entry.custodian, fn state ->
+      %{
+        state
+        | retire_helper: {helper, Process.monitor(helper)},
+          cleanup_deadline: deadline() + 1000
+      }
+    end)
+
+    send(
+      owner,
+      {:custodian_helper_started, entry.resource, entry.custodian, entry.capability, helper}
+    )
+
+    assert {:ok, %{helpers: 1}} = Transports.status(owner)
+    {entry, helper, monitor}
+  end
+
+  defp core_input_barrier(owner) do
+    parent = self()
+    barrier = make_ref()
+
+    :ok =
+      :sys.install(
+        owner,
+        {fn seen, event, _ ->
+           case event do
+             {:in, {:gaoxy_lifecycle_drain, registration, operation, coordinator, d}}
+             when not seen ->
+               send(parent, {:core_input_held, registration, operation, coordinator, d})
+
+               receive do
+                 {:continue_core_input, ^barrier} -> :ok
+               after
+                 2000 -> raise "test-owned core input barrier timed out"
+               end
+
+               true
+
+             _ ->
+               seen
+           end
+         end, false}
+      )
+
+    on_exit(fn -> send(owner, {:continue_core_input, barrier}) end)
+    barrier
+  end
+
   defp fetch_public(client, url) do
     HTTP.fetch(
       url,

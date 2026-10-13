@@ -1,0 +1,39 @@
+{
+  "kind": "INDEPENDENT_SPECIFICATION_REVIEW",
+  "reviewer": "/root/peer_review",
+  "task": "step6_repair1_review",
+  "status": "FAIL_SPEC_CODE_ACCEPTANCE_WITHHELD",
+  "head": "99483529ce8add7984cad18159cbd4568ab801e5",
+  "source": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "47902aaf477e1ffda2b5a5e6cdcc2fe552cc6c84a65dfe85d2b1052d511f433e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/custodian.ex": "1292a96809c5135ab9497b7f02125f6f4ddafd5ef7dec7670602168b3ad4a543",
+    "apps/gaoxy_proxy/test/upstream_transports_test.exs": "5747c128592b21d6395864bdc4a134b8481e4a199aaeba89682f522cce490fc2"
+  },
+  "verified_execution": {
+    "receipt": "retirement-step6-repair1-green-1791884848770494910.json",
+    "tests": 74,
+    "failures": 0,
+    "actual_exit": 0,
+    "source_stable": true
+  },
+  "findings": [
+    {
+      "priority": "P1",
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/custodian.ex",
+      "line": 238,
+      "title": "Returned initiation errors can consume the abort slot",
+      "detail": "A joined explicit error with no receipt leaves graceful mode. Its graceful replacement consumes the second control call; a held request can then prevent abort escalation at the owner deadline. Missing-result recovery alone does not satisfy the contract.",
+      "required_repair": "Treat returned initiation errors without a receipt as uncertainty and use the single replacement in abort mode. Add a held-request regression proving cancellation, original completion, both helper joins, public transport and creator joins, and no third call."
+    }
+  ],
+  "other_actionable_findings": [],
+  "runtime_or_source_mutations_by_reviewer": false,
+  "repair_counters": {
+    "inherited_up2_unsuccessful": {"live": 20, "production": 8, "harness": 3},
+    "step6_unsuccessful_repairs": 1,
+    "step6_repair1_reason": "independent specification rejection after 74/0 GREEN",
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "third_astra_authorized": false
+  }
+}

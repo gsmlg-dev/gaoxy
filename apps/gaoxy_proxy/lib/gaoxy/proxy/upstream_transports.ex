@@ -105,6 +105,41 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   def finish(_, _), do: {:error, :invalid_resource}
 
+  def retire(owner, deadline) when is_pid(owner) and is_integer(deadline),
+    do: Lifecycle.call(owner, {:retire_owner, deadline}, deadline)
+
+  def retire(_, _), do: {:error, :invalid_retirement_receipt}
+
+  def await_retirement(
+        %{provider: __MODULE__, owner: owner, owner_epoch: epoch, operation: operation} = receipt,
+        deadline
+      )
+      when map_size(receipt) == 4 and is_pid(owner) and is_reference(epoch) and
+             is_reference(operation) and is_integer(deadline) do
+    case Lifecycle.call(owner, {:retirement_status, receipt}, deadline) do
+      {:error, :cleanup_pending} ->
+        if Lifecycle.remaining(deadline) == 0 do
+          pending()
+        else
+          receive do
+          after
+            min(5, Lifecycle.remaining(deadline)) -> await_retirement(receipt, deadline)
+          end
+        end
+
+      {:error, :not_running} ->
+        {:error, :cleanup_unconfirmed}
+
+      {:error, {:operation_exit, _}} ->
+        {:error, :cleanup_unconfirmed}
+
+      result ->
+        result
+    end
+  end
+
+  def await_retirement(_, _), do: {:error, :invalid_retirement_receipt}
+
   def status(owner) when is_pid(owner),
     do: Lifecycle.call(owner, :status, Lifecycle.deadline(1000))
 
@@ -128,7 +163,11 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
            records: %{},
            pins: %{},
            tokens: %{},
-           request_timer: nil
+           request_timer: nil,
+           retirement: nil,
+           retirement_timer: nil,
+           core_reply: nil,
+           instance_down: false
          }}
 
       _ ->
@@ -138,6 +177,20 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   @impl true
   def handle_call(:status, _, state), do: {:reply, {:ok, aggregate(state)}, state}
+
+  def handle_call({:retire_owner, deadline}, _, state) do
+    state = begin_retirement(state, deadline) |> retirement_progress()
+    {:reply, {:ok, state.retirement.receipt}, state}
+  end
+
+  def handle_call({:retirement_status, receipt}, _, state) do
+    if state.retirement != nil and state.retirement.receipt == receipt do
+      state = retirement_progress(state)
+      {:reply, state.retirement.result || {:error, :cleanup_pending}, state}
+    else
+      {:reply, {:error, :invalid_retirement_receipt}, state}
+    end
+  end
 
   def handle_call({:status, handle}, _, state) do
     case record(state, handle) do
@@ -255,8 +308,15 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     with {:ok, hold} <- request_hold(state, handle, token, caller),
          true <- match?(%HTTP.RequestCompletion{}, completion) || {:error, :invalid_completion},
          true <- hold.completion == nil || {:error, :completion_already_bound} do
-      {:reply, :ok,
-       %{state | tokens: Map.put(state.tokens, token, %{hold | completion: completion})}}
+      hold = %{hold | completion: completion}
+      state = %{state | tokens: Map.put(state.tokens, token, hold)}
+
+      state =
+        if state.retirement != nil and state.retirement.mode == :abort,
+          do: abort_request(state, token, hold),
+          else: state
+
+      {:reply, :ok, state}
     else
       error -> {:reply, error, state}
     end
@@ -279,19 +339,59 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
       {:error, :unknown_request_token} ->
         {:reply, :ok, state}
 
+      {:error, :invalid_resource} when state.lifecycle != :running and is_reference(token) ->
+        case handle_batch([handle]) do
+          {:ok, owner, _} when owner == self() and handle.owner_epoch == state.epoch ->
+            result =
+              if Map.has_key?(state.tokens, token), do: {:error, :invalid_resource}, else: :ok
+
+            {:reply, result, state}
+
+          _ ->
+            {:reply, {:error, :invalid_resource}, state}
+        end
+
       error ->
         {:reply, error, state}
     end
   end
 
   @impl true
+  def handle_info(
+        {:gaoxy_lifecycle_drain, registration, operation, coordinator, deadline},
+        %{registration: registration} = state
+      )
+      when is_reference(operation) and is_pid(coordinator) and is_integer(deadline) do
+    context = %{operation: operation, coordinator: coordinator, sent: false}
+
+    if state.core_reply == nil or
+         (state.core_reply.operation == operation and state.core_reply.coordinator == coordinator) or
+         not Process.alive?(state.core_reply.coordinator) do
+      state = %{state | core_reply: context}
+      {:noreply, begin_retirement(state, deadline) |> retirement_progress()}
+    else
+      {:noreply, state}
+    end
+  end
+
+  def handle_info(:check_owner_retirement, state) do
+    state = retirement_progress(%{state | retirement_timer: nil})
+
+    if state.instance_down and map_size(state.records) == 0 and map_size(state.tokens) == 0,
+      do: {:stop, :normal, state},
+      else: {:noreply, state}
+  end
+
   def handle_info({:custodian_ready, resource, custodian, capability}, state) do
     case state.records do
       %{
         ^resource =>
           %{custodian: ^custodian, capability: ^capability, lifecycle: :opening} = entry
       } ->
-        send(custodian, {:open, entry.capability})
+        if state.lifecycle == :running,
+          do: send(custodian, {:open, entry.capability}),
+          else: send(custodian, {:retire, entry.capability, :abort, state.retirement.deadline})
+
         {:noreply, state}
 
       _ ->
@@ -352,7 +452,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     case state.records do
       %{^resource => %{custodian: ^pid, capability: ^capability} = entry} ->
         entry = %{entry | transport_confirmed: true, opening: false}
-        {:noreply, settle_entry(put_entry(state, entry), entry)}
+        {:noreply, settle_entry(put_entry(state, entry), entry) |> retirement_progress()}
 
       _ ->
         {:noreply, state}
@@ -382,7 +482,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         case helpers do
           %{^helper => hold} ->
             entry = update_helper(entry, helper, %{hold | finished: true})
-            {:noreply, settle_entry(put_entry(state, entry), entry)}
+            {:noreply, settle_entry(put_entry(state, entry), entry) |> retirement_progress()}
 
           _ ->
             {:noreply, state}
@@ -405,7 +505,9 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   def handle_info({:request_abort_result, token, helper, result}, state) do
     case state.tokens do
       %{^token => %{abort_helper: {^helper, _}} = hold} ->
-        {:noreply, join_request_helper(state, token, %{hold | abort_result: result})}
+        {:noreply,
+         join_request_helper(state, token, %{hold | abort_result: result})
+         |> retirement_progress()}
 
       _ ->
         {:noreply, state}
@@ -428,8 +530,19 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   end
 
   def handle_info({:DOWN, monitor, :process, _, _}, %{instance_monitor: monitor} = state) do
-    for {_, entry} <- state.records, do: send(entry.custodian, {:retire, entry.capability})
-    {:noreply, %{state | lifecycle: :retiring}}
+    deadline = if state.retirement, do: state.retirement.deadline, else: Lifecycle.deadline(5000)
+    state = begin_retirement(%{state | instance_down: true}, deadline)
+
+    for {_, entry} <- state.records,
+        do: send(entry.custodian, {:retire, entry.capability, :abort, deadline})
+
+    state =
+      Enum.reduce(state.tokens, state, fn {token, hold}, acc ->
+        abort_request(acc, token, hold)
+      end)
+
+    state = retirement_progress(state)
+    {:noreply, state}
   end
 
   def handle_info({:DOWN, monitor, :process, _, _}, state) do
@@ -474,7 +587,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         end
       end)
 
-    {:noreply, state}
+    {:noreply, retirement_progress(state)}
   end
 
   def handle_info(_, state), do: {:noreply, state}
@@ -875,6 +988,16 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     do: %{state | tokens: Map.put(state.tokens, token, %{hold | guardian_down: true})}
 
   defp guardian_down(state, token, hold) do
+    abort_request(state, token, %{hold | guardian_down: true})
+  end
+
+  defp abort_request(state, token, %{abort_helper: helper} = hold) when not is_nil(helper),
+    do: %{state | tokens: Map.put(state.tokens, token, hold)}
+
+  defp abort_request(state, _token, %{completion: nil} = hold),
+    do: retire_resource(state, hold.resource)
+
+  defp abort_request(state, token, hold) do
     owner = self()
     completion = hold.completion
     deadline = Lifecycle.deadline(5000)
@@ -891,8 +1014,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
     hold = %{
       hold
-      | guardian_down: true,
-        abort_helper: {helper, monitor},
+      | abort_helper: {helper, monitor},
         cleanup_deadline: deadline
     }
 
@@ -1030,6 +1152,133 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   end
 
   defp settle_entry(state, _), do: state
+
+  defp begin_retirement(%{retirement: nil} = state, deadline) do
+    receipt = %{
+      provider: __MODULE__,
+      owner: self(),
+      owner_epoch: state.epoch,
+      operation: make_ref()
+    }
+
+    for {_, hold} <- state.pins, do: Process.demonitor(hold.holder_monitor, [:flush])
+
+    state = %{
+      state
+      | pins: %{},
+        lifecycle: :retiring,
+        retirement: %{
+          receipt: receipt,
+          deadline: deadline,
+          result: nil,
+          mode: :graceful,
+          cleanup_deadline: deadline + 5000
+        }
+    }
+
+    Enum.reduce(state.records, state, fn {_, entry}, acc ->
+      entry = %{entry | admission: :closed}
+      acc = if entry.from, do: abandon(acc, entry), else: put_entry(acc, entry)
+      send(entry.custodian, {:retire, entry.capability, :graceful, deadline})
+      acc
+    end)
+  end
+
+  defp begin_retirement(state, deadline) do
+    retirement = state.retirement
+    deadline = min(deadline, retirement.deadline)
+
+    if deadline < retirement.deadline do
+      for {_, entry} <- state.records,
+          do: send(entry.custodian, {:retire, entry.capability, retirement.mode, deadline})
+    end
+
+    %{
+      state
+      | retirement: %{
+          retirement
+          | deadline: deadline,
+            cleanup_deadline: min(retirement.cleanup_deadline, deadline + 5000)
+        }
+    }
+  end
+
+  defp retirement_progress(%{retirement: nil} = state), do: state
+
+  defp retirement_progress(state) do
+    state =
+      Enum.reduce(state.tokens, state, fn {token, hold}, acc ->
+        if hold.completion != nil and hold.abort_helper == nil and
+             await_request(hold.completion) == :ok,
+           do: remove_token(acc, token),
+           else: acc
+      end)
+
+    operation = state.retirement
+
+    result =
+      cond do
+        operation.result != nil ->
+          operation.result
+
+        Lifecycle.remaining(operation.deadline) == 0 ->
+          pending()
+
+        Enum.any?(state.tokens, fn {_, hold} -> hold.completion == nil end) ->
+          {:error, :cleanup_unconfirmed}
+
+        Enum.any?(state.records, fn {_, entry} -> entry.lifecycle == :failed end) ->
+          {:error, :cleanup_unconfirmed}
+
+        map_size(state.records) == 0 and map_size(state.tokens) == 0 ->
+          :ok
+
+        true ->
+          nil
+      end
+
+    state = %{state | retirement: %{operation | result: result}}
+
+    state =
+      if Lifecycle.remaining(operation.deadline) == 0 and operation.mode != :abort do
+        for {_, entry} <- state.records,
+            do: send(entry.custodian, {:retire, entry.capability, :abort, operation.deadline})
+
+        state = %{state | retirement: %{state.retirement | mode: :abort}}
+
+        Enum.reduce(state.tokens, state, fn {token, hold}, acc ->
+          abort_request(acc, token, hold)
+        end)
+      else
+        state
+      end
+
+    state =
+      if result != nil and state.core_reply != nil and not state.core_reply.sent do
+        context = state.core_reply
+
+        send(
+          context.coordinator,
+          {:gaoxy_lifecycle_result, state.registration, context.operation, self(), result}
+        )
+
+        %{state | core_reply: %{context | sent: true}}
+      else
+        state
+      end
+
+    complete = map_size(state.records) == 0 and map_size(state.tokens) == 0
+    state = if complete, do: %{state | lifecycle: :retired}, else: state
+
+    if state.retirement_timer == nil and
+         ((state.instance_down and complete) or
+            (not complete and
+               Lifecycle.remaining(state.retirement.cleanup_deadline) > 0)) do
+      %{state | retirement_timer: Process.send_after(self(), :check_owner_retirement, 10)}
+    else
+      state
+    end
+  end
 
   defp cancel_timer(nil), do: :ok
   defp cancel_timer(timer), do: Process.cancel_timer(timer)

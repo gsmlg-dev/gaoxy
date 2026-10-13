@@ -47,7 +47,9 @@ implementation in progress under renewed continuing authorization; core particip
 pure-options and Step4 ledger/custodian gates PASS. The ledger's rejected initial
 review and repair1 RED/44-test GREEN/fresh review evidence remain recorded;
 Step5 metadata pins/request holds repair1 passes 58/0 and independent SPEC/CODE
-review; owner/core retirement and independent runtime acceptance remain NOT RUN.
+review; owner/core retirement repair2 passes 75/0 and independent SPEC/CODE plus
+fresh verification after repair1 review rejection. Independent TCP/TLS runtime
+acceptance remains NOT RUN.
 Task5 production pool activation remains separate; the roadmap still ends at M4.
 
 ## 1. Product and success criteria

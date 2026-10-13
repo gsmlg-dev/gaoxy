@@ -1,7 +1,7 @@
 # M3 H1 transport resource foundation
 
 Date: 2026-10-13 Asia/Shanghai. Status: **IMPLEMENTATION IN PROGRESS;
-Steps 1–4 accepted; complete resource/runtime acceptance NOT RUN**. This is the next bounded package of existing
+Steps 1–6 accepted after repairs; independent TCP/TLS acceptance NOT RUN**. This is the next bounded package of existing
 [M3 upstream-transport Task 4](../plans/m3-upstream-transport.md#task-4-pure-policy-and-bounded-transport-resource-conditional),
 after the M4 release closure. It is not a new milestone.
 
@@ -320,6 +320,33 @@ wait on its opaque receipt with `Lifecycle.remaining(D)`. Snapshot errors or
 helper DOWN do not confirm release. Late public confirmation may refund held
 capacity; it cannot rewrite a timed-out stop receipt as success.
 
+Step 6 uses one owner receipt with exact fields `provider`, `owner`,
+`owner_epoch` and `operation`. Repeated retire calls return this same receipt
+and tighten D; a wait's shorter caller deadline only bounds that wait and does
+not cache a premature owner failure. Only the terminal owner outcome, including
+expiry of its tightest operation D, is cached permanently. Receipt polling
+retains no waiter list or caller history.
+
+Owner-wide retirement invalidates all metadata pins atomically because all
+resource admission is closed. Existing request tokens remain independently
+authenticated and retain binding, finish and abort rights. This differs from
+member-only retirement, which must preserve other grouped members' live holds.
+Use the existing finite 5,000 ms emergency/control budget without new options.
+At most two control helpers may exist per resource. A lost initiation result
+can be recovered by one bounded repeated public retire call: join the original
+helper's DOWN and replacement public retirement confirmation before settling
+that provisional helper hold. Do not invent the missing original result or
+treat its DOWN alone as physical retirement proof. Post-deadline cleanup is
+separate from the original stop result and cannot extend its success budget.
+If the initial graceful helper dies without its result or returns an error
+without a receipt, use the single replacement call in abort mode: initiation uncertainty permits early
+resource-local cancellation. Spending that replacement on another graceful
+call could consume both helpers before D and prevent required abort escalation
+of a held request. Confirmed graceful initiation retains normal admitted-request
+draining. Exercise both lost initiation and returned initiation errors together
+with a held real request. The rejected repair 1 review records the previously
+uncovered returned-error path; its 74/0 GREEN is not specification acceptance.
+
 After successful retirement, keep the owner inert until instance DOWN so it
 can return its cached authenticated result. Unexpected instance DOWN closes
 admission and retires under known D or the configured finite emergency budget;
@@ -351,6 +378,29 @@ no replay, request-credit retention and short-D stop uncertainty. TLS qualifies
 CA/hostname/authority with the literal dial address. Preserve exact body hashes,
 trailers, finite deadlines, nonzero executed counts and all owned joins.
 
+The Step 7 execution profile has eight cases: each row below runs separately
+over TCP and TLS with CA/hostname verification and a literal dial address.
+
+| Case | Required observations |
+| --- | --- |
+| Sequential reuse | Two unique requests, one accepted connection, exact bytes/hash/ordered trailers; completion settles request credit while the idle transport reservation remains held. |
+| Retirement and isolation | Retire A despite metadata baseline pins, observe genuine remote EOF and public retirement/owned joins; a fresh exact request on same-origin instance B succeeds. |
+| Unread response abort | Peer response barrier before reader attachment, original completion pending and token held, public request abort and confirmation, exactly one request and final retirement. |
+| Held upload and short D | Public caller-owned upload source held at a deterministic barrier, pending original completion and credits, failed short-D owner retirement, late cleanup, unchanged cached owner failure and core propagation. |
+
+Use `HTTP.Stream` public APIs for the caller-owned upload source. The harness
+may suspend this explicitly created source as a scheduling barrier; the same
+controller actor must resume it in unconditional cleanup. No custom undocumented
+source lifecycle messages or private dependency worker/state inspection is
+permitted. Record source DOWN, original completion and public transport retirement
+independently. Verify repeated owner failure before instance DOWN, because the
+receipt is owner-hosted; later loss of that owner cannot fabricate success.
+Keep a bounded complete peer event transcript for identities and no-replay proof.
+Only genuine remote EOF observed before peer stop certifies client closure;
+fixture-owned shutdown does not. Each case attempts every cleanup after a
+primary failure and records zero peer threads/connections, temporary certificate
+removal and peer process exit. This profile is planned, not executed evidence.
+
 Record source/cohort identities, commands, counts, exits and receipts with PASS,
 FAIL, BLOCKED and NOT RUN distinct. Require independent specification and code
 review plus fresh scoped verification before each local commit. This package
@@ -363,4 +413,9 @@ SPEC/CODE review PASS. Peer source repair passed independent SPEC/CODE review;
 Step 5 repair 1 passes 58/0 GREEN and independent SPEC/CODE review. Partial
 retirement conservatively retains grouped metadata capabilities until explicit
 release or holder DOWN; it cannot discard an unaffected member's holds.
-Owner/core retirement and real-peer acceptance remain **NOT RUN**.
+Owner/core retirement repair 1's 74/0 GREEN was rejected by independent SPEC
+review for returned-error recovery. Repair 2 covers that branch with a held real
+request: expected RED 75/1, GREEN and fresh 75/0, independent SPEC then CODE,
+canonical format and strict compile PASS. [Step 6 acceptance](../acceptance/evidence/m3/h1-resource-foundation/1791870010586271722/retirement-step6-acceptance.json)
+preserves the rejected review and unsuccessful repair. Real-peer acceptance
+remains **NOT RUN**.

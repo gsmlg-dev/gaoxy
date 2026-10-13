@@ -1,0 +1,36 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 278567, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test core coordinator retry uses fresh operation at same D and preserves its initial failure (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:1278[0m
+     [31mRefute with == failed, both sides are exactly equal[0m
+     [36mcode: [0mrefute first_operation == second_operation
+     [36mleft: [0m#Reference<0.2588450279.3295674369.254528>
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:1288: (test)
+
+[31m
+17:43:07.800 [error] GenServer #PID<0.448.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.447.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.448.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test a lost graceful initiation return uses its one replacement to abort a held real request (Gaoxy.Proxy.UpstreamTransportsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_test.exs:1084[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert :ok = HTTP.RequestCompletion.await(completion, 500)
+     [36mleft:  [0m[31m:ok[0m
+     [36mright: [0m[32m{:error, :cleanup_pending}[0m
+     [36mstacktrace:[0m
+       test/upstream_transports_test.exs:1112: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 16.5 seconds (16.5s async, 0.00s sync)
+[31m74 tests, 2 failures[0m
