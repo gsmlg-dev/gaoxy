@@ -1,0 +1,86 @@
+{
+  "task": "Task5_ST1_ST2_PREPARATION",
+  "assignment": "direct independent read-only CODE review, performed after passing SPEC review",
+  "status": "PASS_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_sha256": {
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "29b52743537664c141e705b9dd58da28d817c1faa914a935916b0be23f7678c8",
+    "integration/http3/standalone/run.py": "afa7bbace075b0f795eb9bacb9b440b792ee4958c0e19586c2d2edc15d0699fd",
+    "integration/http3/standalone/peer.py": "b3cb16fba72a86904e7215eac132c821ab8b4dc23998f21e592fb7012ef0ffd1",
+    "integration/http3/standalone/README.md": "a05d2fc6598f114821f7590f0ec4043c8c816d1551f42a4e21d57f30b80cad79",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b"
+  },
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "preceding_SPEC": {
+    "path": "docs/acceptance/evidence/m4/standalone/review-task5-spec-preparation-current-1791840533194189851.json",
+    "sha256": "529dfcaa6e85109ebaa754c86ea616f11608ab5c81edf8d4cde8fb351f75faa4",
+    "status": "PASS_PREPARATION"
+  },
+  "code_audit": [
+    {
+      "area": "RouteConfig",
+      "result": "PASS",
+      "notes": "Minimal exact-string enum addition, fixed atoms, strict existing key allowlist, omission H1, unchanged prepare-before-activate reload. Delegates normalized HTTPS/regular-CA/client selection to already-reviewed HTTP.init. No dynamic module/atom or address/TLS injection introduced."
+    },
+    {
+      "area": "generation_regressions",
+      "result": "PASS",
+      "notes": "New tests use exact enum/TLS errors, complete pinned Router plus id/listener rollback, fixed Session client/chunk limit and compiled-init idempotence. Existing static/route-store restart/death cleanup assertions retained. Synthetic transport tests are explicitly limited semantic evidence."
+    },
+    {
+      "area": "peer_streaming_observation",
+      "result": "PASS_PREPARATION",
+      "notes": "Independent requests observe17 upstream bytes with fin_count0 before sending remaining body/trailers, then exact body hash/trailer order/one FIN. Zero body sends headers+trailers with no DATA. Response trailer lists checked exactly. Path uniqueness is enforced in polling and final3-request snapshot."
+    },
+    {
+      "area": "reload_interleaving",
+      "result": "PASS_PREPARATION",
+      "notes": "Both old streams have exact initial bodies and no downstream end before reload; new generation requests execute before either control releases old FIN. Old H1/H3 body/trailer assertions follow independent controls. Barrier receipts require unchanged listener and appropriate generation change."
+    },
+    {
+      "area": "control_interface",
+      "result": "PASS_PREPARATION",
+      "notes": "credentials(directory,output,remaining_callable), /echo* and /ordinary routes, snapshot and finish_ordinary interfaces preserved; legacy snapshot fields and fin_count used. Upstream source is contextual and must be separately frozen before live run. Event waits use Child absolute remaining deadline."
+    },
+    {
+      "area": "shutdown_and_receipts",
+      "result": "PASS_PREPARATION",
+      "notes": "Exact Child.wait zero exits precede external TCP/UDP binds; TCP listen detects remaining ownership without SO_REUSEPORT. Socket contexts close acquired probes. Added H1 origin rebind named check includes port; standalone stop receipt includes both service ports. Rollback .cases checks exact names/nonzero cases/zero exit. Finally owns only created children, records returncodes/forced cleanup/source before+after and fails on forced cleanup or source drift."
+    },
+    {
+      "area": "finite_limits_and_scope",
+      "result": "PASS_PREPARATION",
+      "notes": "Existing180s whole-run,70s peer,5s per receipt/lifecycle and finite exit/control waits retained. Runner adds only local independent origin/cert fixture and scoped assertions; README states source preparation cannot satisfy runtime. No dependency/package/public API/redesign or deployment change."
+    }
+  ],
+  "actionable_findings": [],
+  "retained_prior_finding": {
+    "id": "ST2-P1",
+    "status": "RESOLVED_PREPARATION",
+    "receipt": "docs/acceptance/evidence/m4/standalone/review-task5-spec-preparation-finding-1791840447665572335.json",
+    "sha256": "fd10299e87cefb5d86a7de08952c3fc2abc17da41150d51e54a7f87c7a9fe0d5"
+  },
+  "verification": {
+    "supplied_ST1": "PASS: logs/hashes current relevant sources verified;19tests/0failures, format/check and strict compile exits0; original10/5REDexit2 retained",
+    "reviewer_Python_AST": "PASS_SYNTAX_ONLY:2 files parsed fresh after runner repair",
+    "source_unchanged": "PASS: all6 hashes unchanged between fresh SPEC and CODE",
+    "reviewer_Mix_Elixir_Nix_runtime": "NOT RUN",
+    "ST2_live": "NOT RUN",
+    "UP2_M4_runtime_acceptance": "NOT INFERRED"
+  },
+  "repairs": {
+    "reviewer_sol": 0,
+    "Astra_added": 0,
+    "received_counters_unchanged": true
+  },
+  "commands_shutdown": "All commands complete; no owned live processes",
+  "changed_files": "Only unique immutable SPEC/CODE review receipts; parent owns runner repair",
+  "remaining_risks": [
+    "Live ST2 and UP2/harness completion remain unexecuted acceptance dependencies.",
+    "Standalone source preparations and AST cannot establish successful runtime, TLS or port-release evidence."
+  ],
+  "decisions_needed": []
+}

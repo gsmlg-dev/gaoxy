@@ -1,0 +1,913 @@
+{
+  "task_id": "/root/m4_session_affinity_design",
+  "assignment_mode": "implementation",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "status": "DONE",
+  "deliverable": "Frozen bounded recovery round 1 candidate and compile/static preparation; independent pre-live review required",
+  "recovery_runtime_status": "NOT RUN for this candidate; prior actual gate FAIL/incomplete; UP1 HOLD_UP0",
+  "gate_evidence": {
+    "sol1": "run-1791827038372979204: actual :not_consumer first-network failure after compile repair",
+    "sol2": "run-1791830942072768771: actual exit 1; 31 boundary-double + 2 network PASS; paused poll expected [] but returned [:writable]",
+    "diagnosis": "session-round2-runtime-diagnosis-1791831135072226367.json",
+    "diagnosis_sha256": "d8f72b32ee2848db6db4a205ffa35c1de0356bdda7fcfa751c9f6cd38b51e4bc"
+  },
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "handoff_validation": "Parent explicitly transferred sole four-file ownership and froze predecessor. Diagnosis source/evidence hashes matched before edits. Current captured source and historical run hashes reverified. Root granted only compile/format/static lease; no live/double execution permitted before independent review.",
+  "source_before_sha256": {
+    "integration/http3/upstream/session_probe.exs": "6737c00b9b78254cea75d9b7bfe3727167cee8f84a71af60babe157dea09c2cf",
+    "integration/http3/upstream/run.py": "e0ed6429dfd43f529377c9cb44eb823cc699062c1d7b550a41b14000e2aff530",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "ab50177404e6eb30b4df4e8d1efea574385ec42837250ed294d76f82c966e8d9",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "AGENTS.md": "902a735746a9d05c45b5a3f54c35ad612b1de66af132a39ba26b1215cf90f0c7",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic_http3/lib/quic_http3/control.ex": "d0733f9afad0f898d19878261bfbb95d28ccf2ab20bbea40309cf7dd623006c0",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "aa81666e8a451ddd70b32da2355a77ffd6306daa40b10b33b6c1422ee8eb216d",
+    "integration/http3/upstream/run.py": "56fd407995508b6a2555ac9d332e5bb7b355d55ff1d77f3f31eaaaa22508644a",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "a72863fbae8b4a2bde89f467e82cd79c8b4bcc08758943a817ec473e04bf8619",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "AGENTS.md": "902a735746a9d05c45b5a3f54c35ad612b1de66af132a39ba26b1215cf90f0c7",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic_http3/lib/quic_http3/transport.ex": "dd5a9c0f03feb11c7f87391ee0fad1abd345aa17149dfdc44ed1817baf57e4e2",
+    "deps/elixir_quic_http3/lib/quic_http3/control.ex": "d0733f9afad0f898d19878261bfbb95d28ccf2ab20bbea40309cf7dd623006c0",
+    "deps/elixir_quic_http3/lib/quic_http3/qpack.ex": "6fae0bd0123437e71d5499b54ddde35c5b3fa191f99a9e4de38b3c22db1ea66b",
+    "deps/elixir_quic_http3/lib/quic_http3/frame.ex": "350f7c3fcf37183c774adf19ec1f6ddb39dbb03aa4b9c5b998d3d34703cd62c7",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806"
+  },
+  "source_after_preparation_unchanged": true,
+  "pre_existing_dirty_status": " M docs/acceptance/m4.md\n M integration/http3/upstream/README.md\n M integration/http3/upstream/origin.py\n M integration/http3/upstream/probe.exs\n M integration/http3/upstream/run.py\n?? apps/gaoxy_proxy/test/http3_proxy_test.exs\n?? apps/gaoxy_proxy/test/http3_session_client_test.exs\n?? docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/\n?? docs/acceptance/evidence/m4/host/post-review-0.21.4-1791829919033798934/\n?? docs/acceptance/evidence/m4/host/post-review-parser-repair-0.21.4-1791830072903024565/\n?? docs/acceptance/evidence/m4/upstream-contract/review-session-round2-prelive-1791829741461918104.json\n?? docs/acceptance/evidence/m4/upstream-contract/review-session-round2-repaired-prelive-1791830906636314868.json\n?? docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-compile-smoke-1791828918761121823.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-compile-smoke-1791828918761121823.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578-0.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578-1.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-prelive-freeze-1791830554485255277.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-0.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-1.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-runtime-diagnosis-1791831135072226367.json\n?? docs/plans/release-0.3.0.md\n?? integration/http3/upstream/session_probe.exs\n",
+  "final_dirty_status_before_receipt": " M docs/acceptance/m4.md\n M integration/http3/upstream/README.md\n M integration/http3/upstream/origin.py\n M integration/http3/upstream/probe.exs\n M integration/http3/upstream/run.py\n?? apps/gaoxy_proxy/test/http3_proxy_test.exs\n?? apps/gaoxy_proxy/test/http3_session_client_test.exs\n?? docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/\n?? docs/acceptance/evidence/m4/host/post-review-0.21.4-1791829919033798934/\n?? docs/acceptance/evidence/m4/host/post-review-parser-repair-0.21.4-1791830072903024565/\n?? docs/acceptance/evidence/m4/upstream-contract/review-session-round2-prelive-1791829741461918104.json\n?? docs/acceptance/evidence/m4/upstream-contract/review-session-round2-repaired-prelive-1791830906636314868.json\n?? docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-compile-smoke-1791828918761121823.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-compile-smoke-1791828918761121823.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578-0.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578-1.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-prelive-freeze-1791830554485255277.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-0.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-1.log\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454.json\n?? docs/acceptance/evidence/m4/upstream-contract/session-round2-runtime-diagnosis-1791831135072226367.json\n?? docs/plans/release-0.3.0.md\n?? integration/http3/upstream/session_probe.exs\n",
+  "root_cause": {
+    "classification": "Harness public test-contract mismatch, not evidenced dependency bug",
+    "invariant": "Paused request ref suppresses request-stream reads, not all public connection/control events.",
+    "evidence": [
+      "Session.poll begins events + drain (session.ex:247-250).",
+      "read_allowed? skips paused request refs while permitting peer/control reads (session.ex:407-412).",
+      "consume_event passes :ready/:writable/:datagram_readable and ready metadata (session.ex:723-727); control stream returns public settings/goaway (session.ex:1033-1035, control.ex:43).",
+      "Transport.normalize_events preserves control values (transport/quic.ex:411-440).",
+      "Actual failed probe.log first paused poll returned [:writable], following earlier authenticated ready/settings events."
+    ],
+    "quic_connected_check": "Exact installed sources and frozen run-1791830942072768771 log have no quic_connected event; no guessed event added. Runtime ready tuple is covered explicitly."
+  },
+  "repair": {
+    "changed_files": [
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md"
+    ],
+    "origin_py": "Unchanged byte-for-byte from predecessor",
+    "public_allowlist": [
+      ":ready",
+      ":writable",
+      "{:ready, %{alpn: \"h3\", peer_authenticated: true}}",
+      "{:settings, [{nonnegative_integer, nonnegative_integer}, ...]}"
+    ],
+    "scope": "Three real paused-poll assertions now validate complete event lists; no filtering. Existing exact empty scripted poll remains exact.",
+    "rejects": "headers/informational/DATA/trailers/done/errors/reset/stopped/closed/GOAWAY/datagram/invalid ready/invalid settings/unknown, including response from another ref and mixed lists",
+    "deterministic_additions": "16 forbidden shapes x 3 placements = 48 assert_raise cases, plus positive allowed controls. Public Qpack/Frame scripted Transport case emits held DATA, makes next DATA/FIN runnable, verifies two paused polls make exactly events calls and no read/send/replay, then explicit pause release emits remaining DATA/done exactly once. Added within existing blocked_suspend_poll_resume named row, not a new counted row.",
+    "acceptance_limit": "Direct Session pause test; does not claim production downstream ACK/delivery acceptance. No production adapter or scheduler change.",
+    "metadata": "New run counters record Sol 2, preceding unsuccessful Sol 2, Astra recovery 1 in progress. All older receipts retained."
+  },
+  "task_diff_lines": {
+    "integration/http3/upstream/session_probe.exs": [
+      {
+        "action": "add",
+        "line": 42,
+        "text": "  def events(_, _, _), do: call(:events, {:ok, []})"
+      },
+      {
+        "action": "add",
+        "line": 43,
+        "text": "  def read(stream, _, _), do: call(:read, {:ok, []}, [stream])"
+      },
+      {
+        "action": "remove",
+        "line": 42,
+        "text": "  def events(_, _, _), do: {:ok, []}"
+      },
+      {
+        "action": "remove",
+        "line": 43,
+        "text": "  def read(_, _, _), do: {:ok, []}"
+      },
+      {
+        "action": "add",
+        "line": 1814,
+        "text": "  def assert_paused_controls(events) do"
+      },
+      {
+        "action": "add",
+        "line": 1815,
+        "text": "    # Paused refs prohibit response reads, not public connection/control events."
+      },
+      {
+        "action": "add",
+        "line": 1816,
+        "text": "    # Validate the entire batch; filtering would hide response or error events."
+      },
+      {
+        "action": "add",
+        "line": 1817,
+        "text": "    Enum.each(events, fn"
+      },
+      {
+        "action": "add",
+        "line": 1818,
+        "text": "      event when event in [:ready, :writable] ->"
+      },
+      {
+        "action": "add",
+        "line": 1819,
+        "text": "        :ok"
+      },
+      {
+        "action": "add",
+        "line": 1820,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 1821,
+        "text": "      {:ready, %{alpn: \"h3\", peer_authenticated: true}} ->"
+      },
+      {
+        "action": "add",
+        "line": 1822,
+        "text": "        :ok"
+      },
+      {
+        "action": "add",
+        "line": 1823,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 1824,
+        "text": "      {:settings, settings} when is_list(settings) ->"
+      },
+      {
+        "action": "add",
+        "line": 1825,
+        "text": "        assert Enum.all?(settings, fn"
+      },
+      {
+        "action": "add",
+        "line": 1826,
+        "text": "                 {id, value}"
+      },
+      {
+        "action": "add",
+        "line": 1827,
+        "text": "                 when is_integer(id) and id >= 0 and is_integer(value) and value >= 0 ->"
+      },
+      {
+        "action": "add",
+        "line": 1828,
+        "text": "                   true"
+      },
+      {
+        "action": "add",
+        "line": 1829,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 1830,
+        "text": "                 _ ->"
+      },
+      {
+        "action": "add",
+        "line": 1831,
+        "text": "                   false"
+      },
+      {
+        "action": "add",
+        "line": 1832,
+        "text": "               end)"
+      },
+      {
+        "action": "add",
+        "line": 1833,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 1834,
+        "text": "      event ->"
+      },
+      {
+        "action": "add",
+        "line": 1835,
+        "text": "        flunk(\"unexpected event while request is paused: #{inspect(event, limit: 8)}\")"
+      },
+      {
+        "action": "add",
+        "line": 1836,
+        "text": "    end)"
+      },
+      {
+        "action": "add",
+        "line": 1837,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 1838,
+        "text": "    :ok"
+      },
+      {
+        "action": "add",
+        "line": 1839,
+        "text": "  end"
+      },
+      {
+        "action": "add",
+        "line": 1840,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2054,
+        "text": "              assert :ok = assert_paused_controls(poll(h, true))"
+      },
+      {
+        "action": "remove",
+        "line": 2027,
+        "text": "              assert [] = poll(h, true)"
+      },
+      {
+        "action": "add",
+        "line": 2062,
+        "text": "            assert :ok = assert_paused_controls(poll(h, true))"
+      },
+      {
+        "action": "remove",
+        "line": 2035,
+        "text": "            assert [] == poll(h, true)"
+      },
+      {
+        "action": "add",
+        "line": 2314,
+        "text": "      assert :ok = assert_paused_controls(poll(h, true))"
+      },
+      {
+        "action": "remove",
+        "line": 2287,
+        "text": "      assert [] == poll(h, true)"
+      },
+      {
+        "action": "add",
+        "line": 2423,
+        "text": "    paused_poll_contract_double(requested, request_ref)"
+      },
+      {
+        "action": "add",
+        "line": 2427,
+        "text": "  def paused_poll_contract_double(requested, request_ref) do"
+      },
+      {
+        "action": "add",
+        "line": 2428,
+        "text": "    alias Gaoxy.SessionBoundaryDouble, as: D"
+      },
+      {
+        "action": "add",
+        "line": 2429,
+        "text": "    alias QuicHttp3.{Frame, Qpack}"
+      },
+      {
+        "action": "add",
+        "line": 2430,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2431,
+        "text": "    controls = ["
+      },
+      {
+        "action": "add",
+        "line": 2432,
+        "text": "      :ready,"
+      },
+      {
+        "action": "add",
+        "line": 2433,
+        "text": "      :writable,"
+      },
+      {
+        "action": "add",
+        "line": 2434,
+        "text": "      {:ready, %{alpn: \"h3\", peer_authenticated: true}},"
+      },
+      {
+        "action": "add",
+        "line": 2435,
+        "text": "      {:settings, [{1, 0}]}"
+      },
+      {
+        "action": "add",
+        "line": 2436,
+        "text": "    ]"
+      },
+      {
+        "action": "add",
+        "line": 2437,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2438,
+        "text": "    assert :ok = assert_paused_controls(controls)"
+      },
+      {
+        "action": "add",
+        "line": 2439,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2440,
+        "text": "    forbidden = ["
+      },
+      {
+        "action": "add",
+        "line": 2441,
+        "text": "      {:headers, request_ref, [{\":status\", \"200\"}]},"
+      },
+      {
+        "action": "add",
+        "line": 2442,
+        "text": "      {:informational, request_ref, 103, []},"
+      },
+      {
+        "action": "add",
+        "line": 2443,
+        "text": "      {:data, request_ref, \"new delivery\"},"
+      },
+      {
+        "action": "add",
+        "line": 2444,
+        "text": "      {:data, make_ref(), \"other request\"},"
+      },
+      {
+        "action": "add",
+        "line": 2445,
+        "text": "      {:trailers, request_ref, @trailers},"
+      },
+      {
+        "action": "add",
+        "line": 2446,
+        "text": "      {:done, request_ref},"
+      },
+      {
+        "action": "add",
+        "line": 2447,
+        "text": "      {:stream_error, request_ref, 0x100, :failure},"
+      },
+      {
+        "action": "add",
+        "line": 2448,
+        "text": "      {:stream_reset, request_ref, 0x100, 0},"
+      },
+      {
+        "action": "add",
+        "line": 2449,
+        "text": "      {:stopped, request_ref, 0x100},"
+      },
+      {
+        "action": "add",
+        "line": 2450,
+        "text": "      {:error, :failure},"
+      },
+      {
+        "action": "add",
+        "line": 2451,
+        "text": "      {:closed, :normal},"
+      },
+      {
+        "action": "add",
+        "line": 2452,
+        "text": "      {:goaway, 0},"
+      },
+      {
+        "action": "add",
+        "line": 2453,
+        "text": "      :datagram_readable,"
+      },
+      {
+        "action": "add",
+        "line": 2454,
+        "text": "      {:ready, %{peer_authenticated: false}},"
+      },
+      {
+        "action": "add",
+        "line": 2455,
+        "text": "      {:settings, [:invalid]},"
+      },
+      {
+        "action": "add",
+        "line": 2456,
+        "text": "      :unknown"
+      },
+      {
+        "action": "add",
+        "line": 2457,
+        "text": "    ]"
+      },
+      {
+        "action": "add",
+        "line": 2458,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2459,
+        "text": "    for event <- forbidden, batch <- [[event], [:writable, event], [event, :writable]] do"
+      },
+      {
+        "action": "add",
+        "line": 2460,
+        "text": "      assert_raise ExUnit.AssertionError, fn -> assert_paused_controls(batch) end"
+      },
+      {
+        "action": "add",
+        "line": 2461,
+        "text": "    end"
+      },
+      {
+        "action": "add",
+        "line": 2462,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2463,
+        "text": "    # Public codecs script the Transport boundary, not an independent peer."
+      },
+      {
+        "action": "add",
+        "line": 2464,
+        "text": "    assert {:ok, encoded} = Qpack.encode_header_block([{\":status\", \"200\"}])"
+      },
+      {
+        "action": "add",
+        "line": 2465,
+        "text": "    assert {:ok, headers} = Frame.encode(:headers, encoded)"
+      },
+      {
+        "action": "add",
+        "line": 2466,
+        "text": "    assert {:ok, first_data} = Frame.encode(:data, \"held-delivery\")"
+      },
+      {
+        "action": "add",
+        "line": 2467,
+        "text": "    assert {:ok, next_data} = Frame.encode(:data, \"after-ack\")"
+      },
+      {
+        "action": "add",
+        "line": 2468,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2469,
+        "text": "    D.put(%{"
+      },
+      {
+        "action": "add",
+        "line": 2470,
+        "text": "      events: [{:ok, [{:readable, :bidi}]}],"
+      },
+      {
+        "action": "add",
+        "line": 2471,
+        "text": "      read: [{:ok, [{:data, headers <> first_data}]}]"
+      },
+      {
+        "action": "add",
+        "line": 2472,
+        "text": "    })"
+      },
+      {
+        "action": "add",
+        "line": 2473,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2474,
+        "text": "    assert {:ok, held, [{:headers, ^request_ref, _}, {:data, ^request_ref, \"held-delivery\"}]} ="
+      },
+      {
+        "action": "add",
+        "line": 2475,
+        "text": "             Session.poll(requested, 16, max_read_batches: 1)"
+      },
+      {
+        "action": "add",
+        "line": 2476,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2477,
+        "text": "    D.put(%{"
+      },
+      {
+        "action": "add",
+        "line": 2478,
+        "text": "      events: [{:ok, [:writable, {:readable, :bidi}]}],"
+      },
+      {
+        "action": "add",
+        "line": 2479,
+        "text": "      read: [{:ok, [{:data, next_data}, {:fin}]}]"
+      },
+      {
+        "action": "add",
+        "line": 2480,
+        "text": "    })"
+      },
+      {
+        "action": "add",
+        "line": 2481,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2482,
+        "text": "    assert {:ok, paused, [:writable] = events} ="
+      },
+      {
+        "action": "add",
+        "line": 2483,
+        "text": "             Session.poll(held, 16, max_read_batches: 1, paused: MapSet.new([request_ref]))"
+      },
+      {
+        "action": "add",
+        "line": 2484,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2485,
+        "text": "    assert :ok = assert_paused_controls(events)"
+      },
+      {
+        "action": "add",
+        "line": 2486,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2487,
+        "text": "    assert {:ok, still_paused, []} ="
+      },
+      {
+        "action": "add",
+        "line": 2488,
+        "text": "             Session.poll(paused, 16, max_read_batches: 1, paused: MapSet.new([request_ref]))"
+      },
+      {
+        "action": "add",
+        "line": 2489,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2490,
+        "text": "    # While the first delivery is held, only events pulls ran: no response read,"
+      },
+      {
+        "action": "add",
+        "line": 2491,
+        "text": "    # application send/replay or implicit ACK release. Pending DATA/FIN survives."
+      },
+      {
+        "action": "add",
+        "line": 2492,
+        "text": "    assert D.calls() == [{:events, []}, {:events, []}]"
+      },
+      {
+        "action": "add",
+        "line": 2493,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2494,
+        "text": "    assert {:ok, _, [{:data, ^request_ref, \"after-ack\"}, {:done, ^request_ref}]} ="
+      },
+      {
+        "action": "add",
+        "line": 2495,
+        "text": "             Session.poll(still_paused, 16, max_read_batches: 1, paused: MapSet.new())"
+      },
+      {
+        "action": "add",
+        "line": 2496,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 2497,
+        "text": "    assert D.calls() == [{:events, []}, {:events, []}, {:events, []}, {:read, [:bidi]}]"
+      },
+      {
+        "action": "add",
+        "line": 2498,
+        "text": "  end"
+      },
+      {
+        "action": "add",
+        "line": 2499,
+        "text": ""
+      }
+    ],
+    "integration/http3/upstream/run.py": [
+      {
+        "action": "add",
+        "line": 109,
+        "text": "                           \"preceding_unsuccessful_sol\": 2 if args.gate == \"session-contract\" else None,"
+      },
+      {
+        "action": "add",
+        "line": 110,
+        "text": "                           \"astra_recovery\": 1 if args.gate == \"session-contract\" else None,"
+      },
+      {
+        "action": "add",
+        "line": 111,
+        "text": "                           \"astra_recovery_status\": \"round1_in_progress\" if args.gate == \"session-contract\" else None}}"
+      },
+      {
+        "action": "remove",
+        "line": 109,
+        "text": "                           \"preceding_unsuccessful_sol\": 1 if args.gate == \"session-contract\" else None,"
+      },
+      {
+        "action": "remove",
+        "line": 110,
+        "text": "                           \"astra_recovery\": 0 if args.gate == \"session-contract\" else None}}"
+      }
+    ],
+    "integration/http3/upstream/README.md": [
+      {
+        "action": "add",
+        "line": 55,
+        "text": "Paused request polls validate every returned event rather than requiring an empty"
+      },
+      {
+        "action": "add",
+        "line": 56,
+        "text": "list. The fixture allows only `:ready`, `:writable`, authenticated H3 ready"
+      },
+      {
+        "action": "add",
+        "line": 57,
+        "text": "metadata and valid SETTINGS pairs; response headers/informational/DATA/trailers/"
+      },
+      {
+        "action": "add",
+        "line": 58,
+        "text": "done, errors/resets, GOAWAY, datagrams and unknown shapes fail visibly. No event"
+      },
+      {
+        "action": "add",
+        "line": 59,
+        "text": "filter hides a delivery. Within the existing `blocked_suspend_poll_resume` row,"
+      },
+      {
+        "action": "add",
+        "line": 60,
+        "text": "scripted public Transport/codec subcases reject forbidden events alone or mixed"
+      },
+      {
+        "action": "add",
+        "line": 61,
+        "text": "with controls and hold real Session response DATA/FIN behind a paused ref: repeated"
+      },
+      {
+        "action": "add",
+        "line": 62,
+        "text": "polls perform zero request reads or sends until explicit pause release. This"
+      },
+      {
+        "action": "add",
+        "line": 63,
+        "text": "proves the direct Session pause contract, not production downstream ACK handling."
+      },
+      {
+        "action": "add",
+        "line": 64,
+        "text": "The exact empty scripted poll and all 50 named rows remain required."
+      },
+      {
+        "action": "add",
+        "line": 65,
+        "text": ""
+      },
+      {
+        "action": "add",
+        "line": 84,
+        "text": "`run-1791830942072768771` also remains immutable: Sol round 2 failed after 31"
+      },
+      {
+        "action": "add",
+        "line": 85,
+        "text": "double rows and two network rows because its paused poll returned `[:writable]`."
+      },
+      {
+        "action": "add",
+        "line": 86,
+        "text": "The current candidate is bounded Astra recovery round 1 after two unsuccessful"
+      },
+      {
+        "action": "add",
+        "line": 87,
+        "text": "Sol rounds. Compile/static preparation alone is not recovery or gate PASS;"
+      },
+      {
+        "action": "add",
+        "line": 88,
+        "text": "independent pre-live review and fresh coordinator-owned execution remain required."
+      }
+    ]
+  },
+  "preserved_gates": {
+    "manifest": {
+      "network": 17,
+      "policy": 2,
+      "boundary_double": 31,
+      "total": 50
+    },
+    "evidence": "Runner entire done/manifest/acceptance suffix matches predecessor byte-for-byte. Required names/classifications/cleanup, peer cancellation, request counts, DATA hashes, trailers/FIN, identity/caller and deadline assertions unchanged.",
+    "bounds": "No request/operation/opening/cleanup deadline, read/upload/queue or timeout bounds changed."
+  },
+  "verification": [
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' mix format integration/http3/upstream/session_probe.exs",
+      "status": "PASS",
+      "exit": 0,
+      "output": "warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty\n"
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' GAOXY_SESSION_PROBE_LOAD_ONLY=1 mix run --no-compile --no-start integration/http3/upstream/session_probe.exs",
+      "status": "PASS",
+      "exit": 0,
+      "output": "warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty\n",
+      "scope": "Compile/load definitions only; GAOXY_SESSION_PROBE_LOAD_ONLY=1 prevents run(), --no-start prevents application start. Zero network/policy/double rows."
+    },
+    {
+      "command": "nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' mix format --check-formatted integration/http3/upstream/session_probe.exs",
+      "status": "PASS",
+      "exit": 0,
+      "output": "warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty\n"
+    },
+    {
+      "command": "Python ast.parse for run.py/origin.py; newline/whitespace check all four owned files; README local links; git diff --check -- integration/http3/upstream/{session_probe.exs,run.py,origin.py,README.md}",
+      "status": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "Before/after hash verification; in-process comparison of unchanged runner manifest/acceptance suffix and origin.py; task-only line diff",
+      "status": "PASS",
+      "detail": "17 final source/spec/lock hashes bound; historical evidence reverified."
+    },
+    {
+      "command": "Live Session qualification, boundary doubles and policy rows",
+      "status": "NOT RUN",
+      "executed_counts": {
+        "network": 0,
+        "policy": 0,
+        "boundary_double": 0
+      },
+      "reason": "Requires new frozen-source independent Sol review PASS; parent owns subsequent actual gate."
+    }
+  ],
+  "tooling_note": {
+    "status": "BLOCKED_ENV on one optional diff-packaging command, resolved",
+    "detail": "exec_command rejected before process launch: Argument list too long (os error 7). No test or source failure; exact task-only line diff computed in-process instead. No failed validation hidden."
+  },
+  "counters": {
+    "received_sol_repair_rounds": 2,
+    "received_unsuccessful_sol_repair_rounds": 2,
+    "received_astra_repair_rounds": 0,
+    "cumulative_astra_repair_rounds": 1,
+    "astra_round1_started_utc": "2026-10-12 18:57:01 UTC",
+    "astra_round1_status": "PREPARATION PASSED; runtime validation pending",
+    "unsuccessful_astra_repair_rounds": 0,
+    "maximum_astra_recovery_rounds": 2,
+    "note": "First failure-directed edit plus compile/static validation consumes round1. No reset; runtime success not claimed."
+  },
+  "historical_repair_counters": {
+    "connection": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1,
+      "unsuccessful_astra": 0
+    },
+    "options": {
+      "sol": 4,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "proxy": {
+      "sol": 3,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "up0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st2": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "browser": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "ownership": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "read_poll": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "pure_protocol": {
+      "sol": 2,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st1": {
+      "sol": 0,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "historical_h1": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1
+    },
+    "historical_tls": {
+      "sol": 4,
+      "unsuccessful_sol": 2,
+      "astra": 2
+    },
+    "historical_model": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "historical_h2": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g2_peer_informational": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    }
+  },
+  "command_shutdown": "All own formatting, compile/load and static commands exited. No application/peer/background workload launched; no others' processes stopped. Frozen file ownership returns to parent for review; writer stopped.",
+  "independent_review": "PENDING new Sol pre-live specification/code review of these exact hashes",
+  "remaining_risks": [
+    "New rejecting cases and scripted held-delivery case compile but remain unexecuted.",
+    "Actual live gate may expose additional failures; current whole gate remains FAIL/incomplete.",
+    "Source allowlist accepts only expected healthy fixture controls; unexpected GOAWAY/datagrams fail explicitly."
+  ],
+  "decisions_needed": [],
+  "handoff": "Root owns independent review, runtime outcome, acceptance/status documents and commits. No dependency, production, original design/plan or historical evidence writes; no commit/push."
+}

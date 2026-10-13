@@ -1,0 +1,201 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC then CODE review, coordinator local repair2 revision2",
+  "reviewed_utc": "2026-10-12T19:53:12.502676+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-prelive-freeze-1791834660086456707.json",
+  "freeze_sha256": "89f5070262fb856f5bdb2c9efc15b8ba5136c16be60c1df4bf77462453b71d9e",
+  "frozen_source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "integration/http3/upstream/session_probe.exs": "9886201d2553dd79486b93b521211cd4c175bc99429a22607943c0782ab950e4",
+    "integration/http3/upstream/run.py": "2ccd8ba7aed4d9bda5987d8d32fa4714ae06b930c4e6ffe324a789e0e4d1ed15",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "8d1e3a456d38858b170b9e182cce285390ff323f458b173abe14f0d1c5fc1cc9",
+    "docs/designs/m4-session-response-scheduling.md": "820d963be3e2c83e2c838df1375aac0474d95c603f760a3767885e7c011a7565",
+    "docs/plans/m4-session-response-scheduling.md": "711b1f8bf954ca42e008fa04423abc726ff9b60c1516c731321e5564c9756ff2",
+    "docs/designs/m4-session-observation-overhead.md": "bd04f4440a067e1e1537ec3b3ca98dffe7512519e7f8ca28919a2be611016cb9",
+    "docs/plans/m4-session-observation-overhead.md": "b058f7552aa74233d33dfa7972a97e181ccd6a1396120e54b61ebe532665b34e"
+  },
+  "SPEC": {
+    "verdict": "PASS",
+    "documents": [
+      "docs/designs/m4-session-observation-overhead.md",
+      "docs/plans/m4-session-observation-overhead.md"
+    ],
+    "read_before_code": true,
+    "findings": [],
+    "assessment": [
+      "Observation-only change removes separate per-operation identity RPC, not a transport/admission retry or scheduling change.",
+      "Same RPC reference, stable caller, advanced Session result and request/generation/sequence/deadline correlation remain mandatory.",
+      "Exact raw poll event/DATA counts, bytes and SHA256 precede bounded printable diagnostics; original acceptance sees full bytes/events.",
+      "Original five-second total deadline,50 rows and confirmed per-request cleanup remain required; no prior failure or missing cleanup is retroactively passed."
+    ]
+  },
+  "CODE_review_history": [
+    {
+      "verdict": "FAIL",
+      "stage": "initial unfrozen candidate inspection",
+      "finding": "Pre-dispatch expired :call_traced sent a plain result; call/4 fabricated caller nil/liveness false/high-water0 instead of guardian-observed identity.",
+      "resolution": "Root introduced common reply_result helper used on expiry and correlated operation replies, handles actual unallocated nil safely, and removed fallback.",
+      "initial_candidate_exact_hash": "not captured; finding records inspected behavior rather than attaching it to a later source freeze"
+    },
+    {
+      "verdict": "PASS",
+      "stage": "frozen revision2 re-review",
+      "findings": []
+    }
+  ],
+  "CODE": {
+    "verdict": "PASS",
+    "kind": "static pre-live only",
+    "files": [
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Existing call receive guard accepts call/call_traced while retaining operation-nil/nonterminal checks and applicable absolute deadline clamp.",
+      "Successful response still passes caller PID, request ID, generation, command reference, sequence and deadline checks before advanced Session/state update and reply.",
+      "Traced wrapper uses original observer/RPC ref and untouched result; identity is sampled from actual owned state.caller with real liveness and cumulative mailbox high-water.",
+      "Initial expired traced call uses same reply_result helper; actual nil is allowed only when state.caller is absent. Legacy :call returns original shape on all paths.",
+      "call/4 requires traced_result; fabricated fallback and follow-up identity RPC are removed. Bootstrap explicit identity/adoption receipt remains.",
+      "Operation/lifetime rejection paths retain original deadline error and teardown. Cleanup grace, endpoint/owned-task DOWN, confirmed cleanup and rebind semantics are unchanged.",
+      "Raw ordered DATA binaries determine exact event/DATA counts, byte sum and SHA256 before inspect; printable_limit64 affects diagnostics only, not result/verification.",
+      "response progress/idle rule, max_frame8192, max_read_batches1, public supported APIs, paused-event validation, exact bodies/trailers/FIN and all50 classifications remain.",
+      "Counters retain inherited Sol2failed2/Astra2failed2 and coordinator1failed1, assign coordinatorrepair2 separately."
+    ]
+  },
+  "historical_failure": {
+    "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791834217971221876/result.json",
+    "sha256": "b23f9070e80b207eacd388db6db39ef2dcccc459a63cf1d5b0c9e944cda64439",
+    "status": "FAIL",
+    "PASS_rows": 37,
+    "NOT_RUN_rows": 13,
+    "raw_response_bytes": 901615,
+    "successful_emitted_poll_count": 753,
+    "public_poll_ms": 2359,
+    "tiny_request_cleanup_confirmed": false,
+    "diagnosis": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-runtime-diagnosis-1791834454116289432.json",
+    "diagnosis_sha256": "64557b35fa8a45606834818e064093639ae63dc2ffa3c651f9992f8c1f5198ee"
+  },
+  "static_preparation_history": {
+    "first_freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-prelive-freeze-1791834580464667299.json",
+    "first_freeze_sha256": "bed516e3de7b7b89810d2a76cd6431b29d673909be9fc6cdfafa5b939726c9c3",
+    "first_status": "FAIL",
+    "first_commands": [
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "GAOXY_SESSION_PROBE_LOAD_ONLY=1",
+          "unbuffer",
+          "mix",
+          "run",
+          "--no-compile",
+          "--no-start",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834580464667299-0.log"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "unbuffer",
+          "mix",
+          "format",
+          "--check-formatted",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 1,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834580464667299-1.log"
+      }
+    ],
+    "latest_status": "PASS",
+    "latest_commands": [
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "GAOXY_SESSION_PROBE_LOAD_ONLY=1",
+          "unbuffer",
+          "mix",
+          "run",
+          "--no-compile",
+          "--no-start",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834660086456707-0.log"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "unbuffer",
+          "mix",
+          "format",
+          "--check-formatted",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834660086456707-1.log"
+      }
+    ],
+    "latest_log_sha256": {
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834660086456707-0.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair2-preparation-1791834660086456707-1.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f"
+    }
+  },
+  "verification": {
+    "frozen_hash_entries_verified": 9,
+    "previous_run_source_hash_entries_checked": 285,
+    "changed_previous_captured_paths": [
+      "integration/http3/upstream/README.md",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/session_probe.exs"
+    ],
+    "all_other_previous_captured_sources_unchanged": true,
+    "independent_origin_unchanged": true,
+    "Python_AST": "PASS",
+    "reviewer_commands": "Read-only code/spec/log/JSON reads, SHA256/source comparison, Python AST parse, git identity; no Mix, format, compile or live/network/runtime actions."
+  },
+  "runtime": "NOT RUN for repaired revision2. Static PASS does not qualify UP0, confirm prior tiny-request cleanup or release UP1; UP2/standalone/browser/consumer/publication/deployment gates remain separate.",
+  "counters": {
+    "direct_chain_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_local_repair": 2,
+    "preceding_unsuccessful_coordinator": 1,
+    "reviewer_repair_rounds_added": 0,
+    "third_astra_authorized": false
+  },
+  "changed_files": "Only this new unique review receipt; root/team edits and historical evidence preserved.",
+  "command_shutdown_status": "All reviewer commands complete; no reviewer-owned background processes.",
+  "remaining_risks": [
+    "Whether reduced observation overhead permits complete1MiB response and confirmed per-request cleanup within original deadline remains a runtime question."
+  ],
+  "decisions_needed": []
+}

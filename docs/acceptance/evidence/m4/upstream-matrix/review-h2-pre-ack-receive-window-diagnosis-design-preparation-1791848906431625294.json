@@ -1,0 +1,86 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_PROPOSED_SPECIFICATION_PREPARATION_AND_CONFIRMED_DIAGNOSIS",
+  "assignment": "direct read-only RFC/public-protocol accounting and proposed minimal ACK-transition review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/frame.ex": "319d286ef3d9bbe1185ae93b51f8e9af090c02b438de8c1f45118f7300016f9d",
+    "integration/http3/upstream/peer.py": "78723995f1f3affe5e9d52ada9b8fb63ffd3377468d1c951e302a5c0526175cb",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70"
+  },
+  "actual_diagnostic_red": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791848586737931556/result.json",
+    "sha256": "c15c0d30a6da39ff398e433f13ff353fdeb17f55d5e08f2af80756d1662f6ed9",
+    "peer_log_sha256": "664624b62fd2757314cf9282da25dc0a70929396b069f2d3b0bf15472ec66753",
+    "status": "FAIL",
+    "actual_exit": 1,
+    "checks": 30,
+    "passing_network_rows": 28,
+    "passing_policy_rows": 2,
+    "source_unchanged": true,
+    "observed_upload": {
+      "response_reset": 3,
+      "window": -49151,
+      "accepted_chunk_bytes": 16383,
+      "chunk_bytes": 16384,
+      "response_headers": [],
+      "response_ended": false
+    },
+    "secondary_shutdown_error": "SSLError APPLICATION_DATA_AFTER_CLOSE_NOTIFY preserved as failure, not successful or suppressed."
+  },
+  "prior_candidate_disposition": {
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-settings-upload-native-diagnosis-1791848540100432058.json",
+    "sha256": "1bfadd21cd900206a50e736fff92f2b35e93ea84bda0a3da9d5c3a764d412179",
+    "N2": "CONFIRMED by independent peer observing actual FLOW_CONTROL_ERROR reset3 with legal pre-settings default-window upload and matching sender delta -49151.",
+    "N1": "UNVERIFIED raw-delivery-size candidate. No parser carry, Limits, reservation or transport delivery change is justified by this diagnostic."
+  },
+  "findings": [],
+  "reviewed_proposal": [
+    "Pre-ACK new stream receive credit is default65535. Configured16384 initial stream window takes effect upon first own SETTINGS ACK.",
+    "First own SETTINGS ACK adds delta(configured receive_window minus65535) to all existing stream receive credits, retaining allowed negative values. Duplicate ACK is idempotent and cannot apply delta twice.",
+    "New streams after ACK initialize configured receive credit. Existing connection receive credit remains unchanged because INITIAL_WINDOW_SIZE only changes stream windows.",
+    "Zero-payload DATA END_STREAM consumes no flow-control credit and remains valid while stream credit is negative. Positive payload including padding remains subject to actual credit; do not clamp negative credit to zero or permit nonzero data.",
+    "Keep configured frame/body/carry/control/admission limits, original deadlines and existing stream reserve65536 unchanged. Existing connection window constrains aggregate pre-ACK data; established reserve covers initial65535 stream buffering."
+  ],
+  "protocol_assessment": [
+    "HTTP/2 SETTINGS_INITIAL_WINDOW_SIZE changes existing stream windows by delta; the initial default applies before the remote peer receives new SETTINGS. ACK supplies ordered confirmation the peer applied this setting. This transition aligns sender and receiver while accounting for previously sent/received data.",
+    "The installed independent hyper-h2 4.3.0 source corroborates inbound receive-window change in _local_settings_acked via delta across all existing streams and remote sender-window delta when processing received SETTINGS. Source was read only; no private API is called by Gaoxy or by this reviewer.",
+    "Duplicate own ACK tolerance matches existing behavior; proposed repair only prevents repeated window delta. No new negotiation/API/runtime architecture is needed."
+  ],
+  "independent_local_protocol_source_sha256": {
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/h2/connection.py": "001ac10ddb176742575dbc6b1c77471113d885f0ce0860b65e56269adc0f9419",
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/h2/stream.py": "ba8608152270ee91bb8467149ff727b3fc8bec1ad6bead3b418206a49eb82e5f",
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/h2/windows.py": "26958d843bfec782798c85d25a9d0834792af482203cfdbbc6bf455d8bdacc51"
+  },
+  "protocol_source_locations": [
+    "h2/connection.py:_local_settings_acked and _inbound_flow_control_change_from_settings",
+    "h2/connection.py:_acknowledge_settings and _flow_control_change_from_settings",
+    "h2/stream.py:_inbound_flow_control_change_from_settings"
+  ],
+  "review_scope_note": "Proposed design text supplied in parent assignment was reviewed. No new written ACK-transition design/plan was present in docs at review; this receipt does not claim exact-hash review of documents not yet written. No official RFC was fetched or network command run.",
+  "required_regression_contract": [
+    "Actual RED before production for legal pre-ACK DATA up to default65535, first ACK negative-credit transition, post-ACK configured credit and duplicate ACK idempotence.",
+    "Zero-payload END_STREAM must complete under negative stream credit; preserve post-ACK nonzero overrun FLOW_CONTROL_ERROR and normal configured-window credit replenishment.",
+    "Real independent 1MiB matrix upload retains original five-second deadline, exact bytes/hash, FIN/trailer counts and terminal/cleanup assertions."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 11,
+    "up2_unsuccessful_production_repairs": 4,
+    "up2_unsuccessful_harness_repairs": 1,
+    "extra_terminal_diagnostic_executions": 1,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "production_status": "Native H2 source unchanged from actual diagnostic failure; tests owned by separate worker, no reviewer writes outside receipt.",
+  "remaining_acceptance": "Written specification hashes when available, actual focused RED/GREEN, CODE and fresh verification review, full unchanged matrix and repeat, final M4 gates pending. No completeUP2/M4/release acceptance.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-ack-receive-window-diagnosis-design-preparation-1791848906431625294.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/selected logs and standard-library hash/receipt utilities; no runtime/Mix/network/source/document mutation or delegation."
+}

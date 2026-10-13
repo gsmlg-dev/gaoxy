@@ -1,0 +1,457 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "FAIL_PRELIVE_REVIEW",
+  "assignment": "direct independent read-only specification first then frozen harness/public SDK review, plus independent existing G0 evidence review; new unique receipt only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "source_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/session-round2-prelive-freeze-1791829258876539578.json",
+    "sha256": "ae9c00652e4924bd777967d64f3361976b8d7f8bd2273436d81d8e0819f7f645"
+  },
+  "reviewed_source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "361cb3a647fdffcbbe7a545856ca16792c890a205499a94bc62af1c623504539",
+    "integration/http3/upstream/run.py": "fac27181d7bcc33cb699ac919295b310ff8ffd3d1528196117c53ba2291e0cdf",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "99ed52a294001f31405258314e947847d66d69c633683adc79067cc9e43aa6f9",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c"
+  },
+  "current_matches_freeze": true,
+  "sdk_source_sha256": {
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "deps/elixir_quic/lib/quic.ex": "7791050053a16acdb9c8329a9a23034335d423c574adbc77d6215b8231d5500d",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "c1e123186e089adfc8a86490227cb72d1545c1c7d169a1686549ba0fdb1c4375",
+    "apps/gaoxy/lib/gaoxy/service.ex": "c0fa0549815500dad5f50779b05777880b008276540bae58d47a4cccd061037b"
+  },
+  "specification_review": {
+    "status": "FAIL implementation-to-approved-spec mapping",
+    "order": "Approved amendment design/plan and preserved original deadline/cleanup/UP0 assertions read before assessing frozen helpers and runner",
+    "approved_architecture": "Revision2 review remains valid; no architecture/dependency/private API change needed. Correct implementation gaps within existing architecture.",
+    "findings": [
+      "ROUND2-DEADLINES-1",
+      "ROUND2-OWNERSHIP-HELPERS-2"
+    ]
+  },
+  "code_review": {
+    "status": "FAIL pre-live; actionable findings above",
+    "supported_paths": [
+      "Stable SessionCaller request-lived PID, consumer:self at connect, full Session/result correlation, sequence/generation stale command rejection, and full advanced result storage are present.",
+      "Public endpoint acceptor guardian, monitor/link adoption, creator unlink and actual normal DOWN before network caller start are present. Native success after creator exit remains NOT RUN.",
+      "Caller exact guardian monitor ref/PID check before/after operations and hint batches handles normal DOWN; synchronous call barrier releases before task-DOWN assertion. Creator/stop helper normal guardian-loss doubles call actual helpers.",
+      "Cancellation stop starts before safely idle abort; pending operation is not given overlapping second Session command. Consumer hints are discarded in batches16 with yielding; synthetic mailbox and actual network high-water checks labelled distinctly.",
+      "Runner selects exact45 distinct names with exact kind checks:17 network,2 policy,26 doubles. Original exact two-authority/certificate/method-authority/trailer/DATA-hash/FIN checks and four peer-cancellation/sibling observations retained. Tiny upload/download requires exact1MiB response.",
+      "Network final assertions require22adoptions,20cleanup receipts,2guardian-loss observer receipts, per-request stable caller identity/high-water<=16,4cancellation observations, child exit0, before/after source equality and origin UDP rebind. These are code requirements, not executed outcomes.",
+      "Some doubles execute actual Session API via scripted Transport or actual SessionCaller/creator/stop/guardian helpers; five ownership_double rows instead independently reproduce intended behavior and do not cover actual guardian failures."
+    ]
+  },
+  "unresolved_findings": [
+    {
+      "id": "ROUND2-DEADLINES-1",
+      "severity": "P1",
+      "status": "OPEN",
+      "title": "Original operation and cleanup deadlines are not enforced by actual guardian path",
+      "locations": [
+        "integration/http3/upstream/session_probe.exs:1352-1353",
+        "integration/http3/upstream/session_probe.exs:1380-1393",
+        "integration/http3/upstream/session_probe.exs:1457-1473",
+        "integration/http3/upstream/session_probe.exs:1535-1562",
+        "integration/http3/upstream/session_probe.exs:306-321",
+        "integration/http3/upstream/session_probe.exs:430-553"
+      ],
+      "requirement": [
+        "docs/designs/m4-public-session-upstream.md:254-263",
+        "docs/designs/m4-public-session-consumer-affinity.md:106-123,198-223",
+        "docs/plans/m4-public-session-consumer-affinity.md:69"
+      ],
+      "evidence": "call/3 always dispatches now+5000; settle starts budget after initial call and each resume again uses fresh call/3 budget. ready/response preserve an outer local timestamp but do not pass it into guardian or check after returned success. Guardian accepts correlated result without checking now against operation.deadline. Guardian state has no original opening/total/cleanup deadline, while finish_session gives fresh now+1000 and teardown has independent 6000ms stop/DOWN waits plus caller waits, so cleanup grace can extend on each stage. The 150ms late-result double only covers an already-delivered timer; it does not exercise resumed call budgets or late result preceding timer handling.",
+      "impact": "A slow call/resume near deadline can return success beyond original budget; independent teardown can wait beyond prescribed cleanup grace. Passing current row count would not qualify unchanged deadline contract.",
+      "required_change": "Create original absolute opening/total/operation/cleanup deadlines at their existing lifecycle boundaries, propagate applicable original deadline through initial call/resume/ready/poll, never recreate full budgets on wakeup. Reject correlated late results using that deadline even before timer dispatch. Stop remains independent; all waits use remaining original cleanup grace and record uncertainty when exhausted. Add actual-helper doubles for repeated resume and successful result received after original deadline, plus stalled stop/task termination past original cleanup grace without completion."
+    },
+    {
+      "id": "ROUND2-OWNERSHIP-HELPERS-2",
+      "severity": "P1",
+      "status": "OPEN",
+      "title": "Cancellation and uncertain cleanup doubles bypass the guardian helpers and miss broken branches",
+      "locations": [
+        "integration/http3/upstream/session_probe.exs:1826-1948",
+        "integration/http3/upstream/session_probe.exs:243-267",
+        "integration/http3/upstream/session_probe.exs:387-399",
+        "integration/http3/upstream/session_probe.exs:463-542",
+        "integration/http3/upstream/run.py:270-282"
+      ],
+      "requirement": [
+        "docs/plans/m4-public-session-consumer-affinity.md:63-64,73",
+        "docs/designs/m4-public-session-consumer-affinity.md:140-152,208-215"
+      ],
+      "evidence": "ownership_double manually calls Transport.client/stop_endpoint in independent creator code and computes complete?=result==:ok or writes cleanup_token=retained. It never invokes SessionGuardian.creator/loop/teardown for before-adoption, ACK-before-creator-DOWN, creator-DOWN-before-caller launch, stop error, or abnormal endpoint DOWN. Actual teardown always calls stop_task(state.endpoint), then state.endpoint.pid at485; cancel before descriptor with endpoint=nil is not handled and will fail before confirmed creator cleanup. Adopt handler always ACKs without terminal check. Actual stop-error/abnormal-DOWN path sends a receipt at540 before asserting success at541 and has no explicit cleanup-unconfirmed result branch. Existing manual doubles cannot expose any of these failures or enforce retained uncertainty.",
+      "impact": "45 named rows include five ownership/cleanup rows that can pass while the selected guardian lifecycle violates the reviewed contract. Reported retained token is a constant diagnostic label, not an exercised completion/uncertainty decision.",
+      "required_change": "Drive the existing actual creator and guardian helpers using deterministic barriers and injectable public endpoint boundary outcomes at all three cancellation boundaries. Exercise real helper branches for stop error, abnormal/missing endpoint DOWN and cleanup expiry; distinguish confirmed cleanup from explicit uncertainty without sending a success-shaped completion receipt first. Handle endpoint=nil/creator-owned allocation during cancellation, terminal adoption races and creator loss. Keep Service completion NOT CLAIMED until UP1; assert helper cleanup outcome/state rather than a handwritten token label. Preserve old double evidence and all original network assertions."
+    }
+  ],
+  "selected_row_counts": {
+    "network": 17,
+    "policy": 2,
+    "boundary_double": 26,
+    "total": 45
+  },
+  "executed_selected_gate_rows": {
+    "network": 0,
+    "policy": 0,
+    "boundary_double": 0
+  },
+  "qualification_runtime_status": "NOT RUN amended Session network gate. Pre-live PASS not granted; HOLD_UP0 remains. Compile-only/format author exits0 are historical pre-live checks, not reviewer-executed runtime qualification.",
+  "G0_evidence_review": {
+    "status": "PASS scoped existing G0 evidence:4 tests/0 failures,9 real peer rows; logs include visible fixture handler errors",
+    "source_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+    "receipt_sha256": {
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/execution.json": "586ee07a6b329d43e4d23021e3611127e15b450dc19db792894103bc2c13bb02",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/compile.log": "37e1f8d1c03fb5cf2aeb9581c597c5d6b52774f5278e2a1f6a34982a615b166b",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/peer-environment.log": "ed12d4fc1f38be176f6bc4a2fda061a06c29871833abc6da501a0b38cf88ece7",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/environment.json": "ac94e257d5cb0c2584404315fd0b6df485655259400f4b049afcb5767667e1c1",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/tests.log": "33f139f4f0eb1afcec279acd3e938158ede967aecd5d50e4bc3d680be8b7b580",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/deps.log": "64e4a9d2db134505e85edd5ed0a12838e87dc8e77db75feee3112be486f0d520",
+      "docs/acceptance/evidence/m4/host/cohort-0.21.4-1791828625702052885/beam-environment.log": "bc5b882f74a432fb1d3678e6161f6a2dbecd6f269f08a18e318983747c5424c3"
+    },
+    "source_checks": [
+      {
+        "field": "gaoxy_consumer_source_before",
+        "verified_paths": 27,
+        "status": "PASS"
+      },
+      {
+        "field": "gaoxy_consumer_source_after_resolution",
+        "verified_paths": 27,
+        "status": "PASS"
+      },
+      {
+        "field": "gaoxy_consumer_source_after",
+        "verified_paths": 27,
+        "status": "PASS"
+      },
+      {
+        "field": "dependency_source_before",
+        "verified_paths": 140,
+        "status": "PASS"
+      },
+      {
+        "field": "dependency_source_after",
+        "verified_paths": 140,
+        "status": "PASS"
+      }
+    ],
+    "verified_distinct_source_paths": 167,
+    "recorded_execution_commands": [
+      {
+        "command": [
+          "unbuffer",
+          "mix",
+          "deps.get",
+          "--check-locked"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer",
+        "started_ns": 1791828625713948363,
+        "pid": 3475974,
+        "exit": 0,
+        "finished_ns": 1791828632346169840
+      },
+      {
+        "command": [
+          "unbuffer",
+          "mix",
+          "compile",
+          "--warnings-as-errors"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer",
+        "started_ns": 1791828632437793407,
+        "pid": 3557734,
+        "exit": 0,
+        "finished_ns": 1791828646841795956
+      },
+      {
+        "command": [
+          "unbuffer",
+          "mix",
+          "format",
+          "--check-formatted",
+          "mix.exs",
+          "test/quic_test.exs"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer",
+        "started_ns": 1791828646842892784,
+        "pid": 3734254,
+        "exit": 0,
+        "finished_ns": 1791828647760095304
+      },
+      {
+        "command": [
+          "unbuffer",
+          "mix",
+          "test",
+          "--warnings-as-errors"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer",
+        "started_ns": 1791828647761277907,
+        "pid": 3745208,
+        "exit": 0,
+        "finished_ns": 1791828685877211539
+      }
+    ],
+    "actual_counts": {
+      "tests": 4,
+      "failures": 0,
+      "network_rows": 9
+    },
+    "actual_peer_cases": [
+      {
+        "result": "PASS",
+        "gate": "stream_flow_control_fin",
+        "bytes": 344064,
+        "streams": 5,
+        "alpn": "h3",
+        "verified_name": "localhost",
+        "local_uni_id": 3,
+        "peer_uni_id": 2
+      },
+      {
+        "result": "PASS",
+        "gate": "connection_close_isolation",
+        "bytes": 86016
+      },
+      {
+        "result": "PASS",
+        "gate": "directional_reset_stop",
+        "reset": 74565,
+        "stop": 344865
+      },
+      {
+        "result": "PASS",
+        "gate": "peer_reset_stop_sibling_isolation",
+        "reset_code": 273,
+        "stop_code": 546,
+        "sibling_bytes": 16
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "gaoxy-unsupported-v1",
+        "server_name": "localhost"
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "h3",
+        "server_name": "localhost"
+      },
+      {
+        "result": "PASS",
+        "gate": "handshake_rejected",
+        "alpn": "h3",
+        "server_name": "invalid.example"
+      },
+      {
+        "result": "PASS",
+        "gate": "live_listener_stop_isolation",
+        "close_code": 0,
+        "bytes": 77824
+      },
+      {
+        "result": "PASS",
+        "gate": "stream_flow_control_fin",
+        "bytes": 344064,
+        "streams": 5,
+        "alpn": "h3",
+        "verified_name": "localhost",
+        "local_uni_id": 3,
+        "peer_uni_id": 2
+      }
+    ],
+    "source_unchanged": true,
+    "dependency_source_unchanged": true,
+    "environment_receipt_bound_to_execution": true,
+    "recorded_environment_checks": [
+      {
+        "name": "beam",
+        "command": [
+          "elixir",
+          "-e",
+          "IO.puts(JSON.encode!(%{elixir: System.version(), otp_release: System.otp_release(), erts: to_string(:erlang.system_info(:version)), architecture: to_string(:erlang.system_info(:system_architecture))}))"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+        "exit": 0,
+        "output": "{\"otp_release\":\"28\",\"elixir\":\"1.18.5\",\"erts\":\"16.4.0.6\",\"architecture\":\"x86_64-pc-linux-gnu\"}\n"
+      },
+      {
+        "name": "peer",
+        "command": [
+          "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer/.venv/bin/python",
+          "-c",
+          "import sys,ssl,json,importlib.metadata as m; print(json.dumps({\"python\":sys.version,\"aioquic\":m.version(\"aioquic\"),\"cryptography\":m.version(\"cryptography\"),\"openssl\":ssl.OPENSSL_VERSION}))"
+        ],
+        "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer",
+        "exit": 0,
+        "output": "{\"python\": \"3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]\", \"aioquic\": \"1.2.0\", \"cryptography\": \"50.0.2\", \"openssl\": \"OpenSSL 3.5.7 9 Jun 2026\"}\n"
+      }
+    ],
+    "spec_mapping": "Original G0 public Gaoxy/Abyss host gate:authenticated h3, uni/bidi/fragmented streams, exact FIN/reset/stop codes, blocked writes/progress and operation status, connection/listener/sibling isolation, bounded listener removal and same-port restart/rebind. Test source uses actual independent aioquic peer; second echo after re-add is genuine live exchange. Consumer pins elixir_quic/ex_ssl0.21.4 and Abyss9b710e6; separate consumer dependency closure, not seven-package upstream client qualification.",
+    "observable_errors": {
+      "handler_termination_error_count": 6,
+      "messages": [
+        "{:read_failed, {:error, :invalid_operation}}",
+        "{:write_failed, {:error, :not_established}}",
+        "Controls.handle_event/2 MatchError on {:error, :invalid_operation} at test/quic_test.exs:245"
+      ],
+      "disposition": "Retained as observed terminal fixture handler errors. They coexist with asserted exact peer successes and4/0; this scoped verdict does not claim error-free handler teardown or a repair of those paths. No source changed."
+    },
+    "limits": [
+      "Controlled uncertain-operation probe NOT RUN; no such outcome claimed.",
+      "G0 refresh is host compatibility evidence, not direct Session upstream qualification, UP1/UP2/M4 completion, hosted/deployment/production acceptance.",
+      "No reviewer Mix/live/network execution; recorded author commands all finished exit0."
+    ]
+  },
+  "verification_commands": [
+    {
+      "command": "git rev-parse HEAD; git branch --show-current; git status --short; cat frozen receipt and G0 execution/environment receipts",
+      "exit": 0,
+      "result": "Exact c574c784 baseline and pre-existing sources recorded; large receipts subsequently parsed with narrowed output"
+    },
+    {
+      "command": "nl -ba approved amendment plan/design and upstream README; wc -l four scoped sources; rg --files G0 evidence and host harness",
+      "exit": 0,
+      "result": "Specification first and ownership/gate scope read"
+    },
+    {
+      "command": "nl -ba integration/http3/upstream/session_probe.exs | sed -n 1,360p / 360,715p / 715,1060p / 1051,1430p / 1430,1770p / 1770,2144p (six read commands)",
+      "exit": 0,
+      "result": "Entire frozen caller/creator/guardian/stop/helpers/doubles/network probe reviewed"
+    },
+    {
+      "command": "nl -ba integration/http3/upstream/run.py | sed -n 1,290p / 290,526p / 281,526p; nl -ba integration/http3/upstream/origin.py; rg G0/quic_consumer/host specs; cat G0 tests.log",
+      "exit": 0,
+      "result": "Entire runner/origin and raw G0 rows/errors reviewed"
+    },
+    {
+      "command": "nl -ba docs/plans/m4-http3.md | sed -n 74,124p; nl -ba docs/designs/m4-http3.md | sed -n 1,120p; nl -ba integration/quic_consumer/test/quic_test.exs | head -270 and sed -n 270,610p; nl -ba integration/quic_consumer/peer.py | sed -n 1,160p",
+      "exit": 0,
+      "result": "Original host spec and actual consumer/peer assertion mapping reviewed"
+    },
+    {
+      "command": "Python pathlib/json/hashlib/re: assert7frozenhashes, verify all5G0 source maps, parse raw9peer JSON rows/4tests summary/6handler errors, compare environment execution hash and hash8logs/receipts",
+      "exit": 0,
+      "result": "7freeze hashes match;27consumer and140dependency paths match each before/after record; G0 counts and exits independently confirmed"
+    },
+    {
+      "command": "Read installed Connection consumer guards/consumerDOWN, Transport connect/attach/stop/borrowed cleanup, consumer pins and compile/deps logs; git diff --check; git rev-parse HEAD",
+      "exit": 0,
+      "result": "Public SDK invariants unchanged; cohort0.21.4 confirmed; whitespace clean and HEAD unchanged"
+    }
+  ],
+  "counters": {
+    "direct_session_sol_repair_in_progress": 2,
+    "prior_unsuccessful_sol": 1,
+    "astra_recovery": 0,
+    "initial_failure": "FAILcompile0rows",
+    "historical_UP0": "Sol2/failed1/Astra0 preserved"
+  },
+  "historical_repair_counters": {
+    "connection": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1,
+      "unsuccessful_astra": 0
+    },
+    "options": {
+      "sol": 4,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "proxy": {
+      "sol": 3,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "up0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st2": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "browser": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "ownership": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "read_poll": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "pure_protocol": {
+      "sol": 2,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g0": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "st1": {
+      "sol": 0,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "historical_h1": {
+      "sol": 3,
+      "unsuccessful_sol": 2,
+      "astra": 1
+    },
+    "historical_tls": {
+      "sol": 4,
+      "unsuccessful_sol": 2,
+      "astra": 2
+    },
+    "historical_model": {
+      "sol": 2,
+      "unsuccessful_sol": 1,
+      "astra": 0
+    },
+    "historical_h2": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    },
+    "g2_peer_informational": {
+      "sol": 1,
+      "unsuccessful_sol": 0,
+      "astra": 0
+    }
+  },
+  "reviewer_sol_repair_rounds_added": 0,
+  "astra_recovery_rounds_added": 0,
+  "astra_gate": null,
+  "counter_disposition": "Qualifier round2 remains in pre-live review/repair cycle, prior unsuccessful Sol1/Astra0 unchanged; no runtime round2 outcome exists. This reviewer made no repairs and does not reset counters.",
+  "task_diff": "Only this new unique review receipt added. Frozen harness/production/dependency/test/status files and immutable initial FAIL/runtime receipts preserved. No commit, push, stash, reset or process interruption.",
+  "command_shutdown": "All reviewer read/hash commands completed; no owned Mix/live/network/background process launched; no other process touched.",
+  "remaining_risks": [
+    "Two P1 harness findings must be repaired and frozen for independent re-review before actual qualification.",
+    "Actual amended45-row qualification and post-live evidence review/fresh repeat remain required."
+  ],
+  "decisions_needed": [],
+  "parent_notified": true
+}

@@ -1,0 +1,18 @@
+{
+  "status": "FAIL_DIAGNOSED",
+  "execution": "initial-h3-origin-execution-1791841671034019363.json",
+  "result": "docs/acceptance/evidence/m4/standalone/run-1791841671313042675/result.json",
+  "result_sha256": "fe50eeeee5772b6f3fe4db7b42aca81635eb96f609a04e95e5de25c7e1291728",
+  "peer_log_sha256": "15b67adf9c345e852a689acbcf23f3ef977874c43b52bdeb8b5f8ee71ab537a1",
+  "h3_origin_log_sha256": "29dff3141c7140dd938ec96de300a7d851cc6510dcfea6a0c4fdf2ba27e491fc",
+  "source_files": {
+    "integration/http3/standalone/run.py": "afa7bbace075b0f795eb9bacb9b440b792ee4958c0e19586c2d2edc15d0699fd",
+    "apps/gaoxy_http/lib/gaoxy/http/router.ex": "1cb7a4d354ae6f46cac993494eb81265725e10cacb147d20028aea96a326eee7"
+  },
+  "root_cause": "The fixture prefix /echo-standalone only matches itself or /echo-standalone/... according to Router.path_match?/2. The upload path /echo-standalone-upload falls through to static old, so the original 17-byte-before-FIN H3-origin barrier times out with no origin requests.",
+  "minimal_repair": "Use exact path /echo-standalone-upload for the A origin; preserve the B zero-body and ordinary routes, assertions and deadlines.",
+  "standalone_initial_unsuccessful": 1,
+  "standalone_repair_rounds": 0,
+  "up2_live_repair_rounds": 0,
+  "original_failure_preserved": true
+}

@@ -1,0 +1,169 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "assignment": "direct independent read-only actual failure/evidence and dependency blocker assessment",
+  "status": "DONE",
+  "reviewed_ns": 1791832511074857326,
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "actual_gate_review": {
+    "verdict": "FAIL_CONFIRMED",
+    "result_path": "docs/acceptance/evidence/m4/upstream-contract/run-1791831993043786216/result.json",
+    "result_sha256": "a000554e141582b975f344b0c8da1a53102f96e0a3570b6e4eec9404d0d3bbe7",
+    "root_diagnosis_path": "docs/acceptance/evidence/m4/upstream-contract/session-astra1-runtime-diagnosis-1791832095634501415.json",
+    "root_diagnosis_sha256": "85d29625e6c6c0568d5fb36b2551883d2837dd6ad92e673c0ef7ef4c342e4e93",
+    "actual_exit": 1,
+    "executed": 37,
+    "PASS_by_kind": {
+      "boundary_double": 31,
+      "network": 6,
+      "policy": 0
+    },
+    "required_total": 50,
+    "NOT_RUN": {
+      "network": [
+        "cancel_blocked_upload",
+        "cancel_owner_loss",
+        "cancel_pending_headers",
+        "cancel_unacknowledged_response",
+        "request_trailers_three_declared",
+        "request_trailers_three_undeclared",
+        "request_trailers_zero_declared",
+        "request_trailers_zero_undeclared",
+        "tiny_window_1mib",
+        "wrong_ca",
+        "wrong_hostname"
+      ],
+      "policy": [
+        "absent_trust",
+        "address_policy"
+      ],
+      "doubles": []
+    },
+    "source_before_after_equal": true,
+    "current_captured_source_hashes_verified": 285,
+    "children": [
+      {
+        "pid": 1806717,
+        "exit": 0
+      },
+      {
+        "pid": 1811366,
+        "exit": 1
+      }
+    ],
+    "origin_ports_rebound": [
+      48065,
+      37172
+    ],
+    "full_UP0": "FAIL/incomplete",
+    "UP1": "HOLD_UP0",
+    "production_adapter": "NOT IMPLEMENTED",
+    "publication": "NOT ELIGIBLE"
+  },
+  "failure_evidence": {
+    "location": "session_probe.exs:1894-1900 upload first 16KiB application DATA; settle repeated resume then guardian call missing :call",
+    "observations": [
+      "Native /tiny-upload admitted one request HEADERS, data_bytes0 and request_finfalse; no origin DATA or FIN",
+      "One send_data result blocked and 822 resume results blocked, same pending send and preserved deadline; native blocked reason data_blocked value93 is aggregate connection data_sent, not an asserted request offset",
+      "The prior paused-control recovery ran: all31 doubles and6 network checks passed before failure",
+      "No new runtime, format or source mutation performed by this review"
+    ],
+    "log_sha256": {
+      "probe.log": "4e05860aff467f3a23723ed5e0d7c26ba996ecf8b14ee824968250f87bf017bb",
+      "origin.log": "056765770e81de2622b6410b6617564bb659eed139bcd843a4d3f629108430fc"
+    }
+  },
+  "cleanup_evidence": {
+    "verdict": "PARTIAL_ONLY",
+    "captured_native_cleanup_results": 5,
+    "captured_guardian_loss_results": 2,
+    "tiny_upload_cleanup_result": "NOT OBSERVED",
+    "tiny_upload_owned_endpoint_stop_DOWN_and_rebind": "NOT CLAIMED: failed request has no captured cleanup_result",
+    "global_owned_children": "Both child exits recorded0/1, no running child claimed",
+    "origin_listener_rebind": "Both known origin ports rebound. Does not replace missing failed-request endpoint/task cleanup receipt.",
+    "Service_completion": "NOT CLAIMED"
+  },
+  "upstream_assessment": {
+    "verdict": "CONFIRMED_DEFAULT_OPTION_STREAMING_INTEROPERABILITY_BUG; NOT AN UNAVOIDABLE EXTERNAL BLOCKER",
+    "package": "elixir_quic_http30.21.4 + elixir_quic0.21.4",
+    "repository": "gsmlg-dev/http_fetch",
+    "provenance": [
+      "deps/elixir_quic_http3/mix.exs source_url and package link",
+      "deps/elixir_quic/mix.exs:31 GitHub package link",
+      "mix.lock coordinated0.21.4 pins"
+    ],
+    "source_chain": [
+      "Session.send_data accepts<=16384 application bytes (session.ex:131-145); data_steps Frame-encodes DATA and chunks sends by max_frame (615-626)",
+      "Quic Transport.send_stream passes complete binary through public ops; HandshakeScheduler.send_stream validates<=16384 then calls Streams.send (handshake_scheduler.ex:146-183)",
+      "Streams.send requires entire binary to fit both connection and per-stream credit before admitting any bytes (streams.ex:216-246,557-561)",
+      "Peer aioquic initial stream credit16384 (origin.py:118), but HEADERS already consume positive stream bytes; default first16384 transport fragment cannot fit",
+      "Peer raises MAX_STREAM_DATA only when received highest_offset*2>current limit (aioquic connection.py:3571-3600). HEADERS alone stay below8192; repeated identical blocked send cannot produce the required progress"
+    ],
+    "peer_source_sha256": "7c14594073bbdfbd0485154246fc52843d166b6eb0c12779ddfac167da594d74",
+    "routing_recommendation": "Bug issue severity needed for default-option streaming deadlock. Root owns issue creation and any TODO/WORKAROUND callsite comment. No blocker classification before the supported public route is qualified. No issue97 or arbitrary residual-window proof introduced."
+  },
+  "supported_public_route": {
+    "specification_verdict": "LEGITIMATE_BOUNDED_COMPATIBILITY_AMENDMENT",
+    "recommended_configuration": "Session.new(max_frame:8192)",
+    "source_evidence": [
+      "new validates1..16384 (session.ex:49-55)",
+      "send_data application guard remains16384 (131-145)",
+      "chunks fragments encoded control/request/DATA/trailer bytes using max_frame (623-626)",
+      "Response.new receives independent field/header limits; no dependency on max_frame (537-544)",
+      "transport.read uses min(max_frame,work.bytes) (462), so8192also bounds each public read"
+    ],
+    "mechanism": "At unchanged16384 peer credit, positive HEADERS offset plus first8192 admitted transport bytes crosses peer growth threshold. Subsequent fragments retain existing pending Session and FIN semantics. No app-body reconstruction or admitted-byte replay.",
+    "preserved_requirements": [
+      "Application chunk ceiling16KiB and exact1MiB upload/download",
+      "Peer initial stream credit16384 and origin implementation",
+      "All50 named rows/classification and wire/strict TLS/cancellation/sibling assertions",
+      "Same continuation/reconciliation identity, single FIN, no replay",
+      "Original absolute operation/opening/total/cleanup deadlines",
+      "max_read_batches1, paused refs, queue/payload bounds and strict teardown receipts"
+    ],
+    "architect_consultation": {
+      "agent": "/root/m4_session_affinity_design",
+      "result": "Confirmed supported option legitimacy and identified smaller read bound; initial blocker classification overreached arbitrary-window guarantees outside prescribed gate. Root authorized two new bounded amendment docs and config plus deterministic fragment test; no runtime yet."
+    },
+    "runtime_verdict": "NOT RUN: supported-route arithmetic/source feasibility is not live acceptance",
+    "limits": "Does not assert arbitrary future peer-window progress or default16384 configuration acceptance."
+  },
+  "counters": {
+    "sol_repair_rounds": 2,
+    "unsuccessful_sol_repair_rounds": 2,
+    "astra_recovery_rounds": 1,
+    "unsuccessful_astra_recovery_rounds": 1,
+    "astra_round2": "Diagnosis-only so far; no failure-directed edit/validation consumed recovery2 during this review",
+    "reviewer_added_repair_rounds": 0
+  },
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "aa81666e8a451ddd70b32da2355a77ffd6306daa40b10b33b6c1422ee8eb216d",
+    "integration/http3/upstream/run.py": "56fd407995508b6a2555ac9d332e5bb7b355d55ff1d77f3f31eaaaa22508644a",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "a72863fbae8b4a2bde89f467e82cd79c8b4bcc08758943a817ec473e04bf8619",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "AGENTS.md": "902a735746a9d05c45b5a3f54c35ad612b1de66af132a39ba26b1215cf90f0c7",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic_http3/lib/quic_http3/transport.ex": "dd5a9c0f03feb11c7f87391ee0fad1abd345aa17149dfdc44ed1817baf57e4e2",
+    "deps/elixir_quic_http3/lib/quic_http3/control.ex": "d0733f9afad0f898d19878261bfbb95d28ccf2ab20bbea40309cf7dd623006c0",
+    "deps/elixir_quic_http3/lib/quic_http3/qpack.ex": "6fae0bd0123437e71d5499b54ddde35c5b3fa191f99a9e4de38b3c22db1ea66b",
+    "deps/elixir_quic_http3/lib/quic_http3/frame.ex": "350f7c3fcf37183c774adf19ec1f6ddb39dbb03aa4b9c5b998d3d34703cd62c7",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806"
+  },
+  "verification": "Read-only source/spec/log reads, git identity and Python JSON/count/SHA256 checks all exited0. 285 captured paths independently match. No Mix/live/format/compile commands invoked.",
+  "changed_files": "Only this new unique review receipt. All source, original specs and historical evidence preserved.",
+  "command_shutdown": "All reviewer commands finished. No persistent child started, no other process interrupted.",
+  "remaining_risks": [
+    "Supported8192 candidate remains unimplemented/unexecuted by this reviewer",
+    "All13 remaining prescribed rows must execute and pass; existing37 passing rows require fresh candidate qualification",
+    "Smaller public read/write fragments alter scheduling and operation count; unchanged finite deadline acceptance still required",
+    "Default streaming defect remains visible upstream; failed tiny-upload cleanup is not independently qualified"
+  ],
+  "decisions_needed": "Root may proceed with the authorized bounded public-option amendment and qualifying recovery candidate, route needed upstream bug, then require independent pre-live review and actual gate. No new user product decision identified."
+}

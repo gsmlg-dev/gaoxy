@@ -1,0 +1,136 @@
+--- a/integration/http3/upstream/fixture.exs
++++ b/integration/http3/upstream/fixture.exs
+@@ -250,6 +250,8 @@
+         observe(table, Map.reject(owners, fn {_, value} -> value == id end), guardians, monitors)
+ 
+       {:DOWN, reference, :process, pid, reason} ->
++        Process.delete({:matrix_upload_timing, pid})
++
+         case monitors[reference] do
+           {:guardian, id} -> update(table, id, &Map.put(&1, :guardian_down, bounded(reason)))
+           {:owner, id} -> update(table, id, &Map.put(&1, :owner_down, bounded(reason)))
+@@ -295,6 +297,7 @@
+     with id when is_binary(id) <- guardians[guardian],
+          event when is_map(event) <- upload_event(direction, message) do
+       event = Map.put(event, :at_us, System.convert_time_unit(timestamp, :native, :microsecond))
++      event = upload_timing(guardian, direction, message, event)
+ 
+       update(table, id, fn receipt ->
+         trace =
+@@ -322,6 +325,32 @@
+             trace
+           end
+ 
++        trace =
++          Enum.reduce(
++            [:command_us, :upload_reply_us, :upload_interval_us, :ingress_gap_us, :polls_since_upload],
++            trace,
++            fn metric, acc ->
++              if Map.has_key?(event, metric) do
++                name = Atom.to_string(metric)
++                name = if metric == :command_us, do: name <> ":" <> event.operation, else: name
++                metrics = Map.get(acc, :metrics, %{})
++                Map.put(acc, :metrics, Map.update(metrics, name, measurement(event[metric]),
++                  &measure(&1, event[metric])))
++              else
++                acc
++              end
++            end
++          )
++
++        trace =
++          case event do
++            %{poll_events: events} ->
++              totals = Map.get(trace, :poll_events, %{})
++              Map.put(trace, :poll_events, Map.merge(totals, events, fn _, a, b -> a + b end))
++
++            _ -> trace
++          end
++
+         Map.put(receipt, :upload_trace, trace)
+       end)
+     else
+@@ -329,6 +358,73 @@
+     end
+   end
+ 
++  # One scalar/ref context per selected guardian, never a Session or message history.
++  defp upload_timing(guardian, direction, message, %{kind: kind} = event)
++       when kind in ["command", "result", "upload", "upload_reply"] do
++    key = {:matrix_upload_timing, guardian}
++    context = Process.get(key, %{command: nil, upload: nil, last_upload: nil, last_reply: nil, polls: 0})
++    {event, context} = timing_event(direction, message, event, context)
++    Process.put(key, context)
++    event
++  end
++
++  defp upload_timing(_, _, _, event), do: event
++
++  defp timing_event(:send, {:h3_command, _, _, _, ref, _, operation, _, _}, event, context) do
++    polls = context.polls + if(operation == :poll, do: 1, else: 0)
++    {event, %{context | command: {ref, operation, event.at_us}, polls: polls}}
++  end
++
++  defp timing_event(:receive, {:h3_result, _, _, _, ref, result}, event,
++         %{command: {ref, operation, started}} = context) do
++    event = Map.merge(event, %{operation: Atom.to_string(operation), command_us: event.at_us - started})
++    event = if operation == :poll, do: Map.put(event, :poll_events, poll_event_counts(result)), else: event
++    {event, %{context | command: nil}}
++  end
++
++  defp timing_event(:receive, {:h3_upload, _, _, ref, :data, _, _}, event, context) do
++    event = Map.put(event, :polls_since_upload, context.polls)
++    event = if context.last_upload, do: Map.put(event, :upload_interval_us, event.at_us - context.last_upload), else: event
++    event = if context.last_reply, do: Map.put(event, :ingress_gap_us, event.at_us - context.last_reply), else: event
++    {event, %{context | upload: {ref, event.at_us}, last_upload: event.at_us, last_reply: nil, polls: 0}}
++  end
++
++  defp timing_event(:receive, {:h3_upload, _, _, ref, :finish, _, _}, event, context),
++    do: {event, %{context | upload: {ref, event.at_us}}}
++
++  defp timing_event(:send, {:h3_upload_reply, _, ref, _}, event,
++         %{upload: {ref, started}} = context),
++    do: {Map.put(event, :upload_reply_us, event.at_us - started),
++         %{context | upload: nil, last_reply: event.at_us}}
++
++  defp timing_event(_, _, event, context), do: {event, context}
++
++  defp measurement(value), do: %{count: 1, total: value, min: value, max: value}
++
++  defp measure(stats, value),
++    do: %{count: stats.count + 1, total: stats.total + value,
++          min: min(stats.min, value), max: max(stats.max, value)}
++
++  # Poll results are public event lists; inspect tags only, not metadata or Session.
++  defp poll_event_counts({:ok, _, events}) when is_list(events),
++    do: Enum.reduce(events, %{}, fn event, counts ->
++      Map.update(counts, poll_event_kind(event), 1, &(&1 + 1))
++    end)
++
++  defp poll_event_counts(_), do: %{}
++
++  defp poll_event_kind(:writable), do: "writable"
++  defp poll_event_kind(:ready), do: "ready"
++  defp poll_event_kind({:writable, _}), do: "writable"
++  defp poll_event_kind({:ready, _}), do: "ready"
++  defp poll_event_kind({:settings, _}), do: "settings"
++  defp poll_event_kind({:headers, _, _}), do: "headers"
++  defp poll_event_kind({:data, _, _}), do: "data"
++  defp poll_event_kind({:trailers, _, _}), do: "trailers"
++  defp poll_event_kind({:done, _}), do: "done"
++  defp poll_event_kind({:informational, _, _, _}), do: "informational"
++  defp poll_event_kind(_), do: "other"
++
+   defp upload_event(:receive, {:h3_upload, _, _, _, :data, bytes, _}) when is_binary(bytes),
+     do: %{kind: "upload", category: "data", bytes: byte_size(bytes)}
+ 
+@@ -346,6 +442,9 @@
+   defp upload_event(:send, {:h3_command, _, _, _, _, _, operation, _, _})
+        when is_atom(operation),
+        do: %{kind: "command", operation: Atom.to_string(operation)}
++
++  defp upload_event(:send, {:h3_upload_reply, _, _, result}),
++    do: %{kind: "upload_reply", category: result_category(result)}
+ 
+   defp upload_event(_, _), do: nil
+ 

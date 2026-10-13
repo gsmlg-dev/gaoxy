@@ -1,0 +1,245 @@
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_http3
+Running ExUnit with seed: 0, max_cases: 4
+
+.......
+
+  1) test zero-wait polling rejects stale tokens, workers and table owners (Gaoxy.HTTP.HTTP3.TransportTest)
+     apps/gaoxy_http3/test/transport_test.exs:201
+     match (=) failed
+     The following variables were pinned:
+       stale = %Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/3", path: "/", query_string: nil, host: nil, port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: nil, gate: #PID<0.396.0>, lease: #Reference<0.456447563.3996909569.248644>, deadline: -576460746856, limits: %{max_buffer_bytes: 65536, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_header_bytes: 32768, max_request_line: 8192, max_headers: 100, max_body_bytes: 8388608, max_chunk_line: 1024, max_trailer_bytes: 8192, max_trailers: 32}, body: %{total: 0, phase: :data, trailers: [], trailer_bytes: 0}, buffer: "", peer: {{127, 0, 0, 1}, 12345}, local: {{127, 0, 0, 1}, 443}, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, route_bytes: 0, resource_pins: [], protocol_bytes: 0, transport: Gaoxy.HTTP.HTTP3.Transport, transport_state: {#PID<0.397.0>, #Reference<0.456447563.3997040641.248651>, #Reference<0.456447563.3996909569.248652>, #Reference<0.456447563.3996909569.248658>}, secure: true, ssl: nil, peer_cert: nil, expect_sent: false}
+     code:  assert {:error, :closed, ^stale} = Exchange.poll_connection(stale, 0)
+     left:  {:error, :closed, ^stale}
+     right: {:pending,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: nil,
+                 target_form: nil,
+                 version: :"HTTP/3",
+                 path: "/",
+                 query_string: nil,
+                 host: nil,
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 0,
+                 headers: [],
+                 body: :none,
+                 keep_alive: false,
+                 expect_continue: false
+               },
+               socket: nil,
+               gate: #PID<0.396.0>,
+               lease: #Reference<0.456447563.3996909569.248644>,
+               deadline: -576460746856,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_read_chunk: 16384,
+                 read_timeout: 5000,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_headers: 100,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32
+               },
+               body: %{
+                 total: 0,
+                 phase: :data,
+                 trailers: [],
+                 trailer_bytes: 0
+               },
+               buffer: "",
+               peer: {{127, 0, 0, 1}, 12345},
+               local: {{127, 0, 0, 1}, 443},
+               service: nil,
+               instance: nil,
+               response: :unset,
+               response_trailers: [],
+               close: false,
+               route_bytes: 0,
+               resource_pins: [],
+               protocol_bytes: 0,
+               transport: Gaoxy.HTTP.HTTP3.Transport,
+               transport_state: {#PID<0.397.0>,
+                #Reference<0.456447563.3997040641.248651>,
+                #Reference<0.456447563.3996909569.248652>,
+                #Reference<0.456447563.3996909569.248658>},
+               secure: true,
+               ssl: nil,
+               peer_cert: nil,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/transport_test.exs:211: anonymous fn/3 in Gaoxy.HTTP.HTTP3.TransportTest."test zero-wait polling rejects stale tokens, workers and table owners"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/transport_test.exs:205: (test)
+
+
+
+  2) test zero-wait polling rejects finished slots without submitting an operation (Gaoxy.HTTP.HTTP3.TransportTest)
+     apps/gaoxy_http3/test/transport_test.exs:220
+     match (=) failed
+     The following variables were pinned:
+       exchange = %Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/3", path: "/", query_string: nil, host: nil, port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: nil, gate: #PID<0.401.0>, lease: #Reference<0.456447563.3996909569.248698>, deadline: -576460746834, limits: %{max_buffer_bytes: 65536, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_header_bytes: 32768, max_request_line: 8192, max_headers: 100, max_body_bytes: 8388608, max_chunk_line: 1024, max_trailer_bytes: 8192, max_trailers: 32}, body: %{total: 0, phase: :data, trailers: [], trailer_bytes: 0}, buffer: "", peer: {{127, 0, 0, 1}, 12345}, local: {{127, 0, 0, 1}, 443}, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, route_bytes: 0, resource_pins: [], protocol_bytes: 0, transport: Gaoxy.HTTP.HTTP3.Transport, transport_state: {#PID<0.402.0>, #Reference<0.456447563.3997040641.248701>, #Reference<0.456447563.3996909569.248702>, #Reference<0.456447563.3996909569.248703>}, secure: true, ssl: nil, peer_cert: nil, expect_sent: false}
+     code:  assert {:error, :closed, ^exchange} = Exchange.poll_connection(exchange, 0)
+     left:  {:error, :closed, ^exchange}
+     right: {:pending,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: nil,
+                 target_form: nil,
+                 version: :"HTTP/3",
+                 path: "/",
+                 query_string: nil,
+                 host: nil,
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 0,
+                 headers: [],
+                 body: :none,
+                 keep_alive: false,
+                 expect_continue: false
+               },
+               socket: nil,
+               gate: #PID<0.401.0>,
+               lease: #Reference<0.456447563.3996909569.248698>,
+               deadline: -576460746834,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_read_chunk: 16384,
+                 read_timeout: 5000,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_headers: 100,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32
+               },
+               body: %{
+                 total: 0,
+                 phase: :data,
+                 trailers: [],
+                 trailer_bytes: 0
+               },
+               buffer: "",
+               peer: {{127, 0, 0, 1}, 12345},
+               local: {{127, 0, 0, 1}, 443},
+               service: nil,
+               instance: nil,
+               response: :unset,
+               response_trailers: [],
+               close: false,
+               route_bytes: 0,
+               resource_pins: [],
+               protocol_bytes: 0,
+               transport: Gaoxy.HTTP.HTTP3.Transport,
+               transport_state: {#PID<0.402.0>,
+                #Reference<0.456447563.3997040641.248701>,
+                #Reference<0.456447563.3996909569.248702>,
+                #Reference<0.456447563.3996909569.248703>},
+               secure: true,
+               ssl: nil,
+               peer_cert: nil,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/transport_test.exs:224: (test)
+
+...
+
+  3) test owner DOWN and deleted ETS end a cooperative transport wait (Gaoxy.HTTP.HTTP3.TransportTest)
+     apps/gaoxy_http3/test/transport_test.exs:267
+     match (=) failed
+     The following variables were pinned:
+       exchange = %Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: nil, target_form: nil, version: :"HTTP/3", path: "/", query_string: nil, host: nil, port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 0, headers: [], body: :none, keep_alive: false, expect_continue: false}, socket: nil, gate: #PID<0.421.0>, lease: #Reference<0.456447563.3996909570.239665>, deadline: -576460746687, limits: %{max_buffer_bytes: 65536, write_timeout: 5000, request_timeout: 30000, header_timeout: 5000, max_read_chunk: 16384, read_timeout: 5000, max_header_bytes: 32768, max_request_line: 8192, max_headers: 100, max_body_bytes: 8388608, max_chunk_line: 1024, max_trailer_bytes: 8192, max_trailers: 32}, body: %{total: 0, phase: :data, trailers: [], trailer_bytes: 0}, buffer: "", peer: {{127, 0, 0, 1}, 12345}, local: {{127, 0, 0, 1}, 443}, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, route_bytes: 0, resource_pins: [], protocol_bytes: 0, transport: Gaoxy.HTTP.HTTP3.Transport, transport_state: {#PID<0.422.0>, #Reference<0.456447563.3997040642.239672>, #Reference<0.456447563.3996909570.239673>, #Reference<0.456447563.3996909570.239674>}, secure: true, ssl: nil, peer_cert: nil, expect_sent: false}
+     code:  assert {:error, :closed, ^exchange} = Exchange.poll_connection(exchange, 0)
+     left:  {:error, :closed, ^exchange}
+     right: {:pending,
+             %Gaoxy.HTTP.Exchange{
+               request: %Gaoxy.HTTP.Request{
+                 method: "GET",
+                 target: nil,
+                 target_form: nil,
+                 version: :"HTTP/3",
+                 path: "/",
+                 query_string: nil,
+                 host: nil,
+                 port: nil,
+                 scheme: nil,
+                 peer: nil,
+                 local: nil,
+                 head_bytes: 0,
+                 headers: [],
+                 body: :none,
+                 keep_alive: false,
+                 expect_continue: false
+               },
+               socket: nil,
+               gate: #PID<0.421.0>,
+               lease: #Reference<0.456447563.3996909570.239665>,
+               deadline: -576460746687,
+               limits: %{
+                 max_buffer_bytes: 65536,
+                 write_timeout: 5000,
+                 request_timeout: 30000,
+                 header_timeout: 5000,
+                 max_read_chunk: 16384,
+                 read_timeout: 5000,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_headers: 100,
+                 max_body_bytes: 8388608,
+                 max_chunk_line: 1024,
+                 max_trailer_bytes: 8192,
+                 max_trailers: 32
+               },
+               body: %{
+                 total: 0,
+                 phase: :data,
+                 trailers: [],
+                 trailer_bytes: 0
+               },
+               buffer: "",
+               peer: {{127, 0, 0, 1}, 12345},
+               local: {{127, 0, 0, 1}, 443},
+               service: nil,
+               instance: nil,
+               response: :unset,
+               response_trailers: [],
+               close: false,
+               route_bytes: 0,
+               resource_pins: [],
+               protocol_bytes: 0,
+               transport: Gaoxy.HTTP.HTTP3.Transport,
+               transport_state: {#PID<0.422.0>,
+                #Reference<0.456447563.3997040642.239672>,
+                #Reference<0.456447563.3996909570.239673>,
+                #Reference<0.456447563.3996909570.239674>},
+               secure: true,
+               ssl: nil,
+               peer_cert: nil,
+               expect_sent: false
+             }}
+     stacktrace:
+       test/transport_test.exs:274: (test)
+
+
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+13 tests, 3 failures

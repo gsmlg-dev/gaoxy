@@ -1,0 +1,107 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_INFLIGHT_CLEANUP_ABORT_CODE_PREPARATION",
+  "assignment": "direct independent read-only CODE and SPEC amendment review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "inputs_sha256": {
+    "docs/designs/m4-up2-inflight-cleanup-abort.md": "46069672dead83302ea544e414e11b77068a0d00784fb22328b675f21ff092ef",
+    "docs/plans/m4-up2-inflight-cleanup-abort.md": "e370a94689875baff4430d64b953959ce4df4123e4fb7ec4482d22213e774c93",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "07c656eb3ce2eed2eba4237e59ebc4b48e1f3656d6953004a1498d733628d9cc",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "fe7aeaa37d12309ecf4cd5a23673ba2841b4d2c09cf1c4f9b583f982e2910f0a",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a"
+  },
+  "earlier_spec_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-inflight-cleanup-abort-spec-preparation-1791854974393186984.json",
+    "sha256": "81b5d681d7588101bf96e17906777b8663bfdc47a20a13ffc1b24a61071f61f4",
+    "original_design_sha256": "d5197267e785de4318ae0ff53f8ea2857263f27c118f2955fb4899f1adbd19f6",
+    "amended_design_sha256": "46069672dead83302ea544e414e11b77068a0d00784fb22328b675f21ff092ef",
+    "changes": "Explicit cancelled abort versus consumed close pending-contract distinction; original5ms cleanup-entry tick rearm for canceled nonnil timer ref; original stop_due/deadline unchanged."
+  },
+  "findings": [],
+  "code_checks": [
+    "Exact id/generation/caller/ref matcher consumes current result, retains advanced Session before clearing operation. Stale correlation messages remain ignored by fallback receiver.",
+    "ANY outstanding public call with live caller/Session/endpoint waits only under one original min(cleanupdeadline,now+100) stop_due; entry rearm changes neither deadline nor stop_due.",
+    "Correlated nonterminal result does not queue application events or call operation_result. Unknown opaque ref retained as abandoned_operation_identity.",
+    "One terminal abort(cancelled)/close(consumed) uses same caller and advanced Session only while stop_task=nil, stop_due live, caller/endpoint alive and caller_stop not sent. Stop_due is not reset.",
+    "Late result after fallback/stop_due/caller_stop/endpoint loss cannot dispatch public command; caller loss starts local stop. Existing stop/endpoint/owned-DOWN proof remains unchanged.",
+    "Cancelled public abort can clear pending/work without replay under public contract. Consumed close preserves public pending error/local-stop outcome; no remote-abandonment claim.",
+    "No new process/public interface/window/deadline/SDK-private inspection or dependency edit introduced; existing idle abort/deferredstop behavior unchanged."
+  ],
+  "test_assessment": [
+    "Two new tests cover held poll advanced Session and ok/unknown result, stale generation, ignored lateDATA/FIN, no resume/poll replay, exact identity, unchangedstop_due/deadline and publicresult-beforestop.",
+    "Held neverreturning poll and callerloss cover original100ms fallback via250ms assertion headroom, no terminal command after local stop, required completion receipt/ownedDOWN.",
+    "Existing canceled-actual-tick pausedACK test unchanged and now PASS; initial57/1 genuine regression remains immutable.",
+    "Existing idleabort/callerloss/fallback/deferredstop/Service retained-reservation assertions remain in executed57test file."
+  ],
+  "evidence": {
+    "inflight-cleanup-abort-red-1791855372291449908.json": {
+      "sha256": "b0cd2ea5e88a6f65c7f926cc167cc262eced10282329585ab89e36afa8402cf0",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "source_count": 288,
+      "source_unchanged": true,
+      "log_sha256": "9becacd6a8c22fd5f6e1fd93699d3aa3d7d88f8f788c9c67fb73ba25248f2c03",
+      "test_counts": [
+        "57 tests, 2 failures"
+      ],
+      "test_sha256": "fe7aeaa37d12309ecf4cd5a23673ba2841b4d2c09cf1c4f9b583f982e2910f0a",
+      "production_sha256": "9e3774cfe94cf02f63c4db69136bd0b6c636af9fe0a07bac4836d2655e6a77ff"
+    },
+    "inflight-cleanup-abort-green-1791855471217184666.json": {
+      "sha256": "c01c45cb718fcd48b1cd4c184364a7d783a761b84b0bcf480f4e889221b6ba05",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "source_count": 288,
+      "source_unchanged": true,
+      "log_sha256": "7d9d43af584e390f3ab00d3885a00304b18d88cb4b2009dca2fc5216afb0f5a3",
+      "test_counts": [
+        "57 tests, 1 failure"
+      ],
+      "test_sha256": "fe7aeaa37d12309ecf4cd5a23673ba2841b4d2c09cf1c4f9b583f982e2910f0a",
+      "production_sha256": "1261e35dc65a9e97dc10da56b37f45be8254039c6342ae94ec54d2f83bcb0ba4"
+    },
+    "inflight-cleanup-abort-revised-green-1791855534434482423.json": {
+      "sha256": "c002f2b11cf956676209b1ca5859426e58d5e7410f88cfff75524591989cdb0b",
+      "status": "PASS",
+      "actual_exit": 0,
+      "source_count": 288,
+      "source_unchanged": true,
+      "log_sha256": "13e74bac6ee08e2390bbf417dd244cda41ca3f26f4d43eddd8cbfd7b291122d5",
+      "test_counts": [
+        "57 tests, 0 failures"
+      ],
+      "test_sha256": "fe7aeaa37d12309ecf4cd5a23673ba2841b4d2c09cf1c4f9b583f982e2910f0a",
+      "production_sha256": "07c656eb3ce2eed2eba4237e59ebc4b48e1f3656d6953004a1498d733628d9cc"
+    }
+  },
+  "current_green_map": {
+    "inputs": 288,
+    "before_equals_after": true,
+    "current_mismatches": []
+  },
+  "not_run_by_reviewer": [
+    "Mix",
+    "format",
+    "compile",
+    "network/live"
+  ],
+  "acceptance_remaining": [
+    "Current scoped compatibility/format/strictcompile/prelive receipt",
+    "Fresh full66network+2policy matrix and independent review",
+    "Required complete repeat and finalM4 native/browser/standalone/Session/consumer gates"
+  ],
+  "counters": {
+    "up2_failed_live": 20,
+    "failed_production_rounds": 8,
+    "failed_harness_rounds": 3,
+    "current_repair": 12,
+    "initial_repair12_green": "57/1 FAIL preserved; fixed by one local timer rearm edit, revised57/0 PASS; no live-count change",
+    "reviewer_repair_rounds": 0,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2
+  },
+  "scope": "unique immutable receipt only",
+  "command_shutdown": "all reviewer commands finished; no owned runtime process"
+}

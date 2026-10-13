@@ -1,0 +1,40 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 138074, max_cases: 4
+
+..................................
+
+  1) test cleanup waits for the correlated poll then aborts its advanced Session without replay (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:1437
+     Assertion with == failed
+     code:  assert waiting.stop_task == nil
+     left:  %{
+              monitor: #Reference<0.2623434009.1609302018.59171>,
+              pid: #PID<0.630.0>,
+              down: nil
+            }
+     right: nil
+     stacktrace:
+       test/http3_session_client_test.exs:1464: anonymous fn/3 in Gaoxy.Proxy.HTTP3SessionClientTest."test cleanup waits for the correlated poll then aborts its advanced Session without replay"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http3_session_client_test.exs:1442: (test)
+
+...................
+
+  2) test a held cleanup poll retains the original fallback bound and caller-loss stop (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:1507
+     Assertion with == failed
+     code:  assert waiting.stop_task == nil
+     left:  %{
+              monitor: #Reference<0.2623434009.1609302017.68447>,
+              pid: #PID<0.775.0>,
+              down: nil
+            }
+     right: nil
+     stacktrace:
+       test/http3_session_client_test.exs:1516: anonymous fn/3 in Gaoxy.Proxy.HTTP3SessionClientTest."test a held cleanup poll retains the original fallback bound and caller-loss stop"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http3_session_client_test.exs:1508: (test)
+
+..
+Finished in 7.8 seconds (7.8s async, 0.00s sync)
+57 tests, 2 failures

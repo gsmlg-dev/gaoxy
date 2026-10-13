@@ -1,0 +1,144 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPECIFICATION_PREPARATION",
+  "diagnosis_status": "CONFIRMED_INDEPENDENT_PEER_CONTENT_LENGTH_VALIDATION",
+  "assignment": "direct independent read-only repair7 actual H3 HEAD failure diagnosis and repair8 written specification review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-h3-bodyless-peer.md": "53bcb79ffbf8d71a9530916fb0faf34cf7ff8fb23f767715c8636f4c875adfd9",
+    "docs/plans/m4-up2-h3-bodyless-peer.md": "e198a5cdebb2262d685e788672b757ecf0ddef89d2e9180757dd941f5cda5dde",
+    "integration/http3/upstream/peer.py": "25ab8b80006e80cb906d1bdcf26e039ef6b5a26269aa43aa33ef7ebc14d12c5c",
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/aioquic/h3/connection.py": "e7e89dc74f7b353771132a7fdfad10ff81208a7102cb58ff33b8e0e09088d7dd"
+  },
+  "findings": [],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791850003746638515/result.json",
+      "sha256": "416aab1f80c161f758a17e35704555e030f4fcba13087adcfb8a84619d8d15f2",
+      "peer_log_sha256": "9f96fd0fbd881ad8dddd65a2af8ecfcb7306699ce876f6a9a8b6a65213f5391a",
+      "actual_exit": 1,
+      "status": "FAIL",
+      "executed_checks": 47,
+      "network_checks": 45,
+      "policy_checks": 2,
+      "source_unchanged": true,
+      "children": [
+        {
+          "pid": 249544,
+          "exit": 1,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 221842,
+          "exit": 0,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 218106,
+          "exit": 0,
+          "forced_shutdown": false
+        }
+      ],
+      "head_receipt": {
+        "id": "h3-head",
+        "events": [
+          "ready",
+          "headers",
+          "end"
+        ],
+        "result": {
+          "response": ":sent",
+          "outcome": "ok"
+        },
+        "errors": [],
+        "client": "Gaoxy.Proxy.HTTP3SessionClient",
+        "owner_down": ":normal",
+        "public_closed": [],
+        "guardian": "#PID<0.1948.0>",
+        "elapsed_ms": 85,
+        "guardian_down": ":normal"
+      }
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791850200066394763/result.json",
+      "sha256": "d98880f897f267fd1ac2b6e43e238e1cb6526f3b968b32291f1c5c6de0a11fdd",
+      "peer_log_sha256": "301e939b7d71860446a906827eea0996db22d67d691f487e6585d012d9cab2bb",
+      "actual_exit": 1,
+      "status": "FAIL",
+      "executed_checks": 47,
+      "network_checks": 45,
+      "policy_checks": 2,
+      "source_unchanged": true,
+      "children": [
+        {
+          "pid": 2585633,
+          "exit": 1,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 2556947,
+          "exit": 0,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 2553624,
+          "exit": 0,
+          "forced_shutdown": false
+        }
+      ],
+      "head_receipt": {
+        "id": "h3-head",
+        "events": [
+          "ready",
+          "headers",
+          "end"
+        ],
+        "result": {
+          "response": ":sent",
+          "outcome": "ok"
+        },
+        "errors": [],
+        "client": "Gaoxy.Proxy.HTTP3SessionClient",
+        "owner_down": ":normal",
+        "public_closed": [],
+        "guardian": "#PID<0.1936.0>",
+        "elapsed_ms": 68,
+        "guardian_down": ":normal"
+      },
+      "observed_termination": {
+        "error_code": 270,
+        "reason": "content-length does not match data size"
+      }
+    }
+  ],
+  "root_cause": "aioquic1.2.0 generic response validator stores advertisedcontent-length7 but tracks no HEAD/status-bodyless exception. At endedHEADERS it compares0DATA!=7 and raisesMessageError before appendingHeadersReceived; handle_event catchesProtocolError and closesQUIC. Actualindependentpeer termination270/content-length doesnotmatchdatasize confirms this exactpath. Native local:sent/ok and normalowner/guardianDOWN alone wouldnotprove wirecompletion; failures remainFAIL. Same staticvalidator omission applies304metadata.",
+  "review_conclusions": [
+    "Writtenrepair8 accurately records both47checkFAILs and cumulative15live/5production/2harnessfailures. No thirdAstra.",
+    "Narrow selectedH3HEAD/304 publicQUIC/Buffer+pylsqpack rawresponse decoder follows existing integration/http3/peer.py convention. Retain H3Connection request/control support and standardordinary decoding; no privatevalidator/dependency edits or productionchanges.",
+    "Raw carry/frame must remain finite (assigned64KiB bound), assemble splitvarints/payloads and failpartialFIN/dynamicreferences/anybodylessDATAframe. Require exactobservedFIN with sameheaders/body/endedresponse structure; do not inventcompletion or ignoreparser errors.",
+    "Retains original66+2,2KiBwindows,absolute5s,exactheaders/body/hash/duplicate/trailer/end/cleanup/cancellation/sibling oracles. ExactCL7HEAD/304 and absent204 assertions acrossprotocols strengthenmetadata proof withoutchangingwire behavior.",
+    "Record selectedrawprofile inbodylessrows/README. CODEreview and freshchecks stillrequired, thenentire66+2matrix/actualevidencereview/freshrepeat/finalM4gates."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 15,
+    "up2_unsuccessful_production_repairs": 5,
+    "up2_unsuccessful_harness_repairs": 2,
+    "next_up2_harness_repair": 8,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-h3-bodyless-peer-diagnosis-spec-preparation-1791850360473177629.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only scopedsource/docs/immutable actualevidence; standard-libraryhash/receiptserialization. No reviewerMix/live/network/source/documentedits/commits/delegation.",
+  "clearance": "Writtenrepair8 preparation only. Full UP2 remainsFAIL; code/tests/live not yetqualified.",
+  "remaining_acceptance": "Independent CODE/prelive review, actualfull66+2matrix andfreshrepeat, finalM4/releasegates pending."
+}

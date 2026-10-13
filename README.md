@@ -28,11 +28,14 @@ Fetch H3 cleanup completion remains unsupported. The independently reviewed
 [public Session design](docs/designs/m4-public-session-upstream.md) is selected
 for upstream H3, with the reviewed
 [consumer-affinity amendment](docs/designs/m4-public-session-consumer-affinity.md).
-Its runtime qualification and proxy integration are in progress.
-M4 is incomplete and has not been merged, pushed or released. The updated cohort
-passes 274 affected tests. Earlier downstream/browser, standalone static/H1-origin
-and clean-consumer gates retain their 0.21.3 source identities and require the
-prescribed final refresh. [M4 acceptance](docs/acceptance/m4.md) records both.
+All prescribed M4 implementation checks pass:530 scoped tests/0 failures,
+public Session50 checks, native/server/shared/browser47/59/19, standalone16,
+and clean core/H1-H2/H3 consumers1/2/2. The complete H1/H2/H3-to-H3 matrix
+passes66network+2policy checks in both its first execution and required fresh
+repeat, with independent evidence reviews. Final independent M4 acceptance
+passes. Portable artifact/runtime qualification and publication are
+not run. [M4 acceptance](docs/acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds exact source identities, counts and limits and preserves historical FAILs.
 The released 0.21.3 M3 cohort passed compatibility486/0, public managed39/39,
 H1 baseline20/0, B21, supplemental TLS5/5 and the public H2 supplement8/8.
 Negative probes retain their genuine failures and expected outcomes.
@@ -181,7 +184,8 @@ proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.4 through
 HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
 dependency selection does not enable upstream H2/H3. The separately locked
 opt-in consumer now selects `elixir_quic` and `ex_ssl` ==0.21.4. M4's independent
-public-host gate passed on 0.21.3; its updated-cohort refresh remains required.
+public-host gate passed on0.21.4 with independent review; earlier0.21.3 evidence
+retains its historical source identity. The final implementation ledger records accepted reuse after unchanged-host-input review.
 Older 0.17.0 evidence remains historical:
 
 ```sh
@@ -221,3 +225,6 @@ closing phase; clean/no-error fixture teardown is not established.
 [architecture](docs/architecture.md) and [ADRs](docs/adr/) define the boundaries.
 GitHub CI had not executed at implementation acceptance; local/isolated results
 are recorded separately from subsequent workflow runs.
+
+Final M4 implementation acceptance: [independent review](docs/acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

@@ -80,38 +80,38 @@ hashes identify that candidate. Separate independent specification and quality r
 pass. These historical gates do not establish the deferred upstream features or
 production acceptance; current release verification has its own receipt.
 
-## M4 HTTP/3 worktree
+## M4 HTTP/3 candidate
 
-The optional native `gaoxy_http3` application implements the bounded IPv4/QUICv1/
-ALPNh3 profile, shared endpoints/Plug, native framing and zero-dynamic QPACK.
-Independent G0/G1/G2 gates passed; the downstream G3 network/browser matrix
-passes19checks with independent review. [M4 acceptance](acceptance/m4.md) records
-exact candidate/evidence identities and pending gates. This worktree is not yet
-a published M4 release.
-
-Current coordinated cohort is0.21.4, with274affected tests/0failures after
-independent review. Prior live/browser/consumer rows below retain their0.21.3
-source identities pending the required final refresh. HTTP Fetch#101 is closed;
-all15Fetch functional diagnostics pass, but cleanup completion is unsupported.
-The reviewed [public Session plan](plans/m4-public-session-upstream.md) is selected;
-its direct qualification and Gaoxy integration are still incomplete.
+The optional native `gaoxy_http3` application implements concrete IPv4/QUICv1/
+ALPNh3, shared endpoints/Plug and static/literal QPACK with zero dynamic capacity.
+All prescribed implementation checks and final independent acceptance PASS on
+the final repair12 source. Portable qualification and publication remain pending.
+[The final gate ledger](acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds530/0 source checks, strict builds and every native/Session/browser/standalone/
+consumer execution. UP2 first and fresh complete repeat both pass68/68 with
+independent evidence reviews. Historical failures retain their original verdicts.
 
 | Capability | Executed local evidence | Boundary |
 | --- | --- | --- |
-| H3 endpoints/Plug | Independent shared-facade tests and59live checks | Original finite stream/operation/Admission ownership; no H3 WebSocket |
-| H3 downstream to fixed H1 origin | 11 real proxy cases: escaped/empty query, identities, ordered request/response trailers, progressive upload/download, early final/reset/siblings | Dedicated H1 only; no reusable pool, automatic protocol selection or replay |
-| Phoenix H3 browser | Chromium152.0.7977.64/Playwright1.56.0 exact document/static CDPh3 and matching server markers | Process-local fixture trust/IPv4 mapping; ordinary HTTP page, no WebSocket claim; automatic favicon500 retained |
-| Standalone H3 configuration | Explicit JSON, strict fields/budgets and58 scoped tests; real startup/progressive proxy/reload/rollback/stop passed11 checks and a fresh repeat | Static/fixed H1-origin routes; H3-origin row blocked; no public management |
-| Upstream H3 | 0.21.4 Fetch15/15 functional PASS; selected Session architecture reviewed | Fetch cleanup UNSUPPORTED/overall exit2; Session runtime qualification pending; Gaoxy upstream adapter/matrix unimplemented |
-| Fresh consumer isolation | Clean core1/0, H1/H2 2/0 and H3 2/0, all exit0 and independently reviewed | Core/H1H2 exclude QUIC/client runtime; explicit H3 consumer includes its declared cohort; omitted peer hash supplied by independent pre/post observations |
+| H3 endpoints/Plug | G1 47/G2 59 checks; final source530/0 | Finite stream/operation/Admission ownership; no H3 WebSocket |
+| Fixed H1/H3 origins | G3 19 checks; UP2 twice66network+2policy with independent reviews | Dedicated request endpoints; explicit HTTPS/CA for H3; no automatic fallback/pool/replay |
+| Phoenix H3 browser | Final G3 actual Chromiumh3 and server request markers | Existing HTTP page/static resource; process-local fixture trust; favicon500 remains visible |
+| Standalone H3 routes | Final16 real startup/progressive proxy/reload/rollback/stop checks | Data-only static/fixed H1/H3 routes; no public management |
+| Public Session lifecycle | Final50 checks:17network+2policy+31boundary doubles | Dedicated endpoint with confirmed local cleanup; Fetch H3 cleanup diagnostic remains UNSUPPORTED |
+| Core/H1-H2/H3 isolation | Final clean consumers1/2/2 tests,0 failures | Core/H1-H2 exclude optional QUIC/client applications; H3 explicitly selects its cohort |
+| Generic QUIC host | Reviewed4/0+9peer rows, unchanged-input reuse | Separate host gate; does not establish H3 framing or broad platform support |
 
-Dynamic QPACK, push, extended CONNECT, WebTransport, DATAGRAM,0-RTT,resumption,
-migration,mTLS,IPv6/wildcard bindings and graceful H3 GOAWAY drain remain
-unsupported. [Public usage](http3.md) documents embedded and standalone opt-in.
-Final affected tests passed274/0, exact-file format and strict builds passed;
-fresh shared/downstream gates passed59/19 checks. Full M4 acceptance awaits
-required upstream qualification; hosted
-CI, release, deployment and production acceptance remain separate.
+The tiny-window matrix selects public H3 host polling1ms and finite H2
+control2048/s; defaults10ms/256controls/s remain. H3 completion4985ms first/
+4567ms fresh meets the original5s bound without a throughput-margin or default
+10ms burst claim. Installed0.21.4 uses supported8KiB public Session fragmentation
+under the16KiB application ceiling; upstream main-only #105 is not installed.
+
+Dynamic QPACK, push, extended CONNECT, H3 WebSocket, WebTransport, DATAGRAM,
+0-RTT, resumption, migration, mTLS, IPv6/wildcard bindings and graceful H3 GOAWAY
+drain remain unsupported. [Public usage](http3.md) describes explicit opt-in.
+Portable build/runtime, hosted CI, publication, deployment and production
+acceptance remain separate gates.
 
 ## Resource accounting scope
 

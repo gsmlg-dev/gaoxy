@@ -1,0 +1,153 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC then CODE review, coordinator local repair3 revision2",
+  "reviewed_utc": "2026-10-12T20:04:39.184667+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair3-prelive-freeze-1791835384642464117.json",
+  "freeze_sha256": "923b12209c4d1aa1f508760becd500c0ae25045bb4ef3fe946a0c10c2dabb11d",
+  "frozen_source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "integration/http3/upstream/session_probe.exs": "9886201d2553dd79486b93b521211cd4c175bc99429a22607943c0782ab950e4",
+    "integration/http3/upstream/run.py": "cf88187f2df746bcf97c064ff63e4d2a6c7a9ddc4ea7ad07c3fc3cb3cfc46934",
+    "integration/http3/upstream/origin.py": "02969e8f5151a6cfa9f23f3a9a4aeec9c643a3b296b4f479518e83cb7172bb77",
+    "integration/http3/upstream/README.md": "4abc69e678a16119182aa457873ea9cdd9f78796a44c12a3788b3b88e0585d6c",
+    "docs/designs/m4-origin-observation-cost.md": "27e72aabc88290a73d7b6e73614a76fdf51e741f36083db4ed4eccb99cdce76c",
+    "docs/plans/m4-origin-observation-cost.md": "11047f7434cb4bf8ed66da320a1f6f0a0cc2d872929f2e17aa1e1effedaa8967"
+  },
+  "review_history": [
+    {
+      "stage": "initial specification/evidence comparison",
+      "verdict": "CORRECTION REQUIRED",
+      "finding": "New design/README incorrectly described repair2 tiny-request cleanup as unconfirmed. Original run contains confirmed local teardown with incomplete response and unknown abort outcome.",
+      "resolution": "Root corrected current design/README/acceptance; revision2 freeze independently reread. Historical failed run and earlier missing-receipt evidence preserved."
+    },
+    {
+      "stage": "revision2 final",
+      "SPEC": "PASS",
+      "CODE": "PASS"
+    }
+  ],
+  "SPEC": {
+    "verdict": "PASS",
+    "read_before_code": true,
+    "documents": [
+      "docs/designs/m4-origin-observation-cost.md",
+      "docs/plans/m4-origin-observation-cost.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Incremental SHA256 is observation-cost repair: full body and every original wire observation retained.",
+      "Every cumulative snapshot field/digest/count/FIN stays identical; empty/final/all627 intermediate differential proof required.",
+      "No Session, peer window, deadline, payload, hash/FIN, cancellation or cleanup contract change.",
+      "Benchmark/static differential proof is separate from live qualification/sole-cause attribution. All50 rows, independent review and fresh repeat remain required.",
+      "Revision2 correctly separates repair2 incomplete response from confirmed local teardown, retains abortunknown and Service NOT CLAIMED. No previous run becomes PASS."
+    ]
+  },
+  "CODE": {
+    "verdict": "PASS",
+    "kind": "static pre-live only",
+    "files": [
+      "integration/http3/upstream/origin.py",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Initial request HEADERS creates one independent hashlib.sha256 accumulator beside body bytearray.",
+      "Every DataReceived extends complete body and updates the same request hash with raw event.data exactly once before unchanged emit. Empty updates are no-ops.",
+      "snapshot keeps external schema, current body length and accumulator.hexdigest without finalizing/changing hash state. Hasher is internal, not serialized.",
+      "Full body remains for actual echo; trailers/FIN, callback/event order, emit/flush, finished guard and peer window are unchanged.",
+      "In-memory reversal of only snapshot-copy/hash replacement plus hasher initialization/update exactly reproduces previous captured origin SHA256.",
+      "All285 prior captured source entries compared: only origin/run/README changed; reviewed Session9886201d remains unchanged.",
+      "Counters retain Sol2failed2/Astra2failed2; coordinatorrepair3 with preceding coordinatorfailed2 separately recorded. Every50 acceptance row/assertion retained."
+    ]
+  },
+  "independent_pure_verification": {
+    "candidate_method": "AST-extracted actual Origin.snapshot, no origin main or networking",
+    "original_evidence": "docs/acceptance/evidence/m4/upstream-contract/run-1791834829044880836/origin.log",
+    "origin_log_sha256": "a403870483e5ad7ef889658e83e9f6586a2bf4375fc1662cceaec17a79bc598a",
+    "DATA_snapshot_count": 627,
+    "complete_dictionary_comparisons": 629,
+    "empty_HEADERS_and_final_request_FIN": true,
+    "all_original_fields_equal": true,
+    "independent_full_body_sha256_each_snapshot": true,
+    "payload_reconstruction": "Unchanged probe sends64 copies of16384 x bytes; cumulative recorded byte-count deltas reconstruct the original payload chunks.",
+    "final_bytes": 1048576,
+    "final_SHA256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b",
+    "exact_reverse_delta_previous_source_hash_match": true,
+    "Python_AST_origin_and_runner": "PASS",
+    "differential_repeated_after_doc_revision": false,
+    "reason": "Origin/Session/runner/lock hashes are identical in both freezes; only current documentation was corrected."
+  },
+  "benchmark_evidence": {
+    "audit": "docs/acceptance/evidence/m4/upstream-contract/peer-snapshot-cost-diagnosis-1791835074708756267.json",
+    "audit_sha256": "f1f423161befb3917c9c8c2d657f6140fbb46d017fd8b4bcfe7901899891817e",
+    "cumulative_bytes_copied_and_hashed": 337047994,
+    "audit_snapshot_JSON_median_ms": 1388.227,
+    "audit_incremental_JSON_median_ms": 10.77,
+    "reviewer_reran_benchmark": false,
+    "limit": "Algorithm-only audit timing; does not prove observed runtime savings, sole cause, complete response or cleanup."
+  },
+  "historical_failure": {
+    "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791834829044880836/result.json",
+    "sha256": "40b7819a2793e3839eecea6d88ba26ba31a7a3bd7cb079ec4a0f505cb958c55b",
+    "status": "FAIL",
+    "PASS_rows": 37,
+    "NOT_RUN_rows": 13,
+    "raw_response_bytes": 750223,
+    "response_complete": false,
+    "tiny_request_local_teardown": "confirmed",
+    "endpoint_stop": ":ok",
+    "endpoint_down": ":normal",
+    "stop_task_down": ":normal",
+    "guardian_down": ":normal",
+    "tasks": [
+      {
+        "pid": "#PID<0.444.0>",
+        "down": ":normal",
+        "kind": "bootstrap"
+      },
+      {
+        "pid": "#PID<0.448.0>",
+        "down": ":normal",
+        "kind": "stable_caller"
+      }
+    ],
+    "same_port_rebind": true,
+    "abort_session_outcome": "unknown; original full result retained",
+    "service_completion": "NOT CLAIMED: harness lifecycle only",
+    "immutable_evidence_preserved": true
+  },
+  "verification": {
+    "frozen_hash_entries_verified": 7,
+    "previous_source_entries_compared": 285,
+    "changed_previous_paths": [
+      "integration/http3/upstream/README.md",
+      "integration/http3/upstream/origin.py",
+      "integration/http3/upstream/run.py"
+    ],
+    "session_unchanged_from_previous_review": true,
+    "history": "An initial receipt-preparation assertion expecting no tiny cleanup failed before any write, exposing inaccurate current documentation. Exact raw cleanup fields were then checked, root corrected documentation, and revision2 checks passed.",
+    "commands": "Read-only specification/code/evidence reads, SHA256/source identity, Python AST parse and pure AST-extracted snapshot differential replay. No Mix, live/network/runtime actions or source/spec edits."
+  },
+  "runtime": "NOT RUN for coordinator repair3. Static PASS does not qualify UP0 or release UP1. Repair2 response remains failed despite confirmed local teardown. Full unchanged gate and reviewed fresh repeat still required.",
+  "counters": {
+    "direct_chain_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_local_repair": 3,
+    "preceding_unsuccessful_coordinator": 2,
+    "reviewer_repair_rounds_added": 0,
+    "third_astra_authorized": false
+  },
+  "changed_files": "Only this new unique review receipt; root/team edits and historical evidence preserved.",
+  "command_shutdown_status": "All reviewer commands complete; no reviewer-owned background processes.",
+  "remaining_risks": [
+    "The complete response and required per-request cleanup within original deadline remain unverified for repair3; benchmark alone is not runtime acceptance."
+  ],
+  "decisions_needed": []
+}

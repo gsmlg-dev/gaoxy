@@ -1,0 +1,99 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PREPARATION_AND_SCOPED_PRELIVE",
+  "assignment": "direct read-only independent repair4 CODE and actual evidence review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-proxy-total-deadline.md": "8effb19e818797b55152427fd4eb890c3f6ab7976883d8dc434fe739893255c9",
+    "docs/plans/m4-proxy-total-deadline.md": "43f91444ff8003360ca9fb1603d4f609d700a7fc3bb2684f7980ced8da072679",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "8eec1d81a8dfd77a81116d6ad30107b980bcc4905c67fe03245b705e8e9e89ad",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "94a9863d8370245e3def929b6916e47843e5575f6bb59e2942cb7803706747a8",
+    "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs": "f9024c3d92edf7ee02dd71b1aa4f9430305c578e1d1c5772cc93e89398b3b32d",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "0dd40f1635f8da7d7063e593c9f80cf5e402005ac9cb36f51d0aee96e0752c57",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "3693357f8b2c85557f4ffcb45f17fffda3a0dac47f131260bf5f0dacf2bb4bf6"
+  },
+  "spec_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-total-deadline-spec-preparation-1791847588699825267.json",
+    "sha256": "b35ae98246c0afb5b1b83cb6d9beca9b2d8939f97c49a1cebd5f7b16109932aa"
+  },
+  "findings": [],
+  "code_assessment": [
+    "Async internal Session.expire checks cancelled/consumed state before notification; prior failure uses those state flags. Actual guardian own total deadline and selected H3 client choose request_timeout; H1 or early H3 expiry remains timeout.",
+    "Owner pump checks selected H3 total deadline before any queued nonterminal/success dispatch; received guardian error directly invokes fail without re-entering expiry.",
+    "Local read/poll/chunk/finish timeout and actual selected H3 header-write timeout route through same terminal-only expiry wait. The final narrowed send_chunked branch preserves original cancel plus error return for default H1, idle and non-timeout head-send errors.",
+    "Expiry wait receives only matching guardian error or exact monitor plus guardian pid DOWN. Bound is min(original owner deadline plus cleanup_headroom, now plus cleanup_headroom); Lifecycle cleanup_headroom remains 1000ms. Missing terminal confirmation remains explicit guardian_expiry_unconfirmed.",
+    "After expiry fail suppresses unset-response error writes. Native exchange sends and H3 upload/finish operations retain original absolute-deadline checks. No new process, private SDK state, dependency modification or I/O deadline extension.",
+    "Consumed/cancelled timer replays settle without new error. Ordinary cancellation remains intact; original real guardian timer and lifecycle tests remain alongside explicit token:nil callback-order units."
+  ],
+  "actual_red": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/total-deadline-callback-red-1791847492157429491.json",
+    "sha256": "c40cf286b18ca82ccf8ceaa5ef27d630b0a57b5bdf20c760c34f4bcfdcb2125a",
+    "log_sha256": "e1274f78a9d48ea1ef017855d46235eef09686a67bd87fb31e419413b9ffa63c",
+    "executed_tests": 10,
+    "failures": 4,
+    "actual_exit": 2,
+    "source_unchanged": true,
+    "cause": "Missing expiry cast handling/state settlement; tests executed, not a compile-only failure. Explicit token:nil callback unit scope does not establish allocated-resource cleanup.",
+    "guardian_test_bytes_unchanged_through_green": true
+  },
+  "current_green": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/total-deadline-narrowed-prelive-1791847754644496740.json",
+    "sha256": "1988351334992f6b3e2e944b92fa73e62efaff5c88e0a451c639ea80fa243976",
+    "log": "docs/acceptance/evidence/m4/upstream-matrix/total-deadline-narrowed-prelive-1791847754644496740.log",
+    "log_sha256": "b21c8c45610c9f285468fabc94296960f56fcd58cbe5ed6dc2e4d5806b694662",
+    "actual_exit": 0,
+    "format_authored_files": 17,
+    "format_exit": 0,
+    "strict_compile_exit": 0,
+    "test_counts": {
+      "gaoxy_http": 112,
+      "gaoxy_http3": 40,
+      "gaoxy_proxy": 114,
+      "total_executed": 266,
+      "failures": 0
+    },
+    "authored_source_hash_count": 213,
+    "before_after_equal": true,
+    "all_current_hashes_match": true,
+    "source_delta_from_red": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex"
+    ],
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "MIX_ENV=test",
+      "ERL_FLAGS=+S 2:2",
+      "python",
+      "/tmp/gaoxy-m4-framed-series.py"
+    ],
+    "environment_note": "Receipt outer environment fields are null; explicit command sets MIX_ENV=test and ERL_FLAGS=+S 2:2 within nix develop.",
+    "expected_test_log_noise": "Scoped tests contain supervisor killed log under lifecycle exercise while all suites and check-tests exit0; not relabeled as an executed failure."
+  },
+  "historical_first_green": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/total-deadline-prelive-1791847664375841943.json",
+    "sha256": "49721585e1f7dea4791ba720a496aaed4bd7a1f6d1e8098f20a031887c7f78a8",
+    "disposition": "Preserved PASS266 scoped execution for previous HTTP hash; superseded for final branch by narrowed current-hash GREEN."
+  },
+  "cumulative_counters": {
+    "up2_current_production_repair": 4,
+    "up2_unsuccessful_live_executions": 8,
+    "up2_unsuccessful_production_repairs_before_current_live": 3,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "clearance": "Proceed with unchanged complete 66 network plus 2 policy UP2 matrix. This receipt is scoped code/prelive clearance only.",
+  "remaining_acceptance": "Full matrix, actual live terminal notification/cleanup/no-success-FIN/byte/deadline evidence, independent actual-evidence review and fresh repeat, affected final M4 gates remain pending. No full UP2/M4/release/deployment acceptance.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-total-deadline-code-prelive-evidence-1791847860766228022.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/diff/evidence plus Python standard-library hashing/receipt serialization; no reviewer Mix/test/runtime/network/source/document mutation."
+}

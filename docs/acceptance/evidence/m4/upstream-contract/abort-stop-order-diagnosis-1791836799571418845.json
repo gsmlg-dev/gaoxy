@@ -1,0 +1,192 @@
+{
+  "task_id": "m4_public_abort_stop_order_diagnosis",
+  "status": "DONE_READ_ONLY_DIAGNOSIS",
+  "checked_utc": "2026-10-12T20:26:39.560094+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "assignment": "direct read-only diagnosis, no repair/issue filing",
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "96d378b76a0cd5b7261f93e5824732059fc47bcf24f85386167a5df5452055aa",
+    "integration/http3/upstream/run.py": "51c5f96fb234ceeaf9a0818780b286538271df2ad3ce1775d4f379860f60243e",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/elixir_quic/lib/quic/endpoint.ex": "ba56f04cef0fc3119debf054996bdc88faea2d3445add40aff67770ede11cc51",
+    "deps/elixir_quic/lib/quic/io/gen_udp.ex": "ee136b19b214bad3e89ed468b26621182dcd976b8e697e37289da36d7adae76c",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab"
+  },
+  "failed_run": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/run-1791836503490777437",
+    "result_sha256": "2ff0e6d40e0c7f7d2fba51e8ceb181f9665574f944b4b774ac431dbd19d48d29",
+    "status": "FAIL",
+    "actual_exit": 1,
+    "source_unchanged": true,
+    "probe_current_matches_failed_run": true,
+    "children": [
+      {
+        "pid": 1195876,
+        "exit": 0
+      },
+      {
+        "pid": 1200171,
+        "exit": 0
+      }
+    ],
+    "stalled_connection17_wire": [
+      {
+        "event": "headers",
+        "origin": "a",
+        "connection": 17,
+        "stream": 0,
+        "path": "/stalled-response",
+        "certificate_sha256": "148e8208e9912c9327de7f30eb881c6cacdd70a507eb735cdac4ac574f7bd602",
+        "trailer_blocks": 0,
+        "headers": [
+          [
+            ":method",
+            "GET"
+          ],
+          [
+            ":scheme",
+            "https"
+          ],
+          [
+            ":authority",
+            "localhost:36203"
+          ],
+          [
+            ":path",
+            "/stalled-response"
+          ]
+        ],
+        "trailers": [],
+        "data_bytes": 0,
+        "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "request_fin": true
+      },
+      {
+        "event": "request_fin",
+        "origin": "a",
+        "connection": 17,
+        "stream": 0,
+        "path": "/stalled-response",
+        "certificate_sha256": "148e8208e9912c9327de7f30eb881c6cacdd70a507eb735cdac4ac574f7bd602",
+        "trailer_blocks": 0,
+        "headers": [
+          [
+            ":method",
+            "GET"
+          ],
+          [
+            ":scheme",
+            "https"
+          ],
+          [
+            ":authority",
+            "localhost:36203"
+          ],
+          [
+            ":path",
+            "/stalled-response"
+          ]
+        ],
+        "trailers": [],
+        "data_bytes": 0,
+        "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "request_fin": true
+      }
+    ],
+    "cleanup": {
+      "path": "/stalled-response",
+      "origin": "a",
+      "bind_address": "127.0.0.1",
+      "cleanup_deadline": -576460734810,
+      "tasks": [
+        {
+          "pid": "#PID<0.539.0>",
+          "down": ":normal",
+          "kind": "bootstrap"
+        },
+        {
+          "pid": "#PID<0.543.0>",
+          "down": ":normal",
+          "kind": "stable_caller"
+        }
+      ],
+      "caller_high_water": 0,
+      "endpoint_down": ":normal",
+      "cleanup_outcome": "confirmed",
+      "service_completion": "NOT CLAIMED: harness lifecycle only",
+      "observed_at": -576460735809,
+      "endpoint_stop": ":ok",
+      "stop_task_down": ":normal",
+      "bind_port": 46430,
+      "rebound_port": 46430,
+      "guardian_down": ":normal",
+      "event": "cleanup_result"
+    },
+    "session_result_summary": "abort returns unknown, pending kind:close/action:abort, descriptor borrowed(endpoint_owned?false); complete original result remains in failedrunreceipt.",
+    "remote_cancel_observed": false,
+    "row_outcome": "47PASS/50; unacknowledgedresponse FAIL; blockedupload andownerloss NOTRUN"
+  },
+  "public_source_trace": [
+    {
+      "path": "deps/elixir_quic_http3/lib/quic_http3/session.ex:255",
+      "fact": "cancel/2 begins RESET_STREAM+STOP_SENDING0x10c thenremoverequest; genericbegin rejects existingpendingoperation.",
+      "consequence": "Do not callcancel on pendingunknown/blockedSession without supportedhandling; no needto inventwire APIs."
+    },
+    {
+      "path": "deps/elixir_quic_http3/lib/quic_http3/session.ex:274",
+      "fact": "abort/1 preserves abandonedoperationidentity, clears pending/work, begins transportabort; publicresult retains advancedSession.",
+      "consequence": "If caller idle, publicabort can abandon retainedblocked/unknownSessionwork withoutreplayingapplicationDATA."
+    },
+    {
+      "path": "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex:252",
+      "fact": "For borrowedresolvedconnection, abort calls public close(handle,0x100,emptyreason,opts); ownedendpointabort insteadcleansendpoint, unresolvedsharedhandle returns error.",
+      "consequence": "Selected retaineddescriptor/borrowedconnection offers realAPPLICATION_CLOSE path separatefromlocalstop."
+    },
+    {
+      "path": "deps/elixir_quic/lib/quic/connection.ex:1250",
+      "fact": "Publicclose executeoperation beginsclosing, records admitted:ok onlyafter begin_closing returns. begin_closing933-1016 constructs application_close at strongestavailablelevel and flushes. local_send1037 usesadapter.send synchronously.",
+      "consequence": "Completed closeadmission on establishedselectedconnection precedes localsend; :ok isnotremoteackproof, independentpeerassertion stillrequired."
+    },
+    {
+      "path": "deps/elixir_quic/lib/quic/io/gen_udp.ex:65",
+      "fact": "PublicdefaultUDP adapter send uses GenServer.call; handler invokes :gen_udp.send and returns localreceipt.",
+      "consequence": "Abortcompletedbeforestop retains meaningful orderingofpacket submissionbefore UDPsocket closure; no privatehandle lookup needed."
+    },
+    {
+      "path": "deps/elixir_quic/lib/quic/endpoint.ex:637",
+      "fact": "terminate exitsconnectionPIDs :shutdown thenclose_io. Connectionterminate1297 abortsTLS and sends localowner/consumerquic_closed notifications; doesnotencode CONNECTION_CLOSE.",
+      "consequence": "Publicendpointstop is localcleanup; it cannot substitute for emittedprotocolcancellation or independentlyobservedremoteevent."
+    },
+    {
+      "path": "integration/http3/upstream/session_probe.exs:662",
+      "fact": "Failedrun teardown unconditionally starts endpointstop firstforcancelledrequests, then finish_session sends idlecallerSession.abort. Existing100msfallback usedonlyfornormalclose.",
+      "consequence": "Scheduler creates teardown/abort race; unknownabort outcome doesnotestablishSDKfailure."
+    }
+  ],
+  "assessment": "Gaoxy ordering defect supported by frozen source and failed local-vs-remote evidence. No required upstream defect proved. SDK already provides public borrowedconnection abort/close that flushes before admittedreturn. Do not file an issue basedonly onendpointstop havinglocal-only semantics.",
+  "minimal_supported_route": [
+    "Keep terminal marking and waiterfailure immediate; preserve same originalcleanupdeadline and monitor/stop/DOWN/rebind criteria.",
+    "If stablecaller alive and no commandphysicallyoutstanding, issue one cleanupabort first on latestopaqueSession. Armexisting shortfallback timer forcancelledidlebranch too, cappedby remainingoriginalgrace. Start independentendpointstop on matchingabortresult orfallback; neverblockguardianwaiting.",
+    "If commandalready outstanding, caller lost, unresolvedbootstrap or no safelyownedSession, startependentstop immediately; do notqueueabort behindblockedcall orreuseoldSession. Thisbranch doesnotpromise remoteprotocolcancellation from localstopalone.",
+    "Unacknowledgedresponse and owner_loss both reach liveidlecaller after publicpollreturns; applyabort-first boundedroute. Guardian observesdownstreamownerloss but staysalive to owncleanup.",
+    "Blockedupload acceptedpublicreturn (blocked/unknown) likewise means physicalcaller isidle. ReturnedSession belongs toguardian; afterdefiniteblocked suspend/pausedpoll, abort latestSession publiclydiscardscontinuation/pendingwork and closesconnection. Do notresend DATA or useSessioncancel on pendingunknownstate.",
+    "Blockedupload pausesoriginUDP; independentpeer resumesaftercleanup and thenobservesqueuedclose/cancel within unchangedwiredeadline. Keep sourceassertions, max_frame8192, tinywindows, all50row requirements, exactcancelcode/category andsiblingproof.",
+    "Add deterministic idleabort-beforestop and stalledcall-immediatestop regressions to distinguish branches. Keep100msfallback withinexistinggrace, unknownoutcomes visible, andno Servicecompletion fromabort alone. Fresh frozen full50-row gate+review required; read-onlydiagnosis doesnotpassit."
+  ],
+  "design_consistency": "Accepted affinitycleanup195-207 already says commandabort onlywhen safelyidle, independentstop promptly withoutwaitingfor outstandingcall. A bounded idle-only abort opportunity is consistent; cancellation doesnot gainnewgrace or waitbehindblockedoperation.",
+  "remaining_risk": "A submittedUDPclose doesnotguarantee peerreceipt; runtime must verify currentfailedrow plus remainingblockedupload/ownerloss. If orderedpublicclose stillfails, capture actualadmission/transport/peer evidence beforeupstreamseverity assessment.",
+  "upstream_issue_action": "NONE; parent assesses any future proven defect; no duplicateissue or #97 investigation.",
+  "counters": "Sol2/failed2; Astra2/failed2; rootrepair4 is actualFAIL perassignment. Diagnosis addszero; no thirdAstra orbudgetreset.",
+  "verification": {
+    "read_only_source_and_frozen_log_analysis": "completed",
+    "json_receipt_validation": "PASS",
+    "mix_elixir_live": "NOT RUN by assignment",
+    "commands_finished": true
+  },
+  "changes": "One immutable diagnosisreceipt only; no code/dependency/workflow/issue mutation."
+}

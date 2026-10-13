@@ -1,0 +1,821 @@
+COMMAND ['mix', 'format', '--check-formatted', 'apps/gaoxy/lib/gaoxy/config.ex', 'apps/gaoxy/lib/gaoxy/service.ex', 'apps/gaoxy_http/lib/gaoxy/http/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex', 'apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex', 'apps/gaoxy_http/test/http2_control_rate_test.exs', 'apps/gaoxy_http/test/http2_network_test.exs', 'apps/gaoxy_http/test/http2_pre_settings_test.exs', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex', 'apps/gaoxy_http3/test/host_poll_profile_test.exs', 'apps/gaoxy_http3/test/plug_test.exs', 'apps/gaoxy_http3/test/transport_test.exs', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex', 'apps/gaoxy_proxy/test/http3_guardian_test.exs', 'apps/gaoxy_proxy/test/http3_session_client_test.exs', 'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs', 'apps/gaoxy_server/lib/gaoxy/server/route_config.ex', 'apps/gaoxy_server/test/http3_generation_test.exs', 'integration/http3/upstream/fixture.exs', 'integration/http3/upstream/probe.exs', 'integration/http3/upstream/session_probe.exs'] CWD /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3
+ACTUAL_EXIT 0
+COMMAND ['mix', 'compile', '--warnings-as-errors'] CWD /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3
+ACTUAL_EXIT 0
+COMMAND ['python', 'scripts/check-tests.py', 'apps/gaoxy/test/cleanup_attachment_test.exs', 'apps/gaoxy/test/config_test.exs', 'apps/gaoxy/test/lifecycle_acceptance_test.exs', 'apps/gaoxy/test/quic_context_test.exs', 'apps/gaoxy/test/runtime_test.exs', 'apps/gaoxy/test/shutdown_hardening_test.exs', 'apps/gaoxy_http/test/connection_poll_test.exs', 'apps/gaoxy_http/test/http2_capacity_test.exs', 'apps/gaoxy_http/test/http2_codec_test.exs', 'apps/gaoxy_http/test/http2_control_rate_test.exs', 'apps/gaoxy_http/test/http2_facade_test.exs', 'apps/gaoxy_http/test/http2_independent_review_test.exs', 'apps/gaoxy_http/test/http2_integration_test.exs', 'apps/gaoxy_http/test/http2_network_test.exs', 'apps/gaoxy_http/test/http2_pre_settings_test.exs', 'apps/gaoxy_http/test/http2_protocol_test.exs', 'apps/gaoxy_http/test/http2_stale_start_test.exs', 'apps/gaoxy_http/test/http3_upgrade_test.exs', 'apps/gaoxy_http/test/http_contract_test.exs', 'apps/gaoxy_http/test/http_lifecycle_test.exs', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_http/test/native_proxy_seams_test.exs', 'apps/gaoxy_http3/test', 'apps/gaoxy_proxy/test/forward_http_test.exs', 'apps/gaoxy_proxy/test/http3_guardian_test.exs', 'apps/gaoxy_proxy/test/http3_proxy_test.exs', 'apps/gaoxy_proxy/test/http3_session_client_test.exs', 'apps/gaoxy_proxy/test/http_fetch_completion_test.exs', 'apps/gaoxy_proxy/test/http_fetch_contract_test.exs', 'apps/gaoxy_proxy/test/http_headers_test.exs', 'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs', 'apps/gaoxy_proxy/test/http_proxy_tls_test.exs', 'apps/gaoxy_proxy/test/http_proxy_wire_test.exs', 'apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs', 'apps/gaoxy_proxy/test/upstream_group_proxy_test.exs', 'apps/gaoxy_proxy/test/upstream_groups_test.exs', 'apps/gaoxy_server/test/config_test.exs', 'apps/gaoxy_server/test/http3_config_test.exs', 'apps/gaoxy_server/test/http3_generation_test.exs', 'apps/gaoxy_server/test/route_config_test.exs', 'apps/gaoxy_server/test/standalone_generation_test.exs', 'apps/gaoxy_server/test/standalone_independent_review_test.exs'] CWD /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3
+==> gaoxy
+Running ExUnit with seed: 203751, max_cases: 4
+
+..................
+09:19:26.672 [error] GenServer #PID<0.701.0> terminating
+** (RuntimeError) fixture crash
+    test/runtime_test.exs:25: Gaoxy.RuntimeTest.UDP.handle_datagram/2
+    (gaoxy 0.2.0) lib/gaoxy/datagram_bridge.ex:23: Gaoxy.DatagramBridge.handle_data/2
+    (gaoxy 0.2.0) lib/gaoxy/datagram_bridge.ex:3: Gaoxy.DatagramBridge.handle_continue/2
+    (stdlib 7.3.0.3) gen_server.erl:2424: :gen_server.try_handle_continue/3
+    (stdlib 7.3.0.3) gen_server.erl:2291: :gen_server.loop/4
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:continue, {:handle_data, {{127, 0, 0, 1}, 54379, "crash"}}}
+State: %{broadcast: false, socket: #Port<0.75>, listener: #PID<0.691.0>, server_config: %Abyss.ServerConfig{port: 0, transport_module: Abyss.Transport.UDP.Unicast, transport_options: [{:inet_backend, :inet}, :inet, {:ip, {127, 0, 0, 1}}], handler_module: Gaoxy.DatagramBridge, handler_options: %{scope: %{instance: #Reference<0.690822555.1338507266.765>, service: "echo", generation: #Reference<0.690822555.1338507266.770>}, instance: #PID<0.685.0>, service: #PID<0.687.0>, spec: %{id: "echo", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.RuntimeTest.UDP, tls: %{}, transport: :udp, dispatcher: %{}, handler_options: #PID<0.683.0>, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_packet: 8, max_active: 64, drain_timeout: 5000, callback_timeout: 5000, max_memberships: 64, max_state: 65536, max_output: 65507}, handler_mode: :stream, capabilities: [], quic: %{}}, gate: #PID<0.688.0>, startup_token: #Reference<0.690822555.1338507266.774>}, genserver_options: [], supervisor_options: [], broadcast: false, num_listeners: 1, num_connections: 64, max_connections_retry_count: 5, max_connections_retry_wait: 1000, read_timeout: 30000, shutdown_timeout: 5000, udp_buffer_size: 65536, dynamic_listeners: false, min_listeners: 10, max_listeners: 1000, listener_scale_threshold: 0.8, silent_terminate_on_error: false, max_packet_size: 8, connection_telemetry_sample_rate: 1.0, handler_memory_check_interval: 10000, handler_memory_warning_threshold: 100, handler_memory_hard_limit: 150, datagram_dispatcher: nil, dispatcher_options: [], dispatcher_max_queue: 128, dispatcher_max_queue_bytes: 1048576, admission_start_timeout: 5000}, idle_timer: nil, idle_token: nil, read_timeout: 30000, connection_span: %Abyss.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.690822555.1338507266.892>, start_time: -576460748971457926, start_metadata: %{handler: Gaoxy.DatagramBridge, server_pid: #PID<0.689.0>, local_info: {{127, 0, 0, 1}, 56992}, ancillary: [], remote_address: {127, 0, 0, 1}, remote_port: 54379, sampled: true, telemetry_span_context: #Reference<0.690822555.1338507266.892>, parent_telemetry_span_context: #Reference<0.690822555.1338507266.788>}}, processing_times: [], adaptive_timeout: 30000, memory_token: #Reference<0.690822555.1338507266.898>, idle_deadline: :infinity, memory_check_interval: 10000, memory_timer: #Reference<0.690822555.1338507266.899>}
+..............+...+...+....+......+.........+.....+.+..+.......+..+......+.......+............+...+..+..........+.........+..+...+.......+..+++++++++++++++++++++++++++++++++++++++*..+...+++++++++++++++++++++++++++++++++++++++*.....+...+...+............+......+.......+.........+...+.....+.+...........+.+.....+.......+...+......+..........+............+.....+.+..+............+.+..+............+.+.....+......+...+.+......+.....+.+........+.+.....+.........+....+...+............+...+..+.+...........+....+..+.......+......+..+.......+..+...+.+.....+.+..............+.+...+.....+..+.................++++++++++++++++++++++++++++++++++++++.+..+.*......+.+++++++++++++++++++++++++++++++++++++++*.......+........+.............+....+............+.........+..+............+..+...................+.........+.+......+...........++......+............+.........+...+.......+........++...........+....+....+.....+............+...+.......+...+...+...+........++......+.....+....+.........+......+.........+........+............+.......++....+............++..+..+...+...............+.+........+...+.......+.......+........+............++.........+.......+......+...........++........+..............+......+..+...+.........+.....+.+...............++..+......+...+.+....+.....+.........+..+...+..............+...............+++.....+++...++
+....+...+.+..+....+........+..........+..+.+............+..+..........+...............+......+...+..+..+.+.+...+.+++++++++++++++++++++++++++++++++*..+...+.......+....++........+..................+....+.....+.......+........+.+......+......+..++++++.+..++.++++.+..++++++++++++++++++++++++++*.....+...+...+...+.+..............++......+...+....+......................+..........+.......+.....+..........+.....+.+..+......+......+..+.............++..+....+.........+.....+......+..+...++..++...............+++.++
+..............+...............+......+......+....+++++++++++++++++++++++++++++++++.+.+++++*.++.....+.........+.+...+......+......+...+...+........++++++++++++++++++++++++++++++++++++++.+*.....++.....+......+..........+.....+..............+..........++.....+......+....+......................++...+..............+.........+.........+.........+......++.........+...+.....++..++.....++.+........+..+...+......+.........+...+....+.+..+.....+...+.......+.........+..+.......+.......+........+......+.......................+............+....+.+.....+.....+...+.........+.........+...+.+.+.....+...............+...+.....+....+............+...+.......+..........+..........++................++............+...+..+.....................+.+..........++........+.................+......++...+....................+...+..........++.....................+.......+..+......+......................+..+......+.+.......++..............++..........+.......+..+...+...+............+...+...+.+.........+......+....+.................+..+...+.+.......+...+..+.........+.......+..........................++.....................+...+....+......+.....+..................+.+........+......+...+......+.+........+...+.+..+.....+.........+...+.+.+...........+........................++.+......+.....................+............+..+..........+........+......+..+...+.............+....+.........++...++...++............++..++
+......................++++++
+-----
+-----
+.....+.+..+.........+.........+.+...+...+..+.+......+++++++++++++++++++++++++++++++++++++++*..+.......+++++++++++++++++++++++++++++++++++++++*..+.+.........+..+.......+....+........+.......+++++++++++++++++++++++....+...+.++++++++++++++++*....+...........+......+....+......+........+...+.+.....+.+...+.....+....+.....++......++++++++++++++.+.....+...+..+...+..+.+....++++++++++++++++++++*.++.....+++.......++
+.......+....+...+.....+.+.....+....+...+..+.+++++++++.+.+.+++++++++++++++++++++++++++++*..+.+++++++++++++.+.++++++++++++++++++++++++++*.....+..+...+....+......+..........+.................+...................++...........+..+....+.......+.....................+...+..............+..+...+.+.......+..................+..+...+............+............+............+++.+++.........+++
+..+.........+.............+.....+.+..+...+-----
+....+......+......+........+.......+........+...+...+....+...+...............+...+...........+....+...........+............................+...+...+......+.....+......+........................+.........+.......+.....+....+.....+.....................+....+......+..+......+............+...+.........+......+....+...........+......+...+.......+.........+......+........+.+......+.....++++++
+..+...+.........+..+.+..+...+....+...........+....+Certificate request self-signature ok
+subject=CN=localhost
+...+...........+.+++++++++++++++++++++++++++++++++++++++*.......+..+............+++++++++++++++++++++++++++++++++++++++*........+...+......+.+..+.............+........+.....................+.++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+.................+++++++++++++++++++++++++++++++++++++++*......+.+.....+.........+++++++++++++++++++++++++++++++++++++++*......+...+.....+.+.....+......................+.........+...+........+....+...........+..........++++++
+.....+......+..+.............+.....+.......+..+......+.+.....+....+.....+......+...+............+.+...+.........+..+...+++++++++++++++++++++++++++++++++++++++*.+.........+...+..+.+......+.....+.+.........+++++++++++++++++++++++++++++++++++++++*...+......+....+..+.............+..+....+...+.....+.......+......+...+..+..........+........+.+........+.+.....+.+.....+.+.....+.......+..+......+...+.......+..+.+...........+...+.+.....+....+...+..+.+...........+.+...............+.....+....+...+..+......+....+...+........+.......+........+....+...........+.......+...+..+.+......+......+...+...........+...+......+......+.+..+.......+..............+.......+..+.+.........+..+...+...+...............+..................+.+.....+.+.....+...+....+...........+....+......+.........+........+.........+......+...+.........+.+.....+....+...........+......+..........+...+.................+....+..+.........+...+.+.........+..+..........+.........+.....+.+...+......+...........+.........+....+...+........+...............................+.........+.........+.....+...++++++
+-----
+...............+....+..............+.+.........+...+..+......+......+.+..+.+..+....+...+........+++++++++++++++++++++++++++++++++++++++*.....+...+......+.+...+......+..+............+...+.......+..+......+....+.........+..+....+...+.....+......+.+.....+....+++++++++++++++++++++++++++++++++++++++*...+.+.....+.......+......+.........+......+..+.......+..+......+....+...+........+.......+.....+...............+...+.......+..+................+...+.....+..........+.................+...+.+......+..+.+............+..+......+.+.........+......+...+...+.........+.....+.........+.......+..+..........+..+.........+..........+...........+....+.....+.......+........+.........+...+...+......+..................+.......+.....+...+...+.......+...+..+.....................+.+......+..+..........+........+.........+.+.....+.........+.+...+...........++++++
+..+...+.........+.+..+.........+....+.....+.........+.+......+...+..+.+..+...+....+......+.....+.......+.................+....+..+...+.+...+......+..............+......+++++++++++++++++++++++++++++++++++++++*.........+...+......+.........+......+....+......+.................+....+...+...........+....+...+...+......+.....+.+...+.....+.+.....+.+..+.+......+.....+.+.........+...+......+.........+...+...+..+............+...+++++++++++++++++++++++++++++++++++++++*.......+.+..+............+...+.+.....+.+......+..............+...+............+....+..+.......+...+..+...+...............+.......+......+..+.............+.....+....+...+...+......+...+...+..............+...+...............+.......+......+...............+..+...+............+.+..+...+...............+.+...+...+..................+.....+.+.....+.+..+...+...+.+......+..............+...+.++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+...
+Finished in 4.3 seconds (4.3s async, 0.00s sync)
+37 tests, 0 failures
+==> gaoxy_http
+Running ExUnit with seed: 203751, max_cases: 4
+
+.........................................................................................................................................
+Finished in 5.0 seconds (5.0s async, 0.02s sync)
+137 tests, 0 failures
+==> gaoxy_http3
+Running ExUnit with seed: 203751, max_cases: 4
+
+.......+.+.....+..........+..+++++++++++++++++++++++++++++++++++++++*......+.+.....+.........+++++++++++++++++++++++++++++++++++++++*....+......+...+.........+............+......+.....+....+...+..+...+......+.+...+......+..+...+....+..+...+..........+..+.............+......+..+...+......+.+..+.....................+.+...........+...+....+..+.+...+..+..........+.....+............+...+....+...+...+.....+........................+...+.++++++
+...+++++++++++++++++++++++++++++++++++++++*....+.+........+.+.........+...+..+.+.....+.+..................+..+.+++++++++++++++++++++++++.++++++++++++++*....+...........+.+.....+.+.........+......+.....+...................+......+.....+.......+..+...+.......+...+......+.....+.+..............+...............+.+.........+.....+.......+...............+...............+..+.......+.....+.........+.+...+.....+......+..........+...........+......+............+..........+......+............+..............+....+..+.......+.....+.+.........+...+..+.+.....+.........+.+...........+.+........+....+..+.........+....+..+......+....+...+.....+...+....+...+.....+.++++++
+-----
+..+.+.....+....+...+..+......+.+......+++++++++++++++++++++++++++++++++++++++*...+.+++++++++++++++++++++++++++++++++++++++*.++++++
+............+.+...+.........+++++++++++++++++++++++++++++++++++++++*.+..+.......+......+++++++++++++++++++++++++++++++++++++++*.+....+........+......+............+...+......+...............+.+...+......+......+.....+.........+....+.........+........+.........+....+..+............+...+...+....+.....+............+.+..+.+.....+.+.....+.+..+......+.+...+...+............+.......................+............+..........+..+...+.+......+...........+............+.......+.....+.+...+.....+.........+.+..+.........+...+...+..........++++++
+-----
+...Certificate request self-signature ok
+subject=CN=localhost
+..........................................................................................................
+
+  1) test ready after an early final head never reopens a completed upload (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:237
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.3874.0>
+     Showing 10 of 10 messages in the mailbox
+     code: assert_receive {:ready_held, ^worker}
+     mailbox:
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:proxy_started, #PID<0.3874.0>, -576460736710},
+                 #PID<0.3860.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.3874.0>,
+                   #Reference<0.690822555.1338507266.118584>},
+                  {:start_child,
+                   {{Gaoxy.Proxy.HTTP.Session, :start_link,
+                     [
+                       %{
+                         owner: #PID<0.3874.0>,
+                         config: %Gaoxy.Proxy.HTTP{
+                           uri: %URI{
+                             scheme: "http",
+                             authority: "127.0.0.1:42003",
+                             userinfo: nil,
+                             host: "127.0.0.1",
+                             port: 42003,
+                             path: nil,
+                             query: nil,
+                             fragment: nil
+                           },
+                           cacertfile: nil,
+                           connect_address: nil,
+                           limits: %{
+                             idle_timeout: 60000,
+                             write_timeout: 5000,
+                             max_lifetime: 5000,
+                             max_chunk_bytes: 65536,
+                             opening_timeout: 5000
+                           },
+                           upstream_protocol: :http1,
+                           client: Gaoxy.Proxy.HTTPFetchClient
+                         },
+                         instance: #PID<0.3862.0>,
+                         service: #PID<0.3864.0>,
+                         started_at: -576460738710,
+                         deadline: -576460736710,
+                         request_options: %{
+                           path: "/wire",
+                           body: :chunked,
+                           query: "",
+                           headers: [
+                             {"trailer", "x-trace"},
+                             {"x-forwarded-for", "127.0.0.1"},
+                             {"x-forwarded-host",
+                              "downstream.test"},
+                             {"x-forwarded-proto", "https"}
+                           ],
+                           limits: %{
+                             read_timeout: 5000,
+                             max_read_chunk: 16384,
+                             max_buffer_bytes: 65536,
+                             request_timeout: 2000,
+                             max_write_chunk: 16384,
+                             write_timeout: 5000,
+                             header_timeout: 5000,
+                             max_body_bytes: 8388608,
+                             max_chunk_line: 1024,
+                             max_header_bytes: 32768,
+                             max_headers: 100,
+                             max_request_line: 8192,
+                             max_trailer_bytes: 8192,
+                             max_trailers: 32
+                           },
+                           method: :post,
+                           max_upload_bytes: 65536
+                         },
+                         gate: #PID<0.3865.0>,
+                         selector: {:fixed,
+                          %Gaoxy.Proxy.HTTP{
+                            uri: %URI{
+                              scheme: "http",
+                              authority: "127.0.0.1:42003",
+                              userinfo: nil,
+                              host: "127.0.0.1",
+                              port: 42003,
+                              path: nil,
+                              query: nil,
+                              fragment: nil
+                            },
+                            cacertfile: nil,
+                            connect_address: nil,
+                            limits: %{
+                              idle_timeout: 60000,
+                              write_timeout: 5000,
+                              max_lifetime: 5000,
+                              max_chunk_bytes: 65536,
+                              opening_timeout: 5000
+                            },
+                            upstream_protocol: :http1,
+                            client: Gaoxy.Proxy.HTTPFetchClient
+                          }}
+                       }
+                     ]}, :temporary, 5000, :worker,
+                    [Gaoxy.Proxy.HTTP.Session]}}},
+                 #PID<0.289.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.3874.0>,
+                   [:alias |
+                    #Reference<0.0.495875.690822555.1338572802.118592>]},
+                  {:attach_cleanup, #PID<0.3865.0>,
+                   #Reference<0.690822555.1338507265.162071>,
+                   #PID<0.3875.0>, 7750034, -576460736710}},
+                 #PID<0.3864.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:finish,
+                  %HTTP.Headers{
+                    headers: [
+                      {"x-trace", "first"},
+                      {"x-trace", "second"}
+                    ]
+                  }}, #PID<0.3876.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send, {:"$gen_cast", :cancel},
+                 #PID<0.3875.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send, {:plug_conn, :sent},
+                 #PID<0.3874.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:response_operation, #PID<0.3874.0>,
+                  {:head, 504, [{"content-length", "0"}], true},
+                  -576460736710}, #PID<0.3860.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:response_operation, #PID<0.3874.0>,
+                 {:head, 504, [{"content-length", "0"}], true},
+                 -576460736710}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.3874.0>, :send,
+                 {:proxy_finished, #PID<0.3874.0>,
+                  {:ok,
+                   %Gaoxy.HTTP.Exchange{
+                     request: %Gaoxy.HTTP.Request{
+                       method: "POST",
+                       target: "/wire?",
+                       target_form: :origin,
+                       version: :"HTTP/3",
+                       path: "/wire",
+                       query_string: "",
+                       host: "downstream.test",
+                       port: nil,
+                       scheme: nil,
+                       peer: nil,
+                       local: nil,
+                       head_bytes: 0,
+                       headers: [
+                         {"trailer", "x-trace"},
+                         {"content-length", "0"}
+                       ],
+                       body: {:length, 0},
+                       keep_alive: false,
+                       expect_continue: false
+                     },
+                     socket: %ThousandIsland.Socket{
+                       socket: #Port<0.604>,
+                       transport_module: ThousandIsland.Transports.TCP,
+                       read_timeout: 30000,
+                       handshake_timeout: 5000,
+                       silent_terminate_on_error: false,
+                       span: %ThousandIsland.Telemetry{
+                         span_name: :connection,
+                         telemetry_span_context: #Reference<0.690822555.1338507266.118555>,
+                         start_time: -576460738713312179,
+                         start_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           remote_address: {127, 0, 0, 1},
+                           remote_port: 53050,
+                           telemetry_span_context: #Reference<0.690822555.1338507266.118555>,
+                           parent_telemetry_span_context: #Reference<0.690822555.1338507266.118539>
+                         },
+                         handler: Gaoxy.HTTP.Connection,
+                         span_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           telemetry_span_context: #Reference<0.690822555.1338507266.118555>
+                         }
+                       },
+                       read_timer: #Reference<0.690822555.1338507266.118557>,
+                       read_deadline: -576460708710,
+                       timer_deadline: -576460708710
+                     },
+                     gate: #PID<0.3865.0>,
+                     lease: #Reference<0.690822555.1338507265.162071>,
+                     deadline: -576460736710,
+                     limits: %{
+                       read_timeout: 5000,
+                       max_read_chunk: 16384,
+                       max_buffer_bytes: 65536,
+                       request_timeout: 2000,
+                       max_write_chunk: 16384,
+                       write_timeout: 5000,
+                       header_timeout: 5000,
+                       max_body_bytes: 8388608,
+                       max_chunk_line: 1024,
+                       max_header_bytes: 32768,
+                       max_headers: 100,
+                       max_request_line: 8192,
+                       max_trailer_bytes: 8192,
+                       max_trailers: 32
+                     },
+                     body: %{
+                       total: 0,
+                       phase: :done,
+                       trailers: [
+                         {"x-trace", "first"},
+                         {"x-trace", "second"}
+                       ],
+                       trailer_bytes: 0
+                     },
+                     buffer: "",
+                     peer: {{127, 0, 0, 1}, 53050},
+                     local: {{127, 0, 0, 1}, 36809},
+                     service: #PID<0.3864.0>,
+                     instance: #PID<0.3862.0>,
+                     response: :sent,
+                     response_trailers: [],
+                     close: true,
+                     route_bytes: 0,
+                     resource_pins: [],
+                     protocol_bytes: 0,
+                     transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                     transport_state: %{
+                       observer: #PID<0.3860.0>,
+                       pieces: ["a", "bc"],
+                       hold_ready: false,
+                       reorder: true
+                     },
+                     secure: true,
+                     ssl: nil,
+                     peer_cert: nil,
+                     expect_sent: false
+                   }}}, #PID<0.3860.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:proxy_finished, #PID<0.3874.0>,
+                 {:ok,
+                  %Gaoxy.HTTP.Exchange{
+                    request: %Gaoxy.HTTP.Request{
+                      method: "POST",
+                      target: "/wire?",
+                      target_form: :origin,
+                      version: :"HTTP/3",
+                      path: "/wire",
+                      query_string: "",
+                      host: "downstream.test",
+                      port: nil,
+                      scheme: nil,
+                      peer: nil,
+                      local: nil,
+                      head_bytes: 0,
+                      headers: [
+                        {"trailer", "x-trace"},
+                        {"content-length", "0"}
+                      ],
+                      body: {:length, 0},
+                      keep_alive: false,
+                      expect_continue: false
+                    },
+                    socket: %ThousandIsland.Socket{
+                      socket: #Port<0.604>,
+                      transport_module: ThousandIsland.Transports.TCP,
+                      read_timeout: 30000,
+                      handshake_timeout: 5000,
+                      silent_terminate_on_error: false,
+                      span: %ThousandIsland.Telemetry{
+                        span_name: :connection,
+                        telemetry_span_context: #Reference<0.690822555.1338507266.118555>,
+                        start_time: -576460738713312179,
+                        start_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          remote_address: {127, 0, 0, 1},
+                          remote_port: 53050,
+                          telemetry_span_context: #Reference<0.690822555.1338507266.118555>,
+                          parent_telemetry_span_context: #Reference<0.690822555.1338507266.118539>
+                        },
+                        handler: Gaoxy.HTTP.Connection,
+                        span_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          telemetry_span_context: #Reference<0.690822555.1338507266.118555>
+                        }
+                      },
+                      read_timer: #Reference<0.690822555.1338507266.118557>,
+                      read_deadline: -576460708710,
+                      timer_deadline: -576460708710
+                    },
+                    gate: #PID<0.3865.0>,
+                    lease: #Reference<0.690822555.1338507265.162071>,
+                    deadline: -576460736710,
+                    limits: %{
+                      read_timeout: 5000,
+                      max_read_chunk: 16384,
+                      max_buffer_bytes: 65536,
+                      request_timeout: 2000,
+                      max_write_chunk: 16384,
+                      write_timeout: 5000,
+                      header_timeout: 5000,
+                      max_body_bytes: 8388608,
+                      max_chunk_line: 1024,
+                      max_header_bytes: 32768,
+                      max_headers: 100,
+                      max_request_line: 8192,
+                      max_trailer_bytes: 8192,
+                      max_trailers: 32
+                    },
+                    body: %{
+                      total: 0,
+                      phase: :done,
+                      trailers: [
+                        {"x-trace", "first"},
+                        {"x-trace", "second"}
+                      ],
+                      trailer_bytes: 0
+                    },
+                    buffer: "",
+                    peer: {{127, 0, 0, 1}, 53050},
+                    local: {{127, 0, 0, 1}, 36809},
+                    service: #PID<0.3864.0>,
+                    instance: #PID<0.3862.0>,
+                    response: :sent,
+                    response_trailers: [],
+                    close: true,
+                    route_bytes: 0,
+                    resource_pins: [],
+                    protocol_bytes: 0,
+                    transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                    transport_state: %{
+                      observer: #PID<0.3860.0>,
+                      pieces: ["a", "bc"],
+                      hold_ready: false,
+                      reorder: true
+                    },
+                    secure: true,
+                    ssl: nil,
+                    peer_cert: nil,
+                    expect_sent: false
+                  }}}
+     stacktrace:
+       test/proxy_test.exs:256: (test)
+
+...
+
+  2) test a completed nil upload rejects undeclared trailers without reading or finishing (Gaoxy.HTTP.HTTP3.ProxyTest)
+     apps/gaoxy_http3/test/proxy_test.exs:214
+     Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.4078.0>
+     Showing 9 of 9 messages in the mailbox
+     code: assert_receive {:ready_held, ^worker}
+     mailbox:
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send,
+                 {:proxy_started, #PID<0.4078.0>, -576460733603},
+                 #PID<0.4064.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.4078.0>,
+                   #Reference<0.690822555.1338507265.164989>},
+                  {:start_child,
+                   {{Gaoxy.Proxy.HTTP.Session, :start_link,
+                     [
+                       %{
+                         owner: #PID<0.4078.0>,
+                         config: %Gaoxy.Proxy.HTTP{
+                           uri: %URI{
+                             scheme: "http",
+                             authority: "127.0.0.1:33863",
+                             userinfo: nil,
+                             host: "127.0.0.1",
+                             port: 33863,
+                             path: nil,
+                             query: nil,
+                             fragment: nil
+                           },
+                           cacertfile: nil,
+                           connect_address: nil,
+                           limits: %{
+                             idle_timeout: 60000,
+                             write_timeout: 5000,
+                             max_lifetime: 5000,
+                             max_chunk_bytes: 65536,
+                             opening_timeout: 5000
+                           },
+                           upstream_protocol: :http1,
+                           client: Gaoxy.Proxy.HTTPFetchClient
+                         },
+                         instance: #PID<0.4066.0>,
+                         service: #PID<0.4068.0>,
+                         started_at: -576460735603,
+                         deadline: -576460733603,
+                         request_options: %{
+                           path: "/wire",
+                           body: {:length, 0},
+                           query: "",
+                           headers: [
+                             {"content-length", "0"},
+                             {"x-forwarded-for", "127.0.0.1"},
+                             {"x-forwarded-host",
+                              "downstream.test"},
+                             {"x-forwarded-proto", "https"}
+                           ],
+                           limits: %{
+                             read_timeout: 5000,
+                             max_read_chunk: 16384,
+                             max_buffer_bytes: 65536,
+                             request_timeout: 2000,
+                             max_write_chunk: 16384,
+                             write_timeout: 5000,
+                             header_timeout: 5000,
+                             max_body_bytes: 8388608,
+                             max_chunk_line: 1024,
+                             max_header_bytes: 32768,
+                             max_headers: 100,
+                             max_request_line: 8192,
+                             max_trailer_bytes: 8192,
+                             max_trailers: 32
+                           },
+                           method: :post,
+                           max_upload_bytes: 65536
+                         },
+                         gate: #PID<0.4069.0>,
+                         selector: {:fixed,
+                          %Gaoxy.Proxy.HTTP{
+                            uri: %URI{
+                              scheme: "http",
+                              authority: "127.0.0.1:33863",
+                              userinfo: nil,
+                              host: "127.0.0.1",
+                              port: 33863,
+                              path: nil,
+                              query: nil,
+                              fragment: nil
+                            },
+                            cacertfile: nil,
+                            connect_address: nil,
+                            limits: %{
+                              idle_timeout: 60000,
+                              write_timeout: 5000,
+                              max_lifetime: 5000,
+                              max_chunk_bytes: 65536,
+                              opening_timeout: 5000
+                            },
+                            upstream_protocol: :http1,
+                            client: Gaoxy.Proxy.HTTPFetchClient
+                          }}
+                       }
+                     ]}, :temporary, 5000, :worker,
+                    [Gaoxy.Proxy.HTTP.Session]}}},
+                 #PID<0.289.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send,
+                 {:"$gen_call",
+                  {#PID<0.4078.0>,
+                   [:alias |
+                    #Reference<0.0.521987.690822555.1338572801.164997>]},
+                  {:attach_cleanup, #PID<0.4069.0>,
+                   #Reference<0.690822555.1338507265.164963>,
+                   #PID<0.4079.0>, 7750036, -576460733603}},
+                 #PID<0.4068.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send, {:"$gen_cast", :cancel},
+                 #PID<0.4079.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send, {:plug_conn, :sent},
+                 #PID<0.4078.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send,
+                 {:response_operation, #PID<0.4078.0>,
+                  {:head, 502, [{"content-length", "0"}], true},
+                  -576460733603}, #PID<0.4064.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:response_operation, #PID<0.4078.0>,
+                 {:head, 502, [{"content-length", "0"}], true},
+                 -576460733603}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:trace, #PID<0.4078.0>, :send,
+                 {:proxy_finished, #PID<0.4078.0>,
+                  {:ok,
+                   %Gaoxy.HTTP.Exchange{
+                     request: %Gaoxy.HTTP.Request{
+                       method: "POST",
+                       target: "/wire?",
+                       target_form: :origin,
+                       version: :"HTTP/3",
+                       path: "/wire",
+                       query_string: "",
+                       host: "downstream.test",
+                       port: nil,
+                       scheme: nil,
+                       peer: nil,
+                       local: nil,
+                       head_bytes: 0,
+                       headers: [{"content-length", "0"}],
+                       body: {:length, 0},
+                       keep_alive: false,
+                       expect_continue: false
+                     },
+                     socket: %ThousandIsland.Socket{
+                       socket: #Port<0.624>,
+                       transport_module: ThousandIsland.Transports.TCP,
+                       read_timeout: 30000,
+                       handshake_timeout: 5000,
+                       silent_terminate_on_error: false,
+                       span: %ThousandIsland.Telemetry{
+                         span_name: :connection,
+                         telemetry_span_context: #Reference<0.690822555.1338507265.164961>,
+                         start_time: -576460735602927402,
+                         start_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           remote_address: {127, 0, 0, 1},
+                           remote_port: 33482,
+                           telemetry_span_context: #Reference<0.690822555.1338507265.164961>,
+                           parent_telemetry_span_context: #Reference<0.690822555.1338507265.164951>
+                         },
+                         handler: Gaoxy.HTTP.Connection,
+                         span_metadata: %{
+                           handler: Gaoxy.HTTP.Connection,
+                           telemetry_span_context: #Reference<0.690822555.1338507265.164961>
+                         }
+                       },
+                       read_timer: #Reference<0.690822555.1338507265.164965>,
+                       read_deadline: -576460705603,
+                       timer_deadline: -576460705603
+                     },
+                     gate: #PID<0.4069.0>,
+                     lease: #Reference<0.690822555.1338507265.164963>,
+                     deadline: -576460733603,
+                     limits: %{
+                       read_timeout: 5000,
+                       max_read_chunk: 16384,
+                       max_buffer_bytes: 65536,
+                       request_timeout: 2000,
+                       max_write_chunk: 16384,
+                       write_timeout: 5000,
+                       header_timeout: 5000,
+                       max_body_bytes: 8388608,
+                       max_chunk_line: 1024,
+                       max_header_bytes: 32768,
+                       max_headers: 100,
+                       max_request_line: 8192,
+                       max_trailer_bytes: 8192,
+                       max_trailers: 32
+                     },
+                     body: %{
+                       total: 0,
+                       phase: :done,
+                       trailers: [
+                         {"x-trace", "first"},
+                         {"x-trace", "second"}
+                       ],
+                       trailer_bytes: 0
+                     },
+                     buffer: "",
+                     peer: {{127, 0, 0, 1}, 33482},
+                     local: {{127, 0, 0, 1}, 45625},
+                     service: #PID<0.4068.0>,
+                     instance: #PID<0.4066.0>,
+                     response: :sent,
+                     response_trailers: [],
+                     close: true,
+                     route_bytes: 0,
+                     resource_pins: [],
+                     protocol_bytes: 0,
+                     transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                     transport_state: %{
+                       observer: #PID<0.4064.0>,
+                       pieces: ["a", "bc"],
+                       hold_ready: true,
+                       reorder: false
+                     },
+                     secure: true,
+                     ssl: nil,
+                     peer_cert: nil,
+                     expect_sent: false
+                   }}}, #PID<0.4064.0>}
+
+       pattern: {:ready_held, ^worker}
+       value:   {:proxy_finished, #PID<0.4078.0>,
+                 {:ok,
+                  %Gaoxy.HTTP.Exchange{
+                    request: %Gaoxy.HTTP.Request{
+                      method: "POST",
+                      target: "/wire?",
+                      target_form: :origin,
+                      version: :"HTTP/3",
+                      path: "/wire",
+                      query_string: "",
+                      host: "downstream.test",
+                      port: nil,
+                      scheme: nil,
+                      peer: nil,
+                      local: nil,
+                      head_bytes: 0,
+                      headers: [{"content-length", "0"}],
+                      body: {:length, 0},
+                      keep_alive: false,
+                      expect_continue: false
+                    },
+                    socket: %ThousandIsland.Socket{
+                      socket: #Port<0.624>,
+                      transport_module: ThousandIsland.Transports.TCP,
+                      read_timeout: 30000,
+                      handshake_timeout: 5000,
+                      silent_terminate_on_error: false,
+                      span: %ThousandIsland.Telemetry{
+                        span_name: :connection,
+                        telemetry_span_context: #Reference<0.690822555.1338507265.164961>,
+                        start_time: -576460735602927402,
+                        start_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          remote_address: {127, 0, 0, 1},
+                          remote_port: 33482,
+                          telemetry_span_context: #Reference<0.690822555.1338507265.164961>,
+                          parent_telemetry_span_context: #Reference<0.690822555.1338507265.164951>
+                        },
+                        handler: Gaoxy.HTTP.Connection,
+                        span_metadata: %{
+                          handler: Gaoxy.HTTP.Connection,
+                          telemetry_span_context: #Reference<0.690822555.1338507265.164961>
+                        }
+                      },
+                      read_timer: #Reference<0.690822555.1338507265.164965>,
+                      read_deadline: -576460705603,
+                      timer_deadline: -576460705603
+                    },
+                    gate: #PID<0.4069.0>,
+                    lease: #Reference<0.690822555.1338507265.164963>,
+                    deadline: -576460733603,
+                    limits: %{
+                      read_timeout: 5000,
+                      max_read_chunk: 16384,
+                      max_buffer_bytes: 65536,
+                      request_timeout: 2000,
+                      max_write_chunk: 16384,
+                      write_timeout: 5000,
+                      header_timeout: 5000,
+                      max_body_bytes: 8388608,
+                      max_chunk_line: 1024,
+                      max_header_bytes: 32768,
+                      max_headers: 100,
+                      max_request_line: 8192,
+                      max_trailer_bytes: 8192,
+                      max_trailers: 32
+                    },
+                    body: %{
+                      total: 0,
+                      phase: :done,
+                      trailers: [
+                        {"x-trace", "first"},
+                        {"x-trace", "second"}
+                      ],
+                      trailer_bytes: 0
+                    },
+                    buffer: "",
+                    peer: {{127, 0, 0, 1}, 33482},
+                    local: {{127, 0, 0, 1}, 45625},
+                    service: #PID<0.4068.0>,
+                    instance: #PID<0.4066.0>,
+                    response: :sent,
+                    response_trailers: [],
+                    close: true,
+                    route_bytes: 0,
+                    resource_pins: [],
+                    protocol_bytes: 0,
+                    transport: Gaoxy.HTTP.HTTP3.ProxyTest.Transport,
+                    transport_state: %{
+                      observer: #PID<0.4064.0>,
+                      pieces: ["a", "bc"],
+                      hold_ready: true,
+                      reorder: false
+                    },
+                    secure: true,
+                    ssl: nil,
+                    peer_cert: nil,
+                    expect_sent: false
+                  }}}
+     stacktrace:
+       test/proxy_test.exs:224: (test)
+
+....+...+.....+....+...+........+...+.......+...+.........+......+++++++++++++++++++++++++++++++++++++++*..+....+..+...+.......+......+........+.+...+.....+..........+...+..............+......+.........+++++++++++++++++++++++++++++++++++++++*.........+...+..+.+......+.........+.................+..........+...+..+.............+..+.......+.....+.+..+.......+...+........+....+...+..+......+.......+..+...+.......+...+.....+....+......+...+.........+.....+.+......+..............+.+......+...+......+...+..+.+...+......+........+......+....+..+...+......+....+..+.+............+...+...+..+.......+......+......+......+..............+...................+......+.....+.........+......+....+..............+.+..+.........+................+........+.........+......+.+......+.................+.............+.....+..........+..+..........+..+...+.......+......+...+............+...+..............+.+.....+............+.......+......+..+............................+.....+.+...+.....+......+.+.........+......+.....+...+.+.........+.....+......+.+.....................+..+...+.......+.....+...+............+......+......+...+............+.+.........+...+...............+..+.+...+..+.........++++++
+.+..+...+.......+..+..........+..+++++++++++++++++++++++++++++++++++++++*.....+........+.......+......+..+................+..+...+....+..+.+..+..........+......+.....+....+......+..+...+.........+.+......+.....+...+...+.........+......+.........+....+.........+..+.+++++++++++++++++++++++++++++++++++++++*...+.........+..+................+...+......+......+..+.+......+.........+.........+..+...+......+......+....+..+.........+.+..+...+.......+.....+......+....+.....++++++
+-----
+....+.............+.....+..........+..+...+............+.+..+...+.......+++++++++++++++++++++++++++++++++++++++*...+...+.....+..........+..+......+.........+...+...+...............+....+...+.....+..........+..+++++++++++++++++++++++++++++++++++++++*....+.........+..+.......+...+.........+........+.+..+..........+.....+.........+.+..+.+.....+.+........+.............+.......................+.......+.........+.........+..+.......+......+..+....+...+..+...+......................+...+............+.....+.+............+..+.....................+.......+...+.........+.....+..........+........+.++++++
+.+...+++++++++++++++++++++++++++++++++++++++*......+...+....+...+........+++++++++++++++++++++++++++++++++++++++*..+..+.+.....+....+...+............+.........+.....+......+.+..+.+............+...+............+.....+.........+.+........+....+..+...+..........+..+......+.......+........+..........+...............+...+.....+.+..............+.+.....+....+..+...+.......+.........+........+.+.....+.+........................+...........+.........+.+...+...+........+...................+...+...+..+....+..................+...+...............+..+......+.........+......+.+......+..+................+..+...............+.......+.....+.......+.........+..+.........+.+...............+...+..+.......+..+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+............+++++++++++++++++++++++++++++++++++++++*..+............+...+...+..+......+.......+........+.......+........+....+++++++++++++++++++++++++++++++++++++++*.............+.....+.+......+...+.....+...............+.+......++++++
+..+..+.......+...+...+++++++++++++++++++++++++++++++++++++++*.........+..+....+...+..+.+.........+..................+++++++++++++++++++++++++++++++++++++++*.+...+...........................+......................+...+...+..........................+....+..+...+....+..+...+...+....+...+...+..............+...+...+.......+...........+.......+.....+...+.......+...............+.........+.....+.+.........+.....+....+..............+...+......................+........+...+.+...............+.........+.....+.+...+.................+....+.....+....+.................+......+....+.........+..............+.+.....+......+.............++++++
+-----
+.....+.+.....+.............+...+..+.......+.....+...+......+++++++++++++++++++++++++++++++++++++++*...+++++++++++++++++++++++++++++++++++++++*..+.........+.........+......+....+.........+.....+......+....+.....+...+.......+......+......+.........+.....+.+......+..+...+.........+....+.....................+.........+..............+.......+.........+..............+......+.+...+..+.........+.+...+......+............+.........+...+......+.....+....+......+..+...+....+...+..+...............+......+.+.....+...+...+....+......+...+.....+.........+............+....+..+....+...+...........................+.....+......+...+.+.....+......+...+.......+.....++++++
+....+.+..+......+++++++++++++++++++++++++++++++++++++++*.+......+++++++++++++++++++++++++++++++++++++++*.........+..+...+.......+..+...+....+...+........+.......+.....+...+.......+.....+.+......+...+....................+...............+.+.....+......+.+.....+...+......+...................+.........+..+.............+...+..+.......+......+...............+..+.+......+...+..+.+..+..........+......+..+.........+.+..+...+.............+.........+......+..+...+.+......+.........+.........+.....+......+...+.......+......+........+....+...............+......+..+...+.+...+...+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+...
+Finished in 9.4 seconds (8.4s async, 1.0s sync)
+128 tests, 2 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 203751, max_cases: 4
+
+.................................................
+09:19:46.887 [error] GenServer #PID<0.5049.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.5048.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.5049.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.5050.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.690822555.1338638338.124814>, #Reference<0.690822555.1338638338.124815>, :http, #Reference<0.690822555.1338507266.124816>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+................................................................................................................
+Finished in 10.3 seconds (9.0s async, 1.3s sync)
+161 tests, 0 failures
+==> gaoxy_server
+Running ExUnit with seed: 203751, max_cases: 4
+
+................................
+
+  1) test explicit data-only H3 config fixes QUIC ALPN and keeps static routing (Gaoxy.Server.HTTP3ConfigTest)
+     apps/gaoxy_server/test/http3_config_test.exs:6
+     Assertion with == failed
+     code:  assert spec.quic == %{alpn: ["h3"]}
+     left:  %{alpn: ["h3"], poll_interval: 10}
+     right: %{alpn: ["h3"]}
+     stacktrace:
+       test/http3_config_test.exs:10: (test)
+
+...............................
+Finished in 5.5 seconds (1.2s async, 4.3s sync)
+64 tests, 1 failure
+ACTUAL_EXIT 2

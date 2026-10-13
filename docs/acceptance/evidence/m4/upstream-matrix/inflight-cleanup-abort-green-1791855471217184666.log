@@ -1,0 +1,25 @@
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 464796, max_cases: 4
+
+...........................
+
+  1) test a paused poll retains ACK credit through an uncertain result and resumption (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:86
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       endpoint = #PID<0.573.0>
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:endpoint_stop, _, ^endpoint}
+     mailbox:
+       pattern: {:endpoint_stop, _, ^endpoint}
+       value:   {:cleanup_started, #PID<0.571.0>}
+     stacktrace:
+       test/http3_session_client_test.exs:1590: Gaoxy.Proxy.HTTP3SessionClientTest.cleanup/4
+       test/http3_session_client_test.exs:194: (test)
+
+.............................
+Finished in 10.0 seconds (10.0s async, 0.00s sync)
+57 tests, 1 failure

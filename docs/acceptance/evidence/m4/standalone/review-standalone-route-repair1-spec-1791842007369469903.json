@@ -1,0 +1,51 @@
+{
+  "task_id": "/root/m4_session_affinity_review:ROOT_ROUTE_REPAIR1",
+  "assignment": "direct independent read-only SPEC review",
+  "status": "PASS_PREPARATION",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "freeze": {
+    "path": "docs/acceptance/evidence/m4/standalone/repair1-prelive-freeze-1791841807258574295.json",
+    "sha256": "43818ef76f4f3bdb052a06e20591d351bf1751019c677f1c2305199e76e46a16"
+  },
+  "runtime": "NOT RUN",
+  "build": "NOT RUN",
+  "publication": "NOT RUN",
+  "commands_shutdown": "All reviewer read/hash/JSON commands completed; no owned live process",
+  "reviewer_source_changes": [],
+  "reviewer_repairs_added": 0,
+  "cumulative_counters": "UP0 Sol2 unsuccessful2; Astra2 unsuccessful2 exhausted; coordinator5 preceding unsuccessful4; UP1 initial and repair1 unsuccessful, repair2 PASS; UP2 preparation1/live0 at receipt handoff, concurrent writer changes not reviewed; standalone initial unsuccessful1/root repair1; no counters reset",
+  "decisions_needed": [],
+  "scope": "standalone",
+  "preceding_historical_review": {
+    "path": "docs/acceptance/evidence/m4/standalone/review-task5-spec-preparation-current-1791840533194189851.json",
+    "sha256": "529dfcaa6e85109ebaa754c86ea616f11608ab5c81edf8d4cde8fb351f75faa4",
+    "preserved": true
+  },
+  "source_sha256": {
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "29b52743537664c141e705b9dd58da28d817c1faa914a935916b0be23f7678c8",
+    "integration/http3/standalone/run.py": "fcf13196e833242906004a78f8d047fdb4194e885b404ebfe074e465cc51dd9b",
+    "integration/http3/standalone/peer.py": "b3cb16fba72a86904e7215eac132c821ab8b4dc23998f21e592fb7012ef0ffd1",
+    "integration/http3/standalone/README.md": "a05d2fc6598f114821f7590f0ec4043c8c816d1551f42a4e21d57f30b80cad79",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b"
+  },
+  "context_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/router.ex": "1cb7a4d354ae6f46cac993494eb81265725e10cacb147d20028aea96a326eee7",
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995"
+  },
+  "specification_checks": [
+    "Task5 requires actual standalone data-only startup plus independent H3 origins, retaining static/H1, streaming, duplicate trailers, simultaneous old-generation reload, invalid rollback and bounded stop/rebind gates.",
+    "Exact /echo-standalone-upload string passes RouteConfig path through unchanged, compiles to Router exact matching, and selects origin A before static fallback. Exact zero-body B and ordinary A routes remain earlier than static fallback; /proxy segment prefix and legacy static unchanged.",
+    "Reconstructing the single old prefix clause yields exactly prior runner SHA afa7bbace075b0f795eb9bacb9b440b792ee4958c0e19586c2d2edc15d0699fd. Thus all assertions, deadlines, peer controls, rollback and listener/origin rebind code are byte-identical to prior reviewed preparation.",
+    "Original actual standalone FAIL result SHA fe50eeeee5772b6f3fe4db7b42aca81635eb96f609a04e95e5de25c7e1291728 independently verified; result remains FAIL with zero aggregated completed cases. Parent reports two raw peer checks emitted before H3 barrier; no successful runtime inferred."
+  ],
+  "actionable_findings": [],
+  "code_review": "NOT RUN in this SPEC receipt; separate CODE review follows only this PASS",
+  "remaining_risks": [
+    "Source preparation cannot prove actual startup, protocol exchange, reload or port release.",
+    "Concurrent UP2 harness not bound by this receipt; separately freeze before live execution."
+  ]
+}

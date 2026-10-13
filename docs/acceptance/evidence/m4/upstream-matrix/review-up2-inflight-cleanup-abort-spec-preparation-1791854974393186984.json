@@ -1,0 +1,41 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPEC_PREPARATION",
+  "assignment": "direct read-only independent SPEC review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "inputs_sha256": {
+    "docs/designs/m4-up2-inflight-cleanup-abort.md": "d5197267e785de4318ae0ff53f8ea2857263f27c118f2955fb4899f1adbd19f6",
+    "docs/plans/m4-up2-inflight-cleanup-abort.md": "e370a94689875baff4430d64b953959ce4df4123e4fb7ec4482d22213e774c93",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "9e3774cfe94cf02f63c4db69136bd0b6c636af9fe0a07bac4836d2655e6a77ff",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a"
+  },
+  "findings": [],
+  "contract_checks": [
+    "ANY outstanding public operation can finish only within original100ms stop_due armed once and capped by original cleanup deadline.",
+    "Latest correlated advanced Session retained; same caller owns terminal abort/close; no overlapping call or application resume/replay.",
+    "Terminal cleanup command forbidden after stop/fallback/endpoint loss/deadline.",
+    "Caller/endpoint loss and never-returning call preserve finite local stop fallback and all owned DOWN/Service proof.",
+    "ImmutableFAIL39 preserved; source-level ordering defect distinct from unproven failed-run causal linkage.",
+    "Cancelled cleanup uses Session.abort public pending abandonment; consumed=false close retains existing error/local-stop outcome since Session.close cannot clear public pending work.",
+    "Regressions require exact advanced Session, unknown ref abandonment, stale generation/ref no-op, no late delivery/replay, before/after fallback and caller loss; original idle/deferredstop tests unchanged.",
+    "All66+2 matrix assertions/windows/bodybytes/hash/FIN/five-second deadlines and sibling survival retained."
+  ],
+  "counter_checks": {
+    "up2_failed_live": 20,
+    "failed_production_rounds": 8,
+    "failed_harness_rounds": 3,
+    "current_repair": 12,
+    "repair11_classification": "required repeat failed full production qualification round; no causal attribution to DATA coalescing",
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "reviewer_repair_rounds": 0
+  },
+  "limitations": [
+    "Preparation only; implementation/TDD/current source gates/fresh complete matrix and repeat/finalM4 gates remain pending.",
+    "Unknown-result opaque identity should be preserved at adapter boundary without private SDK field inspection."
+  ],
+  "scope": "unique immutable receipt only",
+  "command_shutdown": "all read commands finished; no runtime process owned"
+}

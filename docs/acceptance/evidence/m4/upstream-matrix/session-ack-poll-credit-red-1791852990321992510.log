@@ -1,0 +1,58 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 61357, max_cases: 4
+
+....
+
+  1) test matching ACK retains an already queued wakeup without scheduling a replacement (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:41
+     Assertion with <= failed
+     code:  assert acknowledged.poll_due <= Lifecycle.now()
+     left:  -576460684280
+     right: -576460744280
+     stacktrace:
+       test/http3_session_client_test.exs:61: (test)
+
+...............................
+
+  2) test matching response ACK wakes its owner ahead of a pending idle tick (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:14
+     Assertion with <= failed
+     code:  assert acknowledged.poll_due <= Lifecycle.now()
+     left:  -576460683717
+     right: -576460743717
+     stacktrace:
+       test/http3_session_client_test.exs:34: (test)
+
+.....
+
+  3) test nil ACK with no delivery preserves idle polling credit and its timer (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:67
+     match (=) failed
+     The following variables were pinned:
+       handle = %{id: #Reference<0.246657774.2140143618.56575>, owner: #PID<0.675.0>, tick: #Reference<0.246657774.2140143618.56576>, cleanup: :not_started, poll_due: -576460683691, delivery: nil}
+     code:  assert {:ok, ^handle} = HTTP3SessionClient.acknowledge(handle, nil)
+     left:  {:ok, ^handle}
+     right: {:ok,
+             %{
+               id: #Reference<0.246657774.2140143618.56575>,
+               owner: #PID<0.675.0>,
+               tick: #Reference<0.246657774.2140143618.56578>,
+               cleanup: :not_started,
+               poll_due: -576460683691,
+               delivery: nil
+             }}
+     stacktrace:
+       test/http3_session_client_test.exs:81: (test)
+
+.......
+
+  4) test a paused poll retains ACK credit through an uncertain result and resumption (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:86
+     expected public poll
+     code: assert [^session, 16, paused] = await_operation(caller, :poll)
+     stacktrace:
+       test/http3_session_client_test.exs:102: (test)
+
+..
+Finished in 7.8 seconds (7.8s async, 0.00s sync)
+53 tests, 4 failures

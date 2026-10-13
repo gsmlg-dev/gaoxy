@@ -1,0 +1,175 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "independent read-only Sol review of Astra recovery1 candidate",
+  "verdict": "PASS_PRELIVE",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "reviewed_ns": 1791831967595939395,
+  "specification_review": {
+    "verdict": "PASS",
+    "order": "Read original design/plan and consumer-affinity amendment before reviewing repaired code",
+    "contract": "Paused request refs suppress request-stream reads while bounded connection/control processing remains permitted. Preserve whole Session state, one delivery before ACK, 16 KiB chunks, original absolute deadlines, no replay, all teardown receipts and separate runtime gates. Recovery changes only the overstrict empty-list harness expectation; no production ACK behavior changed.",
+    "documents": {
+      "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+      "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+      "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+      "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272"
+    }
+  },
+  "code_review": {
+    "verdict": "PASS",
+    "actionable_findings": [],
+    "checks": [
+      {
+        "area": "Whole-list event allowlist",
+        "evidence": "session_probe.exs:1814-1839: Enum.each validates every returned item, allowing only :ready/:writable, authenticated h3 ready metadata and nonnegative integer SETTINGS pairs. No response/error filtering. All other shapes fail explicitly, including response events for another ref, datagram, GOAWAY, unknown or guessed quic_connected events."
+      },
+      {
+        "area": "All affected real paused polls",
+        "evidence": "session_probe.exs:2054,2062,2314 call assert_paused_controls on the entire poll result; no wrapper drops events. Original no-done-before-consumption checks remain."
+      },
+      {
+        "area": "Negative and mixed-list cases",
+        "evidence": "session_probe.exs:2431-2461 prepares positive healthy controls and 16 forbidden shapes in three placements (alone, before/after healthy control); 48 assert_raise cases remain NOT RUN."
+      },
+      {
+        "area": "Actual public Session pause contract",
+        "evidence": "session_probe.exs:2463-2497 uses public Qpack/Frame codecs and the scripted public Transport boundary. Initial headers and held DATA are parsed by real Session.poll. Next DATA/FIN is made runnable. Two paused polls require only two events calls, zero reads/sends/admissions; unpaused release requires exact next DATA/done and exactly one request read. The pause is explicit; no production downstream ACK handling is claimed."
+      },
+      {
+        "area": "Existing doubles compatibility",
+        "evidence": "events/read are now logged through the existing D.call helper (session_probe.exs:42-43); existing reconciliation counts select operation names. Exact empty poll in blocked suspend/resume remains at line2418, continuation deadline equality and stale-token rejection remain at lines2416-2422."
+      },
+      {
+        "area": "Installed SDK source evidence",
+        "evidence": "Session.poll (session.ex:247-250) pulls events then drains. read_allowed? (407-412) suppresses only paused request stream reads. consume_event (723-727) preserves ready/writable and metadata; control receive exposes SETTINGS/GOAWAY. Transport normalizes without deleting controls (transport/quic.ex:411-440). connection.ex:1128-1132 emits public ready metadata. No installed quic_connected shape was found or added to allowlist."
+      },
+      {
+        "area": "Preserved assertions and scope",
+        "evidence": "Independently reversed each exact frozen task diff and matched all three predecessor source hashes. Only two boundary logging functions, explicit paused-control validator/three callsites, new subcase within existing named double, README explanation and runner counters changed. Guardian lifecycle/ownership/deadline/cleanup, upload/chunk/ACK-related assertions remain byte-for-byte. origin.py unchanged; runner acceptance suffix beginning done is byte-for-byte unchanged, including wire request/DATA/trailer/FIN, cancellation, sibling, task DOWN and rebind assertions."
+      },
+      {
+        "area": "Counters and historical evidence",
+        "evidence": "run.py:108-111 records direct Sol2, unsuccessful Sol2, Astra1 round1_in_progress. README preserves prior failed run and current compile-only/runtime-pending distinction. No historical receipt was edited."
+      }
+    ]
+  },
+  "freeze_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/session-astra1-prelive-freeze-1791831683007.json",
+    "sha256": "d491b275bc21f8439a8d7cc2fbeafea04bf30dc0942e3a07f1b3c69bfe61dd2c"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "aa81666e8a451ddd70b32da2355a77ffd6306daa40b10b33b6c1422ee8eb216d",
+    "integration/http3/upstream/run.py": "56fd407995508b6a2555ac9d332e5bb7b355d55ff1d77f3f31eaaaa22508644a",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "a72863fbae8b4a2bde89f467e82cd79c8b4bcc08758943a817ec473e04bf8619",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "AGENTS.md": "902a735746a9d05c45b5a3f54c35ad612b1de66af132a39ba26b1215cf90f0c7",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic_http3/lib/quic_http3/transport.ex": "dd5a9c0f03feb11c7f87391ee0fad1abd345aa17149dfdc44ed1817baf57e4e2",
+    "deps/elixir_quic_http3/lib/quic_http3/control.ex": "d0733f9afad0f898d19878261bfbb95d28ccf2ab20bbea40309cf7dd623006c0",
+    "deps/elixir_quic_http3/lib/quic_http3/qpack.ex": "6fae0bd0123437e71d5499b54ddde35c5b3fa191f99a9e4de38b3c22db1ea66b",
+    "deps/elixir_quic_http3/lib/quic_http3/frame.ex": "350f7c3fcf37183c774adf19ec1f6ddb39dbb03aa4b9c5b998d3d34703cd62c7",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806"
+  },
+  "manifest": {
+    "counts": {
+      "network": 17,
+      "policy": 2,
+      "boundary_double": 31,
+      "total": 50
+    },
+    "names": {
+      "network": [
+        "cancel_blocked_upload",
+        "cancel_owner_loss",
+        "cancel_pending_headers",
+        "cancel_unacknowledged_response",
+        "network_guardian_after_connect",
+        "network_guardian_paused_ack",
+        "network_idle_caller_failure",
+        "ordinary_stream_a",
+        "ordinary_stream_b",
+        "progressive_upload",
+        "request_trailers_three_declared",
+        "request_trailers_three_undeclared",
+        "request_trailers_zero_declared",
+        "request_trailers_zero_undeclared",
+        "tiny_window_1mib",
+        "wrong_ca",
+        "wrong_hostname"
+      ],
+      "policy": [
+        "absent_trust",
+        "address_policy"
+      ],
+      "doubles": [
+        "advanced_error_retained",
+        "blocked_suspend_poll_resume",
+        "caller_down_before_stop_result",
+        "caller_reconcile_read_hint_bound",
+        "caller_stale_generation_sequence",
+        "caller_survives_done_pending_consumption",
+        "creator_crash_after_adoption",
+        "creator_crash_before_descriptor",
+        "guardian_duplicate_result_rejected",
+        "guardian_late_success_before_timer",
+        "guardian_loss_blocked_call",
+        "guardian_normal_after_connect",
+        "guardian_normal_before_connect",
+        "guardian_normal_bootstrap_adoption",
+        "guardian_normal_bootstrap_allocation",
+        "guardian_normal_endpoint_stop",
+        "guardian_normal_paused_ack",
+        "guardian_original_deadline_late_result",
+        "guardian_repeated_resume_original_deadline",
+        "idle_caller_failure_before_connect",
+        "ownership_abnormal_down",
+        "ownership_after_ack",
+        "ownership_after_adoption",
+        "ownership_before_adoption",
+        "ownership_before_descriptor",
+        "ownership_cleanup_expiry",
+        "ownership_missing_down",
+        "ownership_stop_error",
+        "unknown_connect_reconciled",
+        "unknown_data_no_replay",
+        "unknown_trailers_no_replay"
+      ]
+    },
+    "current_candidate_executed": {
+      "network": 0,
+      "policy": 0,
+      "boundary_double": 0
+    },
+    "current_candidate_runtime": "NOT RUN"
+  },
+  "prior_runtime": "Sol2 actual exit1 after 31 boundary-double and 2 network PASS; paused poll returned [:writable]. Historical FAIL preserved; no current gate PASS.",
+  "counters": {
+    "sol_repair_rounds": 2,
+    "unsuccessful_sol_repair_rounds": 2,
+    "astra_recovery_rounds": 1,
+    "unsuccessful_astra_recovery_rounds": 0,
+    "astra1_runtime_validation": "PENDING",
+    "reviewer_added_repair_rounds": 0
+  },
+  "verification": {
+    "reviewer_commands": "Read-only git identity/status, spec/source reads, SHA256 verification of all 17 frozen paths, exact predecessor reconstruction, unchanged acceptance-suffix comparison and Python AST parsing; all exited0. No Mix, format, compile, application, live/double/network command invoked.",
+    "author_preparation": "Freeze reports compile/load, format and static preparation exits0; zero current runtime rows. These are preparation only."
+  },
+  "changed_files": "Only this unique review receipt; no source/spec/plan/historical edits. Pre-existing work preserved.",
+  "command_shutdown": "All reviewer commands finished. No persistent child started; no other process stopped or modified.",
+  "remaining_risks": [
+    "All new subcases and all current candidate 50 rows remain unexecuted",
+    "Full Session gate may reveal additional runtime failures; UP1 remains HOLD_UP0",
+    "Boundary double proves direct Session pause behavior only; production downstream ACK/delivery and Service accounting require their separate acceptance"
+  ],
+  "decisions_needed": "Coordinator may grant exclusive live lease and run the exact frozen candidate; runtime/evidence acceptance remains pending."
+}

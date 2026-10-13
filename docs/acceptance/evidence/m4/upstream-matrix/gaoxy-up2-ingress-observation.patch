@@ -1,0 +1,197 @@
+--- a/integration/http3/upstream/fixture.exs
++++ b/integration/http3/upstream/fixture.exs
+@@ -169,7 +169,18 @@
+     receive do
+       {:watch, owner, id} ->
+         :ets.insert_new(table, {id, %{id: id, errors: [], public_closed: [], events: []}})
+-        :erlang.trace(owner, true, [:receive, {:tracer, self()}])
++
++        flags =
++          if id == "h1-tiny_window_1mib" do
++            selected = [{:_, [{:==, {:self}, {:const, owner}}], [{:return_trace}]}]
++            :erlang.trace_pattern({Gaoxy.HTTP.Exchange, :read_body_step, 3}, selected, [])
++            :erlang.trace_pattern({ThousandIsland.Socket, :recv, 3}, selected, [])
++            [:receive, :call, :monotonic_timestamp]
++          else
++            [:receive]
++          end
++
++        :erlang.trace(owner, true, flags ++ [{:tracer, self()}])
+         reference = Process.monitor(owner)
+         send(owner, {:watched, id})
+ 
+@@ -221,6 +232,34 @@
+ 
+         observe(table, owners, guardians, monitors)
+ 
++      {:trace_ts, owner, :receive, {:gaoxy_proxy_http, _, {:error, reason}}, _timestamp} ->
++        if id = owners[owner],
++          do: update(table, id, &%{&1 | errors: append(&1.errors, bounded(reason))})
++
++        observe(table, owners, guardians, monitors)
++
++      {:trace_ts, owner, :receive, {:gaoxy_proxy_http, _, event}, _timestamp} ->
++        kind = if is_tuple(event), do: elem(event, 0), else: event
++
++        if id = owners[owner],
++          do: update(table, id, &%{&1 | events: Enum.take(&1.events ++ [to_string(kind)], -16)})
++
++        observe(table, owners, guardians, monitors)
++
++      {:trace_ts, owner, :receive, {:h3_upload_reply, _, _, _}, timestamp} ->
++        if owners[owner] == "h1-tiny_window_1mib",
++          do: Process.put({:matrix_ingress_reply, owner}, trace_us(timestamp))
++
++        observe(table, owners, guardians, monitors)
++
++      {:trace_ts, owner, :call, {module, operation, arguments}, timestamp} ->
++        observe_ingress(table, owners, owner, :call, module, operation, arguments, timestamp)
++        observe(table, owners, guardians, monitors)
++
++      {:trace_ts, owner, :return_from, {module, operation, 3}, result, timestamp} ->
++        observe_ingress(table, owners, owner, :return, module, operation, result, timestamp)
++        observe(table, owners, guardians, monitors)
++
+       {:trace_ts, guardian, :receive, message, timestamp} ->
+         observe_upload(table, guardians, guardian, :receive, message, timestamp)
+         observe(table, owners, guardians, monitors)
+@@ -241,6 +280,8 @@
+         observe(table, owners, guardians, monitors)
+ 
+       {:completed, id, result, started} ->
++        if id == "h1-tiny_window_1mib", do: clear_ingress_trace()
++
+         update(
+           table,
+           id,
+@@ -251,10 +292,15 @@
+ 
+       {:DOWN, reference, :process, pid, reason} ->
+         Process.delete({:matrix_upload_timing, pid})
++        Process.delete({:matrix_ingress_reply, pid})
++        Process.delete({:matrix_ingress_call, pid, :read_body_step})
++        Process.delete({:matrix_ingress_call, pid, :recv})
+ 
+         case monitors[reference] do
+           {:guardian, id} -> update(table, id, &Map.put(&1, :guardian_down, bounded(reason)))
+-          {:owner, id} -> update(table, id, &Map.put(&1, :owner_down, bounded(reason)))
++          {:owner, id} ->
++            if id == "h1-tiny_window_1mib", do: clear_ingress_trace()
++            update(table, id, &Map.put(&1, :owner_down, bounded(reason)))
+         end
+ 
+         observe(
+@@ -275,10 +321,11 @@
+       {:stop, caller} ->
+         :erlang.trace(:new_processes, false, [:call])
+         :erlang.trace_pattern({@client, :open, 1}, false, [])
++        clear_ingress_trace()
+ 
+         for {owner, _} <- owners,
+             Process.alive?(owner),
+-            do: :erlang.trace(owner, false, [:receive])
++            do: :erlang.trace(owner, false, [:receive, :call, :monotonic_timestamp])
+ 
+         for {guardian, _} <- guardians,
+             Process.alive?(guardian),
+@@ -289,8 +336,98 @@
+       {:trace, _, :receive, _} ->
+         # Unselected messages are discarded without inspecting SDK state.
+         observe(table, owners, guardians, monitors)
+-    end
+-  end
++
++      message when is_tuple(message) and elem(message, 0) in [:trace, :trace_ts] ->
++        observe(table, owners, guardians, monitors)
++    end
++  end
++
++  # Public read arguments/results only; never retain Exchange, socket or body bytes.
++  defp observe_ingress(table, owners, owner, direction, module, operation, value, timestamp) do
++    if owners[owner] == "h1-tiny_window_1mib" and
++         {module, operation} in [{Gaoxy.HTTP.Exchange, :read_body_step}, {ThousandIsland.Socket, :recv}] do
++      at = trace_us(timestamp)
++      key = {:matrix_ingress_call, owner, operation}
++
++      event =
++        case {direction, operation, value} do
++          {:call, :read_body_step, [exchange, credit, wait]} ->
++            event = %{kind: "call", operation: "read_body_step", at_us: at,
++                      phase: read_phase(exchange), credit: credit, wait_ms: wait}
++
++            event =
++              case Process.delete({:matrix_ingress_reply, owner}) do
++                nil -> event
++                replied -> Map.put(event, :reply_to_read_us, at - replied)
++              end
++
++            Process.put(key, event)
++            event
++
++          {:call, :recv, [_, size, timeout]} ->
++            # Label the enclosing step's entry phase, not private decoder progress.
++            step = Process.get({:matrix_ingress_call, owner, :read_body_step}, %{})
++            event = %{kind: "call", operation: "recv", at_us: at,
++                      phase: Map.get(step, :phase, "outside_step"), size: size, wait_ms: timeout}
++            Process.put(key, event)
++            event
++
++          {:return, _, result} ->
++            case Process.delete(key) do
++              nil -> nil
++              started ->
++                event = Map.merge(started, %{kind: "return", at_us: at, duration_us: at - started.at_us,
++                                            category: read_category(result), bytes: read_bytes(result)})
++                if operation == :read_body_step, do: Map.put(event, :end_phase, read_return_phase(result)), else: event
++            end
++
++          _ -> nil
++        end
++
++      if event do
++        update(table, owners[owner], fn receipt ->
++          trace = Map.get(receipt, :ingress_trace, %{counts: %{}, metrics: %{}, first: [], last: [], body_bytes: 0, recv_bytes: 0})
++          size = if event.operation == "recv", do: if(event.size == 1, do: ":one_byte", else: ":bulk"), else: ""
++          name = event.kind <> ":" <> event.operation <> ":" <> event.phase <> size <> ":" <> Map.get(event, :category, "")
++          metrics = if Map.has_key?(event, :duration_us),
++            do: Map.update(trace.metrics, name, measurement(event.duration_us), &measure(&1, event.duration_us)),
++            else: trace.metrics
++          metrics = if Map.has_key?(event, :reply_to_read_us),
++            do: Map.update(metrics, "reply_to_read_us", measurement(event.reply_to_read_us), &measure(&1, event.reply_to_read_us)),
++            else: metrics
++          metric_name = if event.operation == "recv", do: :recv_bytes, else: :body_bytes
++          trace = Map.update!(trace, metric_name, &(&1 + Map.get(event, :bytes, 0)))
++          Map.put(receipt, :ingress_trace, %{trace |
++            counts: Map.update(trace.counts, name, 1, &(&1 + 1)), metrics: metrics,
++            first: if(length(trace.first) < 8, do: trace.first ++ [event], else: trace.first),
++            last: Enum.take(trace.last ++ [event], -8)})
++        end)
++      end
++    end
++  end
++
++  defp clear_ingress_trace do
++    :erlang.trace_pattern({Gaoxy.HTTP.Exchange, :read_body_step, 3}, false, [])
++    :erlang.trace_pattern({ThousandIsland.Socket, :recv, 3}, false, [])
++  end
++
++  defp trace_us(timestamp), do: System.convert_time_unit(timestamp, :native, :microsecond)
++  defp read_phase(%{body: %{phase: {kind, _}}}) when kind in [:length, :chunk_data], do: Atom.to_string(kind)
++  defp read_phase(%{body: %{phase: phase}}) when phase in [:done, :chunk_size, :chunk_crlf, :trailers], do: Atom.to_string(phase)
++  defp read_phase(_), do: "other"
++  defp read_return_phase({:pending, exchange}), do: read_phase(exchange)
++  defp read_return_phase({kind, _, exchange}) when kind in [:ok, :more, :error], do: read_phase(exchange)
++  defp read_return_phase(_), do: "other"
++  defp read_category({:pending, _}), do: "pending"
++  defp read_category({:ok, _}), do: "ok"
++  defp read_category({:ok, _, _}), do: "ok"
++  defp read_category({:more, _, _}), do: "more"
++  defp read_category({:error, :timeout}), do: "timeout"
++  defp read_category({:error, :timeout, _}), do: "timeout"
++  defp read_category(_), do: "error"
++  defp read_bytes({:ok, bytes}) when is_binary(bytes), do: byte_size(bytes)
++  defp read_bytes({kind, bytes, _}) when kind in [:ok, :more] and is_binary(bytes), do: byte_size(bytes)
++  defp read_bytes(_), do: 0
+ 
+   # Observe only Gaoxy envelopes. Session values and command arguments stay opaque.
+   defp observe_upload(table, guardians, guardian, direction, message, timestamp) do

@@ -1,0 +1,197 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "assignment": "direct independent read-only Sol specification then code pre-live review of Astra2 fragment candidate",
+  "status": "DONE",
+  "verdict": "PASS_PRELIVE",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "reviewed_ns": 1791833119486816035,
+  "specification_review": {
+    "verdict": "PASS",
+    "order": "New fragmentation design and plan read first, then unchanged original Session/affinity invariants, then frozen code",
+    "design": "docs/designs/m4-session-frame-fragmentation.md",
+    "plan": "docs/plans/m4-session-frame-fragmentation.md",
+    "precedence": "Supersedes only explicit Session max_frame16384 construction with supported8192 fragment/read configuration; original documents unchanged. No intrinsic application, body, peer-window or other product requirement reduced.",
+    "preserved_invariants": [
+      "16KiB application send_data ceiling and 64 calls/1048576-byte exact body/hash",
+      "16384-byte peer stream window and independent origin",
+      "Stable consumer caller and creator/adoption lifecycle",
+      "Absolute opening/total/operation/cleanup deadlines",
+      "No admitted-prefix or unknown-operation replay; single last FIN",
+      "Paused refs and one delivery before ACK, unchanged read batches/queue bounds",
+      "All50 names/classifications, peer cancellation/sibling, strict stop/normal DOWN/task/rebind requirements",
+      "Failed prior tiny-request cleanup remains unconfirmed, original failure and counters preserved"
+    ]
+  },
+  "code_review": {
+    "verdict": "PASS",
+    "actionable_findings": [],
+    "evidence": [
+      {
+        "area": "Real public option and upstream routing",
+        "source": "session_probe.exs:1687-1697",
+        "assessment": "Public Session.new(max_frame:8192) applied only to real construction; TODO/WORKAROUND markers identify http_fetch#105. Other configured limits remain unchanged. Local root issue receipt records verified Bug/internal request/severity needed; reviewer did not mutate external issue."
+      },
+      {
+        "area": "Success fragments and exact bytes/FIN",
+        "source": "session_probe.exs:2431-2464,2489-2491",
+        "assessment": "Public Frame codec encodes16KiB application body to16389 bytes; pattern extracts8192+8192+5; actual boundary call list pins exact binaries and final-only FIN. Exact concatenation asserted."
+      },
+      {
+        "area": "Definite second-fragment block",
+        "source": "session_probe.exs:2446-2454,2466-2475",
+        "assessment": "Second send alone is rejected and retried by public Session.resume. Exact call list excludes first-fragment replay and emits final5 bytes with FIN only once."
+      },
+      {
+        "area": "Unknown second-fragment admission",
+        "source": "session_probe.exs:2446-2454,2477-2486",
+        "assessment": "Same operation_ref reconciled via operation_status; exact call list contains one first send, one second send, one matching status query and one final send. No resend of unknown fragment or fresh send_data."
+      },
+      {
+        "area": "Prior pause and lifecycle repairs preserved",
+        "assessment": "Independently reversed only known source delta to match prior probe SHAaa81666e8a451ddd70b32da2355a77ffd6306daa40b10b33b6c1422ee8eb216d. Entire-list paused allowlist, forbidden/mixed cases, held DATA/FIN zero-read double, original suspend/poll/resume deadline assertions, guardian lifecycle and teardown remain byte-for-byte."
+      },
+      {
+        "area": "Manifest and network assertions preserved",
+        "assessment": "Independently reversed runner counter-only delta to SHA56fd407995508b6a2555ac9d332e5bb7b355d55ff1d77f3f31eaaaa22508644a. Entire done/acceptance suffix unchanged. origin.py hash unchanged. All17network/2policy/31double names and exact wire/payload/FIN/TLS/cleanup/cancellation/sibling assertions remain mandatory."
+      },
+      {
+        "area": "Counters and status",
+        "source": "run.py:108-112; new plan and README",
+        "assessment": "Sol2/unsuccessful2, Astra2round2_in_progress with preceding unsuccessfulAstra1. No third round authorized. Author compile/static checks are preparation only; candidate doubles/network NOT RUN and UP1 HOLD_UP0."
+      }
+    ]
+  },
+  "freeze_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/session-astra2-prelive-freeze-1791832904000.json",
+    "sha256": "e5373e662a065a27e6a5bcbf456cee56cdb39430d691736f285999c8fdb70896"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "64c93310997f23253e2eeb6ede6dd6bdf19548555ef024b133024cac6e220225",
+    "integration/http3/upstream/run.py": "141c38fc2af115d38aa1e5a090baed7c335788fe31785852f81bd9665e5ec9ab",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "eb04406c8e7d3d636615799104147c7dabc088c5f2737943726b1bc24ed47389",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "deps/elixir_quic_http3/mix.exs": "ccf1c54daa1460a96662d742a435c2d74f3ef512a6a0f92b72f0666854d79982",
+    "deps/elixir_quic/mix.exs": "88ff2ee8f204eb60613d2015afc80e20c28d36f654d43546320a5b3f42fffb87",
+    "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+    "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a",
+    "deps/elixir_quic/lib/quic.ex": "7791050053a16acdb9c8329a9a23034335d423c574adbc77d6215b8231d5500d",
+    "deps/elixir_quic/lib/quic/connection.ex": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "deps/elixir_quic/lib/quic/streams.ex": "2ddf17fe7372796f21b65c2e4fd54e5d36f28071ee59d615c11e43029c163145",
+    "deps/elixir_quic/lib/quic/handshake_scheduler.ex": "55d1f615d75857dfb9c94f69a14adda8575f4816d91ca4baed5e087125f94036",
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/aioquic/quic/connection.py": "7c14594073bbdfbd0485154246fc52843d166b6eb0c12779ddfac167da594d74",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/plans/m4-public-session-upstream.md": "17f87b4e9b7be2f10939f866172d424e6c11c8efc7bf85c9bc15bc7aa218a272",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c",
+    "docs/designs/m4-session-frame-fragmentation.md": "589965f36f67dbb1d78e4afd144351d472c2a4575fcfe884e81652c0c5cb4c78",
+    "docs/plans/m4-session-frame-fragmentation.md": "b0301b4eca4eda92b9ca279bd9e8543324e322b689dcdeaa1e6c1f7ab01ff8fe"
+  },
+  "historical_evidence_sha256_verified": {
+    "docs/acceptance/evidence/m4/upstream-contract/session-astra1-prelive-freeze-1791831683007.json": "d491b275bc21f8439a8d7cc2fbeafea04bf30dc0942e3a07f1b3c69bfe61dd2c",
+    "docs/acceptance/evidence/m4/upstream-contract/session-astra1-runtime-diagnosis-1791832095634501415.json": "85d29625e6c6c0568d5fb36b2551883d2837dd6ad92e673c0ef7ef4c342e4e93",
+    "docs/acceptance/evidence/m4/upstream-contract/session-astra2-upstream-diagnosis-1791832393639.json": "e72d8fd3db5ea168cceac763b1002d5ae0e4b021a005f153f9f860356faacaae",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791831993043786216/result.json": "a000554e141582b975f344b0c8da1a53102f96e0a3570b6e4eec9404d0d3bbe7",
+    "docs/acceptance/evidence/m4/upstream-contract/review-session-astra1-runtime-public-option-1791832511081707496.json": "fd96c4b4c176b9d0f944db01080f9883be1f6d987b7df6300e94451c69bf2653",
+    "docs/acceptance/evidence/m4/upstream-contract/upstream-issue-105-1791832586496133626.json": "d47ad2fb6e81c34954124bf5008fa821163157bc12983b63b03b1c0d66c07983"
+  },
+  "manifest": {
+    "counts": {
+      "network": 17,
+      "policy": 2,
+      "boundary_double": 31,
+      "total": 50
+    },
+    "names": {
+      "network": [
+        "cancel_blocked_upload",
+        "cancel_owner_loss",
+        "cancel_pending_headers",
+        "cancel_unacknowledged_response",
+        "network_guardian_after_connect",
+        "network_guardian_paused_ack",
+        "network_idle_caller_failure",
+        "ordinary_stream_a",
+        "ordinary_stream_b",
+        "progressive_upload",
+        "request_trailers_three_declared",
+        "request_trailers_three_undeclared",
+        "request_trailers_zero_declared",
+        "request_trailers_zero_undeclared",
+        "tiny_window_1mib",
+        "wrong_ca",
+        "wrong_hostname"
+      ],
+      "policy": [
+        "absent_trust",
+        "address_policy"
+      ],
+      "doubles": [
+        "advanced_error_retained",
+        "blocked_suspend_poll_resume",
+        "caller_down_before_stop_result",
+        "caller_reconcile_read_hint_bound",
+        "caller_stale_generation_sequence",
+        "caller_survives_done_pending_consumption",
+        "creator_crash_after_adoption",
+        "creator_crash_before_descriptor",
+        "guardian_duplicate_result_rejected",
+        "guardian_late_success_before_timer",
+        "guardian_loss_blocked_call",
+        "guardian_normal_after_connect",
+        "guardian_normal_before_connect",
+        "guardian_normal_bootstrap_adoption",
+        "guardian_normal_bootstrap_allocation",
+        "guardian_normal_endpoint_stop",
+        "guardian_normal_paused_ack",
+        "guardian_original_deadline_late_result",
+        "guardian_repeated_resume_original_deadline",
+        "idle_caller_failure_before_connect",
+        "ownership_abnormal_down",
+        "ownership_after_ack",
+        "ownership_after_adoption",
+        "ownership_before_adoption",
+        "ownership_before_descriptor",
+        "ownership_cleanup_expiry",
+        "ownership_missing_down",
+        "ownership_stop_error",
+        "unknown_connect_reconciled",
+        "unknown_data_no_replay",
+        "unknown_trailers_no_replay"
+      ]
+    },
+    "current_candidate_executed": {
+      "network": 0,
+      "policy": 0,
+      "boundary_double": 0
+    },
+    "runtime": "NOT RUN"
+  },
+  "upstream_issue_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/upstream-issue-105-1791832586496133626.json",
+    "sha256": "d47ad2fb6e81c34954124bf5008fa821163157bc12983b63b03b1c0d66c07983",
+    "recorded_metadata": "Bug, internal request, severity needed, open. Captured root verification reviewed; no live API call by this reviewer."
+  },
+  "counters": {
+    "sol_repair_rounds": 2,
+    "unsuccessful_sol_repair_rounds": 2,
+    "astra_recovery_rounds": 2,
+    "preceding_unsuccessful_astra_recovery_rounds": 1,
+    "current_astra_round": "round2_in_progress; runtime pending",
+    "third_round_authorized": false,
+    "reviewer_added_repair_rounds": 0
+  },
+  "verification": "Read-only git/source/spec/evidence reads, all20 frozen hashes and6 historical evidence hashes, exact reverse-delta reconstruction, unchanged runner acceptance-suffix comparison, Python AST/local-link checks all exited0. No Mix/live/format/compile commands invoked by reviewer.",
+  "changed_files": "Only this new unique review receipt. Pre-existing source, test and document changes preserved.",
+  "command_shutdown": "All reviewer commands finished. No persistent application/peer child started; no other process interrupted.",
+  "remaining_risks": [
+    "Current8192 candidate and all50 rows require actual runtime qualification",
+    "Extra bounded reads/sends may affect timing; unchanged deadlines must pass",
+    "Static fragment doubles do not replace independent peer1MiB/cancellation/cleanup acceptance",
+    "Astra1 failed tiny-upload cleanup remains unconfirmed; process shutdown and origin rebind do not retroactively qualify it",
+    "UP1 prepared tests remain NOT RUN and are outside this pre-live review"
+  ],
+  "decisions_needed": "Root may grant exclusive live lease and run exact frozen UP0 candidate. Require full actual gate and independent evidence review before UP1."
+}

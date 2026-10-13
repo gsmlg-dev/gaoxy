@@ -1,0 +1,178 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SCOPED_CORRECTED_PARSER_CODE_AND_RECORDED_PRELIVE_EVIDENCE",
+  "assignment": "direct independent read-only repair8 corrected parser code and actual recorded verification review; separate cleanup diagnosis is owned by dependency reviewer",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-h3-bodyless-peer.md": "53bcb79ffbf8d71a9530916fb0faf34cf7ff8fb23f767715c8636f4c875adfd9",
+    "docs/plans/m4-up2-h3-bodyless-peer.md": "e198a5cdebb2262d685e788672b757ecf0ddef89d2e9180757dd941f5cda5dde",
+    "integration/http3/upstream/peer.py": "8bfd6c01d9530483a2debedbd72e37fa8e05b733cf7ecbb8ce472d044680b998",
+    "integration/http3/upstream/bodyless_peer_test.py": "ca0d61eed71c803f8b952ac316275469ed688c768a3fb54518a115149062e38c",
+    "integration/http3/upstream/README.md": "0af01d3dadb035284f3beebc2bc6c247d13d3b5b294af0b66e6e796b9c1af6cc",
+    "integration/http3/upstream/run.py": "58da9ce115bb9e75cb0d9cd8ad382ad80696bb031d2fbcf13dacdceaa5375a70",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "d26be1c80a52c982687d1d48d7a1191d1a2606bd8ad04c4004abf968f63bea12",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "RAW_BODYLESS_FORBIDDEN_FRAME_PARITY",
+      "resolution": "Finite forbidden set now (2,3,4,5,7,13,14), matching pinned standard response guard. Identical independent vectors fail exactly2/14 before correction and all17 pass afterward; response ended remains false on rejection.",
+      "prior_finding_receipt": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-h3-bodyless-peer-code-prelive-findings-1791850848047919146.json"
+    }
+  ],
+  "review_conclusions": [
+    "Only H3 HEAD/304 selected response bidi StreamDataReceived bypasses generic Content-Length semantics. H3Connection request encoding and unselected/control stream handling remain active. Ordinary response decoding remains standard.",
+    "Independent public Buffer/pylsqpack decoder has finite65536 frame/carry limits, split-varint/payload assembly, static/literal QPACK, rejects dynamic references, any DATA includingzero, repeatedHEADERS and known forbidden frames. Partial FIN and missingHEADERS fail; only actual complete QUIC FIN marks ended and fin_count1. Legitimate unknown extensions retain finite framing checks.",
+    "Original66+2 manifest, absolute5s peer deadline,2KiB window, exact status/body/hash/duplicate/trailer/FIN, completion barriers and cleanup/cancellation/sibling assertions preserved. Adds exact CL7 for HEAD/304 and absentCL for204 across protocols; bodyless rows record decoder profile.",
+    "Actual meaningful forbidden-frame RED17/2 and GREEN17/0 use unchanged independent test bytes; initial import failure/zero-test RED remains preparation only. Prior actual47-check wire FAILs remain causal evidence, not passing acceptance.",
+    "Fresh exact19-file format and strict compile exit0; HTTP120/H340/proxy114 =274 tests/0 failures, actual exit0. All284 recorded inputs before=after=current; recorded log hashes verified. Temporary series helper was read previously; recorded command list checked from current log.",
+    "Revised pre-settings cleanup test and prior eaddrinuse diagnosis are under separate independent reviewer ownership. This scoped parser verdict does not classify that failure as flaky or resolved; parent must integrate the separate diagnostic verdict."
+  ],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-forbidden-frames-red-1791850874447444089.json",
+      "sha256": "a9f84a8068483061e4f9573b16219eea9ec98ee75700dda301b2daa4d35ef6ea",
+      "status": "FAIL",
+      "actual_exit": 1,
+      "log_sha256": "acb6be95f92f34ca62c4861e45a1184043429c58c931e64652837818c97db1f1",
+      "source_before_after_equal": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-forbidden-frames-green-1791850875301841711.json",
+      "sha256": "05780432d4b004faa82ac65a47e78e85b0e583fc6843fe3522007655e565d9f0",
+      "status": "PASS",
+      "actual_exit": 0,
+      "log_sha256": "9eb929715e09dab33093165c3270151a1a39b215b1f2fde18923d4ace385fd8d",
+      "source_before_after_equal": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-revised-prelive-1791850933346983549.json",
+      "sha256": "30c4743b07d4d50f17e863931dd1c17e8cb10f4845e323a7f953a6c877d4f010",
+      "status": "PASS",
+      "actual_exit": 0,
+      "log_sha256": "dacb9c4770dcb69a8fb242e559cd905bc6e40aca9cb58ef56bcf88001a20fac2",
+      "source_before_after_equal": true
+    }
+  ],
+  "verification_commands": [
+    [
+      "mix",
+      "format",
+      "--check-formatted",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+      "apps/gaoxy_http/test/http2_network_test.exs",
+      "apps/gaoxy_http/test/http2_pre_settings_test.exs",
+      "apps/gaoxy_http/test/http2_control_rate_test.exs",
+      "apps/gaoxy_http3/test/plug_test.exs",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+      "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+      "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "apps/gaoxy_http/test/http_network_test.exs",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex",
+      "apps/gaoxy_http3/test/transport_test.exs",
+      "integration/http3/upstream/fixture.exs"
+    ],
+    [
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    [
+      "python",
+      "scripts/check-tests.py",
+      "apps/gaoxy_http/test/http2_capacity_test.exs",
+      "apps/gaoxy_http/test/http2_codec_test.exs",
+      "apps/gaoxy_http/test/http2_control_rate_test.exs",
+      "apps/gaoxy_http/test/http2_facade_test.exs",
+      "apps/gaoxy_http/test/http2_independent_review_test.exs",
+      "apps/gaoxy_http/test/http2_integration_test.exs",
+      "apps/gaoxy_http/test/http2_network_test.exs",
+      "apps/gaoxy_http/test/http2_pre_settings_test.exs",
+      "apps/gaoxy_http/test/http2_protocol_test.exs",
+      "apps/gaoxy_http/test/http2_stale_start_test.exs",
+      "apps/gaoxy_http/test/http_network_test.exs",
+      "apps/gaoxy_http/test/http_lifecycle_test.exs",
+      "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+      "apps/gaoxy_http/test/connection_poll_test.exs",
+      "apps/gaoxy_http3/test/plug_test.exs",
+      "apps/gaoxy_http3/test/operations_test.exs",
+      "apps/gaoxy_http3/test/lifecycle_test.exs",
+      "apps/gaoxy_http3/test/lifecycle_race_test.exs",
+      "apps/gaoxy_http3/test/transport_test.exs",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+      "apps/gaoxy_proxy/test/http3_proxy_test.exs",
+      "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+      "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+      "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+      "apps/gaoxy_proxy/test/http_proxy_tls_test.exs",
+      "apps/gaoxy_proxy/test/http_headers_test.exs"
+    ]
+  ],
+  "verification": {
+    "corrected_parser_unit": {
+      "tests": 17,
+      "failures": 0,
+      "actual_exit": 0
+    },
+    "test_contract_red": {
+      "tests": 17,
+      "failures": 2,
+      "actual_exit": 1,
+      "failed_subcases": [
+        2,
+        14
+      ]
+    },
+    "scoped_suites": {
+      "gaoxy_http": {
+        "tests": 120,
+        "failures": 0
+      },
+      "gaoxy_http3": {
+        "tests": 40,
+        "failures": 0
+      },
+      "gaoxy_proxy": {
+        "tests": 114,
+        "failures": 0
+      },
+      "total": 274
+    },
+    "format_files": 19,
+    "compile_actual_exit": 0,
+    "source_capture_count": 284,
+    "before_after_current_hashes_equal": true,
+    "reviewer_ast": "PASS",
+    "reviewer_test_execution": "NOT RUN",
+    "live_matrix": "NOT RUN in this review; overall UP2 remains FAIL"
+  },
+  "cleanup_review": "PENDING separate reviewer receipt; parent integrates diagnostic verdict before combined live clearance",
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 15,
+    "up2_unsuccessful_production_repairs": 5,
+    "up2_unsuccessful_harness_repairs": 2,
+    "pending_up2_harness_repair": 8,
+    "reviewer_repair_rounds": 0,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-h3-bodyless-peer-revised-code-prelive-evidence-1791851216191217041.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/docs/log/receipt inspection; standard-library AST/hash/immutable receipt serialization. No reviewer Mix/tests/live/network, source/docs edits, commits or delegation.",
+  "clearance": "Scoped corrected parser CODE and recorded prelive evidence PASS only. Parent separately integrates cleanup review. No full UP2/M4/release PASS or actual matrix clearance is inferred.",
+  "remaining_acceptance": "Separate cleanup diagnostic review; full66+2 candidate matrix, independent actual-evidence review and fresh full repeat; final M4 and conditional release gates."
+}

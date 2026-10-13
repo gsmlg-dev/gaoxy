@@ -1,0 +1,81 @@
+{
+  "status": "FAIL_DIAGNOSED",
+  "result": "docs/acceptance/evidence/m4/standalone/run-1791842137673800635/result.json",
+  "result_sha256": "6298ab6f2922855b2ee5227fcd0097caf85256c099987f2956c8901467be90cf",
+  "peer_log_sha256": "f099f8a25969095bc3ca917bbeba78e90478b9883c271efb0860a9510ccac27f",
+  "origin_log_sha256": "f07b31d65951db9f91a78da9ab396c141e13f1ce38ea19bc4ddf5002c858334b",
+  "source_sha256": {
+    "integration/http3/upstream/origin.py": "03b949d04fbb66701a4abbb62e4388c554bedef5c9db9969fadb15ba0798ef1a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "9ceb14c46f1c676fd26d4e2b3957786c630304e29d5827c3c7bba8e78a5d307c",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "11309eba6daed70360297cee42a8f366fdb39ed3e5637af9981898b1f8b0558f"
+  },
+  "observed_upload": {
+    "event": "request_fin",
+    "origin": "a",
+    "connection": 0,
+    "stream": 0,
+    "path": "/echo-standalone-upload",
+    "method": "POST",
+    "authority": "localhost:50781",
+    "id": null,
+    "certificate_sha256": "6a1bad47b38fddfdb93d1096fb34e51b1bca839b713b6c4453aa72b56a5ff01b",
+    "trailer_blocks": 1,
+    "headers": [
+      [
+        ":method",
+        "POST"
+      ],
+      [
+        ":scheme",
+        "https"
+      ],
+      [
+        ":authority",
+        "localhost:50781"
+      ],
+      [
+        ":path",
+        "/echo-standalone-upload"
+      ],
+      [
+        "trailer",
+        "x-upload"
+      ],
+      [
+        "x-forwarded-for",
+        "127.0.0.1"
+      ],
+      [
+        "x-forwarded-host",
+        "localhost"
+      ],
+      [
+        "x-forwarded-proto",
+        "https"
+      ]
+    ],
+    "trailers": [
+      [
+        "x-upload",
+        "one"
+      ],
+      [
+        "x-upload",
+        "two"
+      ]
+    ],
+    "data_bytes": 73728,
+    "data_sha256": "644e4a8d52cac95a52d688b6a6142204157aa7cfcb457f7156aa446dd4302f28",
+    "request_fin": true,
+    "fin_count": 1,
+    "data_events": 66,
+    "response_fin": false
+  },
+  "root_cause": "Legacy independent origin responds without declaring Trailer:x-check, then sends duplicate x-check terminal HEADERS. Existing shared Gaoxy proxy policy permits only declared trailer names. Exact echo response body arrives but terminal trailers do not; the original assertion fails.",
+  "minimal_fixture_repair": "Declare only the already-sent response x-check names on legacy echo and ordinary response heads, retaining exact duplicate trailers and all deadlines. Matrix response path already declares them.",
+  "related_production_concern": "H2/H3 generic endpoint error path currently finishes a started response; retain the original UP2 total-timeout not-ended/reset assertion to verify this separately before any production repair.",
+  "standalone_repair_rounds": 1,
+  "standalone_unsuccessful_verifications": 2,
+  "up2_live_repair_rounds": 0,
+  "original_failure_preserved": true
+}

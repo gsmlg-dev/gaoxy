@@ -1,13 +1,46 @@
 # M4 upstream HTTP/3 and standalone implementation plan
 
-**Execution update, 2026-10-13:** Use the reviewed
-[public Session plan](m4-public-session-upstream.md) for UP0/UP1. It replaces the
-Fetch-specific adapter below with an explicit dedicated endpoint lifecycle.
-#101 is closed and cohort 0.21.4 is installed; Fetch functional diagnostics pass,
-while Fetch cleanup remains unsupported. UP2, standalone and final acceptance
-scope stay required. Apply the reviewed
-[consumer-affinity task delta](m4-public-session-consumer-affinity.md) as well;
-the original dated plan and failed receipts remain history.
+**Current execution, 2026-10-13:** All prescribed M4 implementation checks
+PASS on the final repair12 source: **530 tests/0 failures**, strict umbrella and
+explicit Phoenix H3 compilation, Session **50 checks** (17 network + 2 policy +
+31 boundary doubles), G1/G2/G3 **47/59/19**, standalone **16**, and clean
+core/H1-H2/H3 consumers **1/2/2 tests, 0 failures**. G0's reviewed **4 tests +
+9 peer rows** are reused with independently checked unchanged host inputs.
+UP2 completes **66 network + 2 policy** checks in both the first execution and
+required fresh repeat, with independent evidence reviews.
+[The final gate ledger](../acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds each result to its command, source hashes, counts, exits and review.
+
+All six local source versions are0.3.0; fresh candidate530/0,34-file formatting
+and strict umbrella/Phoenix/production compilation PASS as linked in the ledger.
+Final independent M4 acceptance/documentation review PASS, with no unresolved findings. Portable
+build, packaged runtime qualification and publication are **NOT RUN**.
+The selected tiny-window profile uses public H3 host polling1ms and finite H2
+control2048/s; defaults10ms/256controls/s are unchanged. H3 tiny-window completion
+was4985ms first/4567ms fresh within the original5s bound; no throughput margin or
+default10ms workload claim follows.
+
+Unsuccessful UP2 counters remain **20 live/8 production/3 harness**. All earlier
+FAILs and historical19/7/3,18/6/3,17/5/3 checkpoints remain in the acceptance
+history; the new PASS runs do not change failed-run causal uncertainty.
+[The dependency audit](../acceptance/evidence/m4/upstream-contract/latest-http-fetch-main-update-audit-1791855535947755021.json)
+retains published/installed0.21.4 and needed public8KiB fragmentation with a16KiB
+application ceiling; #105 is closed in main, but no containing fix is installed.
+The next prepared package is existing
+[M3 Task4 H1 resource foundation](m3-h1-resource-foundation.md) and its
+[design](../designs/m3-h1-resource-foundation.md): design/plan only, implementation
+**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) remains conditional on final
+acceptance and separate artifact qualification. Operational restrictions remain.
+
+- [x] Complete selected Session UP0 and UP1 under the replacement plan and its
+  consumer-affinity amendment; retain the superseded Fetch tasks below as history.
+- [x] Allowlist standalone reverse-proxy `upstream_protocol` strings, validate
+  HTTPS/CA through HTTP.init and preserve H1 defaults/invalid-generation rollback.
+- [x] Complete standalone H3-origin runtime, independent evidence review and fresh
+  16-check repeat; preserve original static/H1-origin acceptance and failures.
+- [x] Complete UP2 and final affected implementation executions.
+- [x] Complete final independent M4 acceptance.
+- [ ] Complete separate artifact qualification before conditional publication.
 
 For Sol implementation workers: execute the independently reviewed
 [design](../designs/m4-upstream-standalone.md) under continuing authorization,
@@ -23,7 +56,7 @@ standalone H3 services without changing existing default protocols.
 policy; allowlisted standalone handler backed by existing H3 and Generation APIs.
 No new external dependency, pool, protocol fallback or public management endpoint.
 
-**Stack:** existing Elixir/OTP umbrella, HTTP Fetch cohort 0.21.3, native QUIC,
+**Historical original stack:** existing Elixir/OTP umbrella, HTTP Fetch cohort 0.21.3, native QUIC,
 independent aioquic 1.2.0 peer, existing Python/Nix test runners.
 
 ## Work ownership and execution rules
@@ -52,7 +85,7 @@ Each must fail on zero executed checks, establish readiness through emitted
 port/PID barriers, enforce a total deadline, and stop only children it created.
 Keep failed runs intact in unique evidence subdirectories; no overwrite or relabel.
 
-## Task 1 — public client qualification (UP0)
+## Task 1 — historical 0.21.3 Fetch qualification (UP0, superseded)
 
 Owner: client and independent peer implementers, after G2. No production adapter
 activation until lifecycle qualification resolves the design's source findings.
@@ -144,7 +177,7 @@ activation until lifecycle qualification resolves the design's source findings.
 qualified, or precise external blockers retained. Source audit alone is not a
 runtime PASS. This architecture assignment ran none of these commands.
 
-## Task 2 — explicit adapter and shared Session (UP1)
+## Task 2 — historical Fetch adapter plan (UP1, superseded)
 
 Depends on UP0 and G3's protocol-neutral proxy-header compatibility changes.
 
@@ -184,23 +217,23 @@ Depends on UP0 and G3's protocol-neutral proxy-header compatibility changes.
 
 ## Task 3 — independent upstream matrix (UP2)
 
-- [ ] Start separate native H1, H2 and H3 Gaoxy listeners routing explicitly to
+- [x] Start separate native H1, H2 and H3 Gaoxy listeners routing explicitly to
   the aioquic origins. Independent downstream clients speak their actual protocol;
   require origin H3 events. A Gaoxy server talking to itself is insufficient.
-- [ ] Execute all three downstream rows for ordinary GET/HEAD, chunked or DATA
+- [x] Execute all three downstream rows for ordinary GET/HEAD, chunked or DATA
   upload/download, 1 MiB body with tiny receive windows, bodyless statuses,
   duplicate response fields, compressed bytes unchanged, escaped path/empty query,
   manual redirect/no replay, ordered request/response trailers including zero DATA,
   early final response, downstream cancellation, upstream reset and timeout.
-- [ ] Use two configured upstream authorities in interleaved requests. Assert
+- [x] Use two configured upstream authorities in interleaved requests. Assert
   authority and TLS identity do not cross, one failed request does not cancel
   a sibling/other listener, and admission/cleanup returns to baseline within
   absolute deadlines. Show bounded queue/one-delivery behavior under stalled peers.
   Do not claim total native memory or reuse/pool support from this observation.
-- [ ] Run `python integration/http3/upstream/run.py --gate matrix --evidence
+- [x] Run `python integration/http3/upstream/run.py --gate matrix --evidence
   docs/acceptance/evidence/m4/upstream-matrix` with hashes before/after, exact
   nonzero count, protocol/certificate identities and all child exits.
-- [ ] Independent Sol evidence review and a fresh affected rerun after any fix.
+- [x] Independent Sol evidence review and a fresh affected rerun after any fix.
   Keep unsupported upstream H2, H3 forward/CONNECT/WebSocket rows explicit.
 
 ## Task 4 — standalone config and generations (ST1)
@@ -227,7 +260,7 @@ Depends only on G2 for static/H1 upstream routes. H3 route selection awaits UP1.
   stable listener across successful route reload, old in-flight snapshot versus
   new requests, invalid reload rollback and bounded generation-pin cleanup on
   worker death. Do not change core QUIC handler normalization solely for this.
-- [ ] After UP1, allowlist reverse_proxy upstream_protocol JSON strings and
+- [x] After UP1, allowlist reverse_proxy upstream_protocol JSON strings and
   validate HTTPS/CA/limits via HTTP.init. Before UP1, retain rejection of the
   unsupported option; do not accept a nonfunctional H3 route.
 - [x] Run `python scripts/check-tests.py
@@ -269,7 +302,7 @@ Depends only on G2 for static/H1 upstream routes. H3 route selection awaits UP1.
 - [x] Rerun existing clean core and H1/H2 consumers and the H3 consumer from the
   M4 parent plan. Confirm standalone dependency addition does not introduce QUIC
   into core-only/H1/H2-only consumer closures.
-- [x] Independent review covers specification, implementation, evidence counts,
+- [x] Final independent acceptance review covers specification, implementation, evidence counts,
   source hashes, completed child shutdown and capabilities. Resolve actionable
   findings and rerun affected checks before acceptance.
 - [x] Coordinator synchronizes `docs/acceptance/m4.md`, `docs/capabilities.md`,
@@ -284,7 +317,12 @@ Depends only on G2 for static/H1 upstream routes. H3 route selection awaits UP1.
 Received counters: Connection Sol3/unsuccessful2/Astra1/unsuccessful0; Options
 Sol4/unsuccessful1/Astra0. This architecture task adds zero Astra repair rounds.
 Keep cumulative counters through further reviews/repairs; it does not authorize
-a third Astra recovery round. Initial planning contained no executed gates;
-current UP0 block, accepted ST1/ST2 static/H1-origin subset and pending UP1/UP2
-and standalone H3-origin states are recorded in
-[acceptance](../acceptance/m4.md).
+a third Astra recovery round. The original 0.21.3 planning/checkpoint reported
+blocked UP0/UP1/UP2 and accepted ST1/ST2 static/H1-origin only. That historical
+snapshot is superseded by the current execution block above and
+[acceptance](../acceptance/m4.md). Repair12 first and required fresh repeat both
+PASS68 with independent reviews; all final implementation executions PASS.
+Final independent M4 acceptance PASS.
+
+Final M4 implementation acceptance: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

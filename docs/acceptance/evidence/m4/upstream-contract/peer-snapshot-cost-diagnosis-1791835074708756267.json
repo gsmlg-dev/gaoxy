@@ -1,0 +1,138 @@
+{
+  "task_id": "m4_dependency_audit_peer_costs",
+  "status": "PASS_READ_ONLY_DIAGNOSIS_ONLY",
+  "assignment": "direct read-only diagnosis",
+  "checked_utc": "2026-10-12T19:57:54.689767+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791834829044880836",
+  "run_result_sha256": "40b7819a2793e3839eecea6d88ba26ba31a7a3bd7cb079ec4a0f505cb958c55b",
+  "origin_source_sha256": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+  "origin_log_sha256": "a403870483e5ad7ef889658e83e9f6586a2bf4375fc1662cceaec17a79bc598a",
+  "run_status": "FAIL",
+  "run_source_unchanged": true,
+  "executed_pass_by_kind": {
+    "boundary_double": 31,
+    "network": 6
+  },
+  "children": [
+    {
+      "pid": 2060439,
+      "exit": 0
+    },
+    {
+      "pid": 2064516,
+      "exit": 1
+    }
+  ],
+  "peer_observations": {
+    "tiny_upload_data_events": 627,
+    "tiny_payload_bytes": 1048576,
+    "tiny_cumulative_copied_hashed_bytes": 337047994,
+    "tiny_chunk_size_histogram": {
+      "1313": 1,
+      "1318": 11,
+      "284": 2,
+      "5": 41,
+      "1311": 16,
+      "1316": 171,
+      "296": 31,
+      "1315": 252,
+      "301": 1,
+      "1310": 23,
+      "302": 44,
+      "3940": 2,
+      "3945": 1,
+      "8499": 1,
+      "16384": 18,
+      "6877": 1,
+      "2937": 3,
+      "12132": 2,
+      "2625": 1,
+      "13759": 1,
+      "12137": 1,
+      "1617": 1,
+      "16379": 1,
+      "0": 1
+    },
+    "tiny_request_fin_count": 1,
+    "tiny_final_sha256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b",
+    "origin_log_bytes": 310754,
+    "origin_total_event_counts": {
+      "ready": 1,
+      "headers": 6,
+      "request_fin": 6,
+      "response_fin": 3,
+      "connection_closed": 4,
+      "data": 630,
+      "stopped": 1
+    },
+    "pause_resume_snapshot_events": [],
+    "origin_log_has_monotonic_timestamps": false
+  },
+  "benchmark": {
+    "python": "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+    "command": [
+      "integration/quic_consumer/.venv/bin/python",
+      "- (bounded pure origin snapshot benchmark)"
+    ],
+    "exact_method": "import origin.py without main; call actual Origin.snapshot on SimpleNamespace with identical cumulative body bytearray/header/certificate fields after each captured chunk size",
+    "modes": {
+      "exact_snapshot": {
+        "samples_ms": [
+          1455.418,
+          1351.532,
+          1250.745,
+          1322.694,
+          1371.446
+        ],
+        "median_ms": 1351.532
+      },
+      "exact_snapshot_json": {
+        "samples_ms": [
+          1388.227,
+          1663.739,
+          1373.222,
+          1341.665,
+          1427.172
+        ],
+        "median_ms": 1388.227
+      },
+      "incremental_chunk_sha_json_control": {
+        "samples_ms": [
+          11.476,
+          10.773,
+          10.77,
+          10.717,
+          10.694
+        ],
+        "median_ms": 10.77
+      }
+    },
+    "all_repetitions_final_digest_matches": true,
+    "separate_captured_each_event_incremental_digest_comparison": "PASS627/627",
+    "exec_session": 26983,
+    "actual_exit": 0,
+    "limits": "Pure algorithm only. Does not measure actual stdout pipeblocking, runner diskflush, UDPcrypto/ACKs, event-loop scheduling or contestedCPUload. No live test or deadlines changed."
+  },
+  "supported_findings": [
+    "origin.py34-43 snapshot copies body bytearray to bytes and recomputes SHA256 of entire accumulated body. DATA callback91-94 synchronously invokes snapshot+emit(flush=True) every event on aioquic event-loop thread.",
+    "627 tiny DATA events for1MiB imply337,047,994 cumulativebytes copied+hashed before echo response allocation. Exact on-interpreter snapshot+json algorithm costs median1.388s, about27.8percent of original5sdeadline; this is algorithm benchmark, not measured wire-time breakdown.",
+    "An incremental SHA256 hasher updated per DATA chunk and snapshot using bytearray length avoids cumulative hashing. Every627captured cumulativedigest is identical in independent pure comparison; exact count/FIN/finalhash assertions can remain unchanged. Retain bodybytearray for exact echoedresponse.",
+    "origin uses stdout print(flush=True); runner readerthread immediately reads eachline, writes logfile+flush then enqueues JSON. Originlog is310754bytes. Blocking pipe/disk costs are possible but neither pipe occupancy nor per-write timing is captured; cannot assert they are causal.",
+    "No pause_upload/resume_upload control was reached in this failing run. /tiny-upload begins echo response only after full requestFIN; uploadsnapshots cost therefore belongs preceding upload phase of same original totaldeadline. There is no snapshot/hash work on responseDATA sends after thatFIN.",
+    "Original QuicConfiguration max_stream_data16384 applies independentpeer uploadreceivewindow; ACK/congestion and clientcredit govern echo response. No peer-side responsecredit instrumentation was captured. Root separately owns timestamp/poll/creditdiagnosis; this finding does not prove upstreamQUICdefect."
+  ],
+  "actionable_recommendation": "Bounded peer-only logging optimization may replace cumulativebodySHA with persistent incrementalhasher while preserving cumulativedigest on everyevent, bodybytes, exactFIN, all50rows, tinywindows and originaldeadline. Do not loosen5s or assertions. Fresh frozen livegate+independentreview stillrequired; costoptimization alone is not evidence of gatePASS.",
+  "counters_unchanged": {
+    "sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator": 2,
+    "unsuccessful_coordinator": 2,
+    "diagnosis_added_repairs": 0
+  },
+  "changes": "One new immutable diagnosis receipt only. No source/dependency edits; no live/Mix/workflows.",
+  "commands_finished": true
+}

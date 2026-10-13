@@ -1,0 +1,76 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "FINDING_CODE_AND_PRELIVE_FAIL",
+  "assignment": "direct independent read-only repair8 code and recorded prelive evidence review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-h3-bodyless-peer.md": "53bcb79ffbf8d71a9530916fb0faf34cf7ff8fb23f767715c8636f4c875adfd9",
+    "docs/plans/m4-up2-h3-bodyless-peer.md": "e198a5cdebb2262d685e788672b757ecf0ddef89d2e9180757dd941f5cda5dde",
+    "integration/http3/upstream/peer.py": "8bfd6c01d9530483a2debedbd72e37fa8e05b733cf7ecbb8ce472d044680b998",
+    "integration/http3/upstream/bodyless_peer_test.py": "ca0d61eed71c803f8b952ac316275469ed688c768a3fb54518a115149062e38c",
+    "integration/http3/upstream/README.md": "0af01d3dadb035284f3beebc2bc6c247d13d3b5b294af0b66e6e796b9c1af6cc",
+    "integration/quic_consumer/.venv/lib/python3.12/site-packages/aioquic/h3/connection.py": "e7e89dc74f7b353771132a7fdfad10ff81208a7102cb58ff33b8e0e09088d7dd"
+  },
+  "findings": [
+    {
+      "id": "RAW_BODYLESS_FORBIDDEN_FRAME_PARITY",
+      "severity": "medium",
+      "file": "integration/http3/upstream/peer.py",
+      "line": 78,
+      "problem": "The raw decoder rejects types3,4,5,7,13 but silently ignores type2 PRIORITY and type14 DUPLICATE_PUSH. Pinned standard aioquic H3Connection explicitly rejects both on request/response streams. Selected raw HEAD/304 decoding therefore weakens existing forbidden-frame rejection.",
+      "required_resolution": "Preserve pinned standard rejection with a complete finite known-forbidden set and deterministic rejection vectors, including2/14. Retain legitimate unknown-extension handling and all body/FIN/metadata assertions."
+    }
+  ],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-unit-green-1791850706452366241.json",
+      "sha256": "840f5966dda63d1c41a9e1929d1a98658b472000b34e633d45c5749c0e87a8ac",
+      "status": "PASS",
+      "actual_exit": 0,
+      "source_before_after_equal": true,
+      "log_sha256": "d5b7036bbe23fe70d9478fd0fdcfe83ae4a268ef56cfc06a95c1c08d0049033a"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-syntax-1791850707224000341.json",
+      "sha256": "dccdcaabb52113f6752bd335e894755bed9f51a7e685ee3bee3d6442ee0b57b2",
+      "status": "PASS",
+      "actual_exit": 0,
+      "source_before_after_equal": true,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-prelive-green-1791850718514305042.json",
+      "sha256": "c340524d13bd9b8399b136732b2fa5745e0e2344955a51d9f22594e9daa570da",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "source_before_after_equal": true,
+      "log_sha256": "f63f9db9c7bf6f7c44f7a7fde4a5991dcafb914f0f548218066d0f74fc436c80"
+    }
+  ],
+  "verified_outcomes": {
+    "python_unit": "Recorded16 tests/0 failures, exit0; no reviewer execution. Unit/syntax/prelive source maps identical and all284 match current files.",
+    "syntax": "Recorded PASS exit0; reviewer standard-library AST parsing also passed.",
+    "exact_format": "Recorded19 files, exit0.",
+    "strict_compile": "Recorded exit0.",
+    "scoped_suites": "Recorded HTTP120/1, H340/0, proxy114/0. Actual exit2 FAIL. No live matrix executed in this preparation.",
+    "failure": "Gaoxy.HTTP2PreSettingsTest stream opened after SETTINGS ACK cleanup TCP listen returned {:error, :eaddrinuse} at helperline278. Cause unconfirmed; cannot label flaky or passing.",
+    "other_code": "Selected raw H3 HEAD/304 only, public Buffer/pylsqpack, finite65536 carry/frame, actual FIN, DATA includingzero rejection, repeatedHEADERS/dynamic rejection, full66+2/original5s and addedexactCL7/none204 metadata retained. Other H3/control/request decoding remains standard."
+  },
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 15,
+    "up2_unsuccessful_production_repairs": 5,
+    "up2_unsuccessful_harness_repairs": 2,
+    "pending_up2_harness_repair": 8,
+    "reviewer_repair_rounds": 0,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-h3-bodyless-peer-code-prelive-findings-1791850848047919146.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/docs/log/receipt review plus standard-library AST/hash/immutable receipt serialization. No reviewer tests, Mix, runtime/network, source/docs edits, commits or delegation.",
+  "clearance": "WITHHELD. Actionable parser finding and actual prelive cleanup failure must be resolved and freshly verified before live clearance. Full UP2/M4/release remain pending."
+}

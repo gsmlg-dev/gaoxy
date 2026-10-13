@@ -1,0 +1,80 @@
+{
+  "task_id": "/root/m4_session_affinity_review:STANDALONE_SHARED_ORIGIN_REPAIR2_SPEC",
+  "assignment": "direct independent read-only actual repaired source SPEC review",
+  "status": "PASS_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "freeze": {
+    "path": "docs/acceptance/evidence/m4/standalone/repair2-response-declaration-prelive-freeze-1791842497174983860.json",
+    "sha256": "e459a969079b319edcd9707b9bfac960217dec0a57dbd1034e264caba9395688"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/origin.py": "f6a069fa8cc165341c662e7b87577cb0c81f4a07ec770d318da5fce51b070167",
+    "integration/http3/standalone/run.py": "fcf13196e833242906004a78f8d047fdb4194e885b404ebfe074e465cc51dd9b",
+    "integration/http3/standalone/peer.py": "a8771c88c7d8b73a51302aa04e9293de5b9622311cfc49aaf5e10aee2e8f048e"
+  },
+  "context_sha256": {
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "29b52743537664c141e705b9dd58da28d817c1faa914a935916b0be23f7678c8",
+    "integration/http3/standalone/run.py": "fcf13196e833242906004a78f8d047fdb4194e885b404ebfe074e465cc51dd9b",
+    "integration/http3/standalone/peer.py": "a8771c88c7d8b73a51302aa04e9293de5b9622311cfc49aaf5e10aee2e8f048e",
+    "integration/http3/standalone/README.md": "a05d2fc6598f114821f7590f0ec4043c8c816d1551f42a4e21d57f30b80cad79",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "9ceb14c46f1c676fd26d4e2b3957786c630304e29d5827c3c7bba8e78a5d307c",
+    "apps/gaoxy_proxy/test/http_headers_test.exs": "7312458df543cd09b39274abe41f09150b315fc972a49d48ee90fcf3be25cc52",
+    "integration/http3/upstream/session_probe.exs": "33ff6191365fd2f9d72aa9b2b5fb73da7771f765d2885388c8cef7e0db9109be",
+    "integration/http3/upstream/probe.exs": "d2227a0f1d4f04aafea40b082162ded044bb3c4613f5a45dde1739aaf990cc01",
+    "scripts/h3-release-smoke.py": "31c3a5cf98863bffcceadeeef810b4a87f52a27e14cd9198085c44d69e15affe"
+  },
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "preceding_standalone_reviews": [
+    "docs/acceptance/evidence/m4/standalone/review-task5-spec-preparation-current-1791840533194189851.json",
+    "docs/acceptance/evidence/m4/standalone/review-standalone-route-repair1-spec-1791842007369469903.json"
+  ],
+  "diagnosis": {
+    "path": "docs/acceptance/evidence/m4/standalone/repair1-response-trailer-policy-diagnosis-1791842321655561359.json",
+    "sha256": "c660ed9cd65f7cf7cd6bb087e91d62dbf2188dd3067dc8b3dcf73104db56568d",
+    "original_result_status": "FAIL",
+    "result_and_raw_log_sha_verified": true
+  },
+  "verdict": "NEEDED_COMPATIBILITY_REPAIR; no selected-scope or contract objection",
+  "spec_checks": [
+    "Existing shared proxy response trailer policy requires declared allowed names. Legacy origin ordinary/echo emitted duplicate x-check trailers without Trailer head; exact body succeeded then exact terminal-trailer assertion failed. Repair now promises precisely existing x-check trailers.",
+    "Only optional respond trailers=False and true at ordinary/echo finish=False callsites plus diagnostic assert operand changed. All response field ordering/duplicates, body bytes, request/response trailers, FIN barriers and limits unchanged. Entire matrix_response and all other legacy origin behavior byte-identical.",
+    "Direct selected Session UP0 four zero/three declared/undeclared REQUEST-trailer forms remain intact: new declaration is RESPONSE only. Response verify filters x-repeat and exact body/done/trailer events, allowing added Trailer head without weakening assertions.",
+    "Legacy Fetch functional diagnostic filters repeated response headers too; optional declaration is compatible and does not restore historical unsupported cleanup acceptance. No dismissed upstream requirement recreated.",
+    "Standalone exact B-zero/A-upload/A-ordinary routes, fixed adapter/CA, progressive17-byte-before-FIN, zero-body duplicate trailers, simultaneous H1/H3 old-generation reload, invalid/bootstrap rollback and baseline/stop/rebind acceptance preserved.",
+    "Packaged H1 three-byte and H3 zero-byte legacy echo exchanges also require response declaration. Current smoke exact routing and assertions remain unchanged; artifact qualification is pending final candidate, not satisfied by this review."
+  ],
+  "fresh_required_gates": [
+    "Fresh selected Session-UP0 full50-row current source-bound gate including4 request-trailer forms and ordinary duplicate response trailers; parent current live repeat NOT REVIEWED here.",
+    "Fresh entire standalone gate with actual startup, both H3 origins, old streams/reload/rollback/baseline/normal owners DOWN/TCP+UDP rebind and zero exits.",
+    "Fresh UP2 current-source full66network+2policy matrix after shared origin source identity changed; preserve earlier UP2 initialFAIL and original5s/1MiB/FIN assertions.",
+    "Portable recipe/current smoke freeze must bind repaired origin; actual packaged3-exchange offline build/runtime later after M4 completes.",
+    "If repeating legacy Fetch functional diagnostic, retain unsupported cleanup and all historical failures; not a new selected-stage blocker."
+  ],
+  "findings": [],
+  "code_review": "NOT RUN in this SPEC receipt; separate CODE follows PASS",
+  "verification": {
+    "source_hashes": "PASS3freeze files plus context matches",
+    "full_file_diff": "PASS: actual old03b origin yields new source with only intended default/declaration/two calls; peer oldb3 obtained by deleting diagnostic operand only",
+    "AST": "Parent PASS3 syntax-only; reviewer NOT RUN",
+    "tests_executed": 0,
+    "live": "NOT RUN by reviewer; parent Session-UP0 running independently",
+    "M4": "NOT PASSED"
+  },
+  "counters": {
+    "UP2_live_initial_failed": 1,
+    "UP2_live_repair": 0,
+    "standalone_repair": 2,
+    "standalone_initial_plus_repair1_failed": 2,
+    "Astra": 2,
+    "Astra_status": "exhausted",
+    "reviewer_repair_added": 0,
+    "reset": false
+  },
+  "changes": "Only this unique immutable SPEC receipt; no stale pre-repair proposal receipt created",
+  "commands_shutdown": "All reviewer commands complete; no owned live processes; parent Session lease untouched",
+  "decisions_needed": []
+}

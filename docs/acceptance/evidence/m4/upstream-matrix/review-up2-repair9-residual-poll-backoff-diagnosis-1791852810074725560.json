@@ -1,0 +1,180 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "DONE_BOUNDED_DIAGNOSIS_FULL_MATRIX_FAIL",
+  "assignment": "direct independent read-only repair9 failure evidence and local scheduler diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "17ca098471c2e9e6109118e37a91c5c4a949a99bb4567832089e00d63007695c",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "8eec1d81a8dfd77a81116d6ad30107b980bcc4905c67fe03245b705e8e9e89ad",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "3693357f8b2c85557f4ffcb45f17fffda3a0dac47f131260bf5f0dacf2bb4bf6",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "cd271f3f8ea59df56e73354155128d588a71461f006dd246cdb38f29f2ac01fd",
+    "deps/abyss/lib/abyss/quic.ex": "440cb155d37d6f374cee704b8cc5c35a09dbb0759366116c8220d4cde3f3c9e2",
+    "deps/abyss/lib/abyss/quic/handler.ex": "a0e1bc27356c3144db0b3651a524d9712b30a5890a3383be78d7bf78e0b762ed",
+    "deps/abyss/lib/abyss/quic/service.ex": "ecd853982f39301c88fd174d81978deeca28c21e6800797647fbd30b268d8b42",
+    "integration/http3/upstream/peer.py": "fabc768cef82b66b4f9dd79b21cf0ada5f43323f1dde43976f67dcf6b8a9afd2"
+  },
+  "evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791852549173761919/result.json",
+      "sha256": "9e7672d37e1eec205fb8d343b1725cacc97ca44254db03b3c0b1e4734d30dbc5"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-host-poll-profile-first-execution-1791852548910860287.json",
+      "sha256": "fa4859a816c2cb24e018e63b9c5e8e5fafbe5f2258c00cc449efc9c594ecbb99",
+      "log_sha256": "311c8cb059727526712d124e7b80d29e7beefbaa3dba7e60a2bc11828c1d5870",
+      "log_verified": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791852549173761919/peer.log",
+      "sha256": "a6b63bd1f359c98bfa77378b51044842ef187712dcce25f50a901d546afee47e"
+    }
+  ],
+  "actual_result": {
+    "status": "FAIL",
+    "actual_exit": 1,
+    "passed_network_checks": 50,
+    "passed_policy_checks": 2,
+    "executed_checks": 52,
+    "expected_checks": 68,
+    "source_inputs": 292,
+    "before_after_current_equal": true,
+    "selected_quic": {
+      "h3": {
+        "alpn": [
+          "h3"
+        ],
+        "poll_interval": 1
+      },
+      "h3_sibling": {
+        "alpn": [
+          "h3"
+        ],
+        "poll_interval": 1
+      }
+    },
+    "peer": {
+      "headers": "[[(b':status', b'200'), (b'x-origin', b'a'), (b'x-repeat', b'one'), (b'x-repeat', b'two'), (b'set-cookie', b'first=1'), (b'set-cookie', b'second=2'), (b'trailer', b'x-check')]]",
+      "bytes": 642373,
+      "sha256": "fdc062c5696cce167138be390845f0e9e1aefe3a513a42248304b721a39197bd",
+      "ended": false,
+      "reset": null,
+      "closed": false,
+      "termination": null,
+      "data_observation": {
+        "events": 628,
+        "first_ms": 1957.749,
+        "last_ms": 4983.019
+      },
+      "bodyless_wire": null
+    },
+    "peer_average_data_interval_ms": 4.824992,
+    "origin": {
+      "id": "h3-tiny_window_1mib",
+      "data_bytes": 1048576,
+      "data_sha256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b",
+      "request_fin": true,
+      "fin_count": 1,
+      "response_fin": true
+    },
+    "guardian": {
+      "result": {
+        "reason": ":closed",
+        "outcome": "error"
+      },
+      "owner_down": ":normal",
+      "guardian_down": ":normal",
+      "elapsed_ms": 4919
+    },
+    "public_poll_count": 390,
+    "public_poll_total_us": 413080,
+    "upload_intervals_total_us": 1815499,
+    "children": [
+      {
+        "pid": 1459544,
+        "exit": 1,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 1431588,
+        "exit": 0,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 1427358,
+        "exit": 0,
+        "forced_shutdown": false
+      }
+    ],
+    "ports_rebound": [
+      34666,
+      45033
+    ]
+  },
+  "findings": [],
+  "diagnosis": {
+    "confidence": "Sourced local scheduling mechanism and plausible residual bottleneck; whole-run causal attribution NOT proven",
+    "mechanism": [
+      "Abyss Worker public polling runs engine events plus tick then schedules next poll after selected1ms; fixture records both actual normalized1ms maps. One millisecond host selection alone remains insufficient in actual FAIL.",
+      "Operations.submit changes correlated ETS slot without owner wake. Transport awaits operation reference and ACKs exact completion. Connection claims at most one operation per stream turn, flushes twice and replies only after output empty/no uncertain pending write. No replacement FIN or unacknowledged success permitted.",
+      "Proxy HTTP dispatch synchronously completes downstream Response.chunk before matching Session ACK. Session only acknowledges its exact delivery reference and replaces the current client handle.",
+      "HTTP3SessionClient successful public poll sets poll_due=now only for matching headers/data/trailers/done. Empty or writable-only events set poll_due=deadline5. Paused polls preserve control/credit while a delivery awaits ACK.",
+      "Matching client ACK clears delivery and cancels/replaces pending tick with zero delay when possible but does not reset poll_due. Streaming schedule requires remaining(poll_due)==0; an immediate ACK tick can therefore retain stale idle backoff even when newly released downstream credit allows progress. Operation-in-flight schedule guard still prevents overlap.",
+      "advance schedules before delivery and defaults tick5 when no queued event. Retaining an already queued tick when cancel_timer returnsfalse prevents orphaning/duplicate immediate ticks. Stale ACK is exact no-op."
+    ],
+    "supporting_actual_trace": [
+      "Peer642373bytes/628DATA first1957.749ms last4983.019ms, average4.825ms, no FIN/reset/close at original5000ms. Origin full1048576bytes/hash/one requestFIN/responseFIN. Current FAIL cannot be described as success or bytes-complete.",
+      "Public poll390 commands total413080us; upload interval184 total1815499us. These aggregates do not isolate each ACK or prove fixed scheduler cost.",
+      "Final bounded trace has empty poll result; subsequent poll yields onlywritable; earlytick then no public command; nexttick roughly4ms later; eventualabort. Consistent with future due gating. No recorded fullstate/perACK correlation proves all response gaps arise from this mechanism."
+    ],
+    "counterpoints": [
+      "Public poll call latency, upload latency and native QUIC flow control contribute; timer repair is a hypothesis requiring deterministic regression and unchanged full network matrix qualification.",
+      "Progressful public polls already make poll_due immediate. Do not globally make empty/paused polls spin or assert every chunk incurs5ms.",
+      "No upstream defect established by this local state transition; no dependency/private wake change proposed."
+    ]
+  },
+  "recommended_minimal_recovery": {
+    "candidate": "repair10 local matching-response-ACK invalidates stale future idle poll_due to Lifecycle.now while retaining existing tick handling",
+    "scope": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+      "paired bounded design/plan and immutable evidence"
+    ],
+    "retain": [
+      "Exact matching delivery reference; stale/duplicateACKnoop; queuedtickcancel-falsebranch",
+      "One delivery and one in-flight public operation; paused control polls and original idlebackoff when no new ACK",
+      "Current queue/retention/credit limits, byte/hash/oneFIN/cleanup/sibling assertions",
+      "Full68 manifests,1MiB bytes, tiny windows and original five-second row deadline",
+      "Selected1ms fixture and default10 service behavior; public APIs only"
+    ],
+    "verification_required": [
+      "Deterministic regression with future poll_due and new matchingACK proves next public poll runs before that due; real expectedRED thenGREEN at identical test bytes",
+      "StaleACKexactnoop; queuedtickretained; outstandingpausedoperationnotduplicated; pausedcontrol/noACK retains finite backoff",
+      "Scoped client/guardian/proxy and affected H3 verification; independent SPEC/CODE preparation review",
+      "Entire66+2 matrix at current counters, independent actualevidence review and fresh entire repeat afterPASS"
+    ],
+    "qualification": "No source repair or runtime validation performed by reviewer. No claim candidate resolves complete workload."
+  },
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 18,
+    "up2_unsuccessful_production_repairs": 6,
+    "up2_unsuccessful_harness_repairs": 3,
+    "completed_failed_up2_repair": 9,
+    "proposed_up2_repair": 10,
+    "recorded_matrix_starting_failed_counter": 17,
+    "reviewer_repair_rounds": 0,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-repair9-residual-poll-backoff-diagnosis-1791852810074725560.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only scoped source/receipt/log/hash parsing and immutable JSON serialization. No source/test/doc edits, Mix/tests/live/network executions, commits or delegation. No owned runtime processes.",
+  "clearance": "Repair9 fullmatrixFAIL retained. Preparation scoped5/0 and302/0/core1/0 remain scoped valid evidence; they do not imply UP2/M4/releasePASS. Parent owns recovery decision and serialized execution. No third Astra recovery."
+}

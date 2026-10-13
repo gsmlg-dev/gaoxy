@@ -1,0 +1,58 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPECIFICATION_PREPARATION",
+  "assignment": "direct read-only independent SPEC preparation review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-proxy-total-deadline.md": "8effb19e818797b55152427fd4eb890c3f6ab7976883d8dc434fe739893255c9",
+    "docs/plans/m4-proxy-total-deadline.md": "43f91444ff8003360ca9fb1603d4f609d700a7fc3bb2684f7980ced8da072679",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "5ec0e472aa7ca594af86cd2c3b444a3ede98abd434e6f9a4781f11b2fdafe37a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "a79d24e1713728b50ddc10f463a742d206917916d4ecffdaf46042deb226dd0f",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "0dd40f1635f8da7d7063e593c9f80cf5e402005ac9cb36f51d0aee96e0752c57",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "94a9863d8370245e3def929b6916e47843e5575f6bb59e2942cb7803706747a8"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "S1",
+      "historical_receipt": "docs/acceptance/evidence/m4/upstream-matrix/review-total-deadline-spec-preparation-finding-1791847379403308615.json",
+      "historical_receipt_sha256": "b027e6d168cad9bc4028ec91476dafb7a53801eb5052330da01e3810a4a8c175",
+      "resolution": "Amended docs explicitly limit token:nil callback-order tests to notification/state/idempotence; existing real guardian timer and unchanged complete 66 network plus 2 policy matrix independently establish allocated-resource cleanup and protocol acceptance."
+    }
+  ],
+  "spec_assessment": [
+    "Existing guardian owns selected H3 total-expiry notification, checks original own deadline/client and prior failure/cancellation/consumption, emits existing reason once then uses existing cleanup.",
+    "Owner guards queued nonterminal/success events at actual selected H3 total deadline; owner-local read/poll/response-write timeout at that deadline routes to bounded terminal-only wait.",
+    "Received guardian error directly follows prior fail path without recursive expiry. Matching error or DOWN only; original deadline plus existing cleanup headroom bounds wait; no post-deadline success/body/socket I/O.",
+    "Default H1 and idle timeout behavior and ordinary cancel remain; early H3 control retains timeout; no new process/dependency/private SDK state/API redesign.",
+    "Original error receipt, 1500ms deadline, 1400..2500ms elapsed, reset/no-success-FIN assertions and immutable failures remain required."
+  ],
+  "actual_red_reference": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/total-deadline-callback-red-1791847492157429491.json",
+    "sha256": "c40cf286b18ca82ccf8ceaa5ef27d630b0a57b5bdf20c760c34f4bcfdcb2125a",
+    "status": "FAIL",
+    "executed_tests": 10,
+    "failures": 4,
+    "actual_exit": 2,
+    "source_unchanged": true,
+    "scope": "Callback-order RED, distinct from live cleanup and complete matrix acceptance; detailed code/evidence review pending."
+  },
+  "production_status": "Relevant HTTP/Session source remains unchanged from repair3; this is specification clearance to implement only.",
+  "cumulative_counters": {
+    "up2_next_production_repair": 4,
+    "up2_unsuccessful_live_executions": 8,
+    "up2_unsuccessful_production_repairs": 3,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "verification_scope": "Read exact amended documents and historical S1 receipt; hash source, RED receipt/log and inspect reported log counts. No reviewer runtime/Mix/test/network/format commands.",
+  "remaining_acceptance": "CODE review, fresh scoped GREEN, unchanged complete matrix and repeat, affected M4 final gates remain required. No full UP2/M4/release/deployment acceptance.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-total-deadline-spec-preparation-1791847588699825267.json"
+  ],
+  "commands_finished": true
+}

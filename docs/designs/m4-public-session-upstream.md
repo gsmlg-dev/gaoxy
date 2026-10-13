@@ -1,5 +1,12 @@
 # M4 caller-owned public Session upstream
 
+The caller/consumer ownership paragraphs below preserve the original design.
+They are superseded by the reviewed [consumer-affinity amendment](m4-public-session-consumer-affinity.md)
+and [in-flight cleanup amendment](m4-up2-inflight-cleanup-abort.md). The active
+implementation uses a stable same-caller Session with `consumer: self()`; the
+[final implementation ledger](../acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds current verification.
+
 Architecture candidate for independent Sol specification review, 2026-10-13.
 Task `/root/m4_session_design`; `astra_gate: PROJECT_ARCHITECTURE`;
 `mode: architecture`. This document supersedes the **selected upstream client**
@@ -327,3 +334,14 @@ this assignment. No new product decision is required. Any demonstrated public
 API gap is routed under the existing upstream policy instead of adding a private
 API workaround. Historical counters in `checkpoint-2026-10-12.json` carry forward;
 this architecture consumes zero Astra recovery rounds and resets none.
+
+## Qualified implementation seam — 2026-10-13
+
+UP0 passed all50 rows and independent review, followed by an identical-source
+fresh50-row repeat. The documented notification and abort/stop ordering amendments
+apply to UP1. For deterministic public-boundary tests, the adapter may expose
+`@doc false open(options, driver)` with an arity-three whole-public-call driver.
+Production `open/1` always uses fixed supported module/function calls; no config
+or compiled struct may inject a driver or transport. This seam provides no
+production option and no dependency private-state access. The guardian passes
+Exchange field/trailer limits plus original absolute deadlines/max upload allowance.

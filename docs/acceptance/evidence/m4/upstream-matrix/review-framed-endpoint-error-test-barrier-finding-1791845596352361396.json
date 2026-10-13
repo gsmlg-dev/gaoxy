@@ -1,0 +1,46 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "assignment": "direct read-only independent source review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "limits": [
+    "Source preparation only; reviewer ran no Mix/tests/runtime/network/format commands.",
+    "No UP2/M4/package/publication/deployment acceptance."
+  ],
+  "status": "FINDINGS_REQUIRE_RESOLUTION",
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "medium",
+      "files": [
+        "apps/gaoxy_http/test/http2_network_test.exs:87",
+        "apps/gaoxy_http3/test/plug_test.exs:157"
+      ],
+      "finding": "Barrier timeout returns ordinary endpoint error with committed response, allowing expected green cancellation without observing intended test release/marker. H3 peer wait10s exceeds read5s.",
+      "required_change": "Prove endpoint consumed intended release/marker through authenticated test receipt or bounded output assertion, or make timeout fallback fail expected cancellation classification. Retain finite deadlines."
+    },
+    {
+      "id": "F2",
+      "severity": "low",
+      "file": "apps/gaoxy_http/test/http2_network_test.exs:189",
+      "finding": "Strict assert_reset rejects pre-reset terminal frames, but subsequent sibling collector does not reject DATA/HEADERS END_STREAM on failed stream1.",
+      "recommendation": "Reject successful terminal on failed stream during sibling collection as well."
+    }
+  ],
+  "strong_contract_already_present": [
+    "H2 exact200 head and flag0 exact prefix observed before send release; strict reset helper admits only reset8/settings.",
+    "H3 independent aioquic peer exact200/prefix/noFIN before public request marker; request stays open; requires both reset and stop0x10C/noFIN/exact prefix, same-connection sibling and no termination.",
+    "Prehead500 and completed502504 controls require exact body/status and successful sibling without reset.",
+    "No old assertion removed or weakened; four production framed files unchanged."
+  ],
+  "verification_status": "ACTUAL_RED_NOT_YET_RUN",
+  "reviewed_sha256": {
+    "docs/designs/m4-framed-endpoint-errors.md": "477badc1070490e4320eb9b7e8b5ac64a94630797b18407ce707eb7d7d7dad72",
+    "docs/plans/m4-framed-endpoint-errors.md": "b13b5d98143bb7c459323f64f71d6555384a39bb38d6d62f77f32440a9289160",
+    "apps/gaoxy_http/test/http2_network_test.exs": "9d2d1cb2b816892e91934906c24ce1f4492eb0e5d61600d52142fc22d143fa55",
+    "apps/gaoxy_http3/test/plug_test.exs": "bea561d5308628fff08c6e7b37d2b7e620d80f820e1f501286cf5ebe405790eb",
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899"
+  }
+}

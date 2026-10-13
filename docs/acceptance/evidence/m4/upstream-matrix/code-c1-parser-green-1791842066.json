@@ -1,0 +1,61 @@
+{
+  "status": "PASS",
+  "kind": "H1_PREMATURE_EOF_PARSER_REGRESSION",
+  "command": [
+    "docs/acceptance/evidence/m4/upstream-matrix/reproduce-h1-premature-eof.py",
+    "integration/http3/upstream/peer.py",
+    "docs/acceptance/evidence/m4/upstream-matrix/code-c1-parser-green-1791842066.json"
+  ],
+  "source": "integration/http3/upstream/peer.py",
+  "source_sha256": "5ac2768b17c2308d7d96ed1604551598aa355247b08259aeddb81e58b9ecb66a",
+  "executed": 3,
+  "failures": 0,
+  "rows": [
+    {
+      "name": "eof_before_chunk_size",
+      "wire_sha256": "7fa7559813116ecbc176c289314706bb332ca149dededc3928bc182ff4e84da7",
+      "port": 44131,
+      "status": "PASS",
+      "observed": {
+        "headers": "[[(b':status', b'200'), (b'transfer-encoding', b'chunked')]]",
+        "bytes": 9,
+        "sha256": "308e43c137b05ddece54363743d017cfdf05cdaf80c6bf335cc1c4a962c5fea0",
+        "ended": false,
+        "reset": null,
+        "closed": true,
+        "bodyless_wire": null
+      }
+    },
+    {
+      "name": "eof_in_chunk_size",
+      "wire_sha256": "deda488053af13851796b1445effd6cc0d9dad0a10dd95302e184dc586b58307",
+      "port": 44591,
+      "status": "PASS",
+      "observed": {
+        "headers": "[[(b':status', b'200'), (b'transfer-encoding', b'chunked')]]",
+        "bytes": 9,
+        "sha256": "308e43c137b05ddece54363743d017cfdf05cdaf80c6bf335cc1c4a962c5fea0",
+        "ended": false,
+        "reset": null,
+        "closed": true,
+        "bodyless_wire": null
+      }
+    },
+    {
+      "name": "eof_in_trailers",
+      "wire_sha256": "b731451fc4094fd98342c81285caf1effa21215a152bd4339041c1b274e5a77a",
+      "port": 37931,
+      "status": "PASS",
+      "observed": {
+        "headers": "[[(b':status', b'200'), (b'transfer-encoding', b'chunked')]]",
+        "bytes": 9,
+        "sha256": "308e43c137b05ddece54363743d017cfdf05cdaf80c6bf335cc1c4a962c5fea0",
+        "ended": false,
+        "reset": null,
+        "closed": true,
+        "bodyless_wire": null
+      }
+    }
+  ],
+  "scope": "Actual loopback TCP/parser specimens; separate from 66 TLS/H2/H3 production UP2 rows."
+}

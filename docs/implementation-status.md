@@ -1,44 +1,38 @@
 # Implementation status
 
-## M4 dependency resume — 2026-10-13
+## M4 final implementation verification — 2026-10-13
 
-HTTP Fetch #101 is closed and the compatible coordinated **0.21.4** cohort is
-installed. Dependency pins, root/QUIC-consumer/Phoenix locks and the bounded
-core fixture readiness repair are locally committed as `b43a8eb`.
-[Independent review](acceptance/evidence/m4/dependency-resume/run-1791824981886130828/review-core-cohort.json)
-passed, followed by [274 affected tests / 0 failures](acceptance/evidence/m4/dependency-resume/run-1791824981886130828/cohort-scoped-post-review.json).
-The original 274/1 startup-fixture failure and failed Phoenix dependency command
-remain preserved alongside their diagnostics and corrected executions.
+All prescribed implementation executions PASS on the final repair12 source:
+530 scoped tests/0 failures, strict umbrella/Phoenix H3 builds, public Session50
+(17 network+2 policy+31 boundary doubles), G1/G2/G3 47/59/19, standalone16, and
+clean core/H1-H2/H3 consumers1/2/2 with zero failures. Reviewed G0 4/0+9peer rows
+are reused after independent unchanged-host-input verification. UP2 first and
+required fresh complete repeat both pass66network+2policy with independent
+evidence reviews. The [final ledger](acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+links each immutable command/source/count/exit receipt.
 
-The [real Fetch retry](acceptance/evidence/m4/upstream-contract/run-1791825893238138190/result.json)
-passed **15 functional rows**, including four ordered request-trailer variants,
-strict TLS negatives and four cancellation stages. Its overall exit is **2**:
-Fetch H3 cleanup completion remains **UNSUPPORTED**, so this is not full UP0 PASS.
-[Independent functional review](acceptance/evidence/m4/upstream-contract/review-fetch-functional-1791826076183654653.json)
-passed within that stated boundary.
+The six local source versions are0.3.0. Fresh candidate verification passes530/0,
+34 explicit formatting paths and strict umbrella/Phoenix/production compilation
+as recorded in the final ledger. Receipts remain precommit hash-bound.
+Whole-candidate SPEC/CODE preparation passes. Final independent acceptance of
+all evidence and synchronized documentation PASS. Portable build,
+packaged runtime and publication are NOT RUN. The selected H3 tiny-window1ms
+profile completes4985ms first/4567ms fresh within original5s; no default10ms
+throughput-margin claim follows. Session lifecycle evidence is distinct from
+Fetch H3's unsupported cleanup diagnostic.
 
-The selected upstream mechanism is now the caller-owned public Session and
-dedicated endpoint, defined by the [design](designs/m4-public-session-upstream.md)
-and [plan](plans/m4-public-session-upstream.md).
-[Specification/SDK review](acceptance/evidence/m4/upstream-contract/session-design-spec-review.json)
-passed; direct Session qualification is in progress. UP1 production activation,
-UP2 matrix, standalone H3-origin and final updated-cohort runtime/consumer/browser
-verification remain incomplete. M4 is not ready for main/push/release.
-Continuing authorization and all existing operational restrictions remain intact.
+The installed0.21.4 cohort retains the needed supported8KiB frame selection and
+16KiB application ceiling; [the latest audit](acceptance/evidence/m4/upstream-contract/latest-http-fetch-main-update-audit-1791855535947755021.json)
+records #105 closed in main but no installed containing fix. All historical
+failed runs and uncertain causal findings remain in [M4 acceptance](acceptance/m4.md).
+UP2 counters remain20 unsuccessful live/8 failed production/3 failed harness;
+historical19/7/3,18/6/3,17/5/3 and exhausted Astra2 are preserved.
 
-The first Session gate failed compilation before executing network rows. Sol
-repair1 fixed compilation and executed nine labelled boundary-double rows, then
-the first real poll failed `:not_consumer`. The
-[diagnosis](acceptance/evidence/m4/upstream-contract/session-consumer-affinity-diagnosis-1791827196294978658.json)
-identifies the SDK's fixed-consumer requirement. The bounded
-[architecture amendment](designs/m4-public-session-consumer-affinity.md) and
-[task delta](plans/m4-public-session-consumer-affinity.md) now passed
-[independent review](acceptance/evidence/m4/upstream-contract/session-consumer-affinity-spec-review-1791828021439137088.json):
-a stable caller uses its own consumer identity and explicitly monitors guardian
-loss, including normal exit. Qualification is being amended; neither prior run
-is credited as Session PASS. The new qualifier chain
-retains Sol1 unsuccessful/Astra recovery0; project architecture adds no recovery
-round and does not reset historical counters.
+[v0.3.0 release qualification](acceptance/release-0.3.0.md) has separate source,
+artifact/runtime and remote-download gates. Next existing M3 Task4
+[design](designs/m3-h1-resource-foundation.md)/[plan](plans/m3-h1-resource-foundation.md)
+are prepared only; implementation NOT RUN. Continuing authorization remains,
+with unchanged Vault, E2E, publication/deployment and production restrictions.
 
 ## Historical M4 checkpoint — 2026-10-12
 
@@ -378,3 +372,6 @@ request evidence nor upgrade compatibility proves managed lifecycle/bounds.
 Production adapters remain dedicated H1. The reviewed scope in ADR007 permits
 release/M4 preparation; the release receipt separately records remote publication.
 No production deployment or production acceptance is implied.
+
+Final M4 implementation acceptance: [independent review](acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

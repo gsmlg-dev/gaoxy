@@ -1,0 +1,47 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 510747, max_cases: 4
+
+............................
+
+  1) test retained DATA combines within 16 KiB and preserves its exact tail and final ACK (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:722
+     Assertion with == failed
+     code:  assert first == IO.iodata_to_binary(Enum.take(parts, 16))
+     left:  <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>
+     right: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>
+     stacktrace:
+       test/http3_session_client_test.exs:741: (test)
+
+................
+
+  2) test a partial retained DATA batch is delivered immediately through empty events (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:772
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       guardian = #PID<0.704.0>
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+     mailbox:
+       pattern: {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+       value:   {:public_operation, #PID<0.707.0>, :reset_send,
+                 [
+                   %{
+                     test_session: #Reference<0.2549158108.1337196546.103960>
+                   },
+                   #Reference<0.2549158108.1337196546.103978>
+                 ]}
+
+       pattern: {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+       value:   {:adapter_event, #PID<0.704.0>,
+                 {:chunk, "",
+                  #Reference<0.2549158108.1337196546.103981>}}
+     stacktrace:
+       test/http3_session_client_test.exs:785: (test)
+
+.........
+Finished in 7.1 seconds (7.1s async, 0.00s sync)
+55 tests, 2 failures

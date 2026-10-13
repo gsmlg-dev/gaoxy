@@ -1,0 +1,46 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "assignment": "direct read-only independent review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "counters": {
+    "up0_sol": 2,
+    "up0_unsuccessful_sol": 2,
+    "up0_astra": 2,
+    "up0_unsuccessful_astra": 2,
+    "up0_coordinator": 5,
+    "up0_unsuccessful_coordinator": 4,
+    "up1_repair": 2,
+    "up1_unsuccessful_initial": 1,
+    "up1_unsuccessful_repairs": 1,
+    "up2_live_repair": 2,
+    "up2_unsuccessful_executions": 6,
+    "standalone_repair": 2,
+    "standalone_unsuccessful": 2
+  },
+  "limits": [
+    "Preparation/source review only; no reviewer runtime, tests, Mix, formatting or production edits.",
+    "No full UP2, M4, standalone, package, publication, deployment or production acceptance inferred.",
+    "Preserve prior immutable FAIL, original assertions and deadlines; Astra recovery2 exhausted."
+  ],
+  "status": "PASS_CODE_PREPARATION",
+  "reviewed_sha256": {
+    "docs/designs/m4-proxy-progress.md": "eccf7512a0b06fe6437c81c17c5841c871f47f1d3ffed50f7d94d0040809b92d",
+    "docs/plans/m4-proxy-progress.md": "17f104cc6829bedb135780663bdeeaf31d58226971683b580d3250cb121ccb3f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "02e74acfb96018f2993db3a6b78ee79b9eef32a8fcd0175b5712198faa8d24c7",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "cd271f3f8ea59df56e73354155128d588a71461f006dd246cdb38f29f2ac01fd"
+  },
+  "findings": [],
+  "review_observations": [
+    "Only acknowledge matching clause changed; stale fallback untouched.",
+    "Cancellation result distinguishes pending and fired timers; scheduling reuses existing cleanup-guarded tick0.",
+    "Future60000ms timer regression retains original stale ACK/no-wake assertions then requires matching ACK wake1000ms; actual RED audited.",
+    "Second regression deterministically receives0ms timer, requeues existing id message, retains exact timer ref after matching ACK and consumes one existing wake.",
+    "No existing assertion deleted or weakened; no source/runtime gate claimed from inspection."
+  ],
+  "verification_status": "NOT_RUN_BY_REVIEWER; parent production repair2 validation pending",
+  "red_evidence_path": "docs/acceptance/evidence/m4/upstream-matrix/ack-wakeup-red-1791845137608236206.json",
+  "red_receipt_sha256": "71af36d9c01970144a5d9ca73eadb9431992cc1a5238a866b23a6cdfe9c1cd0a"
+}

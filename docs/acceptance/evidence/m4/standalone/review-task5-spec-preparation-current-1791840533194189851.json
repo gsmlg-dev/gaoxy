@@ -1,0 +1,90 @@
+{
+  "task": "Task5_ST1_ST2_PREPARATION",
+  "assignment": "direct independent read-only SPEC review after parent-owned repair",
+  "status": "PASS_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_sha256": {
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "29b52743537664c141e705b9dd58da28d817c1faa914a935916b0be23f7678c8",
+    "integration/http3/standalone/run.py": "afa7bbace075b0f795eb9bacb9b440b792ee4958c0e19586c2d2edc15d0699fd",
+    "integration/http3/standalone/peer.py": "b3cb16fba72a86904e7215eac132c821ab8b4dc23998f21e592fb7012ef0ffd1",
+    "integration/http3/standalone/README.md": "a05d2fc6598f114821f7590f0ec4043c8c816d1551f42a4e21d57f30b80cad79",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b"
+  },
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "source_binding": "Only six assigned source files frozen; upstream run.py/origin.py interface inspected contextually and not bound because its independent writer remains active. Five files retain original reviewed hashes; only run.py changed for parent repair.",
+  "specification": "docs/plans/m4-public-session-upstream.md Task5, existing standalone design and parent assigned acceptance requirements",
+  "checks": [
+    {
+      "name": "strict_data_only_protocol",
+      "status": "PASS",
+      "evidence": "RouteConfig only exact strings http1/http3 to fixed atoms; omitted H1; HTTP.init fixed client; no dynamic atom/module creation."
+    },
+    {
+      "name": "tls_and_injection_rejection",
+      "status": "PASS",
+      "evidence": "H3 HTTPS plus explicit File.regular CA; unknown client/address/TLS keys rejected; exact invalid_upstream_protocol/invalid_http_proxy_options/invalid_route_configuration assertions."
+    },
+    {
+      "name": "generation_rollback",
+      "status": "PASS",
+      "evidence": "Tests preserve exact generation id and complete Router plus listener for invalid enum/TLS; valid H3 candidate changes generation with fixed Session client."
+    },
+    {
+      "name": "actual_application_startup",
+      "status": "PASS_PREPARATION",
+      "evidence": "Runner passes data-only GAOXY_CONFIG to --no-start fixture; Application.ensure_all_started invokes Config.load and Server.Supervisor; no synthetic standalone substitute."
+    },
+    {
+      "name": "independent_origins",
+      "status": "PASS_PREPARATION",
+      "evidence": "Two locally certified H3 origins; progressive17 bytes observed before request FIN, zero-DATA echo, exact pseudo-fields and authority/body hash, ordered duplicate request/response trailers, exactly one request FIN and three unique request paths/certificate identities."
+    },
+    {
+      "name": "simultaneous_reload",
+      "status": "PASS_PREPARATION",
+      "evidence": "Old H1 download and H3 ordinary response both unfinished before reload; new generation static bodies observed while old streams remain open; both old bodies and ordered trailers complete afterward; legacy H1 survives."
+    },
+    {
+      "name": "baseline_and_rollback",
+      "status": "PASS_PREPARATION",
+      "evidence": "Application admission active/retained/cleanup/queue return to baseline for both services; invalid reload preserves current generation/listener; occupied later UDP and missing certificate rollback retain owner/port checks."
+    },
+    {
+      "name": "shutdown_all_known_listener_ports",
+      "status": "PASS_PREPARATION",
+      "evidence": "Fixture monitors5 owners and internally rebinds H3 UDP/legacy TCP; runner awaits exact zero exits then externally rebinds both standalone ports, H1-origin TCP and both H3-origin UDP. SO_REUSEADDR allows TCP TIME_WAIT reuse; SO_REUSEPORT absent. Existing finite180s total,5s lifecycle and10s exit deadlines retained."
+    }
+  ],
+  "supersedes": {
+    "path": "docs/acceptance/evidence/m4/standalone/review-task5-spec-preparation-finding-1791840447665572335.json",
+    "sha256": "fd10299e87cefb5d86a7de08952c3fc2abc17da41150d51e54a7f87c7a9fe0d5",
+    "finding": "ST2-P1",
+    "disposition": "RESOLVED_PREPARATION by parent-owned runner-only TCP rebind repair; historical FAIL receipt preserved"
+  },
+  "supplied_evidence": {
+    "ST1_RED": "Verified original immutable receipt/log SHA:10tests/5failures/exit2; historical preimplementation source maps preserved",
+    "ST1_GREEN": "Verified all4 log hashes and5 source hashes against current unchanged relevant files:19tests/0failures, no skipped/excluded; format/check/compile exits0; environment MIX_ENV=test ERL_FLAGS=+S2:2. Receipt source HEAD c574c784 retained; current review HEAD separately recorded.",
+    "ST2_ORIGINAL_SYNTAX": "Original two-file syntax receipt hashes verified before repair. Runner hash is now superseded; peer unchanged. Fresh reviewer AST parse2files passed after repair."
+  },
+  "live_ST2": "NOT RUN; depends on completed UP2 and upstream harness freeze",
+  "M4": "NOT PASSED by source preparation",
+  "reviewer_verification": {
+    "source_hashing": "PASS6files",
+    "python_AST": "PASS_SYNTAX_ONLY2files",
+    "Mix_Elixir_Nix_format_compile_live": "NOT RUN"
+  },
+  "repairs": {
+    "reviewer_sol": 0,
+    "received_counters": "Unchanged; no repair-counter reset or Astra round"
+  },
+  "commands_shutdown": "All reviewer read/hash/AST/receipt commands completed; no live child owned",
+  "changes": "Only unique immutable review receipts",
+  "remaining_risks": [
+    "Actual standalone and origin startup, TLS, streaming, reload, rollback and shutdown assertions must execute under locked environment; no source/AST inference of runtime PASS.",
+    "Concurrent upstream interface must be frozen before live execution and bound by its own evidence."
+  ],
+  "decisions_needed": []
+}

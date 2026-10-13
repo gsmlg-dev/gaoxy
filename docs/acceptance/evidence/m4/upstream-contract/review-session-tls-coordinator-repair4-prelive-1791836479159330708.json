@@ -1,0 +1,164 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC then CODE review, coordinator repair4 revision2 TLS rejection observation",
+  "reviewed_utc": "2026-10-12T20:21:19.147774+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-prelive-freeze-1791836373370394761.json",
+  "freeze_sha256": "a2608b6ff58c541f8a31b2d7bce69e437bf1365e32d32a56ee4dd81c6e243ba9",
+  "frozen_source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "integration/http3/upstream/session_probe.exs": "96d378b76a0cd5b7261f93e5824732059fc47bcf24f85386167a5df5452055aa",
+    "integration/http3/upstream/run.py": "51c5f96fb234ceeaf9a0818780b286538271df2ad3ce1775d4f379860f60243e",
+    "integration/http3/upstream/origin.py": "02969e8f5151a6cfa9f23f3a9a4aeec9c643a3b296b4f479518e83cb7172bb77",
+    "integration/http3/upstream/README.md": "b8f4690f55749faeb1f6cae29383ca13d54b9f3e28ae84fb60e2f683e8a86170",
+    "docs/designs/m4-session-tls-rejection-observation.md": "bc528718a108f828c33df2447a9d6f1606296d992ee75a9036244e9a6dd97d29",
+    "docs/plans/m4-session-tls-rejection-observation.md": "c582910479b60dd5dfe3270c65563bf951ea59c2d6b206181bed8dcc5ed84371",
+    "docs/acceptance/m4.md": "422266235024756ba2b99a9eb998183ef092e724d3e051683fcf5377684d6284"
+  },
+  "SPEC": {
+    "verdict": "PASS",
+    "read_before_code": true,
+    "documents": [
+      "docs/designs/m4-session-tls-rejection-observation.md",
+      "docs/plans/m4-session-tls-rejection-observation.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Supersedes only discarded public closed notifications in prior observation contract; ready hints remain disposable and caller performs guardian-selected operations only.",
+      "Supported public closure reason is correlated by owned caller/request/generation, bounded64KiB, drained in finite16 batches pre/post operation and observed while idle.",
+      "Actual failed operation and specific actual public cause required; missing/generic cause cannot pass. Original specific TLS assertions and zero-origin/cleanup checks remain.",
+      "No Session-result substitution, endpoint-stop/task-DOWN replacement, private dependency query, replay, scheduling/window/deadline/payload change. All50 rows retained."
+    ]
+  },
+  "CODE_review_history": [
+    {
+      "stage": "first frozen candidate",
+      "verdict": "FAIL",
+      "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-prelive-freeze-1791836220464152992.json",
+      "freeze_sha256": "c927cc1febfadb8d74292b0b0297d8ca3ce66cd5764e7c3f0b29f368b5d049fd",
+      "findings": [
+        {
+          "finding": "Specific TLS substrings checked only on combined operation/result map; missing/generic public_closed could pass via operation-result text.",
+          "resolution": "Original combined assertions retained and all four specific substrings additionally required directly on result.public_closed."
+        },
+        {
+          "finding": "README current behavior still said closed hints discarded.",
+          "resolution": "Current behavior now describes finite ready discard and bounded correlated closed relay post-call/idle."
+        }
+      ]
+    },
+    {
+      "stage": "revision2 frozen re-review",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "CODE": {
+    "verdict": "PASS",
+    "kind": "static pre-live only",
+    "files": [
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md",
+      "docs/acceptance/m4.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Dependency terminate/3 sends supported public quic_closed handle/reason to configured consumer; candidate observes that message, not a private owner or state.",
+      "Caller drains finite16 batches at loop/pre/post-call boundaries, rechecks exact guardian monitor and unchanged deadline, and has idle closed-message handler. It never autonomously polls/replays.",
+      "relay_closed rejects serialized reason above65536 bytes by failing owned caller; guardian caller-DOWN teardown remains intact. No artificial cause is generated from fixture/request inputs.",
+      "Same caller sends correlated closed message before caller_result after public operation; same-sender ordering makes stored cause visible before traced result when observed in post-call drain.",
+      "Guardian accepts only matching request ID/generation and owned caller PID. First supported truthy closure reason retained; actual dependency closure reasons are atoms/structured terms. Ready notifications are still discarded.",
+      "Traced identity/public_result include actual observed cause; original result, advanced state, commandref/sequence/deadline checks and return shape are preserved. Legacy call replies remain unchanged.",
+      "Negative proof keeps actual public error result, captures guardian observed cause before unchanged teardown, retains original four combined TLS substring assertions and requires each directly on public_closed. Missing/generic observed cause fails regardless of Session-result text.",
+      "Existing guardian_duplicate_result_rejected row adds post-call capture-before-result, idle/barrier capture, stale generation/fake caller rejection and first-reason retention subcases; row name/classification unchanged. Static review does not claim their execution.",
+      "Runner reversal of only two counter values matches previous captured runner SHA256, proving assertions and all50 row names/kinds unchanged. Independent zero-origin snapshots, original5s/window/frame/readbatch/body/hash/FIN and cleanup requirements retained.",
+      "README/current acceptance accurately retain repair3 FAIL42/50 and positive1MiB/fourtrailers/local-teardown evidence without UP0/UP1 PASS claim."
+    ]
+  },
+  "public_dependency_evidence": {
+    "file": "deps/elixir_quic/lib/quic/connection.ex",
+    "sha256": "cee54dac44b538d50f546dc91c28a6d46a7e713f100f591a44309ac55b3ad806",
+    "public_consumer_notification": "terminate/3 sends {:quic_closed, public_handle(data), data.reason} to data.consumer before process exit",
+    "scope": "Public notification implementation inspected read-only; no dependency changes or private runtime introspection."
+  },
+  "verification": {
+    "frozen_hash_entries_verified": 8,
+    "previous_captured_source_entries_compared": 285,
+    "changed_previous_paths": [
+      "integration/http3/upstream/README.md",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/session_probe.exs"
+    ],
+    "origin_and_all_other_previous_sources_unchanged": true,
+    "runner_delta_metadata_only_proven_by_reverse_SHA256": true,
+    "Python_AST": "PASS",
+    "root_static_commands": [
+      {
+        "command": [
+          "mix",
+          "format",
+          "--check-formatted",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-preparation-1791836373370394761-0.log"
+      },
+      {
+        "command": [
+          "mix",
+          "run",
+          "--no-compile",
+          "--no-start",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-preparation-1791836373370394761-1.log"
+      }
+    ],
+    "root_static_log_sha256": {
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-preparation-1791836373370394761-0.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-preparation-1791836373370394761-1.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "reviewer_commands": "Read-only spec/code/evidence reads, source/SHA256 comparisons, Python AST and git identity. No Mix, live/network/runtime commands, source/spec edits or row execution."
+  },
+  "historical_runtime": {
+    "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791835529186878739/result.json",
+    "sha256": "bad1b7c202ff2d513620d0576f397241b02fec4312ab2282f77d5199eff45416",
+    "status": "FAIL",
+    "PASS_rows": 42,
+    "network_PASS": 11,
+    "boundary_double_PASS": 31,
+    "NOT_RUN_rows": 8,
+    "positive_rows": [
+      "tiny_window_1mib",
+      "request_trailers_zero_declared",
+      "request_trailers_zero_undeclared",
+      "request_trailers_three_declared",
+      "request_trailers_three_undeclared"
+    ],
+    "tiny_local_cleanup": "confirmed",
+    "TLS_specific_cause_gate": "FAIL on generic ready closed without observed cause",
+    "historical_evidence_preserved": true
+  },
+  "runtime": "NOT RUN for repair4 revision2. Static SPEC/CODE PASS is not UP0 qualification; all50 execution, independent evidence review and fresh repeat remain required before UP1.",
+  "counters": {
+    "direct_chain_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_local_repair": 4,
+    "preceding_unsuccessful_coordinator": 3,
+    "reviewer_repair_rounds_added": 0,
+    "third_astra_authorized": false
+  },
+  "changed_files": "Only this new unique immutable receipt; root/team edits and historical evidence preserved.",
+  "command_shutdown_status": "All reviewer commands complete; no reviewer-owned background process.",
+  "remaining_risks": [
+    "Real TLS-negative closure observation and new deterministic subcases remain unexecuted for this frozen candidate. Supported closure backlog is bounded by required runtime checks; arbitrary external notification injection is not an accepted bound claim."
+  ],
+  "decisions_needed": []
+}

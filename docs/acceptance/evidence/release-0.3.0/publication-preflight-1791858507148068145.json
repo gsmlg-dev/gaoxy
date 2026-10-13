@@ -1,0 +1,49 @@
+{
+  "kind": "PUBLICATION_PREFLIGHT",
+  "status": "PASS_VERSION_AVAILABLE",
+  "commands": [
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "--heads",
+        "origin",
+        "main"
+      ],
+      "exit": 0,
+      "stdout": "78de9d0f3bba5a4662717359438eb3d0853a79b4\trefs/heads/main\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "ls-remote",
+        "--tags",
+        "origin",
+        "refs/tags/v0.3.0",
+        "refs/tags/v0.3.0^{}"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "gh",
+        "release",
+        "view",
+        "v0.3.0",
+        "--repo",
+        "gsmlg-opt/gaoxy",
+        "--json",
+        "tagName,url,targetCommitish"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "release not found\n"
+    }
+  ],
+  "user_file_unchanged": true,
+  "production_deployment_authorized": false,
+  "immutable_existing_tag_not_replaced": true
+}

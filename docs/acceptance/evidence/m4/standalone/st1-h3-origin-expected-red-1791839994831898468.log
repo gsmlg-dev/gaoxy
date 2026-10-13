@@ -1,0 +1,69 @@
+==> gaoxy_server
+Running ExUnit with seed: 519367, max_cases: 4
+
+
+
+  1) test data-only upstream protocol rejects all values outside the two fixed strings (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:228
+     match (=) failed
+     code:  assert {:error, :invalid_upstream_protocol} = RouteConfig.decode(proxy_routes(target))
+     left:  {:error, :invalid_upstream_protocol}
+     right: {:error, :invalid_route_configuration}
+     stacktrace:
+       test/http3_generation_test.exs:234: anonymous fn/3 in Gaoxy.Server.HTTP3GenerationTest."test data-only upstream protocol rejects all values outside the two fixed strings"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http3_generation_test.exs:231: (test)
+
+
+
+  2) test data-only routes default to H1 and accept its explicit enum (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:201
+     match (=) failed
+     code:  assert {:ok, [%{target: {Gaoxy.Proxy.HTTP, explicit}}]} =
+              RouteConfig.decode(proxy_routes(Map.put(target, "upstream_protocol", "http1")))
+     left:  {:ok, [%{target: {Gaoxy.Proxy.HTTP, explicit}}]}
+     right: {:error, :invalid_route_configuration}
+     stacktrace:
+       test/http3_generation_test.exs:207: (test)
+
+
+
+  3) test data-only H3 routes require HTTPS and a regular explicit trust file (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:238
+     match (=) failed
+     code:  assert {:error, :invalid_http_proxy_options} = RouteConfig.decode(proxy_routes(invalid))
+     left:  {:error, :invalid_http_proxy_options}
+     right: {:error, :invalid_route_configuration}
+     stacktrace:
+       test/http3_generation_test.exs:249: anonymous fn/1 in Gaoxy.Server.HTTP3GenerationTest."test data-only H3 routes require HTTPS and a regular explicit trust file"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http3_generation_test.exs:243: (test)
+
+...
+
+  4) test data-only H3 route selects the fixed Session client and preserves compiled options (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:215
+     match (=) failed
+     code:  assert {:ok, [%{target: {Gaoxy.Proxy.HTTP, config}}]} =
+              RouteConfig.decode(proxy_routes(h3_target(directory)))
+     left:  {:ok, [%{target: {Gaoxy.Proxy.HTTP, config}}]}
+     right: {:error, :invalid_route_configuration}
+     stacktrace:
+       test/http3_generation_test.exs:218: (test)
+
+..
+
+  5) test invalid H3 origin reload preserves the listener and complete current generation (Gaoxy.Server.HTTP3GenerationTest)
+     apps/gaoxy_server/test/http3_generation_test.exs:266
+     Assertion with in failed
+     code:  assert reason in [:invalid_upstream_protocol, :invalid_http_proxy_options]
+     left:  :invalid_route_configuration
+     right: [:invalid_upstream_protocol, :invalid_http_proxy_options]
+     stacktrace:
+       test/http3_generation_test.exs:280: anonymous fn/7 in Gaoxy.Server.HTTP3GenerationTest."test invalid H3 origin reload preserves the listener and complete current generation"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http3_generation_test.exs:274: (test)
+
+
+Finished in 5.0 seconds (0.00s async, 5.0s sync)
+10 tests, 5 failures

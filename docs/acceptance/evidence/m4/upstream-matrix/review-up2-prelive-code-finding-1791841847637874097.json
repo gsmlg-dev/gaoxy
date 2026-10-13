@@ -1,0 +1,105 @@
+{
+  "task_id": "/root/m4_session_affinity_review:UP2_PRELIVE_CODE_REPAIR1",
+  "assignment": "direct independent read-only CODE review after passing repaired SPEC",
+  "status": "FAIL_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_sha256": {
+    "integration/http3/upstream/fixture.exs": "e5c4098b7ae3b5419b2b5a6cedc3e56a351a9fa000caf7f418d5db26e1fbbd4e",
+    "integration/http3/upstream/peer.py": "64037dee28e4f33eb2d1faa789f66bf127ff63041407bb9a240a5b4df4ce6744",
+    "integration/http3/upstream/origin.py": "03b949d04fbb66701a4abbb62e4388c554bedef5c9db9969fadb15ba0798ef1a",
+    "integration/http3/upstream/run.py": "7876678072d2c56f7785c3925e46bea4a01416020181ebe0ee7e33cbf170b758",
+    "integration/http3/upstream/README.md": "4125281f5d3386c37bd1fa41bd81cc6aa2c1a5bf5ab8db97f577c0ee965b7232"
+  },
+  "source_unchanged_SPEC_to_CODE": true,
+  "preceding_SPEC": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-prelive-spec-repair1-1791841726952149979.json",
+    "sha256": "7e46044e9abf7a959a21c652da5e94c0a8d1eb4f552df3a7bb0e3bc5128c11a3",
+    "status": "PASS_PREPARATION"
+  },
+  "code_checks": [
+    {
+      "area": "native clients and TLS",
+      "status": "PASS_PREPARATION",
+      "evidence": "Native TLS H1/hyper-h2 and aioquic H3 clients use local CA verification, localhost server name and exact ALPN; no production client substitute. H2 flow windows and H3 stream/connection credit preserve tiny-window limits."
+    },
+    {
+      "area": "bodyless repair",
+      "status": "PASS_PREPARATION",
+      "evidence": "H1 close-request rows consume EOF with bounded count/hash/64-byte prefix, then require zero post-header octets and exact empty hash. Early close/reset cannot be accepted as successful EOF; same five-second deadline applies. H2/H3 body and trailing blocks remain directly observed."
+    },
+    {
+      "area": "row barriers and data semantics",
+      "status": "PASS_PREPARATION",
+      "evidence": "Two held survivors start before failures; wire snapshots precede upload/download FIN. Explicit expected unique request manifests enforce method/path/authority/certificate/body/trailer/FIN event counts. Exact body and repeated-field/trailer blocks, raw compressed bytes, redirects and no replay retained."
+    },
+    {
+      "area": "fixture observability",
+      "status": "PASS_PREPARATION",
+      "evidence": "Only fixed Gaoxy adapter open call and selected owner/guardian notifications traced; no SDK call tracing or opaque Session serialization. Observer registration/trace delivery/normal DOWN use finite waits. Observations capped 4KiB reasons,16-entry lists,256-message mailbox; actual normal guardian DOWN and public SessionSupervisor active counts used."
+    },
+    {
+      "area": "runner evidence and cleanup",
+      "status": "PASS_PREPARATION",
+      "evidence": "Checks exact66+2 unique manifest, per-row baseline for six services/guardian/SessionSupervisor, exact failure categories and finite opening/total elapsed bounds. Real fixture/peer/origin exit0 plus runtime/observer normal DOWN and six service TCP/UDP and two origin UDP rebind assertions. Forced cleanup, source drift or live readers prevent PASS. Credentials import remains stdlib only."
+    },
+    {
+      "area": "H1 chunked premature EOF",
+      "status": "FAIL_PREPARATION",
+      "evidence": "Empty next chunk-size readline is parsed as integer and raises uncaught ValueError; finally notifies waiters without setting a terminal response state."
+    }
+  ],
+  "findings": [
+    {
+      "id": "UP2-C1",
+      "severity": "high",
+      "file": "integration/http3/upstream/peer.py",
+      "source_sha256": "64037dee28e4f33eb2d1faa789f66bf127ff63041407bb9a240a5b4df4ce6744",
+      "lines": [
+        125,
+        126,
+        154,
+        157
+      ],
+      "related_lines": [
+        63,
+        64,
+        466,
+        474
+      ],
+      "problem": "After a complete chunked progress chunk, orderly EOF before the next chunk-size line makes readline return b-empty. int(b-empty,16) raises ValueError, which is outside the existing IncompleteReadError/ConnectionResetError/BrokenPipeError catch. finally wakes changed but closed/ended/reset all remain false, so done waits until the five-second timeout. The required H1 total-timeout row cannot classify that real premature EOF as the asserted closed failure.",
+      "minimal_static_reproduction": "H1 response bytes: HTTP/1.1 200 OK CRLF Transfer-Encoding: chunked CRLF CRLF 9 CRLF progress- CRLF, then actual EOF without terminal zero chunk. The next readline returns empty bytes; response retains progress- and remains neither ended nor closed after ValueError. No runtime reproduction executed in this read-only assignment.",
+      "required_change": "Check the raw chunk-size line for actual EOF before integer conversion and mark/raise the existing premature-closure category so closed becomes true while ended stays false. Preserve the completed progress bytes, exact total-timeout failure assertion, original five-second absolute deadline, and successful zero-chunk/trailer parsing. Do not accept clean-looking incomplete chunked responses as success.",
+      "parent_disposition": "Accepted after source inspection; writer owns peer-only targeted repair after this receipt."
+    }
+  ],
+  "historical_finding": {
+    "id": "UP2-S1",
+    "status": "RESOLVED_PREPARATION",
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-prelive-spec-finding-1791841470517243820.json"
+  },
+  "verification": "All five frozen hashes unchanged from repaired SPEC; supplied prerequisite hashes/AST-only status retained; no reviewer test/network/runtime commands. CODE finding is a concrete static parser path, not an asserted executed failure.",
+  "live_UP2": "NOT RUN",
+  "full_M4": "NOT PASSED",
+  "counters": {
+    "UP0_Sol": 2,
+    "UP0_unsuccessful_Sol": 2,
+    "Astra": 2,
+    "Astra_unsuccessful": 2,
+    "Astra_status": "two recovery rounds exhausted",
+    "Coordinator": 5,
+    "Coordinator_unsuccessful": 4,
+    "UP1_initial": "unsuccessful",
+    "UP1_repair1": "unsuccessful",
+    "UP1_repair2": "PASS",
+    "UP2_received_repair_rounds": 0,
+    "reviewer_repairs_added": 0,
+    "reset": false,
+    "UP2_preparation_repairs": 1,
+    "UP2_live_repair_rounds": 0
+  },
+  "changes": "Only this unique immutable CODE receipt. Source edits remain parent/writer owned; concurrent standalone diagnosis/runner repair excluded from UP2 source binding.",
+  "commands_shutdown": "All read-only commands complete; no reviewer-owned process. Parent reports serialized runtime ended.",
+  "next_step": "Parent/writer repairs UP2-C1 and supplies fresh frozen source identity; retain both historical failure receipts, rerun SPEC first then separate CODE."
+}

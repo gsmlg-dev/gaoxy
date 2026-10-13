@@ -1,0 +1,31 @@
+==> gaoxy_http
+Running ExUnit with seed: 405782, max_cases: 4
+
+.
+
+  1) test three full DATA frames use the standard initial window before SETTINGS ACK (Gaoxy.HTTP2PreSettingsTest)
+     apps/gaoxy_http/test/http2_pre_settings_test.exs:77
+     unexpected frame before PING ACK: {8, 0, 0, <<0, 0, 64, 0>>}
+     stacktrace:
+       test/http2_pre_settings_test.exs:137: Gaoxy.HTTP2PreSettingsTest.before_ack_echo/2
+
+.
+
+  2) test two full DATA frames use the standard initial window before SETTINGS ACK (Gaoxy.HTTP2PreSettingsTest)
+     apps/gaoxy_http/test/http2_pre_settings_test.exs:73
+     unexpected frame before PING ACK: {8, 0, 0, <<0, 0, 64, 0>>}
+     stacktrace:
+       test/http2_pre_settings_test.exs:137: Gaoxy.HTTP2PreSettingsTest.before_ack_echo/2
+
+.
+
+  3) test empty DATA FIN remains legal when SETTINGS ACK makes the queued window negative (Gaoxy.HTTP2PreSettingsTest)
+     apps/gaoxy_http/test/http2_pre_settings_test.exs:81
+     unexpected frame before PING ACK: {8, 0, 0, <<0, 0, 64, 0>>}
+     code: ping(socket, "queued03", deadline)
+     stacktrace:
+       test/http2_pre_settings_test.exs:87: (test)
+
+
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+6 tests, 3 failures

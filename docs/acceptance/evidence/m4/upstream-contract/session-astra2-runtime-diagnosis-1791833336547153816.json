@@ -1,0 +1,108 @@
+{
+  "status": "FAIL",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "branch": "codex/m4-http3",
+  "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791833149635393377/result.json",
+  "run_sha256": "9380efa6a593de805b86ebdbdaa5cc8d28874d7ce574fc182e999781095f04fe",
+  "command": [
+    "/nix/store/jy00n3jp5xj8s40n1fbldmkcr5n7avxc-python3-3.13.15/bin/python",
+    "integration/http3/upstream/run.py",
+    "--gate",
+    "session-contract",
+    "--evidence",
+    "docs/acceptance/evidence/m4/upstream-contract"
+  ],
+  "actual_exit": 1,
+  "source_unchanged": true,
+  "children": [
+    {
+      "pid": 2898467,
+      "exit": 0
+    },
+    {
+      "pid": 2903246,
+      "exit": 1
+    }
+  ],
+  "ports_rebound": [
+    40028,
+    52551
+  ],
+  "passed_counts": {
+    "boundary_double": 31,
+    "network": 6
+  },
+  "required_total": 50,
+  "not_run": {
+    "network": [
+      "cancel_blocked_upload",
+      "cancel_owner_loss",
+      "cancel_pending_headers",
+      "cancel_unacknowledged_response",
+      "request_trailers_three_declared",
+      "request_trailers_three_undeclared",
+      "request_trailers_zero_declared",
+      "request_trailers_zero_undeclared",
+      "tiny_window_1mib",
+      "wrong_ca",
+      "wrong_hostname"
+    ],
+    "policy": [
+      "absent_trust",
+      "address_policy"
+    ],
+    "doubles": []
+  },
+  "probe_stack": "** (ExUnit.AssertionError) \n\nguardian call missing :call\n\n    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:436: ExUnit.Assertions.assert/2\n    integration/http3/upstream/session_probe.exs:1598: Gaoxy.SessionPublicProbe.call/4\n    integration/http3/upstream/session_probe.exs:1811: Gaoxy.SessionPublicProbe.poll/3\n    integration/http3/upstream/session_probe.exs:1847: Gaoxy.SessionPublicProbe.response/4\n    integration/http3/upstream/session_probe.exs:1913: anonymous fn/4 in Gaoxy.SessionPublicProbe.upload/3\n    integration/http3/upstream/session_probe.exs:1797: Gaoxy.SessionPublicProbe.with_request/5\n    integration/http3/upstream/session_probe.exs:2695: Gaoxy.SessionPublicProbe.run/0\n    integration/http3/upstream/session_probe.exs:2710: (file)",
+  "tiny_upload_request_fin": {
+    "event": "request_fin",
+    "origin": "a",
+    "connection": 7,
+    "stream": 0,
+    "path": "/tiny-upload",
+    "certificate_sha256": "3a327e9350f7597c43caac1b0630a7d1900a41073aaafc200917ba5e2eda8801",
+    "trailer_blocks": 0,
+    "headers": [
+      [
+        ":method",
+        "POST"
+      ],
+      [
+        ":scheme",
+        "https"
+      ],
+      [
+        ":authority",
+        "localhost:40028"
+      ],
+      [
+        ":path",
+        "/tiny-upload"
+      ]
+    ],
+    "trailers": [],
+    "data_bytes": 1048576,
+    "data_sha256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b",
+    "request_fin": true
+  },
+  "observed_failure": "64 original16KiB DATAcalls uploaded1MiB exactly, and one requestFIN reached peer. Response polling emitted DATA but failed with guardian call missing at poll/response before complete receipt. Cause not yet determined; do not declare upstream blocker or successful cleanup.",
+  "received_counters": {
+    "sol": 2,
+    "unsuccessful_sol": 2,
+    "astra_recovery": 2,
+    "preceding_unsuccessful_astra": 1
+  },
+  "outcome_counters": {
+    "sol": 2,
+    "unsuccessful_sol": 2,
+    "astra_recovery": 2,
+    "unsuccessful_astra": 2
+  },
+  "third_astra_authorized": false,
+  "next_action": "Additional bounded Sol diagnosis/repair within renewed continuing authorization. Preserve full1MiB response/body hash/FIN, max_frame8192, originaldeadline/window/all50 and confirmed teardown assertions. No normalapproval pause.",
+  "prelive_review": "docs/acceptance/evidence/m4/upstream-contract/review-session-astra2-prelive-1791833119487258571.json",
+  "prelive_review_sha256": "bd1cc6e8340915746426387e232c2508a2c2397b176510f1f05b25066c3f0f8b",
+  "up1": "HOLD_UP0",
+  "publication": "NOT ELIGIBLE",
+  "all_commands_finished": true
+}

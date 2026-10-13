@@ -1,0 +1,68 @@
+{
+  "task": "Task5_ST1_ST2_PREPARATION",
+  "assignment": "direct independent read-only SPEC review",
+  "status": "FAIL",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_sha256": {
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "e35586b067915d1cf62b6b2b198de6fb76a7d014c72aa1349e9d7a491b353995",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "29b52743537664c141e705b9dd58da28d817c1faa914a935916b0be23f7678c8",
+    "integration/http3/standalone/run.py": "9a114a53b7d34356ebea65ce1023274cc762a0e38f98af650768dcc23b65d9cb",
+    "integration/http3/standalone/peer.py": "b3cb16fba72a86904e7215eac132c821ab8b4dc23998f21e592fb7012ef0ffd1",
+    "integration/http3/standalone/README.md": "a05d2fc6598f114821f7590f0ec4043c8c816d1551f42a4e21d57f30b80cad79",
+    "integration/http3/standalone/fixture.exs": "bb65a8fe7b79607e1c8da4833118ecb9c47a8ef8b63812d242b63e3a009afa4b"
+  },
+  "source_identity_note": "Six assigned files independently hashed before reporting findings. Parent has subsequently authorized its own targeted runner edits; this receipt binds the original reviewed hashes, not any later revision. Concurrent upstream harness files are contextual interface dependencies and are not frozen by this receipt.",
+  "checks": {
+    "data_only_enum": "PASS: exact string http1/http3 map to fixed atoms; omission defaults H1; unknown keys rejected",
+    "tls_policy": "PASS: HTTP.init requires HTTPS plus explicit regular CA for H3 and chooses fixed Session client",
+    "reload_unit_contract": "PASS: invalid enum and CA reload preserve exact snapshot id, router and listener",
+    "startup_path": "PASS_PREPARATION: fixture Application.ensure_all_started invokes Config.load and Server.Supervisor via GAOXY_CONFIG",
+    "independent_h3_rows": "PASS_PREPARATION: two local CAs/origins, progressive upload before FIN, zero DATA, ordered duplicate trailers, exact pseudo-fields/authority and body hash, fin_count1 and unique paths",
+    "reload_live_rows": "PASS_PREPARATION: both H1 and H3 old responses remain unfinished before reload, fresh requests see new static generation, both old bodies/trailers later complete",
+    "baseline_and_rollback": "PASS_PREPARATION: both service admission/retention/cleanup/queue baselines; invalid reload; occupied later UDP and missing cert bootstrap rollback",
+    "port_release": "FAIL_PREPARATION: known H1-origin TCP port and external legacy standalone TCP port are not rebound after their child exits"
+  },
+  "findings": [
+    {
+      "id": "ST2-P1",
+      "severity": "medium",
+      "path": "integration/http3/standalone/run.py",
+      "lines": [
+        205,
+        218
+      ],
+      "problem": "Runner externally rebinds standalone H3 UDP and both H3-origin UDP ports but does not externally rebind the standalone legacy TCP listener after fixture exit or the H1-origin TCP listener after origin exit. This leaves the assigned all-known-port release requirement incomplete.",
+      "required_change": "After the existing exact zero-exit waits, perform finite exact TCP bind/listen/rebind checks for ports[legacy] and origin_ready[port], preserve all existing deadlines/assertions, and record the port identities and PASS checks.",
+      "parent_disposition": "Confirmed actionable; root owns targeted repair. Reviewer edits no source."
+    }
+  ],
+  "evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/standalone/st1-h3-origin-expected-red-1791839994831898468.json",
+      "sha256": "6a728ac8688bedb7d8469cf352e73094f9341b60e55720bd68cee1be16735df2",
+      "verified": "log hash matches; 10 tests/5 failures; exit2; historical preimplementation hashes preserved, naturally differ from current code"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/standalone/st1-h3-origin-green-1791840067977541375.json",
+      "sha256": "39b7cd1a385f36572f3a7cf69fd47877362ad36b90a23cd3977e90d1aa7cf623",
+      "verified": "all4 log hashes match; exact-file format/check and strict compile exits0; 19 tests/0 failures, no skipped/excluded markers; five recorded source hashes match current files and before/after maps match"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/standalone/st2-h3-origin-preparation-1791840225137642683.json",
+      "sha256": "ff4e3f7c25f09d488eb4c074a662d38a16d978e14fca5dc33ca5acec770c53fa",
+      "verified": "two source hashes match; supplied status PASS_SYNTAX_ONLY, ast_files2, runtime NOT RUN"
+    }
+  ],
+  "reviewer_execution": "NOT RUN: no Mix/Elixir/Nix/format/compile/live/runtime commands; only reads/hash/evidence serialization",
+  "live_ST2": "NOT RUN: UP2 and frozen upstream harness completion remain dependent",
+  "M4": "NOT PASSED by preparation",
+  "code_review": "NOT RUN: separate CODE review follows passing superseding SPEC review",
+  "repairs": {
+    "reviewer_sol": 0,
+    "received_counters_unchanged": true
+  },
+  "commands_shutdown": "All reviewer commands complete; no owned live children",
+  "changes": "Only this unique immutable receipt"
+}

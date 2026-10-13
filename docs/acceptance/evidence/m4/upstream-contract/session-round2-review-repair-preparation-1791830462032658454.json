@@ -1,0 +1,83 @@
+{
+  "task_id": "/root/m4_session_qualification",
+  "status": "PREPARATION_PASS",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "6737c00b9b78254cea75d9b7bfe3727167cee8f84a71af60babe157dea09c2cf",
+    "integration/http3/upstream/run.py": "e0ed6429dfd43f529377c9cb44eb823cc699062c1d7b550a41b14000e2aff530",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "ab50177404e6eb30b4df4e8d1efea574385ec42837250ed294d76f82c966e8d9",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c"
+  },
+  "source_after_sha256": {
+    "integration/http3/upstream/session_probe.exs": "6737c00b9b78254cea75d9b7bfe3727167cee8f84a71af60babe157dea09c2cf",
+    "integration/http3/upstream/run.py": "e0ed6429dfd43f529377c9cb44eb823cc699062c1d7b550a41b14000e2aff530",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "ab50177404e6eb30b4df4e8d1efea574385ec42837250ed294d76f82c966e8d9",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c"
+  },
+  "source_unchanged": true,
+  "commands": [
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "MIX_ENV=test",
+        "ERL_FLAGS=+S 2:2",
+        "GAOXY_SESSION_PROBE_LOAD_ONLY=1",
+        "mix",
+        "run",
+        "--no-compile",
+        "--no-start",
+        "integration/http3/upstream/session_probe.exs"
+      ],
+      "exit": 0,
+      "log": "docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-0.log"
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "MIX_ENV=test",
+        "ERL_FLAGS=+S 2:2",
+        "mix",
+        "format",
+        "--check-formatted",
+        "integration/http3/upstream/session_probe.exs"
+      ],
+      "exit": 0,
+      "log": "docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-preparation-1791830462032658454-1.log"
+    }
+  ],
+  "review_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-contract/review-session-round2-prelive-1791829741461918104.json",
+    "sha256": "6a44ea2bee594a0daa6f1ea983bbe4080870aebd67e1e509a8384e0fbb15fec8"
+  },
+  "other_checks": [
+    "Python AST parse",
+    "owned-file whitespace and final newline",
+    "owned git diff --check"
+  ],
+  "runtime_status": "NOT RUN: compile-only plus format; no application start, doubles or peers",
+  "executed_rows": {
+    "network": 0,
+    "policy": 0,
+    "boundary_double": 0
+  },
+  "counters": {
+    "direct_session_sol_round": 2,
+    "prior_unsuccessful_sol": 1,
+    "astra_recovery": 0,
+    "full_round2_qualification": "NOT RUN"
+  },
+  "command_shutdown": "all preparation children exited; no owned application or peer children started"
+}

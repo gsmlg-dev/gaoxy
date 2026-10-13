@@ -1,0 +1,162 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "packaged_h1_to_h3_data_trailers",
+      "status": "PASS"
+    },
+    {
+      "name": "packaged_h3_listener",
+      "status": "PASS"
+    },
+    {
+      "name": "packaged_h3_to_h3_zero_trailers",
+      "status": "PASS"
+    }
+  ],
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/_build/prod/rel/gaoxy/bin/gaoxy",
+  "aioquic": "1.2.0",
+  "commands": [
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/quic_consumer/.venv/bin/python",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/integration/http3/upstream/origin.py",
+      "--cert-a",
+      "/tmp/nix-shell.Au7VUs/gaoxy-packaged-h3-57s5u5zm/a",
+      "--cert-b",
+      "/tmp/nix-shell.Au7VUs/gaoxy-packaged-h3-57s5u5zm/b"
+    ],
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3/_build/prod/rel/gaoxy/bin/gaoxy",
+      "start"
+    ]
+  ],
+  "child_exits": {
+    "release": 0,
+    "origin": 0
+  },
+  "origin_requests": [
+    {
+      "origin": "a",
+      "connection": 0,
+      "stream": 0,
+      "path": "/echo-three-declared",
+      "method": "POST",
+      "authority": "localhost:37759",
+      "id": null,
+      "certificate_sha256": "1da23739dc4cff0f13ac4e05791c5a293eccffb9846d835211d8c173fe59b199",
+      "trailer_blocks": 1,
+      "headers": [
+        [
+          ":method",
+          "POST"
+        ],
+        [
+          ":scheme",
+          "https"
+        ],
+        [
+          ":authority",
+          "localhost:37759"
+        ],
+        [
+          ":path",
+          "/echo-three-declared"
+        ],
+        [
+          "trailer",
+          "x-check"
+        ],
+        [
+          "x-forwarded-for",
+          "127.0.0.1"
+        ],
+        [
+          "x-forwarded-host",
+          "edge.test"
+        ],
+        [
+          "x-forwarded-proto",
+          "http"
+        ]
+      ],
+      "trailers": [
+        [
+          "x-check",
+          "one"
+        ],
+        [
+          "x-check",
+          "two"
+        ]
+      ],
+      "data_bytes": 3,
+      "data_sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      "request_fin": true,
+      "fin_count": 1,
+      "data_events": 1,
+      "response_fin": false
+    },
+    {
+      "origin": "b",
+      "connection": 1,
+      "stream": 0,
+      "path": "/echo-zero-declared",
+      "method": "POST",
+      "authority": "localhost:33538",
+      "id": null,
+      "certificate_sha256": "61e49b444aa583fbd78e14c31a0cf6e1c71ce2f004f931d8afc93dfb09fb07ae",
+      "trailer_blocks": 1,
+      "headers": [
+        [
+          ":method",
+          "POST"
+        ],
+        [
+          ":scheme",
+          "https"
+        ],
+        [
+          ":authority",
+          "localhost:33538"
+        ],
+        [
+          ":path",
+          "/echo-zero-declared"
+        ],
+        [
+          "trailer",
+          "x-check"
+        ],
+        [
+          "x-forwarded-for",
+          "127.0.0.1"
+        ],
+        [
+          "x-forwarded-host",
+          "localhost"
+        ],
+        [
+          "x-forwarded-proto",
+          "https"
+        ]
+      ],
+      "trailers": [
+        [
+          "x-check",
+          "one"
+        ],
+        [
+          "x-check",
+          "two"
+        ]
+      ],
+      "data_bytes": 0,
+      "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_fin": true,
+      "fin_count": 1,
+      "data_events": 0,
+      "response_fin": false
+    }
+  ],
+  "ports_rebound": true
+}

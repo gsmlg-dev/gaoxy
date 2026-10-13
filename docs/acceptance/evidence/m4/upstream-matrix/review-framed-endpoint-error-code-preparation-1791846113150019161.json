@@ -1,0 +1,96 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PREPARATION",
+  "assignment": "direct read-only independent CODE preparation review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-framed-endpoint-errors.md": "477badc1070490e4320eb9b7e8b5ac64a94630797b18407ce707eb7d7d7dad72",
+    "docs/plans/m4-framed-endpoint-errors.md": "b13b5d98143bb7c459323f64f71d6555384a39bb38d6d62f77f32440a9289160",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "4eb05cf5d4c039118333445506a431173576b1fa183a16dcd43e9800f41eb890",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "apps/gaoxy_http/test/http2_network_test.exs": "e91672f02e6d34dc25dee2153e39258f2ad146f631a4d396ad255fd7f93ff69b",
+    "apps/gaoxy_http3/test/plug_test.exs": "c688696b0709b11e195fa33aed6165e98f6199780ed8a621588d828a53c4b6a2"
+  },
+  "reference_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/endpoint.ex": "ae24f1266ba8c71b92800aab025b2dd3415cbd996fd154b28cc747a7c1fa7715",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "integration/http3/peer.py": "d1e2d4b3d9abf1dd75576ae8d8be075238ed8a2f64ff7e0e078308a971a95899"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "C1",
+      "historical_receipt": "review-framed-endpoint-error-code-preparation-1791846020559067819.json",
+      "resolution": "Both Stream modules positively match :chunked and {:fixed_stream,remaining} with integer remaining>=0; all invalid modes retain Response.finish failure behavior."
+    },
+    {
+      "id": "F1",
+      "resolution": "H2 exact worker release-consumed receipt and H3 marker-consumed output assertion prevent timeout fallback satisfying green."
+    },
+    {
+      "id": "F2",
+      "resolution": "H2 sibling collector rejects success END_STREAM on settled failed stream."
+    }
+  ],
+  "source_assessment": [
+    "Explicit endpoint error plus valid open committed response does not invoke finish; :fixed_stream0 also cancels because successful terminal has not been sent.",
+    "Only bounded {:error,:endpoint_failed}, :ok or {:error,:response_failed} crosses worker completion boundary; endpoint reason, body and Exchange remain local.",
+    "H2 id/worker/token exact fencing retained and endpoint outcome maps existing stream-local CANCEL8; original local_closed/eof cleanup and DOWN/internal_error paths retained.",
+    "H3 existing Operations.finish uses exact owner/key/token/bound-worker/idle CAS and1024-byte limit; finished endpoint error maps existing reset+stop0x10C only for selected stream. Generic finished response_failed and worker crash retain internal0x102 behavior.",
+    "Prehead error/caught exception retains original Exchange500 path; already sent/bodyless/error-following502504 and ordinary success retain prior finish semantics. Invalid/malformed endpoint result handling outside open valid state remains existing behavior.",
+    "Real H2/H3 tests require exact200/prefix before intended error release, no success terminal, precise error codes and successful sibling on same connection; prehead500 and completed502504 controls remain exact.",
+    "Four-file production diff only; no new process/shared API/dependency patch/connection-wide close; existing assertions/deadlines unchanged."
+  ],
+  "red_evidence_review": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/framed-endpoint-errors-strengthened-red-1791845884890104933.json",
+    "sha256": "e355d026fedd2e48768696bfb90ee71930b970170e4dd4639943f2be18a508dd",
+    "log": "docs/acceptance/evidence/m4/upstream-matrix/framed-endpoint-errors-strengthened-red-1791845884890104933.log",
+    "log_sha256": "eaa13acc911b9865c10acabfcb29c4566a7a3172feda50c24f31212ee581e43e",
+    "actual_exit": 2,
+    "executed_tests": 27,
+    "expected_failures": 2,
+    "authored_source_stable": true,
+    "receipt_source_unchanged": false,
+    "only_difference": [
+      "apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.PlugTest/test-returned-endpoint-errors-preserve-completed-responses-and-reset-a-committed-prefix-on-real-H3-3a73d738/returned_endpoint_errors.exs"
+    ],
+    "assessment": "Generated temporary test script rewritten; original receipt remains immutable and complete source map is not called unchanged. Authored tests/current bytes match stable RED snapshot.",
+    "failures": [
+      "H2 got empty successful DATA END_STREAM instead of reset8 after release receipt.",
+      "H3 marker consumed; got successful completion with empty reset/stop maps."
+    ]
+  },
+  "verification_status": "SOURCE_PREPARATION_PASS_ONLY; corrected strict compilation/scoped lifecycle/protocol/prelive GREEN pending parent execution/audit.",
+  "required_next_checks": [
+    "Exact authored-file format and strict compilation; two network suites, actual H2 lifecycle targets, H3 lifecycle/operations/transport, proxy compatibility.",
+    "Independent actual verification review/fresh checks and unchanged full66network+2policy UP2 with original assertions/deadlines."
+  ],
+  "counters": {
+    "up0_sol": 2,
+    "up0_unsuccessful_sol": 2,
+    "up0_astra": 2,
+    "up0_unsuccessful_astra": 2,
+    "up0_coordinator": 5,
+    "up0_unsuccessful_coordinator": 4,
+    "up1_repair": 2,
+    "up1_unsuccessful_initial": 1,
+    "up1_unsuccessful_repairs": 1,
+    "up2_live_repair": 2,
+    "up2_unsuccessful_executions": 6,
+    "standalone_repair": 2,
+    "standalone_unsuccessful": 2
+  },
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "changed_files": "One unique review receipt only.",
+  "limits": [
+    "No reviewer runtime, Mix, tests, formatting, dependency or source changes.",
+    "No fullUP2/M4/standalone/package/publication/deployment/production acceptance inferred.",
+    "UP0 Sol2/Astra2 exhausted; coordinator5; UP2repair2 pending and unsuccessful live executions6 retained."
+  ]
+}

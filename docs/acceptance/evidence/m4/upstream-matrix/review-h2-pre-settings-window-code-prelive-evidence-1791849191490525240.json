@@ -1,0 +1,112 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PREPARATION_AND_SCOPED_PRELIVE",
+  "assignment": "direct read-only independent repair6 CODE, tests, peer diagnostic and actual RED/GREEN review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-h2-pre-settings-window.md": "25f2a5ed9257df74c183dd12bff88331b49ff5329a78bd9248b019e865a360cd",
+    "docs/plans/m4-h2-pre-settings-window.md": "3ef1b99a4b6ba6e159f5537698f8e4274579c2205a547b8a2fe075f3f897497b",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "d26be1c80a52c982687d1d48d7a1191d1a2606bd8ad04c4004abf968f63bea12",
+    "apps/gaoxy_http/test/http2_pre_settings_test.exs": "7d9243a9de8ae77e98b8bea265636aeb607907b4927a3491e3245beee8d12470",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/options.ex": "3c1a68f1bf58d4f205958b82230e6d28665b719c7b64923593992decdcafdb90",
+    "integration/http3/upstream/peer.py": "78723995f1f3affe5e9d52ada9b8fb63ffd3377468d1c951e302a5c0526175cb",
+    "integration/http3/upstream/run.py": "2e5a77544d31ad64a327da9ff95971f5422188463a0b9fc1a98cbba15b301027",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70"
+  },
+  "spec_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-settings-window-spec-preparation-1791848949480586796.json",
+    "sha256": "55f975f80fb0cdd8c3b54fb508624a56d2c6e7bb3f72fac5e1abdaaff030d9cf"
+  },
+  "findings": [],
+  "code_assessment": [
+    "Repair6 changes exactly preACK new-stream65535 credit, first ownACK one-time delta(configured-65535) across existing streams, duplicateACK no-op and positive-payload stream-credit comparison. MalformedACK payload/frame guards stay ahead of duplicateACK guard.",
+    "Negative remaining stream credit is preserved and never clamped/refunded on ACK. Peer SETTINGS retain separate outbound delta. Connection window/credit restitution, parser carry, Limits/reservations/body/deadline/process policies unchanged.",
+    "Zero raw payload bypasses only positive stream-credit check. Positive padded frames still count payload bytes; malformed empty PADDED frame still fails unpad. EmptyFIN/body-length/stream-state semantics remain guarded.",
+    "New raw-frame tests hold actual endpoint before body-credit return and use strict PING ACK ordering. Two/three full preACKDATA frames echo exactly; firstACK creates negative credit; emptyFIN accepted; duplicateACK exact returned16KiB credit allows next full frame.",
+    "Existing and new postACK streams accept exact16384 then require actual FLOW_CONTROL_ERROR3 on extra byte, actual workerDOWN, same-connection sibling exact200/body, finite allzero cleanup, normal runtimeDOWN and port rebind. All checks share original5000ms absolute test deadline.",
+    "Current peer diagnostic adds actual reset/closed assertion before upload credit wait, preserving original window/chunk/row/byte/hash/FIN assertions. It does not wait for SETTINGS to mask legal early-flight defect or normalize teardown SSL errors.",
+    "Prior framed endpoint completion branch visible in HEAD diff predates repair6 and remains previously reviewed; only new ACK/window/zeroDATA delta is part of current production repair."
+  ],
+  "red_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h2-pre-settings-red-1791848988496887365.json",
+      "sha256": "85de61ebd96065b5ef33de1d4eaf24ba7c14920e44d327b2c7f3632df8ab17a5",
+      "log_sha256": "d2a0e5481c786cce1c1380be08fc5a2baddc1e56384b7a5cdf8485e442d53deb",
+      "executed_tests": 6,
+      "failures": 3,
+      "actual_exit": 2,
+      "source_unchanged": true,
+      "connection_sha256": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h2-negative-window-zero-fin-red-1791849033596205958.json",
+      "sha256": "8e0279c8d2c8e136593c0833b0e89e27918c79186ff62266d066172291c252d5",
+      "log_sha256": "0ff40b7e7e1d92f578d7c5bd474c6b15c362c1e4bbac9475cb41d50fbf082d90",
+      "executed_tests": 6,
+      "failures": 1,
+      "actual_exit": 2,
+      "source_unchanged": true,
+      "connection_sha256": "f4b94544f73ac20e2080d0a09c46a576030c1c0531478dd8354c535b1b2766e6"
+    }
+  ],
+  "red_interpretation": [
+    "Initial6/3 unexpected connection WINDOW_UPDATE before strict PING is causal failure: held endpoint has read no bytes, native premature stream reset returns queued connection credit through unchanged discard/credit path. It is not compile or fixture failure. Tests are not relaxed to ignore this reset evidence.",
+    "StagedACK fix6/1 leaves only emptyFIN barrier failing via queued-credit restitution after native reset; five controlsPASS. Final size>0 guard addresses that isolated failure.",
+    "Test byte hash7d9243a9de8ae77e98b8bea265636aeb607907b4927a3491e3245beee8d12470 is identical for bothRED and finalGREEN; no assertion weakened."
+  ],
+  "green_evidence": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/h2-pre-settings-prelive-green-1791849082934511389.json",
+    "sha256": "3f7b5129977673fa3b87521f7fc4cdd2b1227300c518c86c25853f7cef2876a0",
+    "log": "docs/acceptance/evidence/m4/upstream-matrix/h2-pre-settings-prelive-green-1791849082934511389.log",
+    "log_sha256": "46bfd18547bceb66b6f9845ab23dfc2630101e75f4e0e7acc03f3f8797f4d329",
+    "status": "PASS",
+    "actual_exit": 0,
+    "format_authored_files": 18,
+    "format_exit": 0,
+    "strict_compile_exit": 0,
+    "executed_counts": {
+      "gaoxy_http": 118,
+      "gaoxy_http3": 40,
+      "gaoxy_proxy": 114,
+      "total": 272,
+      "failures": 0
+    },
+    "source_hash_count": 214,
+    "before_after_equal": true,
+    "all_current_hashes_match": true,
+    "command": [
+      "python",
+      "/tmp/gaoxy-m4-framed-series.py"
+    ],
+    "environment": {
+      "MIX_ENV": "test",
+      "ERL_FLAGS": "+S 2:2"
+    }
+  },
+  "matrix_diagnostic_reference": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791848586737931556/result.json",
+    "sha256": "c15c0d30a6da39ff398e433f13ff353fdeb17f55d5e08f2af80756d1662f6ed9",
+    "status": "FAIL",
+    "scope": "Actual prior independentTLS1MiB reset3 cause; fullmatrixnotyetGREEN."
+  },
+  "cumulative_counters": {
+    "up2_current_production_repair": 6,
+    "up2_unsuccessful_live_executions": 11,
+    "up2_unsuccessful_production_repairs": 4,
+    "up2_unsuccessful_harness_repairs": 1,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "clearance": "Proceed with full frozen66 network+2policy matrix using repair6/fail11 counters and current peer terminal assertion. This is code/scoped prelive clearance only.",
+  "remaining_acceptance": "Actual independent H2TLS1MiB/fullmatrix allrows/cleanup/bytes/error/deadline PASS, independent live-evidence review and fresh full repeat, remaining finalM4 gates pending. Raw-delivery candidate unverified and remains excluded.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-settings-window-code-prelive-evidence-1791849191490525240.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/diff/logs and Python standard-library hash/receipt utilities; no Mix/runtime/network/source/document edits or delegation."
+}

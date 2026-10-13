@@ -1,0 +1,127 @@
+{
+  "task_id": "/root/m4_session_affinity_review:CLEAN_CONSUMERS_POST_REVIEW",
+  "assignment": "direct independent read-only evidence review",
+  "status": "DONE",
+  "verdict": "SCOPED PASS",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "execution_receipt": "docs/acceptance/evidence/m4/matrix/consumers-cohort-0.21.4-1791840515561859518/execution.json",
+  "execution_receipt_sha256": "f010ddfbdd95e6be7c5cb85cea3aca988bd2157ab6c4f791c59d93ece4d88e7f",
+  "environment": {
+    "MIX_ENV": "test",
+    "ERL_FLAGS": "+S 2:2"
+  },
+  "runs": [
+    {
+      "consumer": "core",
+      "command": [
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 95.85577771998942,
+      "tests": 1,
+      "failures": 0,
+      "skipped_excluded": 0,
+      "log": "docs/acceptance/evidence/m4/matrix/consumers-cohort-0.21.4-1791840515561859518/core.log",
+      "log_sha256": "306984d9253b03eae4c64fc633e1f705c3f681eb482a7b9c93963f29261daeeb",
+      "verified_summary": [
+        "1",
+        "0"
+      ],
+      "raw_log_hash_verified": true
+    },
+    {
+      "consumer": "http",
+      "command": [
+        "bash",
+        "scripts/http-consumer.sh"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 103.48454243689775,
+      "tests": 2,
+      "failures": 0,
+      "skipped_excluded": 0,
+      "log": "docs/acceptance/evidence/m4/matrix/consumers-cohort-0.21.4-1791840515561859518/http.log",
+      "log_sha256": "557bcd35a288e7485c8632d03d2da6847a4ba40623f0ed5aa54131a505e6dca3",
+      "verified_summary": [
+        "2",
+        "0"
+      ],
+      "raw_log_hash_verified": true
+    },
+    {
+      "consumer": "h3",
+      "command": [
+        "bash",
+        "scripts/h3-consumer.sh"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 125.78245673142374,
+      "tests": 2,
+      "failures": 0,
+      "skipped_excluded": 0,
+      "log": "docs/acceptance/evidence/m4/matrix/consumers-cohort-0.21.4-1791840515561859518/h3.log",
+      "log_sha256": "15b62c32b369fb82be4164c0622c1a2309fa4d48e541449e3a00974672ce62c0",
+      "verified_summary": [
+        "2",
+        "0"
+      ],
+      "raw_log_hash_verified": true
+    }
+  ],
+  "executed_tests": 5,
+  "all_outer_exits": 0,
+  "source_count": 209,
+  "recorded_source_before_after_current_equal": true,
+  "root_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "H3_lock_after_deps_get": "PASS: exact root lock hash printed after --check-locked deps.get; coordinated elixir_quic/elixir_quic_http3/ex_ssl/http_core0.21.4 in raw resolution",
+  "reviewed_templates_and_wrappers": [
+    "integration/core_consumer/{mix.exs,test/consumer_test.exs}",
+    "integration/http_consumer/{mix.exs,test/consumer_test.exs}",
+    "integration/h3_consumer/{mix.exs,test/consumer_test.exs,peer.py}",
+    "scripts/{external-consumer.sh,http-consumer.sh,h3-consumer.sh}"
+  ],
+  "isolation_assertions": {
+    "core": "PASS1test: clean temporary project copies only core app; plug/phoenix/bandit/http_fetch/hpax/elixir_quic/ex_ssl absent in deps paths/code paths/started applications; TCP exact external echo and empty UDP datagram; :ok Gaoxy.stop1s.",
+    "http": "PASS2tests: clean temporary project copies core+HTTP+vendored websock_adapter; gaoxy_http3/elixir_quic/elixir_quic_http3/ex_ssl/http_fetch/bandit absent in resolved/running/code/deps paths; gaoxy_http resolved+running. Native H1 status200/bodyconsumer and H2prior-knowledge independently encoded frames/HPAX decoded status200/bodyconsumer; sockets close and :ok Gaoxy.stop1s.",
+    "h3": "PASS2tests: clean temporary project copies core+HTTP+H3+vendor; gaoxy_http3/elixir_quic/elixir_quic_http3 resolved+running; gaoxy_proxy/gaoxy_server/http_fetch/phoenix/phoenix_live_view/bandit absent in resolved/running/code/deps paths. Independent pinned aioquic1.2.0 uses default certificate verification and local CA/server_namelocalhost; exact h3ALPN/status200/getbodyconsumer and69632bytePOSTecho; finite20speer/8sresponse. System.cmd exit0 and exact success marker asserted inside passing ExUnit test. Admission baseline0 within3s; Gaoxy.stop5s, runtimeDOWN1s, exactUDPrebind.",
+    "core_http_cleanup_limit": "Core/H1-H2 record successful public stop assertions; they do not separately monitor every owned worker or rebind their ports. H3 has explicit runtimeDOWN and UDP rebind. This verdict preserves the existing narrow consumer contract."
+  },
+  "cleanup_and_clean_project_evidence": "PASS within scope: wrapper mktemp copies only selected apps/templates; strictdeps.get/compile/test commands under set-euo pipefail; logs show freshly compiled apps in distinct temporary roots; wrapper exit0 proves traps completed. No production runtime/deployment invoked.",
+  "supplemental_current_HEAD_sha256": {
+    "vendor/websock_adapter/CHANGELOG.md": "56363fa078f46b7602d1ad540e156b8600ebeda0554526962e742bf7ec70a0e5",
+    "vendor/websock_adapter/GAOXY.md": "a04787d9a4fd7e43538e82ae0260287e11f23c14561b5328917f7b5f4442ab53",
+    "vendor/websock_adapter/LICENSE": "26f042d624e62b760e707842347e9e08cb981491d3cecfdd63bc48fc32e870e3",
+    "vendor/websock_adapter/README.md": "075dc846dcf83d556314a3d9d305f979a0d87d82e3de8fb04fa2b1eeafbcbcda",
+    "vendor/websock_adapter/SOURCE.json": "a5226c553ad4aeb14af807946da88a5015fe3fe504e4c511d25f0eed5aa3fde0",
+    "vendor/websock_adapter/gaoxy.patch": "324b707bd1cbe866aa7e689bf0bd75749a6ca8c383a11a26de294d30954fd202",
+    "vendor/websock_adapter/lib/websock_adapter/cowboy_adapter.ex": "d68d617fbbcbbd150f14525b828de63c9db4a4348c647f3b791252ee6438825c",
+    "vendor/websock_adapter/lib/websock_adapter/upgrade_error.ex": "db602d938c4cd6278ddc9129742dbf332a0ee624fa050aa4e58a39248ca3046c",
+    "vendor/websock_adapter/lib/websock_adapter/upgrade_validation.ex": "4edd6043330ace02ef63a274d166e9f2b793cc9cc0decf30ae100e784740bb2c",
+    "vendor/websock_adapter/lib/websock_adapter.ex": "27579f22205c1b04016f6da48b26e05e6b06d34418ebcb548ff6c4b3cb5a4ecf",
+    "vendor/websock_adapter/mix.exs": "3fdda4df6bbcacb434a4be197c54f8c257a95ef704a8bcd1b3cf6f2e75d36ce8",
+    "vendor/websock_adapter/test/gaoxy_dispatch_test.exs": "4a672326e41cb31464ed41bea710edf85952b65bc007d5d8979b6434c9ef7b05",
+    "scripts/generate-fixtures.sh": "46761d658e675a440abadfd17dfb079c27c1cfe7ba8c6655157876251a9786c9",
+    "scripts/check-tests.py": "03387fb8482972def834ceff0ef686fe5e5a4449dda02c20cb3317ebafd716a9"
+  },
+  "provenance_coverage_note": "Original209-file execution map omits copied vendor/websock_adapter and executed generate-fixtures/check-tests helpers. These14files are now independently hashed and byte-compared against the execution/current HEAD Git objects; root reports no edits and concurrent writer ownership excludes them. This is supplemental current/commit provenance, not a backdated execution before/after observation. The original receipt/logs remain unchanged.",
+  "provenance_verdict": "Adequate for prescribed narrow5-test consumer/isolation gate; no expanded exact-artifact/hermetic/full-release qualification inferred. No rerun requested.",
+  "limits": [
+    "This review proves only copied-source clean consumer resolution/isolation and representative TCP/UDP/H1/H2/verifiedCAH3 exchanges/cleanup assertions; it does not prove published-package or release-artifact consumers.",
+    "Root full lockfile is intentionally copied; this is an isolated project/build/dependency graph check, not a completely unconstrained ecosystem solver audit.",
+    "The H3 peer success line is captured by System.cmd and asserted inside ExUnit, not independently printed in the outer log.",
+    "UP2 independent H3-origin matrix, standalone live, completeM4, hostedCI/publication/deployment/production acceptance remain separate.",
+    "No assertion/skips/deadlines changed during review; current upstream writer harness work remains excluded."
+  ],
+  "findings": [],
+  "reviewer_runtime": "NOT RUN: no Mix/Nix/live/test/build/format; only reads/hashes/Git objects/receipt serialization",
+  "repair_counters_added": {
+    "sol": 0,
+    "astra": 0
+  },
+  "changes": "Only this unique immutable review receipt; no source/historical evidence changes",
+  "commands_shutdown": "All reviewer commands complete; no reviewer-owned processes",
+  "decisions_needed": []
+}

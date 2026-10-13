@@ -1,0 +1,97 @@
+{
+  "task_id": "/root/m4_dependency_audit:PORTABLE_RELEASE_STATIC_REVIEW",
+  "assignment": "Direct independent static specification/code review; root owns runtime/build/source repairs",
+  "status": "BLOCKED_REVIEW",
+  "verdict": "FAIL_SCOPED_CODE_REVIEW: one actionable deadline/owned-cleanup finding",
+  "created_utc": "2026-10-13 01:50:48 UTC",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_source_sha256": {
+    "docs/designs/release-0.3.0-portable.md": "27e21eae2a0ca5ef55fb5375bcf552f647b25ea44ac096d68d3eaf09dfa40df1",
+    "docs/plans/release-0.3.0-portable.md": "8c85a3fe6ae4400f967d161ab4477787d028b75c10c516bf0968df702ae6ff86",
+    "scripts/h3-release-smoke.py": "b2e89df4787185c306b38884d263804ddc3b931f5bbb2b088918d2df3c1c0caf",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/Dockerfile": "3a02a15315d552e0da8a830a387ef799d6d9a57efb08aa5b76d82d269b8297f6",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/build.py": "54b64617dfc46aa9b7ae37c6986eaeb9202f2da02cfc2d76fe5d720ec715a5ea",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/finalize.py": "7b9bfda805751cba9c9029a413f6c9cb985f328dfe1338c7d652ba71c483f554",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs": "ac8881a12624cac173088d9a75ee8fbe6be9f6b0f58743594e0d4f98aa87df2f",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py": "dc858a0a7a25b9936cea40a6cc3d9e4c3356fae3875b811ba382207d3d551166",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py": "c4e9006f4d2aee12ac070fb4e22cb94172d883ff744eb847d31c2186d53fec42",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/runtime.py": "b5b239631d2a4a20b4934dd362b4e92c19616d2a055dd7fbe744124ed770d9c6"
+  },
+  "findings": [
+    {
+      "id": "PORTABLE-R1",
+      "priority": "P2",
+      "title": "Apply the finite runtime budget to Docker inspection and preserve owned cleanup on outer timeout",
+      "locations": [
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py:18",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py:24",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py:20",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py:48"
+      ],
+      "evidence": "qualify_runtime.py declares a 600s outer budget but calls image inspection outside execute() with no subprocess timeout. run_runtime.py bounds only docker wait; create/start/inspect/log/stop/rm have no timeout. The parent executes this launcher with timeout remaining-10 and subprocess.run kills the launcher on TimeoutExpired rather than invoking its finally block. The parent has no container cleanup fallback; create is also outside the launcher's try block. A stalled inspection can exceed the outer bound, while a stalled Docker command after creation can leave the owned container present or running after the launcher is killed.",
+      "required_change": "Bound every Docker subprocess against an absolute deadline; reserve a finite cleanup budget, record owned container identity before potentially blocking creation, and guarantee coordinator-owned cleanup if the launcher times out. Keep failed qualification/evidence visible and never mark removal/inspection as successful when unobserved.",
+      "validation": "Coordinator should exercise a deterministic Docker-command timeout after container creation and verify finite failure, saved FAIL receipt and cleanup of only the owned container; also verify image-inspection timeout. Reviewer did not execute a mock/runtime."
+    }
+  ],
+  "spec_assessment": {
+    "source_identity": "One commit/archive/lock identity is checked by build, finalizer and runtime; git archive commit identity and archive hash checked before compilation.",
+    "changed_format": "New identity field validates each changed Elixir path against archived regular files and runs explicit check-formatted. Coordinator generator completeness against recorded pre-M4 baseline remains a pending actual-input review.",
+    "compatibility": "All five complete application test directories are passed without exclusions. Per-app summaries require exactly one nonzero test count, zero failures/exclusions/skips; totals reconciled. Strict production compile preserved.",
+    "source_integrity": "Every archived regular-file SHA checked unchanged after tests and three packaged smoke gates.",
+    "versions": "Exactly one packaged .app per five applications must be 0.3.0 in builder/finalizer/runtime; runtime start_erl.data release version checked.",
+    "archive_and_elf": "Fresh extraction directory; whole inventory prevalidated as files/directories, no absolute/escaping paths/links/devices; ownership and mode neutralized. Every extracted ELF inspected by readelf/ldd for missing/Nix linkage with nonzero ELF count.",
+    "offline_runtime": "Immutable image ID and inspected network none; artifact readonly mount; package executable used, no development application beam copy or Mix invocation in runtime.",
+    "packaged_h3": "Exactly three checks: static H3, H1 DATA+duplicate trailers to H3 origin, H3 zero DATA+duplicate trailers to second origin. Real h3 ALPN, verified CA, exact response bytes, independent method/authority/origin/cert identity/bytes/hash/ordered trailers/request completion; final snapshot exactly two requests; finite child shutdown and all known port rebinding.",
+    "hostname_probe": "Copied historical diagnostic is unused by Docker/build/runtime qualification, so lack of wrong-host assertion does not weaken required current gates."
+  },
+  "verification": [
+    {
+      "command": "Read/nl all 10 assigned files and relevant check-tests, credentials, origin FIN source; inspected current baseline/status",
+      "result": "PASS static inspection"
+    },
+    {
+      "command": "Python ast.parse all six assigned Python files without import/execution/pycache",
+      "result": "PASS",
+      "files": [
+        "scripts/h3-release-smoke.py",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/build.py",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/finalize.py",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py",
+        "docs/acceptance/evidence/release-0.3.0/portable/recipe/runtime.py"
+      ]
+    },
+    {
+      "command": "git diff --check -- assigned review paths",
+      "result": "PASS exit0; assigned paths currently untracked, so this is a limited tracked-diff whitespace check"
+    },
+    {
+      "command": "SHA256 inventory of all 10 assigned files",
+      "result": "PASS; hashes recorded"
+    }
+  ],
+  "limitations": [
+    "Static source review only; builder, runtime, tests, archive metadata and publication NOT RUN by reviewer.",
+    "Final candidate commit/source archive/source-identity generator and actual artifacts remain pending; no M4 or release acceptance claim.",
+    "Prior incremental review remains immutable; this current static finding supersedes its scoped clearance only for the reviewed launcher deadline/cleanup."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live": 20,
+    "up2_failed_production": 8,
+    "up2_failed_harness": 3,
+    "astra_recovery": "Two rounds exhausted; no third round; supplied by handoff, not independently recomputed"
+  },
+  "repair_counters_added": {
+    "sol": 0,
+    "astra": 0
+  },
+  "changed_files": "Only this new immutable review receipt",
+  "command_shutdown": "All reviewer commands finished; no reviewer-owned live/build processes",
+  "remaining_risks": [
+    "Deadline and owned-container cleanup finding unresolved; root must repair and obtain fresh review.",
+    "Live artifact acceptance and all final-source gates remain separate."
+  ],
+  "decisions_needed": []
+}

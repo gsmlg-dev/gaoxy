@@ -1,0 +1,75 @@
+{
+  "status": "FAIL_ROUND2_DIAGNOSIS",
+  "recorded_utc": "2026-10-12T18:52:15.068378+00:00",
+  "head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "actual_gate_exit": 1,
+  "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/result.json",
+  "evidence_sha256": {
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/result.json": "b6e431657862a94e81eae3f4b4f026e1e612970ed202e752fe0d0f7374bc548a",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/probe.log": "b5d010a8eb963deebd957e8056db61703ca8cb3daf66acad427e1ca2d2d6a2d9",
+    "docs/acceptance/evidence/m4/upstream-contract/run-1791830942072768771/origin.log": "9a0cd8a1208ff09f024444adb44cfee39ff38b59bee266047d5e2d5d9d002dfd",
+    "docs/acceptance/evidence/m4/upstream-contract/session-round2-review-repair-prelive-freeze-1791830554485255277.json": "7c8b34de59956d1864ae0c97c05dd881e69723fb6a422b99a5eacd5c1a66a612"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/session_probe.exs": "6737c00b9b78254cea75d9b7bfe3727167cee8f84a71af60babe157dea09c2cf",
+    "integration/http3/upstream/run.py": "e0ed6429dfd43f529377c9cb44eb823cc699062c1d7b550a41b14000e2aff530",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "ab50177404e6eb30b4df4e8d1efea574385ec42837250ed294d76f82c966e8d9",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/plans/m4-public-session-consumer-affinity.md": "9301e8f10d6cfb7ce8e0c7454a684f07a43e06fc25d5fa1e159c87c00e7a824c"
+  },
+  "source_unchanged": true,
+  "executed_pass_rows_by_kind": {
+    "boundary_double": 31,
+    "network": 2
+  },
+  "required_manifest": {
+    "network": 17,
+    "policy": 2,
+    "boundary_double": 31,
+    "total": 50
+  },
+  "unexecuted_required_rows": {
+    "network": 15,
+    "policy": 2,
+    "boundary_double": 0
+  },
+  "failure": {
+    "file": "integration/http3/upstream/session_probe.exs",
+    "line": 2287,
+    "assertion": "assert [] == poll(h, true)",
+    "actual": "[:writable]",
+    "context": "native paused-ACK guardian-loss request; no complete Session gate PASS"
+  },
+  "diagnosis_hypothesis": "Paused responseDATA may still return public transport/control events. Inspect exact public Session.poll contract; preserve no new responseDATA/delivery/ACK/replay assertions. This is a potential harness contract error, not an established dependency bug.",
+  "counters": {
+    "direct_session_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra_recovery_before_next_assignment": 0,
+    "astra_recovery_next": 1,
+    "root_g0_parser_sol_repair": 1
+  },
+  "historical_counters": "checkpoint-2026-10-12.json and subsequent receipts preserved; no resets. Prior initial compile0rows and consumer-affinity Sol1 network failure remain unchanged.",
+  "owned_command_shutdown": {
+    "root_exec_session": 27840,
+    "actual_exit": 1,
+    "children": [
+      {
+        "pid": 1894691,
+        "exit": 0
+      },
+      {
+        "pid": 1899493,
+        "exit": 1
+      }
+    ],
+    "origin_ports_rebound": [
+      50431,
+      35103
+    ],
+    "all_commands_finished": true
+  },
+  "next": "Bounded Astra recovery1 allowed by two actual unsuccessful Sol rounds; sole4harnessfile ownership transferred. SDK-backed contract repair, prelive independent Sol review, actual qualification, evidence review and fresh repeat required. UP1 production HOLD_UP0. No routine user approval.",
+  "publication": "NOT RUN: fullM4 condition unmet"
+}

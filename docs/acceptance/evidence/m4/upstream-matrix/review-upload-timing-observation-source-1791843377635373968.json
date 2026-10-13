@@ -1,0 +1,26 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_DIAGNOSTIC_SOURCE_REVIEW",
+  "assignment": "direct read-only independent source review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "patch": "/tmp/gaoxy-up2-upload-timing-observation.patch",
+  "patch_sha256": "e2ae61f98f87084d75db15a61309d8df4035490e32ee6fdf69713673fd13ca4b",
+  "formatted_fixture_sha256": "af2d4b4a2a2762141c486d8cf55c2f15fd480e94586ab01c323073f89171d008",
+  "findings": [],
+  "verified": [
+    "Retains selected tiny-upload guardian restriction and first8/last8 samples plus capped16 upload-size histogram.",
+    "Adds one Process dictionary context per selected guardian, holding only two correlation refs, operation atom, timestamps and scalar poll count; removed on DOWN and reclaimed when observer exits.",
+    "Correlates h3_command/h3_result refs without examining or serializing opaque Session values or arguments.",
+    "Measures command elapsed time, arrival-to-upload-reply, ingress gaps and poll counts using trace monotonic timestamp converted to microseconds; aggregates only count,total,min,max scalars.",
+    "Poll result analysis recognizes public event tuple tags only, retaining no bodies, headers, metadata or Session. Message shapes match public Gaoxy envelope producers/consumers.",
+    "Original fixture mailbox256, assertions, finite deadlines and product behavior remain unchanged; trace flags disabled at stop and dead-PID sends ignored."
+  ],
+  "limits": [
+    "Timing context assumes the existing serial guardian command/upload flow; these metrics are diagnostic observations, not protocol acceptance.",
+    "Tracing can affect scheduling; no runtime correctness or UP2 PASS claimed.",
+    "No runtime/test/format/dependency/module commands run by reviewer."
+  ],
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true
+}

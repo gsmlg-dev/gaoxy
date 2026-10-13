@@ -1,0 +1,47 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 501153, max_cases: 4
+
+
+
+  1) test retained DATA combines within 16 KiB and preserves its exact tail and final ACK (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:722
+     Assertion with == failed
+     code:  assert first == expected_first
+     left:  <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>
+     right: <<0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+              0, 0, 0, 0, 0, 0, 0, 0, 0, 0, ...>>
+     stacktrace:
+       test/http3_session_client_test.exs:743: (test)
+
+................................
+
+  2) test a partial retained DATA batch is delivered immediately through empty events (Gaoxy.Proxy.HTTP3SessionClientTest)
+     apps/gaoxy_proxy/test/http3_session_client_test.exs:781
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       guardian = #PID<0.589.0>
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+     mailbox:
+       pattern: {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+       value:   {:public_operation, #PID<0.592.0>, :reset_send,
+                 [
+                   %{
+                     test_session: #Reference<0.3976553966.2411200514.240103>
+                   },
+                   #Reference<0.3976553966.2411200514.240121>
+                 ]}
+
+       pattern: {:adapter_event, ^guardian, {:chunk, "abcdef", ack}}
+       value:   {:adapter_event, #PID<0.589.0>,
+                 {:chunk, "",
+                  #Reference<0.3976553966.2411200514.240124>}}
+     stacktrace:
+       test/http3_session_client_test.exs:794: (test)
+
+.....................
+Finished in 7.8 seconds (7.8s async, 0.00s sync)
+55 tests, 2 failures

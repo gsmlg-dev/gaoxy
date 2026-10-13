@@ -1,0 +1,111 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "DIAGNOSIS_CONFIRMED_SOURCE_ORDERING_RACE",
+  "assignment": "direct read-only narrow independent H2 lifecycle/tracker diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "49f4d711c5642be6a89639a9631c8d6370e55188d184ecdd5abd96e5866aef11",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "8eec1d81a8dfd77a81116d6ad30107b980bcc4905c67fe03245b705e8e9e89ad",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70",
+    "integration/http3/upstream/peer.py": "f995d9b7844f6fab5cf77b1d3e8a61ab8cb7d7fe88bc5f5e0f33c66886c693a3",
+    "integration/http3/upstream/run.py": "56eb08abc35f8520efc1f63289a03f595368a98ac1d1d6cd88ff044229504cda"
+  },
+  "all_reviewed_hashes_match_failed_execution_before_after": true,
+  "failed_execution": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/repair4-total-deadline-execution-1791847880726117335.json",
+    "sha256": "8687b6a25c7dfd7d4950d475aa70988c5d4496c22707f3f18104143c91bbd9a9",
+    "log_sha256": "c82e27f357fb7882d9576dcb437ff0bbc42522cc9033be4b17ad8ac369f82cc5",
+    "actual_exit": 1
+  },
+  "failed_matrix": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791847880898684510/result.json",
+    "sha256": "347cd024ef20d185ae651b630405e906bdc153955dd316f73d58fcee50349437",
+    "status": "FAIL",
+    "actual_exit": 1,
+    "source_unchanged": true,
+    "executed_checks": 24,
+    "passing_network_rows": 22,
+    "passing_policy_rows": 2,
+    "total_deadline_row": "h1_total_timeout PASS; current failure occurs later in first H2 get row",
+    "target_receipt": {
+      "id": "h2-get",
+      "events": [
+        "ready",
+        "headers",
+        "chunk",
+        "end"
+      ],
+      "errors": [],
+      "client": "Gaoxy.Proxy.HTTP3SessionClient",
+      "owner_down": ":killed",
+      "public_closed": [],
+      "guardian": "#PID<0.981.0>",
+      "guardian_down": ":normal"
+    },
+    "peer_row_complete_elapsed_ms": 140
+  },
+  "causal_trace": [
+    {
+      "location": "integration/http3/upstream/peer.py:395 and :528",
+      "observation": "row_complete control barrier is outside timeout/opened/AsyncExitStack lifetimes. Each peer opened context closes its writer before row_complete validation."
+    },
+    {
+      "location": "integration/http3/upstream/peer.py:251 and :333",
+      "observation": "H2.close closes TLS writer; opened finally awaits peer.close. Successful StreamEnded permits peer.done before endpoint post-FIN work finishes."
+    },
+    {
+      "location": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:1014 and :1105; apps/gaoxy_http/lib/gaoxy/http/connection.ex:352",
+      "observation": "Writer completion replies to response operation; handle_close routes to H2 Connection.close, which kills all still-owned stream workers."
+    },
+    {
+      "location": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:469 and :481",
+      "observation": "Response.finish writes terminal response before Session.consumed and await_cleanup return. Guardian normal DOWN can result from successful consumption or owner-monitor cancellation."
+    },
+    {
+      "location": "integration/http3/upstream/fixture.exs:41 and :51",
+      "observation": "Endpoint completion receipt is sent only after proxy return, disabling trace and trace_delivered barrier. Peer close can kill endpoint in guardian wait or tracker barrier before completed."
+    },
+    {
+      "location": "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex:56; http2/connection.ex:926",
+      "observation": "H2 stream_done is sent only after wrapped endpoint returns and response completion; successful worker discard(false) cannot protect a worker that peer close kills earlier."
+    },
+    {
+      "location": "integration/http3/upstream/run.py:190 and :236",
+      "observation": "baseline polls finite1s admission/cleanup/guardian/session state; it does not wait for result receipts. Strict validator then requires result for every non-downstream_cancel request."
+    }
+  ],
+  "root_cause": "Harness tears down successful downstream connection before endpoint/guardian/tracker completion acceptance, converting a success lifetime into actual owner cancellation. Source ordering and observed owner killed plus normal guardian support this race. Resource baseline readiness is also weaker than receipt readiness.",
+  "limits": [
+    "Execution has no endpoint stack/timestamp trace at kill. Exact interruption point between response finish acknowledgement, guardian join and fixture trace barrier is unknown; no stack-level proof is claimed.",
+    "H2 operations are inline in Connection plus Transport; no separate H2 Operations module exists. H3 Operations is not needed to explain this first H2 failure.",
+    "Normal guardian DOWN and zero retained counters do not establish successful owner return. Actual matrix remains FAIL; successful wire response alone does not satisfy strict receipt acceptance."
+  ],
+  "recommended_bounded_repair": [
+    "Keep real peers open until bounded row completion/resource-and-receipt barrier validates original error/result/guardian assertions. Place the row barrier before opened/AsyncExitStack unwind so success is not followed by early connection cancellation.",
+    "Within existing finite cleanup bound, wait for expected non-cancel result receipts as well as original clean counters/guardian DOWN; preserve deliberate downstream_cancel owner killed category. Do not extend request deadlines, add sleeps to hide race, fabricate returns, remove result assertions or alter production cancellation semantics.",
+    "Include nested interleaved/survivor peers in lifetime ordering; a top-level indentation-only change must account for their own nested context exits.",
+    "Retain failed matrix and cumulative counts; obtain scoped causal regression, fresh verification/review, then full unchanged 66 network plus 2 policy matrix."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 9,
+    "up2_unsuccessful_production_repairs": 4,
+    "next_up2_diagnosis_repair": 5,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-success-peer-close-receipt-race-diagnosis-1791848068916412090.json"
+  ],
+  "commands_finished": true,
+  "verification": "Read-only source/selected frozen logs and JSON; Python standard-library hashing/serialization. No reviewer Mix/runtime/network/source/document mutations. Root reports own commands finished; recorded child peer terminated(-15), fixture/origin exited0.",
+  "acceptance": "Diagnosis only; no UP2/M4/release acceptance."
+}

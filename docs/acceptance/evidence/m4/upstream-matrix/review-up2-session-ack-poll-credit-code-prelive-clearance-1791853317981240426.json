@@ -1,0 +1,134 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PRELIVE_CLEARANCE",
+  "assignment": "direct independent read-only repair10 source/test/evidence review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "39b9f9cf242ce3fbe1bb6ccb06688bf74cb16971e8db415033cfe1fd24619d89",
+    "apps/gaoxy_proxy/test/http3_session_client_test.exs": "ecb54f042a1d7201eae5bffff29423da066711ad6ad2190c68b50b46e00fc2ee",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "17ca098471c2e9e6109118e37a91c5c4a949a99bb4567832089e00d63007695c",
+    "integration/http3/upstream/fixture.exs": "301e9ce28d5d5dbe9055b33ac2cf6ba58426190af4719cbd0f5e01ec92d4e268",
+    "integration/http3/upstream/run.py": "333e4a531238e1da2c07b60d4512aadc666b8e056cb6e0ae69446d97199021d5",
+    "integration/http3/upstream/peer.py": "fabc768cef82b66b4f9dd79b21cf0ada5f43323f1dde43976f67dcf6b8a9afd2",
+    "scripts/external-consumer.sh": "649f6250641b09dcd0773cdd9ca57f9b7fc46f1068130072f0fed08c74435b36",
+    "integration/core_consumer/mix.exs": "92879d8bafe8f58a84830701d0bc94b6932a0950aa909f10213b8c5c0457ae56",
+    "integration/core_consumer/test/consumer_test.exs": "b92248f407496fbcb8648356db279cc11963e82064bdfc3c92f1292b18dd35fa",
+    "integration/core_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "docs/designs/m4-up2-session-ack-poll-credit.md": "9e418cfe0ec32253b56e037a0c44f03bebfab2da1bd333d33cb326895ade9300",
+    "docs/plans/m4-up2-session-ack-poll-credit.md": "d8744a41ec6703cd86ea18498a3c833dccc0b5d9389c667c925a38b376abd69f"
+  },
+  "spec_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-session-ack-poll-credit-spec-addendum-1791853049639586602.json",
+    "sha256": "713e1aed94690ac3cc1703d2c6659abf5dbf81995691944545766911e94704ec"
+  },
+  "findings": [],
+  "review_conclusions": [
+    "Actual repair10 production change is one client file: actual-reference matchingACK clears delivery/poll_due while retaining queuedtimer cancellation logic; stale/duplicate/nil ACK returnexact handle.",
+    "Streaming public poll fifthargument captures exact deliveryref in local Gaoxyaction{:poll,ref}. Existing operation/pending/continuation/resume passes whole action unchanged; no SDKstate/process/queue change. Result progress or released capturedactualref yieldsdueNOW; capturednil or stillheldref retains5ms. Operation-in-flight/generation/ref/deadline/cleanup guards unchanged.",
+    "Deterministic tests strengthen both prior pending/queuedtickACK cases with controlled futuredue; stale/duplicate and nil ACKexactnoop. Controlled actualstate from real testcaller/guardian proves pausedoptions/action, result-beforeACK backoff then immediate unpausedpoll, ACK-beforeunknown captures action/identity through publicresume[session], lateremptyresult schedules unpausedcapturednilpoll, and subsequent writable-onlyresult returnsbackoff/nooperation. Existing assertions and lifecycle cleanup preserved.",
+    "First RED53/4 preserves3 meaningful assertionfailures and1 genuine fixture setup failure awaitingpoll behind earlyfinal reset; not all four meaningful TDD failures. RevisedRED corrects reset_send barrier/publicresume arguments before run and records53/4 genuine assertions. Identical revised testbytes produceGREEN53/0.",
+    "Fresh format22files and strictcompile actualexit0; scopedcore23/0 HTTP120/0 H345/0 proxy116/0 total304. GREEN/prelive each288inputs before=after=current/loghashverified.",
+    "Prior clean locked core-onlyconsumer1/0 reused with explicit source proof: all prior288inputs unchanged excepttwo proxy implementation/testfiles, which isolatedscript nevercopies; externalconsumer script/template hashes remain current. This is retained prior isolation evidence, not a newly executed coreconsumer run.",
+    "Repair9 selectedprofile/byte/window/deadline/manifests/FIN/completion/cleanup/sibling oracles remain current unchanged. No fullrepair10matrix or runtime resolution accepted by preparation review."
+  ],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/session-ack-poll-credit-red-1791852990321992510.json",
+      "sha256": "7619a645a750533c379a75fef5b446ba1cb4bd9e63040aaf457f1ac434f7f236",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "log_sha256": "205d66b952b26debb073e5426d52ab1f284e4bc5579c0d0521376045075d433b",
+      "counts": [
+        "53 tests, 4 failures"
+      ],
+      "before_after_equal": true,
+      "current_mismatches": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/session-ack-poll-credit-revised-red-1791853118439819274.json",
+      "sha256": "dc3cd5a7d1143e1a47586d5902182f4bb1dd816f2037e15782f909b134472944",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "log_sha256": "70225f396ee720f01685e46f05dc84d4bb07b670e8c696bc9b64a5220df686e5",
+      "counts": [
+        "53 tests, 4 failures"
+      ],
+      "before_after_equal": true,
+      "current_mismatches": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex"
+      ]
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/session-ack-poll-credit-green-1791853178471849773.json",
+      "sha256": "c55558148db2099d56896c626021ee8905783bcd2adbbd25d7d4529654143b63",
+      "status": "PASS",
+      "actual_exit": 0,
+      "log_sha256": "89ed38aadeee1ef87d532df5685b1ae051105742377b1b9cd9f427ff66ece0eb",
+      "counts": [
+        "53 tests, 0 failures"
+      ],
+      "before_after_equal": true,
+      "current_mismatches": []
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/session-ack-poll-credit-prelive-1791853206371557392.json",
+      "sha256": "542e7072182a95b25e6aa19d9a74198ab38e4e2470185a136e6aab38a7c425b9",
+      "status": "PASS",
+      "actual_exit": 0,
+      "log_sha256": "bb01e6307308848c3b81441e2d53c3d710dd5096046623e020cf7cdc961978a5",
+      "counts": [
+        "23 tests, 0 failures",
+        "120 tests, 0 failures",
+        "45 tests, 0 failures",
+        "116 tests, 0 failures"
+      ],
+      "before_after_equal": true,
+      "current_mismatches": []
+    }
+  ],
+  "core_isolation": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-host-poll-profile-core-consumer-1791852358701235544.json",
+    "sha256": "45d7cdade4dd9b67d60bd2460420b67b9de9c2be19ef0cb884d2635631ba470f",
+    "tests": 1,
+    "failures": 0,
+    "actual_exit": 0,
+    "log_sha256": "66122eef0b4ea0ab4389714c15171fe94ded045bc805043fde59acbb879bb851",
+    "log_verified": true,
+    "reused_prior_run": true,
+    "only_source_map_differences": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs"
+    ],
+    "script_and_template_current_sha256": {
+      "scripts/external-consumer.sh": "649f6250641b09dcd0773cdd9ca57f9b7fc46f1068130072f0fed08c74435b36",
+      "integration/core_consumer/mix.exs": "92879d8bafe8f58a84830701d0bc94b6932a0950aa909f10213b8c5c0457ae56",
+      "integration/core_consumer/test/consumer_test.exs": "b92248f407496fbcb8648356db279cc11963e82064bdfc3c92f1292b18dd35fa",
+      "integration/core_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
+    },
+    "scope_isolated_core_copy_unchanged": true
+  },
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 18,
+    "up2_unsuccessful_production_repairs": 6,
+    "up2_unsuccessful_harness_repairs": 3,
+    "current_up2_repair": 10,
+    "reviewer_repair_rounds": 0,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-session-ack-poll-credit-code-prelive-clearance-1791853317981240426.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only scoped source/test/docs/diff/fullreceipt/log/hash checks and immutable serialization. No source/test/doc edits, Mix/tests/live/network execution, commits or delegation. Parent reported all owned runtime sessions finished; reviewer owns no runtimeprocesses.",
+  "clearance": "Repair10 CODE/prelive preparation cleared for parent-owned entire66+2 matrix at repair10/failed18 with frozen reviewedsource. Full UP2/M4/release remains pending actualcompletePASS/evidence review/freshentire repeat and final prescribedgates. No thirdAstra."
+}

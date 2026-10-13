@@ -1,0 +1,123 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "DIAGNOSIS_LOCAL_DEADLINE_NOTIFICATION_RACE",
+  "assignment": "direct read-only bounded source and actual-evidence diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "5ec0e472aa7ca594af86cd2c3b444a3ede98abd434e6f9a4781f11b2fdafe37a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "a79d24e1713728b50ddc10f463a742d206917916d4ecffdaf46042deb226dd0f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "3693357f8b2c85557f4ffcb45f17fffda3a0dac47f131260bf5f0dacf2bb4bf6",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70",
+    "integration/http3/upstream/run.py": "56eb08abc35f8520efc1f63289a03f595368a98ac1d1d6cd88ff044229504cda",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "5fe74f93ff4d01195b519d0c781284a560179be6829d8ec41bcc28fcffbbe050",
+    "apps/gaoxy/lib/gaoxy/lifecycle.ex": "2fc9c20f820cb8049bb950698cd6a5206c511b15e65b4228351e3699d08c0f82"
+  },
+  "matrix": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791846819392530106/result.json",
+    "sha256": "4ead150ea9e42681e3197c81517b5752a64de46b44f2f3aca2c5e17fb66e7d98",
+    "status": "FAIL",
+    "error": "AssertionError({'id': 'h1-total_timeout', 'events': ['ready', 'headers', 'chunk'], 'result': {'reason': ':timeout', 'outcome': 'error'}, 'errors': [], 'client': 'Gaoxy.Proxy.HTTP3SessionClient', 'owner_down': '{:shutdown, :local_closed}', 'public_closed': [], 'guardian': '#PID<0.836.0>', 'elapsed_ms': 1501, 'guardian_down': ':normal'})",
+    "network_rows_passed": 18,
+    "policy_rows_passed": 2,
+    "authored_source_stable": true,
+    "target_receipt": {
+      "id": "h1-total_timeout",
+      "events": [
+        "ready",
+        "headers",
+        "chunk"
+      ],
+      "result": {
+        "reason": ":timeout",
+        "outcome": "error"
+      },
+      "errors": [],
+      "client": "Gaoxy.Proxy.HTTP3SessionClient",
+      "owner_down": "{:shutdown, :local_closed}",
+      "public_closed": [],
+      "guardian": "#PID<0.836.0>",
+      "elapsed_ms": 1501,
+      "guardian_down": ":normal"
+    },
+    "children": [
+      {
+        "pid": 4059422,
+        "exit": -15,
+        "forced_shutdown": true
+      },
+      {
+        "pid": 4028349,
+        "exit": 0,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 4023948,
+        "exit": 0,
+        "forced_shutdown": false
+      }
+    ],
+    "limits": "Full68rowgate incomplete; forced peer shutdown remains failure."
+  },
+  "root_cause": "Owner HTTP.progress remaining<=0 calls fail(:timeout), sends Session.cancel cast before guardian total expiry notification. Session.handle_cast cancel marks cancelled/consumed; handle_info total_expired cancelled clause settles without notification. Thus owner timeout returned1501ms and normal guardian cleanup but no required request_timeout notification received.",
+  "authority_contract": [
+    "Guardian existing total timer maps HTTP3SessionClient to :request_timeout and all other current clients to :timeout.",
+    "Owner remaining is min originaltotal and idlebudget; idle-only expiration must not synthesize total expiry.",
+    "Matrix fixture traces original guardian error messages received by owner; local returned reason alone cannot satisfy required errors exactly[:request_timeout].",
+    "Total requestD still expires1500ms; original cleanupheadroom1000ms and acceptanceupperbound2500ms permit only bounded termination notification/cleanup observation afterD, no additional requestI/O/successbudget."
+  ],
+  "alternatives": [
+    {
+      "approach": "Rename all owner timeout reasons to request_timeout",
+      "verdict": "REJECT",
+      "reason": "Changes defaultH1/idle/opening classes and still loses actual guardian notification."
+    },
+    {
+      "approach": "Send ordinary cancel then await timer or sleep",
+      "verdict": "REJECT",
+      "reason": "cancelled timer clause suppresses error; arbitrary waits cannot restore ordered authority."
+    },
+    {
+      "approach": "Raise timeouts or accept empty error receipt",
+      "verdict": "REJECT",
+      "reason": "Weakens original contract/deadlines."
+    },
+    {
+      "approach": "Guardian-authoritative expiry request plus bounded terminal notification wait",
+      "verdict": "RECOMMENDED",
+      "reason": "Small local seam retains original event shape/classification, permits deterministic ordering and atmostoneerror without extendingI/O."
+    },
+    {
+      "approach": "Synchronous bounded guardian expiry acknowledgment",
+      "verdict": "VIABLE_WITH_CONSTRAINTS",
+      "reason": "Reply must precede any blockingcleanup, only authenticatedownerrequest/actualexpiry, notification orderedbeforeack and subsequently received; finite control budget from existingheadroom, not new requestD. Simpler asyncrequest+selectiveterminalwait may avoid duplicate reply/event protocol."
+    }
+  ],
+  "recommended_contract": [
+    "When actualtotalD expired, send one guardianexpiry operation instead of ordinarycancel, guard guardianownD/client and alreadycancelled/consumed state; notify existing terminalerror once before initiatingcleanup.",
+    "Owner selectively receives matchingguardianerror/DOWN only under originalD+existingheadroom bound. Never resume normalpump success/head/chunk/uploadI/O afterexpiry. No extra queued success dispatch or error duplication.",
+    "Idle-only expiration keeps existing timeout/cancel. Alreadydeliveredguardianerror follows existingfail path directly; do not route it recursively through expiryrequest (defaultH1guardianreason timeout would otherwise re-enter and deadlock).",
+    "Account ownerlocaltimeout paths beyond progress (Exchange/read/write timeout) where originaltotal hasexpired; scope explicitly or deterministictests establish classifier; preserve upstream/reset/opening errors.",
+    "Duplicate expiry/timer/cancel messages are idempotent; previous consumed success/cancellation/upstreamfailure cannot emit anothererror. Dead/unresponsiveguardian yields bounded failure, never invented success/errorreceipt."
+  ],
+  "required_regressions": [
+    "Deterministic ownerexpiry-beforeguardian timer and guardianerror-beforeowner expiry order; require exactlyone originalnotification with H3request_timeout and defaultH1timeout.",
+    "Idle-onlytimeout retains timeout; earlyexpiryrequest cannot forcefailure/extendD; alreadycancelled/consumed/errorreported remainidempotent; stale/wrongowner operation rejected.",
+    "Realnetwork held200/prefix totaltimeout keeps noFIN/original1400..2500ms/origin cancellation/guardiancleanup/sibling assertions; existing originalmatrixerrors assertion unchanged."
+  ],
+  "counters": {
+    "up2_unsuccessful_live_executions": 8,
+    "up2_unsuccessful_production_repairs": 3,
+    "up0_sol": 2,
+    "up0_astra": 2,
+    "up0_coordinator": 5,
+    "astra_exhausted": true
+  },
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "changed_files": "One unique diagnostic receipt only; no source/test/runtime/Mix/network/format/dependency changes.",
+  "limits": [
+    "Recommended seam is source-supported local correction design assessment, not implementation approval/runtimePASS.",
+    "No fullUP2/M4/publication/deployment/productionacceptance."
+  ]
+}

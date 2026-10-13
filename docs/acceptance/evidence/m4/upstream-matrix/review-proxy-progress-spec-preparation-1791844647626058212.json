@@ -1,0 +1,51 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPECIFICATION_PREPARATION",
+  "assignment": "direct read-only independent specification review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-proxy-progress.md": "ae285b93bbd953c654bc3604497248fc217a2c13f75450823d1421e0b6f24cb6",
+    "docs/plans/m4-proxy-progress.md": "0761aa8946005a22747833ee31695e0189396398e64fb3f995decc56e324b12e"
+  },
+  "diagnostic_review_receipt": "docs/acceptance/evidence/m4/upstream-matrix/review-diagnostic4-receive-capacity-1791844613458552477.json",
+  "findings_resolved": [
+    "Replaced inaccurate reply-to-next-read dominance with ingress gaps/socket framing waits; diagnostic3 owner reply_to_read total1766us, while ingress gaps total4477041us."
+  ],
+  "approved_scope": [
+    "Two-line native H1 recbuf/buffer capacity uses already validated max_buffer_bytes; keeps max_read_chunk/read credit/parser/admission bounds unchanged.",
+    "Proxy response phase uses closure-aware poll0 and bounded selective mailbox wait, awakened by upper events/guardian DOWN/drain. Pending/more must enter bounded wait rather than immediate busy recursion. Upload reads retain current finite wait and write synchronization.",
+    "H3 poll0 performs non-mutating live-owner/exact table-owner/key-token/current-worker/idle-slot/original-deadline fencing before returning pending, preserving zero-wait no-submission contract.",
+    "Remove fixture receive-capacity behavior flag before acceptance. Keep diagnostic failures immutable and bounded scalar observations.",
+    "Preserve original absolute total/idle/deadline minima, five-second peer deadline, 1MiB payload, exact hashes/duplicate trailers/FIN/error codes/sibling and cleanup assertions;66network+2policy required."
+  ],
+  "code_review_requirements": [
+    "Expired exchange/original slot deadlines preserve :timeout; missing/stale/wrong-owner/wrong-worker/terminal slots yield :closed. No dependency-private inspection or operation submission for H3 poll0.",
+    "Mailbox wait capped by both remaining total/idle budget and existing5ms poll quantum; incoming drain may only shorten deadline.",
+    "Native TLS regression must exercise real1MiB chunked ingress, exact bytes/hash and original five-second bound; retain disconnect/early-response/pipelining/lifecycle tests.",
+    "Separate framed endpoint-error outcome propagation only after actual focused reproduction; do not infer error-row behavior from early tiny-upload failures."
+  ],
+  "regression_targets": [
+    "apps/gaoxy_http/test/http_network_test.exs",
+    "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+    "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+    "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+    "apps/gaoxy_http3/test/transport_test.exs",
+    "apps/gaoxy_http/test/http2_network_test.exs",
+    "integration/http3/upstream/peer.py unchanged original matrix assertions"
+  ],
+  "timeout_assessment": "Current fixture service request_timeout5000 and normal proxy max_lifetime5000; total route max_lifetime1500 is a deliberate narrower minimum. Peer5000 starts before request setup. Do not restart or extend any deadline to resolve progress.",
+  "limits": [
+    "Preparation review only; production patch and tests need subsequent CODE review and executed gates.",
+    "Diagnostic4 remained FAIL6network+2policy; no UP2/M4/release/deployment acceptance.",
+    "No source edits/runtime/tests/Mix/format by reviewer."
+  ],
+  "current_counters": {
+    "up2_live_repairs": 0,
+    "up2_unsuccessful_executions": 5,
+    "astra_recoveries": 2,
+    "astra_exhausted": true
+  },
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true
+}

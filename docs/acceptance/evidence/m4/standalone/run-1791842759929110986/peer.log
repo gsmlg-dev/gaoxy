@@ -1,0 +1,33 @@
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_static_and_legacy_h1", "result": "PASS", "protocols": ["h3", "HTTP/1.1"]}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_proxy_progressive_upload", "result": "PASS", "bytes": 73728, "before_fin_bytes": 17}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_origin_progressive_upload", "result": "PASS", "bytes": 73728, "before_fin_bytes": 17, "receipt": {"origin": "a", "connection": 0, "stream": 0, "path": "/echo-standalone-upload", "method": "POST", "authority": "localhost:36002", "id": null, "certificate_sha256": "9a2fcd70bb92540967ebd1b3fd8a0a4dba11059be996a2cc032be5089cb5d838", "trailer_blocks": 1, "headers": [[":method", "POST"], [":scheme", "https"], [":authority", "localhost:36002"], [":path", "/echo-standalone-upload"], ["trailer", "x-upload"], ["x-forwarded-for", "127.0.0.1"], ["x-forwarded-host", "localhost"], ["x-forwarded-proto", "https"]], "trailers": [["x-upload", "one"], ["x-upload", "two"]], "data_bytes": 73728, "data_sha256": "644e4a8d52cac95a52d688b6a6142204157aa7cfcb457f7156aa446dd4302f28", "request_fin": true, "fin_count": 1, "data_events": 68, "response_fin": false}, "response_trailers": ["one", "two"]}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "snapshot"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_origin_zero_data_trailers", "result": "PASS", "bytes": 0, "before_fin_bytes": 0, "receipt": {"origin": "b", "connection": 1, "stream": 0, "path": "/echo-standalone-zero", "method": "POST", "authority": "localhost:45083", "id": null, "certificate_sha256": "dbd1399af7bb440de22dd29e73d7eedaa568005b3d782ab91a41db91fb398f6d", "trailer_blocks": 1, "headers": [[":method", "POST"], [":scheme", "https"], [":authority", "localhost:45083"], [":path", "/echo-standalone-zero"], ["trailer", "x-upload"], ["x-forwarded-for", "127.0.0.1"], ["x-forwarded-host", "localhost"], ["x-forwarded-proto", "https"]], "trailers": [["x-upload", "one"], ["x-upload", "two"]], "data_bytes": 0, "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "request_fin": true, "fin_count": 1, "data_events": 0, "response_fin": false}, "response_trailers": ["one", "two"]}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_proxy_failure_isolates_h3_and_h1_siblings", "result": "PASS", "status": 400, "upstream_requests": 0}
+GAOXY_STANDALONE_PEER {"event": "barrier", "command": "reload"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_reload_keeps_listener_and_inflight_generation", "result": "PASS", "old_bytes": 57359, "before_origin_fin_bytes": 15, "new_body": "new", "response_trailers": ["first", "second"]}
+GAOXY_STANDALONE_PEER {"event": "origin_control", "command": "finish_ordinary"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_h3_origin_inflight_generation", "result": "PASS", "old_bytes": 17, "before_origin_fin_bytes": 9, "new_body": "new", "response_trailers": ["one", "two"]}
+GAOXY_STANDALONE_PEER {"event": "barrier", "command": "invalid-reload"}
+GAOXY_STANDALONE_PEER {"event": "check", "name": "standalone_invalid_reload_preserves_current_generation", "result": "PASS", "body": "new"}

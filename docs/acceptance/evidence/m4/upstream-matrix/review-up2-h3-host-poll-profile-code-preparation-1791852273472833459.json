@@ -1,0 +1,64 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PREPARATION_EVIDENCE_PENDING",
+  "assignment": "direct independent read-only repair9 source and test review; recorded GREEN and required scoped checks pending addendum",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-h3-host-poll-profile.md": "d562759f90f5a4962f94ddd95a0e48bdb28c33079ba873561147c4a3573458fe",
+    "docs/plans/m4-up2-h3-host-poll-profile.md": "87d12f80f7d7ec6c89cea707866385b08cb993bf0be49a1737f2d74f873a54d8",
+    "apps/gaoxy/lib/gaoxy/config.ex": "3054657e55350afeb23f0690a4c3d6d0d3df352e564184ce5579cb6f30583cde",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy_http3/test/host_poll_profile_test.exs": "a8470db666512bca27b9decc0beec2717cf82fd910ef5601b61876832faf3e4c",
+    "integration/http3/upstream/fixture.exs": "301e9ce28d5d5dbe9055b33ac2cf6ba58426190af4719cbd0f5e01ec92d4e268",
+    "integration/http3/upstream/run.py": "333e4a531238e1da2c07b60d4512aadc666b8e056cb6e0ae69446d97199021d5",
+    "integration/http3/upstream/README.md": "cedfa8663bc4e15dc1987c936e27a5a55cb6ec61a50c389d0b614e56e1d73b80",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "00c1832ee7a946c90d42aa82b8abffe7424062a9e078b84884837a9dfb1dcd18",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "17ca098471c2e9e6109118e37a91c5c4a949a99bb4567832089e00d63007695c",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "deps/abyss/lib/abyss/quic.ex": "440cb155d37d6f374cee704b8cc5c35a09dbb0759366116c8220d4cde3f3c9e2",
+    "deps/abyss/lib/abyss/quic/handler.ex": "a0e1bc27356c3144db0b3651a524d9712b30a5890a3383be78d7bf78e0b762ed",
+    "deps/abyss/lib/abyss/quic/service.ex": "ecd853982f39301c88fd174d81978deeca28c21e6800797647fbd30b268d8b42"
+  },
+  "findings": [],
+  "review_conclusions": [
+    "Config accepts only alpn/poll_interval for QUIC, validates integer1..1000 before allocation, returns exact invalid_quic_poll_interval, and Map.put_new normalizes only omission to10 after successful validation. Invalid explicitnil is rejected. Existing nonQUIC empty-map guards unchanged; completed QUIC normalization is idempotent.",
+    "Service forwards normalized spec.quic.poll_interval to the public Abyss.QUIC.start_link option; no host private message/state or dependency modification. Operations and H3 Options/Transport/Connection hashes match SPEC identity.",
+    "Five meaningful authored tests cover omitted/default10, accepted1/10/1000, invalid types/ranges, strict unknown keys, completed-spec idempotence and no second endpoint init, preallocation start_link validation, real default10/selected1 public host startup/local/status/stop/normalDOWN/immediateUDP rebind. Original5s lifecycle deadline preserved.",
+    "Public startup tracing matches only Abyss.QUIC.start_link/1 and extracts the finite polling integer before asserting. Raw TLS arguments remain transient; they are not logged, inspected, returned or persisted. Trace patterns are removed in after. Lifecycle test is synchronous and coordinator owns serialized execution.",
+    "Only two fixture H3 specs select1 through normal HTTP3.service_spec and full public Config.service revalidation. Actual normalized QUIC maps are emitted; runner requires exactlyh3/h3_sibling and exactALPNh3/poll1 before rows. H2 selected profile unchanged.",
+    "Runner source capture explicitly adds public Abyss QUIC/Handler/Service. Existing66+2, completion barriers, tiny-window/body/hash/FIN/duplicate/trailer/error/cancellation/sibling/cleanup assertions and original deadlines remain. README distinguishes selected1ms qualification from default10 throughput.",
+    "Actual RED5/5 records missing normalization/unknown-option failures against original code with current unchanged test bytes. It is meaningful expected TDD evidence; not a live repair failure. Passing GREEN/scoped gates/core-only isolation not yet reviewed."
+  ],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/h3-host-poll-profile-red-1791851917643995723.json",
+      "sha256": "867050c3a42b1f51888f1ddbd2eb7e80d6235c0832622e49cf06a3b178d7428a",
+      "status": "FAIL",
+      "actual_exit": 2,
+      "tests": 5,
+      "failures": 5,
+      "disposition": "EXPECTED_TDD_RED",
+      "log_sha256": "a7bf73808b0c0a0f269e2412c7ee58c85edd30db91bba7133871ccbfef43f207",
+      "current_test_hash_matches": true,
+      "source_before_after_equal": true
+    }
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 17,
+    "up2_unsuccessful_production_repairs": 5,
+    "up2_unsuccessful_harness_repairs": 3,
+    "current_up2_repair": 9,
+    "reviewer_repair_rounds": 0,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-h3-host-poll-profile-code-preparation-1791852273472833459.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only exact scoped git diff/source/docs/receipt/log checks and standard-library AST/hash/immutable serialization. No Mix/tests/live/network, source edits, commits or delegation.",
+  "clearance": "Static CODE preparation has no actionable finding. Live clearance WITHHELD until independent review addendum verifies actual GREEN, required affected scoped gates and core-only consumer isolation against current frozen candidate. Full UP2/M4/release remain pending."
+}

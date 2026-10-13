@@ -9,9 +9,11 @@
 public Session/endpoint lifecycle, completing the existing remaining M4 rows.
 
 **Architecture:** use [the bounded Session design](../designs/m4-public-session-upstream.md).
-The existing HTTP guardian schedules one public operation task and retains a
-dedicated endpoint cleanup token; endpoint stop runs independently when needed.
-H1 remains the default. Fetch diagnostics remain historical/diagnostic evidence.
+The [consumer-affinity amendment](m4-public-session-consumer-affinity.md) uses
+one stable request-lived caller for public Session operations. The existing HTTP
+guardian schedules one operation at a time and retains a dedicated endpoint
+cleanup token; endpoint stop runs independently when needed. H1 remains the
+default. Fetch diagnostics remain historical/diagnostic evidence.
 
 **Tech stack:** existing Elixir/OTP umbrella and exact 0.21.4 HTTP/QUIC cohort,
 locked Nix development environment, aioquic independent peers, existing native
@@ -22,6 +24,53 @@ This plan replaces the Fetch-specific UP0/UP1 mechanism in
 remain required. Baseline `ed6ac187f052063fe2c0695c1343cb2980214b62` has concurrent
 coordinator dependency and peer harness changes. Preserve them and immutable
 receipts. Recheck current source/lock identity before each gate.
+
+## Current execution and evidence — 2026-10-13
+
+- [x] Qualify consumer-affinity public Session:50 checks (31 doubles,17 network,
+  2 policy), independent review, fresh repeat and final source-bound execution.
+- [x] Implement selected client/guardian UP1 and resolve independent SPEC/CODE
+  findings; reviewed fresh150/0 and final530/0 scoped compatibility pass.
+- [x] Qualify standalone H3-origin configuration/runtime with independent review,
+  fresh16-check repeat and final16-check execution.
+- [x] Complete UP2 first68/68 and required fresh68/68, both independently reviewed.
+- [x] Run final affected source/strict-Phoenix/G1/G2/G3/Session/standalone/
+  clean-consumer checks; all actual exits0. Reuse reviewed G0 only after unchanged
+  host-input verification.
+- [x] Complete final independent specification/code/evidence/documentation
+  acceptance review, resolving findings before candidate commit/publication.
+
+**Current execution, 2026-10-13:** All prescribed M4 implementation checks
+PASS on the final repair12 source: **530 tests/0 failures**, strict umbrella and
+explicit Phoenix H3 compilation, Session **50 checks** (17 network + 2 policy +
+31 boundary doubles), G1/G2/G3 **47/59/19**, standalone **16**, and clean
+core/H1-H2/H3 consumers **1/2/2 tests, 0 failures**. G0's reviewed **4 tests +
+9 peer rows** are reused with independently checked unchanged host inputs.
+UP2 completes **66 network + 2 policy** checks in both the first execution and
+required fresh repeat, with independent evidence reviews.
+[The final gate ledger](../acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds each result to its command, source hashes, counts, exits and review.
+
+All six local source versions are0.3.0; fresh candidate530/0,34-file formatting
+and strict umbrella/Phoenix/production compilation PASS as linked in the ledger.
+Final independent M4 acceptance/documentation review PASS, with no unresolved findings. Portable
+build, packaged runtime qualification and publication are **NOT RUN**.
+The selected tiny-window profile uses public H3 host polling1ms and finite H2
+control2048/s; defaults10ms/256controls/s are unchanged. H3 tiny-window completion
+was4985ms first/4567ms fresh within the original5s bound; no throughput margin or
+default10ms workload claim follows.
+
+Unsuccessful UP2 counters remain **20 live/8 production/3 harness**. All earlier
+FAILs and historical19/7/3,18/6/3,17/5/3 checkpoints remain in the acceptance
+history; the new PASS runs do not change failed-run causal uncertainty.
+[The dependency audit](../acceptance/evidence/m4/upstream-contract/latest-http-fetch-main-update-audit-1791855535947755021.json)
+retains published/installed0.21.4 and needed public8KiB fragmentation with a16KiB
+application ceiling; #105 is closed in main, but no containing fix is installed.
+The next prepared package is existing
+[M3 Task4 H1 resource foundation](m3-h1-resource-foundation.md) and its
+[design](../designs/m3-h1-resource-foundation.md): design/plan only, implementation
+**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) remains conditional on final
+acceptance and separate artifact qualification. Operational restrictions remain.
 
 ## Ownership and ordering
 
@@ -41,15 +90,15 @@ must not concurrently edit the shared runner/origin.
 
 ## Task 1 — independently review and freeze the selected contract
 
-- [ ] Reviewer reads the design, installed Session/Transport public APIs and
+- [x] Reviewer reads the design, installed Session/Transport public APIs and
   existing guardian/Service cleanup contract. Check all advanced return shapes,
   adoption ownership, borrowed-endpoint teardown, stale-task handling, queue
   bounds, early-response continuation behavior and absolute deadlines.
-- [ ] Resolve concrete findings in the design before client implementation.
+- [x] Resolve concrete findings in the design before client implementation.
   Coordinator updates current selected-design links without rewriting historical
   blocked receipts. Record reviewer identity, exact source/design hashes and
   PASS/FAIL/NOT RUN distinctions. Architecture review is not UP0 runtime PASS.
-- [ ] Confirm Fetch diagnostic owner has finished and released the Mix/live
+- [x] Confirm Fetch diagnostic owner has finished and released the Mix/live
   lease and four harness files. Record current cohort/lock and received counters.
 
 ## Task 2 — direct Session qualification (UP0-Session)
@@ -58,47 +107,47 @@ Add runner choice `--gate session-contract`; keep `--gate contract` as the
 existing Fetch diagnostic with its honest unsupported cleanup result. The new
 probe uses only public Session and Transport calls and known fixture ports.
 
-- [ ] Add a red assertion first: the selected direct Session gate does not yet
+- [x] Add a red assertion first: the selected direct Session gate does not yet
   exist and cannot report PASS from the Fetch export audit or diagnostic rows.
-- [ ] Implement public bootstrap/adoption and retained descriptor flow exactly
+- [x] Implement public bootstrap/adoption and retained descriptor flow exactly
   as the design. Record every public result, monitor reason, request ref, known
   bind address/port and operation deadline. Never query `:sys.get_state`, private
   socket/process handles or a Fetch Session. Use explicit fresh loopback bind
   ports for local endpoint rebind receipts; catch real occupied-port failure.
-- [ ] Create the endpoint with public `acceptor: guardian_pid`. Prove the
+- [x] Create the endpoint with public `acceptor: guardian_pid`. Prove the
   adopted endpoint remains alive and usable after its creator's normal DOWN,
   before connecting; links alone do not transfer the monitored acceptor role.
-- [ ] Execute zero/three DATA bytes × absent/valid Trailer declaration, with
+- [x] Execute zero/three DATA bytes × absent/valid Trailer declaration, with
   `[{"x-check", "one"}, {"x-check", "two"}]` exactly in one terminal trailing
   HEADERS block. Assert one request, exact DATA hash/length and one FIN; record
   local admission result separately. Verify repeated response trailers too.
-- [ ] Execute progressive upload/download barriers and a 1 MiB tiny-window row;
+- [x] Execute progressive upload/download barriers and a 1 MiB tiny-window row;
   pause origin receive credit/owned UDP transport after request HEADERS. Assert
   a public definite blocked/finite pending result, no replay and exact origin
   request/DATA counts. Resume peer IO after cancelling to observe its terminal
   cancellation. A scheduling delay alone is not blocked-write proof.
-- [ ] Execute two distinct certified fixed authorities, authentication rejection
+- [x] Execute two distinct certified fixed authorities, authentication rejection
   for wrong CA and hostname, exact absent-trust rejection, and pre-allocation
   Gaoxy-policy rejection of address pinning. The latter is a policy row, not a
   claim that raw public Transport rejects the Fetch option. Every rejected
   request leaves independent origin request counts unchanged.
-- [ ] Execute normal close plus cancellation before response headers, during
+- [x] Execute normal close plus cancellation before response headers, during
   blocked upload, with one unacknowledged response and after downstream owner
   loss. For each, separately record Session close/abort outcome, explicit public
   endpoint-stop outcome, normal endpoint DOWN, all owned task DOWNs, peer result,
   and same-address/port UDP rebind. Interleave a sibling request on its separate
   endpoint and prove it survives each teardown.
-- [ ] Add deterministic tests/double-driven probe subcases for unknown connect,
+- [x] Add deterministic tests/double-driven probe subcases for unknown connect,
   unknown DATA/trailers, advanced error state, bootstrap-before/after-adoption
   cancellation and stop error/abnormal DOWN. Unknown is reconciled by ref only;
   no second send/request is allowed. Label doubles separately from network rows.
-- [ ] Run the newly implemented gate under the exclusive lease:
+- [x] Run the newly implemented gate under the exclusive lease:
 
   ```sh
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python integration/http3/upstream/run.py --gate session-contract --evidence docs/acceptance/evidence/m4/upstream-contract
   ```
 
-- [ ] Independent Sol source/evidence review, then fresh repeat from frozen
+- [x] Independent Sol source/evidence review, then fresh repeat from frozen
   hashes. Exit 0 requires all executed required Session rows and child cleanup;
   exit 1 is failure; exit 2 is an actual public/environment block. Keep evidence
   in new run directories, never overwrite Fetch or 0.21.3 history.
@@ -126,8 +175,8 @@ only at their existing boundary. No wholesale H1 adapter refactor.
   Assert endpoint-stop invocation and token completion/retention, not just an
   error tuple. A `cleanup_pending`/abnormal DOWN case must retain its reservation.
 - [x] Implement the design's explicit map/upload token shape and phase machine
-  in `HTTP3SessionClient`. Define task runner helpers in that same module; one
-  operation task and one exceptional stop task are sufficient. Every result is
+  in `HTTP3SessionClient`. Define caller/task helpers in that same module; one
+  stable Session caller and one exceptional stop task are sufficient. Every result is
   generation-correlated; store advanced Session before any subsequent operation.
 - [x] Wire allowlisted selected client into endpoint reservation/write/finish
   and guardian open/poll/event/subscribe/ack/cleanup. Declare host/reservation and
@@ -161,58 +210,58 @@ only at their existing boundary. No wholesale H1 adapter refactor.
 
 ## Task 4 — independent downstream-to-upstream matrix (UP2)
 
-- [ ] Implement `--gate matrix` using actual native H1, H2 and H3 downstreams
+- [x] Implement `--gate matrix` using actual native H1, H2 and H3 downstreams
   through Gaoxy to the independent aioquic origin. A first red fixture selecting
   the new client must fail before activation; retain its exact result.
-- [ ] For each downstream protocol execute GET/HEAD, progressive upload/download,
+- [x] For each downstream protocol execute GET/HEAD, progressive upload/download,
   1 MiB/tiny windows, HEAD/204/304/bodyless, duplicate fields, raw compression,
   escaped paths and empty query, redirect/no-follow/no-replay, zero/data request
   trailers, duplicate response trailers, early final response, downstream cancel,
   upstream reset and original opening/total timeout. Include strict TLS negatives
   and two interleaved authorities with distinct certificate identities.
-- [ ] Assert exact independent method/path/authority/DATA/trailer/FIN observations,
+- [x] Assert exact independent method/path/authority/DATA/trailer/FIN observations,
   response bytes and request counts. Assert sibling/other-listener survival and
   eventual active/admission/cleanup baselines. Preserve bounded stalls and exact
   failure categories. A healthy followup alone cannot certify the failed request.
-- [ ] Run under the exclusive lease:
+- [x] Run under the exclusive lease:
 
   ```sh
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python integration/http3/upstream/run.py --gate matrix --evidence docs/acceptance/evidence/m4/upstream-matrix
   ```
 
-- [ ] Independent review of frozen harness and evidence, then fresh affected
+- [x] Independent review of frozen harness and evidence, then fresh affected
   verification. Keep Session-UP0, UP1 tests and UP2 peer counts separate.
 
 ## Task 5 — standalone H3-origin and completion
 
-- [ ] Extend existing standalone JSON fixture with fixed explicit H3 upstream
-  using the qualified adapter and local fixture CA. The inspected
-  `Gaoxy.Server.RouteConfig` proxy clause currently allows only `type`, `upstream`
+- [x] Extend existing standalone JSON fixture with fixed explicit H3 upstream
+  using the qualified adapter and local fixture CA. The original inspected
+  `Gaoxy.Server.RouteConfig` proxy clause allowed only `type`, `upstream`
   and `cacertfile`: add `upstream_protocol` with only string `http1`/`http3`
   mapped to fixed atoms, defaulting to H1. Pass it through `HTTP.init/1`; reject
   arbitrary modules/options/other strings without dynamic atom creation.
   Add red/green `http3_generation_test.exs` tests for acceptance, H1 default,
   invalid enum, invalid TLS and invalid reload preserving the old generation.
-- [ ] Execute independent H3-origin streaming/trailers through actual standalone
+- [x] Execute independent H3-origin streaming/trailers through actual standalone
   Application/Config/Supervisor startup; preserve static and dedicated-H1 rows,
   in-flight old-generation reload, invalid reload rollback, sibling survival,
   stop/UDP rebind, and bootstrap rollback. No operational certificates or live
   deployment is involved.
-- [ ] Run the extended existing command:
+- [x] Run the extended existing command:
 
   ```sh
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python integration/http3/standalone/run.py --evidence docs/acceptance/evidence/m4/standalone
   nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python scripts/check-tests.py apps/gaoxy_server/test/http3_generation_test.exs apps/gaoxy_server/test/standalone_generation_test.exs apps/gaoxy_server/test/standalone_independent_review_test.exs
   ```
 
-- [ ] Coordinator runs previously prescribed affected shared/downstream gates,
+- [x] Coordinator runs previously prescribed affected shared/downstream gates,
   real Chromium/Phoenix acceptance and clean core/H1-H2/H3 consumer checks with
   updated locked closures. Use the exact commands in the existing M4 plans and
   record actual new counts, not historical counts. Confirm core isolation.
-- [ ] Independent final specification/code/evidence review and fresh affected
+- [x] Independent final specification/code/evidence review and fresh affected
   checks; update current acceptance/capability documentation to name the Session
   client and actual complete/incomplete rows. No upstream pool/H2 claim.
-- [ ] Only complete M4 verification and review satisfy conditional main/push/
+- [x] Only complete M4 verification and review satisfy conditional main/push/
   release authorization. Deployment and release-artifact E2E remain separate.
 
 ## Reporting and counters
@@ -225,7 +274,11 @@ coordinator's subsequent receipts before repairs; carry all historical counters
 forward. This architecture/planning assignment adds **0** Astra recovery rounds;
 it neither resets counters nor grants extra Astra repair budget.
 
-At handoff, this plan and design are drafted and self-checked. All implementation,
-unit, direct-Session, matrix and standalone runtime commands above are **NOT RUN
+**Historical architecture handoff:** this plan and design were drafted and
+self-checked before execution. All implementation,
+unit, direct-Session, matrix and standalone runtime commands above were **NOT RUN
 by the architecture author**. The coordinator owns independent review, execution,
 final acceptance and any local commits/publication.
+
+Final M4 implementation acceptance: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

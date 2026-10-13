@@ -1,0 +1,45 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPEC_PREPARATION",
+  "assignment": "direct independent read-only narrow revised repair10 specification addendum",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "prior_review": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-session-ack-poll-credit-spec-preparation-1791852936421013950.json",
+    "sha256": "d3e716b7b3c3065122681b5e152dc191ee41d0f2de94c3121dc2fe3b73605fcb"
+  },
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-session-ack-poll-credit.md": "9e418cfe0ec32253b56e037a0c44f03bebfab2da1bd333d33cb326895ade9300",
+    "docs/plans/m4-up2-session-ack-poll-credit.md": "d8744a41ec6703cd86ea18498a3c833dccc0b5d9389c667c925a38b376abd69f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "3693357f8b2c85557f4ffcb45f17fffda3a0dac47f131260bf5f0dacf2bb4bf6",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "ACK_NIL_CREDIT",
+      "resolution": "Both frozen design and plan explicitly require is_reference(ref) for matching ACK and exact nilACK no-op plus deterministic nil/stale/duplicate tests. Current production source remains unchanged; implementation verification still required."
+    }
+  ],
+  "review_conclusions": [
+    "Prior tuple provenance/both ordering/unknown-resume/queuedtimer/one-followupidlebackoff conclusions remain valid for revised contract.",
+    "Nil/no outstanding delivery cannot grant new polling credit. Matching genuine reference releases one delivery, invalidates idle poll_due, and captured pausedactionref survives existing action propagation.",
+    "Preparation only: tests currently parent-owned and running are not reviewed or accepted by this SPEC addendum. No CODE/runtime/fullmatrix qualification implied."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 18,
+    "up2_unsuccessful_production_repairs": 6,
+    "up2_unsuccessful_harness_repairs": 3,
+    "proposed_up2_repair": 10,
+    "reviewer_repair_rounds": 0,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-session-ack-poll-credit-spec-addendum-1791853049639586602.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only exact revised doc tail/hash and unchanged production identity checks; standard-library immutable receipt serialization. No source edits, Mix/tests/live/network execution, commits or delegation. No own runtime processes.",
+  "clearance": "Revised repair10 SPEC cleared for bounded implementation and meaningful deterministic RED/GREEN. Independent CODE/evidence preparation review, entire68 matrix pass review and fresh entire repeat remain required. Counters18/6/3; no third Astra."
+}

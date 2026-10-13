@@ -1,0 +1,109 @@
+{
+  "task_id": "/root/m4_dependency_audit:H2_CLEANUP_DIAGNOSIS",
+  "assignment": "Direct read-only independent bounded diagnosis and strengthened-test evidence review",
+  "status": "DONE",
+  "verdict": "PASS_SCOPED_TEST_ENHANCEMENT_AND_ACTUAL_EVIDENCE; original failure cause remains UNKNOWN",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_test": {
+    "path": "apps/gaoxy_http/test/http2_pre_settings_test.exs",
+    "sha256": "765668a1fd595a1860f98fd3f0d9354305229ce0293d60abf2124c0a8b05681b"
+  },
+  "initial_failure": {
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-prelive-green-1791850718514305042.json",
+    "sha256": "c340524d13bd9b8399b136732b2fa5745e0e2344955a51d9f22594e9daa570da",
+    "status": "FAIL",
+    "actual_exit": 2,
+    "seed": 429795,
+    "counts": {
+      "http": [
+        120,
+        1
+      ],
+      "http3": [
+        40,
+        0
+      ],
+      "proxy": [
+        114,
+        0
+      ]
+    },
+    "failure": "Immediate TCP rebind returned eaddrinuse in the after-ACK newly opened stream case after normal runtime DOWN. Original receipt lacks listener/socket/ss diagnostic ownership evidence; root cause cannot be inferred retroactively.",
+    "log_sha256": "f63f9db9c7bf6f7c44f7a7fde4a5991dcafb914f0f548218066d0f74fc436c80"
+  },
+  "seeded_strengthened_test": {
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/h2-cleanup-seeded-diagnosis-1791850877929994528.json",
+    "sha256": "7024ea7cc6f059215e965895f7cae7973b11470bb784135b06146e92a0595b1d",
+    "status": "PASS",
+    "actual_exit": 0,
+    "seed": 429795,
+    "counts": {
+      "http": [
+        120,
+        0
+      ]
+    },
+    "log_sha256": "1910880ee73c926e94d80f99fa9405d8fd2d3cc7f6f68c6171562deccebf7bb4"
+  },
+  "fresh_strengthened_test": {
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/h3-bodyless-peer-revised-prelive-1791850933346983549.json",
+    "sha256": "30c4743b07d4d50f17e863931dd1c17e8cb10f4845e323a7f953a6c877d4f010",
+    "status": "PASS",
+    "actual_exit": 0,
+    "seed": 45923,
+    "counts": {
+      "http": [
+        120,
+        0
+      ],
+      "http3": [
+        40,
+        0
+      ],
+      "proxy": [
+        114,
+        0
+      ]
+    },
+    "total_tests": 274,
+    "failures": 0,
+    "format_exit": 0,
+    "strict_compile_exit": 0,
+    "log_sha256": "dacb9c4770dcb69a8fb242e559cd905bc6e40aca9cb58ef56bcf88001a20fac2"
+  },
+  "verification": [
+    "All three receipt log hashes match actual logs; each records unchanged captured source before/after.",
+    "Both strengthened runs capture the reviewed current test hash; current file hash matches fresh source_after.",
+    "Comparing captured initial/fresh sources establishes zero production apps/*/lib changes. Test/harness/release-smoke differences remain distinct from production changes."
+  ],
+  "specification_assessment": [
+    "All six original protocol assertions and five-second deadlines remain intact; exact echo, RST3 and sibling checks are unchanged.",
+    "Setup captures the unique original OTP listener port using actual bound IP/port before opening the client, preventing accepted-client sockets from being mistaken for the listener.",
+    "Cleanup closes client, requires zero active/retained/cleanup state with no cleanup_failed, requires successful Gaoxy.stop and normal runtime DOWN, then verifies the captured listener is no longer addressable.",
+    "Immediate single TCP rebind remains a hard assertion with reuseaddr, matching prior http2_capacity_test.exs practice. No bind retry, automatic test retry, arbitrary sleep, skip, weakened assertion or extended timeout was introduced.",
+    "Failure-only listener/ss diagnostics add observation; they do not establish why the historical bind failed."
+  ],
+  "recommendation": "Accept the strengthened test source and actual seeded120/0 plus fresh274/0 as scoped prelive evidence, while retaining initial FAIL and UNKNOWN original cause. No speculative production fix, serialization change or additional retry loop is justified. Continue only the already prescribed independently reviewed matrix/final gates with these stronger assertions. If a future single rebind fails, preserve the contemporaneous socket/ss ownership evidence and diagnose it before changing behavior.",
+  "limitations": [
+    "No claim that the original failure was flaky, external port competition, TIME_WAIT, a listener leak, or a resolved leak is supported.",
+    "Current passing original-listener closure and actual rebind prove those successful executions only; they do not certify UP2, final M4, portable artifacts or release.",
+    "Reviewer ran no tests/Mix/network commands. Root owns all runtime execution."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live": 15,
+    "up2_failed_production": 5,
+    "up2_failed_harness": 2,
+    "scope_note": "Initial scoped prelive failure remains separate from UP2 live counters.",
+    "astra_recovery": "Two rounds exhausted; no third round"
+  },
+  "repair_counters_added": {
+    "sol": 0,
+    "astra": 0
+  },
+  "changed_files": "Only this unique review receipt",
+  "command_shutdown": "All read-only reviewer commands completed; no owned live processes",
+  "decisions_needed": [],
+  "findings": []
+}

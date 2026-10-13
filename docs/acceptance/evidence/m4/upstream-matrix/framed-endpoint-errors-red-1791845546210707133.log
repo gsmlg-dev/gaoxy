@@ -1,0 +1,57 @@
+==> gaoxy_http
+Running ExUnit with seed: 92223, max_cases: 4
+
+............
+
+  1) test a returned endpoint error resets its committed response without success END_STREAM (Gaoxy.HTTP2NetworkTest)
+     apps/gaoxy_http/test/http2_network_test.exs:177
+     expected stream reset, got {0, 1, 1, ""}
+     code: assert_reset(socket, 1, 0x8)
+     stacktrace:
+       test/http2_network_test.exs:186: (test)
+
+...........
+Finished in 4.4 seconds (4.4s async, 0.00s sync)
+24 tests, 1 failure
+==> gaoxy_http3
+Running ExUnit with seed: 92223, max_cases: 4
+
+.......+..............+.+...........+.+.........+...+...+.....+...+....+...+.....+.......+..+......+....+.....+....+.....+.......+..+......+....+++++++++++++++++++++++++++++++++++++++*.+.+++++++++++++++++++++++++++++++++++++++*..+....+.....+.+..+.+............+.....+....+...+...+.....+...+..........+.....+..........+...............+..+.......+...+.........+.........+.....+.......+..+...+....+...+..+......+...+.+....................+...+.......+...+........+..................+......+.+........+.+.....+.+........+......+...+.......+...+......+..............+..........+......+.....+.+...+...+.........+........+......+..........+.....+.......+.....+....+......+...+..+...+....+..++++++
+..........+......+..+...+.........+.+.................+......+.........+......+....+..+...............+.+.....+.......+......+..+..........+..+++++++++++++++++++++++++++++++++++++++*....+...+..+....+..+...+......+...+.......+...+..+....+..+.............+..+....+...+..+.+..+.......+.....+...+..................+.......+....................+...+....+...+.....+.+..+....+++++++++++++++++++++++++++++++++++++++*.....+.+.....+.......+...+...+......+.....+......+..........+.........+...+...++++++
+-----
+...+....+.....+......+...+................+..............+....+.....+......+.........+.+.....+.......+...+.....+.+.....+.+..+......+....+..+.+...+.........+...+...+..+.............+......+...+...........+....+..+................+........+.+...+..+.+..+...+.......+........+.........+...+..........+..+..........+.........+..+++++++++++++++++++++++++++++++++++++++*...+.....+++++++++++++++++++++++++++++++++++++++*.+...+.....+.......+...+..+...............+......+....+........+....++++++
+....+...+......+++++++++++++++++++++++++++++++++++++++*......+..........+......+..+.+..+...+....+........+.......+..+.........................+++++++++++++++++++++++++++++++++++++++*....+.....+......+............+............+.+..................+......+.....+.........+.+...+........+....++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+.
+
+  1) test returned endpoint errors preserve completed responses and reset a committed prefix on real H3 (Gaoxy.HTTP.HTTP3.PlugTest)
+     apps/gaoxy_http3/test/plug_test.exs:129
+     ** (RuntimeError) independent endpoint-error peer failed: PASS H3 pre-head returned error completes 500
+     PASS H3 completed 502 survives returned error
+     PASS H3 completed 504 survives returned error
+     Traceback (most recent call last):
+       File "<string>", line 36, in <module>
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 195, in run
+         return runner.run(main)
+                ^^^^^^^^^^^^^^^^
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py", line 118, in run
+         return self._loop.run_until_complete(task)
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+       File "/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+         return future.result()
+                ^^^^^^^^^^^^^^^
+       File "<string>", line 29, in run
+     AssertionError: ({}, {})
+
+         apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.PlugTest/test-returned-endpoint-errors-preserve-completed-responses-and-reset-a-committed-prefix-on-real-H3-3a73d738/returned_endpoint_errors.exs:82: (file)
+         (elixir 1.18.5) lib/code.ex:1525: Code.require_file/2
+
+     code: assert exit == 0, output
+     stacktrace:
+       test/plug_test.exs:255: (test)
+
+.
+Finished in 7.1 seconds (7.1s async, 0.00s sync)
+3 tests, 1 failure

@@ -1,0 +1,68 @@
+{
+  "task_id": "/root/m4_dependency_audit:RELEASE_RECIPE_INCREMENTAL_CODE_REVIEW",
+  "assignment": "Direct read-only incremental independent recipe/smoke code review; root owns execution and publication",
+  "status": "DONE",
+  "verdict": "PASS_SCOPED_CODE_REVIEW; build/runtime/artifact qualification NOT RUN",
+  "created_utc": "2026-10-13T00:29:14.294551+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_source_sha256": {
+    "scripts/h3-release-smoke.py": "b2e89df4787185c306b38884d263804ddc3b931f5bbb2b088918d2df3c1c0caf",
+    "integration/http3/upstream/origin.py": "f6a069fa8cc165341c662e7b87577cb0c81f4a07ec770d318da5fce51b070167",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/Dockerfile": "3a02a15315d552e0da8a830a387ef799d6d9a57efb08aa5b76d82d269b8297f6",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/build.py": "e4522d7d25d1d14d960d35d2e15ef15f31a1485737e4951dade4328c5746a4fa",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/finalize.py": "7b9bfda805751cba9c9029a413f6c9cb985f328dfe1338c7d652ba71c483f554",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/runtime.py": "b5b239631d2a4a20b4934dd362b4e92c19616d2a055dd7fbe744124ed770d9c6",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py": "c4e9006f4d2aee12ac070fb4e22cb94172d883ff744eb847d31c2186d53fec42",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py": "dc858a0a7a25b9936cea40a6cc3d9e4c3356fae3875b811ba382207d3d551166",
+    "docs/designs/release-0.3.0-portable.md": "148fe38c5ff7dff8bab64aa075abac18f5ad774e1cb4144181bc000d33cf661d",
+    "docs/plans/release-0.3.0-portable.md": "8c85a3fe6ae4400f967d161ab4477787d028b75c10c516bf0968df702ae6ff86",
+    "docs/plans/release-0.3.0.md": "b5dd72f1e7788e56d6fd5869164e7f8f9436ac1956cd99c215ad692250dad767",
+    ".formatter.exs": "d0da7949df4b7f280847f8226f40a5845414c570c945584875728ab07613db80",
+    "scripts/check-tests.py": "03387fb8482972def834ceff0ef686fe5e5a4449dda02c20cb3317ebafd716a9",
+    "apps/gaoxy_http/.formatter.exs": "42bf753df3dbf8bd44556472867ca7c2691fe6a33551ed464e00380c064ffb02"
+  },
+  "other_reviewed_inputs": {
+    "/tmp/gaoxy-m4-final-series.py": "600ff0ef507aed9fa512b169425b1e6662e090e57b35eca0a1c04a0763b90024"
+  },
+  "fin_assessment": [
+    "Packaged smoke explicitly asserts request_fin and fin_count == 1 for each of two origin requests, together with exact request byte length/hash, ordered duplicate trailers, method, authority, certificate identity and exactly one request per path.",
+    "Origin request_fin is sourced from actual aioquic H3 HeadersReceived/DataReceived.stream_ended, not response success or a scheduled timer. fin_count counts the first observed completed request, guarded by finished; this is one logical request FIN observation, not a raw retransmission/event counter.",
+    "Origin echo final response is produced only after observed request completion; downstream H3 peer requires real H3 stream_ended, exact response bytes and ordered trailers. Finite deadlines, normal child exits and immediate listener/origin port rebind checks remain intact."
+  ],
+  "planned_gate_assessment": {
+    "source_archive": "Plan requires final reviewed integrated commit git archive plus source-identity.json. Builder validates git get-tar-commit-id, archive SHA256, root lock SHA256, then every archived regular file unchanged after qualification.",
+    "versions": "All six source version declarations remain 0.2.0 pending release preparation. Plan explicitly requires all six 0.3.0. Builder/finalizer/runtime check exact five packaged application .app versions; runtime also checks start_erl.data release version.",
+    "format_and_compatibility": "Recipe canonical mix format plus strict production compile; compatibility runs all five complete application test directories with warnings-as-errors and max-cases1, requiring nonzero counts per app, zero failures and zero excluded/skipped. Added http2_pre_settings/control_rate tests are included by directory discovery. Root finalseries explicitly contains http_contract and formats fixture/session_probe/new H2 tests.",
+    "checksums_and_inventory": "Finalizer independently matches source/archive/lock identities and package inventory/versions, checks archive digest against build-info and writes checksums for both archive and build-info. Offline runtime verifies exactly both checksums plus metadata before extraction.",
+    "safe_extraction": "Runtime prevalidates all entries as regular files/directories, rejects absolute/escaping paths and links/devices, neutralizes owner/modes, then extracts into new release directory.",
+    "offline_runtime": "Runtime launch owns a unique container by immutable inspected image ID, --network none, readonly artifact bind, recorded live/final inspection, finite wait and owned-container cleanup. Runtime uses packaged bin/gaoxy for core/gateway/H3 smoke with no Mix command.",
+    "elf": "Runtime iterates every extracted ELF object; readelf and ldd reject missing libraries, Nix dependencies and unexpected linkage errors; requires nonzero inspected ELF objects.",
+    "packaged_h3": "Both builder and fresh runtime run h3-release-smoke against built/extracted release and require three PASS checks plus port rebinding.",
+    "publication": "Plan retains final candidate/release/source independent review, fresh affected checks, remote commit/immutable tag verification and fresh published-asset download/checksum/inventory verification before claiming publication."
+  },
+  "coverage_caveat": {
+    "description": "Default recipe mix format follows existing configured subdirectories; apps/gaoxy_http3 and integration/http3 have no .formatter.exs, so canonical recipe formatting alone does not cover their lib/test/upstream scripts.",
+    "disposition": "Not a missing required gate while explicit final source formatting remains bound to the exact final archived commit. Root finalseries already formats changed H3 source and explicitly lists fixture/session_probe. Preserve that prerequisite; optional recipe duplication is not required for this scoped clearance."
+  },
+  "findings": [],
+  "limitations": [
+    "Static code clearance only. No tests/Mix/build/container/ELF/runtime/publication executed by reviewer.",
+    "Final source-identity.json, source archive, version bump and artifact bytes are pending; no release eligibility or runtime PASS claim.",
+    "Actual final artifact/evidence independent review remains required after execution."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live": 15,
+    "up2_failed_production": 5,
+    "up2_failed_harness": 2,
+    "astra_recovery": "Two rounds exhausted; no third round"
+  },
+  "repair_counters_added": {
+    "sol": 0,
+    "astra": 0
+  },
+  "changed_files": "Only this unique review receipt",
+  "command_shutdown": "All reviewer read commands finished; no owned child runtime/build processes",
+  "decisions_needed": []
+}

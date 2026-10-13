@@ -1,0 +1,49 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "assignment": "direct read-only independent review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "counters": {
+    "up0_sol": 2,
+    "up0_unsuccessful_sol": 2,
+    "up0_astra": 2,
+    "up0_unsuccessful_astra": 2,
+    "up0_coordinator": 5,
+    "up0_unsuccessful_coordinator": 4,
+    "up1_repair": 2,
+    "up1_unsuccessful_initial": 1,
+    "up1_unsuccessful_repairs": 1,
+    "up2_live_repair": 2,
+    "up2_unsuccessful_executions": 6,
+    "standalone_repair": 2,
+    "standalone_unsuccessful": 2
+  },
+  "limits": [
+    "Preparation/source review only; no reviewer runtime, tests, Mix, formatting or production edits.",
+    "No full UP2, M4, standalone, package, publication, deployment or production acceptance inferred.",
+    "Preserve prior immutable FAIL, original assertions and deadlines; Astra recovery2 exhausted."
+  ],
+  "status": "PASS_SPECIFICATION_PREPARATION",
+  "reviewed_sha256": {
+    "docs/designs/m4-framed-endpoint-errors.md": "477badc1070490e4320eb9b7e8b5ac64a94630797b18407ce707eb7d7d7dad72",
+    "docs/plans/m4-framed-endpoint-errors.md": "b13b5d98143bb7c459323f64f71d6555384a39bb38d6d62f77f32440a9289160",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "b6bbfcf79f1b1dd81a3a67a8251b027ca3008b554d4fa37376993a91fe383cbe",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "3e604e41244d64a0dba8cc6f5b87655bf1f6c60e2944f6c37d5dc979d846735b",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "11309eba6daed70360297cee42a8f366fdb39ed3e5637af9981898b1f8b0558f",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "85245a479843eadd61409bcf6b649178e72ac9e115f65aa704efe2ffadc6af6a"
+  },
+  "findings": [],
+  "approved_scope": [
+    "Error tuple with open committed :chunked or {:fixed_stream,n}, including n0, never calls finish; bounded fixed owner outcome only.",
+    "H2 matching owner completion cancels affected stream0x8; H3 fixed endpoint-failed finished outcome cancels affected stream0x10C.",
+    "Preserve :unset prehead500; :sent and :bodyless_stream completion; complete502/504 followed by error; normal success and existing crash/response-failure codes.",
+    "No shared API/process/dependency patch/connection-wide close."
+  ],
+  "required_red_before_production": [
+    "Actual real H2/H3 focused regression execution, independent peer sees exact200/prefix before deterministic endpoint-error release.",
+    "Exact reset code, no END_STREAM/FIN/replacement500, same-connection sibling, prehead500 and complete502/504 controls with finite deadlines."
+  ],
+  "verification_status": "NOT_RUN; production correction not implemented in reviewed snapshot"
+}

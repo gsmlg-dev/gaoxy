@@ -1,0 +1,46 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "SPEC_REVISION_REQUIRED",
+  "assignment": "direct independent read-only repair10 SPEC review before production implementation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-up2-session-ack-poll-credit.md": "0ea022f3527911c02ecd9da0728b70c05e1c05d2c9910284f77bdc0fb0898159",
+    "docs/plans/m4-up2-session-ack-poll-credit.md": "09332272ff74badbd108691fd265d9cb1fc0359d50082cdefa3fa007cb914c35",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "3693357f8b2c85557f4ffcb45f17fffda3a0dac47f131260bf5f0dacf2bb4bf6",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168"
+  },
+  "findings": [
+    {
+      "id": "ACK_NIL_CREDIT",
+      "severity": "needed",
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex:236",
+      "finding": "Existing matching pattern acknowledge(%{delivery:ref},ref) acceptsnil when no delivery; Session matching cast likewise acceptsnil. New poll_due reset would grant credit without an outstanding response delivery, contradicting complete stale/duplicate no-op contract.",
+      "required_change": "Design/plan and implementation must require actual outstanding reference (is_reference(ref) or equivalent nonnil invariant) on matchingACK; test nilACK exactnoop against futurepoll_due and pending/queuedtimer. Preserve current stale/duplicate reference no-op."
+    }
+  ],
+  "review_conclusions": [
+    "Tuple Gaoxyaction{:poll,deliveryref} is retained by current command fifthargument, operation.action, unknown/genericblocked pending.action, pending scheduling resume and continuation action propagation. No additional mutable field/queue/dependency API is needed.",
+    "Both orderings are covered by proposed contract: result-beforeACK idlebackoff then matchingACK clearsdue; ACK-beforepausedresult capturednonnullreference released then result grants one immediateeligiblepoll. Operation guard prevents overlap.",
+    "Captured ref differs from a newer currentdelivery only after genuine prior release in valid live state; newer active delivery continues to produce pausedoptions. Terminal/cleanup receiveevent branches bypass normal operation_result and cannot revive networkwork.",
+    "Unpaused empty/control-only poll capturesnil and restores5ms; paused result whose exact ref remains outstanding restores5ms. NoACK idlepath remains bounded.",
+    "Queuedtimer cancel_timerfalse retains existing wake; successful cancellation replaces one timer with zero; stale/duplicate reference ACK no-op remains. NilACK must be explicitly fenced before granting newdue credit.",
+    "No runtime-resolution claim; repair9FAIL52 and counters18/6/3 preserved. Original68 manifests/1MiB/windows/deadlines/FIN/zero baseline assertions required."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 18,
+    "up2_unsuccessful_production_repairs": 6,
+    "up2_unsuccessful_harness_repairs": 3,
+    "proposed_up2_repair": 10,
+    "reviewer_repair_rounds": 0,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-session-ack-poll-credit-spec-preparation-1791852936421013950.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only scoped docs/source reads and exact source hash/immutable JSON serialization. No source/test/doc modifications, Mix/tests/live/network execution, commits or delegation. Root owns concurrent test authoring.",
+  "clearance": "SPEC clearance withheld pending narrow nilACK contract revision; production implementation should follow passing review addendum."
+}

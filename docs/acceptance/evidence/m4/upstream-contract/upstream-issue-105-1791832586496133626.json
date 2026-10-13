@@ -1,0 +1,45 @@
+{
+  "status": "ISSUE_CREATED_AND_VERIFIED",
+  "requesting_repo": "gsmlg-opt/gaoxy",
+  "branch": "codex/m4-http3",
+  "source_head": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "repo": "gsmlg-dev/http_fetch",
+  "number": 105,
+  "url": "https://github.com/gsmlg-dev/http_fetch/issues/105",
+  "type": "Bug",
+  "labels": [
+    "internal request"
+  ],
+  "severity": "needed",
+  "state": "open",
+  "created_at": "2026-10-12T19:14:56Z",
+  "body_sha256": "f3b6d2d58742447c15f98a3e2631dd45e40dc1c25f2bac02eee0c445af88c52b",
+  "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m4-http3`\n\n**Severity:** needed\n\n**Packages/provenance:** `elixir_quic_http3` and `elixir_quic` 0.21.4, whose package GitHub links point to this umbrella. Root lock SHA256: `aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab`. GitHub and Hex latest stable were both rechecked as 0.21.4.\n\nA public `QuicHttp3.Session` with `max_frame: 16_384` cannot make progress on its first 16 KiB upload DATA when the independent server advertises an initial stream receive window of 16,384 bytes. Request HEADERS have already consumed part of that window. The first encoded transport fragment is still 16,384 bytes; the QUIC send API requires whole-binary credit and admits no prefix. The peer cannot grant additional stream credit because it has received only the small HEADERS block. Repeated public `Session.resume` retries the same blocked fragment until its original deadline.\n\nThis blocks the default/configured Session fragment size for a valid small-window peer. The configured application upload ceiling is 16 KiB; it should remain usable while the implementation splits encoded stream bytes appropriately.\n\n**Minimal reproduction:**\n\n1. Start an independent aioquic 1.2.0 H3 server with `QuicConfiguration(is_client=False, alpn_protocols=[\"h3\"], max_stream_data=16_384)` and an owned trusted localhost certificate.\n2. Create a public client endpoint, retain its public descriptor, and adopt it with a guardian acceptor; use one stable caller for public Session operations and connect with `consumer: self()` plus explicit CA and hostname validation.\n3. `Session.new(max_frame: 16_384)`, authenticated `Session.connect`, `Session.open`, and `Session.request(session, pseudo_headers, :stream, ...)` for POST `/tiny-upload`.\n4. Submit `Session.send_data(session, request_ref, :binary.copy(\"x\", 16_384), false, ...)`.\n5. Observe `{:blocked, advanced_session, %{type: :data_blocked, value: 93}}` in this run. The value is aggregate connection `data_sent`, not the exact stream offset. Retain every advanced Session and resume that same operation without resending/replaying the request.\n6. The server observes request HEADERS, zero DATA, and no request FIN. Reconciliation/resume remains blocked until the original absolute deadline. Public incoming MAX_DATA/MAX_STREAM_DATA handling is independent of Session.poll, so omitting a Session poll is not the cause.\n\n**Observed source path:**\n\n- `apps/elixir_quic_http3/lib/quic_http3/session.ex`: `data_steps/4` and `chunks/4` split encoded DATA into the configured `max_frame` fragments.\n- `apps/elixir_quic/lib/quic/streams.ex`: `send/4` and `send_credit/3` require the whole submitted binary to fit current stream and connection credit. Blocked admission has no send effects.\n- `Session.resume` retries the frozen pending fragment; there is no public pending-rechunk or residual-credit query through Session.\n- The aioquic peer increases stream credit after `highest_offset > max_stream_data / 2`; small HEADERS alone cannot cross that threshold.\n\n**Expected behavior:** streaming at the public application's supported 16 KiB chunk ceiling progresses against the independent 16 KiB stream window, with exact DATA bytes, one terminal FIN, no replay, and the original deadline preserved. The Session transport should support bounded fragmentation/admission under remaining peer credit, or document and expose a supported configuration contract for this situation.\n\n**Current consumer path:** a separately reviewed public `max_frame: 8_192` configuration is a candidate for the unchanged 1 MiB upload/16 KiB peer-window gate. It retains 16 KiB application chunks and all exact payload, FIN, no-replay, ACK and deadline assertions. It has not yet passed runtime qualification; it is not a substitute for this default-option issue. We will mark any temporary selection with `WORKAROUND(upstream)` and retain the failed original evidence.\n\n**Consumer evidence:** `integration/http3/upstream/run.py --gate session-contract`, frozen run `run-1791831993043786216`, source HEAD `c574c784da5474117b7e911693fdc564d8565bf8`, result SHA256 `a000554e141582b975f344b0c8da1a53102f96e0a3570b6e4eec9404d0d3bbe7`. It executed 31 boundary doubles and 6 real network rows successfully, then failed the tiny-window row; 13 required rows remain NOT RUN. Original logs are preserved. Failed-request cleanup is not certified: the tiny request has no cleanup receipt/local endpoint rebind, even though both origin ports rebound and owned process exits were recorded as 0/1. No production adapter, full M4 acceptance or release is claimed.\n",
+  "creation_command": [
+    "gh",
+    "issue",
+    "create",
+    "--repo",
+    "gsmlg-dev/http_fetch",
+    "--type",
+    "Bug",
+    "--label",
+    "internal request",
+    "--title",
+    "[internal] Public H3 Session DATA stalls under residual stream credit",
+    "--body-file",
+    "/tmp/gaoxy-session-credit-1791832459.md"
+  ],
+  "creation_exit": 0,
+  "verification_command": [
+    "gh",
+    "api",
+    "repos/gsmlg-dev/http_fetch/issues/105",
+    "--jq",
+    "{number,state,type:.type.name,labels:[.labels[].name],html_url,created_at}"
+  ],
+  "verification_exit": 0,
+  "configuration_candidate_status": "NOT RUN",
+  "blocked_task": "UP1 HOLD_UP0 pending public max_frame8192 qualification",
+  "unavoidable_external_blocker": false
+}

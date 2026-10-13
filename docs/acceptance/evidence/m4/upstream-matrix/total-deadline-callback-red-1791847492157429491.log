@@ -1,0 +1,105 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 792293, max_cases: 4
+
+..
+
+  1) test owner expiry first emits exactly one H3 total timeout without changing its deadline (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:284
+     match (=) failed
+     code:  assert {:stop, :normal, settled} = first
+     left:  {:stop, :normal, settled}
+     right: {:noreply,
+             %{
+               owner: #PID<0.423.0>,
+               request: nil,
+               cancelled: false,
+               deadline: -576460747459,
+               token: nil,
+               client: Gaoxy.Proxy.HTTP3SessionClient,
+               headers: true,
+               delivery: #Reference<0.2628707531.1320157185.235551>,
+               consumed: false,
+               outcome: :cancelled
+             }}
+     stacktrace:
+       test/http3_guardian_test.exs:295: (test)
+
+...
+
+  2) test owner expiry and timer replay never notify cancelled or consumed requests (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:326
+     match (=) failed
+     The following variables were pinned:
+       cancelled = %{owner: #PID<0.563.0>, request: nil, cancelled: true, deadline: -576460745595, token: nil, client: Gaoxy.Proxy.HTTP3SessionClient, headers: true, delivery: #Reference<0.2628707531.1320157186.231613>, consumed: true, outcome: :cancelled}
+     code:  assert {:stop, :normal, ^cancelled} = Session.handle_cast(:expire, cancelled)
+     left:  {:stop, :normal, ^cancelled}
+     right: {:noreply,
+             %{
+               owner: #PID<0.563.0>,
+               request: nil,
+               cancelled: true,
+               deadline: -576460745595,
+               token: nil,
+               client: Gaoxy.Proxy.HTTP3SessionClient,
+               headers: true,
+               delivery: #Reference<0.2628707531.1320157186.231613>,
+               consumed: true,
+               outcome: :cancelled
+             }}
+     stacktrace:
+       test/http3_guardian_test.exs:331: (test)
+
+
+
+  3) test timer expiry first emits exactly one H3 total timeout without changing its deadline (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:284
+     match (=) failed
+     The following variables were pinned:
+       settled = %{owner: #PID<0.571.0>, request: nil, cancelled: true, deadline: -576460745594, token: nil, client: Gaoxy.Proxy.HTTP3SessionClient, headers: true, delivery: #Reference<0.2628707531.1320157186.231693>, consumed: true, outcome: :cancelled}
+     code:  assert {:stop, :normal, ^settled} = Session.handle_cast(:expire, settled)
+     left:  {:stop, :normal, ^settled}
+     right: {:noreply,
+             %{
+               owner: #PID<0.571.0>,
+               request: nil,
+               cancelled: true,
+               deadline: -576460745594,
+               token: nil,
+               client: Gaoxy.Proxy.HTTP3SessionClient,
+               headers: true,
+               delivery: #Reference<0.2628707531.1320157186.231693>,
+               consumed: true,
+               outcome: :cancelled
+             }}
+     stacktrace:
+       test/http3_guardian_test.exs:301: (test)
+
+.
+
+  4) test owner expiry preserves H1 timeout and an earlier H3 owner timeout category (Gaoxy.Proxy.HTTP3GuardianTest)
+     apps/gaoxy_proxy/test/http3_guardian_test.exs:308
+     match (=) failed
+     code:  assert {:stop, :normal, settled} = Session.handle_cast(:expire, state)
+     left:  {:stop, :normal, settled}
+     right: {:noreply,
+             %{
+               owner: #PID<0.630.0>,
+               request: nil,
+               cancelled: false,
+               deadline: -576460745452,
+               token: nil,
+               client: Gaoxy.Proxy.HTTPFetchClient,
+               headers: true,
+               delivery: #Reference<0.2628707531.1320157186.232813>,
+               consumed: false,
+               outcome: :cancelled
+             }}
+     stacktrace:
+       test/http3_guardian_test.exs:316: anonymous fn/3 in Gaoxy.Proxy.HTTP3GuardianTest."test owner expiry preserves H1 timeout and an earlier H3 owner timeout category"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http3_guardian_test.exs:311: (test)
+
+
+Finished in 4.9 seconds (4.9s async, 0.00s sync)
+10 tests, 4 failures

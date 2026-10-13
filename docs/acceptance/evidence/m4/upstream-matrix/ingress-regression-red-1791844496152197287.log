@@ -1,0 +1,23 @@
+==> gaoxy_http
+Running ExUnit with seed: 0, max_cases: 4
+Excluding tags: [:test]
+Including tags: [location: {"test/http_network_test.exs", 566}]
+
+
+
+  1) test TLS chunked 1 MiB upload completes within its original bounded read budget (Gaoxy.HTTP.NetworkTest)
+     apps/gaoxy_http/test/http_network_test.exs:566
+     match (=) failed
+     code:  assert {output, 0} =
+              System.cmd("python3", ["-c", peer, Integer.to_string(port), Path.join(dir, "ca.pem")],
+                stderr_to_stdout: true
+              )
+     left:  {output, 0}
+     right: {"Traceback (most recent call last):\n  File \"<string>\", line 34, in <module>\n    piece = connection.recv(4096)\n  File \"/nix/store/jy00n3jp5xj8s40n1fbldmkcr5n7avxc-python3-3.13.15/lib/python3.13/ssl.py\", line 1285, in recv\n    return self.read(buflen)\n           ~~~~~~~~~^^^^^^^^\n  File \"/nix/store/jy00n3jp5xj8s40n1fbldmkcr5n7avxc-python3-3.13.15/lib/python3.13/ssl.py\", line 1140, in read\n    return self._sslobj.read(len)\n           ~~~~~~~~~~~~~~~~~^^^^^\nTimeoutError: The read operation timed out\n",
+             1}
+     stacktrace:
+       test/http_network_test.exs:628: (test)
+
+
+Finished in 6.8 seconds (6.8s async, 0.00s sync)
+27 tests, 1 failure, 26 excluded

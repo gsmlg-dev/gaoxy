@@ -1,0 +1,144 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_CODE_PREPARATION_AND_SCOPED_PRELIVE",
+  "assignment": "direct read-only independent repair3 actual evidence review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-proxy-progress.md": "53762b1281fed055956e664153bcef290a3fd6cf8dceb319540e19a6ada2623f",
+    "docs/plans/m4-proxy-progress.md": "3779f0662ef1a0a641eb69f544ae9b8d89c17f049c3e85125501d93238f64df8",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "5ec0e472aa7ca594af86cd2c3b444a3ede98abd434e6f9a4781f11b2fdafe37a",
+    "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs": "f9024c3d92edf7ee02dd71b1aa4f9430305c578e1d1c5772cc93e89398b3b32d"
+  },
+  "source_review": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-idle-native-tls-closure-code-preparation-1791846784802286537.json",
+    "sha256": "82933aa992e51088640c9eaddcca44028ff11b302d0c2903982db552c326afc3"
+  },
+  "findings": [],
+  "verification": {
+    "receipt": "docs/acceptance/evidence/m4/upstream-matrix/native-tls-idle-prelive-1791846733211234017.json",
+    "sha256": "9945621156e93aba90cd83a5bedea6c69d9fdebde962c47d10b6307a08f0c1f2",
+    "log": "docs/acceptance/evidence/m4/upstream-matrix/native-tls-idle-prelive-1791846733211234017.log",
+    "log_sha256": "64c46c2411b2bc7b89e430e8de7e219f375f7299f012f1d5a08ae51521394dd4",
+    "command": [
+      "python",
+      "/tmp/gaoxy-m4-framed-series.py"
+    ],
+    "environment": {
+      "MIX_ENV": "test",
+      "ERL_FLAGS": "+S 2:2"
+    },
+    "expanded_commands": [
+      [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+        "apps/gaoxy_http/test/http2_network_test.exs",
+        "apps/gaoxy_http3/test/plug_test.exs",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+        "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+        "apps/gaoxy_http/test/http_network_test.exs",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex",
+        "apps/gaoxy_http3/test/transport_test.exs",
+        "integration/http3/upstream/fixture.exs"
+      ],
+      [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      [
+        "python",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/http2_capacity_test.exs",
+        "apps/gaoxy_http/test/http2_codec_test.exs",
+        "apps/gaoxy_http/test/http2_facade_test.exs",
+        "apps/gaoxy_http/test/http2_independent_review_test.exs",
+        "apps/gaoxy_http/test/http2_integration_test.exs",
+        "apps/gaoxy_http/test/http2_network_test.exs",
+        "apps/gaoxy_http/test/http2_protocol_test.exs",
+        "apps/gaoxy_http/test/http2_stale_start_test.exs",
+        "apps/gaoxy_http/test/http_network_test.exs",
+        "apps/gaoxy_http/test/http_lifecycle_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "apps/gaoxy_http/test/connection_poll_test.exs",
+        "apps/gaoxy_http3/test/plug_test.exs",
+        "apps/gaoxy_http3/test/operations_test.exs",
+        "apps/gaoxy_http3/test/lifecycle_test.exs",
+        "apps/gaoxy_http3/test/lifecycle_race_test.exs",
+        "apps/gaoxy_http3/test/transport_test.exs",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+        "apps/gaoxy_proxy/test/http3_proxy_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_tls_test.exs",
+        "apps/gaoxy_proxy/test/http_headers_test.exs"
+      ]
+    ],
+    "format_exit": 0,
+    "strict_compile_exit": 0,
+    "test_exit": 0,
+    "outer_exit": 0,
+    "groups": [
+      {
+        "app": "gaoxy_http",
+        "tests": 112,
+        "failures": 0
+      },
+      {
+        "app": "gaoxy_http3",
+        "tests": 40,
+        "failures": 0
+      },
+      {
+        "app": "gaoxy_proxy",
+        "tests": 104,
+        "failures": 0
+      }
+    ],
+    "total_tests": 256,
+    "failures": 0,
+    "actual_native_tls_abort_regression_included": true,
+    "connection_poll_regressions_included": true,
+    "all_scoped_target_files_exist": true,
+    "source_before_equals_after": true,
+    "all_current_captured_hashes_match": true,
+    "captured_source_count": 213,
+    "all_current_reviewed_document_code_hashes_match": true
+  },
+  "assessment": [
+    "No failed/blocked/unexecuted checks relabelled: preceding actualTLSabortRED and earlier0testcompilefailure remain immutable distinct evidence.",
+    "ActualTLSabortcase now passes among16 runtime tests, retaining originalexactprefix/actualabort/Pythonexit0/upstreamclosed/guardian/admission shareddeadline oracle.",
+    "Finite idle-only nativeTLS poll implementation and all framed/ACK/progress compatibility scopes verified together; no source changes occurred during recorded run."
+  ],
+  "clearance": "Proceed unchanged full66network+2policyUP2 under parent serial runtimelease. Full matrix acceptance requires all rows, original five-second deadlines, exacthash/FIN/error/sibling/cleanup assertions and independentactualreview/freshrepeat.",
+  "counters": {
+    "up0_sol": 2,
+    "up0_unsuccessful_sol": 2,
+    "up0_astra": 2,
+    "up0_unsuccessful_astra": 2,
+    "up0_coordinator": 5,
+    "up0_unsuccessful_coordinator": 4,
+    "up1_repair": 2,
+    "up1_unsuccessful_initial": 1,
+    "up1_unsuccessful_repairs": 1,
+    "up2_live_repair": 3,
+    "up2_unsuccessful_executions": 7,
+    "standalone_repair": 2,
+    "standalone_unsuccessful": 2
+  },
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "changed_files": "One unique evidence review receipt only.",
+  "limits": [
+    "No reviewer runtime/Mix/tests/network/format/source/dependency commands.",
+    "Scoped256testPASS is not fullUP2/M4/standalone/G2/G3/package/release/deployment/production acceptance."
+  ]
+}

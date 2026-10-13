@@ -1,0 +1,31 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_DIAGNOSTIC_SOURCE_REVIEW",
+  "assignment": "direct read-only bounded source review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "/tmp/gaoxy-up2-ingress-observation.patch": "1094c374e5d9589661c28a5b1aa863acc707c1aacb11bcccb0ed3b31841e8720",
+    "/tmp/gaoxy-up2-diagnostic2-fixture-original.exs": "af2d4b4a2a2762141c486d8cf55c2f15fd480e94586ab01c323073f89171d008",
+    "integration/http3/upstream/fixture.exs": "0e3441a91051a00f8ebddfcd3ae93713ae59eb353eb44979dc860d53df2ab021"
+  },
+  "patch_only_sha256": "8bea8340ed5642b9561a6cdfec7d42026af11a3395a1e6f597f8645284caba85",
+  "findings": [],
+  "verified": [
+    "Exact original hash and supplied patch hash match assignment; patch applies uniquely in memory; current fixture differs from patched text only in reviewed whitespace formatting.",
+    "Ingress call/return tracing selects only h1-tiny_window_1mib owner PID via self match-spec guard, and only public Exchange.read_body_step/3 and ThousandIsland.Socket.recv/3.",
+    "Reads public exchange phase whitelist, credit/wait/size scalars and returned body byte_size; never stores or serializes Exchange, socket, Session, body contents or full arguments/results.",
+    "Finite phase/category/operation/one-byte-versus-bulk keys bound count/duration metric cardinality; retains first8/last8 plus scalar byte totals and count,total,min,max aggregates.",
+    "At most one scalar event context per read operation and one reply timestamp for the selected owner; per-PID contexts deleted on DOWN.",
+    "Trace patterns cleared on completion, owner DOWN and observer stop; all owner receive/call/timestamp flags disabled at stop. Timestamped existing public error/event tracking preserved.",
+    "Assertion256 and original opening/normal/timeout/cleanup deadlines unchanged."
+  ],
+  "limits": [
+    "recv phase labels the enclosing read step entry, not private decoder state at each socket call.",
+    "A trace context is diagnostic only and not a complete execution history; tracing may affect scheduling.",
+    "No runtime or UP2 acceptance inferred; no tests, Mix, format, product imports or source mutations by reviewer.",
+    "Parent-owned peer stderr diagnostic is outside this fixture review."
+  ],
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true
+}

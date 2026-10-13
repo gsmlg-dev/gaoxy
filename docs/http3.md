@@ -3,7 +3,7 @@
 Select the optional `gaoxy_http3` application explicitly. It serves the existing
 Endpoint/Exchange/Response and Plug APIs over native QUIC; H1/H2 consumers keep
 their existing dependency closure. [M4 acceptance](acceptance/m4.md) records
-local qualification and the remaining upstream Session integration.
+passing implementation gates and completed independent acceptance.
 
 ## Embedded service
 
@@ -35,6 +35,18 @@ the original downstream Content-Length is still validated. Authentication and
 destination policies retain their existing requirements. There is no automatic
 protocol fallback or reusable upstream pool.
 
+For a fixed H3 origin, explicitly select
+`%{upstream: "https://origin.example:443", upstream_protocol: :http3,
+cacertfile: "/path/to/ca.pem"}`. HTTPS and an explicit regular CA file are
+required. The caller-owned public Session client retains one dedicated endpoint
+per request through confirmed cleanup. Upload chunks are at most16KiB; all
+requests have an explicit terminal FIN, including zero-DATA trailers. Configure
+a sufficient service byte budget. Protocol discovery, dial overrides, arbitrary
+client modules and H3 upstream groups are rejected. The independent H1/H2/H3-to-H3 matrix passes66network+2policy checks
+in both the first execution and required fresh repeat, with independent reviews.
+The [final ledger](acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+records the exact source identity and workload limits.
+
 ## Standalone data configuration
 
 `GAOXY_CONFIG` accepts this explicit version-1 service; credential paths must
@@ -59,12 +71,15 @@ refer to existing files. Ordinary `handler: "http"` services retain H1 defaults.
 }
 ```
 
-The allowlist supports static and existing fixed H1 reverse-proxy targets.
+The allowlist supports static and fixed reverse-proxy targets. A reverse-proxy
+target accepts `"upstream_protocol": "http1"` (the default) or `"http3"`;
+H3 also requires an HTTPS `"upstream"` and `"cacertfile"`. Other values and
+client/dial/TLS override fields are rejected before activation.
 Route reload uses `Gaoxy.Server.reload_routes("h3", path, timeout)` locally:
 the listener stays bound, in-flight requests retain their selected generation,
 and invalid configuration preserves the current routes. All configured stream
 snapshots are included in the service byte budget. Unknown keys/protocols and
-nonfunctional upstream-H3 options are rejected; data configuration evaluates no
+invalid upstream-H3 options are rejected; data configuration evaluates no
 code and creates no atoms or public management endpoint.
 
 ## Verification and limits
@@ -93,9 +108,14 @@ The separate release-artifact E2E workflow stays disabled.
 The [request-trailer dependency](dependency-requests/http-fetch-h3-request-trailers.md)
 is resolved in installed0.21.4; all15Fetch functional diagnostics pass. Fetch H3
 cleanup completion remains unsupported. The selected
-[public Session plan](plans/m4-public-session-upstream.md) is undergoing direct
-qualification before Gaoxy integration. The H3 upstream adapter and
-H1/H2/H3-to-H3 origin matrix remain unimplemented; full M4 completion and
-publication require those remaining gates. Dynamic QPACK, push, extended CONNECT, WebTransport,
+[public Session plan](plans/m4-public-session-upstream.md) has passed direct
+qualification and client/guardian integration with independent review and fresh
+verification. Standalone H3-origin runtime passes16checks with independent review
+and a fresh repeat. Both complete UP2 executions and all
+prescribed final source/native/browser/standalone/Session/consumer checks PASS.
+Final independent M4 acceptance PASS; portable build, offline packaged runtime
+and publication are NOT RUN. UP2 explicitly selects1ms host polling for its
+tiny-window workload; passing within5s establishes no default10ms throughput
+margin. Dynamic QPACK, push, extended CONNECT, WebTransport,
 DATAGRAM, 0-RTT, migration, mTLS, IPv6/wildcard bindings and graceful H3 GOAWAY
 drain remain unsupported. Stop qualifies bounded local host cleanup.

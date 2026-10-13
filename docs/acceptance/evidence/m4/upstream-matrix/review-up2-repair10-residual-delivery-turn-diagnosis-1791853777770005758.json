@@ -1,0 +1,270 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "DONE_BOUNDED_DIAGNOSIS_FULL_MATRIX_FAIL",
+  "assignment": "direct independent read-only repair10 runtime failure and residual scheduling diagnosis; final cumulative acceptance deferred",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http3_session_client.ex": "39b9f9cf242ce3fbe1bb6ccb06688bf74cb16971e8db415033cfe1fd24619d89",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "8eec1d81a8dfd77a81116d6ad30107b980bcc4905c67fe03245b705e8e9e89ad",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "712e61952aed9277cf533ed1556a7db618734cb10fe17ed9785bce5487f70168",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex": "58e2f6bcce9b3ce3c20d1a7c2c716c597fc22dd6db2859b6ef4973896443e85e",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex": "17ca098471c2e9e6109118e37a91c5c4a949a99bb4567832089e00d63007695c",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "00c1832ee7a946c90d42aa82b8abffe7424062a9e078b84884837a9dfb1dcd18",
+    "deps/abyss/lib/abyss/quic.ex": "440cb155d37d6f374cee704b8cc5c35a09dbb0759366116c8220d4cde3f3c9e2",
+    "deps/abyss/lib/abyss/quic/handler.ex": "a0e1bc27356c3144db0b3651a524d9712b30a5890a3383be78d7bf78e0b762ed",
+    "deps/abyss/lib/abyss/quic/service.ex": "ecd853982f39301c88fd174d81978deeca28c21e6800797647fbd30b268d8b42",
+    "integration/http3/upstream/peer.py": "fabc768cef82b66b4f9dd79b21cf0ada5f43323f1dde43976f67dcf6b8a9afd2",
+    "integration/http3/upstream/fixture.exs": "301e9ce28d5d5dbe9055b33ac2cf6ba58426190af4719cbd0f5e01ec92d4e268"
+  },
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791853528647261927/result.json",
+      "sha256": "a50c7c9194df5d2dd8507fb2a151bbe3bbad68f794d7e6555c9d1da3fea01d1d"
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/session-ack-poll-credit-first-execution-1791853528379474431.json",
+      "sha256": "50adbb28afc934454d13c57e18f26c3f4419846c6fe923a6cd1bae9245d8ffb4",
+      "log_sha256": "13c236d601698b6ad0a0d8a982d6fcdb23622e6d137e4fe3630e75f359be43e6",
+      "log_verified": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791853528647261927/peer.log",
+      "sha256": "5e18c316c5e0e8540d499d3267d4d46d2ad748388b9dd4fb0141663217b57da9"
+    }
+  ],
+  "actual_result": {
+    "status": "FAIL",
+    "actual_exit": 1,
+    "passed_network_checks": 50,
+    "passed_policy_checks": 2,
+    "executed_successful_checks": 52,
+    "expected_full_checks": 68,
+    "source_inputs": 292,
+    "before_after_current_equal": true,
+    "selected_quic": {
+      "h3": {
+        "alpn": [
+          "h3"
+        ],
+        "poll_interval": 1
+      },
+      "h3_sibling": {
+        "alpn": [
+          "h3"
+        ],
+        "poll_interval": 1
+      }
+    },
+    "peer": {
+      "headers": "[[(b':status', b'200'), (b'x-origin', b'a'), (b'x-repeat', b'one'), (b'x-repeat', b'two'), (b'set-cookie', b'first=1'), (b'set-cookie', b'second=2'), (b'trailer', b'x-check')]]",
+      "bytes": 662281,
+      "sha256": "bab30f9e4c40381613ac103c0f6e06c4e4b7ce8c078659630e65d76c86efd02a",
+      "ended": false,
+      "reset": null,
+      "closed": false,
+      "termination": null,
+      "data_observation": {
+        "events": 648,
+        "first_ms": 1878.508,
+        "last_ms": 4986.39
+      },
+      "bodyless_wire": null
+    },
+    "peer_average_data_interval_ms": 4.803527,
+    "origin": {
+      "data_bytes": 1048576,
+      "data_sha256": "8f990ba0b577b51cf009ea049368c16bbda1b21e1b93be07a824758bb253c39b",
+      "request_fin": true,
+      "fin_count": 1,
+      "response_fin": true
+    },
+    "guardian": {
+      "result": "NOT_RECORDED",
+      "owner_down": ":killed",
+      "guardian_down": ":normal",
+      "elapsed_ms": "NOT_RECORDED"
+    },
+    "public_poll_count": 411,
+    "public_poll_total_us": 478838,
+    "upload_intervals": {
+      "count": 172,
+      "max": 29063,
+      "min": 4171,
+      "total": 1779946
+    },
+    "trace_tail": [
+      {
+        "category": "ok",
+        "kind": "result",
+        "operation": "poll",
+        "at_us": -576460717623096,
+        "command_us": 1879,
+        "poll_events": {
+          "data": 8,
+          "writable": 1
+        }
+      },
+      {
+        "kind": "tick",
+        "at_us": -576460717619907
+      },
+      {
+        "kind": "tick",
+        "at_us": -576460717614953
+      },
+      {
+        "kind": "tick",
+        "at_us": -576460717610605
+      },
+      {
+        "kind": "tick",
+        "at_us": -576460717605985
+      },
+      {
+        "kind": "tick",
+        "at_us": -576460717601987
+      },
+      {
+        "kind": "command",
+        "operation": "abort",
+        "at_us": -576460717600508
+      },
+      {
+        "category": "ok",
+        "kind": "result",
+        "operation": "abort",
+        "at_us": -576460717599469,
+        "command_us": 1039
+      }
+    ],
+    "children": [
+      {
+        "pid": 697858,
+        "exit": 1,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 670872,
+        "exit": 0,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 667467,
+        "exit": 0,
+        "forced_shutdown": false
+      }
+    ],
+    "ports_rebound": [
+      44474,
+      58557
+    ],
+    "final_observed_baselines": {
+      "h1": {
+        "active": 0,
+        "retained_high_water": 4474409,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      },
+      "h1_sibling": {
+        "active": 0,
+        "retained_high_water": 2230196,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      },
+      "h2": {
+        "active": 0,
+        "retained_high_water": 351066860,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      },
+      "h2_sibling": {
+        "active": 0,
+        "retained_high_water": 175534571,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      },
+      "h3": {
+        "active": 0,
+        "retained_high_water": 2529631,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      },
+      "h3_sibling": {
+        "active": 0,
+        "retained_high_water": 0,
+        "retained_bytes": 0,
+        "cleanup_pending": 0,
+        "cleanup_failed": null,
+        "queued_items": 0,
+        "queued_bytes": 0
+      }
+    }
+  },
+  "findings": [],
+  "diagnosis": {
+    "confidence": "Verified failure facts and sourced scheduling/copy granularity; next causal bottleneck UNPROVEN",
+    "observations": [
+      "Selected1ms remains actual; repair10 guardedACK due reset/pausedpollref provenance code is present at frozen39b9f9cf hash. Its unchanged53/0 and304/0 scoped evidence remains valid; whole matrix fails.",
+      "Peer662281bytes/648DATA first1878.508ms last4986.39ms, noFIN/reset/close; originfull1048576/hash/one requestFIN/responseFIN. Nativeownerkilled and guardiannormal, no endpointresult recorded. Do not infer wirecompletion or endpointsuccess.",
+      "Publicpoll411 total478838us, uploadinterval172 total1779946us. These aggregates do not measure deliveryACK roundtrip or each nativewrite. Comparedrun bytes/timings are observations, not controlled attribution of repair benefit.",
+      "Lastproductivepoll returns8DATA+writable, followed byfive ticks withno furtherpubliccommand thenabort. This differs earlierrepair9 controlonly due pattern; queueddata/helddelivery can themselves suppress unpausedpolling. Exact currentdelivery/state was not captured."
+    ],
+    "source_mechanisms": [
+      "HTTP3SessionClient.queue_event appends each public DATA separately; delivery considers only the first DATA event, splittinglargeevents toexisting16KiB but never combining smalladjacentevents. Each resulting chunk requires exactlyone downstream completion then matchingACK.",
+      "ProxyHTTP chunk handler waits for Response.chunk success before Session ACK. H3Transport submit/await correlates each slotref; Connection claims one operation per streamturn, flushes twice, completes onlyoutempty/no uncertainwrite, and preservesdeadline/unknownrefs.",
+      "Abyss publicWorker supplies boundedengineevents+tick then schedules nextpublicpoll afterselected1ms. Operations.submit itself performsETS change withoutpublic immediatewake. Eventbatchesmay providemultipleturns; do not claim eachchunk costs exactly1/5ms.",
+      "Existingconnectionadaptive writequantum halvesblockedwrites/doublesacceptedwrites withinboundedmax. Smallflowcredit/frameoverhead may require severalboundedwritecalls. No perwrite/credit trace proves this accounts for the observedaverage."
+    ],
+    "limitations": [
+      "No completeperdelivery submit/claim/write/reply/ACK correlation. No proved remainingdependencybug, schedulerfixedcost, or productionfix.",
+      "Nativepeerflowcredit, publicupstreampollcost, uploadtime and callbackcost all remain possiblecontributors. No window/body/deadline changes authorized."
+    ]
+  },
+  "recommended_next_bounded_work": {
+    "diagnostic": "If more attribution needed, capture bounded monotonic timings/counts for exact targetpublic operations submit/claim/reply/ACK and nativewrite status via supported Gaoxy/test/public boundaries; never dumpTLS/data/privateSDKstate or alteroracles. Existing aggregatecollector not enough for perdelivery causalproof.",
+    "possible_minimal_recovery": "Combine onlyalreadyretained consecutive DATA events intoone delivery<=existing16KiB; no waitingforfuturedata, no crossingheaders/trailers/end, no extraqueue/process/window/deadline. This reducesGaoxyperdeliveryroundtrips whereonepoll alreadycontainsmultiplesmallDATA. Performancequalification remains hypothesis.",
+    "required_regressions": [
+      "Exactbytes/order acrossmixedsmallDATA and16KiBboundary; retainleftovers/eventbytes correctly",
+      "Stop at headers/trailers/end; preserve progressive immediatefirstavailablebytes",
+      "One delivery untilmatchingACK; stale/nilACKnoop; pausedcontrol/operationoverlap constraints unchanged",
+      "Uncertainoperation/publicgeneration/ref/deadlines/cancellation and boundedqueue/retention remain",
+      "MeaningfulRED/GREEN and independentSPEC/CODE/prelive; unchangedentire68matrix andfreshfullrepeat afteractualPASS"
+    ],
+    "no_runtime_claim": true
+  },
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 19,
+    "up2_unsuccessful_production_repairs": 7,
+    "up2_unsuccessful_harness_repairs": 3,
+    "completed_failed_up2_repair": 10,
+    "recorded_matrix_starting_failed_counter": 18,
+    "reviewer_repair_rounds": 0,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-up2-repair10-residual-delivery-turn-diagnosis-1791853777770005758.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only scoped current source/docs/diff/receipt/log/hash checks and immutable JSON serialization. No Mix/test/live/network execution, source/doc edits, commits or delegation; no ownedruntimeprocesses. Parent owns serializedexecution and recovery.",
+  "clearance": "Repair10 actualmatrixFAIL preserved. Final cumulative CODE/SPEC completion, UP2/M4/release acceptance deferred; finalnative/browser/standalone/Session/cleanconsumer gates still required. No thirdAstra."
+}

@@ -1,0 +1,203 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only actual runtime evidence review, coordinator repair4",
+  "reviewed_utc": "2026-10-12T20:26:29.946726+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "runtime_verdict": "FAIL",
+  "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791836503490777437/result.json",
+  "run_sha256": "2ff0e6d40e0c7f7d2fba51e8ceb181f9665574f944b4b774ac431dbd19d48d29",
+  "wrapper_exit": 1,
+  "prelive_freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair4-revision2-prelive-freeze-1791836373370394761.json",
+  "prelive_freeze_sha256": "a2608b6ff58c541f8a31b2d7bce69e437bf1365e32d32a56ee4dd81c6e243ba9",
+  "review_contract": "Previously reviewed TLS observation design/plan and unchanged50-row Session contract; no source/spec/runtime mutation or gate rerun by reviewer.",
+  "executed_evidence": {
+    "PASS_rows": 47,
+    "PASS_by_kind": {
+      "boundary_double": 31,
+      "network": 14,
+      "policy": 2
+    },
+    "unique_names": true,
+    "raw_probe_checks_equal_result": true,
+    "raw_cleanup_receipts_equal_result": true,
+    "raw_public_diagnostics_equal_result": true,
+    "source_before_equals_after": true,
+    "current_source_hashes_verified": 285,
+    "positive_1MiB_response_raw_bytes": 1048576,
+    "positive_1MiB_response_each_batch_hash_matches_exact_expected_x": true,
+    "positive_1MiB_request_bytes": 1048576,
+    "positive_1MiB_request_FIN_count": 1,
+    "four_zero_three_declared_undeclared_trailer_rows": "PASS",
+    "TLS_network_rows": "PASS",
+    "pure_policy_rows": "PASS",
+    "cancel_pending_headers": "PASS; independent reset observed plus local teardown and sibling completion"
+  },
+  "TLS_causal_evidence": {
+    "actual_error_operation_and_public_cause": {
+      "wrong_ca": {
+        "caller": "#PID<0.499.0>",
+        "path": "/negative-wrong_ca",
+        "origin": "a",
+        "result": "{:error, :closed}",
+        "operation": "ready",
+        "caller_high_water": 0,
+        "public_closed": "{:tls, :tls, :unknown_ca, :path_validation_failed}",
+        "caller_alive": true,
+        "deadline_ms": -576460731020,
+        "poll_events": null,
+        "started_ms": -576460735980,
+        "completed_ms": -576460735980,
+        "remaining_ms": 4960,
+        "event": "public_result"
+      },
+      "wrong_hostname": {
+        "caller": "#PID<0.508.0>",
+        "path": "/negative-wrong_hostname",
+        "origin": "a",
+        "result": "{:error, :closed}",
+        "operation": "ready",
+        "caller_high_water": 0,
+        "public_closed": "{:tls, :tls, :certificate_unknown, :hostname_mismatch}",
+        "caller_alive": true,
+        "deadline_ms": -576460730977,
+        "poll_events": null,
+        "started_ms": -576460735938,
+        "completed_ms": -576460735938,
+        "remaining_ms": 4961,
+        "event": "public_result"
+      }
+    },
+    "specific_original_assertions_plus_direct_public_closed_assertions_executed": true,
+    "negative_before_after_raw_snapshot_pairs_equal": 4,
+    "actual_negative_origin_requests": 0,
+    "local_teardown_for_both_TLS_negatives": "confirmed",
+    "scope": "Observed public consumer closure cause is corroborated by unchanged relay source and raw ready/negative_after receipts; no cause manufactured from requested input."
+  },
+  "deterministic_subcases": {
+    "row": "guardian_duplicate_result_rejected",
+    "receipt": {
+      "name": "guardian_duplicate_result_rejected",
+      "kind": "boundary_double",
+      "service_completion": "NOT CLAIMED",
+      "state_transitions": 2,
+      "post_call_closed_before_result": true,
+      "idle_closed_observed": true,
+      "stale_closed_rejected": true,
+      "first_reason_retained": true,
+      "event": "double_receipt"
+    },
+    "raw_receipt_matches_result": true,
+    "executed_status": "PASS boundary_double; not independent native protocol proof"
+  },
+  "failure": {
+    "row": "cancel_unacknowledged_response",
+    "path": "/stalled-response",
+    "connection": 17,
+    "stage": "Independent peer cancel_observed barrier after unacknowledged14-byte response and paused-control validation and confirmed local teardown",
+    "runner_error": "Empty()",
+    "peer_deadline_seconds": 5,
+    "raw_origin_matching_reset_stop_sending_connection_closed_events": 0,
+    "captured_wire_history_matching_events": 0,
+    "history_scanned_before_new_events": true,
+    "local_teardown": {
+      "cleanup_outcome": "confirmed",
+      "endpoint_stop": ":ok",
+      "endpoint_down": ":normal",
+      "stop_task_down": ":normal",
+      "guardian_down": ":normal",
+      "tasks": [
+        {
+          "pid": "#PID<0.539.0>",
+          "down": ":normal",
+          "kind": "bootstrap"
+        },
+        {
+          "pid": "#PID<0.543.0>",
+          "down": ":normal",
+          "kind": "stable_caller"
+        }
+      ],
+      "bind_port": 46430,
+      "rebound_port": 46430,
+      "service_completion": "NOT CLAIMED: harness lifecycle only",
+      "observed_at": -576460735809,
+      "cleanup_deadline": -576460734810
+    },
+    "session_abort_outcome": "unknown; complete original result retained",
+    "sibling_final_survival_verification": "NOT RUN after this barrier failed",
+    "root_cause_status": "Peer cancellation absence verified; exact cause of absence/endpoint stop vs concurrent abort ordering remains root diagnosis. Local teardown is not peer cancellation proof."
+  },
+  "row_accounting": {
+    "required": 50,
+    "PASS": 47,
+    "attempted_FAIL": [
+      "cancel_unacknowledged_response"
+    ],
+    "later_NOT_RUN": [
+      "cancel_blocked_upload",
+      "cancel_owner_loss"
+    ],
+    "required_rows_without_PASS": 3,
+    "note": "Result JSON has47 PASS checks and no not_run field. The attempted cancellation row failed before its PASS check; classify it FAIL, while two later rows were not started. Do not describe all three as unexecuted."
+  },
+  "partial_lifecycle": {
+    "captured_confirmed_cleanup_receipts": 15,
+    "required_full_gate_cleanup_receipts": 20,
+    "observed_cancellation_receipts": [
+      {
+        "path": "/delayed-headers",
+        "event": {
+          "event": "reset",
+          "origin": "a",
+          "connection": 15,
+          "stream": 0,
+          "path": "/delayed-headers",
+          "error_code": 268
+        }
+      }
+    ],
+    "required_full_gate_cancellation_receipts": 4,
+    "owned_children": [
+      {
+        "pid": 1195876,
+        "exit": 0
+      },
+      {
+        "pid": 1200171,
+        "exit": 0
+      }
+    ],
+    "both_children_exit0": true,
+    "runner_ports_rebound": [
+      36203,
+      44266
+    ],
+    "limit": "Clean child exits/local port rebind do not pass the failed peer cancellation or unexecuted per-request/sibling assertions. Service completion remains NOT CLAIMED."
+  },
+  "artifact_sha256": {
+    "result.json": "2ff0e6d40e0c7f7d2fba51e8ceb181f9665574f944b4b774ac431dbd19d48d29",
+    "probe.log": "0ec3630d356e7f6c62588a7140282d02880af9a78b00ff7542bb6ef326abe54c",
+    "origin.log": "4f0f7917724fc3fb8bf948e038033ea7f87858ed626c217714bad0cbd198d9c3"
+  },
+  "verification_commands": "Read-only JSON/raw-log parsing, exact case/cleanup/diagnostic comparisons, negative snapshot pairs, per-batch byte/hash checks, peer-history scans,285 source SHA256 comparisons and git identity. No Mix/live commands.",
+  "counters": {
+    "direct_chain_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_repair": 4,
+    "coordinator_unsuccessful_after_this_run": 4,
+    "reviewer_repair_rounds_added": 0,
+    "third_astra_authorized": false
+  },
+  "changed_files": "Only this new unique immutable review receipt; sources and historical evidence preserved.",
+  "command_shutdown_status": "All reviewer read commands completed; no reviewer-owned processes. Parent actual gate command is reported finished; captured both-child exits0 confirmed.",
+  "remaining_risks": [
+    "UP0 remains FAIL, UP1 HOLD_UP0. Any next repair needs a written design/freeze and independent review; this receipt does not authorize/qualify a candidate.",
+    "Remaining two cancellation rows, final full snapshot/cleanup/adoption/caller totals and fresh repeat remain unexecuted."
+  ],
+  "decisions_needed": []
+}

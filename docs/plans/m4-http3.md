@@ -1,15 +1,36 @@
 # M4 native HTTP/3 implementation plan
 
-**Dependency/execution update, 2026-10-13:** Coordinated0.21.4 is installed and
-post-review affected tests pass274/0. HTTP Fetch#101 is closed; the selected
-[public Session continuation](m4-public-session-upstream.md) supersedes the
-Fetch-specific upstream mechanism. Its initial network poll exposed fixed SDK
-consumer affinity; the bounded
-[architecture/task amendment](m4-public-session-consumer-affinity.md) passed
-independent review and now requires runtime qualification before activation.
-[Current acceptance](../acceptance/m4.md) records those actual
-failures and all remaining gates. Earlier0.21.3 task receipts remain historical;
-final runtime/browser/consumer verification must use the updated closure.
+**Current execution, 2026-10-13:** All prescribed M4 implementation checks
+PASS on the final repair12 source: **530 tests/0 failures**, strict umbrella and
+explicit Phoenix H3 compilation, Session **50 checks** (17 network + 2 policy +
+31 boundary doubles), G1/G2/G3 **47/59/19**, standalone **16**, and clean
+core/H1-H2/H3 consumers **1/2/2 tests, 0 failures**. G0's reviewed **4 tests +
+9 peer rows** are reused with independently checked unchanged host inputs.
+UP2 completes **66 network + 2 policy** checks in both the first execution and
+required fresh repeat, with independent evidence reviews.
+[The final gate ledger](../acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds each result to its command, source hashes, counts, exits and review.
+
+All six local source versions are0.3.0; fresh candidate530/0,34-file formatting
+and strict umbrella/Phoenix/production compilation PASS as linked in the ledger.
+Final independent M4 acceptance/documentation review PASS, with no unresolved findings. Portable
+build, packaged runtime qualification and publication are **NOT RUN**.
+The selected tiny-window profile uses public H3 host polling1ms and finite H2
+control2048/s; defaults10ms/256controls/s are unchanged. H3 tiny-window completion
+was4985ms first/4567ms fresh within the original5s bound; no throughput margin or
+default10ms workload claim follows.
+
+Unsuccessful UP2 counters remain **20 live/8 production/3 harness**. All earlier
+FAILs and historical19/7/3,18/6/3,17/5/3 checkpoints remain in the acceptance
+history; the new PASS runs do not change failed-run causal uncertainty.
+[The dependency audit](../acceptance/evidence/m4/upstream-contract/latest-http-fetch-main-update-audit-1791855535947755021.json)
+retains published/installed0.21.4 and needed public8KiB fragmentation with a16KiB
+application ceiling; #105 is closed in main, but no containing fix is installed.
+The next prepared package is existing
+[M3 Task4 H1 resource foundation](m3-h1-resource-foundation.md) and its
+[design](../designs/m3-h1-resource-foundation.md): design/plan only, implementation
+**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) remains conditional on final
+acceptance and separate artifact qualification. Operational restrictions remain.
 
 > For Sol execution: use `executing-plans` or `subagent-driven-development`
 > task by task under AGENTS.md. Give parallel writers disjoint ownership;
@@ -23,10 +44,10 @@ then integrate shared HTTP endpoints and prove the downstream proxy/browser rows
 application owns server state and reuses public Frame/Varint/Settings/Control/Qpack
 APIs. Gaoxy's existing QUIC bridge remains the attached I/O owner boundary.
 
-**Stack:** Elixir 1.18 / locked OTP 28 Nix shell, selected Abyss Git revision,
-HTTP cohort 0.21.3, independent Python aioquic, local Chromium/Playwright.
+**Stack:** Elixir 1.18 / locked OTP 28 Nix shell, installed public QUIC host and
+HTTP/QUIC cohort 0.21.4, independent Python aioquic, local Chromium/Playwright.
 
-**Execution start, 2026-10-12:** baseline `78de9d0f3bba5a4662717359438eb3d0853a79b4`,
+**Historical execution start, 2026-10-12:** baseline `78de9d0f3bba5a4662717359438eb3d0853a79b4`,
 branch `codex/m4-http3`, worktree `.trees/m4-http3`. Gates remain NOT RUN until
 source-bound execution evidence is recorded. No routine user approval is required between
 passing gates. Preserve unrelated edits, Vault freeze, disabled release-artifact
@@ -284,9 +305,9 @@ Owner: integration worker. Files:
   Phoenix HTTP page. H2 fallback alone fails the H3 assertion.
 - [x] Run `python scripts/check-tests.py apps/gaoxy_http3/test/proxy_test.exs`,
   then `python integration/http3/matrix.py --evidence docs/acceptance/evidence/m4/matrix`.
-- [x] Record H1/H2 -> H3 origin, H3 -> H3 origin and H3 -> H2 origin rows as
-  NOT IMPLEMENTED / NOT RUN until their separate upstream adapter slices exist.
-  This is an explicit boundary, not a full-matrix PASS. H3 WebSocket is UNSUPPORTED.
+- [x] Record H1/H2 -> H3 and H3 -> H3 origin rows under the completed UP2
+  task below. H3 -> H2 origins remain NOT IMPLEMENTED / NOT RUN;
+  H3 WebSocket is UNSUPPORTED.
 - [x] Run `scripts/external-consumer.sh` for core isolation and create/run an
   analogous clean H1/H2-only consumer selecting only `gaoxy_http`; assert its
   resolved/started apps exclude `elixir_quic`, `elixir_quic_http3`, `ex_ssl` and
@@ -300,9 +321,9 @@ Owner: integration worker. Files:
 
 **G3 pass:** only executed downstream/browser/isolation rows pass. If browser
 support is unavailable, record BLOCKED_ENV and keep that gate incomplete.
-The remaining upstream-H3 adapter/matrix work needs its own written bounded
-architecture and implementation plan under continuing authorization; it must
-not be silently omitted from a claim of full M4 completion.
+The upstream-H3 adapter/matrix has its own written bounded design and plan
+under continuing authorization; its complete UP2 execution remains separate
+from the downstream-only G3 gate.
 
 ## Task 5 — remaining M4 product coverage
 
@@ -314,10 +335,22 @@ streaming/cancellation without enabling the unimplemented reusable H1/H2 pools.
 Prove H1/H2 -> H3 and H3 -> H3 with independent origins, plus a standalone
 data-only H3 service using local test credentials and bounded shutdown. Write
 the exact file ownership, regressions and commands in their own plans before
-implementation. These required rows remain NOT IMPLEMENTED / NOT RUN until
-verified; G0-G3 do not substitute for full M4 acceptance. The separate user
+implementation. UP0/UP1 and standalone H3-origin now pass as recorded above;
+UP2 actual-evidence review/fresh repeat and all final implementation executions
+PASS. Final independent acceptance PASS; G0-G3 alone do not substitute
+for full M4 acceptance. The separate user
 authorization permits main integration, push and release only after full M4
 verification and independent review. Deployment remains excluded.
+
+- [x] Complete selected public Session UP0 and UP1 with independent review and
+  fresh verification; see the source-bound receipts in the selected plan above.
+- [x] Complete standalone fixed H3-origin configuration/runtime with independent
+  review and fresh 16-check repeat.
+- [x] Complete all66network+2policy UP2 checks, independent evidence review
+  and fresh full repeat; retain historical FAILs and cumulative repair counters.
+- [x] Complete final affected native/browser/standalone/Session/consumer executions.
+- [x] Complete final independent M4 acceptance/documentation review before
+  conditional publication and separate artifact qualification.
 
 ## Handoff / stopping rules
 
@@ -333,7 +366,7 @@ Before any final result, record commands completed/stopped, precise diff ownersh
 PASS/FAIL/BLOCKED/NOT RUN per gate and residual capability rows. Local tests do
 not establish hosted CI, release artifacts, deployment or production acceptance.
 
-2026-10-12 checkpoint: fresh shared/downstream gates passed59/19 checks;
+**Historical 0.21.3 checkpoint, 2026-10-12:** fresh shared/downstream gates passed59/19 checks;
 clean core1/0, H1/H2 2/0 and H3 2/0 passed independent review. Final affected
 tests passed274/0, exact53-file format and strict umbrella/Phoenix H3 builds.
 UP0 reports5PASS/2BLOCKED on request trailers (HTTP Fetch#101), so UP1/UP2
@@ -341,3 +374,6 @@ remain unimplemented. Standalone ST1 passed review and58/0; ST2 static/H1-origin
 passed11 checks and its fresh repeat. The standalone H3-origin row remains
 blocked. See [the supplement](m4-upstream-standalone.md),
 [acceptance](../acceptance/m4.md) and [remaining queue](m4-upstream-resume.md).
+
+Final M4 implementation acceptance: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

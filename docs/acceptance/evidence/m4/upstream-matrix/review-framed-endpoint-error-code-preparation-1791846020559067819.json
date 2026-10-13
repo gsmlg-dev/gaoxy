@@ -1,0 +1,78 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "FINDING_REQUIRES_RESOLUTION",
+  "assignment": "direct read-only independent CODE preparation review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-framed-endpoint-errors.md": "477badc1070490e4320eb9b7e8b5ac64a94630797b18407ce707eb7d7d7dad72",
+    "docs/plans/m4-framed-endpoint-errors.md": "b13b5d98143bb7c459323f64f71d6555384a39bb38d6d62f77f32440a9289160",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "db0742ef58724f4f18208420be10884b1f6638ae61882154d07e19e25ee25b0f",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex": "4c6156f10dfc9d34c518de0a6ff3d028d7ecfd81d21c72a31619b1701ec539b7",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "95703155092c985aeb3ff02fa36a26d1614b2cd85b1c76bf76c590ca5fd43036",
+    "apps/gaoxy_http/test/http2_network_test.exs": "e91672f02e6d34dc25dee2153e39258f2ad146f631a4d396ad255fd7f93ff69b",
+    "apps/gaoxy_http3/test/plug_test.exs": "c688696b0709b11e195fa33aed6165e98f6199780ed8a621588d828a53c4b6a2"
+  },
+  "findings": [
+    {
+      "id": "C1",
+      "severity": "medium",
+      "files": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex:36",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex:69"
+      ],
+      "finding": "Negative state guard classifies arbitrary invalid final.response as endpoint_failed/CANCEL, changing prior invalid_response_state/response_failed internal classification. New cancellation must apply only to valid open committed response states.",
+      "requested_change": "Use positive :chunked or {:fixed_stream, nonnegative_integer} classifier; leave invalid states on existing finish/failure path."
+    }
+  ],
+  "resolved_test_findings": [
+    "F1: H2 worker released receipt and H3 actual marker-consumed output required; timeout cannot satisfy green without release proof.",
+    "F2: H2 sibling collector rejects END_STREAM on settled failed response1."
+  ],
+  "red_review": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/framed-endpoint-errors-strengthened-red-1791845884890104933.json",
+    "sha256": "e355d026fedd2e48768696bfb90ee71930b970170e4dd4639943f2be18a508dd",
+    "log_sha256": "eaa13acc911b9865c10acabfcb29c4566a7a3172feda50c24f31212ee581e43e",
+    "actual_exit": 2,
+    "tests": 27,
+    "expected_failures": 2,
+    "authored_source_stable": true,
+    "receipt_source_unchanged": false,
+    "source_difference": [
+      "apps/gaoxy_http3/tmp/Gaoxy.HTTP.HTTP3.PlugTest/test-returned-endpoint-errors-preserve-completed-responses-and-reset-a-committed-prefix-on-real-H3-3a73d738/returned_endpoint_errors.exs"
+    ],
+    "source_difference_assessment": "Only test-generated temporary Elixir fixture rewritten during execution; do not claim complete source map unchanged. Authored tests and four framed production files were unchanged.",
+    "actual_failures": [
+      "H2 expected reset8 but got empty successful DATA END_STREAM.",
+      "H3 marker consumed; expected reset/stop0x10C but both maps empty."
+    ]
+  },
+  "bounded_code_observations": [
+    "H2 completion adds fixed bounded endpoint outcome and retains matching worker/id/token fencing.",
+    "H3 fixed outcome stored by existing owner/worker/key/token/idle CAS Operations.finish; cancellation remains existing affected stream reset/stop path.",
+    "Prehead500, sent/bodyless, ordinary success and worker-crash flow unchanged for valid Exchange states; no endpoint terms/Exchange/body serialized to owner."
+  ],
+  "verification_status": "PREPARATION_ONLY; NO_GREEN_REVIEWED",
+  "counters": {
+    "up0_sol": 2,
+    "up0_unsuccessful_sol": 2,
+    "up0_astra": 2,
+    "up0_unsuccessful_astra": 2,
+    "up0_coordinator": 5,
+    "up0_unsuccessful_coordinator": 4,
+    "up1_repair": 2,
+    "up1_unsuccessful_initial": 1,
+    "up1_unsuccessful_repairs": 1,
+    "up2_live_repair": 2,
+    "up2_unsuccessful_executions": 6,
+    "standalone_repair": 2,
+    "standalone_unsuccessful": 2
+  },
+  "reviewer_repair_rounds": 0,
+  "commands_finished": true,
+  "limits": [
+    "No source changes or runtime/Mix/tests/format commands by reviewer.",
+    "No UP2/M4 acceptance; original deadlines/claims/counters preserved."
+  ]
+}

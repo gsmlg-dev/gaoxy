@@ -1,0 +1,62 @@
+{
+  "task_id": "/root/m4_session_affinity_review:portable_R1_and_exact_commit_coordinator_preparation",
+  "assignment": "Direct independent read-only CODE/SPEC preparation review",
+  "status": "PASS_PREPARATION",
+  "findings": [],
+  "resolved": "PORTABLE-R1 unbounded Docker commands and owned cleanup",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "baseline_head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "source_sha256": {
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py": "e41fa4f4bdb735fc80257abd15b394d7af9732fb917ca0d7c14373025477924e",
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py": "2f105717969546ffa8f0ee44a9a54939c78c7c405e279f733437c1a17011be4d",
+    "docs/designs/release-0.3.0-portable.md": "89e365a34d104dc2416f5b50555484c590740669397fb20a36ba1057813dd5cb",
+    "docs/plans/release-0.3.0-portable.md": "5365b813d1ada072a82fec1f52a8e29d5a7ad5ec6fc0ae34cd1f5f69fe7ad9d0",
+    "docs/acceptance/evidence/release-0.3.0/portable-r1-boundary-validation-1791856783223863468.json": "734c3b4e232375db620f3c5206651d3ad31568446882f81f3ccf2cab380b9f66",
+    "docs/acceptance/evidence/release-0.3.0/portable-r1-boundary-check-1791856783223863468.py": "a8d441514dc543bb65f516d82e4fff4cbb83bd79eef2557b006895961bb73e25",
+    "docs/acceptance/evidence/release-0.3.0/portable-r1-root-code-review-1791856930764812870.json": "debd0fd102e9480c2b3559fe3df2b9c9f010c30ab8554ad54589e6f09446aa09",
+    "docs/acceptance/evidence/release-0.3.0/portable-static-review-1791856248854.json": "7efee489c888a8a2dad8069ca9238e06225e31aa6c46c3395ff8d52e651d91c5",
+    "/tmp/gaoxy-030-portable.py": "e93dad59725b42a6a05ae1acb788c424031895530e604b6bfc5b32c4ef6ea2be"
+  },
+  "reviewed_behavior": [
+    "Parent shared600-second absolute bound with40-second cleanup reserve; child receives bounded remaining budget capped300 seconds with30-second cleanup reserve",
+    "Every parent Docker process wait reserves2 seconds for kill/reap; parent uses owned process group; independent bounded fallback inspect/log/final/remove/absence steps",
+    "Child persists authenticated unique owned name before image inspection/create; all Docker calls finite; diagnostic attempts independent and removal in finally",
+    "Child success requires runtimePASS, actual container exit0, normal diagnostic/removal/absence success; forced cleanup and missing proof preserveFAIL",
+    "Coordinator archive and recipe copies use exact committed Git source; source archive and rootlock checked before/after; changed Elixir paths derived from fixed preM4 baseline; tracked changes rejected at capture",
+    "Coordinator stage process groups have build1790/finalize30/runtime620-second bounds including10-second margin and5-second kill/reap; inner qualifier600-second bound remains authoritative",
+    "No source/runtime execution by reviewer; Python AST and hashes only"
+  ],
+  "boundary_validation": {
+    "status": "PASS_REVIEWED_EXECUTED_RECEIPT",
+    "cases": 10,
+    "tests_not_rerun_by_reviewer": true,
+    "child_cases": [
+      "normal",
+      "image_timeout",
+      "create_timeout",
+      "wait_timeout",
+      "cleanup_inspect_timeout",
+      "remove_failure"
+    ],
+    "parent_cases": [
+      "normal",
+      "image_timeout",
+      "child_timeout",
+      "missing_proof"
+    ],
+    "source_hashes_match": true,
+    "simulation_only": true
+  },
+  "limits": [
+    "Actual artifact build and portable runtime qualification NOT RUN in reviewed inputs",
+    "M4 final docs/implementation closure pending",
+    "Coordinator temporary script is preparation only; preserve copy/hash before execution",
+    "Publication, deployment and production acceptance separate"
+  ],
+  "counters": {
+    "reviewer_repairs": 0,
+    "no_counter_reset": true,
+    "no_third_astra": true
+  },
+  "shutdown": "All own commands finished; no owned runtime processes"
+}

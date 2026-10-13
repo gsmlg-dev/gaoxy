@@ -2,18 +2,41 @@
 
 ## Current execution route — 2026-10-13
 
-HTTP Fetch #101 is closed and the containing coordinated **0.21.4** cohort is
-installed/locally committed as `b43a8eb`; affected post-review tests pass274/0.
-Fetch now passes15functional diagnostics, but its H3 cleanup completion remains
-unsupported. The reviewed [public Session design](../designs/m4-public-session-upstream.md)
-and [implementation plan](m4-public-session-upstream.md) supersede this queue's
-Fetch-specific UP0/UP1 mechanism. Apply the reviewed
-[consumer-affinity task delta](m4-public-session-consumer-affinity.md) to preserve
-the required fixed public caller identity. Direct Session qualification precedes its
-production activation. UP2, standalone H3-origin and final acceptance/publication
-conditions remain required. Follow the new plan; retain the starting evidence,
-original task list and counters below as history, without reusing #101 as a
-current blocker. [Current acceptance](../acceptance/m4.md) records progress.
+**Current execution, 2026-10-13:** All prescribed M4 implementation checks
+PASS on the final repair12 source: **530 tests/0 failures**, strict umbrella and
+explicit Phoenix H3 compilation, Session **50 checks** (17 network + 2 policy +
+31 boundary doubles), G1/G2/G3 **47/59/19**, standalone **16**, and clean
+core/H1-H2/H3 consumers **1/2/2 tests, 0 failures**. G0's reviewed **4 tests +
+9 peer rows** are reused with independently checked unchanged host inputs.
+UP2 completes **66 network + 2 policy** checks in both the first execution and
+required fresh repeat, with independent evidence reviews.
+[The final gate ledger](../acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
+binds each result to its command, source hashes, counts, exits and review.
+
+All six local source versions are0.3.0; fresh candidate530/0,34-file formatting
+and strict umbrella/Phoenix/production compilation PASS as linked in the ledger.
+Final independent M4 acceptance/documentation review PASS, with no unresolved findings. Portable
+build, packaged runtime qualification and publication are **NOT RUN**.
+The selected tiny-window profile uses public H3 host polling1ms and finite H2
+control2048/s; defaults10ms/256controls/s are unchanged. H3 tiny-window completion
+was4985ms first/4567ms fresh within the original5s bound; no throughput margin or
+default10ms workload claim follows.
+
+Unsuccessful UP2 counters remain **20 live/8 production/3 harness**. All earlier
+FAILs and historical19/7/3,18/6/3,17/5/3 checkpoints remain in the acceptance
+history; the new PASS runs do not change failed-run causal uncertainty.
+[The dependency audit](../acceptance/evidence/m4/upstream-contract/latest-http-fetch-main-update-audit-1791855535947755021.json)
+retains published/installed0.21.4 and needed public8KiB fragmentation with a16KiB
+application ceiling; #105 is closed in main, but no containing fix is installed.
+The next prepared package is existing
+[M3 Task4 H1 resource foundation](m3-h1-resource-foundation.md) and its
+[design](../designs/m3-h1-resource-foundation.md): design/plan only, implementation
+**NOT RUN**. [v0.3.0 publication](release-0.3.0.md) remains conditional on final
+acceptance and separate artifact qualification. Operational restrictions remain.
+
+Current completed UP0/UP1/standalone checklists are in the selected Session plan.
+The original Fetch queue below is a historical snapshot, including its unchecked
+Fetch-adapter tasks and then-open #101 disposition; it is not the active mechanism.
 
 ## Historical Fetch-specific continuation queue
 
@@ -34,7 +57,7 @@ tasks; it adds no product scope or replacement architecture.
 compatible coordinated HTTP Fetch/QUIC cohort, independent aioquic origins and
 downstream clients, and the existing Chromium/Phoenix gate.
 
-## Starting evidence and authorization
+## Historical starting evidence and authorization — 0.21.3
 
 As of 2026-10-12, the root cohort remains **0.21.3** and its lock is unchanged
 (SHA256 `16542ddd554f9b78139ddf456288450a12da5781cf3900576edd7e83f159dc25`).
@@ -260,3 +283,6 @@ add zero recovery rounds. No third historical Astra recovery is authorized.
 Retain failed/red evidence and unchanged assertions, preserve concurrent edits,
 and report commands finished/stopped, task-owned diff, source identity and
 PASS/FAIL/BLOCKED/NOT RUN separately at every handoff.
+
+Final M4 implementation acceptance: [independent review](../acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
+PASS with no unresolved findings. Portable qualification/publication stay separate.

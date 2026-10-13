@@ -1,0 +1,86 @@
+Running ExUnit with seed: 602979, max_cases: 4
+
+[32m.[0m[32m.[0m..+........+.+..+....+.....+......+++++++++++++++++++++++++++++++++++++++*...+..+.........+++++++++++++++++++++++++++++++++++++++*...........+..+.......+.....+.+..+.+..+...............+....+......+...+..+..........+..+..........+.....+...+...+.+........+......+.+...+............+.....+...+...+...+....+...+........+......+....+...........+...+.+......++++++
+........+..+....+...............+++++++++++++++++++++++++++++++++++++++*.+..+...+.........+++++++++++++++++++++++++++++++++++++++*.+.+.....+...+....+...+.....+.......+....................+...+...+....+......+..+....+......+.................+.+.........+...+..+...+....+.....+.+.....+..........+...+......+..............+..........+.....+....+..+...+.......+......+..+.+..+...................+.....+....+.....+....+...............+..+.........+....+.....+.+.....+.........+.+...........+.+...+..+.......+..+...+.......+.....+.+........+....+...+..................+.....+.+..............+.......+..............+.+.....+.........++++++
+-----
+....+..+...+++++++++++++++++++++++++++++++++++++++*...........+..+....+..+.........+...............+++++++++++++++++++++++++++++++++++++++*.............+....+.....+....+.....+.......+.....+.............+.....................+.....+......+..........+...+..+...+...+..................+....+..+.+..+.+...............+..............+.+.....+................+.....+.+...+.....+..................................++++++
+............+...+..+...+.+++++++++++++++++++++++++++++++++++++++*..+..+...+.............+..+..........+..+.+.....+++++++++++++++++++++++++++++++++++++++*..+..+..................+...............+.+.....+.+...+...+.....+...+......+....+.....+.+.....++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[22m
+02:34:41.959 [info] The function passed as a handler with ID #Reference<0.1195470663.2349072386.20683> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[31m
+02:34:46.105 [error] GenServer #PID<0.285.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.249.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.284.0>, generation: #Reference<0.1195470663.2349072386.20728>}, initialized: true}}]]
+[0m{"result": "PASS", "gate": "stream_flow_control_fin", "bytes": 344064, "streams": 5, "alpn": "h3", "verified_name": "localhost", "local_uni_id": 3, "peer_uni_id": 2}
+[31m
+02:34:46.753 [error] GenServer #PID<0.287.0> terminating
+** (stop) {:write_failed, {:error, :not_established}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.249.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.286.0>, generation: #Reference<0.1195470663.2349072385.38432>}, initialized: true}}]]
+[0m[31m
+02:34:47.863 [error] GenServer #PID<0.289.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.249.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.288.0>, generation: #Reference<0.1195470663.2349072385.38604>}, initialized: true}}]]
+[0m{"result": "PASS", "gate": "connection_close_isolation", "bytes": 86016}
+[31m
+02:34:48.484 [error] GenServer #PID<0.291.0> terminating
+** (MatchError) no match of right hand side value: {:error, :invalid_operation}
+    test/quic_test.exs:245: GaoxyQUICConsumerTest.Controls.handle_event/2
+    (gaoxy 0.2.0) lib/gaoxy/quic_bridge.ex:30: Gaoxy.QUICBridge.handle_event/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:482: anonymous fn/3 in Abyss.QUIC.Worker.handle_info/2
+    (elixir 1.18.5) lib/enum.ex:4968: Enumerable.List.reduce/3
+    (elixir 1.18.5) lib/enum.ex:2600: Enum.reduce_while/3
+    (abyss 0.7.0) lib/abyss/quic/service.ex:480: anonymous fn/1 in Abyss.QUIC.Worker.handle_info/2
+    (abyss 0.7.0) lib/abyss/quic/service.ex:547: Abyss.QUIC.Worker.watched/3
+    (stdlib 7.3.0.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.265.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.290.0>, generation: #Reference<0.1195470663.2349072386.38087>}, initialized: true}}]]
+[0m{"result": "PASS", "gate": "directional_reset_stop", "reset": 74565, "stop": 344865}
+{"result": "PASS", "gate": "peer_reset_stop_sibling_isolation", "reset_code": 273, "stop_code": 546, "sibling_bytes": 16}
+{"result": "PASS", "gate": "handshake_rejected", "alpn": "gaoxy-unsupported-v1", "server_name": "localhost"}
+.+........+.........+....+............+...+.........+..+.+........+......+......+++++++++++++++++++++++++++++++++++++++*.....+.....+.+..+......+....+..+.........+......+......+.......+...+..+...+............+.......+...+......+..+.........+..........+.....+.+..+......+....+...+........+++++++++++++++++++++++++++++++++++++++*.+....+......+.....+....+..+......+.........+...................+..+...+....+......+.....+.......+..+......+................+......+........................+.....+......+....+......++++++
+..................+.+...+.................+...+++++++++++++++++++++++++++++++++++++++*...+...+.....+....+.....+.+......+.........+..+...+.........+............+.+........+.+.....+.+..+.+......+++++++++++++++++++++++++++++++++++++++*.....+.......+..+.+..+.+.........+.....+...+...+.+.........+..+.............+.....+.+...........+....+.....+..........+...+..+......+............+.......+.........+.....+..........++++++
+-----
+....+..+...+...+...+.+++++++++++++++++++++++++++++++++++++++*...+..............+++++++++++++++++++++++++++++++++++++++*....+.......+...........+...+....+...+.....+.......+...+...+.....+....+...+..+.......+..............+.........+.......+...+..+.+..+.+.....+......+...+.............+.....+...+....+.......................+.............+...............+..+....+.....+...+.............+.........+...+..+.+..+.......+...........+.........+.+.....+....+...+.....+......+.......+.........+...+..+.+..+......+.........+.+.....+....+..+..........+....................+.+.....+.......+.....+.+............+...+..+...+.+.....+..........+.....+......+...+.+...+........+.......+...+............+..+...+...............+......+.+......+...+..+...+.......+...+.....+..........+.........+...........+....+..+.+........+.......+...+......+.....+...+..........+........+.......+...+..+.+............+.....+...+....+...........+....+......+.....+....+...+............+..+...+.+..+.............+.....+....+.................+..........+...+........+...+.+..............+.......+..+.+..+....++++++
+.........+..........+......+.....+.+...+.....+...+...+....+..+.........+......................+++++++++++++++++++++++++++++++++++++++*........+....+......+.....+......+...+.+...+..+...............+++++++++++++++++++++++++++++++++++++++*.....+..+.............+......+..+...+.......+.....+....+...+......+..+...+.+...........+.......+.....+......+......+.+...+..+...+......+.+..+.............+..............+...+.......+........+...+...+.......+.........+...+...+...+......+........+.+..+...+....+...........+.+...+...............+..+.....................+....+......+...+.........+...++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[cbaf4f44c9d06f92] Error: 298, reason: unable to get local issuer certificate, frame_type: 6
+{"result": "PASS", "gate": "handshake_rejected", "alpn": "h3", "server_name": "localhost"}
+[51332d6a19fcf735] Error: 298, reason: hostname 'invalid.example' doesn't match either of DNSPattern(pattern=b'localhost'), IPAddressPattern(pattern=IPv4Address('127.0.0.1')), frame_type: 6
+{"result": "PASS", "gate": "handshake_rejected", "alpn": "h3", "server_name": "invalid.example"}
+QUIC_HOST_OBSERVATIONS: %{
+  retained_high_water: 10639,
+  callback_timeout_ms: 5000,
+  public_read_ids: [0, 1, 2],
+  readiness_before_reads: true
+}
+QUIC_LOCAL_CLEANUP: %{remove_elapsed_ms: 4, deadline_ms: 2000}
+[31m
+02:35:12.597 [error] GenServer #PID<0.304.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.257.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.303.0>, generation: #Reference<0.1195470663.2349072386.39054>}, initialized: true}}]]
+[0m{"result": "PASS", "gate": "live_listener_stop_isolation", "close_code": 0, "bytes": 77824}
+[31m
+02:35:16.580 [error] GenServer #PID<0.317.0> terminating
+** (stop) {:read_failed, {:error, :invalid_operation}}
+Last message: :poll
+State: [data: [{~c"State", %{owner: #PID<0.309.0>, connection: %Quic.Runtime.ConnectionHandle{id: #PID<0.316.0>, generation: #Reference<0.1195470663.2349072386.41852>}, initialized: true}}]]
+[0m{"result": "PASS", "gate": "stream_flow_control_fin", "bytes": 344064, "streams": 5, "alpn": "h3", "verified_name": "localhost", "local_uni_id": 3, "peer_uni_id": 2}
+PASS QUIC_LIVE_LISTENER_STOP_SIBLING_REBIND
+PASS QUIC_FACADE_WIRE_BOUNDS_LIFECYCLE
+[32m.[0m[32m.[0m
+Finished in 36.0 seconds (36.0s async, 0.00s sync)
+[32m4 tests, 0 failures[0m

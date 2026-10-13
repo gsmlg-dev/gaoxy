@@ -1,0 +1,57 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "PASS_SPECIFICATION_PREPARATION",
+  "assignment": "direct read-only independent repair6 written SPEC review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "docs/designs/m4-h2-pre-settings-window.md": "25f2a5ed9257df74c183dd12bff88331b49ff5329a78bd9248b019e865a360cd",
+    "docs/plans/m4-h2-pre-settings-window.md": "3ef1b99a4b6ba6e159f5537698f8e4274579c2205a547b8a2fe075f3f897497b",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/options.ex": "3c1a68f1bf58d4f205958b82230e6d28665b719c7b64923593992decdcafdb90",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70",
+    "integration/http3/upstream/peer.py": "78723995f1f3affe5e9d52ada9b8fb63ffd3377468d1c951e302a5c0526175cb"
+  },
+  "findings": [],
+  "confirmed_diagnosis_and_protocol_assessment": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-ack-receive-window-diagnosis-design-preparation-1791848906431625294.json",
+    "sha256": "bb76043de6da5ccf22d7bcb5dd05182ca60afdf0fb0f2dc3a0e92b3b672e4f41",
+    "scope": "Actual reset3/window-49151 cause, RFC stream-window accounting assessment and read-only independent installed hyper-h2 corroboration. Written docs now reviewed separately."
+  },
+  "spec_assessment": [
+    "Pre-ACK admitted streams initialize default65535; first own SETTINGS ACK applies configured-minus65535 delta to existing remaining receive credit once, retaining negative credit. Post-ACK streams initialize configured credit; duplicate ACK is idempotent under existing policy.",
+    "Connection credit is independent and remains unchanged. Peer SETTINGS continue to alter send-window state; no extra credit, clamps or deadline extension.",
+    "Zero-payload DATA, including END_STREAM, consumes no credit and is allowed against negative stream credit. Positive payload and padding still count full flow-controlled payload length and preserve existing oversend errors.",
+    "Existing stream reserve includes65536 pending-input allowance and configured initial credit<=65535; existing concurrency/body/frame/carry/host/credit/update policies retained. Raw-delivery candidate explicitly unverified and excluded.",
+    "Planned real raw-frame h2c regression contract uses held endpoint and PING wire ordering, covers pre-ACK65535, first-ACK negative transition/emptyFIN, duplicateACK, existing/new postACK oversends, exact bytes/sibling/cleanup/rebind. Actual runtime acceptance remains independent H2 TLS1MiB unchanged row and full matrix.",
+    "Plan preserves actual causalRED requirement, source freeze/ownership, nonzero fresh scoped verification, independent review and full66+2 matrix plus repeat before remaining finalM4 gates."
+  ],
+  "actual_failure_reference": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791848586737931556/result.json",
+    "sha256": "c15c0d30a6da39ff398e433f13ff353fdeb17f55d5e08f2af80756d1662f6ed9",
+    "status": "FAIL",
+    "actual_exit": 1,
+    "executed_checks": 30,
+    "secondary_shutdown_failure": "APPLICATION_DATA_AFTER_CLOSE_NOTIFY retained; no failure reclassified PASS."
+  },
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 11,
+    "up2_unsuccessful_production_repairs": 4,
+    "up2_unsuccessful_harness_repairs": 1,
+    "next_up2_production_repair": 6,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "production_status": "Native production and matrix fixture/peer unchanged from diagnostic failure at clearance; no code/test execution reviewed by this SPEC receipt.",
+  "clearance": "Written specification and proposed bounded implementation scope are clear. Actual focused RED must precede production changes; CODE/fresh scoped GREEN/live acceptance remain required.",
+  "remaining_acceptance": "Tests and actualRED; CODE and freshGREEN; full matrix+repeat and finalM4 gates pending. No UP2/M4/release/deployment acceptance.",
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-settings-window-spec-preparation-1791848949480586796.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read exact written docs and hash read-only source/evidence; no reviewer Mix/runtime/network/source/document edits or delegation."
+}

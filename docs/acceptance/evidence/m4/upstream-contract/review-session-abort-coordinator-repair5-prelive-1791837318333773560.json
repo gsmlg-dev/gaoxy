@@ -1,0 +1,175 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC then CODE review, coordinator repair5 revision2 abort-stop ordering",
+  "reviewed_utc": "2026-10-12T20:35:18.315921+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-prelive-freeze-1791837155590991595.json",
+  "freeze_sha256": "39daf827b864504cd5f81099e6081662ddc1242d5f44d24655037363298ac2e7",
+  "frozen_source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "integration/http3/upstream/session_probe.exs": "33ff6191365fd2f9d72aa9b2b5fb73da7771f765d2885388c8cef7e0db9109be",
+    "integration/http3/upstream/run.py": "2b9b07e7f33785c126aeb582f96734137e266148edb4cabd172c65005cc2bb39",
+    "integration/http3/upstream/origin.py": "02969e8f5151a6cfa9f23f3a9a4aeec9c643a3b296b4f479518e83cb7172bb77",
+    "integration/http3/upstream/README.md": "eee9a16fcd338257c3d56e71d11cd402ea43b3e586fa6f8955e81a7881e9b552",
+    "docs/designs/m4-session-abort-stop-order.md": "64b4808790b36f4af85081bb8049838c7da998cea52793bffab75c4abb390297",
+    "docs/plans/m4-session-abort-stop-order.md": "7e24c79482cea2beee01aa1842c463bf5ffacb2b8205e96eb6fb41a01d1e7bf6",
+    "docs/acceptance/m4.md": "db0d79e059b642d0731cb84e1ef656fd82822a79b256218edb83bd97840b8c0c"
+  },
+  "SPEC": {
+    "verdict": "PASS",
+    "read_before_code": true,
+    "documents": [
+      "docs/designs/m4-session-abort-stop-order.md",
+      "docs/plans/m4-session-abort-stop-order.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Explicitly refines safe-idle cancellation ordering only: command public abort, stop on correlated result or existing<=100ms fallback capped by original cleanup deadline.",
+      "Outstanding operation/absent or lost caller/unresolved bootstrap starts independent stop immediately; never queue abort behind blocked call. Caller loss while waiting for abort also triggers stop.",
+      "Guardian remains asynchronous/responsive, terminal immediately, retains no-replay/advanced-state/correlation and original grace.",
+      "Public abort admission is not local teardown or remote cancellation proof; public stop/normal endpoint DOWN/all task DOWN/rebind and independent peer/sibling assertions remain mandatory.",
+      "Full50 gate and fresh independent review/repeat required before UP1; inherited failures retained."
+    ]
+  },
+  "CODE_review_history": [
+    {
+      "stage": "first frozen candidate",
+      "verdict": "FAIL",
+      "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-prelive-freeze-1791836950753157217.json",
+      "freeze_sha256": "0e286c40af80762a3df1a58ddaab28d654b0b8c29ee073a851d364cb1ab58071",
+      "findings": [
+        {
+          "finding": "Matched caller DOWN during pending idle abort only updated state, leaving stop until fallback despite immediate lost-caller rule.",
+          "resolution": "Matched DOWN now invokes idempotent begin_stop with caller_down trigger immediately."
+        },
+        {
+          "finding": "Released abort subcase could pass on fallback stop followed by late successful abort result; no proof completion triggered stop.",
+          "resolution": "First executing stop branch records immutable stop_trigger. Released subcase requires session_result trigger plus actual successful public result; blocked subcase requires fallback/pending result/killed caller."
+        }
+      ]
+    },
+    {
+      "stage": "revision2 frozen re-review",
+      "verdict": "PASS",
+      "findings": []
+    }
+  ],
+  "CODE": {
+    "verdict": "PASS",
+    "kind": "static pre-live only",
+    "files": [
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md",
+      "docs/acceptance/m4.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "teardown retains earlier absolute grace calculation then finish_session first. Only physically idle owned caller with retained Session gets cleanup command; operation-nonnil/lost/absent caller bypasses command and starts stop immediately. Caller is allocated only after bootstrap adoption/normal DOWN.",
+      "Cancellation and normal close use same finite100ms timer capped remaining grace when a cleanup command exists. No new lifetime/grace or synchronous guardian wait.",
+      "Matched cleanup-result PID/id/gen/commandref/sequence stores untouched advanced public result while still in grace, clears cleanup command and starts public stop. Expired results remain deadline errors. Late original request results cannot advance state or restart work.",
+      "Matched caller monitor DOWN starts stop immediately during cleanup; begin_stop is idempotent when stopper exists. Endpoint/task monitors, stop result and original proof are retained.",
+      "Actual stop trigger is set only when the first stopper task is spawned; later result/timer/DOWN cannot overwrite it. Markers therefore prove executed branch rather than requested intent.",
+      "Released/blocked public-boundary subcases retain500ms original absolute cleanup deadline, all-DOWN/confirmed cleanup and original row assertions. Released requires ok/session_result/normal caller; blocked requires fallback/pending/killed caller. No new row names or classifications. Subcases not executed by reviewer.",
+      "Only owned caller with still-outstanding operation/cleanup command may be killed after observed endpoint DOWN. Public abort alone cannot confirm cleanup.",
+      "Scripted double abort defaults to prior ok behavior but permits barrier to exercise public Session abort; existing initialized double scripts and original blockedcall checks retained.",
+      "Runner reversal of two counter values reproduces captured repair4 runner hash exactly: all50/TLS/byte/hash/FIN/peer/sibling/cleanup/wire-deadline assertions unchanged. Origin, dependencies and all other285 captured sources unchanged."
+    ]
+  },
+  "public_source_assessment": {
+    "diagnosis": "docs/acceptance/evidence/m4/upstream-contract/abort-stop-order-diagnosis-1791836799571418845.json",
+    "diagnosis_sha256": "db4b25226e7c01047082ae7661e364420a9d49fc59d731e75e8537d7c5ff50f3",
+    "read_only_Session_abort_source": "Public abort retains abandoned-operation identity, clears pending/work and begins abort without replay. Borrowed resolved Transport.abort calls public close.",
+    "dependency_hashes": {
+      "deps/elixir_quic_http3/lib/quic_http3/session.ex": "e94dcf9b5a716bb44c48d6dbf8afacb4049e30b1afbcfeb9f232ee63db27e4d2",
+      "deps/elixir_quic_http3/lib/quic_http3/transport/quic.ex": "951124d00e1d01e467ad567e8f258197f826f6ce3c93ab77eff8e36d4daf180a"
+    },
+    "limit": "Public local close submission ordering does not establish independent peer receipt; runtime still required."
+  },
+  "verification": {
+    "frozen_hash_entries_verified": 8,
+    "previous_captured_source_entries_compared": 285,
+    "changed_previous_paths": [
+      "integration/http3/upstream/README.md",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/session_probe.exs"
+    ],
+    "runner_exact_counter_only_delta_reverse_hash_verified": true,
+    "origin_and_other_sources_unchanged": true,
+    "Python_AST": "PASS",
+    "root_static_commands": [
+      {
+        "command": [
+          "mix",
+          "format",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-0.log"
+      },
+      {
+        "command": [
+          "mix",
+          "run",
+          "--no-compile",
+          "--no-start",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-1.log"
+      },
+      {
+        "command": [
+          "mix",
+          "format",
+          "--check-formatted",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-2.log"
+      }
+    ],
+    "root_log_sha256": {
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-0.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-1.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair5-revision2-preparation-1791837155590991595-2.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "reviewer_commands": "Read-only spec/code/evidence reads, SHA256/source comparison, Python AST and git identity. No Mix, live/network/runtime commands or source/spec edits."
+  },
+  "historical_runtime": {
+    "run": "docs/acceptance/evidence/m4/upstream-contract/run-1791836503490777437/result.json",
+    "sha256": "2ff0e6d40e0c7f7d2fba51e8ceb181f9665574f944b4b774ac431dbd19d48d29",
+    "status": "FAIL",
+    "PASS_rows": 47,
+    "attempted_FAIL": [
+      "cancel_unacknowledged_response"
+    ],
+    "NOT_RUN": [
+      "cancel_blocked_upload",
+      "cancel_owner_loss"
+    ],
+    "local_stalled_teardown": "confirmed",
+    "remote_stalled_cancellation": "absent within original5s; no retroactive PASS"
+  },
+  "runtime": "NOT RUN for repair5 revision2. Static review does not qualify UP0, establish submitted-close peer receipt, release UP1 or replace required full50 review/fresh repeat.",
+  "counters": {
+    "direct_chain_sol": 2,
+    "unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_repair": 5,
+    "preceding_unsuccessful_coordinator": 4,
+    "reviewer_repair_rounds_added": 0,
+    "third_astra_authorized": false
+  },
+  "changed_files": "Only this new unique immutable receipt; root/team edits and historical evidence preserved.",
+  "command_shutdown_status": "All reviewer commands completed; no reviewer-owned background processes.",
+  "remaining_risks": [
+    "Actual peer cancellation, sibling survival and all remaining full50 gates remain unverified for this candidate.",
+    "A blocked or unknown abort still retains uncertainty; bounded fallback ensures local stop, not remote cancellation proof."
+  ],
+  "decisions_needed": []
+}

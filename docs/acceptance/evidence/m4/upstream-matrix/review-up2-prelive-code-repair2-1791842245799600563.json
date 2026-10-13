@@ -1,0 +1,145 @@
+{
+  "task_id": "/root/m4_session_affinity_review:UP2_PRELIVE_CODE_REPAIR2",
+  "assignment": "direct independent read-only separate CODE audit after SPEC PASS",
+  "status": "PASS_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "freeze_receipt": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/preparation-repair2-prelive-freeze-1791842098974482736.json",
+    "sha256": "ce2db75e204eee14e6b36a85e00f35cd21ad156bd298595c358e2c02a67c71fe"
+  },
+  "source_sha256": {
+    "integration/http3/upstream/fixture.exs": "e5c4098b7ae3b5419b2b5a6cedc3e56a351a9fa000caf7f418d5db26e1fbbd4e",
+    "integration/http3/upstream/peer.py": "5ac2768b17c2308d7d96ed1604551598aa355247b08259aeddb81e58b9ecb66a",
+    "integration/http3/upstream/origin.py": "03b949d04fbb66701a4abbb62e4388c554bedef5c9db9969fadb15ba0798ef1a",
+    "integration/http3/upstream/run.py": "56eb08abc35f8520efc1f63289a03f595368a98ac1d1d6cd88ff044229504cda",
+    "integration/http3/upstream/README.md": "e9cc855d20ad072d5e760206eaae359387ef428e94f41e64c84f0307ee3d20d2"
+  },
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "preceding_SPEC": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-prelive-spec-repair2-1791842200648837694.json",
+    "sha256": "644e608dac74ca329a6ab6949c4ed4b789fedbea475e30d5feca688ad8fbb2f0",
+    "status": "PASS_PREPARATION"
+  },
+  "source_unchanged_SPEC_to_CODE": true,
+  "code_checks": [
+    {
+      "area": "native clients and TLS",
+      "status": "PASS_PREPARATION",
+      "evidence": "Native TLS H1/hyper-h2 and aioquic H3 clients use local CA verification, localhost server name and exact ALPN; no production client substitute. H2 flow windows and H3 stream/connection credit preserve tiny-window limits."
+    },
+    {
+      "area": "bodyless repair",
+      "status": "PASS_PREPARATION",
+      "evidence": "H1 close-request rows consume EOF with bounded count/hash/64-byte prefix, then require zero post-header octets and exact empty hash. Early close/reset cannot be accepted as successful EOF; same five-second deadline applies. H2/H3 body and trailing blocks remain directly observed."
+    },
+    {
+      "area": "row barriers and data semantics",
+      "status": "PASS_PREPARATION",
+      "evidence": "Two held survivors start before failures; wire snapshots precede upload/download FIN. Explicit expected unique request manifests enforce method/path/authority/certificate/body/trailer/FIN event counts. Exact body and repeated-field/trailer blocks, raw compressed bytes, redirects and no replay retained."
+    },
+    {
+      "area": "fixture observability",
+      "status": "PASS_PREPARATION",
+      "evidence": "Only fixed Gaoxy adapter open call and selected owner/guardian notifications traced; no SDK call tracing or opaque Session serialization. Observer registration/trace delivery/normal DOWN use finite waits. Observations capped 4KiB reasons,16-entry lists,256-message mailbox; actual normal guardian DOWN and public SessionSupervisor active counts used."
+    },
+    {
+      "area": "runner evidence and cleanup",
+      "status": "PASS_PREPARATION",
+      "evidence": "Checks exact66+2 unique manifest, per-row baseline for six services/guardian/SessionSupervisor, exact failure categories and finite opening/total elapsed bounds. Real fixture/peer/origin exit0 plus runtime/observer normal DOWN and six service TCP/UDP and two origin UDP rebind assertions. Forced cleanup, source drift or live readers prevent PASS. Credentials import remains stdlib only."
+    },
+    {
+      "area": "UP2-C1 EOF repair",
+      "status": "PASS_PREPARATION",
+      "evidence": "Raw chunk-size readline checks actual empty EOF or incomplete CRLF at EOF before integer parsing. Same guard in trailers rejects absent blank CRLF terminator. Both raise existing asyncio.IncompleteReadError category, setting closed and leaving ended false; finally wakes done. Completed chunk bytes remain; data/delimiter readexactly failures continue existing closure behavior."
+    },
+    {
+      "area": "success and malformed-input semantics",
+      "status": "PASS_PREPARATION",
+      "evidence": "Success still requires parsed zero size plus exact blank CRLF trailer terminator before ended true. Ordered trailer append occurs only after complete block. Invalid hex size, invalid trailer syntax and full malformed chunk delimiter retain ValueError/assertion behavior; no broad catch, fabricated ended, accepted truncation, added success fallback or deadline renewal introduced. Partial EOF cannot pass normal check_response; H1 total-timeout remains exact progress-,200,not-ended,closed assertion."
+    },
+    {
+      "area": "prior bodyless repair preserved",
+      "status": "PASS_PREPARATION",
+      "evidence": "HEAD/204/304 Connection:close, actual EOF, count/hash/preview and zero octets/empty hash row checks unchanged in source. Same5s timeout_at covers parser and peer context; close errors stay outside success branch."
+    },
+    {
+      "area": "root counter metadata",
+      "status": "PASS_PREPARATION",
+      "evidence": "Only int(os.environ.get(...,0)) metadata dictionary and explicit negative rejection introduced before children are created. Values go solely into report counters; all required counts, deadlines, manifest checks and legacy gates byte-identical. Preparation2 is reported separately; live0/failed0 remain NOT RUN."
+    },
+    {
+      "area": "supplied parser reproduction",
+      "status": "PASS_SCOPED_SUPPLIED_EVIDENCE",
+      "evidence": "Independent actual TCP server writes fixed specimens then closes; peer.done bounded1s asserts closed/not-ended/exact progress body, closes peer and server in finally. Three source-bound rows red3/2 and green3/0 verified with identical recomputed wire/body hashes. Supplemental current reproduction-script hash is not historical capture; no matrix/runtime acceptance inferred."
+    }
+  ],
+  "findings": [],
+  "retained_findings": [
+    {
+      "id": "UP2-S1",
+      "status": "RESOLVED_PREPARATION"
+    },
+    {
+      "id": "UP2-C1",
+      "status": "RESOLVED_PREPARATION",
+      "historical_CODE_FAIL": {
+        "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-prelive-code-finding-1791841847637874097.json",
+        "sha256": "bb32aeac9037554ba68788bb3c01e82e7733ba5ddfe87423d3301dc623a4ea7d"
+      }
+    }
+  ],
+  "historical_CODE_FAIL": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/review-up2-prelive-code-finding-1791841847637874097.json",
+    "sha256": "bb32aeac9037554ba68788bb3c01e82e7733ba5ddfe87423d3301dc623a4ea7d",
+    "preserved": true
+  },
+  "parser_regression_evidence": {
+    "red": {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/code-c1-parser-expected-red-1791842020.json",
+      "sha256": "871456434bb7cf42b4450f19b86f6cda539d2fd121ddd61b65ad9f360bd9846f",
+      "status": "FAIL",
+      "executed": 3,
+      "failures": 2
+    },
+    "green": {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/code-c1-parser-green-1791842066.json",
+      "sha256": "50236185fcfe371fa197ab132c45532d70206a1378d1b9b50d20cd71a2adfa82",
+      "status": "PASS",
+      "executed": 3,
+      "failures": 0
+    },
+    "wire_and_body_hashes": "PASS: identical3 specimen wires and retained9-byte progress body hashes independently recomputed",
+    "scope": "Supplied parent execution; three actual TCP/parser specimens, not66 production matrix rows; reviewer did not execute runtime",
+    "script_current_sha256": "1e69e57f9136c5bb341b5878680ac4e3865ff263e6bd490181a92be421c57780",
+    "script_provenance": "Current script reviewed and hashed separately; original regression receipts do not capture script hash at execution; no backdated capture claim",
+    "outer_exit": "NOT independently captured in these receipts"
+  },
+  "verification": "Fresh read/hash comparisons of all5 scoped files and lock PASS; candidate diff restricted to EOF/counter/docs; supplied prerequisite and3-specimen parser receipts verified. No reviewer runtime/AST/Mix/Elixir/Nix/format/deps execution.",
+  "live_UP2": "NOT RUN",
+  "revised_adapter_absent_RED": "NOT RUN; required frozen-candidate RED remains parent-owned",
+  "full_M4": "NOT PASSED",
+  "counters": {
+    "UP0_Sol": 2,
+    "UP0_unsuccessful": 2,
+    "Astra": 2,
+    "Astra_unsuccessful": 2,
+    "Astra_status": "exhausted",
+    "Coordinator": 5,
+    "Coordinator_preceding_unsuccessful": 4,
+    "UP1_repair2": "PASS after initial and repair1 unsuccessful",
+    "UP2_preparation": 2,
+    "UP2_live_repair": 0,
+    "UP2_live_failed": 0,
+    "reviewer_repair_added": 0,
+    "reset": false
+  },
+  "changes": "Only unique immutable SPEC/CODE review receipts",
+  "commands_shutdown": "All reviewer commands complete; no owned process; concurrent standalone lease untouched",
+  "remaining_risks": [
+    "Fresh frozen-candidate adapter-absent RED and full66network+2policy production matrix with unchanged deadlines must execute under parent lease.",
+    "Supplied3-specimen parser regression is scoped TCP/parser evidence; not TLS/H2/H3 matrix, standalone, artifact or M4 acceptance."
+  ],
+  "decisions_needed": []
+}

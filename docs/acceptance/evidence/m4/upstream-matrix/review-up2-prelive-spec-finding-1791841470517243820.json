@@ -1,0 +1,107 @@
+{
+  "task_id": "/root/m4_session_affinity_review:UP2_PRELIVE_SPEC",
+  "assignment": "direct independent read-only frozen SPEC review",
+  "status": "FAIL_PREPARATION",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "branch": "codex/m4-http3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "freeze_receipt": "docs/acceptance/evidence/m4/upstream-matrix/initial-prelive-freeze-1791841091633589191.json",
+  "freeze_receipt_sha256": "e41b0dd90286e3e1bfa74b5a3159fb870d8fca500b9f714b49f0baa0a2c9693e",
+  "source_sha256": {
+    "integration/http3/upstream/fixture.exs": "e5c4098b7ae3b5419b2b5a6cedc3e56a351a9fa000caf7f418d5db26e1fbbd4e",
+    "integration/http3/upstream/peer.py": "be14cb746318eebb70765f13641ee39259c17868066dba562d61ae439e18e2df",
+    "integration/http3/upstream/origin.py": "03b949d04fbb66701a4abbb62e4388c554bedef5c9db9969fadb15ba0798ef1a",
+    "integration/http3/upstream/run.py": "7876678072d2c56f7785c3925e46bea4a01416020181ebe0ee7e33cbf170b758",
+    "integration/http3/upstream/README.md": "330b15453e73d41d49eefc8f4121bd4d0e011ceb04e8dfe81ba0ced97f13ea8c"
+  },
+  "source_hashes_current_equal": true,
+  "mix_lock_sha256": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+  "requirements": "Task4 docs/plans/m4-public-session-upstream.md plus parent-assigned exact66network+2productionpolicy rows, independent nativeH1/H2/H3/certifiedH3origin, finite deadlines/sibling barriers/cleanup/precise errors",
+  "checks": [
+    {
+      "area": "matrix_manifest_and_native_peers",
+      "status": "PASS_PREPARATION",
+      "evidence": "22fixedcase names for each H1/H2/H3; actual nativeTLSH1/TLSH2/QUICH3 services; independently decoded verifiedCApeers with ALPN assertions; separately certified a/b/downstream identities."
+    },
+    {
+      "area": "production_policy",
+      "status": "PASS_PREPARATION",
+      "evidence": "Fixture actualHTTP.init rejects absentCA and connect_address before endpoint allocation; initial six-service/session/guardian baseline and origin snapshot0 verified in runner."
+    },
+    {
+      "area": "wire_semantics",
+      "status": "PASS_PREPARATION",
+      "evidence": "Cumulative exactuniqueid/requestcount and method/escapedpath/httpsscheme/fixedauthority/certidentity/bodylenhash/trailerorder/block/FIN/logeventcount assertions; duplicates/rawgzip/emptyquery/302 nofollow/no replay and zero/3byte request trailers present."
+    },
+    {
+      "area": "progress_and_original_deadlines",
+      "status": "PASS_PREPARATION",
+      "evidence": "Progressive upload3bytes observed before requestFIN and any response headers; progressive download9bytes held before originFIN; exact1048576byte hash/roundtrip, origin16KiBwindow and downstreamH2/H3 2KiBstream/H3 4KiBconnection windows; one5second peer absolute deadline. Opening500ms/error:timeout and total1500ms/error:request_timeout retained with finite bounds;240second runner limit."
+    },
+    {
+      "area": "failures_and_existing_siblings",
+      "status": "PASS_PREPARATION",
+      "evidence": "Two progressive survivors start and holdresponseFIN before each failure; sameframedconnection/otherlistener and separateH1connection exception; both bodies/trailers asserted after failure. Actual502/504/413/reset/closed categories and origin cancellation evidence; exactupstreamreset268 and TLSclosedcause unknown_ca/path_validation_failed or certificate_unknown/hostname_mismatch plus0originadmission; healthyfollowup not substituted."
+    },
+    {
+      "area": "baselines_and_teardown",
+      "status": "PASS_PREPARATION",
+      "evidence": "Each66row requires six service active/retained/cleanup/queues0, no cleanupfailed, observedguardians0/publicSessionSupervisor0 and eachactualguardnormalDOWN. Boundedobservertracing onlyGaoxyopen/selectednotifications; noSDKcalls/privateSessionstate. Final normalobserver/runtimeDOWN, allsix TCP/UDP service rebinds, bothoriginUDPrebinds, allknownchildwaitexit0 and forcedshutdown cannotPASS."
+    },
+    {
+      "area": "legacy_and_portable_import",
+      "status": "PASS_PREPARATION",
+      "evidence": "Existingcontract/session-contract entry branches retained; credentials(directory,output,remaining_callable) continuesstdlib-only import and bounded P256 fixturegeneration. Standalone /echo*/ordinary/snapshot/finish_ordinary interfaces pluslegacyfields/fin_count retained."
+    },
+    {
+      "area": "H1_bodyless_wire_proof",
+      "status": "FAIL_PREPARATION",
+      "evidence": "H1 read_response marksHEAD/204/304ended immediately at headers and never examines post-headeroctets; emptylocalbody therefore does not establish noDATAonwire."
+    }
+  ],
+  "findings": [
+    {
+      "id": "UP2-S1",
+      "severity": "high",
+      "file": "integration/http3/upstream/peer.py",
+      "source_sha256": "be14cb746318eebb70765f13641ee39259c17868066dba562d61ae439e18e2df",
+      "lines": [
+        111,
+        112
+      ],
+      "related_lines": [
+        326,
+        334,
+        474,
+        486
+      ],
+      "problem": "For H1 HEAD/204/304 the parser sets ended=True immediately after headers. check_response sees body=empty and oneheaderblock regardless of any illegal response bytes after headers, because the reader is then closed. A native server that emitted forbiddenbodyoctets can satisfy the purported bodyless acceptance row.",
+      "required_change": "Use a deterministic actualwire proof for theseH1rows: request Connection:close, read to actualEOF under the same original5second row deadline, and assert no post-headeroctets (or equivalent deterministic bounded raw-byte proof). Preserve HEAD advertisedContentLength semantics and all existing status/body/trailer/assertion/deadline rows.",
+      "parent_disposition": "Accepted; parent-owned targeted repair follows this immutableFAIL receipt. No CODE review until supersedingSPEC passes."
+    }
+  ],
+  "supplied_preparation_evidence": "Verified freeze and allthree logfile hashes, format/check/strictcompile recordedexit0. This is preparation evidence only; no network rows or protocolacceptance inferred.",
+  "adapter_absent_RED": "NOT REVIEWED here; root concurrently prepares detachedcopy of frozenpreactivationharness. No source preparation substituted for actualRED.",
+  "live_UP2": "NOT RUN",
+  "full_M4": "NOT PASSED",
+  "code_review": "NOT RUN as separategate becauseSPECfails",
+  "counters": {
+    "UP0_Sol": 2,
+    "UP0_unsuccessful_Sol": 2,
+    "Astra": 2,
+    "Astra_unsuccessful": 2,
+    "Astra_status": "two recovery rounds exhausted",
+    "Coordinator": 5,
+    "Coordinator_unsuccessful": 4,
+    "UP1_initial": "unsuccessful",
+    "UP1_repair1": "unsuccessful",
+    "UP1_repair2": "PASS",
+    "UP2_received_repair_rounds": 0,
+    "reviewer_repairs_added": 0,
+    "reset": false
+  },
+  "changes": "Only this unique immutableSPEC receipt; no source/oldreceipt edits",
+  "reviewer_execution": "Scoped read/hash/Gitidentity/evidence serialization only; noMix/Elixir/Nix/format/deps/live/runtime/network or tests",
+  "commands_shutdown": "All reviewercommandsfinished; no ownedliveprocess",
+  "remaining_decisions": "No productdecision needed; parentowns targetedS1repair and freshfrozenhandoff"
+}

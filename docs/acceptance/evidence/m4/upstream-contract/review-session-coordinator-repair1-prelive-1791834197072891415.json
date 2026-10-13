@@ -1,0 +1,141 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only specification then code review of coordinator local repair 1",
+  "reviewed_utc": "2026-10-12T19:43:17.062280+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "freeze": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-prelive-freeze-1791834033056141759.json",
+  "freeze_sha256": "ca55c26f8c40b4c73537bab4065b38deaf1e80664199bd99a82a218f222f9f3f",
+  "frozen_source_sha256": {
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "integration/http3/upstream/session_probe.exs": "921d3c2b8ad01965393915b5abdc74c5ae6fdf128998e1c7c7fc6eee27c59f0e",
+    "integration/http3/upstream/run.py": "08e3df81136518ff93ab5d1ad6c5f72e5a591519c835d7d3250d6ca043836a1d",
+    "integration/http3/upstream/origin.py": "2577ff52ea0e645e287fe39376e716f3325cb8207fb01aa1d9263309a9b16ffe",
+    "integration/http3/upstream/README.md": "fd928244c160927cf6a21b381573efd2fb674a9011c05a18c97c3bdb547bc6e2",
+    "docs/designs/m4-session-response-scheduling.md": "820d963be3e2c83e2c838df1375aac0474d95c603f760a3767885e7c011a7565",
+    "docs/plans/m4-session-response-scheduling.md": "711b1f8bf954ca42e008fa04423abc726ff9b60c1516c731321e5564c9756ff2",
+    "docs/designs/m4-public-session-upstream.md": "f13fe8231d68c6b019fc989d5d70e77afc82486f6e7fcd65572461297164c5c5",
+    "docs/designs/m4-public-session-consumer-affinity.md": "e8dfd06518b5f784758e57af4289524fd914e4c3dff977a36f746f9de32a8771",
+    "docs/designs/m4-session-frame-fragmentation.md": "589965f36f67dbb1d78e4afd144351d472c2a4575fcfe884e81652c0c5cb4c78"
+  },
+  "SPEC": {
+    "verdict": "PASS",
+    "scope": "response scheduling amendment, read before candidate code",
+    "documents": [
+      "docs/designs/m4-session-response-scheduling.md",
+      "docs/plans/m4-session-response-scheduling.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "Same original five-second total deadline; no reset across response recursion.",
+      "Current-batch target-reference headers/DATA/trailers/done suppress idle wait only. All events retained, including control and other-ref events.",
+      "Idle batches retain five-millisecond wait; previous progress cannot suppress future idle waits.",
+      "All50 classifications, payload/hash/FIN, tiny windows, ownership and confirmed per-request cleanup remain mandatory.",
+      "Earlier Sol2/Astra2 failures and missing cleanup remain immutable; no extra Astra round or UP1 activation."
+    ]
+  },
+  "CODE": {
+    "verdict": "PASS",
+    "kind": "static pre-live only",
+    "files": [
+      "integration/http3/upstream/session_probe.exs",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/README.md"
+    ],
+    "findings": [],
+    "assessment": [
+      "response/4 clamps to handle.total_deadline at entry/recursion, preserves checks before/after poll and unchanged complete event order.",
+      "Completion predicate runs after retaining the entire batch. Progress detection uses only current events and matches handle.ref for headers/data/trailers/done. Control/other refs do not trigger progress.",
+      "call/4 still clamps its operation deadline to total_deadline, returns the raw result unchanged, and records monotonic start/completion/deadline/remaining before formatting.",
+      "poll_event_summary/2 computes full event length, DATA-event count and sum of byte_size from raw :ok poll result before summary/inspect truncation; nonpoll/nonlist cases produce nil. Metadata describes the whole batch, not only the target ref.",
+      "max_read_batches1/max_frame8192, Session public APIs, caller/guardian ownership, per-request cleanup and independent peer unchanged.",
+      "Runner preserves50 exact names and17network/2policy/31double categories,20 confirmed cleanup receipts,4 cancellation observations,22 stable-caller/adoption groups, all-child exits and UDP rebind.",
+      "README/counters retain Sol2 unsuccessful2 and Astra2 unsuccessful2, recording coordinator local repair1 separately."
+    ]
+  },
+  "diagnosis_corroboration": {
+    "failed_run": "docs/acceptance/evidence/m4/upstream-contract/run-1791833149635393377/result.json",
+    "failed_run_sha256": "9380efa6a593de805b86ebdbdaa5cc8d28874d7ce574fc182e999781095f04fe",
+    "historical_status": "FAIL",
+    "data_bearing_ok_poll_diagnostics": 219,
+    "prior_batches_with_avoidable_wait": 218,
+    "avoidable_delay_lower_bound_ms": 1090,
+    "qualification": "Final DATA-bearing poll reaches post-poll expiry check before an idle wait; truncated diagnostic text does not establish the response byte total.",
+    "origin_request_bytes": 1048576,
+    "origin_request_single_FIN": true,
+    "tiny_request_cleanup_receipts": 0
+  },
+  "verification": {
+    "freeze_hashes_verified": 10,
+    "previous_run_source_hashes_compared": 285,
+    "changed_old_captured_paths": [
+      "integration/http3/upstream/README.md",
+      "integration/http3/upstream/run.py",
+      "integration/http3/upstream/session_probe.exs"
+    ],
+    "all_other_previous_captured_sources_unchanged": true,
+    "origin_unchanged": true,
+    "python_AST": "PASS",
+    "parent_preparation_commands": [
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "GAOXY_SESSION_PROBE_LOAD_ONLY=1",
+          "unbuffer",
+          "mix",
+          "run",
+          "--no-compile",
+          "--no-start",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-preparation-1791834033056141759-0.log"
+      },
+      {
+        "command": [
+          "nix",
+          "develop",
+          "--command",
+          "env",
+          "MIX_ENV=test",
+          "ERL_FLAGS=+S 2:2",
+          "unbuffer",
+          "mix",
+          "format",
+          "--check-formatted",
+          "integration/http3/upstream/session_probe.exs"
+        ],
+        "exit": 0,
+        "log": "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-preparation-1791834033056141759-1.log"
+      }
+    ],
+    "parent_preparation_log_sha256": {
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-preparation-1791834033056141759-0.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f",
+      "docs/acceptance/evidence/m4/upstream-contract/coordinator-repair1-preparation-1791834033056141759-1.log": "f0906a9f5df7115f828309b2aedcd5c6db0dd81507ac1041d1dff1f84b4e661f"
+    },
+    "reviewer_commands": "Read-only file reads, JSON/SHA256/source comparisons, Python AST parse and git identity. No Mix, format, compile, live/network/runtime actions."
+  },
+  "runtime_verdict": "NOT RUN for coordinator repair1. Static SPEC/CODE PASS does not qualify UP0, confirm earlier cleanup, release UP1, or imply UP2/standalone/browser/clean-consumer acceptance.",
+  "cumulative_counters": {
+    "direct_chain_sol": 2,
+    "direct_chain_unsuccessful_sol": 2,
+    "astra": 2,
+    "unsuccessful_astra": 2,
+    "coordinator_local_repair": 1,
+    "reviewer_repair_rounds_added": 0,
+    "no_third_astra": true
+  },
+  "changed_files": "Only this newly created unique review receipt; root/team source/spec changes preserved.",
+  "command_shutdown_status": "All reviewer commands completed; no reviewer-owned child/background process.",
+  "remaining_risks": [
+    "Runtime completion under the original deadline and per-request cleanup remain unverified for this candidate. Progress removes sleep overhead but does not promise performance success."
+  ],
+  "decisions_needed": []
+}

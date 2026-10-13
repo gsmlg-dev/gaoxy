@@ -1,0 +1,327 @@
+{
+  "task_id": "/root/m4_session_affinity_review",
+  "assignment": "direct independent read-only G3 new-cohort evidence review",
+  "status": "DONE",
+  "verdict": "SCOPED PASS",
+  "reviewed_utc": "2026-10-12T19:36:16.231561+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "baseline_commit": "c574c784da5474117b7e911693fdc564d8565bf8",
+  "scope": "G3 native downstream HTTP/3 to dedicated HTTP/1 plus required Phoenix document/static browser rows; excludes upstream HTTP/3 UP2, standalone and clean-consumer acceptance",
+  "review_order": {
+    "specification_before_code_and_evidence": true,
+    "specifications": [
+      "docs/designs/m4-downstream-matrix.md",
+      "docs/plans/m4-downstream-matrix.md",
+      "docs/plans/m4-http3.md:265-304",
+      "docs/designs/m4-http3.md:280-295"
+    ],
+    "code": [
+      "integration/http3/matrix.py",
+      "integration/http3/matrix_fixture.exs",
+      "integration/http3/proxy_peer.py",
+      "integration/http3/browser.py",
+      "integration/http3/h1_origin.py",
+      "examples/phoenix_native/h3_gateway.exs",
+      "examples/phoenix_native/lib/phoenix_native/page_controller.ex"
+    ]
+  },
+  "target_summary": "docs/acceptance/evidence/m4/matrix/cohort-0.21.4/run-1791833022323540066/summary.json",
+  "target_sha256": "e0e5904e37a62d122b9c3016323c6417c24280d792dac7c3bcd11e736ff8d6c0",
+  "source_identity": {
+    "captured_before_equals_after": true,
+    "current_hashes_verified": 197,
+    "harness_matches_HEAD": true,
+    "source_commit_matches_HEAD": true
+  },
+  "findings": [],
+  "evidence": {
+    "summary_status": "PASS",
+    "executed_checks": 19,
+    "unique_check_names": [
+      "proxy_escaped",
+      "proxy_empty-query",
+      "proxy_fixed_host_forwarding_identity_hop_filter",
+      "proxy_fixed-trailers-0",
+      "proxy_fixed-trailers-3",
+      "proxy_progressive_upload_before_request_fin",
+      "proxy_progressive_download_before_origin_fin",
+      "proxy_forbidden_authentication_trailer_before_upstream",
+      "proxy_early_final_stops_open_upload",
+      "proxy_reset_cancels_origin_keeps_connection_siblings",
+      "proxy_separate_listener_sibling",
+      "proxy_admission_baseline",
+      "independent_h1_origin_cleanup",
+      "proxy_runtime_stop_rebind",
+      "browser_h3_phoenix_document",
+      "browser_h3_phoenix_static",
+      "phoenix_admission_baseline",
+      "browser_marker_server_h3_confirmation",
+      "phoenix_runtime_stop_rebind"
+    ],
+    "names_equal_original_fresh_G3": true,
+    "raw_proxy_peer_cases": 11,
+    "raw_browser_cases": 2,
+    "remaining_resource_and_marker_checks": 6,
+    "raw_cases_equal_case_files_and_summary": true,
+    "raw_control_samples_and_stop_receipts_equal_summary": true,
+    "wrapper_exit": {
+      "value": 0,
+      "provenance": "parent reported actual wrapper exit; reviewer did not rerun"
+    },
+    "elapsed_ms": 16772,
+    "deadline_ms": 240000,
+    "owned_child_exits": [
+      {
+        "name": "h1-origin",
+        "pid": 1388229,
+        "exit": 0,
+        "forced_cleanup": false
+      },
+      {
+        "name": "proxy-fixture",
+        "pid": 1390184,
+        "exit": 0,
+        "forced_cleanup": false
+      },
+      {
+        "name": "proxy-peer",
+        "pid": 1411423,
+        "exit": 0,
+        "forced_cleanup": false
+      },
+      {
+        "name": "phoenix-h3",
+        "pid": 1454690,
+        "exit": 0,
+        "forced_cleanup": false
+      },
+      {
+        "name": "chromium",
+        "pid": 1475575,
+        "exit": 0,
+        "forced_cleanup": false
+      }
+    ],
+    "owned_children_exited": true,
+    "resource_checks": [
+      {
+        "name": "proxy_admission_baseline",
+        "result": "PASS",
+        "admission": {
+          "proxy": {
+            "active": 0,
+            "retained_high_water": 15950309,
+            "retained_bytes": 0,
+            "cleanup_pending": 0,
+            "cleanup_failed": null,
+            "queued_items": 0,
+            "queued_bytes": 0
+          },
+          "sibling": {
+            "active": 0,
+            "retained_high_water": 8000475,
+            "retained_bytes": 0,
+            "cleanup_pending": 0,
+            "cleanup_failed": null,
+            "queued_items": 0,
+            "queued_bytes": 0
+          }
+        },
+        "event": "sample"
+      },
+      {
+        "name": "independent_h1_origin_cleanup",
+        "result": "PASS",
+        "requests": 13,
+        "active": 0
+      },
+      {
+        "name": "proxy_runtime_stop_rebind",
+        "result": "PASS",
+        "event": "stopped",
+        "runtime_down": true,
+        "ports_rebound": true,
+        "elapsed_ms": 5
+      },
+      {
+        "name": "phoenix_admission_baseline",
+        "result": "PASS",
+        "requests": [
+          {
+            "status": 200,
+            "path": "/",
+            "protocol": "HTTP/3",
+            "marker": [
+              "684be6e563fa4e8d946e659eb63fde63"
+            ]
+          },
+          {
+            "status": 200,
+            "path": "/static/hello.txt",
+            "protocol": "HTTP/3",
+            "marker": [
+              "684be6e563fa4e8d946e659eb63fde63"
+            ]
+          }
+        ],
+        "event": "sample",
+        "admission": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_pending": 0,
+          "cleanup_failed": null,
+          "queued_items": 0,
+          "queued_bytes": 0
+        }
+      },
+      {
+        "name": "browser_marker_server_h3_confirmation",
+        "result": "PASS",
+        "marker": "684be6e563fa4e8d946e659eb63fde63",
+        "requests": [
+          {
+            "status": 200,
+            "path": "/",
+            "protocol": "HTTP/3",
+            "marker": [
+              "684be6e563fa4e8d946e659eb63fde63"
+            ]
+          },
+          {
+            "status": 200,
+            "path": "/static/hello.txt",
+            "protocol": "HTTP/3",
+            "marker": [
+              "684be6e563fa4e8d946e659eb63fde63"
+            ]
+          }
+        ]
+      },
+      {
+        "name": "phoenix_runtime_stop_rebind",
+        "result": "PASS",
+        "event": "stopped",
+        "runtime_down": true,
+        "port_rebound": true,
+        "elapsed_ms": 21
+      }
+    ]
+  },
+  "protocol_findings": {
+    "upload_exact_bytes": 245760,
+    "upload_origin_progress_before_request_FIN": 17,
+    "download_exact_bytes": 57359,
+    "download_progress_before_origin_FIN": 15,
+    "repeated_request_and_response_trailers": true,
+    "fixed_length_trailer_requests_regenerate_chunked_H1_without_Content_Length": true,
+    "escaped_and_empty_query_preserved": true,
+    "fixed_Host_regenerated_forwarding_and_hop_filter_assertions_retained": true,
+    "forbidden_authentication_trailer_rejected_before_origin": true,
+    "early_final_and_reset_cancel_origin_preserve_connection_and_listener_siblings": true,
+    "independent_origin_requests": 13,
+    "origin_active": 0,
+    "all_origin_receipts_closed": true
+  },
+  "browser_findings": {
+    "required_responses": [
+      {
+        "url": "https://localhost:55719/",
+        "status": 200,
+        "protocol": "h3"
+      },
+      {
+        "url": "https://localhost:55719/static/hello.txt",
+        "status": 200,
+        "protocol": "h3"
+      }
+    ],
+    "marker": "684be6e563fa4e8d946e659eb63fde63",
+    "server_marker_and_HTTP3_confirmation": true,
+    "exact_existing_document": {
+      "title": "",
+      "body": "<h1 id=\"page\">Gaoxy Phoenix native</h1><a href=\"/live-counter\">Live counter</a><p><a href=\"/static/hello.txt\">Static file</a></p>"
+    },
+    "static_expected": "Gaoxy native static file\n",
+    "static_bytes": 25,
+    "chromium": "Chromium 152.0.7977.64",
+    "playwright": "1.56.0",
+    "page_errors": [],
+    "websockets": [],
+    "process_local_SPki_pin_and_local_QUIC_IPv4_mapping": true,
+    "required_URL_fallback_not_accepted": true,
+    "Phoenix_server_disabled_before_application_start_Gaoxy_owns_H3_listener": true
+  },
+  "environment": {
+    "aioquic": [
+      "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+      "1.2.0"
+    ],
+    "playwright": [
+      "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+      "1.56.0"
+    ],
+    "proxy_runtime": {
+      "port": 45933,
+      "otp": "28",
+      "elixir": "1.18.5",
+      "erts": "16.4.0.6",
+      "event": "ready",
+      "upstream": "http://127.0.0.1:46105",
+      "sibling_port": 60673
+    },
+    "phoenix_runtime": {
+      "port": 55719,
+      "otp": "28",
+      "elixir": "1.18.5",
+      "erts": "16.4.0.6",
+      "event": "ready",
+      "server_disabled": true
+    }
+  },
+  "retained_limitations": [
+    "Incidental favicon.ico response is 500 over h3 and retained in browser evidence; required document/static responses are 200. This verdict does not claim every request is error-free.",
+    "Two independent H1 cancellation receipts retain ConnectionResetError in request phase: early response incomplete/cancelled and reset response complete/cancelled. These are permitted by unchanged assertions.",
+    "Parent fresh affected repeat remains pending; this captured-run review alone is not full M4, UP2, standalone, clean-consumer, publication, deployment or production acceptance.",
+    "Concurrent dirty tracked/untracked work belongs to root/team and was preserved."
+  ],
+  "repair_counters": {
+    "reviewer_sol_repair_rounds_added": 0,
+    "G3_cumulative_sol_repair_rounds": "unknown; not incremented by this review",
+    "G3_received_astra_repair_counter": "unknown; no UP0 counter inherited"
+  },
+  "verification_commands": [
+    "git rev-parse HEAD",
+    "git status --short",
+    "Python JSON parsing and SHA256 verification of summary, 197 current sources, raw cases/control events, child exits, browser responses and origin cleanup",
+    "git show HEAD:<harness path> byte comparisons"
+  ],
+  "verification_results": "All read-only assertions passed; no Mix, format, compile, live network or runtime actions executed by reviewer.",
+  "changed_files": "Only this new unique review receipt. No source/spec/historical evidence changes.",
+  "artifact_sha256": {
+    "summary.json": "e0e5904e37a62d122b9c3016323c6417c24280d792dac7c3bcd11e736ff8d6c0",
+    "h1-origin.log": "57a68db2cdc6557a896f9a83c098e311b92d9694c3221a9a481c2b08f1b44807",
+    "chromium.log": "8db2142cedb6a2dea60562f416c3a7d347cfbfaaf4d459baf32d121986fc959e",
+    "proxy-peer.cases.json": "1fe99fab714cb006e4c3e1468ffad3b7b9027d2f08e12c0e838d6e5222f29eb1",
+    "chromium.cases.json": "92d94959517126f7a9940489a30d6512bda0c7d453df8573f96b86ec9b7ba672",
+    "proxy-fixture.log": "08087c59f4d6177052c41bd1bb7f5b7be108ca26f6e4d75e62d3cb88cd5440a4",
+    "proxy-peer.log": "7e1ceace7799282d47fda4a3d346cb99ebd944536f0c879276fa990f8502850c",
+    "phoenix-h3.log": "68f0a890da8202ae1cfe14672c5e9df238e3d5e9db1e60947334593f17225508",
+    "certificates.log": "3f907e61a2f32f78a560c749a8b63596d7c42b2e2fc624a563c51dd5a5a3b1a4",
+    "origin-receipts.json": "711d14ea00d079e60ee12db974e800ee853938de96a4ca30be06b30c9f579667",
+    "browser/browser-observed.json": "c499a5f9b53d011b70561e5c863e1eb0d430fd3b096509d6bc8981b9503903f0",
+    "browser/phoenix-h3.png": "80478c7e9fa449319c5184f4b9c5455ffc40d3cc34c88596051a2608edbfbd6c",
+    "browser/chromium-netlog.json": "8fae69dba93f4d27e06e0a5b80423953f0561fae8a6f1e344e6d6bcb506d83ac"
+  },
+  "harness_sha256": {
+    "integration/http3/matrix.py": "c1d6fe1e1dc639ca068484af21a006d41d904cbb1755071d58a00720b5f34831",
+    "integration/http3/matrix_fixture.exs": "9c2987104d25e89044850fa47e0460d50af3f41a8fa6025af0c0f58c02124f8c",
+    "integration/http3/proxy_peer.py": "b9507b1db5f02a83e46bc652254aea90e2b7f514d7fb1b5a6a6b803332333d2f",
+    "integration/http3/browser.py": "6fcc7f5217c690caa67b4a574e062a92a693cd1dbc8c45ef7a9bcdac61c2d719",
+    "integration/http3/h1_origin.py": "df5040976e9327b014f3eb27a0aca5fae3b6807c637ec3db989d2130ed21bfa5",
+    "examples/phoenix_native/h3_gateway.exs": "699eb2f600ef99e8c4f6596ec46a53e5774f638f698c3b48e306a5337ec10613",
+    "examples/phoenix_native/lib/phoenix_native/page_controller.ex": "40445bd30fbbff4554ee47d4a04d313771583f5b143a05f38042ae233b419ec4"
+  },
+  "command_shutdown_status": "All reviewer read commands completed; no reviewer-owned background process.",
+  "remaining_decisions": []
+}

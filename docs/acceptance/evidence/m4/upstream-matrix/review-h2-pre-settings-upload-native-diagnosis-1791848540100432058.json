@@ -1,0 +1,123 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "SOURCE_DIAGNOSIS_TWO_NATIVE_CAUSAL_CANDIDATES",
+  "assignment": "direct read-only bounded native H2 startup/admission/receive-frame investigation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "89a391eb9875fca289dd6c85410e8904990ac17e3db664dccc9259b44f5891d4",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "54052d64cfb83fb4c0a8a2a834105f7b89d45994b582b5a73f095a1cea105235",
+    "apps/gaoxy_http/lib/gaoxy/http/options.ex": "3c1a68f1bf58d4f205958b82230e6d28665b719c7b64923593992decdcafdb90",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "integration/http3/upstream/peer.py": "c4a3dbebc89c7e703a965a279e558fa89ac1f183423166aa29693ea315453f85",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70"
+  },
+  "all_reviewed_hashes_match_failed_execution_before_after": true,
+  "actual_failure": {
+    "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791848311463709434/result.json",
+    "sha256": "a02c0c2c02b792ead739435c57b69b6871d9d61eacc52ac76841a2192fff22a7",
+    "peer_log_sha256": "4130777aeb6274276957ac1d0a4f9db7ea06f320ba50dff34ebb644e120231c7",
+    "status": "FAIL",
+    "actual_exit": 1,
+    "executed_checks": 30,
+    "passing_network_rows": 28,
+    "passing_policy_rows": 2,
+    "passing_h2_rows": [
+      "h2_get",
+      "h2_head",
+      "h2_bodyless_204",
+      "h2_bodyless_304",
+      "h2_progressive_upload",
+      "h2_progressive_download"
+    ],
+    "completion_barriers": 28,
+    "peer_failure": "TimeoutError from original timeout_at(started+5); cancelled while awaiting H2.data changed.wait at peer.py:204 during h2-tiny_window_1mib upload.",
+    "tiny_target_receipts": [],
+    "tiny_origin_requests": [],
+    "h2_final_admission": {
+      "active": 0,
+      "retained_high_water": 175564993,
+      "retained_bytes": 0,
+      "cleanup_pending": 0,
+      "cleanup_failed": null,
+      "queued_items": 0,
+      "queued_bytes": 0
+    },
+    "source_unchanged": true,
+    "children": [
+      {
+        "pid": 908092,
+        "exit": 1,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 878909,
+        "exit": 0,
+        "forced_shutdown": false
+      },
+      {
+        "pid": 874949,
+        "exit": 0,
+        "forced_shutdown": false
+      }
+    ]
+  },
+  "native_candidates": [
+    {
+      "id": "N1",
+      "locations": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:106",
+        "apps/gaoxy_http/lib/gaoxy/http/options.ex:12",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex:5"
+      ],
+      "mechanism": "data rejects raw delivery plus carry greater than max_buffer_bytes before parsing any frame. Default max_buffer_bytes is65536, yet a legal default initial65535 DATA burst plus preface/settings/headers/frame overhead exceeds65536 if coalesced. Qualified SSL delivery accounting already reserves100*16384+18437 bytes, distinct from parser carry. Immediate close before parsing HEADERS can leave no endpoint watch/guardian/origin receipt.",
+      "confidence": "Source-proven rejection condition; actual failing delivery size/coalescing unrecorded."
+    },
+    {
+      "id": "N2",
+      "locations": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:497",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:348",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:205",
+        "integration/http3/upstream/fixture.exs:140"
+      ],
+      "mechanism": "New stream recv_window is configured16384 immediately, though peer can send using default65535 before receiving server SETTINGS. Second legal DATA frame beyond16384 triggers stream FLOW_CONTROL_ERROR reset. reset discards/kills worker; worker-ready can be queued behind parse, so wrapper endpoint may never reach watch. Own-settings ACK branch currently only sets settings_ack; no stream receive-window transition.",
+      "confidence": "Source-proven early configured-window enforcement; actual peer-observed reset/error unrecorded."
+    }
+  ],
+  "startup_trace": [
+    "TLS startup budget and host checks passed for six preceding H2 rows. Connection reserves independent writer+stream; stream task can start at decoded HEADERS without waiting own-settings ACK.",
+    "Connection parse processes up to32 frames synchronously per turn; an initial multi-frame upload can be parsed/reset before queued h2_stream_ready dispatch.",
+    "No tiny endpoint watch receipt means there is no evidence wrapper call started. This differs from missing completed receipt after known endpoint/guardian events in repair4.",
+    "Conservative h2 retained_high_water175564993 is not evidence of byte exhaustion: fixture max_bytes536870912 and final active/retained/cleanup/queues allzero."
+  ],
+  "peer_scope_handoff": "Parent owns exact terminal-event/flow-control diagnostics. Current H2.data waits for credit without checking existing reset/closed state; a native close/reset can surface only as deadline stall. Do not call peer readiness a native early-flight qualification or hide a legal native rejection by waiting SETTINGS alone.",
+  "needed_next_evidence": [
+    "Record actual independently received remote SETTINGS/reset/GOAWAY/EOF and bytes sent for the failing request.",
+    "Use a bounded scoped early-flight/coalesced legal request reproducer to distinguish raw-delivery cap from premature stream-window enforcement, preserving original byte/hash/FIN/deadline assertions.",
+    "Any repair must keep configured frame/carry/body/flow-control/host/accounting bounds finite and preserve legal initial settings transition. No dependency API gap is established."
+  ],
+  "limits": [
+    "Read-only source diagnosis; no reviewer runtime or network reproduction. Cannot uniquely attribute this execution to N1 or N2 without actual ingress/terminal data.",
+    "Full matrix staysFAIL30checks; completed28 barriers do not qualify remaining H2/H3 rows or M4.",
+    "No third Astra recovery authorization; cumulative counters preserved."
+  ],
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 10,
+    "up2_unsuccessful_production_repairs": 4,
+    "up2_current_harness_repair": 5,
+    "up2_unsuccessful_harness_repairs": 1,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-pre-settings-upload-native-diagnosis-1791848540100432058.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source and selected immutable JSON/log content, standard-library hash/receipt utilities; no source/docs/runtime/Mix/network/delegation changes.",
+  "acceptance": "Bounded diagnosis complete; live causal discrimination and repair acceptance pending."
+}

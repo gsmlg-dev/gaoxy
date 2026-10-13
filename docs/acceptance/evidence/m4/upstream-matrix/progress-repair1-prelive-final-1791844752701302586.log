@@ -1,0 +1,32 @@
+COMMAND ['mix', 'format', '--check-formatted', 'apps/gaoxy_http/lib/gaoxy/http/connection.ex', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex', 'apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex', 'apps/gaoxy_http3/test/transport_test.exs', 'integration/http3/upstream/fixture.exs']
+ACTUAL_EXIT 0
+COMMAND ['mix', 'compile', '--warnings-as-errors']
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+ACTUAL_EXIT 0
+COMMAND ['python', 'scripts/check-tests.py', 'apps/gaoxy_http/test/http_network_test.exs', 'apps/gaoxy_http3/test/transport_test.exs', 'apps/gaoxy_proxy/test/http3_session_client_test.exs', 'apps/gaoxy_proxy/test/http3_proxy_test.exs', 'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs', 'apps/gaoxy_proxy/test/http_proxy_wire_test.exs', 'apps/gaoxy_proxy/test/http_proxy_tls_test.exs', 'apps/gaoxy_proxy/test/http_headers_test.exs', 'apps/gaoxy_http/test/native_proxy_seams_test.exs']
+==> gaoxy_http
+Running ExUnit with seed: 38317, max_cases: 4
+
+.......................................
+Finished in 2.2 seconds (2.2s async, 0.00s sync)
+39 tests, 0 failures
+==> gaoxy_http3
+Running ExUnit with seed: 38317, max_cases: 4
+
+.............
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+13 tests, 0 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 38317, max_cases: 4
+
+..............................
+06:39:22.779 [error] GenServer #PID<0.1310.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1309.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.1310.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{#PID<0.1311.0> => {{Gaoxy.Service, :start_link, [{#Reference<0.1020298158.3729391617.77565>, #Reference<0.1020298158.3729391617.77566>, :http, #Reference<0.1020298158.3729260545.77567>}]}, :transient, 7000, :worker, [Gaoxy.Service]}}, restarts: []}
+.......................................................................
+Finished in 7.4 seconds (5.9s async, 1.5s sync)
+101 tests, 0 failures
+ACTUAL_EXIT 0

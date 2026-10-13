@@ -1,0 +1,92 @@
+{
+  "task_id": "m4_session_affinity_review",
+  "status": "DIAGNOSIS_CONFIRMED_NATIVE_CONTROL_RATE_GUARD",
+  "assignment": "direct read-only native partial-response closure and finite matrix profile scope investigation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m4-http3",
+  "branch": "codex/m4-http3",
+  "head": "d5831d7613e8c8edd2adf76fbd7b86b408e62de6",
+  "reviewed_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "d26be1c80a52c982687d1d48d7a1191d1a2606bd8ad04c4004abf968f63bea12",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "integration/http3/upstream/peer.py": "b8de6bea8c80897ef5979df10c43ae9f8c16f005f7d23ff4847e849eaf84da18",
+    "integration/http3/upstream/fixture.exs": "c82020eb09d8997b1261e6f8c53fa377bafa5c910e52ab6dffa1bd437912ef70",
+    "integration/http3/upstream/run.py": "2e5a77544d31ad64a327da9ff95971f5422188463a0b9fc1a98cbba15b301027",
+    "docs/native-http.md": "56aa2e72e742dcc1f8c6d2ef8cd0a1edeb87b6d578b6329650cd4a02aae2bb98",
+    "docs/plans/m4-public-session-upstream.md": "ca1ecefdd91000c7cab9352de7fea18b305c1b97ca39d62842e9bfa5422e5485",
+    "docs/plans/m4-upstream-resume.md": "cb5f7ba9b839a0400146847c6780df041cccadca50290e40e903fd9980f2b780",
+    "integration/http3/upstream/README.md": "e9cc855d20ad072d5e760206eaae359387ef428e94f41e64c84f0307ee3d20d2",
+    "apps/gaoxy_http/test/http2_capacity_test.exs": "73f55be4aa194647467b386fde54dfcfc8afb4e48afdfe3f24a8ed1693914c28"
+  },
+  "findings": [],
+  "actual_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791849278870095368/result.json",
+      "sha256": "a3b24245e3cf9bd1a5d2c9c7a6bcbd7af1fa58940d15f5b92bcdd85495225063",
+      "status": "FAIL",
+      "actual_exit": 1,
+      "executed_checks": 30,
+      "phase": "Request exact1MiB and origin responseFIN; downstream200 plus402472 bytes thenclosed withnoFIN. Terminalcode initiallyunrecorded."
+    },
+    {
+      "path": "docs/acceptance/evidence/m4/upstream-matrix/matrix-1791849461396561662/result.json",
+      "sha256": "12ef854993332869bc8350c476344f317023af5bb853dd0336a63779908c27dd",
+      "peer_log_sha256": "1bc26281f2cc52711ac5c6d575051333c23b63b8d03cec5f500429f6d851d04b",
+      "status": "FAIL",
+      "actual_exit": 1,
+      "executed_checks": 30,
+      "source_unchanged": true,
+      "observed_goaway": {
+        "error_code": 11,
+        "last_stream_id": 1,
+        "additional_data_hex": ""
+      },
+      "partial_response_bytes": 304162,
+      "response_ended": false,
+      "response_reset": null,
+      "response_closed": true,
+      "children": [
+        {
+          "pid": 2200258,
+          "exit": 1,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 2168012,
+          "exit": 0,
+          "forced_shutdown": false
+        },
+        {
+          "pid": 2162837,
+          "exit": 0,
+          "forced_shutdown": false
+        }
+      ]
+    }
+  ],
+  "root_cause": "Native H2 rate/2 includes all WINDOW_UPDATE type8 controls in default256-per1000ms budget. Peer advertises2048 response stream receive window and acknowledges DATA using independent hyper-h2 half-window replenishment, requiring hundreds of legal progress WINDOW_UPDATEs for1MiB response under5s. Actual peerGOAWAY11 ENHANCE_YOUR_CALM confirms native rate-policy closure, which kills pending stream owner; guardian normal cleanup doesnotestablish response completion.",
+  "candidate_disposition": "Raw-delivery/carry rejection remains unverified and excluded. Exact ingress1MiB succeeds after repair6; no buffer or production rate change is evidenced/needed for the selected fixture profile.",
+  "minimal_scope_determination": [
+    "UP2 reviewed plans require1MiB/tiny2KiB response window/absolute5s/exact bytes/hash/FIN/trailer/error/lifecycle assertions. They do not require default256-persec control profile for that specific throughput workload.",
+    "Native public h2_limits supports finite control_rate up to4096, documented in docs/native-http.md and exercised at4096 by existing capacity tests. Selecting fixture2048 is within established public configuration contract, distinct from changing production default or ignoring controls.",
+    "Retain default256 source policy and qualified4096 ceiling. Profile2048 keeps existing bounded queue formula control_rate+max_streams*8; with fixture defaultmax_streams32, queue ceiling2304 is within admitted qualified control limits and existing fixed control/state reservation. No reservation/host/carry/stream/deadline change.",
+    "Explicitly record selected fixture control_rate2048 in ready/report/evidence/README/design; a futurePASS qualifies that profile, not default256 throughput for1MiB/2KiB workload. Preserve immutable default-profileFAIL evidence and its exact assertions.",
+    "Require actual guard boundary-plus-next-WINDOW_UPDATE GOAWAY11 regressions at256 and2048, alongside original exact matrix assertions. Raising profile must not silently erase guard qualification or permit unbounded control throughput."
+  ],
+  "preparation_scope": "Proposed finite profile is acceptable within existing product scope; written repair7 docs/source/tests are not yet reviewed and full matrix remainsFAIL. No PASS acceptance is claimed.",
+  "cumulative_counters": {
+    "up2_unsuccessful_live_executions": 13,
+    "up2_unsuccessful_production_repairs": 5,
+    "up2_unsuccessful_harness_repairs": 1,
+    "next_up2_profile_harness_repair": 7,
+    "up0_sol_unsuccessful": 2,
+    "up0_astra_unsuccessful": 2,
+    "up0_astra_exhausted": true,
+    "reviewer_repair_rounds": 0
+  },
+  "changed_files": [
+    "docs/acceptance/evidence/m4/upstream-matrix/review-h2-tiny-window-control-rate-actual-diagnosis-1791849619815564369.json"
+  ],
+  "commands_finished": true,
+  "reviewer_commands": "Read-only source/docs and selectedimmutable wire/log/results; standard-library hash/receipt serialization. No reviewer Mix/live/network/source/document edits or delegation.",
+  "remaining_acceptance": "Exact writtenSPEC and CODE review, guard regressions and freshchecks, full66+2 current-profile matrix+independent evidence+freshrepeat, finalM4 gates pending."
+}
