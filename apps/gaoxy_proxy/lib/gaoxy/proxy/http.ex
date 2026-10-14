@@ -228,6 +228,51 @@ defmodule Gaoxy.Proxy.HTTP do
 
   @impl true
   def call(exchange, %__MODULE__{transport: transport} = config) when not is_nil(transport) do
+    case exchange.resource_pins do
+      [] ->
+        call_fixed(exchange, config, transport)
+
+      pins ->
+        if captured_resources?(pins, [transport]),
+          do: dispatch_request(exchange, config),
+          else: error_response(exchange, 503)
+    end
+  end
+
+  def call(exchange, config), do: dispatch_request(exchange, config)
+
+  @doc false
+  def captured_resources?(pins, handles) when is_list(pins) and length(pins) <= 64 do
+    :erlang.external_size(pins) <= 65_536 and
+      Enum.all?(handles, fn handle -> Enum.any?(pins, &captured_pin?(&1, handle)) end)
+  end
+
+  def captured_resources?(_, _), do: false
+
+  defp captured_pin?(
+         %{
+           provider: provider,
+           owner: owner,
+           owner_epoch: epoch,
+           operation: operation,
+           ref: ref,
+           handles: handles,
+           kind: :request
+         } = pin,
+         %{provider: provider, owner: owner, owner_epoch: epoch} = handle
+       )
+       when is_reference(operation) and is_reference(ref) and is_list(handles) do
+    length(handles) <= 64 and handle in handles and
+      case provider do
+        UpstreamTransports -> map_size(pin) == 8 and Map.get(pin, :holder) == self()
+        Gaoxy.Proxy.UpstreamGroups -> map_size(pin) == 7
+        _ -> false
+      end
+  end
+
+  defp captured_pin?(_, _), do: false
+
+  defp call_fixed(exchange, config, transport) do
     case Resources.pin_many([transport], self(), :request, exchange.deadline) do
       {:ok, pins} ->
         try do
@@ -244,8 +289,6 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
-  def call(exchange, config), do: dispatch_request(exchange, config)
-
   defp dispatch_request(exchange, config) do
     client = selected_client(config)
 
@@ -254,7 +297,7 @@ defmodule Gaoxy.Proxy.HTTP do
            exchange.request.target_form in [:origin, :absolute] || {:error, :unsupported_target},
          {:ok, method} <- method(exchange.request.method),
          {:ok, headers, policy} <- Headers.request(exchange),
-         {:ok, session, monitor, deadline} <-
+         {:ok, session, monitor, deadline, handoff} <-
            start_session(exchange, config, method, headers, policy) do
       pump(%{
         exchange: %{
@@ -272,6 +315,7 @@ defmodule Gaoxy.Proxy.HTTP do
         session: session,
         monitor: monitor,
         deadline: deadline,
+        transport_handoff: handoff,
         upload: nil,
         ready: false,
         upload_stopped: false,
@@ -314,10 +358,41 @@ defmodule Gaoxy.Proxy.HTTP do
     started_at = Lifecycle.now()
     deadline = min(exchange.deadline, started_at + config.limits.max_lifetime)
 
+    handles =
+      case config do
+        %{group: group} ->
+          Gaoxy.Proxy.UpstreamGroups.resources(group)
+          |> Enum.filter(&(&1.provider == UpstreamTransports))
+
+        %__MODULE__{transport: nil} ->
+          []
+
+        %__MODULE__{transport: transport} ->
+          [transport]
+      end
+
+    handoff =
+      if handles != [] and exchange.resource_pins != [] do
+        %{
+          ref: make_ref(),
+          handles: handles,
+          source_pins:
+            Enum.filter(exchange.resource_pins, &match?(%{provider: UpstreamTransports}, &1)),
+          used: false
+        }
+      end
+
     selector =
       case config do
-        %{group: handle} -> {:group, handle, exchange.resource_pins}
-        _ -> {:fixed, config}
+        %{group: handle} ->
+          {:group, handle,
+           Enum.filter(
+             exchange.resource_pins,
+             &match?(%{provider: Gaoxy.Proxy.UpstreamGroups}, &1)
+           )}
+
+        _ ->
+          {:fixed, config}
       end
 
     request_options = %{
@@ -343,6 +418,7 @@ defmodule Gaoxy.Proxy.HTTP do
       deadline: deadline,
       config: config,
       selector: selector,
+      transport_handoff: if(handoff, do: handoff.ref),
       request_options: request_options
     }
 
@@ -372,7 +448,7 @@ defmodule Gaoxy.Proxy.HTTP do
              exchange.deadline
            ) do
         {:ok, _token} ->
-          {:ok, session, monitor, deadline}
+          {:ok, session, monitor, deadline, handoff}
 
         error ->
           Session.cancel(session)
@@ -513,6 +589,58 @@ defmodule Gaoxy.Proxy.HTTP do
     })
   end
 
+  defp dispatch(
+         {:transport_handoff, ref, handle, identity, deadline},
+         %{ready: false, transport_handoff: %{ref: ref, used: false} = handoff} = state
+       )
+       when is_integer(deadline) do
+    if handle in handoff.handles do
+      operation = make_ref()
+      deadline = min(state.deadline, deadline)
+      pin = Enum.find(handoff.source_pins, &captured_pin?(&1, handle))
+      state = %{state | transport_handoff: %{handoff | used: true}}
+
+      result =
+        UpstreamTransports.delegate_request_pin(
+          handle,
+          pin,
+          state.session,
+          identity,
+          operation,
+          deadline
+        )
+
+      state = refresh_handoff_deadline(state)
+
+      {result, state} =
+        case Exchange.poll_connection(state.exchange, 0) do
+          {kind, exchange} when kind in [:pending, :more] ->
+            {result, %{state | exchange: exchange}}
+
+          {:error, reason, exchange} ->
+            revoke_handoff(handle, operation, result)
+            {{:error, reason}, %{state | exchange: exchange}}
+        end
+
+      result =
+        if Lifecycle.remaining(min(state.deadline, deadline)) > 0 and
+             Process.alive?(state.session) do
+          result
+        else
+          revoke_handoff(handle, operation, result)
+          {:error, :timeout}
+        end
+
+      if match?({:error, _}, result), do: UpstreamTransports.cancel(handle.owner, operation)
+      send(state.session, {:gaoxy_transport_handoff, ref, result, state.deadline})
+      pump(state)
+    else
+      pump(state)
+    end
+  end
+
+  defp dispatch({:transport_handoff, _, _, _, _}, state), do: pump(state)
+
   defp dispatch({:headers, status, fields}, state) do
     exchange = %{
       state.exchange
@@ -571,6 +699,28 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   defp dispatch({:error, reason}, state), do: fail(state, reason)
+
+  defp refresh_handoff_deadline(state) do
+    receive do
+      {:gaoxy_drain, gate, lease, deadline}
+      when gate == state.exchange.gate and lease == state.exchange.lease ->
+        deadline = min(state.deadline, deadline)
+
+        refresh_handoff_deadline(%{
+          state
+          | deadline: deadline,
+            exchange: %{state.exchange | deadline: deadline}
+        })
+    after
+      0 -> state
+    end
+  end
+
+  defp revoke_handoff(handle, operation, _result) do
+    # Cancellation removes even an already granted child by acquirer/operation
+    # without waiting on the owner beyond the current handoff deadline.
+    UpstreamTransports.cancel(handle.owner, operation)
+  end
 
   defp await_cleanup(state) do
     receive do

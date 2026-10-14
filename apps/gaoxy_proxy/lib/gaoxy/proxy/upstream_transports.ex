@@ -56,6 +56,42 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   def validate_endpoint(_, _, _), do: {:error, :invalid_resource}
 
+  def delegate_request_pin(handle, source_pin, guardian, identity, operation, deadline) do
+    with {:ok, owner, [_]} <- handle_batch([handle]),
+         {:ok, pin_owner} <- delegation_pin_shape(source_pin),
+         true <- owner == pin_owner || {:error, :invalid_resource},
+         {:ok, authority, instance} <- endpoint_identity(identity),
+         true <-
+           (is_pid(guardian) and guardian != self() and is_reference(operation)) ||
+             {:error, :invalid_resource_pin},
+         true <- (valid_deadline?(deadline) and Process.alive?(guardian)) || pending() do
+      result =
+        Lifecycle.call(
+          owner,
+          {:delegate_request_pin, handle, source_pin, guardian, authority, instance, operation,
+           deadline},
+          deadline
+        )
+
+      case result do
+        {:ok, pin} ->
+          if valid_deadline?(deadline) and Process.alive?(guardian) do
+            {:ok, pin}
+          else
+            cancel(owner, operation)
+            pending()
+          end
+
+        {:error, {:deadline_exceeded, :cleanup_pending}} ->
+          cancel(owner, operation)
+          result
+
+        error ->
+          error
+      end
+    end
+  end
+
   @fetch_options [
     http_version: :http1,
     tls_backend: :ssl,
@@ -290,8 +326,42 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     with true <- state.lifecycle == :running || {:error, :retiring},
          true <- (valid_deadline?(deadline) and Process.alive?(holder)) || pending(),
          :ok <- pinnable(state, handles),
-         {:ok, pin, state} <- acquire_pins(state, handles, holder, kind, operation, caller) do
+         {:ok, pin, state} <-
+           acquire_pins(state, handles, holder, kind, operation, caller, deadline) do
       {:reply, {:ok, pin}, state}
+    else
+      error -> {:reply, error, state}
+    end
+  end
+
+  def handle_call(
+        {:delegate_request_pin, handle, source_pin, guardian, authority, instance, operation,
+         deadline},
+        {caller, _},
+        state
+      ) do
+    with true <-
+           (state.lifecycle == :running and Process.alive?(state.instance)) || {:error, :retiring},
+         :ok <- pin_identity(state, source_pin),
+         {:ok, source} <- delegation_source(state, source_pin, caller),
+         {:ok, entry} <- record(state, handle),
+         true <- handle in source.public.handles || {:error, :invalid_resource_pin},
+         true <-
+           (entry.lifecycle == :active and not entry.transport_confirmed and
+              not entry.retirement_requested) || {:error, :resource_unavailable},
+         true <-
+           (instance == state.instance and
+              authority == {entry.policy.scheme, entry.policy.host, entry.policy.port}) ||
+             {:error, :transport_endpoint_mismatch},
+         true <-
+           (is_pid(guardian) and guardian != caller and is_reference(operation)) ||
+             {:error, :invalid_resource_pin},
+         true <-
+           (valid_deadline?(deadline) and deadline <= source.admission_deadline and
+              Process.alive?(caller) and Process.alive?(guardian)) || pending(),
+         {:ok, child, state} <-
+           derive_pin(state, handle, source, guardian, operation, caller, deadline) do
+      {:reply, {:ok, child}, state}
     else
       error -> {:reply, error, state}
     end
@@ -319,11 +389,13 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   def handle_call({:checkout, handle, pins, guardian, deadline}, {caller, _}, state) do
     with true <- caller == guardian || {:error, :unauthorized},
-         true <- state.lifecycle == :running || {:error, :retiring},
+         true <-
+           (state.lifecycle == :running and Process.alive?(state.instance)) || {:error, :retiring},
          true <- valid_deadline?(deadline) || pending(),
          {:ok, entry} <- record(state, handle),
          true <-
-           (entry.lifecycle == :active and not entry.transport_confirmed) ||
+           (entry.lifecycle == :active and not entry.transport_confirmed and
+              not entry.retirement_requested) ||
              {:error, :resource_unavailable},
          :ok <- request_pin(state, handle, pins, guardian),
          {:ok, token, hold} <- token_hold(state, entry, guardian, deadline) do
@@ -426,11 +498,18 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         ^resource =>
           %{custodian: ^custodian, capability: ^capability, lifecycle: :opening} = entry
       } ->
-        if state.lifecycle == :running,
-          do: send(custodian, {:open, entry.capability}),
-          else: send(custodian, {:retire, entry.capability, :abort, state.retirement.deadline})
+        if state.lifecycle == :running and not entry.retirement_requested do
+          send(custodian, {:open, entry.capability})
+          {:noreply, state}
+        else
+          state = put_entry(state, %{entry | admission: :closed, retirement_requested: true})
 
-        {:noreply, state}
+          if state.retirement,
+            do: send(custodian, {:retire, entry.capability, :abort, state.retirement.deadline}),
+            else: send(custodian, {:retire, entry.capability})
+
+          {:noreply, state}
+        end
 
       _ ->
         {:noreply, state}
@@ -446,7 +525,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         case result do
           {:ok, scope} ->
             if valid_deadline?(entry.deadline) and Process.alive?(entry.preparer) and
-                 state.lifecycle == :running do
+                 state.lifecycle == :running and not entry.retirement_requested do
               GenServer.reply(
                 entry.from,
                 {:ok, handle(state, resource), [state.pins[entry.pin].public]}
@@ -464,7 +543,15 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
           {:error, reason} ->
             if entry.from, do: GenServer.reply(entry.from, {:error, reason})
             # A control error alone cannot establish absence of an allocation.
-            entry = %{entry | lifecycle: :failed, from: nil, opening: false}
+            entry = %{
+              entry
+              | lifecycle: :failed,
+                from: nil,
+                opening: false,
+                admission: :closed,
+                retirement_requested: true
+            }
+
             {:noreply, put_entry(state, entry)}
         end
 
@@ -590,7 +677,16 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
           entry.custodian_monitor == monitor ->
             if entry.from, do: GenServer.reply(entry.from, {:error, :cleanup_unconfirmed})
             lifecycle = if entry.transport_confirmed, do: :retired, else: :failed
-            entry = %{entry | lifecycle: lifecycle, from: nil, custodian_down: true}
+
+            entry = %{
+              entry
+              | lifecycle: lifecycle,
+                from: nil,
+                custodian_down: true,
+                admission: :closed,
+                retirement_requested: true
+            }
+
             settle_entry(put_entry(acc, entry), entry)
 
           entry.preparer_monitor == monitor ->
@@ -632,6 +728,14 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   @impl true
   def terminate(_, state) do
+    state = %{
+      state
+      | records:
+          Map.new(state.records, fn {resource, entry} ->
+            {resource, %{entry | admission: :closed, retirement_requested: true}}
+          end)
+    }
+
     for {_, entry} <- state.records, do: send(entry.custodian, {:retire, entry.capability})
     :ok
   end
@@ -678,6 +782,8 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
       capability: capability,
       preparer: preparer,
       deadline: deadline,
+      # The larger false encoding remains reserved when retirement flips true.
+      retirement_requested: false,
       control_slots: %{
         initiation: %{
           operation: make_ref(),
@@ -716,7 +822,8 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
       transport_confirmed: false,
       custodian_down: false,
       helpers: %{},
-      admission: :open
+      admission: :open,
+      retirement_requested: false
     }
 
     {:ok, entry, pin}
@@ -772,14 +879,25 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   defp pinnable(state, handles) do
     Enum.reduce_while(handles, :ok, fn handle, _ ->
       case record(state, handle) do
-        {:ok, %{lifecycle: :active, admission: :open, transport_confirmed: false}} -> {:cont, :ok}
-        {:ok, _} -> {:halt, {:error, :resource_admission_closed}}
-        error -> {:halt, error}
+        {:ok,
+         %{
+           lifecycle: :active,
+           admission: :open,
+           transport_confirmed: false,
+           retirement_requested: false
+         }} ->
+          {:cont, :ok}
+
+        {:ok, _} ->
+          {:halt, {:error, :resource_admission_closed}}
+
+        error ->
+          {:halt, error}
       end
     end)
   end
 
-  defp acquire_pins(state, handles, holder, kind, operation, caller) do
+  defp acquire_pins(state, handles, holder, kind, operation, caller, deadline) do
     existing =
       Enum.find(state.pins, fn {_, hold} ->
         hold.public.operation == operation and hold.acquirer == caller
@@ -805,6 +923,12 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         }
 
         hold = %{public: pin, holder_monitor: make_ref(), acquirer: caller}
+
+        hold =
+          if kind == :request,
+            do: Map.merge(hold, %{admission_deadline: deadline, delegations: %{}}),
+            else: hold
+
         status = aggregate(state)
 
         cond do
@@ -847,6 +971,123 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   end
 
   defp pin_identity(_, _), do: {:error, :invalid_resource_pin}
+
+  defp delegation_pin_shape(
+         %{
+           provider: __MODULE__,
+           owner: owner,
+           owner_epoch: epoch,
+           operation: operation,
+           ref: ref,
+           handles: handles,
+           kind: kind,
+           holder: holder
+         } = pin
+       )
+       when map_size(pin) == 8 and is_pid(owner) and is_reference(epoch) and
+              is_reference(operation) and is_reference(ref) and is_pid(holder) and
+              kind in [:baseline, :preparation, :request] do
+    with {:ok, ^owner, _} <- handle_batch(handles),
+         true <- :erlang.external_size(pin) <= 65_536 do
+      {:ok, owner}
+    else
+      _ -> {:error, :invalid_resource_pin}
+    end
+  end
+
+  defp delegation_pin_shape(_), do: {:error, :invalid_resource_pin}
+
+  defp delegation_source(state, pin, caller) do
+    ref = pin.ref
+
+    case state.pins do
+      %{^ref => %{public: ^pin} = hold} ->
+        cond do
+          caller != hold.public.holder ->
+            {:error, :unauthorized}
+
+          pin.kind != :request or Map.get(hold, :derived, false) ->
+            {:error, :invalid_resource_pin}
+
+          true ->
+            {:ok, hold}
+        end
+
+      _ ->
+        {:error, :invalid_resource_pin}
+    end
+  end
+
+  defp derive_pin(state, handle, source, guardian, operation, caller, deadline) do
+    resource = handle.resource
+
+    case source.delegations do
+      %{^resource => %{guardian: ^guardian, operation: ^operation, ref: ref}} ->
+        case state.pins do
+          %{^ref => %{public: pin}} -> {:ok, pin, state}
+          _ -> {:error, :invalid_resource_pin}
+        end
+
+      %{^resource => _} ->
+        {:error, :invalid_resource_pin}
+
+      _ ->
+        if Enum.any?(state.pins, fn {_, hold} ->
+             hold.acquirer == caller and hold.public.operation == operation
+           end) do
+          {:error, :invalid_resource_pin}
+        else
+          reserve_derived_pin(state, handle, source, guardian, operation, caller, deadline)
+        end
+    end
+  end
+
+  defp reserve_derived_pin(state, handle, source, guardian, operation, caller, deadline) do
+    public = %{
+      provider: __MODULE__,
+      owner: self(),
+      owner_epoch: state.epoch,
+      operation: operation,
+      ref: make_ref(),
+      handles: [handle],
+      kind: :request,
+      holder: guardian
+    }
+
+    child = %{
+      public: public,
+      holder_monitor: make_ref(),
+      acquirer: caller,
+      admission_deadline: deadline,
+      derived: true,
+      source_ref: source.public.ref
+    }
+
+    marker = %{guardian: guardian, operation: operation, ref: public.ref}
+    updated_source = put_in(source.delegations[handle.resource], marker)
+
+    delta =
+      :erlang.external_size(updated_source) - :erlang.external_size(source) +
+        :erlang.external_size(child)
+
+    status = aggregate(state)
+
+    cond do
+      status.pins + 1 > state.limits.max_pins ->
+        {:error, {:capacity, :pins}}
+
+      status.owned_serialized_payload_bytes + delta > state.limits.max_owned_payload_bytes ->
+        {:error, {:capacity, :owned_payload}}
+
+      true ->
+        child = %{child | holder_monitor: Process.monitor(guardian)}
+
+        pins =
+          state.pins |> Map.put(source.public.ref, updated_source) |> Map.put(public.ref, child)
+
+        {:ok, public, %{state | pins: pins}}
+    end
+  end
 
   defp remove_pin(state, ref) do
     case Map.pop(state.pins, ref) do
@@ -897,8 +1138,9 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   defp retire_resource(state, resource) do
     case state.records do
       %{^resource => %{transport_confirmed: false} = entry} ->
+        state = put_entry(state, %{entry | admission: :closed, retirement_requested: true})
         send(entry.custodian, {:retire, entry.capability})
-        put_entry(state, %{entry | admission: :closed})
+        state
 
       _ ->
         state
@@ -1195,7 +1437,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   defp abandon(state, entry) do
     if entry.from, do: GenServer.reply(entry.from, pending())
     cancel_timer(entry.timer)
-    entry = %{entry | from: nil}
+    entry = %{entry | from: nil, admission: :closed, retirement_requested: true}
     put_entry(state, entry)
   end
 
@@ -1211,7 +1453,14 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
         {:noreply, state}
 
       %{^resource => %{custodian: ^pid, capability: ^capability} = entry} ->
-        {:noreply, put_entry(state, %{entry | lifecycle: lifecycle, opening: false})}
+        {:noreply,
+         put_entry(state, %{
+           entry
+           | lifecycle: lifecycle,
+             opening: false,
+             admission: :closed,
+             retirement_requested: true
+         })}
 
       _ ->
         {:noreply, state}
@@ -1286,7 +1535,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
     }
 
     Enum.reduce(state.records, state, fn {_, entry}, acc ->
-      entry = %{entry | admission: :closed}
+      entry = %{entry | admission: :closed, retirement_requested: true}
       acc = if entry.from, do: abandon(acc, entry), else: put_entry(acc, entry)
       send(entry.custodian, {:retire, entry.capability, :graceful, deadline})
       acc

@@ -1,0 +1,54 @@
+{
+  "kind": "INDEPENDENT_COMPLETE_CODE_REVIEW",
+  "status": "FAIL",
+  "reviewer": "/root/generation_complete_code",
+  "mode": "READ_ONLY",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "29068aa8575d4dfd47d04200d9019bdc27d2d193",
+  "findings": [
+    {
+      "priority": "P2",
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "line": 723,
+      "title": "Handoff revocation starts a fresh timeout after D",
+      "path": "Successful delegation followed by an already-expired real drain deadline calls revoke_handoff/3. It queues same-caller cancellation, then Resources.release([pin]) calls UpstreamTransports.release/1, creating a fresh 1000ms deadline and blocking native timeout progress if the owner is withheld.",
+      "contract": "Frozen Generation handoff design explicitly requires not waiting past D; retirement cleanup headroom is not an exception for this revocation.",
+      "repair": "Make revocation nonblocking under the original cancellation operation and add deterministic fixed/group owner-barrier deadline regressions. Preserve public cleanup, retained uncertainty charges and immutable failed receipts."
+    }
+  ],
+  "other_actionable_findings": [],
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "04f28a0b9a342e8f0b8844410a0ce775c8b2dbe67fc36168f8a73ba53e2d7ea0",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "be1ef142ca1776795763eee525213e8bd5dc1e830fd3560fc4f12288a715fc41",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "bbd62a4caea0fc9a0549f9af2988b2dc9f4a1d7dda9c8a35cd1e6b3f983f0bfd",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "fa49c98a914947e517436d41f2d8d0bacb15a5ed8cec3c085ba635bbe48e9138",
+    "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs": "d9f39a71a400d8ea0ab1e8a4961cff1a99af2c8a141b750976fc0a6050da8cd1",
+    "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs": "7b4f67d9f8571a80e91d016354952eaf3072f7d8b4b9b71e169bb8869a0eab70",
+    "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs": "a1ac5404a8d4c7a2ed38ded5cac279ad9eba7ac0d74a2160b3cfd65ee0af6939",
+    "apps/gaoxy_proxy/test/upstream_group_probe_test.exs": "94c7453ab8655a93ad78def0be66e49ce395f83a059f9a28be864005b5cc2c46"
+  },
+  "reviewer_runtime": "NOT RUN, as assigned",
+  "reviewer_edits": [],
+  "parent_pre_review_gate": {
+    "receipt": "generation-streaming-spec-repair-complete-gates-1791949433375318627.json",
+    "executed": 339,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0,
+    "actual_exit": 0,
+    "source_hashes": 172,
+    "source_stable": true
+  },
+  "counters": {
+    "unsuccessful_green": 4,
+    "confirmed_production": 0,
+    "confirmed_harness": 5,
+    "intentional_diagnoses": 1,
+    "spec_rejections": 1,
+    "code_rejections": 1,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2
+  },
+  "next_gate": "Tests-first bounded Sol repair, renewed independent SPEC/CODE and fresh unfiltered verification before acceptance/local commit"
+}

@@ -153,6 +153,33 @@ defmodule Gaoxy.Proxy.UpstreamGroupProbeTest do
     :ok = Resources.release(preparation)
   end
 
+  @tag :preheader_peer_regression
+  test "the HEAD peer serves the next connection after EOF before request headers" do
+    {url, peer} = peer()
+    port = URI.parse(url).port
+
+    {:ok, cancelled} =
+      :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], @timeout)
+
+    :ok = :gen_tcp.close(cancelled)
+    assert_receive {:probe_preheader_closed, ^peer, ""}, @timeout
+
+    {:ok, socket} =
+      :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], @timeout)
+
+    on_exit(fn -> :gen_tcp.close(socket) end)
+    head = "HEAD /health?ready=1 HTTP/1.1\r\nHost: localhost\r\n\r\n"
+    :ok = :gen_tcp.send(socket, head)
+    assert_receive {:probe_head, ^peer, ^head}, @timeout
+    send(peer, {:status, 200})
+
+    assert {:ok, "HTTP/1.1 200 Response\r\nContent-Length: 0\r\n\r\n"} =
+             :gen_tcp.recv(socket, 0, @timeout)
+
+    :ok = :gen_tcp.close(socket)
+    assert_receive {:probe_closed, ^peer}, @timeout
+  end
+
   defp prepare(owner, url, policy \\ %{}) do
     health =
       Map.merge(
@@ -203,22 +230,33 @@ defmodule Gaoxy.Proxy.UpstreamGroupProbeTest do
   defp loop(listener, parent) do
     case :gen_tcp.accept(listener, @timeout) do
       {:ok, socket} ->
-        send(parent, {:probe_head, self(), head(socket)})
+        case head(socket) do
+          {:ok, head} ->
+            send(parent, {:probe_head, self(), head})
 
-        receive do
-          {:status, status} ->
-            :ok =
-              :gen_tcp.send(socket, "HTTP/1.1 #{status} Response\r\nContent-Length: 0\r\n\r\n")
+            receive do
+              {:status, status} ->
+                :ok =
+                  :gen_tcp.send(
+                    socket,
+                    "HTTP/1.1 #{status} Response\r\nContent-Length: 0\r\n\r\n"
+                  )
 
-          :await_close ->
-            :ok
-        after
-          @timeout -> flunk("HEAD peer response barrier expired")
+              :await_close ->
+                :ok
+            after
+              @timeout -> flunk("HEAD peer response barrier expired")
+            end
+
+            assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)
+            :gen_tcp.close(socket)
+            send(parent, {:probe_closed, self()})
+
+          {:closed, bytes} ->
+            :gen_tcp.close(socket)
+            send(parent, {:probe_preheader_closed, self(), bytes})
         end
 
-        assert {:error, :closed} = :gen_tcp.recv(socket, 0, @timeout)
-        :gen_tcp.close(socket)
-        send(parent, {:probe_closed, self()})
         loop(listener, parent)
 
       {:error, :closed} ->
@@ -230,13 +268,18 @@ defmodule Gaoxy.Proxy.UpstreamGroupProbeTest do
   end
 
   defp head(socket, bytes \\ "") do
-    if String.contains?(bytes, "\r\n\r\n"),
-      do: bytes,
-      else:
-        (
-          assert {:ok, more} = :gen_tcp.recv(socket, 0, @timeout)
+    if String.contains?(bytes, "\r\n\r\n") do
+      {:ok, bytes}
+    else
+      case :gen_tcp.recv(socket, 0, @timeout) do
+        {:error, :closed} ->
+          {:closed, bytes}
+
+        received ->
+          assert {:ok, more} = received
           head(socket, bytes <> more)
-        )
+      end
+    end
   end
 
   defp eventually(fun, deadline \\ nil) do

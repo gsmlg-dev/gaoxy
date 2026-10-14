@@ -1,0 +1,29 @@
+{
+  "kind": "DETERMINISTIC_HARNESS_RED",
+  "status": "EXPECTED RED",
+  "receipt": "generation-probe-preheader-regression-red-1791943793326650645.json",
+  "full_raw_log_read": true,
+  "actual_exit": 2,
+  "counts": [
+    {
+      "tests": 6,
+      "failures": 1,
+      "excluded": 5,
+      "skipped": 0,
+      "executed": 1
+    }
+  ],
+  "source_stable": true,
+  "root_cause": "Probe deadline80ms starts before asynchronous Fetch has written a complete HEAD. EOF before headers is valid cancellation; original peer assumes a complete HEAD and crashes on EOF. Independent TCP connection-close-before-write reproduces identical helper failure without the product or scheduler dependency.",
+  "fix_scope": "Test peer only: report observed preheader EOF and resume existing accept loop. Preserve actual timeout80ms, interval50ms, HEAD, response, EOF and later recovery assertions.",
+  "production_modified": false,
+  "unsuccessful_green_increment": 0,
+  "counters": {
+    "generation_unsuccessful_green": 2,
+    "production_failures": 0,
+    "harness_failures": 2,
+    "unclassified_failures": 0,
+    "astra_recovery_rounds_used": 2,
+    "astra_recovery_rounds_max": 2
+  }
+}

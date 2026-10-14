@@ -1,0 +1,564 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 411538, max_cases: 1
+
+
+
+  1) test TLS wrong_ca generation fails verification without request replay or alternate peer (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:445[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert :ok = HTTP.RequestCompletion.await(completion, @timeout)
+     [36mleft:  [0m[31m:ok[0m
+     [36mright: [0m[32m{:error, :cleanup_unconfirmed}[0m
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:483: (test)
+
+     The following output was logged:
+     [22m
+     10:19:09.726 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m[22m
+     10:19:09.714 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m
+
+
+  2) test fixed TLS swaps numeric IP and DER atomically at one authority and port (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:376[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 10 of 13 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, :tls_old, old_worker, head}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:native_outer_acquisition[0m,
+                  [32m#PID<0.384.0>[0m,
+                  #PID<0.385.0>,
+                  #PID<0.404.0>,
+                  [32m[%{owner: #PID<0.384.0>, resource: #Reference<0.3916510033.4255383553.210967>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383553.210945>}][0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.384.0>[0m, #PID<0.405.0>, :prepare}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.384.0>[0m, #PID<0.385.0>, :pin_many}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.384.0>[0m, #PID<0.405.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.384.0>[0m, #PID<0.385.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.384.0>[0m,
+                  #PID<0.371.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:native_outer_acquisition[0m,
+                  [32m#PID<0.384.0>[0m,
+                  #PID<0.404.0>,
+                  #PID<0.404.0>,
+                  [32m[%{owner: #PID<0.384.0>, resource: #Reference<0.3916510033.4255383553.210967>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383553.210945>}][0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.384.0>[0m, #PID<0.404.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383554.204608>[0m,
+                  :process,
+                  #PID<0.404.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383553.211018>[0m,
+                  :process,
+                  #PID<0.388.0>,
+                  [32m:normal[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:413: (test)
+
+
+
+  3) test group native old snapshot dispatches only to its old peer after baseline closure (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:59[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 10 of 36 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, :old, old_worker, old_head}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.440.0>[0m, #PID<0.442.0>, :pin_many}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.440.0>[0m, #PID<0.469.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.440.0>[0m, #PID<0.469.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.440.0>[0m, #PID<0.442.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.440.0>[0m,
+                  #PID<0.422.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.440.0>[0m,
+                  #PID<0.483.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.440.0>[0m, #PID<0.468.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383553.211366>[0m,
+                  :process,
+                  #PID<0.468.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, :old, old_worker, [31mold_head[0m}
+       [36mvalue:   [0m{[32m:peer_eof[0m, :old, #PID<0.456.0>}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383554.206464>[0m,
+                  :process,
+                  #PID<0.445.0>,
+                  [32m:normal[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:82: (test)
+
+
+
+  4) test missing_group nonempty captured group set fails closed without new transport allocation (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:185[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert response(socket) == {expected_status, ""}
+     [36mleft:  [0m{[31m200[0m, "[31munexpected admitted GET[0m"}
+     [36mright: [0m{[32m503[0m, "[48;5;28m[0m"}
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:206: (test)
+
+
+
+  5) test fixed native old snapshot dispatches only to its old peer after baseline closure (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:59[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 10 of 13 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, :old, old_worker, old_head}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:native_outer_acquisition[0m,
+                  [32m#PID<0.560.0>[0m,
+                  #PID<0.561.0>,
+                  #PID<0.580.0>,
+                  [32m[%{owner: #PID<0.560.0>, resource: #Reference<0.3916510033.4255383554.207318>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383554.207296>}][0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.560.0>[0m, #PID<0.581.0>, :prepare}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.560.0>[0m, #PID<0.561.0>, :pin_many}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.560.0>[0m, #PID<0.581.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.560.0>[0m, #PID<0.561.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.560.0>[0m,
+                  #PID<0.551.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:native_outer_acquisition[0m,
+                  [32m#PID<0.560.0>[0m,
+                  #PID<0.580.0>,
+                  #PID<0.580.0>,
+                  [32m[%{owner: #PID<0.560.0>, resource: #Reference<0.3916510033.4255383554.207318>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383554.207296>}][0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.560.0>[0m, #PID<0.580.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383554.207474>[0m,
+                  :process,
+                  #PID<0.580.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:old[0m, old_worker, old_head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383554.207369>[0m,
+                  :process,
+                  #PID<0.564.0>,
+                  [32m:normal[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:82: (test)
+
+[31m
+10:19:22.458 [error] Process #PID<0.604.0> raised an exception
+** (ExUnit.AssertionError) 
+
+Assertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.648.0>
+     The process mailbox is empty.
+code: assert_receive {:worker_finished, ^worker, result}
+
+    (ex_unit 1.18.5) lib/ex_unit/assertions.ex:599: ExUnit.Assertions.__timeout__/5
+    test/upstream_transport_generation_test.exs:1176: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransportGenerationTest.accept_loop/6
+    (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+    test/upstream_transport_generation_test.exs:1175: Gaoxy.Proxy.UpstreamTransportGenerationTest.accept_loop/6
+[0m
+
+  6) test fixed stale CAS retires only the rejected candidate and preserves the active baseline (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:233[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert native_pins == [transport_pin(captured)]
+     [36mleft:  [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.610.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383554.209218>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383553.213704>
+                  }
+                ],
+                holder: #PID<0.642.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383554.209324>,
+                owner: #PID<0.610.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.209218>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383554.209326>
+              },
+              [31m%{
+                owner: #PID<0.610.0>,
+                handles: [%{owner: #PID<0.610.0>, resource: #Reference<0.3916510033.4255383553.213704>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383554.209218>}],
+                kind: :request,
+                ref: #Reference<0.3916510033.4255383554.209336>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                holder: #PID<0.642.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.209218>,
+                operation: #Reference<0.3916510033.4255383554.209334>
+              }[0m
+            ]
+     [36mright: [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.610.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383554.209218>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383553.213704>
+                  }
+                ],
+                holder: #PID<0.642.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383554.209324>,
+                owner: #PID<0.610.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.209218>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383554.209326>
+              }
+            ]
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:826: Gaoxy.Proxy.UpstreamTransportGenerationTest.bound_request/3
+       test/upstream_transport_generation_test.exs:509: Gaoxy.Proxy.UpstreamTransportGenerationTest.complete_request/5
+       test/upstream_transport_generation_test.exs:260: (test)
+
+[32m.[0m
+
+  7) test a real Service attach_cleanup barrier permits no Session pin token or Fetch before activation (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:134[0m
+     [31mUnexpectedly received message {:native_outer_acquisition, #PID<0.733.0>, #PID<0.753.0>, #PID<0.753.0>, [%{owner: #PID<0.733.0>, resource: #Reference<0.3916510033.4255383553.214565>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383553.214543>}]} (which matched {:native_outer_acquisition, ^owner, ^native, _, _})[0m
+     [36mcode: [0massert_no_native_outer_acquisition(fixture, captured.native)
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:167: (test)
+
+
+
+  8) test TLS wrong_host generation fails verification without request replay or alternate peer (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:445[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert :ok = HTTP.RequestCompletion.await(completion, @timeout)
+     [36mleft:  [0m[31m:ok[0m
+     [36mright: [0m[32m{:error, :cleanup_unconfirmed}[0m
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:483: (test)
+
+     The following output was logged:
+     [22m
+     10:19:23.262 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2283 generated CLIENT ALERT: Fatal - Bad Certificate
+      - {:bad_cert,
+      {:hostname_check_failed, {:requested, ~c"other.invalid"},
+       {:received, [dNSName: ~c"localhost", iPAddress: <<127, 0, 0, 1>>]}}}
+     [0m[22m
+     10:19:23.263 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Bad Certificate
+     
+     [0m
+
+
+  9) test fixed two warmups and twenty reloads plateau after old physical resources join (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:339[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert native_pins == [transport_pin(captured)]
+     [36mleft:  [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.822.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383554.210440>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383554.210462>
+                  }
+                ],
+                holder: #PID<0.842.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383554.210609>,
+                owner: #PID<0.822.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.210440>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383554.210611>
+              },
+              [31m%{
+                owner: #PID<0.822.0>,
+                handles: [%{owner: #PID<0.822.0>, resource: #Reference<0.3916510033.4255383554.210462>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383554.210440>}],
+                kind: :request,
+                ref: #Reference<0.3916510033.4255383554.210621>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                holder: #PID<0.842.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.210440>,
+                operation: #Reference<0.3916510033.4255383554.210619>
+              }[0m
+            ]
+     [36mright: [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.822.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383554.210440>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383554.210462>
+                  }
+                ],
+                holder: #PID<0.842.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383554.210609>,
+                owner: #PID<0.822.0>,
+                owner_epoch: #Reference<0.3916510033.4255383554.210440>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383554.210611>
+              }
+            ]
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:826: Gaoxy.Proxy.UpstreamTransportGenerationTest.bound_request/3
+       test/upstream_transport_generation_test.exs:509: Gaoxy.Proxy.UpstreamTransportGenerationTest.complete_request/5
+       test/upstream_transport_generation_test.exs:347: (test)
+
+
+
+ 10) test fixed store death closes configuration while a captured native request retains its old right (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:300[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert response(fresh) == {503, ""}
+     [36mleft:  [0m{50[31m0[0m, ""}
+     [36mright: [0m{50[32m3[0m, ""}
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:319: (test)
+
+
+
+ 11) test group store death closes configuration while a captured native request retains its old right (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:300[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert response(fresh) == {503, ""}
+     [36mleft:  [0m{50[31m0[0m, ""}
+     [36mright: [0m{50[32m3[0m, ""}
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:319: (test)
+
+[32m.[0m
+
+ 12) test missing_transport nonempty captured group set fails closed without new transport allocation (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:185[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert response(socket) == {expected_status, ""}
+     [36mleft:  [0m{[31m200[0m, "[31munexpected admitted GET[0m"}
+     [36mright: [0m{[32m503[0m, "[48;5;28m[0m"}
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:206: (test)
+
+
+
+ 13) test group TLS swaps numeric IP and DER atomically at one authority and port (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:376[0m
+     [31mAssertion failed, no matching message after 3000ms
+     Showing 10 of 38 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, :tls_old, old_worker, head}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.1607.0>[0m, #PID<0.1609.0>, :pin_many}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.1607.0>[0m, #PID<0.1642.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.1607.0>[0m, #PID<0.1642.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.1607.0>[0m, #PID<0.1609.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.1607.0>[0m,
+                  #PID<0.1594.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:transport_input[0m,
+                  [32m#PID<0.1607.0>[0m,
+                  #PID<0.1664.0>,
+                  :validate_endpoint
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{[32m:transport_input[0m, [32m#PID<0.1607.0>[0m, #PID<0.1641.0>, :release}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383553.224694>[0m,
+                  :process,
+                  #PID<0.1641.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+
+       [36mpattern: [0m{[31m:peer_request[0m, :tls_old, old_worker, [31mhead[0m}
+       [36mvalue:   [0m{[32m:peer_eof[0m, :tls_old, #PID<0.1626.0>}
+
+       [36mpattern: [0m{[31m:peer_request[0m, [31m:tls_old[0m, old_worker, head}
+       [36mvalue:   [0m{
+                  [32m:DOWN[0m,
+                  [32m#Reference<0.3916510033.4255383553.224235>[0m,
+                  :process,
+                  #PID<0.1612.0>,
+                  [32m:normal[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:413: (test)
+
+
+
+ 14) test fixed candidate coordinator death before activation releases preparation without changing routing (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:267[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert native_pins == [transport_pin(captured)]
+     [36mleft:  [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.1691.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383553.226837>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383553.226860>
+                  }
+                ],
+                holder: #PID<0.1719.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383553.227081>,
+                owner: #PID<0.1691.0>,
+                owner_epoch: #Reference<0.3916510033.4255383553.226837>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383553.227083>
+              },
+              [31m%{
+                owner: #PID<0.1691.0>,
+                handles: [%{owner: #PID<0.1691.0>, resource: #Reference<0.3916510033.4255383553.226860>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3916510033.4255383553.226837>}],
+                kind: :request,
+                ref: #Reference<0.3916510033.4255383553.227093>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                holder: #PID<0.1719.0>,
+                owner_epoch: #Reference<0.3916510033.4255383553.226837>,
+                operation: #Reference<0.3916510033.4255383553.227091>
+              }[0m
+            ]
+     [36mright: [0m[
+              %{
+                handles: [
+                  %{
+                    owner: #PID<0.1691.0>,
+                    owner_epoch: #Reference<0.3916510033.4255383553.226837>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    resource: #Reference<0.3916510033.4255383553.226860>
+                  }
+                ],
+                holder: #PID<0.1719.0>,
+                kind: :request,
+                operation: #Reference<0.3916510033.4255383553.227081>,
+                owner: #PID<0.1691.0>,
+                owner_epoch: #Reference<0.3916510033.4255383553.226837>,
+                provider: Gaoxy.Proxy.UpstreamTransports,
+                ref: #Reference<0.3916510033.4255383553.227083>
+              }
+            ]
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:826: Gaoxy.Proxy.UpstreamTransportGenerationTest.bound_request/3
+       test/upstream_transport_generation_test.exs:509: Gaoxy.Proxy.UpstreamTransportGenerationTest.complete_request/5
+       test/upstream_transport_generation_test.exs:293: (test)
+
+[32m.[0m
+
+ 15) test fake_transport nonempty captured group set fails closed without new transport allocation (Gaoxy.Proxy.UpstreamTransportGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_generation_test.exs:185[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert response(socket) == {expected_status, ""}
+     [36mleft:  [0m{[31m2[0m0[31m0[0m, "[31munexpected admitted GET[0m"}
+     [36mright: [0m{[32m5[0m0[32m2[0m, "[48;5;28m[0m"}
+     [36mstacktrace:[0m
+       test/upstream_transport_generation_test.exs:206: (test)
+
+
+Finished in 30.9 seconds (0.00s async, 30.9s sync)
+[31m18 tests, 15 failures[0m

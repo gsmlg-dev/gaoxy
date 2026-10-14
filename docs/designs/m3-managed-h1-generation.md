@@ -1,9 +1,11 @@
 # M3 managed H1 Generation integration
 
 Date: 2026-10-13 Asia/Shanghai; readiness updated 2026-10-14.
-Status: **INDEPENDENT DESIGN/PLAN READINESS PASS**; implementation and runtime
-acceptance **NOT RUN**. The original review preserves its predecessor snapshot;
-execution still requires accepted groups/probes and a recorded fresh kickoff.
+Status: **PASS** for this bounded H1 slice. Complete independent SPEC and CODE
+pass after the preserved streaming-peer and handoff-deadline repairs. Fresh
+post-review scoped format, strict compile and all341 tests pass with no failures,
+exclusions or skips. Accepted source, ownership and immutable execution history
+are recorded in the [acceptance ledger](../acceptance/m3-managed-h1-generation.md).
 Depends on accepted [fixed endpoints](m3-managed-h1-fixed-endpoint.md) and
 [groups/probes](m3-managed-h1-groups.md). Implements the remaining bounded H1
 Generation portion of existing M3 upstream-transport Task 5. See the
@@ -269,3 +271,21 @@ Readiness review precedes implementation. Independent SPEC then CODE review
 after GREEN and fresh source-bound verification precede local commit. All
 execution remains **NOT RUN** here; existing release/foundation results do not
 qualify this slice. H2 and standalone require separate bounded packages.
+
+
+## Execution contract clarification — 2026-10-14
+
+Generic Generation store unavailability preserves the existing exact500 response contract and opens no new upstream request; the design's new-snapshot failure requirement does not prescribe503. Structural partial captured-resource denial remains503, and transport-owner authentication denial remains502. No generic Generation production change follows from a newly invented status expectation.
+
+WrongCA/hostname tests preserve the already accepted managed-H1 denied-TLS contract: downstream502 with no upstream HTTP request, fallback or replay; original `RequestCompletion` and scope/owner retirement retain cached `cleanup_unconfirmed`, and uncertain request/resource accounting remains charged. Test-owned actor dismantling and socket/helper joins are separately labeled fixture teardown, never successful public cleanup or a refund. Successful generation replacement, cancellation with confirmed public cleanup and reload plateau cases still require all prescribed zero-accounting and physical-EOF/owned-join assertions. This clarifies expected failure disposition; it neither waives a successful-path gate nor adds a #97 certification requirement.
+
+
+## Candidate delivery boundary — 2026-10-14
+
+The successful-CAS lost-result fixture observes Store publication once, holds
+the embedding coordinator result after the actual Store reply, releases
+candidate preparation and kills that coordinator before result delivery. Its
+new baseline must remain usable. This is not evidence of an actual Store
+GenServer reply timeout. Generic activation deadline/partial-provider rollback
+remains covered by the separately required Generation compatibility suite;
+no blind activation retry is introduced.

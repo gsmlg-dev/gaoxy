@@ -1,0 +1,61 @@
+{
+  "kind": "FRESH_POST_REVIEW_OWNER_GATES",
+  "status": "PASS",
+  "runner_sha256": "96ac70746e2597d56c0ef97f4717c799bdadd7daf732cb107eac00a0809bc7d8",
+  "gates": [
+    {
+      "gate": "FORMAT_CHECK",
+      "command": [
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1037
+    },
+    {
+      "gate": "STRICT_COMPILE",
+      "command": [
+        "unbuffer",
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1662
+    },
+    {
+      "gate": "UNFILTERED_OWNER_TESTS",
+      "command": [
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_preparation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_identity_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs",
+        "apps/gaoxy_proxy/test/http_fetch_completion_test.exs",
+        "apps/gaoxy/test/lifecycle_participant_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 48109
+    }
+  ]
+}

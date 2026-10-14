@@ -1,0 +1,109 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 737128, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:handoff_lifecycle]
+
+
+
+  1) test 100 admitted derive release cycles restore the exact baseline ledger (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:403[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, child} = delegate(f, pin: pin)
+     [36mleft:  [0m{[31m:ok[0m, child}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:416: anonymous fn/4 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test 100 admitted derive release cycles restore the exact baseline ledger"/1
+       (elixir 1.18.5) lib/enum.ex:4484: Enum.map/2
+       test/upstream_transport_handoff_test.exs:410: (test)
+
+
+
+  2) test one source resource grants once with live idempotence but no released replay (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:295[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, child} = delegate(f, operation: operation)
+     [36mleft:  [0m{[31m:ok[0m, child}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:298: (test)
+
+
+
+  3) test a full pin ledger rejects without consuming the source grant (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:393[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              {
+                [31m:missing_api[0m,
+                [31mGaoxy.Proxy.UpstreamTransports[0m,
+                [31m:delegate_request_pin[0m,
+                [31m6[0m
+              }
+            }
+     [36mright: [0m{:error, {[32m:capacity[0m, [32m:pins[0m}}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:450: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:395: (test)
+
+
+
+  4) test expired and extended deadlines cannot grant beyond the stored source admission (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:378[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              {
+                [31m:missing_api[0m,
+                [31mGaoxy.Proxy.UpstreamTransports[0m,
+                [31m:delegate_request_pin[0m,
+                [31m6[0m
+              }
+            }
+     [36mright: [0m{:error, {[32m:deadline_exceeded[0m, [32m:cleanup_pending[0m}}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:450: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:382: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test expired and extended deadlines cannot grant beyond the stored source admission"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:381: (test)
+
+
+
+  5) test source release leaves independent guardian ownership until guardian release (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:319[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, child} = delegate(f)
+     [36mleft:  [0m{[31m:ok[0m, child}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:325: (test)
+
+
+
+  6) test guardian death after grant releases its independently monitored hold (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:425[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, _} = delegate(f)
+     [36mleft:  [0m{[31m:ok[0m, _}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:428: (test)
+
+
+Finished in 1.5 seconds (1.5s async, 0.00s sync)
+[31m16 tests, 6 failures, 10 excluded[0m

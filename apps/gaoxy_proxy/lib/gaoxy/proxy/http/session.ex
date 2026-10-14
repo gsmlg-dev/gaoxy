@@ -35,6 +35,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
        opening_deadline: nil,
        total_timer: nil,
        selection: nil,
+       transport_handoff: Map.get(args, :transport_handoff),
+       awaiting_transport: nil,
        transport_pins: [],
        transport_selection: nil,
        managed_transport: nil,
@@ -108,66 +110,51 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         fail(state, :timeout)
 
       true ->
-        with {:ok, state, config} <- select(state) do
-          state = apply_limits(state, config.limits)
-          state = %{state | client: HTTP.selected_client(config)}
-
-          options =
-            Map.merge(state.request_options, %{
-              url:
-                URI.to_string(%{
-                  config.uri
-                  | path: state.request_options.path,
-                    query: state.request_options.query
-                }),
-              deadline: state.deadline,
-              opening_deadline: state.opening_deadline,
-              timeout: Lifecycle.remaining(state.deadline),
-              opening_timeout: Lifecycle.remaining(state.opening_deadline),
-              write_timeout: state.config.limits.write_timeout,
-              cacertfile: config.cacertfile,
-              connect_address: config.connect_address,
-              managed_transport: state.managed_transport
-            })
-
-          result =
-            cond do
-              options.timeout <= 0 -> {:error, :request_timeout}
-              options.opening_timeout <= 0 -> {:error, :timeout}
-              true -> state.client.open(options)
-            end
-
-          case result do
-            {:ok, request, upload} ->
-              state = %{state | request: request, original_request: request}
-
-              case bind(state) do
-                :ok ->
-                  notify(state, {:ready, upload, state.config.limits, state.deadline})
-                  schedule(state)
-                  {:noreply, state}
-
-                {:error, reason} ->
-                  fail(state, reason)
-              end
-
-            {:error, {:cleanup_unconfirmed, _} = reason} ->
-              if state.transport_selection == nil do
-                notify(state, {:error, reason})
-                {:stop, reason, state}
-              else
-                fail(state, reason)
-              end
-
-            {:error, reason} ->
-              upstream_fail(state, reason)
-          end
-        else
+        case select(state) do
+          {:ok, state, config} -> open_selected(state, config)
+          {:await, state} -> {:noreply, state}
           {:error, reason, state} -> fail(state, reason)
           {:error, reason} -> fail(state, reason)
         end
     end
   end
+
+  def handle_info(
+        {:gaoxy_transport_handoff, ref, {:ok, pin}, deadline},
+        %{transport_handoff: ref, awaiting_transport: %{handle: handle, config: config}} = state
+      )
+      when is_integer(deadline) do
+    if HTTP.captured_resources?([pin], [handle]) and Map.get(pin, :handles) == [handle] do
+      state = %{
+        state
+        | transport_pins: [pin],
+          awaiting_transport: nil,
+          deadline: min(state.deadline, deadline),
+          opening_deadline: min(state.opening_deadline, deadline)
+      }
+
+      if state.cancelled or Lifecycle.remaining(state.opening_deadline) <= 0 do
+        fail(state, :timeout)
+      else
+        case checkout_transport(state, config, [pin], state.opening_deadline) do
+          {:ok, state, config} -> open_selected(state, config)
+          {:error, reason, state} -> fail(state, reason)
+        end
+      end
+    else
+      fail(%{state | awaiting_transport: nil}, :invalid_resource_pin)
+    end
+  end
+
+  def handle_info(
+        {:gaoxy_transport_handoff, ref, {:error, reason}, deadline},
+        %{transport_handoff: ref, awaiting_transport: awaiting} = state
+      )
+      when not is_nil(awaiting) and is_integer(deadline) do
+    fail(%{state | awaiting_transport: nil, deadline: min(state.deadline, deadline)}, reason)
+  end
+
+  def handle_info({:gaoxy_transport_handoff, _, _, _}, state), do: {:noreply, state}
 
   def handle_info({:gaoxy_cleanup_cancel, token, _reason, deadline}, %{token: token} = state) do
     state = %{state | cleanup_requested_deadline: deadline}
@@ -184,6 +171,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   def handle_info(event, %{consumed: true} = state)
       when event in [:opening_expired, :total_expired],
       do: settle(state)
+
+  def handle_info(:opening_expired, %{awaiting_transport: awaiting} = state)
+      when not is_nil(awaiting),
+      do: fail(state, :timeout)
 
   def handle_info(:opening_expired, %{headers: false} = state),
     do: upstream_fail(state, :timeout)
@@ -210,6 +201,62 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   end
 
   def handle_info(_, state), do: {:noreply, state}
+
+  defp open_selected(state, config) do
+    state = apply_limits(state, config.limits)
+    state = %{state | client: HTTP.selected_client(config)}
+
+    options =
+      Map.merge(state.request_options, %{
+        url:
+          URI.to_string(%{
+            config.uri
+            | path: state.request_options.path,
+              query: state.request_options.query
+          }),
+        deadline: state.deadline,
+        opening_deadline: state.opening_deadline,
+        timeout: Lifecycle.remaining(state.deadline),
+        opening_timeout: Lifecycle.remaining(state.opening_deadline),
+        write_timeout: state.config.limits.write_timeout,
+        cacertfile: config.cacertfile,
+        connect_address: config.connect_address,
+        managed_transport: state.managed_transport
+      })
+
+    result =
+      cond do
+        options.timeout <= 0 -> {:error, :request_timeout}
+        options.opening_timeout <= 0 -> {:error, :timeout}
+        true -> state.client.open(options)
+      end
+
+    case result do
+      {:ok, request, upload} ->
+        state = %{state | request: request, original_request: request}
+
+        case bind(state) do
+          :ok ->
+            notify(state, {:ready, upload, state.config.limits, state.deadline})
+            schedule(state)
+            {:noreply, state}
+
+          {:error, reason} ->
+            fail(state, reason)
+        end
+
+      {:error, {:cleanup_unconfirmed, _} = reason} ->
+        if state.transport_selection == nil do
+          notify(state, {:error, reason})
+          {:stop, reason, state}
+        else
+          fail(state, reason)
+        end
+
+      {:error, reason} ->
+        upstream_fail(state, reason)
+    end
+  end
 
   defp dispatch(_event, %{cancelled: true} = state), do: settle(state)
   defp dispatch(_event, %{consumed: true} = state), do: settle(state)
@@ -387,6 +434,20 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp select_transport(state, %HTTP{transport: nil} = config), do: {:ok, state, config}
 
+  defp select_transport(%{transport_handoff: ref} = state, %HTTP{transport: handle} = config)
+       when is_reference(ref) do
+    state = apply_limits(state, config.limits)
+
+    identity = %{
+      origin: URI.to_string(config.uri),
+      upstream_protocol: :http1,
+      instance: state.instance
+    }
+
+    notify(state, {:transport_handoff, ref, handle, identity, state.opening_deadline})
+    {:await, %{state | awaiting_transport: %{handle: handle, config: config}}}
+  end
+
   defp select_transport(state, %HTTP{transport: handle} = config) do
     deadline = min(state.deadline, state.opening_deadline)
 
@@ -399,23 +460,26 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     with :ok <- UpstreamTransports.validate_endpoint(handle, identity, deadline),
          {:ok, pins} <- Resources.pin_many([handle], self(), :request, deadline) do
       state = %{state | transport_pins: pins}
-
-      case UpstreamTransports.checkout(handle, pins, self(), deadline) do
-        {:ok, client, token} ->
-          state = %{state | transport_selection: {handle, token}, managed_transport: client}
-          {:ok, state, %{config | uri: URI.parse(client.policy.origin)}}
-
-        {:error, reason} ->
-          case Resources.release(pins) do
-            :ok ->
-              {:error, reason, %{state | transport_pins: []}}
-
-            {:error, release_reason} ->
-              {:error, {:transport_pin_release_failed, reason, release_reason}, state}
-          end
-      end
+      checkout_transport(state, config, pins, deadline)
     else
       {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  defp checkout_transport(state, %HTTP{transport: handle} = config, pins, deadline) do
+    case UpstreamTransports.checkout(handle, pins, self(), deadline) do
+      {:ok, client, token} ->
+        state = %{state | transport_selection: {handle, token}, managed_transport: client}
+        {:ok, state, %{config | uri: URI.parse(client.policy.origin)}}
+
+      {:error, reason} ->
+        case Resources.release(pins) do
+          :ok ->
+            {:error, reason, %{state | transport_pins: []}}
+
+          {:error, release_reason} ->
+            {:error, {:transport_pin_release_failed, reason, release_reason}, state}
+        end
     end
   end
 

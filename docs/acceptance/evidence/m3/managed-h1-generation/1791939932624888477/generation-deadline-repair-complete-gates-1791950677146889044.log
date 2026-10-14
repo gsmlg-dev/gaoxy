@@ -1,0 +1,47 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+{"gate": "FORMAT_CHECK", "command": ["unbuffer", "mix", "format", "--check-formatted", "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex", "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex", "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex", "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex", "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs", "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs", "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs", "apps/gaoxy_proxy/test/upstream_group_probe_test.exs"]}
+[31m[1m** (Mix) mix format failed due to --check-formatted.
+The following files are not formatted:
+
+[1m[31m/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_generation_test.exs
+[0m
+           |
+ 899  899  |
+ 900  900  |      assert_receive {:delegation_cancel, ^owner, ^native, ^operation}, @timeout
+ 901     [31m -[0m|[31m      assert_receive {:trace, ^native, :send, {:cancel_pins, ^native, ^operation}, ^owner}, @timeout[0m
+      901[32m +[0m|[32m[0m
+      902[32m +[0m|[32m      assert_receive {:trace, ^native, :send, {:cancel_pins, ^native, ^operation}, ^owner},[0m
+      903[32m +[0m|[32m                     @timeout[0m
+      904[32m +[0m|[32m[0m
+ 902  905  |      refute Map.has_key?(:sys.get_state(owner).pins, pin.ref)
+ 903  906  |      assert_receive {:DOWN, ^guardian_monitor, :process, ^guardian, :normal}, @timeout
+           |
+
+
+[0m
+{
+  "kind": "COMPLETE_GENERATION_SCOPED_GATES",
+  "status": "FAIL",
+  "runner_sha256": "68f68d894a0ef46d19622af105c1a655bc33bef7af0a583f3c8a844639efc133",
+  "gates": [
+    {
+      "gate": "FORMAT_CHECK",
+      "command": [
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs"
+      ],
+      "actual_exit": 1,
+      "elapsed_ms": 1395
+    }
+  ]
+}

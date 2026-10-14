@@ -1,0 +1,32 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 252978, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:preheader_peer_regression]
+
+[31m
+10:10:09.037 [error] Process #PID<0.315.0> raised an exception
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert {:ok, more} = :gen_tcp.recv(socket, 0, @timeout)
+left:  {:ok, more}
+right: {:error, :closed}
+
+    test/upstream_group_probe_test.exs:264: Gaoxy.Proxy.UpstreamGroupProbeTest.head/2
+    test/upstream_group_probe_test.exs:233: Gaoxy.Proxy.UpstreamGroupProbeTest.loop/2
+[0m
+
+  1) test the HEAD peer serves the next connection after EOF before request headers (Gaoxy.Proxy.UpstreamGroupProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_probe_test.exs:157[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       peer = #PID<0.315.0>
+     The process mailbox is empty.[0m
+     [36mcode: [0massert_receive {:probe_preheader_closed, ^peer, ""}
+     [36mstacktrace:[0m
+       test/upstream_group_probe_test.exs:165: (test)
+
+
+Finished in 3.7 seconds (3.7s async, 0.00s sync)
+[31m6 tests, 1 failure, 5 excluded[0m

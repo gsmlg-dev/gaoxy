@@ -26,20 +26,23 @@ defmodule Gaoxy.Proxy.GroupEndpoint do
   @impl true
   def call(exchange, config) do
     handles = resources(config)
-    held = Enum.flat_map(exchange.resource_pins, &Map.get(&1, :handles, []))
 
-    if Enum.all?(handles, &(&1 in held)) do
-      HTTP.call(exchange, config)
-    else
-      with {:ok, pins} <- Resources.pin_many(handles, self(), :request, exchange.deadline) do
-        try do
-          HTTP.call(%{exchange | resource_pins: pins ++ exchange.resource_pins}, config)
-        after
-          Resources.release(pins)
+    case exchange.resource_pins do
+      [] ->
+        with {:ok, pins} <- Resources.pin_many(handles, self(), :request, exchange.deadline) do
+          try do
+            HTTP.call(%{exchange | resource_pins: pins}, config)
+          after
+            Resources.release(pins)
+          end
+        else
+          {:error, _} -> HTTP.unavailable(exchange)
         end
-      else
-        {:error, _} -> HTTP.unavailable(exchange)
-      end
+
+      pins ->
+        if HTTP.captured_resources?(pins, handles),
+          do: HTTP.call(exchange, config),
+          else: HTTP.unavailable(exchange)
     end
   end
 end

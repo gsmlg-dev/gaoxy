@@ -1,0 +1,163 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 296219, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:handoff_auth]
+
+
+
+  1) test identity must have exactly three fields with a strict root H1 URI (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:207[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:invalid_transport_endpoint[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:238: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test identity must have exactly three fields with a strict root H1 URI"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:210: (test)
+
+
+
+  2) test another actor and a forged public holder cannot impersonate the stored holder (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:109[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:unauthorized[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:113: (test)
+
+
+
+  3) test the stored holder alone authorizes even when another caller acquired its pin (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:90[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamTransports.delegate_request_pin/6 is undefined or private[0m
+     [36mcode: [0mdenied(
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamTransports.delegate_request_pin(%{owner: #PID<0.345.0>, resource: #Reference<0.3269256013.3708026881.232557>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3269256013.3708026881.232551>}, %{owner: #PID<0.345.0>, handles: [%{owner: #PID<0.345.0>, resource: #Reference<0.3269256013.3708026881.232557>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3269256013.3708026881.232551>}], kind: :request, ref: #Reference<0.3269256013.3708026881.232609>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.351.0>, operation: #Reference<0.3269256013.3708026881.232607>, owner_epoch: #Reference<0.3269256013.3708026881.232551>}, #PID<0.352.0>, %{instance: #PID<0.343.0>, origin: "http://example.test", upstream_protocol: :http1}, #Reference<0.3269256013.3708026881.232615>, -576460733634)
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:94: (test)
+
+
+
+  4) test guardian must be live and distinct from the authentic native holder (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:262[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:invalid_resource_pin[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:266: (test)
+
+
+
+  5) test expanded forged and stale pins cannot consume the authentic source right (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:144[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:invalid_resource_pin[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:163: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test expanded forged and stale pins cannot consume the authentic source right"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:154: (test)
+
+
+
+  6) test delegation requires exact live four field handle membership (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:170[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:invalid_resource[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:179: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test delegation requires exact live four field handle membership"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:173: (test)
+
+
+
+  7) test an authentic old holder delegates after natural closure and guardian uses its own pin (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:8[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, child} = delegate(f)
+     [36mleft:  [0m{[31m:ok[0m, child}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:32: (test)
+
+
+
+  8) test derived guardian pins cannot form a delegation chain (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:278[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, child} = delegate(f)
+     [36mleft:  [0m{[31m:ok[0m, child}
+     [36mright: [0m{
+              [32m:error[0m,
+              {:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}
+            }
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:281: (test)
+
+
+
+  9) test a different instance scheme host or port preserves prepared policy and source right (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:245[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:transport_endpoint_mismatch[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:255: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test a different instance scheme host or port preserves prepared policy and source right"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:249: (test)
+
+
+
+ 10) test baseline and preparation pins cannot derive request rights (Gaoxy.Proxy.UpstreamTransportHandoffTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:192[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert attempt.() == expected
+     [36mleft:  [0m{
+              :error,
+              [31m{:missing_api, Gaoxy.Proxy.UpstreamTransports, :delegate_request_pin, 6}[0m
+            }
+     [36mright: [0m{:error, [32m:invalid_resource_pin[0m}
+     [36mstacktrace:[0m
+       test/upstream_transport_handoff_test.exs:408: Gaoxy.Proxy.UpstreamTransportHandoffTest.denied/3
+       test/upstream_transport_handoff_test.exs:199: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportHandoffTest."test baseline and preparation pins cannot derive request rights"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_handoff_test.exs:195: (test)
+
+
+Finished in 1.6 seconds (1.6s async, 0.00s sync)
+[31m16 tests, 10 failures, 6 excluded[0m

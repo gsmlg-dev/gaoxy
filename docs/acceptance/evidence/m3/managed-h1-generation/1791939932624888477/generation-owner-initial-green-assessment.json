@@ -1,0 +1,38 @@
+{
+  "kind": "INITIAL_OWNER_GREEN_FAILURE_ASSESSMENT",
+  "status": "FAIL",
+  "receipt": "generation-owner-initial-green-1791941701561934859.json",
+  "actual_exit": 2,
+  "core": {"executed": 36, "failures": 0},
+  "proxy": {"executed": 110, "failures": 5},
+  "excluded": 0,
+  "skipped": 0,
+  "source_stable": true,
+  "full_raw_log_read": true,
+  "findings": [
+    {
+      "classification": "TEST_CONTRACT",
+      "case": "guardian death after grant releases its independently monitored hold",
+      "failure": "Full pregrant aggregate equality timed out",
+      "cause": "Child pin is removed on guardian DOWN; consumed-source marker stays charged until source removal by normative design",
+      "repair_requirement": "Assert exact live child removal and retained marker serialized delta, deny replay, then release source and assert exact baseline restoration"
+    },
+    {
+      "classification": "FIXTURE_OWNERSHIP",
+      "cases": ["derived guardian pins cannot form a delegation chain", "100 admitted derive release cycles restore the exact baseline ledger", "baseline and preparation pins cannot derive request rights", "a different instance scheme host or port preserves prepared policy and source right"],
+      "failure": "Strict public Gaoxy.stop assertion received not_running or operation_exit during on_exit",
+      "cause": "Instance monitors its start_link caller; ExUnit test caller exits before separate on_exit process performs stop, racing automatic parent-DOWN termination",
+      "source_references": ["apps/gaoxy/lib/gaoxy/instance.ex:31", "apps/gaoxy/lib/gaoxy/instance.ex:49", "apps/gaoxy/lib/gaoxy/instance.ex:172", "apps/gaoxy_proxy/test/upstream_transport_identity_test.exs:305"],
+      "repair_requirement": "Persistent fixture creator remains alive through strict public stop, physical EOF, owned joins and zero accounting; do not accept failure as successful cleanup"
+    }
+  ],
+  "production_change_released_for_repair": false,
+  "repair_scope": "NEW_HANDOFF_TEST_FILE_ONLY",
+  "generation_unsuccessful_green": 1,
+  "generation_production_failures": 0,
+  "generation_harness_unsuccessful_attempts": 1,
+  "generation_intentional_diagnoses": 0,
+  "generation_spec_rejections": 0,
+  "astra_recovery_used": 2,
+  "astra_recovery_limit": 2
+}

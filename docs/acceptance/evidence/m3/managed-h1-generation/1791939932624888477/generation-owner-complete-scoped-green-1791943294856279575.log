@@ -1,0 +1,65 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy
+Running ExUnit with seed: 655462, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m.+++++++++++++++++++++++++++++++++++++++*.+...+....+...........+++++++++++++++++++++++++++++++++++++++*......+.+.....+.+......+.....+....+...+..+................+.....+.......+............+...+..+.............+...+..+.+..+.......+...+..++++++
+...+.....+.........+......+....+.....+......+...+.+...+......+.....+.+.....+....+++++++++++++++++++++++++++++++++++++++*.........+......+.+...+.........+...+..+...+++++++++++++++++++++++++++++++++++++++*.+.......+...........+................+.........+.........+.....+...+..........+.....+.........+.+..+.+..+.......+......+.....+.+......+.....+...+.++++++
+-----
+..+..+.+++++++++++++++++++++++++++++++++++++++*....+.+............+.....+....+.....+.+..+......+.+......+...+.....+....+........+....+...+++++++++++++++++++++++++++++++++++++++*.+.........+....+............+.........+..+...+....+........+.........+....+............+...+.....+....+..+..........+.........+..+.........+.+..+...+............+.+.....+.........+.+............+........+......+.+..+.......+...+.....+...+....+......+...+............+.....+....+...+..+...+.+..+.............+.....+.......+..+.+......+.....+.............+..+...+......+....+........+...+......+.+........................+...+.....+.......+.....+.+..+.......+...........+...+.+..............+.......+...............+..+.+.................+..........+..............+.........++++++
+............+.+..+....+.....+.+.....+...+....+........+...+....+.....+.+...........+++++++++++++++++++++++++++++++++++++++*....+..+++++++++++++++++++++++++++++++++++++++*.+...+..+.+...........+.............+......+..+...+.....................+.+.....+...+....+...+.........+......+........+....+..+.............+..+......+.......+...+..+...............+.+.....+......................+.....+.......+...+.....+.............+..+....+.....+...+.+..............+.......+...+...+...+.....+......+.+...+.........+...............+........+...........................+......+.+......+...+.........+.....+...............+......+......+.+.....+....+...+..+.............+..........................+.+...+...........+.......+..+.+...........+.++++++
+-----
+Certificate request self-signature ok
+subject=CN=localhost
+[22m
+10:01:41.103 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[22m
+10:01:41.152 [notice] TLS :server: In state :wait_finished at tls_record_1_3.erl:228 generated SERVER ALERT: Fatal - Bad Record MAC
+ - {:record_type_mismatch, 21}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 4.2 seconds (2.5s async, 1.7s sync)
+[32m36 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 655462, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+10:01:45.444 [error] Process #PID<0.1350.0> raised an exception
+** (ExUnit.AssertionError) 
+
+match (=) failed
+code:  assert {:ok, more} = :gen_tcp.recv(socket, 0, @timeout)
+left:  {:ok, more}
+right: {:error, :closed}
+
+    test/upstream_group_probe_test.exs:237: Gaoxy.Proxy.UpstreamGroupProbeTest.head/2
+    test/upstream_group_probe_test.exs:206: Gaoxy.Proxy.UpstreamGroupProbeTest.loop/2
+[0m
+
+  1) test a real HEAD opening timeout closes its peer and enables a later bounded probe (Gaoxy.Proxy.UpstreamGroupProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_probe_test.exs:143[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       peer = #PID<0.1350.0>
+     The process mailbox is empty.[0m
+     [36mcode: [0massert_receive {:probe_head, ^peer, _}
+     [36mstacktrace:[0m
+       test/upstream_group_probe_test.exs:147: (test)
+
+[31m
+10:01:48.387 [error] GenServer #PID<0.1472.0> terminating
+** (stop) :owner_unavailable
+Last message: :poll
+State: %{owner: #PID<0.1352.0>, member: %{id: "one", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "127.0.0.1:58165", userinfo: nil, host: "127.0.0.1", port: 58165, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, probe: nil, failures: 19, health: :unhealthy, successes: 0, checked: -576460740312, due: -576460740262, inflight: 0, max_inflight: 16}, request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.1473.0>, latch: #Reference<0.3675812405.2910191618.252868>, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.1472.0>, pid: #PID<0.1474.0>, ref: #Reference<0.0.188419.3675812405.2910126082.252875>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.1473.0>, latch: #Reference<0.3675812405.2910191618.252868>, unsupported: nil}}}, timer: #Reference<0.3675812405.2910060546.252862>, cancelled: true, deadline: -576460740166, terminal: true, token: #Reference<0.3675812405.2910060546.252858>, url: "http://127.0.0.1:58165/health?ready=1", headers: false, outcome: :failure, cleanup_deadline: -576460739166, transport_selection: nil, transport_pins: [], original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.1473.0>, latch: #Reference<0.3675812405.2910191618.252868>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.1472.0>, pid: #PID<0.1474.0>, ref: #Reference<0.0.188419.3675812405.2910126082.252875>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.1473.0>, latch: #Reference<0.3675812405.2910191618.252868>, unsupported: nil}}}, owner_monitor: #Reference<0.3675812405.2910060546.252863>, health: %{timeout: 80, path: "/health?ready=1", interval: 50, stale_after: 1000, jitter: 0, failure_threshold: 3, recovery_threshold: 2}, managed_transport: nil}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+10:01:50.025 [error] GenServer #PID<0.2295.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2294.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.2295.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+10:01:55.973 [error] GenServer #PID<0.2587.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.2586.0>, :killed}
+State: %DynamicSupervisor{args: {:ok, %{intensity: 3, period: 5, strategy: :one_for_one, max_children: :infinity, extra_arguments: []}}, extra_arguments: [], mod: Supervisor.Default, name: {#PID<0.2587.0>, Supervisor.Default}, strategy: :one_for_one, max_children: :infinity, max_restarts: 3, max_seconds: 5, children: %{}, restarts: []}
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 40.4 seconds (25.7s async, 14.7s sync)
+[31m219 tests, 1 failure[0m

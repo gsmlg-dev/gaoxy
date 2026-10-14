@@ -1,0 +1,87 @@
+{
+  "kind": "COMPLETE_GENERATION_SCOPED_GATES",
+  "status": "PASS",
+  "runner_sha256": "68f68d894a0ef46d19622af105c1a655bc33bef7af0a583f3c8a844639efc133",
+  "gates": [
+    {
+      "gate": "FORMAT_CHECK",
+      "command": [
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1258
+    },
+    {
+      "gate": "STRICT_COMPILE",
+      "command": [
+        "unbuffer",
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1627
+    },
+    {
+      "gate": "UNFILTERED_AFFECTED_TESTS",
+      "command": [
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_preparation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_identity_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs",
+        "apps/gaoxy_proxy/test/http_fetch_completion_test.exs",
+        "apps/gaoxy/test/lifecycle_participant_test.exs",
+        "apps/gaoxy/test/lifecycle_fault_test.exs",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs",
+        "apps/gaoxy/test/lifecycle_acceptance_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 58278
+    },
+    {
+      "gate": "GENERATION_ROUTER_COMPATIBILITY",
+      "command": [
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_http/test/generation_test.exs",
+        "apps/gaoxy_http/test/generation_loader_test.exs",
+        "apps/gaoxy_http/test/generation_resources_test.exs",
+        "apps/gaoxy_http/test/generation_release_deadline_test.exs",
+        "apps/gaoxy_http/test/router_test.exs",
+        "apps/gaoxy_http/test/router_network_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 3269
+    }
+  ]
+}
