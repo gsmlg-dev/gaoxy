@@ -51,7 +51,16 @@ isolated Linux baselines; the experimental optional QUIC wire gate also passed. 
 [task status and repair counters](docs/implementation-status.md).
 Release execution and artifact verification are recorded separately in
 [the v0.3.0 release receipt](docs/acceptance/release-0.3.0.md).
-The next prepared existing task is [M3 Task4 H1 resource foundation](docs/plans/m3-h1-resource-foundation.md); implementation is NOT RUN.
+Continuing local development has accepted [M3 H1 resource foundation](docs/plans/m3-h1-resource-foundation.md),
+[fixed endpoints](docs/plans/m3-managed-h1-fixed-endpoint.md),
+[groups/probes](docs/plans/m3-managed-h1-groups.md) and
+[Generation ownership](docs/plans/m3-managed-h1-generation.md). The Generation
+commit is `cb619569c7a18568981d3425845954ad04908ffb`, with independent SPEC/CODE
+and fresh341/0 scoped verification. [Managed H2 preparation](docs/plans/m3-managed-h2-preparation.md)
+has passed complete independent SPEC/CODE and fresh97/0 scoped plus63/0 public
+qualification; live H2 activation,
+standalone integration and sustained-load acceptance remain pending. These local
+changes are separate from the published v0.3.0 artifact and full M3 acceptance.
 
 ## Development
 

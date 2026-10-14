@@ -1,0 +1,53 @@
+{
+  "kind": "COMPLETE_H2_PREPARATION_SCOPED_GATES",
+  "status": "PASS",
+  "runner_sha256": "e14acf94511a712aaeaf7a7e0d40e9e4e3da8d6783fad2a7b302a7c8e9b409c7",
+  "gates": [
+    {
+      "gate": "FORMAT_CHECK",
+      "command": [
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_preparation.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex",
+        "apps/gaoxy_proxy/test/managed_h2_preparation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs",
+        "integration/http_fetch_contract/h2_0214_functional_supplement.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1302
+    },
+    {
+      "gate": "STRICT_COMPILE",
+      "command": [
+        "unbuffer",
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 1517
+    },
+    {
+      "gate": "UNFILTERED_PREPARATION_COMPATIBILITY",
+      "command": [
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/managed_h2_preparation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_preparation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_accounting_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_proxy/test/http_fetch_completion_test.exs"
+      ],
+      "actual_exit": 0,
+      "elapsed_ms": 4420
+    }
+  ]
+}

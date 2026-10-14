@@ -1,0 +1,961 @@
+defmodule HTTP.HTTP2 do
+  @moduledoc false
+
+  import Bitwise
+
+  alias HTTP.Headers
+  alias HTTP.HTTP2.Frame
+  alias HTTP.HTTP2.HPACK
+  alias HTTP.HTTP2.WireProfile
+  alias HTTP.Request
+
+  @connection_preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
+  @client_stream_id 1
+  @initial_window_size 65_535
+  @initial_max_frame_size 16_384
+  @max_header_block_size 65_536
+  @max_window_size 2_147_483_647
+  @max_max_frame_size 16_777_215
+  @max_content_length "18446744073709551615"
+
+  @flag_end_stream 0x1
+  @flag_ack 0x1
+  @flag_end_headers 0x4
+  @flag_padded 0x8
+  @flag_priority 0x20
+
+  defstruct method: :get,
+            buffer: <<>>,
+            hpack: HPACK.new_decoder(),
+            continuation: nil,
+            status: nil,
+            connection_receive_window: @initial_window_size,
+            stream_receive_window: @initial_window_size,
+            connection_send_window: @initial_window_size,
+            stream_send_window: @initial_window_size,
+            peer_initial_window_size: @initial_window_size,
+            max_frame_size: @initial_max_frame_size,
+            pending_body: "",
+            outbound: [],
+            request_stopped?: false,
+            expected_content_length: nil,
+            received_content_length: 0,
+            done?: false
+
+  @type event :: {:headers, non_neg_integer(), Headers.t()} | {:body, binary()} | :done
+  @type t :: %__MODULE__{}
+
+  @spec new(atom()) :: t()
+  def new(method), do: %__MODULE__{method: method}
+
+  def connection_preface, do: @connection_preface
+
+  def serialize_request(%Request{} = request) do
+    serialize_request(request, WireProfile.native_v1())
+  end
+
+  @spec serialize_request(Request.t(), WireProfile.t() | map() | atom() | binary()) :: list()
+  def serialize_request(%Request{} = request, profile) do
+    {:ok, profile} = WireProfile.compile(profile)
+    {conn, wire_request} = prepare_request(new(request.method), request, profile)
+
+    if conn.pending_body != "" do
+      raise ArgumentError,
+            "HTTP/2 request body exceeds the initial flow-control window; use prepare_request/2"
+    end
+
+    wire_request
+  end
+
+  @spec prepare_request(t(), Request.t()) :: {t(), iodata()}
+  def prepare_request(%__MODULE__{} = conn, %Request{} = request) do
+    prepare_request(conn, request, WireProfile.native_v1())
+  end
+
+  @spec prepare_request(t(), Request.t(), WireProfile.t() | map()) :: {t(), iodata()}
+  def prepare_request(%__MODULE__{} = conn, %Request{} = request, profile) do
+    {:ok, profile} = WireProfile.compile(profile)
+
+    if Request.streaming_body?(request) do
+      raise ArgumentError, "HTTP/2 streaming request bodies are not supported"
+    end
+
+    {headers, body} = request |> base_request_headers() |> Request.put_body_headers(request)
+    body = IO.iodata_to_binary(body)
+
+    header_block =
+      WireProfile.order_headers(profile, pseudo_headers(request), regular_headers(headers))
+
+    encoded_headers = HPACK.encode_headers(header_block)
+
+    header_flags =
+      @flag_end_headers |||
+        if(body == "", do: @flag_end_stream, else: 0)
+
+    conn = %{conn | pending_body: body}
+    {conn, outbound} = conn |> flush_pending_body() |> take_outbound()
+
+    {conn,
+     [
+       @connection_preface,
+       settings_frame(profile),
+       initial_window_frame(profile),
+       Frame.encode(:headers, header_flags, @client_stream_id, encoded_headers),
+       outbound
+     ]}
+  end
+
+  @doc false
+  @spec request_headers(Request.t(), WireProfile.t() | map() | atom() | binary()) ::
+          {:ok, list({String.t(), String.t()}), binary() | {:stream, pid()}}
+  def request_headers(%Request{} = request, profile \\ WireProfile.native_v1()) do
+    request_headers(request, profile, [])
+  end
+
+  def request_headers(%Request{} = request, profile, opts) when is_list(opts) do
+    {:ok, profile} = WireProfile.compile(profile)
+    {headers, body} = request |> base_request_headers() |> Request.put_body_headers(request)
+    body = if is_binary(body), do: IO.iodata_to_binary(body), else: body
+
+    headers = maybe_add_priority_header(headers, request, profile)
+
+    pseudo = pseudo_headers(request)
+    regular = regular_headers(headers)
+
+    ordered =
+      if Keyword.get(opts, :order?, true),
+        do: WireProfile.order_headers(profile, pseudo, regular),
+        else: pseudo ++ regular
+
+    {:ok, ordered, body}
+  end
+
+  @doc false
+  @spec extended_connect_headers(
+          Request.t(),
+          WireProfile.t() | map() | atom() | binary(),
+          keyword()
+        ) ::
+          {:ok, [{String.t(), String.t()}], binary()} | {:error, term()}
+  def extended_connect_headers(request, profile, opts \\ [])
+
+  def extended_connect_headers(%Request{} = request, profile, opts) when is_list(opts) do
+    with {:ok, profile} <- WireProfile.compile(profile),
+         :ok <- validate_extended_body(request.body),
+         {:ok, url} <- extended_connect_url(request.url),
+         {:ok, regular} <- extended_regular_headers(request.headers) do
+      pseudo = [
+        {":method", "CONNECT"},
+        {":protocol", "websocket"},
+        {":scheme", url.scheme},
+        {":authority", Request.authority(url)},
+        {":path", Request.origin_form(url)}
+      ]
+
+      headers =
+        if Keyword.get(opts, :order?, true),
+          do: WireProfile.order_headers(profile, pseudo, regular, :extended_connect),
+          else: pseudo ++ regular
+
+      {:ok, headers, ""}
+    end
+  end
+
+  def extended_connect_headers(_, _, _), do: {:error, :invalid_extended_connect_request}
+
+  defp validate_extended_body(body) when body in [nil, ""], do: :ok
+  defp validate_extended_body(_), do: {:error, :extended_connect_body_not_supported}
+
+  defp extended_connect_url(%URI{scheme: scheme, host: host, userinfo: nil, fragment: nil} = url)
+       when scheme in ["ws", "wss", "http", "https"] and is_binary(host) and host != "" do
+    scheme =
+      case scheme do
+        "ws" -> "http"
+        "wss" -> "https"
+        other -> other
+      end
+
+    if valid_extended_url_parts?(url),
+      do: {:ok, %{url | scheme: scheme}},
+      else: {:error, :invalid_extended_connect_url}
+  end
+
+  defp extended_connect_url(_), do: {:error, :invalid_extended_connect_url}
+
+  defp valid_extended_url_parts?(url) do
+    (url.port == nil or (is_integer(url.port) and url.port in 1..65_535)) and
+      safe_extended_url_part?(url.host) and safe_extended_url_part?(url.path) and
+      safe_extended_url_part?(url.query) and
+      (url.path in [nil, ""] or String.starts_with?(url.path, "/"))
+  end
+
+  defp safe_extended_url_part?(nil), do: true
+
+  defp safe_extended_url_part?(part) when is_binary(part),
+    do: Enum.all?(:binary.bin_to_list(part), &(&1 > 32 and &1 != 127))
+
+  defp safe_extended_url_part?(_), do: false
+
+  defp extended_regular_headers(%Headers{headers: entries}) do
+    Enum.reduce_while(entries, {:ok, []}, fn
+      {name, value}, {:ok, acc} when is_binary(name) and is_binary(value) ->
+        name = String.downcase(name)
+
+        if valid_extended_header?(name, value),
+          do: {:cont, {:ok, [{name, value} | acc]}},
+          else: {:halt, {:error, {:invalid_extended_connect_header, name}}}
+
+      _, _ ->
+        {:halt, {:error, :invalid_extended_connect_headers}}
+    end)
+    |> case do
+      {:ok, entries} -> {:ok, Enum.reverse(entries)}
+      error -> error
+    end
+  end
+
+  defp extended_regular_headers(_), do: {:error, :invalid_extended_connect_headers}
+
+  defp valid_extended_header?(name, value) do
+    valid_token?(name) and safe_header_value?(value) and
+      name not in [
+        "connection",
+        "host",
+        "keep-alive",
+        "proxy-connection",
+        "transfer-encoding",
+        "upgrade",
+        "sec-websocket-key",
+        "sec-websocket-accept",
+        "content-length"
+      ] and
+      (name != "te" or value == "trailers") and
+      (value == "" or (:binary.first(value) not in [9, 32] and :binary.last(value) not in [9, 32]))
+  end
+
+  defp maybe_add_priority_header(%Headers{} = headers, %Request{} = request, profile) do
+    if profile.priority == :rfc9218 and not Headers.has?(headers, "priority") do
+      Headers.set(headers, "priority", priority_value(request))
+    else
+      headers
+    end
+  end
+
+  defp priority_value(%Request{} = request) do
+    values = Keyword.get(request.transport_options, :http2_priority, %{}) |> Map.new()
+    urgency = Map.get(values, :urgency, Map.get(values, "urgency", 3))
+    incremental = Map.get(values, :incremental, Map.get(values, "incremental", false))
+
+    unless is_integer(urgency) and urgency in 0..7 and is_boolean(incremental) do
+      raise ArgumentError, "invalid http2_priority: expected urgency 0..7 and boolean incremental"
+    end
+
+    "u=#{urgency}" <> if(incremental, do: ", i", else: "")
+  end
+
+  defp settings_frame(profile) do
+    {:ok, payload} = WireProfile.settings_payload(profile)
+    Frame.encode(:settings, 0, 0, payload)
+  end
+
+  defp initial_window_frame(profile) do
+    case WireProfile.initial_window_increment(profile) do
+      {:ok, 0} -> ""
+      {:ok, increment} -> Frame.encode(:window_update, 0, 0, <<0::1, increment::31>>)
+      {:error, reason} -> raise ArgumentError, "invalid HTTP/2 profile window: #{inspect(reason)}"
+    end
+  end
+
+  @spec stream(t(), binary()) :: {:ok, t(), [event()]} | {:error, term()}
+  def stream(%__MODULE__{} = conn, data) when is_binary(data) do
+    conn
+    |> append_buffer(data)
+    |> parse([])
+  end
+
+  @spec close(t()) :: {:ok, t(), [event()]} | {:error, term()}
+  def close(%__MODULE__{done?: true} = conn), do: {:ok, conn, []}
+  def close(_conn), do: {:error, :closed}
+
+  @spec take_outbound(t()) :: {t(), iodata()}
+  def take_outbound(%__MODULE__{outbound: outbound} = conn) do
+    {%{conn | outbound: []}, Enum.reverse(outbound)}
+  end
+
+  @spec complete_response?(t()) :: boolean()
+  def complete_response?(%__MODULE__{done?: done?}), do: done?
+
+  @spec request_stopped?(t()) :: boolean()
+  def request_stopped?(%__MODULE__{request_stopped?: stopped?}), do: stopped?
+
+  @spec stop_request(t()) :: t()
+  def stop_request(%__MODULE__{} = conn) do
+    %{
+      conn
+      | pending_body: "",
+        outbound: Enum.reject(conn.outbound, &request_data_frame?/1),
+        request_stopped?: true
+    }
+  end
+
+  @spec outbound_control_only?(t()) :: boolean()
+  def outbound_control_only?(%__MODULE__{outbound: outbound}) do
+    Enum.all?(outbound, &control_frame?/1)
+  end
+
+  defp append_buffer(%__MODULE__{buffer: buffer} = conn, data) do
+    %{conn | buffer: buffer <> data}
+  end
+
+  # We do not advertise a larger receive frame size. Peer SETTINGS only change
+  # the size of frames we send, not this inbound bound.
+  defp parse(%__MODULE__{buffer: <<length::24, _header::binary-size(6), _::binary>>}, _events)
+       when length > @initial_max_frame_size,
+       do: {:error, :frame_size_error}
+
+  defp parse(%__MODULE__{} = conn, events) do
+    case Frame.decode(conn.buffer) do
+      :more ->
+        {:ok, conn, Enum.reverse(events)}
+
+      {:ok, frame, rest} ->
+        with {:ok, conn, frame_events} <- handle_frame(%{conn | buffer: rest}, frame) do
+          parse(conn, append_events(events, frame_events))
+        end
+    end
+  end
+
+  defp append_events(events, frame_events) do
+    Enum.reduce(frame_events, events, fn event, acc -> [event | acc] end)
+  end
+
+  defp handle_frame(%__MODULE__{continuation: continuation}, %Frame{type: type})
+       when not is_nil(continuation) and type != :continuation do
+    {:error, :expected_continuation}
+  end
+
+  defp handle_frame(conn, %Frame{type: :settings, stream_id: 0, flags: flags, payload: payload}) do
+    cond do
+      Frame.flag?(flags, @flag_ack) and payload != "" ->
+        {:error, :invalid_settings_ack}
+
+      Frame.flag?(flags, @flag_ack) ->
+        {:ok, conn, []}
+
+      rem(byte_size(payload), 6) != 0 ->
+        {:error, :invalid_settings_frame}
+
+      true ->
+        with {:ok, conn} <- apply_settings(conn, payload) do
+          conn =
+            conn
+            |> enqueue(Frame.encode(:settings, @flag_ack, 0, ""))
+            |> flush_pending_body()
+
+          {:ok, conn, []}
+        end
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :settings}), do: {:error, :invalid_settings_stream}
+
+  defp handle_frame(%__MODULE__{done?: true}, %Frame{type: :headers, stream_id: @client_stream_id}),
+       do: {:error, :stream_closed}
+
+  defp handle_frame(conn, %Frame{type: :headers, stream_id: @client_stream_id} = frame) do
+    with {:ok, fragment} <- headers_fragment(frame) do
+      end_stream? = Frame.flag?(frame.flags, @flag_end_stream)
+
+      if Frame.flag?(frame.flags, @flag_end_headers) do
+        decode_response_headers(conn, fragment, end_stream?)
+      else
+        continuation = %{
+          stream_id: frame.stream_id,
+          fragments: [fragment],
+          size: byte_size(fragment),
+          end_stream?: end_stream?
+        }
+
+        {:ok, %{conn | continuation: continuation}, []}
+      end
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :headers}), do: {:error, :invalid_headers_stream}
+
+  defp handle_frame(
+         %__MODULE__{continuation: %{stream_id: stream_id} = continuation} = conn,
+         %Frame{type: :continuation, stream_id: stream_id} = frame
+       ) do
+    size = continuation.size + byte_size(frame.payload)
+
+    if size > @max_header_block_size do
+      {:error, :header_block_too_large}
+    else
+      fragments =
+        if frame.payload == "",
+          do: continuation.fragments,
+          else: [frame.payload | continuation.fragments]
+
+      if Frame.flag?(frame.flags, @flag_end_headers) do
+        header_block = fragments |> Enum.reverse() |> IO.iodata_to_binary()
+
+        conn
+        |> Map.put(:continuation, nil)
+        |> decode_response_headers(header_block, continuation.end_stream?)
+      else
+        {:ok, %{conn | continuation: %{continuation | fragments: fragments, size: size}}, []}
+      end
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :continuation}), do: {:error, :unexpected_continuation}
+
+  defp handle_frame(%__MODULE__{done?: true}, %Frame{type: :data, stream_id: @client_stream_id}),
+    do: {:error, :stream_closed}
+
+  defp handle_frame(%__MODULE__{status: nil}, %Frame{type: :data, stream_id: @client_stream_id}) do
+    {:error, :data_before_response_headers}
+  end
+
+  defp handle_frame(conn, %Frame{type: :data, stream_id: @client_stream_id} = frame) do
+    with {:ok, data, flow_controlled_size} <- data_payload(frame),
+         {:ok, conn} <- consume_receive_window(conn, flow_controlled_size),
+         :ok <- validate_response_body(conn, data),
+         {:ok, conn} <- count_response_body(conn, data) do
+      end_stream? = Frame.flag?(frame.flags, @flag_end_stream)
+      forbidden? = response_body_forbidden?(conn)
+
+      with {:ok, conn} <- maybe_complete_response(conn, end_stream?) do
+        events =
+          []
+          |> maybe_body_event(data, forbidden?)
+          |> maybe_done_event(end_stream?)
+
+        {:ok, conn, events}
+      end
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :data}), do: {:error, :invalid_data_stream}
+
+  defp handle_frame(%__MODULE__{done?: true} = conn, %Frame{
+         type: :rst_stream,
+         stream_id: @client_stream_id,
+         payload: <<0::32>>
+       }) do
+    {:ok, conn, []}
+  end
+
+  defp handle_frame(_conn, %Frame{
+         type: :rst_stream,
+         stream_id: @client_stream_id,
+         payload: <<code::32>>
+       }) do
+    {:error, {:stream_reset, error_code(code)}}
+  end
+
+  defp handle_frame(_conn, %Frame{type: :rst_stream, stream_id: @client_stream_id}) do
+    {:error, :invalid_rst_stream}
+  end
+
+  defp handle_frame(conn, %Frame{type: :rst_stream}), do: {:ok, conn, []}
+
+  defp handle_frame(%__MODULE__{done?: true} = conn, %Frame{type: :goaway}), do: {:ok, conn, []}
+
+  defp handle_frame(_conn, %Frame{
+         type: :goaway,
+         stream_id: 0,
+         payload: <<_reserved::1, last_stream_id::31, code::32, debug::binary>>
+       })
+       when last_stream_id < @client_stream_id do
+    {:error, {:goaway, error_code(code), debug}}
+  end
+
+  defp handle_frame(conn, %Frame{
+         type: :goaway,
+         stream_id: 0,
+         payload: <<_reserved::1, _last_stream_id::31, _code::32, _debug::binary>>
+       }) do
+    {:ok, conn, []}
+  end
+
+  defp handle_frame(_conn, %Frame{type: :goaway}), do: {:error, :invalid_goaway}
+
+  defp handle_frame(conn, %Frame{type: :ping, stream_id: 0, flags: flags, payload: payload})
+       when byte_size(payload) == 8 do
+    if Frame.flag?(flags, @flag_ack) do
+      {:ok, conn, []}
+    else
+      {:ok, enqueue(conn, Frame.encode(:ping, @flag_ack, 0, payload)), []}
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :ping}), do: {:error, :invalid_ping}
+
+  defp handle_frame(_conn, %Frame{type: :window_update, payload: <<_reserved::1, 0::31>>}) do
+    {:error, :invalid_window_update_increment}
+  end
+
+  defp handle_frame(conn, %Frame{
+         type: :window_update,
+         stream_id: stream_id,
+         payload: <<_reserved::1, increment::31>>
+       }) do
+    with {:ok, conn} <- update_send_window(conn, stream_id, increment) do
+      {:ok, flush_pending_body(conn), []}
+    end
+  end
+
+  defp handle_frame(_conn, %Frame{type: :window_update}), do: {:error, :invalid_window_update}
+
+  defp handle_frame(conn, %Frame{}), do: {:ok, conn, []}
+
+  defp decode_response_headers(%__MODULE__{status: status} = conn, header_block, end_stream?)
+       when is_integer(status) do
+    with true <- end_stream? || {:error, :invalid_response_trailers},
+         {:ok, hpack, headers} <- HPACK.decode(conn.hpack, header_block),
+         :ok <- validate_response_trailers(headers),
+         {:ok, conn} <- complete_response(conn) do
+      {:ok, %{conn | hpack: hpack}, [:done]}
+    end
+  end
+
+  defp decode_response_headers(%__MODULE__{} = conn, header_block, end_stream?) do
+    with {:ok, hpack, headers} <- HPACK.decode(conn.hpack, header_block),
+         {:ok, status, regular_headers} <- response_headers(headers) do
+      conn = %{conn | hpack: hpack}
+
+      if status in 100..199 do
+        with :ok <- validate_informational_response_headers(regular_headers) do
+          {:ok, conn, []}
+        end
+      else
+        headers = Headers.new(regular_headers)
+        conn = %{conn | status: status}
+
+        with {:ok, conn} <- set_expected_content_length(conn, regular_headers),
+             {:ok, conn} <- maybe_complete_response(conn, end_stream?) do
+          events = [{:headers, status, headers}] |> maybe_done_event(end_stream?)
+
+          {:ok, conn, events}
+        end
+      end
+    end
+  end
+
+  defp response_headers(headers) do
+    status = Enum.find_value(headers, fn {name, value} -> if name == ":status", do: value end)
+
+    regular_headers =
+      Enum.reject(headers, fn {name, _value} -> String.starts_with?(name, ":") end)
+
+    with true <- is_binary(status),
+         {status, ""} <- Integer.parse(status) do
+      {:ok, status, regular_headers}
+    else
+      _ -> {:error, :invalid_response_headers}
+    end
+  end
+
+  defp validate_response_trailers(headers) do
+    if Enum.any?(headers, fn {name, _value} ->
+         String.starts_with?(name, ":") or name == "content-length"
+       end) do
+      {:error, :invalid_response_trailers}
+    else
+      :ok
+    end
+  end
+
+  defp headers_fragment(%Frame{flags: flags, payload: payload}) do
+    with {:ok, payload, pad_length} <- unpad_payload(payload, Frame.flag?(flags, @flag_padded)),
+         {:ok, payload} <- drop_priority(payload, Frame.flag?(flags, @flag_priority)) do
+      take_padding(payload, pad_length)
+    end
+  end
+
+  defp data_payload(%Frame{flags: flags, payload: payload}) do
+    with {:ok, payload, pad_length} <- unpad_payload(payload, Frame.flag?(flags, @flag_padded)) do
+      with {:ok, data} <- take_padding(payload, pad_length) do
+        {:ok, data, byte_size(payload) + if(Frame.flag?(flags, @flag_padded), do: 1, else: 0)}
+      end
+    end
+  end
+
+  defp consume_receive_window(conn, 0), do: {:ok, conn}
+
+  defp consume_receive_window(
+         %__MODULE__{
+           connection_receive_window: connection_window,
+           stream_receive_window: stream_window
+         } = conn,
+         size
+       ) do
+    if size > connection_window or size > stream_window do
+      {:error, :flow_control_error}
+    else
+      conn =
+        conn
+        |> Map.update!(:connection_receive_window, &(&1 - size))
+        |> Map.update!(:stream_receive_window, &(&1 - size))
+        |> restore_receive_window(size)
+
+      {:ok, conn}
+    end
+  end
+
+  defp restore_receive_window(%__MODULE__{} = conn, size) do
+    conn
+    |> Map.update!(:connection_receive_window, &(&1 + size))
+    |> Map.update!(:stream_receive_window, &(&1 + size))
+    |> enqueue(window_update_frame(0, size))
+    |> enqueue(window_update_frame(@client_stream_id, size))
+  end
+
+  defp window_update_frame(stream_id, increment) do
+    Frame.encode(:window_update, 0, stream_id, <<0::1, increment::31>>)
+  end
+
+  defp update_send_window(%__MODULE__{} = conn, 0, increment) do
+    add_window(conn, :connection_send_window, increment)
+  end
+
+  defp update_send_window(%__MODULE__{} = conn, @client_stream_id, increment) do
+    add_window(conn, :stream_send_window, increment)
+  end
+
+  defp update_send_window(%__MODULE__{} = conn, _stream_id, _increment), do: {:ok, conn}
+
+  defp add_window(%__MODULE__{} = conn, key, increment) do
+    window = Map.fetch!(conn, key)
+
+    if window + increment > @max_window_size do
+      {:error, :flow_control_error}
+    else
+      {:ok, Map.put(conn, key, window + increment)}
+    end
+  end
+
+  defp apply_settings(%__MODULE__{} = conn, payload) do
+    payload
+    |> parse_settings([])
+    |> case do
+      {:ok, settings} -> Enum.reduce_while(settings, {:ok, conn}, &apply_setting/2)
+      {:error, _reason} = error -> error
+    end
+  end
+
+  defp parse_settings(<<>>, settings), do: {:ok, Enum.reverse(settings)}
+
+  defp parse_settings(<<id::16, value::32, rest::binary>>, settings) do
+    parse_settings(rest, [{id, value} | settings])
+  end
+
+  defp parse_settings(_payload, _settings), do: {:error, :invalid_settings_frame}
+
+  defp apply_setting({0x4, value}, {:ok, conn}) when value <= @max_window_size do
+    delta = value - conn.peer_initial_window_size
+    stream_send_window = conn.stream_send_window + delta
+
+    if stream_send_window > @max_window_size do
+      {:halt, {:error, :flow_control_error}}
+    else
+      {:cont,
+       {:ok,
+        %{
+          conn
+          | peer_initial_window_size: value,
+            stream_send_window: stream_send_window
+        }}}
+    end
+  end
+
+  defp apply_setting({0x4, _value}, {:ok, _conn}), do: {:halt, {:error, :flow_control_error}}
+
+  defp apply_setting({0x5, value}, {:ok, conn})
+       when value in @initial_max_frame_size..@max_max_frame_size do
+    {:cont, {:ok, %{conn | max_frame_size: value}}}
+  end
+
+  defp apply_setting({0x5, _value}, {:ok, _conn}), do: {:halt, {:error, :protocol_error}}
+
+  defp apply_setting({_id, _value}, {:ok, conn}), do: {:cont, {:ok, conn}}
+
+  defp unpad_payload(<<pad_length, rest::binary>>, true), do: {:ok, rest, pad_length}
+  defp unpad_payload(<<>>, true), do: {:error, :invalid_padding}
+  defp unpad_payload(payload, false), do: {:ok, payload, 0}
+
+  defp take_padding(payload, 0), do: {:ok, payload}
+
+  defp take_padding(payload, pad_length) when byte_size(payload) >= pad_length do
+    body_length = byte_size(payload) - pad_length
+    <<body::binary-size(^body_length), _padding::binary-size(^pad_length)>> = payload
+    {:ok, body}
+  end
+
+  defp take_padding(_payload, _pad_length), do: {:error, :invalid_padding}
+
+  defp drop_priority(<<_exclusive::1, _dependency::31, _weight::8, rest::binary>>, true) do
+    {:ok, rest}
+  end
+
+  defp drop_priority(_payload, true), do: {:error, :invalid_priority}
+  defp drop_priority(payload, false), do: {:ok, payload}
+
+  defp maybe_body_event(events, _data, true), do: events
+  defp maybe_body_event(events, "", false), do: events
+  defp maybe_body_event(events, data, false), do: events ++ [{:body, data}]
+
+  defp maybe_done_event(events, false), do: events
+  defp maybe_done_event(events, true), do: events ++ [:done]
+
+  defp set_expected_content_length(conn, headers) do
+    headers
+    |> response_content_lengths()
+    |> parse_content_lengths()
+    |> case do
+      {:ok, nil} ->
+        {:ok, conn}
+
+      {:ok, length} ->
+        cond do
+          conn.status in 100..199 or conn.status == 204 ->
+            {:error, :invalid_content_length}
+
+          response_body_forbidden?(conn) ->
+            {:ok, conn}
+
+          true ->
+            {:ok, %{conn | expected_content_length: length}}
+        end
+
+      {:error, _reason} = error ->
+        error
+    end
+  end
+
+  defp validate_informational_response_headers(headers) do
+    case headers |> response_content_lengths() |> parse_content_lengths() do
+      {:ok, nil} -> :ok
+      _ -> {:error, :invalid_content_length}
+    end
+  end
+
+  defp response_content_lengths(headers) do
+    headers
+    |> Enum.filter(fn {name, _value} -> name == "content-length" end)
+    |> Enum.map(fn {_name, value} -> value end)
+  end
+
+  defp parse_content_lengths([]), do: {:ok, nil}
+
+  defp parse_content_lengths(values) do
+    if Enum.any?(values, &invalid_content_length_value?/1) do
+      {:error, :invalid_content_length}
+    else
+      lengths = Enum.map(values, &String.to_integer/1)
+
+      case Enum.uniq(lengths) do
+        [length] -> {:ok, length}
+        _ -> {:error, :invalid_content_length}
+      end
+    end
+  end
+
+  defp invalid_content_length_value?(value) do
+    byte_size(value) not in 1..20 or
+      (byte_size(value) == 20 and value > @max_content_length) or
+      not Enum.all?(:binary.bin_to_list(value), &(&1 in ?0..?9))
+  end
+
+  defp validate_response_body(conn, data) do
+    if response_body_forbidden?(conn) and data != "" do
+      {:error, :invalid_response_body}
+    else
+      :ok
+    end
+  end
+
+  defp count_response_body(conn, data) do
+    conn = Map.update!(conn, :received_content_length, &(&1 + byte_size(data)))
+
+    if response_content_length_valid_or_pending?(conn) do
+      {:ok, conn}
+    else
+      {:error, :content_length_mismatch}
+    end
+  end
+
+  defp maybe_complete_response(conn, false), do: {:ok, conn}
+  defp maybe_complete_response(conn, true), do: complete_response(conn)
+
+  defp response_content_length_valid?(%__MODULE__{expected_content_length: nil}), do: true
+
+  defp response_content_length_valid?(%__MODULE__{
+         expected_content_length: expected,
+         received_content_length: received
+       }),
+       do: expected == received
+
+  defp response_content_length_valid_or_pending?(%__MODULE__{expected_content_length: nil}),
+    do: true
+
+  defp response_content_length_valid_or_pending?(%__MODULE__{
+         expected_content_length: expected,
+         received_content_length: received
+       }),
+       do: received <= expected
+
+  defp response_body_forbidden?(%__MODULE__{status: nil}), do: false
+
+  defp response_body_forbidden?(%__MODULE__{method: method, status: status}) do
+    HTTP.HTTP1.body_forbidden?(method, status)
+  end
+
+  defp enqueue(%__MODULE__{outbound: outbound} = conn, iodata) do
+    %{conn | outbound: [iodata | outbound]}
+  end
+
+  defp control_frame?(iodata) do
+    case Frame.decode(IO.iodata_to_binary(iodata)) do
+      {:ok, %Frame{type: :window_update}, ""} -> true
+      {:ok, %Frame{type: :settings, flags: flags}, ""} -> Frame.flag?(flags, @flag_ack)
+      {:ok, %Frame{type: :ping, flags: flags}, ""} -> Frame.flag?(flags, @flag_ack)
+      _ -> false
+    end
+  end
+
+  defp request_data_frame?(iodata) do
+    case Frame.decode(IO.iodata_to_binary(iodata)) do
+      {:ok, %Frame{type: :data, stream_id: @client_stream_id}, ""} -> true
+      _ -> false
+    end
+  end
+
+  defp flush_pending_body(%__MODULE__{pending_body: ""} = conn), do: conn
+  defp flush_pending_body(%__MODULE__{request_stopped?: true} = conn), do: conn
+
+  defp flush_pending_body(%__MODULE__{} = conn) do
+    writable = min(conn.connection_send_window, conn.stream_send_window)
+
+    if writable <= 0 do
+      conn
+    else
+      chunk_size = min(min(writable, conn.max_frame_size), byte_size(conn.pending_body))
+      <<chunk::binary-size(^chunk_size), rest::binary>> = conn.pending_body
+      flags = if rest == "", do: @flag_end_stream, else: 0
+
+      conn
+      |> Map.update!(:connection_send_window, &(&1 - chunk_size))
+      |> Map.update!(:stream_send_window, &(&1 - chunk_size))
+      |> Map.put(:pending_body, rest)
+      |> enqueue(Frame.encode(:data, flags, @client_stream_id, chunk))
+      |> flush_pending_body()
+    end
+  end
+
+  defp complete_response(conn) do
+    if response_content_length_valid?(conn) do
+      {:ok,
+       conn
+       |> Map.put(:done?, true)
+       |> stop_request()}
+    else
+      {:error, :content_length_mismatch}
+    end
+  end
+
+  defp pseudo_headers(%Request{} = request) do
+    [
+      {":method", Request.method_token(request.method)},
+      {":scheme", request.url.scheme || "http"},
+      {":authority", Request.authority(request.url)},
+      {":path", Request.origin_form(request.url)}
+    ]
+  end
+
+  defp base_request_headers(%Request{} = request) do
+    request
+    |> HTTP.Proxy.request_headers()
+    |> Request.reject_unsupported_request_framing!()
+    |> Headers.set_default("User-Agent", Headers.user_agent())
+  end
+
+  defp regular_headers(%Headers{} = headers) do
+    headers.headers
+    |> Enum.reduce([], fn {name, value}, acc ->
+      name = String.downcase(to_string(name))
+      value = to_string(value)
+
+      if request_header_allowed?(name, value) do
+        [{valid_header_name!(name), valid_header_value!(value)} | acc]
+      else
+        acc
+      end
+    end)
+    |> Enum.reverse()
+  end
+
+  defp request_header_allowed?(name, _value)
+       when name in [
+              "connection",
+              "host",
+              "keep-alive",
+              "proxy-connection",
+              "transfer-encoding",
+              "upgrade"
+            ] do
+    false
+  end
+
+  defp request_header_allowed?("te", value), do: String.downcase(String.trim(value)) == "trailers"
+  defp request_header_allowed?(_name, _value), do: true
+
+  defp valid_header_name!(name) do
+    if valid_token?(name) do
+      name
+    else
+      raise ArgumentError, "invalid HTTP header name: #{inspect(name)}"
+    end
+  end
+
+  defp valid_header_value!(value) do
+    if safe_header_value?(value) do
+      value
+    else
+      raise ArgumentError, "invalid HTTP header value for wire serialization"
+    end
+  end
+
+  defp valid_token?(value) when is_binary(value) do
+    value != "" and Enum.all?(:binary.bin_to_list(value), &token_char?/1)
+  end
+
+  defp token_char?(char) when char in ?0..?9, do: true
+  defp token_char?(char) when char in ?a..?z, do: true
+  defp token_char?(char) when char in ~c"!#$%&'*+-.^_`|~", do: true
+  defp token_char?(_char), do: false
+
+  defp safe_header_value?(value) do
+    value
+    |> :binary.bin_to_list()
+    |> Enum.all?(fn char -> char == ?\t or (char >= 32 and char != 127) end)
+  end
+
+  defp error_code(0x0), do: :no_error
+  defp error_code(0x1), do: :protocol_error
+  defp error_code(0x2), do: :internal_error
+  defp error_code(0x3), do: :flow_control_error
+  defp error_code(0x4), do: :settings_timeout
+  defp error_code(0x5), do: :stream_closed
+  defp error_code(0x6), do: :frame_size_error
+  defp error_code(0x7), do: :refused_stream
+  defp error_code(0x8), do: :cancel
+  defp error_code(0x9), do: :compression_error
+  defp error_code(0xA), do: :connect_error
+  defp error_code(0xB), do: :enhance_your_calm
+  defp error_code(0xC), do: :inadequate_security
+  defp error_code(0xD), do: :http_1_1_required
+  defp error_code(code), do: {:unknown_error, code}
+end

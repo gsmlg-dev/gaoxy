@@ -1,0 +1,147 @@
+PUBLIC_PROBE_ENV: %{otp: "28", elixir: "1.18.5", erts: ~c"16.4.0.6", http_fetch: ~c"0.21.4"}
+PUBLIC_CASE: %{
+  case: "h1_sequential_reuse",
+  requests: 2,
+  result: :pass,
+  accepts: 1,
+  cross_process_completion: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stalled_cancel_no_replay",
+  requests: 1,
+  result: :pass,
+  socket_closed: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1_stale_before_write_no_replay",
+  requests: 2,
+  result: :pass,
+  accepts: 2
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 2, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h1/trailers",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 9,
+  trailer_fields: 2,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  reset: true,
+  case: "tls_live_sibling_cancel_reuse",
+  requests: 3,
+  result: :pass,
+  streams: [1, 3],
+  accepts: 1
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "tls/upload",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 9,
+  trailer_fields: 2,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "tls/upload-empty",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 0,
+  trailer_fields: 1,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "tls/upload-split",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 4,
+  trailer_fields: 1,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "tls_early_final_flow_barrier",
+  requests: 2,
+  result: :pass,
+  window_bytes: 16,
+  producer_down: true,
+  sibling_live: true,
+  late_trailers: 0
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  error: {:goaway, 0, 0, :unprocessed},
+  case: "tls_goaway_no_replay",
+  requests: 1,
+  result: :pass
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  reset: true,
+  case: "h2c_live_sibling_cancel_reuse",
+  requests: 3,
+  result: :pass,
+  streams: [1, 3],
+  accepts: 1
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h2c/upload",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 9,
+  trailer_fields: 2,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h2c/upload-empty",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 0,
+  trailer_fields: 1,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: false
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h2c/upload-split",
+  requests: 1,
+  result: :pass,
+  upload_bytes: 4,
+  trailer_fields: 1,
+  ordered_duplicate_response_trailers: true,
+  split_header_block: true
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  case: "h2c_early_final_flow_barrier",
+  requests: 2,
+  result: :pass,
+  window_bytes: 16,
+  producer_down: true,
+  sibling_live: true,
+  late_trailers: 0
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_CASE: %{
+  error: {:goaway, 0, 0, :unprocessed},
+  case: "h2c_goaway_no_replay",
+  requests: 1,
+  result: :pass
+}
+PUBLIC_PEER_STOPPED: %{"connections" => 1, "event" => "stopped", "live_threads" => 0}
+PUBLIC_PROBE_PASS cases=16; request qualification only; managed retirement BLOCKED #78
+H20214_WRAPPER {"primary":{"status":"OK"},"post_identity":{"status":"OK"}}

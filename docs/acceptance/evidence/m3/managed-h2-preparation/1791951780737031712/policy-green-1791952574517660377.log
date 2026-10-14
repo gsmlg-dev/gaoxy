@@ -1,0 +1,218 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 252099, max_cases: 1
+
+[32m.[0m
+
+  1) test copies every retained policy binary and counts source backing occurrences (Gaoxy.Proxy.ManagedH2PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_preparation_test.exs:293[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Proxy.ManagedH2Preparation.Policy (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Proxy.ManagedH2Preparation.Policy{
+           protocol: :http2,
+           origin: "https://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.test",
+           scheme: :https,
+           host: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test",
+           port: 443,
+           connect_address: {127, 0, 0, 1},
+           open_options: [
+             origin: "https://AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA.test",
+             connect_address: {127, 0, 0, 1},
+             http_version: :http2,
+             tls_backend: :ssl,
+             http2_profile: :native_v1,
+             max_requests: 32,
+             max_connections: 2,
+             max_pending: 0,
+             idle_timeout: 30000,
+             ssl: [
+               verify: :verify_peer,
+               depth: 4,
+               versions: [:"tlsv1.3", :"tlsv1.2"],
+               cacerts: ["dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+                "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"],
+               server_name_indication: ~c"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.test"
+             ],
+             socket_opts: [
+               buffer: 8192,
+               recbuf: 8192,
+               sndbuf: 8192,
+               nodelay: true,
+               send_timeout: 30000,
+               send_timeout_close: true
+             ]
+           ]
+         }
+     [0m
+     [36mcode: [0massert compact_tree?(policy)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:382: Enum.all?/2
+       test/managed_h2_preparation_test.exs:303: (test)
+
+
+
+  2) test counts complete TLS constructor trees including SNI and opaque DER (Gaoxy.Proxy.ManagedH2PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_preparation_test.exs:352[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Proxy.ManagedH2Preparation.Policy (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Proxy.ManagedH2Preparation.Policy{
+           protocol: :http2,
+           origin: "https://example.test",
+           scheme: :https,
+           host: "example.test",
+           port: 443,
+           connect_address: {127, 0, 0, 1},
+           open_options: [
+             origin: "https://example.test",
+             connect_address: {127, 0, 0, 1},
+             http_version: :http2,
+             tls_backend: :ssl,
+             http2_profile: :native_v1,
+             max_requests: 32,
+             max_connections: 2,
+             max_pending: 0,
+             idle_timeout: 30000,
+             ssl: [
+               verify: :verify_peer,
+               depth: 4,
+               versions: [:"tlsv1.3", :"tlsv1.2"],
+               cacerts: ["opaque"],
+               server_name_indication: ~c"example.test"
+             ],
+             socket_opts: [
+               buffer: 8192,
+               recbuf: 8192,
+               sndbuf: 8192,
+               nodelay: true,
+               send_timeout: 30000,
+               send_timeout_close: true
+             ]
+           ]
+         }
+     [0m
+     [36mcode: [0massert manifest.owned == constructor_facts(policy)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.flat_map/2
+       test/managed_h2_preparation_test.exs:428: Gaoxy.Proxy.ManagedH2PreparationTest.finite_terms/1
+       test/managed_h2_preparation_test.exs:401: Gaoxy.Proxy.ManagedH2PreparationTest.constructor_facts/1
+       test/managed_h2_preparation_test.exs:356: (test)
+
+
+
+  3) test enforces URL logical bytes independently of the bounded host and valid port (Gaoxy.Proxy.ManagedH2PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_preparation_test.exs:282[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{port: 80}, _} = prepare_policy(%{policy_source() | origin: origin})
+     [36mleft:  [0m{[31m:ok[0m, [31m%{port: 80}[0m, [31m_[0m}
+     [36mright: [0m{[32m:error[0m, [32m:source_backing_limit[0m}
+     [36mstacktrace:[0m
+       test/managed_h2_preparation_test.exs:286: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  4) test uses explicit DER trust with fixed TLS values and no managed ALPN key (Gaoxy.Proxy.ManagedH2PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_preparation_test.exs:64[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Proxy.ManagedH2Preparation.Policy (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Proxy.ManagedH2Preparation.Policy{
+           protocol: :http2,
+           origin: "https://EXAMPLE.test:443/",
+           scheme: :https,
+           host: "example.test",
+           port: 443,
+           connect_address: {127, 0, 0, 1},
+           open_options: [
+             origin: "https://EXAMPLE.test:443/",
+             connect_address: {127, 0, 0, 1},
+             http_version: :http2,
+             tls_backend: :ssl,
+             http2_profile: :native_v1,
+             max_requests: 32,
+             max_connections: 2,
+             max_pending: 0,
+             idle_timeout: 30000,
+             ssl: [
+               verify: :verify_peer,
+               depth: 4,
+               versions: [:"tlsv1.3", :"tlsv1.2"],
+               cacerts: [<<48, 3, 2, 1, 1>>, <<48, 3, 2, 1, 2>>],
+               server_name_indication: ~c"example.test"
+             ],
+             socket_opts: [
+               buffer: 8192,
+               recbuf: 8192,
+               sndbuf: 8192,
+               nodelay: true,
+               send_timeout: 30000,
+               send_timeout_close: true
+             ]
+           ]
+         }
+     [0m
+     [36mcode: [0massert compact_tree?(policy)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:382: Enum.all?/2
+       test/managed_h2_preparation_test.exs:87: (test)
+
+[32m.[0m[32m.[0m[32m.[0m
+
+  5) test builds the exact numeric-pinned prior-knowledge h2c policy (Gaoxy.Proxy.ManagedH2PreparationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_preparation_test.exs:33[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.Proxy.ManagedH2Preparation.Policy (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.Proxy.ManagedH2Preparation.Policy{
+           protocol: :h2c,
+           origin: "http://example.test",
+           scheme: :http,
+           host: "example.test",
+           port: 80,
+           connect_address: {127, 0, 0, 1},
+           open_options: [
+             origin: "http://example.test",
+             connect_address: {127, 0, 0, 1},
+             http_version: :h2c,
+             tls_backend: :ssl,
+             http2_profile: :native_v1,
+             max_requests: 32,
+             max_connections: 2,
+             max_pending: 0,
+             idle_timeout: 30000,
+             ssl: [],
+             socket_opts: [
+               buffer: 8192,
+               recbuf: 8192,
+               sndbuf: 8192,
+               nodelay: true,
+               send_timeout: 30000,
+               send_timeout_close: true
+             ]
+           ]
+         }
+     [0m
+     [36mcode: [0massert compact_tree?(policy)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:382: Enum.all?/2
+       test/managed_h2_preparation_test.exs:60: (test)
+
+[32m.[0m
+Finished in 0.5 seconds (0.5s async, 0.00s sync)
+[31m16 tests, 5 failures[0m
