@@ -367,10 +367,27 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     {:stop, {:cleanup_failed, reason}, state}
   end
 
-  defp select(%{selector: {:fixed, %HTTP{transport: nil} = config}} = state),
-    do: {:ok, state, config}
+  defp select(%{selector: {:fixed, config}} = state), do: select_transport(state, config)
 
-  defp select(%{selector: {:fixed, %HTTP{transport: handle} = config}} = state) do
+  defp select(%{selector: {:group, handle, pins}} = state) do
+    case UpstreamGroups.checkout(
+           handle,
+           pins,
+           self(),
+           %{},
+           min(state.deadline, state.opening_deadline)
+         ) do
+      {:ok, member, token} ->
+        select_transport(%{state | selection: {handle, token}}, member.config)
+
+      {:error, reason} ->
+        {:error, reason, state}
+    end
+  end
+
+  defp select_transport(state, %HTTP{transport: nil} = config), do: {:ok, state, config}
+
+  defp select_transport(state, %HTTP{transport: handle} = config) do
     deadline = min(state.deadline, state.opening_deadline)
 
     identity = %{
@@ -397,19 +414,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
               {:error, {:transport_pin_release_failed, reason, release_reason}, state}
           end
       end
-    end
-  end
-
-  defp select(%{selector: {:group, handle, pins}} = state) do
-    case UpstreamGroups.checkout(
-           handle,
-           pins,
-           self(),
-           %{},
-           min(state.deadline, state.opening_deadline)
-         ) do
-      {:ok, member, token} -> {:ok, %{state | selection: {handle, token}}, member.config}
-      {:error, reason} -> {:error, reason}
+    else
+      {:error, reason} -> {:error, reason, state}
     end
   end
 
@@ -423,7 +429,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp bind_selection(%{selection: nil}), do: :ok
 
-  defp bind_selection(%{selection: {handle, token}, request: request} = state),
+  defp bind_selection(%{selection: {handle, token}, original_request: request} = state),
     do: UpstreamGroups.bind_completion(handle, token, state.client.completion(request))
 
   defp finish_transport(%{transport_selection: nil} = state), do: release_transport_pins(state)

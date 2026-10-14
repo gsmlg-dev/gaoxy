@@ -104,17 +104,23 @@ defmodule Gaoxy.Proxy.UpstreamTransportProxyTest do
     end
   end
 
-  test "group compilation rejects a raw managed member instead of activating it" do
+  @tag :group_transport_pure
+  test "group compilation preserves a raw managed member and its round trip" do
     handle = %{provider: Transports, owner: self(), owner_epoch: make_ref(), resource: make_ref()}
+    assert {:ok, managed} = ProxyHTTP.init(%{upstream: "http://example.test", transport: handle})
 
-    assert {:error, :invalid_upstream_group} =
+    assert {:ok, compiled} =
              UpstreamGroups.compile(%{
-               id: "dedicated-only",
+               id: "managed",
                members: [%{id: "a", upstream: "http://example.test", transport: handle}]
              })
+
+    assert [%{id: "a", config: ^managed}] = compiled.members
+    assert {:ok, ^compiled} = UpstreamGroups.compile(compiled)
   end
 
-  test "group compilation rejects managed config in a compiled group instead of erasing it" do
+  @tag :group_transport_pure
+  test "group compilation preserves managed config in a compiled group" do
     assert {:ok, dedicated} =
              UpstreamGroups.compile(%{
                id: "dedicated-only",
@@ -125,8 +131,8 @@ defmodule Gaoxy.Proxy.UpstreamTransportProxyTest do
     handle = %{provider: Transports, owner: self(), owner_epoch: make_ref(), resource: make_ref()}
     assert {:ok, managed} = ProxyHTTP.init(%{upstream: "http://example.test", transport: handle})
     [member] = dedicated.members
-    tampered = %{dedicated | members: [%{member | config: managed}]}
-    assert {:error, :invalid_upstream_group} = UpstreamGroups.compile(tampered)
+    managed_group = %{dedicated | members: [%{member | config: managed}]}
+    assert {:ok, ^managed_group} = UpstreamGroups.compile(managed_group)
     assert {:ok, ^dedicated} = UpstreamGroups.compile(dedicated)
   end
 

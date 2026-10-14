@@ -1,0 +1,120 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 363279, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/upstream_group_transport_proxy_test.exs", 149}]
+
+
+
+  1) test transport token denial cancels one selection neutrally without another GET or replay (Gaoxy.Proxy.UpstreamGroupTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:149[0m
+     [31m%{
+       service: %{
+         active: 0,
+         state: :ready,
+         rejected: 0,
+         retained_high_water: 15500145,
+         retained_bytes: 0,
+         backend: :stream,
+         cleanup_pending: 0,
+         cleanup_failed: nil,
+         queued_bytes: 0,
+         queued_items: 0
+       },
+       group: %{
+         pins: 1,
+         inflight: 0,
+         members: [
+           %{
+             id: "member-0",
+             probe: false,
+             stale: false,
+             health: :healthy,
+             inflight: 0,
+             scheduling_lag: 0
+           },
+           %{
+             id: "member-1",
+             probe: false,
+             stale: false,
+             health: :healthy,
+             inflight: 0,
+             scheduling_lag: 0
+           }
+         ],
+         probes: 0,
+         lifecycle: :active,
+         probe_bytes: 0
+       },
+       transport: {:ok,
+        %{
+          pins: 4,
+          request_tokens: 0,
+          limits: %{
+            max_resources: 4,
+            max_pins: 32,
+            max_request_tokens: 1,
+            max_owned_payload_bytes: 4194304
+          },
+          resources: 2,
+          helpers: 0,
+          reserved_connections: 4,
+          lifecycle: :running,
+          owned_serialized_payload_bytes: 4165,
+          failed_resources: 0
+        }},
+       expected_transport_pins: 3,
+       transport_holds: [
+         %{
+           handles: [
+             %{
+               owner: #PID<0.324.0>,
+               resource: #Reference<0.2754150204.3431989250.22499>,
+               provider: Gaoxy.Proxy.UpstreamTransports,
+               owner_epoch: #Reference<0.2754150204.3431989250.22464>
+             }
+           ],
+           kind: :baseline,
+           holder: #PID<0.321.0>
+         },
+         %{
+           handles: [
+             %{
+               owner: #PID<0.324.0>,
+               resource: #Reference<0.2754150204.3431989250.22578>,
+               provider: Gaoxy.Proxy.UpstreamTransports,
+               owner_epoch: #Reference<0.2754150204.3431989250.22464>
+             }
+           ],
+           kind: :baseline,
+           holder: #PID<0.321.0>
+         },
+         %{
+           handles: [
+             %{
+               owner: #PID<0.324.0>,
+               resource: #Reference<0.2754150204.3431989250.22499>,
+               provider: Gaoxy.Proxy.UpstreamTransports,
+               owner_epoch: #Reference<0.2754150204.3431989250.22464>
+             },
+             %{
+               owner: #PID<0.324.0>,
+               resource: #Reference<0.2754150204.3431989250.22578>,
+               provider: Gaoxy.Proxy.UpstreamTransports,
+               owner_epoch: #Reference<0.2754150204.3431989250.22464>
+             }
+           ],
+           kind: :baseline,
+           holder: #PID<0.321.0>
+         }
+       ]
+     }[0m
+     [36mcode: [0massert_clean(fixture)
+     [36mstacktrace:[0m
+       test/upstream_group_transport_proxy_test.exs:698: Gaoxy.Proxy.UpstreamGroupTransportProxyTest.eventually/3
+       test/upstream_group_transport_proxy_test.exs:432: Gaoxy.Proxy.UpstreamGroupTransportProxyTest.assert_clean/1
+       test/upstream_group_transport_proxy_test.exs:180: (test)
+
+
+Finished in 5.0 seconds (0.00s async, 5.0s sync)
+[31m5 tests, 1 failure, 4 excluded[0m

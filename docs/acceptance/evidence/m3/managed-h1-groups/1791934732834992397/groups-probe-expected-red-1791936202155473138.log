@@ -1,0 +1,116 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_proxy
+Running ExUnit with seed: 909471, max_cases: 1
+
+
+
+  1) test held managed transport validation leaves group status responsive and cancellation joins the original completion (Gaoxy.Proxy.UpstreamGroupTransportProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs:109[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       owner = #PID<0.351.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:transport_call_held, ^owner, probe, {:validate_endpoint, _, _, _, _}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{
+                  [31m:transport_call_held[0m,
+                  [31m^owner[0m,
+                  probe,
+                  [31m{:validate_endpoint, _, _, _, _}[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:head[0m,
+                  [32m#PID<0.347.0>[0m,
+                  "HEAD /health?ready=1 HTTP/1.1\r\nHost: 127.0.0.1:34699\r\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.6 Elixir/1.18.5 http_fetch/0.21.4\r\nConnection: close\r\n\r\n",
+                  [32mnil[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_probe_test.exs:116: (test)
+
+
+
+  2) test tls HEAD binds the same original completion to both owners with its own transport pin (Gaoxy.Proxy.UpstreamGroupTransportProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs:31[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       peer = #PID<0.381.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:head, ^peer, head, alpn}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:head[0m, ^peer, head, [31malpn[0m}
+       [36mvalue:   [0m{
+                  [32m:peer_error[0m,
+                  #PID<0.381.0>,
+                  "** (ExUnit.AssertionError) \n\nmatch (=) failed\ncode:  assert {:ok, socket} =\n              if wire == :ssl do\n                :ssl.handshake(transport, @timeout)\n              else\n                {:ok, transport}\n              end\nleft:  {:ok, socket}\nright: {:error, {:tls_alert, {:unknown_ca, ~c\"TLS server: In state wait_finished received CLIENT ALERT: Fatal - Unknown CA\\n\"}}}\n\n    test/upstream_group_transport_probe_test.exs:384: Gaoxy.Proxy.UpstreamGroupTransportProbeTest.peer_loop/3\n    test/upstream_group_transport_probe_test.exs:337: anonymous fn/3 in Gaoxy.Proxy.UpstreamGroupTransportProbeTest.peer/2\n"
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_probe_test.exs:37: (test)
+
+     The following output was logged:
+     [22m
+     08:03:43.231 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m[22m
+     08:03:43.238 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m
+
+
+  3) test tcp HEAD binds the same original completion to both owners with its own transport pin (Gaoxy.Proxy.UpstreamGroupTransportProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs:31[0m
+     [31mAssertion with > failed, both sides are exactly equal[0m
+     [36mcode: [0massert Lifecycle.remaining(finish) > 0
+     [36mleft: [0m0
+     [36mstacktrace:[0m
+       test/upstream_group_transport_probe_test.exs:453: Gaoxy.Proxy.UpstreamGroupTransportProbeTest.eventually/2
+       test/upstream_group_transport_probe_test.exs:41: (test)
+
+
+
+  4) test local transport pin capacity denial performs no HEAD and leaves health counters untouched (Gaoxy.Proxy.UpstreamGroupTransportProbeTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs:87[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert [%{health: :unknown, checked: nil, failures: 0, successes: 0}] = stored_members(fixture, group)
+     [36mleft:  [0m[%{checked: [31mnil[0m, failures: [31m0[0m, health: :unknown, successes: 0}]
+     [36mright: [0m[
+              %{
+                checked: [32m-576460735198[0m,
+                failures: [32m1[0m,
+                health: :unknown,
+                successes: 0,
+                config: %Gaoxy.Proxy.HTTP{
+                  uri: %URI{scheme: "http", authority: "127.0.0.1:33691", userinfo: nil, host: "127.0.0.1", port: 33691, path: nil, query: nil, fragment: nil},
+                  cacertfile: nil,
+                  client: Gaoxy.Proxy.HTTPFetchClient,
+                  limits: %{
+                    max_chunk_bytes: 65536,
+                    opening_timeout: 5000,
+                    write_timeout: 5000,
+                    max_lifetime: 30000,
+                    idle_timeout: 60000
+                  },
+                  transport: %{
+                    owner: #PID<0.468.0>,
+                    resource: #Reference<0.1431301447.207880194.163486>,
+                    provider: Gaoxy.Proxy.UpstreamTransports,
+                    owner_epoch: #Reference<0.1431301447.207880194.163476>
+                  },
+                  upstream_protocol: :http1,
+                  connect_address: nil
+                },
+                due: -576460675198,
+                id: "one",
+                inflight: 0,
+                max_inflight: 16,
+                probe: nil
+              }
+            ]
+     [36mstacktrace:[0m
+       test/upstream_group_transport_probe_test.exs:97: (test)
+
+
+Finished in 14.2 seconds (0.00s async, 14.2s sync)
+[31m4 tests, 4 failures[0m

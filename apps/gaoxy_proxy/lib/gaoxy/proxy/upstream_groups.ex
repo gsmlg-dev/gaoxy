@@ -1,9 +1,23 @@
 defmodule Gaoxy.Proxy.UpstreamGroups do
-  @moduledoc "Instance-scoped immutable dedicated-H1 groups with cleanup-held selections."
+  @moduledoc """
+  Instance-scoped immutable H1 groups with cleanup-held selections.
+
+  Managed members declare their exact transport dependencies in the group handle.
+  Preparation acquires dependency pins in the preparer; owners never recursively
+  pin providers. Embeddings must acquire a baseline for `resources(handle)` before
+  releasing the returned group and transport preparation pins.
+  """
   use GenServer
   @behaviour Gaoxy.HTTP.Resources
+  alias Gaoxy.HTTP.Resources
   alias Gaoxy.Lifecycle
-  alias Gaoxy.Proxy.{HTTPFetchClient, UpstreamGroups.Options, UpstreamGroups.Probe}
+
+  alias Gaoxy.Proxy.{
+    HTTPFetchClient,
+    UpstreamGroups.Options,
+    UpstreamGroups.Probe,
+    UpstreamTransports
+  }
 
   def child_spec(options),
     do: %{id: __MODULE__, start: {__MODULE__, :start_link, [options]}, restart: :temporary}
@@ -24,13 +38,107 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
     operation = make_ref()
 
     with {:ok, group} <- compile(group) do
-      result = Lifecycle.call(owner, {:prepare, group, preparer, operation, deadline}, deadline)
-      if match?({:error, _}, result), do: cancel(owner, operation)
-      result
+      case member_transports(group) do
+        [] -> prepare_group(owner, group, preparer, operation, deadline, [])
+        transports -> prepare_managed(owner, group, transports, preparer, operation, deadline)
+      end
     end
   end
 
   def prepare(_, _, _, _), do: {:error, :invalid_upstream_group}
+
+  def instance(owner, deadline) when is_integer(deadline),
+    do: Lifecycle.call(owner, {:instance, deadline}, deadline)
+
+  def instance(_, _), do: {:error, :preparation_expired}
+
+  def claim_probe(owner, token, deadline) when is_reference(token) and is_integer(deadline),
+    do: Lifecycle.call(owner, {:claim_probe, token, deadline}, deadline)
+
+  def claim_probe(_, _, _), do: {:error, :stale_probe}
+
+  defp prepare_managed(owner, group, transports, preparer, operation, deadline) do
+    provisional = group_handle(group, self(), make_ref(), make_ref())
+
+    with true <- preparer == self() || {:error, :unauthorized},
+         true <-
+           (is_integer(deadline) and Lifecycle.remaining(deadline) > 0) ||
+             {:error, {:deadline_exceeded, :cleanup_pending}},
+         {:ok, _} <- Resources.validate(resources(provisional)),
+         {:ok, instance} <- instance(owner, deadline),
+         :ok <- validate_members(group, instance, deadline),
+         {:ok, pins} <- Resources.pin_many(transports, preparer, :preparation, deadline) do
+      prepare_group(owner, group, preparer, operation, deadline, pins)
+    else
+      {:error, _} = error ->
+        cancel(owner, operation)
+        error
+    end
+  end
+
+  defp prepare_group(owner, group, preparer, operation, deadline, transport_pins) do
+    result = Lifecycle.call(owner, {:prepare, group, preparer, operation, deadline}, deadline)
+
+    case result do
+      {:ok, handle, pins} ->
+        if Lifecycle.remaining(deadline) > 0 and Process.alive?(preparer) do
+          {:ok, handle, pins ++ transport_pins}
+        else
+          cancel(owner, operation)
+          cancel_transport_pins(transport_pins)
+          {:error, {:deadline_exceeded, :cleanup_pending}}
+        end
+
+      {:error, _} = error ->
+        cancel(owner, operation)
+        cancel_transport_pins(transport_pins)
+        error
+    end
+  end
+
+  defp cancel_transport_pins(pins) do
+    Enum.each(pins, fn pin ->
+      Lifecycle.protect(fn -> pin.provider.cancel(pin.owner, pin.operation) end)
+    end)
+  end
+
+  defp validate_members(group, instance, deadline) do
+    group.members
+    |> Enum.reject(&is_nil(&1.config.transport))
+    |> Enum.map(&{&1.config.transport, URI.to_string(&1.config.uri)})
+    |> Enum.uniq()
+    |> Enum.reduce_while(:ok, fn {transport, origin}, :ok ->
+      identity = %{origin: origin, upstream_protocol: :http1, instance: instance}
+
+      case UpstreamTransports.validate_endpoint(transport, identity, deadline) do
+        :ok -> {:cont, :ok}
+        {:error, _} = error -> {:halt, error}
+      end
+    end)
+  end
+
+  defp member_transports(group) do
+    group.members
+    |> Enum.map(& &1.config.transport)
+    |> Enum.reject(&is_nil/1)
+    |> Enum.uniq()
+  end
+
+  defp group_handle(group, owner, epoch, generation) do
+    handle = %{
+      provider: __MODULE__,
+      owner: owner,
+      owner_epoch: epoch,
+      group: group.id,
+      generation: generation,
+      max_url_bytes: Enum.max(Enum.map(group.members, &byte_size(URI.to_string(&1.config.uri))))
+    }
+
+    case member_transports(group) do
+      [] -> handle
+      transports -> Map.put(handle, :transports, transports)
+    end
+  end
 
   @impl Gaoxy.HTTP.Resources
   def pin_many([%{owner: owner} | _] = handles, holder, kind, operation, deadline)
@@ -74,19 +182,48 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
   def probe_finished(owner, token, outcome),
     do: Lifecycle.call(owner, {:probe_finished, token, outcome}, Lifecycle.deadline(100))
 
-  def valid_handle?(%{
-        provider: __MODULE__,
-        owner: owner,
-        owner_epoch: epoch,
-        group: group,
-        generation: generation,
-        max_url_bytes: size
-      }),
+  def resources(handle) do
+    if valid_handle?(handle),
+      do: [handle | Map.get(handle, :transports, [])],
+      else: {:error, :invalid_endpoint_resources}
+  end
+
+  def valid_handle?(%{transports: transports} = handle) when map_size(handle) == 7 do
+    valid_handle?(Map.delete(handle, :transports)) and is_list(transports) and
+      length(transports) in 1..32 and Enum.uniq(transports) == transports and
+      Enum.all?(transports, &transport_handle?/1) and
+      match?({:ok, _}, Resources.validate([handle | transports]))
+  end
+
+  def valid_handle?(
+        %{
+          provider: __MODULE__,
+          owner: owner,
+          owner_epoch: epoch,
+          group: group,
+          generation: generation,
+          max_url_bytes: size
+        } = handle
+      )
+      when map_size(handle) == 6,
       do:
         is_pid(owner) and is_reference(epoch) and is_reference(generation) and
           is_binary(group) and byte_size(group) in 1..128 and is_integer(size) and size in 1..8192
 
   def valid_handle?(_), do: false
+
+  defp transport_handle?(
+         %{
+           provider: Gaoxy.Proxy.UpstreamTransports,
+           owner: owner,
+           owner_epoch: epoch,
+           resource: resource
+         } = handle
+       )
+       when map_size(handle) == 4,
+       do: is_pid(owner) and is_reference(epoch) and is_reference(resource)
+
+  defp transport_handle?(_), do: false
 
   @impl true
   def init({instance, limits}) do
@@ -95,6 +232,7 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
     {:ok,
      %{
        epoch: make_ref(),
+       instance: instance,
        instance_monitor: Process.monitor(instance),
        limits: limits,
        groups: %{},
@@ -108,14 +246,27 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
      }}
   end
 
-  @impl true
-  def handle_call({:prepare, compiled, holder, operation, deadline}, {caller, _}, state) do
-    bytes = :erlang.external_size(compiled)
+  defp prepare_record(state, compiled, holder, caller, operation, deadline) do
+    generation = make_ref()
+    handle = group_handle(compiled, self(), state.epoch, generation)
+    transports = Map.get(handle, :transports, [])
+
+    bytes =
+      :erlang.external_size(compiled) +
+        if(transports == [], do: 0, else: :erlang.external_size(transports))
 
     cond do
-      state.mode != :ready or Lifecycle.remaining(deadline) == 0 or not is_pid(holder) or
+      transports != [] and caller != holder ->
+        {:reply, {:error, :unauthorized}, state}
+
+      state.mode != :ready or not is_integer(deadline) or Lifecycle.remaining(deadline) == 0 or
+        not is_pid(holder) or
           not Process.alive?(holder) ->
         {:reply, {:error, :preparation_expired}, state}
+
+      not is_reference(operation) or not valid_handle?(handle) or
+          not match?({:ok, _}, Resources.validate(resources(handle))) ->
+        {:reply, {:error, :invalid_endpoint_resources}, state}
 
       map_size(state.groups) >= state.limits.max_groups or
         state.bytes + bytes > state.limits.max_config_bytes or
@@ -123,18 +274,7 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
         {:reply, {:error, :group_capacity}, state}
 
       true ->
-        generation = make_ref()
         key = {compiled.id, generation}
-        max_url = Enum.max(Enum.map(compiled.members, &byte_size(URI.to_string(&1.config.uri))))
-
-        handle = %{
-          provider: __MODULE__,
-          owner: self(),
-          owner_epoch: state.epoch,
-          group: compiled.id,
-          generation: generation,
-          max_url_bytes: max_url
-        }
 
         members =
           Enum.map(
@@ -167,6 +307,21 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
 
         send(self(), :kick_probes)
         {:reply, {:ok, handle, [pin]}, state}
+    end
+  end
+
+  @impl true
+  def handle_call({:instance, deadline}, _, state) do
+    if state.mode == :ready and Lifecycle.remaining(deadline) > 0 and
+         Process.alive?(state.instance),
+       do: {:reply, {:ok, state.instance}, state},
+       else: {:reply, {:error, :preparation_expired}, state}
+  end
+
+  def handle_call({:prepare, compiled, holder, operation, deadline}, {caller, _}, state) do
+    case compile(compiled) do
+      {:ok, compiled} -> prepare_record(state, compiled, holder, caller, operation, deadline)
+      {:error, _} = error -> {:reply, error, state}
     end
   end
 
@@ -279,6 +434,26 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
            probes: map_size(state.probes),
            pins: map_size(state.pins)
          }, state}
+    end
+  end
+
+  def handle_call({:claim_probe, token, deadline}, {caller, _}, state) do
+    case state.probes[token] do
+      %{pid: ^caller, claimed: false, key: group_key, deadline: probe_deadline, monitor: monitor} =
+          probe ->
+        group = state.groups[group_key]
+
+        if state.mode == :ready and group != nil and group.lifecycle == :active and
+             key(group.handle) == group_key and monitor != nil and
+             Lifecycle.remaining(deadline) > 0 and Lifecycle.remaining(probe_deadline) > 0 and
+             Process.alive?(caller) and Process.alive?(state.instance) do
+          {:reply, {:ok, state.instance}, put_in(state.probes[token], %{probe | claimed: true})}
+        else
+          {:reply, {:error, :stale_probe}, state}
+        end
+
+      _ ->
+        {:reply, {:error, :stale_probe}, state}
     end
   end
 
@@ -563,11 +738,13 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
       if map_size(acc.probes) < acc.limits.max_probes and
            acc.probe_bytes + reserve <= acc.limits.probe_bytes do
         token = make_ref()
+        deadline = Lifecycle.deadline(group.compiled.health.timeout)
 
         args = %{
           owner: self(),
           token: token,
           member: member,
+          deadline: deadline,
           health: group.compiled.health,
           url: url
         }
@@ -580,9 +757,10 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
               index: index,
               bytes: reserve,
               completion: nil,
+              claimed: false,
               monitor: Process.monitor(pid),
               recovery: nil,
-              deadline: Lifecycle.deadline(group.compiled.health.timeout)
+              deadline: deadline
             }
 
             acc =
@@ -616,6 +794,9 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
 
     member =
       case outcome do
+        :cancelled ->
+          member
+
         :success ->
           successes = member.successes + 1
           healthy = member.health != :unhealthy or successes >= health.recovery_threshold
@@ -638,7 +819,7 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
 
     member = %{
       member
-      | checked: Lifecycle.now(),
+      | checked: if(outcome == :cancelled, do: member.checked, else: Lifecycle.now()),
         probe: nil,
         due: Lifecycle.now() + health.interval + jitter
     }

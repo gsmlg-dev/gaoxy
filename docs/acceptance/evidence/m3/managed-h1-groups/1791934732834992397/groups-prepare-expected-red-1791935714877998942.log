@@ -1,0 +1,257 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 859707, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:group_transport_prepare]
+
+
+
+  1) test preparer DOWN before a held owner reply rolls back without publishing a group (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:436[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{pins: 2, request_tokens: 0}} = UpstreamTransports.status(owner)
+     [36mleft:  [0m{:ok, %{pins: [31m2[0m, request_tokens: 0}}
+     [36mright: [0m{
+              :ok,
+              %{
+                pins: [32m1[0m,
+                request_tokens: 0,
+                failed_resources: 0,
+                helpers: 0,
+                lifecycle: :running,
+                limits: %{
+                  max_pins: 16,
+                  max_resources: 4,
+                  max_request_tokens: 64,
+                  max_owned_payload_bytes: 2097152
+                },
+                owned_serialized_payload_bytes: 1708,
+                reserved_connections: 2,
+                resources: 1
+              }
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:443: (test)
+
+
+
+  2) test owned sidecar payload is charged before publication and rolls back at the byte limit (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:548[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :group_capacity} = UpstreamGroups.prepare(fixture.groups, compiled, self(), deadline())
+     [36mleft:  [0m{[31m:error[0m, [31m:group_capacity[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                owner: #PID<0.336.0>,
+                group: "api",
+                provider: Gaoxy.Proxy.UpstreamGroups,
+                generation: #Reference<0.3134580444.1279787009.141020>,
+                owner_epoch: #Reference<0.3134580444.1279787009.140944>,
+                max_url_bytes: 22
+              }[0m,
+              [32m[%{owner: #PID<0.336.0>, handles: [%{owner: #PID<0.336.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.141020>, owner_epoch: #Reference<0.3134580444.1279787009.140944>, max_url_bytes: 22}], kind: :preparation, ref: #Reference<0.3134580444.1279787009.141022>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787009.140944>, operation: #Reference<0.3134580444.1279787009.141002>}][0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:556: (test)
+
+
+
+  3) test partial multiowner pin refusal rolls back the first provider and leaves the active candidate usable (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:370[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       denied_owner = #PID<0.352.0>
+       caller = #PID<0.364.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:call_held, ^denied_owner, ^caller, {:pin_many, _, _, _, _, _}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:call_held[0m, [31m^denied_owner[0m, [31m^caller[0m, [31m{:pin_many, _, _, _, _, _}[0m}
+       [36mvalue:   [0m{
+                  [32m:candidate_result[0m,
+                  [32m#PID<0.364.0>[0m,
+                  [32m{:ok, %{owner: #PID<0.353.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.141263>, owner_epoch: #Reference<0.3134580444.1279787009.141079>, max_url_bytes: 22}, [%{owner: #PID<0.353.0>, handles: [%{owner: #PID<0.353.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.141263>, owner_epoch: #Reference<0.3134580444.1279787009.141079>, max_url_bytes: 22}], kind: :preparation, ref: #Reference<0.3134580444.1279787009.141266>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787009.141079>, operation: #Reference<0.3134580444.1279787009.141230>}]}[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:390: (test)
+
+
+
+  4) test owner exact handle identity rejects structurally valid sidecar and generation forgeries (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:474[0m
+     [31m** (KeyError) key :transports not found[0m
+     [36mcode: [0m%{handle | transports: [second, first]},
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:490: (test)
+
+
+
+  5) test managed preparation authenticates its caller and rejects dead or expired preparers (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:304[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :unauthorized} = UpstreamGroups.prepare(fixture.groups, compiled, other, deadline())
+     [36mleft:  [0m{[31m:error[0m, [31m:unauthorized[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                owner: #PID<0.399.0>,
+                group: "api",
+                provider: Gaoxy.Proxy.UpstreamGroups,
+                generation: #Reference<0.3134580444.1279787009.144871>,
+                owner_epoch: #Reference<0.3134580444.1279787009.144795>,
+                max_url_bytes: 22
+              }[0m,
+              [32m[%{owner: #PID<0.399.0>, handles: [%{owner: #PID<0.399.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.144871>, owner_epoch: #Reference<0.3134580444.1279787009.144795>, max_url_bytes: 22}], kind: :preparation, ref: #Reference<0.3134580444.1279787009.144873>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787009.144795>, operation: #Reference<0.3134580444.1279787009.144853>}][0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:318: (test)
+
+
+
+  6) test late group prepare reply is cancelled by its caller and cannot leave dependency pins (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:416[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{pins: 2, request_tokens: 0}} = UpstreamTransports.status(owner)
+     [36mleft:  [0m{:ok, %{pins: [31m2[0m, request_tokens: 0}}
+     [36mright: [0m{
+              :ok,
+              %{
+                pins: [32m1[0m,
+                request_tokens: 0,
+                failed_resources: 0,
+                helpers: 0,
+                lifecycle: :running,
+                limits: %{
+                  max_pins: 16,
+                  max_resources: 4,
+                  max_request_tokens: 64,
+                  max_owned_payload_bytes: 2097152
+                },
+                owned_serialized_payload_bytes: 1708,
+                reserved_connections: 2,
+                resources: 1
+              }
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:423: (test)
+
+
+
+  7) test facade provider waits do not block group identity and owner inspection (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:512[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       owner = #PID<0.431.0>
+       caller = #PID<0.439.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:call_held, ^owner, ^caller, {:validate_endpoint, _, _, _, _}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:call_held[0m, [31m^owner[0m, [31m^caller[0m, [31m{:validate_endpoint, _, _, _, _}[0m}
+       [36mvalue:   [0m{
+                  [32m:candidate_result[0m,
+                  [32m#PID<0.439.0>[0m,
+                  [32m{:ok, %{owner: #PID<0.432.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.145155>, owner_epoch: #Reference<0.3134580444.1279787009.145078>, max_url_bytes: 22}, [%{owner: #PID<0.432.0>, handles: [%{owner: #PID<0.432.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787009.145155>, owner_epoch: #Reference<0.3134580444.1279787009.145078>, max_url_bytes: 22}], kind: :preparation, ref: #Reference<0.3134580444.1279787009.145157>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787009.145078>, operation: #Reference<0.3134580444.1279787009.145137>}]}[0m
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:517: (test)
+
+
+
+  8) test authority instance and stale transport rejection publish no group or token (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:272[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = UpstreamGroups.prepare(fixture.groups, compiled, self(), deadline())
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              %{
+                owner: #PID<0.450.0>,
+                group: "denied",
+                provider: Gaoxy.Proxy.UpstreamGroups,
+                generation: #Reference<0.3134580444.1279787010.133251>,
+                owner_epoch: #Reference<0.3134580444.1279787010.133125>,
+                max_url_bytes: 23
+              },
+              [32m[%{owner: #PID<0.450.0>, handles: [%{owner: #PID<0.450.0>, group: "denied", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787010.133251>, owner_epoch: #Reference<0.3134580444.1279787010.133125>, max_url_bytes: 23}], kind: :preparation, ref: #Reference<0.3134580444.1279787010.133253>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787010.133125>, operation: #Reference<0.3134580444.1279787010.133233>}][0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:290: anonymous fn/4 in Gaoxy.Proxy.UpstreamGroupTransportTest."test authority instance and stale transport rejection publish no group or token"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_group_transport_test.exs:278: (test)
+
+
+
+  9) test closed transport admission rejects without group publication or a request token (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:531[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = UpstreamGroups.prepare(fixture.groups, managed_group(fixture), self(), deadline())
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              %{
+                owner: #PID<0.479.0>,
+                group: "api",
+                provider: Gaoxy.Proxy.UpstreamGroups,
+                generation: #Reference<0.3134580444.1279787010.133428>,
+                owner_epoch: #Reference<0.3134580444.1279787010.133341>,
+                max_url_bytes: 22
+              },
+              [32m[%{owner: #PID<0.479.0>, handles: [%{owner: #PID<0.479.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3134580444.1279787010.133428>, owner_epoch: #Reference<0.3134580444.1279787010.133341>, max_url_bytes: 22}], kind: :preparation, ref: #Reference<0.3134580444.1279787010.133430>, provider: Gaoxy.Proxy.UpstreamGroups, owner_epoch: #Reference<0.3134580444.1279787010.133341>, operation: #Reference<0.3134580444.1279787010.133410>}][0m
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:540: (test)
+
+
+
+ 10) test preparer death after publication drops both preparation ledgers but preserves another baseline (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:457[0m
+     [31mgroup transport condition did not settle before deadline[0m
+     [36mcode: [0massert_transport_pins(fixture, 2)
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:792: Gaoxy.Proxy.UpstreamGroupTransportTest.eventually/2
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/upstream_group_transport_test.exs:465: (test)
+
+
+
+ 11) test preparation derives ordered shared sidecars and embeds the complete baseline (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:234[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert map_size(handle) == 7
+     [36mleft:  [0m[31m6[0m
+     [36mright: [0m[32m7[0m
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:242: (test)
+
+
+
+ 12) test group capacity denial rolls back acquired dependency pins and preserves existing configuration (Gaoxy.Proxy.UpstreamGroupTransportTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_test.exs:339[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{pins: 3, request_tokens: 0}} = UpstreamTransports.status(owner)
+     [36mleft:  [0m{:ok, %{pins: [31m3[0m, request_tokens: 0}}
+     [36mright: [0m{
+              :ok,
+              %{
+                pins: [32m1[0m,
+                request_tokens: 0,
+                failed_resources: 0,
+                helpers: 0,
+                lifecycle: :running,
+                limits: %{
+                  max_pins: 16,
+                  max_resources: 4,
+                  max_request_tokens: 64,
+                  max_owned_payload_bytes: 2097152
+                },
+                owned_serialized_payload_bytes: 1708,
+                reserved_connections: 2,
+                resources: 1
+              }
+            }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_test.exs:355: (test)
+
+
+Finished in 11.0 seconds (11.0s async, 0.00s sync)
+[31m21 tests, 12 failures, 9 excluded[0m

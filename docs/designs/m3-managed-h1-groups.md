@@ -1,8 +1,11 @@
 # M3 managed H1 groups and probes
 
 Date: 2026-10-13 Asia/Shanghai; readiness updated 2026-10-14.
-Status: **INDEPENDENT DESIGN/PLAN READINESS PASS**; implementation and runtime
-acceptance **NOT RUN**. The original review retains its predecessor snapshot.
+Status: Local implementation/runtime acceptance **PASS**: independent complete
+SPEC then CODE and fresh168/0, strict compile and formatcheck pass. Local commit
+is pending document closure. The [acceptance ledger](../acceptance/m3-managed-h1-groups.md)
+records exact source/log identities and preserves all historical failures. The
+original readiness review retains its predecessor snapshot.
 This bounded package follows full acceptance of
 [fixed endpoints](m3-managed-h1-fixed-endpoint.md), and precedes
 [Generation integration](m3-managed-h1-generation.md). It implements the group
@@ -253,9 +256,10 @@ fixed-endpoint regressions. Assert peer ALPN exactly `null`, explicit DER trust,
 SNI authority despite numeric dial address, wrong CA/hostname rejection and no
 replay. No private dependency pool/process inspection.
 
-Every execution box remains unchecked. Readiness review may authorize Sol's
-next kickoff only after fixed endpoint acceptance; it is not implementation
-acceptance. Parent records exact tree/cohort/environment, commands, nonzero test
+At preparation handoff every execution box remained unchecked. Current plan
+checkboxes and the acceptance ledger record subsequent execution. Readiness
+review authorizes Sol's next kickoff only after fixed endpoint acceptance; it
+is not implementation acceptance. Parent records exact tree/cohort/environment, commands, nonzero test
 counts, exits, independent SPEC then CODE findings and fresh post-review checks.
 Full Task 5, Generation, H2, standalone, publication and production acceptance
 remain separate.

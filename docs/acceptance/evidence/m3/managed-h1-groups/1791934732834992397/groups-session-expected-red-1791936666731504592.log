@@ -1,0 +1,104 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 974982, max_cases: 1
+
+
+
+  1) test Session pins its selected transport and binds both original completions before upload readiness (Gaoxy.Proxy.UpstreamGroupTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:84[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.335.0>
+       peer = #PID<0.319.0>
+     Showing 3 of 3 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, ^peer, ^worker, upstream}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, ^peer, ^worker, [31mupstream[0m}
+       [36mvalue:   [0m{[32m:peer_accepted[0m, #PID<0.319.0>, #PID<0.335.0>}
+
+       [36mpattern: [0m{[31m:peer_request[0m, ^peer, [31m^worker[0m, [31mupstream[0m}
+       [36mvalue:   [0m{[32m:peer_accepted[0m, #PID<0.319.0>, [32m#PID<0.356.0>[0m}
+
+       [36mpattern: [0m{:peer_request, ^peer, [31m^worker[0m, upstream}
+       [36mvalue:   [0m{
+                  :peer_request,
+                  #PID<0.319.0>,
+                  [32m#PID<0.356.0>[0m,
+                  "POST /bound HTTP/1.1\r\nContent-Type: application/octet-stream\r\nHost: 127.0.0.1:37779\r\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.6 Elixir/1.18.5 http_fetch/0.21.4\r\nx-forwarded-for: 127.0.0.1\r\nx-forwarded-host: downstream.test\r\nx-forwarded-proto: http\r\nConnection: close\r\nContent-Length: 3\r\n\r\n"
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_proxy_test.exs:101: (test)
+
+     The following output was logged:
+     [31m
+     08:11:17.470 [error] GenServer #PID<0.348.0> terminating
+     ** (stop) {:selection_cleanup_failed, {:deadline_exceeded, :cleanup_pending}}
+     Last message: {#Reference<0.0.44547.3731630149.3161260033.261922>, {:error, :aborted}}
+     State: %{monitors: %{#Reference<0.3731630149.3161194497.261886> => #PID<0.347.0>, #Reference<0.3731630149.3161194497.261887> => #PID<0.337.0>, #Reference<0.3731630149.3161194497.261888> => #PID<0.321.0>, #Reference<0.3731630149.3161194497.261889> => #PID<0.338.0>}, owner: #PID<0.347.0>, request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.350.0>, latch: #Reference<0.3731630149.3161325569.261915>, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.348.0>, pid: #PID<0.351.0>, ref: #Reference<0.0.44547.3731630149.3161260033.261922>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.350.0>, latch: #Reference<0.3731630149.3161325569.261915>, unsupported: nil}}}, config: %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.324.0>, group: "managed", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3731630149.3161194497.261422>, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.3731630149.3161194497.261274>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3731630149.3161194497.261239>}], owner_epoch: #Reference<0.3731630149.3161194497.261251>, max_url_bytes: 22}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, write_timeout: 5000, max_lifetime: 30000, opening_timeout: 5000}}, instance: #PID<0.321.0>, cancelled: true, service: #PID<0.337.0>, started_at: -576460748102, deadline: -576460718114, token: #Reference<0.3731630149.3161194497.261892>, client: Gaoxy.Proxy.HTTPFetchClient, request_options: %{path: "/bound", body: {:length, 3}, query: nil, headers: [{"content-length", "3"}, {"x-forwarded-for", "127.0.0.1"}, {"x-forwarded-host", "downstream.test"}, {"x-forwarded-proto", "http"}], method: :post, limits: %{request_timeout: 30000, write_timeout: 5000, max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, max_write_chunk: 16384}, max_upload_bytes: 65536}, headers: false, selection: {%{owner: #PID<0.324.0>, group: "managed", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3731630149.3161194497.261422>, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.3731630149.3161194497.261274>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3731630149.3161194497.261239>}], owner_epoch: #Reference<0.3731630149.3161194497.261251>, max_url_bytes: 22}, #Reference<0.3731630149.3161194497.261902>}, transport_selection: nil, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.350.0>, latch: #Reference<0.3731630149.3161325569.261915>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.348.0>, pid: #PID<0.351.0>, ref: #Reference<0.0.44547.3731630149.3161260033.261922>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.350.0>, latch: #Reference<0.3731630149.3161325569.261915>, unsupported: nil}}}, transport_pins: [], gate: #PID<0.338.0>, selector: {:group, %{owner: #PID<0.324.0>, group: "managed", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3731630149.3161194497.261422>, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.3731630149.3161194497.261274>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3731630149.3161194497.261239>}], owner_epoch: #Reference<0.3731630149.3161194497.261251>, max_url_bytes: 22}, [%{owner: #PID<0.323.0>, handles: [%{owner: #PID<0.323.0>, resource: #Reference<0.3731630149.3161194497.261274>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3731630149.3161194497.261239>}], kind: :request, ref: #Reference<0.3731630149.3161194497.261866>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.347.0>, operation: #Reference<0.3731630149.3161194497.261864>, owner_epoch: #Reference<0.3731630149.3161194497.261239>}, %{owner: #PID<0.324.0>, handles: [%{owner: #PID<0.324.0>, group: "managed", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3731630149.3161194497.261422>, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.3731630149.3161194497.261274>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3731630149.3161194497.261239>}], owner_epoch: #Reference<0.3731630149.3161194497.261251>, max_url_bytes: 22}], kind: :request, ref: #Reference<0.3731630149.3161194497.261861>, provider: Gaoxy.Proxy.UpstreamGroups, operation: #Reference<0.3731630149.3161194497.261859>, owner_epoch: #Reference<0.3731630149.3161194497.261251>}]}, consumed: true, delivery: nil, trailers: [], outcome: :cancelled, cleanup_deadline: -576460717114, managed_transport: nil, opening_deadline: -576460743099, activated_at: -576460748099, opening_timer: #Reference<0.3731630149.3161194497.261904>, total_timer: #Reference<0.3731630149.3161194497.261905>, cleanup_started: true, cleanup_requested_deadline: nil}
+     [0m
+
+
+  2) test transport token denial cancels one selection neutrally without another GET or replay (Gaoxy.Proxy.UpstreamGroupTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:149[0m
+     [31mmanaged group accounting did not settle[0m
+     [36mcode: [0mfixture = managed([first_source, second_source], 1)
+     [36mstacktrace:[0m
+       test/upstream_group_transport_proxy_test.exs:679: Gaoxy.Proxy.UpstreamGroupTransportProxyTest.eventually/2
+       test/upstream_group_transport_proxy_test.exs:319: Gaoxy.Proxy.UpstreamGroupTransportProxyTest.managed/2
+       test/upstream_group_transport_proxy_test.exs:152: (test)
+
+
+
+  3) test tcp selected member reuses the HEAD connection for two raw GET responses (Gaoxy.Proxy.UpstreamGroupTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:26[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.426.0>
+       peer = #PID<0.410.0>
+     Showing 2 of 2 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, ^peer, ^worker, upstream}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, ^peer, [31m^worker[0m, [31mupstream[0m}
+       [36mvalue:   [0m{[32m:peer_accepted[0m, #PID<0.410.0>, [32m#PID<0.444.0>[0m}
+
+       [36mpattern: [0m{:peer_request, ^peer, [31m^worker[0m, upstream}
+       [36mvalue:   [0m{
+                  :peer_request,
+                  #PID<0.410.0>,
+                  [32m#PID<0.444.0>[0m,
+                  "GET /a%2Fb?q=%2F HTTP/1.1\r\nHost: 127.0.0.1:34263\r\nUser-Agent: Mozilla/5.0 (Linux; x86_64-pc-linux-gnu) OTP/28 BEAM/16.4.0.6 Elixir/1.18.5 http_fetch/0.21.4\r\nx-trace: one\r\nx-trace: two\r\nx-forwarded-for: 127.0.0.1\r\nx-forwarded-host: downstream.test\r\nx-forwarded-proto: http\r\nConnection: close\r\n\r\n"
+                }
+     [36mstacktrace:[0m
+       test/upstream_group_transport_proxy_test.exs:54: anonymous fn/7 in Gaoxy.Proxy.UpstreamGroupTransportProxyTest."test tcp selected member reuses the HEAD connection for two raw GET responses"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_group_transport_proxy_test.exs:48: (test)
+
+
+
+  4) test tls selected member reuses the HEAD connection for two raw GET responses (Gaoxy.Proxy.UpstreamGroupTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:26[0m
+     [31mAssertion failed, no matching message after 3000ms
+     The following variables were pinned:
+       worker = #PID<0.486.0>
+       peer = #PID<0.463.0>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:peer_request, ^peer, ^worker, upstream}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:peer_request[0m, ^peer, [31m^worker[0m, [31mupstream[0m}
+       [36mvalue:   [0m{[32m:peer_accepted[0m, #PID<0.463.0>, [32m#PID<0.510.0>[0m}
+     [36mstacktrace:[0m
+       test/upstream_group_transport_proxy_test.exs:54: anonymous fn/7 in Gaoxy.Proxy.UpstreamGroupTransportProxyTest."test tls selected member reuses the HEAD connection for two raw GET responses"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_group_transport_proxy_test.exs:48: (test)
+
+     The following output was logged:
+     [22m
+     08:11:26.697 [notice] TLS :client: In state :wait_cert_cr at ssl_handshake.erl:2275 generated CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m[22m
+     08:11:26.700 [notice] TLS :server: In state :wait_finished received CLIENT ALERT: Fatal - Unknown CA
+     
+     [0m
+[32m.[0m
+Finished in 14.7 seconds (0.00s async, 14.7s sync)
+[31m5 tests, 4 failures[0m
