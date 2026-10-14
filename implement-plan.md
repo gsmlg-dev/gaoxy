@@ -50,11 +50,12 @@ remain in its [acceptance](docs/acceptance/m3-h1-resource-foundation.md).
 Task5 [fixed endpoint activation](docs/plans/m3-managed-h1-fixed-endpoint.md)
 is now **DONE locally** at `2bf0883cea1dce1a031016700bb012fb3faac8b5`: independent SPEC/CODE and fresh178/0, strict compile
 and formatcheck PASS; all historical failures remain preserved. Managed H1 [groups/probes](docs/plans/m3-managed-h1-groups.md) are **DONE locally** at `5ea088a9e3fe2646a056b2078f31a34f7adb6049`: complete independent SPEC/CODE, fresh168/0 without skips/exclusions, strict compile and formatcheck PASS. All original failures remain in their [acceptance](docs/acceptance/m3-managed-h1-groups.md). Managed H1 [Generation](docs/plans/m3-managed-h1-generation.md) is **DONE locally** at `cb619569c7a18568981d3425845954ad04908ffb`: complete independent SPEC/CODE, fresh341/0 with zero exclusions/skips, scoped format and strict compile PASS. Its [acceptance](docs/acceptance/m3-managed-h1-generation.md) preserves failed attempts and source/evidence identities.
-The [H2 preparation package](docs/plans/m3-managed-h2-preparation.md) has
-passed complete independent SPEC/CODE, fresh scoped format/strict compile97/0
+The [H2 preparation package](docs/plans/m3-managed-h2-preparation.md) is **DONE locally**
+at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`: complete independent SPEC/CODE, fresh scoped format/strict compile97/0
 and public63/0 with zero exclusions/skips. Its source/peer/evidence identities
 and historical assertions are preserved in its [acceptance](docs/acceptance/m3-managed-h2-preparation.md).
-Fixed/group H2 activation remains NOT RUN; fixed-H2 design and plan follow
+Fixed/group H2 activation remains NOT RUN; fixed-H2 design and plan have independent
+document readiness PASS and tests-first execution follows
 automatically under continuing authorization.
 Preparation does not imply live H2 reservations, standalone integration,
 protocol-matrix or sustained-load acceptance. The roadmap still ends at M4.

@@ -1,6 +1,6 @@
 # M3 managed H2 preparation acceptance
 
-Status: **VERIFIED LOCALLY; COMPLETE SPEC/CODE PASS; FRESH COMPATIBILITY97/0 AND PUBLIC63/0; LOCAL COMMIT NEXT**. Generation predecessor
+Status: **DONE LOCALLY at c871e3d9ee87cf802acf764d7d7622e0a7b611d6; COMPLETE SPEC/CODE PASS; FRESH COMPATIBILITY97/0 AND PUBLIC63/0**. Generation predecessor
 `cb619569c7a18568981d3425845954ad04908ffb` is accepted after complete independent
 SPEC/CODE, fresh341/0, format/strict compile and byte-preserved evidence closure.
 The written [design](../designs/m3-managed-h2-preparation.md) and
@@ -18,7 +18,7 @@ static readiness passed that clarification before implementation release.
 | Fresh public0.21.4 managed39/completion16/supplement8 | Post-review public-final63/0, exact TLS h2, peers joined, identity/source stable; historical0.21.3 untouched | PASS |
 | Complete independent SPEC then CODE | Fresh complete SPEC then complete CODE PASS; candidate2 hashes match | PASS |
 | Fresh scoped format/compile/tests/peer qualification | Post-review scoped format/strict compile97/0 and fresh public63/0; zero skips/exclusions | PASS |
-| Local conventional commit and fixed-H2 successor | All implementation acceptance gates PASS; successor design draft exists | Commit NEXT; successor readiness NOT RUN |
+| Local conventional commit and fixed-H2 successor | Local c871e3d; actual committed reviewed source hashes verified; successor independent document readiness PASS; runtime NOT RUN | Commit PASS; successor readiness PASS |
 
 Parent owns all runtime/Mix/build/format/evidence/commits. Writers are assigned
 disjoint files and freeze before execution. The package adds pure preparation
@@ -66,4 +66,6 @@ Independent [complete CODE review1](evidence/m3/managed-h2-preparation/179195178
 
 Fresh post-review [complete scoped gates97/0](evidence/m3/managed-h2-preparation/1791951780737031712/fresh-post-review-complete-gates-1791955009368298923.json) and [public-final63/0](evidence/m3/managed-h2-preparation/1791951780737031712/public-final/qualification.json) pass with exit0, zero exclusions/skips and stable source/build. [Final acceptance receipt](evidence/m3/managed-h2-preparation/1791951780737031712/fresh-final-acceptance.json) checks all693 fresh public artifacts plus every parent raw log and exact candidate2 source/test/collector/design/lock hashes. Serial VMs execute managed39, completion16 and supplement8 (TLS4/h2c4); all supplement peers join. The original design/hash and old0.21.3 assertions remain unchanged.
 
-Final H2 preparation counters: unsuccessful GREEN1/production0/harness1/diagnoses1/Sol harness repair1/readiness rejection1/SPEC rejection1/Sol SPEC repair1/CODE rejection0/format rejection0; expected missing-API REDs consume zero GREEN rounds. Astra recovery2/2 remains exhausted; architecture assignments consume zero recovery. Native limits and the2,918,508 prospective ETF subtotal remain separate, with no live reservation or H2 activation claim. Local commit and fixed-H2 readiness follow automatically under continuing authorization.
+Final H2 preparation counters: unsuccessful GREEN1/production0/harness1/diagnoses1/Sol harness repair1/readiness rejection1/SPEC rejection1/Sol SPEC repair1/CODE rejection0/format rejection0; expected missing-API REDs consume zero GREEN rounds. Astra recovery2/2 remains exhausted; architecture assignments consume zero recovery. Native limits and the2,918,508 prospective ETF subtotal remain separate, with no live reservation or H2 activation claim. Fixed-H2 readiness follows automatically under continuing authorization; the actual local commit is recorded below.
+
+Local [commit receipt](evidence/m3/managed-h2-preparation/1791951780737031712/local-commit-receipt.json) records `c871e3d9ee87cf802acf764d7d7622e0a7b611d6` and verifies its committed blobs against all reviewed/fresh-verified hashes. Main/publication/deployment remain untouched. Fixed-H2 documents and independent readiness proceed automatically.

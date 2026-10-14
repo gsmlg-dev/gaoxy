@@ -498,7 +498,19 @@ in the canonical environment; capture red then green with exact counts.
 ## Task 5: Endpoint, Session, group and generation integration (conditional)
 
 
-**Current bounded activation — 2026-10-14:** Task4 foundation and Task5 fixed endpoints are locally accepted. Managed H1 [groups/probes](m3-managed-h1-groups.md) now complete independent SPEC/CODE and fresh168/0, strict compile and formatcheck, at local commit `5ea088a9e3fe2646a056b2078f31a34f7adb6049`. The accepted H1 slices preserve dedicated defaults and independent cleanup. Execute the reviewed [Generation design](../designs/m3-managed-h1-generation.md) and [plan](m3-managed-h1-generation.md) next under continuing authorization; its runtime acceptance, other protocol variants and full Task5/M3 remain separate gates.
+**Current bounded activation — 2026-10-14:** Task4 foundation and Task5 fixed
+H1 endpoints are locally accepted. Managed H1 [groups/probes](m3-managed-h1-groups.md)
+complete independent SPEC/CODE and fresh168/0 at local commit
+`5ea088a9e3fe2646a056b2078f31a34f7adb6049`; managed H1
+[Generation](m3-managed-h1-generation.md) completes independent SPEC/CODE and
+fresh341/0 at `cb619569c7a18568981d3425845954ad04908ffb`. Both include scoped
+format and strict compile PASS. [H2 preparation](m3-managed-h2-preparation.md)
+is locally accepted at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`, with complete
+independent SPEC/CODE, fresh97/0 and public63/0, zero skips/exclusions, scoped
+format and strict compile PASS. Preparation supplies no live H2 reservation.
+The fixed-H2 design/plan has independent documentation readiness PASS;
+its implementation remains NOT RUN. Other H2 variants, standalone,
+complete Task5/M3 and sustained-load acceptance retain their separate gates.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,
 `http_fetch_client.ex`, `group_endpoint.ex`, `upstream_groups.ex`,

@@ -14,7 +14,7 @@ evidence, and advance to fixed-H2 activation after this package's gates pass.
 **Tech stack:** Elixir/OTP, ExUnit, HTTP0.21.4 public managed/H2 APIs, Python h2,
 OpenSSL, canonical Nix environment.
 
-Status: **VERIFIED LOCALLY; COMPLETE SPEC/CODE PASS; FRESH COMPATIBILITY97/0 AND PUBLIC63/0; LOCAL COMMIT NEXT**. Generation predecessor
+Status: **DONE LOCALLY at c871e3d9ee87cf802acf764d7d7622e0a7b611d6; COMPLETE SPEC/CODE PASS; FRESH COMPATIBILITY97/0 AND PUBLIC63/0**. Generation predecessor
 `cb619569c7a18568981d3425845954ad04908ffb` is accepted and locally committed.
 [Design](../designs/m3-managed-h2-preparation.md) is normative and immutable for
 the versioned collector. Parent records fresh readiness/ownership before writers. Continuing authorization replaces routine human
@@ -188,7 +188,7 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --wa
 - [x] Close acceptance ledger/checklists from executed evidence, preserving all
   failed attempts and counters. Distinguish prospective payload worksheet from
   native limits/live reservations and preparation from activation/full M3.
-- [ ] Check task-owned source/tests/docs/JSON whitespace and exact historical
+- [x] Check task-owned source/tests/docs/JSON whitespace and exact historical
   hashes; preserve raw log whitespace and unrelated user files. Stage only owned
   files and commit `feat(proxy): prepare bounded managed H2 policies and requests`.
 - [ ] Automatically form fixed-H2 activation design/plan with complete Gaoxy
