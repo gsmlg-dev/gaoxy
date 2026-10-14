@@ -1,6 +1,7 @@
 # M3 managed H1 groups and probes acceptance
 
-Status: **PASS — local implementation/runtime accepted; local commit PENDING**.
+Status: **DONE — managed H1 groups/probes accepted locally** at
+`5ea088a9e3fe2646a056b2078f31a34f7adb6049`.
 Independent complete SPEC then CODE review and fresh168/0, strict compile and
 formatcheck pass. All historical failures remain immutable. At kickoff,
 implementation and runtime acceptance were NOT RUN. The accepted fixed-endpoint predecessor is local
@@ -168,3 +169,8 @@ standalone managed-resource configuration and publication/deployment/production
 acceptance are not inferred. Groups counters remain unsuccessful GREEN2,
 production0, harness3, intentional diagnoses2 and SPEC0; inherited counters and
 Astra2/2 are unchanged. No original failed receipt or log was rewritten.
+
+## Local commit and handoff
+
+[Local commit receipt](evidence/m3/managed-h1-groups/1791934732834992397/groups-local-commit.json)
+records `5ea088a9e3fe2646a056b2078f31a34f7adb6049`, its tree and committed executable hash equality with fresh acceptance. The earlier acceptance/closure receipts keep their at-capture pending-commit status. All source, tests and evidence are now committed locally. Generation starts from the documentation successor after fresh readiness/kickoff, without routine approval. Publication/deployment and production remain NOT RUN.

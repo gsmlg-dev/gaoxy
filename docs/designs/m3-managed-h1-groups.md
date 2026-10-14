@@ -3,7 +3,7 @@
 Date: 2026-10-13 Asia/Shanghai; readiness updated 2026-10-14.
 Status: Local implementation/runtime acceptance **PASS**: independent complete
 SPEC then CODE and fresh168/0, strict compile and formatcheck pass. Local commit
-is pending document closure. The [acceptance ledger](../acceptance/m3-managed-h1-groups.md)
+`5ea088a9e3fe2646a056b2078f31a34f7adb6049` completes this bounded package. The [acceptance ledger](../acceptance/m3-managed-h1-groups.md)
 records exact source/log identities and preserves all historical failures. The
 original readiness review retains its predecessor snapshot.
 This bounded package follows full acceptance of

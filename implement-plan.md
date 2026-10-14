@@ -49,9 +49,7 @@ TCP/TLS8/0, strict compile and format PASS. Historical failed/rejected rounds
 remain in its [acceptance](docs/acceptance/m3-h1-resource-foundation.md).
 Task5 [fixed endpoint activation](docs/plans/m3-managed-h1-fixed-endpoint.md)
 is now **DONE locally** at `2bf0883cea1dce1a031016700bb012fb3faac8b5`: independent SPEC/CODE and fresh178/0, strict compile
-and formatcheck PASS; all historical failures remain preserved. The separately
-reviewed groups/probes and Generation designs/plans follow automatically under
-continuing authorization. No production pool
+and formatcheck PASS; all historical failures remain preserved. Managed H1 [groups/probes](docs/plans/m3-managed-h1-groups.md) are **DONE locally** at `5ea088a9e3fe2646a056b2078f31a34f7adb6049`: complete independent SPEC/CODE, fresh168/0 without skips/exclusions, strict compile and formatcheck PASS. All original failures remain in their [acceptance](docs/acceptance/m3-managed-h1-groups.md). The reviewed [Generation design/plan](docs/plans/m3-managed-h1-generation.md) follows automatically under continuing authorization; Generation implementation acceptance remains NOT RUN. No production pool
 activation acceptance is inferred from the foundation; the roadmap still ends
 at M4.
 

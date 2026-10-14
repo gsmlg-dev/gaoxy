@@ -15,7 +15,7 @@ public completion.
 **Tech stack:** Existing Elixir/OTP umbrella, ExUnit, HTTP Fetch/runtime 0.21.4
 public managed H1 APIs, local raw TCP/OTP TLS peers, qualified Nix environment.
 
-**Status:** Local implementation/runtime acceptance **PASS**, from fixed-endpoint successor `2e5f6767587abadb6fcdc63491cfa082a9106c42`: complete independent SPEC then CODE PASS, fresh168/0 with no exclusions/skips, strict compile and formatcheck PASS. Local commit is **PENDING**; historical failures remain recorded below. [Design](../designs/m3-managed-h1-groups.md) is the
+**Status:** Local implementation/runtime acceptance **PASS**, from fixed-endpoint successor `2e5f6767587abadb6fcdc63491cfa082a9106c42`: complete independent SPEC then CODE PASS, fresh168/0 with no exclusions/skips, strict compile and formatcheck PASS. Local implementation commit `5ea088a9e3fe2646a056b2078f31a34f7adb6049` is verified; historical failures remain recorded below. [Design](../designs/m3-managed-h1-groups.md) is the
 normative contract. The original readiness receipt preserves its earlier
 unfinished-predecessor snapshot; the parent records a fresh kickoff only after
 fixed-endpoint local closure. Required live and final acceptance boxes remain unchecked at kickoff.
@@ -273,7 +273,7 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix compile -
   reviews, peer/actor shutdown and exact evidence paths under parent acceptance.
   Distinguish PASS/FAIL/BLOCKED/NOT RUN. Unrelated failures remain visible without
   silent fixes; dependency defects follow upstream issue/blocker routing.
-- [ ] Parent stages only task-owned accepted files and commits locally with
+- [x] Parent stages only task-owned accepted files and commits locally with
   `feat(proxy): support managed H1 group members and probes`. No push/release.
   Proceed to Generation's readiness/kickoff automatically after this acceptance;
   do not describe this package as Generation/full Task 5/M3 completion.
@@ -316,3 +316,5 @@ snapshots. The [local acceptance receipt](../acceptance/evidence/m3/managed-h1-g
 links exact commands/logs and unchanged cumulative counters. Local commit and
 Generation kickoff follow document closure; this does not accept Generation or
 full M3. Original168/5 and both intentional diagnostic failures remain FAIL.
+
+Local commit `5ea088a9e3fe2646a056b2078f31a34f7adb6049` completes this package. The [commit receipt](../acceptance/evidence/m3/managed-h1-groups/1791934732834992397/groups-local-commit.json) verifies committed executable bytes against fresh acceptance. Generation readiness/kickoff follows automatically; no publication occurred.

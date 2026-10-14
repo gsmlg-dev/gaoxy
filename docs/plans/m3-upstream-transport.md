@@ -498,12 +498,7 @@ in the canonical environment; capture red then green with exact counts.
 ## Task 5: Endpoint, Session, group and generation integration (conditional)
 
 
-**Current bounded activation — 2026-10-13:** Task 4 is locally accepted. Execute
-[managed H1 fixed-endpoint design](../designs/m3-managed-h1-fixed-endpoint.md) and
-[plan](m3-managed-h1-fixed-endpoint.md) next. This first slice qualifies explicit
-fixed endpoints/Session/adapter while preserving dedicated defaults; group,
-probe/Generation and other protocol checklists below remain separate unexecuted
-gates. Continuing authorization replaces routine phase approval pauses.
+**Current bounded activation — 2026-10-14:** Task4 foundation and Task5 fixed endpoints are locally accepted. Managed H1 [groups/probes](m3-managed-h1-groups.md) now complete independent SPEC/CODE and fresh168/0, strict compile and formatcheck, at local commit `5ea088a9e3fe2646a056b2078f31a34f7adb6049`. The accepted H1 slices preserve dedicated defaults and independent cleanup. Execute the reviewed [Generation design](../designs/m3-managed-h1-generation.md) and [plan](m3-managed-h1-generation.md) next under continuing authorization; its runtime acceptance, other protocol variants and full Task5/M3 remain separate gates.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,
 `http_fetch_client.ex`, `group_endpoint.ex`, `upstream_groups.ex`,
@@ -512,7 +507,7 @@ Create tests: `apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs`,
 `apps/gaoxy_proxy/test/upstream_transport_generation_test.exs`.
 Existing generic HTTP Resources/Generation interfaces should suffice.
 
-- [ ] Add pure `HTTP.resources/1` and optional prepared transport validation;
+- [x] Add pure `HTTP.resources/1` and optional prepared transport validation;
   retain the existing dedicated H1 default. Return group plus deduplicated
   member transport handles, preserving the 64-handle sidecar bound. Bound
   candidate preparation pins and roll back only the candidate on failure.
@@ -521,7 +516,7 @@ Existing generic HTTP Resources/Generation interfaces should suffice.
   checks out transport once after cleanup activation, opens once and binds
   completion before enabling upload. Keep independent group and transport
   tokens and hold both until public request cleanup.
-- [ ] Integrate probes with the same immutable transport identity and existing
+- [x] Integrate probes with the same immutable transport identity and existing
   finite probe budget. Acquire holds outside group/transport owners; no owner
   call cycle or new probes on retiring generations. Preserve health semantics.
 - [ ] Change adapter options only through the verified public managed facade;
