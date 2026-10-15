@@ -1,0 +1,11 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
+@@ -316,7 +316,7 @@
+       # No caller, configuration or pure profile marker can enable this branch.
+       # Queued cancel/expired/DOWN handling is required before future gate removal:
+       # handle_continue executes before mailbox delivery.
+-      case ManagedH2GroupBoundary.activation() do
++      case apply(ManagedH2GroupBoundary, :activation, []) do
+         :ok ->
+           raw_result = @h2.open(options)
+ 

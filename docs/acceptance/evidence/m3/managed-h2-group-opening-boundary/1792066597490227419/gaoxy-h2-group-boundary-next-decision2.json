@@ -1,0 +1,39 @@
+{
+  "version": 2,
+  "status": "REVISED_FOR_INDEPENDENT_SPEC2",
+  "previous_review": "FAIL preserved immutable; no passing amendment claim",
+  "entry": "Requires accepted source-foundation local commit and independent SPEC2",
+  "api": [
+    "Boundary.prepare/4",
+    "Boundary.activation/0",
+    "Session.prepare_group_open(state,selected,now)",
+    "Session.drop_group_opening(state)",
+    "Session.group_open_result(state,result,now)"
+  ],
+  "findings": {
+    "BP-SPEC-01": "Upload actual PID|nil carried as {:group_bind,upload}; original handle unchanged; ready only after both binds.",
+    "BP-SPEC-02": "Exact id/config/max_inflight member threads H2 direct and handoff; awaiting %{handle:T,member:selected}; no duplicate config/root/global Session key; exact helper algebra frozen.",
+    "BP-SPEC-03": "Original started_at/activated_at clamps with old deadlines and signed64+1000 safety; pure helpers have no timers; actual callbacks reset once per changed validated transition, handoff identical deadlines reused.",
+    "BP-SPEC-04": "Preserve unique supplied T order; reject duplicates/invalid values only; no pure order authentication/new authority input.",
+    "OBS-07": "Exact H alias/T alias coherence and raw selected origin<=advertised max_url_bytes; shape never proves owner or instance authority."
+  },
+  "helper_algebra": {
+    "prepare_group_open": "{:ok,staged,:group_open}|{:error,finite_reason,dropped}",
+    "drop_group_opening": "group drop; exact identity no-op for non-group/fixed/H1/H3",
+    "group_open_result": "{:ok,bind_state,{:group_bind,upload}}|{:error,finite_reason,dropped}"
+  },
+  "context_keys": [
+    "group",
+    "instance",
+    "limits",
+    "deadline",
+    "opening_deadline",
+    "now"
+  ],
+  "cleanup_discriminator": "Classify raw atom/tuple cleanup_unconfirmed before generic finite_reason; emit {:cleanup_unconfirmed,flat_finite_atom}; preserve transport-selection-dependent stop/fail/hold.",
+  "gate": "Literal activation/0 {:error,:accounting_not_ready}, no runtime/test/caller flag bypass.",
+  "scope": "Only boundary module, Session, two pure test files; no AST/source tests, transfer API/Probe constructor, Options/owner/admission/reservation/fixed-projector edits.",
+  "accounting": "ACCOUNTING_NOT_READY; no reserve/activation; 9Q/8C/4K/2MiB unproved; fixed9444956 unchanged.",
+  "commands": "Read-only inspection and three assigned /tmp writes completed synchronously; no Mix/runtime/network/repo/index writes, no persistent process.",
+  "counters": "Design revision only; no implementation repair round/reset; Astra2/2 remains exhausted."
+}

@@ -1,0 +1,58 @@
+{
+  "kind": "LITERAL_GATE_COMPILER_DIAGNOSTIC",
+  "recorded_at_utc": "2026-10-15T12:52:26.692611+00:00",
+  "source_sha256": "e2ad522ed8f773dcdf41347166ac30082591cdb51f50769de075ef7c1218959b",
+  "root_cause": "Elixir1.18 infers literal error at direct static call and rejects unreachable :ok pattern under strict warnings; real compile failure retained.",
+  "hypothesis": "Fixed public apply avoids compile-time return-contract inference but executes same unconfigurable literal-denying function; no flag/spec/suppression.",
+  "results": [
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "elixirc",
+        "--warnings-as-errors",
+        "-o",
+        "/tmp/gaoxy-group-gate-compile-probe-beams",
+        "/tmp/gaoxy-group-gate-compile-probe.ex"
+      ],
+      "actual_exit": 0,
+      "timed_out": false,
+      "joined": true,
+      "elapsed_ms": 3073,
+      "log": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-gate-repair-probe1-1.log",
+      "log_sha256": "2f98d624cd45fa6b397dadf37f5f341c060b7cf1de399a4443cd84bac3d8666b",
+      "log_bytes": 98
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "elixir",
+        "-pa",
+        "/tmp/gaoxy-group-gate-compile-probe-beams",
+        "-e",
+        "{:error, :accounting_not_ready} = GaoxyGroupGateCompileProbe.activation(); :denied = GaoxyGroupGateConsumerCompileProbe.run(); IO.puts(\"literal gate and fixed apply consumer remain denied\")"
+      ],
+      "actual_exit": 0,
+      "timed_out": false,
+      "joined": true,
+      "elapsed_ms": 3725,
+      "log": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-gate-repair-probe1-2.log",
+      "log_sha256": "4960ed0e2d4a0a738691d1c175ca13a3f9dfaa420115d8c6aba6da58506fa43d",
+      "log_bytes": 150
+    }
+  ],
+  "actual_product_tests": "NOT RUN by this standalone diagnostic",
+  "repairSol": 1,
+  "astra": "2/2 exhausted"
+}

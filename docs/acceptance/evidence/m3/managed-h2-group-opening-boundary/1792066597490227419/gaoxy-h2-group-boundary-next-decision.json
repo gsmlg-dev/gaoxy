@@ -1,0 +1,48 @@
+{
+  "status": "DESIGN_AND_PLAN_COMPLETE_NON_LIVE",
+  "recommendation": "Implement pure prepare/4 plus immutable activation/0 and actual guarded Session selected-envelope install/pre-open/error-drop state helpers; keep Options/prepare and H2 Probe execution disabled. No AST/source-text unit tests or detached transfer APIs.",
+  "smallest_useful_dependency": true,
+  "why": "Pure source assembly exists but no actual selected-envelope install/drop path; detached all-phase ledger cannot source-prove missing transitions. Session dead path and permanent denial allow concrete implementation without live Fetch.",
+  "files_create": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex",
+    "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs"
+  ],
+  "files_modify": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex"
+  ],
+  "non_live_gate": {
+    "function": "ManagedH2GroupBoundary.activation/0",
+    "literal_return": [
+      "error",
+      "accounting_not_ready"
+    ],
+    "configurable": false,
+    "test_bypass": false
+  },
+  "key_repairs": [
+    "Use selected config protocol/client at checkout, not old group state.client; preserve raw selected URI and reject checked authority mismatch.",
+    "Return sanitized staged state before open callback; clear Neutral/selected config/group endpoint sidecars.",
+    "Return handle+URL-only state before bind callback; clear envelope/checked K on every error path.",
+    "Keep original completion, group/transport tokens/pins and managed_path through cleanup; bind transport-first."
+  ],
+  "numeric_hypotheses": {
+    "Q9_C8_K4": "UNPROVED_NOT_ADOPTED",
+    "extra_2097152": "UNPROVED_NOT_ADOPTED",
+    "global_reserve": "NONE"
+  },
+  "startup": "Future accounting obligation only: four transient caller/supervisor/init/returned-state roots; installed source binding still conditional. No startup validator/constructor in this package.",
+  "probe_recovery": "Future actual owner/Probe wiring obligation only: separate normal six-key/recovery four-key starts, narrow expanded member, preserve opaque original completion. No transfer validator/constructor/test in this package.",
+  "acceptance": "No source modification, Mix, tests, network or runtime performed by worker. Predecessor pure-source preliminary107/0 remains unaccepted until parent independent review.",
+  "inherited_astra": "2/2 exhausted; no round spent",
+  "outputs": [
+    "/tmp/gaoxy-h2-group-boundary-next-design.md",
+    "/tmp/gaoxy-h2-group-boundary-next-plan.md"
+  ],
+  "module_api": [
+    "prepare/4",
+    "activation/0"
+  ],
+  "tests": "Two pure files cover exact opening options and production Session state transitions. Gate dominance, callback routing and bypass exclusion belong to independent CODE review.",
+  "revision": "Parent-requested scope simplification; design choice only, no repair counter change or acceptance claim."
+}

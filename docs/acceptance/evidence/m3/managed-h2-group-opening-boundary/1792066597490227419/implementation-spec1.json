@@ -1,0 +1,551 @@
+{
+  "task_id": "h2_group_boundary_impl_spec",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent FULL IMPLEMENTATION SPEC review; not design readiness, independent CODE review, or final acceptance",
+  "recorded_at_utc": "2026-10-15T13:12:41.341645+00:00",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/implementation-candidate2.json",
+    "sha256": "0af470f7d045c3cb970241fc95a1c7142fc9609cdd05a97cfb54b29c20dec3cf",
+    "revision": 2,
+    "kind": "GROUP_OPENING_BOUNDARY_COMPLETE_IMPLEMENTATION_REVIEW_CANDIDATE"
+  },
+  "authentication": {
+    "source_inputs": 75,
+    "source_hash_mismatches": 0,
+    "evidence_entries": 78,
+    "evidence_hash_or_size_mismatches": 0,
+    "baseline_original_test_files": 41,
+    "baseline_original_test_mismatches": 0,
+    "final_reauthentication": "PASS immediately before report write; HEAD and all candidate inputs unchanged",
+    "exact_source_input_hashes": {
+      "AGENTS.md": "73b78c7642c2a38061aa23a36d4ffc2014e97ba7129766fbdb0d10f7e5fde9d4",
+      "apps/gaoxy_http/lib/gaoxy/http/resources.ex": "0e58a4f0badd2ba6d21b9f118c5b3f6c4d1070b4371e76e9dfc0656796f0907b",
+      "apps/gaoxy_http/test/managed_proxy_renderer_test.exs": "a683ab58d90bd38f2471d1f3f6b91b5c2626b3f2005bbbcbb507a25650e4d3ea",
+      "apps/gaoxy_http/test/native_proxy_seams_test.exs": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "fa49c98a914947e517436d41f2d8d0bacb15a5ed8cec3c085ba635bbe48e9138",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "82fa47d3cd53343b64afce1e9703defbe09dead95b8133baa86d455e604fdce1",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex": "c637b089bb10e0b59f93828785a0e5a0869b9b86c6932cb06cd8b1e305c8635a",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_preparation.ex": "ce238f3093a944b2970dbb9cd99372466fae37ecfb5eb2c45330fde4cdc3aca5",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "cc20a304f5d4c5930224a989a2ed65ee7f3162fe86a95276132c584e741f6473",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+      "apps/gaoxy_proxy/test/http3_guardian_test.exs": "94a9863d8370245e3def929b6916e47843e5575f6bb59e2942cb7803706747a8",
+      "apps/gaoxy_proxy/test/http3_proxy_test.exs": "b107014744298d0d9410d9f0581a32c3ac960616c23fbffe74a9312b38aafce1",
+      "apps/gaoxy_proxy/test/http3_session_client_test.exs": "fe7aeaa37d12309ecf4cd5a23673ba2841b4d2c09cf1c4f9b583f982e2910f0a",
+      "apps/gaoxy_proxy/test/http_fetch_completion_test.exs": "8ba39204655c2dbbc5f1159aa3185a909eb8ddf7ececcebc0cb9e56a3ccf7633",
+      "apps/gaoxy_proxy/test/http_fetch_contract_test.exs": "126c03a6b6a772087268246cdd69d92968289d64de744a6bd7391689c915a938",
+      "apps/gaoxy_proxy/test/http_headers_test.exs": "9163be89af3abafc34d99c5b5f8d89686e134db9149da7c0620b6b187c5d51bc",
+      "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs": "f9024c3d92edf7ee02dd71b1aa4f9430305c578e1d1c5772cc93e89398b3b32d",
+      "apps/gaoxy_proxy/test/http_proxy_tls_test.exs": "16e4fea603e3d92c7daeb6fe4a57d8d1c0ba65a2f45ebac3319d409d2d46411e",
+      "apps/gaoxy_proxy/test/http_proxy_wire_test.exs": "3e7caea54e57a51a04672be8774dd255e4fccb3475bdd3eb6c79b4d79fe36e08",
+      "apps/gaoxy_proxy/test/managed_h1_accounting_test.exs": "aadc6fd32cce205770eb8d5b048f000cf602058bbd2bca56b3d7f368cf34232c",
+      "apps/gaoxy_proxy/test/managed_h1_preparation_test.exs": "afe2370368735aac10bc21d0bef07870ea29820d37a3c5ebc69e673a40269d8b",
+      "apps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs": "a3423d905ad2a23a967144238360d449d4ab67a2fad096a4bcb4b4ed8aeb941a",
+      "apps/gaoxy_proxy/test/managed_h2_client_test.exs": "6f2589b54270c71e29928e98732bc58add253bbb0beca1aa16dfa0afdff45b15",
+      "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_control_bounds_test.exs": "a6ab15aa0a25bde48ad5f513467e963beb4e9e407b18986ed65adeb73e1e6691",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs": "31b58d5187ba76a5d20abcb5bba83718d773b8e670a71bf79a381c041ba5a416",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+      "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+      "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs": "c3d911b78c95e3f7a084016d5840c1047c4bc6ad0ae3092dd57abd465eec25d1",
+      "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs": "d758b7e160d2eb70a44fa88c7dfa90420f52a279cc80b4a820f64911161badd7",
+      "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs": "c998127c7690f04f0b303be40991f91528b1bd39676cd6aa30e57bf6d9ea31cb",
+      "apps/gaoxy_proxy/test/managed_h2_preparation_test.exs": "aa9da9b795f37c1d545b90adeb9236bb2b6829ba6f61ce41ea23fd84e00a2210",
+      "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+      "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+      "apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs": "8baf673c888b6f6c0c618f8b6ce73c632753d53107852a0e7efc666513855c62",
+      "apps/gaoxy_proxy/test/upstream_group_probe_test.exs": "94c7453ab8655a93ad78def0be66e49ce395f83a059f9a28be864005b5cc2c46",
+      "apps/gaoxy_proxy/test/upstream_group_proxy_test.exs": "9b94462d2c541e476db45dd793e6809aadab39d87f720894b0dc63e0da575f11",
+      "apps/gaoxy_proxy/test/upstream_group_tls_test.exs": "bbf800751bc4acc369703e1de3094a09c655ae144ac510f31f1770d5a387d9f3",
+      "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs": "0c38f950b30c414bd64a7ba495ceb384dde69284b725cf659e246c08b604b372",
+      "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs": "919741fdab882d0f50ef48e0b91d74e6a81228ddbdd4cd950876bcfc1fe57b67",
+      "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "403f72df8484ce5f1f1ef57490b2f5f14d3a5bbd54144765a303b80b55af1b28",
+      "apps/gaoxy_proxy/test/upstream_groups_test.exs": "395cb0def7dff55acabd682f7a234ebbf08b270c587b97af0a69b19b67edf632",
+      "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs": "a1ac5404a8d4c7a2ed38ded5cac279ad9eba7ac0d74a2160b3cfd65ee0af6939",
+      "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs": "63c521979cee9ecea809c1bf78e00e121f97e7b7a65d416d70cf5b620a84b9f4",
+      "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs": "28ed90ca1a0050828c39bf334bed2b6d3838516e7087ec788af9c6febeac2741",
+      "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs": "d9f39a71a400d8ea0ab1e8a4961cff1a99af2c8a141b750976fc0a6050da8cd1",
+      "apps/gaoxy_proxy/test/upstream_transport_identity_test.exs": "5cc3a4524131297162e33dec1c7db872d98c58ffc7a28db270e47ea03946117e",
+      "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+      "apps/gaoxy_proxy/test/upstream_transports_options_test.exs": "586272ed6d002fd63b337ed8efa11a4cb2f0f42ebe066b066054ffb2f3f831a9",
+      "apps/gaoxy_proxy/test/upstream_transports_test.exs": "a74e5b19e9d1f0a1725f2df57cf29d38b6ede2d8a042cb900bf2702ebec7c208",
+      "deps/elixir_quic/mix.exs": "dcd364f428290923d41250c82d6b66368e2ffd4bb80be7459fd87dc0b649380b",
+      "deps/elixir_quic_http3/mix.exs": "af2bb4c6b72e4c18eb78582f3259ac217ab3db39a33b7f5c34b44ca72a74aa04",
+      "deps/ex_ssl/mix.exs": "133b76236f4416339f9e17d8179a3120ec746de5d632d8f355d1fda604e8261d",
+      "deps/http_core/mix.exs": "fc97ce92d690b50cef67dd965792461dfd7031fc0497b165a78f8f626f5d1076",
+      "deps/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+      "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+      "deps/http_fetch/mix.exs": "3e9821a577d5aabe77a13194eb81f3e9859c64a45f0ab766c186ee844e03866e",
+      "deps/http_runtime/mix.exs": "55662fccdb0fd534e18d48419fbf7e5f2fd7219fe20c5b1388dd95645f23610a",
+      "deps/http_web_socket/mix.exs": "dda5f5525b806773d24fabe8ace536376ea61a2ff98bae747a609ec41848535d",
+      "docs/acceptance/m3-managed-h2-group-opening-boundary.md": "3694d7f55d1c597b4bc077f4b8b8e9b5817579e0f2f2331e3b8522fdc34650bd",
+      "docs/designs/m3-managed-h2-group-opening-boundary.md": "0fa0b754f95559f0e393167f94bf17388d6a9605105c87c810c09ae206253ca5",
+      "docs/plans/m3-managed-h2-group-opening-boundary.md": "75dae30372dafee35eaece70e162953b19291a06d57abcc11d3343640cda3dd3",
+      "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+      "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+      "implement-plan.md": "743ef6e5c17f14396324985387dc26dc1092df060afce306d274b7734645005d",
+      "mix.exs": "28ff09d55e29e3e8303f915f8deb3cf0cc6cb81d5231744ee82b74810defeae3",
+      "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6"
+    },
+    "initial_green_summary_sha256": "41bbbcf9f437bdd5da4140eeb11aad326282d60d17c1865b7753f51b41444a84",
+    "design_readiness_spec2_sha256": "3812acd7249afc699b43fa4ba9e0f846cd82ed26bf4d9014a3df1c6cefd735b8",
+    "custody_failure2_sha256": "7f5fe54ddf85290689ef739e785b2c5277838e79e3d89511d3cda9658bb9cb64"
+  },
+  "root_cause_and_evidence": "No actionable implementation specification defect found. Previously failed design, compile, compatibility and custody attempts remain failure evidence. Fixed public apply preserves literal denial; optional classifier repair preserves legacy minimal control states and unchanged assertions.",
+  "requirements_coverage": [
+    {
+      "id": "GB-IMPL-SPEC-01",
+      "requirement": "Scope and entry",
+      "verdict": "PASS",
+      "evidence": "Only the four adopted implementation/test files and scoped root documents/evidence changed. Public Options/owner prepare, Probe, HTTP admission, dependency APIs, reservation and fixed projector are unchanged. Source feature and documentation closure precede implementation entry.",
+      "source_refs": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:3-11",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:13-15",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:19-63"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-02",
+      "requirement": "Exact Selected and context",
+      "verdict": "PASS",
+      "evidence": "Exact compact id/config/max_inflight and six-key context are validated before construction. Config is the accepted fixed H2 schema; instance is PID shape only. Boundary exports prepare/4 and activation/0 only.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:11-68",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:206-278"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-03",
+      "requirement": "Group and flattened resource bounds",
+      "verdict": "PASS",
+      "evidence": "Exact eight-key H2 H and proper unique 1..32 exact transport shells are checked before flattened resource validation; 33 handles fit the existing 64/65536 manifest. Supplied unique order is preserved without authority inference.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:75-115",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:598-637",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:280-385",
+        "apps/gaoxy_http/lib/gaoxy/http/resources.ex:10-26"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-04",
+      "requirement": "Neutral validation and upload reduction",
+      "verdict": "PASS",
+      "evidence": "Original compact Neutral is validated before reducing only max_upload_bytes by effective chunk. Accepted Envelope assembly preserves fields/count/body/content length and effective pseudoheader checks.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:29-50",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:76-204",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex:43-68"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-05",
+      "requirement": "Checked policy and raw URL",
+      "verdict": "PASS",
+      "evidence": "Selected T membership and checked-client exact public schema/protocol are required. Normalized protocol/scheme/lowercase host/port mismatch rejects; raw root, escape case, leading slashes and empty query survive. Both advertised root+target and actual root+target are bounded, raw root <= advertised cap and8192.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:34-44",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:143-150",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:387-505",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1105-1126"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-06",
+      "requirement": "Effective limits and exact options",
+      "verdict": "PASS",
+      "evidence": "Five validated per-key minima and exact seven-key client options are returned without config/member/Neutral sidecars. Absolute signed64 deadlines and positive remaining intervals are bounded; deadline retains1000 cleanup headroom.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:24-60",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:117-141",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:39-74",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:507-592"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-07",
+      "requirement": "Actual direct Selected threading",
+      "verdict": "PASS",
+      "evidence": "Owner Selected/token is retained exactly, H2 intent routes before generic fallback, direct transport=nil fails schema instead of dedicated fallback. H2 checkout returns the same Selected without old-state.client URI rewrite; checked client is installed in state.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1047-1140",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1176-1197",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:52-57"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-08",
+      "requirement": "Actual handoff Selected and deadline",
+      "verdict": "PASS",
+      "evidence": "Awaiting has handle/member only; notification has finite identity/ref/handle/deadline without member/config copy. Matching ref, exact aliases and single delegated pin are required. Awaiting clears before checkout; finite response deadline clamps total and opening. Existing HTTP pump responds with total deadline, so clarified non-equality contract is source-supported.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:133-188",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1069-1095",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:712-755",
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:33-37"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-09",
+      "requirement": "H/T aliases before drop",
+      "verdict": "PASS",
+      "evidence": "Exact config.group/selector/selection H and awaiting member/handle, transport selection and delegated pin T coherence are checked before sanitization. Sanitized staged/bind states require exact finite controls and original remaining ledgers. This proves coherence only.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:534-596",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:755-780",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:99-152"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-10",
+      "requirement": "Pure helper algebra and sanitized stage",
+      "verdict": "PASS",
+      "evidence": "The three production pure helpers implement the exact success/error tuples, explicit now inputs and no timer/process effects. Staged config is limits-only, request_options is the sole tagged options root, cleared aliases are nil, stable H2 cleanup classification is set first, and ledgers/handles/monitors/service controls survive.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:373-507",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:826-833",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:17-97",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:253-302"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-11",
+      "requirement": "Non-group identity and idempotent drop",
+      "verdict": "PASS",
+      "evidence": "Drop is identity for non-group/fixed H2/H1/H3, including optional group fields absent in legacy minimal states. Group drop is idempotent; invalid limit payloads become failure-only limits:nil. No top-level Session key is added.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:413-436",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:509-532",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:908-960",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:253-328"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-12",
+      "requirement": "Original anchors and finite arithmetic",
+      "verdict": "PASS",
+      "evidence": "Shared timing uses started_at+effective lifetime and activated_at+effective opening, clamps old absolute deadlines, validates anchors/additions/subtractions signed64 and cleanup headroom, and returns cancellation/total/opening errors without renewing from now.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:658-712",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:180-251"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-13",
+      "requirement": "Actual timer placement",
+      "verdict": "PASS",
+      "evidence": "Handoff installs reduced timers before notification; resume rearms only when response changes deadlines; preparation retains identical handoff refs and direct preparation applies once. Pure helpers never call generic apply_limits. Continuation recomputes only remaining intervals from stored absolute deadlines.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:148-159",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:303-318",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:782-811",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:826-829",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1069-1095"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-14",
+      "requirement": "Literal denial and callback dominance",
+      "verdict": "PASS",
+      "evidence": "Actual group open is exclusively in :ok branch after staged validation/local status and fixed apply(ManagedH2GroupBoundary,:activation,[]). Callee/arity/arguments are constants and literal activation returns accounting_not_ready; no override or authority flag exists. Gate denial drops and locally settles unavailable.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:68",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:303-350",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:594-599"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-15",
+      "requirement": "Original public handle and upload carrier BP-SPEC-01",
+      "verdict": "PASS",
+      "evidence": "Supported completion facade validates original handle/Promise/Task shell and strict completion identity. Result stores the original public handle unchanged in request and original_request, keeps only submitted URL and returns group_bind with PID|nil independent of stream. Late success captures original completion before deadline/cancel rejection.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:445-471",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:497-507",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:54-57",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:456-488",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:330-389"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-16",
+      "requirement": "Result failures and finite enums",
+      "verdict": "PASS",
+      "evidence": "Malformed success yields explicit cleanup_unconfirmed invalid_response without retaining arbitrary handle. Ordinary raw errors normalize only through existing finite vocabulary/wrappers; local errors remain finite and drop opening payloads.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:473-505",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1293-1345",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:367-439"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-17",
+      "requirement": "Cleanup-unconfirmed before normalization",
+      "verdict": "PASS",
+      "evidence": "Raw atom and tuple cleanup_unconfirmed precede generic errors; flat cause is retained only from existing finite atoms. Callback handles explicit discriminator before ordinary errors and sends it without legacy normalization. Missing transport selection stops with hold; selected path settles preserving original request/ledgers and conservative unbound completion hold.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:327-338",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:473-503",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:815-824",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:438-439",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:441-463"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-18",
+      "requirement": "Bind-to-ready and cleanup ownership",
+      "verdict": "PASS",
+      "evidence": "Group bind validates finite carrier/original handle and staged controls, binds the same completion transport-first then group, and notifies ready with upload/effective limits/deadline only after both succeed. Failed bind and all terminal paths drop URL/options; original completion then transport finish/pins, group finish and Service cleanup order is unchanged. Local errors use neutral/cancelled health; attempted ordinary errors use existing upstream_fail policy.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:352-370",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:813-824",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:879-923",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:952-1038",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1199-1242"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-19",
+      "requirement": "Pure tests and preserved assertions",
+      "verdict": "PASS",
+      "evidence": "Both complete new test files execute pure production interfaces only with public-shaped fixtures; no Session/owner process, timer, Fetch/client.open, completion await, network, source-text/AST test or adapter. Exact state checks cover both protocols, aliases, limits, raw URL, anchors, original-handle/upload, malformed success, every result/drop family and non-group identity. All41 original files match baseline.",
+      "source_refs": [
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs:1-737",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs:1-669",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:19-66"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-20",
+      "requirement": "Claims, evidence and continuing gates",
+      "verdict": "PASS",
+      "evidence": "Initial actual green receipts authenticate exact implemented code and complete7/36 file lists, with153/603 executed and zero failures/skips/exclusions. Expected RED23+23, first compileFAIL and compat603/4, both repairs and unreleased candidate1 custody failure are preserved. Documents explicitly leave full implementation reviews, fresh gates, commit, activation/accounting, live groups/Probe/network/browser, publication and deployment unaccepted. No adopted requirement/assertion weakened.",
+      "source_refs": [
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md:3-19",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:68-91",
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:90-100",
+        "implement-plan.md",
+        "initial-green-summary1.json"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-21",
+      "requirement": "BP-SPEC-02/03/04 and OBS-07 closure",
+      "verdict": "PASS",
+      "evidence": "Full implementation covers exact member/algebra, original anchors/timers, supplied order without pure authority and H/T/root coherence. Readiness SPEC2 remains separate historical design acceptance. Clarified response deadline follows unchanged HTTP callback wire contract, rather than waiving a runtime requirement.",
+      "source_refs": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:21-37",
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:41-84",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:50-66",
+        "design-readiness-spec2.json",
+        "handoff-deadline-source-clarification1.json"
+      ]
+    },
+    {
+      "id": "GB-IMPL-SPEC-22",
+      "requirement": "Future obligation preservation",
+      "verdict": "PASS",
+      "evidence": "Startup four-root/temporary args, complete request/probe/recovery wrappers and overlaps, normal Probe and recovery narrowing, real owner-record/instance authority, admission and queued cancel/DOWN before gate removal remain explicit future consumer-wired work. No Q/C/K/memory hypothesis, reserve or pure marker is accepted as accounting authority; fixed9444956 and ACCOUNTING_NOT_READY remain.",
+      "source_refs": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md:76-92",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md:76-81",
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md:17-19"
+      ]
+    }
+  ],
+  "actionable_findings": [],
+  "unresolved_findings": [],
+  "authenticated_initial_runtime_gates": {
+    "format": {
+      "receipt": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/format-1792069339333595147.json",
+      "sha256": "93671de474030f3a8b0c2dce4df0382193748c36f74f3ba952e4a4e31f157f13",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs"
+      ],
+      "actual_exit": 0,
+      "executed": 0,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "process_joined": true,
+      "log_sha256": "2f98d624cd45fa6b397dadf37f5f341c060b7cf1de399a4443cd84bac3d8666b"
+    },
+    "compile": {
+      "receipt": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-1792069371512144138.json",
+      "sha256": "98d13964c73c742742071bb487536774cf8f4499c8fe7065889b2cf14751c3fc",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "compile",
+        "--warnings-as-errors",
+        "--force"
+      ],
+      "actual_exit": 0,
+      "executed": 0,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "process_joined": true,
+      "log_sha256": "c0aa8341b407156adfd09b4991eb15b4c0139ddbf3c6991a3a3eb450b1056e8a"
+    },
+    "pure": {
+      "receipt": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/green-repair2-1792069398348390384.json",
+      "sha256": "8b4fe250e5cd7f531e15e731b512c3a7ace31918d6dac76f64ae774225e4624f",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_preparation_test.exs",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "--seed",
+        "33012"
+      ],
+      "actual_exit": 0,
+      "executed": 153,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "process_joined": true,
+      "log_sha256": "1501edd8ef6f52c8ab0b7bc9708c19eceabc62fcf0c6fcb0397ac24320fec36b"
+    },
+    "compatibility": {
+      "receipt": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compatibility-1792069407560639712.json",
+      "sha256": "5b2ecee0a6ec9962000fa0c64183bcb4497e2d88e4990d010bd10d4d341c56e9",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+        "apps/gaoxy_proxy/test/http3_proxy_test.exs",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+        "apps/gaoxy_proxy/test/http_fetch_completion_test.exs",
+        "apps/gaoxy_proxy/test/http_fetch_contract_test.exs",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_tls_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_accounting_test.exs",
+        "apps/gaoxy_proxy/test/managed_h1_preparation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_client_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_control_bounds_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_member_limits_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_tls_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_identity_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_test.exs",
+        "apps/gaoxy_proxy/test/upstream_groups_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_proxy_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_probe_test.exs",
+        "apps/gaoxy_http/test/managed_proxy_renderer_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "--seed",
+        "33012"
+      ],
+      "actual_exit": 0,
+      "executed": 603,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "process_joined": true,
+      "log_sha256": "75146d6e12b543ecf070e0b197ec3b5fb4b7e81c5ffc77a8a4b703a1530a3a8a"
+    }
+  },
+  "runtime_environment_evidence": {
+    "toolchain_receipt_sha256": "6dc6618ff1c2fe5adac547b6252dae43a85ec1933ab569dca0abf618ea01231e",
+    "observed_from_preserved_toolchain_log": "Elixir1.18.5 compiled with OTP28; Erlang/OTP28 erts16.4.0.6; 64bit; schedulers2:2; Nix develop, MIX_ENV=test",
+    "reviewer_runtime_execution": "NOT RUN; read-only assignment prohibits Mix/build/tests/format/network"
+  },
+  "review_limits_and_unknowns": [
+    "Independent CODE review and fresh postreview runtime gates are still PENDING and required before bounded-package acceptance or local commit.",
+    "No actual live H2 group/Probe/Fetch or group owner-admission path was enabled or exercised; pure shells prove shape/coherence only, not live provenance or ordered owner authority.",
+    "Queued cancel/expired/DOWN mailbox behavior remains an explicit pre-gate-removal obligation; handle_continue precedes mailbox processing.",
+    "Group memory/accounting hypotheses9Q/8C/4K/extra2097152/total11542108 remain UNPROVED_NOT_ADOPTED; fixed9444956 unchanged and activation ACCOUNTING_NOT_READY.",
+    "Publication/deployment/production acceptance NOT RUN and not conferred by this report."
+  ],
+  "scope_and_command_closure": {
+    "repository_index_runtime_mutations": 0,
+    "reviewer_written_files": [
+      "/tmp/gaoxy-h2-group-boundary-implementation-spec1.json"
+    ],
+    "observed_task_diff": "Expected root-owned session.ex and implement-plan.md tracked edits plus new boundary module/two tests/scoped docs/evidence. No other writer edits made by reviewer.",
+    "commands": "Read-only pwd/git status/rev-parse/show/diff, rg, cat/sed/nl/tail and synchronous Python hash/JSON audits. Final command writes this single assigned /tmp JSON. No Mix/build/test/format/network, child agent, commit, index or repository write.",
+    "shutdown": "All prior own commands completed synchronously; no persistent command or process started. Report writer completes synchronously."
+  },
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "boundary_cumulative": "implementation1/repairSol2/strictCompileFailure1/compatibilityFailure1/pure unsuccessfulGREEN0; expectedRED46 separate; boundary design failedSPEC1; design-manifest custodyfailure1; stage custodyfailure2 preserved",
+    "inherited": "source-foundation repairSol1/failedSPEC1/custodyfailure1/intendedRED1/unsuccessfulGREEN0; fixedSol19; fixtureSol20 RED1/GREEN1; collectorSol17/full58 failed2; remaining inherited counters unchanged",
+    "astra_recovery": "2/2 exhausted; no third round",
+    "astra_gate": null
+  },
+  "decisions_needed": [],
+  "next_gate": "Independent full CODE review on this authenticated candidate, then root fresh scoped format/forced strict compile/pure/compatibility gates; no final acceptance claim."
+}

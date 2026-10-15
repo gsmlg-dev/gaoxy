@@ -1,0 +1,380 @@
+{
+  "task_id": "h2_group_boundary_impl_code",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent FULL IMPLEMENTATION CODE review after full implementation SPEC PASS; read-only repository",
+  "recorded_at_utc": "2026-10-15T13:18:15.352053+00:00",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/implementation-candidate2.json",
+    "sha256": "0af470f7d045c3cb970241fc95a1c7142fc9609cdd05a97cfb54b29c20dec3cf",
+    "revision": 2
+  },
+  "preceding_spec": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/implementation-spec1.json",
+    "sha256": "2c5f8df57fffcc94caff58a6ae0a4a62dd51c28a4ff0a76ac534913077fc6775",
+    "verdict": "PASS",
+    "findings": 0
+  },
+  "authentication": {
+    "source_inputs": 75,
+    "source_mismatches": 0,
+    "immutable_evidence_entries": 78,
+    "evidence_hash_or_size_mismatches": 0,
+    "baseline_original_test_files": 41,
+    "baseline_original_test_mismatches": 0,
+    "final_reauthentication": "PASS immediately before report write; actual HEAD and all candidate inputs unchanged",
+    "owned_code_hashes": {
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex": "c637b089bb10e0b59f93828785a0e5a0869b9b86c6932cb06cd8b1e305c8635a",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "82fa47d3cd53343b64afce1e9703defbe09dead95b8133baa86d455e604fdce1",
+      "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs": "c3d911b78c95e3f7a084016d5840c1047c4bc6ad0ae3092dd57abd465eec25d1",
+      "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs": "d758b7e160d2eb70a44fa88c7dfa90420f52a279cc80b4a820f64911161badd7"
+    }
+  },
+  "reviewed_files": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+    "apps/gaoxy_proxy/test/managed_h2_group_boundary_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs",
+    "docs/designs/m3-managed-h2-group-opening-boundary.md",
+    "docs/plans/m3-managed-h2-group-opening-boundary.md",
+    "docs/acceptance/m3-managed-h2-group-opening-boundary.md",
+    "implement-plan.md"
+  ],
+  "checks": [
+    {
+      "id": "CODE-01",
+      "status": "PASS",
+      "conclusion": "Exact owner Selected3 survives direct/group checkout; no reconstruction or H2 dedicated fallback.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1049",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1069",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1105"
+      ]
+    },
+    {
+      "id": "CODE-02",
+      "status": "PASS",
+      "conclusion": "H2 intent classification precedes legacy group fallback and malformed H2 input fails group-specific validation.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:503",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:546",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1060"
+      ]
+    },
+    {
+      "id": "CODE-03",
+      "status": "PASS",
+      "conclusion": "Handoff retains exactly handle/member, matches ref, clears awaiting before checkout and threads the same Selected.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:133",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:140",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:158",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1091"
+      ]
+    },
+    {
+      "id": "CODE-04",
+      "status": "PASS",
+      "conclusion": "Handoff response validates finite deadline and delegated pin, clamping total/opening budgets without extension.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:137",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:144",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:148"
+      ]
+    },
+    {
+      "id": "CODE-05",
+      "status": "PASS",
+      "conclusion": "Config/selector/selection H aliases and awaiting/member/transport-selection T aliases agree with transport membership and exact pin coverage.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:546",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:569",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:581",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:755"
+      ]
+    },
+    {
+      "id": "CODE-06",
+      "status": "PASS",
+      "conclusion": "H2 checkout validates selected protocol/normalized authority and preserves original raw URI; old-client URI rewrite remains in legacy checkout only.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1114",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1120",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1123",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1181"
+      ]
+    },
+    {
+      "id": "CODE-07",
+      "status": "PASS",
+      "conclusion": "Boundary validates original compact Neutral, exact Selected/context/checked/group shape and complete flattened resource manifest before assembly.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:11",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:30",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:75"
+      ]
+    },
+    {
+      "id": "CODE-08",
+      "status": "PASS",
+      "conclusion": "Unique supplied transport orders remain intact; duplicates reject; shape/membership are explicitly coherence only.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:90",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:143"
+      ]
+    },
+    {
+      "id": "CODE-09",
+      "status": "PASS",
+      "conclusion": "Raw selected root independently respects advertised bound; original root/target, escapes, leading slashes and empty query survive assembly.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:42",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:51"
+      ]
+    },
+    {
+      "id": "CODE-10",
+      "status": "PASS",
+      "conclusion": "Upload reduction follows original Neutral validation; return contains exactly seven options and five per-key minimum limits.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:33",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:46",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:53",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:133"
+      ]
+    },
+    {
+      "id": "CODE-11",
+      "status": "PASS",
+      "conclusion": "Shared selected-limit arithmetic uses original started/activated anchors with signed64 arithmetic, cleanup headroom and finite intervals.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:655",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:684"
+      ]
+    },
+    {
+      "id": "CODE-12",
+      "status": "PASS",
+      "conclusion": "Preparation/result/drop are pure state transformations with explicit now, no timers/clocks/process effects and no new top-level state key.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:373",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:415",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:438"
+      ]
+    },
+    {
+      "id": "CODE-13",
+      "status": "PASS",
+      "conclusion": "Handoff installs reduced timers before wait; resume rearms changed deadlines only; identical prepare retains refs; direct preparation applies once, bypassing generic apply_limits.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:156",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:782",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:829",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1089"
+      ]
+    },
+    {
+      "id": "CODE-14",
+      "status": "PASS",
+      "conclusion": "Sanitized staged state releases predecessor aliases before internal group_open continuation; no Selected/config sidecar remains.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:393",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:420",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:826"
+      ]
+    },
+    {
+      "id": "CODE-15",
+      "status": "PASS",
+      "conclusion": "Sole new group open is dominated by fixed apply(ManagedH2GroupBoundary,:activation,[]) and a literal one-clause accounting_not_ready denial without override.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:303",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:321",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:323"
+      ]
+    },
+    {
+      "id": "CODE-16",
+      "status": "PASS",
+      "conclusion": "Continuation validates stage/cancel/consumed/deadlines, recomputes remaining intervals only and locally fails denial with cancelled neutral outcome.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:306",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:308",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:339",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:813"
+      ]
+    },
+    {
+      "id": "CODE-17",
+      "status": "PASS",
+      "conclusion": "Public completion facade and strict original handle identity are preserved; PID-or-nil upload is carried independently of handle.stream.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:449",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:493",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:325",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:347"
+      ]
+    },
+    {
+      "id": "CODE-18",
+      "status": "PASS",
+      "conclusion": "Late valid success captures original completion before cancellation/deadline checks; malformed success becomes finite cleanup-unconfirmed.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:449",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:482"
+      ]
+    },
+    {
+      "id": "CODE-19",
+      "status": "PASS",
+      "conclusion": "Bind validates handle/carrier, binds transport then group, and sends ready/upload only after both succeed; failures drop payloads and retain ledgers.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:347",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:358",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1207"
+      ]
+    },
+    {
+      "id": "CODE-20",
+      "status": "PASS",
+      "conclusion": "Raw cleanup-unconfirmed atom/tuple precede generic normalization and ordinary error dispatch, with finite dedicated discriminator.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:329",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:468",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:487",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:815"
+      ]
+    },
+    {
+      "id": "CODE-21",
+      "status": "PASS",
+      "conclusion": "Cleanup uncertainty retains selection/pins/managed classification and original completion; completion-to-transport/pins-to-group-to-Service ordering remains unchanged.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:955",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1005",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1226"
+      ]
+    },
+    {
+      "id": "CODE-22",
+      "status": "PASS",
+      "conclusion": "Drop is group-only/idempotent, clears opening aliases/URL and preserves handles/ledgers; fixed H2/H1/H3 identity and all41 original tests/projector remain unchanged.",
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:415",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:906",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:951"
+      ]
+    }
+  ],
+  "findings": [],
+  "recorded_initial_gate_evidence": [
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/format-1792069339333595147.json",
+      "sha256": "93671de474030f3a8b0c2dce4df0382193748c36f74f3ba952e4a4e31f157f13",
+      "actual_exit": 0,
+      "tests_executed": 0,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "process_joined": true,
+      "recorded_source_stable": true,
+      "candidate_source_matches": 56,
+      "postgate_updated_document_paths": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md",
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md",
+        "implement-plan.md"
+      ],
+      "log_authenticated": true,
+      "reviewer_execution": false
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-1792069371512144138.json",
+      "sha256": "98d13964c73c742742071bb487536774cf8f4499c8fe7065889b2cf14751c3fc",
+      "actual_exit": 0,
+      "tests_executed": 0,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "process_joined": true,
+      "recorded_source_stable": true,
+      "candidate_source_matches": 56,
+      "postgate_updated_document_paths": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md",
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md",
+        "implement-plan.md"
+      ],
+      "log_authenticated": true,
+      "reviewer_execution": false
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/green-repair2-1792069398348390384.json",
+      "sha256": "8b4fe250e5cd7f531e15e731b512c3a7ace31918d6dac76f64ae774225e4624f",
+      "actual_exit": 0,
+      "tests_executed": 153,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "process_joined": true,
+      "recorded_source_stable": true,
+      "candidate_source_matches": 56,
+      "postgate_updated_document_paths": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md",
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md",
+        "implement-plan.md"
+      ],
+      "log_authenticated": true,
+      "reviewer_execution": false
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compatibility-1792069407560639712.json",
+      "sha256": "5b2ecee0a6ec9962000fa0c64183bcb4497e2d88e4990d010bd10d4d341c56e9",
+      "actual_exit": 0,
+      "tests_executed": 603,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "process_joined": true,
+      "recorded_source_stable": true,
+      "candidate_source_matches": 56,
+      "postgate_updated_document_paths": [
+        "docs/designs/m3-managed-h2-group-opening-boundary.md",
+        "docs/plans/m3-managed-h2-group-opening-boundary.md",
+        "docs/acceptance/m3-managed-h2-group-opening-boundary.md",
+        "implement-plan.md"
+      ],
+      "log_authenticated": true,
+      "reviewer_execution": false
+    }
+  ],
+  "verification_commands_and_actual_results": [
+    "Read-only pwd/git status --short/git rev-parse HEAD: assigned worktree/baseline, expected existing candidate changes.",
+    "Python SHA256/byte audit:75 source and78 immutable evidence entries matched candidate2.",
+    "Read-only git show baseline:path plus SHA256:all41 existing tests unchanged.",
+    "Read full four implementation/test files, adopted design/plan/acceptance and implement-plan checkpoint; traced public Envelope/completion and actual handoff/bind/finish paths.",
+    "Authenticated recorded gate receipt/log hashes, actual exits/counts, joined commands and source stability. Four post-gate document checkpoint updates are explicitly distinguished from the56 matching implementation/runtime/test source identities.",
+    "No Mix/build/tests/format/network/agents or runtime commands executed by reviewer.",
+    "One reviewer-only read audit initially asserted all60 historical gate inputs equal candidate documents; it stopped before writing the report. Diagnostic inspection isolated exactly the four known adopted document checkpoint updates. No repository mutation or implementation repair resulted."
+  ],
+  "cumulative_counters": {
+    "boundary": "implementation1/repairSol2/strictCompileFailure1/compatibilityFailure1/pure unsuccessfulGREEN0; intendedRED46 separate; manifest custodyfailure2",
+    "inherited": "All prior counters remain unchanged, including source-foundation repairSol1/failedSPEC1/custodyfailure1/intendedRED1/unsuccessfulGREEN0 and predecessor fixed/collector/fixture/evidence counters.",
+    "astra_recovery": "2/2 exhausted; none requested or run",
+    "reviewer_repairs": 0
+  },
+  "command_shutdown_status": "All reviewer commands completed synchronously; no persistent/runtime process started or other process touched. All four recorded initial gate receipts process_joined=true.",
+  "repository_mutations": "NONE; only assigned /tmp JSON report written, no Git/index mutation",
+  "remaining_risks_and_limits": [
+    "PASS is source CODE review of this staged denied boundary, not final acceptance or fresh runtime execution. Root must run fresh prescribed gates before local commit.",
+    "ACCOUNTING_NOT_READY remains literal. Live groups/Probe, protocol-aware owner/Probe compatibility, startup/recovery/accounting/reserve, queued-mailbox handling, group network/browser/lifecycle and VM memory acceptance remain outside this bounded package.",
+    "Queued cancel/expired/DOWN must be addressed before future gate removal because handle_continue precedes mailbox delivery.",
+    "Inherited negative TLS cleanup remains unconfirmed with retained failure; no new cleanup/accounting or production claim.",
+    "No Options/owner/Probe/HTTP admission/dependency/reserve/fixed-projector change; no publication/deployment acceptance."
+  ],
+  "decisions_needed": [],
+  "astra_gate": null
+}

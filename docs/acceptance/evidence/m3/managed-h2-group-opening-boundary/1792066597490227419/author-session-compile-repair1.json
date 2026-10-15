@@ -1,0 +1,56 @@
+{
+  "task_id": "h2_group_session_author_compile_repair1",
+  "status": "RECOMMENDED_REPAIR_PENDING_ROOT_ACTUAL_STRICT_COMPILE",
+  "assignment": "direct bounded source-only diagnosis; /tmp report and minimal patch only",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "current_session_sha256": "64963d8f2384e7d6c107273213cecd75147b55d2c76510c95830efc8fc85c4f4",
+  "current_boundary_sha256": "c637b089bb10e0b59f93828785a0e5a0869b9b86c6932cb06cd8b1e305c8635a",
+  "failed_candidate_sha256": "b482bb1353128e7bb9770ab6bdc892ea297a59230b4a624db977319312c1c21c",
+  "root_cause": {
+    "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-1792068523965426013.log",
+    "actual_result": "strict compile exit1; no GREEN product tests ran",
+    "error": "Session :ok clause will never match because direct ManagedH2GroupBoundary.activation() has inferred type dynamic({:error, :accounting_not_ready})",
+    "diagnosis": "The required dormant success wiring conflicts with Elixir1.18.5 direct remote-call return inference. The literal gate itself is correct and must remain unchanged."
+  },
+  "recommended_change": {
+    "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+    "from": "case ManagedH2GroupBoundary.activation() do",
+    "to": "case apply(ManagedH2GroupBoundary, :activation, []) do",
+    "changed_lines": 1,
+    "reason": "Fixed public apply dispatches the same constant zero-argument function and leaves the future success branch behind its actual return. Root isolated Elixir1.18.5 strict-compile diagnostic demonstrates this exact expression avoids the false-for-future-consumer unreachable-pattern gate without suppressing warnings. No variable module/function, caller authority, flag, configuration, environment or fabricated spec is added."
+  },
+  "invariants": [
+    "Boundary.activation/0 remains exactly one literal {:error, :accounting_not_ready} clause",
+    "actual apply target is statically fixed ManagedH2GroupBoundary/:activation/0; no injection or alternate branch authority",
+    "only :ok from that exact callee can reach existing @h2.open(options); current literal denial remains unavoidable",
+    "required actual future open/result/bind wiring retained unchanged",
+    "no compiler options/suppressions/spec widening; all existing test assertions retained"
+  ],
+  "alternative_disposition": "No Function.capture indirection or separate helper needed: root supplied passing evidence for the smaller one-line fixed apply expression. Potential literal-apply compiler optimization is resolved for the installed Elixir1.18.5 by actual diagnostic, rather than assumed.",
+  "verification": {
+    "author_runtime": "NOT RUN; no Mix/Elixir/build/format/process commands by author",
+    "root_probe": {
+      "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-gate-repair-probe1.json",
+      "evidence_sha256": "28c6b5a69ef0af1feb445aefd99a6ffb85329a173730f4fb6e63cde26198b05b",
+      "source": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compile-gate-repair-probe1.ex",
+      "source_sha256": "e2ad522ed8f773dcdf41347166ac30082591cdb51f50769de075ef7c1218959b",
+      "strict_compile_exit": 0,
+      "literal_denial_runtime_exit": 0,
+      "consumer_result": ":denied",
+      "scope": "isolated diagnostic only; actual Session strict compile and complete pure GREEN still required"
+    }
+  },
+  "artifact": "/tmp/gaoxy-h2-group-session-author-compile-repair1.patch",
+  "artifact_sha256": "6b2aba5eb1b8eadbc9dc7af7732984b2581b66068dfd9c91e8ac1abb4373e79a",
+  "counters": {
+    "sol_repair_rounds": 1,
+    "astra_recovery": "2/2 exhausted; no escalation requested"
+  },
+  "command_shutdown": "All own read/report/patch-file commands finished; no persistent process started.",
+  "remaining_risks": [
+    "Root must apply the one-line change, preserve initial failing evidence, and rerun actual forced strict compile and all scoped pure tests before claiming repair PASS.",
+    "No product GREEN, protocol, live accounting, activation or runtime acceptance follows from isolated diagnostic."
+  ],
+  "decisions_needed": []
+}

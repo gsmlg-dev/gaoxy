@@ -1,0 +1,29 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
+@@ -507,17 +507,19 @@
+   end
+ 
+   defp group_intent?(state) do
+-    profile_group?(Map.get(state.config, :group)) or
+-      profile_group?(selector_group(state.selector)) or
+-      profile_group?(selection_group(state.selection)) or
+-      awaiting_h2_member?(state.awaiting_transport) or
+-      (state.client == @h2 and group_payload?(state))
++    match?(%{config: %{group: %{execution_profile: :managed_h2}}}, state) or
++      profile_group?(selector_group(Map.get(state, :selector))) or
++      profile_group?(selection_group(Map.get(state, :selection))) or
++      awaiting_h2_member?(Map.get(state, :awaiting_transport)) or
++      (Map.get(state, :client) == @h2 and group_payload?(state))
+   end
+ 
+   defp group_payload?(state),
+     do:
+-      Map.has_key?(state.config, :group) or match?({:group, _, _}, state.selector) or
+-        match?({_, _}, state.selection) or match?(%{member: _}, state.awaiting_transport)
++      match?(%{config: %{group: _}}, state) or
++        match?({:group, _, _}, Map.get(state, :selector)) or
++        match?({_, _}, Map.get(state, :selection)) or
++        match?(%{member: _}, Map.get(state, :awaiting_transport))
+ 
+   defp profile_group?(%{execution_profile: :managed_h2}), do: true
+   defp profile_group?(_), do: false

@@ -1,0 +1,81 @@
+{
+  "task_id": "h2_group_session_compatibility_repair2",
+  "status": "RECOMMENDED_PRODUCTION_ONLY_REPAIR_PENDING_ROOT_VERIFICATION",
+  "assignment": "direct bounded read-only compatibility diagnosis; root alone edits repo and runs runtime",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "source_session_sha256": "64963d8f2384e7d6c107273213cecd75147b55d2c76510c95830efc8fc85c4f4",
+  "root_cause": {
+    "summary": "New broad-use H2-group classification assumed every legacy callback state carried full config/selector/selection/awaiting keys. Existing minimal H1/H3 guardian expiry_state intentionally omits these. The eager state.config read raised KeyError before the identity-noop path could run. Merely fixing config would leave immediate selector/selection/awaiting KeyErrors.",
+    "failing_log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compatibility-1792068898560039543.log",
+    "failure_log_sha256": "ba247a80f25b649aef39506b50c8c509766259a5ad34f433bcd01d73fcdca9db",
+    "failure_evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compatibility-1792068898560039543.json",
+    "failure_evidence_sha256": "1dc946811612622e119a51efd03b1d66a3bd1467c87a18444e51644807ab6578",
+    "actual_result": {
+      "exit": 2,
+      "tests_executed": 603,
+      "failures": 4,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true
+    },
+    "affected_tests": [
+      "http3_guardian_test.exs:284 owner expiry first",
+      "http3_guardian_test.exs:284 timer expiry first",
+      "http3_guardian_test.exs:308 H1 timeout and earlier H3 owner timeout",
+      "http3_guardian_test.exs:326 cancelled/consumed timer replay"
+    ],
+    "existing_legacy_fixture": "http3_guardian_test.exs:516 expiry_state has owner/client/deadline/token/request/headers/delivery/outcome/cancelled/consumed only",
+    "call_paths": [
+      "handle_cast(:expire) -> group_intent? for H1",
+      "H3 owner/timer expiry -> fail -> drop_group_opening -> group_intent?",
+      "cancel/repeated expiry/consumed -> settle token:nil -> drop_group_opening -> group_intent?"
+    ]
+  },
+  "recommended_change": {
+    "files": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex"
+    ],
+    "functions": [
+      "group_intent?/1",
+      "group_payload?/1"
+    ],
+    "scope": "Replace optional field dot access with Map.get(state,key); config/group presence is a nested map pattern that is safe for absent/nonmap config. No callback, drop algebra, state shape, timer, message, error enum, gate or legacy client behavior changes.",
+    "why_minimal": "Two existing private predicate bodies only. No extra helper, default state construction, test fixture expansion, rescue or test edits."
+  },
+  "classification_review": [
+    "config.group execution_profile managed_h2: same positive profile evidence via nested pattern",
+    "selector group and selection group profile: same existing helpers on Map.get(nil default)",
+    "awaiting member H2 intent: same helper on Map.get(nil default)",
+    "already-classified H2 plus any group payload: same logical OR and @h2 comparison using safe reads",
+    "group_payload config.group presence: same presence semantics via nested map match; nil/malformed group value still counts when key exists",
+    "payload selector/selection/awaiting aliases: same patterns with optional safe reads",
+    "absent all group evidence: false without state mutation; drop returns exact original nongroup map, preserving minimal H1/H3 and fixed H2 contracts"
+  ],
+  "artifact": "/tmp/gaoxy-h2-group-session-compatibility-repair2.patch",
+  "artifact_sha256": "2c21a3058d772af6b04bbd1c2f6626ca83441c6925b08325fb8116bc9f839142",
+  "proposed_result_session_sha256": "82fa47d3cd53343b64afce1e9703defbe09dead95b8133baa86d455e604fdce1",
+  "provenance": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "64963d8f2384e7d6c107273213cecd75147b55d2c76510c95830efc8fc85c4f4",
+    "apps/gaoxy_proxy/test/http3_guardian_test.exs": "94a9863d8370245e3def929b6916e47843e5575f6bb59e2942cb7803706747a8",
+    "apps/gaoxy_proxy/test/managed_h2_group_session_boundary_test.exs": "d758b7e160d2eb70a44fa88c7dfa90420f52a279cc80b4a820f64911161badd7",
+    "docs/designs/m3-managed-h2-group-opening-boundary.md": "3a355586e9e8f9324ea585f88b46ea671fcbbe7b5ea3d9ad7b710e8c79a2aa42"
+  },
+  "verification": {
+    "author_runtime": "NOT RUN; no Mix/Elixir/build/format/network/process commands",
+    "author_analysis": "Inspected all four retained failure stacks, exact legacy minimal fixture, both classification predicates and their call sites; generated minimal unified patch and hashes only.",
+    "root_required": "Apply production-only patch; run fresh scoped format/forced strict compile, complete pure gate and full previously failing compatibility invocation with unchanged tests/assertions."
+  },
+  "counters": {
+    "sol_repair_rounds": 2,
+    "prior_round1": "fixed apply compile repair passed root strict compile/pure gate per handoff; original failure retained",
+    "current_round2": "compatibility repair proposed; runtime outcome pending root",
+    "astra_recovery": "2/2 exhausted; none requested"
+  },
+  "command_shutdown": "All own commands finished synchronously; no persistent commands or runtime started.",
+  "remaining_risks": [
+    "No repair PASS claimed before root actual unchanged-test compatibility run.",
+    "Malformed H2-group payload validation/drop remains the existing valid-internal-control contract; predicates now safely recognize optional legacy classifier fields."
+  ],
+  "decisions_needed": []
+}

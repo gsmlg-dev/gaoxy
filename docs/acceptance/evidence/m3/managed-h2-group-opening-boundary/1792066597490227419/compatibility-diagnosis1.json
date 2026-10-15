@@ -1,0 +1,37 @@
+{
+  "kind": "GROUP_BOUNDARY_COMPATIBILITY_FAILURE_DIAGNOSIS",
+  "recorded_at_utc": "2026-10-15T13:01:20.708216+00:00",
+  "head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "actual_receipt": "docs/acceptance/evidence/m3/managed-h2-group-opening-boundary/1792066597490227419/compatibility-1792068898560039543.json",
+  "actual_receipt_sha256": "1dc946811612622e119a51efd03b1d66a3bd1467c87a18444e51644807ab6578",
+  "counts": [
+    {
+      "tests": 31,
+      "failures": 0,
+      "skipped": 0,
+      "excluded": 0,
+      "executed": 31
+    },
+    {
+      "tests": 572,
+      "failures": 4,
+      "skipped": 0,
+      "excluded": 0,
+      "executed": 572
+    }
+  ],
+  "actual_exit": 2,
+  "process_joined": true,
+  "source_stable": true,
+  "skips": 0,
+  "exclusions": 0,
+  "failures": 4,
+  "root_cause": "New group_intent?/1 evaluates state.config/selector/selection/awaiting_transport through required-field dot access from legacy expire/fail/settle paths. Existing valid expiry_state H1/H3 maps intentionally lack those group-only fields. All four KeyError stacks originate there.",
+  "regression_file": "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+  "regression_file_sha256": "94a9863d8370245e3def929b6916e47843e5575f6bb59e2942cb7803706747a8",
+  "pre_repair_session_sha256": "64963d8f2384e7d6c107273213cecd75147b55d2c76510c95830efc8fc85c4f4",
+  "hypothesis": "Treat absent optional group fields as no group evidence only in group_intent?/group_payload?. Exact non-group drop returns the original map; no state default keys or weaker test contracts.",
+  "next": "Small production classification repair, strict format/compile, complete153 pure, complete36 compatibility files. No filters/skips/exclusions or assertion changes.",
+  "original_existing_test_hashes_unchanged": 41,
+  "counters": "boundary implementation1, completed repairSol1, pending repairSol2, strictCompileFailure1, compatibilityFailure1, pure unsuccessfulGREEN0; expectedRED46 separate; source and inherited counters unchanged; Astra2/2 exhausted"
+}
