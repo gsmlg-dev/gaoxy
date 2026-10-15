@@ -1,0 +1,199 @@
+{
+  "task_id": "h2_group_probe_design_spec_revision3",
+  "status": "DONE",
+  "assignment": "direct read-only independent preliminary DESIGN SPEC review",
+  "verdict": "FAIL",
+  "review_kind": "PRELIMINARY_DRAFT_DESIGN_SPEC_ONLY",
+  "implementation_or_runtime_acceptance": false,
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_head": "73ddf628dcd8ef037b78d9a28bcfb84bda170df4",
+  "baseline_qualification": "Parent-owned predecessor opening-boundary changes remain uncommitted in the observed worktree. HEAD is not an accepted predecessor boundary source.",
+  "inputs": [
+    {
+      "path": "/tmp/gaoxy-h2-group-probe-next-design3.md",
+      "sha256": "e301a7e5e433da3534ca5a62d5eb10500781644f196233f45b7c21b2f87ff751"
+    },
+    {
+      "path": "/tmp/gaoxy-h2-group-probe-next-plan3.md",
+      "sha256": "95b1f99336334244ac5697cdd7b688b74148834f0c0f04a9e9673b9986798363"
+    }
+  ],
+  "source_snapshot_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "cc20a304f5d4c5930224a989a2ed65ee7f3162fe86a95276132c584e741f6473",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex": "c637b089bb10e0b59f93828785a0e5a0869b9b86c6932cb06cd8b1e305c8635a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "82fa47d3cd53343b64afce1e9703defbe09dead95b8133baa86d455e604fdce1",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+    "apps/gaoxy_proxy/test/upstream_group_probe_test.exs": "94c7453ab8655a93ad78def0be66e49ce395f83a059f9a28be864005b5cc2c46",
+    "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs": "0c38f950b30c414bd64a7ba495ceb384dde69284b725cf659e246c08b604b372"
+  },
+  "findings": [
+    {
+      "id": "H2GP-DESIGN-SPEC-002",
+      "severity": "medium",
+      "title": "Do not claim stopped-child handle retention publishes its completion to owner recovery",
+      "draft_refs": [
+        "/tmp/gaoxy-h2-group-probe-next-design3.md:148",
+        "/tmp/gaoxy-h2-group-probe-next-plan3.md:67"
+      ],
+      "source_refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:139-149",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:460-465",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:511-514",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:754-763",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:851-874"
+      ],
+      "evidence": "The new design says that if a supported original is retained, stopping leaves its original barrier available to existing owner recovery; plan says the original is retained for existing owner recovery. However malformed-success handling runs before :group_bind. A newly started owner probe record has completion:nil; bind_probe is the operation that stores the completion there. The DOWN handler passes only that held owner record to recover, which reads held.completion and never the dead child final state. For the newly required valid-original+nonnil-upload or wrong-arity successful return, retaining original_request in returned stopped state does not publish it to either owner. The group nil-completion branch marks lifecycle failed and retains the hold; it does not gain access to that child-state handle. This is an incorrect recovery-availability statement, although the mandated stop/no-refund behavior itself is fail closed.",
+      "required_change": "Make a narrow wording correction in both documents: preserving a supported original in the dropped/stopped child state preserves the transformation identity but is not owner-record publication or proof of cleanup. Existing owner recovery can use only an already bound/stored completion; for pre-bind malformed success the owner may still have completion:nil, and its current fail-closed lifecycle/hold behavior remains authoritative. Keep stop/no-refund and the finite discriminator unchanged. Do not add early binds, death-state inspection, a recovery protocol or a new transport/group completion-publication step to work around this wording in this slice. Any later need to recover these pre-bind originals remains separately designed accounting/activation work.",
+      "verification_expected": "Revised versioned design/plan must accurately distinguish child-local original retention, prior owner binding and nil-completion hold. Source review of existing bind/DOWN/recover paths suffices for the design correction; no new runtime/test gate is requested by this finding."
+    }
+  ],
+  "reviewed_contracts": [
+    {
+      "id": "OWNER-VS-LEGACY",
+      "result": "PASS",
+      "refs": [
+        "design:44-61",
+        "plan:22",
+        "plan:62",
+        "upstream_groups/probe.ex:11-38"
+      ],
+      "assessment": "Exact new owner args6/Selected3 contract is expressly distinct from broader legacy init. Minimal member.config, health.timeout, optional deadline and expanded H1 member remain supported; safe intent predicates must avoid missing optional-key dereferences. H1 health query paths remain covered by the explicit retain-existing-H1 rule and existing tests."
+    },
+    {
+      "id": "RECOVERY-IDENTITY",
+      "result": "PASS",
+      "refs": [
+        "design:86-93",
+        "design:163-164",
+        "upstream_groups.ex:851-874",
+        "upstream_groups/probe.ex:155-173",
+        "http_fetch_client.ex:24-27"
+      ],
+      "assessment": "Exact args4/state5, original completion/deadline, existing owner deadline max, public facade behavior and first expired abort attempt are preserved. No opaque traversal/ETF and no inferred cross-owner release order."
+    },
+    {
+      "id": "H2-INTENT-AND-GATE",
+      "result": "PASS",
+      "refs": [
+        "design:59",
+        "design:82-105",
+        "design:132-140",
+        "plan:52-53",
+        "plan:62-65",
+        "managed_h2_group_boundary.ex:68",
+        "upstream_groups.ex:734-752"
+      ],
+      "assessment": "All H2 intent sources precede legacy fallback; owner gate precedes H1 reserve/start and Probe gates precede claim/checkout/open. Literal public denial remains fixed, using constant apply dispatch. Future :ok cannot authorize zero/H1 reserve; no public H2 Options or alternate test gate."
+    },
+    {
+      "id": "H2-CLAIM-AUTHORITY",
+      "result": "PASS",
+      "refs": [
+        "design:107-111",
+        "plan:55",
+        "upstream_groups.ex:440-458",
+        "upstream_groups.ex:555-562"
+      ],
+      "assessment": "Exact stored full H equality, actual caller PID, stored token/monitor, one-use, active group/live instance, epoch/key/generation and exact original deadline are required; shape/permutation acceptance confers no owner authority."
+    },
+    {
+      "id": "STAGED-SANITIZATION-AND-TIMING",
+      "result": "PASS",
+      "refs": [
+        "design:130-148",
+        "plan:36-38",
+        "managed_h2_group_boundary.ex:11-60",
+        "managed_h2_client.ex:339-346"
+      ],
+      "assessment": "Draft3 closes finding001 for the result discriminator and holds. Existing staged payload, absolute timing and stable client/original identity requirements remain coherent. Owner-recovery availability wording is separately tracked as finding002."
+    },
+    {
+      "id": "BIND-AND-NORMAL-FINISH",
+      "result": "PASS_WITH_FINDING_H2GP-DESIGN-SPEC-002",
+      "refs": [
+        "design:146-148",
+        "plan:66-68",
+        "upstream_groups/probe.ex:139-149",
+        "upstream_groups/probe.ex:229-285"
+      ],
+      "assessment": "Normal bind/finish ordering remains coherent, but child-local retention before bind is not completion publication to owner recovery; see finding002."
+    },
+    {
+      "id": "TRANSFER-ROOTS-AND-WRAPPERS",
+      "result": "PASS_AS_FUTURE_OBLIGATION_ONLY",
+      "refs": [
+        "design:150-166",
+        "design:174",
+        "plan:95",
+        "plan:104-106"
+      ],
+      "assessment": "All four normal/recovery startup roots, additional H in startup and claim, public/GenServer from/call/reply wrappers, child-return/failed-child overlap and old/new preparation overlap are expressly retained for later source-linked accounting. Canonical executable/source binding and maximal complete aggregate bundles remain unproved, not acceptance of a cap."
+    },
+    {
+      "id": "ENTRY-REVIEW-AND-ACCEPTANCE",
+      "result": "PASS",
+      "refs": [
+        "design:3",
+        "design:168-176",
+        "plan:11-16",
+        "plan:75-102"
+      ],
+      "assessment": "Predecessor accepted local commit and fresh adoption/source identities precede design-readiness review and any next tests/code. Intended pure RED, complete initial GREEN, distinct full implementation SPEC, CODE, fresh scoped checks then local commit are separate gates. Real H1 compatibility remains required unmodified; H2 network/browser/lifecycle/accounting remain outside this pure gated slice."
+    }
+  ],
+  "historical_state": {
+    "predecessor_acceptance": "NOT ESTABLISHED BY THIS REVIEW",
+    "parent_reported_latest": "Complete predecessor initial pure153/0 and compatibility603/0 passed. Independent full implementation SPEC in progress; CODE/fresh/local commit still pending. Parent additionally reports preserved custodyfailure2 from erroneous format-glob selection; corrected actual numeric gate paths/current candidate2 and production counters unchanged. These are parent reports, not runtime checks performed by this reviewer.",
+    "astra_recovery": "2/2 exhausted; no new recovery round requested or performed",
+    "unknowns_preserved": [
+      "Strict cross-owner recovery transport/group release ordering",
+      "Canonical executable/startup source binding",
+      "Complete maximal aggregate wrapper/overlap accounting",
+      "Queued cancellation/expiry/DOWN and genuine H2 network/browser/lifecycle acceptance"
+    ],
+    "unchanged_dispositions": [
+      "R-GROUP-ACCOUNTING=ACCOUNTING_NOT_READY",
+      "9Q/8C/4K, extra2097152 and total11542108=UNPROVED_NOT_ADOPTED",
+      "fixed9444956 unchanged"
+    ]
+  },
+  "verification": {
+    "performed": "Read-only draft SHA256 checks, complete v2-to-v3 diff review of both documents, affected numbered draft reads, git HEAD/status and SHA256 revalidation of actual owner/Probe/Options/Boundary/Session/client/envelope source. All revalidated source hashes match spec1. diff returned expected exit1 because revised documents differ; it is not a runtime failure. The second document diff was run separately after the first diff stopped an && chain.",
+    "build_format_tests_network": "NOT RUN, prohibited by assignment",
+    "runtime_acceptance": "NOT RUN",
+    "repository_changes": "NONE; observed dirty/untracked paths remain parent predecessor work",
+    "output_only": "/tmp/gaoxy-h2-group-probe-design-spec2.json"
+  },
+  "counters": {
+    "implementation_rounds": 0,
+    "sol_repair_rounds": 0,
+    "astra_repair_rounds": 0,
+    "inherited_counters_reset": false
+  },
+  "command_shutdown_status": "All own commands completed; no child processes or ongoing commands launched.",
+  "remaining_risks": "This exact draft3 review does not grant implementation entry. Predecessor full SPEC/CODE/fresh/local commit and adopted frozen-source design-readiness review remain required. Historical spec1 FAIL is preserved; finding001 is closed only at draft-design level. Finding002 is documentation consistency, not evidence of an implementation regression.",
+  "decisions_needed": "No user decision or permission. Parent should correct owner-recovery availability wording, then seek renewed preliminary/adopted readiness review as applicable.",
+  "prior_review_preserved": {
+    "path": "/tmp/gaoxy-h2-group-probe-design-spec1.json",
+    "sha256": "fd8e00307ab2c5efdadd81c4171eabe54b98fd9aa08468b02fe370ceba908832",
+    "verdict": "FAIL",
+    "overwritten": false
+  },
+  "resolved_findings": [
+    {
+      "id": "H2GP-DESIGN-SPEC-001",
+      "status": "RESOLVED_IN_DRAFT_DESIGN_ONLY",
+      "refs": [
+        "/tmp/gaoxy-h2-group-probe-next-design3.md:142-148",
+        "/tmp/gaoxy-h2-group-probe-next-plan3.md:38-39",
+        "/tmp/gaoxy-h2-group-probe-next-plan3.md:67",
+        "/tmp/gaoxy-h2-group-probe-next-plan3.md:80"
+      ],
+      "evidence": "Every malformed/unsupported success, including bare :ok, wrong arity, unsupported handle and any nonnil upload, explicitly returns cleanup-unconfirmed/invalid_response. Supported originals are retained without arbitrary payloads. Consumer discrimination precedes ordinary errors, including absent request/selection, and prohibits rejected/settle(request:nil)/complete/probe_finished/refund. Pure cases and actual source review are mandatory; implementation not reviewed or accepted."
+    }
+  ]
+}

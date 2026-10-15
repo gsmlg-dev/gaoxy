@@ -1,0 +1,68 @@
+{
+  "task": "probe-child-positive-fixture-backing-repair1",
+  "status": "DRAFT_READY_NOT_RUN",
+  "assignment": "direct bounded fixture repair after root untraced backing diagnosis",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "faa07702344b47129119f4902938481ddce03023",
+  "root_cause_evidence": "Root reports exact owner fixture URL logical28/referenced256 rejected untraced; binary.copy positive passed. Four diagnostics preserved by root; author ran none.",
+  "source": {
+    "path": "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs",
+    "sha256": "ef1e8749ca7272db72e9326b86f3a76eecd77140f0efaec10ab4b0f3c7c625c6"
+  },
+  "artifact": {
+    "path": "/tmp/gaoxy-h2-group-probe-boundary-test-repair1.exs",
+    "sha256": "b8aabfd43aa3cf05a8def303e0bb2104e3f3e335e816a98e814ac90b8d667d30",
+    "bytes": 25266,
+    "declared_test_count": 26
+  },
+  "changed_lines": [
+    {
+      "source_line": 197,
+      "before": "    path = \"/\" <> :binary.copy(\"p\", 100)",
+      "after": "    path = :binary.copy(\"/\" <> :binary.copy(\"p\", 100))",
+      "reason": "The positive100-byte health path must own exact backing before entering strict original validation."
+    },
+    {
+      "source_line": 198,
+      "before": "    state = %{state | health: %{state.health | path: path}, url: raw_root(state) <> path}",
+      "after": "    state = %{state | health: %{state.health | path: path}, url: :binary.copy(raw_root(state) <> path)}",
+      "reason": "The long positive coherent URL must own exact backing; its later slice remains deliberately backed."
+    },
+    {
+      "source_line": 585,
+      "before": "    root = scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\")",
+      "after": "    root = :binary.copy(scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\"))",
+      "reason": "The shared positive raw root must be compact before URI parsing and assembly without changing raw authority text."
+    },
+    {
+      "source_line": 650,
+      "before": "      url: root <> health.path,",
+      "after": "      url: :binary.copy(root <> health.path),",
+      "reason": "The positive startup URL must own exact backing; root confirmed dynamic concatenation can retain28 logical bytes in256 backing bytes."
+    }
+  ],
+  "diff": "--- apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs\n+++ gaoxy-h2-group-probe-boundary-test-repair1.exs\n@@ -194,8 +194,8 @@\n \n   test \"startup URL is exactly raw root plus the original compact valid health path\" do\n     state = fixture()\n-    path = \"/\" <> :binary.copy(\"p\", 100)\n-    state = %{state | health: %{state.health | path: path}, url: raw_root(state) <> path}\n+    path = :binary.copy(\"/\" <> :binary.copy(\"p\", 100))\n+    state = %{state | health: %{state.health | path: path}, url: :binary.copy(raw_root(state) <> path)}\n \n     for url <- [\n           nil,\n@@ -582,7 +582,7 @@\n   defp fixture(protocol \\\\ :http2, raw_port? \\\\ false) do\n     scheme = if protocol == :http2, do: \"https\", else: \"http\"\n     port = if protocol == :http2, do: \"00443\", else: \"00080\"\n-    root = scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\")\n+    root = :binary.copy(scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\"))\n \n     transport = %{\n       provider: UpstreamTransports,\n@@ -647,7 +647,7 @@\n       member: %{id: \"member\", config: config, max_inflight: 32},\n       deadline: 4_000,\n       health: health,\n-      url: root <> health.path,\n+      url: :binary.copy(root <> health.path),\n       group: group,\n       cleanup_deadline: 5_000,\n       owner_monitor: make_ref(),\n",
+  "preserved": {
+    "assertion_refutation_lines_byte_equal": true,
+    "test_count": 26,
+    "all_slice_negative_lines_byte_equal": true,
+    "negative_url_override_and_invalid_path_cases": "Unchanged",
+    "strict_source_validators": "Unchanged",
+    "production1_sha256": "2048f2536c1717b89d6ebfe3575d6fe2153d9faec3186d4a5cef66a5bf0e4b87"
+  },
+  "verification": {
+    "runtime": "NOT RUN; root owns formatting and full validation",
+    "repository_edits": false,
+    "production_edits": false,
+    "commands": "All exited; no active sessions"
+  },
+  "counters": {
+    "implementation": 1,
+    "repairSol": "Root assigns shared repairSol1; this author has not executed validation",
+    "astra_recovery": "2/2 exhausted, unchanged"
+  },
+  "remaining_risks": [
+    "Root must format and execute full required files; no passing runtime claim from this artifact."
+  ],
+  "decisions_needed": []
+}

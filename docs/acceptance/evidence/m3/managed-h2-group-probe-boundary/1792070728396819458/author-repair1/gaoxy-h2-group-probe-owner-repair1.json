@@ -1,0 +1,38 @@
+{
+  "assignment": "direct bounded repair after failed initial GREEN",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "faa07702344b47129119f4902938481ddce03023",
+  "source_inputs": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "a655d420823acd0f74e4c58c83076c5cca7926703304bfdc1714587971b39ebf",
+    "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs": "9648f97d0644c7eb3e13462870847a27e0e4412d16f2aa685477b208c16f8397",
+    "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/boundary-green-1792071847758952409.json": "22378816ccdddb730856495c22d6454fc147cee65a343b0283429dd945bd91e9",
+    "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/boundary-green-1792071847758952409.log": "52932e92a4d3990523fd9cad2bd12d740440f91eb8b128fb4e73e211bc6e011d",
+    "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/owner-diagnostic4.exs": "97f5ab645a201ff4815987bd37f734612f7409d93ec11990b428ec2d66900aa2",
+    "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/owner-diagnostic4.json": "131df4863332cecf4fa80257edef499601c3b00e9260f4ce5b2e51bb9a8039cf",
+    "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/owner-diagnostic4.log": "2fb74603abc0cc0f27bf46e1cbd52171fb70b78a9f5f7beabce813fca66577e5",
+    "docs/designs/m3-managed-h2-group-probe-boundary.md": "225c3d8e079df2bf55aca410b30f64b47229934c5aabda87c53280e716fa723d"
+  },
+  "root_cause": "Newly assembled writable URL binaries are logically correct but carry oversized backing. Strict constructor correctly rejects originals. Diagnostic4 exact untraced fixture had URL byte_size28/referenced256, raw result:error, backing33 afterward, explicit binary.copy result:ok. Prior return-traced diagnostics observed acceptance because tracing changes writable-binary sharing/backing; only the untraced exact fixture established cause.",
+  "evidence": {
+    "initial_green": "29 tests/11 failures/exit2/stable source; all positive H2 acceptance failures, H1/recovery passed",
+    "diagnostic4": "0 tests; no trace/messages before constructor; raw URL backing28/256, copied accepted; unused-variable diagnostic warning preserved"
+  },
+  "counters": {
+    "sol_repair_rounds": 1,
+    "sol_successful_repair_validation": "PENDING root execution",
+    "astra_inherited": "2/2 exhausted"
+  },
+  "verification": "Source-only audit; no runtime/build/format/tests executed by author. Root owns integration and actual validation.",
+  "repo_edits": [],
+  "command_shutdown": "All own commands finished; no active sessions.",
+  "decisions_needed": [],
+  "task_id": "probe-owner-repair1",
+  "status": "DONE_DRAFT",
+  "artifact": "/tmp/gaoxy-h2-group-probe-owner-repair1.ex",
+  "artifact_sha256": "6b4aa4be3ab570c9698979bb464b5b8279e0aebf7b291248f593cdff7e35fd65",
+  "bounded_change": "Only newly PRODUCED H2 startup URL is explicitly copied before strict original-validation constructor; constructor predicates, supplied inputs, H1 producer, gate, accounting, claim and recovery untouched.",
+  "diff": "--- /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex\n+++ /tmp/gaoxy-h2-group-probe-owner-repair1.ex\n@@ -985,9 +985,11 @@\n            deadline: deadline,\n            health: health,\n            url:\n-             selected.config.uri.scheme <>\n-               \"://\" <>\n-               selected.config.uri.authority <> health.path,\n+             :binary.copy(\n+               selected.config.uri.scheme <>\n+                 \"://\" <>\n+                 selected.config.uri.authority <> health.path\n+             ),\n            group: group.handle\n          },\n          {:ok, _args} <- probe_start_arguments(args) do\n",
+  "remaining_risks": [
+    "Full required source/tests format/strict compile/pure/compatibility and independent review remain required."
+  ]
+}

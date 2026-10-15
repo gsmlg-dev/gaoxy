@@ -1,0 +1,558 @@
+{
+  "task_id": "probe-full-implementation-spec1",
+  "status": "DONE",
+  "verdict": "PASS",
+  "review_type": "INDEPENDENT_FULL_IMPLEMENTATION_SPEC_AFTER_COMPLETE_INITIAL_GREEN",
+  "assignment": "direct read-only source/specification review; no authoring of reviewed implementation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "faa07702344b47129119f4902938481ddce03023",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/implementation-candidate1.json",
+    "sha256": "bbc55d849a69962f2dc655d1ee9d793e89e83d1c4da1d0a0e8f9466cdd142beb"
+  },
+  "input_authentication": {
+    "source_hashes": {
+      "checked": 82,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "immutable_review_document_copies": {
+      "checked": 4,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "original_existing_test_hashes": {
+      "checked": 43,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "evidence_files": {
+      "checked": 95,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "inventory_repo_inputs": {
+      "checked": 10,
+      "mismatches": [],
+      "status": "PASS"
+    },
+    "inventory_canonical_source_inputs": {
+      "checked": 6,
+      "mismatches": [],
+      "status": "PASS"
+    }
+  },
+  "requirements_reviewed": 30,
+  "requirements": [
+    {
+      "id": "H2GP-IMPL-SPEC-001",
+      "requirement": "Owned scope, no detached accounting/dependency/admission change",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex"
+      ],
+      "tests_or_evidence": [
+        "git diff; candidate owned_code_paths/source_hashes"
+      ],
+      "assessment": "Only the two production files and two new pure test files implement this slice. Boundary, Session, Options, HTTP/resources, client and dependencies remain bound unchanged. No new process or reserve is introduced."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-002",
+      "requirement": "Narrow owner member before either normal args construction",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:957",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:965",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:1007"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:117"
+      ],
+      "assessment": "Map.take(id/config/max_inflight) occurs in the actual launch reduction before H1/H2 helper dispatch. Expanded counters remain owner-local."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-003",
+      "requirement": "Exact normal args6/H2 args7 and Selected3 originals",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:26",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:80"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:30",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:89",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:203"
+      ],
+      "assessment": "Exact key cardinality plus required patterns reject missing/extra/struct payloads. Successful constructors return original args; H2 includes complete H."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-004",
+      "requirement": "H1 logical/config/backing behavior preserved",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:94",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:137",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:166"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:39",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:64",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:79",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:153",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:174"
+      ],
+      "assessment": "H1 keeps noncompact id/path/URL, query path acceptance, positive timeouts beyond H2 caps and any integer deadline. Structural config validation is pure and matches compiled owner forms; no HTTP.init, Options.compile, filesystem or host query is called."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-005",
+      "requirement": "Legacy direct H1 init and H1 claim receiver unchanged",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:48",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:632"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:318",
+        "Mechanical extraction against HEAD: exact legacy init and claim_probe/3 receiver unchanged"
+      ],
+      "assessment": "Legacy init is not routed through the new strict owner constructor. Optional deadline fallback and wider member/config/health fixtures remain intact;18 keys describes owner-produced state only."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-006",
+      "requirement": "H2 intent rejects before H1 compatibility/reservation",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:76",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:959",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:40",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:105"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:217",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:283"
+      ],
+      "assessment": "Profile, protocol and ManagedH2Client signals dispatch before H1 paths. Strict H2 init rejects malformed H2 inputs; producer dispatch precedes H1 reservation."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-007",
+      "requirement": "Complete finite H2 config and compact Selected",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:80",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:182"
+      ],
+      "tests_or_evidence": "arguments tests242-275,544-583",
+      "assessment": "Envelope.validate_config validates exact config originals/non-nil T; compact id1..128 and max1..1024 enforced. Finite config limits and HTTP2/h2c scheme/client coherence are retained."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-008",
+      "requirement": "Complete H/T exact manifests, unique order, flattened resources",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:182",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:205",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:411"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:277",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:320",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:355",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:368"
+      ],
+      "assessment": "Exact H8, compact group, refs/PIDs/profile/maxURL and proper unique1..32 T4 validated before Resources.validate([H|Ts]). Supplied order remains unchanged; selected T must be a member and H.owner must equal args.owner."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-009",
+      "requirement": "Health7 original scalars/path and URL budgets",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:143",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:166",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:175"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:380",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:401",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:442",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:480",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:508"
+      ],
+      "assessment": "All seven fields required; time/jitter/threshold/staleness and compact H2 path checks precede use. Raw URL equals scheme+authority+path; compact URL and actual/advertised/tighter8192/65536 caps checked without canonicalization."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-010",
+      "requirement": "One launch clock, min budget and signed/headroom validation",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:965",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:75",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:453"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:585",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:85",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:98"
+      ],
+      "assessment": "H2 producer takes one launch_now, computes min health/opening/lifetime, checks signed addition and deadline+1000 headroom. Constructors preserve valid expired originals; init/preparation never renew absolute deadline."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-011",
+      "requirement": "Literal public activation and constant supported dispatch dominate producer/open",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:994",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:166",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:213",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:68"
+      ],
+      "tests_or_evidence": [
+        "Initial strict compile receipt; direct source inspection"
+      ],
+      "assessment": "Each retained future branch uses exact apply(Gaoxy.Proxy.ManagedH2GroupBoundary,:activation,[]). Producer denial returns unchanged state; even future :ok returns unchanged state, with no H1/zero reserve child. Probe gates precede claim/endpoint/pin/checkout and staged ManagedH2Client.open. No alternate selector or warning suppression."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-012",
+      "requirement": "Strict H2 owner-record authority with one-use original deadline",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:250",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:656"
+      ],
+      "tests_or_evidence": [
+        "Direct receiver review; inventory claim transfer"
+      ],
+      "assessment": "Stored pid must equal actual caller; claimed=false; monitor reference; ready owner/live instance/active group; full group.handle===H; self/epoch/key-generation/profile coherent; deadline===stored and unexpired. Only then claimed=true and instance returned. Pure manifest permutations grant no authority."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-013",
+      "requirement": "Recovery args4/state5 exact shell and first abort-await",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:54",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:1127",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:29",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:686"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:608",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:620",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:637",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:655",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:686",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:318"
+      ],
+      "assessment": "Owner retains max(original deadline, now+1000) calculation and completion. Pure constructor checks only RequestCompletion4 shell; opaque interiors are neither traversed nor serialized/rebuilt. Init adds only owner_monitor; original await(...,true) precedes expiry test after cleanup_pending."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-014",
+      "requirement": "H2 state23, no instance/config/checked sidecar",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:72",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:384"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:14",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:269"
+      ],
+      "assessment": "Seven args plus twelve original controls plus client/limits/request_options/submitted_url. Instance is callback-local. Exact state keys enforced for preparation/staged result, stable H2 client survives payload drop."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-015",
+      "requirement": "Actual H2 claim endpoint pin checkout consumers and cancellation checks",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:220"
+      ],
+      "tests_or_evidence": [
+        "Direct callback review",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:152",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:172"
+      ],
+      "assessment": "Future path uses exact H/deadline claim first, raw origin/selected protocol/returned instance endpoint validation, then real request pins and checkout. opening_allowed guards waits; only ledger selection and K are installed before pure preparation."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-016",
+      "requirement": "Actual pure preparation uses exact HEAD/Neutral/context6",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:265",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:501",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:509"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:14",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:45",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:70",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:123",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:195",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:237"
+      ],
+      "assessment": "Constructor validates original normal args; selected T/ledger/request-pin aliases and checked client validated. HEAD fields[]/none/upload1/max request limits256/65536/128/65536 and unchanged health target used. Boundary.prepare receives exact6 context with both deadlines original; opening/write/lifetime clamp to health, idle/chunk unchanged."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-017",
+      "requirement": "Preparation/drop clear payloads but preserve original controls and finite limits",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:296",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:315"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:115",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:269",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:301",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:318"
+      ],
+      "assessment": "Staged keeps tagged options7 and limits5, clears member/H/health/url/K. Drop additionally clears options/submittedURL, is idempotent/H2-only, preserves ledgers/handles/token/timer/monitor/deadlines and finite limits or nil. H1/recovery return exact identity."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-018",
+      "requirement": "Staged open revalidates absolute remaining budget with second gate",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:160",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:517"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:85",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:534",
+        "Direct callback review"
+      ],
+      "assessment": "Opening mailbox/deadline/owner guard, exact staged options/Envelope/check policy/authority and fresh finite remaining time precede gate/open. Only timeout/opening_timeout replaced; original absolute deadlines unchanged."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-019",
+      "requirement": "Exact supported success and original handle custody before late errors",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:329",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:576",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:456"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:358",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:377",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:393"
+      ],
+      "assessment": "Only {:ok,valid_original,nil} binds; ManagedH2Client.completion validates exact public handle and completion identity. Original is installed unchanged in request/original_request before cancel/deadline checks; URL comes only from validated staged request; K/options cleared."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-020",
+      "requirement": "ALL unsupported :ok use cleanup-unconfirmed invalid-response and bounded retention",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:329",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:564",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:571"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:409",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:433",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:449",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:461"
+      ],
+      "assessment": "Bare :ok, all tagged tuples regardless arity, invalid handles and every nonnil upload produce {:cleanup_unconfirmed,:invalid_response}. Supported originals survive; arbitrary invalid handle/upload/diagnostics are never installed. Cancellation/expiry cannot replace this discriminator."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-021",
+      "requirement": "Actual cleanup-unconfirmed stop branch before ordinary settle even nil holds",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:173",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:352"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:461",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:486",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:507",
+        "Direct consumer dominance review"
+      ],
+      "assessment": "Discriminator matched before cancellation and ordinary error branches; returns {:stop,reason,dropped} unconditionally with no request/selection guard, settle/rejected/complete/probe_finished/refund. Raw atom/tuple cleanup-unconfirmed follows identical discriminator. Holds/pins retained."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-022",
+      "requirement": "Finite ordinary errors and bounded diagnostic normalization",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:358",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:586"
+      ],
+      "tests_or_evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:507",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:519",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs:534"
+      ],
+      "assessment": "Known finite atoms/accepted bounded wrapper vocabulary retained; unknown diagnostics reduce to upstream_failure, cleanup-unconfirmed inner unknown reduces to cleanup_unconfirmed atom. No diagnostic payload is stored in state."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-023",
+      "requirement": "Original completion bind transport before group, poll only after both",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:189",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:669"
+      ],
+      "tests_or_evidence": [
+        "Direct :group_bind/bind with source review"
+      ],
+      "assessment": "Exact original handle/active ledger is required. with bind_transport then UpstreamGroups.bind_probe prevents group bind after transport failure. Poll schedule only follows both successes and final opening_allowed. Failures retain original and ledgers through cleanup."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-024",
+      "requirement": "H2 poll/event/subscription URL/client routing and original cleanup",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:710",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:726",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:738",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:771",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:843"
+      ],
+      "tests_or_evidence": [
+        "Direct source review; pure original/drop tests"
+      ],
+      "assessment": "Poll/event use transient {request,submitted_url}; accepted headers and all settle/drop terminal paths clear URL. Subscription selects public client. Stable H2 client selects original_request cleanup even when K nil; H1 dispatch remains HTTPFetchClient."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-025",
+      "requirement": "Normal finish cleanup then transport then pins then probe_finished",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:785",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:803",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:828",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex:836"
+      ],
+      "tests_or_evidence": [
+        "Direct cleanup/complete/finish_transport/release call ordering review"
+      ],
+      "assessment": "Only successful original cleanup invokes complete; transport finish success precedes pin release; probe_finished follows both. Pending/unconfirmed errors do not refund."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-026",
+      "requirement": "Canonical complete startup wrappers and four semantic roots",
+      "status": "PASS",
+      "source": [
+        "adopted transfer inventory MD/JSON; installed canonical gen.erl233-280 and DynamicSupervisor773-825"
+      ],
+      "tests_or_evidence": [
+        "Inventory repo10/canonical6 input hashes verified; actual child-spec metadata receipt verified"
+      ],
+      "assessment": "Local startup GenServer.call infinity uses plain monitor-ref From, finite Lifecycle calls use alias list. shutdown5000 differs from startup infinity; temporary mfa args becomes undefined only after successful save. Caller/supervisor/init/return full envelopes and H payload/claim roots explicitly retained; no aggregate maximum claimed."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-027",
+      "requirement": "Prebind publication absent and cross-owner recovery order UNKNOWN",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:682",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:723",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:750",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:1127",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:1263"
+      ],
+      "tests_or_evidence": [
+        "Adopted design/inventory current checkpoint"
+      ],
+      "assessment": "Owner recovery reads only held.completion; child retained original does not publish it. Nonnil stored completion recovery and transport abort helper are independent. Strict transport-before-group recovery release remains UNKNOWN and is not certified or repaired by this slice."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-028",
+      "requirement": "Pure tests-first RED, retained failed GREEN/repair and no weakened assertions",
+      "status": "PASS",
+      "source": [
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs"
+      ],
+      "tests_or_evidence": [
+        "RED29/29 and26/26 receipts + authentication; failed owner GREEN29/11; repair integration records"
+      ],
+      "assessment": "Complete intended missing-interface RED preceded production authoring. New tests are pure inert-shell helper calls without processes/network/fake adapters/AST tests. Repair1 explicitly compacts valid produced/fixture binaries; historical failure, explicit backing/overlimit negatives and assertions retained.43 original tests byte-identical."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-029",
+      "requirement": "Complete initial GREEN before this FULL IMPLEMENTATION SPEC",
+      "status": "PASS",
+      "source": [
+        "candidate gates/initial-complete-green1.json"
+      ],
+      "tests_or_evidence": [
+        "format exit0; forced strict compile exit0; pure141/0; prescribed six-file real H1compat70/0"
+      ],
+      "assessment": "Receipt/log/source hashes authenticated. All actual exits0, joined, stable, no skips/exclusions, nonzero tests for test gates. Review author ran no build/test/runtime command and does not infer H2 protocol acceptance."
+    },
+    {
+      "id": "H2GP-IMPL-SPEC-030",
+      "requirement": "No early closure/publication/accounting claim; downstream gates remain required",
+      "status": "PASS",
+      "source": [
+        "adopted design/plan/acceptance/current implement-plan checkpoint"
+      ],
+      "tests_or_evidence": "Candidate full_implementation_SPEC/CODE/fresh status and documented boundary",
+      "assessment": "This PASS is solely FULL IMPLEMENTATION SPEC. CODE, fresh gates and local commit remain pending. ACCOUNTING_NOT_READY/literal denial/fixed9444956 retained;9Q/8C/4K,extra2097152,total11542108 unadopted; no H2 peer/browser/lifecycle/reserve or deployment certification."
+    }
+  ],
+  "findings": [],
+  "finding_count": 0,
+  "initial_gate_receipts": [
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/format-1792072444157164806.json",
+      "sha256": "51eb77b1a03160d385125d996508c312a9289647596665998307a086bbe3c087",
+      "gate": "format",
+      "tests_executed": 0
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/compile-1792072474575557210.json",
+      "sha256": "03583e97342f2122495ea2a8b2ac92851385fdbbb2d154c906c4028b88b542ac",
+      "gate": "compile",
+      "tests_executed": 0
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/green-1792072500390229838.json",
+      "sha256": "7b290a975f85d6a214de967b06503398fc3b4f9510e72758a3505c1702f25fe4",
+      "gate": "green",
+      "tests_executed": 141
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792070728396819458/compatibility-1792072507602182104.json",
+      "sha256": "91c32b4e9ba33f592aac83d0ce020d4f07ddc210511f2fbfd598023ffd371f55",
+      "gate": "compatibility",
+      "tests_executed": 70
+    }
+  ],
+  "counters_preserved": {
+    "implementation": 1,
+    "repairSol": 1,
+    "owner_unsuccessful_GREEN": 1,
+    "intended_RED": [
+      29,
+      26
+    ],
+    "preliminary_design_failed_SPEC": 2,
+    "Astra": "2/2 exhausted"
+  },
+  "reviewer_implementation_or_repair_rounds": 0,
+  "astra_gate": null,
+  "repo_edits": [],
+  "artifacts_written": [
+    "/tmp/gaoxy-h2-group-probe-implementation-spec1.json"
+  ],
+  "verification_performed": [
+    "Read complete adopted design/plan/acceptance, current checkpoint, complete Probe module, owner changed implementation and real consumers, and both complete new pure test files",
+    "Read current dependencies/Boundary/client/resource/lifecycle/owner recovery and canonical startup source consumers",
+    "SHA256 and evidence byte-length audit:82 source,4 immutable review document copies,43 original tests,95 evidence files,10 inventory repo inputs,6 canonical source inputs all PASS",
+    "Read exact four initial gate receipts/log binding and intended RED authentication; preserved historical failure/repair receipts",
+    "Compared legacy H1 init and claim_probe/3 receiver to baseline: byte-identical"
+  ],
+  "tests_build_runtime": "NOT RUN by reviewer as assigned; root supplied authenticated initial results only",
+  "command_shutdown": "All own read-only/source commands completed; no ongoing session or runtime/build/test process was started. Only assigned /tmp report written.",
+  "remaining_risks": [
+    "Independent CODE review and all fresh gates/local commit remain pending",
+    "Activation/accounting aggregate/canonical execution qualification and network/browser/lifecycle H2 group acceptance remain unestablished",
+    "Prebind completion publication absent and strict cross-owner recovery release order UNKNOWN"
+  ],
+  "decisions_needed": [],
+  "recorded_at_utc": "2026-10-15T14:08:43.072377+00:00"
+}

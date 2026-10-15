@@ -1,0 +1,362 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 33013, max_cases: 1
+
+
+
+  1) test H2 membership validates every exact transport and rejects duplicates improper and nonmember lists (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:320[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor transports <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.314.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.314.0>, resource: #Reference<0.1296634628.1899233282.224619>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224618>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.314.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230153>, owner_epoch: #Reference<0.1296634628.1899233281.230152>, max_url_bytes: 8192, transports: nil, execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230151>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:337: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 membership validates every exact transport and rejects duplicates improper and nonmember lists"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:324: (test)
+
+
+
+  2) test new owner-produced H1 has exactly six original arguments and a Selected3 member (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:30[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0massert {:ok, returned} = start(args)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.315.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224680>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:34: (test)
+
+
+
+  3) test recovery rejects omitted extra and normal H2 client URL health payloads (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:637[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor bad <- [nil, [], :args, %{}, Map.put(args, :__struct__, URI)], do: reject_recovery(bad)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments(nil)
+       test/managed_h2_group_probe_arguments_test.exs:703: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject_recovery/1
+       test/managed_h2_group_probe_arguments_test.exs:639: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery rejects omitted extra and normal H2 client URL health payloads"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:639: (test)
+
+
+
+  4) test recovery signed64 deadline preserves expired values and does not add normal cleanup headroom (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:686[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor deadline <- [@signed_min, -1, 0, 1, @signed_max] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments(%{owner: #PID<0.317.0>, completion: %HTTP.RequestCompletion{tracker: #PID<0.317.0>, latch: #Reference<0.1296634628.1899233282.224691>, unsupported: nil}, deadline: -9223372036854775808, recovery: {:selection, #Reference<0.1296634628.1899233282.224690>}})
+       test/managed_h2_group_probe_arguments_test.exs:691: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery signed64 deadline preserves expired values and does not add normal cleanup headroom"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:689: (test)
+
+
+
+  5) test H2 health requires exactly seven scalar fields before retaining inputs (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:380[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor health <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.318.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.318.0>, resource: #Reference<0.1296634628.1899233282.224696>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224695>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.318.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224701>, owner_epoch: #Reference<0.1296634628.1899233282.224700>, max_url_bytes: 8192, transports: [%{owner: #PID<0.318.0>, resource: #Reference<0.1296634628.1899233282.224696>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224695>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224699>, url: "https://upstream.test/health", health: nil})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:391: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 health requires exactly seven scalar fields before retaining inputs"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:383: (test)
+
+
+
+  6) test H2 URL is compact exact original raw root plus path without canonicalization (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:480[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.319.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "UPSTREAM.test:000443", userinfo: nil, host: "UPSTREAM.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.319.0>, resource: #Reference<0.1296634628.1899233282.224706>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224705>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.319.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224711>, owner_epoch: #Reference<0.1296634628.1899233282.224710>, max_url_bytes: 8192, transports: [%{owner: #PID<0.319.0>, resource: #Reference<0.1296634628.1899233282.224706>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224705>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224709>, url: "https://UPSTREAM.test:000443/a%2fb%2F", health: %{timeout: 2000, path: "/a%2fb%2F", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:488: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 URL is compact exact original raw root plus path without canonicalization"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:481: (test)
+
+
+
+  7) test H2 maximal transport manifest satisfies full flattened resource caps (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:368[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0massert {:ok, ^input} = start(input)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.320.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224718>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224717>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.320.0>, group: "gggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggggg", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224723>, owner_epoch: #Reference<0.1296634628.1899233282.224722>, max_url_bytes: 8192, transports: [%{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224718>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224717>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224725>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224724>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224727>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224726>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224729>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224728>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224731>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224730>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224733>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224732>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224735>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224734>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224737>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224736>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224739>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224738>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224741>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224740>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224743>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224742>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224745>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224744>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224747>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224746>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224749>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224748>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224751>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224750>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224753>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224752>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224755>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224754>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224757>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224756>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224759>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224758>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224761>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224760>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224763>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224762>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224765>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224764>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224767>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224766>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224769>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224768>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224771>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224770>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224773>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224772>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224775>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224774>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224777>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224776>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224779>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224778>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224781>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224780>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224783>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224782>}, %{owner: #PID<0.320.0>, resource: #Reference<0.1296634628.1899233282.224785>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224784>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224721>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:376: (test)
+
+
+
+  8) test H2 intent cannot fall through to H1 compatibility when profile protocol or client disagrees (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:217[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor input <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.321.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.321.0>, resource: #Reference<0.1296634628.1899233281.230188>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230187>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230191>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_probe_arguments_test.exs:221: (test)
+
+
+
+  9) test H2 group is the exact finite profile shell coherent with owner (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:277[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor group <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.322.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.322.0>, resource: #Reference<0.1296634628.1899233281.230201>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230200>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: nil, deadline: 12000, token: #Reference<0.1296634628.1899233281.230204>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:287: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 group is the exact finite profile shell coherent with owner"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:280: (test)
+
+
+
+ 10) test H2 compact health path accepts raw escaped bytes and rejects query fragment whitespace invalid escapes (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:442[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor path <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.323.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.323.0>, resource: #Reference<0.1296634628.1899233281.230211>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230210>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.323.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230216>, owner_epoch: #Reference<0.1296634628.1899233281.230215>, max_url_bytes: 8192, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.1296634628.1899233281.230211>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230210>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230214>, url: "https://upstream.test/", health: %{timeout: 2000, path: "/", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:453: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 compact health path accepts raw escaped bytes and rejects query fragment whitespace invalid escapes"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:445: (test)
+
+
+
+ 11) test normal owner and token must be PID and reference originals (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:109[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor protocol <- [:http1, :http2, :h2c] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: nil, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230222>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:112: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test normal owner and token must be PID and reference originals"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:112: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test normal owner and token must be PID and reference originals"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:110: (test)
+
+
+
+ 12) test H1 preserves supported dedicated and managed transport configurations (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:79[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor handle <- [nil, transport()] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.325.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230229>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:84: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H1 preserves supported dedicated and managed transport configurations"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_probe_arguments_test.exs:82: (test)
+
+
+
+ 13) test H2 accepts both unique supplied orders without sorting or authority inference (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:355[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor handles <- [[selected, other], [other, selected]] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.326.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.326.0>, resource: #Reference<0.1296634628.1899233281.230236>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230235>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.326.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230241>, owner_epoch: #Reference<0.1296634628.1899233281.230240>, max_url_bytes: 8192, transports: [%{owner: #PID<0.326.0>, resource: #Reference<0.1296634628.1899233281.230236>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230235>}, %{owner: #PID<0.326.0>, resource: #Reference<0.1296634628.1899233281.230243>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230242>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230239>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:362: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 accepts both unique supplied orders without sorting or authority inference"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_probe_arguments_test.exs:360: (test)
+
+
+
+ 14) test strict owner constructor rejects expanded members without changing legacy direct-init contract (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:117[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor protocol <- [:http1, :http2, :h2c] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.327.0>, member: nil, deadline: 12000, token: #Reference<0.1296634628.1899233281.230249>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:142: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test strict owner constructor rejects expanded members without changing legacy direct-init contract"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:132: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test strict owner constructor rejects expanded members without changing legacy direct-init contract"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:118: (test)
+
+
+
+ 15) test recovery exact shell does not inspect serialize or reconstruct completion interiors (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:620[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments/1 is undefined or private[0m
+     [36mcode: [0massert {:ok, returned} = recover(args)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments(%{owner: #PID<0.328.0>, completion: %HTTP.RequestCompletion{tracker: #Function<42.37993500/0 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery exact shell does not inspect serialize or reconstruct completion interiors"/1>, latch: [#Reference<0.1296634628.1899233281.230253> | :opaque_tail], unsupported: %{opaque: #Function<42.37993500/0 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery exact shell does not inspect serialize or reconstruct completion interiors"/1>}}, deadline: -1, recovery: {:probe, #Reference<0.1296634628.1899233281.230254>}})
+       test/managed_h2_group_probe_arguments_test.exs:630: (test)
+
+
+
+ 16) test H2 config finite limits retain exact accepted caps and reject missing extra or unbounded values (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:544[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor key <- Map.keys(limits()) do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.329.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.329.0>, resource: #Reference<0.1296634628.1899233281.230260>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230259>}, limits: %{idle_timeout: 1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.329.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230265>, owner_epoch: #Reference<0.1296634628.1899233281.230264>, max_url_bytes: 8192, transports: [%{owner: #PID<0.329.0>, resource: #Reference<0.1296634628.1899233281.230260>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230259>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230263>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:559: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 config finite limits retain exact accepted caps and reject missing extra or unbounded values"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:550: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 config finite limits retain exact accepted caps and reject missing extra or unbounded values"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:547: (test)
+
+
+
+ 17) test normal constructors reject nonmaps missing keys extra keys and struct payloads (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:89[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor protocol <- [:http1, :http2, :h2c] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(nil)
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:101: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test normal constructors reject nonmaps missing keys extra keys and struct payloads"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:93: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test normal constructors reject nonmaps missing keys extra keys and struct payloads"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:90: (test)
+
+
+
+ 18) test H2 deadline is signed64 with cleanup headroom and retains valid expired originals (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:585[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor deadline <- [@signed_min, -1, 0, 1, @signed_max - 1_000] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.331.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.331.0>, resource: #Reference<0.1296634628.1899233281.230276>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230275>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.331.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230281>, owner_epoch: #Reference<0.1296634628.1899233281.230280>, max_url_bytes: 8192, transports: [%{owner: #PID<0.331.0>, resource: #Reference<0.1296634628.1899233281.230276>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230275>}], execution_profile: :managed_h2}, deadline: -9223372036854775808, token: #Reference<0.1296634628.1899233281.230279>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:590: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 deadline is signed64 with cleanup headroom and retains valid expired originals"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:588: (test)
+
+
+
+ 19) test H1 retains supported limits and integer deadline outside new H2 finite caps (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:64[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor deadline <- [@signed_min - 1, @signed_max + 1, -1, 0] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.332.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 86400001, max_lifetime: 86400001, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: -9223372036854775809, token: #Reference<0.1296634628.1899233281.230287>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:74: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H1 retains supported limits and integer deadline outside new H2 finite caps"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_probe_arguments_test.exs:72: (test)
+
+
+
+ 20) test recovery rejects invalid owner kind token and completion shell without traversing payloads (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:655[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor owner <- [nil, make_ref(), :owner, 1], do: reject_recovery(%{args | owner: owner})
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments(%{owner: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.333.0>, latch: #Reference<0.1296634628.1899233281.230292>, unsupported: nil}, deadline: -1, recovery: {:probe, #Reference<0.1296634628.1899233281.230291>}})
+       test/managed_h2_group_probe_arguments_test.exs:703: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject_recovery/1
+       test/managed_h2_group_probe_arguments_test.exs:657: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery rejects invalid owner kind token and completion shell without traversing payloads"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:657: (test)
+
+
+
+ 21) test H2 configs require the complete accepted managed envelope including nonnil exact transport (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:257[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor config <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.334.0>, member: %{id: "member", config: nil, max_inflight: 1}, group: %{owner: #PID<0.334.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233281.230303>, owner_epoch: #Reference<0.1296634628.1899233281.230302>, max_url_bytes: 8192, transports: [%{owner: #PID<0.334.0>, resource: #Reference<0.1296634628.1899233281.230298>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233281.230297>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233281.230301>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_probe_arguments_test.exs:260: (test)
+
+
+
+ 22) test H2 Selected id and inflight bounds are inclusive compact and exact (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:242[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor id <- ["i", :binary.copy("i", 128)], count <- [1, 1_024] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.335.0>, member: %{id: "i", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.335.0>, resource: #Reference<0.1296634628.1899233282.224800>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224799>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.335.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224805>, owner_epoch: #Reference<0.1296634628.1899233282.224804>, max_url_bytes: 8192, transports: [%{owner: #PID<0.335.0>, resource: #Reference<0.1296634628.1899233282.224800>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224799>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224803>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:247: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 Selected id and inflight bounds are inclusive compact and exact"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:245: (test)
+
+
+
+ 23) test H2 root actual advertised and joined URL bounds are checked independently (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:508[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0massert {:ok, ^exact} = start(exact)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.336.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.336.0>, resource: #Reference<0.1296634628.1899233282.224809>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224808>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.336.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224814>, owner_epoch: #Reference<0.1296634628.1899233282.224813>, max_url_bytes: 21, transports: [%{owner: #PID<0.336.0>, resource: #Reference<0.1296634628.1899233282.224809>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224808>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224812>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:512: (test)
+
+
+
+ 24) test H1 strict owner input preserves existing member and health logical bounds (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:174[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor id <- ["i", :binary.copy("i", 128)], count <- [1, 1_024] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.337.0>, member: %{id: "i", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224823>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:179: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H1 strict owner input preserves existing member and health logical bounds"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:177: (test)
+
+
+
+ 25) test both managed H2 protocols preserve exact seven-key arguments and supplied identities (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:203[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.338.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.338.0>, resource: #Reference<0.1296634628.1899233282.224829>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224828>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.338.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224834>, owner_epoch: #Reference<0.1296634628.1899233282.224833>, max_url_bytes: 8192, transports: [%{owner: #PID<0.338.0>, resource: #Reference<0.1296634628.1899233282.224829>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224828>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224832>, url: "https://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:210: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test both managed H2 protocols preserve exact seven-key arguments and supplied identities"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:204: (test)
+
+
+
+ 26) test H1 strict owner input requires its existing HTTP config client and complete health (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:153[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor config <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.339.0>, member: %{id: "member", config: nil, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224855>, url: "http://upstream.test/health", health: %{timeout: 2000, path: "/health", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:702: Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest.reject/1
+       test/managed_h2_group_probe_arguments_test.exs:163: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H1 strict owner input requires its existing HTTP config client and complete health"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:156: (test)
+
+
+
+ 27) test H1 preserves existing path query acceptance and binary backing rather than H2 compact restrictions (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:39[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0massert {:ok, returned} = start(args)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.340.0>, member: %{id: "iiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}, max_inflight: 1}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224862>, url: "http://upstream.test/health?query=%2fpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp", health: %{timeout: 2000, path: "/health?query=%2fpppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp", interval: 5000, stale_after: 15000, failure_threshold: 3, recovery_threshold: 2, jitter: 500}})
+       test/managed_h2_group_probe_arguments_test.exs:55: (test)
+
+
+
+ 28) test recovery preserves exactly four keys both kinds and supported original opaque completion (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:608[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor kind <- [:selection, :probe] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_recovery_arguments(%{owner: #PID<0.341.0>, completion: %HTTP.RequestCompletion{tracker: #PID<0.341.0>, latch: #Reference<0.1296634628.1899233282.224869>, unsupported: nil}, deadline: -1, recovery: {:selection, #Reference<0.1296634628.1899233282.224868>}})
+       test/managed_h2_group_probe_arguments_test.exs:612: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test recovery preserves exactly four keys both kinds and supported original opaque completion"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:609: (test)
+
+
+
+ 29) test H2 health finite bounds timeout thresholds and staleness relation are inclusive (Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs:401[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.UpstreamGroups.probe_start_arguments/1 is undefined or private[0m
+     [36mcode: [0mfor health <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.UpstreamGroups.probe_start_arguments(%{owner: #PID<0.342.0>, member: %{id: "member", config: %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.342.0>, resource: #Reference<0.1296634628.1899233282.224874>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224873>}, limits: %{idle_timeout: 60000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, write_timeout: 3000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, max_inflight: 1}, group: %{owner: #PID<0.342.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.1296634628.1899233282.224879>, owner_epoch: #Reference<0.1296634628.1899233282.224878>, max_url_bytes: 8192, transports: [%{owner: #PID<0.342.0>, resource: #Reference<0.1296634628.1899233282.224874>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.1296634628.1899233282.224873>}], execution_profile: :managed_h2}, deadline: 12000, token: #Reference<0.1296634628.1899233282.224877>, url: "https://upstream.test/health", health: %{timeout: 1, path: "/health", interval: 1, stale_after: 1, failure_threshold: 1, recovery_threshold: 1, jitter: 0}})
+       test/managed_h2_group_probe_arguments_test.exs:425: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupProbeArgumentsTest."test H2 health finite bounds timeout thresholds and staleness relation are inclusive"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_probe_arguments_test.exs:404: (test)
+
+
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+[31m29 tests, 29 failures[0m

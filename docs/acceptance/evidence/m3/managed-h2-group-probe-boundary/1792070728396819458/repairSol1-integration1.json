@@ -1,0 +1,21 @@
+{
+  "repairSol": 1,
+  "owner_failed_GREEN": 1,
+  "failure_receipt": "boundary-green-1792071847758952409.json",
+  "diagnostic": "owner-diagnostic4.json",
+  "scope": "freshly produced compact URL/path only; assertions retained",
+  "changes": [
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex",
+      "before": "a655d420823acd0f74e4c58c83076c5cca7926703304bfdc1714587971b39ebf",
+      "after": "6b4aa4be3ab570c9698979bb464b5b8279e0aebf7b291248f593cdff7e35fd65",
+      "diff": "--- apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex\n+++ gaoxy-h2-group-probe-owner-repair1.ex\n@@ -985,9 +985,11 @@\n            deadline: deadline,\n            health: health,\n            url:\n-             selected.config.uri.scheme <>\n-               \"://\" <>\n-               selected.config.uri.authority <> health.path,\n+             :binary.copy(\n+               selected.config.uri.scheme <>\n+                 \"://\" <>\n+                 selected.config.uri.authority <> health.path\n+             ),\n            group: group.handle\n          },\n          {:ok, _args} <- probe_start_arguments(args) do\n"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs",
+      "before": "9648f97d0644c7eb3e13462870847a27e0e4412d16f2aa685477b208c16f8397",
+      "after": "533d718b19dcb2bb38e2aae920eb1ae041ecc8c332a84a31c1049758aa313d5b",
+      "diff": "--- apps/gaoxy_proxy/test/managed_h2_group_probe_arguments_test.exs\n+++ gaoxy-h2-group-probe-arguments-test-repair1.exs\n@@ -488,7 +488,7 @@\n       assert {:ok, returned} = start(input)\n       assert returned === input\n       reject(%{input | url: scheme <> \"://upstream.test\" <> input.health.path})\n-      backed = with_path(input, \"/\" <> :binary.copy(\"p\", 99))\n+      backed = with_path(input, :binary.copy(\"/\" <> :binary.copy(\"p\", 99)))\n       backed_url = slice(backed.url, 4_096)\n       assert :binary.referenced_byte_size(backed_url) > byte_size(backed_url)\n       reject(%{backed | url: backed_url})\n@@ -516,7 +516,7 @@\n     maximal =\n       with_path(\n         %{args | member: %{args.member | config: config}},\n-        \"/\" <> :binary.copy(\"p\", 8_191)\n+        :binary.copy(\"/\" <> :binary.copy(\"p\", 8_191))\n       )\n \n     assert byte_size(maximal.url) == 16_384\n@@ -722,7 +722,7 @@\n       member: %{id: \"member\", config: config, max_inflight: 1},\n       deadline: 12_000,\n       health: health(),\n-      url: scheme <> \"://upstream.test/health\"\n+      url: :binary.copy(scheme <> \"://upstream.test/health\")\n     }\n \n     if protocol == :http1, do: args, else: Map.put(args, :group, group(transport))\n@@ -779,7 +779,7 @@\n   defp root(args), do: args.member.config.uri.scheme <> \"://\" <> args.member.config.uri.authority\n \n   defp with_path(args, path) when is_binary(path),\n-    do: %{args | health: %{args.health | path: path}, url: root(args) <> path}\n+    do: %{args | health: %{args.health | path: path}, url: :binary.copy(root(args) <> path)}\n \n   defp with_path(args, path), do: %{args | health: %{args.health | path: path}}\n \n"
+    }
+  ]
+}

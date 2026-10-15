@@ -19,6 +19,196 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
     UpstreamTransports
   }
 
+  @signed_min -9_223_372_036_854_775_808
+  @signed_max 9_223_372_036_854_775_807
+
+  @doc false
+  def probe_start_arguments(
+        %{
+          owner: owner,
+          token: token,
+          member: member,
+          deadline: deadline,
+          health: health,
+          url: url
+        } = args
+      )
+      when is_pid(owner) and is_reference(token) and is_integer(deadline) and is_binary(url) do
+    h2 = probe_group_intent?(member, Map.get(args, :group))
+
+    valid =
+      if h2 do
+        map_size(args) == 7 and probe_selected?(member, true) and
+          probe_health?(health, true) and probe_group_handle?(Map.get(args, :group)) and
+          probe_h2_arguments?(args)
+      else
+        map_size(args) == 6 and probe_selected?(member, false) and probe_health?(health, false)
+      end
+
+    if valid, do: {:ok, args}, else: {:error, :invalid_probe_arguments}
+  end
+
+  def probe_start_arguments(_), do: {:error, :invalid_probe_arguments}
+
+  @doc false
+  def probe_recovery_arguments(
+        %{owner: owner, recovery: {kind, token}, completion: completion, deadline: deadline} =
+          args
+      )
+      when map_size(args) == 4 and is_pid(owner) and kind in [:selection, :probe] and
+             is_reference(token) and is_integer(deadline) and deadline >= @signed_min and
+             deadline <= @signed_max do
+    # The public capability is opaque: validate its shell without inspecting,
+    # serializing or reconstructing tracker/latch/unsupported interiors.
+    case completion do
+      %HTTP.RequestCompletion{tracker: _, latch: _, unsupported: _}
+      when map_size(completion) == 4 ->
+        {:ok, args}
+
+      _ ->
+        {:error, :invalid_probe_arguments}
+    end
+  end
+
+  def probe_recovery_arguments(_), do: {:error, :invalid_probe_arguments}
+
+  defp probe_group_intent?(member, group) do
+    match?(%{execution_profile: :managed_h2}, group) or
+      match?(%{config: %{upstream_protocol: protocol}} when protocol in [:http2, :h2c], member) or
+      match?(%{config: %{client: Gaoxy.Proxy.ManagedH2Client}}, member)
+  end
+
+  defp probe_selected?(%{id: id, config: config, max_inflight: max} = member, h2)
+       when map_size(member) == 3 and is_binary(id) and byte_size(id) in 1..128 and
+              is_integer(max) and max in 1..1_024 do
+    if h2,
+      do: probe_compact?(id) and Gaoxy.Proxy.ManagedH2Envelope.validate_config(config) == :ok,
+      else: probe_h1_config?(config)
+  end
+
+  defp probe_selected?(_, _), do: false
+
+  defp probe_h1_config?(
+         %Gaoxy.Proxy.HTTP{
+           uri: %URI{} = uri,
+           upstream_protocol: :http1,
+           client: HTTPFetchClient,
+           transport: transport,
+           limits: limits,
+           cacertfile: cert,
+           connect_address: address
+         } = config
+       )
+       when map_size(config) == 8 and map_size(uri) == 9 do
+    # These are already compiled owner configs. Keep H1's existing structural
+    # rules without repeating filesystem/host checks or adding H2 backing caps.
+    uri.scheme in ["http", "https"] and is_binary(uri.authority) and
+      is_binary(uri.host) and uri.host != "" and
+      is_integer(uri.port) and uri.port in 1..65_535 and uri.userinfo == nil and
+      uri.path == nil and uri.query == nil and uri.fragment == nil and
+      probe_h1_limits?(limits) and (cert == nil or is_binary(cert)) and
+      probe_address?(address) and
+      (transport == nil or (transport_handle?(transport) and cert == nil and address == nil))
+  end
+
+  defp probe_h1_config?(_), do: false
+
+  defp probe_h1_limits?(
+         %{
+           max_chunk_bytes: chunk,
+           opening_timeout: opening,
+           idle_timeout: idle,
+           write_timeout: write,
+           max_lifetime: lifetime
+         } = limits
+       )
+       when map_size(limits) == 5 and is_integer(chunk) and chunk in 1..65_536 and
+              is_integer(opening) and opening > 0 and is_integer(idle) and idle > 0 and
+              is_integer(write) and write > 0 and is_integer(lifetime) and lifetime > 0,
+       do: true
+
+  defp probe_h1_limits?(_), do: false
+  defp probe_address?(nil), do: true
+
+  defp probe_address?(address),
+    do: Gaoxy.Proxy.DestinationPolicy.normalize_address(address) === {:ok, address}
+
+  defp probe_health?(
+         %{
+           path: path,
+           interval: interval,
+           timeout: timeout,
+           stale_after: stale,
+           failure_threshold: failure,
+           recovery_threshold: recovery,
+           jitter: jitter
+         } = health,
+         h2
+       )
+       when map_size(health) == 7 and is_integer(interval) and interval in 1..3_600_000 and
+              is_integer(timeout) and timeout in 1..5_000 and is_integer(stale) and
+              stale in 1..3_600_000 and stale >= interval and is_integer(failure) and
+              failure in 1..100 and is_integer(recovery) and recovery in 1..100 and
+              is_integer(jitter) and jitter in 0..3_600_000 do
+    probe_health_path?(path, h2)
+  end
+
+  defp probe_health?(_, _), do: false
+
+  defp probe_health_path?("/" <> _ = path, h2) when byte_size(path) <= 8_192 do
+    (not h2 or probe_compact?(path)) and
+      Enum.all?(:binary.bin_to_list(path), fn char ->
+        char in 33..126 and char not in [?#, ?\\] and (not h2 or char != ??)
+      end) and not Regex.match?(~r/%(?![0-9a-fA-F]{2})/, path)
+  end
+
+  defp probe_health_path?(_, _), do: false
+
+  defp probe_h2_arguments?(args) do
+    group = args.group
+    config = args.member.config
+    root = config.uri.scheme <> "://" <> config.uri.authority
+    path = args.health.path
+
+    group.owner === args.owner and config.transport in group.transports and
+      args.deadline >= @signed_min and args.deadline <= @signed_max - 1_000 and
+      probe_compact?(args.url) and byte_size(root) <= group.max_url_bytes and
+      byte_size(root) <= 8_192 and byte_size(root) + byte_size(path) <= 65_536 and
+      group.max_url_bytes + byte_size(path) <= 65_536 and args.url === root <> path
+  end
+
+  defp probe_compact?(value) when is_binary(value),
+    do: :binary.referenced_byte_size(value) == byte_size(value)
+
+  defp probe_group_handle?(
+         %{
+           provider: __MODULE__,
+           owner: owner,
+           owner_epoch: epoch,
+           group: id,
+           generation: generation,
+           max_url_bytes: bytes,
+           transports: transports,
+           execution_profile: :managed_h2
+         } = handle
+       )
+       when map_size(handle) == 8 and is_pid(owner) and is_reference(epoch) and
+              is_reference(generation) and is_binary(id) and byte_size(id) in 1..128 and
+              is_integer(bytes) and bytes in 1..8_192 do
+    probe_compact?(id) and probe_transports?(transports, [], 0) and
+      match?({:ok, _}, Resources.validate([handle | transports]))
+  end
+
+  defp probe_group_handle?(_), do: false
+  defp probe_transports?([], _, count), do: count > 0
+
+  defp probe_transports?([transport | rest], seen, count) when count < 32,
+    do:
+      transport_handle?(transport) and transport not in seen and
+        probe_transports?(rest, [transport | seen], count + 1)
+
+  defp probe_transports?(_, _, _), do: false
+
   def child_spec(options),
     do: %{id: __MODULE__, start: {__MODULE__, :start_link, [options]}, restart: :temporary}
 
@@ -56,6 +246,12 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
     do: Lifecycle.call(owner, {:claim_probe, token, deadline}, deadline)
 
   def claim_probe(_, _, _), do: {:error, :stale_probe}
+
+  def claim_probe(owner, token, group, deadline)
+      when is_reference(token) and is_integer(deadline),
+      do: Lifecycle.call(owner, {:claim_probe, token, group, deadline}, deadline)
+
+  def claim_probe(_, _, _, _), do: {:error, :stale_probe}
 
   defp prepare_managed(owner, group, transports, preparer, operation, deadline) do
     provisional = group_handle(group, self(), make_ref(), make_ref())
@@ -457,6 +653,32 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
     end
   end
 
+  def handle_call({:claim_probe, token, handle, deadline}, {caller, _}, state)
+      when is_reference(token) and is_integer(deadline) do
+    case state.probes[token] do
+      %{pid: ^caller, claimed: false, key: group_key, deadline: probe_deadline, monitor: monitor} =
+          probe ->
+        group = state.groups[group_key]
+
+        if state.mode == :ready and group != nil and group.lifecycle == :active and
+             is_reference(monitor) and probe_group_handle?(handle) and
+             group.handle === handle and handle.owner === self() and
+             handle.owner_epoch === state.epoch and key(handle) === group_key and
+             deadline === probe_deadline and Lifecycle.remaining(deadline) > 0 and
+             Process.alive?(caller) and Process.alive?(state.instance) do
+          {:reply, {:ok, state.instance}, put_in(state.probes[token], %{probe | claimed: true})}
+        else
+          {:reply, {:error, :stale_probe}, state}
+        end
+
+      _ ->
+        {:reply, {:error, :stale_probe}, state}
+    end
+  end
+
+  def handle_call({:claim_probe, _, _, _}, _, state),
+    do: {:reply, {:error, :stale_probe}, state}
+
   def handle_call({:bind_probe, token, completion}, {caller, _}, state) do
     case state.probes[token] do
       %{pid: ^caller, completion: nil} = probe ->
@@ -732,23 +954,75 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
             Enum.take(candidates, rem(state.probe_cursor, count))
 
     Enum.reduce(candidates, state, fn {group_key, index, member, group}, acc ->
-      url = URI.to_string(%{member.config.uri | path: group.compiled.health.path})
-      reserve = HTTPFetchClient.reservation([], url, member.config.limits.max_chunk_bytes)
+      selected = Map.take(member, [:id, :config, :max_inflight])
 
-      if map_size(acc.probes) < acc.limits.max_probes and
-           acc.probe_bytes + reserve <= acc.limits.probe_bytes do
-        token = make_ref()
-        deadline = Lifecycle.deadline(group.compiled.health.timeout)
+      if probe_group_intent?(selected, group.handle),
+        do: launch_group_probe(acc, selected, group),
+        else: launch_h1_probe(acc, group_key, index, selected, group)
+    end)
+  end
 
-        args = %{
-          owner: self(),
-          token: token,
-          member: member,
-          deadline: deadline,
-          health: group.compiled.health,
-          url: url
-        }
+  defp launch_group_probe(state, selected, group) do
+    health = group.compiled.health
+    launch_now = Lifecycle.now()
 
+    with true <- probe_selected?(selected, true) and probe_health?(health, true),
+         true <- launch_now >= @signed_min and launch_now <= @signed_max,
+         budget =
+           min(
+             health.timeout,
+             min(
+               selected.config.limits.opening_timeout,
+               selected.config.limits.max_lifetime
+             )
+           ),
+         deadline = launch_now + budget,
+         true <- deadline >= @signed_min and deadline <= @signed_max - 1_000,
+         args = %{
+           owner: self(),
+           token: make_ref(),
+           member: selected,
+           deadline: deadline,
+           health: health,
+           url:
+             :binary.copy(
+               selected.config.uri.scheme <>
+                 "://" <>
+                 selected.config.uri.authority <> health.path
+             ),
+           group: group.handle
+         },
+         {:ok, _args} <- probe_start_arguments(args) do
+      case apply(Gaoxy.Proxy.ManagedH2GroupBoundary, :activation, []) do
+        {:error, :accounting_not_ready} -> state
+        # Future activation still requires separately accounted H2 admission;
+        # this branch cannot use the H1 reservation or start with zero bytes.
+        :ok -> state
+      end
+    else
+      _ -> state
+    end
+  end
+
+  defp launch_h1_probe(state, group_key, index, selected, group) do
+    url = URI.to_string(%{selected.config.uri | path: group.compiled.health.path})
+    token = make_ref()
+    deadline = Lifecycle.deadline(group.compiled.health.timeout)
+
+    args = %{
+      owner: self(),
+      token: token,
+      member: selected,
+      deadline: deadline,
+      health: group.compiled.health,
+      url: url
+    }
+
+    with {:ok, args} <- probe_start_arguments(args) do
+      reserve = HTTPFetchClient.reservation([], url, selected.config.limits.max_chunk_bytes)
+
+      if map_size(state.probes) < state.limits.max_probes and
+           state.probe_bytes + reserve <= state.limits.probe_bytes do
         case DynamicSupervisor.start_child(Gaoxy.Proxy.ProbeSupervisor, {Probe, args}) do
           {:ok, pid} ->
             probe = %{
@@ -763,26 +1037,28 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
               deadline: deadline
             }
 
-            acc =
+            state =
               put_in(
-                acc.groups[group_key].members,
-                List.update_at(acc.groups[group_key].members, index, &%{&1 | probe: token})
+                state.groups[group_key].members,
+                List.update_at(state.groups[group_key].members, index, &%{&1 | probe: token})
               )
 
             %{
-              acc
-              | probes: Map.put(acc.probes, token, probe),
-                probe_bytes: acc.probe_bytes + reserve,
-                probe_cursor: acc.probe_cursor + 1
+              state
+              | probes: Map.put(state.probes, token, probe),
+                probe_bytes: state.probe_bytes + reserve,
+                probe_cursor: state.probe_cursor + 1
             }
 
           {:error, _} ->
-            acc
+            state
         end
       else
-        acc
+        state
       end
-    end)
+    else
+      {:error, :invalid_probe_arguments} -> state
+    end
   end
 
   defp finish_probe(state, token, outcome) do
@@ -857,15 +1133,15 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
         deadline: max(held.deadline, Lifecycle.deadline(1_000))
       }
 
-      case DynamicSupervisor.start_child(Gaoxy.Proxy.ProbeSupervisor, {Probe, args}) do
-        {:ok, pid} ->
-          recovered =
-            Map.merge(held, %{recovery: pid, recovery_monitor: Process.monitor(pid), monitor: nil})
+      with {:ok, args} <- probe_recovery_arguments(args),
+           {:ok, pid} <- DynamicSupervisor.start_child(Gaoxy.Proxy.ProbeSupervisor, {Probe, args}) do
+        recovered =
+          Map.merge(held, %{recovery: pid, recovery_monitor: Process.monitor(pid), monitor: nil})
 
-          if kind == :selection,
-            do: put_in(state.tokens[token], recovered),
-            else: put_in(state.probes[token], recovered)
-
+        if kind == :selection,
+          do: put_in(state.tokens[token], recovered),
+          else: put_in(state.probes[token], recovered)
+      else
         {:error, _} ->
           put_in(state.groups[held.key].lifecycle, :failed)
       end

@@ -1,0 +1,8 @@
+{
+  "repairSol": 1,
+  "path": "apps/gaoxy_proxy/test/managed_h2_group_probe_boundary_test.exs",
+  "before": "ef1e8749ca7272db72e9326b86f3a76eecd77140f0efaec10ab4b0f3c7c625c6",
+  "after": "b8aabfd43aa3cf05a8def303e0bb2104e3f3e335e816a98e814ac90b8d667d30",
+  "assertions_unchanged": true,
+  "diff": "--- \n+++ \n@@ -194,8 +194,8 @@\n \n   test \"startup URL is exactly raw root plus the original compact valid health path\" do\n     state = fixture()\n-    path = \"/\" <> :binary.copy(\"p\", 100)\n-    state = %{state | health: %{state.health | path: path}, url: raw_root(state) <> path}\n+    path = :binary.copy(\"/\" <> :binary.copy(\"p\", 100))\n+    state = %{state | health: %{state.health | path: path}, url: :binary.copy(raw_root(state) <> path)}\n \n     for url <- [\n           nil,\n@@ -582,7 +582,7 @@\n   defp fixture(protocol \\\\ :http2, raw_port? \\\\ false) do\n     scheme = if protocol == :http2, do: \"https\", else: \"http\"\n     port = if protocol == :http2, do: \"00443\", else: \"00080\"\n-    root = scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\")\n+    root = :binary.copy(scheme <> \"://upstream.test\" <> if(raw_port?, do: \":\" <> port, else: \"\"))\n \n     transport = %{\n       provider: UpstreamTransports,\n@@ -647,7 +647,7 @@\n       member: %{id: \"member\", config: config, max_inflight: 32},\n       deadline: 4_000,\n       health: health,\n-      url: root <> health.path,\n+      url: :binary.copy(root <> health.path),\n       group: group,\n       cleanup_deadline: 5_000,\n       owner_monitor: make_ref(),\n"
+}
