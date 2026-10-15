@@ -1,0 +1,248 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 33012, max_cases: 1
+
+
+
+  1) test retained validation rejects noncompact fields (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:126[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_group_source/1 is undefined or private. Did you mean:
+
+           * validate_request/1
+           * validate_response/2
+     [0m
+     [36mcode: [0mfor {key, value} <- [target: target(101), name: :binary.copy("n", 100),
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.validate_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:132: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test retained validation rejects noncompact fields"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:127: (test)
+
+
+
+  2) test source rejects unknown shapes before serialization (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:18[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor bad <- [nil, [], %{}, Map.put(source(), :url, "https://other.test/"),
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(nil)
+       test/managed_h2_group_source_test.exs:293: Gaoxy.Proxy.ManagedH2GroupSourceTest.reject_source/1
+       test/managed_h2_group_source_test.exs:23: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test source rejects unknown shapes before serialization"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:19: (test)
+
+
+
+  3) test maximum complete neutral value fits the existing request slot (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:141[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mretained = accept_source(input)
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"x", "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" <> ...}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...], target: "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" <> ..., method: :options, body_mode: {:length, 18446744073709551615}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:146: (test)
+
+
+
+  4) test selected TLS H2 and h2c use their actual origin (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:163[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request/2 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor {protocol, origin} <- [{:http2, "https://selected.test:444"},
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "selected.test:444", userinfo: nil, host: "selected.test", port: 444, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.317.0>, resource: #Reference<0.3046868459.1883504642.13366>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3046868459.1883504642.13365>}, limits: %{idle_timeout: 60000, max_lifetime: 30000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:168: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test selected TLS H2 and h2c use their actual origin"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:164: (test)
+
+
+
+  5) test selected envelope keeps effective pseudoheader limits (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:237[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mneutral = accept_source(%{source() | fields: List.duplicate({"x", ""}, 251)})
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:238: (test)
+
+
+
+  6) test source rejects malformed target grammar (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:60[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor target <- [nil, [], "", "relative", "*", "upstream.test:443", "https://other.test/",
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: nil, method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:293: Gaoxy.Proxy.ManagedH2GroupSourceTest.reject_source/1
+       test/managed_h2_group_source_test.exs:64: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test source rejects malformed target grammar"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:61: (test)
+
+
+
+  7) test backing limits precede compact copies (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:99[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor {key, value} <- [target: target(101), name: :binary.copy("n", 100),
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:293: Gaoxy.Proxy.ManagedH2GroupSourceTest.reject_source/1
+       test/managed_h2_group_source_test.exs:104: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test backing limits precede compact copies"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:100: (test)
+
+
+
+  8) test selected envelope still rejects forbidden fields (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:226[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor fields <- [[{"host", "other.test"}], [{"connection", "close"}],
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"host", "other.test"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:232: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test selected envelope still rejects forbidden fields"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:227: (test)
+
+
+
+  9) test fixed activation accounting and public preparation remain unchanged (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:266[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request/2 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0massert {:ok, request} = selected(cfg, source())
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.322.0>, resource: #Reference<0.3046868459.1883504641.19024>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3046868459.1883504641.19023>}, limits: %{idle_timeout: 60000, max_lifetime: 30000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000}, upstream_protocol: :h2c, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:268: (test)
+
+
+
+ 10) test source bounds complete proper fields (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:72[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor fields <- [nil, %HTTP.Headers{}, [{"x", "v"} | :improper], ["x"], [[[]]],
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: nil, target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:293: Gaoxy.Proxy.ManagedH2GroupSourceTest.reject_source/1
+       test/managed_h2_group_source_test.exs:78: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test source bounds complete proper fields"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:73: (test)
+
+
+
+ 11) test selected request preserves escapes double slash and empty query (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:197[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c],
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:201: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test selected request preserves escapes double slash and empty query"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:198: (test)
+
+
+
+ 12) test selected upload limit remains member-specific (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:253[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor mode <- [:none, :chunked, {:length, 3}] do
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 1, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:257: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test selected upload limit remains member-specific"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:256: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test selected upload limit remains member-specific"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_source_test.exs:255: (test)
+
+
+
+ 13) test origin-neutral source preserves raw target (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:8[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0massert {:ok, retained} = call(:prepare_group_source, [input])
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:10: (test)
+
+
+
+ 14) test selected assembly bounds origin and joined URL (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:211[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request/2 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0massert {:ok, request} = selected(cfg, source())
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_request(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test:00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" <> ..., userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.327.0>, resource: #Reference<0.3046868459.1883504641.19045>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3046868459.1883504641.19044>}, limits: %{idle_timeout: 60000, max_lifetime: 30000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:216: (test)
+
+
+
+ 15) test logical source bounds are inclusive (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:88[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0massert accept_source(%{source() | target: target, fields: fields}).target == target
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"x", "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" <> ...}], target: "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" <> ..., method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:92: (test)
+
+
+
+ 16) test source validates all fixed scalar ranges (Gaoxy.Proxy.ManagedH2GroupSourceTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_source_test.exs:29[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source/1 is undefined or private. Did you mean:
+
+           * prepare/2
+     [0m
+     [36mcode: [0mfor method <- [:get, :head, :post, :put, :patch, :delete, :options],
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Envelope.prepare_group_source(%{fields: [{"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 1, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_group_source_test.exs:298: Gaoxy.Proxy.ManagedH2GroupSourceTest.accept_source/1
+       test/managed_h2_group_source_test.exs:33: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GroupSourceTest."test source validates all fixed scalar ranges"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_source_test.exs:30: (test)
+
+
+Finished in 0.9 seconds (0.9s async, 0.00s sync)
+[31m16 tests, 16 failures[0m

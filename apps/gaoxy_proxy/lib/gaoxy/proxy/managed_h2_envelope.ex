@@ -40,6 +40,33 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
 
   def prepare(_, _), do: {:error, :invalid_request}
 
+  def prepare_group_source(source) do
+    with :ok <- group_source_shape(source) do
+      {:ok, %{source | target: :binary.copy(source.target), fields: copy_pairs(source.fields)}}
+    end
+  end
+
+  def validate_group_source(source) do
+    with :ok <- group_source_shape(source),
+         true <- compact?(source.target) and compact_pairs?(source.fields) do
+      :ok
+    else
+      _ -> {:error, :invalid_group_source}
+    end
+  end
+
+  def prepare_group_request(config, source) do
+    with :ok <- validate_config(config),
+         :ok <- validate_group_source(source),
+         root = config.uri.scheme <> "://" <> config.uri.authority,
+         true <- byte_size(root) <= 8_192,
+         true <- byte_size(root) + byte_size(source.target) <= @binary_cap do
+      prepare(config, Map.put(source, :url, :binary.copy(root <> source.target)))
+    else
+      _ -> {:error, :invalid_request}
+    end
+  end
+
   def validate_request(request) do
     with {:ok, _} <- request_shape(request),
          true <- compact?(request.url) and compact?(request.target),
@@ -155,6 +182,35 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
   end
 
   def validate_response(_, _), do: {:error, :invalid_response}
+
+  defp group_source_shape(
+         %{
+           target: target,
+           method: method,
+           fields: fields,
+           body_mode: mode,
+           request_limits: limits,
+           max_upload_bytes: upload
+         } = source
+       )
+       when map_size(source) == 6 and method in @methods and
+              is_integer(upload) and upload in 1..@binary_cap do
+    with :ok <- body_mode(mode),
+         :ok <- request_limits(limits),
+         :ok <- bounded_binary(target, @binary_cap, false),
+         <<"/", _::binary>> <- target,
+         true <- url_text?(target),
+         {:ok, _, logical, backing} <- pairs(fields, 256, 0, 0, 0),
+         true <- byte_size(target) + logical <= 131_072,
+         true <- :binary.referenced_byte_size(target) + backing <= 131_072,
+         true <- :erlang.external_size(source) <= 205_337 do
+      :ok
+    else
+      _ -> {:error, :invalid_group_source}
+    end
+  end
+
+  defp group_source_shape(_), do: {:error, :invalid_group_source}
 
   defp request_shape(
          %{

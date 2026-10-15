@@ -1,0 +1,180 @@
+{
+  "task_id": "h2_group_accounting_readiness",
+  "assignment": "direct read-only bounded planning/investigation",
+  "status": "DONE",
+  "accounting_status": "ACCOUNTING_NOT_READY",
+  "scope_completion": "Investigation and two requested artifacts only; no implementation/measurement acceptance claimed.",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_at_start": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "baseline_at_report": "bbbc50dc628d4d82fde7377b5bcff68bb35e1867",
+  "baseline_change": "Root declared and performed predecessor evidence/feature commits during read-only investigation; no worker mutation.",
+  "drafts": {
+    "gaoxy-h2-groups-probes-design-draft.md": "c5e8dd33e2e89d067a438a7dcbcd50bfbb8788915a576992c597457f1d173fe3",
+    "gaoxy-h2-groups-probes-plan-draft.md": "f7f82a2bf202cb12f08e06e7b113903aca0dae47b65eaf97f78fe36a1a082325"
+  },
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "6a8433c9b5b309b1996d58895115f12004d53dbddc22204ac47106fbd76cd50a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_preparation.ex": "ce238f3093a944b2970dbb9cd99372466fae37ecfb5eb2c45330fde4cdc3aca5",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "cc20a304f5d4c5930224a989a2ed65ee7f3162fe86a95276132c584e741f6473",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "fa49c98a914947e517436d41f2d8d0bacb15a5ed8cec3c085ba635bbe48e9138",
+    "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+    "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+    "apps/gaoxy_http/lib/gaoxy/http/resources.ex": "0e58a4f0badd2ba6d21b9f118c5b3f6c4d1070b4371e76e9dfc0656796f0907b",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+    "apps/gaoxy/lib/gaoxy/lifecycle.ex": "7f673e89f59b41af72057ce1afa553fa6c62e56125b450e6d09e58da0a434f75"
+  },
+  "installed_elixir_source": {
+    "path": "/nix/store/22fybrvpfzc2csw3n686x8nr486jsj0n-elixir-1.18.5/lib/elixir/lib/elixir/lib/dynamic_supervisor.ex",
+    "sha256": "75dad290cf34294824d2d0f0741f0d1db2f2ff5533658adab54b0349b3050a62",
+    "runtime_qualification": "NOT RUN; installed source only, canonical Nix cohort must be checked by parent"
+  },
+  "findings": [
+    {
+      "id": "A01",
+      "status": "CONFIRMED_SCHEMA_MISMATCH",
+      "evidence": [
+        "upstream_groups.ex:666",
+        "upstream_groups.ex:743-750"
+      ],
+      "finding": "Checkout reply already has exact id/config/max_inflight; Probe startup currently copies the full 11-key runtime member. The draft Selected schema conflates them.",
+      "action": "Keep checkout exact three-key; narrow Probe launch member to those same three keys before copying into child/start args. Do not carry health counters or probe identity inside selected member."
+    },
+    {
+      "id": "A02",
+      "status": "CONFIRMED_MISSING_SCHEMA",
+      "evidence": [
+        "upstream_groups/probe.ex:11-14",
+        "upstream_groups/probe.ex:157-182",
+        "upstream_groups.ex:851-870"
+      ],
+      "finding": "Recovery is a second Probe actor schema: start owner/recovery/completion/deadline; state adds owner_monitor. Current PC/PR definition omits it.",
+      "action": "Define separate recovery start/state/message projections and concurrent failed-probe/owner-helper multiplicity; preserve original completion as typed opaque capability and finite public shell. Never serialize its interior."
+    },
+    {
+      "id": "A03",
+      "status": "CONFIRMED_MISSING_ENFORCEMENT",
+      "evidence": [
+        "upstream_groups/options.ex:117-136",
+        "upstream_groups.ex:127-142",
+        "group_endpoint.ex:10-18",
+        "http.ex:247-255"
+      ],
+      "finding": "Current id/path bounds are logical-only, group handle forwards id without compaction, and GroupEndpoint.group_limits permits time bignums. Proposed compact/backing/signed ranges are not implemented.",
+      "action": "H2-only pure validators reject excess backing before copy, unknown keys, noncompact retained id/path, and limits outside fixed five-key range; later bind before retention. Keep H1 contracts unchanged."
+    },
+    {
+      "id": "A04",
+      "status": "CONFIRMED_PROJECTOR_INCOMPATIBILITY",
+      "evidence": [
+        "test/support/managed_h2_control_projection.exs:23-27",
+        "test/support/managed_h2_control_projection.exs:365-367",
+        "test/support/managed_h2_control_projection.exs:387-393",
+        "test/support/managed_h2_control_projection.exs:470-498"
+      ],
+      "finding": "Fixed projector requires nil group selection, fixed selector, one transport/source pin, one Exchange pin and no downstream TLS policy/certificate. It cannot measure group or TLS browser phase closure.",
+      "action": "Add separate group projector; preserve fixed projector unchanged. Explicitly support native H1/H2 Exchange shell and named native lease projections only after validation."
+    },
+    {
+      "id": "A05",
+      "status": "SOURCE_PARTLY_RESOLVES_MULTIPLICITY",
+      "evidence": [
+        "http.ex:529-539",
+        "http.ex:558-575",
+        "upstream_groups.ex:743-779",
+        "Elixir.DynamicSupervisor:438-440,783-819"
+      ],
+      "finding": "Temporary Session/Probe children discard startup MFA args at save_child; no persistent supervisor args copy after success. Transient caller, supervisor call, child-init argument and returned child state can overlap. Two PC alone is not an adequate standalone proof; 2PC plus 2PR may cover those roots only with exact allocation of payload slots and wrappers.",
+      "action": "Construct four-root startup bundle and source-linked release table for normal/start-error/recovery. Verify canonical Nix Elixir source matches inspected installed1.18.5 before accepting."
+    },
+    {
+      "id": "A06",
+      "status": "UNPROVED_FIXED_SLOT_ALLOCATION",
+      "evidence": [
+        "managed_h2_reservation.ex:25-28",
+        "managed_h2_client.ex:245-282",
+        "http/session.ex:221-255,430-459,548-590"
+      ],
+      "finding": "Five request/config and two checked-policy components are fixed totals, not per-projection freebies. Neutral, new envelope, complete preparation return, source Fetch options and submitted Fetch may overlap with a retained pump/start or old callback source. Old/new control projections with markers do not prove only five payload copies.",
+      "action": "Closed phase evaluator counts all independently retained complete root occurrences; report count by slot and reject sixth request/config or third checked policy. If current transitions cannot fit, explicitly add charged slots and recalculate; do not assume11542108."
+    },
+    {
+      "id": "A07",
+      "status": "UNPROVED_MESSAGE_MULTIPLICITY",
+      "evidence": [
+        "upstream_groups.ex:163-183",
+        "upstream_transports.ex:41-84,1370-1401",
+        "http.ex:712-759",
+        "lifecycle.ex:10-20"
+      ],
+      "finding": "One M cap and2M do not by themselves cover nested calls in two concurrent actors, queued handoff, call arguments and reply candidates. GenServer call wrappers/from-alias are absent from an application-body-only tuple. Transport validation wire uses normalized authority tuple, distinct from public origin identity.",
+      "action": "Enumerate exact call/reply/handoff/start/recovery/timer families including actual public wrappers; construct simultaneous pump+Session and owner+Probe bundles. Count call arg copy/reply/workspace explicitly."
+    },
+    {
+      "id": "A08",
+      "status": "UNPROVED_COMPONENT_AND_WORKSPACE_CEILINGS",
+      "evidence": [
+        "design-draft:D4",
+        "resources.ex:10-24",
+        "upstream_groups.ex:584-592",
+        "managed_h2_envelope.ex:13-38,159-231"
+      ],
+      "finding": "Component cap arithmetic does not prove ETF complete wrapper bounds; H near65536 cannot also have its group-pin list at65536 without admission restriction. Flattened Resources constraint further couples H and repeated transport list. Workspace262144 is not proof for oldNeutral/newEnvelope/URL/target/preparation temporaries.",
+      "action": "Use actually jointly admissible maximal constructed values, validate complete lists, measure wrapper-inclusive old/new/message/workspace bundles, and keep request-representation payloads out of W only with explicit slot ownership."
+    },
+    {
+      "id": "A09",
+      "status": "BOUNDARY_OF_CLAIM",
+      "evidence": [
+        "upstream_groups.ex:249-307",
+        "upstream_groups.ex:798-847"
+      ],
+      "finding": "max_config_bytes charges compiled plus transport sidecar once; owner retains additional derived representations. It does not establish whole-owner memory or make copied launch arguments free. Failure/success counters are unbounded over lifetime if exported wholesale.",
+      "action": "Do not expand this task into owner-memory redesign. Narrow selected/start member before retention; leave owner private counters out of transferred schema. If any counter is later exported, require an explicit finite range or bounded normalization before copying."
+    }
+  ],
+  "recommended_prerequisite": {
+    "name": "P0 closed group accounting schemas and phase ledger",
+    "new_files": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex",
+      "apps/gaoxy_proxy/test/support/managed_h2_group_projection.exs",
+      "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs"
+    ],
+    "existing_file_edits": "None for initial pure prerequisite; root updates adopted design/plan. Runtime boundary consumers follow in separate explicitly owned integration without enabling live H2 Options.",
+    "runtime_or_network": "Forbidden for this prerequisite; parent may run pure ExUnit tests only after source readiness.",
+    "reservation_constant": "None adopted; proposed extra2097152/total11542108 remain PROPOSED_UNPROVED."
+  },
+  "verification": {
+    "source_trace": "PASS static inspection",
+    "python_report_generation": "PASS",
+    "mix": "NOT RUN",
+    "etf_measurements": "NOT RUN",
+    "tests": "NOT RUN",
+    "live_prepare": "NOT RUN",
+    "network_browser": "NOT RUN",
+    "independent_readiness": "NOT RUN"
+  },
+  "counters": {
+    "worker_sol_repair_rounds": 0,
+    "inherited_fixed_sol": 19,
+    "inherited_fixture": "Sol20 RED1/GREEN1",
+    "inherited_collector_sol": 17,
+    "inherited_full58_failed": 2,
+    "inherited_astra": "2/2 exhausted",
+    "astra_gate": null
+  },
+  "shutdown": "All worker commands finished synchronously; no worker runtime/build/peer/browser/agent launched.",
+  "writes": [
+    "/tmp/gaoxy-h2-group-accounting-readiness-investigation.json",
+    "/tmp/gaoxy-h2-group-accounting-readiness-investigation.md"
+  ],
+  "decisions_needed": "No user product decision; root may adopt recommended pure prerequisite and independently review exact sources. No speculative reserve or live activation until closure.",
+  "markdown_sha256": "e8a1e4d4f45e6a9c0c93c83e3bff53edd1f008899fe4041882cc1d318def7fbd"
+}
