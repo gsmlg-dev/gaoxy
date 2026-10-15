@@ -442,6 +442,7 @@ defmodule Gaoxy.HTTP.Generation.Store do
     with :ok <- input_bound(routes, limits),
          {:ok, _} <- Resources.validate(router.resources),
          :ok <- generation_bound(routes),
+         :ok <- Router.validate_resource_sidecar(router),
          true <-
            :erlang.external_size(router) <= limits.max_config_bytes ||
              {:error, :configuration_too_large},

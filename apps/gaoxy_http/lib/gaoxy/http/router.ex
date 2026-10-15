@@ -39,10 +39,27 @@ defmodule Gaoxy.HTTP.Router do
 
   def compile(_), do: {:error, :invalid_routes}
 
-  defp collect_resources(routes) do
+  @doc false
+  def validate_resource_sidecar(%__MODULE__{routes: routes, resources: resources})
+      when is_list(routes) do
+    with {:ok, supplied} <- Gaoxy.HTTP.Resources.validate(resources),
+         {:ok, expected} <- collect_resources(routes, :compiled),
+         true <- MapSet.equal?(MapSet.new(supplied), MapSet.new(expected)) do
+      :ok
+    else
+      _ -> {:error, :invalid_endpoint_resources}
+    end
+  end
+
+  def validate_resource_sidecar(_), do: {:error, :invalid_endpoint_resources}
+
+  defp collect_resources(routes, mode \\ :compile) do
     Enum.reduce_while(routes, {:ok, []}, fn %{target: {module, options}}, {:ok, acc} ->
       handles =
-        if function_exported?(module, :resources, 1), do: module.resources(options), else: []
+        if mode == :compiled,
+          do: compiled_resources(module, options),
+          else:
+            if(function_exported?(module, :resources, 1), do: module.resources(options), else: [])
 
       with {:ok, handles} <- Gaoxy.HTTP.Resources.validate(handles),
            {:ok, union} <- Gaoxy.HTTP.Resources.validate(Enum.uniq(acc ++ handles)) do
@@ -55,6 +72,16 @@ defmodule Gaoxy.HTTP.Router do
     _ -> {:error, :invalid_endpoint_resources}
   catch
     _, _ -> {:error, :invalid_endpoint_resources}
+  end
+
+  defp compiled_resources(__MODULE__, router) do
+    with :ok <- validate_resource_sidecar(router), do: resources(router)
+  end
+
+  defp compiled_resources(module, options) when is_atom(module) do
+    if Code.ensure_loaded?(module) and function_exported?(module, :resources, 1),
+      do: module.resources(options),
+      else: []
   end
 
   @impl true
