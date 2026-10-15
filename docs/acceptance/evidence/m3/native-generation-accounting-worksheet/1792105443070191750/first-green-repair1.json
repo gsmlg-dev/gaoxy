@@ -1,0 +1,31 @@
+{
+  "kind": "FIRST_GREEN_DIAGNOSIS_AND_TEST_CONTRACT_REPAIR",
+  "failed_green": "worksheet-green1.json",
+  "fresh_green": "worksheet-green2.json",
+  "production_changed": false,
+  "scope": "standalone ETF version octet in exact integer expectations",
+  "artifacts": {
+    "gaoxy-native-generation-worksheet-first-green-diagnosis1.md": {
+      "sha256": "e1f7ee7d6b2077ea874337ed2733ed84db85c4a07236c232d871d37421193d6b",
+      "bytes": 10989
+    },
+    "gaoxy-native-generation-worksheet-first-green-diagnosis1.json": {
+      "sha256": "83b6cfac68cd851cfc7026d0efc2482eb01568746de8649bae9449137b79c73c",
+      "bytes": 10608
+    }
+  },
+  "counters": {
+    "inherited_group_failed_GREEN": 24,
+    "inherited_group_root_repair_events": 27,
+    "worksheet_failed_GREEN": 1,
+    "worksheet_test_contract_repair_events": 1,
+    "worksheet_production_repair_events": 0,
+    "pre_RED_fixture_deprecation_compatibility_correction": 1,
+    "pre_runtime_adoption_tooling_failure": 1,
+    "astra_used": 2,
+    "astra_max": 2
+  },
+  "diff": "--- preserved failing test\n+++ corrected exact expectations\n@@ -178,14 +178,14 @@\n   test \"unbounded M pays the ETF widths of both M and the fixed point B\" do\n     m = 18_446_744_073_709_551_616\n     assert {:ok, report} = call(:worksheet, [m, context()])\n-    # E(M)=E(B)=13 rather than the baseline INTEGER_EXT size5. This\n-    # independently adds8 for M,8 for plan B and16 for the two update roots.\n-    assert report.total == 110_680_464_442_259_675_084\n-    assert report.total == 6 * m + 2_365_388\n+    # Complete E(M)=E(B)=13 rather than INTEGER_EXT size6, including version.\n+    # This adds7 for M,7 for plan B and14 for the two complete update roots.\n+    assert report.total == 110_680_464_442_259_675_080\n+    assert report.total == 6 * m + 2_365_384\n     rows = Map.new(report.roles, &{&1.name, &1})\n-    assert rows.plan.cap == 69\n-    assert rows.admission_update_payload.cap == 2071\n-    assert rows.admission_update_wire.cap == 6206\n+    assert rows.plan.cap == 67\n+    assert rows.admission_update_payload.cap == 2070\n+    assert rows.admission_update_wire.cap == 6205\n     assert e(m) == 13\n     assert e(report.total) == 13\n   end\n@@ -199,13 +199,13 @@\n       {255, 2_758_572},\n       {256, 2_758_575},\n       {2_144_725_072, 2_758_575},\n-      {2_144_725_073, 2_758_581},\n-      {2_147_483_647, 2_758_581},\n-      {2_147_483_648, 2_758_584},\n-      {4_294_967_295, 2_758_586},\n-      {4_294_967_296, 2_758_587},\n-      {18_446_744_073_709_551_615, 2_758_598},\n-      {18_446_744_073_709_551_616, 2_758_599}\n+      {2_144_725_073, 2_758_579},\n+      {2_147_483_647, 2_758_579},\n+      {2_147_483_648, 2_758_581},\n+      {4_294_967_295, 2_758_583},\n+      {4_294_967_296, 2_758_584},\n+      {18_446_744_073_709_551_615, 2_758_595},\n+      {18_446_744_073_709_551_616, 2_758_596}\n     ]\n \n     for {retained, expected_total} <- expected do\n@@ -214,10 +214,10 @@\n       assert report.total == expected_total\n       assert report.total == Enum.sum(Enum.map(report.roles, & &1.subtotal))\n       rows = Map.new(report.roles, &{&1.name, &1})\n-      assert rows.context.cap == 8213 + e(retained) - 2\n+      assert rows.context.cap == 8213 + e(retained) - 3\n       assert rows.plan.cap == 53\n-      assert rows.admission_update_payload.cap == 2063 + e(retained + expected_total) - 5\n-      assert rows.admission_update_wire.cap == 6198 + e(retained + expected_total) - 5\n+      assert rows.admission_update_payload.cap == 2063 + e(retained + expected_total) - 6\n+      assert rows.admission_update_wire.cap == 6198 + e(retained + expected_total) - 6\n     end\n   end\n \n",
+  "production_sha256": "73249ba0952f33cb7605d1ca8a5c7aecfe240d93456a3ad9f877ee9a9501636c",
+  "status": "REPAIRED_TEST_CONTRACT_WITH_EXACT_ASSERTIONS"
+}

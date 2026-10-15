@@ -1,0 +1,346 @@
+{
+  "task_id": "native_worksheet_tests_first_green_diagnosis",
+  "assignment": "direct read-only diagnosis; only two assigned /tmp outputs",
+  "status": "DIAGNOSIS_COMPLETE_NOT_REVALIDATED",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_parent_and_archived_receipt": "48a71a70acbe9cb46f99b82e4062c6f5f25d9667",
+  "root_cause": "Test author used body sizes2/5 as complete standalone ETF sizes for SMALL_INTEGER_EXT/INTEGER_EXT; required version byte makes them3/6. SMALL_BIG_EXT expectations already included version correctly.",
+  "production_change_required": false,
+  "production_evidence": {
+    "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_generation_accounting.ex",
+    "sha256": "73249ba0952f33cb7605d1ca8a5c7aecfe240d93456a3ad9f877ee9a9501636c",
+    "lines": [
+      78,
+      79,
+      81,
+      188,
+      189,
+      223
+    ],
+    "reason": "E is external_size; tuple helper removes one version per nested child once; integer-dependent roles use complete E dynamically."
+  },
+  "test": {
+    "file": "apps/gaoxy_proxy/test/managed_generation_accounting_test.exs",
+    "sha256": "b2c2fca6313be718fd3375a309790a13f81d528e3d6fb7d51180d5ea2d319d65",
+    "corrections": [
+      {
+        "line": 181,
+        "old": "# E(M)=E(B)=13 rather than the baseline INTEGER_EXT size5. This",
+        "new": "# E(M)=E(B)=13 rather than the complete baseline INTEGER_EXT size6. This",
+        "formula": "standalone INTEGER_EXT = version1 + tag1 + payload4 = 6"
+      },
+      {
+        "line": 182,
+        "old": "# independently adds8 for M,8 for plan B and16 for the two update roots.",
+        "new": "# independently adds7 for M,7 for plan B and14 for the two update roots.",
+        "formula": "13-6=7; four independently priced integer occurrences add28"
+      },
+      {
+        "line": 183,
+        "old": "assert report.total == 110_680_464_442_259_675_084",
+        "new": "assert report.total == 110_680_464_442_259_675_080",
+        "formula": "6*M + 2365356 + (13-6) + (13-6) + 2*(13-6)"
+      },
+      {
+        "line": 184,
+        "old": "assert report.total == 6 * m + 2_365_388",
+        "new": "assert report.total == 6 * m + 2_365_384",
+        "formula": "2365356+28=2365384"
+      },
+      {
+        "line": 186,
+        "old": "assert rows.plan.cap == 69",
+        "new": "assert rows.plan.cap == 67",
+        "formula": "53+(E(M)-6)+(E(B)-6)=53+7+7"
+      },
+      {
+        "line": 187,
+        "old": "assert rows.admission_update_payload.cap == 2071",
+        "new": "assert rows.admission_update_payload.cap == 2070",
+        "formula": "2063+(E(B)-6)=2063+7"
+      },
+      {
+        "line": 188,
+        "old": "assert rows.admission_update_wire.cap == 6206",
+        "new": "assert rows.admission_update_wire.cap == 6205",
+        "formula": "6198+(E(B)-6)=6198+7"
+      },
+      {
+        "line": 202,
+        "old": "{2_144_725_073, 2_758_581}",
+        "new": "{2_144_725_073, 2_758_579}",
+        "formula": "2758572+(6-3)+2*(8-6)"
+      },
+      {
+        "line": 203,
+        "old": "{2_147_483_647, 2_758_581}",
+        "new": "{2_147_483_647, 2_758_579}",
+        "formula": "2758572+(6-3)+2*(8-6)"
+      },
+      {
+        "line": 204,
+        "old": "{2_147_483_648, 2_758_584}",
+        "new": "{2_147_483_648, 2_758_581}",
+        "formula": "2758572+(8-3)+2*(8-6)"
+      },
+      {
+        "line": 205,
+        "old": "{4_294_967_295, 2_758_586}",
+        "new": "{4_294_967_295, 2_758_583}",
+        "formula": "2758572+(8-3)+2*(9-6)"
+      },
+      {
+        "line": 206,
+        "old": "{4_294_967_296, 2_758_587}",
+        "new": "{4_294_967_296, 2_758_584}",
+        "formula": "2758572+(9-3)+2*(9-6)"
+      },
+      {
+        "line": 207,
+        "old": "{18_446_744_073_709_551_615, 2_758_598}",
+        "new": "{18_446_744_073_709_551_615, 2_758_595}",
+        "formula": "2758572+(12-3)+2*(13-6)"
+      },
+      {
+        "line": 208,
+        "old": "{18_446_744_073_709_551_616, 2_758_599}",
+        "new": "{18_446_744_073_709_551_616, 2_758_596}",
+        "formula": "2758572+(13-3)+2*(13-6)"
+      },
+      {
+        "line": 217,
+        "old": "assert rows.context.cap == 8213 + e(retained) - 2",
+        "new": "assert rows.context.cap == 8213 + e(retained) - 3",
+        "formula": "8213+E(retained)-E(0); complete E(0)=3"
+      },
+      {
+        "line": 219,
+        "old": "assert rows.admission_update_payload.cap == 2063 + e(retained + expected_total) - 5",
+        "new": "assert rows.admission_update_payload.cap == 2063 + e(retained + expected_total) - 6",
+        "formula": "2063+E(retained+B)-E(B0); complete E(B0)=6"
+      },
+      {
+        "line": 220,
+        "old": "assert rows.admission_update_wire.cap == 6198 + e(retained + expected_total) - 5",
+        "new": "assert rows.admission_update_wire.cap == 6198 + e(retained + expected_total) - 6",
+        "formula": "6198+E(retained+B)-E(B0); complete E(B0)=6"
+      }
+    ]
+  },
+  "formal_reference": {
+    "url": "https://raw.githubusercontent.com/erlang/otp/OTP-28.5.0.7/erts/doc/guides/erl_ext_dist.md",
+    "read_current_turn": true,
+    "lines": {
+      "overall": [
+        42,
+        46
+      ],
+      "small_integer": [
+        351,
+        357
+      ],
+      "integer": [
+        359,
+        365
+      ],
+      "small_big": [
+        535,
+        543
+      ]
+    },
+    "syntax": {
+      "standalone": "version131 + tag + data",
+      "small_integer_size": "1+1+1=3",
+      "integer_size": "1+1+4=6",
+      "small_big_size": "1+1+1+1+n=n+4"
+    },
+    "scope": "Formal syntax reference; no local runtime executed by diagnosing worker."
+  },
+  "retained_formula": "B=B0+(E(retained)-3)+2*(E(retained+B)-6), B0=2758572, E(B)=6 for every listed row; settle starts at0.",
+  "retained_rows": [
+    {
+      "retained": "0",
+      "retained_etf": 3,
+      "sum_etf": 6,
+      "old_total": 2758572,
+      "correct_total": 2758572,
+      "context_cap": 8213,
+      "plan_cap": 53,
+      "update_cap": 2063,
+      "wire_cap": 6198
+    },
+    {
+      "retained": "255",
+      "retained_etf": 3,
+      "sum_etf": 6,
+      "old_total": 2758572,
+      "correct_total": 2758572,
+      "context_cap": 8213,
+      "plan_cap": 53,
+      "update_cap": 2063,
+      "wire_cap": 6198
+    },
+    {
+      "retained": "256",
+      "retained_etf": 6,
+      "sum_etf": 6,
+      "old_total": 2758575,
+      "correct_total": 2758575,
+      "context_cap": 8216,
+      "plan_cap": 53,
+      "update_cap": 2063,
+      "wire_cap": 6198
+    },
+    {
+      "retained": "2144725072",
+      "retained_etf": 6,
+      "sum_etf": 6,
+      "old_total": 2758575,
+      "correct_total": 2758575,
+      "context_cap": 8216,
+      "plan_cap": 53,
+      "update_cap": 2063,
+      "wire_cap": 6198
+    },
+    {
+      "retained": "2144725073",
+      "retained_etf": 6,
+      "sum_etf": 8,
+      "old_total": 2758581,
+      "correct_total": 2758579,
+      "context_cap": 8216,
+      "plan_cap": 53,
+      "update_cap": 2065,
+      "wire_cap": 6200
+    },
+    {
+      "retained": "2147483647",
+      "retained_etf": 6,
+      "sum_etf": 8,
+      "old_total": 2758581,
+      "correct_total": 2758579,
+      "context_cap": 8216,
+      "plan_cap": 53,
+      "update_cap": 2065,
+      "wire_cap": 6200
+    },
+    {
+      "retained": "2147483648",
+      "retained_etf": 8,
+      "sum_etf": 8,
+      "old_total": 2758584,
+      "correct_total": 2758581,
+      "context_cap": 8218,
+      "plan_cap": 53,
+      "update_cap": 2065,
+      "wire_cap": 6200
+    },
+    {
+      "retained": "4294967295",
+      "retained_etf": 8,
+      "sum_etf": 9,
+      "old_total": 2758586,
+      "correct_total": 2758583,
+      "context_cap": 8218,
+      "plan_cap": 53,
+      "update_cap": 2066,
+      "wire_cap": 6201
+    },
+    {
+      "retained": "4294967296",
+      "retained_etf": 9,
+      "sum_etf": 9,
+      "old_total": 2758587,
+      "correct_total": 2758584,
+      "context_cap": 8219,
+      "plan_cap": 53,
+      "update_cap": 2066,
+      "wire_cap": 6201
+    },
+    {
+      "retained": "18446744073709551615",
+      "retained_etf": 12,
+      "sum_etf": 13,
+      "old_total": 2758598,
+      "correct_total": 2758595,
+      "context_cap": 8222,
+      "plan_cap": 53,
+      "update_cap": 2070,
+      "wire_cap": 6205
+    },
+    {
+      "retained": "18446744073709551616",
+      "retained_etf": 13,
+      "sum_etf": 13,
+      "old_total": 2758599,
+      "correct_total": 2758596,
+      "context_cap": 8223,
+      "plan_cap": 53,
+      "update_cap": 2070,
+      "wire_cap": 6205
+    }
+  ],
+  "large_m": {
+    "m": "18446744073709551616",
+    "m_etf": 13,
+    "b_etf": 13,
+    "old_total": "110680464442259675084",
+    "correct_total": "110680464442259675080",
+    "formula": "B=6*M+2365356+7+7+14=6*M+2365384",
+    "plan_cap": 67,
+    "update_cap": 2070,
+    "wire_cap": 6205
+  },
+  "preserved_evidence": [
+    {
+      "file": "worksheet-green1.log",
+      "sha256": "9757612727c8eeace98280de88a00d25814581d643d4248a8a841d6b33e8e572",
+      "status": "FAIL",
+      "tests": 24,
+      "failures": 2,
+      "exit": 2
+    },
+    {
+      "file": "worksheet-green1.json",
+      "sha256": "8605d3763b42fe808676453b6fa6cb1114ceece354e799aa121e24cf7e407abb",
+      "status": "FAIL",
+      "joined": true,
+      "source_stable": true,
+      "process_group_absent": true
+    },
+    {
+      "file": "etf-integer-diagnostic1.log",
+      "sha256": "d48e15687bff0134e5d4bf49e6602ef93c16fd3ec2ff536879169bf35435d1d0",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "tests": 0,
+      "exit": 0
+    },
+    {
+      "file": "etf-integer-diagnostic1.json",
+      "sha256": "db3e36be87df97dfbea7ee63cb7e58732872cd041d1299679e132b2ffe6e92be",
+      "status": "PASS_DIAGNOSTIC_ONLY",
+      "joined": true,
+      "source_stable": true
+    }
+  ],
+  "verification": {
+    "author_executed_tests": false,
+    "author_executed_runtime": false,
+    "author_ran_git": false,
+    "repo_writes": false,
+    "all_own_commands_finished": true,
+    "background_processes_started": false,
+    "next": "Parent applies exact test expectation corrections without reducing equality assertions; parent runs fresh scoped check and preserves failedGREEN1."
+  },
+  "counters": {
+    "slice_failed_green": 1,
+    "production_repair_rounds": 0,
+    "fixture_compatibility_corrections": 1,
+    "inherited_group_failed_green": 24,
+    "inherited_root_events": 27,
+    "inherited_astra_rounds_used": 2,
+    "inherited_astra_rounds_limit": 2,
+    "author_diagnosis_runtime_attempts": 0
+  },
+  "remaining_risk": "Corrected expectations have not been adopted or revalidated by this worker. New runtime result is parent-owned."
+}

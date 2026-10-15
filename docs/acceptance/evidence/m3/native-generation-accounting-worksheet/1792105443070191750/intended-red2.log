@@ -1,0 +1,207 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 1, max_cases: 1
+
+
+
+  1) test complete G7 and T8 pin maps preserve their actual ETF and request kind (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:270[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{count: 1, bytes: bytes}} = call(:preflight_cons, [pin, []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 1, bytes: bytes}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:276: anonymous fn/2 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test complete G7 and T8 pin maps preserve their actual ETF and request kind"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:273: (test)
+
+[32m.[0m
+
+  2) test each finite checked reason is retained exactly as an atom (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:430[0m
+     [31mAssertion with === failed[0m
+     [36mcode:  [0massert call(:finite_checked_reason, [reason]) === reason
+     [36mleft:  [0m[31m:generation_unavailable[0m
+     [36mright: [0m[32m:invalid_generation_capture[0m
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:431: anonymous fn/2 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test each finite checked reason is retained exactly as an atom"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:431: (test)
+
+
+
+  3) test different real operation refs are schema-valid without authentic request context (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:422[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{count: 2, bytes: bytes}} = call(:preflight_append, [[changed], [f.t_pin]])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 2, bytes: bytes}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:426: (test)
+
+
+
+  4) test 64 captures fit but a prospective 65th capture does not (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:348[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert {:ok, %{count: 64, bytes: e(pins)}} == call(:preflight_append, [pins, []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 64, bytes: 29255}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:352: (test)
+
+
+
+  5) test cons and append measure original complete operands including empty lists (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:312[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert {:ok, %{count: 0, bytes: 2}} == call(:preflight_append, [[], []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 0, bytes: 2}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:314: (test)
+
+[32m.[0m[32m.[0m
+
+  6) test worksheet accepts signed64 past deadlines and exact cleanup headroom without a clock (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:224[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{qualification: :conditional_not_runtime_ready}} =
+              call(:worksheet, [65536, put_elem(context(), 5, deadline)])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{qualification: :conditional_not_runtime_ready}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:226: anonymous fn/2 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test worksheet accepts signed64 past deadlines and exact cleanup headroom without a clock"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:225: (test)
+
+
+
+  7) test positive M has no invented universal byte cap (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:167[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [m, context()])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:169: anonymous fn/2 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test positive M has no invented universal byte cap"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:168: (test)
+
+
+
+  8) test an exact 65536 byte singleton fits and the next byte fails prospectively (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:323[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert {:ok, %{count: 1, bytes: 65536}} == call(:preflight_cons, [exact, []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 1, bytes: 65536}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:329: (test)
+
+[32m.[0m
+
+  9) test capture preflight has no invented global 33 resource cutoff (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:303[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{count: 1, bytes: bytes}} = call(:preflight_cons, [pin, []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 1, bytes: bytes}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:308: (test)
+
+[32m.[0m
+
+ 10) test only specified top level timeout shapes normalize to deadline exceeded (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:434[0m
+     [31mAssertion with === failed[0m
+     [36mcode:  [0massert call(:finite_checked_reason, [term]) === :deadline_exceeded
+     [36mleft:  [0m[31m:generation_unavailable[0m
+     [36mright: [0m[32m:deadline_exceeded[0m
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_generation_accounting_test.exs:437: (test)
+
+
+
+ 11) test two individually bounded byte operands reject before combined list construction (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:336[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert @capacity == call(:preflight_append, [left, right])
+     [36mleft:  [0m{:error, [31m:generation_capture_capacity[0m}
+     [36mright: [0m{:error, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:344: (test)
+
+
+
+ 12) test existing fixed service group and startup reservations remain distinct (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:482[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [65536, context()])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:486: (test)
+
+[32m.[0m[32m.[0m
+
+ 13) test unbounded M pays the ETF widths of both M and the fixed point B (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:178[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [m, context()])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:180: (test)
+
+
+
+ 14) test retained integer encoding and retained plus B cross their own boundaries (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:193[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [65536, context(retained)])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:212: anonymous fn/2 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test retained integer encoding and retained plus B cross their own boundaries"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:211: (test)
+
+
+
+ 15) test actual default M retains all three complete snapshot roots (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:137[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [1_048_576, context()])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:138: (test)
+
+
+
+ 16) test H1 G6 G7 and H2 G8 handles and 32 transports remain compatible (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:286[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %{count: 1, bytes: bytes}} = call(:preflight_cons, [pin, []])
+     [36mleft:  [0m{[31m:ok[0m, [31m%{count: 1, bytes: bytes}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_generation_capture[0m}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:291: anonymous fn/3 in Gaoxy.Proxy.ManagedGenerationAccountingTest."test H1 G6 G7 and H2 G8 handles and 32 transports remain compatible"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_generation_accounting_test.exs:289: (test)
+
+
+
+ 17) test worksheet reports the full conditional ledger and each source lifetime (Gaoxy.Proxy.ManagedGenerationAccountingTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_generation_accounting_test.exs:95[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, report} = call(:worksheet, [65536, context()])
+     [36mleft:  [0m{[31m:ok[0m, report}
+     [36mright: [0m{[32m:error[0m, :invalid_generation_capture}
+     [36mstacktrace:[0m
+       test/managed_generation_accounting_test.exs:96: (test)
+
+
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+[31m24 tests, 17 failures[0m
