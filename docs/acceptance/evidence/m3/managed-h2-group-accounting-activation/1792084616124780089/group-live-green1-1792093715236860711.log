@@ -1,0 +1,1318 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 33015, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+03:49:00.418 [error] DynamicSupervisor received unexpected message: {:continue_real_recovery, #Reference<0.216446081.4103864322.92568>}
+
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+03:49:03.518 [error] DynamicSupervisor received unexpected message: {:continue_real_recovery, #Reference<0.216446081.4103864321.104080>}
+
+[0m[32m.[0m[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+  1) test group h2c cancellation keeps the full Service and G T holds until original completion then a sibling progresses (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:275[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864322.97986>
+       guardian = #PID<0.830.0>
+     Showing 8 of 8 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.802.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864322.97986>,
+                  :process,
+                  #PID<0.830.0>,
+                  [32m{:cleanup_failed, :invalid_request}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:290: (test)
+
+     The following output was logged:
+     [31m
+     03:49:07.220 [error] GenServer #PID<0.830.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.106243.216446081.4103929858.97866>, {:error, :aborted}}
+     State: %{gate: #PID<0.820.0>, started_at: -576460720155, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.807.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.96807>, transports: [%{owner: #PID<0.806.0>, resource: #Reference<0.216446081.4103864322.96695>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.96684>}], owner_epoch: #Reference<0.216446081.4103864322.96688>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864321.105822>}, submitted_url: nil, activated_at: -576460720154, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.829.0>, awaiting_transport: nil, cleanup_deadline: -576460689155, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460690155, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.97990>, monitors: %{#Reference<0.216446081.4103864322.97502> => #PID<0.829.0>, #Reference<0.216446081.4103864322.97503> => #PID<0.819.0>, #Reference<0.216446081.4103864322.97504> => #PID<0.804.0>, #Reference<0.216446081.4103864322.97505> => #PID<0.820.0>}, headers: false, transport_pins: [%{owner: #PID<0.806.0>, handles: [%{owner: #PID<0.806.0>, resource: #Reference<0.216446081.4103864322.96695>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.96684>}], kind: :request, ref: #Reference<0.216446081.4103864321.105871>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.830.0>, owner_epoch: #Reference<0.216446081.4103864322.96684>, operation: #Reference<0.216446081.4103864321.105864>}], opening_deadline: -576460715154, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.97508>, instance: #PID<0.804.0>, total_timer: #Reference<0.216446081.4103864321.105819>, opening_timer: #Reference<0.216446081.4103864321.105820>, transport_selection: {%{owner: #PID<0.806.0>, resource: #Reference<0.216446081.4103864322.96695>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.96684>}, #Reference<0.216446081.4103864322.97531>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.831.0>, latch: #Reference<0.216446081.4103995394.97859>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.830.0>, pid: #PID<0.832.0>, ref: #Reference<0.0.106243.216446081.4103929858.97866>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.831.0>, latch: #Reference<0.216446081.4103995394.97859>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.819.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+
+
+  2) test group http2 opening timeout joins the original completion without replay (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:335[0m
+     [31mAssertion with in failed[0m
+     [36mcode:  [0massert reason in [:normal, :noproc]
+     [36mleft:  [0m[31m{:cleanup_failed, :invalid_request}[0m
+     [36mright: [0m[32m[:normal, :noproc][0m
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:358: (test)
+
+     The following output was logged:
+     [31m
+     03:49:12.978 [error] GenServer #PID<0.891.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.114051.216446081.4103929857.110014>, {:error, :aborted}}
+     State: %{gate: #PID<0.881.0>, started_at: -576460714476, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.865.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.108835>, transports: [%{owner: #PID<0.864.0>, resource: #Reference<0.216446081.4103864321.108723>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.108712>}], owner_epoch: #Reference<0.216446081.4103864321.108716>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864321.109606>}, submitted_url: nil, activated_at: -576460714476, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.890.0>, awaiting_transport: nil, cleanup_deadline: -576460711476, managed_path: true, cleanup_requested_deadline: nil, outcome: :upstream_failure, deadline: -576460712476, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.98172>, monitors: %{#Reference<0.216446081.4103864321.109590> => #PID<0.890.0>, #Reference<0.216446081.4103864321.109591> => #PID<0.880.0>, #Reference<0.216446081.4103864321.109592> => #PID<0.862.0>, #Reference<0.216446081.4103864321.109593> => #PID<0.881.0>}, headers: false, transport_pins: [%{owner: #PID<0.864.0>, handles: [%{owner: #PID<0.864.0>, resource: #Reference<0.216446081.4103864321.108723>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.108712>}], kind: :request, ref: #Reference<0.216446081.4103864321.109656>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.891.0>, owner_epoch: #Reference<0.216446081.4103864321.108712>, operation: #Reference<0.216446081.4103864321.109649>}], opening_deadline: -576460714376, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.109596>, instance: #PID<0.862.0>, total_timer: #Reference<0.216446081.4103864321.109600>, opening_timer: #Reference<0.216446081.4103864321.109601>, transport_selection: {%{owner: #PID<0.864.0>, resource: #Reference<0.216446081.4103864321.108723>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.108712>}, #Reference<0.216446081.4103864321.109676>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.892.0>, latch: #Reference<0.216446081.4103995393.110007>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.891.0>, pid: #PID<0.893.0>, ref: #Reference<0.0.114051.216446081.4103929857.110014>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.892.0>, latch: #Reference<0.216446081.4103995393.110007>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.880.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 100, write_timeout: 5000, max_lifetime: 2000}}}
+     [0m
+[31m
+03:49:13.946 [error] GenServer #PID<0.941.0> terminating
+** (stop) {:cleanup_failed, :cleanup_pending}
+Last message: {#Reference<0.0.120451.216446081.4103929857.111017>, {:error, :aborted}}
+State: %{gate: #PID<0.931.0>, started_at: -576460713434, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.915.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.98416>, transports: [%{owner: #PID<0.914.0>, resource: #Reference<0.216446081.4103864322.98304>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.98293>}], owner_epoch: #Reference<0.216446081.4103864322.98297>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.98835>}, submitted_url: nil, activated_at: -576460713434, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.940.0>, awaiting_transport: nil, cleanup_deadline: -576460682435, managed_path: true, cleanup_requested_deadline: -576460703407, outcome: :cancelled, deadline: -576460683435, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.99135>, monitors: %{#Reference<0.216446081.4103864322.98819> => #PID<0.940.0>, #Reference<0.216446081.4103864322.98820> => #PID<0.930.0>, #Reference<0.216446081.4103864322.98821> => #PID<0.912.0>, #Reference<0.216446081.4103864322.98822> => #PID<0.931.0>}, headers: false, transport_pins: [%{owner: #PID<0.914.0>, handles: [%{owner: #PID<0.914.0>, resource: #Reference<0.216446081.4103864322.98304>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.98293>}], kind: :request, ref: #Reference<0.216446081.4103864322.98885>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.941.0>, owner_epoch: #Reference<0.216446081.4103864322.98293>, operation: #Reference<0.216446081.4103864322.98878>}], opening_deadline: -576460708434, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.98825>, instance: #PID<0.912.0>, total_timer: #Reference<0.216446081.4103864322.98829>, opening_timer: #Reference<0.216446081.4103864322.98830>, transport_selection: {%{owner: #PID<0.914.0>, resource: #Reference<0.216446081.4103864322.98304>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.98293>}, #Reference<0.216446081.4103864322.98906>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.943.0>, latch: #Reference<0.216446081.4103995393.111010>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.941.0>, pid: #PID<0.944.0>, ref: #Reference<0.0.120451.216446081.4103929857.111017>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.943.0>, latch: #Reference<0.216446081.4103995393.111010>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.930.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+[0m
+
+  3) test http1 -> group http2 original G and T binding precedes bounded upload with ordered request trailers and early final (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:82[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.910.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:101: (test)
+
+
+
+  4) test http1 -> group h2c original G and T binding precedes bounded upload with ordered request trailers and early final (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:82[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.961.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:101: (test)
+
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"retained_high_water":533290476,"retained_bytes":527326702,"event":"managed_h2_group_capacity","actual_requests":32,"cleanup_bytes":527323584,"service_max_bytes":1073741824}
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[31m
+03:49:33.035 [error] GenServer #PID<0.1451.0> terminating
+** (stop) {:cleanup_failed, :cleanup_pending}
+Last message: {#Reference<0.0.185731.216446081.4103929857.139754>, {:error, :aborted}}
+State: %{gate: #PID<0.1439.0>, started_at: -576460694332, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.1426.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.127344>, transports: [%{owner: #PID<0.1425.0>, resource: #Reference<0.216446081.4103864322.127232>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.127221>}], owner_epoch: #Reference<0.216446081.4103864322.127225>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864321.139351>}, submitted_url: nil, activated_at: -576460694332, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.1450.0>, awaiting_transport: nil, cleanup_deadline: -576460663333, managed_path: true, cleanup_requested_deadline: -576460684318, outcome: :cancelled, deadline: -576460664333, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.128015>, monitors: %{#Reference<0.216446081.4103864322.127871> => #PID<0.1450.0>, #Reference<0.216446081.4103864322.127872> => #PID<0.1438.0>, #Reference<0.216446081.4103864322.127873> => #PID<0.1423.0>, #Reference<0.216446081.4103864322.127874> => #PID<0.1439.0>}, headers: false, transport_pins: [%{owner: #PID<0.1425.0>, handles: [%{owner: #PID<0.1425.0>, resource: #Reference<0.216446081.4103864322.127232>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.127221>}], kind: :request, ref: #Reference<0.216446081.4103864321.139400>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.1451.0>, owner_epoch: #Reference<0.216446081.4103864322.127221>, operation: #Reference<0.216446081.4103864321.139393>}], opening_deadline: -576460689332, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.127877>, instance: #PID<0.1423.0>, total_timer: #Reference<0.216446081.4103864322.127881>, opening_timer: #Reference<0.216446081.4103864322.127882>, transport_selection: {%{owner: #PID<0.1425.0>, resource: #Reference<0.216446081.4103864322.127232>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.127221>}, #Reference<0.216446081.4103864321.139418>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.1453.0>, latch: #Reference<0.216446081.4103995393.139748>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.1451.0>, pid: #PID<0.1454.0>, ref: #Reference<0.0.185731.216446081.4103929857.139754>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.1453.0>, latch: #Reference<0.216446081.4103995393.139748>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.1438.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+[0m
+
+  5) test http2 -> group h2c original G and T binding precedes bounded upload with ordered request trailers and early final (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:82[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.1421.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:101: (test)
+
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[31m
+03:49:56.370 [error] GenServer #PID<0.2017.0> terminating
+** (stop) {:cleanup_failed, :cleanup_pending}
+Last message: {#Reference<0.0.258179.216446081.4103929857.153646>, {:error, :aborted}}
+State: %{gate: #PID<0.2007.0>, started_at: -576460671004, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.1991.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.152707>, transports: [%{owner: #PID<0.1990.0>, resource: #Reference<0.216446081.4103864321.152595>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.152584>}], owner_epoch: #Reference<0.216446081.4103864321.152588>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.142969>}, submitted_url: nil, activated_at: -576460671004, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.2016.0>, awaiting_transport: nil, cleanup_deadline: -576460660983, managed_path: true, cleanup_requested_deadline: -576460660983, outcome: :cancelled, deadline: -576460641005, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.153802>, monitors: %{#Reference<0.216446081.4103864322.142954> => #PID<0.2016.0>, #Reference<0.216446081.4103864322.142955> => #PID<0.2006.0>, #Reference<0.216446081.4103864322.142956> => #PID<0.1988.0>, #Reference<0.216446081.4103864322.142957> => #PID<0.2007.0>}, headers: false, transport_pins: [%{owner: #PID<0.1990.0>, handles: [%{owner: #PID<0.1990.0>, resource: #Reference<0.216446081.4103864321.152595>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.152584>}], kind: :request, ref: #Reference<0.216446081.4103864322.143018>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.2017.0>, owner_epoch: #Reference<0.216446081.4103864321.152584>, operation: #Reference<0.216446081.4103864322.143011>}], opening_deadline: -576460666004, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.142960>, instance: #PID<0.1988.0>, total_timer: #Reference<0.216446081.4103864322.142964>, opening_timer: #Reference<0.216446081.4103864322.142965>, transport_selection: {%{owner: #PID<0.1990.0>, resource: #Reference<0.216446081.4103864321.152595>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.152584>}, #Reference<0.216446081.4103864321.153308>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.2019.0>, latch: #Reference<0.216446081.4103995393.153639>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.2017.0>, pid: #PID<0.2020.0>, ref: #Reference<0.0.258179.216446081.4103929857.153646>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.2019.0>, latch: #Reference<0.216446081.4103995393.153639>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.2006.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+[0m
+
+  6) test group http2 queued cancellation at genuine original bind releases both owners without producer bytes (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:440[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.1986.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:460: (test)
+
+[31m
+03:50:11.662 [error] GenServer #PID<0.2065.0> terminating
+** (stop) {:cleanup_failed, :cleanup_pending}
+Last message: {#Reference<0.0.264323.216446081.4103929858.144059>, {:error, :aborted}}
+State: %{gate: #PID<0.2055.0>, started_at: -576460655719, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.2042.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.154009>, transports: [%{owner: #PID<0.2041.0>, resource: #Reference<0.216446081.4103864321.153897>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.153886>}], owner_epoch: #Reference<0.216446081.4103864321.153890>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864321.154312>}, submitted_url: nil, activated_at: -576460655719, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.2064.0>, awaiting_transport: nil, cleanup_deadline: -576460645691, managed_path: true, cleanup_requested_deadline: -576460645691, outcome: :cancelled, deadline: -576460625720, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.144158>, monitors: %{#Reference<0.216446081.4103864321.154296> => #PID<0.2064.0>, #Reference<0.216446081.4103864321.154297> => #PID<0.2054.0>, #Reference<0.216446081.4103864321.154298> => #PID<0.2039.0>, #Reference<0.216446081.4103864321.154299> => #PID<0.2055.0>}, headers: false, transport_pins: [%{owner: #PID<0.2041.0>, handles: [%{owner: #PID<0.2041.0>, resource: #Reference<0.216446081.4103864321.153897>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.153886>}], kind: :request, ref: #Reference<0.216446081.4103864321.154361>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.2065.0>, owner_epoch: #Reference<0.216446081.4103864321.153886>, operation: #Reference<0.216446081.4103864321.154354>}], opening_deadline: -576460650719, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.154302>, instance: #PID<0.2039.0>, total_timer: #Reference<0.216446081.4103864321.154306>, opening_timer: #Reference<0.216446081.4103864321.154307>, transport_selection: {%{owner: #PID<0.2041.0>, resource: #Reference<0.216446081.4103864321.153897>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.153886>}, #Reference<0.216446081.4103864322.143716>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.2067.0>, latch: #Reference<0.216446081.4103995394.144051>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.2065.0>, pid: #PID<0.2068.0>, ref: #Reference<0.0.264323.216446081.4103929858.144059>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.2067.0>, latch: #Reference<0.216446081.4103995394.144051>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.2054.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+[0m
+
+  7) test group h2c queued cancellation at genuine original bind releases both owners without producer bytes (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:440[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.2037.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:460: (test)
+
+[31m
+03:50:27.662 [error] GenServer #PID<0.2118.0> terminating
+** (stop) {:cleanup_failed, :invalid_request}
+Last message: {#Reference<0.0.271107.216446081.4103929858.145521>, {:error, :aborted}}
+State: %{gate: #PID<0.2106.0>, started_at: -576460639715, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.2090.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.144362>, transports: [%{owner: #PID<0.2089.0>, resource: #Reference<0.216446081.4103864322.144250>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.144239>}], owner_epoch: #Reference<0.216446081.4103864322.144243>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.145111>}, submitted_url: nil, activated_at: -576460639714, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.2117.0>, awaiting_transport: nil, cleanup_deadline: -576460608716, managed_path: true, cleanup_requested_deadline: -576460629692, outcome: :cancelled, deadline: -576460609716, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.145625>, monitors: %{#Reference<0.216446081.4103864321.154686> => #PID<0.2117.0>, #Reference<0.216446081.4103864321.154687> => #PID<0.2105.0>, #Reference<0.216446081.4103864321.154688> => #PID<0.2087.0>, #Reference<0.216446081.4103864321.154689> => #PID<0.2106.0>}, headers: false, transport_pins: [%{owner: #PID<0.2089.0>, handles: [%{owner: #PID<0.2089.0>, resource: #Reference<0.216446081.4103864322.144250>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.144239>}], kind: :request, ref: #Reference<0.216446081.4103864322.145160>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.2118.0>, owner_epoch: #Reference<0.216446081.4103864322.144239>, operation: #Reference<0.216446081.4103864322.145153>}], opening_deadline: -576460634714, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.154692>, instance: #PID<0.2087.0>, total_timer: #Reference<0.216446081.4103864321.154696>, opening_timer: #Reference<0.216446081.4103864321.154697>, transport_selection: {%{owner: #PID<0.2089.0>, resource: #Reference<0.216446081.4103864322.144250>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.144239>}, #Reference<0.216446081.4103864322.145178>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.2120.0>, latch: #Reference<0.216446081.4103995394.145514>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.2118.0>, pid: #PID<0.2121.0>, ref: #Reference<0.0.271107.216446081.4103929858.145521>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.2120.0>, latch: #Reference<0.216446081.4103995394.145514>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.2105.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+[0m
+
+  8) test http2 -> group http2 original G and T binding precedes bounded upload with ordered request trailers and early final (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:82[0m
+     [31mUnexpectedly received message {:fixed_h2_peer, #PID<0.2085.0>, %{"connection" => 1, "event" => "upload_end", "stream" => 1, "total_bytes" => 0}} (which matched {:fixed_h2_peer, ^peer, %{"event" => ^name}})[0m
+     [36mcode: [0mG.no_event(f.peer, "upload_end")
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:101: (test)
+
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+  9) test group http2 cancellation keeps the full Service and G T holds until original completion then a sibling progresses (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:275[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864321.160360>
+       guardian = #PID<0.2325.0>
+     Showing 9 of 9 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "alpn" => "h2",
+                    "connection" => 1,
+                    "event" => "tls",
+                    "sni" => "localhost"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.2294.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864321.160360>,
+                  :process,
+                  #PID<0.2325.0>,
+                  [32m{:cleanup_failed, :invalid_request}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:290: (test)
+
+     The following output was logged:
+     [31m
+     03:50:44.408 [error] GenServer #PID<0.2325.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.297603.216446081.4103929857.160232>, {:error, :aborted}}
+     State: %{gate: #PID<0.2315.0>, started_at: -576460622960, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.2299.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.159176>, transports: [%{owner: #PID<0.2298.0>, resource: #Reference<0.216446081.4103864321.159064>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.159053>}], owner_epoch: #Reference<0.216446081.4103864321.159057>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864321.159827>}, submitted_url: nil, activated_at: -576460622960, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.2324.0>, awaiting_transport: nil, cleanup_deadline: -576460591961, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460592961, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.150248>, monitors: %{#Reference<0.216446081.4103864322.150206> => #PID<0.2324.0>, #Reference<0.216446081.4103864322.150207> => #PID<0.2314.0>, #Reference<0.216446081.4103864322.150208> => #PID<0.2296.0>, #Reference<0.216446081.4103864322.150209> => #PID<0.2315.0>}, headers: false, transport_pins: [%{owner: #PID<0.2298.0>, handles: [%{owner: #PID<0.2298.0>, resource: #Reference<0.216446081.4103864321.159064>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.159053>}], kind: :request, ref: #Reference<0.216446081.4103864321.159876>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.2325.0>, owner_epoch: #Reference<0.216446081.4103864321.159053>, operation: #Reference<0.216446081.4103864321.159869>}], opening_deadline: -576460617960, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.159821>, instance: #PID<0.2296.0>, total_timer: #Reference<0.216446081.4103864321.159824>, opening_timer: #Reference<0.216446081.4103864321.159825>, transport_selection: {%{owner: #PID<0.2298.0>, resource: #Reference<0.216446081.4103864321.159064>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.159053>}, #Reference<0.216446081.4103864321.159897>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.2326.0>, latch: #Reference<0.216446081.4103995393.160225>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.2325.0>, pid: #PID<0.2327.0>, ref: #Reference<0.0.297603.216446081.4103929857.160232>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.2326.0>, latch: #Reference<0.216446081.4103995393.160225>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.2314.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"retained_high_water":533290476,"retained_bytes":527326702,"event":"managed_h2_group_capacity","actual_requests":32,"cleanup_bytes":527323584,"service_max_bytes":1073741824}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 10) test group h2c opening timeout joins the original completion without replay (Gaoxy.Proxy.ManagedH2GroupEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:335[0m
+     [31mAssertion with in failed[0m
+     [36mcode:  [0massert reason in [:normal, :noproc]
+     [36mleft:  [0m[31m{:cleanup_failed, :cleanup_pending}[0m
+     [36mright: [0m[32m[:normal, :noproc][0m
+     [36mstacktrace:[0m
+       test/managed_h2_group_endpoint_test.exs:358: (test)
+
+     The following output was logged:
+     [31m
+     03:50:53.863 [error] GenServer #PID<0.2975.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.380803.216446081.4103929857.192042>, {:error, :aborted}}
+     State: %{gate: #PID<0.2965.0>, started_at: -576460613592, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.2952.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.179945>, transports: [%{owner: #PID<0.2951.0>, resource: #Reference<0.216446081.4103864322.179833>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.179822>}], owner_epoch: #Reference<0.216446081.4103864322.179826>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864321.191634>}, submitted_url: nil, activated_at: -576460613591, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.2974.0>, awaiting_transport: nil, cleanup_deadline: -576460610592, managed_path: true, cleanup_requested_deadline: nil, outcome: :upstream_failure, deadline: -576460611592, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.192264>, monitors: %{#Reference<0.216446081.4103864322.180647> => #PID<0.2974.0>, #Reference<0.216446081.4103864322.180648> => #PID<0.2964.0>, #Reference<0.216446081.4103864322.180649> => #PID<0.2949.0>, #Reference<0.216446081.4103864322.180650> => #PID<0.2965.0>}, headers: false, transport_pins: [%{owner: #PID<0.2951.0>, handles: [%{owner: #PID<0.2951.0>, resource: #Reference<0.216446081.4103864322.179833>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.179822>}], kind: :request, ref: #Reference<0.216446081.4103864321.191683>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.2975.0>, owner_epoch: #Reference<0.216446081.4103864322.179822>, operation: #Reference<0.216446081.4103864321.191676>}], opening_deadline: -576460613491, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.191629>, instance: #PID<0.2949.0>, total_timer: #Reference<0.216446081.4103864321.191631>, opening_timer: #Reference<0.216446081.4103864321.191632>, transport_selection: {%{owner: #PID<0.2951.0>, resource: #Reference<0.216446081.4103864322.179833>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.179822>}, #Reference<0.216446081.4103864321.191704>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.2976.0>, latch: #Reference<0.216446081.4103995393.192032>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.2975.0>, pid: #PID<0.2977.0>, ref: #Reference<0.0.380803.216446081.4103929857.192042>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.2976.0>, latch: #Reference<0.216446081.4103995393.192032>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.2964.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 100, write_timeout: 5000, max_lifetime: 2000}}}
+     [0m
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 11) test group http2 real gate loss joins the original but public shutdown records backend failure (Gaoxy.Proxy.ManagedH2GroupFailureTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_failure_test.exs:78[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Process.alive?(guardian)
+     [36marguments:[0m
+
+         # 1
+         #PID<0.3146.0>
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_failure_test.exs:99: (test)
+
+     The following output was logged:
+     [31m
+     03:50:56.563 [error] GenServer #PID<0.3146.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.402691.216446081.4103929857.195333>, {:error, :aborted}}
+     State: %{gate: #PID<0.3136.0>, started_at: -576460610803, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.3120.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.194275>, transports: [%{owner: #PID<0.3119.0>, resource: #Reference<0.216446081.4103864321.194163>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.194152>}], owner_epoch: #Reference<0.216446081.4103864321.194156>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864321.194928>}, submitted_url: nil, activated_at: -576460610803, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.3145.0>, awaiting_transport: nil, cleanup_deadline: -576460579804, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460580804, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.195446>, monitors: %{#Reference<0.216446081.4103864321.194912> => #PID<0.3145.0>, #Reference<0.216446081.4103864321.194913> => #PID<0.3135.0>, #Reference<0.216446081.4103864321.194914> => #PID<0.3117.0>, #Reference<0.216446081.4103864321.194915> => #PID<0.3136.0>}, headers: false, transport_pins: [%{owner: #PID<0.3119.0>, handles: [%{owner: #PID<0.3119.0>, resource: #Reference<0.216446081.4103864321.194163>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.194152>}], kind: :request, ref: #Reference<0.216446081.4103864321.194978>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.3146.0>, owner_epoch: #Reference<0.216446081.4103864321.194152>, operation: #Reference<0.216446081.4103864321.194971>}], opening_deadline: -576460605803, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.194918>, instance: #PID<0.3117.0>, total_timer: #Reference<0.216446081.4103864321.194922>, opening_timer: #Reference<0.216446081.4103864321.194923>, transport_selection: {%{owner: #PID<0.3119.0>, resource: #Reference<0.216446081.4103864321.194163>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.194152>}, #Reference<0.216446081.4103864321.194999>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.3147.0>, latch: #Reference<0.216446081.4103995393.195327>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.3146.0>, pid: #PID<0.3148.0>, ref: #Reference<0.0.402691.216446081.4103929857.195333>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.3147.0>, latch: #Reference<0.216446081.4103995393.195327>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.3135.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"shutdown":"deadline_exceeded_cleanup_pending","result":"UNCONFIRMED_WITH_RETAINED_FAILURE","event":"managed_h2_group_uncertain_cleanup","original_completion":"cleanup_unconfirmed","group_inflight":1,"transport_tokens":1,"group_control_bytes":558,"cleanup_reservation_before_failure":16478862}
+{"event":"managed_h2_group_negative_forced_test_disposal","actors":2,"public_cleanup":"UNCONFIRMED_WITH_RETAINED_FAILURE"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 12) test group h2c real gate loss joins the original but public shutdown records backend failure (Gaoxy.Proxy.ManagedH2GroupFailureTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_failure_test.exs:78[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Process.alive?(guardian)
+     [36marguments:[0m
+
+         # 1
+         #PID<0.3247.0>
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_failure_test.exs:99: (test)
+
+     The following output was logged:
+     [31m
+     03:51:18.471 [error] GenServer #PID<0.3247.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.415619.216446081.4103929857.201308>, {:error, :aborted}}
+     State: %{gate: #PID<0.3237.0>, started_at: -576460588895, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.3224.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.200212>, transports: [%{owner: #PID<0.3223.0>, resource: #Reference<0.216446081.4103864321.200100>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.200089>}], owner_epoch: #Reference<0.216446081.4103864321.200093>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864321.200902>}, submitted_url: nil, activated_at: -576460588895, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.3246.0>, awaiting_transport: nil, cleanup_deadline: -576460557896, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460558896, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.201372>, monitors: %{#Reference<0.216446081.4103864321.200886> => #PID<0.3246.0>, #Reference<0.216446081.4103864321.200887> => #PID<0.3236.0>, #Reference<0.216446081.4103864321.200888> => #PID<0.3221.0>, #Reference<0.216446081.4103864321.200889> => #PID<0.3237.0>}, headers: false, transport_pins: [%{owner: #PID<0.3223.0>, handles: [%{owner: #PID<0.3223.0>, resource: #Reference<0.216446081.4103864321.200100>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.200089>}], kind: :request, ref: #Reference<0.216446081.4103864321.200952>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.3247.0>, owner_epoch: #Reference<0.216446081.4103864321.200089>, operation: #Reference<0.216446081.4103864321.200945>}], opening_deadline: -576460583895, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.200892>, instance: #PID<0.3221.0>, total_timer: #Reference<0.216446081.4103864321.200896>, opening_timer: #Reference<0.216446081.4103864321.200897>, transport_selection: {%{owner: #PID<0.3223.0>, resource: #Reference<0.216446081.4103864321.200100>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.200089>}, #Reference<0.216446081.4103864321.200973>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.3248.0>, latch: #Reference<0.216446081.4103995393.201301>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.3247.0>, pid: #PID<0.3249.0>, ref: #Reference<0.0.415619.216446081.4103929857.201308>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.3248.0>, latch: #Reference<0.216446081.4103995393.201301>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.3236.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"shutdown":"deadline_exceeded_cleanup_pending","result":"UNCONFIRMED_WITH_RETAINED_FAILURE","event":"managed_h2_group_uncertain_cleanup","original_completion":"cleanup_unconfirmed","group_inflight":1,"transport_tokens":1,"group_control_bytes":558,"cleanup_reservation_before_failure":16478862}
+{"event":"managed_h2_group_negative_forced_test_disposal","actors":2,"public_cleanup":"UNCONFIRMED_WITH_RETAINED_FAILURE"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 13) test group h2c lost original Service has no cleanup receipt while its separate replacement forwards healthy work (Gaoxy.Proxy.ManagedH2GroupFailureTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_failure_test.exs:112[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       guardian_monitor = #Reference<0.216446081.4103864321.214203>
+       guardian = #PID<0.3397.0>
+     Showing 8 of 8 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^guardian_monitor, :process, ^guardian,
+            {:cleanup_failed, {:service_cleanup_failed, :unavailable}}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3369.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  :DOWN,
+                  ^guardian_monitor,
+                  :process,
+                  ^guardian,
+                  {
+                    :cleanup_failed,
+                    [31m{:service_cleanup_failed, :unavailable}[0m
+                  }
+                }
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864321.214203>,
+                  :process,
+                  #PID<0.3397.0>,
+                  {:cleanup_failed, [32m:cleanup_pending[0m}
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_failure_test.exs:126: (test)
+
+     The following output was logged:
+     [31m
+     03:51:46.162 [error] GenServer #PID<0.3397.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.434819.216446081.4103929857.214087>, {:error, :aborted}}
+     State: %{gate: #PID<0.3387.0>, started_at: -576460561215, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.3374.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.213393>, transports: [%{owner: #PID<0.3373.0>, resource: #Reference<0.216446081.4103864321.213281>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.213270>}], owner_epoch: #Reference<0.216446081.4103864321.213274>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864322.187844>}, submitted_url: nil, activated_at: -576460561214, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.3396.0>, awaiting_transport: nil, cleanup_deadline: -576460530215, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460531215, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.188241>, monitors: %{#Reference<0.216446081.4103864321.214032> => #PID<0.3396.0>, #Reference<0.216446081.4103864321.214033> => #PID<0.3386.0>, #Reference<0.216446081.4103864321.214034> => #PID<0.3371.0>, #Reference<0.216446081.4103864321.214035> => #PID<0.3387.0>}, headers: false, transport_pins: [%{owner: #PID<0.3373.0>, handles: [%{owner: #PID<0.3373.0>, resource: #Reference<0.216446081.4103864321.213281>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.213270>}], kind: :request, ref: #Reference<0.216446081.4103864322.187893>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.3397.0>, owner_epoch: #Reference<0.216446081.4103864321.213270>, operation: #Reference<0.216446081.4103864322.187886>}], opening_deadline: -576460556214, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.187837>, instance: #PID<0.3371.0>, total_timer: #Reference<0.216446081.4103864322.187841>, opening_timer: #Reference<0.216446081.4103864322.187842>, transport_selection: {%{owner: #PID<0.3373.0>, resource: #Reference<0.216446081.4103864321.213281>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.213270>}, #Reference<0.216446081.4103864322.187914>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.3398.0>, latch: #Reference<0.216446081.4103995393.214080>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.3397.0>, pid: #PID<0.3399.0>, ref: #Reference<0.0.434819.216446081.4103929857.214087>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.3398.0>, latch: #Reference<0.216446081.4103995393.214080>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.3386.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m[31m
+     03:51:46.163 [error] GenServer #PID<0.3388.0> terminating
+     ** (stop) killed
+     Process Label: {:thousand_island, :server, {0, Gaoxy.HTTP.Connection}}
+     Last message: {:EXIT, #PID<0.3386.0>, :killed}
+     State: {:state, {#PID<0.3388.0>, ThousandIsland.Server}, :rest_for_one, {[:shutdown_listener, :acceptor_pool_supervisor, :listener], %{listener: {:child, #PID<0.3389.0>, :listener, {ThousandIsland.Listener, :start_link, [%ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.213261>, service: :http, generation: #Reference<0.216446081.4103864321.213967>}, instance: #PID<0.3371.0>, service: #PID<0.3386.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3374.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.213393>, transports: [...], ...}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, max_trailers: 256, max_trailer_bytes: 131072, max_body_bytes: 8388608, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, max_frame: 16384, max_header_block: 16384, control_rate: 256, ...}}}, gate: #PID<0.3387.0>, startup_token: #Reference<0.216446081.4103864322.187803>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}]}, :transient, false, 5000, :worker, [ThousandIsland.Listener]}, acceptor_pool_supervisor: {:child, #PID<0.3390.0>, :acceptor_pool_supervisor, {ThousandIsland.AcceptorPoolSupervisor, :start_link, [{#PID<0.3388.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.213261>, service: :http, generation: #Reference<0.216446081.4103864321.213967>}, instance: #PID<0.3371.0>, service: #PID<0.3386.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3374.0>, group: "group-wire", ...}, limits: %{idle_timeout: 60000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, ...}}}, gate: #PID<0.3387.0>, startup_token: #Reference<0.216446081.4103864322.187803>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorPoolSupervisor]}, shutdown_listener: {:child, #PID<0.3394.0>, :shutdown_listener, {ThousandIsland.ShutdownListener, :start_link, [{#PID<0.3388.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.213261>, service: :http, generation: #Reference<0.216446081.4103864321.213967>}, instance: #PID<0.3371.0>, service: #PID<0.3386.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3374.0>, ...}, limits: %{...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, ...}, h2_limits: %{max_streams: 32, table_size: 4096, ...}}}, gate: #PID<0.3387.0>, startup_token: #Reference<0.216446081.4103864322.187803>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, 5000, :worker, [ThousandIsland.ShutdownListener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.216446081.4103864322.187806>, ThousandIsland.Server, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.213261>, service: :http, generation: #Reference<0.216446081.4103864321.213967>}, instance: #PID<0.3371.0>, service: #PID<0.3386.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3374.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.213393>, transports: [...], ...}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, max_trailers: 256, max_trailer_bytes: 131072, max_body_bytes: 8388608, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, max_frame: 16384, max_header_block: 16384, control_rate: 256, ...}}}, gate: #PID<0.3387.0>, startup_token: #Reference<0.216446081.4103864322.187803>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}
+     [0m
+
+
+ 14) test group http2 actual guardian death retains original ledgers until recovery but missing Service receipt fails shutdown (Gaoxy.Proxy.ManagedH2GroupFailureTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_failure_test.exs:19[0m
+     [31mfinite state barrier expired[0m
+     [36mcode: [0mG.eventually(fn ->
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:636: Gaoxy.Proxy.ManagedH2FixedFixture.eventually/2
+       test/managed_h2_group_failure_test.exs:56: (test)
+
+
+
+ 15) test group http2 lost original Service has no cleanup receipt while its separate replacement forwards healthy work (Gaoxy.Proxy.ManagedH2GroupFailureTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_failure_test.exs:112[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       guardian_monitor = #Reference<0.216446081.4103864322.189502>
+       guardian = #PID<0.3516.0>
+     Showing 9 of 9 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^guardian_monitor, :process, ^guardian,
+            {:cleanup_failed, {:service_cleanup_failed, :unavailable}}}
+     [36mmailbox:[0m
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "alpn" => "h2",
+                    "connection" => 1,
+                    "event" => "tls",
+                    "sni" => "localhost"
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  [31m:DOWN[0m,
+                  [31m^guardian_monitor[0m,
+                  [31m:process[0m,
+                  [31m^guardian[0m,
+                  [31m{
+                    :cleanup_failed,
+                    {:service_cleanup_failed, :unavailable}
+                  }[0m
+                }
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3485.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{
+                  :DOWN,
+                  ^guardian_monitor,
+                  :process,
+                  ^guardian,
+                  {
+                    :cleanup_failed,
+                    [31m{:service_cleanup_failed, :unavailable}[0m
+                  }
+                }
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864322.189502>,
+                  :process,
+                  #PID<0.3516.0>,
+                  {:cleanup_failed, [32m:cleanup_pending[0m}
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_failure_test.exs:126: (test)
+
+     The following output was logged:
+     [31m
+     03:51:58.191 [error] GenServer #PID<0.3516.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.450051.216446081.4103929857.226608>, {:error, :aborted}}
+     State: %{gate: #PID<0.3506.0>, started_at: -576460549179, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.3490.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.225629>, transports: [%{owner: #PID<0.3489.0>, resource: #Reference<0.216446081.4103864321.225517>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.225506>}], owner_epoch: #Reference<0.216446081.4103864321.225510>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.189417>}, submitted_url: nil, activated_at: -576460549179, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.3515.0>, awaiting_transport: nil, cleanup_deadline: -576460518180, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460519180, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.189515>, monitors: %{#Reference<0.216446081.4103864322.189401> => #PID<0.3515.0>, #Reference<0.216446081.4103864322.189402> => #PID<0.3505.0>, #Reference<0.216446081.4103864322.189403> => #PID<0.3487.0>, #Reference<0.216446081.4103864322.189404> => #PID<0.3506.0>}, headers: false, transport_pins: [%{owner: #PID<0.3489.0>, handles: [%{owner: #PID<0.3489.0>, resource: #Reference<0.216446081.4103864321.225517>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.225506>}], kind: :request, ref: #Reference<0.216446081.4103864321.226252>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.3516.0>, owner_epoch: #Reference<0.216446081.4103864321.225506>, operation: #Reference<0.216446081.4103864321.226245>}], opening_deadline: -576460544179, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.189407>, instance: #PID<0.3487.0>, total_timer: #Reference<0.216446081.4103864322.189411>, opening_timer: #Reference<0.216446081.4103864322.189412>, transport_selection: {%{owner: #PID<0.3489.0>, resource: #Reference<0.216446081.4103864321.225517>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.225506>}, #Reference<0.216446081.4103864321.226273>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.3517.0>, latch: #Reference<0.216446081.4103995393.226601>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.3516.0>, pid: #PID<0.3518.0>, ref: #Reference<0.0.450051.216446081.4103929857.226608>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.3517.0>, latch: #Reference<0.216446081.4103995393.226601>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.3505.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m[31m
+     03:51:58.192 [error] GenServer #PID<0.3507.0> terminating
+     ** (stop) killed
+     Process Label: {:thousand_island, :server, {0, Gaoxy.HTTP.Connection}}
+     Last message: {:EXIT, #PID<0.3505.0>, :killed}
+     State: {:state, {#PID<0.3507.0>, ThousandIsland.Server}, :rest_for_one, {[:shutdown_listener, :acceptor_pool_supervisor, :listener], %{listener: {:child, #PID<0.3508.0>, :listener, {ThousandIsland.Listener, :start_link, [%ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.225497>, service: :http, generation: #Reference<0.216446081.4103864322.189305>}, instance: #PID<0.3487.0>, service: #PID<0.3505.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3490.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.225629>, transports: [...], ...}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, max_trailers: 256, max_trailer_bytes: 131072, max_body_bytes: 8388608, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, max_frame: 16384, max_header_block: 16384, control_rate: 256, ...}}}, gate: #PID<0.3506.0>, startup_token: #Reference<0.216446081.4103864322.189309>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}]}, :transient, false, 5000, :worker, [ThousandIsland.Listener]}, acceptor_pool_supervisor: {:child, #PID<0.3509.0>, :acceptor_pool_supervisor, {ThousandIsland.AcceptorPoolSupervisor, :start_link, [{#PID<0.3507.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.225497>, service: :http, generation: #Reference<0.216446081.4103864322.189305>}, instance: #PID<0.3487.0>, service: #PID<0.3505.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3490.0>, group: "group-wire", ...}, limits: %{idle_timeout: 60000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, ...}}}, gate: #PID<0.3506.0>, startup_token: #Reference<0.216446081.4103864322.189309>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, :infinity, :supervisor, [ThousandIsland.AcceptorPoolSupervisor]}, shutdown_listener: {:child, #PID<0.3513.0>, :shutdown_listener, {ThousandIsland.ShutdownListener, :start_link, [{#PID<0.3507.0>, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.225497>, service: :http, generation: #Reference<0.216446081.4103864322.189305>}, instance: #PID<0.3487.0>, service: #PID<0.3505.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3490.0>, ...}, limits: %{...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, ...}, h2_limits: %{max_streams: 32, table_size: 4096, ...}}}, gate: #PID<0.3506.0>, startup_token: #Reference<0.216446081.4103864322.189309>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}]}, :permanent, false, 5000, :worker, [ThousandIsland.ShutdownListener]}}}, :undefined, 3, 5, [], 0, 0, :never, 1000, #Reference<0.216446081.4103864322.189312>, ThousandIsland.Server, %ThousandIsland.ServerConfig{port: 0, transport_module: ThousandIsland.Transports.TCP, transport_options: [:inet, {:ip, {127, 0, 0, 1}}, {:send_timeout, 5000}, {:send_timeout_close, true}], handler_module: Gaoxy.HTTP.Connection, handler_options: %{scope: %{instance: #Reference<0.216446081.4103864321.225497>, service: :http, generation: #Reference<0.216446081.4103864322.189305>}, instance: #PID<0.3487.0>, service: #PID<0.3505.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1073741824, idle_timeout: 30000, max_active: 64, drain_timeout: 5000, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.3490.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.225629>, transports: [...], ...}, limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, ...}}}, http_limits: %{write_timeout: 2000, request_timeout: 30000, max_headers: 512, max_header_bytes: 131072, max_trailers: 256, max_trailer_bytes: 131072, max_body_bytes: 8388608, ...}, h2_limits: %{max_streams: 32, table_size: 4096, receive_window: 65535, max_frame: 16384, max_header_block: 16384, control_rate: 256, ...}}}, gate: #PID<0.3506.0>, startup_token: #Reference<0.216446081.4103864322.189309>}, genserver_options: [], supervisor_options: [], num_acceptors: 1, num_listen_sockets: 1, num_connections: 64, max_connections_retry_count: 0, max_connections_retry_wait: 1000, read_timeout: 30000, handshake_timeout: 5000, shutdown_timeout: 5000, silent_terminate_on_error: false}}
+     [0m
+{"shutdown":"deadline_exceeded_cleanup_pending","result":"UNCONFIRMED_WITH_RETAINED_FAILURE","event":"managed_h2_group_uncertain_cleanup","original_completion":"cleanup_unconfirmed","group_inflight":1,"transport_tokens":1,"group_control_bytes":558,"cleanup_reservation_before_failure":16478862}
+{"event":"managed_h2_group_negative_forced_test_disposal","actors":2,"public_cleanup":"UNCONFIRMED_WITH_RETAINED_FAILURE"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"shutdown":"deadline_exceeded_cleanup_pending","result":"UNCONFIRMED_WITH_RETAINED_FAILURE","event":"managed_h2_group_uncertain_cleanup","original_completion":"cleanup_unconfirmed","group_inflight":1,"transport_tokens":1,"group_control_bytes":558,"cleanup_reservation_before_failure":16478862}
+{"event":"managed_h2_group_negative_forced_test_disposal","actors":2,"public_cleanup":"UNCONFIRMED_WITH_RETAINED_FAILURE"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 16) test group h2c pump_owner_death joins its original before both owner ledgers refund and a healthy sibling proceeds (Gaoxy.Proxy.ManagedH2GroupLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs:91[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864322.202619>
+       guardian = #PID<0.3906.0>
+     Showing 8 of 8 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.3878.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864322.202619>,
+                  :process,
+                  #PID<0.3906.0>,
+                  [32m{:cleanup_failed, :invalid_request}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_lifecycle_test.exs:104: (test)
+
+     The following output was logged:
+     [31m
+     03:52:20.159 [error] GenServer #PID<0.3906.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.499971.216446081.4103929858.202524>, {:error, :aborted}}
+     State: %{gate: #PID<0.3896.0>, started_at: -576460527214, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.3883.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.235672>, transports: [%{owner: #PID<0.3882.0>, resource: #Reference<0.216446081.4103864321.235560>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.235549>}], owner_epoch: #Reference<0.216446081.4103864321.235553>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864322.202116>}, submitted_url: nil, activated_at: -576460527213, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.3905.0>, awaiting_transport: nil, cleanup_deadline: -576460496214, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460497214, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.202639>, monitors: %{#Reference<0.216446081.4103864322.202100> => #PID<0.3905.0>, #Reference<0.216446081.4103864322.202101> => #PID<0.3895.0>, #Reference<0.216446081.4103864322.202102> => #PID<0.3880.0>, #Reference<0.216446081.4103864322.202103> => #PID<0.3896.0>}, headers: false, transport_pins: [%{owner: #PID<0.3882.0>, handles: [%{owner: #PID<0.3882.0>, resource: #Reference<0.216446081.4103864321.235560>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.235549>}], kind: :request, ref: #Reference<0.216446081.4103864322.202166>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.3906.0>, owner_epoch: #Reference<0.216446081.4103864321.235549>, operation: #Reference<0.216446081.4103864322.202159>}], opening_deadline: -576460522213, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.202106>, instance: #PID<0.3880.0>, total_timer: #Reference<0.216446081.4103864322.202110>, opening_timer: #Reference<0.216446081.4103864322.202111>, transport_selection: {%{owner: #PID<0.3882.0>, resource: #Reference<0.216446081.4103864321.235560>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.235549>}, #Reference<0.216446081.4103864322.202187>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.3907.0>, latch: #Reference<0.216446081.4103995394.202516>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.3906.0>, pid: #PID<0.3908.0>, ref: #Reference<0.0.499971.216446081.4103929858.202524>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.3907.0>, latch: #Reference<0.216446081.4103995394.202516>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.3895.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 17) test group http2 pump_owner_death joins its original before both owner ledgers refund and a healthy sibling proceeds (Gaoxy.Proxy.ManagedH2GroupLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs:91[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864321.243434>
+       guardian = #PID<0.4124.0>
+     Showing 9 of 9 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "alpn" => "h2",
+                    "connection" => 1,
+                    "event" => "tls",
+                    "sni" => "localhost"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4093.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864321.243434>,
+                  :process,
+                  #PID<0.4124.0>,
+                  [32m{:cleanup_failed, :invalid_request}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_lifecycle_test.exs:104: (test)
+
+     The following output was logged:
+     [31m
+     03:52:28.713 [error] GenServer #PID<0.4124.0> terminating
+     ** (stop) {:cleanup_failed, :invalid_request}
+     Last message: {#Reference<0.0.527875.216446081.4103929857.243347>, {:error, :aborted}}
+     State: %{gate: #PID<0.4114.0>, started_at: -576460518655, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.4098.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864321.242556>, transports: [%{owner: #PID<0.4097.0>, resource: #Reference<0.216446081.4103864321.242444>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.242433>}], owner_epoch: #Reference<0.216446081.4103864321.242437>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.205754>}, submitted_url: nil, activated_at: -576460518655, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.4123.0>, awaiting_transport: nil, cleanup_deadline: -576460487656, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460488656, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.243451>, monitors: %{#Reference<0.216446081.4103864321.242940> => #PID<0.4123.0>, #Reference<0.216446081.4103864321.242941> => #PID<0.4113.0>, #Reference<0.216446081.4103864321.242942> => #PID<0.4095.0>, #Reference<0.216446081.4103864321.242943> => #PID<0.4114.0>}, headers: false, transport_pins: [%{owner: #PID<0.4097.0>, handles: [%{owner: #PID<0.4097.0>, resource: #Reference<0.216446081.4103864321.242444>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.242433>}], kind: :request, ref: #Reference<0.216446081.4103864321.242991>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.4124.0>, owner_epoch: #Reference<0.216446081.4103864321.242433>, operation: #Reference<0.216446081.4103864321.242984>}], opening_deadline: -576460513655, consumed: true, selector: nil, token: #Reference<0.216446081.4103864321.242946>, instance: #PID<0.4095.0>, total_timer: #Reference<0.216446081.4103864321.242950>, opening_timer: #Reference<0.216446081.4103864321.242951>, transport_selection: {%{owner: #PID<0.4097.0>, resource: #Reference<0.216446081.4103864321.242444>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864321.242433>}, #Reference<0.216446081.4103864321.243012>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.4125.0>, latch: #Reference<0.216446081.4103995393.243340>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.4124.0>, pid: #PID<0.4126.0>, ref: #Reference<0.0.527875.216446081.4103929857.243347>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.4125.0>, latch: #Reference<0.216446081.4103995393.243340>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.4113.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 18) test group http2 disconnect joins its original before both owner ledgers refund and a healthy sibling proceeds (Gaoxy.Proxy.ManagedH2GroupLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs:91[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864321.248732>
+       guardian = #PID<0.4422.0>
+     Showing 9 of 9 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "alpn" => "h2",
+                    "connection" => 1,
+                    "event" => "tls",
+                    "sni" => "localhost"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4391.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864321.248732>,
+                  :process,
+                  #PID<0.4422.0>,
+                  [32m{:cleanup_failed, :cleanup_pending}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_lifecycle_test.exs:104: (test)
+
+     The following output was logged:
+     [31m
+     03:52:38.652 [error] GenServer #PID<0.4422.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.566019.216446081.4103929858.213947>, {:error, :aborted}}
+     State: %{gate: #PID<0.4412.0>, started_at: -576460508731, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.4396.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.212905>, transports: [%{owner: #PID<0.4395.0>, resource: #Reference<0.216446081.4103864322.212793>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.212782>}], owner_epoch: #Reference<0.216446081.4103864322.212786>, execution_profile: :managed_h2, max_url_bytes: 23}, #Reference<0.216446081.4103864322.213541>}, submitted_url: nil, activated_at: -576460508731, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.4421.0>, awaiting_transport: nil, cleanup_deadline: -576460477732, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460478732, delivery: nil, poll_timer: #Reference<0.216446081.4103864321.248764>, monitors: %{#Reference<0.216446081.4103864322.213524> => #PID<0.4421.0>, #Reference<0.216446081.4103864322.213525> => #PID<0.4411.0>, #Reference<0.216446081.4103864322.213526> => #PID<0.4393.0>, #Reference<0.216446081.4103864322.213527> => #PID<0.4412.0>}, headers: false, transport_pins: [%{owner: #PID<0.4395.0>, handles: [%{owner: #PID<0.4395.0>, resource: #Reference<0.216446081.4103864322.212793>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.212782>}], kind: :request, ref: #Reference<0.216446081.4103864322.213590>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.4422.0>, owner_epoch: #Reference<0.216446081.4103864322.212782>, operation: #Reference<0.216446081.4103864322.213583>}], opening_deadline: -576460503731, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.213530>, instance: #PID<0.4393.0>, total_timer: #Reference<0.216446081.4103864322.213534>, opening_timer: #Reference<0.216446081.4103864322.213535>, transport_selection: {%{owner: #PID<0.4395.0>, resource: #Reference<0.216446081.4103864322.212793>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.212782>}, #Reference<0.216446081.4103864322.213611>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.4423.0>, latch: #Reference<0.216446081.4103995394.213939>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.4422.0>, pid: #PID<0.4424.0>, ref: #Reference<0.0.566019.216446081.4103929858.213947>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.4423.0>, latch: #Reference<0.216446081.4103995394.213939>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.4411.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m
+
+ 19) test group h2c disconnect joins its original before both owner ledgers refund and a healthy sibling proceeds (Gaoxy.Proxy.ManagedH2GroupLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs:91[0m
+     [31mAssertion failed, no matching message after 5000ms
+     The following variables were pinned:
+       monitor = #Reference<0.216446081.4103864322.216763>
+       guardian = #PID<0.4539.0>
+     Showing 8 of 8 messages in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{"connection" => 1, "event" => "accept"}[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "RemoteSettingsChanged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 1,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "settings_ack",
+                    "max_streams" => 100
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "control",
+                    "kind" => "SettingsAcknowledged"
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "connection" => 1,
+                    "event" => "upload_end",
+                    "stream" => 3,
+                    "total_bytes" => 0
+                  }[0m
+                }
+
+       [36mpattern: [0m{[31m:DOWN[0m, [31m^monitor[0m, [31m:process[0m, [31m^guardian[0m, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  [32m:fixed_h2_peer[0m,
+                  [32m#PID<0.4511.0>[0m,
+                  [32m%{
+                    "code" => 8,
+                    "connection" => 1,
+                    "event" => "reset",
+                    "stream" => 3
+                  }[0m
+                }
+
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^guardian, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.216446081.4103864322.216763>,
+                  :process,
+                  #PID<0.4539.0>,
+                  [32m{:cleanup_failed, :cleanup_pending}[0m
+                }
+     [36mstacktrace:[0m
+       test/managed_h2_group_lifecycle_test.exs:104: (test)
+
+     The following output was logged:
+     [31m
+     03:52:44.537 [error] GenServer #PID<0.4539.0> terminating
+     ** (stop) {:cleanup_failed, :cleanup_pending}
+     Last message: {#Reference<0.0.580995.216446081.4103929858.216640>, {:error, :aborted}}
+     State: %{gate: #PID<0.4529.0>, started_at: -576460502836, cancelled: true, request: %{stream: nil, completion: nil, resolved: true, promise: nil}, selection: {%{owner: #PID<0.4516.0>, group: "group-wire", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.216446081.4103864322.215462>, transports: [%{owner: #PID<0.4515.0>, resource: #Reference<0.216446081.4103864322.215350>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.215339>}], owner_epoch: #Reference<0.216446081.4103864322.215343>, execution_profile: :managed_h2, max_url_bytes: 22}, #Reference<0.216446081.4103864322.216231>}, submitted_url: nil, activated_at: -576460502836, client: Gaoxy.Proxy.ManagedH2Client, managed_transport: nil, owner: #PID<0.4538.0>, awaiting_transport: nil, cleanup_deadline: -576460471837, managed_path: true, cleanup_requested_deadline: nil, outcome: :cancelled, deadline: -576460472837, delivery: nil, poll_timer: #Reference<0.216446081.4103864322.216794>, monitors: %{#Reference<0.216446081.4103864322.216215> => #PID<0.4538.0>, #Reference<0.216446081.4103864322.216216> => #PID<0.4528.0>, #Reference<0.216446081.4103864322.216217> => #PID<0.4513.0>, #Reference<0.216446081.4103864322.216218> => #PID<0.4529.0>}, headers: false, transport_pins: [%{owner: #PID<0.4515.0>, handles: [%{owner: #PID<0.4515.0>, resource: #Reference<0.216446081.4103864322.215350>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.215339>}], kind: :request, ref: #Reference<0.216446081.4103864322.216284>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.4539.0>, owner_epoch: #Reference<0.216446081.4103864322.215339>, operation: #Reference<0.216446081.4103864322.216277>}], opening_deadline: -576460497836, consumed: true, selector: nil, token: #Reference<0.216446081.4103864322.216221>, instance: #PID<0.4513.0>, total_timer: #Reference<0.216446081.4103864322.216225>, opening_timer: #Reference<0.216446081.4103864322.216226>, transport_selection: {%{owner: #PID<0.4515.0>, resource: #Reference<0.216446081.4103864322.215350>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.216446081.4103864322.215339>}, #Reference<0.216446081.4103864322.216305>}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.4540.0>, latch: #Reference<0.216446081.4103995394.216633>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.4539.0>, pid: #PID<0.4541.0>, ref: #Reference<0.0.580995.216446081.4103929858.216640>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.4540.0>, latch: #Reference<0.216446081.4103995394.216633>, unsupported: nil}}}, cleanup_started: true, request_options: nil, service: #PID<0.4528.0>, trailers: [], transport_handoff: nil, config: %{limits: %{idle_timeout: 60000, max_chunk_bytes: 65536, opening_timeout: 5000, write_timeout: 5000, max_lifetime: 30000}}}
+     [0m
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m
+Finished in 284.2 seconds (0.00s async, 284.2s sync)
+[31m106 tests, 19 failures[0m

@@ -1,0 +1,76 @@
+{
+  "task": "group_preactivation_spec / integrated initial health event fixture binding",
+  "status": "DONE_SOURCE_SUPPLEMENT",
+  "verdict": "PASS_INTEGRATED_FIXTURE_SOURCE_ONLY",
+  "recorded_at_utc": "2026-10-15T19:56:02.467734+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "assignment": "direct read-only supplementary binding; root solewriter/runtime owner",
+  "prior_reports_retained_immutable": [
+    {
+      "path": "/tmp/gaoxy-group-cleanup-spec-review1.md",
+      "sha256": "3a6ef596920050b0e2d8b0c94cfccb6ba36d260193cedb8d319106c7f25a8bb8"
+    },
+    {
+      "path": "/tmp/gaoxy-group-cleanup-spec-review1.json",
+      "sha256": "456007e7099a1cf5c286efef59b9298c5c2e7aa9a6353e52610a2d3968b1f425"
+    }
+  ],
+  "binding": {
+    "archived_before": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/postactivation-before-adoption1/apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+    "before_sha256": "75e97f217aaf2186de938899234c49524571ee5f9194e835deb6abbd7f3cc9a8",
+    "current": "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+    "current_sha256": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/initial-health-upload-end-repair1.json",
+    "receipt_sha256": "8635cd438ad2fe4ee8d9d073f89a46a539cdf97721e6fa53ec7d96bd3242e0a0",
+    "matches_expected_receipt_sha256": true,
+    "before_matches_receipt": true,
+    "current_matches_receipt_before_formatter": true,
+    "actual_diff": "--- archived_before\n+++ current\n@@ -129,6 +129,11 @@\n       assert seen[\"target\"] === health.path\n       assert [\":method\", \"HEAD\"] in seen[\"headers\"]\n       assert seen[\"ended\"] === true\n+      health_connection = seen[\"connection\"]\n+      health_stream = seen[\"stream\"]\n+\n+      assert %{\"connection\" => ^health_connection, \"stream\" => ^health_stream, \"total_bytes\" => 0} =\n+               F.event(peer, \"upload_end\")\n \n       if \"--manual\" in peer_options,\n         do:\n"
+  },
+  "checks": [
+    {
+      "id": "IF1",
+      "status": "PASS",
+      "evidence": "Exactly5 added lines immediately after actual initial HEAD request target/method/ended assertions, within await_health branch."
+    },
+    {
+      "id": "IF2",
+      "status": "PASS",
+      "evidence": "Captured health_connection and health_stream are bound directly to observed request and pinned in one actual F.event(peer,\"upload_end\") assertion with exact total_bytes0."
+    },
+    {
+      "id": "IF3",
+      "status": "PASS",
+      "evidence": "Complete file diff contains no other changes: no request/upload/byte/trailer/no_event/cleanup assertions removed or relaxed, no blanket drain. Manual response and genuine health settlement remain unchanged."
+    },
+    {
+      "id": "IF4",
+      "status": "PASS",
+      "evidence": "Archived SHA75e97f... and current SHA4d5f70... match root receipt, whose actual bytes authenticate against parent supplied8635cd... . This is the exact previously reviewed fixture contract."
+    }
+  ],
+  "Session": {
+    "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+    "current_sha256": "dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d",
+    "qualification": "Still unchanged52f17de...; proposed terminal patch pending CODE/root adoption, not certified as integrated here."
+  },
+  "actionable_findings": [],
+  "runtime": "NOT_RUN_BY_REVIEWER",
+  "parent_runtime_update": {
+    "source": "Parent message only, not independently authenticated by this source-only supplement",
+    "controlled_live": "106 tests/19 failures exit2 joined stable; fresh Session NOT_RUN failfast",
+    "qualification": "No claim proposed patch/fixture fixes all19; one TLS guardian recovery anomaly remains potentially separate. Preserve failures/counters."
+  },
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "inherited_astra": "2/2 exhausted",
+    "parent_failed_GREEN": "Parent reports at least14; ledger append pending; preserved without inferred global sum/reset"
+  },
+  "repository_mutations": [],
+  "only_new_output": "/tmp/gaoxy-group-cleanup-spec-integrated-fixture1.json",
+  "shutdown": "All reviewer read/write-report commands completed; no own running processes. Root runtime58585 untouched.",
+  "remaining_risks": [
+    "Source binding only; actual fresh formatter/runtime/compatibility gates remain necessary.",
+    "Session proposal is still separate and unintegrated at this source snapshot."
+  ]
+}

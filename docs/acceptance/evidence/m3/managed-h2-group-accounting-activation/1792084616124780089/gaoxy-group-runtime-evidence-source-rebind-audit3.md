@@ -1,0 +1,15 @@
+# Source rebind and runtime evidence audit3
+
+PASS source-rebind and aggregate3 source review. FAIL browser4; stage NOT_ACCEPTED.
+
+Direct read-only task `/root/browser_contract_spec/source-rebind-audit3`; worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, historical baseline `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. Candidate4 SHA045494d4e74fcb23f829579aeede1ea175d3a2155b443b9193a0df5593c305d5 has exactly1 reviewed HOST serialization insertion and197 unchanged sources; all198 current hashes match. Removing that exact insertion reconstructs candidate3 bytes. Generated newHOST is exactly the same one-line delta from the failed browser3 artifact. Canonical browser source is unchanged.
+
+Adoption4 SHA3fb519d64546bd28fad04cc71d493e4d11506caedfbd6c282bdc7178e5f43656, full3 review chain, both independent patch reviews, repair adoption, collector, gate list, wrapper and ledger12 are authenticated. Candidate3 command aggregate matches immutable audit2 and all25 receipt/log hashes and original source maps. These25 runs retain1752 executed invocations and are explicitly reused; they were not rerun on newHOST.
+
+Aggregate3 SHAe0767734ae68ce005131bd0406503d46b63b6a7f2b5647d01c01d8e1334a7458 passes source-only review. It checks exact candidate/current hashes and one-field reconstruction, source/review/reference custody, original25 candidate3 gate receipts and successful command predicates, and fresh candidate4 browser source/exit/join/PASS3 exact-case/artifact predicates. It explicitly separates old command candidate3 from browser candidate4 and retains browser3 failure. No open source finding. Python parsing in memory passes; reviewer never executed aggregate. Output remains absent.
+
+Browser4 receipt SHA45d856b653e8b064db66f53a4f79f6891d66e35354f27b0c395dde67ae539e5b is actual exit1/joined/no timeout with198 before/after candidate4 hashes. Qualification SHA207eef6c8c79b3807e4a973f25ce353b008c8bf6acf7537ecacaa1beff915af4 has source-stable FAIL, zero cases and one successful unforced browser join. All9 artifacts and log hash authenticate. The consumer fails waiting for stopped at line212 because host emits process_eof; this is separate from the repaired missing-field failure. Neither positive nor negative canonical cases completed. Aggregate must reject this receipt.
+
+Immutable ledger12 SHA d4288539023e52019b91ca9a5bf2dfab2bfd23eb42fd082c90d5f46753b2f122 retains22 failedGREEN/25 root events and nests exact ledger11. Parent reports23 failedGREEN/25 events after browser4, which is a later snapshot. Astra2/2 exhausted; reviewer adds0 repairs. Historical cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE. Diagnosis/repair, fresh actual complete canonical browser, documentation rebind, independent closure and source/index/commit custody remain.
+
+Only these assigned /tmp reports were written. No runtime/build/test/browser/collector/aggregate/process-control command was run; all reviewer commands finished. No stage/publication/deployment claim or decision request.

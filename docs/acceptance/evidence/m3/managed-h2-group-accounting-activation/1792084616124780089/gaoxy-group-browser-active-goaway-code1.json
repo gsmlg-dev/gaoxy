@@ -1,0 +1,69 @@
+{
+  "task_id": "/root/browser_contract_spec/active-goaway-code1",
+  "status": "DONE_SOURCE_ONLY_CODE_REVIEW_AND_PATCH_PROPOSAL",
+  "assignment": "direct read-only fixture diagnosis and minimal patch proposal; writes only assigned /tmp files",
+  "verdict": "PASS_SOURCE_ONLY_PROPOSED_PATCH_NOT_RUNTIME_VALIDATED",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "candidate5_sha256": "fcd3fdd1b358722f8e6714363b6a0e9f44d8c3390fdfffd6074e8e333928820d",
+  "current198_match_candidate5": true,
+  "patch": "/tmp/gaoxy-group-browser-active-goaway1.patch",
+  "patch_sha256": "3fbd8753eb44786c0e09b05c032c265cf6935ba81b3c02199219d16a3f5b8eff",
+  "source_delta": {
+    "apps/gaoxy_proxy/test/support/managed_h2_group_browser_peer.py": {
+      "base_sha256": "0b73127aa1f3cf3d7a9257526db158c40b3ec76913089c028397175e5bafd259",
+      "proposed_sha256": "32fedd373c42b37e37f1c87fe1986df05dd12aef46e8e96f48dc583d4e639772"
+    },
+    "integration/http_fetch_contract/managed_h2_group_browser.py": {
+      "base_sha256": "5c6544a5b3f70329f083ad2fb48b522b81fe7a990135136a12358dd436ef6dfa",
+      "proposed_sha256": "478236b7876ffa47bd945be92d2475b7f9a2a3e07f49b83cc6a53b55efa4b81a"
+    }
+  },
+  "assigned_scope": [
+    "apps/gaoxy_proxy/test/support/managed_h2_group_browser_peer.py",
+    "integration/http_fetch_contract/managed_h2_group_browser.py"
+  ],
+  "other_files_changed": false,
+  "evidence": {
+    "browser5_receipt": "browser-command5-1792101661338130027.json",
+    "browser5_status": "FAIL actual1 joined completed1 positive; first negative setup EOF deadline, wrong-name NOT_RUN",
+    "qualification_sha256": "68045cc4d57a2dc1c061d3aca05be67faabcb8c3326ef0191a6b0135f0b2f6d2",
+    "wrong_ca_peer_log_sha256": "9db21c19950b4fda30ded6debe81d38ef30b7850473d76327717c3b8477f88ac",
+    "observed_order": "actual initial HEAD health, upload_end, real GOAWAY command connection1/stream1/last1/code0, eventualEOF; consumer20s wait expired before subsequent rotation",
+    "base_peer_sha256": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00",
+    "runtime_owner_sha256": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615",
+    "shared_host_process_sha256": "b0942982c3cc102c1fe1787e237b99b767560e1ed851efa3e256697a0c77807b"
+  },
+  "root_cause_trace": "start_host waits healthy completed initial probe before orchestrator sends GOAWAY. Runtime GOAWAY sets draining and starts default30000ms timer; an already-released stream cannot later trigger release_stream branch that stops a draining owner when streams become0. Consumer retains default20s physicalEOF deadline. This is fixture ordering, not evidence of immediate idle GOAWAY retirement or a runtime fix.",
+  "patch_behavior": "Negative unrotated exact initial /health HEAD automatic callback calls inherited Peer.command realGOAWAY before inherited automatic response. Browser waits for actual command and adds exact connection/stream/last_stream/code binding; removes only late send.",
+  "lock_and_wire": "Peer.serve invokes automatic while holding threading.RLock. Inherited Peer.command and its emit safely reacquire that same RLock on the worker thread. The existing command sends real 8byte GOAWAY payload (last_stream32/code32) inside actual type0x07/flags0/stream0 frame through TLS socket; no copied encoder, fake event, fakeEOF, shutdown, force-close, sleep or new thread. It leaves hyper-h2 connection state usable to send existing accepted HEAD response. GOAWAY wire send precedes response headers, so active stream remains represented before completion/release.",
+  "assertion_preservation": {
+    "original_canonical_require_calls": 41,
+    "all_original_require_ASTs_unchanged": true,
+    "new_require_calls": 1,
+    "all_original_event_calls_and_timeouts_unchanged": true,
+    "retained": "Initial real HEAD/ALPN/SNI; exact20sEOF on same actual connection; rotation1request/1accept/workerjoin/physicalEOF/certdifference; real failed handshakes; no replay and peerjoins; bounded502/browser body; Service/fullreservation/G/T cleanup ledgers; exact3case names/isolated3joins; original180s peer deadline, socket timeouts and join deadlines unchanged.",
+    "positive_untouched": "automatic new branch only negative and unrotated exact /health HEAD; all positive behaviors unchanged."
+  },
+  "verification": {
+    "source": "All current198 candidate5 hashes and two exact base hashes authenticated; proposed two-file source compiles in memory; reverse replacements exactly restore both bases.",
+    "AST": "PASS every original require and every event call preserved; one additional actualGOAWAY identity requirement; no deadline change.",
+    "runtime": "NOT_RUN_BY_REVIEWER; existing browser5 remains FAIL; fresh complete canonical3 on reviewed/rebound new suite+peer required.",
+    "fresh_identity": "Because canonical and peer bytes change, next candidate/adoption/wrapper/aggregate must bind both result hashes honestly and continue explicit historicalc3 command25 reuse through unchanged production/test bytes."
+  },
+  "findings": [],
+  "counters": "Parent-current24failedGREEN/26root events; reviewer0 repair/validation rounds; Astra2/2 exhausted unchanged. Ordered root events are not relabelled globalSol repairs.",
+  "command_shutdown": "All reviewer commands finished; no imports/runtime/tests/Mix/browser/collector/aggregate/process/Git mutation.",
+  "writes": [
+    "/tmp/gaoxy-group-browser-active-goaway1.patch",
+    "/tmp/gaoxy-group-browser-active-goaway-code1.md",
+    "/tmp/gaoxy-group-browser-active-goaway-code1.json"
+  ],
+  "remaining_risks": [
+    "Source ordering guarantees same worker sends GOAWAY before HEAD response; only fresh actual run can establish resulting ownerEOF and allnegative gates.",
+    "No assertion of peerEOF cause/timing from eventual log alone; default30s drain/release distinction comes from current runtime source.",
+    "All original failures must remain immutable; this fixture proposal must not be reported as production runtime acceptance."
+  ],
+  "decisions_needed": [],
+  "astra_gate": null
+}

@@ -1,0 +1,127 @@
+{
+  "task_id": "/root/group_postactivation_code/native_tls_ownership_proposal1",
+  "status": "DONE_PROPOSAL",
+  "assignment": "direct bounded read-only compatibility design and patch proposal",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_verification": "no Git; target bytes authenticated; historical frozen175 manifest not reasserted after authorized root changes",
+  "recommendation": "native H2 owner retains full SSL metadata; per-stream Exchange.ssl=nil; Exchange.ssl_data uses existing authenticated Transport.operation(:ssl_data); owner replies full original after actual stream deadline check",
+  "alternatives": {
+    "retain_full_exchange_metadata": "requires real constructor/live lease provenance and retained-copy byte budget before projection; scalar transport-state validation alone is insufficient; runtime calls in pure accountant add complexity",
+    "expand_scalar_whitelist": "rejected; incomplete for complete OTP metadata and broadens trusted data grammar"
+  },
+  "patch": {
+    "path": "/tmp/gaoxy-group-native-tls-ownership-proposal1.patch",
+    "sha256": "3821eae059f8b03d01eb20726ce536ee4fcc8c4e05494a4ec72a71314f609d79",
+    "targets": [
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+        "before_sha256": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+        "proposed_after_before_formatter_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "before_sha256": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+        "proposed_after_before_formatter_sha256": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+        "before_sha256": "8ec0d0568ba2d9180be33dc421f7294a5fe8ec6988002d5c64b6c7fe48ec2eb8",
+        "proposed_after_before_formatter_sha256": "300e315d2d37ee927fe6eb2b7c1f210183ce83ec11aa118fc7059f8b87d586a1",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+        "before_sha256": null,
+        "proposed_after_before_formatter_sha256": "bee3be78b40e51154bf6cf6ccd1d65ab498d77d98a0e46de18e1509bdf3e664c",
+        "new_file": true
+      }
+    ],
+    "runtime": "NOT RUN",
+    "format": "NOT RUN",
+    "compile": "NOT RUN",
+    "new_tests_planned": 3,
+    "new_tests_executed": 0
+  },
+  "source_inputs": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "apps/gaoxy/lib/gaoxy/config.ex": "3054657e55350afeb23f0690a4c3d6d0d3df352e564184ce5579cb6f30583cde",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "cf78f0bbb37bf76c0f4d9cad9b5d5843ce0f8457120f730591ba686b42459659",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a"
+  },
+  "diagnosis_inputs": {
+    "md_sha256": "34323a7535ed80fa79c406bc9b9f7572d0778e8258723637482dbd5f909054aa",
+    "json_sha256": "b100496a114167ae744ea7adf050e9cfec07d1e7e773a5fd07b4cb4e9ed568ca"
+  },
+  "assertions_weakened": false,
+  "accountant_modified": false,
+  "caps_changed": false,
+  "new_process_or_authority": false,
+  "compatibility": {
+    "valid_native_h2_worker": "full existing original data preserved through Exchange and Plug; no filtering",
+    "copied_exchange_foreign_caller": "denied by existing worker/id/token authorization; Exchange API nil, raw operation closed; intentional requested ownership boundary",
+    "h1": "same direct Socket path",
+    "h3_other_transports": "same stored SSL data clause",
+    "peer_cert_and_secure": "unchanged",
+    "deadlines": "existing Transport request deadline plus authoritative stream.deadline owner check"
+  },
+  "regressions": [
+    "Two real verified TLS/h2 downstream group cases, each independent upstream H2 protocol, actual nonzero full OTP metadata, same owner/API/Plug value, constructor nil payload, real Admission owner and worker leases",
+    "Wrong stream, wrong token, foreign caller with real copied token denied; local expired deadline denied; owner-deadline branch implemented but deliberate post-watchdog live case not included",
+    "Actual group target, original completion, full16478862 cleanup with correct lease/token/Service guardian association,200/bodyempty, completion await, actor joins and zero G/T/Service accounting",
+    "Existing accounting negatives unchanged; new session_data/PID/improperlist/logical65537/backing65537 negatives and nil-payload nativeH2 structural positive"
+  ],
+  "remaining_gates": [
+    "root exact failure-selector diagnostic",
+    "independent spec/code review",
+    "format and strict prod/test compilation",
+    "scoped actual tests with nonzero executed counts",
+    "native H1/H2 and H3 compatibility",
+    "fresh group live/Session",
+    "unchanged isolated browser cases",
+    "exact loaded VM identity"
+  ],
+  "limitations": [
+    "no runtime-confirmed503 attribution",
+    "no compilation or syntax acceptance",
+    "does not establish new complete native connection memory proof",
+    "explicit SSL API return can copy data to caller; production pump does not capture returned metadata",
+    "foreign-caller metadata reads intentionally change to nil under requested authority model"
+  ],
+  "verification": {
+    "in_memory_patch_reconstruction": "PASS exact contexts/hunk counts/before/after hashes",
+    "source_target_stability": "PASS at final reconstruction",
+    "runtime_compile_test_browser": "NOT RUN",
+    "repo_changes": []
+  },
+  "draft_refinement": {
+    "prior_own_draft_sha256": "f5722867019cef2710b816a45ab1ae8681bb33083d195cece2175e5b6382e36f",
+    "edits": "correct cleanup guardian lookup to actual Service record by Admission token;128-byte backing-negative slice",
+    "classification": "pre-delivery source self-review; no runtime round"
+  },
+  "counter_custody": {
+    "reviewer_sol_repair_rounds_added": 0,
+    "parent_failed_green_latest_reported": 18,
+    "parent_root_events_latest_reported": 20,
+    "receipt_status": "pending per parent",
+    "astra": "2/2 exhausted",
+    "earlier_startup_compile_failure": "exit1/zero tests; root local refund pin repair independent review pending; separate nativeTLS scope; no fresh live/Session after fail-fast"
+  },
+  "writes": [
+    "/tmp/gaoxy-group-native-tls-ownership-proposal1.patch",
+    "/tmp/gaoxy-group-native-tls-ownership-proposal1.md",
+    "/tmp/gaoxy-group-native-tls-ownership-proposal1.json"
+  ],
+  "command_shutdown": "all own commands completed; no runtime or process-control actions",
+  "decisions_needed": []
+}

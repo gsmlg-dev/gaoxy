@@ -1,5 +1,5 @@
 defmodule Gaoxy.Proxy.GroupEndpoint do
-  @moduledoc "HTTP/1 proxy endpoint for an explicitly prepared immutable group and its resources."
+  @moduledoc "HTTP/1 and managed HTTP/2 proxy endpoint for an explicitly prepared immutable group and its resources."
   @behaviour Gaoxy.HTTP.Endpoint
   alias Gaoxy.HTTP.Resources
   alias Gaoxy.Proxy.{HTTP, UpstreamGroups}

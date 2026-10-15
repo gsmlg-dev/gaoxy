@@ -1,0 +1,17 @@
+# Native TLS positive compatibility fix independent SPEC review
+
+**PASS_SOURCE_ONLY. No actionable source findings. Repaired runtime acceptance remains NOT RUN.**
+
+Task `M3/group-activation/native_tls_positive_repair1/spec`; direct read-only assignment. Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, supplied historical baseline `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. No repository/runtime/build/Git/process-control mutation. Only the authorized two `/tmp` reports were written.
+
+Exact reconstruction authenticates patch `24d256384037ab88a241e01bc13162f81cb8926874af20d36d81dab8b2d1e371`, its single original context/hunk count, Exchange before `513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652` and after `75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0` before formatting. The only production change is `Code.ensure_loaded!(Gaoxy.PlugAdapter)` plus a blank line at entry to Exchange.plug_conn.
+
+Actual diagnostic receipt SHA `01fd918d56960b7d78d013f424796771d4ab97b15566acc157eac545f0cd874b` and log SHA `61fda4c0f25e01f9fde0c6fd046a0fcc1163ccbd657251297bfc22a542cbc156` independently authenticate41 executed/2 failures, exit2, joined/stable, zero skips/exclusions. Both actual selectors are RuntimeError `get_ssl_data not supported by Gaoxy.PlugAdapter` with `:code.is_loaded` false. The diagnostic wraps only the original expression in memory and reraises original error/stack. It remains FAIL and is not repaired acceptance. Eager tuple construction prevents the observation send when that expression raises; native Stream catches endpoint errors, explaining the original observation timeout.
+
+Exchange.plug_conn is the correct owned adapter-load boundary. Plug.Conn.Adapter.conn merely stores the atom in Conn; Plug.Conn.get_ssl_data uses function_exported? without autoload before invoking its optional callback. Gaoxy.PlugAdapter already implements that callback. Production PlugEndpoint reaches the same Conn construction before user Plug code and loads only the user module. A fixture preload would leave this ordinary first-operation path broken. No dependency defect is established.
+
+The proposed call loads an existing owned module, with explicit failure if missing, before constructing Conn. It introduces no process, dependency, application startup, callback invocation, synthetic SSL value or swallowed error. Existing H1/H3 Conn semantics, native H2 owner/worker/token authorization, authoritative deadline, Service/Admission lifecycle and all accountant grammars/caps remain unchanged.
+
+Canonical TLS test bytes independently remain `601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3`. Every full SSL/API/Plug equality, actual network/ALPN, negative authority, real deadline/watchdog, exact cleanup/completion and actor-join assertion is preserved. Companion JSON records9 requirement mappings and exact source/artifact hashes.
+
+Root must adopt the exact one-call repair, run formatter/strict compile and rerun unchanged nativeTLS41 requiring actual zero failures, no skips/exclusions and joined/stable evidence. Accountant/nativeH2 and other prescribed compatibility/browser/final independent gates remain required. Parent reports command77347 joined, Session46/0 and real deadline case PASS; those receipts were not independently reread here. No stage verdict follows. Inherited failedGREEN20/rootrepair22, Astra2/2 remain unchanged; reviewer adds zero runtime repair rounds. All own commands finished; no decisions needed.

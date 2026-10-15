@@ -1,0 +1,117 @@
+{
+  "task_id": "/root/group_postactivation_code",
+  "assignment": "direct read-only independent targeted CODE review of three root-authored tmp proposals",
+  "review_status": "DONE_REVIEW",
+  "verdict": "REQUEST_CHANGES_NARROW_TEST_CLEANUP",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/postactivation-full-review-candidate1.json",
+    "sha256": "06c453b0a3f38fd1c008f5821491cff02809666b3c8c697d4965e2265dd8a4b0",
+    "source_count": 175,
+    "final_mismatches": []
+  },
+  "descriptor": {
+    "path": "/tmp/gaoxy-group-overlap-observer-repairs1.json",
+    "sha256": "116312c81f9526be4c3143cecbfc14945284b8500006faa57d22ad79137a0cd0"
+  },
+  "patches": [
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_startup_reservation_test.exs",
+      "patch": "/tmp/gaoxy-group-positive-startup1.patch",
+      "patch_sha256": "ed8257558ed40a6abcd69e1f004b99d0cd7ce225e5b42da56b0e032c4ce14ee4",
+      "before_sha256": "af5730f75b2217d6bff5052434ce13fb24eaecdc7d1a3f0bf2fe551dc7582045",
+      "after_before_formatter_sha256": "ef0c18f261731b7e7120e9e56424737116774c05590ce986e48e7c173a4fdd23",
+      "new_tests": 4,
+      "existing_assertions_removed": false
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs",
+      "patch": "/tmp/gaoxy-group-handoff-debug-state2.patch",
+      "patch_sha256": "1d56547371d3f57236f2ec82172f80181a2a12425c60f9a4c7a85a60f12234bd",
+      "before_sha256": "c907608a276f66cf3550407369eee31b4ed97597073474c616a8bde2dcb1752e",
+      "after_before_formatter_sha256": "e0b4cbedf8b60e85626b3d57a1ab6bb76af9e666385605bcd86df4a58451c543",
+      "new_tests": 0,
+      "existing_assertions_removed": false
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs",
+      "patch": "/tmp/gaoxy-group-recovery-observer-cleanup1.patch",
+      "patch_sha256": "b3e785084468801078d82b53e04c6d8847d242af65d82afabb10e9f163542dd1",
+      "before_sha256": "0dff9a288f929b8679e9cc264884b31fd8041dab4b3d6369a800757d0ce5c244",
+      "after_before_formatter_sha256": "3c7550eb75f941ede344251630d519d0db05d71482f84db7df632d7e5dd78e70",
+      "new_tests": 0,
+      "existing_assertions_removed": false
+    }
+  ],
+  "findings": [
+    {
+      "id": "F-OVERLAP-CODE-01",
+      "priority": "P3",
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_startup_reservation_test.exs",
+      "proposed_lines": [
+        167,
+        319
+      ],
+      "patch": "/tmp/gaoxy-group-positive-startup1.patch",
+      "title": "Positive startup observer adds redundant continuation sends after the one owned release",
+      "detail": "The normal path explicitly releases at reconstructed line137, then the observer returns :done at312 and removes itself. The test after167 and observer on_exit319 unconditionally send the same continuation again. After a successful G.close the Gate is already joined, so these sends target a dead PID; on early failure they can reach an Admission gate with no pending barrier. Admission.handle_info(_,state) absorbs such messages, so no DynamicSupervisor-style error noise is asserted. They are nevertheless unnecessary duplicate release traffic in the repair of the same fixture-ownership class.",
+      "repair": "Delete both redundant after/on_exit continuation sends. Preserve the actual single release at137, caller monitor DOWN release at301, finite5000 barrier timeout at303, observer removal, trace cleanup and all new/old assertions.",
+      "runtime": "NOT RUN; source finding only"
+    }
+  ],
+  "checks": [
+    {
+      "area": "Identity/custody",
+      "result": "All three patch hashes, current source before hashes and reconstructed in-memory after hashes match the supplied descriptor. All175 frozen candidate source hashes still match. No source/patch/report was overwritten."
+    },
+    {
+      "area": "F-CODE-01",
+      "result": "SOURCE_RESOLVED: tagged {:delegation,from,operation} is a3tuple, avoiding OTP legacy/keyed debug state ambiguity. Exact real raw From+operation+capacity correlation and normalized invalid_resource_pin/502 assertions remain intact."
+    },
+    {
+      "area": "F-CODE-02 substantive coverage",
+      "result": "SOURCE_ADDRESSED: four actual public success cases cover both native downstream protocols and both upstream H2 protocols. ObservedEndpoint takes the real request pump/lease gate baseline. Keyed gate observer captures actual :ok output states for +startup and genuine Service attach. Assertions require ordinary lease+5963776 and cleanup16478862 simultaneously, exact total, same lease/token, false receipt and bounded high-water."
+    },
+    {
+      "area": "Helper-return/refund order",
+      "result": "SOURCE_VALID: only authentic -startup Gate input is held; return tracing in the same pump proves start_group_session/5 returned {:ok,guardian,...} before adjust_bytes refund call. trace_delivered(:all) fences original trace messages. No fabricated replies/state updates; after release, actual Gate :ok output proves exact base lease and unchanged cleanup record, total base+16478862; complete trace history requires exactly one + and one -."
+    },
+    {
+      "area": "Genuine network and completion",
+      "result": "SOURCE_VALID: manual real peer sees exact /startup-overlap?; G original token guardian equals actually created Session; public RequestCompletion equals Session original request completion. Actual200 response, original completion await, G.clean ledgers, peer no-extra-request and G.close actor/physical joins remain. Existing wider live suite independently checks same G/T originals; this proposal does not add a second explicit T-original assertion."
+    },
+    {
+      "area": "F-CODE-03",
+      "result": "SOURCE_RESOLVED: recovery debug barrier monitors original test caller and releases on exact DOWN or explicit matching continuation, demonitoring in after. on_exit only removes observer, no duplicate DynamicSupervisor continuation. Original recovery proof/assertions and finite @timeout unchanged."
+    },
+    {
+      "area": "Cleanup/deadlines",
+      "result": "Five-second actual receives and existing fixture deadlines retained; parent DOWN releases held callbacks even if test exits before explicit release. Trace cleanup in try/after retained. New positive observer has redundant sends F-OVERLAP-CODE-01; no production mutation or diagnostic suppression."
+    },
+    {
+      "area": "Assertion preservation",
+      "result": "No prior assertion is removed or weakened in any patch. Startup negative tests remain; only shared trace-pattern list extracted. All caps, real raw/norm refusal assertions, recovery and original completion assertions retained."
+    },
+    {
+      "area": "Runtime boundary",
+      "result": "No compile/test/build/runtime command launched. All repairs are NOT RUN. Root reports fresh browser command joined exit1 FAIL with zero completed cases and stable source; not a patch finding and not a passed browser gate. No external/product decision needed."
+    }
+  ],
+  "original_findings": {
+    "F_CODE_01": "SOURCE_RESOLVED_NOT_RUN",
+    "F_CODE_02": "SUBSTANTIVE_SOURCE_ADDRESSED_NOT_RUN; narrow duplicate release finding remains",
+    "F_CODE_03": "SOURCE_RESOLVED_NOT_RUN"
+  },
+  "counter_custody": {
+    "reviewer_repairs": 0,
+    "parent_failed_green_recorded": 16,
+    "new_browser_failure": "root reports one additional joined browser exit1 failure, not yet ledgered; do not silently reset or merge counters",
+    "parent_root_repair_events": 16,
+    "astra": "2/2 exhausted"
+  },
+  "writes": "Only two new tmp review reports; reconstructed target bytes existed only in Python memory.",
+  "commands": "All own read-only commands complete. No tests/build/formatter/Git/repository/process writes or process actions.",
+  "remaining": "Root remove two duplicate sends, freeze new candidate, independent source review and actual scoped tests/fresh gates. Browser failure diagnosis remains root-owned.",
+  "limitations": "Targeted proposal source review does not rerun or replace the full-stage review, validate formatting/compilation, or accept runtime/activation."
+}

@@ -54,6 +54,8 @@ defmodule Gaoxy.HTTP.Exchange do
   end
 
   def plug_conn(exchange) do
+    Code.ensure_loaded!(Gaoxy.PlugAdapter)
+
     request = exchange.request
     scheme = if secure?(exchange), do: "https", else: "http"
 
@@ -400,6 +402,13 @@ defmodule Gaoxy.HTTP.Exchange do
   def sock_data(exchange) do
     {address, port} = exchange.local
     %{address: address, port: port}
+  end
+
+  def ssl_data(%{transport: Gaoxy.HTTP.HTTP2.Transport} = exchange) do
+    case Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :ssl_data) do
+      {:ok, data} -> data
+      {:error, _} -> nil
+    end
   end
 
   def ssl_data(%{transport: module, ssl: ssl}) when not is_nil(module), do: ssl

@@ -1,0 +1,11 @@
+--- a/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
+@@ -54,6 +54,8 @@
+   end
+ 
+   def plug_conn(exchange) do
++    Code.ensure_loaded!(Gaoxy.PlugAdapter)
++
+     request = exchange.request
+     scheme = if secure?(exchange), do: "https", else: "http"
+ 

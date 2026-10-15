@@ -1,0 +1,73 @@
+{
+  "kind": "REVIEWED_NATIVE_TLS_OWNERSHIP_PRODUCTION_ADOPTION",
+  "recorded_at_utc": "2026-10-15T20:58:17.269402+00:00",
+  "proposal": {
+    "path": "/tmp/gaoxy-group-native-tls-ownership-proposal2.patch",
+    "sha256": "a02084cbf31ae9ccff7b8028ec9c5de2f70f4a29dd502b168cefcf7ef15ebd2c",
+    "application": "complete combined replacement for proposal1 against identical original source; not incremental on adopted proposal1",
+    "targets": [
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+        "before_sha256": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+        "proposed_after_before_formatter_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "before_sha256": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+        "proposed_after_before_formatter_sha256": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+        "before_sha256": "8ec0d0568ba2d9180be33dc421f7294a5fe8ec6988002d5c64b6c7fe48ec2eb8",
+        "proposed_after_before_formatter_sha256": "300e315d2d37ee927fe6eb2b7c1f210183ce83ec11aa118fc7059f8b87d586a1",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+        "before_sha256": null,
+        "proposed_after_before_formatter_sha256": "68e088c3b033aff0697e5d41cfed375020d2b139d09a50feb6f2eadd0629c986",
+        "new_file": true
+      }
+    ],
+    "production_delta_from_proposal1": "none",
+    "accounting_test_delta_from_proposal1": "none",
+    "positive_cases_delta": "only native owner role additionally permits exact documented shutdown peer_closed tuple",
+    "new_test_lines_before_formatter": 405,
+    "new_tests_planned_total": 4,
+    "new_tests_executed": 0
+  },
+  "red": {
+    "receipt": "native-tls-red1-1792097811580202931.json",
+    "sha256": "694f409f4eae41ad888b3286a6e9010ab1e0550a33584f9082b43669562345f4",
+    "actual_exit": 2,
+    "executed": 41,
+    "failed": 3,
+    "classification": "AUTHENTICATED_INTENDED_RED",
+    "causes": "two actual TLS exchanges still copy full metadata; real queued owner ssl_data returns invalid_operation instead of authoritative timeout",
+    "assertions_unchanged": true
+  },
+  "reviews": {
+    "gaoxy-group-native-tls-ownership-spec-review2.json": "a114d537394d11c7e210c274df7712b63ca256b5a6009508d3c800fb452e6512",
+    "gaoxy-group-native-tls-ownership-code-review2.json": "19dddfcf67d4b42907a3106403d7ce1c970593c37df2188ef3ee87dd9af3d093"
+  },
+  "production_targets": [
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+      "before_sha256": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+      "proposed_after_before_formatter_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+      "new_file": false
+    },
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "before_sha256": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+      "proposed_after_before_formatter_sha256": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+      "new_file": false
+    }
+  ],
+  "runtime_after_adoption": "NOT RUN",
+  "root_repair_event": 21,
+  "failed_green_increment": 0,
+  "astra": "2/2 exhausted unchanged"
+}

@@ -1,0 +1,110 @@
+{
+  "kind": "ACTUAL_BROWSER4_STOPPED_PUBLIC_GROUP_STATUS_SERIALIZATION_FAILURE",
+  "receipt": "browser-command4-1792101328172786028.json",
+  "receipt_sha256": "45d856b653e8b064db66f53a4f79f6891d66e35354f27b0c395dde67ae539e5b",
+  "qualification": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/browser-three-cases4-1792101328172786028/qualification.json",
+  "qualification_sha256": "207eef6c8c79b3807e4a973f25ce353b008c8bf6acf7537ecacaa1beff915af4",
+  "host_log": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/browser-three-cases4-1792101328172786028/host.log",
+  "host_log_sha256": "3cbdc06da2ac3e30eda6edcd4761712f76da845d38f9725aa79f26cb8b51ca86",
+  "actual_exit": 1,
+  "completed_cases": 0,
+  "joined": true,
+  "source_stable": true,
+  "failure": "JSON.Encoder Tuple {:error,:stale_group} at stopped emission; no stopped event published",
+  "actual_prior_observations": {
+    "request_clean_receipt_count": 28,
+    "request_clean_originals": [
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.368.0>, latch: #Reference<0.3067646017.1171390465.186673>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.3067646017.1171259393.186345>",
+        "group_token": "#Reference<0.3067646017.1171259394.169967>"
+      },
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.361.0>, latch: #Reference<0.3067646017.1171390466.169704>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.3067646017.1171259394.169376>",
+        "group_token": "#Reference<0.3067646017.1171259394.169309>"
+      },
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.380.0>, latch: #Reference<0.3067646017.1171390466.170566>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.3067646017.1171259394.170236>",
+        "group_token": "#Reference<0.3067646017.1171259394.170198>"
+      }
+    ],
+    "clean_service": {
+      "active": 0,
+      "state": "ready",
+      "retained_bytes": 0,
+      "cleanup_failed": null,
+      "cleanup_pending": 0
+    },
+    "clean_group": {
+      "owner": "#PID<0.322.0>",
+      "public": {
+        "pins": 1,
+        "probes": 0,
+        "control_bytes": 277,
+        "probe_bytes": 0,
+        "lifecycle": "active",
+        "inflight": 0,
+        "config_bytes": 133270,
+        "members": [
+          {
+            "id": "only",
+            "probe": false,
+            "stale": false,
+            "inflight": 0,
+            "health": "healthy",
+            "scheduling_lag": 0
+          }
+        ],
+        "control_limit": 16777216
+      },
+      "mode": ":ready",
+      "tokens": 0,
+      "pins": 1,
+      "probes": 0,
+      "control_bytes": 277,
+      "probe_bytes": 0,
+      "config_bytes": 133270,
+      "holds": []
+    },
+    "real_browser_joins": [
+      {
+        "event": "joined",
+        "passed": true,
+        "forced": false,
+        "process": {
+          "code": 0,
+          "signal": null
+        },
+        "isolated_profile_removed": true
+      }
+    ],
+    "failure_receipt_coverage": "TERMINAL_FENCED",
+    "terminal_service_receipt": {
+      "active": 0,
+      "mode": ":draining",
+      "service": "#PID<0.332.0>",
+      "retained_bytes": 0,
+      "leases": [],
+      "sequence": 31,
+      "total_invariant": true,
+      "cleanups": [],
+      "gate": "#PID<0.333.0>",
+      "cleanup_pending": 0,
+      "lease_bytes": 0,
+      "cleanup_bytes": 0
+    }
+  },
+  "source_cause": "group_snapshot passes the actual public Groups.status return directly to JSON; successful group retirement can return stale_group while raw owner ledgers are independently read",
+  "not_inferred": "no fabricated final group ledger, no stopped/retirement/browser-case acceptance from this failure",
+  "proposed_patch": {
+    "path": "/tmp/gaoxy-group-browser-stale-status-encoding1.patch",
+    "sha256": "1b15ce4107e80503e2d7efeecda2414dbec6a7ba1764abd57254f5753fb84594"
+  },
+  "verification": "unchanged complete actual canonical three-case browser required",
+  "counters": "23failedGREEN/25root events before repair adoption;Astra2/2 exhausted unchanged"
+}

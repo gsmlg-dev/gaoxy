@@ -1,0 +1,20 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs
+@@ -199,6 +199,17 @@
+                response(socket, nil, "", HPAX.new(4_096), 256, Gaoxy.Lifecycle.deadline(@timeout))
+ 
+       assert :ok = RequestCompletion.await(completion, @timeout)
++      # Upstream completion precedes the downstream pump returning. Join that
++      # lifecycle before closing the socket, which kills any remaining stream.
++      G.eventually(fn -> not Process.alive?(worker) end)
++
++      G.eventually(fn ->
++        {_, state} = :sys.get_state(owner)
++        not Map.has_key?(state.streams, 1)
++      end)
++
++      assert Process.alive?(owner)
++      assert Process.alive?(native.writer)
+       assert :ok = :ssl.close(socket)
+ 
+       for {pid, monitor} <- joins do

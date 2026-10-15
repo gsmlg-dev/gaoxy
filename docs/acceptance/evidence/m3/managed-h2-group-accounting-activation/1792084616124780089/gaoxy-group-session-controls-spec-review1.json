@@ -1,0 +1,153 @@
+{
+  "task_id": "M3/group-activation/session_controls_repair1/spec",
+  "status": "PASS_SOURCE_ONLY",
+  "assignment": "direct independent read-only SPEC review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_custody": "No Git/runtime commands; exact target before SHA verified; no whole-worktree freeze claim",
+  "captured_at": "2026-10-15T21:02:03.843823+00:00",
+  "patch": {
+    "path": "/tmp/gaoxy-group-session-controls-repair1.patch",
+    "sha256": "aaa4d5cf6adafcae036e3e586a0d7b238d490a86c98335815729b5cb54a97071",
+    "hunks_authenticated": 4,
+    "target": "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs",
+    "before_sha256": "72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a",
+    "after_before_formatter_sha256": "87915005988001f9e2249c3d3cb1bc8f82e10eef1bfa06538cc14b4d3f8736be",
+    "assertion_lines_before": 53,
+    "assertion_lines_after": 54,
+    "assertions_removed": 0
+  },
+  "retained_failure": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-session-control-1792097388206486059.json",
+    "receipt_sha256": "f629d63f371a816323b9457d4dfca1df03d6f808bc7ebbbc4f6955438a883011",
+    "log": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-session-control-1792097388206486059.log",
+    "log_sha256": "d595e8ddfcffe1ad2cef3fd90ed0c2a9e43f87cec703f9f25fd7911a05b9211e",
+    "actual_exit": 2,
+    "joined": true,
+    "source_stable": true,
+    "executed": 46,
+    "failures": 4,
+    "skips": 0,
+    "exclusions": 0,
+    "verdict": "FAIL preserved",
+    "failure_mapping": [
+      {
+        "upstream": "h2c",
+        "test": "streaming trailers",
+        "evidence": "log line45 onward: terminal h1_chunks recv expected ok but closed"
+      },
+      {
+        "upstream": "h2c",
+        "test": "original owner diagnostic DOWN",
+        "evidence": "log line59 onward: no matching original diagnostic DOWN after5000ms"
+      },
+      {
+        "upstream": "http2",
+        "test": "streaming trailers",
+        "evidence": "log line155 onward: terminal h1_chunks recv expected ok but closed"
+      },
+      {
+        "upstream": "http2",
+        "test": "original owner diagnostic DOWN",
+        "evidence": "log line169 onward: expected diagnostic DOWN; actual DOWN shutdown/local_closed"
+      }
+    ]
+  },
+  "source_inputs": {
+    "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs": "72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319"
+  },
+  "requirements": [
+    {
+      "id": "S01",
+      "result": "PASS_SOURCE",
+      "evidence": "One test-only target; all4 hunk contexts/counts and exact before/after SHA independently reconstructed. No removed assertion/refutation; original53 assertion lines preserved, exactly one new trap_exit assertion."
+    },
+    {
+      "id": "S02",
+      "result": "PASS_EVIDENCE",
+      "evidence": "Actual retained receipt and log SHA independently authenticated:46 executed/4failures, exit2, joined, stable, no skips/exclusions; not relabeled PASS."
+    },
+    {
+      "id": "S03",
+      "result": "PASS_DIAGNOSIS_SOURCE",
+      "evidence": "Two upstream-protocol streaming failures occur while H1 fixture reads terminal chunk. Source Headers.response derives trailer policy solely from initial Trailer field; Headers.trailers requires declared allowed names. Existing peer supplied x-check trailer without declaration. Declaration is proper valid-input fixture correction, not a renderer allowance."
+    },
+    {
+      "id": "S04",
+      "result": "PASS_SOURCE",
+      "evidence": "Initial peer fields now Trailer:x-check. Original response body=data, trailing x-check=final, control ready/ack/data/delivery/trailers validations, exact capability/pin identity and full16478862 cleanup remain untouched. Same real peer receives command; no fake control/response or changed expected response."
+    },
+    {
+      "id": "S05",
+      "result": "PASS_DIAGNOSIS_SOURCE",
+      "evidence": "Both original diagnostic failures assert exact arbitrary exit reason against H1 connection owner. ThousandIsland Handler.init deliberately sets trap_exit true; external Process.exit(pid,diagnostic) therefore delivers EXIT and does not promise death with that reason. Existing connection generic info ignores such messages. Retained http2-upstream case actually observed local_closed DOWN, confirming failed stimulus expectation."
+    },
+    {
+      "id": "S06",
+      "result": "PASS_SOURCE",
+      "evidence": "Only arbitrary ownerDOWN case selects existing supported downstream http2 fixture. H2 Stream.run is actual Task worker executing endpoint, never sets trap_exit; new assertion requires false before original Process.exit diagnostic. HTTP initializes Session owner:self and Session monitors that original owner; no replacement or injected DOWN."
+    },
+    {
+      "id": "S07",
+      "result": "PASS_SOURCE",
+      "evidence": "Exact large original diagnostic remains unchanged; actual pump monitor requires original reason; guardian actual A.validate controlDOWN requires same PID/reason and reference; projection must normalize only result to upstream_failure. Original completion await, actual guardian normal DOWN, G.clean/G.close/control accounting/physical peer joins preserved."
+    },
+    {
+      "id": "S08",
+      "result": "PASS_SCOPE",
+      "evidence": "Upstream protocol loop remains [:http2,:h2c], both independent TLS-H2/h2c peers retained. Other test families continue default H1 downstream; streaming/trailers and Service-removal/preactivation remain H1. Optional helper downstream defaults H1, preserving all existing calls."
+    },
+    {
+      "id": "S09",
+      "result": "PASS_LIMITATION",
+      "evidence": "Choosing real nontrapping H2 worker tests arbitrary actual owner death contract; no evidence establishes a production H1 bug merely because arbitrary Process.exit does not kill its intentional trap_exit process. This source approval does not prove H1 owner-death coverage with arbitrary reason, nor any runtime PASS."
+    },
+    {
+      "id": "S10",
+      "result": "PASS_PENDING_RUNTIME",
+      "evidence": "Strict source assertions and finite5000ms bounds unchanged; no production/accountant/cap/dependency/browser edits. Root must execute fresh46-test gate and diagnose any remaining failure; source approval cannot replace actual test results."
+    }
+  ],
+  "actionable_findings": [],
+  "author_artifacts": "Patch reviewed directly. Author md/json not present during initial source review; not used as evidence.",
+  "execution": {
+    "read_only_patch_reconstruction": "PASS",
+    "receipt_log_authentication": "PASS",
+    "source_review": "PASS",
+    "format": "NOT RUN",
+    "compile": "NOT RUN",
+    "tests": "NOT RUN",
+    "runtime": "NOT RUN",
+    "browser": "NOT RUN",
+    "git": "NOT RUN",
+    "repository_writes": 0
+  },
+  "counters": {
+    "reviewer_sol_repairs_added": 0,
+    "parent_failedGREEN_last_reported": 19,
+    "parent_root_event_last_reported": "21 pending ledger",
+    "astra": "2/2 exhausted; unchanged; no reset"
+  },
+  "required_next": [
+    "Root adopt only reviewed test patch after active runtime joins; preserve retained46/4 failure.",
+    "Run format/strict validation and fresh Session46 test gate, nonzero tests/zero failures/zero skips/exclusions/joined/stable required.",
+    "Diagnose any remaining failure; final stage/browser/compatibility and independent review gates remain separate."
+  ],
+  "shutdown": "All own commands finished; no runtime/process-control actions; only authorized two /tmp review reports written.",
+  "decisions_needed": [],
+  "markdown": {
+    "path": "/tmp/gaoxy-group-session-controls-spec-review1.md",
+    "sha256": "2499e6905db764cc6629145c3411e6c33310be5b4d9b1ed3ec9b1a51d0592fbb"
+  }
+}

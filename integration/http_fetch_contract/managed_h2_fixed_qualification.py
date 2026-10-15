@@ -69,9 +69,172 @@ defmodule FixedGaoxyIdentity do
     File.write!(path, JSON.encode!(%{pid: System.pid(), root: root, applications: applications}) <> "\n")
   end
 end
+
+defmodule ManagedH2GroupBrowserEvidence do
+  alias Gaoxy.Proxy.ManagedH2GroupAccounting, as: A
+  def start(host) do
+    credits = :atomics.new(3, signed: true)
+    {pid, ref} = spawn_monitor(fn -> loop(%{host: host, host_ref: Process.monitor(host),
+      owners: %{}, rows: [], credits: credits, received: 0, high_water: 0, failure: nil}) end)
+    %{pid: pid, ref: ref, credits: credits}
+  end
+  def install(observer, owner, kind) do
+    send(observer.pid, {:register, self(), owner, kind})
+    receive do {:registered, pid, ^owner} when pid == observer.pid -> :ok
+    after 1000 -> raise "group evidence registration deadline" end
+    debug = fn projection, event, _ ->
+      raw = case event do
+        {:out, _, _, raw} -> raw
+        {:noreply, raw} -> raw
+        _ -> nil
+      end
+      current = if is_map(raw) do
+        case kind do
+          :group -> Map.take(raw, [:groups, :pins, :tokens, :probes, :bytes, :control_bytes, :probe_bytes, :mode])
+          :transport -> Map.take(raw, [:records, :pins, :tokens, :retirement, :instance_down])
+        end
+      end
+      if current != nil and current !== projection do
+        outstanding = :atomics.add_get(observer.credits, 1, 1)
+        if outstanding <= 1024 do
+          :atomics.add(observer.credits, 2, 1)
+          send(observer.pid, {:raw, self(), kind, raw, outstanding})
+        else
+          :atomics.sub(observer.credits, 1, 1)
+          :atomics.add(observer.credits, 3, 1)
+          send(observer.pid, {:overflow, self(), outstanding})
+        end
+        current
+      else projection end
+    end
+    :ok = :sys.install(owner, {make_ref(), debug, nil})
+  end
+  def collect(observer, expires) do
+    send(observer.pid, {:owners, self()})
+    owners = receive do {:owners, pid, owners} when pid == observer.pid -> owners
+    after max(0, expires - System.monotonic_time(:millisecond)) -> raise "group evidence owners deadline" end
+    marker = make_ref()
+    for {owner, %{closed: false}} <- owners do
+      try do
+        :sys.replace_state(owner, fn exact ->
+          send(observer.pid, {:fence, owner, self(), marker})
+          exact
+        end, max(1, min(1000, expires - System.monotonic_time(:millisecond))))
+      catch :exit, reason -> if Process.alive?(owner), do: exit(reason) end
+    end
+    send(observer.pid, {:collect, self(), marker})
+    receive do {:evidence, pid, ^marker, evidence} when pid == observer.pid -> evidence
+    after max(0, expires - System.monotonic_time(:millisecond)) -> raise "group evidence fence deadline" end
+  end
+  def finish(observer, expires) do
+    evidence = collect(observer, expires)
+    true = Enum.all?(evidence.owners, & &1.closed)
+    send(observer.pid, {:stop, self()})
+    receive do {:DOWN, ref, :process, pid, :normal} when ref == observer.ref and pid == observer.pid -> evidence
+    after max(0, expires - System.monotonic_time(:millisecond)) -> raise "group evidence observer join deadline" end
+  end
+  defp loop(state) do
+    receive do
+      {:register, caller, owner, kind} ->
+        false = Map.has_key?(state.owners, owner)
+        entry = %{kind: kind, ref: Process.monitor(owner), closed: false, reason: nil, fences: MapSet.new()}
+        send(caller, {:registered, self(), owner})
+        loop(%{state | owners: Map.put(state.owners, owner, entry)})
+      {:raw, owner, kind, raw, outstanding} ->
+        state = try do
+          true = state.owners[owner].kind == kind and outstanding in 1..1024
+          true = length(state.rows) < 1024
+          row = snapshot(owner, kind, raw) |> Map.put(:sequence, state.received + 1)
+          %{state | rows: state.rows ++ [row], received: state.received + 1,
+            high_water: max(state.high_water, outstanding)}
+        rescue error -> %{state | failure: inspect({error, __STACKTRACE__}, limit: :infinity)} end
+        :atomics.sub(state.credits, 1, 1)
+        loop(state)
+      {:overflow, owner, outstanding} ->
+        loop(%{state | failure: inspect({:overflow, owner, outstanding})})
+      {:fence, owner, _same_owner, marker} ->
+        loop(update_in(state.owners[owner].fences, &MapSet.put(&1, marker)))
+      {:owners, caller} ->
+        send(caller, {:owners, self(), state.owners})
+        loop(state)
+      {:collect, caller, marker} ->
+        ready = Enum.all?(state.owners, fn {_, entry} -> entry.closed or MapSet.member?(entry.fences, marker) end)
+        if ready do
+          true = state.failure == nil and :atomics.get(state.credits, 3) == 0
+          true = state.received == :atomics.get(state.credits, 2)
+          send(caller, {:evidence, self(), marker, %{rows: state.rows, received: state.received,
+            high_water: state.high_water, outstanding: :atomics.get(state.credits, 1),
+            rejected: :atomics.get(state.credits, 3), failure: state.failure,
+            owners: Enum.map(state.owners, fn {owner, entry} -> %{pid: inspect(owner),
+              kind: to_string(entry.kind), closed: entry.closed, reason: entry.reason} end)}})
+        else
+          # Owner fences and real DOWN signals can arrive after this request.
+          # Requeue only after another actual owner signal; no polling sleep.
+          send(self(), {:pending_collect, caller, marker})
+        end
+        loop(state)
+      {:pending_collect, caller, marker} ->
+        receive do
+          {:fence, owner, _same_owner, ^marker} ->
+            send(self(), {:collect, caller, marker})
+            loop(update_in(state.owners[owner].fences, &MapSet.put(&1, marker)))
+          {:DOWN, ref, :process, owner, reason} when is_map_key(state.owners, owner) ->
+            ^ref = state.owners[owner].ref
+            send(self(), {:collect, caller, marker})
+            loop(update_in(state.owners[owner], &%{&1 | closed: true, reason: inspect(reason)}))
+          {:DOWN, ref, :process, host, _} when ref == state.host_ref and host == state.host -> :ok
+        after 5000 -> raise "group evidence pending fence deadline" end
+      {:DOWN, ref, :process, owner, reason} when is_map_key(state.owners, owner) ->
+        ^ref = state.owners[owner].ref
+        loop(update_in(state.owners[owner], &%{&1 | closed: true, reason: inspect(reason)}))
+      {:DOWN, ref, :process, host, _} when ref == state.host_ref and host == state.host -> :ok
+      {:stop, caller} when caller == state.host -> :ok
+    end
+  end
+  defp completion(nil), do: nil
+  defp completion(original), do: %{identity: inspect(original, limit: :infinity),
+    result: inspect(HTTP.RequestCompletion.await(original, 0))}
+  defp snapshot(owner, :transport, raw) do
+    resources = for {ref, entry} <- raw.records do
+      %{resource: inspect(ref), payload_bytes: entry.payload_bytes,
+        lifecycle: inspect(entry.lifecycle), transport_confirmed: entry.transport_confirmed,
+        custodian_down: entry.custodian_down}
+    end
+    tokens = for {token, hold} <- raw.tokens do
+      %{token: inspect(token), resource: inspect(hold.resource), payload_bytes: hold.payload_bytes,
+        guardian: inspect(hold.guardian), guardian_down: hold.guardian_down, completion: completion(hold.completion)}
+    end
+    pins = for {ref, pin} <- raw.pins, do: %{pin: inspect(ref), payload_bytes: :erlang.external_size(pin)}
+    %{kind: "transport", owner: inspect(owner), resources: resources, tokens: tokens, pins: pins,
+      owned_serialized_payload_bytes: Enum.sum(Enum.map(resources ++ tokens ++ pins, & &1.payload_bytes)),
+      instance_down: raw.instance_down}
+  end
+  defp snapshot(owner, :group, raw) do
+    groups = for {key, group} <- raw.groups do
+      :ok = A.group_update(group, group.bytes)
+      %{key: inspect(key), bytes: group.bytes, serialized_payload_bytes: :erlang.external_size(Map.delete(group, :bytes)),
+        lifecycle: inspect(group.lifecycle), inflight: group.inflight}
+    end
+    controls = for {kind, records} <- [pin: raw.pins, selection: raw.tokens, probe: raw.probes], {token, hold} <- records do
+      {:ok, bytes} = A.control_charge(kind, hold)
+      true = hold.control_bytes == bytes
+      %{kind: to_string(kind), token: inspect(token), control_bytes: bytes,
+        completion: completion(Map.get(hold, :completion)), guardian: inspect(Map.get(hold, :guardian)),
+        probe_bytes: Map.get(hold, :bytes)}
+    end
+    true = raw.bytes == Enum.sum(Enum.map(groups, & &1.bytes))
+    true = raw.control_bytes == Enum.sum(Enum.map(controls, & &1.control_bytes))
+    true = raw.control_bytes <= 16_777_216 and raw.bytes <= 12_582_912
+    %{kind: "group", owner: inspect(owner), groups: groups, controls: controls,
+      config_bytes: raw.bytes, control_bytes: raw.control_bytes, probe_bytes: raw.probe_bytes,
+      mode: inspect(raw.mode), total_invariant: true}
+  end
+end
+
 defmodule FixedManagedH2Host do
   alias Gaoxy.HTTP.Resources
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
+  alias Gaoxy.Proxy.UpstreamGroups, as: Groups
   def deadline, do: System.monotonic_time(:millisecond) + 5000
   def emit(value), do: IO.puts("FIXED_H2_HOST " <> JSON.encode!(value))
 
@@ -243,6 +406,9 @@ defmodule FixedManagedH2Host do
               max_owned_payload_bytes: 4_194_304})
           Process.unlink(owner)
           caller = self()
+          group_mode = command["group"] == true
+          ledger_observer = if group_mode, do: ManagedH2GroupBrowserEvidence.start(caller), else: nil
+          if ledger_observer, do: ManagedH2GroupBrowserEvidence.install(ledger_observer, owner, :transport)
           debug = fn state, event, _ ->
             case event do
               {:in, {:"$gen_call", _, {:bind_completion, _, token, completion}}} ->
@@ -260,9 +426,37 @@ defmodule FixedManagedH2Host do
           {:ok, handle, preparation} = Transports.prepare(owner,
             %{protocol: protocol, origin: origin, connect_address: {127,0,0,1}, trust: trust}, self(), deadline())
           {:ok, pins} = Resources.pin_many([handle], self(), :baseline, deadline())
+          {groups, group, pins} = if group_mode do
+            :ok = Resources.release(pins)
+            {:ok, groups} = Groups.start_link(instance: instance)
+            Process.unlink(groups)
+            :ok = ManagedH2GroupBrowserEvidence.install(ledger_observer, groups, :group)
+            group_debug = fn previous, event, _ ->
+              case event do
+                {:in, {:"$gen_call", _, {:bind, _, token, completion}}} ->
+                  send(caller, {:group_h2_original, :selection, token, completion})
+                {:in, {:"$gen_call", _, {:bind_probe, token, completion}}} ->
+                  send(caller, {:group_h2_original, :probe, token, completion})
+                _ -> :ok
+              end
+              previous
+            end
+            :ok = :sys.install(groups, {make_ref(), group_debug, nil})
+            {:ok, compiled} = Groups.compile(%{id: "browser-group", max_inflight: 32,
+              members: [%{id: "only", upstream: origin, upstream_protocol: protocol,
+                transport: handle, max_inflight: 32}],
+              health: %{path: "/health", interval: 3_600_000, timeout: 5000,
+                stale_after: 3_600_000, failure_threshold: 2, recovery_threshold: 2, jitter: 0}})
+            {:ok, group, preparation} = Groups.prepare(groups, compiled, caller, deadline())
+            {:ok, baseline} = Resources.pin_many(Groups.resources(group), caller, :baseline, deadline())
+            :ok = Resources.release(preparation)
+            wait_group_healthy(group, owner, deadline())
+            {groups, group, baseline}
+          else {nil, nil, pins} end
+          endpoint = if group_mode, do: {Gaoxy.Proxy.GroupEndpoint, %{group: group}},
+            else: {Gaoxy.Proxy.HTTP, %{upstream: origin, upstream_protocol: protocol, transport: handle}}
           :ok = Resources.release(preparation)
-          options = [id: :http, endpoint: {Gaoxy.Proxy.HTTP, %{upstream: origin,
-            upstream_protocol: protocol, transport: handle}},
+          options = [id: :http, endpoint: endpoint,
             limits: %{max_bytes: 536_870_912, max_active: 64},
             http_limits: %{request_timeout: 10_000, write_timeout: 2000}]
           options = if command["boundary_limits"] do
@@ -286,15 +480,19 @@ defmodule FixedManagedH2Host do
                 spec.handler_options.http_limits, spec.handler_options.h2_limits)
               # Each independent client owns C+Writer+one native stream lease.
               # The upstream scope still has exactly32 request slots/C2/P0.
+              request_reservation = if group_mode, do: 16_478_862, else: 9_444_956
+              startup_delta = if group_mode, do: 5_963_776, else: 0
               bytes = max(536_870_912,
-                clients * (reserves.connection + reserves.writer + reserves.stream) + 32 * 9_444_956)
+                clients * (reserves.connection + reserves.writer + reserves.stream) +
+                  32 * (request_reservation + startup_delta))
               active = max(64, 3 * clients)
               true = bytes <= 8_589_934_592 and active <= 128
               options = Keyword.update!(options, :limits, &Map.merge(&1, %{max_bytes: bytes, max_active: active}))
               {:ok, expanded} = Gaoxy.HTTP.service_spec(options)
               {expanded, %{mode: "DERIVED_CONCURRENT_NATIVE_CLIENTS", native_clients: clients,
                 max_bytes: bytes, max_active: active, native_reservations: reserves,
-                upstream_request_slots: 32, upstream_request_reservation: 9_444_956}}
+                upstream_request_slots: 32, upstream_request_reservation: request_reservation,
+                upstream_startup_delta: startup_delta}}
             other -> raise "invalid finite native_clients: #{inspect(other)}"
           end
           {:ok, _} = Gaoxy.add(instance, spec)
@@ -354,15 +552,17 @@ defmodule FixedManagedH2Host do
             %{active: false, submitted: 0, failed: false, projection: nil}})
           scope = :sys.get_state(owner).records[handle.resource].scope
           creators = :sys.get_state(owner).records |> Map.values() |> Enum.map(& &1.custodian)
-          joins = Enum.map([instance, owner | creators], &{&1, Process.monitor(&1)})
+          joins = Enum.map([instance, owner | creators] ++ List.wrap(groups), &{&1, Process.monitor(&1)})
           state = %{instance: instance, owner: owner, pins: pins, origin: origin,
             scope: scope, originals: %{}, reported: MapSet.new(), failures: [], joins: joins,
             creators: creators, service: service, gate: gate, spec: spec,
             gate_join: {gate, Process.monitor(gate)}, native_joins: %{}, admission_receipts: [],
             admission_observer: admission_observer, admission_observer_ref: admission_observer_ref,
-            admission_observer_failure: nil, admission_observer_join: nil}
+            admission_observer_failure: nil, admission_observer_join: nil,
+            groups: groups, group: group, group_originals: %{}, ledger_observer: ledger_observer}
           emit(%{event: "started", port: port, origin: origin, owner: inspect(owner), instance: inspect(instance),
-            native_allowance: allowance})
+            native_allowance: allowance, group: if(group, do: Groups.status(group), else: nil),
+            full_request_reservation: if(group_mode, do: 16_478_862, else: 9_444_956)})
           state
         "status" ->
           state = flush_admission(state, expires)
@@ -378,7 +578,8 @@ defmodule FixedManagedH2Host do
             |> Map.put(:service_failures, state.failures)
             |> Map.put(:admission_receipts, state.admission_receipts)
             |> Map.put(:admission_terminal_failed, terminal_failed(state.admission_receipts))
-            |> Map.put(:owner_ledger, owner_ledger(state.owner)))
+            |> Map.put(:owner_ledger, owner_ledger(state.owner))
+            |> Map.put(:group_evidence, group_evidence(state, expires)))
           state
         "clean" ->
           state = wait_clean(state, expires)
@@ -386,7 +587,8 @@ defmodule FixedManagedH2Host do
           state = collect_originals(state)
           originals = original_rows(state)
           true = originals != [] and Enum.all?(originals, &(&1.result == ":ok"))
-          emit(status(state) |> Map.put(:event, "clean") |> Map.put(:originals, originals))
+          emit(status(state) |> Map.put(:event, "clean") |> Map.put(:originals, originals)
+            |> Map.put(:group_evidence, group_evidence(state, expires)))
           %{state | reported: MapSet.new(Map.keys(state.originals))}
         "request_clean" ->
           {state, ledger} = wait_request_clean(state, expires)
@@ -395,7 +597,9 @@ defmodule FixedManagedH2Host do
           originals = original_rows(state)
           true = originals != [] and Enum.all?(originals, &(&1.result == ":ok"))
           emit(status(state) |> Map.put(:event, "request_clean") |> Map.put(:originals, originals)
-            |> Map.put(:original_repeat, original_rows(state)) |> Map.put(:native_idle, ledger))
+            |> Map.put(:original_repeat, original_rows(state)) |> Map.put(:native_idle, ledger)
+            |> Map.put(:admission_receipts, state.admission_receipts)
+            |> Map.put(:group_evidence, group_evidence(state, expires)))
           state
         "stop" ->
           state = flush_admission(state, expires)
@@ -410,9 +614,17 @@ defmodule FixedManagedH2Host do
             do: settle_owner_helpers(state.owner, creators, deadline(), result), else: nil
           retained = if Process.alive?(state.owner), do: elem(Transports.status(state.owner), 1), else: nil
           retained_ledger = if Process.alive?(state.owner), do: owner_ledger(state.owner), else: nil
-          forced = not confirmed and Process.alive?(state.owner)
+          retained_group = if confirmed and state.groups do
+            wait_group_empty(state.groups, deadline())
+            snapshot = group_snapshot(state)
+            :ok = GenServer.stop(state.groups, :normal, 1000)
+            snapshot
+          else group_snapshot(state) end
+          retained_group_evidence = group_evidence(state, deadline())
+          forced = not confirmed and (Process.alive?(state.owner) or
+            (state.groups != nil and Process.alive?(state.groups)))
           disposals = if forced do
-            for pid <- creators ++ [state.owner], Process.alive?(pid) do
+            for pid <- creators ++ [state.owner] ++ List.wrap(state.groups), Process.alive?(pid) do
               :ok = GenServer.stop(pid, :normal, 5000)
               %{pid: inspect(pid), outcome: "TEST_OWNED_DISPOSAL_AFTER_UNCONFIRMED_PUBLIC_STOP"}
             end
@@ -437,7 +649,10 @@ defmodule FixedManagedH2Host do
             helper_settlement: helper_settlement,
             admission_terminal_failed: terminal_failed(state.admission_receipts),
             public_stop: public_stop(result), terminal_service_alive: Process.alive?(state.service),
-            terminal_gate_alive: Process.alive?(state.gate)})
+            terminal_gate_alive: Process.alive?(state.gate), retained_group: retained_group,
+            group_evidence: retained_group_evidence,
+            terminal_group_evidence: if(state.ledger_observer,
+              do: ManagedH2GroupBrowserEvidence.finish(state.ledger_observer, deadline()), else: nil)})
           nil
         "exit" ->
           nil = state
@@ -460,6 +675,57 @@ defmodule FixedManagedH2Host do
     end)
     if state != nil, do: raise("host stdin ended with live fixture")
   end
+
+  defp wait_group_healthy(group, owner, expires) do
+    if System.monotonic_time(:millisecond) >= expires, do: raise("real initial group HEAD deadline")
+    ready = match?(%{inflight: 0, probes: 0, probe_bytes: 0, members: [%{health: :healthy}]}, Groups.status(group)) and
+      match?({:ok, %{request_tokens: 0, helpers: 0}}, Transports.status(owner))
+    if not ready do
+      receive do after 1 -> :ok end
+      wait_group_healthy(group, owner, expires)
+    end
+  end
+  defp group_clean?(%{group: nil}), do: true
+  defp group_clean?(state), do: match?(%{inflight: 0, probes: 0, probe_bytes: 0}, Groups.status(state.group))
+  defp group_snapshot(%{group: nil}), do: nil
+  defp group_snapshot(state) do
+    if Process.alive?(state.groups) do
+      raw = :sys.get_state(state.groups, 1000)
+      public = case Groups.status(state.group) do
+        %{} = value -> value
+        {:error, :stale_group} = error -> %{public_result: inspect(error)}
+      end
+      %{owner: inspect(state.groups), public: public,
+        config_bytes: raw.bytes, control_bytes: raw.control_bytes, probe_bytes: raw.probe_bytes,
+        pins: map_size(raw.pins), tokens: map_size(raw.tokens), probes: map_size(raw.probes), mode: inspect(raw.mode),
+        holds: for {kind, records} <- [selection: raw.tokens, probe: raw.probes], {token, held} <- records do
+          %{kind: to_string(kind), token: inspect(token), control_bytes: held.control_bytes,
+            completion: if(held.completion, do: inspect(held.completion, limit: :infinity), else: nil),
+            result: if(held.completion, do: inspect(HTTP.RequestCompletion.await(held.completion, 0)), else: nil)}
+        end}
+    else %{public_result: "OWNER_DOWN"} end
+  end
+  defp group_evidence(%{ledger_observer: nil}, _), do: nil
+  defp group_evidence(state, expires) do
+    evidence = ManagedH2GroupBrowserEvidence.collect(state.ledger_observer, expires)
+    probes = for {{:probe, token}, completion} <- state.group_originals do
+      transports = for {transport_token, actual} <- state.originals, actual === completion, do: inspect(transport_token)
+      %{group_token: inspect(token), transport_tokens: transports,
+        completion: inspect(completion, limit: :infinity), result: inspect(HTTP.RequestCompletion.await(completion, 0))}
+    end
+    Map.put(evidence, :probe_originals, probes)
+  end
+  defp wait_group_empty(groups, expires) do
+    raw = :sys.get_state(groups, max(1, min(1000, expires - System.monotonic_time(:millisecond))))
+    ready = raw.groups == %{} and raw.pins == %{} and raw.tokens == %{} and raw.probes == %{} and
+      raw.bytes == 0 and raw.control_bytes == 0 and raw.probe_bytes == 0
+    if not ready do
+      if System.monotonic_time(:millisecond) >= expires, do: raise("confirmed group owner settlement deadline")
+      receive do after 1 -> :ok end
+      wait_group_empty(groups, expires)
+    end
+  end
+
   defp status(state) do
     {:ok, owner} = Transports.status(state.owner)
     service = Gaoxy.status(state.instance, :http)
@@ -475,10 +741,13 @@ defmodule FixedManagedH2Host do
     %{event: "status", service: service, owner: owner, native_scope: snapshot,
       instance: inspect(state.instance), owner_pid: inspect(state.owner),
       service_pid: inspect(state.service), gate_pid: inspect(state.gate),
-      service_alive: Process.alive?(state.service), gate_alive: Process.alive?(state.gate)}
+      service_alive: Process.alive?(state.service), gate_alive: Process.alive?(state.gate),
+      group: group_snapshot(state)}
   end
   defp collect_originals(state) do
     receive do
+      {:group_h2_original, kind, token, completion} ->
+        collect_originals(%{state | group_originals: Map.put(state.group_originals, {kind, token}, completion)})
       {:fixed_h2_original, token, completion} ->
         collect_originals(%{state | originals: Map.put(state.originals, token, completion)})
       {:fixed_h2_service_failure, failure} ->
@@ -493,8 +762,15 @@ defmodule FixedManagedH2Host do
     end
   end
   defp original_rows(state) do
-    for {token, completion} <- state.originals, not MapSet.member?(state.reported, token) do
-      %{token: inspect(token), result: inspect(HTTP.RequestCompletion.await(completion, 0))}
+    for {token, completion} <- state.originals, not MapSet.member?(state.reported, token),
+        state.group == nil or Enum.any?(state.group_originals, fn {{kind, _}, actual} ->
+          kind == :selection and actual === completion end) do
+      base = %{token: inspect(token), result: inspect(HTTP.RequestCompletion.await(completion, 0))}
+      if state.group do
+        [{{:selection, group_token}, ^completion}] = Enum.filter(state.group_originals,
+          fn {{kind, _}, actual} -> kind == :selection and actual === completion end)
+        Map.merge(base, %{group_token: inspect(group_token), completion: inspect(completion, limit: :infinity)})
+      else base end
     end |> Enum.sort_by(& &1.token)
   end
   defp joined(pid, ref) do
@@ -741,7 +1017,7 @@ defmodule FixedManagedH2Host do
   defp wait_request_clean(state, expires) do
     current = status(state)
     settled = current.service.cleanup_pending == 0 and current.service.cleanup_failed == nil and
-      match?(%{request_tokens: 0, helpers: 0, pins: 1}, current.owner)
+      match?(%{request_tokens: 0, helpers: 0, pins: 1}, current.owner) and group_clean?(state)
     if settled do
       {rows, ledger} = idle_ledger(state, expires)
       monitors = Enum.reduce(rows, state.native_joins, fn row, monitors ->
@@ -758,7 +1034,7 @@ defmodule FixedManagedH2Host do
     state = collect_originals(state)
     current = status(state)
     clean = match?(%{active: 0, cleanup_pending: 0, retained_bytes: 0, cleanup_failed: nil}, current.service) and
-      match?(%{request_tokens: 0, helpers: 0, pins: 1, resources: 1, reserved_connections: 2}, current.owner)
+      match?(%{request_tokens: 0, helpers: 0, pins: 1, resources: 1, reserved_connections: 2}, current.owner) and group_clean?(state)
     if clean do
       state
     else
@@ -787,6 +1063,9 @@ def inventory():
                  "docs/designs/m3-managed-h2-fixed-endpoint.md", "docs/plans/m3-managed-h2-fixed-endpoint.md",
                  "docs/acceptance/m3-managed-h2-fixed-endpoint.md"))
     paths.add(PEER)
+    paths.add(ROOT / "apps/gaoxy_proxy/test/support/managed_h2_group_browser_peer.py")
+    for area in ("designs", "plans", "acceptance"):
+        paths.update(ROOT.glob("docs/" + area + "/*managed-h2-group*"))
     return {str(path.relative_to(ROOT)): hashlib.sha256(path.read_bytes()).hexdigest()
             for path in sorted(paths) if path.is_file()}
 
@@ -1009,7 +1288,7 @@ def rejection_observation(host):
         require(time.monotonic() < expires, "TLS rejection original/timeline observation deadline")
 
 
-def rejection_cleanup(observed, stopped):
+def rejection_cleanup(observed, stopped, reservation=9_444_956):
     originals = observed["originals"]
     require(len(originals) == 1 and originals == observed["original_repeat"] ==
             stopped["originals"] == stopped["original_repeat"], "TLS rejection original identity/result changed")
@@ -1030,7 +1309,7 @@ def rejection_cleanup(observed, stopped):
                 "actual Admission retained reserve sum changed")
     holds = [(snapshot, cleanup) for snapshot in receipts for cleanup in snapshot["cleanups"]]
     require(holds and len({row["token"] for _, row in holds}) == 1 and
-            all(row["bytes"] == 9_444_956 for _, row in holds), "TLS rejection lacked exact live cleanup reservation")
+            all(row["bytes"] == reservation for _, row in holds), "TLS rejection lacked exact live cleanup reservation")
     attached = [(snapshot, cleanup) for snapshot, cleanup in holds if not cleanup["receipt"] and
                 any(lease["lease"] == cleanup["lease"] and lease["cleanup"] == cleanup["token"] and
                     lease["request_active"] for lease in snapshot["leases"])]

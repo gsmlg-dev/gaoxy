@@ -1,0 +1,67 @@
+{
+  "task_id": "/root/browser_contract_spec/stale-status-spec-review1",
+  "status": "DONE_SOURCE_ONLY_SPEC_REVIEW",
+  "assignment": "direct read-only diagnosis and exact patch specification review",
+  "verdict": "PASS_SOURCE_ONLY_NO_OPEN_FINDINGS",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "candidate4_sha256": "045494d4e74fcb23f829579aeede1ea175d3a2155b443b9193a0df5593c305d5",
+  "patch": "/tmp/gaoxy-group-browser-stale-status-encoding1.patch",
+  "patch_sha256": "1b15ce4107e80503e2d7efeecda2414dbec6a7ba1764abd57254f5753fb84594",
+  "applied_by_reviewer": false,
+  "source_before_sha256": "cdf86f664d70e08e7c5db456ad3e535f791a05f85ee2eb89162501944f391cdf",
+  "proposed_source_sha256": "b0942982c3cc102c1fe1787e237b99b767560e1ed851efa3e256697a0c77807b",
+  "current198_match_candidate4": true,
+  "canonical_browser_unchanged_sha256": "5c6544a5b3f70329f083ad2fb48b522b81fe7a990135136a12358dd436ef6dfa",
+  "root_cause": {
+    "actual_host_log_sha256": "3cbdc06da2ac3e30eda6edcd4761712f76da845d38f9725aa79f26cb8b51ca86",
+    "exception": "Protocol.UndefinedError JSON.Encoder Tuple {:error, :stale_group}",
+    "actual_event_order": [
+      "ready",
+      "started",
+      "native_idle_snapshot",
+      "request_clean",
+      "clean",
+      "admission_collector_failure"
+    ],
+    "stopped_event_emitted": false,
+    "browser_joined": {
+      "event": "joined",
+      "passed": true,
+      "forced": false,
+      "process": {
+        "code": 0,
+        "signal": null
+      },
+      "isolated_profile_removed": true
+    },
+    "consumer_failure": "Wait for stopped receives process_eof at canonical group browser line212;0 completed cases",
+    "producer_path": "stop saves before status; confirmed public stop waits actual group owner empty; group_snapshot reads raw owner state then serializes public Groups.status; returned stale tuple is passed unencoded into retained_group.public at emit(stopped).",
+    "public_API_semantics": "UpstreamGroups.status/1 returns {:error,:stale_group} when record(state,handle) is nil (invalid/mismatched handle, epoch or missing record). This is distinct from owner-down and does not itself prove raw ledgers empty."
+  },
+  "spec_assessment": [
+    "Normal public status map returned unchanged; exact stale tuple becomes %{public_result: \"{:error, :stale_group}\"}.",
+    "All raw owner identity/config/control/probe byte counters, pins/tokens/probes and original completion holds are preserved from actual :sys.get_state, never inferred from stale status.",
+    "No default/catch-all map, zero values, successful cleanup flag, OWNER_DOWN rewrite, new timers/processes/deadlines, dependencies or public production interface change. Other unexpected public results still fail case matching.",
+    "Existing wait_group_empty checks actual raw groups/pins/tokens/probes maps and all three byte ledgers at finite deadline; public_result does not replace it.",
+    "Existing cleanup_confirmed remains result==:ok, forced disposal/retention labels and Gate/native/owner/observer joins remain unchanged.",
+    "Consumer exact Service/full reservation/G/T original/ledger/terminal observer/peer/Chrome/TLS-rotation assertions and3 canonical case/join requirements unchanged. group_rejection_cleanup reads retained raw counters/holds; no consumer interprets public stale as zero."
+  ],
+  "verification": [
+    "Exact patch hash and proposed one-file byte reconstruction authenticated; in-memory Python compile succeeds without module import or runtime.",
+    "All198 current bytes still match candidate4; actual generated source and failure artifacts already authenticated in audit3.",
+    "Fresh complete unchanged canonical browser on rebound source manifest required; source-only pass grants no runtime/stage acceptance."
+  ],
+  "findings": [],
+  "runtime_status": "Browser4 FAIL1/joined/0 completed; request_clean+clean and one real browser join precede encoding failure. Negative canonical cases NOT_RUN. Missing stopped event means cleanup acceptance not established.",
+  "counter_snapshot": "Ledger12 immutable22 failedGREEN/25 root events; parent-current23/25 after browser4. Reviewer0 added repairs. Astra2/2 exhausted unchanged.",
+  "historical_cleanup": "UNCONFIRMED_WITH_RETAINED_FAILURE",
+  "remaining_risks": "Later assertions/negative cases have not executed; source repair may expose independent failures. Stale status must remain explicit and cannot substitute for actual ledger proof.",
+  "command_shutdown": "All reviewer commands finished; no runtime/process/build/test/browser/collector/aggregate control.",
+  "writes": [
+    "/tmp/gaoxy-group-browser-stale-status-spec-review1.md",
+    "/tmp/gaoxy-group-browser-stale-status-spec-review1.json"
+  ],
+  "decisions_needed": [],
+  "astra_gate": null
+}

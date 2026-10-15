@@ -9,6 +9,7 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
     ManagedH2Client,
     ManagedH2Envelope,
     ManagedH2GroupBoundary,
+    ManagedH2GroupAccounting,
     UpstreamGroups,
     UpstreamTransports
   }
@@ -27,13 +28,22 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
 
   @impl true
   def init(%{recovery: _} = args) do
-    case UpstreamGroups.probe_recovery_arguments(args) do
-      {:ok, args} ->
-        send(self(), :recover)
-        {:ok, Map.put(args, :owner_monitor, Process.monitor(args.owner))}
+    with {:ok, args} <- UpstreamGroups.probe_recovery_arguments(args),
+         {:ok, _} <- ManagedH2GroupAccounting.startup(__MODULE__, args),
+         :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, args.owner) do
+      state = Map.put(args, :owner_monitor, Process.monitor(args.owner))
 
-      {:error, reason} ->
-        {:stop, reason}
+      case ManagedH2GroupAccounting.validate({:state, :recovery}, state) do
+        :ok ->
+          send(self(), :recover)
+          {:ok, state}
+
+        {:error, reason} ->
+          Process.demonitor(state.owner_monitor, [:flush])
+          {:stop, reason}
+      end
+    else
+      {:error, reason} -> {:stop, reason}
     end
   end
 
@@ -70,34 +80,43 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   defp init_group(args) do
-    case UpstreamGroups.probe_start_arguments(args) do
-      {:ok, args} ->
-        timer = Process.send_after(self(), :expired, Lifecycle.remaining(args.deadline))
+    with {:ok, args} <- UpstreamGroups.probe_start_arguments(args),
+         {:ok, _} <- ManagedH2GroupAccounting.startup(__MODULE__, args),
+         :ok <- account_control(args, :timer, :expired),
+         :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, args.owner) do
+      timer = Process.send_after(self(), :expired, Lifecycle.remaining(args.deadline))
 
-        state =
-          Map.merge(args, %{
-            cleanup_deadline: args.deadline + 1_000,
-            owner_monitor: Process.monitor(args.owner),
-            timer: timer,
-            request: nil,
-            original_request: nil,
-            managed_transport: nil,
-            transport_selection: nil,
-            transport_pins: [],
-            terminal: false,
-            cancelled: false,
-            headers: false,
-            outcome: :failure,
-            client: @h2,
-            limits: args.member.config.limits,
-            request_options: nil,
-            submitted_url: nil
-          })
+      state =
+        Map.merge(args, %{
+          cleanup_deadline: args.deadline + 1_000,
+          owner_monitor: Process.monitor(args.owner),
+          timer: timer,
+          request: nil,
+          original_request: nil,
+          managed_transport: nil,
+          transport_selection: nil,
+          transport_pins: [],
+          terminal: false,
+          cancelled: false,
+          headers: false,
+          outcome: :failure,
+          client: @h2,
+          limits: args.member.config.limits,
+          request_options: nil,
+          submitted_url: nil
+        })
 
-        {:ok, state, {:continue, :open}}
+      case account_state(state) do
+        :ok ->
+          {:ok, state, {:continue, :open}}
 
-      {:error, reason} ->
-        {:stop, reason}
+        {:error, reason} ->
+          Process.cancel_timer(timer)
+          Process.demonitor(state.owner_monitor, [:flush])
+          {:stop, reason}
+      end
+    else
+      {:error, reason} -> {:stop, reason}
     end
   end
 
@@ -158,14 +177,16 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   def handle_continue(:group_open, state) do
-    with :ok <- opening_allowed(state),
+    with :ok <- account_state(state),
+         :ok <- opening_allowed(state),
          {:ok, options} <- staged_group_options(state),
+         :ok <- account(state, :options, options),
          :ok <- group_local_status(state, Lifecycle.now()),
          remaining = state.deadline - Lifecycle.now(),
          true <- remaining in 1..@day,
+         options = %{options | timeout: remaining, opening_timeout: remaining},
+         :ok <- account(state, :options, options),
          :ok <- apply(Gaoxy.Proxy.ManagedH2GroupBoundary, :activation, []) do
-      options = %{options | timeout: remaining, opening_timeout: remaining}
-
       case group_open_result(state, ManagedH2Client.open(options), Lifecycle.now()) do
         {:ok, staged, :group_bind} ->
           {:noreply, staged, {:continue, :group_bind}}
@@ -187,7 +208,8 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   def handle_continue(:group_bind, state) do
-    with :ok <- opening_allowed(state),
+    with :ok <- account_state(state),
+         :ok <- opening_allowed(state),
          :ok <- group_local_status(state, Lifecycle.now()),
          true <- state.client == @h2 and state.request === state.original_request,
          true <- valid_group_handle?(state.original_request),
@@ -197,8 +219,10 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
          :ok <- bind(state) do
       case opening_allowed(state) do
         :ok ->
-          schedule()
-          {:noreply, state}
+          case schedule(state) do
+            :ok -> retained_state(state)
+            _ -> rejected(state)
+          end
 
         _ ->
           settle(%{drop_group_opening(state) | cancelled: true, terminal: true})
@@ -209,7 +233,8 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   defp start_group_open(state) do
-    with :ok <- opening_allowed(state),
+    with :ok <- account_state(state),
+         :ok <- opening_allowed(state),
          :ok <- apply(Gaoxy.Proxy.ManagedH2GroupBoundary, :activation, []) do
       checkout_group(state)
     else
@@ -220,51 +245,133 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   defp checkout_group(state) do
     config = state.member.config
 
-    with {:ok, instance} <-
-           UpstreamGroups.claim_probe(state.owner, state.token, state.group, state.deadline),
-         :ok <- opening_allowed(state),
+    with :ok <- account_state(state),
          :ok <-
-           UpstreamTransports.validate_endpoint(
-             config.transport,
-             %{
-               origin: config.uri.scheme <> "://" <> config.uri.authority,
-               upstream_protocol: config.upstream_protocol,
-               instance: instance
-             },
-             state.deadline
+           account(
+             state,
+             {:control, :probe},
+             {:claim_probe, state.token, state.group, state.deadline}
            ),
+         {:ok, instance} <-
+           UpstreamGroups.claim_probe(state.owner, state.token, state.group, state.deadline),
+         :ok <- account(state, {:control, :probe}, {:ok, instance}),
          :ok <- opening_allowed(state),
-         {:ok, pins} <- Resources.pin_many([config.transport], self(), :request, state.deadline) do
-      state = %{state | transport_pins: pins}
+         identity = %{
+           origin: :binary.copy(config.uri.scheme <> "://" <> config.uri.authority),
+           upstream_protocol: config.upstream_protocol,
+           instance: instance
+         },
+         authority =
+           {config.upstream_protocol, if(config.uri.scheme == "https", do: :https, else: :http),
+            String.downcase(config.uri.host), config.uri.port},
+         :ok <-
+           account(
+             state,
+             {:control, :identity},
+             {:validate_endpoint, config.transport, authority, instance, state.deadline}
+           ),
+         :ok <- UpstreamTransports.validate_endpoint(config.transport, identity, state.deadline),
+         :ok <- opening_allowed(state),
+         {:ok, state} <- pin_group_transport(state, config.transport) do
+      with :ok <- account_state(state),
+           :ok <- opening_allowed(state),
+           :ok <-
+             account_owner_call(
+               state,
+               :transport,
+               :checkout,
+               {:checkout, config.transport, state.transport_pins, self(), state.deadline}
+             ) do
+        case UpstreamTransports.checkout(
+               config.transport,
+               state.transport_pins,
+               self(),
+               state.deadline
+             ) do
+          {:ok, client, token} ->
+            # Preserve the original selection before any post-reply K/S refusal.
+            selected = %{
+              state
+              | transport_selection: {config.transport, token},
+                managed_transport: client
+            }
 
-      with :ok <- opening_allowed(state),
-           {:ok, client, token} <-
-             UpstreamTransports.checkout(config.transport, pins, self(), state.deadline) do
-        state = %{
-          state
-          | transport_selection: {config.transport, token},
-            managed_transport: client
-        }
+            with :ok <- account(selected, :checked, client),
+                 :ok <- account_state(selected),
+                 :ok <- opening_allowed(selected),
+                 {:ok, staged, :group_open} <-
+                   prepare_group_open(selected, instance, Lifecycle.now()) do
+              {:noreply, staged, {:continue, :group_open}}
+            else
+              {:error, _, dropped} -> rejected(dropped)
+              _ -> rejected(drop_group_opening(selected))
+            end
 
-        with :ok <- opening_allowed(state),
-             {:ok, staged, :group_open} <- prepare_group_open(state, instance, Lifecycle.now()) do
-          {:noreply, staged, {:continue, :group_open}}
-        else
-          {:error, _, dropped} -> rejected(dropped)
-          _ -> rejected(drop_group_opening(state))
+          {:error, reason} ->
+            _ = account_owner_reply(state, :transport, :checkout, {:error, reason})
+            rejected(drop_group_opening(state))
         end
       else
         _ -> rejected(drop_group_opening(state))
       end
     else
+      {:error, _, retained} -> rejected(drop_group_opening(retained))
       _ -> rejected(drop_group_opening(state))
     end
+  end
+
+  defp pin_group_transport(state, handle) do
+    operation = make_ref()
+    request = {:pin_many, [handle], self(), :request, operation, state.deadline}
+
+    with :ok <- account_owner_call(state, :transport, :pin, request) do
+      case Lifecycle.protect(fn ->
+             UpstreamTransports.pin_many([handle], self(), :request, operation, state.deadline)
+           end) do
+        {:ok, pin} ->
+          captured = capture_transport_pin(state, pin, handle)
+
+          with :ok <- account_owner_reply(state, :transport, :pin, {:ok, pin}),
+               true <- captured.transport_pins === [pin],
+               :ok <- account(captured, :captured_pins, captured.transport_pins),
+               :ok <- account_state(captured) do
+            {:ok, captured}
+          else
+            _ ->
+              cancel_pin_operation(state, handle, operation)
+              {:error, :invalid_resource_pin, captured}
+          end
+
+        {:error, reason} ->
+          # Cancellation of the original operation remains owed on refusal.
+          cancel_pin_operation(state, handle, operation)
+          _ = account_owner_reply(state, :transport, :pin, {:error, reason})
+          {:error, group_reason(reason), state}
+      end
+    else
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
+  defp capture_transport_pin(state, pin, handle) do
+    if ManagedH2GroupAccounting.validate(:captured_pins, [pin]) == :ok and
+         pin_alias?([pin], handle) and Map.get(pin, :holder) === self(),
+       do: %{state | transport_pins: [pin]},
+       else: state
+  end
+
+  defp cancel_pin_operation(state, handle, operation) do
+    _ = account_control(state, :owner, {:cancel_pins, self(), operation})
+    Lifecycle.protect(fn -> UpstreamTransports.cancel(handle.owner, operation) end)
   end
 
   @doc false
   def prepare_group_open(state, instance, now) do
     if group_intent?(state) do
-      with true <- normal_group_state?(state),
+      with :ok <- account_state(state),
+           true <- normal_group_state?(state),
+           :ok <- account(state, :selected, state.member),
+           :ok <- account(state, :checked, state.managed_transport),
            {:ok, _} <- UpstreamGroups.probe_start_arguments(Map.take(state, @normal_keys)),
            true <- is_pid(instance),
            true <- state.client == @h2 and state.limits === state.member.config.limits,
@@ -279,26 +386,35 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
              max_upload_bytes: 1,
              request_limits: request_limits()
            },
+           :ok <- account(state, :neutral, neutral),
+           context = %{
+             group: state.group,
+             instance: instance,
+             limits: limits,
+             deadline: state.deadline,
+             opening_deadline: state.deadline,
+             now: now
+           },
+           :ok <- account(state, :context, context),
            {:ok, options, effective} <-
              ManagedH2GroupBoundary.prepare(
                state.member,
                neutral,
                state.managed_transport,
-               %{
-                 group: state.group,
-                 instance: instance,
-                 limits: limits,
-                 deadline: state.deadline,
-                 opening_deadline: state.deadline,
-                 now: now
-               }
-             ) do
-        {:ok,
-         %{
-           drop_group_opening(state)
-           | limits: effective,
-             request_options: {:group_prepared, options}
-         }, :group_open}
+               context
+             ),
+           :ok <- account(state, :request, options.request),
+           :ok <- account(state, :options, options) do
+        staged = %{
+          drop_group_opening(state)
+          | limits: effective,
+            request_options: {:group_prepared, options}
+        }
+
+        case account_state(staged) do
+          :ok -> {:ok, staged, :group_open}
+          _ -> {:error, :invalid_request, drop_group_opening(state)}
+        end
       else
         {:error, reason} when reason in [:cancelled, :request_timeout, :timeout] ->
           {:error, reason, drop_group_opening(state)}
@@ -328,22 +444,32 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   @doc false
   def group_open_result(state, result, now) do
     if group_intent?(state) do
+      result_accounting = account(state, :open_result, result)
+
       cond do
         successful_result?(result) ->
           handle = successful_handle(result)
 
           captured =
-            if valid_group_handle?(handle),
+            if ManagedH2GroupAccounting.validate(:open_result, {:ok, handle, nil}) == :ok,
               do: Map.merge(state, %{request: handle, original_request: handle}),
               else: state
 
-          if match?({:ok, _, nil}, result) and valid_group_handle?(handle) do
-            with {:ok, options} <- staged_group_options(state),
-                 :ok <- group_local_status(captured, now) do
-              {:ok, %{drop_group_opening(captured) | submitted_url: options.request.url},
-               :group_bind}
+          if result_accounting == :ok and match?({:ok, _, nil}, result) and
+               valid_group_handle?(handle) do
+            with :ok <- account_state(state),
+                 {:ok, options} <- staged_group_options(state),
+                 :ok <- account(state, :options, options),
+                 :ok <- group_local_status(captured, now),
+                 bound = %{drop_group_opening(captured) | submitted_url: options.request.url},
+                 :ok <- account_state(bound) do
+              {:ok, bound, :group_bind}
             else
-              {:error, reason} -> {:error, reason, drop_group_opening(captured)}
+              {:error, reason} when reason in [:cancelled, :request_timeout, :timeout] ->
+                {:error, reason, drop_group_opening(captured)}
+
+              _ ->
+                {:error, :invalid_request, drop_group_opening(captured)}
             end
           else
             {:error, {:cleanup_unconfirmed, :invalid_response}, drop_group_opening(captured)}
@@ -356,7 +482,11 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
           {:error, group_reason(elem(result, 1)), drop_group_opening(state)}
 
         true ->
-          with {:ok, _} <- staged_group_options(state),
+          # Refused raw error interiors are normalized immediately below and
+          # never retained in S or projected as an accepted U capability.
+          with :ok <- account_state(state),
+               {:ok, options} <- staged_group_options(state),
+               :ok <- account(state, :options, options),
                :ok <- group_local_status(state, now) do
             reason =
               case result do
@@ -366,11 +496,83 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
 
             {:error, reason, drop_group_opening(state)}
           else
-            {:error, reason} -> {:error, reason, drop_group_opening(state)}
+            {:error, reason} when reason in [:cancelled, :request_timeout, :timeout] ->
+              {:error, reason, drop_group_opening(state)}
+
+            _ ->
+              {:error, :invalid_request, drop_group_opening(state)}
           end
       end
     else
       {:error, :invalid_request, drop_group_opening(state)}
+    end
+  end
+
+  defp account(state, selector, original) do
+    if group_intent?(state), do: ManagedH2GroupAccounting.validate(selector, original), else: :ok
+  end
+
+  defp account_state(state), do: account(state, {:state, :probe}, state)
+  defp account_control(state, family, original), do: account(state, {:control, family}, original)
+
+  defp account_owner_call(state, owner, operation, original) do
+    with :ok <- account(state, {:owner_call, owner, operation}, original) do
+      if group_intent?(state),
+        do: ManagedH2GroupAccounting.preflight_control({:owner, owner, operation}, original),
+        else: :ok
+    end
+  end
+
+  defp account_owner_reply(state, owner, operation, {:error, reason}),
+    do: account(state, {:owner_reply, owner, operation}, {:error, group_reason(reason)})
+
+  defp account_owner_reply(state, owner, operation, original),
+    do: account(state, {:owner_reply, owner, operation}, original)
+
+  defp preflight_task(state) do
+    if group_intent?(state) and state.request != nil do
+      task = state.request.promise.task
+      ManagedH2GroupAccounting.preflight_control(:task, {task.ref, task.pid})
+    else
+      :ok
+    end
+  end
+
+  defp account_client_event(state, message) do
+    task = state.request.promise.task
+    stream = state.request.stream
+
+    case message do
+      {ref, %Elixir.HTTP.Response{}} when ref === task.ref ->
+        account_control(state, {:task, state.submitted_url}, message)
+
+      {ref, {:error, _}} when ref === task.ref ->
+        account_control(state, :task, message)
+
+      {:DOWN, ref, :process, pid, _} when ref === task.ref and pid === task.pid ->
+        account_control(state, :down, message)
+
+      {:stream_chunk, ^stream, _, _} ->
+        account_control(state, :data, message)
+
+      {:stream_trailers, ^stream, _} ->
+        account_control(state, :trailers, message)
+
+      {:stream_end, ^stream} ->
+        account_control(state, :stream_end, message)
+
+      {:stream_error, ^stream, _} ->
+        account_control(state, :stream_error, message)
+
+      _ ->
+        :ok
+    end
+  end
+
+  defp retained_state(state) do
+    case account_state(state) do
+      :ok -> {:noreply, state}
+      _ -> rejected(state)
     end
   end
 
@@ -613,11 +815,20 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
 
   defp opening_allowed(state) do
     monitor = state.owner_monitor
+    owner = state.owner
 
     receive do
-      {:"$gen_cast", :cancel} -> {:error, :cancelled}
-      :expired -> {:error, :cancelled}
-      {:DOWN, ^monitor, :process, _, _} -> {:error, :cancelled}
+      {:"$gen_cast", :cancel} = original ->
+        _ = account_control(state, :cast, original)
+        {:error, :cancelled}
+
+      :expired ->
+        _ = account_control(state, :timer, :expired)
+        {:error, :cancelled}
+
+      {:DOWN, ^monitor, :process, ^owner, _} = original ->
+        _ = account_control(state, :down, original)
+        {:error, :cancelled}
     after
       0 ->
         if Lifecycle.remaining(state.deadline) > 0 and Process.alive?(state.owner),
@@ -651,7 +862,7 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
 
         case bind(state) do
           :ok ->
-            schedule()
+            schedule(state)
             {:noreply, state}
 
           {:error, _} ->
@@ -670,46 +881,82 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
     selected_client = client(state)
     completion = selected_client.completion(state.original_request)
 
-    with :ok <- bind_transport(state.transport_selection, completion),
-         do: UpstreamGroups.bind_probe(state.owner, state.token, completion)
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :probe, {:bind_probe, state.token, completion}),
+         :ok <- bind_transport(state, completion),
+         :ok <- UpstreamGroups.bind_probe(state.owner, state.token, completion),
+         do: account_state(state)
   end
 
-  defp bind_transport(nil, _), do: :ok
+  defp bind_transport(%{transport_selection: nil}, _), do: :ok
 
-  defp bind_transport({handle, token}, completion),
-    do: UpstreamTransports.bind_completion(handle, token, completion)
+  defp bind_transport(%{transport_selection: {handle, token}} = state, completion) do
+    with :ok <-
+           account_owner_call(
+             state,
+             :transport,
+             :bind,
+             {:bind_completion, handle, token, completion}
+           ),
+         result = UpstreamTransports.bind_completion(handle, token, completion),
+         :ok <- account_owner_reply(state, :transport, :bind, result),
+         do: result
+  end
 
   @impl true
-  def handle_cast(:cancel, state), do: settle(%{state | cancelled: true, terminal: true})
+  def handle_cast(:cancel, state) do
+    _ = account_state(state)
+    _ = account_control(state, :cast, {:"$gen_cast", :cancel})
+    settle(%{state | cancelled: true, terminal: true})
+  end
 
   @impl true
   def handle_info(:recover, %{recovery: {kind, token}} = state) do
-    case HTTPFetchClient.await_completion(state.completion, true) do
-      :ok ->
-        send(state.owner, {:recovered, kind, token, self(), :ok})
-        {:stop, :normal, state}
+    source = ManagedH2GroupAccounting.validate({:state, :recovery}, state)
+    # Even a refused S cannot cancel the obligation to await original cleanup.
+    result = Lifecycle.protect(fn -> HTTPFetchClient.await_completion(state.completion, true) end)
 
-      {:error, :cleanup_pending} ->
+    case {source, result} do
+      {:ok, :ok} ->
+        recovered(state, kind, token, :ok, :normal)
+
+      {:ok, {:error, :cleanup_pending}} ->
         if Lifecycle.remaining(state.deadline) > 0 do
           Process.send_after(self(), :recover, 5)
           {:noreply, state}
         else
-          send(state.owner, {:recovered, kind, token, self(), {:error, :cleanup_unconfirmed}})
-          {:stop, :cleanup_unconfirmed, state}
+          recovered(state, kind, token, {:error, :cleanup_unconfirmed}, :cleanup_unconfirmed)
         end
 
-      {:error, reason} ->
-        send(state.owner, {:recovered, kind, token, self(), {:error, reason}})
-        {:stop, reason, state}
+      {:ok, {:error, reason}} ->
+        reason = group_reason(reason)
+        recovered(state, kind, token, {:error, reason}, reason)
+
+      _ ->
+        {:stop, :invalid_request, state}
     end
   end
 
-  def handle_info(:expired, state), do: settle(%{state | cancelled: true, terminal: true})
-  def handle_info(:poll, %{terminal: true} = state), do: settle(state)
+  def handle_info(:expired, state) do
+    _ = account_state(state)
+    _ = account_control(state, :timer, :expired)
+    settle(%{state | cancelled: true, terminal: true})
+  end
+
+  def handle_info(:poll, %{terminal: true} = state) do
+    _ = account_control(state, :timer, :poll)
+    settle(state)
+  end
 
   def handle_info(:poll, %{client: @h2} = state) do
-    {event, request} = ManagedH2Client.poll_headers({state.request, state.submitted_url})
-    dispatch(event, %{state | request: request})
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :timer, :poll),
+         :ok <- preflight_task(state) do
+      {event, request} = ManagedH2Client.poll_headers({state.request, state.submitted_url})
+      dispatch(event, %{state | request: request})
+    else
+      _ -> rejected(state)
+    end
   end
 
   def handle_info(:poll, state) do
@@ -717,15 +964,32 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
     dispatch(event, %{state | request: request})
   end
 
-  def handle_info({:DOWN, ref, :process, _, _}, %{owner_monitor: ref, recovery: _} = state),
-    do: {:stop, :owner_down, state}
+  def handle_info(
+        {:DOWN, ref, :process, owner, _} = original,
+        %{owner_monitor: ref, owner: owner, recovery: _} = state
+      ) do
+    _ = ManagedH2GroupAccounting.validate({:state, :recovery}, state)
+    _ = ManagedH2GroupAccounting.validate({:control, :down}, original)
+    {:stop, :owner_down, state}
+  end
 
-  def handle_info({:DOWN, ref, :process, _, _}, %{owner_monitor: ref} = state),
-    do: settle(%{state | cancelled: true, terminal: true})
+  def handle_info(
+        {:DOWN, ref, :process, owner, _} = original,
+        %{owner_monitor: ref, owner: owner} = state
+      ) do
+    _ = account_state(state)
+    _ = account_control(state, :down, original)
+    settle(%{state | cancelled: true, terminal: true})
+  end
 
   def handle_info(message, %{client: @h2, request: request} = state) when not is_nil(request) do
-    {event, request} = ManagedH2Client.event({request, state.submitted_url}, message)
-    dispatch(event, %{state | request: request})
+    with :ok <- account_state(state),
+         :ok <- account_client_event(state, message) do
+      {event, request} = ManagedH2Client.event({request, state.submitted_url}, message)
+      dispatch(event, %{state | request: request})
+    else
+      _ -> rejected(state)
+    end
   end
 
   def handle_info(message, %{request: request} = state) when not is_nil(request) do
@@ -734,6 +998,18 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   def handle_info(_, state), do: {:noreply, state}
+
+  defp recovered(state, kind, token, result, stop_reason) do
+    original = {:recovered, kind, token, self(), result}
+
+    with :ok <- ManagedH2GroupAccounting.validate({:state, :recovery}, state),
+         :ok <- ManagedH2GroupAccounting.validate({:control, :probe}, original) do
+      send(state.owner, original)
+      {:stop, stop_reason, state}
+    else
+      _ -> {:stop, :invalid_request, state}
+    end
+  end
 
   defp dispatch({:headers, status, _}, state) do
     state = clear_submitted_url(state)
@@ -748,12 +1024,28 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
       settle(%{state | terminal: true})
     else
       selected_client = client(state)
-      :ok = selected_client.subscribe(state.request)
-      {:noreply, state}
+
+      with :ok <- account_state(state),
+           :ok <- account_control(state, :acknowledge, {:read_chunk, self(), :ack}),
+           :ok <- selected_client.subscribe(state.request) do
+        retained_state(state)
+      else
+        _ -> rejected(state)
+      end
     end
   end
 
   defp dispatch(:end, state), do: settle(%{state | terminal: true})
+
+  defp dispatch({:chunk, _, ref}, %{client: @h2} = state) do
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :acknowledge, {:stream_chunk_ack, ref}),
+         :ok <- ManagedH2Client.acknowledge(state.request, ref) do
+      settle(%{state | outcome: :failure, cancelled: true, terminal: true})
+    else
+      _ -> rejected(state)
+    end
+  end
 
   defp dispatch({:chunk, _, _}, state),
     do: settle(%{state | outcome: :failure, cancelled: true, terminal: true})
@@ -762,13 +1054,24 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
     do: settle(%{state | outcome: :failure, cancelled: true, terminal: true})
 
   defp dispatch(:none, state) do
-    if not state.headers, do: schedule()
-    {:noreply, state}
+    if state.headers do
+      retained_state(state)
+    else
+      case schedule(state) do
+        :ok -> retained_state(state)
+        _ -> rejected(state)
+      end
+    end
   end
 
-  defp dispatch(_, state), do: {:noreply, state}
+  defp dispatch(_, state), do: retained_state(state)
 
-  defp settle(state), do: settle_request(clear_submitted_url(state))
+  defp settle(state) do
+    _ = account_state(state)
+    state = clear_submitted_url(state)
+    _ = account_state(state)
+    settle_request(state)
+  end
 
   defp settle_request(%{client: @h2, original_request: nil} = state), do: complete(state)
 
@@ -789,8 +1092,10 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
 
       {:error, :cleanup_pending} ->
         if Lifecycle.remaining(state.cleanup_deadline) > 0 do
-          schedule()
-          {:noreply, state}
+          case schedule(state) do
+            :ok -> retained_state(state)
+            _ -> {:stop, :cleanup_unconfirmed, state}
+          end
         else
           {:stop, :cleanup_unconfirmed, state}
         end
@@ -801,19 +1106,28 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   end
 
   defp complete(state) do
+    _ = account_state(state)
     Process.cancel_timer(state.timer)
 
     case finish_transport(state) do
       {:ok, state} ->
-        case UpstreamGroups.probe_finished(state.owner, state.token, state.outcome) do
+        result =
+          with :ok <-
+                 account(state, {:control, :probe}, {:probe_finished, state.token, state.outcome}),
+               :ok <- UpstreamGroups.probe_finished(state.owner, state.token, state.outcome),
+               do: account_state(state)
+
+        case result do
           :ok -> {:stop, :normal, state}
           {:error, _} -> {:stop, :owner_unavailable, state}
         end
 
       {:pending, state} ->
         if Lifecycle.remaining(state.cleanup_deadline) > 0 do
-          schedule()
-          {:noreply, state}
+          case schedule(state) do
+            :ok -> retained_state(state)
+            _ -> {:stop, :cleanup_unconfirmed, state}
+          end
         else
           {:stop, :cleanup_unconfirmed, state}
         end
@@ -826,17 +1140,64 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   defp finish_transport(%{transport_selection: nil} = state), do: release_transport_pins(state)
 
   defp finish_transport(%{transport_selection: {handle, token}} = state) do
-    case UpstreamTransports.finish(handle, token) do
-      :ok -> release_transport_pins(%{state | transport_selection: nil})
-      {:error, :cleanup_pending} -> {:pending, state}
+    with :ok <- account_state(state),
+         :ok <- account_owner_call(state, :transport, :finish, {:finish, handle, token}) do
+      result = UpstreamTransports.finish(handle, token)
+
+      with :ok <- account_owner_reply(state, :transport, :finish, result) do
+        case result do
+          :ok ->
+            release_transport_pins(%{state | transport_selection: nil})
+
+          {:error, :cleanup_pending} ->
+            {:pending, state}
+
+          {:error, reason} ->
+            reason = if group_intent?(state), do: group_reason(reason), else: reason
+            {:error, reason, state}
+        end
+      else
+        {:error, reason} -> {:error, reason, state}
+      end
+    else
       {:error, reason} -> {:error, reason, state}
     end
   end
 
   defp release_transport_pins(state) do
-    case Resources.release(state.transport_pins) do
-      :ok -> {:ok, %{state | transport_pins: []}}
-      {:error, reason} -> {:error, {:pin_release_failed, reason}, state}
+    if group_intent?(state) do
+      result =
+        with :ok <- account_state(state),
+             :ok <- account(state, :captured_pins, state.transport_pins) do
+          Enum.reduce_while(state.transport_pins, :ok, fn pin, :ok ->
+            with :ok <- account_owner_call(state, :transport, :release, {:release, pin}),
+                 result = Resources.release(pin),
+                 :ok <- account_owner_reply(state, :transport, :release, result),
+                 :ok <- result do
+              {:cont, :ok}
+            else
+              {:error, reason} -> {:halt, {:error, group_reason(reason)}}
+            end
+          end)
+        end
+
+      case result do
+        :ok ->
+          released = %{state | transport_pins: []}
+
+          case account_state(released) do
+            :ok -> {:ok, released}
+            {:error, reason} -> {:error, reason, released}
+          end
+
+        {:error, reason} ->
+          {:error, {:pin_release_failed, reason}, state}
+      end
+    else
+      case Resources.release(state.transport_pins) do
+        :ok -> {:ok, %{state | transport_pins: []}}
+        {:error, reason} -> {:error, {:pin_release_failed, reason}, state}
+      end
     end
   end
 
@@ -845,5 +1206,11 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Probe do
   defp clear_submitted_url(%{client: @h2} = state), do: %{state | submitted_url: nil}
   defp clear_submitted_url(state), do: state
 
-  defp schedule, do: Process.send_after(self(), :poll, 5)
+  defp schedule(state) do
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :timer, :poll) do
+      Process.send_after(self(), :poll, 5)
+      :ok
+    end
+  end
 end

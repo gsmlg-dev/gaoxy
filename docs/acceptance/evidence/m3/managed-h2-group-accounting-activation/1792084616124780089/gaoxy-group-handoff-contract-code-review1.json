@@ -1,0 +1,115 @@
+{
+  "task_id": "group_postactivation_code / handoff_test_contract1",
+  "status": "DONE_SOURCE_REVIEW",
+  "verdict": "PASS_SOURCE_ONLY",
+  "assignment": "direct independent bounded test-only CODE review",
+  "recorded_at_utc": "2026-10-15T20:09:56.220777+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "workspace": "root-owned dirty source/runtime; no repository/Git/build mutations",
+  "patch": {
+    "path": "/tmp/gaoxy-group-handoff-contract1.patch",
+    "sha256": "4419cd51e207f727171b7121cf344c0b5aacd5d5474bb76c38db4ded48038aa3",
+    "target": "apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs",
+    "before_sha256": "8b2456198ee065355c0fda89a8e5b610cdac88f1194b70c3ca5975ccedeb638d",
+    "expected_after_sha256": "f421db612017b309e1fca9e8fb088c487c841edbd7b77b743f9853f3a5e2dded",
+    "unique_hunks": true,
+    "repository_adoption": "NOT APPLIED by reviewer"
+  },
+  "reviewed_hashes": {
+    "apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs": "8b2456198ee065355c0fda89a8e5b610cdac88f1194b70c3ca5975ccedeb638d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+    "apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs": "0dff9a288f929b8679e9cc264884b31fd8041dab4b3d6369a800757d0ce5c244",
+    "/nix/store/5y0714j8czhkjbmjb6l6m46n5w5fyr6q-erlang-28.5.0.5/lib/erlang/lib/stdlib-7.3.0.1/src/gen_server.erl": "66a4a649c8ed58f3c9ed317047f28ea2e2a61b38032cc467565fbad2c53a09db",
+    "/nix/store/5y0714j8czhkjbmjb6l6m46n5w5fyr6q-erlang-28.5.0.5/lib/erlang/lib/stdlib-7.3.0.1/src/sys.erl": "266f18abd9ba539c1da69e076844c4cfcf1162adc6fae1cf816e8be09411dd82",
+    "/tmp/gaoxy-group-handoff-contract1.patch": "4419cd51e207f727171b7121cf344c0b5aacd5d5474bb76c38db4ded48038aa3",
+    "/tmp/gaoxy-group-handoff-contract1.json": "3106b7570cec002fc34bd0aa264a053ad72198547856671d00970cdffd473745",
+    "/tmp/gaoxy-group-handoff-contract1.md": "40bc2b12d5879cbd8fcf54bb6b7f8c3ee11b6247da46507e5cd9f09bf4590569"
+  },
+  "source_inputs_match_author": true,
+  "checks": [
+    {
+      "id": "HC1",
+      "status": "PASS",
+      "evidence": "Patch4419cd... and all6 author source hashes plus actual OTP gen_server source66a4a6... authenticate. Exact unique in-memory hunk application produces expected f421db... from predecessor8b2456...; no repository apply."
+    },
+    {
+      "id": "HC2",
+      "status": "PASS",
+      "evidence": "Actual OTP decode_msg emits {:in,msg} before application handling; reply(Name,From,Reply,State,Debug) sends real reply then emits {:out,Reply,From,State}. Full From preserves caller pid plus opaque call tag; observer pattern matches actual4-tuple, not guessed trace shape."
+    },
+    {
+      "id": "HC3",
+      "status": "PASS",
+      "evidence": "Observer installs before failing request and owner input barrier, then retains only first actual delegate input From+operation. Raw output acceptance requires exact same full From; test separately pins caller/tag/operation from its input barrier. No fake reply or operation authority is created."
+    },
+    {
+      "id": "HC4",
+      "status": "PASS",
+      "evidence": "Observer callback performs bounded pattern matching and one send only. Existing later-installed input barrier may run first; on release both debug callbacks finish that same input event before application call handling, so pending correlation is installed before reply output. It never calls blocked owner/Session or waits."
+    },
+    {
+      "id": "HC5",
+      "status": "PASS",
+      "evidence": "Owner refusal is genuinely caused by max_pins4 fifth-pin admission and exact raw {:error,{:capacity,:pins}}. Group finite owner reply validator rejects capacity tuple, HTTP cancels operation and sends exact {:error,:invalid_resource_pin}; downstream production maps this to502. Patch separately authenticates both observations instead of widening errors/status alternatives."
+    },
+    {
+      "id": "HC6",
+      "status": "PASS",
+      "evidence": "Original G2/T1/Service2 precleanup holds and exact sibling G/T completion, failed G nil completion/no original request/T token, pins4, all exact accounting and no upstream request remain. Postfailure normal guardian DOWN, exact survivor records/pins3/full Service1, failed token absence, healthy sibling/original join/no replay remain. Only wrong error/status contract changes."
+    },
+    {
+      "id": "HC7",
+      "status": "PASS",
+      "evidence": "Session barrier is installed before owner release and matches genuine selected handoff ref with exact normalized error. Raw owner output may arrive before or after Session hold receipt, but test selective receives preserve both; no actor-state query targets held Session."
+    },
+    {
+      "id": "HC8",
+      "status": "PASS",
+      "evidence": "Observer returns :done, which actual OTP sys removes automatically. on_exit removes surviving observer if owner still alive; existing on_exit barrier releases were registered later and run before that cleanup. Success G.close joins actual owner before on_exit, so no process/observer leak introduced. No new runtime actor."
+    },
+    {
+      "id": "HC9",
+      "status": "PASS",
+      "evidence": "Native partial-DATA cases and helper deadlines/fixture cleanup remain unchanged. Exactly4 existing tests remain:2 affected handoff cases,0 additions/skips/exclusions. Corrected source-only approval supersedes earlier wrong raw-error-to-Session inference only; historical evidence remains immutable."
+    },
+    {
+      "id": "HC10",
+      "status": "PASS",
+      "evidence": "No production/dependency/schema/capability change. Fresh runtime remains required; prior110/10 and diagnostic48/2 results remain FAIL, not proof this proposal passes."
+    }
+  ],
+  "actionable_findings": [],
+  "earlier_review_correction": "Earlier source-only inference that raw capacity tuple reached Session unchanged and yielded503 was incorrect. Exact production chain normalizes to invalid_resource_pin/502; this review supersedes only that bounded test-contract conclusion and leaves earlier reports unchanged.",
+  "verification": {
+    "runtime": "NOT RUN",
+    "format_compile": "NOT RUN",
+    "tests_executed": 0,
+    "source_commands": "Read complete patch/author report/JSON, actual predecessor test, production delegate/pin-reply/accountant/Session routing, exact OTP gen_server/sys source and existing correlated observer patterns; python SHA256 authentication and unique in-memory hunk application. All commands exit0.",
+    "repository_mutations": [],
+    "Git_index": "NOT RUN",
+    "outputs": [
+      "/tmp/gaoxy-group-handoff-contract-code-review1.md",
+      "/tmp/gaoxy-group-handoff-contract-code-review1.json"
+    ],
+    "shutdown": "All reviewer commands completed; no runtime actors started/signalled/stopped; root processes untouched."
+  },
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "author_proposal_rounds": 0,
+    "root_cumulative_sol": "parent-owned preserved; no reset or guessed aggregation",
+    "astra_recovery": "2/2 exhausted; unchanged"
+  },
+  "required_root_validation": [
+    "Authenticate/adopt exact reviewed source after source freeze release, format/strict compile.",
+    "Run both genuine handoff cases and unchanged partial-DATA cases with exact accounting/refund/normal-DOWN/sibling/no-replay assertions, then all prescribed scoped gates."
+  ],
+  "remaining_risks": [
+    "Runtime/compile/format of proposal NOT RUN.",
+    "Source-only contract correction does not close separate guardian recovery failures; root diagnostic48/2 preserved."
+  ],
+  "decisions_needed": []
+}

@@ -1,0 +1,97 @@
+{
+  "kind": "ACTUAL_BROWSER3_REQUEST_CLEAN_MISSING_FIELD_DIAGNOSIS",
+  "recorded_at_utc": "2026-10-15T21:52:03.232292+00:00",
+  "receipt": "browser-command3-1792100929073920313.json",
+  "receipt_sha256": "1039207d48dee9b9cd6badc985052a50f387fdbd3ccb5c9eba0e4b4834b40f41",
+  "qualification": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/browser-three-cases3-1792100929073920313/qualification.json",
+  "qualification_sha256": "3b351df9e1b8dd8b2b5ed3ee51386d5844971ca3c8f3f9e2fe24292d360aac46",
+  "host_log": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/browser-three-cases3-1792100929073920313/host.log",
+  "host_log_sha256": "4f218b1df6884c76bbccd46e190ffe70f554a1669efbb021a32e881fd2316f8f",
+  "actual_exit": 1,
+  "completed_cases": 0,
+  "joined": true,
+  "source_stable": true,
+  "failure": "KeyError admission_receipts at unchanged group exact_reservations(request_clean,originals)",
+  "actual_host_request_clean": {
+    "keys": [
+      "event",
+      "gate_alive",
+      "gate_pid",
+      "group",
+      "group_evidence",
+      "instance",
+      "native_idle",
+      "native_scope",
+      "original_repeat",
+      "originals",
+      "owner",
+      "owner_pid",
+      "service",
+      "service_alive",
+      "service_pid"
+    ],
+    "originals": [
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.361.0>, latch: #Reference<0.1989579753.4122869761.241050>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.1989579753.4122738689.240719>",
+        "group_token": "#Reference<0.1989579753.4122738690.221953>"
+      },
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.368.0>, latch: #Reference<0.1989579753.4122869761.241687>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.1989579753.4122738689.241359>",
+        "group_token": "#Reference<0.1989579753.4122738689.241291>"
+      },
+      {
+        "completion": "%HTTP.RequestCompletion{tracker: #PID<0.380.0>, latch: #Reference<0.1989579753.4122869761.242327>, unsupported: nil}",
+        "result": ":ok",
+        "token": "#Reference<0.1989579753.4122738689.241997>",
+        "group_token": "#Reference<0.1989579753.4122738690.222404>"
+      }
+    ],
+    "service": {
+      "active": 2,
+      "state": "ready",
+      "retained_bytes": 173106215,
+      "cleanup_failed": null,
+      "cleanup_pending": 0
+    },
+    "service_alive": true,
+    "gate_alive": true,
+    "native_idle": {
+      "active": 2,
+      "retained_bytes": 173106215,
+      "reservations": {
+        "stream": 196608,
+        "decode": 142680064,
+        "connection": 173039655,
+        "writer": 66560
+      },
+      "leases": [
+        {
+          "pid": "#PID<0.357.0>",
+          "bytes": 173039655,
+          "writer": "#PID<0.358.0>",
+          "lease": "#Reference<0.1989579753.4122738689.240574>",
+          "preface": true,
+          "class": "native_h2_connection"
+        },
+        {
+          "pid": "#PID<0.358.0>",
+          "bytes": 66560,
+          "connection": "#PID<0.357.0>",
+          "lease": "#Reference<0.1989579753.4122738689.240583>",
+          "class": "native_h2_writer"
+        }
+      ]
+    },
+    "group_evidence_received": 57
+  },
+  "source_cause": "request_clean flushes real admission observer/collects actual receipts but omits admission_receipts in emitted event; observe/status/stop emit it",
+  "proposed_patch": "/tmp/gaoxy-group-browser-request-clean-receipts1.patch",
+  "patch_sha256": "8d9787086392928cad4c8e14e4cfab7c2cdf1a8f67bf91dc4dbebce00a6f180b",
+  "assertions": "canonical suite unchanged; no defaults/synthetic receipts/missing-Service-as-zero; real fresh browser required",
+  "counters": "22failedGREEN/24root events before repair adoption;Astra2/2 unchanged",
+  "acceptance": false
+}

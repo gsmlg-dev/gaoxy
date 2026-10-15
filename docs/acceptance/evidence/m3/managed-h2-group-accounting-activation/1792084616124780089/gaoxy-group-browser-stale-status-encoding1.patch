@@ -1,0 +1,15 @@
+--- a/integration/http_fetch_contract/managed_h2_fixed_qualification.py
++++ b/integration/http_fetch_contract/managed_h2_fixed_qualification.py
+@@ -691,7 +691,11 @@
+   defp group_snapshot(state) do
+     if Process.alive?(state.groups) do
+       raw = :sys.get_state(state.groups, 1000)
+-      %{owner: inspect(state.groups), public: Groups.status(state.group),
++      public = case Groups.status(state.group) do
++        %{} = value -> value
++        {:error, :stale_group} = error -> %{public_result: inspect(error)}
++      end
++      %{owner: inspect(state.groups), public: public,
+         config_bytes: raw.bytes, control_bytes: raw.control_bytes, probe_bytes: raw.probe_bytes,
+         pins: map_size(raw.pins), tokens: map_size(raw.tokens), probes: map_size(raw.probes), mode: inspect(raw.mode),
+         holds: for {kind, records} <- [selection: raw.tokens, probe: raw.probes], {token, held} <- records do

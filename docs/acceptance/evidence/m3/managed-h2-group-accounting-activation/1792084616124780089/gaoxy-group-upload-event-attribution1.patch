@@ -1,0 +1,26 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs
+@@ -127,6 +127,15 @@
+       assert %{"total_bytes" => 6} = G.upload_through(f.peer, seen, "abcdef", 3)
+       connection = seen["connection"]
+       stream = seen["stream"]
++      upload_hash = Base.encode16(:crypto.hash(:sha256, "abcdef"), case: :lower)
++
++      assert %{
++               "connection" => ^connection,
++               "stream" => ^stream,
++               "chunk_bytes" => 0,
++               "total_bytes" => 6,
++               "sha256" => ^upload_hash
++             } = G.event(f.peer, "upload")
+ 
+       assert %{"connection" => ^connection, "stream" => ^stream, "total_bytes" => 6} =
+                G.event(f.peer, "upload_end")
+@@ -157,6 +166,7 @@
+       seen = G.event(f.peer, "request")
+       assert seen["target"] === "/echo"
+       assert [":method", "DELETE"] in seen["headers"]
++      assert %{"total_bytes" => 4} = G.upload_through(f.peer, seen, "wire")
+ 
+       assert %{"fields" => [["x-check", "first"], ["x-check", "second"]]} =
+                G.event(f.peer, "upload_trailers")

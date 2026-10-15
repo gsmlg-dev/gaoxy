@@ -1,0 +1,209 @@
+{
+  "task_id": "M3/group-activation/native_tls_ownership_proposal1/spec",
+  "status": "SOURCE_APPROVED_FOR_VALIDATION_TEST_COMPLETION_REQUIRED",
+  "assignment": "direct independent source-only SPEC and focused code-contract review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "historical_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "captured_at": "2026-10-15T20:44:15.435699+00:00",
+  "proposal_hashes": {
+    "md": "e9544f98b492cd1ac670f822703eb1b51df270b96aedf667fd27699abc8c72cf",
+    "json": "545e55d8236ed40079b5fab3155f60cb322a009c0446831e63cca47fb458b49b",
+    "patch": "3821eae059f8b03d01eb20726ce536ee4fcc8c4e05494a4ec72a71314f609d79"
+  },
+  "reconstructed_targets": [
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+      "before": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+      "after": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "before": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+      "after": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+      "before": "8ec0d0568ba2d9180be33dc421f7294a5fe8ec6988002d5c64b6c7fe48ec2eb8",
+      "after": "300e315d2d37ee927fe6eb2b7c1f210183ce83ec11aa118fc7059f8b87d586a1",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+      "before": null,
+      "after": "bee3be78b40e51154bf6cf6ccd1d65ab498d77d98a0e46de18e1509bdf3e664c",
+      "result": "PASS"
+    }
+  ],
+  "source_inputs_authenticated": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "apps/gaoxy/lib/gaoxy/config.ex": "3054657e55350afeb23f0690a4c3d6d0d3df352e564184ce5579cb6f30583cde",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "cf78f0bbb37bf76c0f4d9cad9b5d5843ce0f8457120f730591ba686b42459659",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a"
+  },
+  "requirements": [
+    {
+      "id": "T01",
+      "result": "PASS_SOURCE",
+      "evidence": "Proposal md/json/patch hashes match; four original/after hunk reconstructions and all12 source-input hashes independently authenticated."
+    },
+    {
+      "id": "T02",
+      "result": "PASS_DIAGNOSTIC_ONLY",
+      "evidence": "Actual diagnostic2 capture hash authenticated: same original pump rejected; changing only ssl:nil admitted. Owner has same SSL/gate, securetrue,38 actual entries incl session_data2281/functions. Inner exit1 remains FAIL, not acceptance."
+    },
+    {
+      "id": "T03",
+      "result": "PASS_SOURCE",
+      "evidence": "Connection.handle_connection already obtains complete Socket.connection_information into owner state.ssl; existing connection Admission lease is acquired before native H2 handling. Proposal retains original state.ssl and connection reserve."
+    },
+    {
+      "id": "T04",
+      "result": "PASS_SOURCE",
+      "evidence": "Only nativeH2 Exchange constructor changes ssl:state.ssl to ssl:nil; group pump no longer receives that duplicate root. Accountant finite grammar, role caps, whitelist, projections and existing negative assertions unchanged."
+    },
+    {
+      "id": "T05",
+      "result": "PASS_SOURCE",
+      "evidence": "Exchange.ssl_data nativeH2 clause precedes generic transport clause; actual worker uses supported existing Transport.operation(:ssl_data), returns complete original data or nil on closed/timeout. Plug adapter delegates directly, preserving live worker API data."
+    },
+    {
+      "id": "T06",
+      "result": "PASS_SOURCE",
+      "evidence": "Native owner call/4 authenticates exact stream ID/token and actual From PID==stream.worker before invoking operation; wrong stream/token/foreign copied capability receives closed; no new process/global authority or runtime query inside pure accountant."
+    },
+    {
+      "id": "T07",
+      "result": "PASS_SOURCE",
+      "evidence": "Transport operation uses local absolute request deadline and finite call timeout; new owner checks authoritative stream.deadline independently and replies timeout on expiry. Owner handler does not call itself; current SSL API callsites run inside worker/Plug endpoint."
+    },
+    {
+      "id": "T08",
+      "result": "FINDING_TEST_GAP",
+      "evidence": "Proposed local expired Exchange is rejected by Transport.remaining before owner call, so it never proves new authoritative stream.deadline guard against extended local deadline. Proposal explicitly requires additional bounded unit/live verification; missing from its3 new tests."
+    },
+    {
+      "id": "T09",
+      "result": "PASS_SOURCE",
+      "evidence": "H1 direct secure Socket path and H3/other stored metadata clause unchanged. peer_cert/secure/peer/local unchanged. Foreign copied Exchange getter intentionally changes to nil and is documented; valid live worker returns original full value."
+    },
+    {
+      "id": "T10",
+      "result": "PASS_SOURCE",
+      "evidence": "Actual nativeTLS tests generate local fixtures, verify peer CA/name and ALPNh2, exercise both real upstream TLSH2/h2c; assert owner.ssl==Exchange SSL==Plug SSL and nonzero actual session_data, Exchange.ssl=nil, real native owner/request leases."
+    },
+    {
+      "id": "T11",
+      "result": "PASS_SOURCE",
+      "evidence": "Wrong stream, wrong token, foreign real copied token and expired local operation exact errors tested. Foreign public getter nil, with original worker request held behind finite observer monitor/deadline before GroupEndpoint."
+    },
+    {
+      "id": "T12",
+      "result": "PASS_SOURCE",
+      "evidence": "Real GroupEndpoint request requires exact empty-query target, original RequestCompletion in G/Session, Service cleanup full16478862 on genuine request lease and correct token->Service guardian, actual200/bodyempty and original completion await."
+    },
+    {
+      "id": "T13",
+      "result": "PASS_SOURCE",
+      "evidence": "Native connection/writer/worker monitors join; service retained/active/cleanup totals zero, nil cleanup failure and highwater bound, explicit nativeTLS service removal then exact existing G/T baseline cleanup and peer termination. No fake success/receipt."
+    },
+    {
+      "id": "T14",
+      "result": "PASS_SOURCE",
+      "evidence": "Response reader has finite frame count256, frame cap16384, body cap65536, absolute finite receive deadline and settings ACK. Empty200 target avoids continuation/upload ambiguity; original RequestCompletion await finite5000."
+    },
+    {
+      "id": "T15",
+      "result": "PASS_SOURCE",
+      "evidence": "Pure accountant new case admits nativeH2 nil TLS shape structurally only and keeps rejecting session_data, PID, improper lists, logical65537 and128-visible-byte subbinary backed65537; grants no live runtime authority."
+    },
+    {
+      "id": "T16",
+      "result": "PASS_SOURCE",
+      "evidence": "New test alias HTTP.RequestCompletion resolves public HTTP module, no Proxy.HTTP alias collision. Test actual owner state correctly unwraps {socket,native}; source patterns inspected but not compiler-accepted evidence."
+    },
+    {
+      "id": "T17",
+      "result": "PASS_SOURCE_LIMITATION",
+      "evidence": "Explicit endpoint SSL API return still copies full metadata to caller under existing API; production group pump does not call/store that return. Existing connection lease unchanged; proposal establishes no new complete arbitrary OTP connection memory bound."
+    },
+    {
+      "id": "T18",
+      "result": "PASS_SOURCE_PENDING_RUNTIME",
+      "evidence": "Scope is necessary native transport compatibility, no cap weakening. Adoption may proceed after review; final acceptance requires targeted authoritative-deadline check, actual format/compile/tests, fresh live/Session/nativeH1/H2/H3 compatibility and browser3."
+    }
+  ],
+  "requirements_total": 18,
+  "actionable_findings": [
+    {
+      "id": "TLS-SPEC-01",
+      "priority": "P2",
+      "kind": "new authoritative owner deadline lacks targeted regression",
+      "location": "proposed apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs ObservedEndpoint.expired case; proposed native Connection.operation(:ssl_data)",
+      "evidence": "Transport.operation returns {:error,:timeout} immediately for locally expired Exchange and does not call owner. Both proposed live cases exercise only this local expiry. New owner-side deadline guard is therefore source-inspected but not exercised.",
+      "requested": "Complete the author-listed targeted finite unit or deterministic live check that reaches owner :ssl_data with authentic call authority or explicitly scoped owner-handler unit fixtures, local deadline still future while authoritative stream deadline expired; assert timeout/no full data. Do not disable watchdog or invent a positive runtime authority/receipt.",
+      "adoption": "No source production bug found; proposed ownership repair can be adopted for validation. Final SPEC acceptance remains pending test completion and actual gates."
+    }
+  ],
+  "diagnostic": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-startup-diagnostic2-1792096890813828777.json",
+    "sha256": "1ff747a4b741b95d33c8563e668f13429e64b03955b7a71efbeac3094445c398",
+    "capture": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-startup-diagnostic2-1792096890813828777/actual-pump-tls-validation.jsonl",
+    "capture_sha256": "0f6f05ca2b4a8f9bf66f020339fb3d3727aa96869790a2c4de4b8e09915eb07f",
+    "actual_exit": 1,
+    "joined": true,
+    "original_result": "{:error, :invalid_group_accounting}",
+    "ssl_nil_only_result": ":ok",
+    "same_ssl": true,
+    "same_gate": true,
+    "metadata_count": 38,
+    "session_data_bytes": 2281,
+    "actual_vm": {
+      "root": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang",
+      "ssl": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/lib/ssl-11.6.0.6/ebin/ssl.beam",
+      "otp": "28",
+      "erts": "16.4.0.6"
+    },
+    "acceptance": false
+  },
+  "execution": {
+    "read_only_python": "PASS4 target reconstruction and12 supporting hashes",
+    "tests": "NOT RUN",
+    "runtime": "NOT RUN",
+    "build": "NOT RUN",
+    "compile": "NOT RUN",
+    "format": "NOT RUN",
+    "browser": "NOT RUN",
+    "git": "NOT RUN",
+    "repository_writes": 0,
+    "new_tests_proposed": 3,
+    "new_tests_executed": 0
+  },
+  "counters": {
+    "local_review_repairs": 0,
+    "parent_failedGREEN_at_assignment": 18,
+    "parent_root_events_at_assignment": 20,
+    "astra": "2/2 exhausted unchanged; preserve latest parent ledger"
+  },
+  "remaining_gates": [
+    "Targeted authoritative owner-deadline regression listed by proposal author.",
+    "Actual format/strict production+test compile, focused accountant/nativeTLS tests nonzero, nativeH1/H2/H3 compatibility.",
+    "Fresh full group live/Session/browser3 and independent final review/acceptance on exact final source."
+  ],
+  "shutdown": "All commands completed; no runtime processes launched/touched; checkout/index unchanged by reviewer.",
+  "decisions_needed": [],
+  "markdown": {
+    "path": "/tmp/gaoxy-group-native-tls-ownership-spec-review1.md",
+    "sha256": "3204f96a94ae4462647ae302adde6b9deeb15db3291ae39b30a9bc12df7385cb"
+  }
+}

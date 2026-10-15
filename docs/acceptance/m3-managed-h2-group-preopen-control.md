@@ -1,6 +1,6 @@
 # Managed H2 group queued-terminal control acceptance
 
-Status: VERIFIED, local commit pending. Original FULL SPEC47/47 and CODE48/48 PASS; fixture repair FULL SPEC50/50 and CODE44/44 PASS, zero findings. All six fresh prescribed gates PASS on identical99 source inputs: format and forced strict compile exit0; pure452/0, compatibility603/0, Python11/0 and fixture97/0, zero skips/exclusions, all commands joined. The earlier fresh603/1 failure remains retained. Group activation stays ACCOUNTING_NOT_READY; fixed9,444,956 unchanged.
+Status: DONE LOCALLY at `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. Original FULL SPEC47/47 and CODE48/48 PASS; fixture repair FULL SPEC50/50 and CODE44/44 PASS, zero findings. All six fresh prescribed gates PASS on identical99 source inputs: format and forced strict compile exit0; pure452/0, compatibility603/0, Python11/0 and fixture97/0, zero skips/exclusions, all commands joined. The earlier fresh603/1 failure remains retained. Group activation stays ACCOUNTING_NOT_READY; fixed9,444,956 unchanged.
 
 Scope: existing-handler dispatch for one queued terminal event at BOTH Session group open/bind continuations. No activation/reserve/owner authority change; ACCOUNTING_NOT_READY/fixed9444956, all inherited counters/Astra2/2 remain. Actual initial and fresh results are authenticated in the stage evidence.
 
@@ -46,3 +46,5 @@ gates now PASS; the final document/index audit and local commit remain.
 `fresh-complete-green2.json` binds the six actual post-review commands, logs, counts, exits and all99 unchanged input hashes. Original guard SPEC47/47/CODE48/48 and fixture SPEC50/50/CODE44/44 have no actionable findings.
 
 Historical603/1, all RED/custody/author failures and cumulative counters remain immutable, including rootDocumentSnapshotFailure1. Astra2/2 is exhausted. Negative TLS/browser cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE. This stage establishes QUEUED_PREOPEN_CONTROL_IMPLEMENTED_GATED, without live managed-H2 group activation.
+
+Actual local-commit closure: `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`, tree `a26656f16425d35ccc08584ee0486abb296a3c39`; all158 committed paths match raw disk/index/commit bytes. The external receipt is copied into the accounting/activation stage; no self-referential commit claim was inserted into the committed candidate. Continuing authorization advances to that stage.

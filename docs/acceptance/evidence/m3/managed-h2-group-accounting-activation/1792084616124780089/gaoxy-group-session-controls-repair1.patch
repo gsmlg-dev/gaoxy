@@ -1,0 +1,43 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs
+@@ -12,13 +12,13 @@
+   alias Gaoxy.Proxy.ManagedH2GroupAccounting, as: A
+   @timeout 5_000
+ 
+-  def open(protocol, target, preactivation \\ false) do
++  def open(protocol, target, preactivation \\ false, downstream \\ :http1) do
+     options =
+       if preactivation,
+         do: %{await_health: false, group_limits: %{probe_bytes: 16_478_861}},
+         else: %{}
+ 
+-    f = G.fixture(protocol, :http1, ["--manual"], options)
++    f = G.fixture(protocol, downstream, ["--manual"], options)
+     {barrier, debug} = attachment_barrier(f.service)
+     socket = G.connect(f)
+     :ok = G.send_request(f, socket, "GET", target)
+@@ -205,6 +205,7 @@
+       assert G.assert_cleanup(f, 1) === 16_478_862
+ 
+       G.command(f.peer, seen, "respond", %{
++        "fields" => [["trailer", "x-check"]],
+         "body64" => Base.encode64("data"),
+         "trailers" => [["x-check", "final"]]
+       })
+@@ -302,7 +303,7 @@
+     end
+ 
+     test "#{protocol} genuine owner DOWN diagnostic is normalized for E while the already owed original cleanup still joins" do
+-      {f, socket, guardian} = C.open(@protocol, "/hold/owner-down")
++      {f, socket, guardian} = C.open(@protocol, "/hold/owner-down", false, :http2)
+       assert %{"target" => "/hold/owner-down"} = G.event(f.peer, "request")
+       G.eventually(fn -> G.held_selection(f, "/hold/owner-down") != nil end)
+       {_, held} = G.held_selection(f, "/hold/owner-down")
+@@ -311,6 +312,7 @@
+       diagnostic = {:actual_owner_failure, :binary.copy("diagnostic", 16_384)}
+       guardian_monitor = Process.monitor(guardian)
+       pump_monitor = Process.monitor(pump)
++      assert {:trap_exit, false} = Process.info(pump, :trap_exit)
+       Process.exit(pump, diagnostic)
+       assert_receive {:DOWN, ^pump_monitor, :process, ^pump, ^diagnostic}, @timeout
+ 

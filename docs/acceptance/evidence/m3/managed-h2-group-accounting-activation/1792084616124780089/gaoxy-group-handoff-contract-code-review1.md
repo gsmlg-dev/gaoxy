@@ -1,0 +1,13 @@
+# Handoff test-contract CODE review 1
+
+PASS_SOURCE_ONLY; no actionable findings. Direct bounded independent read-only review in `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, baseline HEAD `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. Root owns checkout/runtime/build/Git; previous report bytes unchanged.
+
+Patch `/tmp/gaoxy-group-handoff-contract1.patch` SHA `4419cd51e207f727171b7121cf344c0b5aacd5d5474bb76c38db4ded48038aa3`; predecessor test `8b2456198ee065355c0fda89a8e5b610cdac88f1194b70c3ca5975ccedeb638d`; unique in-memory application yields expected `f421db612017b309e1fca9e8fb088c487c841edbd7b77b743f9853f3a5e2dded`. All6 author source hashes and exact OTP source authenticate.
+
+Real OTP emits input before call handling and `{out,Reply,From,State}` after sending its real reply. Observer captures actual delegate full `{caller,tag}` plus operation; output must match same full From and exact raw capacity refusal. Test independently pins caller/tag/operation from its owner input barrier. Callback only pattern matches/sends, does not block/read actors/retain owner state/construct authority. Installed-before-request ordering is valid even if newer blocking input callback runs first: after release both callbacks see that input before application call handling. Returning :done removes it in actual sys code; on_exit fallback and later-registered barrier releases add no actor/observer leak.
+
+Production finite pin-reply validation normalizes genuine owner fifth-pin capacity refusal to invalid_resource_pin, and downstream status is502. The patch requires both exact correlated raw refusal and exact normalized selected-Session handoff; no wildcard or status alternative is introduced. Earlier source-only inference that raw capacity tuple reached Session and yielded503 was incorrect; this review supersedes only that bounded contract inference while preserving immutable earlier reports.
+
+Original selected G/T/Service ledger holds, nil preopen completion/Ttoken, exact sibling capability identity, pins4-to3, full reserve/refund, normal guardian DOWN, actual healthy sibling completion and no replay remain. Native partial-DATA cases untouched; retained test count4, affected2, added/skipped/excluded0.
+
+Runtime/format/compile NOT RUN; reviewer0 tests. Root must integrate and execute exact unchanged acceptance assertions. Historical live110/10 and root diagnostic48/2 remain FAIL; no guardian-recovery fix claim. All reviewer commands completed; no repository/Git/runtime mutation, only these new `/tmp` reports written. Reviewer Sol0; parent cumulative counters unchanged; Astra2/2 exhausted. No escalation or decision needed.

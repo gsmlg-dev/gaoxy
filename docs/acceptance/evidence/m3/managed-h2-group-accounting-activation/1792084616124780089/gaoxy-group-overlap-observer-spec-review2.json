@@ -1,0 +1,145 @@
+{
+  "task_id": "M3/group-activation/overlap_observer_repairs2/spec",
+  "status": "PASS_SOURCE_RUNTIME_PENDING",
+  "assignment": "direct source-only delta SPEC review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "captured_at": "2026-10-15T20:34:40.259685+00:00",
+  "descriptor": {
+    "path": "/tmp/gaoxy-group-overlap-observer-repairs2.json",
+    "sha256": "8167bad718a257cf0ec67046775db83cd2df3ef463bf8681f9644a813939150c"
+  },
+  "proposals": [
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_startup_reservation_test.exs",
+      "before": "af5730f75b2217d6bff5052434ce13fb24eaecdc7d1a3f0bf2fe551dc7582045",
+      "after_before_formatter": "972a460d60eb6ac542df2af01bf18674f27ae5cd58e3ab1b7d172237a8836742",
+      "patch": "997e5b24c1e37d41f90e02b32da0161466a4c8af5bbe5d076906d52c4abd7ef1",
+      "new_tests": 4,
+      "meaningful": "actual gate startup and fullattach exact totals; original pump/lease/guardian/helperreturn before refund; exact postrefund bytes and genuine original network completion; no old assertion edits",
+      "runtime": "NOT RUN",
+      "correction": "Remove redundant after/on_exit continuation; sole genuine release, caller monitor and5s deadline retained. Admission absorbs unknown messages, so no observed DynamicSupervisor-noise claim."
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs",
+      "before": "c907608a276f66cf3550407369eee31b4ed97597073474c616a8bde2dcb1752e",
+      "after_before_formatter": "e0b4cbedf8b60e85626b3d57a1ab6bb76af9e666385605bcd86df4a58451c543",
+      "patch": "1d56547371d3f57236f2ec82172f80181a2a12425c60f9a4c7a85a60f12234bd",
+      "new_tests": 0,
+      "cause": "sys.erl876 interprets legacy2tupledebugstate as keyed {Func,FuncState} and calls From asfun then removesobserver;3tupletransientstate avoidsambiguity",
+      "assertions_weakened": false,
+      "actual_failed_live": "fresh-group-live-1792095380140129955.json 110/2 exit2",
+      "runtime": "NOT RUN"
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs",
+      "before": "0dff9a288f929b8679e9cc264884b31fd8041dab4b3d6369a800757d0ce5c244",
+      "after_before_formatter": "3c7550eb75f941ede344251630d519d0db05d71482f84db7df632d7e5dd78e70",
+      "patch": "b3e785084468801078d82b53e04c6d8847d242af65d82afabb10e9f163542dd1",
+      "new_tests": 0,
+      "cause": "on_exit unconditional continuation reaches DynamicSupervisor after successful normalrelease/debugremove; monitor originaltestcaller duringbarrier instead and removeonexit withoutduplicatecontinuation",
+      "assertions_weakened": false,
+      "runtime": "NOT RUN"
+    }
+  ],
+  "startup_patch": {
+    "path": "/tmp/gaoxy-group-positive-startup2.patch",
+    "sha256": "997e5b24c1e37d41f90e02b32da0161466a4c8af5bbe5d076906d52c4abd7ef1",
+    "original_sha256": "af5730f75b2217d6bff5052434ce13fb24eaecdc7d1a3f0bf2fe551dc7582045",
+    "after_before_formatter_sha256": "972a460d60eb6ac542df2af01bf18674f27ae5cd58e3ab1b7d172237a8836742"
+  },
+  "exact_revision_delta": {
+    "removed_lines": [
+      "        send(f.gate, {:positive_startup_continue, barrier})",
+      "      send(gate, {:positive_startup_continue, barrier})"
+    ],
+    "added_lines": [],
+    "all_assertion_lines_byte_identical": true,
+    "old_denial_tests_byte_identical": true,
+    "sole_success_release": 1,
+    "finite_barrier_and_monitor_retained": true
+  },
+  "requirements": [
+    {
+      "id": "D01",
+      "result": "PASS_SOURCE",
+      "evidence": "Patch2 and descriptor SHA verified; current target original before hash matches; in-memory patched after972a460\u2026 matches descriptor."
+    },
+    {
+      "id": "D02",
+      "result": "PASS_SOURCE",
+      "evidence": "Comparing reconstructed proposal1 to proposal2 removes exactly two redundant continuation sends, zero added/modified lines; all assert/refute lines remain byte-identical."
+    },
+    {
+      "id": "D03",
+      "result": "PASS_SOURCE",
+      "evidence": "Sole successful release remains send(gate,{:positive_startup_continue,barrier}) immediately before actual refund output assertion; actual gate input barrier remains unchanged."
+    },
+    {
+      "id": "D04",
+      "result": "PASS_SOURCE",
+      "evidence": "Actual original caller monitor, exact DOWN match, five-second deadline and demonitor flush remain, unblocking on failed test termination without redundant on_exit messages."
+    },
+    {
+      "id": "D05",
+      "result": "PASS_SOURCE",
+      "evidence": "Actual Gate startup/fullattach/refund output states, original lease/pump/Service/guardian, exact deltas5963776/16478862/22442638 and actual helper-return-before-refund trace assertions remain unchanged."
+    },
+    {
+      "id": "D06",
+      "result": "PASS_SOURCE",
+      "evidence": "Four positive matrix cells, real request/completion cleanup proof and final exact-once adjustment traces retained; old8 denial tests byte-identical, common trace-pattern extraction unchanged."
+    },
+    {
+      "id": "D07",
+      "result": "PASS_SOURCE",
+      "evidence": "B/C descriptors and patch SHAs unchanged; exact after hashes reconstructed again. Tagged3tuple raw observer and actual-parent recovery monitor conclusions from review1 retain source validity."
+    },
+    {
+      "id": "D08",
+      "result": "PASS_SOURCE",
+      "evidence": "Removal avoids redundant Admission application messages; Admission catchall previously absorbed them. No claim of observed positive-startup DynamicSupervisor noise, no production behavior change."
+    },
+    {
+      "id": "D09",
+      "result": "PASS_SOURCE",
+      "evidence": "No runtime/build/formatter/Git/repository writes. Expected startup50 is source-derived, NOT RUN; separate browser failure cannot be treated as acceptance."
+    }
+  ],
+  "requirements_passed": 9,
+  "requirements_total": 9,
+  "actionable_findings": [],
+  "prior_full_spec_findings": {
+    "SPEC_01": "SOURCE_RESOLVED_RUNTIME_PENDING",
+    "SPEC_02": "SOURCE_RESOLVED_RUNTIME_PENDING"
+  },
+  "validation": {
+    "read_only_python": "PASS",
+    "tests": "NOT RUN",
+    "compile": "NOT RUN",
+    "format": "NOT RUN",
+    "runtime": "NOT RUN",
+    "browser": "NOT RUN",
+    "git": "NOT RUN",
+    "repository_writes": 0
+  },
+  "parent_reported_unvalidated_context": {
+    "browser": "browser1 FAIL0 completed; separate genuine native TLS metadata rejection diagnostic, no production repair yet",
+    "draft_assembly": "positive-startup-draft-assembly-failure1.json retained; corrected assertion failure, no source writes from failure"
+  },
+  "counters": {
+    "local_review_repairs": 0,
+    "parent_cumulative": "unchanged by reviewer; preserve latest append-only ledger",
+    "astra": "2/2 exhausted unchanged"
+  },
+  "remaining_risks": [
+    "Actual compile/format/startup50/live/Session/browser/compatibility and independent review gates pending; no runtime acceptance claim."
+  ],
+  "shutdown": "All reviewer commands complete; actors untouched; checkout/index unchanged by reviewer.",
+  "decisions_needed": [],
+  "markdown": {
+    "path": "/tmp/gaoxy-group-overlap-observer-spec-review2.md",
+    "sha256": "aef9265ddfe1e5efd4c0247adf2d1671e5459c870e93d1f8a367e2317d059cb4"
+  }
+}

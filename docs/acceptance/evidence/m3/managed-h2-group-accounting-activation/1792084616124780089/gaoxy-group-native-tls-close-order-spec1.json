@@ -1,0 +1,139 @@
+{
+  "task_id": "native_tls_close_order_spec1",
+  "status": "DONE",
+  "assignment": "direct_parent_handoff",
+  "verdict": "PASS_SOURCE_ONLY",
+  "checks_passed": 12,
+  "checks_total": 12,
+  "findings": [],
+  "reviewer": "/root/native_tls_spec2",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "recorded_at_utc": "2026-10-15T21:26:17.098583+00:00",
+  "patch": {
+    "path": "/tmp/gaoxy-group-native-tls-close-order1.patch",
+    "sha256": "6b40b036469187b3944c0a5f7071cd070c6eddca7eebfe36ca143a5b869a91a8",
+    "source_sha256": "601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3",
+    "prospective_source_sha256": "f0f44cdbb02845fddf33b76a7d0f34379630c584c2b5d8e161492354979e951d",
+    "adopted": false,
+    "added_lines": 11,
+    "removed_lines": 0,
+    "original_assertion_lines": 100,
+    "proposed_assertion_lines": 102,
+    "all_original_assertions_preserved": true
+  },
+  "received_receipts": [
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-native-tls-1792099204364786266.json",
+      "sha256": "b39c05bca4f3192ad902c8f8ca12842264e7961e8ebe64481169f53b66ff21c9",
+      "actual_exit": 2,
+      "process_joined": true,
+      "timed_out": false,
+      "tests_executed": 41,
+      "failures": 1,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "source_count": 198,
+      "current_source_differences": [],
+      "log_sha256_matches": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-close-diagnostic1-1792099336483544452.json",
+      "sha256": "bb78ba8e641510cf724e208904428268cc74fd0fd79d087a6064491c2b6ffe73",
+      "actual_exit": 2,
+      "process_joined": true,
+      "timed_out": false,
+      "tests_executed": 41,
+      "failures": 1,
+      "skips": 0,
+      "exclusions": 0,
+      "source_stable": true,
+      "source_count": 198,
+      "current_source_differences": [],
+      "log_sha256_matches": true
+    }
+  ],
+  "checks": [
+    {
+      "id": "C01",
+      "result": "PASS",
+      "claim": "Patch SHA and exact single source context match the assigned unadopted proposal."
+    },
+    {
+      "id": "C02",
+      "result": "PASS",
+      "claim": "Both actual 41/1 failed receipts are exit2 joined stable, zero skips/exclusions, with matching logs and all198 current source bindings."
+    },
+    {
+      "id": "C03",
+      "result": "PASS",
+      "claim": "Diagnostic actual roles show original http2 worker killed after client-close, while owner is peer_closed and writer normal; h2c worker normal."
+    },
+    {
+      "id": "C04",
+      "result": "PASS",
+      "claim": "Both pre-close original workers were still waiting in HTTP.await_cleanup with stream1 present."
+    },
+    {
+      "id": "C05",
+      "result": "PASS",
+      "claim": "RequestCompletion barrier covers upstream request resources; HTTP pump separately awaits guardianDOWN and downstream Stream completes afterward."
+    },
+    {
+      "id": "C06",
+      "result": "PASS",
+      "claim": "Connection.close kills remaining stream workers; normal stream-done path discards the completed stream without killing worker."
+    },
+    {
+      "id": "C07",
+      "result": "PASS",
+      "claim": "New worker-dead then stream-absent barriers occur before ssl.close and use existing finite eventually helper."
+    },
+    {
+      "id": "C08",
+      "result": "PASS",
+      "claim": "Owner and exact original writer must still be alive immediately before deliberate client close."
+    },
+    {
+      "id": "C09",
+      "result": "PASS",
+      "claim": "Barriers consume no monitorDOWN or completion messages; original exact monitors and role-specific reason assertions remain unchanged and killed remains rejected."
+    },
+    {
+      "id": "C10",
+      "result": "PASS",
+      "claim": "Insertion-only11-line proposal preserves all original source, including response200/body, original completion identity/await and cleanup byte/lease assertions."
+    },
+    {
+      "id": "C11",
+      "result": "PASS",
+      "claim": "Final native Service zero/high-water/remove, group cleanup/no-extra-request and physical/peer/actor joins remain unchanged."
+    },
+    {
+      "id": "C12",
+      "result": "PASS",
+      "claim": "No skip/retry/widened exit reason, production/accounting/reservation/deadline change, synthetic completion, or teardown refund is introduced."
+    }
+  ],
+  "report": {
+    "path": "/tmp/gaoxy-group-native-tls-close-order-spec1.md",
+    "sha256": "af3b056da268117966769dc1952e703ede622e2015edfdb487e4dd4c79ac95e8"
+  },
+  "counters": {
+    "failed_green_attempts": 21,
+    "root_events": 23,
+    "astra_recovery_rounds": 2,
+    "astra_recovery_limit": 2,
+    "new_sol_repair_rounds": 0,
+    "new_astra_repair_rounds": 0
+  },
+  "runtime_for_proposal": "NOT_RUN",
+  "command_shutdown": "ALL_OWN_COMMANDS_FINISHED",
+  "repo_writes": false,
+  "remaining_risks": [
+    "Source-only assessment; fresh runtime success and independent CODE review pending."
+  ],
+  "decisions_needed": []
+}

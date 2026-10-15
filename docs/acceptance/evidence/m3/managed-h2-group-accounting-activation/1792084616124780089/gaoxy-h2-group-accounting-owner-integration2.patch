@@ -1,0 +1,146 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
+@@ -1235,7 +1235,8 @@
+       map_size(state.groups) >= state.limits.max_groups or map_size(state.pins) >= state.limits.max_pins ->
+         {:reply, {:error, :group_capacity}, state}
+       true ->
+-        with {:ok, bytes} <- ManagedH2GroupAccounting.group_charge(group),
++        with :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, state.instance),
++             {:ok, bytes} <- ManagedH2GroupAccounting.group_charge(group),
+              true <- state.bytes + bytes <= state.limits.max_config_bytes,
+              group = %{group | bytes: bytes},
+              candidate = %{state | groups: Map.put(state.groups, group_key, group), bytes: state.bytes + bytes},
+@@ -1256,7 +1257,8 @@
+     partial = %{keys: keys, holder: holder, acquirer: caller, kind: kind,
+       operation: operation, deadline: if(kind == :baseline, do: nil, else: deadline)}
+ 
+-    with :ok <- ManagedH2GroupAccounting.validate(:captured_pins, [pin]),
++    with :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, holder),
++         :ok <- ManagedH2GroupAccounting.validate(:captured_pins, [pin]),
+          {:ok, reserved, pending} <- reserve_control(state, :pin, partial) do
+       monitor = Process.monitor(holder)
+       timer = if kind == :baseline, do: nil,
+@@ -1386,7 +1388,8 @@
+       updated = %{group | cursor: rem(index + 1, size), inflight: group.inflight + 1,
+         members: List.update_at(group.members, index, &%{&1 | inflight: &1.inflight + 1})}
+ 
+-      with :ok <- ManagedH2GroupAccounting.validate(:selected, selected),
++      with :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, guardian),
++           :ok <- ManagedH2GroupAccounting.validate(:selected, selected),
+            {:ok, next} <- put_group(state, group_key, updated),
+            {:ok, reserved, pending} <- reserve_control(next, :selection, partial) do
+         monitor = Process.monitor(guardian)
+@@ -1431,7 +1434,8 @@
+     group = state.groups[group_key]
+     updated = %{group | members: List.update_at(group.members, index, &%{&1 | probe: token})}
+ 
+-    with true <- map_size(state.probes) < state.limits.max_probes,
++    with :ok <- ManagedH2GroupAccounting.preflight_control(:local_monitor, node()),
++         true <- map_size(state.probes) < state.limits.max_probes,
+          true <- state.probe_bytes + reserve <= state.limits.probe_bytes,
+          {:ok, candidate} <- put_group(state, group_key, updated),
+          {:ok, reserved, pending} <- reserve_control(candidate, :probe, partial) do
+@@ -1440,14 +1444,18 @@
+         probe_bytes: pending.probe_bytes + reserve}
+       case start_h2_probe(args) do
+         {:ok, pid} ->
+-          monitor = Process.monitor(pid)
+-          record = Map.merge(reserved, %{pid: pid, monitor: monitor})
+-          case reconcile_control(pending, :probe, record) do
+-            {:ok, record, admitted} ->
+-              %{admitted | probes: Map.put(admitted.probes, token, record),
+-                probe_cursor: rem(admitted.probe_cursor + 1, 32_768)}
++          case monitor_h2_child(pid) do
++            {:ok, monitor} ->
++              record = Map.merge(reserved, %{pid: pid, monitor: monitor})
++              case reconcile_control(pending, :probe, record) do
++                {:ok, record, admitted} ->
++                  %{admitted | probes: Map.put(admitted.probes, token, record),
++                    probe_cursor: rem(admitted.probe_cursor + 1, 32_768)}
++                {:error, _} ->
++                  rollback_probe_child(state, pending, record, token, pid, monitor)
++              end
+             {:error, _} ->
+-              rollback_probe_child(state, pending, record, token, pid, monitor)
++              rollback_probe_child(state, pending, reserved, token, pid, nil)
+           end
+         {:error, :start_unconfirmed} -> fail_group(pending, group_key)
+         {:error, _} -> state
+@@ -1460,11 +1468,11 @@
+   defp rollback_probe_child(original, pending, record, token, pid, monitor) do
+     case stop_h2_probe(pid) do
+       :ok ->
+-        Process.demonitor(monitor, [:flush])
++        if monitor, do: Process.demonitor(monitor, [:flush])
+         original
+       {:error, :not_found} ->
+         if not Process.alive?(pid) do
+-          Process.demonitor(monitor, [:flush])
++          if monitor, do: Process.demonitor(monitor, [:flush])
+           original
+         else
+           fail_group(put_in(pending.probes[token], record), record.key)
+@@ -1525,22 +1533,20 @@
+       partial = Map.drop(held, [:recovery, :recovery_monitor])
+       with {:ok, args} <- probe_recovery_arguments(args),
+            {:ok, _startup} <- ManagedH2GroupAccounting.startup(Probe, args),
++           :ok <- ManagedH2GroupAccounting.preflight_control(:local_monitor, node()),
+            {:ok, reserved, pending} <- reserve_control(state, kind, partial) do
+         case start_h2_probe(args) do
+           {:ok, pid} ->
+-            monitor = Process.monitor(pid)
+-            record = Map.merge(reserved, %{recovery: pid, recovery_monitor: monitor})
+-            case reconcile_control(pending, kind, record) do
+-              {:ok, record, next} -> Map.update!(next, control_table(kind), &Map.put(&1, token, record))
++            case monitor_h2_child(pid) do
++              {:ok, monitor} ->
++                record = Map.merge(reserved, %{recovery: pid, recovery_monitor: monitor})
++                case reconcile_control(pending, kind, record) do
++                  {:ok, record, next} -> Map.update!(next, control_table(kind), &Map.put(&1, token, record))
++                  {:error, _} ->
++                    rollback_h2_recovery(state, pending, kind, token, record, pid, monitor)
++                end
+               {:error, _} ->
+-                case stop_h2_probe(pid) do
+-                  :ok ->
+-                    Process.demonitor(monitor, [:flush])
+-                    fail_group(state, held.key)
+-                  _ ->
+-                    pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, record))
+-                    fail_group(pending, held.key)
+-                end
++                rollback_h2_recovery(state, pending, kind, token, reserved, pid, nil)
+             end
+           {:error, :start_unconfirmed} ->
+             pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, reserved))
+@@ -1552,6 +1558,30 @@
+       end
+     end
+   end
++  defp monitor_h2_child(pid) do
++    with :ok <- ManagedH2GroupAccounting.preflight_control(:monitor, pid),
++      do: {:ok, Process.monitor(pid)}
++  end
++
++  defp rollback_h2_recovery(original, pending, kind, token, record, pid, monitor) do
++    case stop_h2_probe(pid) do
++      :ok ->
++        if monitor, do: Process.demonitor(monitor, [:flush])
++        fail_group(original, record.key)
++      {:error, :not_found} ->
++        if not Process.alive?(pid) do
++          if monitor, do: Process.demonitor(monitor, [:flush])
++          fail_group(original, record.key)
++        else
++          pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, record))
++          fail_group(pending, record.key)
++        end
++      {:error, _} ->
++        pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, record))
++        fail_group(pending, record.key)
++    end
++  end
++
+   defp start_h2_probe(args) do
+     DynamicSupervisor.start_child(Gaoxy.Proxy.ProbeSupervisor, {Probe, args})
+   catch

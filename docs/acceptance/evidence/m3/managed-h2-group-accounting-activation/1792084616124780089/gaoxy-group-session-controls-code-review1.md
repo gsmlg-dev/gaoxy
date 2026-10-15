@@ -1,0 +1,27 @@
+# Session controls repair1 — independent code review
+
+**DONE_REVIEW_NO_OPEN_SOURCE_FINDINGS.** Task `/root/browser_contract_spec/session-controls-code-review1`; direct bounded read-only CODE review. This approves the proposed test correction at source level; it does not accept runtime behavior or the stage.
+
+Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, historical supplied baseline `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. No Git was run. The target `apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs` has current/before SHA256 `72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a`. All ten author-listed source hashes match current reads. Full-tree equality to the historical failed run is not asserted.
+
+Patch SHA256 `aaa4d5cf6adafcae036e3e586a0d7b238d490a86c98335815729b5cb54a97071`, author MD `6601d72520dcd107e631f5edb33c10e76c23cc91159abf80ab2a67caa2c68da7` and JSON `ef3ad188303fd7a03275e23ac14b26912146a7306f9bb3d3bc5e2d88f7bb64a7` independently match. Python stdlib reconstruction checked exact original context and hunk counts, producing the declared target SHA256 `87915005988001f9e2249c3d3cb1bc8f82e10eef1bfa06538cc14b4d3f8736be` entirely in memory (exit0).
+
+## Findings and source evidence
+
+No open source finding.
+
+The initial `Trailer: x-check` declaration repairs a fixture contract error. The manual peer's respond command uses supplied initial fields, defaulting to none (`managed_h2_fixed_peer.py:385`). Proxy `Headers.response40–54` constructs the policy from those fields; `Headers.trailers57–74` accepts only declared names. The real pump validates final trailers before `Response.finish` (`http.ex:1051–1058`), and the native H1 encoder independently validates declared trailer names (`http1/response.ex:58–75,121–139`). The original nonempty trailer with no declaration violates both contracts. The new field is a valid input correction; exact body, trailer and authentic control traces are retained. The old log proves premature close during final H1 chunk reading, but does not directly identify the final rejection selector.
+
+Moving only the arbitrary owner-DOWN stimulus to a real native H2 stream worker is justified. H1's Thousand Island handler deliberately sets `trap_exit` true (`handler.ex:356`) and invokes its endpoint synchronously (`connection.ex:175–220`). The nested proxy pump receives recognized proxy/monitor/drain events, without arbitrary EXIT handling (`http.ex:797–825`). An external `Process.exit(pid, diagnostic)` is thus not an immediate-death stimulus for that H1 actor. The authentic later `local_closed` reason is not proof of a production H1 bug, and the repair does not change H1 production behavior.
+
+The existing fixture selects a genuine prior-knowledge H2 service (`managed_h2_group_fixture.exs:184–186`) and sends real protocol preface/request frames (`managed_h2_fixed_endpoint_test.exs:313–341`). Native Connection starts a supervised Stream.run task (`http2/connection.ex:546–561`); that task links the owner, acquires its real lease and runs the endpoint without setting trap_exit (`http2/stream.ex:6–30`). Proxy startup passes `owner: self()` (`http.ex:610`), and the real Session monitors that owner (`http/session.ex:47–53`). The existing attachment barrier captures the actual guardian. The test still obtains its original owner from that guardian, monitors and exits that exact PID. The added runtime `trap_exit:false` assertion verifies the precondition without altering flags or actors.
+
+## Preserved assertions and acceptance boundary
+
+The downstream default stays H1; only the two upstream variants of owner-DOWN explicitly choose H2. Both upstream protocols remain exercised. Every original assertion-starting line is byte-identical and ordered; only the trap flag assertion is added. The same large diagnostic, exact monitor reason and PID, authentic guardian down/control trace, normalized projection, completion await, guardian normal join, socket close and G.clean/G.close remain. No fake event/reply, private state mutation, widened reason, skip, sleep or watchdog/deadline relaxation is introduced. Only one test file is proposed; production code is unchanged.
+
+The failed receipt and log hashes independently match `f629d63f371a816323b9457d4dfca1df03d6f808bc7ebbbc4f6955438a883011` and `d595e8ddfcffe1ad2cef3fd90ed0c2a9e43f87cec703f9f25fd7911a05b9211e`. They retain **FAIL46 executed/4 failures/0 skipped/0 excluded**, exit2, joined, no timeout, with189 stable source inputs and the same original test-target hash. Source stability applies to that run only. PATH erl `.5` is not proof of the loaded VM. The exact later H1 local_closed timing/path remains untraced.
+
+Formatting, compilation, runtime/tests and browser checks were **NOT RUN**; zero new tests executed. Parent must adopt and freshly validate the full scoped suite, retaining all exact assertions and physical joins. The reported separate TLS41/2 failure is not assigned to this unadopted Session proposal. Reviewer added0 Sol repair rounds; latest parent counters failedGREEN20/event21 pending ledger, Astra2/2 exhausted, with no reset. No new design decision is needed.
+
+All own commands finished. The final EXIT-clause search returned the normal no-match exit1; other source/reconstruction checks exited0. No repository edits, Git, build/runtime or process-control actions occurred. Only this new review pair was written.

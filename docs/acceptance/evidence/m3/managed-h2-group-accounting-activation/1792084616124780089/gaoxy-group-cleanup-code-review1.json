@@ -1,0 +1,137 @@
+{
+  "task_id": "group_postactivation_code / cleanup diagnosis1 patch",
+  "status": "DONE_SOURCE_REVIEW",
+  "verdict": "PASS_SOURCE_ONLY",
+  "assignment": "direct independent bounded read-only production CODE review follow-up",
+  "recorded_at_utc": "2026-10-15T19:56:20.600335+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "workspace": "dirty stage root-owned; reviewer has no repo/runtime/build/evidence/Git/index write ownership",
+  "patch": {
+    "path": "/tmp/gaoxy-group-cleanup-diagnosis1.patch",
+    "sha256": "0cb41d880db06e27c1e4c92aacbe2e76755f9bfbd775aa87dc3d58305f4850d5",
+    "target": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+    "before_sha256": "52f17de068ec2746ae7eaaba69bb32614371396bee27f20d892cd69eaef63f04",
+    "expected_after_sha256": "dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d",
+    "added_lines": 13,
+    "removed_lines": 0,
+    "adoption": "NOT APPLIED by reviewer"
+  },
+  "reviewed_hashes": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "52f17de068ec2746ae7eaaba69bb32614371396bee27f20d892cd69eaef63f04",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+    "deps/http_fetch/lib/http/socket_client.ex": "245784a82edfdc741d18a967f611568cf81682409c3f8acb212e0dcd5b12c6ef",
+    "/tmp/gaoxy-group-cleanup-diagnosis1.patch": "0cb41d880db06e27c1e4c92aacbe2e76755f9bfbd775aa87dc3d58305f4850d5",
+    "/tmp/gaoxy-group-cleanup-diagnosis1.json": "b8bfa0eec946da9afbcf881c8ec2c8b38c2a104687d0866e751dc267ddd37938",
+    "/tmp/gaoxy-group-cleanup-diagnosis1.md": "be4fe54c27676cc115ceaf8908fe9ceafce1ced127d00dd3086d29f364917e59",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00",
+    "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/postactivation-before-adoption1/apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "75e97f217aaf2186de938899234c49524571ee5f9194e835deb6abbd7f3cc9a8",
+    "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/initial-health-upload-end-repair1.json": "8635cd438ad2fe4ee8d9d073f89a46a539cdf97721e6fa53ec7d96bd3242e0a0",
+    "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/group-live-green1-1792093715236860711.json": "fae4fbe4367b6e549b2ba1b394ccdde895067f1d6007ff816db8836a60f61395"
+  },
+  "source_hashes_match": true,
+  "log_snapshot": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/group-live-green1-1792093715236860711.log",
+    "bytes": 123841,
+    "sha256": "b9a5c1c8c28ec87a80a12f3ded65012adcb9f1a6027df672ea379dbe223bf527",
+    "status": "read-only snapshot of root-owned active live log; not authenticated final gate result"
+  },
+  "checks": [
+    {
+      "id": "CP1",
+      "status": "PASS",
+      "evidence": "Patch SHA0cb41d... and all5 author source hashes match. Exact old hunk appears once in Session52f17de...; pure in-memory application produces dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d, +13/-0; no checkout apply performed."
+    },
+    {
+      "id": "CP2",
+      "status": "PASS",
+      "evidence": "Observed log snapshot contains17 aborted messages and17 mutable nil-Promise/completion sentinel states. Source deterministically explains sentinel: settle drops submitted_url; unresolved H2 context requires binary URL; generic event produces invalid_context sentinel before terminal dispatch branch; accountant correctly rejects sentinel even though original_request survives."
+    },
+    {
+      "id": "CP3",
+      "status": "PASS",
+      "evidence": "New clause precedes generic client event only for @h2/nonnil request/cancelled-or-consumed. It checks original retained state and same account_client_event before settling unchanged state. It neither broadens accountant schemas nor bypasses control checks."
+    },
+    {
+      "id": "CP4",
+      "status": "PASS",
+      "evidence": "Specific activation, handoff, genuine Service cleanup cancellation, authenticated owner DOWN, opening/total timers and poll handlers all remain earlier. Generic terminal branch does not intercept those owed messages. Unknown generic messages already reached terminal dispatch/settle; new branch preserves that terminal meaning."
+    },
+    {
+      "id": "CP5",
+      "status": "PASS",
+      "evidence": "Original RequestCompletion.await/abort_and_await is independent of Session response parsing and remains actual cleanup authority. settle still calls cleanup(original_request), retains cleanup_pending until deadline and calls finish_transport/pin release then finish_selection then complete_service only after confirmed original completion. No fake joins, early ledger refunds or whole-delivery ACK."
+    },
+    {
+      "id": "CP6",
+      "status": "PASS",
+      "evidence": "Skipped H2 parsing otherwise only resolves mutable handle/demonitors Task/forwards response events, none required by terminal cleanup. Task monitor is owned by Session and disappears on real process exit. Late data/trailer/end/error control validation remains; no further event is forwarded after terminal state."
+    },
+    {
+      "id": "CP7",
+      "status": "PASS",
+      "evidence": "Late successful Task response after URL removal still fails existing group task envelope validation and enters existing local_group_fail with genuine original cleanup; patch does not create provenance-free response acceptance."
+    },
+    {
+      "id": "CP8",
+      "status": "PASS",
+      "evidence": "H1/H3 clauses remain unchanged since guard requires ManagedH2Client. Fixed H2 terminal behavior uses same supported original completion cleanup; skipping terminal parser mutation is compatible in source. Full fixed/H1/H3 runtime compatibility remains NOT RUN."
+    },
+    {
+      "id": "FX1",
+      "status": "PASS",
+      "evidence": "Only5 additive fixture lines inside initial await_health flow consume/assert exact same already-observed HEAD connection/stream upload_end with total_bytes0. Independent peer emits request and StreamEnded upload_end for END_STREAM HEAD without waiting for manual response, so placing the finite F.event before respond creates no circular wait. Captured ids prevent consuming a later request upload event. Existing no_event/upload/physical shutdown assertions and observed request counts remain unchanged; await_health:false flow untouched."
+    }
+  ],
+  "actionable_findings": [],
+  "verification": {
+    "runtime": "NOT RUN",
+    "format_compile": "NOT RUN",
+    "tests_executed_by_reviewer": 0,
+    "source_commands": "Read patch/report and exact Session/ManagedH2Client/accountant/RequestCompletion paths; read root log snapshot; python SHA256 comparisons all5 MATCH and pure in-memory unique-hunk application. A sed read of nonexistent deps/http_fetch/lib/http/request_lifecycle.ex exited2; no dependency code mutated.",
+    "repository_mutations": [],
+    "outputs": [
+      "/tmp/gaoxy-group-cleanup-code-review1.md",
+      "/tmp/gaoxy-group-cleanup-code-review1.json"
+    ],
+    "shutdown": "All reviewer commands finished; no reviewer runtime actors launched; root runtime58585 untouched."
+  },
+  "counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "author_sol_repair_rounds": 0,
+    "root_cumulative_sol": "parent-owned and preserved; no reset/inferred aggregation",
+    "astra_recovery": "2/2 exhausted; unchanged"
+  },
+  "remaining_risks": [
+    "Patch has not been compiled/formatted/executed by reviewer; root must authenticate RED and GREEN against unchanged cancellation/opening-timeout assertions and all required live/compatibility gates.",
+    "Source correspondence supports the corrupting parser cause and safe proposed ordering; actual live106/19 FAIL is preserved. Neither patch nor fixture delta proves all19 are fixed; TLS guardian-death recovery failure remains pending diagnosis/fresh execution.",
+    "Malformed late successful response remains fail closed by design; no task-envelope bypass is approved."
+  ],
+  "decisions_needed": [],
+  "fixture_delta": {
+    "path": "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+    "before_sha256": "75e97f217aaf2186de938899234c49524571ee5f9194e835deb6abbd7f3cc9a8",
+    "after_before_formatter_sha256": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "repair_receipt_sha256": "8635cd438ad2fe4ee8d9d073f89a46a539cdf97721e6fa53ec7d96bd3242e0a0",
+    "verdict": "PASS_SOURCE_ONLY",
+    "added_lines": 5,
+    "removed_lines": 0
+  },
+  "completed_root_runtime_receipt_read": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/group-live-green1-1792093715236860711.json",
+    "status": "FAIL",
+    "actual_exit": 2,
+    "executed": 106,
+    "failures": 19,
+    "skips": 0,
+    "exclusions": 0,
+    "source_stable": true,
+    "process_joined": true,
+    "provenance": "read existing root-owned receipt; not reviewer execution",
+    "Session46": "NOT RUN due root failfast (parent report)",
+    "failure_disposition": "Parent reports6 stale initial upload_end,12 potential cleanup-related and1 TLS guardian-death recovery finite-state failure; no claim all19 fixed."
+  }
+}

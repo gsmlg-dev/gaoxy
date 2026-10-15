@@ -1,0 +1,193 @@
+{
+  "task_id": "M3/group-activation/native_tls_ownership_proposal2/spec",
+  "status": "PASS_SOURCE_ONLY",
+  "assignment": "direct independent SPEC review; no runtime or repository mutation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_limit": "No Git command; original target bytes authenticated, no whole-tree freeze claim",
+  "captured_at": "2026-10-15T20:54:57.191336+00:00",
+  "proposal_hashes": {
+    "md": "d0a905a57abc74e464b80b98e9ad336bbf65f584f8b9e461fdb94f7efe7de0d5",
+    "json": "60dd899cad6154b66fb9ea86220fcf53be4ca3c67bd38a5a4816d965432f66bf",
+    "patch": "a02084cbf31ae9ccff7b8028ec9c5de2f70f4a29dd502b168cefcf7ef15ebd2c"
+  },
+  "reconstructed_targets": [
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+      "before_sha256": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+      "after_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "before_sha256": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+      "after_sha256": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+      "before_sha256": "8ec0d0568ba2d9180be33dc421f7294a5fe8ec6988002d5c64b6c7fe48ec2eb8",
+      "after_sha256": "300e315d2d37ee927fe6eb2b7c1f210183ce83ec11aa118fc7059f8b87d586a1",
+      "result": "PASS"
+    },
+    {
+      "target": "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+      "before_sha256": null,
+      "after_sha256": "68e088c3b033aff0697e5d41cfed375020d2b139d09a50feb6f2eadd0629c986",
+      "result": "PASS"
+    }
+  ],
+  "supporting_inputs": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "cf78f0bbb37bf76c0f4d9cad9b5d5843ce0f8457120f730591ba686b42459659",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319",
+    "docs/designs/m3-managed-h2-group-accounting-activation.md": "8715fffefa50b997fe3bd8bf0d63dbf23ed97aa596d2a06d23ac74ee639c47a7",
+    "docs/plans/m3-managed-h2-group-accounting-activation.md": "2fca2646fa890936706ded4d68bb0816c871edda130cc3e1b4e34cc944e09d00"
+  },
+  "requirements": [
+    {
+      "id": "TLS02-01",
+      "result": "PASS_SOURCE",
+      "evidence": "Exact patch SHA a02084cbf31ae9ccff7b8028ec9c5de2f70f4a29dd502b168cefcf7ef15ebd2c and all four original/after hashes independently reconstructed in memory; every original context and hunk count matched, new repository test absent."
+    },
+    {
+      "id": "TLS02-02",
+      "result": "PASS_SOURCE",
+      "evidence": "Two-file production repair retains full owner state.ssl under existing connection lease; only native H2 Exchange constructor changes to ssl:nil. Closed accountant grammar and every cap untouched. No dependency/new process/whitelist/cleartext/browser assertion modification."
+    },
+    {
+      "id": "TLS02-03",
+      "result": "PASS_SOURCE",
+      "evidence": "Exchange native-H2 getter uses existing Transport.operation; owner call authenticates actual From PID, stream ID and original token before new operation. Full original state.ssl returned only while authoritative stream deadline remains positive; error maps to public getter nil. H1 direct Socket and H3 generic stored metadata paths preserved."
+    },
+    {
+      "id": "TLS02-04",
+      "result": "PASS_SOURCE",
+      "evidence": "Actual verified TLS/h2 downstream cases exercise independent TLS-H2 and h2c upstreams, full owner/API/Plug metadata equality and nonzero session_data. Wrong token/stream, foreign copied Exchange and expired local operation retain exact errors."
+    },
+    {
+      "id": "TLS02-05",
+      "result": "PASS_SOURCE",
+      "evidence": "TLS-CODE-01 closes in source: positive joins add only exact {:shutdown,:peer_closed} for actual native owner; worker and Writer reasons unchanged. Existing ThousandIsland ssl_closed clause supplies that exact reason. New race requires killed worker, peer_closed owner, normal Writer, normal/shutdown Service, killed gate."
+    },
+    {
+      "id": "TLS02-06",
+      "result": "PASS_SOURCE",
+      "evidence": "TLS-SPEC-01 closes in source: original real native worker calls ordinary Transport.operation with only local deadline extended to15s; original owner/stream1/token/lease/caller retained. Real request lifetime2s, actual server SETTINGS acknowledged before request, active lease token and read_timer verified."
+    },
+    {
+      "id": "TLS02-07",
+      "result": "PASS_SOURCE",
+      "evidence": "Only owner suspended; actual call observed in mailbox while original deadline positive, original From recovered from that call. Actual worker dies killed, original owner deadline expired while local deadline remains positive, true owner-held monitor DOWN appears after call. No synthetic From, call, DOWN, lease mutation or timer cancellation."
+    },
+    {
+      "id": "TLS02-08",
+      "result": "PASS_SOURCE",
+      "evidence": "Admission remains live and traced; original expired lease/watchdog-token handle_info must be observed. Source Admission callback explicitly Process.exit(pid,:kill). Test never manually kills worker or fabricates expiry. Actual kill plus callback and exact token establish live watchdog path."
+    },
+    {
+      "id": "TLS02-09",
+      "result": "PASS_SOURCE",
+      "evidence": "Resumed owner processes queued authenticated call before worker DOWN deletes stream. Exact GenServer.reply and :gen.reply calls to original From must carry {:error,:timeout}; trace-delivered fences then require no further reply of any kind to that From. Removing authoritative deadline guard would produce SSL success and fail these assertions."
+    },
+    {
+      "id": "TLS02-10",
+      "result": "PASS_SOURCE",
+      "evidence": "Local Transport-only expiry cannot satisfy race: local deadline remains positive before and after timeout trace. Returning invalid_operation/closed, absence of original queued call, normal worker return, watchdog disable, premature stream deletion, duplicate/success reply all fail explicit assertions."
+    },
+    {
+      "id": "TLS02-11",
+      "result": "PASS_SOURCE",
+      "evidence": "Race requires original request lease disappearance, native cleanups empty, absent upstream application requests, actual owner/Writer/Service/gate joins, zero native service retained/active/cleanup totals and unchanged high-water bound. Original fixture closes actual G/T/Service/gate/custodian/embedding and physically joins peer with exact request count."
+    },
+    {
+      "id": "TLS02-12",
+      "result": "PASS_SOURCE",
+      "evidence": "Positive network cases retain original RequestCompletion identity in G/Session, exact16478862 Service cleanup bound to original request lease/guardian, real200 empty response, original completion await and native owner/Writer/worker joins. No fabricated cleanup receipt/refund."
+    },
+    {
+      "id": "TLS02-13",
+      "result": "PASS_SOURCE",
+      "evidence": "Pure accountant additional case admits nil nativeTLS shape while rejecting session_data, PID, improper list, oversized logical binary and retained-backing binary. Existing finite scalar grammar not widened."
+    },
+    {
+      "id": "TLS02-14",
+      "result": "PASS_SOURCE",
+      "evidence": "All waits use finite deadlines/counts; mailbox barriers use existing bounded eventually, try/after and on_exit resume only owned native owner and clear traces. Response loop preserves256frames/16384 frame cap/65536 body cap. Global trace patterns require serialized runtime ownership as parent specifies."
+    },
+    {
+      "id": "TLS02-15",
+      "result": "PASS_SOURCE",
+      "evidence": "Normal endpoint SSL API intentionally returns full metadata into caller under existing API; group pump never requests or retains that return. Copied Exchange in foreign process now yields nil by documented ownership design. No additional native-memory proof or opaque discount claimed."
+    }
+  ],
+  "actionable_findings": [],
+  "prior_finding_closure": [
+    {
+      "id": "TLS-SPEC-01",
+      "status": "CLOSED_SOURCE_PENDING_RUNTIME",
+      "evidence": "TLS02-06 through TLS02-10; actual owner deadline branch designed with live watchdog and original authenticated queued call."
+    },
+    {
+      "id": "TLS-CODE-01",
+      "status": "CLOSED_SOURCE_PENDING_RUNTIME",
+      "evidence": "TLS02-05 exact actor-specific close reason."
+    }
+  ],
+  "execution": {
+    "patch_context_count_hash_verification": "PASS independent Python in-memory reconstruction",
+    "source_spec_review": "PASS",
+    "new_cases_proposed": 4,
+    "new_tests_executed": 0,
+    "format": "NOT RUN",
+    "compile": "NOT RUN",
+    "runtime": "NOT RUN",
+    "tests": "NOT RUN",
+    "browser": "NOT RUN",
+    "git": "NOT RUN",
+    "repository_writes": 0
+  },
+  "parent_reported_runtime_only": {
+    "startup": "50/0 PASS joined/stable",
+    "live": "110/0 PASS",
+    "session_control": "46/4 FAIL under parent diagnosis",
+    "independently_reread": false,
+    "stage_acceptance": false
+  },
+  "adoption_contract": [
+    "Tests-only adoption first; intended RED requires nonzero actual tests with exit2 from intended behavioral failures, never compile or fixture failure.",
+    "Then adopt reviewed two production changes; run formatter, strict compile, nonzero nativeTLS/accounting/native H2 and required compatibility/group/Session gates.",
+    "Unchanged canonical three browser cases and final exact-source independent closure required; retain historical FAIL and negativeTLS UNCONFIRMED_WITH_RETAINED_FAILURE.",
+    "Synchronize design/plan current-proposal local-expiry-only sentence after adoption; it accurately describes prior proposal1 and must not be used as current proposal2 status."
+  ],
+  "counters": {
+    "reviewer_sol_runtime_repairs_added": 0,
+    "astra": "2/2 exhausted unchanged",
+    "parent_failed_green_last_reported": 18,
+    "parent_root_repair_events_last_reported": 20,
+    "ledger_authority": "Parent latest ledger/receipts; known new Session failures not folded into inherited count by this reviewer; no reset"
+  },
+  "shutdown": "All own read-only commands completed; no runtime/process control; only two authorized /tmp reports written.",
+  "decisions_needed": [],
+  "limits": [
+    "Source approval is permission for validation within existing authorization, not stage acceptance or browser/runtime proof.",
+    "Exact loaded OTP/Elixir trace behavior, strict compilation, timing and teardown reasons remain unexecuted and must be checked by root.",
+    "No third Astra recovery; preserve cumulative counters."
+  ],
+  "memory_used": {
+    "file": "MEMORY.md",
+    "lines": "150-154",
+    "note": "Only continuing-authorization and retained-evidence boundaries; current source and task assignment govern review."
+  },
+  "markdown": {
+    "path": "/tmp/gaoxy-group-native-tls-ownership-spec-review2.md",
+    "sha256": "6f34b1743dcc1c64f12f82f8edcaa63193116ee806456cb56eafe9214588c755"
+  }
+}

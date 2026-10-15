@@ -1,0 +1,156 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
+@@ -1032,6 +1032,19 @@
+ 
+   defp reconcile(state, group_key) do
+     group = state.groups[group_key]
++
++    if h2_group?(group) and Enum.any?(state.pins, fn {_, pin} ->
++         pin.kind in [:baseline, :preparation] and group_key in pin.keys
++       end) do
++      # A real remaining anchor leaves the stored group unchanged. Avoid
++      # rescanning every pin and revalidating it once per multi-group key.
++      state
++    else
++      reconcile_unanchored(state, group_key, group)
++    end
++  end
++
++  defp reconcile_unanchored(state, group_key, group) do
+     pins = Enum.filter(Map.values(state.pins), &(group_key in &1.keys))
+     retiring = not Enum.any?(pins, &(&1.kind in [:baseline, :preparation]))
+ 
+@@ -1109,11 +1122,11 @@
+       group: group.handle
+     }
+ 
+-    with true <- launch_now >= @signed_min and launch_now <= @signed_max,
++    with :ok <- Gaoxy.Proxy.ManagedH2GroupBoundary.activation(),
++         true <- launch_now >= @signed_min and launch_now <= @signed_max,
+          true <- deadline >= @signed_min and deadline <= @signed_max - 1_000,
+          {:ok, args} <- probe_start_arguments(args),
+-         {:ok, _startup} <- ManagedH2GroupAccounting.startup(Probe, args),
+-         :ok <- Gaoxy.Proxy.ManagedH2GroupBoundary.activation() do
++         {:ok, _startup} <- ManagedH2GroupAccounting.startup(Probe, args) do
+       admit_group_probe(state, group_key, index, token, deadline, args)
+     else
+       _ -> state
+--- a/apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs
+@@ -487,46 +487,50 @@
+   end
+ 
+   defp fixture(protocol, group_limits \\ []) do
+-    assert {:ok, instance} = Gaoxy.start_link()
+-    Process.unlink(instance)
+-
+-    assert {:ok, owner} =
+-             UpstreamTransports.start_link(
+-               instance: instance,
+-               limits: %{
+-                 max_resources: 64,
+-                 max_pins: 4_096,
+-                 max_request_tokens: 64,
+-                 max_owned_payload_bytes: 67_108_864
+-               }
+-             )
+-
+-    Process.unlink(owner)
+-
+-    assert {:ok, groups} =
+-             UpstreamGroups.start_link(
+-               instance: instance,
+-               limits: Map.merge(%{probe_bytes: 1}, Map.new(group_limits))
+-             )
+-
+-    Process.unlink(groups)
+-
++    caller = self()
++    embedding = spawn(fn ->
++      assert {:ok, instance} = Gaoxy.start_link()
++      Process.unlink(instance)
++      assert {:ok, owner} = UpstreamTransports.start_link(instance: instance, limits: %{
++        max_resources: 64, max_pins: 4_096, max_request_tokens: 64,
++        max_owned_payload_bytes: 67_108_864
++      })
++      Process.unlink(owner)
++      assert {:ok, groups} = UpstreamGroups.start_link(instance: instance,
++        limits: Map.merge(%{probe_bytes: 1}, Map.new(group_limits)))
++      Process.unlink(groups)
++      send(caller, {:owner_fixture_ready, self(), instance, owner, groups})
++      receive do
++        {:cleanup, reply} ->
++          result =
++            try do
++              group_monitor = Process.monitor(groups)
++              owner_monitor = Process.monitor(owner)
++              instance_monitor = Process.monitor(instance)
++              assert :ok = GenServer.stop(groups, :normal, 3_000)
++              assert_receive {:DOWN, ^group_monitor, :process, ^groups, :normal}, 3_000
++              assert {:ok, receipt} = UpstreamTransports.retire(owner, Lifecycle.deadline(10_000))
++              assert :ok = UpstreamTransports.await_retirement(receipt, Lifecycle.deadline(10_000))
++              assert {:ok, %{resources: 0, pins: 0, request_tokens: 0, helpers: 0}} =
++                UpstreamTransports.status(owner)
++              assert :ok = Gaoxy.stop(instance, 10_000)
++              assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 3_000
++              assert_receive {:DOWN, ^instance_monitor, :process, ^instance, :normal}, 3_000
++              :ok
++            rescue
++              error -> {:error, Exception.format(:error, error, __STACKTRACE__)}
++            end
++          send(reply, {:owner_fixture_cleanup, self(), result})
++      after
++        180_000 -> raise "test-owned fixture cleanup deadline expired"
++      end
++    end)
++    assert_receive {:owner_fixture_ready, ^embedding, instance, owner, groups}, 3_000
+     on_exit(fn ->
+-      group_monitor = Process.monitor(groups)
+-      owner_monitor = Process.monitor(owner)
+-      if Process.alive?(groups), do: GenServer.stop(groups, :normal, 3_000)
+-      assert_receive {:DOWN, ^group_monitor, :process, ^groups, _}, 3_000
+-
+-      if Process.alive?(owner) do
+-        assert {:ok, receipt} = UpstreamTransports.retire(owner, Lifecycle.deadline(10_000))
+-        assert :ok = UpstreamTransports.await_retirement(receipt, Lifecycle.deadline(10_000))
+-
+-        assert {:ok, %{resources: 0, pins: 0, request_tokens: 0, helpers: 0}} =
+-                 UpstreamTransports.status(owner)
+-      end
+-
+-      assert :ok = Gaoxy.stop(instance, 10_000)
+-      assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 3_000
++      monitor = Process.monitor(embedding)
++      send(embedding, {:cleanup, self()})
++      assert_receive {:owner_fixture_cleanup, ^embedding, :ok}, 30_000
++      assert_receive {:DOWN, ^monitor, :process, ^embedding, :normal}, 3_000
+     end)
+ 
+     origin = if protocol == :http2, do: "https://peer.test", else: "http://peer.test"
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
+@@ -58,7 +58,11 @@
+          true <- is_struct(config.uri, URI) and is_map(config.limits),
+          options =
+            Map.merge(config.limits, %{
+-             upstream: URI.to_string(config.uri),
++             upstream:
++               if(config.upstream_protocol in [:http2, :h2c],
++                 do: config.uri.scheme <> "://" <> config.uri.authority,
++                 else: URI.to_string(config.uri)
++               ),
+              upstream_protocol: config.upstream_protocol,
+              cacertfile: config.cacertfile,
+              connect_address: config.connect_address,
+@@ -116,7 +120,10 @@
+          {:ok, address} <- connect_address(options[:connect_address]),
+          client = protocol_client(protocol),
+          true <- client.host_supported?() do
+-      uri = URI.parse(URI.to_string(%{uri | path: nil}))
++      uri =
++        if protocol in [:http2, :h2c],
++          do: %{uri | path: nil},
++          else: URI.parse(URI.to_string(%{uri | path: nil}))
+ 
+       config = %__MODULE__{
+         uri: if(protocol in [:http2, :h2c], do: compact_uri(uri), else: uri),

@@ -195,10 +195,22 @@ defmodule Gaoxy.Proxy.ManagedH2GroupPreopenControlTest do
       assert_terminal(result, state, :cancel)
     end
 
-    test "#{protocol} no-message open retains literal accounting denial" do
+    test "#{protocol} nil Service token rejects no-message and unrelated bind before owner effects" do
+      for unrelated <- [nil, {:unrelated_activation, make_ref()}] do
+        {state, continuation} = fixture(unquote(protocol), :bind)
+        assert state.token === nil
+        if unrelated, do: send(self(), unrelated)
+
+        assert_gate_denied(Session.handle_continue(continuation, state), state)
+        if unrelated, do: assert_receive(^unrelated, 100)
+      end
+    end
+
+    test "#{protocol} enabled accounting still denies nil-token open without Service authority" do
       {state, continuation} = fixture(unquote(protocol), :open)
+      assert state.token === nil
+      assert :ok === Gaoxy.Proxy.ManagedH2GroupBoundary.activation()
       assert_gate_denied(Session.handle_continue(continuation, state), state)
-      assert {:error, :accounting_not_ready} == Gaoxy.Proxy.ManagedH2GroupBoundary.activation()
     end
   end
 
@@ -283,6 +295,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupPreopenControlTest do
     case kind do
       kind when kind in [:expire, :opening_expired] -> assert_error(:timeout)
       kind when kind in [:total_expired, :expired_expire] -> assert_error(:request_timeout)
+      :cleanup_cancel when state.token == nil -> assert_error(:invalid_request)
       _ -> :ok
     end
 
@@ -514,16 +527,28 @@ defmodule Gaoxy.Proxy.ManagedH2GroupPreopenControlTest do
       instance: self(),
       gate: self(),
       token: nil,
-      config: %{group: group, limits: limits},
-      selector: {:group, group, []},
+      config: %Gaoxy.Proxy.GroupEndpoint{group: group, limits: limits},
+      selector:
+        {:group, group,
+         [
+           %{
+             provider: UpstreamGroups,
+             owner: group.owner,
+             owner_epoch: group.owner_epoch,
+             ref: make_ref(),
+             operation: make_ref(),
+             handles: [group],
+             kind: :request
+           }
+         ]},
       selection: {group, make_ref()},
       transport_selection: {transport, make_ref()},
       transport_pins: [pin],
       managed_transport: checked_client(protocol, origin),
       transport_handoff: make_ref(),
       awaiting_transport: nil,
-      client: Gaoxy.Proxy.HTTPFetchClient,
-      managed_path: false,
+      client: ManagedH2Client,
+      managed_path: true,
       request_options: neutral(),
       request: nil,
       original_request: nil,

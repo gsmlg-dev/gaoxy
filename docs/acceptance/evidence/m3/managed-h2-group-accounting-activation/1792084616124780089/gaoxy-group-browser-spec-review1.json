@@ -1,0 +1,228 @@
+{
+  "kind": "INDEPENDENT_BROWSER_DRAFT_SPEC_REVIEW",
+  "task_id": "group_browser_spec_review1",
+  "agent": "group_preactivation_spec",
+  "assignment": "direct independent source-only read-only",
+  "status": "DONE",
+  "verdict": "DRAFT_SPEC_READINESS_PASS",
+  "scope": "Task E inherited three-case browser draft readiness only; runtime/browser/F/full-stage NOT RUN",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_parent_supplied": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_tree_parent_supplied": "a26656f16425d35ccc08584ee0486abb296a3c39",
+  "source_hashes": {
+    "/tmp/managed-h2-browser-shared-qualification2.py": "0054aae722003a32715aab0469aafe56579b14b7f318e399c7e2570ebea89f3c",
+    "/tmp/managed-h2-group-browser-peer1.py": "0b73127aa1f3cf3d7a9257526db158c40b3ec76913089c028397175e5bafd259",
+    "/tmp/managed-h2-group-browser1.py": "5c6544a5b3f70329f083ad2fb48b522b81fe7a990135136a12358dd436ef6dfa",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_browser.mjs": "aa37489913d0d7e791b92c72fdb1dd1241bcf24052a801c45c218bd93117d08a",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_browser.py": "d0a29693f9a488f2f1876978b236f69183e0c398f19cac36ab0d97f7c409e672",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py": "e1430b94339c39cc11f1d705e5f02050da34f9d1b6789fdbafb7b43cfaded5b5",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh": "46761d658e675a440abadfd17dfb079c27c1cfe7ba8c6655157876251a9786c9",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/plans/m3-managed-h2-group-accounting-activation.md": "5bca18533a1d5835f37c5a3d57cd2d71a57b9068c1d152a80a74a78621353740"
+  },
+  "draft_count": 3,
+  "draft_hashes_match_assignment": true,
+  "python_draft_ast_parse": "PASS without import/execute",
+  "requirements": [
+    {
+      "id": "B01",
+      "requirement": "Task E inherited three-case matrix",
+      "status": "PASS",
+      "evidence": "Exactly positive native-H2->TLS-H2 plus wrong-ca and wrong-name, each isolated Chrome fixture; final case list and three joins asserted."
+    },
+    {
+      "id": "B02",
+      "requirement": "Actual managed-group route",
+      "status": "PASS",
+      "evidence": "Shared HOST creates genuine instance, Transports, Groups compiled homogeneous H2 member and GroupEndpoint; no fake success client or activation override."
+    },
+    {
+      "id": "B03",
+      "requirement": "Initial actual healthy HEAD",
+      "status": "PASS",
+      "evidence": "HOST waits public healthy/no-inflight/no-probe and T settlement; runner verifies /health HEAD ended, actual ALPN h2/SNI localhost."
+    },
+    {
+      "id": "B04",
+      "requirement": "GOAWAY precedes negative rotation",
+      "status": "PASS",
+      "evidence": "Runner sends GOAWAY at actual health stream and awaits command receipt then actual EOF for that connection."
+    },
+    {
+      "id": "B05",
+      "requirement": "Real worker join before rotation",
+      "status": "PASS",
+      "evidence": "Peer requires exactly one accept/request/worker and health target with physical EOF; joins worker with finite deadline and rejects a live worker."
+    },
+    {
+      "id": "B06",
+      "requirement": "Same-listener TLS rotation",
+      "status": "PASS",
+      "evidence": "Only SSLContext changes; listener/address/port remain. One-shot rotation records differing initial/replacement certificate hashes and joined health worker."
+    },
+    {
+      "id": "B07",
+      "requirement": "Wrong CA isolation",
+      "status": "PASS",
+      "evidence": "Replacement valid-localhost certificate is signed by fresh alternate CA; upstream trusts original CA only."
+    },
+    {
+      "id": "B08",
+      "requirement": "Wrong name isolation",
+      "status": "PASS",
+      "evidence": "Upstream trusts both original and alternate CAs; replacement names wrong.invalid while upstream hostname remains localhost, isolating hostname rejection."
+    },
+    {
+      "id": "B09",
+      "requirement": "Local browser certificate trust",
+      "status": "PASS",
+      "evidence": "Unchanged Chrome launcher uses fresh isolated profile and exact initial test-leaf SPKI exception; no system trust or operational certificate changes."
+    },
+    {
+      "id": "B10",
+      "requirement": "Positive actual Chrome navigation",
+      "status": "PASS",
+      "evidence": "CDP requires /probe protocol h2,status200,loadingFinished and exact visible title/text."
+    },
+    {
+      "id": "B11",
+      "requirement": "Positive streamed response",
+      "status": "PASS",
+      "evidence": "Browser streams bounded /stream body via reader, checks exact65554 bytes and full expected text; emits SHA256 and h2 network record."
+    },
+    {
+      "id": "B12",
+      "requirement": "Positive early response",
+      "status": "PASS",
+      "evidence": "Real browser POST /early must return exact413/early-final and CDP protocol h2; captures network events and screenshot."
+    },
+    {
+      "id": "B13",
+      "requirement": "Independent positive peer receipts",
+      "status": "PASS",
+      "evidence": "Peer exact request path sequence /probe,/stream,/early plus actual health; same physical H2 connection; final accepts1/requests4/no-force/no-live assertion prevents replay."
+    },
+    {
+      "id": "B14",
+      "requirement": "Exact negative browser response",
+      "status": "PASS",
+      "evidence": "Unchanged mjs requires h2/502/Document/Content-Length0 and matching loader/request identities."
+    },
+    {
+      "id": "B15",
+      "requirement": "Exact negative loading/error page",
+      "status": "PASS",
+      "evidence": "Requires ERR_HTTP_RESPONSE_CODE_FAILURE,loadingFailed not canceled, matching loader, chrome-error document/unreachable URL and exact localhost/HTTP ERROR502 DOM."
+    },
+    {
+      "id": "B16",
+      "requirement": "Exact negative logging",
+      "status": "PASS",
+      "evidence": "No console/Runtime exceptions; exactly one matching network error log with expected502 text; event JSON and screenshot retained."
+    },
+    {
+      "id": "B17",
+      "requirement": "Genuine post-health rejection/no replay",
+      "status": "PASS",
+      "evidence": "At least one new failed TLS handshake after health, initial connection excluded; final request count remains exactly1 health only, peer workers join without force."
+    },
+    {
+      "id": "B18",
+      "requirement": "Full request reservation",
+      "status": "PASS",
+      "evidence": "Actual Service/Admission snapshots attach each original cleanup token to an active real lease, with complete16,478,862 charge and exact byte sums/sequences."
+    },
+    {
+      "id": "B19",
+      "requirement": "Full original Probe reservation",
+      "status": "PASS",
+      "evidence": "Live G timeline contains actual probe token with16,478,862 bytes and original completion; exactly one confirmed health Probe linked to one matching actual T token/completion."
+    },
+    {
+      "id": "B20",
+      "requirement": "Original request completion identity",
+      "status": "PASS",
+      "evidence": "G selection and T token timelines must bind each same actual original completion; positive three original results :ok before browser closes."
+    },
+    {
+      "id": "B21",
+      "requirement": "Separate complete ledgers",
+      "status": "PASS",
+      "evidence": "G compiled/runtime config and exact control charges, Probe bytes, T resources/tokens/pins and Service lease/cleanup sums checked separately; no cross-ledger refund inference."
+    },
+    {
+      "id": "B22",
+      "requirement": "1024 evidence bound and no silent loss",
+      "status": "PASS",
+      "evidence": "G/T collector caps raw outstanding and total rows1024; sequential counts, zero overflow/rejection/failure, actual owner fences and terminal joins/outstanding0 required. Admission inherited distinct/raw credits and fences remain."
+    },
+    {
+      "id": "B23",
+      "requirement": "Confirmed positive cleanup",
+      "status": "PASS",
+      "evidence": "Originals confirmed with native browser socket still open; then browser join, native lease zero gate, public stop, G empty/owner joins, peer physical termination and host join."
+    },
+    {
+      "id": "B24",
+      "requirement": "Unconfirmed negative cleanup retained",
+      "status": "PASS",
+      "evidence": "Inherited rejection_cleanup keeps failed Admission/Service timeline, exact original T hold/resource bytes and failed public-stop shape; group layer adds matching retained original G/control hold before and after public stop."
+    },
+    {
+      "id": "B25",
+      "requirement": "Missing Service is not zero",
+      "status": "PASS",
+      "evidence": "HOST emits public_result not_running, explicit service/gate alive flags and actual gate join; validators require failure timeline rather than synthesizing zero usage."
+    },
+    {
+      "id": "B26",
+      "requirement": "Test-owned disposal is not cleanup receipt",
+      "status": "PASS",
+      "evidence": "Failed public stop must remain unconfirmed; actual helper settlement and G/T retained ledgers are captured before labeled test-owned disposal; no forced disposal is accepted as product cleanup."
+    },
+    {
+      "id": "B27",
+      "requirement": "Negative cleanup status remains explicit",
+      "status": "PASS",
+      "evidence": "Proof returns UNCONFIRMED_WITH_RETAINED_FAILURE when actual original is cleanup_unconfirmed; browser case PASS describes bounded rejection semantics and carries independent cleanup_status."
+    },
+    {
+      "id": "B28",
+      "requirement": "Source/toolchain and loaded-code identity",
+      "status": "PASS",
+      "evidence": "Inventory before/after, pinned Python peer packages, actual peer hash, candidate loaded/disk/source module identity and host dependency identity are checked; result includes artifact hashes."
+    },
+    {
+      "id": "B29",
+      "requirement": "Finite execution and shutdown contract",
+      "status": "PASS",
+      "evidence": "Peer/browser/host events, joins and overall fixture deadlines bounded; all success actors explicitly join before passed=True; source-only AST parse succeeds for all three drafts."
+    },
+    {
+      "id": "B30",
+      "requirement": "Acceptance scope remains separate",
+      "status": "PASS",
+      "evidence": "Draft readiness grants no runtime/browser/F/full-stage result. Four-cell raw protocol matrix, R32 capacity and nonbrowser lifecycle remain separate prescribed Task E gates."
+    }
+  ],
+  "requirements_passed": 30,
+  "requirements_total": 30,
+  "unresolved_findings": [],
+  "negative_cleanup": "UNCONFIRMED_WITH_RETAINED_FAILURE retained independently of browser rejection PASS",
+  "runtime_tests_run": false,
+  "builds_run": false,
+  "browser_run": false,
+  "git_or_index_commands_run": false,
+  "repository_or_draft_mutations": false,
+  "reviewer_sol_repair_rounds": 0,
+  "inherited_sol_counters": "Root-owned inherited and stream-local snapshots retained without reset or guessed sum",
+  "received_astra_counter": "2/2 exhausted unchanged",
+  "astra_gate": null,
+  "commands_joined": true,
+  "reviewer_commands_exit0": true,
+  "reviewer_processes_remaining": 0,
+  "decisions_needed": [],
+  "report_path": "/tmp/gaoxy-group-browser-spec-review1.md",
+  "report_sha256": "209530d4c03084b2b638106cb3a78fa5554ba8225cc0831e3ff16b09c455ad74",
+  "recorded_at_utc": "2026-10-15T19:38:17.928276+00:00"
+}

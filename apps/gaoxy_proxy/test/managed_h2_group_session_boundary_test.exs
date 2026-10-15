@@ -42,7 +42,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupSessionBoundaryTest do
     end
   end
 
-  test "direct and awaiting Selected aliases produce identical sanitized stages" do
+  test "checked transport rejects pending handoff and clearing it preserves the exact direct stage" do
     {state, selected} = fixture()
 
     waiting = %{
@@ -50,8 +50,12 @@ defmodule Gaoxy.Proxy.ManagedH2GroupSessionBoundaryTest do
       | awaiting_transport: %{handle: selected.config.transport, member: selected}
     }
 
-    assert prepare(state, selected) === prepare(waiting, selected)
-    assert {:ok, staged, :group_open} = prepare(waiting, selected)
+    # The real handoff callback clears awaiting_transport before installing K.
+    assert {:error, :invalid_request, dropped} = prepare(waiting, selected)
+    assert dropped === expected_drop(waiting)
+    assert_controls_preserved(waiting, dropped)
+    assert prepare(state, selected) === prepare(%{waiting | awaiting_transport: nil}, selected)
+    assert {:ok, staged, :group_open} = prepare(state, selected)
     assert staged.awaiting_transport == nil
   end
 
@@ -370,21 +374,22 @@ defmodule Gaoxy.Proxy.ManagedH2GroupSessionBoundaryTest do
     original = public_handle()
     alien_completion = %HTTP.RequestCompletion{tracker: self(), latch: make_ref()}
 
-    for bad <- [
-          {:ok, nil, nil},
-          {:ok, original, make_ref()},
-          {:ok, original, :upload},
-          {:ok, Map.put(original, :upload, self()), self()},
-          {:ok, %{original | completion: nil}, nil},
-          {:ok, %{original | completion: alien_completion}, nil},
-          {:ok, %{original | promise: %{original.promise | task: nil}}, nil},
-          {:ok, %{original | completion: Map.put(original.completion, :extra, [])}, nil},
-          {:ok, original},
-          {:ok, original, nil, :extra}
+    for {bad, captured} <- [
+          {{:ok, nil, nil}, nil},
+          {{:ok, original, make_ref()}, original},
+          {{:ok, original, :upload}, original},
+          {{:ok, Map.put(original, :upload, self()), self()}, nil},
+          {{:ok, %{original | completion: nil}, nil}, nil},
+          {{:ok, %{original | completion: alien_completion}, nil}, nil},
+          {{:ok, %{original | promise: %{original.promise | task: nil}}, nil}, nil},
+          {{:ok, %{original | completion: Map.put(original.completion, :extra, [])}, nil}, nil},
+          {{:ok, original}, original},
+          {{:ok, original, nil, :extra}, original}
         ] do
       assert {:error, {:cleanup_unconfirmed, :invalid_response}, dropped} = result(staged, bad)
-      assert dropped === expected_drop(staged)
-      assert dropped.request == nil and dropped.original_request == nil
+      assert dropped === expected_drop(%{staged | request: captured, original_request: captured})
+      assert dropped.request === captured and dropped.original_request === captured
+      assert_controls_preserved(staged, dropped)
     end
   end
 
@@ -553,16 +558,28 @@ defmodule Gaoxy.Proxy.ManagedH2GroupSessionBoundaryTest do
       instance: self(),
       gate: self(),
       token: make_ref(),
-      config: %{group: group, limits: endpoint_limits()},
-      selector: {:group, group, []},
+      config: %Gaoxy.Proxy.GroupEndpoint{group: group, limits: endpoint_limits()},
+      selector:
+        {:group, group,
+         [
+           %{
+             provider: UpstreamGroups,
+             owner: group.owner,
+             owner_epoch: group.owner_epoch,
+             ref: make_ref(),
+             operation: make_ref(),
+             handles: [group],
+             kind: :request
+           }
+         ]},
       selection: {group, make_ref()},
       transport_selection: {transport, make_ref()},
       transport_pins: [pin],
       managed_transport: checked_client(protocol, scheme <> "://upstream.test"),
       transport_handoff: make_ref(),
       awaiting_transport: nil,
-      client: Gaoxy.Proxy.HTTPFetchClient,
-      managed_path: false,
+      client: ManagedH2Client,
+      managed_path: true,
       request_options: neutral(),
       request: nil,
       original_request: nil,

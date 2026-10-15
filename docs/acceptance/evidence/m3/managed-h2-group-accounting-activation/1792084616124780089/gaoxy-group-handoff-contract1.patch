@@ -1,0 +1,110 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs
+@@ -39,13 +39,15 @@
+       assert sibling_t_hold.completion === sibling_completion
+       assert {:ok, %{request_tokens: 1, pins: 3}} = UpstreamTransports.status(f.owner)
+ 
++      observe_delegate_refusal(f.owner)
++
+       owner_barrier =
+         barrier(f.owner, fn
+           {:in,
+-           {:"$gen_call", {pump, _},
++           {:"$gen_call", {_pump, _} = from,
+             {:delegate_request_pin, handle, source, guardian, authority, instance, operation,
+              deadline}}} ->
+-            {pump, handle, source, guardian, authority, instance, operation, deadline}
++            {from, handle, source, guardian, authority, instance, operation, deadline}
+ 
+           _ ->
+             nil
+@@ -56,7 +58,8 @@
+       owner = f.owner
+ 
+       assert_receive {:group_gap_held, ^owner, ^owner_barrier,
+-                      {pump, handle, source, guardian, _, instance, operation, deadline}},
++                      {{pump, call_tag}, handle, source, guardian, _, instance, operation,
++                       deadline}},
+                      @timeout
+ 
+       assert handle === f.handle
+@@ -82,7 +85,7 @@
+ 
+       session_barrier =
+         barrier(guardian, fn
+-          {:in, {:gaoxy_transport_handoff, ^handoff, {:error, {:capacity, :pins}}, _} = message} ->
++          {:in, {:gaoxy_transport_handoff, ^handoff, {:error, :invalid_resource_pin}, _} = message} ->
+             message
+ 
+           _ ->
+@@ -92,12 +95,17 @@
+       guardian_monitor = Process.monitor(guardian)
+       release(f.owner, owner_barrier)
+ 
++      assert_receive {:group_gap_owner_refusal, ^owner, {^pump, ^call_tag}, ^operation,
++                      {:error, {:capacity, :pins}}},
++                     @timeout
++
+       assert_receive {:group_gap_held, ^guardian, ^session_barrier,
+-                      {:gaoxy_transport_handoff, ^handoff, {:error, {:capacity, :pins}}, _}},
+-                     @timeout
+-
+-      # The real owner has refused the fifth pin. Freeze only the Session's
+-      # receipt, leaving all three public ledgers readable before its cleanup.
++                      {:gaoxy_transport_handoff, ^handoff, {:error, :invalid_resource_pin}, _}},
++                     @timeout
++
++      # The real owner refuses the fifth pin. HTTP's finite pin-reply validator
++      # converts that raw refusal to invalid_resource_pin before the genuine
++      # Session handoff. Freeze that receipt with all three ledgers readable.
+       assert %{inflight: 2} = UpstreamGroups.status(f.group)
+       groups = :sys.get_state(f.groups)
+       assert groups.tokens[sibling_g] === sibling_g_hold
+@@ -113,7 +121,7 @@
+       G.no_event(f.peer, "request")
+ 
+       release(guardian, session_barrier)
+-      assert %{status: 503, body: ""} = G.response(f, socket)
++      assert %{status: 502, body: ""} = G.response(f, socket)
+       assert_receive {:DOWN, ^guardian_monitor, :process, ^guardian, :normal}, @timeout
+       :ok = :gen_tcp.close(socket)
+ 
+@@ -267,6 +275,38 @@
+     end
+   end
+ 
++  # OTP gen_server emits {:out, reply, original_from, app_state} only after
++  # replying to this actual call. Correlate that From and captured operation;
++  # retain neither the owner state nor any substitute reply capability.
++  defp observe_delegate_refusal(owner) do
++    caller = self()
++
++    debug = fn pending, event, _ ->
++      case {pending, event} do
++        {:unseen,
++         {:in,
++          {:"$gen_call", {pump, _} = from,
++           {:delegate_request_pin, _, _, _, _, _, operation, _}}}}
++        when is_pid(pump) and is_reference(operation) ->
++          {from, operation}
++
++        {{from, operation},
++         {:out, {:error, {:capacity, :pins}} = reply, actual_from, _owner_state}}
++        when actual_from === from ->
++          send(caller, {:group_gap_owner_refusal, owner, from, operation, reply})
++          :done
++
++        _ ->
++          pending
++      end
++    end
++
++    :ok = :sys.install(owner, {debug, :unseen})
++    on_exit(fn ->
++      if Process.alive?(owner), do: :sys.remove(owner, debug)
++    end)
++  end
++
+   # Actual owner/Session :sys input barriers follow the established live-suite
+   # pattern. They never modify state, fabricate replies, or bypass callers.
+   defp barrier(actor, match_event) do

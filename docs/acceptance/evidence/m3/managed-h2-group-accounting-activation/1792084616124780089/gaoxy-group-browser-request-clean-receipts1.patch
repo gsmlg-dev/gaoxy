@@ -1,0 +1,10 @@
+--- a/integration/http_fetch_contract/managed_h2_fixed_qualification.py
++++ b/integration/http_fetch_contract/managed_h2_fixed_qualification.py
+@@ -598,6 +598,7 @@
+           true = originals != [] and Enum.all?(originals, &(&1.result == ":ok"))
+           emit(status(state) |> Map.put(:event, "request_clean") |> Map.put(:originals, originals)
+             |> Map.put(:original_repeat, original_rows(state)) |> Map.put(:native_idle, ledger)
++            |> Map.put(:admission_receipts, state.admission_receipts)
+             |> Map.put(:group_evidence, group_evidence(state, expires)))
+           state
+         "stop" ->

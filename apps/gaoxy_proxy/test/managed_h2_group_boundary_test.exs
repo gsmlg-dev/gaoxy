@@ -591,11 +591,21 @@ defmodule Gaoxy.Proxy.ManagedH2GroupBoundaryTest do
     end
   end
 
-  test "activation always denies independently of successful pure preparation" do
-    assert {:error, :accounting_not_ready} = apply(@boundary, :activation, [])
+  test "enabled accounting preserves preparation coherence and rejects a foreign transport" do
+    assert :ok === apply(@boundary, :activation, [])
     {selected, neutral, checked, context} = fixture()
     assert {:ok, _, _} = prepare(selected, neutral, checked, context)
-    assert {:error, :accounting_not_ready} = apply(@boundary, :activation, [])
+
+    foreign = %{
+      selected
+      | config: %{
+          selected.config
+          | transport: %{selected.config.transport | resource: make_ref()}
+        }
+    }
+
+    reject(foreign, neutral, checked, context)
+    assert :ok === apply(@boundary, :activation, [])
   end
 
   defp prepare(selected, neutral, checked, context),

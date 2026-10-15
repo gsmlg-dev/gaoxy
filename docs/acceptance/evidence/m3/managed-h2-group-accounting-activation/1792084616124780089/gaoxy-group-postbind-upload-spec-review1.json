@@ -1,0 +1,202 @@
+{
+  "task": "group_preactivation_spec / postbind terminal guard and exact upload event attribution",
+  "status": "DONE_SOURCE_REVIEW",
+  "verdict": "PASS_PROPOSALS_SOURCE_ONLY",
+  "assignment": "direct bounded independent source-only SPEC review before CODE/root adoption",
+  "recorded_at_utc": "2026-10-15T20:05:15.389645+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "HEAD": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+    "tree": "a26656f16425d35ccc08584ee0486abb296a3c39",
+    "provenance": "parent supplied; no Git/index command"
+  },
+  "patches": [
+    {
+      "path": "/tmp/gaoxy-group-postbind-terminal1.patch",
+      "sha256": "e230d1ac86d187c160c7d30f3e68675e5fe9c256d137e9fce91a52616ab9bb84",
+      "expected": "e230d1ac86d187c160c7d30f3e68675e5fe9c256d137e9fce91a52616ab9bb84",
+      "in_memory_after_sha256": "34440a51473179f5140cafbe501de67136be1c76de9367819aee42f6660d8e6c",
+      "expected_after": "34440a51473179f5140cafbe501de67136be1c76de9367819aee42f6660d8e6c"
+    },
+    {
+      "path": "/tmp/gaoxy-group-upload-event-attribution1.patch",
+      "sha256": "011858019498e185945592c65aee8d0a47492b1941465e4d714b45a4c415fdbc",
+      "expected": "011858019498e185945592c65aee8d0a47492b1941465e4d714b45a4c415fdbc",
+      "in_memory_after_sha256": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced",
+      "expected_after": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced"
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "sha256": "dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d",
+      "author_expected": "dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d",
+      "matches": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "sha256": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+      "author_expected": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+      "matches": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex",
+      "sha256": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "author_expected": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "matches": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs",
+      "sha256": "0d9328fd4ab27215dfafe5ddba38d67acb1c52be7ed11387f3b14385857b5659",
+      "author_expected": "0d9328fd4ab27215dfafe5ddba38d67acb1c52be7ed11387f3b14385857b5659",
+      "matches": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "sha256": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "sha256": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00"
+    },
+    {
+      "path": "deps/http_fetch/lib/http/stream.ex",
+      "sha256": "d67a6ba36851dc255376ba93131e84dd003c9da2497fc0bb6e7d6c721c4be77b"
+    },
+    {
+      "path": "deps/http_fetch/lib/http/http2/body_bridge.ex",
+      "sha256": "e27351a43ca89e80e169a66b8a186c9ae9079d522ba87d769a62cd5746c9ecb3"
+    },
+    {
+      "path": "deps/http_fetch/lib/http/socket_client.ex",
+      "sha256": "245784a82edfdc741d18a967f611568cf81682409c3f8acb212e0dcd5b12c6ef"
+    },
+    {
+      "path": "deps/http_runtime/lib/http/http2/connection_owner.ex",
+      "sha256": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615"
+    }
+  ],
+  "checks": [
+    {
+      "id": "PU1",
+      "status": "PASS",
+      "evidence": "Actual Sessiondcd567 and endpoint0d9328 plus accountant/pump hashes match author inputs. Both patch byte hashes match supplied expected SHA and both unified hunks apply exactly in memory only."
+    },
+    {
+      "id": "PU2",
+      "status": "PASS",
+      "evidence": "In-memory patched Session SHA34440a... and endpoint68ab36... match author/root expected after hashes. Neither patch applied to repository or /tmp runtime source by reviewer."
+    },
+    {
+      "id": "PU3",
+      "status": "PASS",
+      "evidence": "All original pre-bind account/schema/identity/activation-token/queued-terminal/local-deadline checks remain, and bind continues binding original T completion before original G completion."
+    },
+    {
+      "id": "PU4",
+      "status": "PASS",
+      "evidence": "Only successful bind branch adds existing queued_group_terminal and fresh group_local_status before notify ready. Thus a cancel actually queued while G bind blocks is consumed before readiness and producer upload."
+    },
+    {
+      "id": "PU5",
+      "status": "PASS",
+      "evidence": "Recognized queued terminals preserve existing oldest recognized mailbox order, authenticated Service token and owner PID/ref checks; unrelated traffic stays queued. Existing helper reused, no new scanner or private dependency proof."
+    },
+    {
+      "id": "PU6",
+      "status": "PASS",
+      "evidence": "Post-bind finite local status catches cancelled/consumed or elapsed total/opening deadlines even before timer becomes selected. Original reason is passed to local_group_fail/drop; no deadline renewal or timing discount."
+    },
+    {
+      "id": "PU7",
+      "status": "PASS",
+      "evidence": "Handled terminal returns its actual existing result. Original ready notify failure stays invalid_response via retained nested with; failed bind handling unchanged. Helpers only produce handled/clear and error/ok alternatives, so no missing expected else branch."
+    },
+    {
+      "id": "PU8",
+      "status": "PASS",
+      "evidence": "Actual original completion, selected G/T tokens, real pins and Service cleanup token remain unchanged. Terminal settle still aborts/joins original public completion before existing T/pin/G/Service refund; uncertain/missing cleanup remains failure."
+    },
+    {
+      "id": "PU9",
+      "status": "PASS",
+      "evidence": "Predecessor terminal-H2 parsing repair remains in source; no return to nil-capability invalid_context sentinel. H1/H3/non-group paths are outside this group-bind branch."
+    },
+    {
+      "id": "PU10",
+      "status": "PASS",
+      "evidence": "Unchanged real queued-bind test proves cancel queued in guardian mailbox during actual G bind and both protocol failures show real3-byte abc upload after release. Proposed boundary check targets this exact effect order; it does not claim atomic cancellation after the check."
+    },
+    {
+      "id": "PU11",
+      "status": "PASS",
+      "evidence": "POST streamed positive abc/def assertions remain. Proposed exact zero-byte upload event pins prior POST connection/stream, chunk_bytes0,total_bytes6 and complete SHA256(abcdef), then retains original same-stream upload_end assertion."
+    },
+    {
+      "id": "PU12",
+      "status": "PASS",
+      "evidence": "Actual supported client cohort deterministically sends EOF via empty final DATA: finish_body\u2192HTTP.Stream.finish(no trailers)\u2192BodyBridge stream_end/body_eof\u2192ConnectionOwner Connection.send_data(id,<<>>,true). Peer DataReceived emits chunk_bytes0 with unchanged cumulative bytes/hash; StreamEnded separately emits upload_end."
+    },
+    {
+      "id": "PU13",
+      "status": "PASS",
+      "evidence": "DELETE wire remains a positive real payload. Added existing G.upload_through(...,\"wire\") authenticates exact request connection/stream, positive per-chunk deltas, cumulative<=4 and prefix SHA, ending total4 before unchanged ordered request trailers/upload_end/response assertions."
+    },
+    {
+      "id": "PU14",
+      "status": "PASS",
+      "evidence": "DELETE trailing fields follow Stream.finish(trailers)\u2192body_trailers\u2192Connection.send_trailers, so final empty DATA attribution belongs to POST; no blanket ignore/drain is introduced."
+    },
+    {
+      "id": "PU15",
+      "status": "PASS",
+      "evidence": "Later early-response no-upload, no producer-byte queued-bind assertions, healthy sibling/no-replay, byte reserves and cleanup assertions are untouched. New consumes add exact positive evidence for completed earlier requests instead of weakening negatives."
+    },
+    {
+      "id": "PU16",
+      "status": "PASS",
+      "evidence": "Four-cell loop remains unchanged. Additive test-only event attribution does not change production/public interfaces/dependencies or reinterpret stage failures."
+    },
+    {
+      "id": "PU17",
+      "status": "PASS",
+      "evidence": "Both are source-ready proposals only. Existing110/10 failures remain actual failures; guardian recovery and handoff-barrier defects are separate and not certified fixed. Root owns fresh nonzero gates and independent CODE review."
+    }
+  ],
+  "actionable_findings": [],
+  "assertions_weakened": false,
+  "required_root_validation": [
+    "Obtain independent CODE review and bind actual integrated source.",
+    "Run unchanged actual queued-bind no-upload regressions for both protocols and exact four-cell upload/early-response tests.",
+    "Run prescribed live/Session/compatibility gates, preserving prior failures and separate guardian recovery/handoff-barrier diagnoses."
+  ],
+  "verification": {
+    "source": "Complete patch and source review; actual cohort EOF/trailer send path and peer emission traced; patches applied in memory for exact after hashes.",
+    "runtime_tests": "NOT_RUN",
+    "build_format_compile": "NOT_RUN",
+    "Git_index": "NOT_RUN",
+    "repository_mutations": [],
+    "only_outputs": [
+      "/tmp/gaoxy-group-postbind-upload-spec-review1.md",
+      "/tmp/gaoxy-group-postbind-upload-spec-review1.json"
+    ],
+    "shutdown": "All reviewer commands finished; no own running process; root83067 untouched."
+  },
+  "counter_custody": {
+    "reviewer_sol_repair_rounds": 0,
+    "author_proposal_rounds": 0,
+    "inherited_astra": "2/2 exhausted; unchanged",
+    "root": "Parent-owned cumulative failed GREEN and repair events preserved without reset or guessed aggregation."
+  },
+  "parent_gate_status": {
+    "source": "parent message only, not independently runtime-certified",
+    "live": "110 tests/10 failures exit2 joined stable zero skips/exclusions",
+    "Session": "NOT_RUN failfast",
+    "qualification": "No claim these two proposals fix all10; guardian recovery and new handoff barrier errors remain separate."
+  },
+  "remaining_risks": [
+    "Unexecuted proposals need root fresh runtime and compatibility verification.",
+    "Boundary check prevents readiness for terminal events present at the check, not an atomic guarantee for later cancellation arrivals."
+  ],
+  "decisions_needed": []
+}

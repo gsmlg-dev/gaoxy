@@ -20,7 +20,7 @@ defmodule Gaoxy.Proxy.HTTP do
   alias Gaoxy.Lifecycle
   alias Gaoxy.Proxy.{HTTPFetchClient, HTTP3SessionClient, ManagedH2Client, ManagedH2Envelope}
   alias Gaoxy.HTTP.{Exchange, Resources, Response}
-  alias Gaoxy.Proxy.UpstreamTransports
+  alias Gaoxy.Proxy.{UpstreamTransports, ManagedH2GroupAccounting}
   alias Gaoxy.Proxy.HTTP.{Headers, Session}
 
   @defaults %{
@@ -56,9 +56,16 @@ defmodule Gaoxy.Proxy.HTTP do
   def init(%__MODULE__{} = config) do
     with true <- Map.keys(config) -- Map.keys(%__MODULE__{}) == [],
          true <- is_struct(config.uri, URI) and is_map(config.limits),
+         true <-
+           config.upstream_protocol not in [:http2, :h2c] or
+             (is_binary(config.uri.scheme) and is_binary(config.uri.authority)),
          options =
            Map.merge(config.limits, %{
-             upstream: URI.to_string(config.uri),
+             upstream:
+               if(config.upstream_protocol in [:http2, :h2c],
+                 do: config.uri.scheme <> "://" <> config.uri.authority,
+                 else: URI.to_string(config.uri)
+               ),
              upstream_protocol: config.upstream_protocol,
              cacertfile: config.cacertfile,
              connect_address: config.connect_address,
@@ -116,7 +123,10 @@ defmodule Gaoxy.Proxy.HTTP do
          {:ok, address} <- connect_address(options[:connect_address]),
          client = protocol_client(protocol),
          true <- client.host_supported?() do
-      uri = URI.parse(URI.to_string(%{uri | path: nil}))
+      uri =
+        if protocol in [:http2, :h2c],
+          do: %{uri | path: nil},
+          else: URI.parse(URI.to_string(%{uri | path: nil}))
 
       config = %__MODULE__{
         uri: if(protocol in [:http2, :h2c], do: compact_uri(uri), else: uri),
@@ -214,6 +224,8 @@ defmodule Gaoxy.Proxy.HTTP do
   defp root_hex?(char), do: char in ?0..?9 or char in ?a..?f or char in ?A..?F
 
   @doc false
+  def selected_client(%{group: %{execution_profile: :managed_h2}}), do: ManagedH2Client
+
   def selected_client(%{group: _}), do: HTTPFetchClient
 
   def selected_client(%__MODULE__{upstream_protocol: :http1, client: HTTPFetchClient}),
@@ -335,28 +347,7 @@ defmodule Gaoxy.Proxy.HTTP do
          {:ok, headers, policy} <- Headers.request(exchange),
          {:ok, session, monitor, deadline, handoff} <-
            start_session(exchange, config, method, headers, policy) do
-      pump(%{
-        exchange: %{
-          exchange
-          | deadline: deadline,
-            limits: %{
-              exchange.limits
-              | write_timeout: min(exchange.limits.write_timeout, config.limits.write_timeout)
-            }
-        },
-        config: config,
-        client: client,
-        policy: policy,
-        response_policy: nil,
-        session: session,
-        monitor: monitor,
-        deadline: deadline,
-        transport_handoff: handoff,
-        upload: nil,
-        ready: false,
-        upload_stopped: false,
-        last_activity: Lifecycle.now()
-      })
+      pump(pump_state(exchange, config, client, policy, session, monitor, deadline, handoff))
     else
       {:error, :unsupported_target} ->
         error_response(exchange, 501)
@@ -386,9 +377,98 @@ defmodule Gaoxy.Proxy.HTTP do
     end
   end
 
+  defp start_session(
+         exchange,
+         %{group: %{execution_profile: :managed_h2}} = config,
+         method,
+         headers,
+         policy
+       ) do
+    startup = ManagedH2GroupAccounting.startup_bytes()
+
+    with :ok <-
+           ManagedH2GroupAccounting.validate(
+             {:control, :admission},
+             {:adjust_bytes, exchange.lease, startup}
+           ),
+         :ok <- Gaoxy.Admission.adjust_bytes(exchange.gate, exchange.lease, startup) do
+      # This caller owns the lease. The args-owning frame must have returned
+      # before its temporary startup allowance can be refunded.
+      result = start_group_session(exchange, config, method, headers, policy)
+
+      case result do
+        {:startup_cleanup_unconfirmed, reason} ->
+          {:error, reason}
+
+        result ->
+          case Gaoxy.Admission.adjust_bytes(exchange.gate, exchange.lease, -startup) do
+            :ok -> result
+            {:error, reason} -> {:error, reason}
+          end
+      end
+    end
+  end
+
   defp start_session(exchange, config, method, headers, policy) do
     with {:ok, request_options} <- request_options(exchange, config, method, headers, policy) do
       start_prepared_session(exchange, config, headers, request_options)
+    end
+  end
+
+  defp start_group_session(exchange, config, method, headers, policy) do
+    with {:ok, neutral} <- group_request_options(exchange, config, method, headers, policy),
+         :ok <- ManagedH2GroupAccounting.validate(:neutral, neutral) do
+      start_prepared_session(exchange, config, headers, neutral, policy)
+    end
+  end
+
+  defp group_request_options(exchange, config, method, fields, policy) do
+    request = exchange.request
+
+    query =
+      if is_binary(request.target) and String.contains?(request.target, "?"),
+        do: request.query_string,
+        else: nil
+
+    with true <- bounded_source?(request.target) and bounded_source?(request.path),
+         true <- query == nil or bounded_source?(query),
+         true <- signed_time?(exchange.deadline) and exchange.deadline <= @signed_max - 1_000,
+         true <- signed_time?(Lifecycle.now() + config.limits.max_lifetime),
+         target_bytes =
+           byte_size(request.path) + if(query == nil, do: 0, else: byte_size(query) + 1),
+         true <- config.group.max_url_bytes + target_bytes <= 65_536,
+         target =
+           if(request.target_form == :absolute,
+             do: request.path <> if(query == nil, do: "", else: "?" <> query),
+             else: request.target
+           ),
+         source = %{
+           target: target,
+           method: method,
+           fields: fields,
+           body_mode:
+             if(policy.allowed != [] and request.version in [:"HTTP/2", :"HTTP/3"],
+               do: :chunked,
+               else: request.body
+             ),
+           request_limits: %{
+             max_headers: min(Map.get(exchange.limits, :max_headers, 256), 256),
+             max_header_bytes: min(exchange.limits.max_header_bytes, 65_536),
+             max_trailers: min(exchange.limits.max_trailers, 128),
+             max_trailer_bytes: min(exchange.limits.max_trailer_bytes, 65_536)
+           },
+           max_upload_bytes: config.limits.max_chunk_bytes
+         },
+         :ok <- ManagedH2Envelope.validate_group_source(source) do
+      {:ok,
+       %{
+         source
+         | target: :binary.copy(target),
+           fields:
+             Enum.map(fields, fn {key, value} -> {:binary.copy(key), :binary.copy(value)} end)
+       }}
+    else
+      _ -> {:error, :invalid_request}
     end
   end
 
@@ -480,7 +560,7 @@ defmodule Gaoxy.Proxy.HTTP do
   defp signed_time?(value),
     do: is_integer(value) and value >= @signed_min and value <= @signed_max
 
-  defp start_prepared_session(exchange, config, headers, request_options) do
+  defp start_prepared_session(exchange, config, headers, request_options, policy \\ nil) do
     query =
       if String.contains?(exchange.request.target, "?"),
         do: exchange.request.query_string,
@@ -553,37 +633,181 @@ defmodule Gaoxy.Proxy.HTTP do
       end
 
     client = selected_client(config)
-    reserve = client.reservation_bytes(headers, url_bytes, config.limits.max_chunk_bytes)
+    group? = match?(%{group: %{execution_profile: :managed_h2}}, config)
 
-    with {:ok, session} <-
+    reserve =
+      if group?,
+        do: ManagedH2GroupAccounting.reservation_bytes(),
+        else: client.reservation_bytes(headers, url_bytes, config.limits.max_chunk_bytes)
+
+    with :ok <-
+           validate_group_startup(
+             group?,
+             args,
+             pump_state(exchange, config, client, policy, nil, nil, deadline, handoff)
+           ),
+         {:ok, session} <-
            DynamicSupervisor.start_child(Gaoxy.Proxy.SessionSupervisor, {Session, args}) do
-      monitor = Process.monitor(session)
+      with :ok <- preflight_started_session(group?, session) do
+        monitor = Process.monitor(session)
 
-      case Gaoxy.Service.attach_cleanup(
-             exchange.service,
-             exchange.gate,
-             exchange.lease,
-             session,
-             reserve,
-             exchange.deadline
-           ) do
-        {:ok, _token} ->
-          {:ok, session, monitor, deadline, handoff}
+        attachment =
+          with :ok <-
+                 account_control(
+                   config,
+                   :admission,
+                   {:attach_cleanup, exchange.gate, exchange.lease, session, reserve,
+                    exchange.deadline}
+                 ) do
+            Gaoxy.Service.attach_cleanup(
+              exchange.service,
+              exchange.gate,
+              exchange.lease,
+              session,
+              reserve,
+              exchange.deadline
+            )
+          end
 
+        case attachment do
+          {:ok, _token} ->
+            {:ok, session, monitor, deadline, handoff}
+
+          error ->
+            Session.cancel(session)
+
+            if group? do
+              # A denied attachment leaves an inactive child. An ambiguous late
+              # attachment remains covered by Service's genuine cleanup record.
+              receive do
+                {:DOWN, ^monitor, :process, ^session, _} -> error
+              after
+                Lifecycle.remaining(
+                  min(
+                    exchange.deadline + Lifecycle.cleanup_headroom(),
+                    Lifecycle.deadline(Lifecycle.cleanup_headroom())
+                  )
+                ) ->
+                  # Killing a child after cancellation cannot erase the Service
+                  # ledger; an unconfirmed cleanup remains held by its owners.
+                  joined = Lifecycle.terminate_resources([session], Lifecycle.deadline(1_000))
+                  Process.demonitor(monitor, [:flush])
+
+                  case joined do
+                    :ok ->
+                      error
+
+                    {:error, reason} ->
+                      # An unjoined child is not a cleanup receipt. Prevent new
+                      # admissions before this request owner can leave its lease.
+                      # Do not report lease bytes as retained after owner DOWN.
+                      drain =
+                        Lifecycle.protect(fn ->
+                          Gaoxy.Admission.drain(exchange.gate, Lifecycle.now())
+                        end)
+
+                      case drain do
+                        :ok ->
+                          :ok
+
+                        _ ->
+                          # If admission cannot acknowledge draining, join the
+                          # real gate termination before this caller can leave.
+                          # Service observes gate loss and closes its transport.
+                          :ok =
+                            Lifecycle.terminate_resources(
+                              [exchange.gate],
+                              Lifecycle.deadline(1_000)
+                            )
+                      end
+
+                      {:startup_cleanup_unconfirmed, reason}
+                  end
+              end
+            else
+              Process.demonitor(monitor, [:flush])
+              error
+            end
+        end
+      else
         error ->
-          Session.cancel(session)
-          Process.demonitor(monitor, [:flush])
+          :ok = Lifecycle.terminate_resources([session], Lifecycle.deadline(1_000))
           error
       end
     end
   end
 
+  defp preflight_started_session(false, _session), do: :ok
+
+  defp preflight_started_session(true, session),
+    do: ManagedH2GroupAccounting.preflight_control(:monitor, session)
+
+  defp validate_group_startup(false, _, _), do: :ok
+
+  defp validate_group_startup(true, args, pump) do
+    with :ok <- ManagedH2GroupAccounting.validate(:captured_pins, pump.exchange.resource_pins),
+         :ok <- ManagedH2GroupAccounting.validate(:pump, pump),
+         {:ok, _} <- ManagedH2GroupAccounting.startup(Session, args),
+         :ok <- ManagedH2GroupAccounting.preflight_control(:local_monitor, node()) do
+      :ok
+    end
+  end
+
+  defp pump_state(exchange, config, client, policy, session, monitor, deadline, handoff) do
+    %{
+      exchange: %{
+        exchange
+        | deadline: deadline,
+          limits: %{
+            exchange.limits
+            | write_timeout: min(exchange.limits.write_timeout, config.limits.write_timeout)
+          }
+      },
+      config: config,
+      client: client,
+      policy: policy,
+      response_policy: nil,
+      session: session,
+      monitor: monitor,
+      deadline: deadline,
+      transport_handoff: handoff,
+      upload: nil,
+      ready: false,
+      upload_stopped: false,
+      last_activity: Lifecycle.now()
+    }
+  end
+
   defp pump(state, wait \\ 0) do
+    if match?(%{group: %{execution_profile: :managed_h2}}, state.config) do
+      case ManagedH2GroupAccounting.validate(:pump, state) do
+        :ok -> pump_wait(state, wait)
+        {:error, _} -> fail(state, :invalid_request)
+      end
+    else
+      pump_wait(state, wait)
+    end
+  end
+
+  defp pump_wait(state, wait) do
     receive do
       {:gaoxy_proxy_http, session, event} when session == state.session ->
-        if total_expired?(state) and not match?({:error, _}, event),
-          do: timeout(state),
-          else: dispatch(event, state)
+        family =
+          case event do
+            {:ready, _, _, _} -> :ready
+            {:transport_handoff, _, _, _, _} -> :handoff_request
+            _ -> :delivery
+          end
+
+        case account_control(state.config, family, {:gaoxy_proxy_http, session, event}) do
+          :ok ->
+            if total_expired?(state) and not match?({:error, _}, event),
+              do: timeout(state),
+              else: dispatch(event, state)
+
+          {:error, _} ->
+            fail(state, :invalid_request)
+        end
 
       {:DOWN, monitor, :process, _, reason} when monitor == state.monitor ->
         fail(state, {:guardian_down, reason})
@@ -721,14 +945,26 @@ defmodule Gaoxy.Proxy.HTTP do
       state = %{state | transport_handoff: %{handoff | used: true}}
 
       result =
-        UpstreamTransports.delegate_request_pin(
-          handle,
-          pin,
-          state.session,
-          identity,
-          operation,
-          deadline
-        )
+        with :ok <- account_delegate(state, handle, pin, identity, operation, deadline) do
+          UpstreamTransports.delegate_request_pin(
+            handle,
+            pin,
+            state.session,
+            identity,
+            operation,
+            deadline
+          )
+        end
+
+      result =
+        case account_pin_reply(state.config, result) do
+          :ok ->
+            result
+
+          {:error, _} ->
+            UpstreamTransports.cancel(handle.owner, operation)
+            {:error, :invalid_resource_pin}
+        end
 
       state = refresh_handoff_deadline(state)
 
@@ -839,6 +1075,39 @@ defmodule Gaoxy.Proxy.HTTP do
       0 -> state
     end
   end
+
+  defp account_control(%{group: %{execution_profile: :managed_h2}}, family, original),
+    do: ManagedH2GroupAccounting.validate({:control, family}, original)
+
+  defp account_control(_, _, _), do: :ok
+
+  defp account_pin_reply(%{group: %{execution_profile: :managed_h2}}, result),
+    do: ManagedH2GroupAccounting.validate({:owner_reply, :transport, :pin}, result)
+
+  defp account_pin_reply(_, _), do: :ok
+
+  defp account_delegate(
+         %{config: %{group: %{execution_profile: :managed_h2}}} = state,
+         handle,
+         pin,
+         identity,
+         operation,
+         deadline
+       ) do
+    uri = URI.parse(identity.origin)
+
+    authority =
+      {identity.upstream_protocol, if(uri.scheme == "https", do: :https, else: :http),
+       :binary.copy(String.downcase(uri.host)), uri.port}
+
+    ManagedH2GroupAccounting.validate(
+      {:owner_call, :transport, :delegate},
+      {:delegate_request_pin, handle, pin, state.session, authority, state.exchange.instance,
+       operation, deadline}
+    )
+  end
+
+  defp account_delegate(_, _, _, _, _, _), do: :ok
 
   defp revoke_handoff(handle, operation, _result) do
     # Cancellation removes even an already granted child by acquirer/operation

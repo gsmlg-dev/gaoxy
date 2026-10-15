@@ -1,0 +1,84 @@
+{
+  "task_id": "/root/browser_contract_spec/native-tls-close-order-code1",
+  "status": "DONE",
+  "assignment": "direct bounded independent CODE review; source-only",
+  "verdict": "PASS_SOURCE_ONLY_NO_OPEN_FINDINGS",
+  "open_findings": [],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "candidate2_sha256": "2429bbdecb1bba716627af84f24c59209a10d953f985acace590736978e0fb7e",
+  "candidate_source_count": 198,
+  "proposal": "/tmp/gaoxy-group-native-tls-close-order1.patch",
+  "proposal_sha256": "6b40b036469187b3944c0a5f7071cd070c6eddca7eebfe36ca143a5b869a91a8",
+  "unchanged_current_test_sha256": "601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3",
+  "in_memory_proposed_test_sha256": "f0f44cdbb02845fddf33b76a7d0f34379630c584c2b5d8e161492354979e951d",
+  "root_cause": "Upstream RequestCompletion.await does not join the downstream original worker. Both positive workers were still in HTTP.await_cleanup with stream1 present immediately before client peer close; Connection.close intentionally kills remaining stream workers. The TLS upstream original worker consequently joined as :killed.",
+  "diagnostic": {
+    "receipt": "native-tls-close-diagnostic1-1792099336483544452.json",
+    "receipt_sha256": "bb78ba8e641510cf724e208904428268cc74fd0fd79d087a6064491c2b6ffe73",
+    "log_sha256": "4b3a67e0bf99bafdbf7534f3ffd429c404ec72bc36df5dea6ac4e9a4b5f2da51",
+    "diagnostic_program_sha256": "9cd3eb6948f75b275679dcddcf9245f562e2ab55a25bb0527299301efeb3e923",
+    "executed": 41,
+    "failures": 1,
+    "actual_exit": 2,
+    "joined": true,
+    "timed_out": false,
+    "source_stable": true,
+    "http2_roles": {
+      "owner": "{:shutdown, :peer_closed}",
+      "writer": ":normal",
+      "original_worker": ":killed"
+    },
+    "h2c_original_worker": ":normal",
+    "preservation": "Diagnostic program only inserts state/role logging into an in-memory compilation; original assertions remain."
+  },
+  "code_assessment": [
+    "Exactly 11 additions in one positive-fixture hunk; no deletions, production edits or reason changes.",
+    "Waits for the captured real original worker to die and for stream1 to retire before client close; asserts original owner and writer remain alive.",
+    "No lifecycle cycle found: Response.finish precedes Session.consumed; session cleanup stops normally; HTTP.await_cleanup receives its DOWN; Stream.run sends h2_stream_done and returns; owner discards completed stream without killing it. None requires client close.",
+    "G.eventually delegates to the existing finite-deadline helper. :sys.get_state is also bounded; an unavailable owner errors rather than being treated as successful retirement.",
+    "Original monitors are created before dispatch and never consumed, replaced, flushed or demonitor-ed by added code. A worker killed before either barrier still leaves its original :killed DOWN and fails the unchanged worker reason assertion.",
+    "Exact original owner/writer/worker joins and reason sets remain after client close. Final cleanup/accounting/remove/no-extra-request assertions remain byte-identical."
+  ],
+  "verification": [
+    {
+      "check": "Candidate198 exact source identity, receipt source maps, diagnostic log SHA/length and failure fields",
+      "result": "PASS",
+      "exit": 0,
+      "method": "Read-only Python SHA/JSON assertions."
+    },
+    {
+      "check": "Proposal identity and in-memory hunk applicability; additions-only preservation, original monitor and reason assertions",
+      "result": "PASS",
+      "exit": 0,
+      "method": "Read-only Python textual assertions; no patch application."
+    },
+    {
+      "check": "Lifecycle/deadlock/reason preservation",
+      "result": "PASS_SOURCE_ONLY",
+      "method": "Read actual HTTP dispatch/await_cleanup, Session consumed/cleanup_complete, Stream.run, Connection h2_stream_done/discard/close, and finite helper sources."
+    },
+    {
+      "check": "Fresh repaired native TLS, all command gates and canonical browser3",
+      "result": "NOT RUN BY REVIEWER",
+      "note": "Unadopted proposal; passing runtime evidence remains required."
+    }
+  ],
+  "changed_files_by_reviewer": [
+    "/tmp/gaoxy-group-native-tls-close-order-code1.md",
+    "/tmp/gaoxy-group-native-tls-close-order-code1.json"
+  ],
+  "counters": {
+    "parent_failed_green": 21,
+    "parent_ordered_root_events": 23,
+    "astra_recovery_rounds": "2/2 exhausted unchanged",
+    "reviewer_added_sol_repair_rounds": 0,
+    "cumulative_sol_repair_rounds": "Not separately specified in handoff; parent ledger retained, no reset."
+  },
+  "astra_gate": null,
+  "decisions_needed": [],
+  "command_shutdown": "All reviewer commands finished. No repository, runtime, build, process-control or Git mutations. No patch applied.",
+  "remaining_risks": [
+    "Source-only verdict cannot establish runtime success. Parent must adopt exact proposal, preserve prior failure evidence, rebind source identity and run required fresh gates."
+  ]
+}

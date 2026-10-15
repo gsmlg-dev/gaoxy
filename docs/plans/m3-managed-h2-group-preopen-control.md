@@ -1,6 +1,6 @@
 # Managed H2 group queued-terminal control implementation plan
 
-Status: VERIFIED, local commit pending. Original FULL SPEC47/47 and CODE48/48 PASS; fixture repair FULL SPEC50/50 and CODE44/44 PASS, zero findings. All six fresh prescribed gates PASS on identical99 source inputs: format and forced strict compile exit0; pure452/0, compatibility603/0, Python11/0 and fixture97/0, zero skips/exclusions, all commands joined. The earlier fresh603/1 failure remains retained. Group activation stays ACCOUNTING_NOT_READY; fixed9,444,956 unchanged.
+Status: DONE LOCALLY at `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. Original FULL SPEC47/47 and CODE48/48 PASS; fixture repair FULL SPEC50/50 and CODE44/44 PASS, zero findings. All six fresh prescribed gates PASS on identical99 source inputs: format and forced strict compile exit0; pure452/0, compatibility603/0, Python11/0 and fixture97/0, zero skips/exclusions, all commands joined. The earlier fresh603/1 failure remains retained. Group activation stays ACCOUNTING_NOT_READY; fixed9,444,956 unchanged.
 
 1. [x] Authenticate predecessor actual141 paths/receipt, protected files and source boundaries; adopt source-only recommendation and choose the smaller private-helper/existing-handler design.
 2. [x] Freeze design/plan/source and receive independent readiness SPEC. No tests or Session changes before PASS.
@@ -9,7 +9,7 @@ Status: VERIFIED, local commit pending. Original FULL SPEC47/47 and CODE48/48 PA
 5. [x] Run complete initial format, forced strict compile, all nine pure files and36 compatibility files on stable source, no skips/exclusions. Diagnose failures/assertion-preserving repairs with versioned evidence and cumulative counters.
 6. [x] Independent FULL implementation SPEC47/47 then CODE48/48, zero findings. Both bind the original unchanged94 inputs. Review actual callback wiring and original-handler semantics, not only a helper.
 7. [x] Run same gates fresh after both reviews and document exact results/limits/source/counters. Final document-only review and raw/index byte audit follow before local commit `fix(proxy): honor queued group preopen cancellation`; actual commit identity is recorded externally and bound by the next stage.
-8. [ ] Record actual commit/tree, then automatically advance actual group/probe accounting/activation under existing product gates. No new universal/helper-lifetime/native/private proof or third Astra.
+8. [x] Record actual commit/tree, then automatically advance actual group/probe accounting/activation under existing product gates. No new universal/helper-lifetime/native/private proof or third Astra.
 
 ## Scope and ownership
 
@@ -99,3 +99,5 @@ rootCommandOverlap1/repair1 and all predecessor counters/Astra2/2 remain.
 `fresh-complete-green2.json` binds the six actual post-review commands, logs, counts, exits and all99 unchanged input hashes. Original guard SPEC47/47/CODE48/48 and fixture SPEC50/50/CODE44/44 have no actionable findings.
 
 Historical603/1, all RED/custody/author failures and cumulative counters remain immutable, including rootDocumentSnapshotFailure1. Astra2/2 is exhausted. Negative TLS/browser cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE. This stage establishes QUEUED_PREOPEN_CONTROL_IMPLEMENTED_GATED, without live managed-H2 group activation.
+
+Actual local-commit closure: `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`, tree `a26656f16425d35ccc08584ee0486abb296a3c39`; all158 committed paths match raw disk/index/commit bytes. The external receipt is copied into the accounting/activation stage; no self-referential commit claim was inserted into the committed candidate. Continuing authorization advances to that stage.

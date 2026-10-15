@@ -1,0 +1,96 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_failure_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_failure_test.exs
+@@ -53,13 +53,19 @@
+       send(f.owner, {:group_failure_continue, transport_barrier})
+       assert :ok = HTTP.RequestCompletion.await(completion, @timeout)
+ 
+-      G.eventually(fn ->
+-        :sys.get_state(f.groups).tokens === %{} and
+-          match?(
+-            {:ok, %{request_tokens: 0, helpers: 0, pins: 1}},
+-            UpstreamTransports.status(f.owner)
+-          )
+-      end)
++      try do
++        G.eventually(fn ->
++          :sys.get_state(f.groups).tokens === %{} and
++            match?(
++              {:ok, %{request_tokens: 0, helpers: 0, pins: 1}},
++              UpstreamTransports.status(f.owner)
++            )
++        end)
++      rescue
++        error in ExUnit.AssertionError ->
++          guardian_recovery_diagnostic(f, guardian, completion)
++          reraise error, __STACKTRACE__
++      end
+ 
+       G.assert_exact_controls(:sys.get_state(f.groups))
+       refute_receive {:group_failure_service_receipt, _, ^guardian}, 0
+@@ -294,6 +300,66 @@
+     end
+   end
+ 
++  # Failure-only, bounded observations. Never query held Service/gate actors.
++  defp guardian_recovery_diagnostic(f, guardian, completion) do
++    observe = fn owner, project ->
++      try do
++        project.(:sys.get_state(owner, 100))
++      rescue
++        error -> {:diagnostic_error, error.__struct__}
++      catch
++        kind, _ -> {:diagnostic_unavailable, kind}
++      end
++    end
++
++    actor = fn
++      pid when is_pid(pid) ->
++        %{pid: pid, alive: Process.alive?(pid),
++          process: Process.info(pid, [:status, :current_function, :message_queue_len])}
++      _ -> nil
++    end
++
++    groups = observe.(f.groups, fn state ->
++      %{tokens: map_size(state.tokens), pins: map_size(state.pins),
++        control_bytes: state.control_bytes,
++        groups: Enum.map(Enum.take(state.groups, 8), fn {key, held} ->
++          {key, held.lifecycle, held.inflight}
++        end),
++        holds: Enum.map(Enum.take(state.tokens, 8), fn {token, held} ->
++          %{token: token, guardian_original: held.guardian === guardian,
++            completion_original: held.completion === completion,
++            record: Map.take(held, [:monitor, :recovery_monitor, :deadline, :control_bytes]),
++            recovery: actor.(held.recovery)}
++        end)}
++    end)
++
++    transports = observe.(f.owner, fn state ->
++      %{tokens: map_size(state.tokens),
++        pins: Enum.sum(Enum.map(state.pins, fn {_, held} -> length(held.public.handles) end)),
++        helpers: Enum.sum(Enum.map(state.records, fn {_, held} ->
++          map_size(held.helpers) + if(held.opening, do: 1, else: 0)
++        end)) + Enum.count(state.tokens, fn {_, held} -> held.abort_helper != nil end),
++        request_timer: state.request_timer,
++        holds: Enum.map(Enum.take(state.tokens, 8), fn {token, held} ->
++          %{token: token, guardian_original: held.guardian === guardian,
++            completion_original: held.completion === completion,
++            record: Map.take(held, [:guardian_down, :abort_down, :abort_result, :cleanup_deadline]),
++            abort_helper: actor.(if held.abort_helper, do: elem(held.abort_helper, 0))}
++        end),
++        pin_holders: Enum.map(Enum.take(state.pins, 8), fn {ref, held} ->
++          %{ref: ref, kind: held.public.kind, holder: actor.(held.public.holder),
++            derived: Map.get(held, :derived, false), handles: length(held.public.handles)}
++        end),
++        resources: Enum.map(Enum.take(state.records, 8), fn {ref, held} ->
++          %{ref: ref, lifecycle: held.lifecycle, opening: held.opening,
++            helpers: map_size(held.helpers), transport_confirmed: held.transport_confirmed}
++        end)}
++    end)
++
++    IO.inspect(%{protocol: f.protocol, groups: groups, transports: transports},
++      label: "GUARDIAN_RECOVERY_PREDICATE_FAILURE", limit: :infinity, printable_limit: 2_000)
++  end
++
+   defp assert_held_down(actor, guardian, reason, kind) do
+     case kind do
+       :service ->

@@ -1,0 +1,125 @@
+{
+  "task_id": "/root/group_postactivation_code/session_controls_repair1",
+  "status": "DONE_DIAGNOSIS_PROPOSAL",
+  "assignment": "direct source-only diagnosis/proposal; parent exclusively owns repository, runtime, build, formatting, Git, process and evidence mutations",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_verification": "Historical identity supplied by parent; no Git commands run in this assignment.",
+  "target": "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs",
+  "target_before_sha256": "72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a",
+  "target_proposed_before_formatter_sha256": "87915005988001f9e2249c3d3cb1bc8f82e10eef1bfa06538cc14b4d3f8736be",
+  "target_current_at_report_sha256": "72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a",
+  "patch": {
+    "path": "/tmp/gaoxy-group-session-controls-repair1.patch",
+    "bytes": 1947,
+    "sha256": "aaa4d5cf6adafcae036e3e586a0d7b238d490a86c98335815729b5cb54a97071"
+  },
+  "failed_gate": {
+    "status": "FAIL",
+    "receipt": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-session-control-1792097388206486059.json",
+    "receipt_sha256": "f629d63f371a816323b9457d4dfca1df03d6f808bc7ebbbc4f6955438a883011",
+    "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-session-control-1792097388206486059.log",
+    "log_sha256": "d595e8ddfcffe1ad2cef3fd90ed0c2a9e43f87cec703f9f25fd7911a05b9211e",
+    "actual_exit": 2,
+    "process_joined": true,
+    "timed_out": false,
+    "elapsed_ms": 53623,
+    "tests_executed": 46,
+    "failures": 4,
+    "skips": 0,
+    "exclusions": 0,
+    "source_stable": true,
+    "source_inputs": 189,
+    "argv": [
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "unbuffer",
+      "mix",
+      "test",
+      "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "--seed",
+      "33015"
+    ],
+    "runtime_identity_limit": "PATH erl .5 is PATH-only evidence, not actual loaded VM proof.",
+    "current_tree_limit": "Receipt source stability describes only its run. Root-owned TLS/accounting/docs changes have occurred since; no claim that current full 189-input tree matches that receipt."
+  },
+  "diagnoses": [
+    {
+      "case": "streaming final chunk/trailers, both upstream protocols",
+      "observed": "Real H1 socket closes while reading final chunk at test line213; log lines45-55 and155-165.",
+      "source_proven": "Manual peer sends fields from value.get(fields,[]). Test requested x-check trailers without an initial Trailer declaration. Both proxy trailer policy and native H1 response encoder require declared trailers.",
+      "inference_limit": "Source contract violation is proven and consistent with premature close. The failed run did not directly trace the exact Headers.trailers/Response.finish final rejection selector.",
+      "proposal": "Add initial response field [trailer,x-check]; retain exact body, trailer, control, completion and cleanup assertions."
+    },
+    {
+      "case": "genuine owner DOWN diagnostic, both upstream protocols",
+      "observed": "Original monitor/pump match receives {:shutdown,:local_closed}, not original large diagnostic; actual reason log lines99 and185.",
+      "source_proven": "Native H1 ThousandIsland handler sets trap_exit true and runs the endpoint synchronously. Nested proxy pump_wait does not receive generic EXIT/system requests. Process.exit with arbitrary reason is therefore an invalid immediate-death stimulus for this actual H1 pump.",
+      "inference_limit": "Specific timing/path producing later local_closed was not fully traced. This is not a claim of a production H1 defect.",
+      "proposal": "Use existing genuine native H2 downstream stream-worker fixture only for owner-DOWN case. Assert actual Process.info(pump,:trap_exit)=={:trap_exit,false}; retain original external exit stimulus and exact large diagnostic DOWN assertion.",
+      "rejected_alternative": "sys.terminate is unsuitable while synchronous H1 endpoint is in nested pump_wait because the system request queues."
+    }
+  ],
+  "scope_and_preservation": {
+    "proposed_repository_files": [
+      "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs"
+    ],
+    "repository_files_modified_by_reviewer": [],
+    "fixture_defaults": "Existing preactivation default retained; new downstream default is :http1. Only owner-DOWN explicitly chooses :http2.",
+    "upstream_protocols": "Both upstream protocols remain exercised.",
+    "assertions": "All original assertion-starting lines unchanged and ordered; only actual trap_exit:false assertion added. Original diagnostic, exact monitor reason, authentic guardian control/down trace, normalization, completion await, guardian normal join, socket and cleanup assertions retained.",
+    "forbidden_techniques_used": [],
+    "production_changes": false,
+    "no_fake_events_or_private_state_mutation": true,
+    "no_watchdog_or_deadline_relaxation": true
+  },
+  "verification": [
+    {
+      "status": "PASS",
+      "check": "Python exact patch context and hunk counts; in-memory reconstruction equals proposed bytes; original assertions ordered and unchanged; diagnostic unchanged; no Process.flag/sys.terminate introduced; default argument backslash pairs match original style."
+    },
+    {
+      "status": "PASS",
+      "check": "Current target and patch identities re-read; receipt/log SHA256 independently re-read. These are source/artifact checks, not runtime acceptance."
+    },
+    {
+      "status": "NOT RUN",
+      "check": "Formatting, compiler, runtime, tests, native peers and independent review; parent owns all such actions."
+    }
+  ],
+  "suggested_parent_checks": [
+    "Independent SPEC/CODE proposal review, parent adoption, scoped formatter and strict compile.",
+    "Fresh unchanged full Session-control suite; require nonzero 46 executed, 0 failed, 0 skipped, 0 excluded, joined process, no timeout, source stability and actual loaded VM proof; do not predict PASS.",
+    "If streaming remains failed, capture bounded real-pump response policy and final Headers.trailers/Response.finish return selector without dumping body/diagnostic.",
+    "If H2 owner-DOWN remains failed, retain actual trap flag and exact monitor reason; inspect authentic guardian monitor/completion. Do not fake DOWN or broaden expected reasons.",
+    "Preserve original failure receipt and parent-owned TLS/browser work."
+  ],
+  "counters": {
+    "inherited_ledger": 6,
+    "inherited_failed_GREEN": 19,
+    "inherited_root_repair": 20,
+    "inherited_Astra_recovery": "2/2 exhausted",
+    "reviewer_added_runtime_repair_rounds": 0,
+    "latest_parent_update": "Root reports TLS test-only RED41/3 exit2 stable, no compiler error; root-owned production proposal2 adoption event21, not yet runtime. No counter reset or third Astra recovery proposed."
+  },
+  "astra_gate": "not requested; proposal only",
+  "command_shutdown": "All reviewer commands completed; no runtime/background processes started.",
+  "remaining_risks": "Proposal is not formatted, compiled, executed or independently reviewed. Runtime46/0 is unproven. Exact dynamic failure selectors were not captured by original failed receipt.",
+  "decisions_needed": [],
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_group_session_control_test.exs": "72d3f593e52abbdc57ba35a7a31cd571cd0cdb940e36711a417c15a89869cb6a",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "b8b3c75760998d0e6dd5a8a2ad4a1820efb1eacfac5398103367e69d78237b00",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac"
+  }
+}

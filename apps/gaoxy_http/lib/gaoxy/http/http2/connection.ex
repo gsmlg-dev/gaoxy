@@ -579,6 +579,15 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
+  defp operation(state, stream, :ssl_data, from) do
+    if Lifecycle.remaining(stream.deadline) == 0 do
+      reply_error(state, from, :timeout)
+    else
+      GenServer.reply(from, {:ok, state.ssl})
+      state
+    end
+  end
+
   defp operation(state, _stream, {:poll, 0}, from) do
     GenServer.reply(from, :ok)
     state
@@ -1046,7 +1055,9 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           peer: state.peer,
           local: state.local,
           secure: state.secure,
-          ssl: state.ssl,
+          # Full TLS metadata stays on this connection's existing lease.
+          # Stream callers query it through their authenticated transport.
+          ssl: nil,
           peer_cert: state.peer_cert,
           service: Map.get(state, :service),
           instance: Map.get(state, :instance),

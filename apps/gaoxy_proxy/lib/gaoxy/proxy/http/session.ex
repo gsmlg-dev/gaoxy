@@ -3,7 +3,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   use GenServer, restart: :temporary
   alias Gaoxy.Lifecycle
   alias Gaoxy.Proxy.HTTP
-  alias Gaoxy.Proxy.{ManagedH2Envelope, ManagedH2GroupBoundary}
+  alias Gaoxy.Proxy.{ManagedH2Envelope, ManagedH2GroupAccounting, ManagedH2GroupBoundary}
   alias Gaoxy.Proxy.UpstreamGroups
   alias Gaoxy.Proxy.UpstreamTransports
   alias Gaoxy.HTTP.Resources
@@ -24,6 +24,26 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   @impl true
   def init(args) do
+    case validate_group_start(args) do
+      :ok -> init_session(args)
+      {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp validate_group_start(args) do
+    if is_map(args) and group_intent?(args) do
+      with {:ok, _} <- ManagedH2GroupAccounting.startup(__MODULE__, args),
+           :ok <- preflight_monitors([args.owner, args.service, args.instance, args.gate]),
+           :ok <-
+             ManagedH2GroupAccounting.preflight_control(:cleanup_cancel, args.deadline + 1_000) do
+        :ok
+      end
+    else
+      :ok
+    end
+  end
+
+  defp init_session(args) do
     Process.flag(:trap_exit, true)
 
     monitors =
@@ -31,102 +51,110 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           into: %{},
           do: {Process.monitor(pid), pid}
 
-    {:ok,
-     Map.merge(args, %{
-       monitors: monitors,
-       client: HTTP.selected_client(args.config),
-       cleanup_deadline: nil,
-       cleanup_requested_deadline: nil,
-       cleanup_started: false,
-       opening_timer: nil,
-       activated_at: nil,
-       opening_deadline: nil,
-       total_timer: nil,
-       selection: nil,
-       transport_handoff: Map.get(args, :transport_handoff),
-       awaiting_transport: nil,
-       transport_pins: [],
-       transport_selection: nil,
-       managed_transport: nil,
-       managed_path: HTTP.selected_client(args.config) == @h2,
-       submitted_url: nil,
-       poll_timer: nil,
-       original_request: nil,
-       outcome: :cancelled,
-       token: nil,
-       request: nil,
-       headers: false,
-       delivery: nil,
-       trailers: [],
-       cancelled: false,
-       consumed: false
-     })}
+    state =
+      Map.merge(args, %{
+        monitors: monitors,
+        client: HTTP.selected_client(args.config),
+        cleanup_deadline: nil,
+        cleanup_requested_deadline: nil,
+        cleanup_started: false,
+        opening_timer: nil,
+        activated_at: nil,
+        opening_deadline: nil,
+        total_timer: nil,
+        selection: nil,
+        transport_handoff: Map.get(args, :transport_handoff),
+        awaiting_transport: nil,
+        transport_pins: [],
+        transport_selection: nil,
+        managed_transport: nil,
+        managed_path: HTTP.selected_client(args.config) == @h2,
+        submitted_url: nil,
+        poll_timer: nil,
+        original_request: nil,
+        outcome: :cancelled,
+        token: nil,
+        request: nil,
+        headers: false,
+        delivery: nil,
+        trailers: [],
+        cancelled: false,
+        consumed: false
+      })
+
+    result =
+      if group_intent?(state),
+        do: ManagedH2GroupAccounting.validate({:state, :session}, state),
+        else: :ok
+
+    case result do
+      :ok ->
+        {:ok, state}
+
+      {:error, reason} ->
+        Enum.each(monitors, fn {ref, _} -> Process.demonitor(ref, [:flush]) end)
+        {:stop, reason}
+    end
   end
 
   @impl true
-  def handle_cast(:cancel, state), do: settle(mark_cancelled(state))
+  def handle_cast(:cancel, state), do: terminal_cast(state, :cancel)
 
-  def handle_cast(:expire, %{cancelled: true} = state), do: settle(state)
-  def handle_cast(:expire, %{consumed: true} = state), do: settle(state)
+  def handle_cast(:expire, %{cancelled: true} = state), do: settle_cast(state, :expire)
+  def handle_cast(:expire, %{consumed: true} = state), do: settle_cast(state, :expire)
 
   def handle_cast(:expire, state) do
-    reason =
-      if (state.client == Gaoxy.Proxy.HTTP3SessionClient or group_intent?(state)) and
-           Lifecycle.remaining(state.deadline) == 0,
-         do: :request_timeout,
-         else: :timeout
-
-    fail(state, reason)
+    case account_control(state, :cast, {:"$gen_cast", :expire}) do
+      :ok -> expire_session(state)
+      _ -> local_group_fail(state, :invalid_request)
+    end
   end
 
-  def handle_cast(:consumed, %{cancelled: true} = state), do: settle(state)
-  def handle_cast(:consumed, state), do: settle(%{state | consumed: true, outcome: :success})
+  def handle_cast(:consumed, %{cancelled: true} = state), do: settle_cast(state, :consumed)
+
+  def handle_cast(:consumed, state) do
+    case account_control(state, :cast, {:"$gen_cast", :consumed}) do
+      :ok -> settle(%{state | consumed: true, outcome: :success})
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
 
   def handle_cast(
         {:acknowledge, ref},
         %{delivery: ref, cancelled: false, consumed: false} = state
       ) do
-    case state.client.acknowledge(state.request, ref) do
-      :ok -> {:noreply, %{state | delivery: nil}}
-      {:ok, request} -> {:noreply, %{state | request: request, delivery: nil}}
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :acknowledge, {:"$gen_cast", {:acknowledge, ref}}),
+         :ok <- account_control(state, :acknowledge, {:stream_chunk_ack, ref}) do
+      case state.client.acknowledge(state.request, ref) do
+        :ok -> retained_state(%{state | delivery: nil})
+        {:ok, request} -> retained_state(%{state | request: request, delivery: nil})
+      end
+    else
+      _ -> local_group_fail(state, :invalid_request)
     end
   end
 
   def handle_cast(_, state), do: {:noreply, state}
 
   @impl true
-  def handle_info({:gaoxy_cleanup_activate, token}, %{token: nil} = state) do
-    activated_at = Lifecycle.now()
-    opening_deadline = min(state.deadline, activated_at + state.config.limits.opening_timeout)
+  def handle_info({:gaoxy_cleanup_activate, token} = event, %{token: nil} = state) do
+    case account_control(state, :activate, event) do
+      :ok ->
+        # The supported activation carries the actual Service cleanup token.
+        # Later envelope or timer rejection still owes that original receipt.
+        captured = %{state | token: token}
 
-    state = %{
-      state
-      | token: token,
-        activated_at: activated_at,
-        opening_deadline: opening_deadline,
-        opening_timer:
-          Process.send_after(self(), :opening_expired, Lifecycle.remaining(opening_deadline)),
-        total_timer:
-          Process.send_after(self(), :total_expired, Lifecycle.remaining(state.deadline))
-    }
-
-    cond do
-      state.cancelled ->
-        settle(state)
-
-      not state.client.host_supported?() ->
-        fail(state, :unsupported_http_proxy_host)
-
-      Lifecycle.remaining(state.deadline) <= 0 ->
-        fail(state, :timeout)
-
-      true ->
-        case select(state) do
-          {:ok, state, config} -> open_selected(state, config)
-          {:await, state} -> {:noreply, state}
-          {:error, reason, state} -> fail(state, reason)
-          {:error, reason} -> fail(state, reason)
+        with :ok <- account_state(state),
+             {:ok, activated} <- activation_state(captured, token),
+             {:ok, activated} <- apply_group_timers(state, activated) do
+          activate_session(activated)
+        else
+          _ -> local_group_fail(captured, :invalid_request)
         end
+
+      _ ->
+        local_group_fail(state, :invalid_request)
     end
   end
 
@@ -134,11 +162,19 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         {:gaoxy_transport_handoff, ref, {:ok, pin}, deadline},
         %{transport_handoff: ref, awaiting_transport: %{handle: handle, member: selected}} = state
       ) do
-    with true <- signed_time?(deadline) and deadline <= @signed_max - 1_000,
+    # Capture an actual supported delegated pin before later envelope checks.
+    # A denied transition still owes revocation of that original capability.
+    captured = capture_handoff_pin(state, pin, handle)
+
+    with :ok <- account_state(state),
+         :ok <- account_owner_reply(state, :transport, :pin, {:ok, pin}),
+         :ok <-
+           account_control(state, :handoff, {:gaoxy_transport_handoff, ref, {:ok, pin}, deadline}),
+         true <- signed_time?(deadline) and deadline <= @signed_max - 1_000,
          :ok <- selected_aliases(state, selected, false),
-         true <- HTTP.captured_resources?([pin], [handle]) and Map.get(pin, :handles) == [handle] do
+         true <- captured.transport_pins === [pin] do
       resumed = %{
-        state
+        captured
         | transport_pins: [pin],
           awaiting_transport: nil,
           deadline: min(state.deadline, deadline),
@@ -153,18 +189,20 @@ defmodule Gaoxy.Proxy.HTTP.Session do
             opening_deadline: opening
         }
 
-        resumed = apply_group_timers(state, resumed)
-
-        case checkout_group_transport(resumed, selected, [pin], opening) do
-          {:ok, resumed, selected} -> open_selected(resumed, selected)
-          {:error, reason, resumed} -> local_group_fail(resumed, reason)
+        with {:ok, resumed} <- apply_group_timers(state, resumed) do
+          case checkout_group_transport(resumed, selected, [pin], opening) do
+            {:ok, resumed, selected} -> open_selected(resumed, selected)
+            {:error, reason, resumed} -> local_group_fail(resumed, reason)
+          end
+        else
+          _ -> local_group_fail(resumed, :invalid_request)
         end
       else
         {:error, reason} -> local_group_fail(resumed, reason)
       end
     else
-      {:error, reason} -> local_group_fail(state, reason)
-      _ -> local_group_fail(state, :invalid_resource_pin)
+      {:error, reason} -> local_group_fail(captured, reason)
+      _ -> local_group_fail(captured, :invalid_resource_pin)
     end
   end
 
@@ -172,7 +210,14 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         {:gaoxy_transport_handoff, ref, {:error, reason}, deadline},
         %{transport_handoff: ref, awaiting_transport: %{member: selected}} = state
       ) do
-    with true <- signed_time?(deadline) and deadline <= @signed_max - 1_000,
+    with :ok <- account_state(state),
+         :ok <-
+           account_control(
+             state,
+             :handoff,
+             {:gaoxy_transport_handoff, ref, {:error, reason}, deadline}
+           ),
+         true <- signed_time?(deadline) and deadline <= @signed_max - 1_000,
          :ok <- selected_aliases(state, selected, false) do
       state = %{
         state
@@ -238,73 +283,155 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   def handle_info({:gaoxy_transport_handoff, _, _, _}, state), do: {:noreply, state}
 
-  def handle_info({:gaoxy_cleanup_cancel, token, _reason, deadline}, %{token: token} = state) do
+  def handle_info(
+        {:gaoxy_cleanup_cancel, token, _reason, deadline} = event,
+        %{token: token} = state
+      ) do
     if state.client != @h2 or signed_time?(deadline) do
-      state = %{state | cleanup_requested_deadline: deadline}
-      settle(mark_cancelled(state))
+      # An authenticated cancellation remains owed even if its finite envelope
+      # is rejected late. Never turn that failure into an ignored cancellation.
+      cancelled = mark_cancelled(%{state | cleanup_requested_deadline: deadline})
+
+      case account_control(state, :cleanup_cancel, event) do
+        :ok -> settle(cancelled)
+        _ -> local_group_fail(cancelled, :invalid_request)
+      end
+    else
+      if group_intent?(state),
+        do: local_group_fail(state, :invalid_request),
+        else: {:noreply, state}
+    end
+  end
+
+  def handle_info({:DOWN, ref, :process, pid, _} = event, state)
+      when is_map_key(state.monitors, ref) do
+    if state.client != @h2 or state.monitors[ref] == pid do
+      case account_control(state, :down, event) do
+        :ok -> settle(mark_cancelled(state))
+        _ -> local_group_fail(state, :invalid_request)
+      end
     else
       {:noreply, state}
     end
   end
 
-  def handle_info({:DOWN, ref, :process, pid, _}, state) when is_map_key(state.monitors, ref) do
-    if state.client != @h2 or state.monitors[ref] == pid,
-      do: settle(mark_cancelled(state)),
-      else: {:noreply, state}
+  def handle_info(event, state) when event in [:opening_expired, :total_expired] do
+    case account_control(state, :timer, event) do
+      :ok -> timer_event(event, state)
+      _ -> local_group_fail(state, :invalid_request)
+    end
   end
 
-  def handle_info(event, %{cancelled: true} = state)
-      when event in [:opening_expired, :total_expired],
-      do: settle(state)
+  def handle_info(:poll, %{request: nil} = state), do: settle_timer(state, :poll)
+  def handle_info(:poll, %{cancelled: true} = state), do: settle_timer(state, :poll)
+  def handle_info(:poll, %{consumed: true} = state), do: settle_timer(state, :poll)
 
-  def handle_info(event, %{consumed: true} = state)
-      when event in [:opening_expired, :total_expired],
-      do: settle(state)
+  def handle_info(:poll, state) do
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :timer, :poll),
+         :ok <- preflight_task(state) do
+      state = cancel_poll(state)
+      {event, request} = state.client.poll_headers(callback_request(state))
+      dispatch(event, %{state | request: request})
+    else
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
 
-  def handle_info(:opening_expired, %{awaiting_transport: awaiting} = state)
-      when not is_nil(awaiting),
-      do: fail(state, :timeout)
+  def handle_info(
+        message,
+        %{client: @h2, request: request, cancelled: cancelled, consumed: consumed} = state
+      )
+      when not is_nil(request) and (cancelled or consumed) do
+    with :ok <- account_state(state),
+         :ok <- account_client_event(state, message) do
+      settle(state)
+    else
+      _ -> local_group_fail(state, :invalid_response)
+    end
+  end
 
-  def handle_info(:opening_expired, %{headers: false} = state) do
+  def handle_info(message, %{request: request} = state) when not is_nil(request) do
+    with :ok <- account_state(state),
+         :ok <- account_client_event(state, message) do
+      {event, request} = state.client.event(callback_request(state), message)
+      dispatch(event, %{state | request: request})
+    else
+      _ -> local_group_fail(state, :invalid_response)
+    end
+  end
+
+  def handle_info(_, state), do: {:noreply, state}
+
+  defp expire_session(state) do
+    reason =
+      if (state.client == Gaoxy.Proxy.HTTP3SessionClient or group_intent?(state)) and
+           Lifecycle.remaining(state.deadline) == 0,
+         do: :request_timeout,
+         else: :timeout
+
+    fail(state, reason)
+  end
+
+  defp timer_event(event, %{cancelled: true} = state)
+       when event in [:opening_expired, :total_expired],
+       do: settle(state)
+
+  defp timer_event(event, %{consumed: true} = state)
+       when event in [:opening_expired, :total_expired],
+       do: settle(state)
+
+  defp timer_event(:opening_expired, %{awaiting_transport: awaiting} = state)
+       when not is_nil(awaiting),
+       do: fail(state, :timeout)
+
+  defp timer_event(:opening_expired, %{headers: false} = state) do
     if group_intent?(state) and is_nil(state.original_request),
       do: local_group_fail(state, :timeout),
       else: upstream_fail(state, :timeout)
   end
 
-  def handle_info(:opening_expired, state), do: {:noreply, state}
+  defp timer_event(:opening_expired, state), do: {:noreply, state}
 
-  def handle_info(:total_expired, %{client: Gaoxy.Proxy.HTTP3SessionClient} = state),
+  defp timer_event(:total_expired, %{client: Gaoxy.Proxy.HTTP3SessionClient} = state),
     do: fail(state, :request_timeout)
 
-  def handle_info(:total_expired, state) do
+  defp timer_event(:total_expired, state) do
     if group_intent?(state),
       do: local_group_fail(state, :request_timeout),
       else: fail(state, :timeout)
   end
 
-  def handle_info(:poll, %{request: nil} = state), do: settle(state)
-  def handle_info(:poll, %{cancelled: true} = state), do: settle(state)
-  def handle_info(:poll, %{consumed: true} = state), do: settle(state)
+  defp activate_session(state) do
+    cond do
+      state.cancelled ->
+        settle(state)
 
-  def handle_info(:poll, state) do
-    state = cancel_poll(state)
-    {event, request} = state.client.poll_headers(callback_request(state))
-    dispatch(event, %{state | request: request})
+      not state.client.host_supported?() ->
+        fail(state, :unsupported_http_proxy_host)
+
+      Lifecycle.remaining(state.deadline) <= 0 ->
+        fail(state, :timeout)
+
+      true ->
+        case select(state) do
+          {:ok, state, config} -> open_selected(state, config)
+          {:await, state} -> {:noreply, state}
+          {:error, reason, state} -> fail(state, reason)
+          {:error, reason} -> fail(state, reason)
+        end
+    end
   end
-
-  def handle_info(message, %{request: request} = state) when not is_nil(request) do
-    {event, request} = state.client.event(callback_request(%{state | request: request}), message)
-    dispatch(event, %{state | request: request})
-  end
-
-  def handle_info(_, state), do: {:noreply, state}
 
   @impl true
   def handle_continue(:group_open, state) do
-    with {:ok, options} <- staged_group_options(state),
+    with :ok <- account_state(state),
+         {:ok, options} <- staged_group_options(state),
+         :ok <- account(state, :options, options),
          :clear <- queued_group_terminal(state),
          now = Lifecycle.now(),
-         :ok <- group_local_status(state, state.deadline, state.opening_deadline, now) do
+         :ok <- group_local_status(state, state.deadline, state.opening_deadline, now),
+         :ok <- group_activation_token(state) do
       options = %{
         options
         | timeout: state.deadline - now,
@@ -315,7 +442,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
       # No caller, configuration or pure profile marker can enable this branch.
       # The queued-terminal check above precedes this group open boundary.
-      # Keep the staged consumer compilable with the literal denial installed.
+      # The reviewed accounting path is enabled by the fixed internal gate.
       # This public callee and its arguments are fixed, with no override.
       case apply(ManagedH2GroupBoundary, :activation, []) do
         :ok ->
@@ -345,7 +472,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   end
 
   def handle_continue({:group_bind, upload}, state) do
-    with true <- is_pid(upload) or is_nil(upload),
+    with :ok <- account_state(state),
+         true <- is_pid(upload) or is_nil(upload),
          true <- sanitized_group_controls?(state),
          true <- state.request_options == nil,
          true <- valid_group_handle?(state.original_request),
@@ -354,12 +482,29 @@ defmodule Gaoxy.Proxy.HTTP.Session do
          true <-
            :binary.referenced_byte_size(state.submitted_url) == byte_size(state.submitted_url),
          :clear <- queued_group_terminal(state),
-         :ok <- group_local_status(state, state.deadline, state.opening_deadline, Lifecycle.now()) do
+         :ok <-
+           group_local_status(state, state.deadline, state.opening_deadline, Lifecycle.now()),
+         :ok <- group_activation_token(state) do
       # bind/1 preserves the original public completion and binds transport first.
       case bind(state) do
         :ok ->
-          notify(state, {:ready, upload, state.config.limits, state.deadline})
-          {:noreply, schedule(state)}
+          with :clear <- queued_group_terminal(state),
+               :ok <-
+                 group_local_status(
+                   state,
+                   state.deadline,
+                   state.opening_deadline,
+                   Lifecycle.now()
+                 ) do
+            with :ok <- notify(state, {:ready, upload, state.config.limits, state.deadline}) do
+              continue_session(state)
+            else
+              _ -> local_group_fail(state, :invalid_response)
+            end
+          else
+            {:handled, result} -> result
+            {:error, reason} -> local_group_fail(drop_group_opening(state), reason)
+          end
 
         {:error, reason} ->
           fail(drop_group_opening(state), reason)
@@ -400,25 +545,31 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   @doc false
   def prepare_group_open(state, selected, now) do
-    state = classify_group(state, selected)
-
     if group_intent?(state) do
-      with :ok <- selected_aliases(state, selected, true),
+      with :ok <- account_state(state),
+           :ok <- account(state, :selected, selected),
+           :ok <- account(state, :neutral, state.request_options),
+           :ok <- account(state, :checked, state.managed_transport),
+           :ok <- selected_aliases(state, selected, true),
            {:ok, limits, deadline, opening_deadline} <- group_timing(state, selected, now),
+           context = %{
+             group: state.config.group,
+             instance: state.instance,
+             limits: limits,
+             deadline: deadline,
+             opening_deadline: opening_deadline,
+             now: now
+           },
+           :ok <- account(state, :context, context),
            {:ok, options, effective_limits} <-
              ManagedH2GroupBoundary.prepare(
                selected,
                state.request_options,
                state.managed_transport,
-               %{
-                 group: state.config.group,
-                 instance: state.instance,
-                 limits: limits,
-                 deadline: deadline,
-                 opening_deadline: opening_deadline,
-                 now: now
-               }
-             ) do
+               context
+             ),
+           :ok <- account(state, :request, options.request),
+           :ok <- account(state, :options, options) do
         staged = %{
           drop_group_opening(state)
           | config: %{limits: effective_limits},
@@ -427,7 +578,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
             opening_deadline: opening_deadline
         }
 
-        {:ok, staged, :group_open}
+        case account_state(staged) do
+          :ok -> {:ok, staged, :group_open}
+          _ -> {:error, :invalid_request, drop_group_opening(state)}
+        end
       else
         {:error, reason} when reason in [:cancelled, :request_timeout, :timeout] ->
           {:error, reason, drop_group_opening(state)}
@@ -466,24 +620,47 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   @doc false
   def group_open_result(state, result, now) do
     if group_intent?(state) do
-      case staged_group_options(state) do
-        {:ok, options} -> group_result(state, options, result, now)
-        _ -> {:error, :invalid_request, drop_group_opening(state)}
+      # Supported original authority is owed cleanup even if another result
+      # field or the retained source is invalid. Never replace it with a copy.
+      captured = capture_group_result(state, result)
+
+      with :ok <- account_state(state),
+           {:ok, options} <- staged_group_options(state),
+           :ok <- account(state, :options, options) do
+        group_result(captured, options, result, now)
+      else
+        _ -> {:error, :invalid_request, drop_group_opening(captured)}
       end
     else
       {:error, :invalid_request, drop_group_opening(state)}
     end
   end
 
+  defp capture_group_result(state, result)
+       when is_tuple(result) and tuple_size(result) >= 2 and elem(result, 0) == :ok do
+    handle = elem(result, 1)
+
+    case ManagedH2GroupAccounting.validate(:open_result, {:ok, handle, nil}) do
+      :ok -> %{state | request: handle, original_request: handle}
+      _ -> state
+    end
+  end
+
+  defp capture_group_result(state, _), do: state
+
   defp group_result(state, options, {:ok, handle, upload}, now) do
-    if valid_group_handle?(handle) and (is_pid(upload) or is_nil(upload)) do
+    if ManagedH2GroupAccounting.validate(:open_result, {:ok, handle, upload}) == :ok do
       # Capture the original supported completion before any late-open decision.
       state = %{state | request: handle, original_request: handle}
 
       case group_local_status(state, state.deadline, state.opening_deadline, now) do
         :ok ->
-          {:ok, %{drop_group_opening(state) | submitted_url: options.request.url},
-           {:group_bind, upload}}
+          bound = %{drop_group_opening(state) | submitted_url: options.request.url}
+
+          case account_state(bound) do
+            :ok -> {:ok, bound, {:group_bind, upload}}
+            _ -> {:error, :invalid_request, drop_group_opening(state)}
+          end
 
         {:error, reason} ->
           {:error, reason, drop_group_opening(state)}
@@ -527,6 +704,146 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
     is_struct(completion, Elixir.HTTP.RequestCompletion) and map_size(completion) == 4 and
       completion === handle.completion
+  end
+
+  defp account(state, selector, original) do
+    if group_intent?(state), do: ManagedH2GroupAccounting.validate(selector, original), else: :ok
+  end
+
+  defp account_state(state), do: account(state, {:state, :session}, state)
+  defp account_control(state, family, original), do: account(state, {:control, family}, original)
+
+  defp account_owner_call(state, owner, operation, original) do
+    with :ok <- account(state, {:owner_call, owner, operation}, original) do
+      if group_intent?(state),
+        do: ManagedH2GroupAccounting.preflight_control({:owner, owner, operation}, original),
+        else: :ok
+    end
+  end
+
+  defp account_owner_reply(state, owner, operation, {:error, reason}),
+    do: account(state, {:owner_reply, owner, operation}, {:error, finite_reason(reason)})
+
+  defp account_owner_reply(state, owner, operation, original),
+    do: account(state, {:owner_reply, owner, operation}, original)
+
+  defp settle_cast(state, event) do
+    case account_control(state, :cast, {:"$gen_cast", event}) do
+      :ok -> settle(state)
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
+
+  defp settle_timer(state, event) do
+    case account_control(state, :timer, event) do
+      :ok -> settle(state)
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
+
+  defp terminal_cast(state, event) do
+    case account_control(state, :cast, {:"$gen_cast", event}) do
+      :ok -> settle(mark_cancelled(state))
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
+
+  defp activation_state(state, token) do
+    now = Lifecycle.now()
+    opening = min(state.deadline, now + state.config.limits.opening_timeout)
+    updated = %{state | token: token, activated_at: now, opening_deadline: opening}
+
+    with :ok <- account_state(updated),
+         :ok <- preflight_cleanup_cancel(updated) do
+      {:ok, updated}
+    end
+  end
+
+  defp preflight_cleanup_cancel(state) do
+    if group_intent?(state),
+      do:
+        ManagedH2GroupAccounting.preflight_control(
+          :cleanup_cancel,
+          {:token, state.token, state.deadline + 1_000}
+        ),
+      else: :ok
+  end
+
+  defp retained_state(state) do
+    case account_state(state) do
+      :ok -> {:noreply, state}
+      _ -> local_group_fail(state, :invalid_request)
+    end
+  end
+
+  defp continue_session(state) do
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :timer, :poll) do
+      retained_state(schedule(state))
+    else
+      _ -> cleanup_failed(state, :invalid_request)
+    end
+  end
+
+  defp capture_handoff_pin(state, pin, handle) do
+    if ManagedH2GroupAccounting.validate(:captured_pins, [pin]) == :ok and
+         HTTP.captured_resources?([pin], [handle]) and Map.get(pin, :handles) === [handle] and
+         Map.get(pin, :provider) == UpstreamTransports and Map.get(pin, :holder) == self(),
+       do: %{state | transport_pins: [pin]},
+       else: state
+  end
+
+  defp preflight_task(state) do
+    if group_intent?(state) and state.request != nil do
+      task = state.request.promise.task
+      ManagedH2GroupAccounting.preflight_control(:task, {task.ref, task.pid})
+    else
+      :ok
+    end
+  end
+
+  defp account_client_event(state, message) do
+    if group_intent?(state) do
+      task = state.request.promise.task
+      stream = state.request.stream
+
+      case message do
+        {ref, %Elixir.HTTP.Response{}} when ref === task.ref ->
+          account_control(state, {:task, state.submitted_url}, message)
+
+        {ref, {:error, _}} when ref === task.ref ->
+          account_control(state, :task, message)
+
+        {:DOWN, ref, :process, pid, _} when ref === task.ref and pid === task.pid ->
+          account_control(state, :down, message)
+
+        {:stream_chunk, ^stream, _, _} ->
+          account_control(state, :data, message)
+
+        {:stream_trailers, ^stream, _} ->
+          account_control(state, :trailers, message)
+
+        {:stream_end, ^stream} ->
+          account_control(state, :stream_end, message)
+
+        {:stream_error, ^stream, _} ->
+          account_control(state, :stream_error, message)
+
+        _ ->
+          :ok
+      end
+    else
+      :ok
+    end
+  end
+
+  defp preflight_monitors(pids) do
+    Enum.reduce_while(pids, :ok, fn pid, :ok ->
+      case ManagedH2GroupAccounting.preflight_control(:monitor, pid) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, error}
+      end
+    end)
   end
 
   defp classify_group(state, selected) do
@@ -709,6 +1026,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     end
   end
 
+  defp group_activation_token(%{token: token}) when is_reference(token), do: :ok
+  defp group_activation_token(_state), do: {:error, :unavailable}
+
   defp group_local_status(state, deadline, opening, now) do
     cond do
       not Enum.all?([deadline, opening, now], &signed_time?/1) ->
@@ -809,6 +1129,19 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   end
 
   defp apply_group_timers(old_state, state) do
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :timer, :total_expired),
+         :ok <- account_control(state, :timer, :opening_expired) do
+      updated = replace_group_timers(old_state, state)
+
+      case account_state(updated) do
+        :ok -> {:ok, updated}
+        error -> error
+      end
+    end
+  end
+
+  defp replace_group_timers(old_state, state) do
     state =
       if old_state.deadline != state.deadline or is_nil(old_state.total_timer) do
         if old_state.total_timer, do: Process.cancel_timer(old_state.total_timer)
@@ -845,7 +1178,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     state = drop_group_opening(state)
     # The explicit group discriminator is already finite. Legacy normalization
     # intentionally does not accept this tuple; do not pass it through notify.
-    send(state.owner, {:gaoxy_proxy_http, self(), {:error, reason}})
+    message = {:gaoxy_proxy_http, self(), {:error, reason}}
+    if account_control(state, :delivery, message) == :ok, do: send(state.owner, message)
 
     if state.transport_selection == nil,
       do: {:stop, reason, state},
@@ -855,7 +1189,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp open_selected(state, %{id: _, config: _, max_inflight: _} = selected) do
     case prepare_group_open(state, selected, Lifecycle.now()) do
       {:ok, staged, :group_open} ->
-        {:noreply, apply_group_timers(state, staged), {:continue, :group_open}}
+        case apply_group_timers(state, staged) do
+          {:ok, timed} -> {:noreply, timed, {:continue, :group_open}}
+          _ -> local_group_fail(staged, :invalid_request)
+        end
 
       {:error, reason, dropped} ->
         local_group_fail(dropped, reason)
@@ -883,7 +1220,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           :ok ->
             state = release_opening_payloads(state)
             notify(state, {:ready, upload, state.config.limits, state.deadline})
-            {:noreply, schedule(state)}
+            continue_session(state)
 
           {:error, reason} ->
             fail(state, reason)
@@ -905,33 +1242,56 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp dispatch(_event, %{cancelled: true} = state), do: settle(state)
   defp dispatch(_event, %{consumed: true} = state), do: settle(state)
 
-  defp dispatch({:headers, status, fields}, state) do
-    Process.cancel_timer(state.opening_timer)
-    notify(state, {:headers, status, fields})
-    :ok = state.client.subscribe(state.request)
-    state = %{cancel_poll(state) | headers: true}
-    state = if state.client == @h2, do: %{state | submitted_url: nil}, else: state
-    if state.request.stream == nil, do: notify(state, {:end, []})
-    {:noreply, state}
+  defp dispatch(event, state) do
+    case account_state(state) do
+      :ok -> dispatch_event(event, state)
+      _ -> local_group_fail(state, :invalid_response)
+    end
   end
 
-  defp dispatch({:chunk, bytes, ref}, %{delivery: nil, cancelled: false} = state) do
-    notify(state, {:chunk, bytes, ref})
-    {:noreply, %{state | delivery: ref}}
+  defp dispatch_event({:headers, status, fields}, state) do
+    updated = %{cancel_poll(state) | headers: true}
+    updated = if state.client == @h2, do: %{updated | submitted_url: nil}, else: updated
+
+    with :ok <- account_state(updated),
+         :ok <- account_control(updated, :acknowledge, {:read_chunk, self(), :ack}),
+         :ok <- notify(updated, {:headers, status, fields}) do
+      Process.cancel_timer(state.opening_timer)
+      :ok = state.client.subscribe(updated.request)
+      if updated.request.stream == nil, do: notify(updated, {:end, []})
+      retained_state(updated)
+    else
+      _ -> local_group_fail(state, :invalid_response)
+    end
   end
 
-  defp dispatch({:chunk, _, _}, state), do: fail(state, :upstream_delivery_overlap)
-  defp dispatch({:trailers, trailers}, state), do: {:noreply, %{state | trailers: trailers}}
+  defp dispatch_event({:chunk, bytes, ref}, %{delivery: nil, cancelled: false} = state) do
+    updated = %{state | delivery: ref}
 
-  defp dispatch(:end, state) do
-    notify(state, {:end, state.trailers})
-    {:noreply, if(state.client == @h2, do: %{state | trailers: []}, else: state)}
+    with :ok <- account_state(updated),
+         :ok <- notify(updated, {:chunk, bytes, ref}) do
+      retained_state(updated)
+    else
+      _ -> local_group_fail(state, :invalid_response)
+    end
   end
 
-  defp dispatch({:error, reason}, state), do: upstream_fail(state, reason)
+  defp dispatch_event({:chunk, _, _}, state), do: fail(state, :upstream_delivery_overlap)
 
-  defp dispatch(:none, state) do
-    {:noreply, if(not state.headers, do: schedule(state), else: state)}
+  defp dispatch_event({:trailers, trailers}, state),
+    do: retained_state(%{state | trailers: trailers})
+
+  defp dispatch_event(:end, state) do
+    case notify(state, {:end, state.trailers}) do
+      :ok -> retained_state(if(state.client == @h2, do: %{state | trailers: []}, else: state))
+      _ -> local_group_fail(state, :invalid_response)
+    end
+  end
+
+  defp dispatch_event({:error, reason}, state), do: upstream_fail(state, reason)
+
+  defp dispatch_event(:none, state) do
+    if not state.headers, do: continue_session(state), else: retained_state(state)
   end
 
   defp fail(state, reason) do
@@ -987,6 +1347,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     state = drop_group_opening(state)
     state = begin_cleanup(state)
     state = if state.client == @h2, do: %{state | submitted_url: nil}, else: state
+    accounting = account_state(state)
 
     request =
       if state.managed_path or state.managed_transport,
@@ -995,13 +1356,14 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
     result = if request, do: state.client.cleanup(request, state.cancelled), else: :ok
 
-    case result do
-      :ok -> cleanup_complete(state)
-      {:ok, request} -> cleanup_complete(%{state | request: request})
-      {:pending, request} -> cleanup_pending(%{state | request: request})
-      {:error, :cleanup_pending} -> cleanup_pending(state)
-      {:error, reason, request} -> cleanup_failed(%{state | request: request}, reason)
-      {:error, reason} -> cleanup_failed(state, reason)
+    case {accounting, result} do
+      {:ok, :ok} -> cleanup_complete(state)
+      {:ok, {:ok, request}} -> cleanup_complete(%{state | request: request})
+      {:ok, {:pending, request}} -> cleanup_pending(%{state | request: request})
+      {:ok, {:error, :cleanup_pending}} -> cleanup_pending(state)
+      {_, {:error, reason, request}} -> cleanup_failed(%{state | request: request}, reason)
+      {_, {:error, reason}} -> cleanup_failed(state, reason)
+      _ -> cleanup_failed(state, :invalid_request)
     end
   end
 
@@ -1061,7 +1423,10 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp cleanup_pending(state) do
     if Lifecycle.remaining(state.cleanup_deadline) > 0 do
-      {:noreply, schedule(state)}
+      case account_state(state) do
+        :ok -> continue_session(state)
+        _ -> cleanup_failed(state, :invalid_request)
+      end
     else
       {:stop, :cleanup_unconfirmed, state}
     end
@@ -1076,33 +1441,48 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp select(%{selector: {:fixed, config}} = state), do: select_transport(state, config)
 
   defp select(%{selector: {:group, handle, pins}} = state) do
-    case UpstreamGroups.checkout(
-           handle,
-           pins,
-           self(),
-           %{},
-           min(state.deadline, state.opening_deadline)
-         ) do
-      {:ok, member, token} ->
-        state = %{state | selection: {handle, token}}
+    deadline = min(state.deadline, state.opening_deadline)
 
-        if group_intent?(state) or h2_member?(member),
-          do: select_group_transport(classify_group(state, member), member),
-          else: select_transport(state, member.config)
+    with :ok <- account_state(state),
+         :ok <-
+           account_owner_call(
+             state,
+             :group,
+             :checkout,
+             {:checkout, handle, pins, self(), %{}, deadline}
+           ) do
+      case UpstreamGroups.checkout(
+             handle,
+             pins,
+             self(),
+             %{},
+             min(state.deadline, state.opening_deadline)
+           ) do
+        {:ok, member, token} ->
+          state = %{state | selection: {handle, token}}
 
-      {:error, reason} ->
-        {:error, reason, state}
+          if group_intent?(state) or h2_member?(member),
+            do: select_group_transport(classify_group(state, member), member),
+            else: select_transport(state, member.config)
+
+        {:error, reason} ->
+          {:error, reason, state}
+      end
+    else
+      {:error, reason} -> {:error, reason, state}
     end
   end
 
   defp select_group_transport(state, selected) do
-    with :ok <- selected_aliases(state, selected, false),
+    with :ok <- account_state(state),
+         :ok <- account(state, :selected, selected),
+         :ok <- selected_aliases(state, selected, false),
          {:ok, limits, total, opening} <- group_timing(state, selected, Lifecycle.now()) do
       config = selected.config
       handle = config.transport
 
       identity = %{
-        origin: config.uri.scheme <> "://" <> config.uri.authority,
+        origin: :binary.copy(config.uri.scheme <> "://" <> config.uri.authority),
         upstream_protocol: config.upstream_protocol,
         instance: state.instance
       }
@@ -1115,13 +1495,43 @@ defmodule Gaoxy.Proxy.HTTP.Session do
             opening_deadline: opening
         }
 
-        timed = apply_group_timers(state, timed)
-        notify(timed, {:transport_handoff, timed.transport_handoff, handle, identity, opening})
-        {:await, %{timed | awaiting_transport: %{handle: handle, member: selected}}}
+        waiting = %{timed | awaiting_transport: %{handle: handle, member: selected}}
+
+        message =
+          {:gaoxy_proxy_http, self(),
+           {:transport_handoff, timed.transport_handoff, handle, identity, opening}}
+
+        with :ok <- account_state(waiting),
+             :ok <- account(waiting, {:control, :identity}, message),
+             :ok <- account(waiting, {:control, :handoff_request}, message),
+             {:ok, waiting} <- apply_group_timers(state, waiting),
+             :ok <-
+               notify(
+                 waiting,
+                 {:transport_handoff, waiting.transport_handoff, handle, identity, opening}
+               ) do
+          {:await, waiting}
+        else
+          {:error, reason} -> {:error, reason, drop_group_opening(waiting)}
+        end
       else
-        with :ok <- UpstreamTransports.validate_endpoint(handle, identity, opening),
-             {:ok, pins} <- Resources.pin_many([handle], self(), :request, opening) do
-          checkout_group_transport(%{state | transport_pins: pins}, selected, pins, opening)
+        with :ok <-
+               account(
+                 state,
+                 {:control, :identity},
+                 {:validate_endpoint, handle,
+                  {config.upstream_protocol,
+                   if(config.uri.scheme == "https", do: :https, else: :http), config.uri.host,
+                   config.uri.port}, state.instance, opening}
+               ),
+             :ok <- UpstreamTransports.validate_endpoint(handle, identity, opening) do
+          case pin_group_transport(state, handle, opening) do
+            {:ok, pinned} ->
+              checkout_group_transport(pinned, selected, pinned.transport_pins, opening)
+
+            {:error, reason, retained} ->
+              {:error, reason, drop_group_opening(retained)}
+          end
         else
           {:error, reason} -> {:error, reason, drop_group_opening(state)}
         end
@@ -1131,11 +1541,52 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     end
   end
 
+  defp pin_group_transport(state, handle, deadline) do
+    operation = make_ref()
+    request = {:pin_many, [handle], self(), :request, operation, deadline}
+
+    with :ok <- account_owner_call(state, :transport, :pin, request) do
+      case UpstreamTransports.pin_many([handle], self(), :request, operation, deadline) do
+        {:ok, pin} ->
+          captured = capture_handoff_pin(state, pin, handle)
+
+          with :ok <- account_owner_reply(state, :transport, :pin, {:ok, pin}),
+               true <- captured.transport_pins === [pin],
+               :ok <- account_state(captured) do
+            {:ok, captured}
+          else
+            _ ->
+              _ = account_control(state, :owner, {:cancel_pins, self(), operation})
+              UpstreamTransports.cancel(handle.owner, operation)
+              {:error, :invalid_resource_pin, captured}
+          end
+
+        {:error, reason} ->
+          # Cancelling the actual operation is owed even on a rejected reply.
+          _ = account_control(state, :owner, {:cancel_pins, self(), operation})
+          UpstreamTransports.cancel(handle.owner, operation)
+          _ = account_owner_reply(state, :transport, :pin, {:error, reason})
+          {:error, reason, state}
+      end
+    else
+      {:error, reason} -> {:error, reason, state}
+    end
+  end
+
   defp checkout_group_transport(state, selected, pins, deadline) do
     handle = selected.config.transport
 
-    with :ok <- selected_aliases(state, selected, false),
-         true <- HTTP.captured_resources?(pins, [handle]) do
+    with :ok <- account_state(state),
+         :ok <- selected_aliases(state, selected, false),
+         true <- HTTP.captured_resources?(pins, [handle]),
+         :ok <- account(state, :captured_pins, pins),
+         :ok <-
+           account_owner_call(
+             state,
+             :transport,
+             :checkout,
+             {:checkout, handle, pins, self(), deadline}
+           ) do
       case UpstreamTransports.checkout(handle, pins, self(), deadline) do
         {:ok, client, token} ->
           state = %{state | transport_selection: {handle, token}, managed_transport: client}
@@ -1147,7 +1598,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
                  ),
                true <-
                  checked_origin?(client, selected.config.upstream_protocol, selected.config.uri),
-               :ok <- selected_aliases(state, selected, true) do
+               :ok <- selected_aliases(state, selected, true),
+               :ok <- account(state, :checked, client),
+               :ok <- account_state(state) do
             # The exact owner Selected and raw member URI survive checkout.
             {:ok, state, selected}
           else
@@ -1155,12 +1608,12 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           end
 
         {:error, reason} ->
-          case Resources.release(pins) do
-            :ok ->
-              {:error, reason, drop_group_opening(%{state | transport_pins: []})}
+          case release_transport_pins(state) do
+            {:ok, released} ->
+              {:error, reason, drop_group_opening(released)}
 
-            {:error, release_reason} ->
-              {:error, {:pin_release_failed, release_reason}, drop_group_opening(state)}
+            {:error, release_reason, retained} ->
+              {:error, release_reason, drop_group_opening(retained)}
           end
       end
     else
@@ -1228,35 +1681,94 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp bind(%{transport_selection: nil} = state), do: bind_selection(state)
 
   defp bind(%{transport_selection: {handle, token}, original_request: request} = state) do
-    with :ok <-
-           UpstreamTransports.bind_completion(handle, token, state.client.completion(request)),
+    completion = state.client.completion(request)
+
+    with :ok <- account_state(state),
+         :ok <-
+           account_owner_call(
+             state,
+             :transport,
+             :bind,
+             {:bind_completion, handle, token, completion}
+           ),
+         result = UpstreamTransports.bind_completion(handle, token, completion),
+         :ok <- account_owner_reply(state, :transport, :bind, result),
+         :ok <- result,
          do: bind_selection(state)
   end
 
   defp bind_selection(%{selection: nil}), do: :ok
 
-  defp bind_selection(%{selection: {handle, token}, original_request: request} = state),
-    do: UpstreamGroups.bind_completion(handle, token, state.client.completion(request))
+  defp bind_selection(%{selection: {handle, token}, original_request: request} = state) do
+    completion = state.client.completion(request)
+
+    with :ok <- account_owner_call(state, :group, :bind, {:bind, handle, token, completion}),
+         result = UpstreamGroups.bind_completion(handle, token, completion),
+         :ok <- account_owner_reply(state, :group, :bind, result),
+         do: result
+  end
 
   defp finish_transport(%{transport_selection: nil} = state), do: release_transport_pins(state)
 
   defp finish_transport(%{transport_selection: {handle, token}} = state) do
-    case UpstreamTransports.finish(handle, token) do
-      :ok -> release_transport_pins(%{state | transport_selection: nil})
-      {:error, :cleanup_pending} -> {:pending, state}
+    with :ok <- account_state(state),
+         :ok <- account_owner_call(state, :transport, :finish, {:finish, handle, token}) do
+      result = UpstreamTransports.finish(handle, token)
+
+      with :ok <- account_owner_reply(state, :transport, :finish, result) do
+        case result do
+          :ok -> release_transport_pins(%{state | transport_selection: nil})
+          {:error, :cleanup_pending} -> {:pending, state}
+          {:error, reason} -> {:error, reason, state}
+        end
+      else
+        {:error, reason} -> {:error, reason, state}
+      end
+    else
       {:error, reason} -> {:error, reason, state}
     end
   end
 
   defp release_transport_pins(state) do
-    case Resources.release(state.transport_pins) do
+    if group_intent?(state) do
+      release_group_transport_pins(state)
+    else
+      case Resources.release(state.transport_pins) do
+        :ok -> {:ok, %{state | transport_pins: []}}
+        {:error, reason} -> {:error, {:pin_release_failed, reason}, state}
+      end
+    end
+  end
+
+  defp release_group_transport_pins(state) do
+    result =
+      Enum.reduce_while(state.transport_pins, :ok, fn pin, :ok ->
+        with :ok <- account_owner_call(state, :transport, :release, {:release, pin}),
+             result = Resources.release(pin),
+             :ok <- account_owner_reply(state, :transport, :release, result),
+             :ok <- result do
+          {:cont, :ok}
+        else
+          error -> {:halt, error}
+        end
+      end)
+
+    case result do
       :ok -> {:ok, %{state | transport_pins: []}}
       {:error, reason} -> {:error, {:pin_release_failed, reason}, state}
     end
   end
 
-  defp complete_service(%{managed_path: true} = state),
-    do: Gaoxy.Service.complete_cleanup(state.service, state.token)
+  defp complete_service(%{managed_path: true} = state) do
+    request = {:complete_cleanup, state.token}
+
+    with :ok <- account_state(state),
+         :ok <- account_control(state, :admission, request),
+         :ok <- preflight_service_cleanup(state, request),
+         result = Gaoxy.Service.complete_cleanup(state.service, state.token),
+         :ok <- account_service_reply(state, result),
+         do: result
+  end
 
   defp complete_service(%{managed_transport: nil} = state) do
     _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
@@ -1265,10 +1777,27 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp complete_service(state), do: Gaoxy.Service.complete_cleanup(state.service, state.token)
 
+  defp preflight_service_cleanup(state, request) do
+    if group_intent?(state),
+      do: ManagedH2GroupAccounting.preflight_control(:admission, request),
+      else: :ok
+  end
+
+  defp account_service_reply(state, {:error, reason}),
+    do: account_control(state, :admission, {:error, finite_reason(reason)})
+
+  defp account_service_reply(state, result), do: account_control(state, :admission, result)
+
   defp finish_selection(%{selection: nil}), do: :ok
 
-  defp finish_selection(%{selection: {handle, token}} = state),
-    do: UpstreamGroups.finish(handle, token, state.outcome)
+  defp finish_selection(%{selection: {handle, token}} = state) do
+    with :ok <- account_state(state),
+         :ok <-
+           account_owner_call(state, :group, :finish, {:finish, handle, token, state.outcome}),
+         result = UpstreamGroups.finish(handle, token, state.outcome),
+         :ok <- account_owner_reply(state, :group, :finish, result),
+         do: result
+  end
 
   defp open_options(%{client: @h2} = state, _config) do
     %{
@@ -1379,9 +1908,25 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         value <= 9_223_372_036_854_775_807
 
   defp notify(state, {:error, reason}),
-    do: send(state.owner, {:gaoxy_proxy_http, self(), {:error, normalize_reason(state, reason)}})
+    do: notify_event(state, {:error, normalize_reason(state, reason)})
 
-  defp notify(state, event), do: send(state.owner, {:gaoxy_proxy_http, self(), event})
+  defp notify(state, event), do: notify_event(state, event)
+
+  defp notify_event(state, event) do
+    message = {:gaoxy_proxy_http, self(), event}
+
+    family =
+      case event do
+        {:ready, _, _, _} -> :ready
+        {:transport_handoff, _, _, _, _} -> :handoff_request
+        _ -> :delivery
+      end
+
+    with :ok <- account_control(state, family, message) do
+      send(state.owner, message)
+      :ok
+    end
+  end
 
   defp cancel_poll(%{client: @h2, poll_timer: timer} = state) do
     if timer, do: Process.cancel_timer(timer)

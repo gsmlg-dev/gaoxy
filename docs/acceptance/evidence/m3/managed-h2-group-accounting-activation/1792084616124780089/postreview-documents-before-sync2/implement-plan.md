@@ -1,0 +1,661 @@
+# Gaoxy Implementation Plan
+
+The [managed H2 group accounting/activation stage](docs/acceptance/m3-managed-h2-group-accounting-activation.md) remains IN PROGRESS at guard baseline `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`. A-D/preactivation gates and independent SPEC35/35/CODE passed. Controlled F is ENABLED_PENDING_ACCEPTANCE. Enabled live gates FAIL106/19 and110/10; guardian diagnostic FAIL48/2 are retained. Independently reviewed repairs are integrated pending fresh verification. Browser3, final FULL review/acceptance and local commit are NOT RUN. Counter ledger3 records15 failed GREEN attempts and16 root repair events, preserving all inherited counters and Astra2/2.
+## Current checkpoint — 2026-10-16
+
+The pure [managed H2 group source foundation](docs/acceptance/m3-managed-h2-group-source-foundation.md) is now **DONE locally** at `060f92641ae12345b7121e220549222418a40b0e`. Complete independent SPEC2 then CODE1 and fresh scoped format, forced strict compile and five-file tests passed: **107 executed/0 failures/0 skips/0 exclusions**, exit0, with all33 reviewed source identities stable. The raw disk/index audit authenticated63 files/484475 bytes, separately checked its appended output and verified all64 paths against the actual feature tree. The exact candidate, review, gate/log and local commit identities are retained in the stage ledger.
+
+The [group opening boundary](docs/acceptance/m3-managed-h2-group-opening-boundary.md) is now **DONE locally** at `faa07702344b47129119f4902938481ddce03023` after complete independent implementation SPEC1/CODE1 and fresh format/forced strict compile, pure153/0 and complete36-file compatibility603/0. Zero skips/exclusions and stable source; all41 original tests remain unchanged. Original strict compileFAIL, compatibility603/4, both Sol repairs and cumulative manifest custodyfailure2 remain preserved. The [Probe/owner boundary](docs/acceptance/m3-managed-h2-group-probe-boundary.md) is **DONE locally** at1f32850e4d1cfd2e5c5b913e12bb574bfe924f5b after independent implementation SPEC30/0/CODE15/0, fresh format/forced compile/pure141/0 and six-file H1 compatibility70/0, zero skips/exclusions and stable source. Final document rebind and all131 actual committed-path byte identities passed. All failures/counters and43 original tests are retained. The [canonical startup controls](docs/acceptance/m3-managed-h2-group-startup-controls.md) is DONE LOCALLY at `b30bdb0dcbdd3bc33b3b8e06a6f691e3584e42f1` after readiness SPEC2 (20/0), complete intended RED113/113, FULL implementation SPEC1 (39/39), CODE1 (23/23) and fresh format/forced strict compile/pure254/0/H1 compatibility70/0/validated metadata, all exit0/joined/stable/zero skips or exclusions. Final documentation SPEC21/21/CODE12/12 and all141 actual committed-path byte identities passed. All45 pre-existing tests remain unchanged. The [Session queued-terminal control](docs/acceptance/m3-managed-h2-group-preopen-control.md) is DONE LOCALLY at `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`: original FULL SPEC47/47/CODE48/48, fixture repair SPEC50/50/CODE44/44 and six fresh gates PASS on99 stable inputs (pure452/0, compatibility603/0, Python11/0, affected fixture97/0, format and forced strict compile exit0; zero skips/exclusions). The retained fresh603/1 failure led to fixture repairSol1. Session198,46 other original tests and the endpoint no_event-through-tests suffix remain unchanged. No group activation/reserve change follows; ACCOUNTING_NOT_READY and fixed9,444,956 remain. Negative TLS/browser cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE. All counters and historical failures are preserved, including the root overlapping format check (NONACCEPTED, followed by serial PASS) and rootDocumentSnapshotFailure1. Readiness SPEC1 FAIL18/2, strict test-warning FAIL and first metadata-path FAIL are preserved. The startup catalog measures a partial22-representation three-mode success catalog with per-instance formulas; no universal VM/private/native or replacement97 proof. At that predecessor checkpoint H2 groups/probes retained unconditional accounting-not-ready denial; the current accounting/activation stage is tracked above.
+
+The initial zero-test source custody failure, intended16/16 missing-functionRED, first implementation SPEC failure and additive exact65536 boundary repair remain preserved. Source repairSol1/failedSPEC1, unsuccessfulGREEN0, custody failure1 and intendedRED1 are separate from boundary designfailedSPEC1/custodyfailure1 and inherited counters; Astra2/2 remains exhausted. Actual selected-envelope release, startup/recovery accounting, live groups/probes, Generation and standalone/load retain their separate gates; no new group reserve, network/browser or publication result follows from pure-source acceptance.
+
+All six fresh post-review runtime gates PASS for the managed H2 fixed-endpoint
+candidate at baseline `31f23eb2d915ba715a1016f254b90d9805f18a1a`. Complete independent
+[SPEC](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-spec.json) then
+[CODE](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-code.json) passed with zero findings.
+Candidate manifest SHA256 is `eae7be8d14325be8f34f13ddef2ab1183d950153b4172599d91c837a3034f559`.
+
+Fresh format43 and forced strict compile passed; complete full58 executed
+**853 tests /0 failures /0 skips /0 exclusions**, exit0. Additive HTTP0.21.10
+public qualification passed **63/63**, the four-cell real-peer matrix passed
+**135/135** unique required cases, and isolated browser acceptance passed
+**3/3**. All source identities remained stable. The
+[complete receipt audit](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-postreview-complete-evidence-audit.json) verifies logs/artifacts, actual
+loaded source/BEAM identities, original public completions and peer/browser
+process joins. HTTP0.21.10 resolves upstream122; every original assertion and
+all historical failure evidence remain preserved.
+
+Negative wrong-CA/name browser cleanup remains
+`UNCONFIRMED_WITH_RETAINED_FAILURE`; passing negative cases do not establish
+successful original cleanup. Historical EOF and connection-reset outcomes
+remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
+new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
+remains exhausted.
+
+Fixed-endpoint activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`, with qualification evidence committed
+at `5516ea1b398d7970e861cabdb2c2c3075be7eeae`. Final documentation-only SPEC then
+CODE and the bounded evidence-byte repair reviews passed with zero findings.
+The fresh Git-index audit checked8096 evidence files (1081175548 bytes),
+preserved all8084 immutable inventory entries and found zero mismatches; the
+two appended audit/binding outputs were separately byte-checked. The accepted
+52 source/5 authority hashes matched the actual feature commit.
+
+The `upstream122-v02110-local-commit-closure.json` receipt in the evidence
+directory records both actual commits and trees, clean index/worktree, and
+preserved user files. Managed H2 groups/probes begins with non-live accounting
+readiness; its extra2097152-byte draft remains PROPOSED_UNPROVED and
+ACCOUNTING_NOT_READY. Generation, standalone/load, hosted CI, publication,
+deployment and production acceptance retain their separate gates.
+
+## Historical checkpoints before the final runtime gates
+
+Current checkpoint — 2026-10-15: managed H2 fixed endpoints remain uncommitted.
+
+Upstream [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is CLOSED, repaired by PR125 / merge9caf38cabdaa5fc1c65501632a28548ebd27d714
+and released in the coordinated HTTP 0.21.10 cohort
+(tag ed27a577d418e45266cd54638692362d17fcdcd1). All seven packages are now
+pinned/locked to0.21.10. The original cancellation assertion still requires
+:aborted and passed unchanged (5 tests /0 failures).
+
+Strict compilation and format41 passed. Two complete full58 runs each
+executed853 tests with1 failure, exit2 and stable source; both are retained.
+The second exposed a local H1 probe-fixture lifetime race: querying an owner
+after instance-driven normal termination returns :not_running. Sol20 added
+exact owner-DOWN barriers and reproduced the same class deterministically
+(34 tests /22 expected failures), then corrected only fixture teardown
+ordering. The complete two-file GREEN passed34/0, exit0/stable source.
+Original primary bodies, short-stop failure and TLS uncertainty assertions
+remain unchanged. Live-owner zero-status checks remain; body-owned core
+shutdown uses a monitor installed before shutdown and an exact normal DOWN.
+See sol20-group-cleanup-repair-design-plan.md, independent design SPEC,
+RED/GREEN receipts and the explicit test-contract amendment in stage evidence.
+This scoped GREEN does not substitute for a fresh full58 gate.
+
+The additive h2_02110 qualification/supplement preserves all63 public cases
+and hash-pins historical0.21.4 sources. Matrix/browser use its exact0.21.10
+identity wrapper; all135/3 cases and assertions remain. Complete updated
+independent SPEC then CODE and fresh format43/strict compile/full58/public63/
+matrix135/browser3 remain required before acceptance and local commit.
+Current ownership is52 files plus5 authorities; no58-file omission is allowed.
+
+Cumulative prior counters persist: fixedSol19/unsuccessfulGREEN14;
+collectorSol17/unsuccessfulGREEN12; matrixfailed11; browserfailed5;
+R32diagnosticfailed5; nativeH1 RED2/fixture2; nativeH2 shape RED2/fixture1;
+local-status RED2/fixture1; full-staticCODEfailed1. New counters:
+0.21.10 full58failed2; fixtureSol20 RED1/GREEN1. Astra recovery2/2 remains
+exhausted. Negative TLS cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE.
+Root owns all repository writes/runtime; publication/deployment restrictions
+remain. No stage completion, commit or successor activation is claimed.
+
+Historical Sol19 checkpoint before the upstream122 repair follows:
+
+Latest execution (Sol19 final unblocked verification): activation remains
+BLOCKED_UPSTREAM122 and uncommitted at baseline `31f23eb`.
+Sol19 trusted local_fail now preserves only native400/413/431 for
+ManagedH2Client and immediately discards raw diagnostics to :invalid_request.
+Generic upstream errors still normalize before status selection; original
+cleanup, unset-head/total-expiry, close, caps and deadlines are unchanged.
+Independent bounded SPEC then CODE PASS with zero open findings. Complete
+endpoint GREEN1 PASS38/0 and affected lifecycle/H1/H3 compatibility PASS141/0
+(21 native HTTP +120 proxy), exit0/source stable/zero skips or exclusions.
+These scoped passes resolve LOCAL_REQUEST_ERROR_STATUS_LOST, not stage acceptance.
+
+Sol19 RED1 remains fixture FAIL38/8 on its invalid Trailer assertion; its sole
+correction asserts exact authentic H2 pseudoheaders and no hop fields. Genuine
+RED2 FAIL38/8 reached the exact closed wire response after original pending
+barriers and observed502 vs400x2/413x2/431x4. Original30 cases and all8
+status/completion/cleanup assertions remain unchanged. Actual release, bounded
+design/plan, exact candidates/reviews and RED/GREEN receipts are preserved as
+`sol19-local-status-*` in the existing stage evidence directory.
+
+Full independent SPEC Sol19 then CODE Sol19 PASS with zero findings on the
+frozen owned46/authorities5 candidate. Fresh post-review format38, strict
+compile (--warnings-as-errors --force), public63/63, complete matrix135/135
+and browser3/3 all PASS with exit0 and stable source. The matrix executed all
+135 unique required identities across four cells, with zero omissions,
+skips or exclusions. Actual public command-group, matrix peer and browser
+joins, artifact hashes and91 loaded Gaoxy module identities were audited.
+Browser negative CA/name outcomes remain UNCONFIRMED_WITH_RETAINED_FAILURE;
+these passing cases do not confirm their original cleanup.
+
+`sol19-postreview-unblocked-evidence-audit.json` binds the fresh qualifications,
+receipts, full reviews and frozen manifest. Its status is
+PASS_UNBLOCKED_GATES_ONLY; full58 and stage acceptance remain blocked.
+The earlier Collector Sol17 matrix GREEN12 and browser-sol17-1 passes remain
+historical evidence and are not substituted for these Sol19 results.
+
+Live read-only recheck confirms [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+OPEN/Bug/internal request/blocker. Latest v0.21.9/main `81ad386f` is unchanged
+and fixes119, not122; dependency cohort remains0.21.4. Historical full58
+FAIL845/1 expected original Promise:aborted but observed:einval. Later5/0 and
+32/0 are not repairs. Full58 stays BLOCKED_UPSTREAM122 without workaround,
+omission or weakened assertion, pending upstream fix and compatible update.
+The final read-only snapshot is `sol19-upstream122-final-read-only-check.json`.
+
+Counters: fixedSol19/unsuccessfulGREEN14; collectorSol17/unsuccessfulGREEN12;
+matrixfailed11; browserfailed5; R32diagnosticfailed5; nativeH1 RED2/fixture2;
+nativeH2 shape RED2/fixture1; local-status RED2/fixture1; full static CODE failed1.
+Astra recovery2/2 remains exhausted. Owned46/format38/full58 remain complete.
+Forward-only runner3 captures AGENTS.md/implement-plan.md alongside the earlier
+source set; old receipts and smaller coverage remain immutable. No stage
+acceptance, commit or next-stage activation is claimed.
+
+Previous execution checkpoint (before matrix GREEN12 and Sol19), retained as history:
+
+Latest execution: managed H2 fixed-endpoint activation is INCOMPLETE and
+uncommitted. Native H1 Sol17/Sol18 focused GREEN2 passed67/0 with stable
+source and narrow independent SPEC then CODE; historical failures are retained.
+Fresh format37 and strict compile passed. Full58 executed845/1, exit2,
+source stable with zero skips/exclusions. Its sole pre-head public H1
+cancellation assertion expected:aborted and observed:einval after confirmed
+cleanup. The unchanged file later passed5/0 and the bounded public diagnostic
+passed32/0; neither result proves a repair or erases full58's failure.
+
+Upstream [gsmlg-dev/http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is confirmed OPEN, type Bug, label internal request, severity blocker for the
+existing cancellation compatibility gate. The callsite has its required TODO;
+no local workaround or weaker assertion is authorized. That task remains
+BLOCKED until an upstream repair and compatible dependency update. Other
+unblocked verification continues. Comment-only routing makes owned46/format38;
+the required complete test manifest remains full58, with no omission.
+
+Released canonical Collector Sol16 passed narrow independent SPEC then CODE.
+Diagnostic8 PASS4/4 authenticated all128 held cleanup refs and2 refused extras
+against all130 authentic raw calls (:ok, max6.594785ms), with real joins and
+unchanged1024 caps. Diagnostic7's original overall FAIL remains historical.
+Complete matrix GREEN11 remains FAIL87/135, exit1/source stable. The next H2
+head-bytes-exact response needs65688 RFC metadata bytes; the fixture advertised
+131072 but its decoder retained65536. This establishes a fixture mismatch,
+not a production defect. The public update_settings/matching ACK candidate
+preserves the existing finite131072 cap,135 identities and120 original collector
+assertions. Initial independent SPEC passed; CODE found a first-request/ACK-send
+absolute-deadline gap in a controlled-clock model. The targeted candidate repair
+passed fresh independent SPEC then CODE with24 deadline and4 fail-closed
+models and no actionable findings. Root released Collector Sol17 and its
+managed-only peer ACK profile; complete matrix GREEN12 is pending execution.
+The first reviewer response-vector arithmetic failure and exact correction are
+preserved separately; it occurred before candidate execution.
+
+Fresh public63 PASS63/63 is retained as scoped evidence; browser3 is not fresh
+for the eventual final candidate. Current counters: fixed Sol18/unsuccessful
+GREEN14; collector Sol17/unsuccessful GREEN12; matrix failures11; browser
+failures5; R32 diagnostic failures5; native H1 poll-floor RED failures2/fixture
+corrections2; native H2 shape RED failures2/fixture correction1. Astra recovery2/2
+is exhausted. Full58 is BLOCKED by upstream122; format38, complete matrix135,
+browser3, full stage independent SPEC then CODE and fresh post-review gates
+remain required. No phase acceptance or commit is claimed.
+Earlier execution summaries below are historical.
+
+**Reviewed execution update, 2026-10-11:** The former http_fetch#97 proof
+requirement is dismissed and must not be revived or replaced by equivalent gates.
+Preserve historical evidence and assertions. Release the verified native H1/H2
+and dedicated-H1 gateway beta subset as v0.2.0, disclosing unimplemented upstream
+pools and upstream H2. Integration, push, tagging and GitHub standalone release
+are authorized. Prepare M4's design/plan. Vault, disabled release-artifact E2E,
+deployment, production data, operational certificates and public management
+restrictions remain. See [ADR007](docs/adr/007-m3-beta-and-m4.md).
+
+**Date:** 2026-10-08  
+**Status:** Architecture and execution plan; not an implementation or acceptance report  
+**Initial execution scope (historical kickoff):** M0 + M1, the transport-runtime foundation
+**Companion:** `codex-prompt.md`
+
+**Current execution authorization (renewed 2026-10-13):** Execute M3 H1 resources and continue through
+the existing milestone plan after each stage passes its prescribed verification
+and independent review. Automatically choose recommended designs, write stage
+designs/plans, implement, repair, document, test, review, and commit locally;
+routine per-action and per-stage approval is no longer required. Necessary
+compatibility fixes and test/documentation updates are authorized beyond older
+file lists. Historical M0/M1 stop rules below apply only to the kickoff.
+Product scope and explicit Vault, E2E, publication/deployment, and production
+data restrictions remain in force. See `AGENTS.md` for the continuing workflow.
+The 2026-10-11 instruction to prepare M4's design/plan is superseded by this
+explicit implementation start; retain that dated release disposition as history.
+Full M4 acceptance includes the remaining upstream-H3 proxy matrix and explicit
+standalone H3 opt-in, following their bounded written designs and verification.
+
+**Conditional publication authorization, 2026-10-12:** After M4 completes its
+required verification and independent review, integrate main, push to GitHub,
+publish a new version and prepare the next planned stage. An incomplete/blocked
+gate is not completion. Deployment, production data/certificates, Vault, public
+management and disabled release-artifact E2E restrictions remain.
+
+**Completed M4 and publication, 2026-10-13:** All prescribed M4 gates and
+independent acceptance PASS. [v0.3.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.3.0) is published from
+immutable source `4931982cff7b07c8e9f42a5e4561d22854d418bd`; portable builder757/0, fresh offline core/H1/H2/H3
+runtime,21 ELF and all three fresh downloads PASS. [Release acceptance](docs/acceptance/release-0.3.0.md)
+records actual identities and unchanged historical failures. Hosted CI is
+BLOCKED_ENV with zero executed steps; deployment/production/E2E remain NOT RUN.
+The next prepared existing package is M3 Task4 H1 resource foundation:
+[design](docs/designs/m3-h1-resource-foundation.md) and
+[plan](docs/plans/m3-h1-resource-foundation.md), now **DONE** at local commit
+`5b73f5a951d506f194d090a0083183a79d577d6e`: final independent SPEC/CODE and
+fresh proxy77/0, core36/0, external core consumer1/0, complete independent
+TCP/TLS8/0, strict compile and format PASS. Historical failed/rejected rounds
+remain in its [acceptance](docs/acceptance/m3-h1-resource-foundation.md).
+Task5 [fixed endpoint activation](docs/plans/m3-managed-h1-fixed-endpoint.md)
+is now **DONE locally** at `2bf0883cea1dce1a031016700bb012fb3faac8b5`: independent SPEC/CODE and fresh178/0, strict compile
+and formatcheck PASS; all historical failures remain preserved. Managed H1 [groups/probes](docs/plans/m3-managed-h1-groups.md) are **DONE locally** at `5ea088a9e3fe2646a056b2078f31a34f7adb6049`: complete independent SPEC/CODE, fresh168/0 without skips/exclusions, strict compile and formatcheck PASS. All original failures remain in their [acceptance](docs/acceptance/m3-managed-h1-groups.md). Managed H1 [Generation](docs/plans/m3-managed-h1-generation.md) is **DONE locally** at `cb619569c7a18568981d3425845954ad04908ffb`: complete independent SPEC/CODE, fresh341/0 with zero exclusions/skips, scoped format and strict compile PASS. Its [acceptance](docs/acceptance/m3-managed-h1-generation.md) preserves failed attempts and source/evidence identities.
+The [H2 preparation package](docs/plans/m3-managed-h2-preparation.md) is **DONE locally**
+at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`: complete independent SPEC/CODE, fresh scoped format/strict compile97/0
+and public63/0 with zero exclusions/skips. Its source/peer/evidence identities
+and historical assertions are preserved in its [acceptance](docs/acceptance/m3-managed-h2-preparation.md).
+Fixed-H2 activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`; evidence commit
+`5516ea1b398d7970e861cabdb2c2c3075be7eeae` preserves every historical failure.
+Complete independent SPEC/CODE and final documentation reviews PASS; fresh
+format43/strict compile/full58 **853/0**/public63/matrix135/browser3 PASS with
+zero skips or exclusions and stable source. Lossless index audit checked8096
+evidence files and two appended outputs; actual committed52+5 source identities
+match the accepted candidate. Negative TLS/browser cleanup remains
+UNCONFIRMED_WITH_RETAINED_FAILURE. Managed H2 groups/probes next enters only
+non-live accounting readiness; its proposed extra2097152 bytes is unproved.
+The [plan](docs/plans/m3-managed-h2-fixed-endpoint.md) and
+[acceptance](docs/acceptance/m3-managed-h2-fixed-endpoint.md) retain exact receipts.
+
+Historical fixed-H2 execution checkpoints follow: Pure/owner/renderer
+GREEN2 passed237/0, while client/integration GREEN2 remains a preserved194/30
+failure. Task7 RED76/8 and unfiltered H2 network RED28/4 exposed a downstream H2
+write-deadline gap. Repair4 strict compile passed and combined759/4 remains a
+preserved failure; targeted repair5 executed107/2 with stable source and zero
+skips/exclusions. Repair6 fixed both diagnosed races, but targeted108/1 exposed
+an instance-death fixture assumption about the separate original and Service
+ledgers. Sol repair7 Task7 passed77/0 with source stable, exit0 and zero
+skips/exclusions; the earlier wrong-fixture9/9 failure is preserved. Browser
+positive case passed inside diagnostic2/3; the five earlier browser runs failed;
+negative GREEN1 passed exact wrong-CA h2/502/navigation/errorPage assertions,
+then failed on Service.retained_bytes after genuine cleanup_unconfirmed and
+Service exit. Timeline GREEN1 records exact9,444,956 pre-exit reserve, missing
+receipt, retained token and finite Writer readiness, but helpers1 violates
+required0. Collector Sol9 then passed complete browser3/3 with exact helpers0
+and actual helper settlement before disposal; negative originals remain
+cleanup_unconfirmed with retained failure. Full53 GREEN1 passed761/0 and public
+GREEN1 passed63/63, source stable, exit0, zero skips/exclusions. Matrix GREEN1
+failed after5 cases due to selecting a stale zero-byte GET upload_end for the
+actual65536-byte POST completion; Sol10 exact identity repair replay passed.
+Matrix GREEN2 completed13 cases before C2 blank502 violated required503;
+precise local capacity RED executed32/4 with all four intended failures and
+malformed diagnostics preserved. Sol10 implements the exact public capacity
+mapping. Repair12 combined control/capacity/renderer GREEN passed96/0 and the
+real public C2 raw Promise witness passed with confirmed cleanup/peer joins.
+Control supplement GREEN1/GREEN2 each failed63/2; renderer network33/0 passed.
+Bounded trace diagnostic failed30/1 on a non-original-Task `{ref, false}` reply;
+Sol11 combined run failed96/1: real h2c public timer provenance verified1,
+TLS0 observed; all capacity cases and renderer33/0 passed. Sol12 repairs only
+the rejection-reporting exception in the missing-call counterexample. Matrix
+GREEN3 passed C2 then failed after14 cases: R32's cold second connection led to
+5 legitimate P0 refusals. Collector Sol11 adds actual connection/SETTINGS
+preparation barriers, preserving32 simultaneous held requests, refusal33,
+deadlines and all exact oracles.
+Matrix GREEN4 then proved two ACK16 connections,32 simultaneously held requests,
+blank503 refusal33, healthy responses and joins, but remains FAIL after15 cases,
+exit1, source stable and zero skips/exclusions. The next pre-EOF H1 upload sent
+16392 bytes with Content-Length32781; upstream received16384, missing8 while EOF
+was withheld. Preserve the [immutable diagnosis](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-h1-partial-upload-diagnosis.json)
+and [run receipt](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-1791987688394641648.json).
+B owns the bounded `Exchange.recv_body/4` repair and new native H1 partial-upload
+suite: max-sized timeout0 probes halve to1, then one finite wait uses the same
+absolute read deadline. Parent owns runtime. Native H1 RED1 failed8/6: four byte
+regressions and two incorrect fixture shutdown expectations, plus logged
+CaseClauseError from an invalid Endpoint abort. B corrects TEST ONLY before
+RED2; production stays frozen. These fixture failures are not capacity failures.
+Clean native H1 RED2 failed8/4 on exactly the four byte regressions. Sol13
+GREEN1 executed53/1: all8 new cases and existing deadline/cap/network checks
+passed; only the unchanged exact trailer-limit error reason failed. Independent
+bounded short-read SPEC then CODE passed with no findings; full fixed-H2 review
+is still pending. Sol14 restores the trailer-specific reason while keeping all
+bounds/assertions; focused GREEN passed63/0, stable exit0 with no skips/exclusions.
+Matrix GREEN5 failed19 on a late helper after early zero settlement.
+CollectorSol12 then proved native-head256/257 genuine helper settlement with
+helpers0 in GREEN6 while preserving original cleanup_unconfirmed and retained
+failure. GREEN6 remains FAIL21, stable exit1: the next H1 byte-head expected200
+fixture would render65,600 bytes against the unchanged65,536 cap. Independent
+source/byte diagnoses confirm its infeasibility. CollectorSol13 is prepared and frozen to
+use explicit reachable exact/over units; the four cells/all135 cases and exact
+byte/order/status/cleanup assertions remain. Header RED1 executed30/4; bounded test-only collection of authenticated exact
+upload prefixes resolves the legitimate per-byte fragmentation contract.
+Clean RED2 executed30/2 with only the intended500-versus502 failures; exact
+wire65,536 and all upload assertions pass. Sol15 is released only for the
+uncommitted Proxy.HTTP renderer response_header_limit502 cleanup path; caps,
+ordinary core behavior and other error/timeout paths remain. Production GREEN
+and full135 matrix rerun remain NOT RUN.
+Sol15 relevant GREEN87/0 and narrow SPEC/CODE PASS; pre-review full57 PASS824/0,
+source stable/exit0/zero skips or exclusions. CollectorSol14 independent narrow
+SPEC then CODE PASS. MatrixGREEN8 remains FAIL84: both completeH1 cells plus
+H2→TLS functional/concurrent/controlled cases passed, includingR32all32command
+ACKs before clientjoins in17.206/29.193/19.095ms with unchanged deadlines.
+NextH2→TLShead255 expected200 emittedempty502. Public HPAX codec isolation
+confirms256 total fields are feasible, but bulk returned iodata depth258 exceeds
+the unchanged depth16 guard. Ordered per-field encoding has identical bytes,
+exact decode and valid frames at depth4; this diagnostic is not acceptance.
+Sol16 is planned within the same single returned-iodata slot and all original
+caps/deadlines, with empty resize-prefix semantics retained. Clean nativeH2 RED2 executed57/2 with exactly head255/trailer128 refusal;
+emptyblock/ledger pass. RED1 warnings corrected without assertions changing.
+Sol16 production released only for codec assembly, nativeH2shapeRED2/fixture1. Current countersfixedSol16/unsuccessfulGREEN11,nativeH1RED2/fixture1,
+headerRED2/uploadEventFixture1,collectorSol14/unsuccessful9,matrix8,browser5,
+Astra2/2. Complete135 matrix, full review and fresh post-review gates incomplete.
+Complete control/renderer evidence supplements, final SPEC
+then CODE and fresh gates remain incomplete. Historical active3 remains
+unexplained in the
+[acceptance](docs/acceptance/m3-managed-h2-fixed-endpoint.md#latest-scoped-receipts).
+Fixed Sol12/unsuccessful GREEN10 include parent fixture failure1 and proof supplement failures3; trace diagnostic failures1, capacity RED failures1, browser failures5,
+matrix failures4, native H1 RED failed runs1 and collector Sol11/unsuccessful GREEN5 remain separate,
+with Astra2/2 exhausted. Group H2 activation
+remains NOT RUN.
+Preparation does not imply live H2 reservations, standalone integration,
+protocol-matrix or sustained-load acceptance. The roadmap still ends at M4.
+
+## 1. Product and success criteria
+
+Gaoxy is an Elixir/OTP multi-protocol server runtime, native HTTP server, and programmable proxy gateway. It must support embedded use in an application's supervision tree and standalone use as a release, with the same service model and data paths.
+
+The intended product supports UDP unicast, IPv4 broadcast, IPv4/IPv6 multicast, TCP, TLS over TCP, and QUIC applications. Above these transports it provides custom protocol services, HTTP/1.1, HTTP/2, HTTP/3, WebSocket, local Plug/Phoenix endpoints, HTTP reverse and forward proxies, and raw socket relays.
+
+The first useful integrated application milestone is one Gaoxy instance serving a real Phoenix application, a local/remote HTTP route table, and independent TCP and UDP services. The first implementation milestone is smaller: establish a tested transport runtime on which that application can be built.
+
+**Architecture decision:** combine Abyss and Thousand Island through supported adapters; do not merge their source trees. Gaoxy owns service orchestration, its public contracts, HTTP server behavior, proxy policy, and Phoenix integration. Abyss remains a UDP/QUIC hosting foundation. Protocol implementations such as DNS, DHCP, DoQ, HTTP/3, and QPACK do not belong in Abyss.
+
+**Bandit replacement means native execution:** serving a Plug through Bandit under a Gaoxy supervisor is not completion of Gaoxy's HTTP server. Bandit can be a reference peer or explicitly labeled development fixture, but is not the default production HTTP backend in this plan.
+
+## 2. Evidence baseline and mandatory dependency audit
+
+The following observations come from source/documentation inspected on the date above. They are discovery inputs, not proof that a release, platform, or feature is production-ready. Re-read the selected revisions during M0.
+
+| Area | Observed boundary | Implementation consequence |
+|---|---|---|
+| Abyss ordinary UDP | Current documentation describes separate broadcast/multicast transports, runtime membership APIs, admission limits, shared-socket ownership, and pause/drain behavior. [R1] | Reuse and test these APIs. Do not assume broadcast/multicast still need to be invented. Preserve platform/backend restrictions. |
+| Abyss persistent dispatcher | The documented dispatcher is opt-in and unavailable in broadcast mode; writer admission and local completion are different, with explicit unknown outcomes. [R2] | Do not configure the dispatcher indiscriminately for all datagram modes or retry an uncertain send. |
+| Abyss QUIC hosting | The documented public host is `Abyss.QUIC`, with application handlers and opaque connection/stream handles. Its supported host subset has explicit limitations. [R3] | Use the host, not an endpoint-private adapter or a duplicate CID registry. Verify lifecycle and capability support separately. |
+| Current QUIC/TLS package ownership | The HTTP Fetch umbrella lists `ex_ssl`, `elixir_quic`, `http_core`, `http_runtime`, and `elixir_quic_http3`; public facades include `SSL`, `Quic`, and `QuicHttp3`. [R4, R5] | Historical repository names such as `ex_quic` do not establish the package or module name to depend on now. Record the authoritative source and resolved artifacts. |
+| TCP TLS client evidence | The existing TLS consumer contract primarily validates clients. It does not establish Thousand Island server-side transport compatibility. [R6] | Audit listen/accept/handshake and ownership separately before enabling an `ex_ssl` server adapter. |
+| Thousand Island | Its documented `Transport` behaviour supports custom transport implementations. [R7] | Use a formal adapter and contract tests; do not patch dependency internals. |
+| Plug and WebSock | Plug defines a server adapter contract; inspected WebSockAdapter code explicitly dispatches supported adapter modules. [R8, R9] | Native HTTP must implement the Plug contract. Phoenix WebSocket support requires a real WebSockAdapter integration path. |
+
+Abyss documentation currently distinguishes the QUIC host's supported subset from broader engine capabilities. The HTTP umbrella may report a capability that the Abyss host does not expose. Neither report alone establishes Gaoxy support. [R3, R5]
+
+Create `docs/dependency-audit.md` with the repository, commit, package name, OTP application, public namespace, selected version, source/artifact provenance, platform requirements, license, relevant APIs, tests run, and remaining gaps. Distinguish a Git commit from a file blob SHA. Commit a reproducible lockfile; use explicit source overrides only for development or dependency repair.
+
+Inspect server/client roles before reusing `http_core`, `http_runtime`, or `elixir_quic_http3`. A client session owner is not a server runtime. Reuse public role-neutral codecs or server-capable engines when the contract is verified; avoid copying mature protocol machinery merely to create a new namespace. Conversely, do not depend on private client state to avoid implementing a proper server boundary.
+
+Choose and record a tested Elixir/OTP baseline from the actual dependency intersection. Target Linux/NixOS deployment and macOS development. A dependency's declared minimum version is not a tested Gaoxy support claim.
+
+## 3. Repository and application boundaries
+
+Use one umbrella repository with the following logical applications:
+
+| Application | Owns | Allowed internal dependencies |
+|---|---|---|
+| `gaoxy` | Service/listener specifications, runtime supervision, lifecycle, capabilities, admission, telemetry, transport/handler bridges | None of the other Gaoxy applications |
+| `gaoxy_http` | Native HTTP server, WebSocket, Plug adapter, Phoenix adapter, HTTP route/endpoint contracts | `gaoxy` |
+| `gaoxy_http3` (M4, optional) | Native HTTP/3 server over the public QUIC host and role-neutral H3/QPACK codecs | `gaoxy`, `gaoxy_http` |
+| `gaoxy_proxy` | HTTP upstream client integration, reverse/forward proxy policies, stream/datagram relays, upstream pools | `gaoxy`, `gaoxy_http` |
+| `gaoxy_server` | Standalone release, data-only configuration loader, validation commands, later management interface | Applications above, as needed; explicit H3 opt-in |
+
+`gaoxy_http` defines an extensible HTTP endpoint/action contract. A proxy endpoint implements it in `gaoxy_proxy`; the HTTP application must not depend back on the proxy application.
+
+The core must remain usable without Plug, Phoenix, Bandit, `http_fetch`, or a QUIC engine being installed or started. Optional transport support must not force unrelated applications into ordinary TCP/UDP consumers. Verify this in an external consumer project, not only inside the umbrella. If optional dependencies or compile-time behaviour references undermine isolation, add a thin optional integration package rather than weakening the boundary.
+
+Suggested repository organization:
+
+```text
+apps/gaoxy/
+apps/gaoxy_http/
+apps/gaoxy_proxy/
+apps/gaoxy_server/
+docs/architecture.md
+docs/dependency-audit.md
+docs/capabilities.md
+docs/implementation-status.md
+docs/adr/
+docs/acceptance/
+examples/mixed_transports/
+examples/phoenix_native/          # M2
+examples/reverse_proxy/           # M2/M3
+integration/network/
+```
+
+During M1, create compile-clean application boundaries but implement only the real foundation. Empty future applications must not export working-looking placeholders or appear as supported capabilities. Keep example applications outside the production dependency graph. Preserve existing repository conventions if a Gaoxy checkout already exists.
+
+## 4. Runtime model and public contracts
+
+### 4.1 Separate transport semantics
+
+Define three handler families, not one universal socket abstraction:
+
+| Family | Unit of application work | Required distinctions |
+|---|---|---|
+| Datagram | One complete UDP datagram | Peer versus destination metadata; empty payload versus no message; local admission versus delivery; optional application association |
+| Stream | An ordered byte stream over TCP/TLS | Arbitrary read fragmentation; write backpressure; EOF; directional shutdown where the provider supports it |
+| QUIC | A connection containing directional streams | Connection versus stream state; stream open/readable/writable; FIN/reset/stop; engine flow control and uncertain operations |
+
+Gaoxy-created module names such as `Gaoxy.DatagramHandler`, `Gaoxy.StreamHandler`, `Gaoxy.QUICHandler`, `Gaoxy.PlugAdapter`, and `Gaoxy.PhoenixAdapter` are **proposed new interfaces**, not existing dependency APIs. Finalize minimal callback contracts after the dependency audit and prove each with a small application.
+
+Keep configuration validation, routing decisions, admission accounting, and protocol state transitions pure where practical. OTP processes own I/O, timers, supervision, and mutable resources. Do not introduce a process for every pure operation or a global request dispatcher.
+
+### 4.2 Instance, service, and listener identities
+
+An instance owns a set of named services. A listener owns a concrete bound endpoint and one root protocol dispatcher. An application protocol can route multiple logical services on that listener; HTTP host/path routing is the primary example.
+
+Use stable service IDs scoped to the instance. Support multiple Gaoxy instances and the same handler module in multiple services. Avoid atom creation from configuration or network input. Permit runtime names through explicit OTP-compatible naming rather than forcing a global singleton.
+
+A service specification records its ID, listener reference/specification, transport family, handler and options, limits, metadata requirements, and requested capabilities. A listener specification records address family, address, port, backend/provider, TLS/ALPN settings where relevant, and transport-specific options.
+
+Do not equate a numeric port with a unique socket: TCP and UDP can have separate bindings. Reject conflicting ownership within the same transport/address space. Do not implicitly share a UDP socket between raw datagrams and QUIC or a TCP socket between arbitrary byte protocols and HTTP. Future protocol demultiplexing requires an explicit, bounded dispatcher. First-phase QUIC uses one application handler per host unless the selected public host proves otherwise.
+
+### 4.3 Lifecycle and observability
+
+Provide public operations for instance startup, validated service addition, removal/drain, service status, listener information, and capability discovery. Include pause/resume only with explicit backend semantics. Use `child_spec/1` and `start_link/1` for embedded use.
+
+Represent lifecycle states such as `starting`, `ready`, `paused`, `draining`, `stopped`, and `failed`. A service is ready only after actual binding and required setup succeed. Distinguish requested port zero from the actual bound port.
+
+Startup validates the whole initial plan before opening sockets. Prepare resources with rollback: failure must not leave orphan sockets, memberships, workers, or registry entries. Dynamic operations must return explicit errors and preserve unrelated running services.
+
+Pause is not OS process suspension. Expose whether a backend can stop new admission while retaining its bind or must unbind. State what happens to queued datagrams and port-zero listeners on resume. Do not promise stable ephemeral endpoints after a backend rebind.
+
+Drain uses one absolute deadline, not a fresh timeout at each cleanup step. Preserve existing work's required I/O while refusing new work when the backend supports this. QUIC shutdown that stops all ingress is not equivalent to a full protocol-level drain: ACKs and existing streams may still require reception. Report a narrower contract or request an upstream enhancement rather than claiming equivalence. A call timeout alone is not proof that a service has stopped.
+
+Failure isolation is per service/listener and per connection/handler where applicable. A failed shared writer or QUIC endpoint may require that listener to fail closed. A failed UDP handler must never close the shared socket. Shutdown, restart, and late messages must not resurrect an intentionally removed service.
+
+### 4.4 Effective capability reporting
+
+Compute usable capabilities from the intersection of provider, host adapter, Gaoxy adapter, selected options, OS/backend, and completed acceptance evidence. Report configured capability separately from validation status.
+
+Use statuses such as `supported`, `experimental`, `unsupported`, and `not_tested`, with a reason and evidence reference. Distinguish QUIC streams from unreliable QUIC DATAGRAM, generic QUIC from HTTP/3, TLS from mTLS, IPv4 from IPv6 multicast, and local drain from network-protocol drain.
+
+Reject explicitly requested but unsupported behavior before activation where possible. No automatic fallback from QUIC to UDP/TCP, HTTP/3 to HTTP/2, or `ex_ssl` to OTP `:ssl`. Unsupported configuration must not be silently discarded.
+
+### 4.5 Resource and error contracts
+
+Every untrusted input path needs finite admission, retained-item and retained-byte limits, and relevant deadlines. Count in-flight work and pending handoffs, not only entries already processed by a queue owner. A bounded GenServer state does not bound its mailbox if callers can cast payloads without admission.
+
+For streams, use read credit and bounded pending writes. For UDP, define drop/reject policy; receiver throttling is local overload control, not network backpressure. For QUIC, consume transport credit deliberately and preserve the backend's operation-reference semantics. Distinguish definitely rejected, admitted, locally completed, uncertain, and peer-delivered outcomes wherever the underlying contract makes that distinction. Never retry a potentially completed operation blindly.
+
+Generation-tag all owned handles, reservations, and operation receipts. Use monitors and idempotent teardown so late completions cannot refund a newer generation or affect another service. Ensure callbacks run outside shared receiving/writing processes, and bound callback work without spawning an unbounded task stream.
+
+Telemetry must be instance/service scoped, with bounded-cardinality metrics. Include lifecycle, admission rejection, active work, retained bytes, send outcomes, timeout, and drain results. Do not label metrics by arbitrary peer IPs, URLs, or stream IDs. Redact credentials and payloads. Describe which memory/kernel buffers a measurement does not cover.
+
+## 5. Transport implementation requirements
+
+### 5.1 TCP and TLS through Thousand Island
+
+Implement a Gaoxy handler bridge and lifecycle adapter using supported Thousand Island APIs. Verify socket ownership transfer, connection startup errors, read/write behavior, timeouts, bounded callback work, and cleanup. Differentiate TCP EOF/half-close from TLS close behavior rather than forcing identical promises.
+
+Use OTP `:ssl` as the foundation's explicit reference/default TLS-over-TCP provider. Provide an `ex_ssl` selection only after its server-side contract passes. This is a bootstrapping decision, not a removal of the custom TLS goal; QUIC has its own required TLS integration.
+
+The custom TLS audit must cover listen, accept, handshake, controlling process, active/passive delivery, send/recv, shutdown, peer/local data, ALPN, certificate configuration, validation failures, and all callbacks required by the selected Thousand Island version. Client test success is insufficient. Unsupported options or mTLS requests must fail explicitly. An explicitly selected provider never falls back to another provider. [R6, R7]
+
+Use generated test certificates and independent validating clients. No real deployment private keys, disabled verification as a workaround, or automatic public certificate issuance.
+
+### 5.2 UDP through Abyss
+
+Map unicast, broadcast, and multicast to their actual public transports and host contracts. Keep shared socket ownership in Abyss. Build a capability-scoped Gaoxy send interface instead of handing user handlers unrestricted listener-close operations.
+
+Support complete datagrams including empty payloads. Preserve actual peer and ancillary information. A wildcard socket address is not the packet's destination; unknown destination/interface metadata must remain unknown. A feature that requires unavailable metadata must be rejected or limited to concrete bindings. [R1, R10]
+
+Expose membership management as explicit operations on an endpoint: list, join, and leave group/interface pairs. Preserve desired state across restart only when the underlying operation succeeds. Test duplicate operations, interface failures, family mismatches, bind rollback, and finite membership limits.
+
+IPv4 broadcast and multicast are separate configuration modes. IPv6 broadcast is invalid. Treat membership selection, outgoing interface selection, and IPv6 scope as different properties. Do not guess subnet broadcast addresses, fake scope IDs, deduplicate payloads, or rely on `reuseport` to provide correct multicast fan-out.
+
+Test configured hop/TTL and loopback behavior using a prepared network fixture. Preserve backend limitations, including explicit unsupported results for unverified IPv6 or strict-group-filter options. Runtime membership success is not evidence of wire-level interface isolation. [R1]
+
+M1 must include real IPv4 unicast, broadcast, and multicast paths. Linux IPv6 multicast is a separate explicit gate. A missing runner capability is `NOT RUN`, not a passed test or a justification to remove the feature from the roadmap.
+
+### 5.3 QUIC through the verified Abyss host
+
+Use `Abyss.QUIC` and its public handler/facade after M0 verifies the selected artifact. The engine remains the single authority for connection IDs, cryptographic state, recovery, flow control, and stream records. Gaoxy owns only application/service state. [R3, R5, R14]
+
+The initial integration is a bounded, explicitly experimental generic stream service with an application-specific ALPN and independent peer test. Preserve opaque handles, stream direction, FIN/reset/stop, admission failure, uncertain outcomes, and connection-close isolation. One failed connection cannot close the listener.
+
+Do not advertise DATAGRAM, mTLS, migration, 0-RTT, HTTP/3, or WebTransport merely because an engine exposes related methods. Full connection migration and CID-aware passthrough need their own work. Do not bypass private host seams to enable a feature the public host does not support.
+
+Ordinary core consumers must work without QUIC dependencies. An explicit QUIC configuration with no usable engine must return a meaningful startup error.
+
+## 6. Native HTTP, Plug, and Phoenix work
+
+### 6.1 HTTP server implementation strategy
+
+During M0, write a short reuse ADR covering existing public codecs, any role-neutral `http_core` components, and Bandit reference tests/implementation. Gaoxy must own its server lifecycle and public adapter even when a verified lower-level library supplies codecs. Any reused source needs license/provenance records and retained notices. Never copy Bandit modules wholesale or rely on its private transports without an explicit architectural decision.
+
+Use a shared HTTP request/response abstraction over independent H1, H2, and H3 wire engines. Keep application dispatch separate from protocol connection ownership. Do not route requests through loopback HTTP to call a local Plug.
+
+H1 work includes incremental framing, request-target forms, bounded headers/body reads, keep-alive, chunked handling, bodyless responses, informational responses, connection closure, and a strict policy for ambiguous framing. Test fragmentation and request-smuggling cases before enabling proxy use. [R11]
+
+H2 work includes SETTINGS, frame limits, HPACK state, stream lifecycle, connection/stream windows, cancellation, GOAWAY, and fair bounded multiplexing. Test h2 over TLS separately from any supported h2c mode. H2 server success does not establish WebSocket extended-CONNECT support. [R12]
+
+H3 requires its own application/control streams, SETTINGS, error handling, QPACK profile, and shutdown behavior above QUIC. Audit `QuicHttp3` for a supported server role before reuse. A static/literal QPACK profile can be an explicitly documented initial subset; never advertise unsupported dynamic capacity. Basic QUIC stream exchange is not H3 acceptance. [R5, R13]
+
+### 6.2 Plug adapter
+
+Implement all mandatory callbacks of the pinned Plug version and the useful optional callbacks, with contract-correct unsupported results. Cover request body reads, ordinary/chunked/file responses, HTTP version, peer/local/TLS information, informational responses, and upgrades. Verify already-sent and error paths. A successful Plug call returning bytes is not sufficient adapter coverage. [R8]
+
+### 6.3 Phoenix and WebSock compatibility
+
+Implement `Gaoxy.PhoenixAdapter` against the pinned Phoenix Endpoint contract: child specs, HTTP/HTTPS configuration, bound server information, code reload integration, and shutdown ownership. Support an Endpoint-managed embedded listener first. Gateway-managed mounting of an Endpoint must have explicit ownership and must not start a duplicate listener.
+
+Implement the WebSock server lifecycle and resolve WebSockAdapter's dispatch integration. Prefer an upstream-supported registration or adapter addition. If unavailable, use a minimal reviewed fork pinned by commit, with a patch and removal plan. Do not redefine `WebSockAdapter`, impersonate `Bandit.Adapter`, or mutate fetched dependencies. [R9]
+
+Native Phoenix acceptance requires browser/network tests of a regular page, LiveView interaction, Channels, upload, static content, streaming/SSE, development reload, reconnect, and graceful shutdown. Plug.ConnTest and LiveView unit tests alone do not exercise the real server. H1 WebSocket support is the initial requirement; H2/H3 WebSocket upgrades have separate capability gates.
+
+## 7. Routing, proxy, and standalone work
+
+### 7.1 Local/remote HTTP routing
+
+Compile host/path/method matching into a deterministic immutable route generation. A route targets a local Plug/Endpoint or a proxy endpoint through the same HTTP extension contract. Document precedence, header mutation order, authority/SNI policy, and request-target normalization. Enforce explicit routing policy rather than trusting client-supplied forwarding headers.
+
+### 7.2 HTTP reverse proxy
+
+Use a narrow upstream-client behaviour. Evaluate the public `http_fetch` streaming API first, including demand, cancellation, trailers, connection reuse, TLS verification, and uncertain operations. Add missing primitives at the appropriate upstream boundary, not by reaching into private connection processes.
+
+Maintain bounded streaming both directions; never collect arbitrary request/response bodies. Cover early upstream responses during upload, downstream disconnect, slow peers, SSE, WebSocket tunneling, duplicate response headers, compression transparency, hop-by-hop header removal, and trailers. Do not forward transfer framing unchanged between different HTTP versions.
+
+Add upstream groups, verified HTTPS, load balancing, health checks, timeouts, and explicit replay rules. Default to no automatic request replay. Retry only when the failure point, method/policy, body replayability, and response commitment make it safe. Do not automatically follow redirects for reverse proxy requests.
+
+### 7.3 Forward proxy and socket relays
+
+Separate HTTP forward proxy/CONNECT from reverse-proxy configuration. Require explicit authentication/access policy and destination allow rules. Validate resolved destinations at connection time, including IPv6 and mapped forms; control loopback, private, link-local, metadata-service, and management endpoints. Do not ship an open proxy.
+
+TCP relay requires bounded duplex transfer and tested half-close. TLS termination, verified upstream TLS, and opaque TLS passthrough are distinct modes. Optional SNI inspection needs bounded parsing and must not claim visibility where unavailable. PROXY protocol acceptance is limited to explicitly trusted listeners/peers.
+
+UDP relay retains datagram boundaries, bounds associations and bytes, expires state, validates return sources, and separates association policy from protocol-specific transaction IDs. Broadcast/multicast relaying is opt-in with explicit ingress/egress scope and loop/amplification controls; it is not a generic transparent multicast router.
+
+QUIC passthrough requires defined CID/affinity behavior and migration limitations. QUIC termination plus upstream reconnection is an application proxy with independent connection state. HTTP/3-to-HTTP/2 translation occurs at HTTP semantics, not by forwarding stream IDs. SOCKS5 is an optional later protocol, not another name for raw TCP proxying.
+
+### 7.4 Standalone release and configuration
+
+The release instantiates the same runtime as embedded consumers. Begin with a versioned, data-only configuration format and a validation command. Resolve named handler types through an allowlist/registry; no atom creation or code evaluation from external configuration. Keep trusted embedded Elixir specifications distinct from external data.
+
+Configuration updates validate, prepare, and then activate a new generation. Routes may switch atomically while in-flight requests retain the old generation. Same-port listener replacement is not automatically transactional: preserve stable socket owners, use supported handoff, or document a controlled disruption. Roll back failed preparation.
+
+Use explicit certificate provisioning first; add atomic certificate rotation and SNI selection when tested. ACME/automatic HTTPS is a later feature, not implied by the phrase “Caddy-like.” Management HTTP is disabled by default and requires an explicit trusted/authenticated exposure model when added. M1 does not need a UI or public admin listener.
+
+## 8. Work packages and milestone gates
+
+| Milestone | Work packages | Completion gate |
+|---|---|---|
+| **M0: Audit and bootstrap** | Repository inspection, dependency lock/provenance, capability map, architecture ADRs, umbrella/dev/CI setup | Reproducible compilation; source-backed backend contracts; actionable gaps; no false support claims |
+| **M1: Runtime foundation** | Instance/service model, TCP/TLS bridge, UDP modes/memberships, lifecycle/admission/telemetry, mixed-service example, release smoke; optional verified custom-TLS/QUIC slice | Actual network exchanges, multi-instance isolation, failure/overload/cleanup tests, external core consumer, explicit platform evidence |
+| **M2: Native application server** | H1, WebSocket/WebSock, Plug/Phoenix adapters, native Phoenix fixture, local/remote routing, minimal streaming reverse proxy | Browser-tested native Phoenix plus local/proxy route selection and streaming; no Bandit runtime dependency |
+| **M3: HTTP/2 and gateway beta** | H2, upstream pools, complete proxy controls, CONNECT, TCP/TLS/UDP relays, configuration generations, operational hardening | Interoperability, security, cancellation/slow-peer, relay semantics, reload and sustained-load gates |
+| **M4: HTTP/3** | Verified QUIC host contract, server-side H3 engine/QPACK profile, Plug mapping, H3 upstream/downstream proxy matrix | Independent H3 peers, malformed control streams, flow control, stream reset, shutdown and browser acceptance |
+
+These are evidence gates, not calendar estimates. QUIC host integration can progress alongside native HTTP; H3 depends on both relevant boundaries. A custom TLS gap must not block ordinary TCP/UDP work, and a general runtime gap must not be hidden by advancing to more protocols.
+
+### M1 execution order
+
+1. Inspect the working tree and relevant instructions. Create `gaoxy` in the intended location without overwriting existing work. Record the source/release matrix before selecting dependencies.
+2. Bootstrap the umbrella and reproducible development environment. Keep Nix/devenv support small and avoid machine-specific paths. Establish the unit/loopback test path and an external core-consumer fixture.
+3. Implement pure configuration validation, instance-scoped identity, service supervision, status, capability records, and startup rollback. Test invalid specifications without opening sockets.
+4. Implement real TCP and reference TLS services through Thousand Island, including failure isolation and lifecycle translation.
+5. Implement real UDP unicast, IPv4 broadcast/multicast, membership operations, and admission through Abyss. Add platform-specific IPv6 coverage without hiding unsupported paths.
+6. Add shared generation-safe lifecycle, bounded resource accounting, and telemetry; prove that slow handlers or blocked sends cannot monopolize unrelated services.
+7. Audit and, when independently testable, implement opt-in `ex_ssl` server and generic QUIC adapters. Otherwise record precise upstream blockers and capability errors; do not build a substitute protocol stack.
+8. Deliver a mixed-transport example, standalone release smoke, network fixture, documentation, and truthful acceptance report. Stop at M1 rather than adding partial HTTP stubs.
+
+## 9. Test design and completion criteria
+
+### 9.1 Evidence classes
+
+Use `PASS`, `FAIL`, `NOT RUN`, and `BLOCKED` for execution records. Separate unit/fake-backend tests, loopback network tests, independent peer tests, isolated multi-interface tests, and load/soak tests. A skipped or empty suite cannot satisfy a required gate. Preserve test counts, commands, versions, exit codes, and logs.
+
+A Linux network-namespace/veth fixture should contain broadcast/multicast tests and clean up its own resources with a trap. Require explicit opt-in privileges and unique names. Never change the host's ordinary routes, firewall, DHCP service, or physical-interface broadcast traffic. macOS tests should report unsupported backend features honestly rather than emulate passing results.
+
+### 9.2 Foundation acceptance matrix
+
+| Gate | Required evidence |
+|---|---|
+| CORE-01 | Two runtime instances with overlapping service IDs and identical handler modules operate independently |
+| CORE-02 | Invalid configuration/bind/initialization failure leaves no leaked listener, child, membership, or registration |
+| CORE-03 | Real listener info exposes actual ephemeral ports; documented pause/resume behavior matches each backend |
+| CORE-04 | Explicit removal stays removed; crash restarts and stale generation/timer messages are handled correctly |
+| TCP-01 | Independent client sends fragmented input and receives correct output through the Gaoxy bridge |
+| TLS-01 | Validating independent TLS client succeeds; invalid credentials/policy fail without provider fallback |
+| UDP-01 | Unicast retains datagram boundaries, empty payloads, and oversize rejection behavior |
+| UDP-02 | IPv4 broadcast exchanges on an isolated interface; multiple senders and an unrelated service remain isolated |
+| UDP-03 | IPv4 multicast join/leave/rejoin, multiple groups/interfaces, TTL/loopback, and membership limits are tested |
+| UDP-04 | Linux IPv6 group/scope/hop behavior passes its dedicated gate, or is explicitly BLOCKED/NOT RUN; IPv6 broadcast is rejected |
+| LIFE-01 | An admitted UDP worker can reply without owning/closing the listener; pause/drain and deadline cleanup are real |
+| LOAD-01 | Sustained overload keeps application-retained work within stated limits; rejection does not spawn unbounded tasks |
+| LOAD-02 | Blocked writes and slow/crashing callbacks do not block unrelated services; uncertain outcomes are not retried |
+| PKG-01 | External core-only consumer compiles/runs without Phoenix, Plug, Bandit, http_fetch, or QUIC activation |
+| REL-01 | Standalone mixed-transport release starts, reports readiness, exchanges traffic, and stops cleanly |
+| OPT-TLS | Optional custom TLS server contract is independently tested, or remains explicitly unsupported/experimental |
+| OPT-QUIC | Optional custom-ALPN QUIC stream exchange and close isolation are independently tested, with host limitations recorded |
+
+M1's required portable/IPv4 foundation gates must pass before it is called complete. IPv6 and optional provider/QUIC gates have separate status; they may remain incomplete without erasing the delivered foundation, but the corresponding feature must not be advertised as accepted. Network prerequisites missing from the local environment require a runnable dedicated gate, not a fabricated PASS.
+
+### 9.3 Later hardening
+
+Add property/model tests for configuration, admission conservation, generation changes, parsing, and cancellation. Maintain malformed-input corpora and independent HTTP/WebSocket/QUIC peers. Run browser-based Phoenix tests, not only in-process tests. Benchmarks record environment, concurrency, payload distribution, throughput, tail latency, retained memory, and drops; do not invent equivalence to Bandit or Caddy from small local measurements.
+
+No beta/release claim follows from compilation alone. No full protocol conformance or security-audit claim follows from selected happy-path peers.
+
+## 10. Deliverables, guardrails, and handoff
+
+Initial deliverables are working M0/M1 code, automated tests, a mixed-transport example, reproducible dependency/environment records, architecture/capability documentation, and `docs/acceptance/m1.md`. Write concise ADRs for composition rather than source merger, transport-specific handler families, TLS defaults, HTTP reuse, dependency isolation, and lifecycle semantics.
+
+Do not patch `deps/`, use private dependency messages, duplicate CID registries, store payloads in unbounded mailboxes, create phantom capability implementations, or silently switch providers. Do not add DNS/DHCP/HTTP protocol implementations to Abyss.
+
+If a shared-library fix is necessary, identify the repository, public contract, reproducer, regression test, and minimal change. Work in an explicitly available dependency checkout/worktree; otherwise deliver an unapplied patch or a focused follow-up specification. Do not edit unrelated repositories, publish packages, push commits, create remote repositories, deploy services, or issue certificates without separate authorization.
+
+The Codex handoff must distinguish completed code from planned work, actual test results from configured CI, and portable gates from platform-specific gates. When blocked, preserve tested progress and identify the smallest next dependency action. Do not end the task by asking the user to choose architecture decisions already settled here.
+
+## References
+
+These references identify the inspected interfaces and protocol sources; refresh the selected dependency revisions during M0. Version numbers inside upstream documents may be historical examples rather than the version to adopt. Requirements elsewhere in this document are Gaoxy design requirements, not claims that the referenced libraries already implement them.
+
+- **R1 — Abyss UDP broadcast/multicast contract:** `https://github.com/gsmlg-dev/abyss/blob/main/docs/udp-broadcast-multicast.md`
+- **R2 — Abyss dispatcher/writer contract:** `https://github.com/gsmlg-dev/abyss/blob/main/docs/dispatcher.md`
+- **R3 — Abyss general QUIC service:** `https://github.com/gsmlg-dev/abyss/blob/main/docs/quic-service.md`
+- **R4 — HTTP Fetch umbrella package layout:** `https://github.com/gsmlg-dev/http_fetch/blob/main/mix.exs`
+- **R5 — QUIC/HTTP package and consumer boundaries:** `https://github.com/gsmlg-dev/http_fetch/blob/main/docs/ex-quic-consumer-contract.md`
+- **R6 — TLS consumer contract:** `https://github.com/gsmlg-dev/http_fetch/blob/main/docs/ex-ssl-consumer-contract.md`
+- **R7 — Thousand Island transport behaviour:** `https://hexdocs.pm/thousand_island/ThousandIsland.Transport.html`
+- **R8 — Plug server adapter contract:** `https://hexdocs.pm/plug/Plug.Conn.Adapter.html`
+- **R9 — WebSockAdapter source:** `https://github.com/phoenixframework/websock_adapter/blob/main/lib/websock_adapter.ex`
+- **R10 — OTP UDP API:** `https://www.erlang.org/doc/apps/kernel/gen_udp.html`
+- **R11 — HTTP/1.1 framing and connection management:** `https://www.rfc-editor.org/rfc/rfc9112.html`
+- **R12 — HTTP/2:** `https://www.rfc-editor.org/rfc/rfc9113.html`
+- **R13 — HTTP/3:** `https://www.rfc-editor.org/rfc/rfc9114.html`
+- **R14 — QUIC transport:** `https://www.rfc-editor.org/rfc/rfc9000.html`

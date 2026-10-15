@@ -1,0 +1,271 @@
+--- a/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
+@@ -402,6 +402,13 @@
+     %{address: address, port: port}
+   end
+ 
++  def ssl_data(%{transport: Gaoxy.HTTP.HTTP2.Transport} = exchange) do
++    case Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :ssl_data) do
++      {:ok, data} -> data
++      {:error, _} -> nil
++    end
++  end
++
+   def ssl_data(%{transport: module, ssl: ssl}) when not is_nil(module), do: ssl
+ 
+   def ssl_data(exchange) do
+--- a/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
+@@ -579,6 +579,15 @@
+     end
+   end
+ 
++  defp operation(state, stream, :ssl_data, from) do
++    if Lifecycle.remaining(stream.deadline) == 0 do
++      reply_error(state, from, :timeout)
++    else
++      GenServer.reply(from, {:ok, state.ssl})
++      state
++    end
++  end
++
+   defp operation(state, _stream, {:poll, 0}, from) do
+     GenServer.reply(from, :ok)
+     state
+@@ -1046,7 +1055,9 @@
+           peer: state.peer,
+           local: state.local,
+           secure: state.secure,
+-          ssl: state.ssl,
++          # Full TLS metadata stays on this connection's existing lease.
++          # Stream callers query it through their authenticated transport.
++          ssl: nil,
+           peer_cert: state.peer_cert,
+           service: Map.get(state, :service),
+           instance: Map.get(state, :instance),
+--- a/apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs
+@@ -567,6 +567,31 @@
+     end
+   end
+ 
++  test "native H2 owner-only TLS keeps the closed per-pump metadata grammar" do
++    f = fixture()
++    pins = [group_pin(f.group), transport_pin(f.transport)]
++    p = pump(f, pins)
++    exchange = %{
++      p.exchange
++      | secure: true,
++        transport: Gaoxy.HTTP.HTTP2.Transport,
++        transport_state: {self(), 1, make_ref()},
++        ssl: nil
++    }
++
++    assert accepted(:pump, %{p | exchange: exchange}, :p).projection.exchange.ssl === nil
++
++    for ssl <- [
++          [session_data: <<1>>],
++          [protocol: self()],
++          [{:protocol, :"tlsv1.3"} | :improper],
++          [session_id: :binary.copy("s", 65_537)],
++          [session_id: slice(:binary.copy("s", 128), 65_537)]
++        ] do
++      invalid(:pump, %{p | exchange: %{exchange | ssl: ssl}})
++    end
++  end
++
+   test "pending pump has exact13 keys and genuine future scalar identities remain absent before effects" do
+     f = fixture()
+     pins = [group_pin(f.group), transport_pin(f.transport)]
+--- /dev/null
++++ b/apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs
+@@ -0,0 +1,189 @@
++unless Code.ensure_loaded?(Gaoxy.Proxy.ManagedH2FixedFixture) do
++  Code.require_file("managed_h2_fixed_endpoint_test.exs", __DIR__)
++end
++
++Code.require_file("support/managed_h2_group_fixture.exs", __DIR__)
++
++defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
++  use ExUnit.Case, async: false
++  alias Gaoxy.HTTP.{Exchange, HTTP2.Frame, HTTP2.Transport}
++  alias Gaoxy.Proxy.GroupEndpoint
++  alias Gaoxy.Proxy.ManagedH2GroupFixture, as: G
++  alias HTTP.RequestCompletion
++  @timeout 5_000
++
++  defmodule ObservedEndpoint do
++    def init(options) do
++      {observer, options} = Map.pop(options, :observer)
++      with {:ok, endpoint} <- GroupEndpoint.init(options), do: {:ok, {endpoint, observer}}
++    end
++
++    def resources({endpoint, _}), do: GroupEndpoint.resources(endpoint)
++
++    def call(exchange, {endpoint, observer}) do
++      reference = make_ref()
++      monitor = Process.monitor(observer)
++      {owner, id, token} = exchange.transport_state
++      wrong_stream = %{exchange | transport_state: {owner, id + 2, token}}
++      wrong_token = %{exchange | transport_state: {owner, id, make_ref()}}
++      expired = %{exchange | deadline: Gaoxy.Lifecycle.deadline(0)}
++
++      send(observer, {
++        :native_tls_exchange, self(), reference, exchange,
++        Exchange.ssl_data(exchange), Plug.Conn.get_ssl_data(Exchange.plug_conn(exchange)),
++        Transport.operation(wrong_stream, :ssl_data),
++        Transport.operation(wrong_token, :ssl_data),
++        Transport.operation(expired, :ssl_data)
++      })
++
++      proceed =
++        try do
++          receive do
++            {:native_tls_continue, ^reference} -> true
++            {:DOWN, ^monitor, :process, ^observer, _} -> false
++          after
++            5_000 -> false
++          end
++        after
++          Process.demonitor(monitor, [:flush])
++        end
++
++      if proceed,
++        do: GroupEndpoint.call(exchange, endpoint),
++        else: {:error, :test_observer_closed, exchange}
++    end
++  end
++
++  for protocol <- [:http2, :h2c] do
++    @tag :tmp_dir
++    test "native TLS/h2 to #{protocol} preserves full SSL data without copying it into the group pump", %{
++      tmp_dir: directory
++    } do
++      script = Path.expand("../../../scripts/generate-fixtures.sh", __DIR__)
++      assert {_, 0} = System.cmd("bash", [script, directory], stderr_to_stdout: true)
++      f = G.fixture(unquote(protocol), :http1, ["--manual"])
++
++      assert {:ok, spec} = Gaoxy.HTTP.service_spec(
++        id: :native_tls,
++        endpoint: {ObservedEndpoint, %{group: f.group, observer: self()}},
++        protocols: [:http2],
++        transport: :tls,
++        tls: %{
++          certfile: Path.join(directory, "cert.pem"),
++          keyfile: Path.join(directory, "key.pem")
++        },
++        limits: %{max_bytes: f.service_bytes, max_active: 64},
++        http_limits: %{request_timeout: 30_000, write_timeout: 2_000}
++      )
++      assert {:ok, _} = Gaoxy.add(f.instance, spec)
++      [{:native_tls, service, _}] = :ets.lookup(:sys.get_state(f.instance).live, :native_tls)
++      gate = :sys.get_state(service).gate
++      {:ok, {_, port}} = Gaoxy.info(f.instance, :native_tls).local
++      assert {:ok, socket} = :ssl.connect(~c"localhost", port, [
++        :binary, active: false, verify: :verify_peer,
++        cacertfile: Path.join(directory, "ca.pem"),
++        server_name_indication: ~c"localhost", alpn_advertised_protocols: ["h2"]
++      ], @timeout)
++      on_exit(fn -> :ssl.close(socket) end)
++      assert {:ok, "h2"} = :ssl.negotiated_protocol(socket)
++      {block, _} = HPAX.encode(:never_store, [
++        {":method", "GET"}, {":scheme", "https"},
++        {":authority", "localhost"}, {":path", "/native-tls?"}
++      ], HPAX.new(4_096))
++      assert :ok = :ssl.send(socket, [
++        "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", Frame.encode(4, 0, 0, ""),
++        Frame.encode(1, 5, 1, block)
++      ])
++
++      assert_receive {:native_tls_exchange, worker, reference, exchange, ssl, plug_ssl,
++                      {:error, :closed}, {:error, :closed}, {:error, :timeout}}, @timeout
++      assert exchange.ssl === nil
++      assert exchange.secure === true
++      assert ssl === plug_ssl
++      assert is_binary(ssl[:session_data]) and byte_size(ssl[:session_data]) > 0
++      assert :erlang.external_size(ssl) > 0
++      {owner, 1, token} = exchange.transport_state
++      {_, native} = :sys.get_state(owner)
++      assert native.ssl === ssl
++      assert native.streams[1].worker === worker
++      assert native.streams[1].lease === exchange.lease
++      admission = :sys.get_state(gate)
++      assert admission.leases[native.lease].pid === owner
++      assert admission.leases[native.lease].bytes === native.reserves.connection
++      assert admission.leases[exchange.lease].pid === worker
++      # A copied real token does not authorize this different caller.
++      assert {:error, :closed} = GenServer.call(owner, {:h2_operation, 1, token, :ssl_data}, @timeout)
++      assert Exchange.ssl_data(exchange) === nil
++      joins = for pid <- [owner, native.writer, worker], do: {pid, Process.monitor(pid)}
++      send(worker, {:native_tls_continue, reference})
++
++      seen = G.event(f.peer, "request")
++      assert seen["target"] === "/native-tls?"
++      G.eventually(fn -> G.held_selection(f, "/native-tls?") != nil end)
++      {_, held} = G.held_selection(f, "/native-tls?")
++      completion = held.completion
++      assert %RequestCompletion{} = completion
++      assert :sys.get_state(held.guardian).original_request.completion === completion
++      G.eventually(fn -> map_size(:sys.get_state(gate).cleanups) === 1 end)
++      [{cleanup_token, cleanup}] = Map.to_list(:sys.get_state(gate).cleanups)
++      assert cleanup.bytes === 16_478_862
++      assert cleanup.lease === exchange.lease
++      assert :sys.get_state(service).cleanups[cleanup_token].guardian === held.guardian
++      G.command(f.peer, seen, "respond", %{"fields" => [["content-length", "0"]]})
++      assert %{status: 200, body: ""} = response(socket, nil, "", HPAX.new(4_096), 256,
++                                               Gaoxy.Lifecycle.deadline(@timeout))
++      assert :ok = RequestCompletion.await(completion, @timeout)
++      assert :ok = :ssl.close(socket)
++      for {pid, monitor} <- joins do
++        assert_receive {:DOWN, ^monitor, :process, ^pid, reason}, @timeout
++        assert reason in [:normal, :noproc, :shutdown]
++      end
++      G.eventually(fn -> match?(%{active: 0, cleanup_pending: 0, retained_bytes: 0},
++                                      Gaoxy.status(f.instance, :native_tls)) end)
++      assert %{cleanup_failed: nil, retained_high_water: high} = Gaoxy.status(f.instance, :native_tls)
++      assert high <= f.service_bytes
++      assert :ok = Gaoxy.remove(f.instance, :native_tls, @timeout)
++      G.clean(f)
++      G.no_event(f.peer, "request")
++      G.close(f)
++    end
++  end
++
++  # This regression expects only an empty200 response; every frame and the
++  # entire receive loop retain finite size/count/deadline bounds.
++  defp response(_socket, _status, _body, _decoder, 0, _deadline),
++    do: flunk("native TLS response exceeded frame bound")
++
++  defp response(socket, status, body, decoder, left, deadline) do
++    assert {:ok, <<size::24, type, flags, 0::1, id::31>>} =
++             :ssl.recv(socket, 9, Gaoxy.Lifecycle.remaining(deadline))
++    assert size <= 16_384
++    payload = if size == 0, do: "", else: receive_payload(socket, size, deadline)
++    case {type, id} do
++      {4, 0} ->
++        if flags == 0, do: :ok = :ssl.send(socket, Frame.encode(4, 1, 0, ""))
++        response(socket, status, body, decoder, left - 1, deadline)
++      {1, 1} ->
++        assert Bitwise.band(flags, 4) === 4
++        assert {:ok, fields, decoder} = HPAX.decode(payload, decoder)
++        {":status", code} = List.keyfind(fields, ":status", 0)
++        status = String.to_integer(code)
++        if Bitwise.band(flags, 1) == 1,
++          do: %{status: status, body: body},
++          else: response(socket, status, body, decoder, left - 1, deadline)
++      {0, 1} ->
++        body = body <> payload
++        assert byte_size(body) <= 65_536
++        if Bitwise.band(flags, 1) == 1,
++          do: %{status: status, body: body},
++          else: response(socket, status, body, decoder, left - 1, deadline)
++      {8, _} -> response(socket, status, body, decoder, left - 1, deadline)
++      _ -> flunk("unexpected native TLS frame #{inspect({type, flags, id})}")
++    end
++  end
++
++  defp receive_payload(socket, size, deadline) do
++    assert {:ok, payload} = :ssl.recv(socket, size, Gaoxy.Lifecycle.remaining(deadline))
++    payload
++  end
++end

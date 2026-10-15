@@ -1,0 +1,85 @@
+{
+  "task_id": "/root/browser_contract_spec/native-tls-positive-code-review1",
+  "status": "DONE_REVIEW_NO_OPEN_SOURCE_FINDINGS",
+  "assignment": "direct independent bounded read-only CODE review of another Sol author",
+  "scope": "One-call production Plug adapter readiness repair; source/evidence review only, runtime pending",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_custody": "No Git executed. Exact Exchange current before bytes and all9 author-listed source hashes match. Diagnostic190-input before/after source manifests equal; no current whole-tree equality assertion.",
+  "patch": {
+    "path": "/tmp/gaoxy-group-native-tls-positive-repair1.patch",
+    "sha256": "24d256384037ab88a241e01bc13162f81cb8926874af20d36d81dab8b2d1e371",
+    "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+    "before_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+    "proposed_after_before_formatter_sha256": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "delta": "Code.ensure_loaded!(Gaoxy.PlugAdapter) and one blank line at start of plug_conn/1 only"
+  },
+  "findings": [],
+  "root_cause": {
+    "status": "CONFIRMED_ACTUAL_DIAGNOSTIC",
+    "selectors": "Two actual original positive endpoints raise RuntimeError: get_ssl_data not supported by Gaoxy.PlugAdapter; code.is_loaded(Gaoxy.PlugAdapter) is false in both captures.",
+    "diagnostic_receipt": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-positive-diagnostic1-1792098286467315265.json",
+    "receipt_sha256": "01fd918d56960b7d78d013f424796771d4ab97b15566acc157eac545f0cd874b",
+    "log_sha256": "61fda4c0f25e01f9fde0c6fd046a0fcc1163ccbd657251297bfc22a542cbc156",
+    "script_sha256": "a67cdc13b5c97532eb2b0e2d39389003c7e19067c7e064952a2ae851cc023d30",
+    "actual_exit": 2,
+    "tests_executed": 41,
+    "failures": 2,
+    "skips": 0,
+    "exclusions": 0,
+    "process_joined": true,
+    "timed_out": false,
+    "source_stable": true,
+    "source_inputs": 190,
+    "preservation": "Diagnostic script changes only original Plug expression in memory to capture exception and loaded state, then reraises original exception/stack. Original test/assertions are not edited, and no module preload is introduced.",
+    "classification": "Actual diagnostic FAIL41/2; explanatory evidence, not acceptance"
+  },
+  "production_boundary": {
+    "source_path": "Exchange.plug_conn56-77 constructs Conn with Gaoxy.PlugAdapter atom. Plug.Conn.Adapter.conn37-53 merely stores the adapter; Plug.Conn.get_ssl_data662-668 uses function_exported? before calling it. Gaoxy.PlugAdapter67 implements the callback. PlugEndpoint27-30 constructs via Exchange before invoking user Plug, so a first optional metadata callback reaches the same production issue.",
+    "assessment": "Load the owned adapter at shared Conn construction boundary before any consumer can inspect its optional callbacks. Runtime Code.ensure_loaded! requires no architecture/interface/dependency change and does not alter adapter callbacks or payload.",
+    "unavailable_adapter": "A missing owned adapter fails explicitly at construction; it is required for this Conn to function. No fallback or suppression is added.",
+    "core_isolation": "Load occurs only when gaoxy_http Exchange.plug_conn is invoked; no core application startup/dependency change.",
+    "upstream": "No dependency bug proven. Plug optional-callback probe is respected; Gaoxy owns adapter readiness."
+  },
+  "preserved_semantics": {
+    "h1": "Same direct Socket metadata getter and secure/nonsecure nil behavior after adapter readiness; no getter edits",
+    "h2": "Same actual worker/id/token authority, authoritative stream deadline and native connection-owned full metadata; no transport/owner edits",
+    "h3_and_other_transports": "Same stored metadata clause and payload; no optional H3 dependency introduced",
+    "caps_and_accountant": "unchanged",
+    "tests": "Original formatted native TLS test SHA601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3 remains unchanged and matches diagnostic manifest; no assertion/reason/deadline/fixture preload changes"
+  },
+  "verification": {
+    "artifact_hashes": "PASS parent supplied patch/md/json SHA256 independently matched",
+    "exact_reconstruction": "PASS Python stdlib in-memory context/hunk counts, before/after hashes and exact one-call delta; no reconstructed repository file written",
+    "source_hashes": "PASS all9 author-listed current source hashes including unchanged test, Exchange, Plug adapter/endpoint and dependency constructor/probe",
+    "diagnostic_authentication": "PASS receipt/log/script hashes,190-input source stability and41/2 exit2 joined/no-timeout counts; actual bounded exception lines140-146 and272-278 read",
+    "format_compile_runtime_browser": "NOT_RUN",
+    "new_tests_executed": 0,
+    "git_commands": 0,
+    "runtime_processes_started": 0,
+    "report_json": "serialized; fresh jq empty validation follows creation",
+    "read_correction": "An initial rg used a nonexistent shorter PlugEndpoint path; corrected to apps/gaoxy_http/lib/gaoxy/http/plug_endpoint.ex and read in full. No implementation command failed."
+  },
+  "counter_custody": {
+    "reviewer_added_sol_repair_rounds": 0,
+    "parent_failed_GREEN_latest_supplied": 20,
+    "parent_root_event_latest_supplied": 22,
+    "astra_used": 2,
+    "astra_max": 2,
+    "reset": false
+  },
+  "parent_feedback_only": "Root command77347 joined0 and Session46/0 PASS per parent; Session receipt not independently authenticated for this adapter review.",
+  "remaining_risks": [
+    "One-call repair is not adopted/formatted/compiled/executed in this review; actual nativeTLS41/0 remains unproven",
+    "Parent must run original unchanged nativeTLS suite and prescribed affected accountant/nativeH2/H1/H3 compatibility gates; diagnostic failure is not GREEN",
+    "Preserve all prior failure receipts and exact original assertions; source approval is not whole-stage or browser acceptance"
+  ],
+  "decisions_needed": [],
+  "repo_changes": [],
+  "writes": [
+    "/tmp/gaoxy-group-native-tls-positive-code-review1.md",
+    "/tmp/gaoxy-group-native-tls-positive-code-review1.json"
+  ],
+  "command_shutdown": "All own reads/reconstruction commands finished. No repo/Git/build/runtime/process-control changes; parent actors untouched.",
+  "runtime_acceptance": "NOT_ACCEPTED_NOT_EXECUTED"
+}

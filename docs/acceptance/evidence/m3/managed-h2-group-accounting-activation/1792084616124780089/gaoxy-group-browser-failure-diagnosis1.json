@@ -1,0 +1,41 @@
+{
+  "task_id": "browser_contract_spec/group-browser-failure-diagnosis1",
+  "status": "DONE_READ_ONLY_DIAGNOSIS",
+  "assignment": "direct_bounded_read_only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "evidence_root": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/browser-three-cases1-1792095973474636383",
+  "actual": {"exit": 1, "joined": true, "timeout": false, "source_stable": true, "suite": "FAIL", "completed_cases": 0, "positive_response": {"protocol": "h2", "status": 503, "content_length": 0, "navigation_error": "net::ERR_HTTP_RESPONSE_CODE_FAILURE", "canceled": false}, "upstream_requests": ["HEAD /health"]},
+  "cause": {
+    "classification": "Gaoxy runtime native TLS constructor/accounting incompatibility",
+    "source_proof": "Native Connection retains full OTP connection_information/1 output in Exchange.ssl. OTP constructor includes session_data binary. ManagedH2GroupAccounting finite_native atom vocabulary excludes session_data, so actual constructor output cannot satisfy pump Exchange validation before Session start; generic dispatch error maps to503.",
+    "confidence": "static_constructor_mismatch_proven; specific_request_branch_source_derived_not_live_traced",
+    "missing_runtime_evidence": ["actual bounded Exchange.ssl shape", "individual startup validator result", "post-failure G/T/Service snapshot"],
+    "fixture_defect_established": false,
+    "fixture_observability_gap": "Exception path does not collect final host diagnostic snapshot before actor termination"
+  },
+  "historical_environment": {
+    "receipt": "host-loaded-before.json",
+    "pid": "1324176",
+    "otp": "28",
+    "elixir": "1.18.5",
+    "erts": "16.4.0.6",
+    "beam": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/erts-16.4.0.6/bin/beam.smp",
+    "beam_sha256": "7d7cc767b20c28e26fe93a13d23d5daf688cbd83ed60523a5bdedd9cb6ee02e6",
+    "ssl_module_code_path_separately_attested": false,
+    "parent_current_environment_report": "/nix/store/5y0714j8czhkjbmjb6l6m46n5w5fyr6q-erlang-28.5.0.5",
+    "http_cohort": "0.21.10"
+  },
+  "repair_proposal": "Parent captures exact pre-start validator boundary, then narrowly repairs named native TLS metadata constructor/accounting contract. Recommended: preserve original Exchange.ssl and Plug ssl_data semantics; reconcile group validation with the already named native_tls_lease projection after establishing actual retained provenance, ownership and exact byte budget. Do not discard retained ssl before ownership measurement, whitelist arbitrary terms, or change positive browser assertions. Add actual native TLS/h2 regression and rerun unchanged three browser cases.",
+  "assertions_weakened": false,
+  "historical_negative_tls": "UNCONFIRMED_WITH_RETAINED_FAILURE preserved",
+  "repo_files_changed": [],
+  "reports_created": ["/tmp/gaoxy-group-browser-failure-diagnosis1.md", "/tmp/gaoxy-group-browser-failure-diagnosis1.json"],
+  "verification": "Read-only preserved JSON/log/source inspection and exact source hashes; no tests/runtime/browser/build/Git commands",
+  "sol_repair_rounds_added": 0,
+  "inherited_sol_counter": "not supplied; unchanged",
+  "astra_recovery_used": 2,
+  "astra_recovery_max": 2,
+  "command_shutdown": "all own commands finished; no runtime processes started",
+  "acceptance": "NOT_ACCEPTED"
+}

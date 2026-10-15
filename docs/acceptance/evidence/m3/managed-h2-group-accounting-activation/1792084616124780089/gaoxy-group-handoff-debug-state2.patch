@@ -1,0 +1,15 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_live_gap_test.exs
+@@ -288,9 +288,9 @@
+          {:in,
+           {:"$gen_call", {pump, _} = from, {:delegate_request_pin, _, _, _, _, _, operation, _}}}}
+         when is_pid(pump) and is_reference(operation) ->
+-          {from, operation}
+-
+-        {{from, operation},
++          {:delegation, from, operation}
++
++        {{:delegation, from, operation},
+          {:out, {:error, {:capacity, :pins}} = reply, actual_from, _owner_state}}
+         when actual_from === from ->
+           send(caller, {:group_gap_owner_refusal, owner, from, operation, reply})

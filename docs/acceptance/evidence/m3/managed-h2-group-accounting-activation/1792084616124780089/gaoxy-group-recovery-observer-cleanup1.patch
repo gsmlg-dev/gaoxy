@@ -1,0 +1,31 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs
+@@ -486,10 +486,17 @@
+             args ->
+               send(parent, {:real_recovery_start, self(), args})
+ 
+-              receive do
+-                {:continue_real_recovery, ^barrier} -> :ok
++              monitor = Process.monitor(parent)
++
++              try do
++                receive do
++                  {:continue_real_recovery, ^barrier} -> :ok
++                  {:DOWN, ^monitor, :process, ^parent, _} -> :ok
++                after
++                  @timeout -> raise "real recovery startup barrier expired"
++                end
+               after
+-                @timeout -> raise "real recovery startup barrier expired"
++                Process.demonitor(monitor, [:flush])
+               end
+ 
+               true
+@@ -507,7 +514,6 @@
+     :ok = :sys.install(supervisor, {debug, false})
+ 
+     on_exit(fn ->
+-      send(supervisor, {:continue_real_recovery, barrier})
+       if Process.alive?(supervisor), do: :sys.remove(supervisor, debug)
+     end)
+ 

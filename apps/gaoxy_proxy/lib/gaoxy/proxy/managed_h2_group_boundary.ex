@@ -65,7 +65,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupBoundary do
 
   def prepare(_, _, _, _), do: {:error, :invalid_group_opening}
 
-  def activation, do: {:error, :accounting_not_ready}
+  def activation, do: :ok
 
   defp compact_identifier?(value) when is_binary(value) and byte_size(value) in 1..128,
     do: :binary.referenced_byte_size(value) == byte_size(value)

@@ -1,0 +1,23 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
+@@ -488,10 +488,17 @@
+       # bind/1 preserves the original public completion and binds transport first.
+       case bind(state) do
+         :ok ->
+-          with :ok <- notify(state, {:ready, upload, state.config.limits, state.deadline}) do
+-            continue_session(state)
++          with :clear <- queued_group_terminal(state),
++               :ok <-
++                 group_local_status(state, state.deadline, state.opening_deadline, Lifecycle.now()) do
++            with :ok <- notify(state, {:ready, upload, state.config.limits, state.deadline}) do
++              continue_session(state)
++            else
++              _ -> local_group_fail(state, :invalid_response)
++            end
+           else
+-            _ -> local_group_fail(state, :invalid_response)
++            {:handled, result} -> result
++            {:error, reason} -> local_group_fail(drop_group_opening(state), reason)
+           end
+ 
+         {:error, reason} ->

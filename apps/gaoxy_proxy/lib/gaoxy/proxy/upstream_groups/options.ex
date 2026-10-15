@@ -25,12 +25,16 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Options do
     members =
       for member <- group.members do
         {:ok, config} = HTTP.init(member.config)
-        true = config.upstream_protocol == :http1
-        true = config.client == Gaoxy.Proxy.HTTPFetchClient
+        true = member_config?(config)
+
+        true =
+          not h2?(config) or
+            (map_size(group) == 5 and map_size(member) == 3 and compact?(member.id))
 
         Map.merge(config.limits, %{
           id: member.id,
-          upstream: URI.to_string(member.config.uri),
+          upstream: origin(config),
+          upstream_protocol: config.upstream_protocol,
           cacertfile: member.config.cacertfile,
           connect_address: member.config.connect_address,
           transport: config.transport,
@@ -55,12 +59,16 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Options do
          members when is_list(members) and length(members) in 1..32 <- options[:members],
          {:ok, members} <- members(members),
          true <- length(Enum.uniq_by(members, & &1.id)) == length(members),
+         true <- length(Enum.uniq_by(members, & &1.config.upstream_protocol)) == 1,
+         h2 = h2?(hd(members).config),
+         true <- not h2 or compact?(options.id),
          max = Map.get(options, :max_inflight, 64),
          true <- is_integer(max) and max in 1..1024,
          health when is_map(health) <- Map.get(options, :health, %{}),
          true <- Map.keys(health) -- Map.keys(@health) == [],
          health = Map.merge(@health, health),
          true <- path?(health.path),
+         true <- not h2 or (compact?(health.path) and not String.contains?(health.path, "?")),
          true <-
            Enum.all?(Map.delete(health, :path), fn {key, value} ->
              is_integer(value) and value >= if(key == :jitter, do: 0, else: 1) and
@@ -105,15 +113,35 @@ defmodule Gaoxy.Proxy.UpstreamGroups.Options do
            max = Map.get(value, :max_inflight, 16),
            true <- is_integer(max) and max in 1..1024,
            {:ok, config} <- HTTP.init(Map.drop(value, [:id, :max_inflight])),
-           true <-
-             config.upstream_protocol == :http1 and
-               config.client == Gaoxy.Proxy.HTTPFetchClient,
-           true <- byte_size(URI.to_string(config.uri)) <= 8192 do
+           true <- member_config?(config),
+           true <- not h2?(config) or compact?(value.id),
+           true <- byte_size(origin(config)) <= 8192 do
         {:cont, {:ok, acc ++ [%{id: value.id, config: config, max_inflight: max}]}}
       else
         _ -> {:halt, {:error, :invalid_group_member}}
       end
     end)
+  end
+
+  defp member_config?(%{upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}),
+    do: true
+
+  defp member_config?(
+         %{upstream_protocol: protocol, client: Gaoxy.Proxy.ManagedH2Client} = config
+       )
+       when protocol in [:http2, :h2c],
+       do: Gaoxy.Proxy.ManagedH2Envelope.validate_config(config) == :ok
+
+  defp member_config?(_), do: false
+  defp h2?(config), do: config.upstream_protocol in [:http2, :h2c]
+
+  defp compact?(value),
+    do: is_binary(value) and :binary.referenced_byte_size(value) == byte_size(value)
+
+  defp origin(config) do
+    if h2?(config),
+      do: config.uri.scheme <> "://" <> config.uri.authority,
+      else: URI.to_string(config.uri)
   end
 
   defp name?(name) when is_atom(name), do: name != nil

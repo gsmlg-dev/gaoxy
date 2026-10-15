@@ -1,0 +1,187 @@
+{
+  "task_id": "/root/group_postactivation_code/native_tls_positive_diagnosis1",
+  "status": "DONE_DIAGNOSIS_PROPOSAL",
+  "assignment": "direct, source/artifact read-only diagnosis; parent exclusively owns repository/runtime/build/process/evidence/Git mutations",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "supplied_historical_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "git_commands_run": false,
+  "receipt": {
+    "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-native-tls-1792097971682851911.json",
+    "sha256": "983690f6a0a1bbaf99a19c76749de3eb14efee79c45d3ac807bdf323da6aed0a",
+    "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/fresh-native-tls-1792097971682851911.log",
+    "log_sha256": "0ef19a5e5000b0cc0f9ad912669a88bde05281878a887959a9cc1f10b8a62ac6",
+    "actual_exit": 2,
+    "process_joined": true,
+    "timed_out": false,
+    "elapsed_ms": 59223,
+    "tests_executed": 41,
+    "failures": 2,
+    "skips": 0,
+    "exclusions": 0,
+    "source_stable": true,
+    "source_inputs": 189,
+    "before_after_equal": true,
+    "argv": [
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "unbuffer",
+      "mix",
+      "test",
+      "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "--seed",
+      "33015"
+    ]
+  },
+  "observed": [
+    "FAIL41/2; both native TLS/h2 positive cases lack native_tls_exchange tuple entirely. Mailbox contains only real upstream peer accept/TLS/control/settings events, not a mismatching observation tuple.",
+    "Both fail at original 5000ms assert_receive at test158. Log43-130 h2c case and134-243 http2 case.",
+    "Queued real SSL operation owner-deadline/watchdog case PASS according to parent; complete suite log has41 executed and only the2 positive failures.",
+    "Parent reports format and strict compile PASS; accountant/nativeH2 gates NOT RUN due failfast. These parent-owned checks were not rerun by reviewer."
+  ],
+  "source_proven": [
+    "Test ObservedEndpoint.call23-40 constructs the entire native_tls_exchange tuple before send; any earlier pattern/URI/metadata exception prevents sending it.",
+    "H2 Stream.run18-25 catches endpoint call kind/reason into an error tuple. Unset response becomes500; original exception is not forwarded to observer.",
+    "Plug.Conn.get_ssl_data/1 conn.ex662-668 probes function_exported?(adapter,:get_ssl_data,1) without loading adapter and raises RuntimeError get_ssl_data not supported by Gaoxy.PlugAdapter when probe is false.",
+    "Exchange.plug_conn56-77 creates URI and calls Plug.Conn.Adapter.conn with Gaoxy.PlugAdapter atom; Adapter.conn37-53 only creates Conn and does not invoke/load adapter.",
+    "Gaoxy.PlugAdapter65-67 implements get_ssl_data as Exchange.ssl_data; its module can be present on code path while not loaded.",
+    "Production PlugEndpoint.init only loads user Plug; PlugEndpoint.call27-30 calls Exchange.plug_conn before user Plug, without loading Gaoxy.PlugAdapter.",
+    "H2 authenticated call authorizes stream id/token plus actual worker pid; native ssl_data operation checks authoritative owner stream deadline and replies with state.ssl. These ordinary error-return paths do not alone explain missing whole tuple."
+  ],
+  "hypotheses": [
+    {
+      "rank": 1,
+      "hypothesis": "Gaoxy.PlugAdapter is unloaded at first optional Plug SSL metadata probe.",
+      "status": "CONFIRMED_ACTUAL_BOTH_CASES",
+      "expected_diagnostic": "RuntimeError get_ssl_data not supported by Gaoxy.PlugAdapter, top Plug.Conn.get_ssl_data/1 conn.ex666, actual code.is_loaded false before probe."
+    },
+    {
+      "rank": 2,
+      "hypothesis": "Different eager expression exception before observation send (transport_state destructure, URI/Conn construction, metadata operation).",
+      "status": "NOT_CAUSE_OF_CAPTURED_EXCEPTION; future post-repair symptoms remain possible",
+      "next_selector": "Endpoint-local original kind/reason-class/top MFA plus stage markers."
+    },
+    {
+      "rank": 3,
+      "hypothesis": "Positive endpoint not dispatched or blocked before send.",
+      "status": "NOT_CAUSE_OF_CAPTURED_EXCEPTION; future post-repair symptoms remain possible",
+      "next_selector": "Endpoint-entry marker and bounded real native owner/worker identity after authenticated dispatch. Passing separate deadline case narrows generic startup but is not proof positive endpoint ran."
+    }
+  ],
+  "recommended_diagnostic": {
+    "owner": "root only; temporary source mutation under fresh source manifest and receipt",
+    "capture": "Before any callback/load call, report :code.is_loaded(Gaoxy.PlugAdapter) and :erlang.function_exported(Gaoxy.PlugAdapter,:get_ssl_data,1). Add endpoint entry/phase marker; endpoint-local catch original kind/reason, preserve stacktrace and rethrow with :erlang.raise(kind,reason,stacktrace).",
+    "bounded_fields": "Use exception struct module or atom reason; recognize exact expected RuntimeError message as fixed :adapter_ssl_not_exported selector. Summarize top stack entries as module/function/arity/file/line; convert argument lists to arity. Do not dump exchange, SSL/session bytes, arbitrary reason terms, or stack arguments.",
+    "do_not_mask": "Do not ensure_loaded, invoke adapter callback, replace failure with success, or alter any original assertion/reason/deadline before recording actual diagnostic.",
+    "why_rethrow": "Native H2 worker still catches the original exception identically; diagnostic must not convert endpoint failure into successful metadata or a substituted reason."
+  },
+  "conditional_repair": {
+    "requires": "Actual selector condition satisfied by root-owned diagnostic, independently read. Root remains sole adopter after its command join and review.",
+    "preferred": "Load owned Gaoxy.PlugAdapter with Code.ensure_loaded!(Gaoxy.PlugAdapter) in production Exchange.plug_conn before returning/constructing Conn; leave TLS ownership test and its assertions unchanged.",
+    "reason": "Both direct Exchange.plug_conn consumers and ordinary production PlugEndpoint can call optional metadata as their first adapter operation; fixture-only preload would hide this first-call compatibility gap.",
+    "fixture_only_alternative": "Not recommended: the same first-optional-callback path is reachable through ordinary production PlugEndpoint. Preserve original TLS test bytes.",
+    "upstream_routing": "No confirmed dependency bug identified. Plug intentionally probes optional adapter callback; Gaoxy owns adapter readiness. Do not file speculative upstream issue.",
+    "patch_path": "/tmp/gaoxy-group-native-tls-positive-repair1.patch",
+    "patch_status": "EVIDENCED_SOURCE_PROPOSAL_NOT_ADOPTED; runtime repair acceptance NOT RUN",
+    "patch_sha256": "24d256384037ab88a241e01bc13162f81cb8926874af20d36d81dab8b2d1e371",
+    "before_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+    "proposed_after_before_formatter_sha256": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0"
+  },
+  "verification": [
+    {
+      "status": "PASS",
+      "check": "Read-only receipt/log SHA256, count/exit/join/source-stability authentication; test/Exchange/Transport/Connection current hashes equal failed-run manifest."
+    },
+    {
+      "status": "PASS",
+      "check": "Source trace across real endpoint eager send, native H2 catch/dispatch/authenticated metadata, Conn construction, optional callback and ordinary PlugEndpoint."
+    },
+    {
+      "status": "PASS",
+      "check": "Conditional patch exact current Exchange bytes SHA513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652; exactly one load call plus blank line added. Source remained byte-identical after tmp patch creation. Runtime hypothesis unconfirmed."
+    },
+    {
+      "status": "PASS",
+      "check": "Independently read bounded actual diagnostic exception lines140-146 and272-278 plus receipt. Both show exact RuntimeError selector with adapter unloaded. Diagnostic script wraps only original Plug expression in memory and reraises original stack; repository TLS test remains byte-identical."
+    },
+    {
+      "status": "NOT RUN",
+      "check": "Conditional patch adoption, formatter, compiler, fresh repaired nativeTLS runtime suite and independent proposal review; parent owns these."
+    }
+  ],
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs": "601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/plug_endpoint.ex": "ba94e2dc22cae2187e0dc32d1bcf143f9a25b64fb71f7a0b793b83f7d7967cdb",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "deps/plug/lib/plug/conn.ex": "7841e3654ebc8d2cd5af86c8c6f7717807af305789d7e03e2529e7ceeca96c22",
+    "deps/plug/lib/plug/conn/adapter.ex": "67ab9803750c870cff490817ed6c570314e90f1f0e3e798a35cb7c5c1ecba589"
+  },
+  "source_custody_limit": "Only hashes present in receipt were compared to its manifest. Stream, PlugEndpoint, PlugAdapter and Plug dependency sources were inspected at current read time, not asserted covered by original189-input manifest.",
+  "changed_repository_files": [],
+  "new_artifacts": [
+    "/tmp/gaoxy-group-native-tls-positive-diagnosis1.md",
+    "/tmp/gaoxy-group-native-tls-positive-diagnosis1.json",
+    "/tmp/gaoxy-group-native-tls-positive-repair1.patch"
+  ],
+  "counters": {
+    "failed_GREEN": 20,
+    "parent_event": 21,
+    "Astra": "2/2 exhausted",
+    "reviewer_added_runtime_repair_rounds": 0,
+    "prior_explicit_rootrepair": 20,
+    "note": "Preserved inherited counters. Parent event21 not reinterpreted or used to reset any counter."
+  },
+  "astra_gate": "not requested",
+  "command_shutdown": "All reviewer read-only commands finished; no background/runtime/build processes started.",
+  "remaining_risks": "One-line production repair is proposed only: not adopted/formatted/compiled/executed or independently reviewed here. Actual41/0 runtime success remains unproven. Preserve prior FAIL receipts and original TLS assertions/reasons/deadlines.",
+  "decisions_needed": [],
+  "latest_parent_update": "Root command77347 fully joined0. Parent reports Session repair46/0 joined/stable receipt fresh-session-control-1792098341265691639.json SHA1c2b9f98b2eb44828fa397126b6a7023bc0e30ce223d9d68ca74fb8f243fdfcb. Root remains sole adopter. Session update parent-reported, not independently authenticated in this nativeTLS diagnosis.",
+  "confirmed_root_cause": "Both actual positive native TLS endpoints raise RuntimeError get_ssl_data not supported by Gaoxy.PlugAdapter while :code.is_loaded(Gaoxy.PlugAdapter) is false. Exchange produces Conn without loading owned adapter; Plug optional callback probe treats unloaded adapter as unsupported. Ordinary production PlugEndpoint follows same boundary, so production first-call compatibility repair is warranted.",
+  "diagnostic_receipt": {
+    "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-positive-diagnostic1-1792098286467315265.json",
+    "sha256": "01fd918d56960b7d78d013f424796771d4ab97b15566acc157eac545f0cd874b",
+    "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-positive-diagnostic1-1792098286467315265.log",
+    "log_sha256": "61fda4c0f25e01f9fde0c6fd046a0fcc1163ccbd657251297bfc22a542cbc156",
+    "script": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-positive-exception-diagnostic1.exs",
+    "script_sha256": "a67cdc13b5c97532eb2b0e2d39389003c7e19067c7e064952a2ae851cc023d30",
+    "actual_exit": 2,
+    "process_joined": true,
+    "timed_out": false,
+    "elapsed_ms": 54732,
+    "tests_executed": 41,
+    "failures": 2,
+    "skips": 0,
+    "exclusions": 0,
+    "source_stable": true,
+    "source_inputs": 190,
+    "before_after_equal": true,
+    "selectors": [
+      {
+        "log_lines": "140-146",
+        "exception": "RuntimeError",
+        "message": "get_ssl_data not supported by Gaoxy.PlugAdapter",
+        "code_is_loaded": false
+      },
+      {
+        "log_lines": "272-278",
+        "exception": "RuntimeError",
+        "message": "get_ssl_data not supported by Gaoxy.PlugAdapter",
+        "code_is_loaded": false
+      }
+    ],
+    "classification": "actual diagnostic FAIL41/2, not GREEN; original endpoint exception reraised and all original assertions retained"
+  },
+  "parent_next_checks": [
+    "Root command77347 has joined per parent. Maintain exclusive source custody through independent review and adoption.",
+    "Independent SPEC/CODE review of one-line adapter-readiness repair; root apply exact patch to current Exchange SHA and preserve original TLS test hash.",
+    "Scoped format and strict compile; rerun original unchanged nativeTLS ownership suite, require41 executed/0 failed/0 skipped/0 excluded plus joined/no timeout/stable source.",
+    "Run prescribed accountant/nativeH2 gates previously NOT RUN on failfast and fresh other affected gates; do not infer protocol acceptance from diagnostic failure."
+  ]
+}

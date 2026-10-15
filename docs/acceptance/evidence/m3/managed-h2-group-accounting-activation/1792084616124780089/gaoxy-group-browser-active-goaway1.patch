@@ -1,0 +1,30 @@
+--- a/apps/gaoxy_proxy/test/support/managed_h2_group_browser_peer.py
++++ b/apps/gaoxy_proxy/test/support/managed_h2_group_browser_peer.py
+@@ -59,6 +59,12 @@
+         self.emit('group_browser_ready', trust=self.trust, negative=self.negative,
+                   rotation=None if not self.negative else self.rotation)
+ 
++    def automatic(self, number, client, stream, target, method):
++        if self.negative and not self.rotated and target == '/health' and method == 'HEAD':
++            super().command(dict(op='goaway', connection=number, stream=stream,
++                                 last_stream=stream, code=0))
++        super().automatic(number, client, stream, target, method)
++
+     def command(self, value):
+         if value['op'] != 'rotate_tls':
+             return super().command(value)
+--- a/integration/http_fetch_contract/managed_h2_group_browser.py
++++ b/integration/http_fetch_contract/managed_h2_group_browser.py
+@@ -227,9 +227,10 @@
+             negative, ready, group_ready = start_peer(directory, name, actors)
+             started = start_host(host, ready, group_ready)
+             health = initial_head(negative)
+-            negative.send(dict(op='goaway', connection=health['connection'], stream=health['stream'],
+-                               last_stream=health['stream'], code=0))
+             goaway = negative.event('command', predicate=lambda event: event.get('op') == 'goaway')
++            require(goaway['connection'] == health['connection'] and
++                    goaway['stream'] == goaway['last_stream'] == health['stream'] and goaway['code'] == 0,
++                    'initial health GOAWAY did not name the exact accepted connection/stream')
+             physical = negative.event('eof', predicate=lambda event: event['connection'] == health['connection'])
+             negative.send(dict(op='rotate_tls'))
+             rotation = negative.event('tls_rotated')

@@ -1,0 +1,903 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex
+@@ -25,12 +25,14 @@
+     members =
+       for member <- group.members do
+         {:ok, config} = HTTP.init(member.config)
+-        true = config.upstream_protocol == :http1
+-        true = config.client == Gaoxy.Proxy.HTTPFetchClient
++        true = member_config?(config)
++        true = not h2?(config) or
++          (map_size(group) == 5 and map_size(member) == 3 and compact?(member.id))
+ 
+         Map.merge(config.limits, %{
+           id: member.id,
+-          upstream: URI.to_string(member.config.uri),
++          upstream: origin(config),
++          upstream_protocol: config.upstream_protocol,
+           cacertfile: member.config.cacertfile,
+           connect_address: member.config.connect_address,
+           transport: config.transport,
+@@ -55,12 +57,16 @@
+          members when is_list(members) and length(members) in 1..32 <- options[:members],
+          {:ok, members} <- members(members),
+          true <- length(Enum.uniq_by(members, & &1.id)) == length(members),
++         true <- length(Enum.uniq_by(members, & &1.config.upstream_protocol)) == 1,
++         h2 = h2?(hd(members).config),
++         true <- not h2 or compact?(options.id),
+          max = Map.get(options, :max_inflight, 64),
+          true <- is_integer(max) and max in 1..1024,
+          health when is_map(health) <- Map.get(options, :health, %{}),
+          true <- Map.keys(health) -- Map.keys(@health) == [],
+          health = Map.merge(@health, health),
+          true <- path?(health.path),
++         true <- not h2 or (compact?(health.path) and not String.contains?(health.path, "?")),
+          true <-
+            Enum.all?(Map.delete(health, :path), fn {key, value} ->
+              is_integer(value) and value >= if(key == :jitter, do: 0, else: 1) and
+@@ -105,15 +111,29 @@
+            max = Map.get(value, :max_inflight, 16),
+            true <- is_integer(max) and max in 1..1024,
+            {:ok, config} <- HTTP.init(Map.drop(value, [:id, :max_inflight])),
+-           true <-
+-             config.upstream_protocol == :http1 and
+-               config.client == Gaoxy.Proxy.HTTPFetchClient,
+-           true <- byte_size(URI.to_string(config.uri)) <= 8192 do
++           true <- member_config?(config),
++           true <- not h2?(config) or compact?(value.id),
++           true <- byte_size(origin(config)) <= 8192 do
+         {:cont, {:ok, acc ++ [%{id: value.id, config: config, max_inflight: max}]}}
+       else
+         _ -> {:halt, {:error, :invalid_group_member}}
+       end
+     end)
++  end
++
++  defp member_config?(%{upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}),
++    do: true
++
++  defp member_config?(%{upstream_protocol: protocol, client: Gaoxy.Proxy.ManagedH2Client} = config)
++       when protocol in [:http2, :h2c],
++       do: Gaoxy.Proxy.ManagedH2Envelope.validate_config(config) == :ok
++
++  defp member_config?(_), do: false
++  defp h2?(config), do: config.upstream_protocol in [:http2, :h2c]
++  defp compact?(value), do: is_binary(value) and :binary.referenced_byte_size(value) == byte_size(value)
++  defp origin(config) do
++    if h2?(config), do: config.uri.scheme <> "://" <> config.uri.authority,
++      else: URI.to_string(config.uri)
+   end
+ 
+   defp name?(name) when is_atom(name), do: name != nil
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex
+@@ -1,6 +1,6 @@
+ defmodule Gaoxy.Proxy.UpstreamGroups do
+   @moduledoc """
+-  Instance-scoped immutable H1 groups with cleanup-held selections.
++  Instance-scoped immutable homogeneous H1/H2 groups with cleanup-held selections.
+ 
+   Managed members declare their exact transport dependencies in the group handle.
+   Preparation acquires dependency pins in the preparer; owners never recursively
+@@ -14,10 +14,13 @@
+ 
+   alias Gaoxy.Proxy.{
+     HTTPFetchClient,
++    ManagedH2GroupAccounting,
+     UpstreamGroups.Options,
+     UpstreamGroups.Probe,
+     UpstreamTransports
+   }
++
++  @control_limit 16_777_216
+ 
+   @signed_min -9_223_372_036_854_775_808
+   @signed_max 9_223_372_036_854_775_807
+@@ -301,10 +304,10 @@
+   defp validate_members(group, instance, deadline) do
+     group.members
+     |> Enum.reject(&is_nil(&1.config.transport))
+-    |> Enum.map(&{&1.config.transport, URI.to_string(&1.config.uri)})
++    |> Enum.map(&{&1.config.transport, member_origin(&1.config), &1.config.upstream_protocol})
+     |> Enum.uniq()
+-    |> Enum.reduce_while(:ok, fn {transport, origin}, :ok ->
+-      identity = %{origin: origin, upstream_protocol: :http1, instance: instance}
++    |> Enum.reduce_while(:ok, fn {transport, origin, protocol}, :ok ->
++      identity = %{origin: origin, upstream_protocol: protocol, instance: instance}
+ 
+       case UpstreamTransports.validate_endpoint(transport, identity, deadline) do
+         :ok -> {:cont, :ok}
+@@ -327,12 +330,14 @@
+       owner_epoch: epoch,
+       group: group.id,
+       generation: generation,
+-      max_url_bytes: Enum.max(Enum.map(group.members, &byte_size(URI.to_string(&1.config.uri))))
++      max_url_bytes: Enum.max(Enum.map(group.members, &byte_size(member_origin(&1.config))))
+     }
+ 
+     case member_transports(group) do
+       [] -> handle
+-      transports -> Map.put(handle, :transports, transports)
++      transports ->
++        handle = Map.put(handle, :transports, transports)
++        if h2_compiled?(group), do: Map.put(handle, :execution_profile, :managed_h2), else: handle
+     end
+   end
+ 
+@@ -383,6 +388,9 @@
+       do: [handle | Map.get(handle, :transports, [])],
+       else: {:error, :invalid_endpoint_resources}
+   end
++
++  def valid_handle?(%{execution_profile: :managed_h2} = handle) when map_size(handle) == 8,
++    do: probe_group_handle?(handle)
+ 
+   def valid_handle?(%{transports: transports} = handle) when map_size(handle) == 7 do
+     valid_handle?(Map.delete(handle, :transports)) and is_list(transports) and
+@@ -437,12 +445,19 @@
+        probes: %{},
+        bytes: 0,
+        probe_bytes: 0,
++       control_bytes: 0,
+        probe_cursor: 0,
+        mode: :ready
+      }}
+   end
+ 
+   defp prepare_record(state, compiled, holder, caller, operation, deadline) do
++    if h2_compiled?(compiled),
++      do: prepare_h2_record(state, compiled, holder, caller, operation, deadline),
++      else: prepare_h1_record(state, compiled, holder, caller, operation, deadline)
++  end
++
++  defp prepare_h1_record(state, compiled, holder, caller, operation, deadline) do
+     generation = make_ref()
+     handle = group_handle(compiled, self(), state.epoch, generation)
+     transports = Map.get(handle, :transports, [])
+@@ -498,7 +513,7 @@
+ 
+         state = %{state | groups: Map.put(state.groups, key, group), bytes: state.bytes + bytes}
+ 
+-        {pin, state} =
++        {:ok, pin, state} =
+           add_pin(state, [key], [handle], holder, caller, :preparation, operation, deadline)
+ 
+         send(self(), :kick_probes)
+@@ -540,14 +555,19 @@
+         {:reply, {:error, :group_capacity}, state}
+ 
+       true ->
+-        {pin, state} = add_pin(state, keys, handles, holder, caller, kind, operation, deadline)
+-        {:reply, {:ok, pin}, state}
+-    end
+-  end
+-
+-  def handle_call({:release, %{ref: ref, owner_epoch: epoch}}, {caller, _}, state) do
++        case add_pin(state, keys, handles, holder, caller, kind, operation, deadline) do
++          {:ok, pin, next} -> {:reply, {:ok, pin}, next}
++          {:error, reason} -> {:reply, {:error, reason}, state}
++        end
++    end
++  end
++
++  def handle_call({:release, %{ref: ref, owner_epoch: epoch} = public}, {caller, _}, state) do
+     case state.pins[ref] do
+       nil -> {:reply, :ok, state}
++      %{holder: ^caller, control_bytes: _} = held when epoch == state.epoch ->
++        if authentic_h2_pin?(state, public, held), do: {:reply, :ok, remove_pin(state, ref)},
++          else: {:reply, {:error, :unauthorized_pin_release}, state}
+       %{holder: ^caller} when epoch == state.epoch -> {:reply, :ok, remove_pin(state, ref)}
+       _ -> {:reply, {:error, :unauthorized_pin_release}, state}
+     end
+@@ -559,6 +579,10 @@
+     cond do
+       caller != guardian or not is_pid(guardian) or not is_map(context) or
+           :erlang.external_size(context) > 1024 ->
++        {:reply, {:error, :invalid_checkout}, state}
++
++      group != nil and h2_group?(group) and
++          (map_size(context) != 0 or not h2_request_pin?(state, pins, handle)) ->
+         {:reply, {:error, :invalid_checkout}, state}
+ 
+       state.mode != :ready or group == nil or group.lifecycle == :failed or
+@@ -579,7 +603,7 @@
+       %{guardian: ^caller, key: group_key, completion: nil} = held ->
+         if record(state, handle) != nil and group_key == key(handle) and
+              match?(%HTTP.RequestCompletion{}, completion),
+-           do: {:reply, :ok, put_in(state.tokens[token], %{held | completion: completion})},
++           do: control_reply(state, :selection, token, %{held | completion: completion}, :invalid_completion),
+            else: {:reply, {:error, :invalid_completion}, state}
+ 
+       _ ->
+@@ -621,15 +645,19 @@
+             }
+           end)
+ 
+-        {:reply,
+-         %{
+-           lifecycle: group.lifecycle,
+-           inflight: group.inflight,
+-           members: members,
+-           probe_bytes: state.probe_bytes,
+-           probes: map_size(state.probes),
+-           pins: map_size(state.pins)
+-         }, state}
++        status = %{
++          lifecycle: group.lifecycle,
++          inflight: group.inflight,
++          members: members,
++          probe_bytes: state.probe_bytes,
++          probes: map_size(state.probes),
++          pins: map_size(state.pins)
++        }
++
++        status = if h2_group?(group), do: Map.merge(status, %{
++          config_bytes: state.bytes, control_bytes: state.control_bytes, control_limit: @control_limit
++        }), else: status
++        {:reply, status, state}
+     end
+   end
+ 
+@@ -640,10 +668,10 @@
+         group = state.groups[group_key]
+ 
+         if state.mode == :ready and group != nil and group.lifecycle == :active and
+-             key(group.handle) == group_key and monitor != nil and
++             not h2_group?(group) and key(group.handle) == group_key and monitor != nil and
+              Lifecycle.remaining(deadline) > 0 and Lifecycle.remaining(probe_deadline) > 0 and
+              Process.alive?(caller) and Process.alive?(state.instance) do
+-          {:reply, {:ok, state.instance}, put_in(state.probes[token], %{probe | claimed: true})}
++          claim_reply(state, token, probe)
+         else
+           {:reply, {:error, :stale_probe}, state}
+         end
+@@ -666,7 +694,7 @@
+              handle.owner_epoch === state.epoch and key(handle) === group_key and
+              deadline === probe_deadline and Lifecycle.remaining(deadline) > 0 and
+              Process.alive?(caller) and Process.alive?(state.instance) do
+-          {:reply, {:ok, state.instance}, put_in(state.probes[token], %{probe | claimed: true})}
++          claim_reply(state, token, probe)
+         else
+           {:reply, {:error, :stale_probe}, state}
+         end
+@@ -683,7 +711,7 @@
+     case state.probes[token] do
+       %{pid: ^caller, completion: nil} = probe ->
+         if match?(%HTTP.RequestCompletion{}, completion),
+-          do: {:reply, :ok, put_in(state.probes[token], %{probe | completion: completion})},
++          do: control_reply(state, :probe, token, %{probe | completion: completion}, :invalid_completion),
+           else: {:reply, {:error, :invalid_completion}, state}
+ 
+       _ ->
+@@ -693,7 +721,10 @@
+ 
+   def handle_call({:probe_finished, token, outcome}, {caller, _}, state) do
+     case state.probes[token] do
+-      %{pid: ^caller} -> {:reply, :ok, finish_probe(state, token, outcome)}
++      %{pid: ^caller} = probe ->
++        if not Map.has_key?(probe, :control_bytes) or outcome in [:success, :failure, :cancelled],
++          do: {:reply, :ok, finish_probe(state, token, outcome)},
++          else: {:reply, {:error, :stale_probe}, state}
+       _ -> {:reply, {:error, :stale_probe}, state}
+     end
+   end
+@@ -705,7 +736,15 @@
+   end
+ 
+   def handle_info(:kick_probes, state), do: {:noreply, launch_probes(state)}
+-  def handle_info({:pin_expired, ref}, state), do: {:noreply, remove_pin(state, ref)}
++  def handle_info({:pin_expired, ref}, state) do
++    case state.pins[ref] do
++      %{control_bytes: _, deadline: deadline} when is_integer(deadline) ->
++        if Lifecycle.remaining(deadline) == 0, do: {:noreply, remove_pin(state, ref)},
++          else: {:noreply, state}
++      %{control_bytes: _} -> {:noreply, state}
++      _ -> {:noreply, remove_pin(state, ref)}
++    end
++  end
+ 
+   def handle_info({:cancel_pin, caller, operation}, state) do
+     refs =
+@@ -714,40 +753,42 @@
+     {:noreply, Enum.reduce(refs, state, &remove_pin(&2, &1))}
+   end
+ 
+-  def handle_info({:DOWN, monitor, :process, _pid, _reason}, %{instance_monitor: monitor} = state) do
++  def handle_info({:DOWN, monitor, :process, pid, _reason}, %{instance_monitor: monitor, instance: pid} = state) do
+     Enum.each(state.tokens, fn {_, token} -> Gaoxy.Proxy.HTTP.Session.cancel(token.guardian) end)
+-    Enum.each(state.probes, fn {_, probe} -> Probe.cancel(probe.pid) end)
++    Enum.each(state.probes, fn {_, probe} -> if is_pid(probe[:pid]), do: Probe.cancel(probe.pid) end)
+     {:noreply, %{state | mode: :draining}}
+   end
+ 
+-  def handle_info({:DOWN, monitor, :process, _, _}, state) do
++  def handle_info({:DOWN, monitor, :process, pid, _}, state) when is_reference(monitor) and is_pid(pid) do
+     cond do
+-      pin = Enum.find(state.pins, fn {_, pin} -> pin.monitor == monitor end) ->
++      pin = Enum.find(state.pins, fn {_, pin} -> pin.monitor == monitor and
++          (not Map.has_key?(pin, :control_bytes) or pin.holder == pid) end) ->
+         {:noreply, remove_pin(state, elem(pin, 0))}
+ 
+-      token = Enum.find(state.tokens, fn {_, token} -> token.monitor == monitor end) ->
++      token = Enum.find(state.tokens, fn {_, token} -> token.monitor == monitor and
++          (not Map.has_key?(token, :control_bytes) or token.guardian == pid) end) ->
+         {ref, held} = token
+-        state = put_in(state.tokens[ref], %{held | monitor: nil})
+-        {:noreply, recover(state, :selection, ref, held)}
+-
+-      probe = Enum.find(state.probes, fn {_, probe} -> probe.monitor == monitor end) ->
++        {:noreply, guardian_down(state, :selection, ref, held)}
++
++      probe = Enum.find(state.probes, fn {_, probe} -> probe[:monitor] == monitor and
++          (not Map.has_key?(probe, :control_bytes) or probe.pid == pid) end) ->
+         {ref, held} = probe
+-        state = put_in(state.probes[ref], %{held | monitor: nil})
+-        {:noreply, recover(state, :probe, ref, held)}
++        {:noreply, guardian_down(state, :probe, ref, held)}
+ 
+       recovery =
+           Enum.find(
+             Map.values(state.tokens) ++ Map.values(state.probes),
+-            &(&1[:recovery_monitor] == monitor)
++            &(&1[:recovery_monitor] == monitor and
++              (not Map.has_key?(&1, :control_bytes) or &1.recovery == pid))
+           ) ->
+-        {:noreply, put_in(state.groups[recovery.key].lifecycle, :failed)}
++        {:noreply, fail_group(state, recovery.key)}
+ 
+       true ->
+         {:noreply, state}
+     end
+   end
+ 
+-  def handle_info({:recovered, kind, ref, recovery, :ok}, state) do
++  def handle_info({:recovered, kind, ref, recovery, :ok}, state) when kind in [:selection, :probe] do
+     held = if kind == :selection, do: state.tokens[ref], else: state.probes[ref]
+ 
+     if held && held[:recovery] == recovery do
+@@ -764,11 +805,11 @@
+     end
+   end
+ 
+-  def handle_info({:recovered, kind, ref, recovery, {:error, _}}, state) do
++  def handle_info({:recovered, kind, ref, recovery, {:error, _}}, state) when kind in [:selection, :probe] do
+     held = if kind == :selection, do: state.tokens[ref], else: state.probes[ref]
+ 
+     if held && held[:recovery] == recovery,
+-      do: {:noreply, put_in(state.groups[held.key].lifecycle, :failed)},
++      do: {:noreply, fail_group(state, held.key)},
+       else: {:noreply, state}
+   end
+ 
+@@ -786,6 +827,12 @@
+   end
+ 
+   defp add_pin(state, keys, handles, holder, caller, kind, operation, deadline) do
++    if Enum.any?(keys, &h2_group?(state.groups[&1])),
++      do: add_h2_pin(state, keys, handles, holder, caller, kind, operation, deadline),
++      else: add_h1_pin(state, keys, handles, holder, caller, kind, operation, deadline)
++  end
++
++  defp add_h1_pin(state, keys, handles, holder, caller, kind, operation, deadline) do
+     ref = make_ref()
+ 
+     timer =
+@@ -813,7 +860,7 @@
+       kind: kind
+     }
+ 
+-    {pin, %{state | pins: Map.put(state.pins, ref, record)}}
++    {:ok, pin, %{state | pins: Map.put(state.pins, ref, record)}}
+   end
+ 
+   defp remove_pin(state, ref) do
+@@ -824,7 +871,7 @@
+       {pin, pins} ->
+         if pin.timer, do: Process.cancel_timer(pin.timer)
+         Process.demonitor(pin.monitor, [:flush])
+-        Enum.reduce(pin.keys, %{state | pins: pins}, &reconcile(&2, &1))
++        Enum.reduce(pin.keys, refund_control(%{state | pins: pins}, pin), &reconcile(&2, &1))
+     end
+   end
+ 
+@@ -845,6 +892,11 @@
+   defp request_pin?(_, _, _), do: false
+ 
+   defp select(state, group, group_key, guardian, deadline) do
++    if h2_group?(group), do: select_h2(state, group, group_key, guardian, deadline),
++      else: select_h1(state, group, group_key, guardian, deadline)
++  end
++
++  defp select_h1(state, group, group_key, guardian, deadline) do
+     size = length(group.members)
+ 
+     index =
+@@ -890,6 +942,14 @@
+   end
+ 
+   defp finish_token(state, token, outcome) do
++    case state.tokens[token] do
++      nil -> state
++      %{control_bytes: _} -> finish_h2_token(state, token, outcome)
++      _ -> finish_h1_token(state, token, outcome)
++    end
++  end
++
++  defp finish_h1_token(state, token, outcome) do
+     {held, tokens} = Map.pop(state.tokens, token)
+     if held.monitor, do: Process.demonitor(held.monitor, [:flush])
+     group = state.groups[held.key]
+@@ -922,7 +982,7 @@
+ 
+     if retiring do
+       Enum.each(state.probes, fn {_, probe} ->
+-        if probe.key == group_key, do: Probe.cancel(probe.pid)
++        if probe.key == group_key and is_pid(probe[:pid]), do: Probe.cancel(probe.pid)
+       end)
+     end
+ 
+@@ -930,7 +990,10 @@
+          not Enum.any?(state.probes, fn {_, p} -> p.key == group_key end) do
+       %{state | groups: Map.delete(state.groups, group_key), bytes: state.bytes - group.bytes}
+     else
+-      put_in(state.groups[group_key], group)
++      case put_group(state, group_key, group) do
++        {:ok, next} -> next
++        {:error, _} -> fail_group(state, group_key)
++      end
+     end
+   end
+ 
+@@ -957,48 +1020,29 @@
+       selected = Map.take(member, [:id, :config, :max_inflight])
+ 
+       if probe_group_intent?(selected, group.handle),
+-        do: launch_group_probe(acc, selected, group),
++        do: launch_group_probe(acc, group_key, index, selected, group),
+         else: launch_h1_probe(acc, group_key, index, selected, group)
+     end)
+   end
+ 
+-  defp launch_group_probe(state, selected, group) do
++  defp launch_group_probe(state, group_key, index, selected, group) do
+     health = group.compiled.health
+     launch_now = Lifecycle.now()
+-
+-    with true <- probe_selected?(selected, true) and probe_health?(health, true),
+-         true <- launch_now >= @signed_min and launch_now <= @signed_max,
+-         budget =
+-           min(
+-             health.timeout,
+-             min(
+-               selected.config.limits.opening_timeout,
+-               selected.config.limits.max_lifetime
+-             )
+-           ),
+-         deadline = launch_now + budget,
++    budget = min(health.timeout, min(selected.config.limits.opening_timeout,
++      selected.config.limits.max_lifetime))
++    deadline = launch_now + budget
++    token = make_ref()
++    args = %{
++      owner: self(), token: token, member: selected, deadline: deadline, health: health,
++      url: :binary.copy(member_origin(selected.config) <> health.path), group: group.handle
++    }
++
++    with true <- launch_now >= @signed_min and launch_now <= @signed_max,
+          true <- deadline >= @signed_min and deadline <= @signed_max - 1_000,
+-         args = %{
+-           owner: self(),
+-           token: make_ref(),
+-           member: selected,
+-           deadline: deadline,
+-           health: health,
+-           url:
+-             :binary.copy(
+-               selected.config.uri.scheme <>
+-                 "://" <>
+-                 selected.config.uri.authority <> health.path
+-             ),
+-           group: group.handle
+-         },
+-         {:ok, _args} <- probe_start_arguments(args) do
+-      case apply(Gaoxy.Proxy.ManagedH2GroupBoundary, :activation, []) do
+-        {:error, :accounting_not_ready} -> state
+-        # Future activation still requires separately accounted H2 admission;
+-        # this branch cannot use the H1 reservation or start with zero bytes.
+-        :ok -> state
+-      end
++         {:ok, args} <- probe_start_arguments(args),
++         {:ok, _startup} <- ManagedH2GroupAccounting.startup(Probe, args),
++         :ok <- Gaoxy.Proxy.ManagedH2GroupBoundary.activation() do
++      admit_group_probe(state, group_key, index, token, deadline, args)
+     else
+       _ -> state
+     end
+@@ -1062,6 +1106,14 @@
+   end
+ 
+   defp finish_probe(state, token, outcome) do
++    case state.probes[token] do
++      nil -> state
++      %{control_bytes: _} -> finish_h2_probe(state, token, outcome)
++      _ -> finish_h1_probe(state, token, outcome)
++    end
++  end
++
++  defp finish_h1_probe(state, token, outcome) do
+     {probe, probes} = Map.pop(state.probes, token)
+     if probe.monitor, do: Process.demonitor(probe.monitor, [:flush])
+     group = state.groups[probe.key]
+@@ -1125,6 +1177,11 @@
+   end
+ 
+   defp recover(state, kind, token, held) do
++    if Map.has_key?(held, :control_bytes), do: recover_h2(state, kind, token, held),
++      else: recover_h1(state, kind, token, held)
++  end
++
++  defp recover_h1(state, kind, token, held) do
+     if held.completion != nil do
+       args = %{
+         owner: self(),
+@@ -1149,4 +1206,360 @@
+       put_in(state.groups[held.key].lifecycle, :failed)
+     end
+   end
++  defp h2_compiled?(group), do: hd(group.members).config.upstream_protocol in [:http2, :h2c]
++  defp h2_group?(%{handle: %{execution_profile: :managed_h2}}), do: true
++  defp h2_group?(_), do: false
++  defp member_origin(%{upstream_protocol: protocol, uri: uri}) when protocol in [:http2, :h2c],
++    do: uri.scheme <> "://" <> uri.authority
++  defp member_origin(config), do: URI.to_string(config.uri)
++
++  defp prepare_h2_record(state, compiled, holder, caller, operation, deadline) do
++    handle = group_handle(compiled, self(), state.epoch, make_ref())
++    group_key = key(handle)
++    group = %{
++      compiled: compiled,
++      members: Enum.map(compiled.members, &Map.merge(&1, %{
++        health: :unknown, checked: nil, failures: 0, successes: 0, inflight: 0,
++        probe: nil, due: Lifecycle.now()
++      })),
++      cursor: 0, inflight: 0, lifecycle: :active, bytes: 0, handle: handle
++    }
++
++    cond do
++      caller != holder -> {:reply, {:error, :unauthorized}, state}
++      state.mode != :ready or not is_integer(deadline) or Lifecycle.remaining(deadline) == 0 or
++          not is_pid(holder) or not Process.alive?(holder) ->
++        {:reply, {:error, :preparation_expired}, state}
++      not is_reference(operation) or not valid_handle?(handle) ->
++        {:reply, {:error, :invalid_endpoint_resources}, state}
++      map_size(state.groups) >= state.limits.max_groups or map_size(state.pins) >= state.limits.max_pins ->
++        {:reply, {:error, :group_capacity}, state}
++      true ->
++        with {:ok, bytes} <- ManagedH2GroupAccounting.group_charge(group),
++             true <- state.bytes + bytes <= state.limits.max_config_bytes,
++             group = %{group | bytes: bytes},
++             candidate = %{state | groups: Map.put(state.groups, group_key, group), bytes: state.bytes + bytes},
++             {:ok, pin, next} <- add_h2_pin(candidate, [group_key], [handle], holder, caller,
++               :preparation, operation, deadline) do
++          send(self(), :kick_probes)
++          {:reply, {:ok, handle, [pin]}, next}
++        else
++          _ -> {:reply, {:error, :group_capacity}, state}
++        end
++    end
++  end
++
++  defp add_h2_pin(state, keys, handles, holder, caller, kind, operation, deadline) do
++    ref = make_ref()
++    pin = %{provider: __MODULE__, owner: self(), owner_epoch: state.epoch, ref: ref,
++      operation: operation, handles: handles, kind: kind}
++    partial = %{keys: keys, holder: holder, acquirer: caller, kind: kind,
++      operation: operation, deadline: if(kind == :baseline, do: nil, else: deadline)}
++
++    with :ok <- ManagedH2GroupAccounting.validate(:captured_pins, [pin]),
++         {:ok, reserved, pending} <- reserve_control(state, :pin, partial) do
++      monitor = Process.monitor(holder)
++      timer = if kind == :baseline, do: nil,
++        else: Process.send_after(self(), {:pin_expired, ref}, Lifecycle.remaining(deadline))
++      record = Map.merge(reserved, %{monitor: monitor, timer: timer})
++      case reconcile_control(pending, :pin, record) do
++        {:ok, record, next} -> {:ok, pin, put_in(next.pins[ref], record)}
++        {:error, _} ->
++          if timer, do: Process.cancel_timer(timer)
++          Process.demonitor(monitor, [:flush])
++          {:error, :group_capacity}
++      end
++    else
++      _ -> {:error, :group_capacity}
++    end
++  end
++
++  # A provisional charge is installed before effects; no future PID/ref is invented.
++  defp reserve_control(state, kind, partial) do
++    old = Map.get(partial, :control_bytes, 0)
++    with {:ok, cap} <- ManagedH2GroupAccounting.control_reserve(kind, partial),
++         total = state.control_bytes - old + cap,
++         true <- total <= @control_limit do
++      {:ok, Map.put(partial, :control_bytes, cap), %{state | control_bytes: total}}
++    else
++      _ -> {:error, :group_capacity}
++    end
++  end
++
++  defp reconcile_control(state, kind, record) do
++    if Map.has_key?(record, :control_bytes) do
++      with {:ok, bytes} <- ManagedH2GroupAccounting.control_charge(kind, record),
++           total = state.control_bytes - record.control_bytes + bytes,
++           true <- total <= @control_limit do
++        {:ok, %{record | control_bytes: bytes}, %{state | control_bytes: total}}
++      else
++        _ -> {:error, :group_capacity}
++      end
++    else
++      {:ok, record, state}
++    end
++  end
++
++  defp control_table(:selection), do: :tokens
++  defp control_table(:probe), do: :probes
++  defp control_reply(state, kind, token, candidate, reason) do
++    case replace_control(state, kind, token, candidate) do
++      {:ok, next} -> {:reply, :ok, next}
++      {:error, _} -> {:reply, {:error, reason}, state}
++    end
++  end
++
++  defp replace_control(state, kind, token, candidate) do
++    with {:ok, held, next} <- reconcile_control(state, kind, candidate) do
++      {:ok, Map.update!(next, control_table(kind), &Map.put(&1, token, held))}
++    end
++  end
++
++  defp claim_reply(state, token, probe) do
++    case replace_control(state, :probe, token, %{probe | claimed: true}) do
++      {:ok, next} -> {:reply, {:ok, state.instance}, next}
++      {:error, _} -> {:reply, {:error, :stale_probe}, state}
++    end
++  end
++
++  defp refund_control(state, record),
++    do: %{state | control_bytes: state.control_bytes - Map.get(record, :control_bytes, 0)}
++
++  defp put_group(state, group_key, group) do
++    if not h2_group?(group) or
++         ManagedH2GroupAccounting.group_update(group, group.bytes) == :ok,
++      do: {:ok, put_in(state.groups[group_key], group)},
++      else: {:error, :group_capacity}
++  end
++
++  defp fail_group(state, group_key) do
++    group = state.groups[group_key]
++    case put_group(state, group_key, %{group | lifecycle: :failed}) do
++      {:ok, next} -> next
++      {:error, _} -> %{state | mode: :draining}
++    end
++  end
++
++  defp authentic_h2_pin?(state, public, held) do
++    ManagedH2GroupAccounting.validate(:captured_pins, [public]) == :ok and
++      public.provider == __MODULE__ and public.owner == self() and
++      public.operation == held.operation and public.kind == held.kind and
++      Enum.map(public.handles, &key/1) == held.keys and
++      Enum.all?(public.handles, &(record(state, &1) != nil))
++  end
++
++  defp h2_request_pin?(state, pins, handle) do
++    ManagedH2GroupAccounting.validate(:captured_pins, pins) == :ok and
++      Enum.any?(pins, fn pin ->
++        case pin do
++          %{provider: __MODULE__, owner: owner, owner_epoch: epoch, ref: ref,
++            operation: operation, handles: handles, kind: :request}
++              when owner == self() and epoch == state.epoch ->
++            case state.pins[ref] do
++              %{kind: :request, operation: ^operation, keys: keys} ->
++                key(handle) in keys and Enum.map(handles, &key/1) == keys and
++                  Enum.all?(handles, &(record(state, &1) != nil))
++              _ -> false
++            end
++          _ -> false
++        end
++      end)
++  end
++
++  defp select_h2(state, group, group_key, guardian, deadline) do
++    size = length(group.members)
++    offset = Enum.find(0..(size - 1), fn offset ->
++      member = Enum.at(group.members, rem(group.cursor + offset, size))
++      member.health == :healthy and not stale?(member, group.compiled.health) and
++        member.inflight < member.max_inflight
++    end)
++
++    if offset == nil do
++      {:reply, {:error, :unavailable}, state}
++    else
++      index = rem(group.cursor + offset, size)
++      member = Enum.at(group.members, index)
++      selected = Map.take(member, [:id, :config, :max_inflight])
++      token = make_ref()
++      partial = %{key: group_key, index: index, guardian: guardian, completion: nil,
++        deadline: deadline, recovery: nil}
++      updated = %{group | cursor: rem(index + 1, size), inflight: group.inflight + 1,
++        members: List.update_at(group.members, index, &%{&1 | inflight: &1.inflight + 1})}
++
++      with :ok <- ManagedH2GroupAccounting.validate(:selected, selected),
++           {:ok, next} <- put_group(state, group_key, updated),
++           {:ok, reserved, pending} <- reserve_control(next, :selection, partial) do
++        monitor = Process.monitor(guardian)
++        case reconcile_control(pending, :selection, Map.put(reserved, :monitor, monitor)) do
++          {:ok, held, admitted} -> {:reply, {:ok, selected, token}, put_in(admitted.tokens[token], held)}
++          {:error, _} ->
++            Process.demonitor(monitor, [:flush])
++            {:reply, {:error, :unavailable}, state}
++        end
++      else
++        _ -> {:reply, {:error, :unavailable}, state}
++      end
++    end
++  end
++
++  defp finish_h2_token(state, token, outcome) do
++    held = state.tokens[token]
++    group = state.groups[held.key]
++    member = Enum.at(group.members, held.index)
++    member = %{member | inflight: member.inflight - 1}
++    member = case outcome do
++      :upstream_failure -> failed_h2_health(member, group.compiled.health)
++      :success -> %{member | failures: 0}
++      _ -> member
++    end
++    updated = %{group | inflight: group.inflight - 1,
++      members: List.replace_at(group.members, held.index, member)}
++
++    case put_group(state, held.key, updated) do
++      {:ok, next} ->
++        if held.monitor, do: Process.demonitor(held.monitor, [:flush])
++        next = refund_control(%{next | tokens: Map.delete(next.tokens, token)}, held)
++        reconcile(next, held.key)
++      {:error, _} -> fail_group(state, held.key)
++    end
++  end
++
++  defp admit_group_probe(state, group_key, index, token, deadline, args) do
++    reserve = ManagedH2GroupAccounting.reservation_bytes()
++    partial = %{key: group_key, index: index, bytes: reserve, completion: nil,
++      claimed: false, recovery: nil, deadline: deadline}
++    group = state.groups[group_key]
++    updated = %{group | members: List.update_at(group.members, index, &%{&1 | probe: token})}
++
++    with true <- map_size(state.probes) < state.limits.max_probes,
++         true <- state.probe_bytes + reserve <= state.limits.probe_bytes,
++         {:ok, candidate} <- put_group(state, group_key, updated),
++         {:ok, reserved, pending} <- reserve_control(candidate, :probe, partial) do
++      # Both ledgers and the real key/index are owned before the child starts.
++      pending = %{pending | probes: Map.put(pending.probes, token, reserved),
++        probe_bytes: pending.probe_bytes + reserve}
++      case start_h2_probe(args) do
++        {:ok, pid} ->
++          monitor = Process.monitor(pid)
++          record = Map.merge(reserved, %{pid: pid, monitor: monitor})
++          case reconcile_control(pending, :probe, record) do
++            {:ok, record, admitted} ->
++              %{admitted | probes: Map.put(admitted.probes, token, record),
++                probe_cursor: rem(admitted.probe_cursor + 1, 32_768)}
++            {:error, _} ->
++              rollback_probe_child(state, pending, record, token, pid, monitor)
++          end
++        {:error, :start_unconfirmed} -> fail_group(pending, group_key)
++        {:error, _} -> state
++      end
++    else
++      _ -> state
++    end
++  end
++
++  defp rollback_probe_child(original, pending, record, token, pid, monitor) do
++    case stop_h2_probe(pid) do
++      :ok ->
++        Process.demonitor(monitor, [:flush])
++        original
++      {:error, :not_found} ->
++        if not Process.alive?(pid) do
++          Process.demonitor(monitor, [:flush])
++          original
++        else
++          fail_group(put_in(pending.probes[token], record), record.key)
++        end
++      {:error, _} -> fail_group(put_in(pending.probes[token], record), record.key)
++    end
++  end
++
++  defp finish_h2_probe(state, token, outcome) do
++    probe = state.probes[token]
++    group = state.groups[probe.key]
++    health = group.compiled.health
++    member = Enum.at(group.members, probe.index)
++    member = case outcome do
++      :cancelled -> member
++      :success ->
++        successes = min(member.successes + 1, health.recovery_threshold)
++        healthy = member.health != :unhealthy or successes >= health.recovery_threshold
++        %{member | health: if(healthy, do: :healthy, else: :unhealthy), successes: successes, failures: 0}
++      _ -> failed_h2_health(member, health)
++    end
++    now = Lifecycle.now()
++    jitter = if health.jitter == 0, do: 0,
++      else: :erlang.phash2({probe.key, member.id}, health.jitter + 1)
++    member = %{member | checked: if(outcome == :cancelled, do: member.checked, else: now),
++      probe: nil, due: now + health.interval + jitter}
++    updated = %{group | members: List.replace_at(group.members, probe.index, member)}
++
++    case put_group(state, probe.key, updated) do
++      {:ok, next} ->
++        if probe.monitor, do: Process.demonitor(probe.monitor, [:flush])
++        next = refund_control(%{next | probes: Map.delete(next.probes, token),
++          probe_bytes: next.probe_bytes - probe.bytes}, probe)
++        reconcile(next, probe.key)
++      {:error, _} -> fail_group(state, probe.key)
++    end
++  end
++
++  defp failed_h2_health(member, health) do
++    failures = min(member.failures + 1, health.failure_threshold)
++    %{member | failures: failures, successes: 0,
++      health: if(failures >= health.failure_threshold, do: :unhealthy, else: member.health)}
++  end
++
++  defp guardian_down(state, kind, token, held) do
++    case replace_control(state, kind, token, %{held | monitor: nil}) do
++      {:ok, next} -> recover(next, kind, token, Map.fetch!(Map.fetch!(next, control_table(kind)), token))
++      {:error, _} -> fail_group(state, held.key)
++    end
++  end
++
++  defp recover_h2(state, kind, token, held) do
++    if held.completion == nil do
++      fail_group(state, held.key)
++    else
++      args = %{owner: self(), recovery: {kind, token}, completion: held.completion,
++        deadline: max(held.deadline, Lifecycle.deadline(1_000))}
++      partial = Map.drop(held, [:recovery, :recovery_monitor])
++      with {:ok, args} <- probe_recovery_arguments(args),
++           {:ok, _startup} <- ManagedH2GroupAccounting.startup(Probe, args),
++           {:ok, reserved, pending} <- reserve_control(state, kind, partial) do
++        case start_h2_probe(args) do
++          {:ok, pid} ->
++            monitor = Process.monitor(pid)
++            record = Map.merge(reserved, %{recovery: pid, recovery_monitor: monitor})
++            case reconcile_control(pending, kind, record) do
++              {:ok, record, next} -> Map.update!(next, control_table(kind), &Map.put(&1, token, record))
++              {:error, _} ->
++                case stop_h2_probe(pid) do
++                  :ok ->
++                    Process.demonitor(monitor, [:flush])
++                    fail_group(state, held.key)
++                  _ ->
++                    pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, record))
++                    fail_group(pending, held.key)
++                end
++            end
++          {:error, :start_unconfirmed} ->
++            pending = Map.update!(pending, control_table(kind), &Map.put(&1, token, reserved))
++            fail_group(pending, held.key)
++          {:error, _} -> fail_group(state, held.key)
++        end
++      else
++        _ -> fail_group(state, held.key)
++      end
++    end
++  end
++  defp start_h2_probe(args) do
++    DynamicSupervisor.start_child(Gaoxy.Proxy.ProbeSupervisor, {Probe, args})
++  catch
++    :exit, _ -> {:error, :start_unconfirmed}
++  end
++  defp stop_h2_probe(pid) do
++    DynamicSupervisor.terminate_child(Gaoxy.Proxy.ProbeSupervisor, pid)
++  catch
++    :exit, _ -> {:error, :cleanup_unconfirmed}
++  end
+ end

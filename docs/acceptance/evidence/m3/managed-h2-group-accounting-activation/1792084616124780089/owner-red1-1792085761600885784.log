@@ -1,0 +1,286 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 33015, max_cases: 1
+
+[32m.[0m     [33mwarning:[0m comparison between distinct types found:
+
+         protocol == :http2
+
+     given types:
+
+         :h2c == :http2
+
+     where "protocol" was given the type:
+
+         # type: :h2c
+         # from: test/managed_h2_group_accounting_owner_test.exs:143:16
+         protocol = :h2c
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 146 │       other_protocol = fixture(if(protocol == :http2, do: :h2c, else: :http2))
+     │ [33m                                           ~[0m
+     │
+     └─ test/managed_h2_group_accounting_owner_test.exs:146:44: Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest."test h2c validates real protocol raw-root instance and resource identities before group admission"/1
+
+
+
+  1) test complete H2 config charge admits its exact budget and refuses one byte less (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:389[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(:h2c, f.transport, "exact"))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:391: (test)
+
+
+
+  2) test h2c records exact real pin bytes and refunds duplicates once while a baseline keeps the group (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:212[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:215: (test)
+
+[32m.[0m
+
+  3) test http2 validates real protocol raw-root instance and resource identities before group admission (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:142[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(%{input | members: [%{member | upstream: origin}]})
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:159: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest."test http2 validates real protocol raw-root instance and resource identities before group admission"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_accounting_owner_test.exs:149: (test)
+
+
+
+  4) test http2 pin capacity denial creates no monitor timer token or probe and keeps exact charges (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:193[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:196: (test)
+
+
+
+  5) test h2c validates real protocol raw-root instance and resource identities before group admission (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:142[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(%{input | members: [%{member | upstream: origin}]})
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:159: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest."test h2c validates real protocol raw-root instance and resource identities before group admission"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_accounting_owner_test.exs:149: (test)
+
+
+
+  6) test h2c preserves complete raw roots at 8192 bytes and refuses one over (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:64[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(%{input | members: [%{member | upstream: root}]})
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:71: (test)
+
+
+
+  7) test real H8 manifest preserves first occurrence order and the complete 32-resource set (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:426[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(input)
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:445: (test)
+
+
+
+  8) test mixed H1 H2 profiles and mixed H2 protocols are refused in raw and struct forms (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:249[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(h2)
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:255: (test)
+
+
+
+  9) test strict H8 rejects expanded incomplete duplicate and backing-heavy manifests (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:272[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert UpstreamGroups.valid_handle?(handle)
+     [36marguments:[0m
+
+         # 1
+         %{
+           owner: #PID<0.626.0>,
+           group: "group",
+           provider: Gaoxy.Proxy.UpstreamGroups,
+           generation: #Reference<0.2820198337.4083679234.10364>,
+           execution_profile: :managed_h2,
+           transports: [
+             %{
+               owner: #PID<0.626.0>,
+               resource: #Reference<0.2820198337.4083679234.10362>,
+               provider: Gaoxy.Proxy.UpstreamTransports,
+               owner_epoch: #Reference<0.2820198337.4083679234.10361>
+             }
+           ],
+           max_url_bytes: 8192,
+           owner_epoch: #Reference<0.2820198337.4083679234.10363>
+         }
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:286: (test)
+
+
+
+ 10) test http2 prepares a real H8 and charges both compiled and runtime configs (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:86[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(input)
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:90: (test)
+
+
+
+ 11) test http2 refuses config capacity including runtime duplicates before monitor or timer effects (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:174[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport, "denied", 32))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:178: (test)
+
+
+
+ 12) test a real H2 pin containing H1 keys charges the whole record and H1 status stays unchanged (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:307[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, h2} = UpstreamGroups.compile(group_input(:h2c, f.transport, "h2"))
+     [36mleft:  [0m{[31m:ok[0m, h2}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:309: (test)
+
+
+
+ 13) test http2 records exact real pin bytes and refunds duplicates once while a baseline keeps the group (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:212[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:215: (test)
+
+
+
+ 14) test http2 compiles homogeneous managed members and recompiles the exact struct (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:16[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %Options{} = compiled} = UpstreamGroups.compile(input)
+     [36mleft:  [0m{[31m:ok[0m, [31m%Gaoxy.Proxy.UpstreamGroups.Options{} = compiled[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_upstream_group[0m}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:20: (test)
+
+
+
+ 15) test h2c refuses config capacity including runtime duplicates before monitor or timer effects (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:174[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport, "denied", 32))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:178: (test)
+
+
+
+ 16) test http2 preserves complete raw roots at 8192 bytes and refuses one over (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:64[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(%{input | members: [%{member | upstream: root}]})
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:71: (test)
+
+
+
+ 17) test internal control capacity denies real multi-group pins atomically and stored removal refunds exactly (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:347[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(:h2c, f.transport, id))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:353: anonymous fn/2 in Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest."test internal control capacity denies real multi-group pins atomically and stored removal refunds exactly"/1
+       (elixir 1.18.5) lib/enum.ex:4484: Enum.map/2
+       test/managed_h2_group_accounting_owner_test.exs:351: (test)
+
+[32m.[0m
+
+ 18) test h2c prepares a real H8 and charges both compiled and runtime configs (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:86[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(input)
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:90: (test)
+
+
+
+ 19) test prepared max_url_bytes retains the actual complete raw 8192-byte origin (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:458[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(%{input | members: [%{member | upstream: root}]})
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:464: (test)
+
+
+
+ 20) test h2c pin capacity denial creates no monitor timer token or probe and keeps exact charges (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:193[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, compiled} = UpstreamGroups.compile(group_input(protocol, f.transport))
+     [36mleft:  [0m{[31m:ok[0m, compiled}
+     [36mright: [0m{[32m:error[0m, :invalid_upstream_group}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:196: (test)
+
+
+
+ 21) test h2c compiles homogeneous managed members and recompiles the exact struct (Gaoxy.Proxy.ManagedH2GroupAccountingOwnerTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs:16[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %Options{} = compiled} = UpstreamGroups.compile(input)
+     [36mleft:  [0m{[31m:ok[0m, [31m%Gaoxy.Proxy.UpstreamGroups.Options{} = compiled[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_upstream_group[0m}
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_owner_test.exs:20: (test)
+
+
+Finished in 3.0 seconds (3.0s async, 0.00s sync)
+[31m24 tests, 21 failures[0m

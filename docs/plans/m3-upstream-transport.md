@@ -498,19 +498,27 @@ in the canonical environment; capture red then green with exact counts.
 ## Task 5: Endpoint, Session, group and generation integration (conditional)
 
 
-**Current bounded activation — 2026-10-14:** Task4 foundation and Task5 fixed
-H1 endpoints are locally accepted. Managed H1 [groups/probes](m3-managed-h1-groups.md)
-complete independent SPEC/CODE and fresh168/0 at local commit
-`5ea088a9e3fe2646a056b2078f31a34f7adb6049`; managed H1
-[Generation](m3-managed-h1-generation.md) completes independent SPEC/CODE and
-fresh341/0 at `cb619569c7a18568981d3425845954ad04908ffb`. Both include scoped
-format and strict compile PASS. [H2 preparation](m3-managed-h2-preparation.md)
-is locally accepted at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`, with complete
-independent SPEC/CODE, fresh97/0 and public63/0, zero skips/exclusions, scoped
-format and strict compile PASS. Preparation supplies no live H2 reservation.
-The fixed-H2 design/plan has independent documentation readiness PASS;
-its implementation remains NOT RUN. Other H2 variants, standalone,
-complete Task5/M3 and sustained-load acceptance retain their separate gates.
+**Current bounded activation — 2026-10-16:** Task4 foundation, fixed H1,
+managed H1 groups/probes and H1 Generation are locally accepted at their recorded
+commits. Fixed managed H2 completed independent review, full58 853/0, public63/63,
+real-peer135/135 and isolated Chrome3/3 with HTTP0.21.10 (feature bbbc50dc628d4d82fde7377b5bcff68bb35e1867,
+evidence5516ea1b398d7970e861cabdb2c2c3075be7eeae). The bounded managed-H2
+[group accounting/activation](m3-managed-h2-group-accounting-activation.md) now
+passes complete FULL SPEC3/CODE3 plus exact fixture rebind review,25 original-source
+command gates/1,752 test invocations and fresh Chrome/CDP3/3. Final document/Git custody must pass before a local commit; the resulting
+stage closure receipt records the actual commit. The actual native
+H1/H2 downstream to h2c/TLS-H2 group subset is qualified; this is not H2 Generation
+or standalone-profile activation. Historical negative TLS/browser cleanup remains
+UNCONFIRMED_WITH_RETAINED_FAILURE. Fixed9,444,956/group16,478,862/startup5,963,776
+are unchanged; cumulative24 failed GREEN attempts/27 ordered root events and
+Astra2/2 remain retained. Complete Task5/M3, H2 Generation, standalone integration,
+reload/rotation and sustained load retain their separate gates.
+
+Next prerequisite: compiled Router route/resource-sidecar consistency before any
+new Generation baseline pin, followed by separate native Generation accounting
+and actual H2 Generation qualification. A reachable path is not an accepted
+Generation capability. The continuing authorization advances these bounded
+slices after their verification and independent review; no routine approval stop.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,
 `http_fetch_client.ex`, `group_endpoint.ex`, `upstream_groups.ex`,
@@ -531,7 +539,7 @@ Existing generic HTTP Resources/Generation interfaces should suffice.
 - [x] Integrate probes with the same immutable transport identity and existing
   finite probe budget. Acquire holds outside group/transport owners; no owner
   call cycle or new probes on retiring generations. Preserve health semantics.
-- [ ] Change adapter options only through the verified public managed facade;
+- [x] Change adapter options only through the verified public managed facade;
   explicit H1/H2/h2c, raw streamed response, no redirect/replay. Separate shared
   transport policy from request deadlines and choose the audited protocol
   reservation. Preserve the existing completion callback shapes.

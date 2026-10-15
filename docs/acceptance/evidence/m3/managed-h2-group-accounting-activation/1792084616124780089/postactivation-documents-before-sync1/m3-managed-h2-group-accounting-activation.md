@@ -1,0 +1,42 @@
+# Managed H2 group accounting and activation acceptance
+
+Status: IN PROGRESS. A-D are integrated; fresh scoped preactivation gates pass. Independent preactivation SPEC35/35 and CODE readiness PASS are authenticated. The fixed internal F gate is now CONTROLLED_ENABLED_PENDING_ACCEPTANCE. Successful live/browser/full acceptance is NOT RUN.
+
+Baseline local guard commit: `7cff6e87edb9b67e2667897bfbb7ee7e0075162e`, tree `a26656f16425d35ccc08584ee0486abb296a3c39`. Its local receipt is preserved as `predecessor-local-commit1.json`. Current implementation is dirty/untracked and must be identified by its source manifest, not HEAD alone.
+
+Evidence directory: `docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/`. Preactivation collector is `command-runner27.py`, SHA256 `0e6c3e48174b2e86e2956402b380d8cae63af2c6d63ec1b76592bcc534d31ff4`; controlled-F collector is `command-runner28.py`, SHA256 `9fd17d518447c14f8ac1bf2e51f73cdbd7d61853870cb44ed43d3bd8e9af162d`. Commands run through Nix with Elixir1.18.5, OTP28, ERTS16.4.0.6, MIX_ENV=test, ERL_FLAGS=+S 2:2, seed33015/max-cases1 and a600-second command deadline. Actual receipts retain executable paths, argv, sources before/after, log bytes/hash, counts, exit and joined state.
+
+## Fresh preactivation evidence
+
+| Gate | Actual result |
+| --- | --- |
+| Formatting check; forced strict compile | PASS, exit0 each |
+| A accountant; B owner | PASS68/0;24/0 |
+| C initial Session; control preflight; transitions | PASS13/0;9/0;11/0 |
+| Whole pin response; finite controls; actual public cancel | PASS6/0;16/0;2/0 |
+| D initial Probe; Probe controls | PASS13/0;21/0 |
+| Startup lease/full attachment reservation | PASS46/0 (fixed38 plus startup8) |
+| Existing pure suites | PASS454/0 (452 retained plus2 additive nil-token cases) |
+| Scoped H1/fixed-H2/H3/HTTP compatibility | PASS603/0 |
+| Nil-token structural preopen regression | Authenticated intended RED200/2, then unchanged-test GREEN200/0 |
+| Mixed Session control suite before F | FAIL46/6;40 pass, six postactivation cases stop at literal |
+| Group live suite before F | Authenticated intended RED106/68; fixed38 pass,68 stop at literal |
+| Final preactivation independent SPEC/CODE | PASS35/35; CODE no findings; exact126-source manifest authenticated |
+| Controlled F integration | ENABLED_PENDING_ACCEPTANCE; authenticated preactivation review precedes mutation |
+| Successful matrix/capacity/lifecycle | NOT RUN |
+| Browser three-case suite; standalone/core-only final gates | NOT RUN for this stage |
+| Final full SPEC/CODE, fresh acceptance, local commit | NOT RUN |
+
+All passing test rows have nonzero execution, stable source, real joined command exit0 and zero skips/exclusions/unexpected warnings. Aggregate rows include repeated fixed fixtures; counts are per command, not a sum of unique tests. Neither RED row is a green gate. The authenticated nil-token RED exposed missing pre-open/bind token refusal; the repair requires a reference token after queued/local terminal checks and before open/bind. Initial preattachment nil-token state remains valid. A fabricated reference shell is not Service authority.
+
+Selected enforced payload contract: unchanged fixed9,444,956 plus group7,033,906 yields request/normal-Probe16,478,862; startup lease delta5,963,776. Full cleanup attach overlaps startup until the args-owning helper returns.32 cleanup reservations527,323,584; four normal probes65,915,448. These are finite serialized original-role payload charges, separate from physical memory or complete runtime acceptance. Config and control ledgers remain separate from probe bytes, T and Service holds.
+
+## Retained failures and repair custody
+
+`counter-ledger1.json` inventories every command attempt at its cutoff, every inherited/stream-local counter snapshot and ordered root repair receipts. Current-stage failed GREEN attempts total12: accountant2, owner1, transitions test-warning1, Probe1, startup3, legacy pure3 and fresh Probe1. Earlier implementation/repair/failure counters remain inherited from `kickoff1.json`; local author snapshots are preserved verbatim, without a guessed global sum or reset. Astra2/2 remains exhausted.
+
+All initial/mixed RED, source/wrapper, diagnostic and failed GREEN logs remain immutable. The retained pure452/211 constructor failures led to actual GroupEndpoint/G7/client fixtures;452/26 and452/24 led to finite deadline and exact cleanup-capture contracts. Probe controls21/1 RED exposed a foreign-PID DOWN accepted under a real monitor ref; the repair matches both PID and ref, then21/0 passed. Startup gate disposal requires the actual killed exit; its other joins and full lease-adjust ordering are unchanged. Earlier compatibility603/1 timing attribution remains UNPROVED. No assertion was weakened, no verification skipped, and no failure relabelled as success. Before this status sync, all four edited documents were archived byte-for-byte in `preactivation-documents-before-sync1/`.
+
+The historical negative TLS/browser cleanup result remains **UNCONFIRMED_WITH_RETAINED_FAILURE**. Missing Service is not zero usage or a cleanup receipt. The dismissed upstream97 proof remains excluded. No publication, deployment, operational certificates, Vault, public management, production data or disabled release-artifact E2E changes are authorized.
+
+`controlled-activation1.json` records the authorized F mutation and stronger literal-contract replacements. This is not successful group runtime acceptance. The original CODE report store-path wording is retained with `gaoxy-group-preactivation-code-final1-toolchain-erratum.json`; actual canonical runtime is OTP28/ERTS16.4.0.6/Elixir1.18.5.

@@ -1,0 +1,64 @@
+{
+  "task_id": "group_postactivation_code / guardian_death_source_investigation1",
+  "status": "DONE_SOURCE_INVESTIGATION_CAUSE_UNPROVED",
+  "assignment": "direct bounded read-only source investigation; conditional /tmp diagnostic only",
+  "recorded_at_utc": "2026-10-15T20:02:28.778210+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "workspace": "root-owned source freeze; runtime83067 untouched",
+  "root_cause": "UNPROVED",
+  "terminalguard_fixes_guardian_death": "NOT ESTABLISHED; no direct source causal path",
+  "source_facts": [
+    "Prior failure14 at test line56 occurred after original RequestCompletion.await(completion,@timeout) returned :ok. It proves only that the compound Gtokens-empty/Ttokens0/helpers0/pins1 predicate did not succeed within G.eventually default5s. Log supplies no G/T raw predicate snapshot and no recovery exception for this case.",
+    "Group owner handles actual guardian monitor DOWN by clearing token monitor, preserving stored completion/charge and spawning a separate Probe recovery with exact original completion. Recovery public abort-and-await polls every5ms until its deadline; matching recovered success removes/refunds original G selection. Refused startup/reconcile, error recovery or recovery DOWN can mark group failed while retaining selection; none is evidenced by the prior failure log.",
+    "T owner handles guardian monitor DOWN independently by spawning abort helper over same original completion with5s deadline. Original token is retained until helper result plus helper DOWN join, then a fresh await(original,0) confirms cleanup before removal. Polling may retain unresolved token within original cleanup deadline. Helpers field includes both resource helpers/opening and token abort helpers.",
+    "T pin records are independent of request tokens: derived request pin is guardian-held and is removed on its own holder monitor DOWN; captured source pin is pump-held and released from GroupEndpoint try/after or holder DOWN; baseline remains embedding-held. Therefore completion:ok alone does not identify token/helper/pin predicate satisfaction.",
+    "Killed guardian cannot execute new terminalguard; test held state has pending live request before Process.exit(:kill), and G Probe/T helper paths are outside Session generic events. HTTP pump observes Session DOWN and returns bounded error response then releases captured pins through endpoint after. No direct source path makes terminalguard a repair for this killed-guardian failure; scheduling changes are not causal evidence.",
+    "Service and Admission gate are intentionally still blocked at the predicate. Diagnostic must never query these actors. The existing barrier5s timeout is unchanged; the investigation does not extend it, release it early or waive missing Service receipt/shutdown assertions."
+  ],
+  "reviewed_hashes": {
+    "apps/gaoxy_proxy/test/managed_h2_group_failure_test.exs": "ef24421bbae699d1f5c868eb7a29d34d1aededca8b3a0d501a7bd879fd72190d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "dcd567f4dd2ef2a864078270cd1ee3522b45db390bfca7a8565052c31a153d3d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "cf78f0bbb37bf76c0f4d9cad9b5d5843ce0f8457120f730591ba686b42459659",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "b0330019d771b9f58f6f15eba555cd77ec0ce0fcf2843bd9e19619d65b2ae2c7",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "44978c228e41316cac42608b39ef98272e33d1db2c0494580bc886e25c291a68",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c"
+  },
+  "conditional_diagnostic": {
+    "path": "/tmp/gaoxy-group-guardian-recovery-diagnostic1.patch",
+    "sha256": "bed26f744cd25052c3efa22395616230a9bf3326f624d08173f62e87b8a290ee",
+    "target": "apps/gaoxy_proxy/test/managed_h2_group_failure_test.exs",
+    "target_before_sha256": "ef24421bbae699d1f5c868eb7a29d34d1aededca8b3a0d501a7bd879fd72190d",
+    "candidate_unformatted_sha256": "4cffeea054f94674cfaa4e1931ee15621baeb379100758fb733bbcfe12b4b02d",
+    "adoption": "ONLY IF fresh live110 reproduces guardian-death predicate failure; root decides after run joins",
+    "behavior": "Wrap unchanged original G.eventually predicate in rescue ExUnit.AssertionError, take failure-only G/T snapshots with each sys.get_state100ms, print bounded projected record metadata and exact count arithmetic, then reraise original assertion with original stacktrace. No success-path observation or timeout change.",
+    "snapshot_fields": "G token/pin/control counts, group lifecycle/inflight, original guardian/completion equality, recovery actor/liveness/current function; T exact token/helpers/pins aggregation, abort helper/result/down/timer, pin holders/derived flag/liveness and resource helpers/opening/confirmed state; projected records max8 per category. No opaque completion or Promise serialization; no Service/gate calls.",
+    "bounds": "Two sequential sys calls each100ms maximum, local bounded projections/IO after original failure only; snapshots are non-atomic postfailure observations and cannot reconstruct the exact historical predicate state.",
+    "source_check": "Original predicate and all timeout arguments unchanged ignoring indentation; source hash stable; pure diff draft only.",
+    "format_compile_runtime": "NOT RUN; root must review/compile before any conditional execution"
+  },
+  "verification": {
+    "tests_executed": 0,
+    "runtime": "NOT RUN",
+    "build_format_compile": "NOT RUN",
+    "repository_mutations": [],
+    "commands": "Read assigned test/log and G/T/Probe/Session/endpoint/fixture/public completion source; generate /tmp diagnostic and hash source. Read-only no-match/nonexistent guessed source paths produced rg/sed exit2, then actual source paths located; no runtime launched.",
+    "shutdown": "All own commands completed; root83067 untouched; no owned actors to stop."
+  },
+  "counters": {
+    "local_sol_repair_rounds": 0,
+    "root_cumulative_sol": "parent-owned preserved",
+    "astra_recovery": "2/2 exhausted; unchanged"
+  },
+  "risks": [
+    "No raw predicate state available from prior failing run; cause cannot be attributed to TLS, G recovery, T helper or pump/source pin from that log.",
+    "Diagnostic source is uncompiled and must not be adopted during root active source freeze.",
+    "Current live110/Session46 outcome remains root-owned and pending; no passing or repaired claim."
+  ],
+  "decisions_needed": []
+}

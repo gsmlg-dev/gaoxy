@@ -1,0 +1,380 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 33015, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test h2c normal init accounts original A before genuine monitor and exact initial S (Gaoxy.Proxy.ManagedH2GroupProbeIntegrationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_probe_test.exs:34[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert before?(calls, {:erlang, :monitor, [:process, args.owner]}, {Accounting, :validate})
+     [36marguments:[0m
+
+         # 1
+         [
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :startup,
+            [
+              Gaoxy.Proxy.UpstreamGroups.Probe,
+              %{
+                owner: #PID<0.329.0>,
+                member: %{
+                  id: "member",
+                  config: %Gaoxy.Proxy.HTTP{
+                    uri: %URI{
+                      scheme: "http",
+                      authority: "upstream.test",
+                      userinfo: nil,
+                      host: "upstream.test",
+                      port: 80,
+                      path: nil,
+                      query: nil,
+                      fragment: nil
+                    },
+                    cacertfile: nil,
+                    connect_address: nil,
+                    transport: %{
+                      owner: #PID<0.329.0>,
+                      resource: #Reference<0.1526482936.3828875265.183735>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875265.183734>
+                    },
+                    limits: %{
+                      idle_timeout: 3000,
+                      opening_timeout: 4000,
+                      max_chunk_bytes: 1024,
+                      write_timeout: 700,
+                      max_lifetime: 10000
+                    },
+                    upstream_protocol: :h2c,
+                    client: Gaoxy.Proxy.ManagedH2Client
+                  },
+                  max_inflight: 32
+                },
+                group: %{
+                  owner: #PID<0.329.0>,
+                  group: "health",
+                  provider: Gaoxy.Proxy.UpstreamGroups,
+                  generation: #Reference<0.1526482936.3828875265.183737>,
+                  owner_epoch: #Reference<0.1526482936.3828875265.183736>,
+                  max_url_bytes: 8192,
+                  transports: [
+                    %{
+                      owner: #PID<0.329.0>,
+                      resource: #Reference<0.1526482936.3828875265.183735>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875265.183734>
+                    }
+                  ],
+                  execution_profile: :managed_h2
+                },
+                deadline: 4000,
+                token: #Reference<0.1526482936.3828875265.183742>,
+                url: "http://upstream.test/health%2fready",
+                health: %{
+                  timeout: 3000,
+                  path: "/health%2fready",
+                  interval: 1000,
+                  stale_after: 2000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 0
+                }
+              }
+            ]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate,
+            [{:control, :timer}, :expired]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :preflight_control,
+            [:monitor, #PID<0.329.0>]},
+           {:erlang, :monitor, [:process, :code_server]},
+           {:erlang, :monitor, [:process, :code_server]},
+           {:erlang, :monitor, [:process, #PID<0.329.0>]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate,
+            [
+              {:state, :probe},
+              %{
+                owner: #PID<0.329.0>,
+                member: %{
+                  id: "member",
+                  config: %Gaoxy.Proxy.HTTP{
+                    uri: %URI{
+                      scheme: "http",
+                      authority: "upstream.test",
+                      userinfo: nil,
+                      host: "upstream.test",
+                      port: 80,
+                      path: nil,
+                      query: nil,
+                      fragment: nil
+                    },
+                    cacertfile: nil,
+                    connect_address: nil,
+                    transport: %{
+                      owner: #PID<0.329.0>,
+                      resource: #Reference<0.1526482936.3828875265.183735>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875265.183734>
+                    },
+                    limits: %{
+                      idle_timeout: 3000,
+                      opening_timeout: 4000,
+                      max_chunk_bytes: 1024,
+                      write_timeout: 700,
+                      max_lifetime: 10000
+                    },
+                    upstream_protocol: :h2c,
+                    client: Gaoxy.Proxy.ManagedH2Client
+                  },
+                  max_inflight: 32
+                },
+                request: nil,
+                timer: #Reference<0.1526482936.3828875265.183764>,
+                cancelled: false,
+                group: %{
+                  owner: #PID<0.329.0>,
+                  group: "health",
+                  provider: Gaoxy.Proxy.UpstreamGroups,
+                  generation: #Reference<0.1526482936.3828875265.183737>,
+                  owner_epoch: #Reference<0.1526482936.3828875265.183736>,
+                  max_url_bytes: 8192,
+                  transports: [
+                    %{
+                      owner: #PID<0.329.0>,
+                      resource: #Reference<0.1526482936.3828875265.183735>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875265.183734>
+                    }
+                  ],
+                  execution_profile: :managed_h2
+                },
+                deadline: 4000,
+                terminal: false,
+                token: #Reference<0.1526482936.3828875265.183742>,
+                url: "http://upstream.test/health%2fready",
+                client: Gaoxy.Proxy.ManagedH2Client,
+                request_options: nil,
+                headers: false,
+                cleanup_deadline: 5000,
+                original_request: nil,
+                transport_selection: nil,
+                transport_pins: [],
+                managed_transport: nil,
+                owner_monitor: #Reference<0.1526482936.3828875265.183765>,
+                health: %{
+                  timeout: 3000,
+                  path: "/health%2fready",
+                  interval: 1000,
+                  stale_after: 2000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 0
+                },
+                submitted_url: nil,
+                limits: %{
+                  idle_timeout: 3000,
+                  opening_timeout: 4000,
+                  max_chunk_bytes: 1024,
+                  write_timeout: 700,
+                  max_lifetime: 10000
+                },
+                outcome: :failure
+              }
+            ]}
+         ]
+
+         # 2
+         {:erlang, :monitor, [:process, #PID<0.329.0>]}
+
+         # 3
+         {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate}
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_probe_test.exs:60: (test)
+
+[32m.[0m[32m.[0m
+
+  2) test http2 normal init accounts original A before genuine monitor and exact initial S (Gaoxy.Proxy.ManagedH2GroupProbeIntegrationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_probe_test.exs:34[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert before?(calls, {:erlang, :monitor, [:process, args.owner]}, {Accounting, :validate})
+     [36marguments:[0m
+
+         # 1
+         [
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :startup,
+            [
+              Gaoxy.Proxy.UpstreamGroups.Probe,
+              %{
+                owner: #PID<0.338.0>,
+                member: %{
+                  id: "member",
+                  config: %Gaoxy.Proxy.HTTP{
+                    uri: %URI{
+                      scheme: "https",
+                      authority: "upstream.test",
+                      userinfo: nil,
+                      host: "upstream.test",
+                      port: 443,
+                      path: nil,
+                      query: nil,
+                      fragment: nil
+                    },
+                    cacertfile: nil,
+                    connect_address: nil,
+                    transport: %{
+                      owner: #PID<0.338.0>,
+                      resource: #Reference<0.1526482936.3828875266.173914>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875266.173913>
+                    },
+                    limits: %{
+                      idle_timeout: 3000,
+                      opening_timeout: 4000,
+                      max_chunk_bytes: 1024,
+                      write_timeout: 700,
+                      max_lifetime: 10000
+                    },
+                    upstream_protocol: :http2,
+                    client: Gaoxy.Proxy.ManagedH2Client
+                  },
+                  max_inflight: 32
+                },
+                group: %{
+                  owner: #PID<0.338.0>,
+                  group: "health",
+                  provider: Gaoxy.Proxy.UpstreamGroups,
+                  generation: #Reference<0.1526482936.3828875266.173916>,
+                  owner_epoch: #Reference<0.1526482936.3828875266.173915>,
+                  max_url_bytes: 8192,
+                  transports: [
+                    %{
+                      owner: #PID<0.338.0>,
+                      resource: #Reference<0.1526482936.3828875266.173914>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875266.173913>
+                    }
+                  ],
+                  execution_profile: :managed_h2
+                },
+                deadline: 4000,
+                token: #Reference<0.1526482936.3828875266.173921>,
+                url: "https://upstream.test/health%2fready",
+                health: %{
+                  timeout: 3000,
+                  path: "/health%2fready",
+                  interval: 1000,
+                  stale_after: 2000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 0
+                }
+              }
+            ]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate,
+            [{:control, :timer}, :expired]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :preflight_control,
+            [:monitor, #PID<0.338.0>]},
+           {:erlang, :monitor, [:process, #PID<0.338.0>]},
+           {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate,
+            [
+              {:state, :probe},
+              %{
+                owner: #PID<0.338.0>,
+                member: %{
+                  id: "member",
+                  config: %Gaoxy.Proxy.HTTP{
+                    uri: %URI{
+                      scheme: "https",
+                      authority: "upstream.test",
+                      userinfo: nil,
+                      host: "upstream.test",
+                      port: 443,
+                      path: nil,
+                      query: nil,
+                      fragment: nil
+                    },
+                    cacertfile: nil,
+                    connect_address: nil,
+                    transport: %{
+                      owner: #PID<0.338.0>,
+                      resource: #Reference<0.1526482936.3828875266.173914>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875266.173913>
+                    },
+                    limits: %{
+                      idle_timeout: 3000,
+                      opening_timeout: 4000,
+                      max_chunk_bytes: 1024,
+                      write_timeout: 700,
+                      max_lifetime: 10000
+                    },
+                    upstream_protocol: :http2,
+                    client: Gaoxy.Proxy.ManagedH2Client
+                  },
+                  max_inflight: 32
+                },
+                request: nil,
+                timer: #Reference<0.1526482936.3828875266.173939>,
+                cancelled: false,
+                group: %{
+                  owner: #PID<0.338.0>,
+                  group: "health",
+                  provider: Gaoxy.Proxy.UpstreamGroups,
+                  generation: #Reference<0.1526482936.3828875266.173916>,
+                  owner_epoch: #Reference<0.1526482936.3828875266.173915>,
+                  max_url_bytes: 8192,
+                  transports: [
+                    %{
+                      owner: #PID<0.338.0>,
+                      resource: #Reference<0.1526482936.3828875266.173914>,
+                      provider: Gaoxy.Proxy.UpstreamTransports,
+                      owner_epoch: #Reference<0.1526482936.3828875266.173913>
+                    }
+                  ],
+                  execution_profile: :managed_h2
+                },
+                deadline: 4000,
+                terminal: false,
+                token: #Reference<0.1526482936.3828875266.173921>,
+                url: "https://upstream.test/health%2fready",
+                client: Gaoxy.Proxy.ManagedH2Client,
+                request_options: nil,
+                headers: false,
+                cleanup_deadline: 5000,
+                original_request: nil,
+                transport_selection: nil,
+                transport_pins: [],
+                managed_transport: nil,
+                owner_monitor: #Reference<0.1526482936.3828875266.173940>,
+                health: %{
+                  timeout: 3000,
+                  path: "/health%2fready",
+                  interval: 1000,
+                  stale_after: 2000,
+                  failure_threshold: 3,
+                  recovery_threshold: 2,
+                  jitter: 0
+                },
+                submitted_url: nil,
+                limits: %{
+                  idle_timeout: 3000,
+                  opening_timeout: 4000,
+                  max_chunk_bytes: 1024,
+                  write_timeout: 700,
+                  max_lifetime: 10000
+                },
+                outcome: :failure
+              }
+            ]}
+         ]
+
+         # 2
+         {:erlang, :monitor, [:process, #PID<0.338.0>]}
+
+         # 3
+         {Gaoxy.Proxy.ManagedH2GroupAccounting, :validate}
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_probe_test.exs:60: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 1.5 seconds (0.00s async, 1.5s sync)
+[31m13 tests, 2 failures[0m

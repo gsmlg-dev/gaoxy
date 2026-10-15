@@ -1,0 +1,120 @@
+{
+  "task_id": "/root/browser_contract_spec/native-tls-ownership-code-review2",
+  "status": "DONE_REVIEW_NO_OPEN_SOURCE_FINDINGS",
+  "assignment": "direct independent focused read-only CODE review of another Sol author",
+  "scope": "Unadopted complete proposal2 patch against original source; source review only, not implementation or stage acceptance",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_custody": "No Git executed. All three existing target hashes match declared original source; new target absent. No whole-tree identity claim.",
+  "patch": {
+    "path": "/tmp/gaoxy-group-native-tls-ownership-proposal2.patch",
+    "sha256": "a02084cbf31ae9ccff7b8028ec9c5de2f70f4a29dd502b168cefcf7ef15ebd2c",
+    "application": "complete replacement for proposal1, not incremental"
+  },
+  "findings": [],
+  "closed_findings": [
+    {
+      "id": "TLS-CODE-01",
+      "status": "CLOSED_AT_SOURCE_REVIEW",
+      "evidence": "proposal2 patch250-254 (proposed test168-172) adds exact shutdown peer_closed only when pid===owner; remaining actor reasons, monitors and finite waits preserved. ThousandIsland.Handler source421 supplies that tuple."
+    },
+    {
+      "id": "TLS-SPEC-01",
+      "status": "CLOSED_AT_SOURCE_REVIEW",
+      "evidence": "proposal2 patch267-418 (proposed test185-336) queues actual Transport.operation from original worker/id/token before original deadline, with only owner suspended; observes unchanged Admission watchdog kill and queued real DOWN, then exact timeout reply calls to original From after expiry. Extended local Exchange deadline remains positive. Runtime confirmation still NOT RUN."
+    }
+  ],
+  "reviewed_contract": {
+    "actual_endpoint_call": true,
+    "original_worker_stream_token_lease_and_from": true,
+    "only_local_exchange_deadline_extended": true,
+    "only_native_owner_suspended": true,
+    "admission_original_watchdog_active": true,
+    "watchdog_callback_correlation": "original lease/token expired callback traced; worker monitor specifically killed while owner suspended",
+    "queue_order": "actual original gen_call observed before original expiry; same mailbox exact call index before native worker DOWN",
+    "owner_timeout": "GenServer.reply and underlying gen.reply traced with exact original From and timeout; stream still present for authorized original worker when queued call precedes DOWN",
+    "no_extra_replies": "owner and gate trace-delivered fences; exact empty remaining replies to original From",
+    "cleanup": "real worker/owner/Writer/Service/gate joins, zero native ledger, no cleanup failure, original group/transport cleanup and joined health-only peer request count",
+    "failure_cleanup": "try/after and on_exit resume this owner and disable owned call tracing/patterns",
+    "no_fake_state_or_reply": "no sys replace_state, synthetic gen_call/From, manual worker kill, Admission suspension or watchdog disabling",
+    "bounded_synchronization": "explicit mailbox/monitor/trace barriers, existing bounded eventually loop, finite calls/receives; no arbitrary sleep as proof"
+  },
+  "production_review": {
+    "delta_from_proposal1": "none, byte-identical independently reconstructed",
+    "accounting_test_delta_from_proposal1": "none, byte-identical independently reconstructed",
+    "authority": "existing actual caller PID equals original stream.worker plus stream id/token; new operation checks authoritative stream.deadline",
+    "full_ssl_location": "original existing native connection owner/lease, no full metadata term in per-stream Exchange",
+    "h1": "unchanged direct Socket getter",
+    "h3_other_transports": "unchanged stored metadata clause",
+    "copied_foreign_exchange": "nil/closed under already authorized worker ownership boundary",
+    "accounting_validator_caps": "unchanged"
+  },
+  "verification": {
+    "patch_sha256": "PASS independently read and checked",
+    "in_memory_reconstruction": "PASS both proposals, exact current context and hunk counts, all declared before/after hashes, four targets each",
+    "targets": [
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+        "before_sha256": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+        "proposed_after_before_formatter_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "before_sha256": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+        "proposed_after_before_formatter_sha256": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+        "before_sha256": "8ec0d0568ba2d9180be33dc421f7294a5fe8ec6988002d5c64b6c7fe48ec2eb8",
+        "proposed_after_before_formatter_sha256": "300e315d2d37ee927fe6eb2b7c1f210183ce83ec11aa118fc7059f8b87d586a1",
+        "new_file": false
+      },
+      {
+        "target": "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs",
+        "before_sha256": null,
+        "proposed_after_before_formatter_sha256": "68e088c3b033aff0697e5d41cfed375020d2b139d09a50feb6f2eadd0629c986",
+        "new_file": true
+      }
+    ],
+    "proposal1_artifacts": "PASS md/json/patch hashes equal declared preserved hashes",
+    "production_and_accounting_comparison": "PASS byte-identical p1/p2",
+    "normal_case_delta": "owner-specific exact peer_closed reason only; helper response bytes unchanged",
+    "source_crosschecks": "Admission365-369 watchdog, Connection571-580 authority and1107-1123 DOWN handling, Transport16-34 local deadline, fixture eventually629-645, G.clean299-319/G.close364-399, ThousandIsland.Handler421",
+    "format_compile_tests_browser": "NOT_RUN",
+    "planned_new_tests_total": 4,
+    "new_tests_executed": 0,
+    "runtime_processes_started": 0,
+    "git_commands": 0,
+    "report_json": "PASS json serialization; fresh jq validation follows report creation"
+  },
+  "parent_feedback_only": {
+    "startup": "PASS 50/0 per parent, receipt not independently reread in proposal2 review",
+    "live": "PASS 110/0 per parent, receipt not independently reread in proposal2 review",
+    "session": "FAIL 46 tests/4 failures per parent; diagnosis pending, unadopted proposal2 is not attributed as cause"
+  },
+  "counter_custody": {
+    "reviewer_sol_repair_rounds_added": 0,
+    "parent_failed_green_last_supplied": 18,
+    "parent_root_repair_last_supplied": 20,
+    "diagnostic_failure_separate": 1,
+    "astra_used": 2,
+    "astra_max": 2,
+    "reset": false
+  },
+  "historical_negative_tls": "UNCONFIRMED_WITH_RETAINED_FAILURE preserved; no historical evidence or assertions changed",
+  "risks_and_remaining": [
+    "405-line proposed source is not formatted, compiled or executed; exact loaded VM must validate wrapper/gen call tracing and physical joins",
+    "Source closure does not establish RED/GREEN regression sensitivity, compatibility, browser success or whole-stage acceptance",
+    "Parent retains adoption and agreed RED/GREEN, strict compile, scoped native H1/H2/H3 compatibility and group/Session/browser gates"
+  ],
+  "decisions_needed": [],
+  "repo_changes": [],
+  "writes": [
+    "/tmp/gaoxy-group-native-tls-ownership-code-review2.md",
+    "/tmp/gaoxy-group-native-tls-ownership-code-review2.json"
+  ],
+  "command_shutdown": "All own reads/reconstruction commands completed. No runtime/process-control action; parent actors untouched.",
+  "implementation_acceptance": "NOT_ACCEPTED_NOT_EXECUTED"
+}

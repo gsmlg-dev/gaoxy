@@ -1,0 +1,135 @@
+{
+  "task_id": "M3/group-activation/native_tls_positive_repair1/spec",
+  "status": "PASS_SOURCE_ONLY",
+  "assignment": "direct independent SPEC source/artifact review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "historical_supplied_baseline": "7cff6e87edb9b67e2667897bfbb7ee7e0075162e",
+  "baseline_custody": "No Git; target/test exact bytes authenticated; no whole-tree freeze claim",
+  "captured_at": "2026-10-15T21:09:29.246086+00:00",
+  "patch": {
+    "path": "/tmp/gaoxy-group-native-tls-positive-repair1.patch",
+    "sha256": "24d256384037ab88a241e01bc13162f81cb8926874af20d36d81dab8b2d1e371",
+    "target": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+    "before_sha256": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+    "after_before_formatter_sha256": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "hunks_authenticated": 1,
+    "added_production_calls": 1,
+    "test_changes": 0
+  },
+  "source_inputs_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "513c300e4b3a161d54465696663eaa024acc7061c87aa43f961c42ea54de5652",
+    "apps/gaoxy_http/lib/gaoxy/http/plug_endpoint.ex": "ba94e2dc22cae2187e0dc32d1bcf143f9a25b64fb71f7a0b793b83f7d7967cdb",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "794c9cfd20c470f11687d4c6525d9f081ebd287fedfbd0c145812cee45533bd2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+    "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs": "601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3",
+    "deps/plug/lib/plug/conn.ex": "7841e3654ebc8d2cd5af86c8c6f7717807af305789d7e03e2529e7ceeca96c22",
+    "deps/plug/lib/plug/conn/adapter.ex": "67ab9803750c870cff490817ed6c570314e90f1f0e3e798a35cb7c5c1ecba589"
+  },
+  "actual_diagnostic": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-accounting-activation/1792084616124780089/native-tls-positive-diagnostic1-1792098286467315265.json",
+    "receipt_sha256": "01fd918d56960b7d78d013f424796771d4ab97b15566acc157eac545f0cd874b",
+    "log_sha256": "61fda4c0f25e01f9fde0c6fd046a0fcc1163ccbd657251297bfc22a542cbc156",
+    "script_sha256": "a67cdc13b5c97532eb2b0e2d39389003c7e19067c7e064952a2ae851cc023d30",
+    "actual_exit": 2,
+    "joined": true,
+    "source_stable": true,
+    "executed": 41,
+    "failures": 2,
+    "skips": 0,
+    "exclusions": 0,
+    "actual_exception_selectors": 2,
+    "message": "get_ssl_data not supported by Gaoxy.PlugAdapter",
+    "exception": "RuntimeError",
+    "actual_code_is_loaded": false,
+    "verdict": "FAIL; expected diagnostic exit2; NOT GREEN"
+  },
+  "author_inputs_sha256": {
+    "/tmp/gaoxy-group-native-tls-positive-diagnosis1.md": "7ba1032ac0369b099b25f81f1b30a55248e6463399bdc74a18c6edf18605a481",
+    "/tmp/gaoxy-group-native-tls-positive-diagnosis1.json": "7b47b622577a0bde2a1f9c1736df791227f40feafafcde668a74ac56186179eb"
+  },
+  "requirements": [
+    {
+      "id": "P01",
+      "result": "PASS_SOURCE",
+      "evidence": "Exact patch SHA, original context/count and target before513c300e\u2026 to after75b752c3\u2026 independently reconstructed. Exactly one Code.ensure_loaded!(Gaoxy.PlugAdapter) call plus blank line; no deleted original lines."
+    },
+    {
+      "id": "P02",
+      "result": "PASS_DIAGNOSTIC",
+      "evidence": "Receipt01fd918d\u2026 and log61fda4c0\u2026 authenticated. Actual41executed/2failures/exit2 joined stable. Both actual exception selectors RuntimeError get_ssl_data not supported by Gaoxy.PlugAdapter with code.is_loaded=false. Diagnostic is explanatory FAIL, not acceptance."
+    },
+    {
+      "id": "P03",
+      "result": "PASS_DIAGNOSTIC",
+      "evidence": "Diagnostic script wraps only original Plug SSL expression in memory, sends observed exception/loaded state and reraises original error/stack; all canonical assertions remain. Eager tuple argument exception prevents observation send; native Stream catches endpoint failure, explaining timeout before observation."
+    },
+    {
+      "id": "P04",
+      "result": "PASS_SOURCE",
+      "evidence": "Plug.Conn.Adapter.conn only constructs Conn containing adapter atom; no load or invocation. Plug.Conn.get_ssl_data probes function_exported? before callback without loading. Gaoxy adapter already implements callback. This is Gaoxy adapter-readiness ownership, no dependency bug established."
+    },
+    {
+      "id": "P05",
+      "result": "PASS_SOURCE",
+      "evidence": "Exchange.plug_conn is common Conn publication boundary for direct callers and production PlugEndpoint; PlugEndpoint loads user Plug but not adapter before user callback. Ensuring owned adapter loaded before constructing Conn fixes cold optional callback readiness without test preload."
+    },
+    {
+      "id": "P06",
+      "result": "PASS_SOURCE",
+      "evidence": "Code.ensure_loaded! loads existing own module only, no new process/application/dependency/callback invocation. Failure remains explicit if packaged module absent. No fake SSL data or swallowed errors."
+    },
+    {
+      "id": "P07",
+      "result": "PASS_SOURCE",
+      "evidence": "Actual TLS test exactSHA601d497749e5daee3c4dc43d6351ddcc70abe5bda17f888be49eee5cd2be4ea3 unchanged. Full metadata/API/Plug equality, actual TLS/ALPN, wrong caller/token, authoritative deadline/watchdog, exact cleanup/completion and joins untouched."
+    },
+    {
+      "id": "P08",
+      "result": "PASS_SOURCE",
+      "evidence": "Patch touches no native TLS owner/getter authentication, deadline, Service/Admission lifecycle or accountant/caps. H1 and H3 existing Conn construction/data routes preserved; ensuring callback module loaded changes cold metadata readiness consistently across protocols."
+    },
+    {
+      "id": "P09",
+      "result": "PASS_PENDING_RUNTIME",
+      "evidence": "New source fix has no executed runtime proof. Parent must preserve actual failures, adopt exact fix, format/strict compile and rerun unchanged nativeTLS41 plus previously deferred accountant/nativeH2/affected compatibility gates. Browser and final stage acceptance remain separate."
+    }
+  ],
+  "actionable_findings": [],
+  "execution": {
+    "read_only_reconstruction_hashes": "PASS",
+    "bounded_actual_diagnostic_authentication": "PASS",
+    "source_review": "PASS",
+    "format": "NOT RUN",
+    "compile": "NOT RUN",
+    "tests": "NOT RUN",
+    "runtime": "NOT RUN",
+    "browser": "NOT RUN",
+    "git": "NOT RUN",
+    "repository_writes": 0
+  },
+  "parent_reports_not_independently_reread": {
+    "command77347": "joined",
+    "session_control": "46/0 PASS",
+    "authoritative_deadline_case": "PASS in suite with only two positive failures"
+  },
+  "counters": {
+    "reviewer_sol_runtime_repairs_added": 0,
+    "failedGREEN_last_parent_report": 20,
+    "rootrepair_last_parent_report": 22,
+    "astra": "2/2 exhausted unchanged; no reset"
+  },
+  "shutdown": "All own commands finished; no runtime/build/process-control commands; only two authorized /tmp reports written.",
+  "remaining": [
+    "Exact production adoption, formatter/strict compile and original unchanged actual nativeTLS41/0 proof.",
+    "Accountant/nativeH2 and prescribed fresh compatibility/group/browser/final independent acceptance.",
+    "Retain failed canonical and diagnostic evidence; do not infer GREEN from expected diagnostic exit."
+  ],
+  "decisions_needed": [],
+  "markdown": {
+    "path": "/tmp/gaoxy-group-native-tls-positive-spec-review1.md",
+    "sha256": "427554e62116d3ca539e0ad97df00fde29a9dbad1ea7ae1f98963cc8c24b8544"
+  }
+}

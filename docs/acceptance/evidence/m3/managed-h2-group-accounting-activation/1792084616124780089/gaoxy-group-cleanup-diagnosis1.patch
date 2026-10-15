@@ -1,0 +1,22 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex
+@@ -335,6 +335,19 @@
+       dispatch(event, %{state | request: request})
+     else
+       _ -> local_group_fail(state, :invalid_request)
++    end
++  end
++
++  def handle_info(
++        message,
++        %{client: @h2, request: request, cancelled: cancelled, consumed: consumed} = state
++      )
++      when not is_nil(request) and (cancelled or consumed) do
++    with :ok <- account_state(state),
++         :ok <- account_client_event(state, message) do
++      settle(state)
++    else
++      _ -> local_group_fail(state, :invalid_response)
+     end
+   end
+ 

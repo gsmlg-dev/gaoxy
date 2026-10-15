@@ -1,0 +1,45 @@
+--- a/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/exchange.ex
+@@ -402,6 +402,13 @@
+     %{address: address, port: port}
+   end
+ 
++  def ssl_data(%{transport: Gaoxy.HTTP.HTTP2.Transport} = exchange) do
++    case Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :ssl_data) do
++      {:ok, data} -> data
++      {:error, _} -> nil
++    end
++  end
++
+   def ssl_data(%{transport: module, ssl: ssl}) when not is_nil(module), do: ssl
+ 
+   def ssl_data(exchange) do
+--- a/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
+@@ -579,6 +579,15 @@
+     end
+   end
+ 
++  defp operation(state, stream, :ssl_data, from) do
++    if Lifecycle.remaining(stream.deadline) == 0 do
++      reply_error(state, from, :timeout)
++    else
++      GenServer.reply(from, {:ok, state.ssl})
++      state
++    end
++  end
++
+   defp operation(state, _stream, {:poll, 0}, from) do
+     GenServer.reply(from, :ok)
+     state
+@@ -1046,7 +1055,9 @@
+           peer: state.peer,
+           local: state.local,
+           secure: state.secure,
+-          ssl: state.ssl,
++          # Full TLS metadata stays on this connection's existing lease.
++          # Stream callers query it through their authenticated transport.
++          ssl: nil,
+           peer_cert: state.peer_cert,
+           service: Map.get(state, :service),
+           instance: Map.get(state, :instance),

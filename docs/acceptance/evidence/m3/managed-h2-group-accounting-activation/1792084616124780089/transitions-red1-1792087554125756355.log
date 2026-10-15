@@ -1,0 +1,621 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 33015, max_cases: 1
+
+     [33mwarning:[0m function raw_origin/1 is unused
+     │
+ 276 │   defp raw_origin(config), do: config.uri.scheme <> "://" <> config.uri.authority
+     │ [33m       ~[0m
+     │
+     └─ test/managed_h2_group_accounting_transitions_test.exs:276:8: Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest (module)
+
+
+
+  1) test expanded retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                unaccounted: [],
+                owner: #PID<0.315.0>,
+                transport_selection: {%{owner: #PID<0.315.0>, resource: #Reference<0.3716278243.61341698.64558>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64557>}, #Reference<0.3716278243.61341698.64577>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.315.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.64560>, owner_epoch: #Reference<0.3716278243.61341698.64559>, max_url_bytes: 8192, transports: [%{owner: #PID<0.315.0>, resource: #Reference<0.3716278243.61341698.64558>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64557>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.64576>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.315.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.64596> => #PID<0.315.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.315.0>, handles: [%{owner: #PID<0.315.0>, resource: #Reference<0.3716278243.61341698.64558>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64557>}], kind: :request, ref: #Reference<0.3716278243.61341698.64572>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.315.0>, owner_epoch: #Reference<0.3716278243.61341698.64557>, operation: #Reference<0.3716278243.61341698.64571>}],
+                token: #Reference<0.3716278243.61341698.64573>,
+                instance: #PID<0.315.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.64594>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.315.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.64595>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  2) test cleanup_time retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.316.0>,
+                transport_selection: {%{owner: #PID<0.316.0>, resource: #Reference<0.3716278243.61341697.74156>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74155>}, #Reference<0.3716278243.61341697.74167>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.316.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341697.74158>, owner_epoch: #Reference<0.3716278243.61341697.74157>, max_url_bytes: 8192, transports: [%{owner: #PID<0.316.0>, resource: #Reference<0.3716278243.61341697.74156>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74155>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341697.74166>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.316.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341697.74174> => #PID<0.316.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.316.0>, handles: [%{owner: #PID<0.316.0>, resource: #Reference<0.3716278243.61341697.74156>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74155>}], kind: :request, ref: #Reference<0.3716278243.61341697.74162>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.316.0>, owner_epoch: #Reference<0.3716278243.61341697.74155>, operation: #Reference<0.3716278243.61341697.74161>}],
+                token: #Reference<0.3716278243.61341697.74163>,
+                instance: #PID<0.316.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341697.74172>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: 9223372036854775808,
+                service: #PID<0.316.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341697.74173>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  3) test trailers retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.317.0>,
+                transport_selection: {%{owner: #PID<0.317.0>, resource: #Reference<0.3716278243.61341697.74216>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74215>}, #Reference<0.3716278243.61341697.74227>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.317.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341697.74218>, owner_epoch: #Reference<0.3716278243.61341697.74217>, max_url_bytes: 8192, transports: [%{owner: #PID<0.317.0>, resource: #Reference<0.3716278243.61341697.74216>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74215>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341697.74226>},
+                trailers: [{"x", "v"} | :improper],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.317.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341697.74234> => #PID<0.317.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.317.0>, handles: [%{owner: #PID<0.317.0>, resource: #Reference<0.3716278243.61341697.74216>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341697.74215>}], kind: :request, ref: #Reference<0.3716278243.61341697.74222>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.317.0>, owner_epoch: #Reference<0.3716278243.61341697.74215>, operation: #Reference<0.3716278243.61341697.74221>}],
+                token: #Reference<0.3716278243.61341697.74223>,
+                instance: #PID<0.317.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341697.74232>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.317.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341697.74233>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  4) test success transition checks the complete original result and resulting retained state (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:58[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Enum.any?(calls, fn [selector, value] ->
+             selector === :open_result and value === {:ok, original, nil}
+           end)
+     [36marguments:[0m
+
+         # 1
+         []
+
+         # 2
+         #Function<9.71391681/1 in Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest."test success transition checks the complete original result and resulting retained state"/1>
+
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:65: (test)
+
+
+
+  5) test outcome retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.321.0>,
+                transport_selection: {%{owner: #PID<0.321.0>, resource: #Reference<0.3716278243.61341698.64740>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64739>}, #Reference<0.3716278243.61341698.64751>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.321.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.64742>, owner_epoch: #Reference<0.3716278243.61341698.64741>, max_url_bytes: 8192, transports: [%{owner: #PID<0.321.0>, resource: #Reference<0.3716278243.61341698.64740>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64739>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.64750>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.321.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.64758> => #PID<0.321.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.321.0>, handles: [%{owner: #PID<0.321.0>, resource: #Reference<0.3716278243.61341698.64740>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64739>}], kind: :request, ref: #Reference<0.3716278243.61341698.64746>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.321.0>, owner_epoch: #Reference<0.3716278243.61341698.64739>, operation: #Reference<0.3716278243.61341698.64745>}],
+                token: #Reference<0.3716278243.61341698.64747>,
+                instance: #PID<0.321.0>,
+                poll_timer: nil,
+                outcome: %{
+                  raw_diagnostic: #Function<0.71391681/0 in Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest.mutate/2>
+                },
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.64756>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.321.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.64757>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  6) test delivery retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.322.0>,
+                transport_selection: {%{owner: #PID<0.322.0>, resource: #Reference<0.3716278243.61341698.64800>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64799>}, #Reference<0.3716278243.61341698.64811>},
+                delivery: #PID<0.322.0>,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.322.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.64802>, owner_epoch: #Reference<0.3716278243.61341698.64801>, max_url_bytes: 8192, transports: [%{owner: #PID<0.322.0>, resource: #Reference<0.3716278243.61341698.64800>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64799>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.64810>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.322.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.64818> => #PID<0.322.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.322.0>, handles: [%{owner: #PID<0.322.0>, resource: #Reference<0.3716278243.61341698.64800>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64799>}], kind: :request, ref: #Reference<0.3716278243.61341698.64806>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.322.0>, owner_epoch: #Reference<0.3716278243.61341698.64799>, operation: #Reference<0.3716278243.61341698.64805>}],
+                token: #Reference<0.3716278243.61341698.64807>,
+                instance: #PID<0.322.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.64816>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.322.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.64817>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  7) test selector_pin retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.323.0>,
+                transport_selection: {%{owner: #PID<0.323.0>, resource: #Reference<0.3716278243.61341698.64860>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64859>}, #Reference<0.3716278243.61341698.64871>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.323.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.64862>, owner_epoch: #Reference<0.3716278243.61341698.64861>, max_url_bytes: 8192, transports: [%{owner: #PID<0.323.0>, resource: #Reference<0.3716278243.61341698.64860>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64859>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.64870>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.323.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.64878> => #PID<0.323.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.323.0>, handles: [%{owner: #PID<0.323.0>, resource: #Reference<0.3716278243.61341698.64860>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64859>}], kind: :request, ref: #Reference<0.3716278243.61341698.64866>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.323.0>, owner_epoch: #Reference<0.3716278243.61341698.64859>, operation: #Reference<0.3716278243.61341698.64865>}],
+                token: #Reference<0.3716278243.61341698.64867>,
+                instance: #PID<0.323.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.64876>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.323.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.64877>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+  8) test real preparation validates each original charged boundary role before transfer (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:6[0m
+     [31m:selected[0m
+     [36mcode: [0mfor role <- [:selected, :neutral, :checked, :context, :request, :options] do
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:13: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest."test real preparation validates each original charged boundary role before transfer"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_group_accounting_transitions_test.exs:12: (test)
+
+
+
+  9) test monitor retained source is refused before preparing or retaining options (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:22[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} = Session.prepare_group_open(original, selected, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: nil,
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                owner: #PID<0.326.0>,
+                transport_selection: {%{owner: #PID<0.326.0>, resource: #Reference<0.3716278243.61341698.64986>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64985>}, #Reference<0.3716278243.61341698.64997>},
+                delivery: nil,
+                original_request: nil,
+                submitted_url: nil,
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.326.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.64988>, owner_epoch: #Reference<0.3716278243.61341698.64987>, max_url_bytes: 8192, transports: [%{owner: #PID<0.326.0>, resource: #Reference<0.3716278243.61341698.64986>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64985>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.64996>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.326.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.65005> => :wrong_target
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.326.0>, handles: [%{owner: #PID<0.326.0>, resource: #Reference<0.3716278243.61341698.64986>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.64985>}], kind: :request, ref: #Reference<0.3716278243.61341698.64992>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.326.0>, owner_epoch: #Reference<0.3716278243.61341698.64985>, operation: #Reference<0.3716278243.61341698.64991>}],
+                token: #Reference<0.3716278243.61341698.64993>,
+                instance: #PID<0.326.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.65002>,
+                request_options: {:group_prepared, %{timeout: 9000, request: %{protocol: :http2, fields: [{"Content-Length", "3"}, {"X-Trace", "one"}, {"x-trace", "two"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1024, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: 11000, managed_transport: %{policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}, fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false]}, opening_deadline: 5500, opening_timeout: 3500, write_timeout: 700}},
+                cleanup_deadline: nil,
+                service: #PID<0.326.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.65003>
+              }[0m,
+              :group_open
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:26: (test)
+
+
+
+ 10) test supported success is captured before rejecting an expanded staged source (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:49[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_request, dropped} =
+              Session.group_open_result(Map.put(staged, :unaccounted, []), {:ok, original, nil}, 2000)
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_request[0m, dropped}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%{
+                started_at: 1000,
+                consumed: false,
+                cancelled: false,
+                request: %{
+                  stream: nil,
+                  completion: %HTTP.RequestCompletion{
+                    unsupported: nil,
+                    tracker: #PID<0.327.0>,
+                    latch: #Reference<0.3716278243.61341698.65103>
+                  },
+                  resolved: false,
+                  promise: %HTTP.Promise{
+                    completion: %HTTP.RequestCompletion{
+                      unsupported: nil,
+                      tracker: #PID<0.327.0>,
+                      latch: #Reference<0.3716278243.61341698.65103>
+                    },
+                    task: %Task{
+                      owner: #PID<0.327.0>,
+                      pid: #PID<0.327.0>,
+                      mfa: {:erlang, :apply, 2},
+                      ref: #Reference<0.3716278243.61341698.65104>
+                    }
+                  }
+                },
+                client: Gaoxy.Proxy.ManagedH2Client,
+                cleanup_started: false,
+                unaccounted: [],
+                owner: #PID<0.327.0>,
+                transport_selection: {%{owner: #PID<0.327.0>, resource: #Reference<0.3716278243.61341698.65047>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.65046>}, #Reference<0.3716278243.61341698.65058>},
+                delivery: nil,
+                original_request: %{
+                  stream: nil,
+                  completion: %HTTP.RequestCompletion{
+                    unsupported: nil,
+                    tracker: #PID<0.327.0>,
+                    latch: #Reference<0.3716278243.61341698.65103>
+                  },
+                  resolved: false,
+                  promise: %HTTP.Promise{
+                    completion: %HTTP.RequestCompletion{
+                      unsupported: nil,
+                      tracker: #PID<0.327.0>,
+                      latch: #Reference<0.3716278243.61341698.65103>
+                    },
+                    task: %Task{
+                      owner: #PID<0.327.0>,
+                      pid: #PID<0.327.0>,
+                      mfa: {:erlang, :apply, 2},
+                      ref: #Reference<0.3716278243.61341698.65104>
+                    }
+                  }
+                },
+                submitted_url: "https://upstream.test/a%2Fb?",
+                cleanup_requested_deadline: nil,
+                selector: nil,
+                selection: {%{owner: #PID<0.327.0>, group: "group", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.3716278243.61341698.65049>, owner_epoch: #Reference<0.3716278243.61341698.65048>, max_url_bytes: 8192, transports: [%{owner: #PID<0.327.0>, resource: #Reference<0.3716278243.61341698.65047>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.65046>}], execution_profile: :managed_h2}, #Reference<0.3716278243.61341698.65057>},
+                trailers: [],
+                managed_path: true,
+                deadline: 11000,
+                gate: #PID<0.327.0>,
+                monitors: %{
+                  #Reference<0.3716278243.61341698.65065> => #PID<0.327.0>
+                },
+                headers: false,
+                transport_pins: [%{owner: #PID<0.327.0>, handles: [%{owner: #PID<0.327.0>, resource: #Reference<0.3716278243.61341698.65047>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3716278243.61341698.65046>}], kind: :request, ref: #Reference<0.3716278243.61341698.65053>, provider: Gaoxy.Proxy.UpstreamTransports, holder: #PID<0.327.0>, owner_epoch: #Reference<0.3716278243.61341698.65046>, operation: #Reference<0.3716278243.61341698.65052>}],
+                token: #Reference<0.3716278243.61341698.65054>,
+                instance: #PID<0.327.0>,
+                poll_timer: nil,
+                outcome: :cancelled,
+                awaiting_transport: nil,
+                activated_at: 1500,
+                transport_handoff: nil,
+                opening_timer: #Reference<0.3716278243.61341698.65063>,
+                request_options: nil,
+                cleanup_deadline: nil,
+                service: #PID<0.327.0>,
+                managed_transport: nil,
+                config: %{
+                  limits: %{
+                    idle_timeout: 3000,
+                    max_chunk_bytes: 1024,
+                    opening_timeout: 4000,
+                    write_timeout: 700,
+                    max_lifetime: 10000
+                  }
+                },
+                opening_deadline: 5500,
+                total_timer: #Reference<0.3716278243.61341698.65064>
+              }[0m,
+              {:group_bind, nil}
+            }
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:53: (test)
+
+
+
+ 11) test invalid successful upload preserves supported original completion for genuine cleanup (Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_group_accounting_transitions_test.exs:36[0m
+     [31mAssertion with === failed[0m
+     [36mcode:  [0massert dropped.request === original
+     [36mleft:  [0m[31mnil[0m
+     [36mright: [0m[32m%{
+              stream: nil,
+              completion: %HTTP.RequestCompletion{
+                unsupported: nil,
+                tracker: #PID<0.328.0>,
+                latch: #Reference<0.3716278243.61341698.65188>
+              },
+              resolved: false,
+              promise: %HTTP.Promise{
+                completion: %HTTP.RequestCompletion{
+                  unsupported: nil,
+                  tracker: #PID<0.328.0>,
+                  latch: #Reference<0.3716278243.61341698.65188>
+                },
+                task: %Task{
+                  owner: #PID<0.328.0>,
+                  pid: #PID<0.328.0>,
+                  mfa: {:erlang, :apply, 2},
+                  ref: #Reference<0.3716278243.61341698.65189>
+                }
+              }
+            }[0m
+     [36mstacktrace:[0m
+       test/managed_h2_group_accounting_transitions_test.exs:42: anonymous fn/3 in Gaoxy.Proxy.ManagedH2GroupAccountingTransitionsTest."test invalid successful upload preserves supported original completion for genuine cleanup"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_group_accounting_transitions_test.exs:40: (test)
+
+
+Finished in 1.0 seconds (0.00s async, 1.0s sync)
+[31m11 tests, 11 failures[0m

@@ -1,0 +1,17 @@
+==> gaoxy_proxy
+Running ExUnit with seed: 33015, max_cases: 1
+
+     [31merror:[0m cannot invoke remote function :erlang.-/1 inside a match
+     │
+ 156 │               {:call, ^pump, {Gaoxy.Admission, :adjust_bytes, [^gate, ^lease, -@startup]}},
+     │ [31m                                                                              ^[0m
+     │
+     └─ test/managed_h2_group_startup_reservation_test.exs:156:79: Gaoxy.Proxy.ManagedH2GroupStartupReservationTest."test http1 to http2 successful attach retains startup until helper return then refunds exactly once"/1
+
+
+== Compilation error in file test/managed_h2_group_startup_reservation_test.exs ==
+** (CompileError) test/managed_h2_group_startup_reservation_test.exs: cannot compile module Gaoxy.Proxy.ManagedH2GroupStartupReservationTest (errors have been logged)
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (elixir 1.18.5) expanding macro: Kernel.match?/2
+    test/managed_h2_group_startup_reservation_test.exs:155: Gaoxy.Proxy.ManagedH2GroupStartupReservationTest."test http1 to http2 successful attach retains startup until helper return then refunds exactly once"/1
