@@ -1,6 +1,8 @@
 # Generation route/resource-sidecar consistency acceptance
 
-Status: **VERIFIED_AND_REVIEWED — local commit custody pending**.
+Status: **DONE LOCALLY — verified, independently reviewed and committed**.
+
+Feature commit: `00cdedb2b348131c6298fa192e753ce5ad1e1b52`, parent `8160e8bb6d7f55dc836b1aed0403cc2304a539bf`. Actual commit custody verified all64 task blobs/982,448 bytes against the reviewed index and disk, with unchanged protected user files and a clean worktree before this documentation closure. [Index custody](evidence/m3/generation-resource-consistency/1792103327760528135/index-custody1.json) and [actual feature commit](evidence/m3/generation-resource-consistency/1792103327760528135/actual-feature-commit1.json) preserve the complete inventory. This documentation-only closure does not rerun or replace runtime evidence.
 
 Generation rejects compiled Routers whose declared resources differ from their compiled targets, including agreeing false sidecars through static nested Routers. Rejection occurs before baseline acquisition on public/direct activation, preparation through static targets, and both startup paths. Exact old snapshots, baseline/request pin identities and test-provider ledgers remain unchanged on refusal. Valid reordered/duplicate sidecars publish the exact supplied Router; generic five/six-key pins, raw64/ETF65,536 limits, legacy callbacks, static empty Routers, dynamic Generation[] and once-only initialization remain supported.
 
@@ -23,7 +25,7 @@ Evidence directory: `docs/acceptance/evidence/m3/generation-resource-consistency
 
 The six prescribed command gates executed152 test invocations. Post-review verification adds61 repeated invocations:213 combined is not a unique-test count. Existing91 compatibility cases are reused after review with independently confirmed unchanged runtime bytes, not described as post-review reruns. Each accepted command has actual exit0, joined process, stable86 source guards, zero failures/skips/exclusions and zero unexpected warnings. Raw logs retain the exact Nix dirty-worktree advisory; collector2 explicitly classifies only that observed environment line. Erlang/OTP28 (ERTS16.4.0.6), Elixir1.18.5, Nix shell, ERL_FLAGS='+S 2:2' and MIX_ENV=test are recorded. Each command has a600-second deadline.
 
-The pre-production RED is retained as actual FAIL/exit2. No runtime failed-GREEN or repair event occurred in this slice. The pre-adoption structural-MapSet comparison was corrected to MapSet.equal? before production adoption; both proposals are archived. The exact environment-advisory parser update preserves all warnings and all other acceptance predicates; both collectors are archived. Original prepared/readiness and all3 pre-closure normative documents remain byte-for-byte evidence. Candidate1 and the documentation rebind record actual source custody; index and actual local commit remain pending.
+The pre-production RED is retained as actual FAIL/exit2. No runtime failed-GREEN or repair event occurred in this slice. The pre-adoption structural-MapSet comparison was corrected to MapSet.equal? before production adoption; both proposals are archived. The exact environment-advisory parser update preserves all warnings and all other acceptance predicates; both collectors are archived. Original prepared/readiness and all3 pre-closure normative documents remain byte-for-byte evidence. Candidate1, documentation rebind, index and actual feature commit custody bind the accepted source; their historical pending statuses remain unchanged in the original receipts.
 
 ## Boundaries and continuation
 
