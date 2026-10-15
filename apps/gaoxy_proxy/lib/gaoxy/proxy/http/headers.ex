@@ -10,9 +10,11 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
                         content-range expect cache-control cookie set-cookie)
 
   def request(exchange) do
-    with {:ok, fields} <- normalize(exchange.request.headers),
+    with :ok <- preflight(exchange.request.headers, 256),
+         {:ok, fields} <- normalize(exchange.request.headers),
          {:ok, policy} <- trailer_policy(fields, exchange.limits),
          policy = distrust_forwarding_trailers(policy),
+         {:ok, forwarded} <- forwarding(exchange),
          true <-
            (policy.allowed == [] or exchange.request.body == :chunked or
               exchange.request.version in [:"HTTP/2", :"HTTP/3"]) ||
@@ -25,9 +27,11 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
         end)
         |> declare_trailers(policy.allowed)
 
-      fields = fields ++ forwarding(exchange)
+      fields = fields ++ forwarded
 
-      with :ok <- header_limit(fields, exchange.limits), do: {:ok, fields, policy}
+      with :ok <- valid_policy(policy),
+           :ok <- header_limit(fields, exchange.limits),
+           do: {:ok, fields, policy}
     end
   end
 
@@ -40,20 +44,24 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
     do: name in ["forwarded", "x-real-ip"] or String.starts_with?(name, "x-forwarded-")
 
   def response(exchange, status, raw_fields) do
-    with {:ok, fields} <- normalize(raw_fields),
+    with :ok <- preflight(raw_fields, 256),
+         {:ok, fields} <- normalize(raw_fields),
          {:ok, policy} <- trailer_policy(fields, exchange.limits),
          fields = Enum.reject(fields, fn {name, _} -> name in policy.dropped end),
          true <-
            (policy.allowed == [] or trailers_supported?(exchange, status, fields)) ||
              {:error, :invalid_proxy_trailers},
          fields = declare_trailers(fields, policy.allowed),
+         :ok <- valid_policy(policy),
          :ok <- header_limit(fields, exchange.limits) do
       {:ok, fields, policy}
     end
   end
 
   def trailers(raw_fields, policy) do
-    with {:ok, fields} <- normalize(raw_fields),
+    with :ok <- valid_policy(policy),
+         :ok <- preflight(raw_fields, 128),
+         {:ok, fields} <- normalize(raw_fields),
          fields = Enum.reject(fields, fn {name, _} -> name in policy.dropped end),
          true <-
            Enum.all?(fields, fn {name, _} ->
@@ -67,24 +75,27 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
   end
 
   defp trailer_policy(fields, limits) do
-    declared = tokens(fields, "trailer")
-    dropped = Enum.uniq(@hop ++ tokens(fields, "connection"))
+    with {:ok, declared} <- tokens(fields, "trailer"),
+         {:ok, connection} <- tokens(fields, "connection"),
+         true <- valid_limits?(limits) || {:error, :invalid_proxy_trailers} do
+      dropped = Enum.uniq(@hop ++ connection)
 
-    cond do
-      not Enum.all?(declared, &(Regex.match?(@token, &1) and &1 not in @forbidden_trailers)) ->
-        {:error, :invalid_proxy_trailers}
+      cond do
+        not Enum.all?(declared, &(Regex.match?(@token, &1) and &1 not in @forbidden_trailers)) ->
+          {:error, :invalid_proxy_trailers}
 
-      length(declared) > limits.max_trailers ->
-        {:error, :proxy_trailer_limit}
+        length(declared) > min(limits.max_trailers, 128) ->
+          {:error, :proxy_trailer_limit}
 
-      true ->
-        {:ok,
-         %{
-           allowed: declared |> Enum.reject(&(&1 in dropped)) |> Enum.uniq(),
-           dropped: dropped,
-           max_count: limits.max_trailers,
-           max_bytes: limits.max_trailer_bytes
-         }}
+        true ->
+          {:ok,
+           %{
+             allowed: declared |> Enum.reject(&(&1 in dropped)) |> Enum.uniq(),
+             dropped: dropped,
+             max_count: min(limits.max_trailers, 128),
+             max_bytes: min(limits.max_trailer_bytes, 65_536)
+           }}
+      end
     end
   end
 
@@ -109,15 +120,70 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
     scheme = if Gaoxy.HTTP.Exchange.secure?(exchange), do: "https", else: "http"
     {address, _port} = exchange.peer
 
-    [{"x-forwarded-for", address |> :inet.ntoa() |> to_string()}] ++
-      host_fields ++ [{"x-forwarded-proto", scheme}]
+    fields =
+      [{"x-forwarded-for", address |> :inet.ntoa() |> to_string()}] ++
+        host_fields ++ [{"x-forwarded-proto", scheme}]
+
+    with :ok <- preflight(fields, 256), do: normalize(fields)
   end
 
   defp tokens(fields, name) do
-    for {^name, value} <- fields,
-        token <- String.split(value, ","),
-        do: token |> String.trim() |> String.downcase()
+    values = for {^name, value} <- fields, do: value
+
+    with :ok <- token_count(values, 0) do
+      tokens =
+        for value <- values,
+            token <- String.split(value, ","),
+            do: token |> String.trim() |> String.downcase() |> :binary.copy()
+
+      if Enum.all?(tokens, &Regex.match?(@token, &1)),
+        do: {:ok, tokens},
+        else: {:error, :invalid_proxy_trailers}
+    end
   end
+
+  defp token_count([], _count), do: :ok
+
+  defp token_count([value | rest], count) do
+    case commas(value, count + 1) do
+      {:ok, next} -> token_count(rest, next)
+      error -> error
+    end
+  end
+
+  defp commas(_, count) when count > 128, do: {:error, :proxy_trailer_limit}
+  defp commas(<<>>, count), do: {:ok, count}
+  defp commas(<<?,, rest::binary>>, count), do: commas(rest, count + 1)
+  defp commas(<<_, rest::binary>>, count), do: commas(rest, count)
+
+  defp valid_limits?(limits) do
+    is_integer(limits.max_trailers) and limits.max_trailers > 0 and
+      is_integer(limits.max_trailer_bytes) and limits.max_trailer_bytes > 0
+  end
+
+  defp valid_policy(policy) do
+    case Gaoxy.Proxy.ManagedH2Envelope.validate_trailer_policy(policy) do
+      :ok -> :ok
+      _ -> {:error, :invalid_proxy_trailers}
+    end
+  end
+
+  # Traverse the original proper pair list and its backing before grammar,
+  # lowercase, splitting, filtering or external-size work can copy it.
+  defp preflight(fields, count), do: preflight(fields, count, 0, 0)
+  defp preflight([], _count, _logical, _backing), do: :ok
+
+  defp preflight([{name, value} | rest], count, logical, backing)
+       when count > 0 and is_binary(name) and is_binary(value) do
+    logical = logical + byte_size(name) + byte_size(value)
+    backing = backing + :binary.referenced_byte_size(name) + :binary.referenced_byte_size(value)
+
+    if logical <= 65_536 and backing <= 65_536,
+      do: preflight(rest, count - 1, logical, backing),
+      else: {:error, :proxy_header_limit}
+  end
+
+  defp preflight(_, _, _, _), do: {:error, :invalid_proxy_headers}
 
   defp normalize(fields) when is_list(fields) do
     if Enum.all?(fields, fn
@@ -128,7 +194,10 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
          _ ->
            false
        end) do
-      {:ok, Enum.map(fields, fn {name, value} -> {String.downcase(name), value} end)}
+      {:ok,
+       Enum.map(fields, fn {name, value} ->
+         {:binary.copy(String.downcase(name)), :binary.copy(value)}
+       end)}
     else
       {:error, :invalid_proxy_headers}
     end
@@ -137,9 +206,10 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
   defp normalize(_), do: {:error, :invalid_proxy_headers}
 
   defp header_limit(fields, limits) do
-    if field_bytes(fields) + 2 <= limits.max_header_bytes,
-      do: :ok,
-      else: {:error, :proxy_header_limit}
+    if length(fields) <= min(Map.get(limits, :max_headers, 256), 256) and
+         field_bytes(fields) + 2 <= min(limits.max_header_bytes, 65_536),
+       do: :ok,
+       else: {:error, :proxy_header_limit}
   end
 
   defp field_bytes(fields),

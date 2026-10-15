@@ -15,13 +15,27 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
   def operation(exchange, operation) do
     {owner, id, token} = exchange.transport_state
-    remaining = Lifecycle.remaining(exchange.deadline)
+
+    {operation, deadline} =
+      case operation do
+        {:head, _, _, _} -> write_operation(exchange, operation)
+        {:data, _, _} -> write_operation(exchange, operation)
+        {:trailers, _} -> write_operation(exchange, operation)
+        _ -> {operation, exchange.deadline}
+      end
+
+    remaining = Lifecycle.remaining(deadline)
 
     if remaining == 0,
       do: {:error, :timeout},
       else: GenServer.call(owner, {:h2_operation, id, token, operation}, remaining + 100)
   catch
     :exit, _ -> {:error, :closed}
+  end
+
+  defp write_operation(exchange, operation) do
+    deadline = min(exchange.deadline, Lifecycle.deadline(exchange.limits.write_timeout))
+    {{:write, deadline, operation}, deadline}
   end
 
   def read_body_step(exchange, credit, wait) do

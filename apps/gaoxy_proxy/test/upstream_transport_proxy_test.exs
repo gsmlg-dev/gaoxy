@@ -60,9 +60,23 @@ defmodule Gaoxy.Proxy.UpstreamTransportProxyTest do
     assert [] = apply(ProxyHTTP, :resources, [dedicated])
   end
 
-  test "managed init rejects expanded handles, overrides, raw options and non-H1 protocols" do
+  test "managed init rejects expanded handles, overrides, raw options and unqualified protocols" do
     handle = %{provider: Transports, owner: self(), owner_epoch: make_ref(), resource: make_ref()}
     assert {:ok, _} = ProxyHTTP.init(%{upstream: "http://example.test", transport: handle})
+
+    for {protocol, upstream} <- [{:http2, "https://example.test"}, {:h2c, "http://example.test"}] do
+      assert {:ok, qualified} =
+               ProxyHTTP.init(%{
+                 upstream: upstream,
+                 upstream_protocol: protocol,
+                 transport: handle
+               })
+
+      assert qualified.client == Gaoxy.Proxy.ManagedH2Client
+      assert qualified.upstream_protocol == protocol
+      assert {:ok, ^qualified} = ProxyHTTP.init(qualified)
+    end
+
     backing = "http://" <> String.duplicate("a", 100) <> String.duplicate("x", 65_537)
     retained_origin = binary_part(backing, 0, 107)
     assert :binary.referenced_byte_size(retained_origin) > 65_536
@@ -78,6 +92,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportProxyTest do
           %{transport: %{handle | owner_epoch: 1}},
           %{transport: %{handle | resource: 1}},
           %{upstream_protocol: :http2},
+          %{upstream_protocol: :h2c, upstream: "https://example.test"},
           %{upstream_protocol: :http3},
           %{cacertfile: "/does/not/exist"},
           %{connect_address: {127, 0, 0, 1}},

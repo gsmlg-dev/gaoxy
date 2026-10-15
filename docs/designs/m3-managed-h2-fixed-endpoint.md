@@ -1,6 +1,223 @@
 # M3 managed H2 fixed-endpoint activation
 
-Date: 2026-10-14 Asia/Shanghai. Status: **DESIGN CANDIDATE; NOT IMPLEMENTED;
+## Current checkpoint — 2026-10-15
+
+All six fresh post-review runtime gates PASS for the managed H2 fixed-endpoint
+candidate at baseline `31f23eb2d915ba715a1016f254b90d9805f18a1a`. Complete independent
+[SPEC](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-spec.json) then
+[CODE](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-code.json) passed with zero findings.
+Candidate manifest SHA256 is `eae7be8d14325be8f34f13ddef2ab1183d950153b4172599d91c837a3034f559`.
+
+Fresh format43 and forced strict compile passed; complete full58 executed
+**853 tests /0 failures /0 skips /0 exclusions**, exit0. Additive HTTP0.21.10
+public qualification passed **63/63**, the four-cell real-peer matrix passed
+**135/135** unique required cases, and isolated browser acceptance passed
+**3/3**. All source identities remained stable. The
+[complete receipt audit](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-postreview-complete-evidence-audit.json) verifies logs/artifacts, actual
+loaded source/BEAM identities, original public completions and peer/browser
+process joins. HTTP0.21.10 resolves upstream122; every original assertion and
+all historical failure evidence remain preserved.
+
+Negative wrong-CA/name browser cleanup remains
+`UNCONFIRMED_WITH_RETAINED_FAILURE`; passing negative cases do not establish
+successful original cleanup. Historical EOF and connection-reset outcomes
+remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
+new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
+remains exhausted.
+
+Runtime verification is complete. Final documentation-only independent review
+and the authorized local conventional commit remain pending. Managed H2
+groups/probes is the next bounded slice after this closure; its design draft
+does not activate it. Generation, standalone/load, hosted CI, publication,
+deployment and production acceptance retain their separate gates.
+
+## Historical checkpoints before the final runtime gates
+
+Current checkpoint — 2026-10-15: managed H2 fixed endpoints remain uncommitted.
+
+Upstream [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is CLOSED, repaired by PR125 / merge9caf38cabdaa5fc1c65501632a28548ebd27d714
+and released in the coordinated HTTP 0.21.10 cohort
+(tag ed27a577d418e45266cd54638692362d17fcdcd1). All seven packages are now
+pinned/locked to0.21.10. The original cancellation assertion still requires
+:aborted and passed unchanged (5 tests /0 failures).
+
+Strict compilation and format41 passed. Two complete full58 runs each
+executed853 tests with1 failure, exit2 and stable source; both are retained.
+The second exposed a local H1 probe-fixture lifetime race: querying an owner
+after instance-driven normal termination returns :not_running. Sol20 added
+exact owner-DOWN barriers and reproduced the same class deterministically
+(34 tests /22 expected failures), then corrected only fixture teardown
+ordering. The complete two-file GREEN passed34/0, exit0/stable source.
+Original primary bodies, short-stop failure and TLS uncertainty assertions
+remain unchanged. Live-owner zero-status checks remain; body-owned core
+shutdown uses a monitor installed before shutdown and an exact normal DOWN.
+See sol20-group-cleanup-repair-design-plan.md, independent design SPEC,
+RED/GREEN receipts and the explicit test-contract amendment in stage evidence.
+This scoped GREEN does not substitute for a fresh full58 gate.
+
+The additive h2_02110 qualification/supplement preserves all63 public cases
+and hash-pins historical0.21.4 sources. Matrix/browser use its exact0.21.10
+identity wrapper; all135/3 cases and assertions remain. Complete updated
+independent SPEC then CODE and fresh format43/strict compile/full58/public63/
+matrix135/browser3 remain required before acceptance and local commit.
+Current ownership is52 files plus5 authorities; no58-file omission is allowed.
+
+Cumulative prior counters persist: fixedSol19/unsuccessfulGREEN14;
+collectorSol17/unsuccessfulGREEN12; matrixfailed11; browserfailed5;
+R32diagnosticfailed5; nativeH1 RED2/fixture2; nativeH2 shape RED2/fixture1;
+local-status RED2/fixture1; full-staticCODEfailed1. New counters:
+0.21.10 full58failed2; fixtureSol20 RED1/GREEN1. Astra recovery2/2 remains
+exhausted. Negative TLS cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE.
+Root owns all repository writes/runtime; publication/deployment restrictions
+remain. No stage completion, commit or successor activation is claimed.
+
+Historical Sol19 checkpoint before the upstream122 repair follows:
+
+Latest execution (Sol19 final unblocked verification): activation remains
+BLOCKED_UPSTREAM122 and uncommitted at baseline `31f23eb`.
+Sol19 trusted local_fail now preserves only native400/413/431 for
+ManagedH2Client and immediately discards raw diagnostics to :invalid_request.
+Generic upstream errors still normalize before status selection; original
+cleanup, unset-head/total-expiry, close, caps and deadlines are unchanged.
+Independent bounded SPEC then CODE PASS with zero open findings. Complete
+endpoint GREEN1 PASS38/0 and affected lifecycle/H1/H3 compatibility PASS141/0
+(21 native HTTP +120 proxy), exit0/source stable/zero skips or exclusions.
+These scoped passes resolve LOCAL_REQUEST_ERROR_STATUS_LOST, not stage acceptance.
+
+Sol19 RED1 remains fixture FAIL38/8 on its invalid Trailer assertion; its sole
+correction asserts exact authentic H2 pseudoheaders and no hop fields. Genuine
+RED2 FAIL38/8 reached the exact closed wire response after original pending
+barriers and observed502 vs400x2/413x2/431x4. Original30 cases and all8
+status/completion/cleanup assertions remain unchanged. Actual release, bounded
+design/plan, exact candidates/reviews and RED/GREEN receipts are preserved as
+`sol19-local-status-*` in the existing stage evidence directory.
+
+Full independent SPEC Sol19 then CODE Sol19 PASS with zero findings on the
+frozen owned46/authorities5 candidate. Fresh post-review format38, strict
+compile (--warnings-as-errors --force), public63/63, complete matrix135/135
+and browser3/3 all PASS with exit0 and stable source. The matrix executed all
+135 unique required identities across four cells, with zero omissions,
+skips or exclusions. Actual public command-group, matrix peer and browser
+joins, artifact hashes and91 loaded Gaoxy module identities were audited.
+Browser negative CA/name outcomes remain UNCONFIRMED_WITH_RETAINED_FAILURE;
+these passing cases do not confirm their original cleanup.
+
+`sol19-postreview-unblocked-evidence-audit.json` binds the fresh qualifications,
+receipts, full reviews and frozen manifest. Its status is
+PASS_UNBLOCKED_GATES_ONLY; full58 and stage acceptance remain blocked.
+The earlier Collector Sol17 matrix GREEN12 and browser-sol17-1 passes remain
+historical evidence and are not substituted for these Sol19 results.
+
+Live read-only recheck confirms [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+OPEN/Bug/internal request/blocker. Latest v0.21.9/main `81ad386f` is unchanged
+and fixes119, not122; dependency cohort remains0.21.4. Historical full58
+FAIL845/1 expected original Promise:aborted but observed:einval. Later5/0 and
+32/0 are not repairs. Full58 stays BLOCKED_UPSTREAM122 without workaround,
+omission or weakened assertion, pending upstream fix and compatible update.
+The final read-only snapshot is `sol19-upstream122-final-read-only-check.json`.
+
+Counters: fixedSol19/unsuccessfulGREEN14; collectorSol17/unsuccessfulGREEN12;
+matrixfailed11; browserfailed5; R32diagnosticfailed5; nativeH1 RED2/fixture2;
+nativeH2 shape RED2/fixture1; local-status RED2/fixture1; full static CODE failed1.
+Astra recovery2/2 remains exhausted. Owned46/format38/full58 remain complete.
+Forward-only runner3 captures AGENTS.md/implement-plan.md alongside the earlier
+source set; old receipts and smaller coverage remain immutable. No stage
+acceptance, commit or next-stage activation is claimed.
+
+Previous execution checkpoint (before matrix GREEN12 and Sol19), retained as history:
+
+Latest execution: managed H2 fixed-endpoint activation is INCOMPLETE and
+uncommitted. Native H1 Sol17/Sol18 focused GREEN2 passed67/0 with stable
+source and narrow independent SPEC then CODE; historical failures are retained.
+Fresh format37 and strict compile passed. Full58 executed845/1, exit2,
+source stable with zero skips/exclusions. Its sole pre-head public H1
+cancellation assertion expected:aborted and observed:einval after confirmed
+cleanup. The unchanged file later passed5/0 and the bounded public diagnostic
+passed32/0; neither result proves a repair or erases full58's failure.
+
+Upstream [gsmlg-dev/http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is confirmed OPEN, type Bug, label internal request, severity blocker for the
+existing cancellation compatibility gate. The callsite has its required TODO;
+no local workaround or weaker assertion is authorized. That task remains
+BLOCKED until an upstream repair and compatible dependency update. Other
+unblocked verification continues. Comment-only routing makes owned46/format38;
+the required complete test manifest remains full58, with no omission.
+
+Released canonical Collector Sol16 passed narrow independent SPEC then CODE.
+Diagnostic8 PASS4/4 authenticated all128 held cleanup refs and2 refused extras
+against all130 authentic raw calls (:ok, max6.594785ms), with real joins and
+unchanged1024 caps. Diagnostic7's original overall FAIL remains historical.
+Complete matrix GREEN11 remains FAIL87/135, exit1/source stable. The next H2
+head-bytes-exact response needs65688 RFC metadata bytes; the fixture advertised
+131072 but its decoder retained65536. This establishes a fixture mismatch,
+not a production defect. The public update_settings/matching ACK candidate
+preserves the existing finite131072 cap,135 identities and120 original collector
+assertions. Initial independent SPEC passed; CODE found a first-request/ACK-send
+absolute-deadline gap in a controlled-clock model. The targeted candidate repair
+passed fresh independent SPEC then CODE with24 deadline and4 fail-closed
+models and no actionable findings. Root released Collector Sol17 and its
+managed-only peer ACK profile; complete matrix GREEN12 is pending execution.
+The first reviewer response-vector arithmetic failure and exact correction are
+preserved separately; it occurred before candidate execution.
+
+Fresh public63 PASS63/63 is retained as scoped evidence; browser3 is not fresh
+for the eventual final candidate. Current counters: fixed Sol18/unsuccessful
+GREEN14; collector Sol17/unsuccessful GREEN12; matrix failures11; browser
+failures5; R32 diagnostic failures5; native H1 poll-floor RED failures2/fixture
+corrections2; native H2 shape RED failures2/fixture correction1. Astra recovery2/2
+is exhausted. Full58 is BLOCKED by upstream122; format38, complete matrix135,
+browser3, full stage independent SPEC then CODE and fresh post-review gates
+remain required. No phase acceptance or commit is claimed.
+Earlier execution summaries below are historical.
+
+Latest native H1 compatibility execution: [clean RED2](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/native-h1-partial-upload-red2-1791989000488049202.json)
+failed8/4 on exactly the four withheld-eight-byte cases, with the fixture
+contracts corrected. Sol13's [GREEN1](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/repair13-native-h1-green1-1791989166975977591.json)
+executed53/1: all8 new upload cases and original-deadline/cap/network checks
+passed; the unchanged trailer-limit error contract was the sole failure.
+The bounded short-read [independent SPEC then CODE review](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/native-h1-short-read-independent-spec-code-review.json)
+passed with no findings. It does not accept the full fixed-H2 slice. Sol14
+restores the exact response_trailer_limit reason at the trailer preflight,
+retaining every bound and unchanged test assertion. Its focused GREEN passed63/0,
+exit0, source stable and zero skips/exclusions.
+Current cumulative counters are fixed Sol16/unsuccessful GREEN11, native H1
+RED failed runs2/fixture correction1, header RED failed runs2/upload-event
+fixture correction1, collector Sol14/unsuccessful GREEN9, matrix failed runs8
+and browser failed runs5. Astra recovery2/2 stays exhausted. Sol15 relevant
+GREEN87/0 and narrow SPEC/CODE PASS; pre-review full57 PASS824/0, stable exit0
+with zero skips/exclusions. Collector Sol14's narrow SPEC then CODE review also
+passed with no findings.
+Matrix GREEN8 remains FAIL84, exit1/source stable. Both complete H1 cells and
+H2→TLS functional/concurrent/controlled cases passed. The R32 repair dispatches
+all32 authentic response commands before client joins in17.206/29.193/19.095ms
+for those three cells, preserving opening/capacity/identity/byte/cleanup checks.
+Those are collector observations, not certified Session timer receipts. Next
+H2→TLS head255 expected200 emitted complete empty502. The same255 regular
+upstream fields plus status passed both H1 cells. The supported public HPAX
+runtime diagnostic confirms256 total fields are feasible: bulk encoding nests
+its accumulator to depth258, exceeding the unchanged RendererBounds depth16.
+Ordered single-field encoding returns identical bytes, exact public decode and
+valid frames at depth4/nodes3832/ETF15994. This is codec diagnosis, not server
+acceptance. The diagnostic source and receipt are retained in the evidence root.
+Sol16 is planned to build one proper outer list using supported per-field HPAX
+calls and carried encoder state, preserving empty-block resize-prefix semantics.
+The existing aggregate preflight stays before binary conversion/frames, with
+the transient input conservatively charged within the unchanged renderer
+allowance, with no cap, field-count, byte or deadline change. Clean native RED2 executed57/2, exactly the head255/trailer128 refusal, while
+empty-block wire semantics and renderer arithmetic passed. RED1 executed46/2
+with generated-test type warnings; one warning-only fixture correction retained
+all assertions. Source-stable RED2 has no compiler warnings. Sol16 production
+is released solely for supported codec assembly; native H2 shape RED failed
+runs2/fixture correction1 are separate cumulative counters. All earlier
+failures and retained uncertainty remain. Complete135 and final complete
+review/post-review gates are still incomplete.
+
+Pre-review full57 is PASS824/0. Complete135 matrix, fresh public63/browser3,
+final independent full SPEC/CODE and fresh post-review gates remain required
+and incomplete.
+
+Date: 2026-10-14 Asia/Shanghai. Status: **IMPLEMENTATION IN PROGRESS;
 ACTIVATION CEILING UNACCEPTED**. This document defines the next bounded slice
 after [managed H2 preparation](m3-managed-h2-preparation.md). The preparation
 candidate has complete independent SPEC then CODE PASS, fresh format/strict
@@ -18,6 +235,23 @@ copy ledger; neither its historical 6,053,414 estimate nor preparation's
 2,918,508 worksheet is a runtime reservation. Astra recovery remains 2/2
 exhausted. Continuing authorization selects the recommended local approach and
 execution automatically; no routine approval pause is introduced.
+
+Current verification remains incomplete: full53 PASS761/0, public PASS63 and
+browser PASS3 precede the latest changes. Matrix GREEN2 failed after13 cases
+because local normalization changed the public capacity tuple into502 instead
+of503. Both control supplements failed63/2; the bounded trace diagnostic
+failed30/1 on a non-original-Task `{ref, false}` reply. Renderer network33/0
+proved projection release and repeated terminal rejection. These preserved
+partial results do not accept activation or replace final SPEC/CODE and fresh
+verification. See the acceptance ledger for exact receipts and repair counters.
+Matrix GREEN4 remains FAIL after15 completed cases, exit1 and source stable.
+R32 passed with two actual SETTINGS ACK16 receipts,32 simultaneously held
+requests, blank503 refusal33, healthy responses and joins. The next pre-EOF H1
+upload sent16392 bytes but delivered only16384 upstream;8 bytes remained buffered
+with Content-Length32781 and EOF withheld. The immutable
+[diagnosis](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-h1-partial-upload-diagnosis.json)
+and [run receipt](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-1791987688394641648.json)
+preserve this failure; activation acceptance remains incomplete.
 
 ## Choice, goal and scope
 
@@ -368,9 +602,17 @@ extra struct keys and malformed wrappers reject. Immutable streamed `trailers`
 must be empty. Both Headers wrappers are exactly
 `%HTTP.Headers{headers: proper_pairs}` (two map keys including tag).
 
-URL is nil or the exact canonical nine-key URI derived from the submitted URL:
-same scheme/host/port/path/query/authority, no arbitrary upstream redirect or
-extra payload; total URI projection <=132,096 with per-source backing preflight.
+URL is nil or a closed nine-key URI with the submitted scheme/host/port/path/query,
+no userinfo, fragment, arbitrary upstream redirect or extra payload. The pinned
+public managed preparer returns a normalized URI with `authority: nil`; accept
+that exact representation only after validating and matching all address and
+target fields. A supplied authority still has to be valid and match the submitted
+authority. Do not rewrite a Response to manufacture provenance. Total URI
+projection remains <=132,096 with per-source backing preflight. This compatibility
+amendment follows the executed `native-response-url-diagnostic2` receipt: replacing
+only the native nil authority with the parsed submitted URI changed rejection
+to success, while all other Response fields stayed identical. Both accepted
+representations and every mismatched field require independent review/regressions.
 Initial heads <=256 pairs and65,536 name+value bytes/backing, BEFORE cache,
 normalization or policy. Informational is <=128 ordered `{status, Headers}`
 blocks, status100..199, aggregate fields<=2,048, and aggregate
@@ -378,6 +620,53 @@ name+value+32<=65,536 with finite backing preflight. Retained fields are copied
 after validation; no partial traversal or dedup shortcut establishes the bound.
 Its upper envelope is 7+128*63+65,536=73,607; status-text70, URI132,096 and scalar/
 wrapper8,192 yield metadata213,965, EXCLUDING initial fields separately charged.
+
+Keep adapter and native wire boundaries distinct. The pinned native HPACK
+256-field limit includes `:status`:255 regular fields plus status reach the
+adapter, while256 regular fields plus status fail natively with
+`{:transport_error, {:hpack, :hpack_field_count_exceeded}}`. The pure adapter
+must still accept256 regular fields and reject257. The executed header-boundary
+diagnostic also observed original `:cleanup_unconfirmed` after native rejection;
+retain that negative result and the resulting request/Service failure evidence.
+It is never a successful cleanup receipt. No dependency internals or new
+cleanup certification are required to replace a documented uncertain outcome.
+
+The four-cell byte matrix measures each reachable enforcement boundary in its
+own unit. Adapter name+value and backing caps remain65,536; exact/over adapter
+65,536/65,537 are independently verified by the unchanged pure tests. They
+cannot be claimed as feasible final-head network positives: the upstream
+native decoded head also counts `:status` (10 bytes), and H1 adds status and
+framing bytes. Matrix GREEN6's three-field fixture had field-wire65,536 but
+complete H1 wire65,600, so its expected200 was infeasible. Preserve that FAIL21
+receipt and the strict renderer rejection; do not raise any cap.
+
+Use four ordered upstream fields `content-length:0`, `x-pad:a*p`, `x:b`, `y:c`
+for empty200 byte-head cases. Their name+value is p+24, native decoded head
+including status is p+34, and proxy field-wire including CRLF is p+42. H1 uses
+fixed framing: status line17 and connection-close19 yield full wire p+78.
+
+| Network boundary | Exact/over padding p | Exact/over measured bytes | Other exact budgets |
+| --- | --- | --- | --- |
+| H1 complete rendered wire | 65458/65459 | 65536/65537 | Adapter65482; native65492; field-wire65500 |
+| H2 proxy field-wire | 65494/65495 | 65536/65537 | Adapter65518; native65528; downstream decoded65688 |
+| Native terminal trailer metadata | 65497/65498 (`x-check:a*p`) | 65536/65537, name+value+32/field | Adapter65504; field-wire65510; H1 terminal65513 |
+
+Both upstream protocols retain all135 matrix identities and all four cells.
+Successful exact cases require exact ordered fields/trailers and bytes; over
+cases retain pre-head empty502 or post-head termination as applicable. The H1
+uncommitted renderer `:response_header_limit` is an upstream metadata failure
+at Proxy.HTTP and must use its existing502 cleanup path, before any partial
+head can escape. Ordinary native core renderer behavior is unchanged. H2's
+compressible padding must additionally satisfy the existing bounded HPAX/encoded
+block guards; arithmetic does not establish runtime success.
+
+Trailer byte exact/over network evidence is explicitly native metadata,
+including32 bytes per field, rather than adapter name+value. The original
+field-wire65,536 positive would exceed native metadata and H1's full terminal
+cap. Keep the unchanged pure adapter trailer65,536/65,537 and public renderer
+exact/over tests. If native rejection yields an unconfirmed original completion,
+preserve that exact failure, token and Service receipt with genuine helper and
+peer joins. Scope retirement or actor disposal never converts it to cleanup:ok.
 
 Extract only bounded status/fields/stream, discard URL/status-text/informational
 and the full Response immediately. Handles contain exactly four keys:
@@ -482,7 +771,7 @@ The renderer boundary owns the following bounded complete public Gaoxy payloads:
 | Backend | Simultaneously allowed complete slots | Maximum |
 | --- | --- | ---: |
 | H1 | Two complete head/trailer rendered iodata slots<=81,920 each; one compact wire projection<=B(65,536); finite send traversal/control<=4,096 | 233478 |
-| H2 | One HPAX returned iodata<=131,072; one compact block<=B(65,536); two request-owned encoded head/trailer frame-list/queue projections<=73,728 each; finite send traversal/control<=4,096 | 348166 |
+| H2 | One HPAX aggregate returned iodata<=131,072; one transient single-field codec input<=F(1,65536); one compact block<=B(65,536); two request-owned encoded head/trailer frame-list/queue projections<=73,728 each; finite send traversal/control<=4,096 | 413721 |
 | Unified renderer ceiling | Conservative ceiling above both backend sums | **524288** |
 
 H1 conservative field-iolist formula is `b+35n+7`, because each field has two
@@ -497,7 +786,20 @@ traversal; cap its complete external representation81,920 before retaining.
 Do not double-charge the already charged field input as another new field slot.
 
 For H2, preflight outgoing finite heads/trailers and status semantics before
-HPAX.encode. Bound its returned public iodata by8,192 nodes/depth16,
+HPAX.encode. Assemble one proper ordered outer list from supported
+`HPAX.encode(:never_store, [field], encoder)` calls, carrying the returned
+encoder. Recursion constructs the result directly without a reversed second
+list or an unchecked bulk-encoding copy. Empty headers must use the supported
+empty encode so a pending table-size update remains on the wire; preserve exact
+bytes for nonempty heads and trailers too. The full aggregate occupies the same
+single returned-iodata slot. Conservatively charge the transient one-field codec
+input as F(1,65536)=65,555, even though it references the already bounded field.
+Only one such input is live per supported call; no second full input list or
+encoded aggregate is constructed. H2 complete public slots therefore sum to
+413,721, still below the unchanged524,288 allowance and9,444,956 reservation.
+HPAX/VM stack internals remain opaque; finite field-count recursion is not a
+certificate of native memory or a claim that the4,096 public control charge
+measures the VM stack. Bound its returned public iodata by8,192 nodes/depth16,
 logical/backing65,536, complete external size131,072 before binary conversion;
 then compact encoded block<=65,536 and framed piece<=16,384 payload. At most
 four header/continuation frames per block, each9-byte wire header plus binary
@@ -524,7 +826,46 @@ certification. No third queue/rendered copy is silently absorbed; additional
 overlap revises the contract before acceptance. Both backend component sums and
 the complete combined Service reserve require independent executable tests.
 
+## Native H1 incremental-read compatibility repair
+
+`Exchange.recv_body/5` requests an exact passive-socket length. After forwarding
+the first16384 bytes, another16384-byte receive withholds an available8-byte
+fragment while the producer deliberately withholds EOF. Preserve the existing
+incremental Body decoder, read credit and maximum read chunk. The proposed
+bounded repair first probes that maximum size with timeout0, halving on timeout
+down to1; if every probe times out, make one finite1-byte wait using the same
+absolute read deadline. Successful fragments stay within existing reserved
+credit. Do not use unbounded recv0, add queues or payload copies, relax byte
+assertions, or renew the deadline between probes.
+
+B owns only `apps/gaoxy_http/lib/gaoxy/http/exchange.ex` and new
+`apps/gaoxy_http/test/http1_partial_upload_test.exs` for this compatibility slice;
+parent owns runtime/format/evidence. Native H1 RED1 executed8/6, exit2, source
+stable and zero skips/exclusions: four failures reproduce byte delivery, while
+two new fixture assertions incorrectly expected `:normal` instead of exact
+`{:shutdown, :local_closed}`. An invalid Endpoint two-tuple abort also logged a
+CaseClauseError. These fixture failures are separate from capacity and production
+failures. B is correcting tests only before RED2; Exchange production stays
+frozen until parent releases it. Final verification must use the intended
+full57 manifest, including this new suite and the existing
+`native_proxy_seams_test.exs` original-request-deadline regression.
+
 ## Closed control/message schemas
+
+The executed Task7 zero-flow-credit regression exposed a native downstream H2
+compatibility gap: its operation call, queued frames and DATA flow wait used the
+request deadline rather than the endpoint write timeout. The necessary bounded
+repair propagates an absolute per-operation write deadline for head/DATA/trailer
+writes, using the minimum of the request deadline and now plus write timeout.
+Track one identity/timer/caller for each pending operation; queued and in-flight
+frames use that same deadline. On expiry, return timeout while the pump remains
+able to cancel and join its genuine original completion. Latch failed writes to
+prevent a fallback head, replay or late successful callback/ACK; read/poll and
+overall stream deadlines remain separate. An unsent expired frame may preserve
+siblings. If a HEADERS fragment has already reached the wire, hard deadline
+expiry closes the connection rather than dropping a required CONTINUATION.
+Existing ordinary-reset END_HEADERS draining remains independently qualified.
+This adds no dependency/private-actor or memory certification requirement.
 
 Session projection is <=16,384; pump control projection <=8,192; each handle
 shell <=4,096. Permit only finite booleans/enums, signed64 times, bounded unsigned
@@ -562,6 +903,17 @@ remain; no new framework/message bus is introduced.
 
 Public outbound read/ACK/upload calls and Service/owner calls use transient
 wrappers within their named control slot, not extra retained mailboxes.
+Synchronous public timer cancellation replies are transient controls too:
+measure the complete `{ref, false | nonnegative_signed64}` tuple within2,048,
+requiring same-actor public cancel_timer CALL/receive/RETURN provenance and exact
+returned result. This adds no retained family or allowance. A reference that
+differs from the original Task reference is never accepted as a Task result;
+missing, mismatched or expanded transient wrappers fail the evidence projector.
+Repair12 combined scoped verification passed96/0, including strict constructor
+counterexamples and real h2c provenance1; TLS observed0. The separate raw C2
+public Promise witness passed. Matrix GREEN3 passed C2 but failed after14 cases
+because R32's fixture launched requests while its second connection was cold;
+preparation barriers preserve the required32 held streams and all P0 limits.
 Unexpected messages are ignored/dropped without copying/retaining/logging raw
 payloads. Authentication checks refs/PIDs before accepting each form. Raw task,
 monitor, exception, stream or downstream errors are normalized before retention
@@ -612,12 +964,31 @@ expired caller wait do not establish completion. Pending/unconfirmed completion
 retains token/pins/Service request reservation; cleanup retries are finite and
 single-poll. Owner scope retirement through Custodian is separate. A healthy
 shared connection may remain after one request completes; final owner retirement
-must establish public retirement, physical peer EOF and joined owned helpers.
-Keep exact negative TLS uncertainty results if the pinned public contract cannot
-confirm cleanup; do not turn test teardown into a successful Service receipt.
+must establish public retirement, actual physical socket termination and joined
+owned helpers. Record orderly EOF and `ConnectionResetError` separately on both
+normal and abort paths. The executed normal-retirement diagnostic confirmed
+three original completions and graceful scope retirement for BOTH protocols,
+with peer reset, exactly three requests and zero forced/live helpers. The public
+contract does not guarantee FIN-only termination even after normal completion.
+All tests require the observed terminal signal, unchanged public receipts/zero
+ledgers, exact final request counts and all actor joins. A reset is never
+relabeled EOF, and forced peer disposal is never confirmation.
+Keep exact negative TLS/native-rejection uncertainty when the pinned public
+contract cannot confirm cleanup; retain failure and holds instead of treating
+test-owned disposal or physical closure as a successful Service receipt.
 
-Before a response head: malformed request/envelope400; unsupported method/target
-501; unavailable/identity/admission capacity503; timeout504; upstream protocol,
+Instance death may leave the original public abort able to join successfully
+while the separate Service is already unavailable. It does not imply that the
+original completion must become uncertain, or manufacture a Service receipt.
+Qualify that confirmed-original case with Custodian retirement held until the
+actual abort completes, then require the exact unavailable Service failure.
+Separately establish genuine published Response Stream death and the original
+`cleanup_unconfirmed` before instance collapse; preserve that original identity,
+retained request token and missing receipt through recovery. These are two
+deterministic fault cases, each with one exact outcome.
+
+Before a response head: malformed request/envelope400; authentic native upload
+body/trailer limits413/431; unsupported method/target501; unavailable/identity/admission capacity503; timeout504; upstream protocol,
 metadata, delivery/reset/GOAWAY failure502. After a response head, cancel and
 terminate the stream/connection; send no second response. Bound open, idle,
 write, total and cleanup deadlines, cancellation and producer/Session/owner/
@@ -649,17 +1020,107 @@ Required browser verification uses a local native Gaoxy TLS downstream with
 test-only fixtures and a real fixed TLS-H2 peer. Through Chrome DevTools, load
 a local `/probe` HTML response, fetch a streamed `/stream` body and a `/early`
 response, inspect browser network protocol h2, exact visible content and final
-bytes; exercise upstream wrong-name/CA error without credentials/replay. Record
-actual navigation/network/console outcomes and screenshots or trace, plus
-public cleanup and fixture peer/helper joins. Restrict trust exception, if
-needed, to the generated downstream test certificate SPKI; no operational
-certificate issuance, global trust mutation or public listener. Browser checks
-are separate from the four independent Python peer cells and cannot be claimed
-from them. Parent uses the browser automation skill and captures real outcomes;
-unavailable browser access is BLOCKED_ENV, not PASS.
+bytes; exercise upstream wrong-name/CA error without credentials/replay.
+Positive `Page.navigate` must return no error and complete normally. The pinned
+Chrome negative case has a separate exact contract: h2 status502 and
+Content-Length0, navigation errorText and matching Document loadingFailed
+`net::ERR_HTTP_RESPONSE_CODE_FAILURE`, then a `chrome-error://chromewebdata/`
+frame/document displaying HTTP ERROR502. Browser-generated error content is
+separate from the zero-byte server body. Capture matching request/loader/frame
+identities, network/console and screenshot/trace, public cleanup and helper joins.
+
+While browser sockets remain open, classify every charged native Connection and
+Writer lease by actual PID/ref and require a bijection with exact summed bytes.
+Connection acquisition precedes asynchronous Writer acquisition; wait finitely
+for `writer_ready`, then take a fresh exact ledger. This is no count allowance.
+Diagnostic2 proves2C/2W and346,212,430 bytes; its speculative connection with
+`preface:false` remains a charged connection with a real Writer. Historical
+diagnostic1 active3 lacks exact actor evidence and remains unexplained;
+the finite Writer-readiness path executed in failed browser timeline GREEN1
+with exact2C/2W and `writer_ready:true`; final fresh verification remains. For confirmed positive
+request cleanup, explicitly exit/join the isolated browser before the unchanged
+zero-active/zero-retained Service ledger and repeated original completions.
+For actual original `cleanup_unconfirmed`, preserve failure: capture the exact
+9,444,956 live cleanup-reserve timeline before Service exit, original identity,
+terminal missing-Service receipt, retained owner token/resource and explicit
+failed actor disposal/joins. Absent post-exit fields cannot establish zero or
+successful cleanup. Earlier failed browser timeline GREEN1 records this exact live reserve and
+terminal failure, but retained helpers1 violates required0. Wait
+finitely for actual helper joins before sampling the retained ledger and test
+disposal; keep helpers0 and do not manufacture it through disposal. Preserve the
+[navigation/Service diagnosis](../acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/browser-navigation-and-service-timeline-diagnosis.json);
+[actual browser receipts](../acceptance/m3-managed-h2-fixed-endpoint.md#latest-scoped-receipts)
+preserve all earlier failures. Browser helper-join GREEN1 now passes3/3 with
+actual helper DOWN/slot settlement and exacthelpers0 before disposal, while
+wrong-CA/name cleanup_unconfirmed remains UNCONFIRMED_WITH_RETAINED_FAILURE.
+Full53 GREEN1 passes761/0 and public GREEN1 passes63/63. Matrix GREEN1 remains
+FAIL5 due to stale upload-end event selection; exact connection/stream repair
+has a passing recorded-event replay, with complete rerun pending. Supplemental
+complete control and renderer-release tests plus final SPEC/CODE/fresh gates
+remain required before activation acceptance.
+
+Restrict trust exception, if needed, to the generated downstream test certificate
+SPKI; no operational certificate issuance, global trust mutation or public
+listener. Browser checks are separate from the four independent Python peer
+cells and cannot be claimed from them. Parent uses the browser automation skill
+and captures real outcomes; unavailable browser access is BLOCKED_ENV, not PASS.
 
 Only after complete passing independent reviews and fresh gates may the parent
 record this local slice accepted, make its local conventional commit, and
 automatically design/execute the next bounded managed-H2 groups/probes slice,
 then its Generation integration and later standalone/load qualification. Do not
 claim whole M3, hosted CI, publication, deployment or production acceptance.
+
+## Native H1 polling compatibility repair — Sol17 planned after diagnostic6
+
+Diagnostic6 retained all1024 first-distinct original snapshots and rejected
+key1025, despite suppressing2737 exact repeats. Raw high-water226 was below1024;
+no normal observer/Gate/tracer join or cleanup call executed. This confirms an
+actual H1 empty-poll state-combination limit, not merely a raw queue backlog.
+The canonical collector remains Sol15 v2; neither experimental projection set
+has been released as a passing collector repair.
+
+The recommended bounded repair keeps native buffer/poll workspace as a
+persistent conservative request lease floor. Add `poll_buffer_bytes: 0` to
+Exchange; `retained_bytes/1` charges `max(byte_size(buffer), poll_buffer_bytes)`
+in place of its previous raw-buffer term. For each native poll, prepare a
+candidate floor `max(poll_buffer_bytes, 2 * byte_size(buffer) + 2)`, check
+Admission against its full total, and perform the unchanged one-byte receive
+only after admission. A refused increase returns the original Exchange and
+performs no receive. Timeout/close retains the admitted floor. A successful
+receive adds one actual buffered byte without increasing the admitted total:
+`b + 1 <= 2 * b + 2`. Body/response operations already use `retained_bytes/1`,
+so carry the same floor. H2 facade exchanges keep the default0 and previous
+buffer accounting.
+
+The floor is at most `2 * max_buffer_bytes`: polling refuses a full buffer
+before computing it. For buffer size b, the old buffer b, received byte1 and
+new concatenation b+1 have peak2b+2. Preflight charges this peak before receive,
+without depending on compiler allocation optimizations. Returned state cannot
+exceed that preflight merely because its buffer grew by1. The floor is released
+by the existing real request/reuse transition
+`Admission.retain(..., byte_size(exchange.buffer))` or connection lease removal;
+a newly constructed Exchange starts with0. No Service/Admission lifecycle,
+cleanup50ms, limits, slot multiplicities or request deadline is changed.
+Original checks continue on every poll; no stale-lease check is bypassed.
+The earlier additive b+1 proposal was rejected during read-only arithmetic
+review before implementation: it undercounted the separately live input/copy
+peak and allowed returned-state growth beyond preflight at an exact cap. This
+readiness correction is not a production repair attempt or GREEN result.
+
+Parent first requires real passive TCP regression RED for stable admitted
+workspace across repeated empty waits, high-water buffer copy accounting,
+byte-cap refusal before consuming input, original deadline/close behavior,
+read/send persistence and real native keepalive reuse release. Only the
+observed intended RED permits production release. After focused GREEN and
+independent narrow SPEC then CODE, use the independently proven exact adjacent
+projection suppression experiment against all four original R32 cells/128
+cleanup pairs. It may suppress only adjacent states rendering the same full
+original snapshot; first different states, invariant failures, both1024 caps,
+FIFO fences and sticky overflow remain. A passing experiment does not replace
+the full135 matrix or the complete stage reviews and fresh post-review gates.
+
+All writers remain frozen during parent runtime. Current counters are
+fixed Sol18, collector Sol16 and R32 diagnostic failures5. Collector Sol16
+is released after actual diagnostic8 PASS4/4; full135 is still required. Astra recovery2/2 remains exhausted; no third
+round is allowed.

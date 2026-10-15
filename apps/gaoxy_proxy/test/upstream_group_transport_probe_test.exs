@@ -502,10 +502,11 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportProbeTest do
           )
 
         Process.unlink(transports)
+        transport_monitor = Process.monitor(transports)
         {:ok, groups} = UpstreamGroups.start_link(instance: instance)
         Process.unlink(groups)
         send(test_owner, {:fixture_ready, self(), instance, transports, groups})
-        embedding_loop(instance, transports, groups, [])
+        embedding_loop(instance, transports, groups, transport_monitor, [])
       end)
 
     assert_receive {:fixture_ready, ^embedding, instance, transports, groups}, @timeout
@@ -536,7 +537,7 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportProbeTest do
     }
   end
 
-  defp embedding_loop(instance, transports, groups, actors, mode \\ :ok) do
+  defp embedding_loop(instance, transports, groups, transport_monitor, actors, mode \\ :ok) do
     receive do
       {:track, actor, caller} ->
         send(caller, {:tracked, self(), actor})
@@ -545,34 +546,36 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportProbeTest do
           instance,
           transports,
           groups,
+          transport_monitor,
           [{actor, Process.monitor(actor)} | actors],
           mode
         )
 
       {:expect_uncertainty, caller} ->
         send(caller, {:uncertainty_expected, self()})
-        embedding_loop(instance, transports, groups, actors, :tls_unconfirmed)
+        embedding_loop(instance, transports, groups, transport_monitor, actors, :tls_unconfirmed)
 
       {:cleanup, caller} ->
         result =
           try do
-            if mode == :ok and Process.alive?(instance),
-              do: assert(:ok == Gaoxy.stop(instance, @timeout))
+            if mode == :ok do
+              if Process.alive?(instance) do
+                assert {:ok, receipt} = Transports.retire(transports, deadline())
+                assert :ok = Transports.await_retirement(receipt, deadline())
 
-            if mode == :ok and Process.alive?(transports) do
-              assert {:ok, receipt} = Transports.retire(transports, deadline())
-              assert :ok = Transports.await_retirement(receipt, deadline())
+                assert {:ok,
+                        %{
+                          resources: 0,
+                          pins: 0,
+                          request_tokens: 0,
+                          helpers: 0,
+                          reserved_connections: 0
+                        }} = Transports.status(transports)
 
-              assert {:ok,
-                      %{
-                        resources: 0,
-                        pins: 0,
-                        request_tokens: 0,
-                        helpers: 0,
-                        reserved_connections: 0
-                      }} = Transports.status(transports)
+                assert(:ok == Gaoxy.stop(instance, @timeout))
+              end
 
-              GenServer.stop(transports, :normal, @timeout)
+              assert_receive {:DOWN, ^transport_monitor, :process, ^transports, :normal}, @timeout
             end
 
             if mode == :tls_unconfirmed do
@@ -784,7 +787,11 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportProbeTest do
 
   defp stop(fixture, peer) do
     send(peer, :finish)
+    transports = fixture.transports
+    transport_monitor = Process.monitor(transports)
     assert :ok = Gaoxy.stop(fixture.instance, @timeout)
+    assert_receive {:DOWN, ^transport_monitor, :process, ^transports, :normal}, @timeout
+
     assert_receive {:peer_done, ^peer}, @timeout
     monitor = Process.monitor(peer)
 

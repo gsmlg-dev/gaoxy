@@ -441,6 +441,7 @@ defmodule Gaoxy.HTTP.Generation.Store do
       when is_reference(generation) and is_list(routes) do
     with :ok <- input_bound(routes, limits),
          {:ok, _} <- Resources.validate(router.resources),
+         :ok <- generation_bound(routes),
          true <-
            :erlang.external_size(router) <= limits.max_config_bytes ||
              {:error, :configuration_too_large},
@@ -448,4 +449,31 @@ defmodule Gaoxy.HTTP.Generation.Store do
   end
 
   def compiled_bound(_, _), do: {:error, :invalid_prepared_router}
+
+  defp generation_bound(routes) do
+    Enum.reduce_while(routes, :ok, fn route, :ok ->
+      case generation_endpoint(route) do
+        :ok -> {:cont, :ok}
+        error -> {:halt, error}
+      end
+    end)
+  end
+
+  defp generation_endpoint(%{target: {module, config}}) when is_atom(module) do
+    if Code.ensure_loaded?(module) and function_exported?(module, :generation_validate, 1) do
+      case module.generation_validate(config) do
+        :ok -> :ok
+        {:error, reason} when is_atom(reason) -> {:error, reason}
+        _ -> {:error, :invalid_generation_endpoint}
+      end
+    else
+      :ok
+    end
+  rescue
+    _ -> {:error, :invalid_generation_endpoint}
+  catch
+    _, _ -> {:error, :invalid_generation_endpoint}
+  end
+
+  defp generation_endpoint(_), do: {:error, :invalid_generation_endpoint}
 end

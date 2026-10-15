@@ -2,6 +2,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports.OptionsTest do
   use ExUnit.Case, async: true
 
   alias Gaoxy.Proxy.ManagedH1Preparation, as: Preparation
+  alias Gaoxy.Proxy.ManagedH2Preparation, as: H2Preparation
   alias Gaoxy.Proxy.UpstreamTransports.Options
 
   test "requires every finite owner budget and preserves accepted limits" do
@@ -169,6 +170,103 @@ defmodule Gaoxy.Proxy.UpstreamTransports.OptionsTest do
 
     assert Process.info(self(), :links) == {:links, links}
     refute_receive _message, 0
+  end
+
+  test "dispatches both H2 policies with exact accepted preparation and complete owner accounting" do
+    {:links, links} = Process.info(self(), :links)
+
+    for source <- h2_sources() do
+      assert {:ok, expected, manifest} = H2Preparation.prepare_policy(source)
+      assert {:ok, ^expected, accounting} = Options.prepare_policy(source)
+
+      assert accounting == %{
+               owned_serialized_payload_bytes: :erlang.external_size(expected),
+               preparation: manifest
+             }
+
+      assert expected.protocol == source.protocol
+      assert expected.open_options[:http_version] == source.protocol
+      assert expected.open_options[:tls_backend] == :ssl
+      assert expected.open_options[:http2_profile] == :native_v1
+      assert expected.open_options[:max_connections] == 2
+      assert expected.open_options[:max_requests] == 32
+      assert expected.open_options[:max_pending] == 0
+      assert compact_tree?(expected)
+    end
+
+    assert Process.info(self(), :links) == {:links, links}
+    refute_receive _message, 0
+  end
+
+  test "dispatches H2 requests through accepted canonical preparation without mutating policy" do
+    for source <- h2_sources() do
+      assert {:ok, policy, _} = H2Preparation.prepare_policy(source)
+      request = %{request_source() | url: source.origin <> "/upload?"}
+      assert {:ok, expected, manifest} = H2Preparation.prepare_request(policy, request)
+      assert {:ok, ^expected, accounting} = Options.prepare_request(policy, request)
+
+      assert accounting == %{
+               owned_serialized_payload_bytes: :erlang.external_size(expected),
+               preparation: manifest
+             }
+
+      assert expected.target == "/upload?"
+
+      assert expected.fields == [
+               {"x-repeat", "first"},
+               {"x-repeat", "second"},
+               {"user-agent", "gaoxy"}
+             ]
+
+      assert compact_tree?(expected)
+      assert {:ok, ^policy, _} = Options.prepare_policy(source)
+
+      for key <- [:protocol, :http_version, :trust, :connect_address, :transport_scope] do
+        assert {:error, :invalid_request} =
+                 Options.prepare_request(policy, Map.put(request, key, :override))
+      end
+
+      forged = %{policy | open_options: Keyword.put(policy.open_options, :max_pending, 1)}
+      assert {:error, :invalid_policy} = Options.prepare_request(forged, request)
+
+      assert {:error, :invalid_policy} =
+               Options.prepare_request(Map.put(policy, :extra, true), request)
+    end
+  end
+
+  test "H2 dispatch preserves finite invalid-source and backing errors without option aliases" do
+    for source <- h2_sources() do
+      for key <- [:http_version, :ssl, :options, :transport_scope, :http2_reuse] do
+        assert {:error, :invalid_policy} =
+                 Options.prepare_policy(Map.put(source, key, :override))
+      end
+
+      origin = URI.parse(source.origin).scheme <> "://" <> String.duplicate("a", 100)
+      retained = slice(origin, 65_537)
+      assert :binary.referenced_byte_size(retained) > 65_536
+
+      assert {:error, :source_backing_limit} =
+               Options.prepare_policy(%{source | origin: retained})
+
+      assert {:ok, policy, _} = Options.prepare_policy(source)
+      request = %{request_source() | url: source.origin <> "/upload?"}
+
+      assert {:error, :source_backing_limit} =
+               Options.prepare_request(policy, %{
+                 request
+                 | fields: [{"x", slice(String.duplicate("v", 80), 196_609)}]
+               })
+
+      assert {:error, :origin_mismatch} =
+               Options.prepare_request(policy, %{request | url: source.origin <> ":81/"})
+    end
+  end
+
+  defp h2_sources do
+    [
+      Map.put(policy_source(), :protocol, :h2c),
+      Map.put(tls_source([<<48, 3, 2, 1, 1>>]), :protocol, :http2)
+    ]
   end
 
   defp limits do

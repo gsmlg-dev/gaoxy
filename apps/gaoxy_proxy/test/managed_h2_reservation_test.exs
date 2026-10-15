@@ -3,7 +3,7 @@ defmodule Gaoxy.Proxy.ManagedH2ReservationTest do
 
   alias Gaoxy.Proxy.ManagedH2Reservation, as: Reservation
 
-  test "exposes a deterministic prospective worksheet without a live reserve or activation API" do
+  test "preserves the deterministic prospective worksheet alongside additive activation APIs" do
     worksheet = worksheet()
     assert worksheet == worksheet()
     assert worksheet.unit == :external_term_payload_bytes
@@ -11,7 +11,13 @@ defmodule Gaoxy.Proxy.ManagedH2ReservationTest do
     assert worksheet.runtime_reservation == :not_implemented
     assert worksheet.profile == %{connections: 2, requests: 32, pending: 0}
 
-    assert apply(Reservation, :__info__, [:functions]) == [worksheet: 0]
+    assert apply(Reservation, :__info__, [:functions]) == [
+             activation_contract: 0,
+             evaluate_activation: 1,
+             reservation_bytes: 3,
+             worksheet: 0
+           ]
+
     refute Map.has_key?(worksheet, :reservation_bytes)
     refute Map.has_key?(worksheet, :activation_bytes)
     refute Map.has_key?(worksheet, :heap_bytes)

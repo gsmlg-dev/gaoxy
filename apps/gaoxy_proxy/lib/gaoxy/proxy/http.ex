@@ -18,7 +18,7 @@ defmodule Gaoxy.Proxy.HTTP do
   """
   @behaviour Gaoxy.HTTP.Endpoint
   alias Gaoxy.Lifecycle
-  alias Gaoxy.Proxy.{HTTPFetchClient, HTTP3SessionClient}
+  alias Gaoxy.Proxy.{HTTPFetchClient, HTTP3SessionClient, ManagedH2Client, ManagedH2Envelope}
   alias Gaoxy.HTTP.{Exchange, Resources, Response}
   alias Gaoxy.Proxy.UpstreamTransports
   alias Gaoxy.Proxy.HTTP.{Headers, Session}
@@ -40,6 +40,8 @@ defmodule Gaoxy.Proxy.HTTP do
     "OPTIONS" => :options
   }
   @poll_ms 5
+  @signed_min -9_223_372_036_854_775_808
+  @signed_max 9_223_372_036_854_775_807
   defstruct [
     :uri,
     :cacertfile,
@@ -96,7 +98,7 @@ defmodule Gaoxy.Proxy.HTTP do
              ] ==
              [],
          true <- managed_options?(transport, uri, protocol, options),
-         true <- protocol in [:http1, :http3],
+         true <- protocol in [:http1, :http2, :h2c, :http3],
          true <- uri.scheme in ["http", "https"] and is_binary(uri.host) and uri.host != "",
          true <- is_integer(uri.port) and uri.port in 1..65_535,
          true <-
@@ -112,20 +114,28 @@ defmodule Gaoxy.Proxy.HTTP do
              (uri.scheme == "https" and is_binary(options[:cacertfile]) and
                 is_nil(options[:connect_address])),
          {:ok, address} <- connect_address(options[:connect_address]),
-         client = if(protocol == :http3, do: HTTP3SessionClient, else: HTTPFetchClient),
+         client = protocol_client(protocol),
          true <- client.host_supported?() do
       uri = URI.parse(URI.to_string(%{uri | path: nil}))
 
-      {:ok,
-       %__MODULE__{
-         uri: uri,
-         cacertfile: options[:cacertfile],
-         connect_address: address,
-         transport: transport,
-         limits: limits,
-         upstream_protocol: protocol,
-         client: client
-       }}
+      config = %__MODULE__{
+        uri: if(protocol in [:http2, :h2c], do: compact_uri(uri), else: uri),
+        cacertfile: options[:cacertfile],
+        connect_address: address,
+        transport: transport,
+        limits: limits,
+        upstream_protocol: protocol,
+        client: client
+      }
+
+      if protocol in [:http2, :h2c] do
+        case ManagedH2Envelope.validate_config(config) do
+          :ok -> {:ok, config}
+          _ -> {:error, :invalid_http_proxy_options}
+        end
+      else
+        {:ok, config}
+      end
     else
       _ -> {:error, :invalid_http_proxy_options}
     end
@@ -146,18 +156,23 @@ defmodule Gaoxy.Proxy.HTTP do
       byte_size(origin) in 1..65_536 and :binary.referenced_byte_size(origin) <= 65_536 and
         root_text?(origin)
 
+  defp managed_options?(nil, _, protocol, _) when protocol in [:http2, :h2c], do: false
   defp managed_options?(nil, _, _, _), do: true
 
   defp managed_options?(
          %{provider: UpstreamTransports, owner: owner, owner_epoch: epoch, resource: resource} =
            handle,
          uri,
-         :http1,
+         protocol,
          options
        )
-       when map_size(handle) == 4 and is_pid(owner) and is_reference(epoch) and
+       when protocol in [:http1, :http2, :h2c] and map_size(handle) == 4 and is_pid(owner) and
+              is_reference(epoch) and
               is_reference(resource) do
-    is_binary(uri.host) and byte_size(uri.host) in 1..253 and
+    (protocol == :http1 or
+       (protocol == :http2 and uri.scheme == "https") or
+       (protocol == :h2c and uri.scheme == "http")) and
+      is_binary(uri.host) and byte_size(uri.host) in 1..253 and
       is_integer(uri.port) and
       root_authority?(uri.authority, uri.host, uri.port) and
       is_nil(options[:cacertfile]) and is_nil(options[:connect_address])
@@ -206,6 +221,27 @@ defmodule Gaoxy.Proxy.HTTP do
 
   def selected_client(%__MODULE__{upstream_protocol: :http3, client: HTTP3SessionClient}),
     do: HTTP3SessionClient
+
+  def selected_client(%__MODULE__{upstream_protocol: protocol, client: ManagedH2Client})
+      when protocol in [:http2, :h2c],
+      do: ManagedH2Client
+
+  @impl true
+  def generation_validate(%__MODULE__{upstream_protocol: protocol})
+      when protocol in [:http2, :h2c],
+      do: {:error, :unsupported_generation_endpoint}
+
+  def generation_validate(_), do: :ok
+
+  defp protocol_client(:http1), do: HTTPFetchClient
+  defp protocol_client(:http3), do: HTTP3SessionClient
+  defp protocol_client(protocol) when protocol in [:http2, :h2c], do: ManagedH2Client
+
+  defp compact_uri(uri) do
+    Map.new(Map.to_list(uri), fn {key, value} ->
+      {key, if(is_binary(value), do: :binary.copy(value), else: value)}
+    end)
+  end
 
   @doc false
   def group_limits(options) when is_map(options) do
@@ -333,9 +369,10 @@ defmodule Gaoxy.Proxy.HTTP do
              :invalid_proxy_headers,
              :invalid_proxy_trailers,
              :proxy_trailer_limit,
-             :proxy_header_limit
+             :proxy_header_limit,
+             :invalid_request
            ] ->
-        error_response(exchange, 400)
+        invalid_request_response(exchange, config)
 
       _ ->
         error_response(exchange, 503)
@@ -350,6 +387,100 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   defp start_session(exchange, config, method, headers, policy) do
+    with {:ok, request_options} <- request_options(exchange, config, method, headers, policy) do
+      start_prepared_session(exchange, config, headers, request_options)
+    end
+  end
+
+  defp request_options(
+         exchange,
+         %__MODULE__{upstream_protocol: protocol} = config,
+         method,
+         fields,
+         policy
+       )
+       when protocol in [:http2, :h2c] do
+    request = exchange.request
+
+    query =
+      if is_binary(request.target) and String.contains?(request.target, "?"),
+        do: request.query_string,
+        else: nil
+
+    with true <- bounded_source?(request.target) and bounded_source?(request.path),
+         true <- query == nil or bounded_source?(query),
+         true <- signed_time?(exchange.deadline) and exchange.deadline <= @signed_max - 1_000,
+         true <- signed_time?(Lifecycle.now() + config.limits.max_lifetime),
+         target_bytes =
+           byte_size(request.path) + if(query == nil, do: 0, else: byte_size(query) + 1),
+         true <-
+           target_bytes <= 65_536 and
+             byte_size(URI.to_string(config.uri)) + target_bytes <= 65_536,
+         target =
+           if(request.target_form == :absolute,
+             do: request.path <> if(query == nil, do: "", else: "?" <> query),
+             else: request.target
+           ),
+         # These URL/absolute-target values are our bounded assembly workspace,
+         # not caller subbinaries; compact them only after the source preflight.
+         target = if(request.target_form == :absolute, do: :binary.copy(target), else: target),
+         url = :binary.copy(URI.to_string(%{config.uri | path: request.path, query: query})),
+         source = %{
+           url: url,
+           target: target,
+           method: method,
+           fields: fields,
+           body_mode:
+             if(policy.allowed != [] and request.version in [:"HTTP/2", :"HTTP/3"],
+               do: :chunked,
+               else: request.body
+             ),
+           request_limits: %{
+             max_headers: min(Map.get(exchange.limits, :max_headers, 256), 256),
+             max_header_bytes: min(exchange.limits.max_header_bytes, 65_536),
+             max_trailers: min(exchange.limits.max_trailers, 128),
+             max_trailer_bytes: min(exchange.limits.max_trailer_bytes, 65_536)
+           },
+           max_upload_bytes: config.limits.max_chunk_bytes
+         },
+         {:ok, envelope} <- ManagedH2Envelope.prepare(config, source) do
+      {:ok, envelope}
+    else
+      _ -> {:error, :invalid_request}
+    end
+  end
+
+  defp request_options(exchange, config, method, headers, policy) do
+    query =
+      if String.contains?(exchange.request.target, "?"),
+        do: exchange.request.query_string,
+        else: nil
+
+    {:ok,
+     %{
+       method: method,
+       headers: headers,
+       body:
+         if(policy.allowed != [] and exchange.request.version in [:"HTTP/2", :"HTTP/3"],
+           do: :chunked,
+           else: exchange.request.body
+         ),
+       path: exchange.request.path,
+       query: query,
+       limits: exchange.limits,
+       max_upload_bytes: config.limits.max_chunk_bytes
+     }}
+  end
+
+  defp bounded_source?(value) when is_binary(value),
+    do: byte_size(value) <= 65_536 and :binary.referenced_byte_size(value) <= 65_536
+
+  defp bounded_source?(_), do: false
+
+  defp signed_time?(value),
+    do: is_integer(value) and value >= @signed_min and value <= @signed_max
+
+  defp start_prepared_session(exchange, config, headers, request_options) do
     query =
       if String.contains?(exchange.request.target, "?"),
         do: exchange.request.query_string,
@@ -395,20 +526,6 @@ defmodule Gaoxy.Proxy.HTTP do
           {:fixed, config}
       end
 
-    request_options = %{
-      method: method,
-      headers: headers,
-      body:
-        if(policy.allowed != [] and exchange.request.version in [:"HTTP/2", :"HTTP/3"],
-          do: :chunked,
-          else: exchange.request.body
-        ),
-      path: exchange.request.path,
-      query: query,
-      limits: exchange.limits,
-      max_upload_bytes: config.limits.max_chunk_bytes
-    }
-
     args = %{
       owner: self(),
       service: exchange.service,
@@ -424,6 +541,9 @@ defmodule Gaoxy.Proxy.HTTP do
 
     url_bytes =
       case selector do
+        {:fixed, %{upstream_protocol: protocol}} when protocol in [:http2, :h2c] ->
+          byte_size(request_options.url)
+
         {:group, handle, _} ->
           handle.max_url_bytes + byte_size(exchange.request.path) +
             if(query == nil, do: 0, else: byte_size(query) + 1)
@@ -561,7 +681,7 @@ defmodule Gaoxy.Proxy.HTTP do
              do: :ok,
              else: state.client.finish_body(state.upload, trailers)
            ) do
-      pump(%{state | upload_stopped: true})
+      pump(%{state | upload_stopped: true, policy: nil})
     else
       {:error, reason} -> local_fail(state, reason)
     end
@@ -656,8 +776,12 @@ defmodule Gaoxy.Proxy.HTTP do
               | exchange: exchange,
                 response_policy: policy,
                 upload_stopped: true,
+                policy: nil,
                 last_activity: Lifecycle.now()
             })
+
+          {:error, :response_header_limit} when exchange.response == :unset ->
+            local_fail(%{state | exchange: exchange}, :response_header_limit)
 
           {:error, reason} ->
             if reason == :timeout and total_expired?(state) do
@@ -741,6 +865,11 @@ defmodule Gaoxy.Proxy.HTTP do
     do: state.client == HTTP3SessionClient and Lifecycle.remaining(state.deadline) == 0
 
   defp local_fail(state, :timeout), do: timeout(state)
+
+  defp local_fail(%{client: ManagedH2Client} = state, {:request_error, status, _})
+       when status in [400, 413, 431],
+       do: fail(state, :invalid_request, status)
+
   defp local_fail(state, reason), do: fail(state, reason)
 
   defp timeout(state) do
@@ -769,19 +898,25 @@ defmodule Gaoxy.Proxy.HTTP do
   end
 
   defp fail(state, reason) do
+    reason = if state.client == ManagedH2Client, do: Session.finite_reason(reason), else: reason
+
+    status =
+      case reason do
+        {:request_error, status, _} -> status
+        :timeout -> 504
+        :request_timeout -> 504
+        :unavailable -> 503
+        _ -> 502
+      end
+
+    fail(state, reason, status)
+  end
+
+  defp fail(state, reason, status) do
     Session.cancel(state.session)
     Process.demonitor(state.monitor, [:flush])
 
     if state.exchange.response == :unset and not total_expired?(state) do
-      status =
-        case reason do
-          {:request_error, status, _} -> status
-          :timeout -> 504
-          :request_timeout -> 504
-          :unavailable -> 503
-          _ -> 502
-        end
-
       error_response(state.exchange, status)
     else
       {:error, reason, %{state.exchange | close: true}}
@@ -794,4 +929,20 @@ defmodule Gaoxy.Proxy.HTTP do
       {:error, reason} -> {:error, reason, %{exchange | close: true}}
     end
   end
+
+  defp invalid_request_response(exchange, %{upstream_protocol: protocol})
+       when protocol in [:http2, :h2c] do
+    # A malformed request limit cannot also disable its bounded empty rejection.
+    limits =
+      if is_integer(exchange.limits.max_headers) and exchange.limits.max_headers > 0 and
+           is_integer(exchange.limits.max_header_bytes) and exchange.limits.max_header_bytes > 0 do
+        exchange.limits
+      else
+        exchange.limits |> Map.put(:max_headers, 256) |> Map.put(:max_header_bytes, 65_536)
+      end
+
+    error_response(%{exchange | limits: limits}, 400)
+  end
+
+  defp invalid_request_response(exchange, _config), do: error_response(exchange, 400)
 end

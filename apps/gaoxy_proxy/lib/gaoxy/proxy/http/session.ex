@@ -7,6 +7,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   alias Gaoxy.Proxy.UpstreamTransports
   alias Gaoxy.HTTP.Resources
   @poll_ms 5
+  @h2 Gaoxy.Proxy.ManagedH2Client
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
   def cancel(pid), do: GenServer.cast(pid, :cancel)
@@ -40,6 +41,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
        transport_pins: [],
        transport_selection: nil,
        managed_transport: nil,
+       managed_path: HTTP.selected_client(args.config) == @h2,
+       submitted_url: nil,
+       poll_timer: nil,
        original_request: nil,
        outcome: :cancelled,
        token: nil,
@@ -124,7 +128,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         %{transport_handoff: ref, awaiting_transport: %{handle: handle, config: config}} = state
       )
       when is_integer(deadline) do
-    if HTTP.captured_resources?([pin], [handle]) and Map.get(pin, :handles) == [handle] do
+    if (state.client != @h2 or signed_time?(deadline)) and
+         HTTP.captured_resources?([pin], [handle]) and Map.get(pin, :handles) == [handle] do
       state = %{
         state
         | transport_pins: [pin],
@@ -151,18 +156,28 @@ defmodule Gaoxy.Proxy.HTTP.Session do
         %{transport_handoff: ref, awaiting_transport: awaiting} = state
       )
       when not is_nil(awaiting) and is_integer(deadline) do
-    fail(%{state | awaiting_transport: nil, deadline: min(state.deadline, deadline)}, reason)
+    if state.client != @h2 or signed_time?(deadline),
+      do:
+        fail(%{state | awaiting_transport: nil, deadline: min(state.deadline, deadline)}, reason),
+      else: {:noreply, state}
   end
 
   def handle_info({:gaoxy_transport_handoff, _, _, _}, state), do: {:noreply, state}
 
   def handle_info({:gaoxy_cleanup_cancel, token, _reason, deadline}, %{token: token} = state) do
-    state = %{state | cleanup_requested_deadline: deadline}
-    settle(mark_cancelled(state))
+    if state.client != @h2 or signed_time?(deadline) do
+      state = %{state | cleanup_requested_deadline: deadline}
+      settle(mark_cancelled(state))
+    else
+      {:noreply, state}
+    end
   end
 
-  def handle_info({:DOWN, ref, :process, _, _}, state) when is_map_key(state.monitors, ref),
-    do: settle(mark_cancelled(state))
+  def handle_info({:DOWN, ref, :process, pid, _}, state) when is_map_key(state.monitors, ref) do
+    if state.client != @h2 or state.monitors[ref] == pid,
+      do: settle(mark_cancelled(state)),
+      else: {:noreply, state}
+  end
 
   def handle_info(event, %{cancelled: true} = state)
       when event in [:opening_expired, :total_expired],
@@ -191,12 +206,13 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   def handle_info(:poll, %{consumed: true} = state), do: settle(state)
 
   def handle_info(:poll, state) do
-    {event, request} = state.client.poll_headers(state.request)
+    state = cancel_poll(state)
+    {event, request} = state.client.poll_headers(callback_request(state))
     dispatch(event, %{state | request: request})
   end
 
   def handle_info(message, %{request: request} = state) when not is_nil(request) do
-    {event, request} = state.client.event(request, message)
+    {event, request} = state.client.event(callback_request(%{state | request: request}), message)
     dispatch(event, %{state | request: request})
   end
 
@@ -206,23 +222,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     state = apply_limits(state, config.limits)
     state = %{state | client: HTTP.selected_client(config)}
 
-    options =
-      Map.merge(state.request_options, %{
-        url:
-          URI.to_string(%{
-            config.uri
-            | path: state.request_options.path,
-              query: state.request_options.query
-          }),
-        deadline: state.deadline,
-        opening_deadline: state.opening_deadline,
-        timeout: Lifecycle.remaining(state.deadline),
-        opening_timeout: Lifecycle.remaining(state.opening_deadline),
-        write_timeout: state.config.limits.write_timeout,
-        cacertfile: config.cacertfile,
-        connect_address: config.connect_address,
-        managed_transport: state.managed_transport
-      })
+    options = open_options(state, config)
 
     result =
       cond do
@@ -237,9 +237,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
         case bind(state) do
           :ok ->
+            state = release_opening_payloads(state)
             notify(state, {:ready, upload, state.config.limits, state.deadline})
-            schedule(state)
-            {:noreply, state}
+            {:noreply, schedule(state)}
 
           {:error, reason} ->
             fail(state, reason)
@@ -265,7 +265,8 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     Process.cancel_timer(state.opening_timer)
     notify(state, {:headers, status, fields})
     :ok = state.client.subscribe(state.request)
-    state = %{state | headers: true}
+    state = %{cancel_poll(state) | headers: true}
+    state = if state.client == @h2, do: %{state | submitted_url: nil}, else: state
     if state.request.stream == nil, do: notify(state, {:end, []})
     {:noreply, state}
   end
@@ -280,17 +281,17 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp dispatch(:end, state) do
     notify(state, {:end, state.trailers})
-    {:noreply, state}
+    {:noreply, if(state.client == @h2, do: %{state | trailers: []}, else: state)}
   end
 
   defp dispatch({:error, reason}, state), do: upstream_fail(state, reason)
 
   defp dispatch(:none, state) do
-    if not state.headers, do: schedule(state)
-    {:noreply, state}
+    {:noreply, if(not state.headers, do: schedule(state), else: state)}
   end
 
   defp fail(state, reason) do
+    reason = normalize_reason(state, reason)
     notify(state, {:error, reason})
     settle(%{state | cancelled: true, consumed: true})
   end
@@ -337,7 +338,13 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp settle(state) do
     state = begin_cleanup(state)
-    request = if state.managed_transport, do: state.original_request, else: state.request
+    state = if state.client == @h2, do: %{state | submitted_url: nil}, else: state
+
+    request =
+      if state.managed_path or state.managed_transport,
+        do: state.original_request,
+        else: state.request
+
     result = if request, do: state.client.cleanup(request, state.cancelled), else: :ok
 
     case result do
@@ -361,7 +368,11 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           do: min(deadline, state.cleanup_requested_deadline),
           else: deadline
       else
-        state.deadline + 1_000
+        deadline = state.deadline + 1_000
+
+        if state.client == @h2 and is_integer(state.cleanup_requested_deadline),
+          do: min(deadline, state.cleanup_requested_deadline),
+          else: deadline
       end
 
     state = %{state | cleanup_started: true, cleanup_deadline: deadline}
@@ -402,16 +413,16 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp cleanup_pending(state) do
     if Lifecycle.remaining(state.cleanup_deadline) > 0 do
-      schedule(state)
-      {:noreply, state}
+      {:noreply, schedule(state)}
     else
       {:stop, :cleanup_unconfirmed, state}
     end
   end
 
   defp cleanup_failed(state, reason) do
-    notify(state, {:error, {:cleanup_failed, reason}})
-    {:stop, {:cleanup_failed, reason}, state}
+    reason = normalize_reason(state, {:cleanup_failed, reason})
+    notify(state, {:error, reason})
+    {:stop, reason, state}
   end
 
   defp select(%{selector: {:fixed, config}} = state), do: select_transport(state, config)
@@ -440,7 +451,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
     identity = %{
       origin: URI.to_string(config.uri),
-      upstream_protocol: :http1,
+      upstream_protocol: config.upstream_protocol,
       instance: state.instance
     }
 
@@ -453,7 +464,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
     identity = %{
       origin: URI.to_string(config.uri),
-      upstream_protocol: :http1,
+      upstream_protocol: config.upstream_protocol,
       instance: state.instance
     }
 
@@ -470,7 +481,13 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     case UpstreamTransports.checkout(handle, pins, self(), deadline) do
       {:ok, client, token} ->
         state = %{state | transport_selection: {handle, token}, managed_transport: client}
-        {:ok, state, %{config | uri: URI.parse(client.policy.origin)}}
+
+        opening_config =
+          if state.client == @h2,
+            do: config,
+            else: %{config | uri: URI.parse(client.policy.origin)}
+
+        {:ok, state, opening_config}
 
       {:error, reason} ->
         case Resources.release(pins) do
@@ -513,6 +530,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
     end
   end
 
+  defp complete_service(%{managed_path: true} = state),
+    do: Gaoxy.Service.complete_cleanup(state.service, state.token)
+
   defp complete_service(%{managed_transport: nil} = state) do
     _ = Gaoxy.Service.complete_cleanup(state.service, state.token)
     :ok
@@ -525,7 +545,135 @@ defmodule Gaoxy.Proxy.HTTP.Session do
   defp finish_selection(%{selection: {handle, token}} = state),
     do: UpstreamGroups.finish(handle, token, state.outcome)
 
+  defp open_options(%{client: @h2} = state, _config) do
+    %{
+      request: state.request_options,
+      managed_transport: state.managed_transport,
+      timeout: Lifecycle.remaining(state.deadline),
+      opening_timeout: Lifecycle.remaining(state.opening_deadline),
+      write_timeout: state.config.limits.write_timeout,
+      deadline: state.deadline,
+      opening_deadline: state.opening_deadline
+    }
+  end
+
+  defp open_options(state, config) do
+    Map.merge(state.request_options, %{
+      url:
+        URI.to_string(%{
+          config.uri
+          | path: state.request_options.path,
+            query: state.request_options.query
+        }),
+      deadline: state.deadline,
+      opening_deadline: state.opening_deadline,
+      timeout: Lifecycle.remaining(state.deadline),
+      opening_timeout: Lifecycle.remaining(state.opening_deadline),
+      write_timeout: state.config.limits.write_timeout,
+      cacertfile: config.cacertfile,
+      connect_address: config.connect_address,
+      managed_transport: state.managed_transport
+    })
+  end
+
+  defp release_opening_payloads(%{client: @h2} = state) do
+    %{
+      state
+      | submitted_url: state.request_options.url,
+        request_options: nil,
+        managed_transport: nil,
+        selector: nil,
+        awaiting_transport: nil,
+        transport_handoff: nil,
+        config: %{state.config | uri: nil, transport: nil, cacertfile: nil, connect_address: nil}
+    }
+  end
+
+  defp release_opening_payloads(state), do: state
+
+  defp callback_request(%{client: @h2} = state), do: {state.request, state.submitted_url}
+  defp callback_request(state), do: state.request
+
+  @doc false
+  def finite_reason(reason), do: finite_reason(reason, 0)
+  defp finite_reason(:not_running, _), do: :unavailable
+  defp finite_reason({:deadline_exceeded, :cleanup_pending}, _), do: :timeout
+
+  defp finite_reason(reason, _)
+       when reason in [
+              :invalid_request,
+              :invalid_policy,
+              :invalid_response,
+              :upstream_failure,
+              :upstream_task,
+              :upstream_delivery_limit,
+              :upstream_delivery_overlap,
+              :upstream_trailer_limit,
+              :timeout,
+              :request_timeout,
+              :unavailable,
+              :cancelled,
+              :cleanup_pending,
+              :cleanup_unconfirmed,
+              :invalid_resource,
+              :invalid_resource_pin,
+              :invalid_transport_endpoint,
+              :unauthorized,
+              :retiring,
+              :resource_unavailable
+            ],
+       do: reason
+
+  defp finite_reason({kind, reason}, depth)
+       when depth < 3 and
+              kind in [
+                :cleanup_failed,
+                :transport_cleanup_failed,
+                :pin_release_failed,
+                :service_cleanup_failed,
+                :selection_cleanup_failed
+              ],
+       do: {kind, finite_reason(reason, depth + 1)}
+
+  defp finite_reason(:transport_endpoint_mismatch, _), do: :unavailable
+
+  defp finite_reason({:capacity, kind}, _)
+       when kind in [:request_tokens, :pins, :owned_payload_bytes],
+       do: :unavailable
+
+  defp finite_reason(:request_limit, _), do: :unavailable
+  defp finite_reason(:resource_admission_closed, _), do: :unavailable
+  defp finite_reason(_, _), do: :upstream_failure
+
+  defp normalize_reason(%{client: @h2}, reason), do: finite_reason(reason)
+  defp normalize_reason(_, reason), do: reason
+
+  defp signed_time?(value),
+    do:
+      is_integer(value) and value >= -9_223_372_036_854_775_808 and
+        value <= 9_223_372_036_854_775_807
+
+  defp notify(state, {:error, reason}),
+    do: send(state.owner, {:gaoxy_proxy_http, self(), {:error, normalize_reason(state, reason)}})
+
   defp notify(state, event), do: send(state.owner, {:gaoxy_proxy_http, self(), event})
-  defp schedule(%{client: Gaoxy.Proxy.HTTP3SessionClient}), do: :ok
-  defp schedule(_state), do: Process.send_after(self(), :poll, @poll_ms)
+
+  defp cancel_poll(%{client: @h2, poll_timer: timer} = state) do
+    if timer, do: Process.cancel_timer(timer)
+    %{state | poll_timer: nil}
+  end
+
+  defp cancel_poll(state), do: state
+
+  defp schedule(%{client: Gaoxy.Proxy.HTTP3SessionClient} = state), do: state
+
+  defp schedule(%{client: @h2} = state) do
+    state = cancel_poll(state)
+    %{state | poll_timer: Process.send_after(self(), :poll, @poll_ms)}
+  end
+
+  defp schedule(state) do
+    Process.send_after(self(), :poll, @poll_ms)
+    state
+  end
 end

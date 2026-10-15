@@ -4,7 +4,8 @@ defmodule Gaoxy.HTTP.HTTP2.Writer do
   alias ThousandIsland.Socket
 
   def run(owner, socket, gate, bytes, timeout) do
-    Process.link(owner)
+    # The socket owner can exit when send_timeout_close closes its socket.
+    # Monitor it so the actual send result reaches admission before we stop.
     monitor = Process.monitor(owner)
 
     with {:ok, lease} <- Admission.acquire(gate, bytes, drain_notify: true) do
@@ -21,22 +22,35 @@ defmodule Gaoxy.HTTP.HTTP2.Writer do
         remaining = Gaoxy.Lifecycle.remaining(deadline)
 
         result =
-          with true <- remaining > 0 || {:error, :timeout},
+          with true <- Process.alive?(owner) || {:error, :closed},
+               true <- remaining > 0 || :expired,
                {:ok, operation} <- Admission.start_send(gate, lease, IO.iodata_length(bytes)) do
             result =
               with :ok <-
                      Socket.setopts(socket,
-                       send_timeout: min(timeout, remaining),
+                       send_timeout: min(timeout, Gaoxy.Lifecycle.remaining(deadline)),
                        send_timeout_close: true
-                     ),
-                   do: Socket.send(socket, bytes)
+                     ) do
+                cond do
+                  not Process.alive?(owner) ->
+                    {:error, :closed}
 
-            :ok = Admission.finish_send(gate, lease, operation, result)
+                  Gaoxy.Lifecycle.remaining(deadline) == 0 ->
+                    :expired
+
+                  true ->
+                    send(owner, {:h2_write_started, self(), token})
+                    Socket.send(socket, bytes)
+                end
+              end
+
+            outcome = if result == :expired, do: {:error, :timeout}, else: result
+            :ok = Admission.finish_send(gate, lease, operation, outcome)
             result
           end
 
         send(owner, {:h2_written, self(), token, result})
-        if result == :ok, do: loop(owner, monitor, socket, gate, lease, timeout)
+        if result in [:ok, :expired], do: loop(owner, monitor, socket, gate, lease, timeout)
 
       {:DOWN, ^monitor, :process, ^owner, _} ->
         :ok

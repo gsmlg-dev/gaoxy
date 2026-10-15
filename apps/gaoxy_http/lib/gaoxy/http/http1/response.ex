@@ -1,6 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP1.Response do
   @moduledoc false
-  alias Gaoxy.HTTP.Exchange
+  alias Gaoxy.HTTP.{Exchange, RendererBounds}
 
   @token ~r/\A[!#$%&'*+.^_`|~0-9A-Za-z-]+\z/
   @forbidden_trailers ~w(content-length transfer-encoding host connection trailer te upgrade
@@ -59,7 +59,9 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
 
   def finish(%{response: :chunked} = exchange, trailers) do
     with :ok <- validate_trailers(exchange, trailers),
-         :ok <- Exchange.send_bytes(exchange, ["0\r\n", fields(trailers), "\r\n"]) do
+         rendered = ["0\r\n", fields(trailers), "\r\n"],
+         {:ok, _} <- rendered(rendered, :response_trailer_limit),
+         :ok <- Exchange.send_bytes(exchange, rendered) do
       exchange = %{exchange | response: :sent, response_trailers: []}
 
       with :ok <-
@@ -86,6 +88,13 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   def finish(_, []), do: {:error, :invalid_response_state}
 
   defp declared_trailers(exchange, headers, mode) do
+    with :ok <- token_budget(headers, "trailer"),
+         :ok <- token_budget(headers, "connection") do
+      declared_names(exchange, headers, mode)
+    end
+  end
+
+  defp declared_names(exchange, headers, mode) do
     declarations = for {"trailer", value} <- headers, do: value
 
     names =
@@ -110,7 +119,13 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   end
 
   defp validate_trailers(exchange, trailers) do
-    with :ok <- validate_headers(trailers),
+    with :ok <-
+           validate_headers(
+             trailers,
+             exchange.limits.max_trailers,
+             exchange.limits.max_trailer_bytes,
+             :response_trailer_limit
+           ),
          true <-
            Enum.all?(trailers, fn {name, _} ->
              name in exchange.response_trailers and name not in @forbidden_trailers
@@ -157,7 +172,12 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   def chunk(_, _), do: {:error, :invalid_response_state}
 
   def inform(exchange, status, headers) when status in 100..199 and status != 101 do
-    with :ok <- validate_headers(headers),
+    with :ok <-
+           validate_headers(
+             headers,
+             exchange.limits.max_headers,
+             exchange.limits.max_header_bytes
+           ),
          true <-
            Enum.all?(headers, fn {key, _} ->
              key not in ["content-length", "transfer-encoding"]
@@ -172,7 +192,12 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
 
   defp prepare_headers(exchange, status, headers, {:length, length}) do
     with :ok <- validate_status(status),
-         :ok <- validate_headers(headers),
+         :ok <-
+           validate_headers(
+             headers,
+             exchange.limits.max_headers,
+             exchange.limits.max_header_bytes
+           ),
          :ok <- valid_framing(headers) do
       headers =
         Enum.reject(headers, fn {key, _} ->
@@ -192,7 +217,12 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
 
   defp stream_headers(exchange, status, headers) do
     with :ok <- validate_status(status),
-         :ok <- validate_headers(headers),
+         :ok <-
+           validate_headers(
+             headers,
+             exchange.limits.max_headers,
+             exchange.limits.max_header_bytes
+           ),
          :ok <- valid_framing(headers) do
       length =
         Enum.find_value(headers, fn {key, value} -> if key == "content-length", do: value end)
@@ -249,11 +279,18 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   defp validate_status(status) when is_integer(status) and status in 200..599, do: :ok
   defp validate_status(_), do: {:error, :invalid_status}
 
-  defp validate_headers(headers) when is_list(headers) do
+  defp validate_headers(headers, max_count, max_bytes, limit_error \\ :response_header_limit) do
+    case RendererBounds.fields(headers, max_count, max_bytes) do
+      :ok -> validate_field_grammar(headers)
+      {:error, :renderer_limit} -> {:error, limit_error}
+      {:error, _} -> {:error, :invalid_response_headers}
+    end
+  end
+
+  defp validate_field_grammar(headers) do
     if Enum.all?(headers, fn
          {key, value} when is_binary(key) and is_binary(value) ->
-           Regex.match?(@token, key) and key == String.downcase(key) and
-             Enum.all?(:binary.bin_to_list(value), &(&1 == 9 or (&1 >= 32 and &1 != 127)))
+           RendererBounds.lower_token?(key) and RendererBounds.field_value?(value)
 
          _ ->
            false
@@ -262,7 +299,28 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
        else: {:error, :invalid_response_headers}
   end
 
-  defp validate_headers(_), do: {:error, :invalid_response_headers}
+  # Count before String.split/normalization can amplify a declaration.
+  defp token_budget(headers, selected) do
+    Enum.reduce_while(headers, 0, fn
+      {^selected, value}, count ->
+        case commas(value, count + 1) do
+          {:ok, next} -> {:cont, next}
+          :over -> {:halt, :over}
+        end
+
+      _, count ->
+        {:cont, count}
+    end)
+    |> case do
+      :over -> {:error, :invalid_response_trailers}
+      _ -> :ok
+    end
+  end
+
+  defp commas(_, count) when count > 128, do: :over
+  defp commas(<<>>, count), do: {:ok, count}
+  defp commas(<<?,, rest::binary>>, count), do: commas(rest, count + 1)
+  defp commas(<<_, rest::binary>>, count), do: commas(rest, count)
 
   defp add_connection(exchange, headers) do
     cond do
@@ -307,13 +365,19 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   defp send_head(exchange, status, headers, final? \\ true) do
     head = head(exchange, status, headers)
 
-    if IO.iodata_length(head) <= exchange.limits.max_header_bytes do
+    with {:ok, length} <- rendered(head, :response_header_limit),
+         true <- length <= exchange.limits.max_header_bytes || {:error, :response_header_limit} do
       # A failed final response write must never become a second response.
       # Informational responses still allow the application to send its final head.
       if final?, do: send(self(), Plug.Conn.Adapter.already_sent())
       Exchange.send_bytes(exchange, head)
-    else
-      {:error, :response_header_limit}
+    end
+  end
+
+  defp rendered(data, error) do
+    case RendererBounds.iodata(data, 81_920) do
+      {:ok, length} -> {:ok, length}
+      {:error, _} -> {:error, error}
     end
   end
 

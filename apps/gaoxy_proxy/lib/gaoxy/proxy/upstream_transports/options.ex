@@ -1,6 +1,6 @@
 defmodule Gaoxy.Proxy.UpstreamTransports.Options do
   @moduledoc """
-  Pure preparation of immutable H1 resources and their finite owner limits.
+  Pure preparation of immutable H1/H2 resources and their finite owner limits.
 
   Limits have no defaults. At most 64 resources, 4096 metadata pins, 2048
   request tokens and 64 MiB of owned serialized payload may be admitted by an
@@ -12,7 +12,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports.Options do
   facts. Neither operation creates a process or opens a managed scope.
   """
 
-  alias Gaoxy.Proxy.ManagedH1Preparation
+  alias Gaoxy.Proxy.{ManagedH1Preparation, ManagedH2Preparation}
 
   def normalize_limits(
         %{
@@ -29,9 +29,21 @@ defmodule Gaoxy.Proxy.UpstreamTransports.Options do
 
   def normalize_limits(_), do: {:error, :invalid_limits}
 
+  def prepare_policy(%{protocol: protocol} = source) when protocol in [:http2, :h2c] do
+    with {:ok, policy, manifest} <- ManagedH2Preparation.prepare_policy(source) do
+      {:ok, policy, accounting(policy, manifest)}
+    end
+  end
+
   def prepare_policy(source) do
     with {:ok, policy, manifest} <- ManagedH1Preparation.prepare_policy(source) do
       {:ok, policy, accounting(policy, manifest)}
+    end
+  end
+
+  def prepare_request(%ManagedH2Preparation.Policy{} = policy, source) do
+    with {:ok, request, manifest} <- ManagedH2Preparation.prepare_request(policy, source) do
+      {:ok, request, accounting(request, manifest)}
     end
   end
 

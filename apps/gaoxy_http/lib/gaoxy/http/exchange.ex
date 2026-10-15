@@ -23,6 +23,7 @@ defmodule Gaoxy.HTTP.Exchange do
     route_bytes: 0,
     resource_pins: [],
     protocol_bytes: 0,
+    poll_buffer_bytes: 0,
     transport: nil,
     transport_state: nil,
     secure: nil,
@@ -143,12 +144,15 @@ defmodule Gaoxy.HTTP.Exchange do
         {:error, :buffer_limit, exchange}
 
       true ->
-        case Admission.update(
-               exchange.gate,
-               exchange.lease,
-               retained_bytes(exchange) + byte_size(exchange.buffer) + 1
-             ) do
-          :ok -> recv_connection(exchange, wait_ms)
+        # The old buffer, received byte and concatenation can coexist. Keep the
+        # complete peak charged across idle polls until the request is released.
+        next = %{
+          exchange
+          | poll_buffer_bytes: max(exchange.poll_buffer_bytes, 2 * byte_size(exchange.buffer) + 2)
+        }
+
+        case Admission.update(next.gate, next.lease, retained_bytes(next)) do
+          :ok -> recv_connection(next, wait_ms)
           {:error, reason} -> {:error, reason, exchange}
         end
     end
@@ -257,14 +261,14 @@ defmodule Gaoxy.HTTP.Exchange do
 
       true ->
         case Admission.update(exchange.gate, exchange.lease, retained_bytes(exchange) + size) do
-          :ok -> recv_body(exchange, size, timeout, credit, read_deadline)
+          :ok -> recv_body(exchange, size, credit, read_deadline)
           {:error, reason} -> {:error, reason, exchange}
         end
     end
   end
 
-  defp recv_body(exchange, size, timeout, credit, read_deadline) do
-    case Socket.recv(exchange.socket, size, timeout) do
+  defp recv_body(exchange, size, credit, read_deadline) do
+    case recv_body_chunk(exchange.socket, size, read_deadline) do
       {:ok, chunk} ->
         exchange = %{exchange | buffer: exchange.buffer <> chunk}
 
@@ -284,6 +288,26 @@ defmodule Gaoxy.HTTP.Exchange do
         if reason == :timeout,
           do: wait_expired(exchange),
           else: {:error, reason, exchange}
+    end
+  end
+
+  defp recv_body_chunk(socket, size, read_deadline) do
+    timeout = Gaoxy.Lifecycle.remaining(read_deadline)
+
+    cond do
+      timeout <= 0 ->
+        {:error, :timeout}
+
+      size == 1 ->
+        Socket.recv(socket, 1, timeout)
+
+      true ->
+        # Exact-length reads must not hold an available producer prefix until
+        # more DATA arrives. Probe smaller bounded pieces before waiting.
+        case Socket.recv(socket, size, 0) do
+          {:error, :timeout} -> recv_body_chunk(socket, div(size, 2), read_deadline)
+          result -> result
+        end
     end
   end
 
@@ -343,8 +367,8 @@ defmodule Gaoxy.HTTP.Exchange do
     trailers = if exchange.body, do: 2 * exchange.body.trailer_bytes, else: 0
     response_trailers = 2 * Enum.reduce(exchange.response_trailers, 0, &(byte_size(&1) + &2))
 
-    byte_size(exchange.buffer) + headers + trailers + response_trailers + exchange.route_bytes +
-      exchange.protocol_bytes
+    max(byte_size(exchange.buffer), exchange.poll_buffer_bytes) + headers + trailers +
+      response_trailers + exchange.route_bytes + exchange.protocol_bytes
   end
 
   def body_complete?(%{transport: nil, body: %{phase: :done}}), do: true

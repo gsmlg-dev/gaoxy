@@ -18,6 +18,7 @@ defmodule Gaoxy.Proxy.HTTPFetchCompletionTest do
     assert_receive {:request_headers, ^peer}, @timeout
     assert {:error, :cleanup_pending} = RequestCompletion.await(completion, 0)
     assert :ok = RequestCompletion.abort_and_await(completion, @timeout)
+    # Regression: gsmlg-dev/http_fetch#122, fixed in HTTP 0.21.10.
     assert {:error, :aborted} = Promise.await(promise, @timeout)
     assert {:error, :closed} = peer_result(peer)
     assert :ok = RequestCompletion.abort_and_await(completion, 0)

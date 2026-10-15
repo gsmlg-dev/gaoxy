@@ -662,7 +662,7 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportTest do
       {:cleanup, caller} ->
         result =
           Lifecycle.protect(fn ->
-            if Process.alive?(instance), do: assert(:ok == Gaoxy.stop(instance, 3_000))
+            owner_monitors = for owner <- owners, do: {owner, Process.monitor(owner)}
             assert :ok = Resources.release(baseline)
             eventually(fn -> :sys.get_state(groups).groups == %{} end)
             GenServer.stop(groups, :normal, 3_000)
@@ -673,8 +673,12 @@ defmodule Gaoxy.Proxy.UpstreamGroupTransportTest do
 
               assert {:ok, %{resources: 0, pins: 0, request_tokens: 0, helpers: 0}} =
                        UpstreamTransports.status(owner)
+            end
 
-              GenServer.stop(owner, :normal, 3_000)
+            if Process.alive?(instance), do: assert(:ok == Gaoxy.stop(instance, 3_000))
+
+            for {owner, owner_monitor} <- owner_monitors do
+              assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 3_000
             end
 
             monitor = Process.monitor(peer)

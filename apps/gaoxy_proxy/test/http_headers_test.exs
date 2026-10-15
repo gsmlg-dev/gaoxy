@@ -186,6 +186,105 @@ defmodule Gaoxy.Proxy.HTTPHeadersTest do
     end
   end
 
+  test "managed H2 trailer and Connection declarations count repeated tokens before deduplication" do
+    bounded = %{
+      exchange()
+      | limits: %{
+          max_headers: 256,
+          max_header_bytes: 65_536,
+          max_trailers: 128,
+          max_trailer_bytes: 65_536
+        }
+    }
+
+    for field <- ["trailer", "connection"] do
+      exact = Enum.join(List.duplicate("x-check", 128), ",")
+      over = exact <> ",x-check"
+
+      request = %{
+        bounded
+        | request: %{
+            bounded.request
+            | headers: [{field, exact}],
+              body: :chunked,
+              version: :"HTTP/2"
+          }
+      }
+
+      assert {:ok, _, policy} = Headers.request(request)
+      assert Enum.sort(Map.keys(policy)) == [:allowed, :dropped, :max_bytes, :max_count]
+      assert :erlang.external_size(policy) <= 67_689
+
+      assert {:error, _} =
+               Headers.request(%{
+                 request
+                 | request: %{request.request | headers: [{field, over}]}
+               })
+
+      assert {:ok, _, _} = Headers.response(bounded, 200, [{field, exact}])
+      assert {:error, _} = Headers.response(bounded, 200, [{field, over}])
+    end
+  end
+
+  test "managed H2 header backing and improper lists reject before normalization or token splitting" do
+    bounded = %{
+      exchange()
+      | limits: %{
+          max_headers: 256,
+          max_header_bytes: 65_536,
+          max_trailers: 128,
+          max_trailer_bytes: 65_536
+        }
+    }
+
+    backing = "x-check" <> String.duplicate("x", 65_537)
+    token = binary_part(backing, 0, 100)
+    assert :binary.referenced_byte_size(token) > 65_536
+
+    for fields <- [
+          [{"trailer", token}],
+          [{"connection", token}],
+          [{"x-check", token}],
+          [{"x-check", "x"} | :improper],
+          List.duplicate({"x-check", "x"}, 257)
+        ] do
+      assert {:error, _} =
+               Headers.request(%{
+                 bounded
+                 | request: %{bounded.request | headers: fields, body: :chunked}
+               })
+
+      assert {:error, _} = Headers.response(bounded, 200, fields)
+    end
+  end
+
+  test "managed H2 actual trailers retain exact128 ordered duplicates and reject129 before filtering" do
+    bounded = %{
+      exchange()
+      | limits: %{
+          max_headers: 256,
+          max_header_bytes: 65_536,
+          max_trailers: 128,
+          max_trailer_bytes: 65_536
+        }
+    }
+
+    assert {:ok, _, policy} = Headers.response(bounded, 200, [{"trailer", "x-check"}])
+    exact = for index <- 1..128, do: {"x-check", Integer.to_string(index)}
+    assert {:ok, ^exact} = Headers.trailers(exact, policy)
+    assert {:error, _} = Headers.trailers(exact ++ [{"x-check", "129"}], policy)
+
+    for forged <- [
+          Map.put(policy, :extra, true),
+          Map.delete(policy, :allowed),
+          %{policy | max_count: 129},
+          %{policy | max_bytes: 65_537},
+          %{policy | allowed: ["x-check" | :improper]}
+        ] do
+      assert {:error, _} = Headers.trailers(exact, forged)
+    end
+  end
+
   defp exchange(headers \\ [], framing \\ :none) do
     %Exchange{
       request: %Request{

@@ -1,5 +1,176 @@
 # Gaoxy Implementation Plan
 
+## Current checkpoint — 2026-10-15
+
+All six fresh post-review runtime gates PASS for the managed H2 fixed-endpoint
+candidate at baseline `31f23eb2d915ba715a1016f254b90d9805f18a1a`. Complete independent
+[SPEC](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-spec.json) then
+[CODE](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-code.json) passed with zero findings.
+Candidate manifest SHA256 is `eae7be8d14325be8f34f13ddef2ab1183d950153b4172599d91c837a3034f559`.
+
+Fresh format43 and forced strict compile passed; complete full58 executed
+**853 tests /0 failures /0 skips /0 exclusions**, exit0. Additive HTTP0.21.10
+public qualification passed **63/63**, the four-cell real-peer matrix passed
+**135/135** unique required cases, and isolated browser acceptance passed
+**3/3**. All source identities remained stable. The
+[complete receipt audit](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-postreview-complete-evidence-audit.json) verifies logs/artifacts, actual
+loaded source/BEAM identities, original public completions and peer/browser
+process joins. HTTP0.21.10 resolves upstream122; every original assertion and
+all historical failure evidence remain preserved.
+
+Negative wrong-CA/name browser cleanup remains
+`UNCONFIRMED_WITH_RETAINED_FAILURE`; passing negative cases do not establish
+successful original cleanup. Historical EOF and connection-reset outcomes
+remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
+new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
+remains exhausted.
+
+Runtime verification is complete. Final documentation-only independent review
+and the authorized local conventional commit remain pending. Managed H2
+groups/probes is the next bounded slice after this closure; its design draft
+does not activate it. Generation, standalone/load, hosted CI, publication,
+deployment and production acceptance retain their separate gates.
+
+## Historical checkpoints before the final runtime gates
+
+Current checkpoint — 2026-10-15: managed H2 fixed endpoints remain uncommitted.
+
+Upstream [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is CLOSED, repaired by PR125 / merge9caf38cabdaa5fc1c65501632a28548ebd27d714
+and released in the coordinated HTTP 0.21.10 cohort
+(tag ed27a577d418e45266cd54638692362d17fcdcd1). All seven packages are now
+pinned/locked to0.21.10. The original cancellation assertion still requires
+:aborted and passed unchanged (5 tests /0 failures).
+
+Strict compilation and format41 passed. Two complete full58 runs each
+executed853 tests with1 failure, exit2 and stable source; both are retained.
+The second exposed a local H1 probe-fixture lifetime race: querying an owner
+after instance-driven normal termination returns :not_running. Sol20 added
+exact owner-DOWN barriers and reproduced the same class deterministically
+(34 tests /22 expected failures), then corrected only fixture teardown
+ordering. The complete two-file GREEN passed34/0, exit0/stable source.
+Original primary bodies, short-stop failure and TLS uncertainty assertions
+remain unchanged. Live-owner zero-status checks remain; body-owned core
+shutdown uses a monitor installed before shutdown and an exact normal DOWN.
+See sol20-group-cleanup-repair-design-plan.md, independent design SPEC,
+RED/GREEN receipts and the explicit test-contract amendment in stage evidence.
+This scoped GREEN does not substitute for a fresh full58 gate.
+
+The additive h2_02110 qualification/supplement preserves all63 public cases
+and hash-pins historical0.21.4 sources. Matrix/browser use its exact0.21.10
+identity wrapper; all135/3 cases and assertions remain. Complete updated
+independent SPEC then CODE and fresh format43/strict compile/full58/public63/
+matrix135/browser3 remain required before acceptance and local commit.
+Current ownership is52 files plus5 authorities; no58-file omission is allowed.
+
+Cumulative prior counters persist: fixedSol19/unsuccessfulGREEN14;
+collectorSol17/unsuccessfulGREEN12; matrixfailed11; browserfailed5;
+R32diagnosticfailed5; nativeH1 RED2/fixture2; nativeH2 shape RED2/fixture1;
+local-status RED2/fixture1; full-staticCODEfailed1. New counters:
+0.21.10 full58failed2; fixtureSol20 RED1/GREEN1. Astra recovery2/2 remains
+exhausted. Negative TLS cleanup remains UNCONFIRMED_WITH_RETAINED_FAILURE.
+Root owns all repository writes/runtime; publication/deployment restrictions
+remain. No stage completion, commit or successor activation is claimed.
+
+Historical Sol19 checkpoint before the upstream122 repair follows:
+
+Latest execution (Sol19 final unblocked verification): activation remains
+BLOCKED_UPSTREAM122 and uncommitted at baseline `31f23eb`.
+Sol19 trusted local_fail now preserves only native400/413/431 for
+ManagedH2Client and immediately discards raw diagnostics to :invalid_request.
+Generic upstream errors still normalize before status selection; original
+cleanup, unset-head/total-expiry, close, caps and deadlines are unchanged.
+Independent bounded SPEC then CODE PASS with zero open findings. Complete
+endpoint GREEN1 PASS38/0 and affected lifecycle/H1/H3 compatibility PASS141/0
+(21 native HTTP +120 proxy), exit0/source stable/zero skips or exclusions.
+These scoped passes resolve LOCAL_REQUEST_ERROR_STATUS_LOST, not stage acceptance.
+
+Sol19 RED1 remains fixture FAIL38/8 on its invalid Trailer assertion; its sole
+correction asserts exact authentic H2 pseudoheaders and no hop fields. Genuine
+RED2 FAIL38/8 reached the exact closed wire response after original pending
+barriers and observed502 vs400x2/413x2/431x4. Original30 cases and all8
+status/completion/cleanup assertions remain unchanged. Actual release, bounded
+design/plan, exact candidates/reviews and RED/GREEN receipts are preserved as
+`sol19-local-status-*` in the existing stage evidence directory.
+
+Full independent SPEC Sol19 then CODE Sol19 PASS with zero findings on the
+frozen owned46/authorities5 candidate. Fresh post-review format38, strict
+compile (--warnings-as-errors --force), public63/63, complete matrix135/135
+and browser3/3 all PASS with exit0 and stable source. The matrix executed all
+135 unique required identities across four cells, with zero omissions,
+skips or exclusions. Actual public command-group, matrix peer and browser
+joins, artifact hashes and91 loaded Gaoxy module identities were audited.
+Browser negative CA/name outcomes remain UNCONFIRMED_WITH_RETAINED_FAILURE;
+these passing cases do not confirm their original cleanup.
+
+`sol19-postreview-unblocked-evidence-audit.json` binds the fresh qualifications,
+receipts, full reviews and frozen manifest. Its status is
+PASS_UNBLOCKED_GATES_ONLY; full58 and stage acceptance remain blocked.
+The earlier Collector Sol17 matrix GREEN12 and browser-sol17-1 passes remain
+historical evidence and are not substituted for these Sol19 results.
+
+Live read-only recheck confirms [http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+OPEN/Bug/internal request/blocker. Latest v0.21.9/main `81ad386f` is unchanged
+and fixes119, not122; dependency cohort remains0.21.4. Historical full58
+FAIL845/1 expected original Promise:aborted but observed:einval. Later5/0 and
+32/0 are not repairs. Full58 stays BLOCKED_UPSTREAM122 without workaround,
+omission or weakened assertion, pending upstream fix and compatible update.
+The final read-only snapshot is `sol19-upstream122-final-read-only-check.json`.
+
+Counters: fixedSol19/unsuccessfulGREEN14; collectorSol17/unsuccessfulGREEN12;
+matrixfailed11; browserfailed5; R32diagnosticfailed5; nativeH1 RED2/fixture2;
+nativeH2 shape RED2/fixture1; local-status RED2/fixture1; full static CODE failed1.
+Astra recovery2/2 remains exhausted. Owned46/format38/full58 remain complete.
+Forward-only runner3 captures AGENTS.md/implement-plan.md alongside the earlier
+source set; old receipts and smaller coverage remain immutable. No stage
+acceptance, commit or next-stage activation is claimed.
+
+Previous execution checkpoint (before matrix GREEN12 and Sol19), retained as history:
+
+Latest execution: managed H2 fixed-endpoint activation is INCOMPLETE and
+uncommitted. Native H1 Sol17/Sol18 focused GREEN2 passed67/0 with stable
+source and narrow independent SPEC then CODE; historical failures are retained.
+Fresh format37 and strict compile passed. Full58 executed845/1, exit2,
+source stable with zero skips/exclusions. Its sole pre-head public H1
+cancellation assertion expected:aborted and observed:einval after confirmed
+cleanup. The unchanged file later passed5/0 and the bounded public diagnostic
+passed32/0; neither result proves a repair or erases full58's failure.
+
+Upstream [gsmlg-dev/http_fetch#122](https://github.com/gsmlg-dev/http_fetch/issues/122)
+is confirmed OPEN, type Bug, label internal request, severity blocker for the
+existing cancellation compatibility gate. The callsite has its required TODO;
+no local workaround or weaker assertion is authorized. That task remains
+BLOCKED until an upstream repair and compatible dependency update. Other
+unblocked verification continues. Comment-only routing makes owned46/format38;
+the required complete test manifest remains full58, with no omission.
+
+Released canonical Collector Sol16 passed narrow independent SPEC then CODE.
+Diagnostic8 PASS4/4 authenticated all128 held cleanup refs and2 refused extras
+against all130 authentic raw calls (:ok, max6.594785ms), with real joins and
+unchanged1024 caps. Diagnostic7's original overall FAIL remains historical.
+Complete matrix GREEN11 remains FAIL87/135, exit1/source stable. The next H2
+head-bytes-exact response needs65688 RFC metadata bytes; the fixture advertised
+131072 but its decoder retained65536. This establishes a fixture mismatch,
+not a production defect. The public update_settings/matching ACK candidate
+preserves the existing finite131072 cap,135 identities and120 original collector
+assertions. Initial independent SPEC passed; CODE found a first-request/ACK-send
+absolute-deadline gap in a controlled-clock model. The targeted candidate repair
+passed fresh independent SPEC then CODE with24 deadline and4 fail-closed
+models and no actionable findings. Root released Collector Sol17 and its
+managed-only peer ACK profile; complete matrix GREEN12 is pending execution.
+The first reviewer response-vector arithmetic failure and exact correction are
+preserved separately; it occurred before candidate execution.
+
+Fresh public63 PASS63/63 is retained as scoped evidence; browser3 is not fresh
+for the eventual final candidate. Current counters: fixed Sol18/unsuccessful
+GREEN14; collector Sol17/unsuccessful GREEN12; matrix failures11; browser
+failures5; R32 diagnostic failures5; native H1 poll-floor RED failures2/fixture
+corrections2; native H2 shape RED failures2/fixture correction1. Astra recovery2/2
+is exhausted. Full58 is BLOCKED by upstream122; format38, complete matrix135,
+browser3, full stage independent SPEC then CODE and fresh post-review gates
+remain required. No phase acceptance or commit is claimed.
+Earlier execution summaries below are historical.
+
 **Reviewed execution update, 2026-10-11:** The former http_fetch#97 proof
 requirement is dismissed and must not be revived or replaced by equivalent gates.
 Preserve historical evidence and assertions. Release the verified native H1/H2
@@ -54,9 +225,96 @@ The [H2 preparation package](docs/plans/m3-managed-h2-preparation.md) is **DONE 
 at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`: complete independent SPEC/CODE, fresh scoped format/strict compile97/0
 and public63/0 with zero exclusions/skips. Its source/peer/evidence identities
 and historical assertions are preserved in its [acceptance](docs/acceptance/m3-managed-h2-preparation.md).
-Fixed/group H2 activation remains NOT RUN; fixed-H2 design and plan have independent
-document readiness PASS and tests-first execution follows
-automatically under continuing authorization.
+Fixed-H2 activation is IN PROGRESS under its
+[design and plan](docs/plans/m3-managed-h2-fixed-endpoint.md). Pure/owner/renderer
+GREEN2 passed237/0, while client/integration GREEN2 remains a preserved194/30
+failure. Task7 RED76/8 and unfiltered H2 network RED28/4 exposed a downstream H2
+write-deadline gap. Repair4 strict compile passed and combined759/4 remains a
+preserved failure; targeted repair5 executed107/2 with stable source and zero
+skips/exclusions. Repair6 fixed both diagnosed races, but targeted108/1 exposed
+an instance-death fixture assumption about the separate original and Service
+ledgers. Sol repair7 Task7 passed77/0 with source stable, exit0 and zero
+skips/exclusions; the earlier wrong-fixture9/9 failure is preserved. Browser
+positive case passed inside diagnostic2/3; the five earlier browser runs failed;
+negative GREEN1 passed exact wrong-CA h2/502/navigation/errorPage assertions,
+then failed on Service.retained_bytes after genuine cleanup_unconfirmed and
+Service exit. Timeline GREEN1 records exact9,444,956 pre-exit reserve, missing
+receipt, retained token and finite Writer readiness, but helpers1 violates
+required0. Collector Sol9 then passed complete browser3/3 with exact helpers0
+and actual helper settlement before disposal; negative originals remain
+cleanup_unconfirmed with retained failure. Full53 GREEN1 passed761/0 and public
+GREEN1 passed63/63, source stable, exit0, zero skips/exclusions. Matrix GREEN1
+failed after5 cases due to selecting a stale zero-byte GET upload_end for the
+actual65536-byte POST completion; Sol10 exact identity repair replay passed.
+Matrix GREEN2 completed13 cases before C2 blank502 violated required503;
+precise local capacity RED executed32/4 with all four intended failures and
+malformed diagnostics preserved. Sol10 implements the exact public capacity
+mapping. Repair12 combined control/capacity/renderer GREEN passed96/0 and the
+real public C2 raw Promise witness passed with confirmed cleanup/peer joins.
+Control supplement GREEN1/GREEN2 each failed63/2; renderer network33/0 passed.
+Bounded trace diagnostic failed30/1 on a non-original-Task `{ref, false}` reply;
+Sol11 combined run failed96/1: real h2c public timer provenance verified1,
+TLS0 observed; all capacity cases and renderer33/0 passed. Sol12 repairs only
+the rejection-reporting exception in the missing-call counterexample. Matrix
+GREEN3 passed C2 then failed after14 cases: R32's cold second connection led to
+5 legitimate P0 refusals. Collector Sol11 adds actual connection/SETTINGS
+preparation barriers, preserving32 simultaneous held requests, refusal33,
+deadlines and all exact oracles.
+Matrix GREEN4 then proved two ACK16 connections,32 simultaneously held requests,
+blank503 refusal33, healthy responses and joins, but remains FAIL after15 cases,
+exit1, source stable and zero skips/exclusions. The next pre-EOF H1 upload sent
+16392 bytes with Content-Length32781; upstream received16384, missing8 while EOF
+was withheld. Preserve the [immutable diagnosis](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-h1-partial-upload-diagnosis.json)
+and [run receipt](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green4-1791987688394641648.json).
+B owns the bounded `Exchange.recv_body/4` repair and new native H1 partial-upload
+suite: max-sized timeout0 probes halve to1, then one finite wait uses the same
+absolute read deadline. Parent owns runtime. Native H1 RED1 failed8/6: four byte
+regressions and two incorrect fixture shutdown expectations, plus logged
+CaseClauseError from an invalid Endpoint abort. B corrects TEST ONLY before
+RED2; production stays frozen. These fixture failures are not capacity failures.
+Clean native H1 RED2 failed8/4 on exactly the four byte regressions. Sol13
+GREEN1 executed53/1: all8 new cases and existing deadline/cap/network checks
+passed; only the unchanged exact trailer-limit error reason failed. Independent
+bounded short-read SPEC then CODE passed with no findings; full fixed-H2 review
+is still pending. Sol14 restores the trailer-specific reason while keeping all
+bounds/assertions; focused GREEN passed63/0, stable exit0 with no skips/exclusions.
+Matrix GREEN5 failed19 on a late helper after early zero settlement.
+CollectorSol12 then proved native-head256/257 genuine helper settlement with
+helpers0 in GREEN6 while preserving original cleanup_unconfirmed and retained
+failure. GREEN6 remains FAIL21, stable exit1: the next H1 byte-head expected200
+fixture would render65,600 bytes against the unchanged65,536 cap. Independent
+source/byte diagnoses confirm its infeasibility. CollectorSol13 is prepared and frozen to
+use explicit reachable exact/over units; the four cells/all135 cases and exact
+byte/order/status/cleanup assertions remain. Header RED1 executed30/4; bounded test-only collection of authenticated exact
+upload prefixes resolves the legitimate per-byte fragmentation contract.
+Clean RED2 executed30/2 with only the intended500-versus502 failures; exact
+wire65,536 and all upload assertions pass. Sol15 is released only for the
+uncommitted Proxy.HTTP renderer response_header_limit502 cleanup path; caps,
+ordinary core behavior and other error/timeout paths remain. Production GREEN
+and full135 matrix rerun remain NOT RUN.
+Sol15 relevant GREEN87/0 and narrow SPEC/CODE PASS; pre-review full57 PASS824/0,
+source stable/exit0/zero skips or exclusions. CollectorSol14 independent narrow
+SPEC then CODE PASS. MatrixGREEN8 remains FAIL84: both completeH1 cells plus
+H2→TLS functional/concurrent/controlled cases passed, includingR32all32command
+ACKs before clientjoins in17.206/29.193/19.095ms with unchanged deadlines.
+NextH2→TLShead255 expected200 emittedempty502. Public HPAX codec isolation
+confirms256 total fields are feasible, but bulk returned iodata depth258 exceeds
+the unchanged depth16 guard. Ordered per-field encoding has identical bytes,
+exact decode and valid frames at depth4; this diagnostic is not acceptance.
+Sol16 is planned within the same single returned-iodata slot and all original
+caps/deadlines, with empty resize-prefix semantics retained. Clean nativeH2 RED2 executed57/2 with exactly head255/trailer128 refusal;
+emptyblock/ledger pass. RED1 warnings corrected without assertions changing.
+Sol16 production released only for codec assembly, nativeH2shapeRED2/fixture1. Current countersfixedSol16/unsuccessfulGREEN11,nativeH1RED2/fixture1,
+headerRED2/uploadEventFixture1,collectorSol14/unsuccessful9,matrix8,browser5,
+Astra2/2. Complete135 matrix, full review and fresh post-review gates incomplete.
+Complete control/renderer evidence supplements, final SPEC
+then CODE and fresh gates remain incomplete. Historical active3 remains
+unexplained in the
+[acceptance](docs/acceptance/m3-managed-h2-fixed-endpoint.md#latest-scoped-receipts).
+Fixed Sol12/unsuccessful GREEN10 include parent fixture failure1 and proof supplement failures3; trace diagnostic failures1, capacity RED failures1, browser failures5,
+matrix failures4, native H1 RED failed runs1 and collector Sol11/unsuccessful GREEN5 remain separate,
+with Astra2/2 exhausted. Group H2 activation
+remains NOT RUN.
 Preparation does not imply live H2 reservations, standalone integration,
 protocol-matrix or sustained-load acceptance. The roadmap still ends at M4.
 

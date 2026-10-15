@@ -1,6 +1,6 @@
 defmodule Gaoxy.Proxy.UpstreamTransports do
   @moduledoc """
-  Instance-associated finite ownership of immutable managed H1 resources.
+  Instance-associated finite ownership of immutable managed H1/H2 resources.
 
   Preparation authenticates the caller as the preparer. Status counts compact
   Gaoxy policy and metadata/control-slot serialized payload; dependency opaque
@@ -9,7 +9,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   Cancellation is ordered with acquisition by its caller and original deadline;
   only live pin groups retain operation metadata, with no cancellation history.
   Checkout returns the immutable prepared policy, opaque public scope and fixed
-  raw/manual H1 Fetch profile. Capture and bind the original Promise completion
+  raw/manual protocol-bound Fetch profile. Capture and bind the original Promise completion
   before publishing request success; a completion cannot replace transport
   retirement or an unresolved request/helper hold.
   Dedicated production endpoints are unaffected by this resource foundation.
@@ -17,6 +17,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   use GenServer
   @behaviour Gaoxy.HTTP.Resources
   alias Gaoxy.Lifecycle
+  alias Gaoxy.Proxy.{ManagedH1Preparation, ManagedH2Preparation}
   alias Gaoxy.Proxy.UpstreamTransports.{Custodian, Options}
 
   def child_spec(options),
@@ -265,7 +266,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
            true <- entry.admission == :open || {:error, :resource_admission_closed},
            true <-
              (instance == state.instance and
-                authority == {entry.policy.scheme, entry.policy.host, entry.policy.port}) ||
+                authority == policy_authority(entry.policy)) ||
                {:error, :transport_endpoint_mismatch} do
         :ok
       end
@@ -351,7 +352,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
               not entry.retirement_requested) || {:error, :resource_unavailable},
          true <-
            (instance == state.instance and
-              authority == {entry.policy.scheme, entry.policy.host, entry.policy.port}) ||
+              authority == policy_authority(entry.policy)) ||
              {:error, :transport_endpoint_mismatch},
          true <-
            (is_pid(guardian) and guardian != caller and is_reference(operation)) ||
@@ -405,7 +406,7 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
       client = %{
         policy: entry.policy,
         transport_scope: entry.scope,
-        fetch_options: @fetch_options
+        fetch_options: fetch_options(entry.policy)
       }
 
       {:reply, {:ok, client, token}, state}
@@ -1367,10 +1368,11 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   defp record(_, _), do: {:error, :invalid_resource}
 
   defp endpoint_identity(
-         %{origin: origin, upstream_protocol: :http1, instance: instance} = identity
+         %{origin: origin, upstream_protocol: protocol, instance: instance} = identity
        )
        when map_size(identity) == 3 and is_binary(origin) and
-              byte_size(origin) in 1..65_536 and is_pid(instance) do
+              byte_size(origin) in 1..65_536 and is_pid(instance) and
+              protocol in [:http1, :http2, :h2c] do
     with true <- :binary.referenced_byte_size(origin) <= 65_536 and endpoint_url_text?(origin),
          %URI{
            scheme: scheme,
@@ -1385,9 +1387,10 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
          true <-
            scheme in ["http", "https"] and is_binary(host) and byte_size(host) in 1..253 and
              is_integer(port) and port in 1..65_535 and path in [nil, "", "/"],
+         true <- protocol_scheme?(protocol, scheme),
          true <- endpoint_authority?(authority, host, port) do
       scheme = if scheme == "http", do: :http, else: :https
-      {:ok, {scheme, String.downcase(host), port}, instance}
+      {:ok, {protocol, scheme, String.downcase(host), port}, instance}
     else
       _ -> {:error, :invalid_transport_endpoint}
     end
@@ -1396,6 +1399,32 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
   end
 
   defp endpoint_identity(_), do: {:error, :invalid_transport_endpoint}
+
+  defp protocol_scheme?(:http1, scheme), do: scheme in ["http", "https"]
+  defp protocol_scheme?(:http2, scheme), do: scheme == "https"
+  defp protocol_scheme?(:h2c, scheme), do: scheme == "http"
+
+  defp policy_authority(%ManagedH1Preparation.Policy{} = policy),
+    do: {:http1, policy.scheme, policy.host, policy.port}
+
+  defp policy_authority(%ManagedH2Preparation.Policy{} = policy),
+    do: {policy.protocol, policy.scheme, policy.host, policy.port}
+
+  defp fetch_options(%ManagedH1Preparation.Policy{}), do: @fetch_options
+
+  defp fetch_options(%ManagedH2Preparation.Policy{protocol: protocol}) do
+    [
+      http_version: protocol,
+      tls_backend: :ssl,
+      http2_profile: :native_v1,
+      http2_reuse: true,
+      redirect: :manual,
+      request_mode: :proxy,
+      decode_body: false,
+      stream_response: true,
+      telemetry: false
+    ]
+  end
 
   defp endpoint_authority?(authority, host, port) when is_binary(authority) do
     host = if String.contains?(host, ":"), do: "[" <> host <> "]", else: host
