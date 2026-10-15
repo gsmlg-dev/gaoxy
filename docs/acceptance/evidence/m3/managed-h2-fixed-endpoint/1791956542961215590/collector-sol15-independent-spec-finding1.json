@@ -1,0 +1,47 @@
+{
+  "task_id": "collector_sol15_review",
+  "status": "SPEC_FAIL_CODE_NOT_RUN",
+  "assignment": "direct read-only independent narrow SPEC then CODE",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "candidate_sha256": "8d230d9ebcee8bdbbe71a21f9473b941603275e24a801d9da5ecc66bf44a1dcf",
+  "before_sha256": "be4f49eae2dcfd43f051627e1d9e0f444e0974fc34000096a190eff725bfac0b",
+  "delta_sha256": "15479a279035f7b90960f402fd88575021cf083a82a3c0e67eb226d90937ccbc",
+  "scope": "integration/http_fetch_contract/managed_h2_fixed_qualification.py only",
+  "findings": [
+    {
+      "id": "SPEC-1",
+      "severity": "high",
+      "lines": [
+        359,
+        733,
+        737
+      ],
+      "title": "clean wait consumes admission receipts and original completions but discards updated state",
+      "evidence": "wait_clean/2 newly collects messages into its local state. Its caller ignores its return; terminal unless clean returns nil. flush_admission then receives caller pre-wait state although receipt/original messages were drained. Process evidence cache is consulted only in failure reporting, not in the passing clean command.",
+      "impact": "Any newly queued admission receipt consumed by wait_clean is missing from canonical prefix; admission_prefix fails or originals disappear. Violates complete immutable receipts and unchanged clean assertions.",
+      "required_fix": "Preserve updated state through wait_clean recursion and return it at clean; assign returned state in clean command without altering predicates/assertions/deadline."
+    }
+  ],
+  "static_verification": {
+    "hashes": "PASS exact root freeze match",
+    "python_ast_parse": "PASS",
+    "python_functions_and_classes": "PASS all22 byte-structural AST unchanged",
+    "top_level_assignments": "PASS only HOST changed",
+    "case_ids": "PASS source identity lists unchanged,135 required identities",
+    "admission_snapshot": "PASS exact text unchanged sha2569f157af4ce1450f3ee17ed74251e5d12e0bc3bdcbd0bcdf27d74fe1a19634c99"
+  },
+  "runtime": "NOT RUN reviewer forbidden; root sole runtime owner",
+  "code_review": "NOT RUN requires corrected SPEC pass",
+  "counters": {
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  },
+  "commands_finished": true,
+  "repository_edits": [],
+  "stage_acceptance": "INCOMPLETE",
+  "remaining": "Re-freeze corrected candidate, repeat SPEC then CODE and parent runtime gates."
+}

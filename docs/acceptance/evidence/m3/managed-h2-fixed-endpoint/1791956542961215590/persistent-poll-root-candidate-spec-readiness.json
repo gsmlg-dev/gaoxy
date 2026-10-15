@@ -1,0 +1,54 @@
+{
+  "task_id": "persistent_poll_workspace_root_candidate_spec_readiness",
+  "status": "DONE",
+  "assignment": "direct read-only SPEC arithmetic assessment; no implementation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "canonical_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "verdict": "READY_FOR_TESTS_ONLY_RED_NOT_PRODUCTION_READY_WITH_B_PLUS_1",
+  "candidate_assessed": "poll_bytes defaults0; included in retained_bytes; poll raises high-water, Admission.update validates gate/lease each time; timeout/close retain reserve; append/read/send include persistent reserve; true reuse boundary Admission.retain(buffer_bytes) releases it.",
+  "accepted_direction": [
+    "Real conservative lease charge, not collector filtering of byte states.",
+    "Stable pending-poll accounting, unchanged cap/deadline/close detection.",
+    "Original complete observer snapshot and adjacent exact projection suppression preserve every first changed receipt.",
+    "H2 default0/delegated poll behavior preserved."
+  ],
+  "copy_peak_finding": {
+    "severity": "required_red",
+    "notation": "b=current buffer bytes;B=current retained base excluding poll_bytes;P=additive poll workspace.",
+    "simultaneous_payload_peak": "old buffer b + separately received input byte1 + appended new buffer(b+1)=2b+2. Base B already carries old buffer b, so conservative additional scratch minimum is b+2.",
+    "candidate_b_plus_1": "Only2b+1 buffer bytes precharged; lacks1 byte for conservative three-value liveness. Cannot assume runtime compiler liveness or old implementation proves it sufficient.",
+    "b_plus_2": "Covers transient append peak conservatively. Since poll accepts b<max_buffer_bytes, workspace high-water<=max_buffer_bytes+1; actual buffer cap remains unchanged. This changes derived workspace extent, not service cap."
+  },
+  "returned_total_finding": {
+    "severity": "required_red",
+    "equation": "Pre-recv retained charge=B+P. If successful append increments buffer1 while P persists, returned retained_bytes=B+1+P.",
+    "impact": "Service cap admitting exactly B+P may allow recv and then reject the returned total. Increasing P from b+1 to b+2 alone does not eliminate this1-byte post-read accounting increase.",
+    "required_resolution": "RED exact preflight/returned-total cap and data-preservation/error path. Define safe reservation transfer or anticipated total semantics explicitly; do not claim all cap failures precede recv merely from b+2. Maintain truthful actual lease accounting on post-read errors and terminal release."
+  },
+  "minimum_red_checks": [
+    "Stable repeated pending/timeout polls retain exact ledger and original deadline.",
+    "Empty/nonempty copy peak b+2 and exact/one-short Admission bounds.",
+    "One received byte with service cap exactly prior B+P exercises returned-total boundary; preserves byte or closes with authentic error/cleanup.",
+    "max_buffer-1 append to max, then buffer-limit rejection; finite persistent workspace.",
+    "Plain TCP/passive TLS EOF/reset and early cancellation; no replay.",
+    "Real reuse/newExchange reset releases request workspace while cleanup reservation obeys original completion.",
+    "Read/send/renderer restoration carries reserve; H2/H3 default0 compatibility."
+  ],
+  "implementation": "NOT RUN",
+  "runtime_tests": "NOT RUN by reviewer; parent owns tests-only RED",
+  "repository_edits": [],
+  "commands_finished": true,
+  "stage_acceptance": "INCOMPLETE",
+  "counters": {
+    "r32_diagnostic_failed_runs": 4,
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  }
+}

@@ -1,0 +1,112 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs
+@@ -201,14 +201,18 @@
+       id: :http,
+       endpoint: {Map.get(overrides, :endpoint_module, Gaoxy.Proxy.HTTP), endpoint},
+       limits: %{max_bytes: 536_870_912, max_active: 64},
+-      http_limits: %{
+-        request_timeout: 10_000,
+-        write_timeout: 2_000,
+-        max_headers: 512,
+-        max_header_bytes: 131_072,
+-        max_trailers: 256,
+-        max_trailer_bytes: 131_072
+-      }
++      http_limits:
++        Map.merge(
++          %{
++            request_timeout: 10_000,
++            write_timeout: 2_000,
++            max_headers: 512,
++            max_header_bytes: 131_072,
++            max_trailers: 256,
++            max_trailer_bytes: 131_072
++          },
++          Map.get(overrides, :http_limits, %{})
++        )
+     ]
+ 
+     service_options =
+@@ -642,6 +646,82 @@
+       assert :ok = HTTP.RequestCompletion.await(completion, 5_000)
+       assert :ok = HTTP.RequestCompletion.await(completion, 0)
+       assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}, 5_000
++      :ok = :gen_tcp.close(socket)
++      F.clean(f)
++      F.close(f)
++    end
++  end
++
++  for protocol <- [:http2, :h2c],
++      {failure, status, phrase, limits, malformed} <- [
++        {:malformed_chunk, 400, "Bad Request", %{}, "Z\r\n"},
++        {:body_limit, 413, "Request Entity Too Large", %{max_body_bytes: 4},
++         "5\r\nabcde\r\n0\r\n\r\n"},
++        {:trailer_count, 431, "Request Header Fields Too Large", %{max_trailers: 1},
++         "0\r\nX-Check: first\r\nX-Check: second\r\n\r\n"},
++        {:trailer_bytes, 431, "Request Header Fields Too Large", %{max_trailer_bytes: 8},
++         "0\r\nX-Check: x\r\n\r\n"}
++      ] do
++    @local_protocol protocol
++    @local_failure failure
++    @local_status status
++    @local_phrase phrase
++    @local_limits limits
++    @local_malformed malformed
++    @tag :local_request_status
++    test "http1 -> #{protocol} native #{failure} preserves #{status} with upstream final head withheld" do
++      f = F.fixture(@local_protocol, :http1, ["--manual"], %{http_limits: @local_limits})
++      socket = F.connect(f)
++      target = "/hold/local-#{@local_failure}"
++
++      :ok =
++        F.send_request(
++          f,
++          socket,
++          "POST",
++          target,
++          [{"transfer-encoding", "chunked"}, {"trailer", "x-check"}],
++          false
++        )
++
++      seen = F.event(f.peer, "request")
++      assert seen["target"] == target
++      assert seen["connection"] == 1
++      assert ["trailer", "x-check"] in seen["headers"]
++
++      F.eventually(fn ->
++        match?(
++          [%{completion: %HTTP.RequestCompletion{}}],
++          Map.values(:sys.get_state(f.owner).tokens)
++        )
++      end)
++
++      [held] = Map.values(:sys.get_state(f.owner).tokens)
++      guardian = held.guardian
++      completion = held.completion
++      state = :sys.get_state(guardian)
++      assert state.client.completion(state.original_request) == completion
++      assert state.submitted_url == f.origin <> target
++      assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(completion, 0)
++      assert {:ok, %{request_tokens: 1, pins: 3, helpers: 0}} = Transports.status(f.owner)
++      assert %{cleanup_pending: 1, retained_bytes: retained} = Gaoxy.status(f.instance, :http)
++      assert retained >= 9_444_956
++      monitor = Process.monitor(guardian)
++
++      # The real peer's manual mode withholds every final response. These bytes
++      # exercise the native parser and public service limits, not a fake error.
++      :ok = :gen_tcp.send(socket, @local_malformed)
++
++      assert F.until_closed(socket) ==
++               "HTTP/1.1 #{@local_status} #{@local_phrase}\r\nconnection: close\r\ncontent-length: 0\r\n\r\n"
++
++      assert :ok = HTTP.RequestCompletion.await(completion, 5_000)
++      assert :ok = HTTP.RequestCompletion.await(completion, 0)
++      assert_receive {:DOWN, ^monitor, :process, ^guardian, :normal}, 5_000
++      F.no_event(f.peer, "upload")
++      F.no_event(f.peer, "upload_end")
++      F.no_event(f.peer, "upload_trailers")
++      F.no_event(f.peer, "request")
+       :ok = :gen_tcp.close(socket)
+       F.clean(f)
+       F.close(f)

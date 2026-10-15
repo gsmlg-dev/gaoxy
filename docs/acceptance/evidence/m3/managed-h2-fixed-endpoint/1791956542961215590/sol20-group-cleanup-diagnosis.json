@@ -1,0 +1,90 @@
+{
+  "task_id": "sol20-group-cleanup-diagnosis",
+  "status": "DONE",
+  "assignment": "direct read-only diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "branch": "codex/m3-h1-resource-foundation",
+  "scope": "fixture ownership and group-specific participant/probe callbacks; no core Lifecycle traversal",
+  "failure": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-pre-review-full58-1792059240419303619.json",
+    "log_sha256": "51e641adea484aa749065fcf3cfc26991f0fb26f8c847884f5ce657d30206106",
+    "counts": {
+      "http": 191,
+      "http3": 18,
+      "proxy": 644,
+      "failures": 1
+    },
+    "exit": 2,
+    "seed": 33011,
+    "max_cases": 1
+  },
+  "findings": [
+    "Only reported failure is ExUnit on_exit line625 receiving {:error, {:exception, ExUnit.AssertionError}}; original assertion/stacktrace absent.",
+    "Embedding owns TCP listener, instance and embedding baseline pins; original test process owns group/transport preparations and group baseline. Child instance/owner processes are unlinked.",
+    "UpstreamGroups is not registered as a core lifecycle participant; it only monitors the instance. DOWN changes mode to draining and cancels existing probe/selection work.",
+    "probe_bytes=1 prevents Probe startup because HTTPFetchClient.reservation is strictly greater than 1. Probe claim/open/bind/recovery callbacks are unreachable for this fixture.",
+    "Test body confirms empty groups and one embedding-owned pin per transport before cleanup. No test-body failure reported.",
+    "Transport owners are lifecycle participants; begin_retirement clears pins and release of a missing valid pin is idempotent. Baseline-before-stop ordering alone is not proof of failure.",
+    "Remaining concealed assertion candidates: instance stop result; baseline release result; group-empty eventually deadline; transport retire/await/status; peer normal DOWN. No ranking is established by the immutable log."
+  ],
+  "root_cause": "UNKNOWN: exact cleanup assertion is concealed; no fix justified by existing evidence.",
+  "recommended_instrumentation": {
+    "patch": "/tmp/gaoxy-sol20-group-cleanup-diagnosis.patch",
+    "behavior": "Only fixture cleanup entry is wrapped. Print original Exception.format with captured stacktrace and reraise unchanged inside Lifecycle.protect. Preserve callback body, assertions, timeouts, and failure result. No successful-path logging.",
+    "patch_sha256": "04da8cb21772f2b31224ed16775599ed0bd68880f2db35843178730a2f8be1ba"
+  },
+  "diagnostic_command": [
+    "nix",
+    "develop",
+    "--command",
+    "env",
+    "ERL_FLAGS=+S 2:2",
+    "MIX_ENV=test",
+    "unbuffer",
+    "mix",
+    "test",
+    "--warnings-as-errors",
+    "--max-cases",
+    "1",
+    "--seed",
+    "33011",
+    "apps/gaoxy_proxy/test/upstream_group_transport_test.exs"
+  ],
+  "execution_policy": "Parent applies patch and runs one evidence-recorded diagnostic, not acceptance. A nonreproducing diagnostic does not clear full58; preserve the failure and original receipt. Parent may use original full58 exact command to retain ordering/context if needed, without green-seeking retries.",
+  "source_hashes_before": {
+    "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "2a3351448cf3f9da2506eceb1101b4154051fc8e15ae8875be7db80ee8ab2db0",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e"
+  },
+  "source_hashes_after": {
+    "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "2a3351448cf3f9da2506eceb1101b4154051fc8e15ae8875be7db80ee8ab2db0",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e"
+  },
+  "repository_writes": false,
+  "checks": {
+    "git_identity": "PASS",
+    "scoped_modules_clean_against_HEAD": "PASS",
+    "failure_log_sha": "PASS",
+    "proposed_callback_body_unchanged": "PASS",
+    "assertion_counts_unchanged": "PASS",
+    "patch_syntax_apply_check": "PASS: git apply --check /tmp/gaoxy-sol20-group-cleanup-diagnosis.patch (exit 0)",
+    "runtime": "NOT RUN by read-only assignment",
+    "tests": "NOT RUN by read-only assignment"
+  },
+  "counters": {
+    "FixedSol": "19 before new failure; parent owns updated count",
+    "unsuccessfulGREEN": "14 before new failure; parent owns updated count",
+    "CollectorSol": 17,
+    "Astra": "2/2 exhausted",
+    "local_repair_rounds_this_assignment": 0
+  },
+  "command_shutdown": "All issued commands completed; no persistent session or runtime process started.",
+  "remaining_risks": [
+    "Underlying failure remains unresolved",
+    "Logging runs only on exception but can perturb subsequent failure teardown scheduling",
+    "No runtime or Elixir syntax validation performed under assignment"
+  ],
+  "decisions_needed": "Parent owns diagnostic application/execution and actual repair; no user permission or product decision identified."
+}

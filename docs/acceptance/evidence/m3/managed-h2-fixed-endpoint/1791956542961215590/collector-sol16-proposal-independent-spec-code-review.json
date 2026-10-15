@@ -1,0 +1,69 @@
+{
+  "task_id": "collector_sol16_proposal_independent_narrow_spec_code",
+  "status": "DONE",
+  "assignment": "direct read-only narrow independent SPEC first then CODE",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "canonical_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "proposal_sha256": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d",
+  "proposal_diff_sha256": "e96a5e4f71b18809da33e60150e34b2862b94cbb314c089d3eee14ec263a8027",
+  "spec_checkpoint": "/tmp/gaoxy-h2-fixed-collector-sol16-proposal-independent-spec.json",
+  "spec_checkpoint_sha256": "86522b9c3a1680c0988f86846cf0ed88412d0190b9e6f37bfa3305206d0aa354",
+  "verdict": "PASS_NARROW_STATIC_SPEC_CODE_CONDITIONAL_RELEASE",
+  "findings": [],
+  "spec": {
+    "status": "PASS_NARROW_STATIC",
+    "projection_fields": "{service,mode,bytes,map(ref=>{pid,bytes,cleanup,request_active}),map(token=>{lease,bytes,receipt})}",
+    "proof": "For one fixed Gate, strict raw equality covers every original admission_snapshot input. Raw refs/PIDs remain identical; sorted inspect rows, counts, lease/cleanup sums, retained bytes and total invariant outcome are identical. Previous admitted complete app_state remains destined for unchanged observer; suppressing its adjacent exact duplicate cannot change first-distinct receipts or clear an invariant failure. A/B/A still sends all3candidates to original global digest dedup.",
+    "preservation": "Complete original app_state, snapshot schema, serialization/hash, first-distinct sequence, invariant checks, sticky failures, observer global seen and1024 bound preserved. No global projection MapSet or new cap in Gate."
+  },
+  "code": {
+    "status": "PASS_NARROW_CODE",
+    "python_ast": {
+      "top_level_nodes": 50,
+      "identical_nodes_excluding_HOST": 49,
+      "only_changed_node": "HOST assignment26",
+      "identities": "All original Python functions/constants/timeouts and135 scenario identity generation unchanged by exact AST comparison."
+    },
+    "byte_identical_host_helpers_sha256": {
+      "admission_failure": "01bc67c0319c7c3a583ee9e355413cc609ba79e6dee573519ccfecad81f8a2ac",
+      "admission_observer_loop": "5ba9b8fff6af3f2ea0d823fb563200f043fc575aa7154dad29ec39383fcb395e",
+      "finish_admission": "98c890a58c1d3e3a3df62813765f4a5ed610ab265c18b8877a13b1e8a18fe0de",
+      "flush_admission": "21bb279433b93d552ee96923217868f2c5d3bacb9e022838f95f457a791a0c5c",
+      "admission_host_failure": "185700e18dd9701ec454ed7c332deecc52a47450f73a277f4197fe5d3a57ceae",
+      "collect_originals": "51e38ccd8de5be44bfc146fb7a7717cdebce1bd07c4f3bafe35d0524338ed6cb",
+      "admission_snapshot": "9f157af4ce1450f3ee17ed74251e5d12e0bc3bdcbd0bcdf27d74fe1a19634c99",
+      "deadline": "9290788d8c3183f140f396e51f96c68f7900affe7e640646e87d907bec67ee43",
+      "joined": "ff064469f0a2ab7a3c41cbaf94b15d502b11b73a3bf071bda67f54b025297f9f"
+    },
+    "producer_path": "Original qualification/activation filter unchanged; candidates++ once per eligible callback, then exact typed === previous admitted projection. Equal branch suppressed++ and returns same trace; changed branch reserves original raw credit, sends exact original app_state with contiguous submitted ordinal, stores projection only after send.",
+    "bounds_and_failure": "Original outstanding credit cap1024 remains before message send; rejection rolls back outstanding credit, increments rejected, sends original sticky overflow and trace.failed. Original observer independently enforces ordinal/FIFO/highwater and1024distinct cap. Failed trace stops future candidate processing under existing filter; no silent success.",
+    "counter_model": "4atomics:1outstanding,2eligible candidates,3adjacent suppressed,4rejected candidates. One eligible callback takes suppression/sent/rejected branch. Accepted terminal requires rejected0 and candidates=received_raw+suppressed, plus existing nofailure/normalobserverjoin/outstanding0/receiptcount+sequence conditions.",
+    "terminal_reliability": "Only Gate writes candidates/suppressed/rejected. Observer monitors actual Gate before producer installation. Gate sends raw/fences directly to observer in order; queued Gate raw signals precede its DOWN to that observer. Terminal after GateDOWN has no future Gate counter writes and all prior raw consumed; original outstanding0 guards incomplete delivery. Abrupt Gate death during an increment/dispatch would fail conservation rather than fabricate acceptance. Host then obtains actual observer_closed and matching normal observer DOWN; timeout remains original command expires.",
+    "live_fence": "Live fence defines a FIFO receipt prefix but shared atomics may already include Gate callbacks after that fence when observer samples counters. Proposal intentionally asserts balance only for terminal, preserving original live receipt prefix checks without false livebalance.",
+    "cost": "Gate adds map traversal/construction and strict equality with one previous projection. Work/memory scales with live lease+cleanup entries; changed app_state send still has BEAM message-copy cost. No Gate inspect/sort/crypto/serialization or O1 claim. Heavy original snapshot/hash remains observer-owned."
+  },
+  "verified_own_state_domain": "Current own Admission initializes service PID/mode atom/bytes integer, uses reference map keys, lease PID/bytes/nil-or-reference cleanup/request_active boolean and cleanup reference/bytes/receipt boolean. All projected fields are the actual snapshot inputs; cleanup positive receipt and final failed mode cannot be suppressed when changed.",
+  "empirical_status": "NOT RUN by reviewer; diagnostic7 actual result pending from Root at report creation. No experiment PASS is inferred from static review.",
+  "release_condition": "Only conditional static readiness. Requires actual diagnostic7 PASS for all4originalR32cells/128authenticcleanup tracepairs and joins/source stability, plus Root explicit canonical release authorization. This report itself does not release canonical or advance collector counter.",
+  "canonical_change_released": false,
+  "stage_acceptance": "INCOMPLETE; full135matrix/fullstageindependentreview/freshgates remain separate.",
+  "historical_evidence_preserved": "Earlier adjacent/global static proof PASS did not erase empiricalFAIL; diagnostic6 true distinct1025 remains FAIL; original canonical remains Sol15v2.",
+  "repository_edits": [],
+  "runtime": "No Mix/runtime/format/build/peer/browser/import/compile commands or agents run by reviewer; only AST parsing,read-only hashes/source/diff and /tmp JSON writes.",
+  "verification_commands": [
+    "sha256sum proposal/canonical/diff",
+    "read proposal diff and original snapshot/observer/fence/terminal paths",
+    "Python ast.parse only:50nodes/49unchanged/HOSTonly",
+    "Static helper byte comparison and frozen SHA assertions"
+  ],
+  "commands_finished": true,
+  "counters_retained": "fixedSol18/unsuccessfulGREEN13;collectorSol15/unsuccessfulGREEN11;matrixFAIL10;R32diagnosticFAIL4;nativepollRED2fixturecorr2;Astra2of2",
+  "reviewer_repair_rounds": 0,
+  "remaining_risks": [
+    "Adjacent suppression cannot remove nonadjacent state combinations; actual R32 experiment can still fail both original1024caps.",
+    "Additional Gate traversal/equality/copy can perturb scheduling; original cleanup50ms proof requires real empirical gates.",
+    "Focused diagnostic success would qualify only collector release readiness, not complete fixed-H2 acceptance."
+  ],
+  "decisions_needed": []
+}

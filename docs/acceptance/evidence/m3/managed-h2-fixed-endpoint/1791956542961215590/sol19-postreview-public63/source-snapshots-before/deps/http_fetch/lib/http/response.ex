@@ -1,0 +1,660 @@
+defmodule HTTP.Response do
+  @moduledoc """
+  HTTP response struct implementing the Browser Fetch API Response interface.
+
+  This module represents an HTTP response with full compatibility with the
+  Browser Fetch API standard. It supports both buffered and streaming responses,
+  body consumption tracking, response cloning, and multiple read formats.
+
+  ## Browser Fetch API Compatibility
+
+  This module implements the JavaScript Fetch API Response interface:
+
+  - `status` - HTTP status code (e.g., 200, 404, 500)
+  - `status_text` - Status message ("OK", "Not Found", etc.)
+  - `ok` - Boolean for success status (200-299)
+  - `headers` - Response headers as `HTTP.Headers` struct
+  - `body` - Response body as binary, or stream PID for streaming responses
+  - `body_used` - Track if body has been consumed
+  - `url` - The requested URL as `URI` struct
+  - `redirected` - Whether response was redirected
+  - `type` - Response type (:basic, :cors, :error, :opaque)
+  - `stream` - Stream process PID for streaming responses (nil for buffered)
+
+  Network responses expose the actual `http_version` (`:http1`, `:http2`, or
+  `:http3`). HTTP/2 and HTTP/3 retain ordered `{status, headers}` informational
+  blocks in `informational` when the final response arrives. Buffered trailers
+  are available in `trailers` when the promise completes, separate from initial
+  `headers`. Streamed trailers arrive as `{:stream_trailers, stream_pid, headers}`
+  after body delivery acknowledgements and immediately before `{:stream_end,
+  stream_pid}`; the immutable response's `trailers` field remains empty.
+
+  HTTP/2 retains at most 128 informational blocks and 65,536 bytes of
+  informational fields in total. Trailers have at most 256 fields and 65,536
+  bytes. These byte budgets include 32 bytes of overhead per field, and the
+  protocol's HPACK limits also apply. Exceeding a retention budget fails with
+  `:http2_informational_limit` or `:http2_trailers_limit` rather than dropping
+  fields. HTTP/1 informational fields are currently not exposed. HTTP/1 trailers
+  retain at most 128 fields and 65,536 serialized bytes, including delimiters,
+  and reject malformed or forbidden fields. Permitted undeclared response
+  trailers are accepted; `Trailer` declarations are advisory and validated.
+  Exposing metadata does not establish gRPC support.
+
+  ## HTTP Content-Encoding
+
+  Network responses transparently decode `gzip` (including concatenated members)
+  and zlib-wrapped `deflate` on HTTP/1.1, HTTP/2 and HTTP/3. Supported coding
+  chains and repeated header fields decode in reverse order; `identity` is a
+  no-op. If any coding is unsupported (for example `br`), the entire body passes
+  through unchanged. No `Accept-Encoding` header is added automatically; callers
+  may explicitly request `gzip, deflate`.
+
+  Decoding applies only to `Content-Encoding`. A `.tgz` download without that
+  header keeps its original archive bytes, regardless of URL or Content-Type.
+  Manually constructed responses are also unchanged. HEAD and body-forbidden
+  statuses expose their empty body without decoding.
+
+  All network body consumers (`text/1`, `json/1`, `read_all/1`, `array_buffer/1`,
+  `blob/1`, `clone/1` and `write_to/2`) see decoded bytes, as do direct stream
+  readers. Stream decoding is incremental and retains delivery acknowledgements
+  and trailer ordering. A response stream is consumed once; buffered bodies can
+  be read repeatedly. Chunk boundaries may change during decoding.
+
+  Initial headers retain the server's values, including `Content-Encoding` and
+  the encoded `Content-Length`. That length also determines whether a response
+  is buffered or streamed; it is not the decoded byte count. Streaming telemetry
+  chunk/stop byte counts describe the decoded bytes, while streaming start
+  retains the encoded length. Decoded bodies can be larger than encoded bodies.
+
+  Malformed or truncated supported encodings fail buffered fetches with
+  `{:error, {:invalid_content_encoding, coding}}`. Streams deliver
+  `{:stream_error, stream_pid, {:invalid_content_encoding, coding}}`;
+  `write_to/2` returns that error, while read methods raise the usual stream-read
+  `RuntimeError`. A failed file write may leave partial decoded bytes. Raw
+  (non-zlib-wrapped) deflate is rejected as malformed.
+
+  ## Response Methods
+
+  - `json/1` - Parse response as JSON
+  - `text/1` - Read response as text
+  - `arrayBuffer/1` - Read response as binary
+  - `blob/1` - Read response as Blob with metadata
+  - `clone/1` - Clone response for multiple reads
+
+  ## Elixir-Specific Differences
+
+  **Immutability**: Unlike JavaScript, Elixir responses are immutable. The `body_used`
+  property won't automatically update across function calls. Use `clone/1` before
+  multiple reads.
+
+  **Synchronous Returns**: Methods like `json()` and `text()` return values directly
+  instead of Promises, following Elixir conventions.
+
+  **Stream Handling**: Large responses expose a stream process in `body`, with
+  `stream` retained as a compatibility alias.
+
+  ## Struct Fields
+
+  - `status` - HTTP status code (e.g., 200, 404, 500)
+  - `status_text` - Status message (e.g., "OK", "Not Found")
+  - `ok` - Boolean indicating success (true for 200-299)
+  - `headers` - Response headers as `HTTP.Headers` struct
+  - `body` - Response body as binary, or stream PID for streaming responses
+  - `body_used` - Whether body has been consumed (Browser API behavior)
+  - `url` - The requested URL as `URI` struct
+  - `redirected` - Whether response was redirected
+  - `type` - Response type (:basic, :cors, :error, :opaque)
+  - `stream` - Stream process PID for streaming responses (nil for buffered)
+
+  ## Streaming vs Buffered Responses
+
+  Responses are automatically streamed when:
+
+  - Content-Length > 5MB
+  - Content-Length header is missing/unknown
+
+  **Buffered responses** have the complete body in the `body` field:
+
+      %HTTP.Response{
+        status: 200,
+        body: "response data",
+        stream: nil
+      }
+
+  **Streaming responses** expose the stream PID on `body`, with the same PID
+  retained on `stream` for compatibility:
+
+        %HTTP.Response{
+          status: 200,
+          body: #PID<0.123.0>,
+          stream: #PID<0.123.0>
+        }
+
+  ## Usage
+
+      # Simple text response
+      response = HTTP.fetch("https://example.com") |> HTTP.Promise.await()
+      text = HTTP.Response.text(response)
+
+      # JSON parsing
+      response = HTTP.fetch("https://api.example.com/data") |> HTTP.Promise.await()
+      {:ok, json} = HTTP.Response.json(response)
+
+      # Write to file (works with both streaming and buffered)
+      response = HTTP.fetch("https://example.com/file.zip") |> HTTP.Promise.await()
+      :ok = HTTP.Response.write_to(response, "/tmp/file.zip")
+
+      # Get specific header
+      content_type = HTTP.Response.get_header(response, "content-type")
+
+      # Parse Content-Type
+      {media_type, params} = HTTP.Response.content_type(response)
+
+  ## Streaming Responses
+
+  For streaming responses, use `read_all/1` or `write_to/2` to consume the stream:
+
+      # Read entire stream into memory
+      body = HTTP.Response.read_all(response)
+
+      # Write stream directly to file (more memory efficient)
+      :ok = HTTP.Response.write_to(response, "/path/to/file")
+  """
+
+  defstruct status: 0,
+            status_text: "",
+            ok: false,
+            headers: %HTTP.Headers{},
+            body: nil,
+            body_used: false,
+            url: nil,
+            redirected: false,
+            type: :basic,
+            stream: nil,
+            http_version: nil,
+            informational: [],
+            trailers: %HTTP.Headers{}
+
+  @type response_type :: :basic | :cors | :error | :opaque
+
+  @type t :: %__MODULE__{
+          status: integer(),
+          status_text: String.t(),
+          ok: boolean(),
+          headers: HTTP.Headers.t(),
+          body: binary() | pid() | nil,
+          body_used: boolean(),
+          url: URI.t() | nil,
+          redirected: boolean(),
+          type: response_type(),
+          stream: pid() | nil,
+          http_version: :http1 | :http2 | :http3 | nil,
+          informational: [{integer(), HTTP.Headers.t()}],
+          trailers: HTTP.Headers.t()
+        }
+
+  @doc """
+  Creates a new Response struct with Browser Fetch API fields populated.
+
+  This is the recommended way to create Response structs. It automatically
+  derives `status_text` and `ok` from the status code, and sets proper defaults
+  for all Browser API fields.
+
+  ## Parameters
+    - `opts` - Keyword list with fields:
+      - `:status` - HTTP status code (default: 0)
+      - `:headers` - HTTP.Headers struct (default: empty headers)
+      - `:body` - Response body binary or stream PID (default: stream PID or nil)
+      - `:url` - Request URL (default: nil)
+      - `:stream` - Stream PID for streaming responses (default: nil)
+      - `:redirected` - Whether response was redirected (default: false)
+      - `:type` - Response type (default: :basic)
+
+  The following fields are automatically computed:
+    - `status_text` - Derived from status code via HTTP.StatusText
+    - `ok` - Set to true if status in 200..299
+    - `body_used` - Always initialized to false
+
+  ## Examples
+
+      iex> response = HTTP.Response.new(status: 200, body: "OK", url: URI.parse("https://example.com"))
+      iex> response.status
+      200
+      iex> response.status_text
+      "OK"
+      iex> response.ok
+      true
+      iex> response.body
+      "OK"
+      iex> response.body_used
+      false
+
+      iex> response = HTTP.Response.new(status: 404, headers: HTTP.Headers.new())
+      iex> response.status
+      404
+      iex> response.status_text
+      "Not Found"
+      iex> response.ok
+      false
+  """
+  @spec new(keyword()) :: t()
+  def new(opts \\ []) do
+    status = Keyword.get(opts, :status, 0)
+    stream = Keyword.get(opts, :stream, nil)
+
+    body =
+      if Keyword.has_key?(opts, :body) do
+        Keyword.get(opts, :body)
+      else
+        stream
+      end
+
+    %__MODULE__{
+      status: status,
+      status_text: HTTP.StatusText.get(status),
+      ok: status in 200..299,
+      headers: Keyword.get(opts, :headers, %HTTP.Headers{}),
+      body: body,
+      body_used: false,
+      url: Keyword.get(opts, :url, nil),
+      redirected: Keyword.get(opts, :redirected, false),
+      type: Keyword.get(opts, :type, :basic),
+      stream: stream,
+      http_version: Keyword.get(opts, :http_version),
+      informational: Keyword.get(opts, :informational, []),
+      trailers: Keyword.get(opts, :trailers, %HTTP.Headers{})
+    }
+  end
+
+  # Note: body_used tracking exists for Browser API compatibility but due to
+  # Elixir's immutability, it cannot prevent multiple reads like in JavaScript.
+  # The field is present for API compatibility and documentation purposes.
+
+  @doc """
+  Reads the response body as text.
+
+  For streaming responses, this will read the entire stream into memory.
+
+  **Note**: Due to Elixir's immutability, the `body_used` field exists for API
+  compatibility but doesn't prevent multiple reads. Use `clone/1` for clarity
+  when reading multiple times.
+
+  ## Examples
+
+      iex> response = HTTP.Response.new(status: 200, body: "Hello")
+      iex> HTTP.Response.text(response)
+      "Hello"
+  """
+  @spec text(t()) :: binary()
+  def text(%__MODULE__{body: body} = response) when is_pid(body), do: read_all(response)
+  def text(%__MODULE__{body: body, stream: nil}), do: body
+
+  def text(%__MODULE__{body: body} = response) do
+    if is_pid(response_stream(response)) do
+      read_all(response)
+    else
+      body || ""
+    end
+  end
+
+  @doc """
+  Reads the entire response body as binary.
+
+  For streaming responses, this will consume the entire stream into memory.
+  For non-streaming responses, returns the existing body.
+
+  ## Examples
+      iex> response = HTTP.Response.new(status: 200, body: "Hello World")
+      iex> HTTP.Response.read_all(response)
+      "Hello World"
+  """
+  @spec read_all(t()) :: binary()
+  def read_all(%__MODULE__{} = response) do
+    case response_stream(response) do
+      stream when is_pid(stream) ->
+        case read_stream(stream) do
+          {:ok, body} -> body
+          {:error, reason} -> raise RuntimeError, "stream read failed: #{inspect(reason)}"
+        end
+
+      nil ->
+        response.body || ""
+    end
+  end
+
+  defp response_stream(%__MODULE__{body: body}) when is_pid(body), do: body
+  defp response_stream(%__MODULE__{stream: stream}) when is_pid(stream), do: stream
+  defp response_stream(%__MODULE__{}), do: nil
+
+  @doc false
+  @spec stream_body?(t()) :: boolean()
+  def stream_body?(%__MODULE__{} = response), do: is_pid(response_stream(response))
+
+  @doc false
+  @spec stream_pid(t()) :: pid() | nil
+  def stream_pid(%__MODULE__{} = response), do: response_stream(response)
+
+  @doc false
+  @spec with_stream_body(t(), pid()) :: t()
+  def with_stream_body(%__MODULE__{} = response, stream) when is_pid(stream) do
+    %{response | body: stream, stream: stream}
+  end
+
+  @doc false
+  @spec with_buffered_body(t(), binary()) :: t()
+  def with_buffered_body(%__MODULE__{} = response, body) when is_binary(body) do
+    %{response | body: body, stream: nil}
+  end
+
+  @doc false
+  @spec buffered_body(t()) :: binary() | nil
+  def buffered_body(%__MODULE__{} = response) do
+    if stream_body?(response), do: nil, else: response.body
+  end
+
+  @doc false
+  @spec body_size(t()) :: non_neg_integer()
+  def body_size(%__MODULE__{} = response) do
+    case buffered_body(response) do
+      body when is_binary(body) -> byte_size(body)
+      _other -> 0
+    end
+  end
+
+  defp read_stream(stream) do
+    send(stream, {:read_chunk, self(), :ack})
+    collect_stream(stream, [])
+  end
+
+  defp collect_stream(stream, acc) do
+    receive do
+      {:stream_chunk, ^stream, chunk, ack_ref} ->
+        send(stream, {:stream_chunk_ack, ack_ref})
+        collect_stream(stream, [chunk | acc])
+
+      {:stream_chunk, ^stream, chunk} ->
+        collect_stream(stream, [chunk | acc])
+
+      {:stream_end, ^stream} ->
+        {:ok, collected_body(acc)}
+
+      {:stream_error, ^stream, reason} ->
+        {:error, reason}
+    after
+      HTTP.Config.streaming_timeout() -> {:error, :timeout}
+    end
+  end
+
+  defp collected_body(acc) do
+    acc
+    |> Enum.reverse()
+    |> IO.iodata_to_binary()
+  end
+
+  @doc """
+  Reads the response body and parses it as JSON.
+
+  For streaming responses, this will read the entire stream before parsing.
+
+  Returns:
+    - `{:ok, map | list}` if the body is valid JSON.
+    - `{:error, reason}` if the body cannot be parsed as JSON.
+
+  ## Examples
+      iex> response = HTTP.Response.new(status: 200, body: ~s({"key": "value"}))
+      iex> HTTP.Response.read_as_json(response)
+      {:ok, %{"key" => "value"}}
+  """
+  @spec read_as_json(t()) :: {:ok, map() | list()} | {:error, term()}
+  def read_as_json(%__MODULE__{} = response) do
+    body = read_all(response)
+
+    case JSON.decode(body) do
+      {:ok, decoded} -> {:ok, decoded}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @doc """
+  Parses the response body as JSON using Elixir's built-in `JSON` module (available in Elixir 1.18+).
+
+  Returns:
+    - `{:ok, map | list}` if the body is valid JSON.
+    - `{:error, reason}` if the body cannot be parsed as JSON.
+
+  Note: This method is deprecated in favor of `read_as_json/1` for streaming responses.
+  """
+  @spec json(t()) :: {:ok, map() | list()} | {:error, term()}
+  def json(%__MODULE__{} = response) do
+    body = read_all(response)
+
+    case JSON.decode(body) do
+      {:ok, decoded} -> {:ok, decoded}
+      {:error, error} -> {:error, error}
+    end
+  end
+
+  @doc """
+  Gets a response header value by name (case-insensitive).
+
+  ## Examples
+      iex> response = %HTTP.Response{headers: HTTP.Headers.new([{"Content-Type", "application/json"}])}
+      iex> HTTP.Response.get_header(response, "content-type")
+      "application/json"
+
+      iex> response = %HTTP.Response{headers: HTTP.Headers.new([{"Content-Type", "application/json"}])}
+      iex> HTTP.Response.get_header(response, "missing")
+      nil
+  """
+  @spec get_header(t(), String.t()) :: String.t() | nil
+  def get_header(%__MODULE__{headers: headers}, name) do
+    HTTP.Headers.get(headers, name)
+  end
+
+  @doc """
+  Parses the Content-Type header to extract media type and parameters.
+
+  ## Examples
+      iex> response = %HTTP.Response{headers: HTTP.Headers.new([{"Content-Type", "application/json; charset=utf-8"}])}
+      iex> HTTP.Response.content_type(response)
+      {"application/json", %{"charset" => "utf-8"}}
+
+      iex> response = %HTTP.Response{headers: HTTP.Headers.new([{"Content-Type", "text/plain"}])}
+      iex> HTTP.Response.content_type(response)
+      {"text/plain", %{}}
+  """
+  @spec content_type(t()) :: {String.t(), map()}
+  def content_type(%__MODULE__{headers: headers}) do
+    case HTTP.Headers.get(headers, "content-type") do
+      nil -> {"text/plain", %{}}
+      content_type -> HTTP.Headers.parse_content_type(content_type)
+    end
+  end
+
+  @doc """
+  Creates a duplicate of the response, allowing the body to be read multiple times.
+
+  For buffered responses, this creates a shallow copy with the body duplicated and
+  `body_used` reset to false.
+
+  For streaming responses, this creates a "tee" that splits the stream into two
+  independent streams that can be consumed separately.
+
+  ## Examples
+
+      # Clone buffered response
+      response = HTTP.Response.new(status: 200, body: "data")
+      clone = HTTP.Response.clone(response)
+
+      # Read original
+      text1 = HTTP.Response.text(response)
+
+      # Read clone independently
+      text2 = HTTP.Response.text(clone)
+
+      # Both contain the same data
+      text1 == text2  # true
+
+      # Clone streaming response
+      response = HTTP.Response.new(status: 200, stream: stream_pid)
+      clone = HTTP.Response.clone(response)
+
+      # Both can be read independently
+      data1 = HTTP.Response.read_all(response)
+      data2 = HTTP.Response.read_all(clone)
+  """
+  @spec clone(t()) :: t()
+  def clone(%__MODULE__{} = response) do
+    cond do
+      stream_body?(response) ->
+        # This reads the stream and returns a buffered copy.
+        body = read_all(%{response | body_used: false})
+        with_buffered_body(%{response | body_used: false}, body)
+
+      not is_nil(response.body) ->
+        %{response | body_used: false}
+
+      true ->
+        %{response | body_used: false}
+    end
+  end
+
+  @doc """
+  Reads the response body as raw binary data (equivalent to JavaScript's ArrayBuffer).
+
+  Returns the body as an Elixir binary. For streaming responses, this reads
+  the entire stream into memory.
+
+  ## Examples
+
+      iex> response = HTTP.Response.new(status: 200, body: <<1, 2, 3, 4>>)
+      iex> HTTP.Response.arrayBuffer(response)
+      <<1, 2, 3, 4>>
+  """
+  @spec arrayBuffer(t()) :: binary()
+  # credo:disable-for-next-line Credo.Check.Readability.FunctionNames
+  def arrayBuffer(%__MODULE__{} = response) do
+    # arrayBuffer is essentially the same as read_all for binary data
+    read_all(response)
+  end
+
+  @doc """
+  Alias for `arrayBuffer/1` following Elixir naming conventions.
+  """
+  @spec array_buffer(t()) :: binary()
+  def array_buffer(response), do: arrayBuffer(response)
+
+  @doc """
+  Reads the response body as a Blob (binary data with metadata).
+
+  Returns an `HTTP.Blob` struct containing the body data, MIME type extracted
+  from the Content-Type header, and size in bytes.
+
+  ## Examples
+
+      iex> response = HTTP.Response.new(
+      ...>   status: 200,
+      ...>   body: <<1, 2, 3, 4>>,
+      ...>   headers: HTTP.Headers.new([{"content-type", "image/png"}])
+      ...> )
+      iex> blob = HTTP.Response.blob(response)
+      iex> blob.type
+      "image/png"
+      iex> blob.size
+      4
+  """
+  @spec blob(t()) :: HTTP.Blob.t()
+  def blob(%__MODULE__{} = response) do
+    # Read body data
+    data = read_all(response)
+
+    # Extract MIME type from Content-Type header
+    {content_type, _params} = content_type(response)
+
+    HTTP.Blob.new(data, content_type)
+  end
+
+  @doc """
+  Writes the response body to a file.
+
+  For streaming responses, this writes chunks directly to the file.
+  For non-streaming responses, it will write the existing body directly.
+
+  ## Parameters
+    - `response`: The HTTP response to write
+    - `file_path`: The path to write the file to
+
+  ## Returns
+    - `:ok` on success
+    - `{:error, reason}` on failure
+
+  ## Examples
+      iex> response = %HTTP.Response{body: "file content", stream: nil}
+      iex> HTTP.Response.write_to(response, "/tmp/test.txt")
+      :ok
+  """
+  @spec write_to(t(), String.t()) :: :ok | {:error, term()}
+  def write_to(%__MODULE__{} = response, file_path) do
+    # Ensure the directory exists
+    file_path
+    |> Path.dirname()
+    |> File.mkdir_p!()
+
+    cond do
+      stream_body?(response) ->
+        write_stream_to_file(response, file_path)
+
+      is_binary(response.body) or is_list(response.body) ->
+        # Non-streaming response
+        binary_body =
+          if is_list(response.body), do: IO.iodata_to_binary(response.body), else: response.body
+
+        File.write!(file_path, binary_body)
+        :ok
+
+      true ->
+        # Empty or nil body
+        File.write!(file_path, "")
+        :ok
+    end
+  rescue
+    error -> {:error, error}
+  end
+
+  defp write_stream_to_file(response, file_path) do
+    with stream when is_pid(stream) <- response_stream(response),
+         {:ok, result} <-
+           File.open(file_path, [:write, :binary], &write_stream_chunks(stream, &1)) do
+      result
+    else
+      {:error, reason} -> {:error, reason}
+      _ -> :ok
+    end
+  end
+
+  defp write_stream_chunks(stream, file) do
+    send(stream, {:read_chunk, self(), :ack})
+    do_write_stream_chunks(stream, file)
+  end
+
+  defp do_write_stream_chunks(stream, file) do
+    receive do
+      {:stream_chunk, ^stream, chunk, ack_ref} ->
+        :ok = IO.binwrite(file, chunk)
+        send(stream, {:stream_chunk_ack, ack_ref})
+        do_write_stream_chunks(stream, file)
+
+      {:stream_chunk, ^stream, chunk} ->
+        :ok = IO.binwrite(file, chunk)
+        do_write_stream_chunks(stream, file)
+
+      {:stream_end, ^stream} ->
+        :ok
+
+      {:stream_error, ^stream, reason} ->
+        {:error, reason}
+    after
+      HTTP.Config.streaming_timeout() -> {:error, :timeout}
+    end
+  end
+end

@@ -1,0 +1,577 @@
+{
+  "task_id": "upstream122_v0219_release_diagnosis",
+  "status": "DONE",
+  "assignment": "direct bounded read-only released-source investigation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "completed_timestamp_utc": "2026-10-14T19:28:00.408154+00:00",
+  "verdict": "V0219_DOES_NOT_REPAIR_SOURCE_SUPPORTED_PUBLIC_PRE_HEAD_CANCELLATION_CLASSIFICATION_RACE",
+  "blocked_gate_status": "BLOCKED_UPSTREAM remains; issue122 repair plus compatible dependency update and fresh required gates needed. Release availability and passing trials are not resolution.",
+  "root_cause_and_evidence": {
+    "result": "Published 0.21.9 preserves the abort/socket-close ordering and raw final-send/activation-error path from installed0.21.4. Finite3000ms original reproduction does not use any new infinite-deadline branch.",
+    "causal_path": [
+      "Original RequestCompletion.abort_and_await sends lifecycle :abort then awaits logical cleanup (request_completion.ex99-102; whole file identical).",
+      "Lifecycle handles :abort by enumerating resources and cancelling each. Owner cancellation sends :abort (line458); socket cancellation applies linger and closes TCP port (475-477). Map traversal/send order does not force owner to consume abort before setopts. Whole lifecycle file identical.",
+      "send_request1765 returns transport.send result selected from its mailbox. Byte-identical function retains potential final-send error arriving ahead of pendingabort. Peer complete-header notification alone does not prove owner has consumed final-send result or entered response loop.",
+      "initialize_legacy_owner558-571 performs request_ready before start_prepared_request; following successful send it calls activate_socket immediately, with no new intervening cancellationcause arbitration. activate_socket1959-1967 still returns raw setopts error and closes socket; function byte-identical.",
+      "fail1567-1577 normalizes only :timeout after originaldeadline; :einval is unchanged. report_failure1582-1584 triggers cleanup then sends originalreason. Functions unchanged.",
+      "await_owner1664-1666 forwards raw http_fetch_error reason. Its only source change is timeout+1000 delegated to owner_wait_timeout, identical behavior for finite3000. Promise, RequestCompletion and AbortController unchanged; HTTP.ex difference is documentation only.",
+      "Thus cleanup can close TCP while owner is activating/final-sending, letting raw transport error win over pendingabort. The actual original failing syscall/interleaving remains untraced. No new runtime reproduction performed."
+    ],
+    "source_refs": [
+      {
+        "tag_file": "apps/http_fetch/lib/http/socket_client.ex",
+        "ranges": [
+          "558-571",
+          "1567-1584",
+          "1656-1675",
+          "1765-1808",
+          "1959-1967",
+          "1998-2019"
+        ]
+      },
+      {
+        "tag_file": "apps/http_core/lib/http/request_lifecycle.ex",
+        "ranges": [
+          "373-375",
+          "458",
+          "475-477"
+        ]
+      },
+      {
+        "tag_file": "apps/http_fetch/lib/http/request_completion.ex",
+        "ranges": [
+          "99-102"
+        ]
+      }
+    ],
+    "confidence": "High: source/package-byte-backed absence of a cancellation-path repair; no claim that scheduling frequency is unchanged or that original observed interleaving has been deterministically reproduced."
+  },
+  "release_provenance": {
+    "tag": "v0.21.9",
+    "tag_commit": "81ad386f9e6577ee5b7b20edc7fb07e3d67c6e8a",
+    "published_at": "2026-10-14T19:04:03Z",
+    "url": "https://github.com/gsmlg-dev/http_fetch/releases/tag/v0.21.9",
+    "body": "Published to Hex.pm: https://hex.pm/packages/ex_ssl/0.21.9, https://hex.pm/packages/elixir_quic/0.21.9, https://hex.pm/packages/http_core/0.21.9, https://hex.pm/packages/elixir_quic_http3/0.21.9, https://hex.pm/packages/http_runtime/0.21.9, https://hex.pm/packages/http_fetch/0.21.9, https://hex.pm/packages/http_web_socket/0.21.9, https://hex.pm/packages/http_event_source/0.21.9, https://hex.pm/packages/http_web_transport/0.21.9\n\n## What's Changed\n* fix: support infinite HTTP1 request deadlines by @gsmlg in https://github.com/gsmlg-dev/http_fetch/pull/120\n\n\n**Full Changelog**: https://github.com/gsmlg-dev/http_fetch/compare/v0.21.8...v0.21.9",
+    "installed_0214_commit_from_prior_diagnosis": "264fb3e4388b98f34b26f16199a0ad4fb278a4fc",
+    "prior0218_commit_from_prior_diagnosis": "0ca9cf01ad07b568c80e0e3d6ea84c2c6f0ee3ea",
+    "commits_since0218": [
+      {
+        "sha": "58c0711d5975cbdf1bfc914218d2858ec6304a15",
+        "title": "fix: support infinite HTTP1 request deadlines (fixes #119)"
+      },
+      {
+        "sha": "33a99c1f38e54078baa4ddd42873b8914b805afd",
+        "title": "fix: support infinite HTTP1 request deadlines (#120)"
+      },
+      {
+        "sha": "81ad386f9e6577ee5b7b20edc7fb07e3d67c6e8a",
+        "title": "chore(release): v0.21.9"
+      }
+    ],
+    "linked_repair_pr": {
+      "number": 120,
+      "title": "fix: support infinite HTTP1 request deadlines",
+      "state": "MERGED",
+      "mergedAt": "2026-10-14T18:43:31Z",
+      "mergeCommit": {
+        "oid": "33a99c1f38e54078baa4ddd42873b8914b805afd"
+      },
+      "url": "https://github.com/gsmlg-dev/http_fetch/pull/120",
+      "body": "HTTP/1 requests using `timeout: :infinity` crashed while calculating their deadline. Preserve an unlimited request deadline and an independent finite or infinite connection timeout, including raw streaming uploads/downloads, cancellation, owner cleanup, and connection reuse.\n\nExSSL streaming uploads retain a finite per-write limit. Document that limit, separate stream/Promise timeouts, and the existing finite-timeout requirement for managed scopes. Add the v0.21.9 changelog entry.\n\nValidation: strict compilation in default and test environments; full Fetch suite (20 doctests, 951 tests, zero failures); focused real TCP/OTP TLS/ExSSL regressions; root formatting; Credo (496 files, no issues). The focused tests cover stalled setup, blocked TLS uploads, raw streaming, abort/caller/reader death, and reuse.\n\nFixes #119\n"
+    },
+    "linked_fixed_issue": 119,
+    "issue122_linked_fix": "NONE in release body/PR120/commits; issue122 remains OPEN with no comments.",
+    "coordinated_source_cohort": {
+      "elixir_quic": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "7d370a888e03f443479acda6149c0d3ff9cefdbe8a1d7555f8ea1ad255fa3332",
+        "exact_requirements": {
+          "ex_ssl": "0.21.9"
+        }
+      },
+      "elixir_quic_http3": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "aec31a5f6ea7d2cdbd2f4bdb7c7d8959fc037c6ebea1c3f15d1d331d140a2c72",
+        "exact_requirements": {
+          "http_core": "0.21.9",
+          "elixir_quic": "0.21.9"
+        }
+      },
+      "ex_ssl": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "9872cd237f46feb0a1b8450cbd14f175a1993db72f50aec761260679d250e4be",
+        "exact_requirements": {}
+      },
+      "http_core": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "8522b5ead9216105ed64dd3b6cc3af78bbe814fc0ce3d519f21f965ffc8730be",
+        "exact_requirements": {
+          "ex_ssl": "0.21.9",
+          "elixir_quic": "0.21.9"
+        }
+      },
+      "http_event_source": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "5f3810b2ab243f994b16c44e467bf86dd844d4a1901b401d161620a64a46cb36",
+        "exact_requirements": {
+          "http_core": "0.21.9",
+          "http_runtime": "0.21.9"
+        }
+      },
+      "http_fetch": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "17d438f9524cf7184e08dfdd5767530d50fb919db73d225962f6277e480a3940",
+        "exact_requirements": {
+          "http_core": "0.21.9",
+          "http_runtime": "0.21.9"
+        }
+      },
+      "http_runtime": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "632be776028736d1eb4dc56c0e38bef40c4798d2f30afd9d7fe2a1f895dbfa28",
+        "exact_requirements": {
+          "http_core": "0.21.9",
+          "elixir_quic_http3": "0.21.9"
+        }
+      },
+      "http_web_socket": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "5c34de20ef735397e2072c6c991f3d899761d18a740a24860d5637d6282c0ee0",
+        "exact_requirements": {
+          "http_core": "0.21.9",
+          "http_runtime": "0.21.9"
+        }
+      },
+      "http_web_transport": {
+        "version": "0.21.9",
+        "mix_exs_sha256": "09699a428f83430d887d7d6ab6c74de65e7e247fc105f9688fbf473fc0646572",
+        "exact_requirements": {
+          "http_core": "0.21.9"
+        }
+      }
+    },
+    "published_hex_packages_verified": {
+      "http_fetch": {
+        "tar_sha256": "79b9c9c42cbd1b438d244bb012d74696603db5e323c21f0c8d8c7a370b583c7f",
+        "github_release_digest_matches": true,
+        "hex_checksum_matches": true,
+        "requirements": {
+          "http_core": {
+            "app": "http_core",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          },
+          "http_runtime": {
+            "app": "http_runtime",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          },
+          "telemetry": {
+            "app": "telemetry",
+            "optional": false,
+            "requirement": "~> 1.0"
+          }
+        },
+        "hex_release": {
+          "meta": {
+            "elixir": "~> 1.18",
+            "app": "http_fetch",
+            "build_tools": [
+              "mix"
+            ]
+          },
+          "version": "0.21.9",
+          "checksum": "79b9c9c42cbd1b438d244bb012d74696603db5e323c21f0c8d8c7a370b583c7f",
+          "url": "https://hex.pm/api/packages/http_fetch/releases/0.21.9",
+          "has_docs": false,
+          "inserted_at": "2026-10-14T19:01:25.002826Z",
+          "updated_at": "2026-10-14T19:01:25.002826Z",
+          "requirements": {
+            "http_core": {
+              "app": "http_core",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            },
+            "http_runtime": {
+              "app": "http_runtime",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            },
+            "telemetry": {
+              "app": "telemetry",
+              "optional": false,
+              "requirement": "~> 1.0"
+            }
+          },
+          "html_url": "https://hex.pm/packages/http_fetch/0.21.9",
+          "retirement": null,
+          "publisher": {
+            "url": "https://hex.pm/api/users/gsmlg",
+            "email": "gsmlg.com@gmail.com",
+            "username": "gsmlg"
+          },
+          "package_url": "https://hex.pm/api/packages/http_fetch",
+          "oidc_claims": null,
+          "downloads": [],
+          "security_advisories": [],
+          "docs_html_url": null,
+          "configs": {
+            "erlang.mk": "dep_http_fetch = hex 0.21.9",
+            "mix.exs": "{:http_fetch, \"~> 0.21.9\"}",
+            "rebar.config": "{http_fetch, \"0.21.9\"}"
+          }
+        }
+      },
+      "http_core": {
+        "tar_sha256": "8fd7d53b7f4cdc0b10da6a06a09087c29d1dcdef6f8cd223b518605bce655a52",
+        "github_release_digest_matches": true,
+        "hex_checksum_matches": true,
+        "requirements": {
+          "elixir_quic": {
+            "app": "elixir_quic",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          },
+          "ex_ssl": {
+            "app": "ex_ssl",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          }
+        },
+        "hex_release": {
+          "meta": {
+            "elixir": "~> 1.18",
+            "app": "http_core",
+            "build_tools": [
+              "mix"
+            ]
+          },
+          "version": "0.21.9",
+          "checksum": "8fd7d53b7f4cdc0b10da6a06a09087c29d1dcdef6f8cd223b518605bce655a52",
+          "url": "https://hex.pm/api/packages/http_core/releases/0.21.9",
+          "has_docs": false,
+          "inserted_at": "2026-10-14T19:01:16.762775Z",
+          "updated_at": "2026-10-14T19:01:16.762775Z",
+          "requirements": {
+            "elixir_quic": {
+              "app": "elixir_quic",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            },
+            "ex_ssl": {
+              "app": "ex_ssl",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            }
+          },
+          "html_url": "https://hex.pm/packages/http_core/0.21.9",
+          "retirement": null,
+          "publisher": {
+            "url": "https://hex.pm/api/users/gsmlg",
+            "email": "gsmlg.com@gmail.com",
+            "username": "gsmlg"
+          },
+          "package_url": "https://hex.pm/api/packages/http_core",
+          "oidc_claims": null,
+          "downloads": [],
+          "security_advisories": [],
+          "docs_html_url": null,
+          "configs": {
+            "erlang.mk": "dep_http_core = hex 0.21.9",
+            "mix.exs": "{:http_core, \"~> 0.21.9\"}",
+            "rebar.config": "{http_core, \"0.21.9\"}"
+          }
+        }
+      },
+      "http_runtime": {
+        "tar_sha256": "c43c6a3ed08227ed97818d2238bfcacab6e9c240e37cd575028c1ead71ee42ab",
+        "github_release_digest_matches": true,
+        "hex_checksum_matches": true,
+        "requirements": {
+          "elixir_quic_http3": {
+            "app": "elixir_quic_http3",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          },
+          "http_core": {
+            "app": "http_core",
+            "optional": false,
+            "requirement": "== 0.21.9"
+          },
+          "telemetry": {
+            "app": "telemetry",
+            "optional": false,
+            "requirement": "~> 1.0"
+          }
+        },
+        "hex_release": {
+          "meta": {
+            "elixir": "~> 1.18",
+            "app": "http_runtime",
+            "build_tools": [
+              "mix"
+            ]
+          },
+          "version": "0.21.9",
+          "checksum": "c43c6a3ed08227ed97818d2238bfcacab6e9c240e37cd575028c1ead71ee42ab",
+          "url": "https://hex.pm/api/packages/http_runtime/releases/0.21.9",
+          "has_docs": false,
+          "inserted_at": "2026-10-14T19:01:22.300560Z",
+          "updated_at": "2026-10-14T19:01:22.300560Z",
+          "requirements": {
+            "elixir_quic_http3": {
+              "app": "elixir_quic_http3",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            },
+            "http_core": {
+              "app": "http_core",
+              "optional": false,
+              "requirement": "== 0.21.9"
+            },
+            "telemetry": {
+              "app": "telemetry",
+              "optional": false,
+              "requirement": "~> 1.0"
+            }
+          },
+          "html_url": "https://hex.pm/packages/http_runtime/0.21.9",
+          "retirement": null,
+          "publisher": {
+            "url": "https://hex.pm/api/users/gsmlg",
+            "email": "gsmlg.com@gmail.com",
+            "username": "gsmlg"
+          },
+          "package_url": "https://hex.pm/api/packages/http_runtime",
+          "oidc_claims": null,
+          "downloads": [],
+          "security_advisories": [],
+          "docs_html_url": null,
+          "configs": {
+            "erlang.mk": "dep_http_runtime = hex 0.21.9",
+            "mix.exs": "{:http_runtime, \"~> 0.21.9\"}",
+            "rebar.config": "{http_runtime, \"0.21.9\"}"
+          }
+        }
+      }
+    },
+    "package_authentication": "http_fetch/http_core/http_runtime Hex tar SHA256 each equals corresponding Hex release API checksum and GitHub release asset digest. All nine selected relevant source files from tag exactly match corresponding Hex package contents.",
+    "constraints": "http_fetch requires http_core==0.21.9 and http_runtime==0.21.9; http_core requires ex_ssl/elixir_quic==0.21.9; http_runtime requires http_core/elixir_quic_http3==0.21.9. The full own-source release cohort versions are synchronized0.21.9."
+  },
+  "issue122_current_readonly_snapshot": {
+    "number": 122,
+    "title": "[internal] H1 cancellation can return einval instead of aborted",
+    "state": "OPEN",
+    "updatedAt": "2026-10-14T18:53:23Z",
+    "url": "https://github.com/gsmlg-dev/http_fetch/issues/122",
+    "comments": []
+  },
+  "before_after_file_sha256": {
+    "http_fetch/lib/http/socket_client.ex": {
+      "installed_0214_sha256": "3bfd24c17fb9f3237c2c259fdc366c2df48304a0f58faf308ee87d0523519f88",
+      "tag_0219_sha256": "adc69f64fc29cb6a120127381da6d4679aaba2975fc99812dbc6491dbfbfa78a",
+      "hex_0219_sha256": "adc69f64fc29cb6a120127381da6d4679aaba2975fc99812dbc6491dbfbfa78a",
+      "tag_hex_equal": true,
+      "installed_equal_0219": false
+    },
+    "http_core/lib/http/request_lifecycle.ex": {
+      "installed_0214_sha256": "21cf5d861399587e596f1829acfef83b7ca2bbfa1d4787adee48752fbe900e89",
+      "tag_0219_sha256": "21cf5d861399587e596f1829acfef83b7ca2bbfa1d4787adee48752fbe900e89",
+      "hex_0219_sha256": "21cf5d861399587e596f1829acfef83b7ca2bbfa1d4787adee48752fbe900e89",
+      "tag_hex_equal": true,
+      "installed_equal_0219": true
+    },
+    "http_fetch/lib/http/request_completion.ex": {
+      "installed_0214_sha256": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+      "tag_0219_sha256": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+      "hex_0219_sha256": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+      "tag_hex_equal": true,
+      "installed_equal_0219": true
+    },
+    "http_fetch/lib/http.ex": {
+      "installed_0214_sha256": "b86d8cc723cbab453e04dee8cf2a8bd99ca5a08d638c07a1d677ef501a495f7b",
+      "tag_0219_sha256": "61ea03a1b6d43054fa91f19a1614fd2441ad6b730fb12553a847ffb4e2344238",
+      "hex_0219_sha256": "61ea03a1b6d43054fa91f19a1614fd2441ad6b730fb12553a847ffb4e2344238",
+      "tag_hex_equal": true,
+      "installed_equal_0219": false
+    },
+    "http_fetch/lib/http/promise.ex": {
+      "installed_0214_sha256": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+      "tag_0219_sha256": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+      "hex_0219_sha256": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+      "tag_hex_equal": true,
+      "installed_equal_0219": true
+    },
+    "http_core/lib/http/transport/tcp.ex": {
+      "installed_0214_sha256": "2685ee728c19fc21014972792e5d71560fc8b08f5553b9a3874707fe534a7c9d",
+      "tag_0219_sha256": "2685ee728c19fc21014972792e5d71560fc8b08f5553b9a3874707fe534a7c9d",
+      "hex_0219_sha256": "2685ee728c19fc21014972792e5d71560fc8b08f5553b9a3874707fe534a7c9d",
+      "tag_hex_equal": true,
+      "installed_equal_0219": true
+    },
+    "http_fetch/lib/http/abort_controller.ex": {
+      "installed_0214_sha256": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+      "tag_0219_sha256": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+      "hex_0219_sha256": "82dd7af703720aa49e1a798275f92a81120e983c2133aee548ae02c96523ae93",
+      "tag_hex_equal": true,
+      "installed_equal_0219": true
+    },
+    "http_fetch/lib/http/fetch_options.ex": {
+      "installed_0214_sha256": "8e035e1ec4a8c3afb68731ceb325ddf1cd1b5a780bd1b2a063e3f417241b6061",
+      "tag_0219_sha256": "5fe2a98abc75995afcaad8ed086aa02262a3d0f24858fdbf9d172fbec8dbb32b",
+      "hex_0219_sha256": "5fe2a98abc75995afcaad8ed086aa02262a3d0f24858fdbf9d172fbec8dbb32b",
+      "tag_hex_equal": true,
+      "installed_equal_0219": false
+    },
+    "http_fetch/lib/http/http1/upload.ex": {
+      "installed_0214_sha256": "e55ed4591faf1a0253d2d506dce43d1b3f794f831d48825644045250f3888d65",
+      "tag_0219_sha256": "aff900ec472f31f2c074aa9055c0c4983a7e432d764d39ed3d145bc4ce635c3d",
+      "hex_0219_sha256": "aff900ec472f31f2c074aa9055c0c4983a7e432d764d39ed3d145bc4ce635c3d",
+      "tag_hex_equal": true,
+      "installed_equal_0219": false
+    }
+  },
+  "function_byte_comparison": {
+    "initialize_legacy_owner": {
+      "old_line": 540,
+      "new_line": 540,
+      "old_sha256": "eae715fe44695675cecac947fb9f076e049b16692f0a66b7ff2309955ad19c7c",
+      "new_sha256": "9364f51563ebddc33f51eb9f7e6710e618917586bbc8b70708aa0d5e063bb005",
+      "byte_identical": false,
+      "only_change": true
+    },
+    "send_request": {
+      "old_line": 1765,
+      "new_line": 1765,
+      "old_sha256": "1c4781301a8405489e1e0cee48a54c779f08ffd2601d55623f35649e19dd2965",
+      "new_sha256": "1c4781301a8405489e1e0cee48a54c779f08ffd2601d55623f35649e19dd2965",
+      "byte_identical": true
+    },
+    "activate_socket": {
+      "old_line": 1954,
+      "new_line": 1959,
+      "old_sha256": "121c823bd6fa0cc46110c6332ea9a0c44fc67d2857c5c9a9868edf3f9090039e",
+      "new_sha256": "121c823bd6fa0cc46110c6332ea9a0c44fc67d2857c5c9a9868edf3f9090039e",
+      "byte_identical": true
+    },
+    "fail": {
+      "old_line": 1567,
+      "new_line": 1567,
+      "old_sha256": "b58ee550221b35828004831fc8fc44a803015ae6c508032cbf6e9ac2fd5c7e49",
+      "new_sha256": "b58ee550221b35828004831fc8fc44a803015ae6c508032cbf6e9ac2fd5c7e49",
+      "byte_identical": true
+    },
+    "report_failure": {
+      "old_line": 1579,
+      "new_line": 1579,
+      "old_sha256": "32b2b2d71627244c62150c85e9df96d8e09a44fcefdd9619558d1ceaf0f701ce",
+      "new_sha256": "32b2b2d71627244c62150c85e9df96d8e09a44fcefdd9619558d1ceaf0f701ce",
+      "byte_identical": true
+    },
+    "await_owner": {
+      "old_line": 1656,
+      "new_line": 1656,
+      "old_sha256": "2a471ccb3c3b2e55f19a735da77490f13e412a5605476acab58a2d443553fe0e",
+      "new_sha256": "ab0fb2a96b8ca63effdb4ed906323de0e816a3d435217ea74a7c7bd61a2c93df",
+      "byte_identical": false,
+      "only_change": true
+    }
+  },
+  "relevant_change_assessment": {
+    "socket_client": "Infinity-compatible deadline creation, request timers/cancellation, owner wait timeout, stream timeout and finite ExSSL per-write fallback. Finite timeout behavior of relevant wrappers remains the prior expression. No change to send_request, activate_socket, fail or lifecycle ordering.",
+    "http_ex": "Documentation only.",
+    "fetch_options": "Timeout docs/types admit :infinity; original finite request unchanged.",
+    "http1_upload": "remaining_timeout(:infinity) clause added; original reproduction is a bodyless GET.",
+    "new_upstream_tests": "PR120 covers infinite deadlines/cancellation/cleanup. Upstream reported PASS is upstream evidence only; it does not repair or recertify the exact RequestCompletion#122 race.",
+    "runtime_cohort": "http_runtime source code unchanged v0.21.8->v0.21.9; mix dependency pins/version updated. Earlier Dialer changes remain before-requestheader behavior as prior diagnosis; no cancellation precedence repair."
+  },
+  "original_evidence_preserved": {
+    "full58": "FAIL845/1, exit2, stable source, seed33011; expected {:error,:aborted}, observed {:error,:einval} after abort_and_await :ok. Later originalpeer/repeat assertions NOTEXECUTED after failure.",
+    "same_file_later": "PASS5/0 unchanged source, not repair proof.",
+    "bounded_public_probe": "PASS32/0, peerclosure/DOWN/repeated original completion retained for all32; not repair proof.",
+    "interleaving_limit": "No deterministic trace of original failing syscall/operation; source-supported possible activation/finalsend race only.",
+    "upstream_122_receipts": "Existing routed blocker and snapshot remain unchanged; no issue/comments/PR mutations."
+  },
+  "scope_and_exclusions": [
+    "Read only installed dependency/source files, existing diagnosis/evidence, GitHub issue/release/tag/compare/PR and public Hex source packages/API.",
+    "No repository/deps/candidate/evidence edits; only assigned/tmp diagnosis and scratch writes.",
+    "No runtime/Mix/test/format/network-peer/browser runs.",
+    "No issue97 or replacement proof investigation.",
+    "No dependency upgrade, commit, push/publication/deployment, memory change or Astra recovery."
+  ],
+  "verification_commands_and_results": [
+    {
+      "commands": [
+        "gh api repos/gsmlg-dev/http_fetch/releases/tags/v0.21.9",
+        "gh api repos/gsmlg-dev/http_fetch/compare/v0.21.8...v0.21.9",
+        "gh api repos/gsmlg-dev/http_fetch/git/ref/tags/v0.21.9",
+        "gh issue view122 --repo gsmlg-dev/http_fetch --json number,title,state,body,comments,updatedAt,url",
+        "gh pr view120 --repo gsmlg-dev/http_fetch --json number,title,state,body,mergedAt,mergeCommit,url,commits"
+      ],
+      "actual_outcome": "All exit0; raw responses saved under assigned scratch."
+    },
+    {
+      "commands": [
+        "Python urllib read-only source archive, three Hex packages and three Hex release APIs; per-request30sdeadline",
+        "Python in-memory tar member reads and scoped extraction; exact file/function diff and SHA checks"
+      ],
+      "actual_outcome": "Downloads and scoped package authentication/source comparisons PASS. All9 source pairs tagged-vs-Hex equal; three package checksums/digests equal."
+    },
+    {
+      "commands": [
+        "Static cohort manifest extraction; compare existing owned46 files and installed dependencySHA; git rev-parseHEAD"
+      ],
+      "actual_outcome": "Final PASS exit0; all9 own-source package versions0.21.9 and dependency requirements recorded; owned46 and installed9 reviewed files unchanged at completion."
+    }
+  ],
+  "administrative_diagnostic_failures": {
+    "count": 3,
+    "actual_exit_each": 1,
+    "exception": "AttributeError: NoneType object has no attribute group",
+    "cause": "Scratch-only cohort extraction initially assumed every own package declares @version; elixir_quic/ex_ssl declare literal version: strings. Restricting path matching alone did not correct this assumption.",
+    "resolution": "Read exact top-levelmix headers; accept either @version or literalversion and verify all9 packages. Final extraction PASS. No product source changes or runtime/test assertion changes; these are source-report script failures, not Sol product repair rounds."
+  },
+  "remaining_external_block": "gsmlg-dev/http_fetch#122 has no identified released fix in0.21.9; blocked public H1 cancellation/full58 task cannot resume as repaired. Continue independently unblocked matrix/browser work.",
+  "remaining_risks": [
+    "No new runtime qualification executed; source diagnosis proves absent path repair rather than observed runtime failure frequency.",
+    "Future upstream repair/dependency update still requires exact unchanged assertion and prescribed fresh complete gates."
+  ],
+  "decisions_needed": [],
+  "sol_repair_rounds_consumed": 0,
+  "astra_recovery_rounds_consumed": 0,
+  "retained_astra_counter": "2/2 exhausted",
+  "astra_gate": null,
+  "repository_edits": "NONE",
+  "command_shutdown": "All own gh/urllib/Python commands completed; download exec session35939 exited0. No own active processes/sessions; parent processes untouched.",
+  "scratch_receipt_sha256": {
+    "http_runtime-0.21.9.tar": "c43c6a3ed08227ed97818d2238bfcacab6e9c240e37cd575028c1ead71ee42ab",
+    "issue122.json": "4fc8ca43c3063016857c0b5c7fa2a220fd736c9f99edcec2950e3c542f894d18",
+    "release-v0.21.9.json": "199385d98acb081c3ba067acb73cb9a6f4b581505f27d35fa1fa9254ca5cf0a2",
+    "pr120.json": "e3596861fcdef7ffe18da7eb24ac32ddccf317cfe06d84b06f17420354b44a5a",
+    "http_fetch-0.21.9.tar": "79b9c9c42cbd1b438d244bb012d74696603db5e323c21f0c8d8c7a370b583c7f",
+    "source-comparison-summary.json": "92d35fe54cc22c65b2e3dfeb48a8b751ecba0f49102fcd30381dccb28be40ef3",
+    "hex-http_fetch-0.21.9.json": "ae02eab9fd412f2d81450359636c1ccd570a0aeafe8ae77c52bb25ff49216a3b",
+    "owned46-frozen-readonly-hashes.json": "0c94bea50ab77ee3814fb83848d2428ed0797b5a68cb21f7b5170fd8932bd3eb",
+    "http_runtime-CHECKSUM": "9e758940f8d2a9e6e5a9b53b9737611ffed743df4346a22184c99c410fa27f3b",
+    "upstream-source-v0219.tar.gz": "5467be91e81140c971a9fb48096cc9a737025436edd254b3e43adcfbf736564d",
+    "coordinated-cohort.json": "8d46bdd46f5f1ced8777ad67a7a99680e9ac5ebf8c2548b40928c153e5482721",
+    "http_core-0.21.9.tar": "8fd7d53b7f4cdc0b10da6a06a09087c29d1dcdef6f8cd223b518605bce655a52",
+    "http_fetch-metadata.config": "a7c276758e0770a26a103fa612b96cc979093cb02982b3ab3bb1df8a59500bb2",
+    "function-comparison.json": "5e752be54e4b3f36937e69bc2c4fd3de895164c8691d3da90e153bbd1ca23e90",
+    "http_fetch-CHECKSUM": "57cfc1e201e79bb8105f8d538f21126804daf2801e34a2692152c60610d0109c",
+    "http_core-CHECKSUM": "8cfb54078ae8af9458624353b60789529bb03d370fe532d9bbe70bf65a577ba5",
+    "hex-http_runtime-0.21.9.json": "43013cc1b9ca631c805305f23486cafec1aee6a7b6c343d806dd74ae89910a92",
+    "http_fetch__lib__http__fetch_options.ex.diff": "6934cf4a351312e2e9fa3164f3c8d4cb07cff80fa34dab7b08c592d486586fa3",
+    "http_fetch__lib__http__socket_client.ex.diff": "c079a33bba36dbe2f5e7ef323e42429cd2468cf3410e4ee669fb294776d5b233",
+    "tag-v0.21.9.json": "a7418e4d8362542d2b9eee24b21b113200c1ac53236f08513d6cf4d7c3d08037",
+    "http_fetch__lib__http__http1__upload.ex.diff": "d4d69f6e6fe8d09a1e134f09a59714132c4aa8ff26f766a5b5ce6438fcad5c2b",
+    "http_runtime-metadata.config": "5f33bd7e12b10a989ac3bf6232ed3e8115daffadb46e895c5c0550a24ef050a8",
+    "http_core-metadata.config": "dfb84d5cf055bbde2be91db49a22bc3290b10ba93a69a96c65be697efd70de18",
+    "hex-http_core-0.21.9.json": "e22144576df0915c73269a4e846f870a6896134ecf8e7870914ac1514e2365ba",
+    "http_fetch__lib__http.ex.diff": "7b940d2304453b1d831a629725c873fa3b9cfc3063e03987abe73a43700a006b",
+    "compare-v0218-v0219.json": "a09631e1772ea19696c8f91003c83a0ab1e0b259c9529d4675d1abbe20ea3426"
+  },
+  "output": "/tmp/gaoxy-upstream122-v0219-release-diagnosis.json"
+}

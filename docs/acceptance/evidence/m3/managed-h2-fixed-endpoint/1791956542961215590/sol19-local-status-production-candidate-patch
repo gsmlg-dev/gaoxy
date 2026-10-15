@@ -1,0 +1,48 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
+@@ -865,6 +865,11 @@
+     do: state.client == HTTP3SessionClient and Lifecycle.remaining(state.deadline) == 0
+ 
+   defp local_fail(state, :timeout), do: timeout(state)
++
++  defp local_fail(%{client: ManagedH2Client} = state, {:request_error, status, _})
++       when status in [400, 413, 431],
++       do: fail(state, :invalid_request, status)
++
+   defp local_fail(state, reason), do: fail(state, reason)
+ 
+   defp timeout(state) do
+@@ -894,19 +899,24 @@
+ 
+   defp fail(state, reason) do
+     reason = if state.client == ManagedH2Client, do: Session.finite_reason(reason), else: reason
++
++    status =
++      case reason do
++        {:request_error, status, _} -> status
++        :timeout -> 504
++        :request_timeout -> 504
++        :unavailable -> 503
++        _ -> 502
++      end
++
++    fail(state, reason, status)
++  end
++
++  defp fail(state, reason, status) do
+     Session.cancel(state.session)
+     Process.demonitor(state.monitor, [:flush])
+ 
+     if state.exchange.response == :unset and not total_expired?(state) do
+-      status =
+-        case reason do
+-          {:request_error, status, _} -> status
+-          :timeout -> 504
+-          :request_timeout -> 504
+-          :unavailable -> 503
+-          _ -> 502
+-        end
+-
+       error_response(state.exchange, status)
+     else
+       {:error, reason, %{state.exchange | close: true}}

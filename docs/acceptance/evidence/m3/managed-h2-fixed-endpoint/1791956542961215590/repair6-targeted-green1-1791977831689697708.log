@@ -1,0 +1,98 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 602266, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 6.2 seconds (6.2s async, 0.00s sync)
+[32m32 tests, 0 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 602266, max_cases: 1
+
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[31m
+19:37:45.902 [error] GenServer #PID<0.1479.0> terminating
+** (stop) {:cleanup_failed, {:transport_cleanup_failed, {:pin_release_failed, :unavailable}}}
+Last message: {:DOWN, #Reference<0.3739901613.2731278338.68667>, :process, #PID<0.1460.0>, :killed}
+State: %{started_at: -576460726798, cancelled: true, request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.1480.0>, latch: #Reference<0.3739901613.2731409410.68735>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.1479.0>, pid: #PID<0.1481.0>, ref: #Reference<0.0.189315.3739901613.2731343874.68742>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.1480.0>, latch: #Reference<0.3739901613.2731409410.68735>, unsupported: nil}}}, original_request: %{stream: nil, completion: %HTTP.RequestCompletion{tracker: #PID<0.1480.0>, latch: #Reference<0.3739901613.2731409410.68735>, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.1479.0>, pid: #PID<0.1481.0>, ref: #Reference<0.0.189315.3739901613.2731343874.68742>}, completion: %HTTP.RequestCompletion{tracker: #PID<0.1480.0>, latch: #Reference<0.3739901613.2731409410.68735>, unsupported: nil}}}, client: Gaoxy.Proxy.ManagedH2Client, transport_pins: [%{owner: #PID<0.1462.0>, handles: [%{owner: #PID<0.1462.0>, resource: #Reference<0.3739901613.2731278338.68501>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.3739901613.2731278338.68495>}], kind: :request, ref: #Reference<0.3739901613.2731278338.68685>, provider: Gaoxy.Proxy.UpstreamTransports, operation: #Reference<0.3739901613.2731278338.68683>, holder: #PID<0.1479.0>, owner_epoch: #Reference<0.3739901613.2731278338.68495>}], gate: #PID<0.1469.0>, opening_timer: #Reference<0.3739901613.2731278338.68694>, owner: #PID<0.1478.0>, selector: nil, outcome: :cancelled, consumed: true, cleanup_deadline: -576460715799, deadline: -576460716799, managed_path: true, cleanup_started: true, transport_selection: nil, monitors: %{#Reference<0.3739901613.2731278338.68665> => #PID<0.1478.0>, #Reference<0.3739901613.2731278338.68666> => #PID<0.1468.0>, #Reference<0.3739901613.2731278338.68667> => #PID<0.1460.0>, #Reference<0.3739901613.2731278338.68668> => #PID<0.1469.0>}, headers: false, total_timer: #Reference<0.3739901613.2731278338.68695>, token: #Reference<0.3739901613.2731278338.68671>, instance: #PID<0.1460.0>, trailers: [], cleanup_requested_deadline: nil, activated_at: -576460726798, transport_handoff: nil, selection: nil, submitted_url: nil, managed_transport: nil, request_options: nil, service: #PID<0.1468.0>, delivery: nil, opening_deadline: -576460721798, awaiting_transport: nil, config: %Gaoxy.Proxy.HTTP{uri: nil, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, write_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536, opening_timeout: 5000}, upstream_protocol: :h2c, client: Gaoxy.Proxy.ManagedH2Client}, poll_timer: #Reference<0.3739901613.2731278338.68761>}
+[0m
+
+  1) test abrupt instance death preserves pending identity and cannot manufacture a Service receipt (Gaoxy.Proxy.ManagedH2FixedReleaseOrderTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs:217[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :cleanup_unconfirmed} = HTTP.RequestCompletion.await(completion, @timeout)
+     [36mleft:  [0m[31m{:error, :cleanup_unconfirmed}[0m
+     [36mright: [0m[32m:ok[0m
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_release_order_test.exs:247: (test)
+
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"event":"fixed_h2_negative_forced_gaoxy_disposal","actors":1,"public_cleanup":"cleanup_unconfirmed"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m{"event":"fixed_h2_negative_forced_gaoxy_disposal","actors":1,"public_cleanup":"cleanup_unconfirmed"}
+{"connection":1,"signal":"eof","event":"fixed_h2_physical_termination"}
+[32m.[0m{"connection":1,"signal":"connection_reset","event":"fixed_h2_physical_termination"}
+[32m.[0m[32m.[0m
+Finished in 92.5 seconds (0.00s async, 92.5s sync)
+[31m76 tests, 1 failure[0m

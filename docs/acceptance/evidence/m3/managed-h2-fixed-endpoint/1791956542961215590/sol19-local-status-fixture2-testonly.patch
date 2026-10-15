@@ -1,0 +1,21 @@
+--- a/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs
++++ b/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs
+@@ -687,7 +687,17 @@
+       seen = F.event(f.peer, "request")
+       assert seen["target"] == target
+       assert seen["connection"] == 1
+-      assert ["trailer", "x-check"] in seen["headers"]
++      assert Enum.filter(seen["headers"], fn [name, _] -> String.starts_with?(name, ":") end) ==
++               [
++                 [":method", "POST"],
++                 [":scheme", if(@local_protocol == :http2, do: "https", else: "http")],
++                 [":authority", "localhost:#{f.ready["port"]}"],
++                 [":path", target]
++               ]
++
++      refute Enum.any?(seen["headers"], fn [name, _] ->
++               name in ["trailer", "transfer-encoding"]
++             end)
+ 
+       F.eventually(fn ->
+         match?(

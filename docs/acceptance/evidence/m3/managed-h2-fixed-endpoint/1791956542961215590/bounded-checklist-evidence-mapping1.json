@@ -1,0 +1,48 @@
+{
+  "kind": "FIXED_H2_READ_ONLY_CHECKLIST_EVIDENCE_MAPPING",
+  "status": "BOUNDED_MAPPING_NOT_FINAL_SPEC_OR_CODE",
+  "reviewer": "/root/fixed_h2_evidence_map",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "timestamp_ns": 1791985055341122489,
+  "verified_gates": {
+    "full53": "full53-green1-1791984018698064241.json",
+    "browser3": "browser-helper-join-green1/qualification.json"
+  },
+  "task_mapping": {
+    "task2": "managed_h2_envelope_test.exs and managed_h2_activation_reservation_test.exs; pure RED70/61, GREEN2 PASS237/0",
+    "task3": "upstream_transport_h2_identity_test.exs, upstream_transports_options_test.exs, generation_endpoint_validation_test.exs, managed_h2_generation_exclusion_test.exs",
+    "task4": "managed_h2_client_test.exs; client/integration RED135/92, current full53 PASS",
+    "task5": "managed_h2_fixed_lifecycle_test.exs, managed_h2_fixed_endpoint_test.exs and http_headers_test.exs",
+    "task6": "managed_proxy_renderer_test.exs, http2_network_test.exs actual per-stream occupancy, fixed peer/collectors and real browser PASS3",
+    "task7": "managed_h2_fixed_write_lifecycle_test.exs, managed_h2_fixed_release_order_test.exs and lifecycle/network tests; RED76/8, network RED28/4, Task7 PASS77/0"
+  },
+  "identified_evidence_gaps": [
+    {
+      "id": "COMPLETE_CONTROL_PROJECTIONS",
+      "requirement": "Session<=16384, pump<=8192, handle<=4096, sixteen wrappers<=2048 with explicit dedicated payload preflight",
+      "status": "test-only supplement in progress",
+      "owner": "/root/fixed_h2_evidence_map"
+    },
+    {
+      "id": "RENDERER_FULL_WRITE_RELEASE_AND_REPEATED_TERMINAL",
+      "requirement": "Actual complete projection counters clear before worker exit; duplicate and third terminal rejects, healthy sibling preserved",
+      "status": "tests frozen, parent runtime NOT RUN",
+      "owner": "/root/renderer_terminal_proof"
+    },
+    {
+      "id": "PEER_LITERAL_API_DRIFT",
+      "requirement": "Document actual head/DATA/upload-EOF/reset/GOAWAY/close barrier commands",
+      "status": "parent synchronized actual peer respond/data/inform/reset/goaway/settings/stop and downstream upload ended:true; final SPEC still required"
+    }
+  ],
+  "pending_gates": [
+    "complete135 matrix",
+    "complete independent SPEC then CODE",
+    "fresh post-review checks",
+    "owned safe shutdown and local commit"
+  ],
+  "historical_helper_kind": "not inferred from old helpers1 event",
+  "whole_stage": "NOT_ACCEPTED",
+  "astra_recovery_used": 2,
+  "astra_recovery_max": 2
+}

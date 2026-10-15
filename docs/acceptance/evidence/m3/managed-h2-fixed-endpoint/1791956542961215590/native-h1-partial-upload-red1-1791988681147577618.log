@@ -1,0 +1,553 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 0, max_cases: 4
+
+
+
+  1) test tcp length delivers the last eight prefix bytes before producer EOF (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:42[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:more, piece, _next} = read(reader, credit, 100, deadline)
+     [36mleft:  [0m{[31m:more[0m, piece, [31m_next[0m}
+     [36mright: [0m{
+              [32m:pending[0m,
+              %Gaoxy.HTTP.Exchange{
+                close: true,
+                local: {{127, 0, 0, 1}, 41239},
+                request: %Gaoxy.HTTP.Request{
+                  local: nil,
+                  port: nil,
+                  scheme: nil,
+                  version: :"HTTP/1.1",
+                  path: "/upload",
+                  host: "localhost",
+                  peer: nil,
+                  target: "/upload",
+                  body: {:length, 32781},
+                  keep_alive: false,
+                  headers: [{"host", "localhost"}, {"connection", "close"}, {"content-length", "32781"}],
+                  target_form: :origin,
+                  query_string: "",
+                  head_bytes: 84,
+                  expect_continue: false,
+                  method: "POST"
+                },
+                buffer: "",
+                ssl: nil,
+                socket: %ThousandIsland.Socket{
+                  read_timer: #Reference<0.780770066.1685061634.10619>,
+                  socket: #Port<0.20>,
+                  span: %ThousandIsland.Telemetry{
+                    handler: Gaoxy.HTTP.Connection,
+                    start_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      remote_address: {127, 0, 0, 1},
+                      remote_port: 55388,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.10607>,
+                      parent_telemetry_span_context: #Reference<0.780770066.1685061634.10594>
+                    },
+                    telemetry_span_context: #Reference<0.780770066.1685061634.10607>,
+                    span_name: :connection,
+                    start_time: -576460749004077146,
+                    span_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.10607>
+                    }
+                  },
+                  transport_module: ThousandIsland.Transports.TCP,
+                  read_timeout: 30000,
+                  handshake_timeout: 5000,
+                  silent_terminate_on_error: false,
+                  read_deadline: -576460719000,
+                  timer_deadline: -576460719000
+                },
+                instance: #PID<0.318.0>,
+                service: #PID<0.320.0>,
+                peer: {{127, 0, 0, 1}, 55388},
+                deadline: -576460744000,
+                response: :unset,
+                body: %Gaoxy.HTTP.HTTP1.Body{
+                  total: 16384,
+                  phase: {:length, 16397},
+                  limits: %{
+                    max_read_chunk: 16384,
+                    max_buffer_bytes: 65536,
+                    request_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    read_timeout: 5000,
+                    write_timeout: 5000,
+                    max_write_chunk: 16384
+                  },
+                  trailers: [],
+                  trailer_bytes: 0
+                },
+                transport: nil,
+                lease: #Reference<0.780770066.1685061634.10617>,
+                gate: #PID<0.321.0>,
+                limits: %{
+                  max_read_chunk: 16384,
+                  max_buffer_bytes: 65536,
+                  request_timeout: 5000,
+                  header_timeout: 5000,
+                  max_body_bytes: 8388608,
+                  max_chunk_line: 1024,
+                  max_header_bytes: 32768,
+                  max_headers: 100,
+                  max_request_line: 8192,
+                  max_trailer_bytes: 8192,
+                  max_trailers: 32,
+                  read_timeout: 5000,
+                  write_timeout: 5000,
+                  max_write_chunk: 16384
+                },
+                secure: nil,
+                peer_cert: nil,
+                response_trailers: [],
+                route_bytes: 0,
+                resource_pins: [],
+                protocol_bytes: 0,
+                transport_state: nil,
+                expect_sent: false
+              }
+            }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:125: Gaoxy.HTTP.HTTP1PartialUploadTest.collect/5
+       test/http1_partial_upload_test.exs:56: (test)
+
+
+
+  2) test tcp chunked delivers the last eight prefix bytes before producer EOF (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:42[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:more, piece, _next} = read(reader, credit, 100, deadline)
+     [36mleft:  [0m{[31m:more[0m, piece, [31m_next[0m}
+     [36mright: [0m{
+              [32m:pending[0m,
+              %Gaoxy.HTTP.Exchange{
+                close: true,
+                local: {{127, 0, 0, 1}, 42933},
+                request: %Gaoxy.HTTP.Request{
+                  local: nil,
+                  port: nil,
+                  scheme: nil,
+                  version: :"HTTP/1.1",
+                  path: "/upload",
+                  host: "localhost",
+                  peer: nil,
+                  target: "/upload",
+                  body: :chunked,
+                  keep_alive: false,
+                  headers: [{"host", "localhost"}, {"connection", "close"}, {"transfer-encoding", "chunked"}],
+                  target_form: :origin,
+                  query_string: "",
+                  head_bytes: 89,
+                  expect_continue: false,
+                  method: "POST"
+                },
+                buffer: "",
+                ssl: nil,
+                socket: %ThousandIsland.Socket{
+                  read_timer: #Reference<0.780770066.1685061634.10959>,
+                  socket: #Port<0.23>,
+                  span: %ThousandIsland.Telemetry{
+                    handler: Gaoxy.HTTP.Connection,
+                    start_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      remote_address: {127, 0, 0, 1},
+                      remote_port: 58810,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.10955>,
+                      parent_telemetry_span_context: #Reference<0.780770066.1685061634.10939>
+                    },
+                    telemetry_span_context: #Reference<0.780770066.1685061634.10955>,
+                    span_name: :connection,
+                    start_time: -576460743995389110,
+                    span_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.10955>
+                    }
+                  },
+                  transport_module: ThousandIsland.Transports.TCP,
+                  read_timeout: 30000,
+                  handshake_timeout: 5000,
+                  silent_terminate_on_error: false,
+                  read_deadline: -576460713996,
+                  timer_deadline: -576460713996
+                },
+                instance: #PID<0.334.0>,
+                service: #PID<0.336.0>,
+                peer: {{127, 0, 0, 1}, 58810},
+                deadline: -576460738996,
+                response: :unset,
+                body: %Gaoxy.HTTP.HTTP1.Body{
+                  total: 16384,
+                  phase: {:chunk_data, 16397},
+                  limits: %{
+                    max_read_chunk: 16384,
+                    max_buffer_bytes: 65536,
+                    request_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    read_timeout: 5000,
+                    write_timeout: 5000,
+                    max_write_chunk: 16384
+                  },
+                  trailers: [],
+                  trailer_bytes: 0
+                },
+                transport: nil,
+                lease: #Reference<0.780770066.1685061634.10957>,
+                gate: #PID<0.337.0>,
+                limits: %{
+                  max_read_chunk: 16384,
+                  max_buffer_bytes: 65536,
+                  request_timeout: 5000,
+                  header_timeout: 5000,
+                  max_body_bytes: 8388608,
+                  max_chunk_line: 1024,
+                  max_header_bytes: 32768,
+                  max_headers: 100,
+                  max_request_line: 8192,
+                  max_trailer_bytes: 8192,
+                  max_trailers: 32,
+                  read_timeout: 5000,
+                  write_timeout: 5000,
+                  max_write_chunk: 16384
+                },
+                secure: nil,
+                peer_cert: nil,
+                response_trailers: [],
+                route_bytes: 0,
+                resource_pins: [],
+                protocol_bytes: 0,
+                transport_state: nil,
+                expect_sent: false
+              }
+            }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:125: Gaoxy.HTTP.HTTP1PartialUploadTest.collect/5
+       test/http1_partial_upload_test.exs:56: (test)
+
+
+
+  3) test tls length delivers the last eight prefix bytes before producer EOF (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:42[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:more, piece, _next} = read(reader, credit, 100, deadline)
+     [36mleft:  [0m{[31m:more[0m, piece, [31m_next[0m}
+     [36mright: [0m{
+              [32m:pending[0m,
+              %Gaoxy.HTTP.Exchange{
+                close: true,
+                local: {{127, 0, 0, 1}, 43539},
+                request: %Gaoxy.HTTP.Request{
+                  local: nil,
+                  port: nil,
+                  scheme: nil,
+                  version: :"HTTP/1.1",
+                  path: "/upload",
+                  host: "localhost",
+                  peer: nil,
+                  target: "/upload",
+                  body: {:length, 32781},
+                  keep_alive: false,
+                  headers: [{"host", "localhost"}, {"connection", "close"}, {"content-length", "32781"}],
+                  target_form: :origin,
+                  query_string: "",
+                  head_bytes: 84,
+                  expect_continue: false,
+                  method: "POST"
+                },
+                buffer: "",
+                ssl: nil,
+                socket: %ThousandIsland.Socket{
+                  read_timer: #Reference<0.780770066.1685061634.12061>,
+                  socket: {:sslsocket, #Port<0.27>, #PID<0.368.0>, #PID<0.367.0>, :gen_tcp, :tls_gen_connection, #Reference<0.780770066.1685192705.20789>, [option_tracker: #PID<0.359.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]},
+                  span: %ThousandIsland.Telemetry{
+                    handler: Gaoxy.HTTP.Connection,
+                    start_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      remote_address: {127, 0, 0, 1},
+                      remote_port: 48048,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.12031>,
+                      parent_telemetry_span_context: #Reference<0.780770066.1685061633.20759>
+                    },
+                    telemetry_span_context: #Reference<0.780770066.1685061634.12031>,
+                    span_name: :connection,
+                    start_time: -576460738278536228,
+                    span_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      telemetry_span_context: #Reference<0.780770066.1685061634.12031>
+                    }
+                  },
+                  transport_module: ThousandIsland.Transports.SSL,
+                  read_timeout: 30000,
+                  handshake_timeout: 5000,
+                  silent_terminate_on_error: false,
+                  read_deadline: -576460708154,
+                  timer_deadline: -576460708154
+                },
+                instance: #PID<0.352.0>,
+                service: #PID<0.354.0>,
+                peer: {{127, 0, 0, 1}, 48048},
+                deadline: -576460733113,
+                response: :unset,
+                body: %Gaoxy.HTTP.HTTP1.Body{
+                  total: 16384,
+                  phase: {:length, 16397},
+                  limits: %{
+                    max_read_chunk: 16384,
+                    max_buffer_bytes: 65536,
+                    request_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    read_timeout: 5000,
+                    write_timeout: 5000,
+                    max_write_chunk: 16384
+                  },
+                  trailers: [],
+                  trailer_bytes: 0
+                },
+                transport: nil,
+                lease: #Reference<0.780770066.1685061634.12058>,
+                gate: #PID<0.355.0>,
+                limits: %{
+                  max_read_chunk: 16384,
+                  max_buffer_bytes: 65536,
+                  request_timeout: 5000,
+                  header_timeout: 5000,
+                  max_body_bytes: 8388608,
+                  max_chunk_line: 1024,
+                  max_header_bytes: 32768,
+                  max_headers: 100,
+                  max_request_line: 8192,
+                  max_trailer_bytes: 8192,
+                  max_trailers: 32,
+                  read_timeout: 5000,
+                  write_timeout: 5000,
+                  max_write_chunk: 16384
+                },
+                secure: nil,
+                peer_cert: nil,
+                response_trailers: [],
+                route_bytes: 0,
+                resource_pins: [],
+                protocol_bytes: 0,
+                transport_state: nil,
+                expect_sent: false
+              }
+            }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:125: Gaoxy.HTTP.HTTP1PartialUploadTest.collect/5
+       test/http1_partial_upload_test.exs:56: (test)
+
+
+
+  4) test tls chunked delivers the last eight prefix bytes before producer EOF (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:42[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:more, piece, _next} = read(reader, credit, 100, deadline)
+     [36mleft:  [0m{[31m:more[0m, piece, [31m_next[0m}
+     [36mright: [0m{
+              [32m:pending[0m,
+              %Gaoxy.HTTP.Exchange{
+                close: true,
+                local: {{127, 0, 0, 1}, 35725},
+                request: %Gaoxy.HTTP.Request{
+                  local: nil,
+                  port: nil,
+                  scheme: nil,
+                  version: :"HTTP/1.1",
+                  path: "/upload",
+                  host: "localhost",
+                  peer: nil,
+                  target: "/upload",
+                  body: :chunked,
+                  keep_alive: false,
+                  headers: [{"host", "localhost"}, {"connection", "close"}, {"transfer-encoding", "chunked"}],
+                  target_form: :origin,
+                  query_string: "",
+                  head_bytes: 89,
+                  expect_continue: false,
+                  method: "POST"
+                },
+                buffer: "",
+                ssl: nil,
+                socket: %ThousandIsland.Socket{
+                  read_timer: #Reference<0.780770066.1685061633.21128>,
+                  socket: {:sslsocket, #Port<0.31>, #PID<0.395.0>, #PID<0.394.0>, :gen_tcp, :tls_gen_connection, #Reference<0.780770066.1685192705.21056>, [option_tracker: #PID<0.383.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]},
+                  span: %ThousandIsland.Telemetry{
+                    handler: Gaoxy.HTTP.Connection,
+                    start_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      remote_address: {127, 0, 0, 1},
+                      remote_port: 51756,
+                      telemetry_span_context: #Reference<0.780770066.1685061633.21074>,
+                      parent_telemetry_span_context: #Reference<0.780770066.1685061633.21039>
+                    },
+                    telemetry_span_context: #Reference<0.780770066.1685061633.21074>,
+                    span_name: :connection,
+                    start_time: -576460732618744788,
+                    span_metadata: %{
+                      handler: Gaoxy.HTTP.Connection,
+                      telemetry_span_context: #Reference<0.780770066.1685061633.21074>
+                    }
+                  },
+                  transport_module: ThousandIsland.Transports.SSL,
+                  read_timeout: 30000,
+                  handshake_timeout: 5000,
+                  silent_terminate_on_error: false,
+                  read_deadline: -576460702608,
+                  timer_deadline: -576460702608
+                },
+                instance: #PID<0.377.0>,
+                service: #PID<0.379.0>,
+                peer: {{127, 0, 0, 1}, 51756},
+                deadline: -576460727568,
+                response: :unset,
+                body: %Gaoxy.HTTP.HTTP1.Body{
+                  total: 16384,
+                  phase: {:chunk_data, 16397},
+                  limits: %{
+                    max_read_chunk: 16384,
+                    max_buffer_bytes: 65536,
+                    request_timeout: 5000,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    read_timeout: 5000,
+                    write_timeout: 5000,
+                    max_write_chunk: 16384
+                  },
+                  trailers: [],
+                  trailer_bytes: 0
+                },
+                transport: nil,
+                lease: #Reference<0.780770066.1685061633.21125>,
+                gate: #PID<0.380.0>,
+                limits: %{
+                  max_read_chunk: 16384,
+                  max_buffer_bytes: 65536,
+                  request_timeout: 5000,
+                  header_timeout: 5000,
+                  max_body_bytes: 8388608,
+                  max_chunk_line: 1024,
+                  max_header_bytes: 32768,
+                  max_headers: 100,
+                  max_request_line: 8192,
+                  max_trailer_bytes: 8192,
+                  max_trailers: 32,
+                  read_timeout: 5000,
+                  write_timeout: 5000,
+                  max_write_chunk: 16384
+                },
+                secure: nil,
+                peer_cert: nil,
+                response_trailers: [],
+                route_bytes: 0,
+                resource_pins: [],
+                protocol_bytes: 0,
+                transport_state: nil,
+                expect_sent: false
+              }
+            }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:125: Gaoxy.HTTP.HTTP1PartialUploadTest.collect/5
+       test/http1_partial_upload_test.exs:56: (test)
+
+
+
+  5) test tcp reads preserve credit and max_read_chunk caps (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:73[0m
+     [31mAssertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reader = #PID<0.413.0>
+       monitor = #Reference<0.780770066.1685061634.13128>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^reader, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^reader, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.780770066.1685061634.13128>,
+                  :process,
+                  #PID<0.413.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:179: Gaoxy.HTTP.HTTP1PartialUploadTest.finish_request/5
+       test/http1_partial_upload_test.exs:82: (test)
+
+[31m
+22:38:28.739 [error] GenServer #PID<0.430.0> terminating
+** (CaseClauseError) no case clause matching: {:error, :closed}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:214: Gaoxy.HTTP.Connection.respond/3
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:3: Gaoxy.HTTP.Connection.handle_info/2
+    (stdlib 7.3.0.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 49866}}}
+Last message: {:tcp, #Port<0.37>, "POST /upload HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Length: 9\r\n\r\n"}
+State: {%ThousandIsland.Socket{socket: #Port<0.37>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.780770066.1685061634.13379>, start_time: -576460726531340788, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 49866, telemetry_span_context: #Reference<0.780770066.1685061634.13379>, parent_telemetry_span_context: #Reference<0.780770066.1685061633.22179>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.780770066.1685061634.13379>}}, read_timer: #Reference<0.780770066.1685061634.13383>, read_deadline: -576460696532, timer_deadline: -576460696532}, %{scope: %{instance: #Reference<0.780770066.1685061634.13329>, service: :http, generation: #Reference<0.780770066.1685061634.13334>}, buffer: "", instance: #PID<0.418.0>, closing: false, service: #PID<0.420.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.HTTP.HTTP1PartialUploadTest.Endpoint, #PID<0.416.0>}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, request_timeout: 5000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000}, h2_limits: %{max_streams: 32, max_frame: 16384, receive_window: 65535, max_header_block: 16384, table_size: 4096, control_rate: 256, control_turn: 32, frame_timeout: 5000}}, handler_mode: :native}, deadline: nil, phase: :idle, lease: #Reference<0.780770066.1685061634.13381>, gate: #PID<0.421.0>, limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, request_timeout: 5000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000}, websocket: nil, header_token: nil, header_timer: nil, startup_token: #Reference<0.780770066.1685061634.13338>}}
+[0m[32m.[0m
+
+  6) test tls reads preserve credit and max_read_chunk caps (Gaoxy.HTTP.HTTP1PartialUploadTest)
+     [1m[30mapps/gaoxy_http/test/http1_partial_upload_test.exs:73[0m
+     [31mAssertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       reader = #PID<0.454.0>
+       monitor = #Reference<0.780770066.1685061634.13663>
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:DOWN, ^monitor, :process, ^reader, :normal}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:DOWN, ^monitor, :process, ^reader, [31m:normal[0m}
+       [36mvalue:   [0m{
+                  :DOWN,
+                  #Reference<0.780770066.1685061634.13663>,
+                  :process,
+                  #PID<0.454.0>,
+                  [32m{:shutdown, :local_closed}[0m
+                }
+     [36mstacktrace:[0m
+       test/http1_partial_upload_test.exs:179: Gaoxy.HTTP.HTTP1PartialUploadTest.finish_request/5
+       test/http1_partial_upload_test.exs:82: (test)
+
+[31m
+22:38:30.991 [error] GenServer #PID<0.478.0> terminating
+** (CaseClauseError) no case clause matching: {:error, :closed}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:214: Gaoxy.HTTP.Connection.respond/3
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:3: Gaoxy.HTTP.Connection.handle_info/2
+    (stdlib 7.3.0.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 41216}}}
+Last message: {:ssl, {:sslsocket, #Port<0.45>, #PID<0.477.0>, #PID<0.476.0>, :gen_tcp, :tls_gen_connection, #Reference<0.780770066.1685192705.22422>, [option_tracker: #PID<0.465.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, "POST /upload HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\nContent-Length: 9\r\n\r\n"}
+State: {%ThousandIsland.Socket{socket: {:sslsocket, #Port<0.45>, #PID<0.477.0>, #PID<0.476.0>, :gen_tcp, :tls_gen_connection, #Reference<0.780770066.1685192705.22422>, [option_tracker: #PID<0.465.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: ThousandIsland.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.780770066.1685061634.13965>, start_time: -576460724327891390, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 41216, telemetry_span_context: #Reference<0.780770066.1685061634.13965>, parent_telemetry_span_context: #Reference<0.780770066.1685061634.13926>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.780770066.1685061634.13965>}}, read_timer: #Reference<0.780770066.1685061633.22472>, read_deadline: -576460694321, timer_deadline: -576460694321}, %{scope: %{instance: #Reference<0.780770066.1685061634.13872>, service: :http, generation: #Reference<0.780770066.1685061634.13877>}, buffer: "", instance: #PID<0.459.0>, closing: false, service: #PID<0.461.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{certfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_http/tmp/Gaoxy.HTTP.HTTP1PartialUploadTest/test-tls-finite-pending-and-closed-reads-preserve-decoder-and-admission-state-b4dd06e8/cert.pem", keyfile: "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_http/tmp/Gaoxy.HTTP.HTTP1PartialUploadTest/test-tls-finite-pending-and-closed-reads-preserve-decoder-and-admission-state-b4dd06e8/key.pem", alpn: ["http/1.1"]}, transport: :tls, dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, capabilities: [], quic: %{}, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.HTTP.HTTP1PartialUploadTest.Endpoint, #PID<0.457.0>}, http_limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, request_timeout: 5000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000}, h2_limits: %{max_streams: 32, max_frame: 16384, receive_window: 65535, max_header_block: 16384, table_size: 4096, control_rate: 256, control_turn: 32, frame_timeout: 5000}}, handler_mode: :native}, deadline: nil, phase: :idle, lease: #Reference<0.780770066.1685061633.22469>, gate: #PID<0.462.0>, limits: %{max_read_chunk: 16384, max_buffer_bytes: 65536, request_timeout: 5000, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, write_timeout: 5000}, websocket: nil, header_token: nil, header_timer: nil, startup_token: #Reference<0.780770066.1685061634.13881>}}
+[0m[32m.[0m
+Finished in 25.6 seconds (25.6s async, 0.00s sync)
+[31m8 tests, 6 failures[0m

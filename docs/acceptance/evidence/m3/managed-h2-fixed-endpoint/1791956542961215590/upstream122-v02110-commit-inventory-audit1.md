@@ -1,0 +1,15 @@
+# gaoxy-v02110-commit-inventory-audit — DONE (inventory only)
+
+Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, branch `codex/m3-h1-resource-foundation`, baseline `31f23eb2d915ba715a1016f254b90d9805f18a1a`. Frozen final52+5 manifest SHA256 `3acd435913b0643f5f4db1b969e64f9f71c39ada64f2069241bd4fe158244c55` and all52 source/five authority hashes match before/after. No code review, runtime, staging, commit, deletion or repository mutation was performed.
+
+The exact changed non-evidence source set is **53 files**:52 manifest-owned files plus changed authority `mix.lock` (30 tracked modifications,23 untracked files;1,280,101 bytes). Include the lockfile with eventual source staging. The other four authorities are unchanged. No unexpected/unrelated dirty paths were found. Full explicit path/hash/status allowlist is in the JSON. The index is unstaged and its hash remained unchanged.
+
+`codex-prompt.md` remains tracked/clean in both project root and this worktree,17,814bytes each,SHA256 `87112f8eb621966e0062c8611054bda49af0508693c46fa621de87a2b774038c`. Preserve it outside this task staging set.
+
+Stage evidence contains **6,938 files/991,224,618 bytes (945.31MiB)**:13 clean tracked baseline files and6,925 untracked evidence files. Root-level stage records number485 (17,462,078bytes); current0.21.10/Sol20 records are separately listed. They are task-owned formal candidates after gates, including failure receipts and diagnostic patches. Preserve predecessor review statuses and historical cohort identities; no current acceptance is inferred.
+
+The large nested files are deliberate raw diagnostic/matrix/browser evidence. Three files exceed50MiB: `async-admission-diagnostic4/diagnostic.json`82,374,038bytes, `matrix-green8/qualification.json`72,712,366bytes, and `matrix-green9/qualification.json`56,746,075bytes. No file exceeds100MiB. There are3,340 source snapshot files; their nested `deps/` paths are archived provenance, not active dependency caches. No actual `_build`,node_modules,__pycache__,.cache,.venv or.git artifact was found inside evidence. The27wrong-trust PEM files are generated test-fixture evidence, listed explicitly; no operational certificate work was performed.
+
+Preserve **all historical evidence unchanged**, including raw logs,source snapshots,failures and fixtures. Parent should use the53-file source allowlist and explicit formal evidence paths after complete independent reviews/fresh gates, with receipt/doc dependencies included. Avoid blanket recursive staging: that would include approximately945MiB and thousands of archived source copies. No evidence is declared disposable or authorized for removal. Final review/gate evidence is still pending and must be inventoried when appended.
+
+Existing ignored `_build/`,`deps/` and`.audit/` trees were identified without runtime or sizing scans and remain outside the source staging set. All commands completed. This inventory adds zero repair rounds; parent retains global counters and staging ownership.

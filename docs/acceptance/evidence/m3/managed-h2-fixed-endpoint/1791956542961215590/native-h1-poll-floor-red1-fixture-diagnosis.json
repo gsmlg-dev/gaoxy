@@ -1,0 +1,74 @@
+{
+  "kind": "NATIVE_H1_POLL_FLOOR_RED1_DIAGNOSIS_PRODUCTION_UNRELEASED",
+  "status": "FAIL30_9_WITH_EIGHT_INTENDED_AND_ONE_FIXTURE_FAILURE",
+  "run_receipt": "native-h1-poll-floor-red1-1791999049539589176.json",
+  "actual_exit": 2,
+  "counts": [
+    {
+      "tests": 30,
+      "failures": 9,
+      "excluded": 0,
+      "skipped": 0,
+      "executed": 30
+    }
+  ],
+  "source_stable": true,
+  "failures": [
+    {
+      "number": 1,
+      "test": "native keepalive reuse releases the prior poll floor and admits a fresh request (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 2,
+      "test": "body consumption and response writes preserve the admitted poll floor (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 3,
+      "test": "a retained poll floor still validates the gate and lease before every recv (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 4,
+      "test": "repeated empty polls retain the complete copy floor for \"\" (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 5,
+      "test": "one byte short of the full poll copy peak refuses without consuming input (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 6,
+      "test": "repeated empty polls retain the complete copy floor for \"GET /next\" (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 7,
+      "test": "poll floor survives deadline and peer close without renewing the request (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 8,
+      "test": "poll copy peak is admitted before recv and returned charge fits the exact cap (Gaoxy.HTTP.NativeProxySeamsTest)"
+    },
+    {
+      "number": 9,
+      "test": "maximum poll floor stays bounded and a full buffer refuses the following byte (Gaoxy.HTTP.NativeProxySeamsTest)"
+    }
+  ],
+  "intended_failures": 8,
+  "fixture_failures": 1,
+  "fixture_root_cause": "Admission.terminate/2 kills every lease.pid; GenServer.stop of own live Gate kills the test process that owns its lease. Create and stop a separate real empty Gate, retaining dead-Gate catch_exit/no-recv/unconsumed-y assertions.",
+  "cleanup_fixture_contract": "The newly introduced keepalive endpoint must normalize Response.send_resp {:error,reason} into the valid Endpoint {:error,reason,exchange} return when RED cleanup closes the socket.",
+  "original_existing_tests": "All12 original NativeProxySeams and9 ConnectionPoll cases passed before production change.",
+  "production_sha256": "cbb958641a2079418ef60bdaeb00678c37940205dfa4fe76893e50afc7417d50",
+  "next": "Tests-only fixturecorrection1, parent fresh clean RED2. No production or collector release yet.",
+  "counters": {
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "browser_failed_runs": 5,
+    "r32_diagnostic_failed_runs": 4,
+    "native_h1_poll_floor_red_failed_runs": 1,
+    "native_h1_poll_floor_fixture_corrections": 1,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2
+  }
+}

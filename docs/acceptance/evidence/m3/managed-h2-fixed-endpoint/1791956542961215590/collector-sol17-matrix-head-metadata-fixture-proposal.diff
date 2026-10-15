@@ -1,0 +1,150 @@
+--- a/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py
++++ b/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py
+@@ -402,6 +402,48 @@
+     return status, headers, trailers, informational, bytes(data)
+ 
+ 
++def managed_fixed_socket_timeout(sock, deadline, timeout):
++    remaining = deadline - time.monotonic()
++    if remaining <= 0:
++        raise TimeoutError("independent H2 client deadline")
++    sock.settimeout(min(timeout, remaining) if timeout is not None else remaining)
++
++
++def acknowledge_managed_fixed_header_list(conn, sock, deadline):
++    # A same-value public update creates an actual pending SETTINGS change.
++    # Its real ACK makes h2 synchronize the decoder with the existing finite
++    # 131072 advertisement before any response can arrive.
++    timeout, acknowledged = sock.gettimeout(), None
++    conn.update_settings({h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE: 131072})
++    pending = conn.data_to_send()
++    managed_fixed_socket_timeout(sock, deadline, timeout)
++    sock.sendall(pending)
++    try:
++        while acknowledged is None:
++            managed_fixed_socket_timeout(sock, deadline, timeout)
++            try:
++                received = sock.recv(65536)
++            except socket.timeout:
++                continue
++            if not received:
++                raise EOFError("downstream closed before header-list SETTINGS ACK")
++            for event in conn.receive_data(received):
++                if isinstance(event, h2.events.SettingsAcknowledged):
++                    change = event.changed_settings.get(h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE)
++                    if change is not None and change.original_value == 131072 and change.new_value == 131072:
++                        acknowledged = dict(original_value=change.original_value, new_value=change.new_value)
++                elif not isinstance(event, (h2.events.RemoteSettingsChanged, h2.events.WindowUpdated,
++                                            h2.events.PriorityUpdated)):
++                    raise RuntimeError("unexpected downstream H2 event before settings ACK: " + repr(event))
++            pending = conn.data_to_send()
++            if pending:
++                managed_fixed_socket_timeout(sock, deadline, timeout)
++                sock.sendall(pending)
++        return acknowledged
++    finally:
++        sock.settimeout(timeout)
++
++
+ def client_h2(sock, args, fields, body):
+     conn = h2.connection.H2Connection(config=h2.config.H2Configuration(
+         client_side=True, header_encoding="utf-8"))
+@@ -410,12 +452,20 @@
+     conn.local_settings = h2.settings.Settings(client=True, initial_values={
+         h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE: 131072})
+     conn.initiate_connection()
++    managed_deadline, managed_timeout = None, None
++    if args.managed_fixed_client:
++        managed_deadline, managed_timeout = time.monotonic() + 20, sock.gettimeout()
++        args.managed_fixed_header_list_ack = acknowledge_managed_fixed_header_list(conn, sock, managed_deadline)
++        managed_fixed_socket_timeout(sock, managed_deadline, managed_timeout)
+     conn.send_headers(1, [(":method", args.method), (":scheme", "https" if args.tls else "http"),
+                           (":authority", f"{args.hostname}:{args.port}"), (":path", args.target),
+                           *fields], end_stream=not body and not args.controlled)
+-    sock.sendall(conn.data_to_send())
++    pending = conn.data_to_send()
++    if managed_deadline is not None:
++        managed_fixed_socket_timeout(sock, managed_deadline, managed_timeout)
++    sock.sendall(pending)
+     remaining, data, headers, trailers, informational, status = body, bytearray(), [], [], [], None
+-    deadline, ended, upload_trailers = time.monotonic() + 20, False, []
++    deadline, ended, upload_trailers = managed_deadline or time.monotonic() + 20, False, []
+     args.received_body = data
+     while not ended:
+         if time.monotonic() >= deadline:
+@@ -446,6 +496,12 @@
+         if pending:
+             sock.sendall(pending)
+         try:
++            if managed_deadline is not None:
++                remaining_seconds = deadline - time.monotonic()
++                if remaining_seconds <= 0:
++                    raise TimeoutError("independent H2 client deadline")
++                sock.settimeout(min(managed_timeout, remaining_seconds)
++                                if managed_timeout is not None else remaining_seconds)
+             received = sock.recv(65536)
+         except socket.timeout:
+             if args.controlled:
+@@ -544,6 +600,8 @@
+ def independent_client(args):
+     if args.downstream is None or args.port is None or not 1 <= args.port <= 65535:
+         raise ValueError("client requires downstream and finite port")
++    if args.managed_fixed_client and args.downstream != "h2":
++        raise ValueError("managed fixed client profile requires downstream H2")
+     body = base64.b64decode(args.body64, validate=True)
+     fields = json.loads(args.headers_json)
+     if (len(body) > 1048576 or not args.target.startswith("/") or
+@@ -593,6 +651,8 @@
+                           socket_closed=True, identity=dict(python=sys.executable,
+                             packages={p: importlib.metadata.version(p) for p in ("h2", "hpack", "hyperframe")},
+                             source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest()))
++    if args.managed_fixed_client:
++        result["managed_fixed_header_list_ack"] = args.managed_fixed_header_list_ack
+     if args.events:
+         result.update(event="client_response", termination=args.termination,
+                       complete=args.termination == "complete", upload_bytes=args.upload_sent,
+@@ -608,6 +668,7 @@
+     parser.add_argument("--max-streams", type=int, choices=range(1, 129))
+     parser.add_argument("--alpn", default="h2", choices=("h2", "http/1.1"))
+     parser.add_argument("--client", action="store_true")
++    parser.add_argument("--managed-fixed-client", action="store_true")
+     parser.add_argument("--events", action="store_true")
+     parser.add_argument("--controlled", action="store_true")
+     parser.add_argument("--allow-incomplete", action="store_true")
+--- a/integration/http_fetch_contract/managed_h2_fixed_qualification.py
++++ b/integration/http_fetch_contract/managed_h2_fixed_qualification.py
+@@ -901,10 +901,15 @@
+     command = [str(PYTHON), str(PEER), "--client", "--downstream", downstream,
+                "--port", str(started["port"]), "--target", target, "--method", method,
+                "--body64", base64.b64encode(body).decode(), "--headers-json", json.dumps(fields)]
++    if downstream == "h2":
++        command.append("--managed-fixed-client")
+     result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=25)
+     (directory / (name + "-client.log")).write_text(result.stdout + result.stderr)
+     require(result.returncode == 0, "independent client failure: " + result.stdout[-2000:])
+     response = json.loads(result.stdout)
++    if downstream == "h2":
++        require(response["managed_fixed_header_list_ack"] == dict(original_value=131072, new_value=131072),
++                "managed fixed header-list SETTINGS ACK missing")
+     require(response["protocol"] == ("http/1.1" if downstream == "h1" else "h2c"), "actual downstream protocol mismatch")
+     require(response["identity"]["packages"] == PACKAGES and response["socket_closed"], "independent client identity/join mismatch")
+     require(response["body_bytes"] == len(base64.b64decode(response["body64"])) and
+@@ -917,6 +922,8 @@
+     command = [str(PYTHON), str(PEER), "--client", "--events", "--downstream", downstream,
+                "--port", str(started["port"]), "--target", target, "--method", method,
+                "--headers-json", json.dumps(fields)]
++    if downstream == "h2":
++        command.append("--managed-fixed-client")
+     if controlled:
+         command.append("--controlled")
+     if incomplete:
+@@ -928,6 +935,9 @@
+ 
+ def client_result(actor, downstream, status, body, complete=True):
+     result = actor.event("client_response")
++    if downstream == "h2":
++        require(result["managed_fixed_header_list_ack"] == dict(original_value=131072, new_value=131072),
++                "managed fixed header-list SETTINGS ACK missing")
+     require(result["protocol"] == ("http/1.1" if downstream == "h1" else "h2c"),
+             "concurrent client protocol mismatch")
+     require(result["identity"]["packages"] == PACKAGES and result["socket_closed"] and

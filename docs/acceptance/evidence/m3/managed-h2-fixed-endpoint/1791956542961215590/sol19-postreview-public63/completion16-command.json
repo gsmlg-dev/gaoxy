@@ -1,0 +1,36 @@
+{
+  "command": [
+    "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/unbuffer",
+    "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/bin/mix",
+    "run",
+    "--no-compile",
+    "--no-deps-check",
+    "--no-start",
+    "-e",
+    "\ndefmodule HTTPFetch0214Identity do\n  @packages ~w(http_core http_runtime http_fetch http_web_socket ex_ssl elixir_quic elixir_quic_http3)a\n  def digest(bytes), do: Base.encode16(:crypto.hash(:sha256, bytes), case: :lower)\n  def file(path), do: %{path: path, sha256: digest(File.read!(path))}\n  def capture do\n    applications = Enum.map(@packages, fn app ->\n      loaded = Application.load(app)\n      true = loaded in [:ok, {:error, {:already_loaded, app}}]\n      \"0.21.4\" = version = to_string(Application.spec(app, :vsn))\n      app_path = :code.where_is_file(~c\"#{app}.app\") |> to_string()\n      modules = Enum.map(Application.spec(app, :modules), fn module ->\n        Code.ensure_loaded!(module)\n        {^module, bytes, path} = :code.get_object_code(module)\n        path = to_string(path)\n        ^bytes = File.read!(path)\n        {:ok, {^module, md5}} = :beam_lib.md5(bytes)\n        ^md5 = module.module_info(:md5)\n        compile_source = module.module_info(:compile) |> Keyword.fetch!(:source) |> to_string()\n        [_prefix, relative] = String.split(compile_source, \"/deps/#{app}/\")\n        source = Path.expand(Path.join(\"deps/#{app}\", relative))\n        true = String.starts_with?(source, Path.expand(\"deps/#{app}\") <> \"/\")\n        source_hash = digest(File.read!(source))\n        compile_source_hash =\n          if File.regular?(compile_source), do: digest(File.read!(compile_source)), else: nil\n        true = is_nil(compile_source_hash) or compile_source_hash == source_hash\n        %{module: to_string(module), beam_path: path, beam_sha256: digest(bytes),\n          loaded_code_md5: Base.encode16(md5, case: :lower),\n          disk_code_md5: Base.encode16(md5, case: :lower),\n          source: source, source_sha256: source_hash,\n          compile_source: compile_source, compile_source_sha256: compile_source_hash}\n      end)\n      true = modules != []\n      %{application: to_string(app), version: version, app: file(app_path), modules: modules}\n    end)\n    mapped = File.read!(\"/proc/self/maps\") |> String.split(\"\\n\", trim: true)\n    paths = Enum.flat_map(mapped, fn line ->\n      case String.split(line, ~r/\\s+/, parts: 6) do\n        [_, _, _, _, _, \"/\" <> _ = path] ->\n          if String.ends_with?(path, \" (deleted)\") do\n            true = String.starts_with?(path, \"/memfd:vmem\")\n            []\n          else\n            [path]\n          end\n        _ -> []\n      end\n    end) |> Enum.uniq() |> Enum.sort()\n    files = Enum.map(paths, &file/1)\n    true = Enum.any?(paths, &String.ends_with?(&1, \"/crypto.so\"))\n    true = Enum.any?(paths, &String.contains?(&1, \"/libcrypto.so\"))\n    %{applications: applications, mapped_files: files,\n      beam_executable: file(File.read_link!(\"/proc/self/exe\")),\n      pid: System.pid(), elixir: System.version(), otp: System.otp_release(),\n      erts: to_string(:erlang.system_info(:version)), architecture: to_string(:erlang.system_info(:system_architecture)),\n      native_claim: \"Actual loaded file identity; excludes mutable JIT/anonymous memory; no memory certification\"}\n  end\n  def record(path), do: File.write!(path, JSON.encode!(capture()) <> \"\\n\")\nend\n[before_path, after_path, runner | args] = System.argv()\nSystem.argv(args)\nfor app <- [:http_core, :http_runtime, :http_fetch] do\n  {:ok, _} = Application.ensure_all_started(app)\nend\nHTTPFetch0214Identity.record(before_path)\nresult = try do\n  Code.require_file(runner)\n  %{status: \"OK\"}\nrescue\n  error -> %{status: \"FAIL\", failure: Exception.format(:error, error, __STACKTRACE__)}\ncatch\n  kind, reason -> %{status: \"FAIL\", failure: Exception.format(kind, reason, __STACKTRACE__)}\nend\npost = try do\n  HTTPFetch0214Identity.record(after_path)\n  %{status: \"OK\"}\nrescue\n  error -> %{status: \"FAIL\", failure: Exception.format(:error, error, __STACKTRACE__)}\ncatch\n  kind, reason -> %{status: \"FAIL\", failure: Exception.format(kind, reason, __STACKTRACE__)}\nend\nIO.puts(\"H20214_WRAPPER \" <> JSON.encode!(%{primary: result, post_identity: post}))\nif result.status != \"OK\" or post.status != \"OK\", do: System.halt(1)\n",
+    "--",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-postreview-public63/completion16-loaded-before.json",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-postreview-public63/completion16-loaded-after.json",
+    "integration/http_fetch_contract/pooled_completion_probe.exs"
+  ],
+  "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "elapsed_seconds": 12.661217588931322,
+  "environment": {
+    "ERL_FLAGS": "+S 2:2",
+    "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+    "HTTP_FETCH_PROBE_LIBRARY": null,
+    "IN_NIX_SHELL": "impure",
+    "MIX_ENV": "test"
+  },
+  "exit": 0,
+  "group_shutdown_confirmed": true,
+  "log": "completion16.log",
+  "log_bytes": 4160,
+  "log_sha256": "0e0e0e547f57d5332e3722c5f04d889537e5a0141305c266e422fa510bcabadb",
+  "process_group": 3192033,
+  "remaining_after_cleanup": [],
+  "remaining_before_cleanup": [],
+  "status": "PASS_COMMAND",
+  "timed_out": false,
+  "timeout_seconds": 600
+}

@@ -1,0 +1,103 @@
+{
+  "task_id": "diagnostic6_actual_and_persistent_poll_workspace_spec_review",
+  "status": "DONE",
+  "assignment": "direct independent read-only verification/spec feasibility assessment",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "canonical_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "canonical_collector_sol16_released": false,
+  "diagnostic_source_sha256": "69f475f31e531febfa7a5c1666c7faca4c22c9f1263ac58987a299bcffcfb30e",
+  "actual_receipt": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/global-projection-admission-diagnostic6/diagnostic.json",
+  "actual_receipt_sha256": "71457ec32b06f9790eecec33dedf0664efd4ca55447a6dea6881ab79163e003f",
+  "observed_runtime_result": {
+    "status": "FAIL",
+    "attempted": 1,
+    "passed": 0,
+    "elapsed_ms": 16609,
+    "source_stable": true,
+    "actual_exit": 1,
+    "cleanup_trace_pairs": 0,
+    "accepted_observer_joins": 0,
+    "trace_joins": 0,
+    "trace_barriers": 0,
+    "failure": "{:projection_distinct_limit, 1025, 1025}",
+    "host_failure_reason": "%MatchError{term: false}",
+    "coverage": "UNCONFIRMED_PREFIX"
+  },
+  "independent_checks": {
+    "schema": "PASS all1024 rows exact original12-field schema; lease rows exact5 fields, cleanup rows exact4 fields; gate/service identity fixed, mode:ready throughout.",
+    "prefix": "PASS1024 unique full snapshot contents excluding sequence; exact first-distinct sequence1..1024.",
+    "invariants": "PASS all1024 rows:active=lease count, cleanup_pending=cleanup count, each byte sum matches rows, retained_bytes=lease_bytes+cleanup_bytes and total_invariant:true.",
+    "poll_combination_evidence": {
+      "maximum_active": 27,
+      "maximum_cleanups": 27,
+      "attached_byte_sets_histogram": {
+        "[140, 141]": 10,
+        "[142, 143]": 17
+      },
+      "adjacent_sole_byte_changes": {
+        "+1": 360,
+        "-1": 334
+      },
+      "conclusion": "Observed10 leases only140/141 and17 only142/143 while attached. The repeated base/+1 combinations directly match existing poll admission +1 then timeout-restoration logic; bytes are genuinely observable snapshot fields."
+    },
+    "distinct_cap": "PASS rejection is real projected key1025. Source branch requires exact key not previously in MapSet and set already1024; sends sticky admission_capture_failure before submitting key1025.1024 unique receipt prefix and observer failure support this path. Raw high-water226 shows this run is not raw1025 overflow.",
+    "credit_statistics": {
+      "received_raw": 1024,
+      "distinct": 1024,
+      "raw_candidates": 3762,
+      "global_suppressed": 2737,
+      "rejected_candidates": 1,
+      "outstanding": 0,
+      "high_water": 226
+    },
+    "candidate_conservation": "PASS3762=1024 received+2737 suppressed+1 rejected.",
+    "join_claim": "NO_ACCEPTED_GATE_OR_OBSERVER_JOIN. HOSTDOWN row is authentic observer failure evidence after HOST death, not Gate DOWN or normal terminal observer join. observer_join:null and no stopped event; outstanding0 alone does not establish cleanup/physical termination."
+  },
+  "root_cause": "H1 Exchange.poll_connection repeatedly admits one-byte handoff workspace above current retained base then releases it on timeout. Concurrent held requests produce genuine combinations of lease byte values; global exact projection cannot suppress distinct snapshots safely under unchanged1024 cap.",
+  "persistent_workspace_spec_assessment": {
+    "verdict": "FEASIBLE_WITH_CONSERVATIVE_ACCOUNTING_AND_DETERMINISTIC_RED_NOT_IMPLEMENTED",
+    "scope": "Native H1 Exchange poll accounting compatibility repair; preserve snapshot fields, collector bounds/full135 assertions, production50ms and all network/deadline behavior.",
+    "required_semantics": [
+      "Treat workspace as real reserved Admission capacity carried in returned Exchange and included by retained_bytes; never merely hide poll bytes from collector snapshots.",
+      "Before native poll Socket.recv/concatenation, reserve at least old-buffer byte_size+1 beyond retained base to cover the existing old/new handoff charge. Empty buffer repeated pending polls can retain one conservative byte; nonempty buffer needs the full old-buffer+1 workspace, not a blanket1-byte shortcut.",
+      "Carry reservation over timeout/pending polls and all re-accounting paths. Increase it conservatively when required for new buffer growth; do not reduce it during an outstanding handoff. A bounded high-water policy may stabilize polls while keeping finite capacity.",
+      "Avoid double charging when retained_bytes already includes workspace. Derive one explicit byte equation for poll admission, successful append, body-reader scratch, renderer writes and restoration paths.",
+      "Release request-local workspace only at a genuine terminal or keep-alive idle/new-request handoff where no poll operation remains. Existing Connection idle Admission.retain(buffer_bytes) is the relevant candidate release boundary; cleanup reservation must survive independently until its real receipt.",
+      "Preserve original deadline, min(wait_ms,remaining), zero-wait polling, immediate downstream close detection, body buffer limits and send/error/no-replay semantics.",
+      "Keep delegated H2/H3 poll behavior unchanged; default inactive workspace contributes0. Audit changes to Exchange structure/retained byte formulas and existing renderer/request accounting for compatibility."
+    ],
+    "required_red_and_validation": [
+      "Deterministic repeated pending H1 polls: after first successful reservation, identical buffer/deadline maintains stable real lease bytes and exact retained_bytes; no per-poll release/reacquire oscillation. Include a concurrent controlled cohort with independent Admission observer.",
+      "Admission boundaries: enough for current payload but one byte short of required empty poll workspace must reject before recv; exact required capacity succeeds. Nonempty buffer proves old-buffer+1 reserve; invalid wait/deadline/full-buffer rejects without socket side effect.",
+      "Buffer/append boundaries: max_buffer-1 one byte succeeds to max_buffer, next poll rejects buffer_limit; input/pipelined bytes are preserved exactly and workspace remains sufficient without double counting.",
+      "Close/error: real EOF/reset, plain TCP and passive TLS finite close poll, returned Exchange retains truthful accounting; no extra HTTP response/replay; actual owner/cleanup joins and retained failure behavior remain mandatory.",
+      "Timeout/deadline: repeated pending wait0/finite waits do not refresh original request or idle/total deadline; long requested wait is capped; expired repeat fails immediately. Preserve unread-body, upload, early-final and cancellation contracts.",
+      "Handoffs/releases: body-read/write restoration includes persistent reserve; final keep-alive idle/new-request handoff releases workspace exactly once; socket-owner DOWN clears actual lease while managed request cleanup reserve remains until original completion.",
+      "Run scoped native seams/body/partial-upload/response checks and necessary H2/H3 compatibility. Then exact4 R32 cells with128 authentic cleanup:ok/50ms traces and joins, unchanged complete135 matrix, independent review and fresh complete stage gates."
+    ],
+    "risks": [
+      "Conservative persistent capacity may refuse closer-to-limit requests; this must be explicit tested accounting rather than weaken Admission limits.",
+      "A1-byte-only reserve is insufficient with nonempty input because current poll preflight includes old-buffer handoff bytes.",
+      "Freeing/reinitializing workspace on each pending poll recreates the same distinct-state explosion.",
+      "No static feasibility assessment guarantees complete135 success or latency; no implementation/release is authorized by this report alone."
+    ]
+  },
+  "historical_static_reviews": "Prior projection readiness static PASS remains valid for safety; diagnostic5/6 later empirical FAILs are retained separately. They establish insufficient mechanisms, not prior review history rewritten as runtime PASS.",
+  "reviewer_runtime": "NOT RUN; actual root-run receipt examined only",
+  "repository_edits": [],
+  "commands_finished": true,
+  "counters": {
+    "r32_diagnostic_failed_runs": 4,
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  },
+  "stage_acceptance": "INCOMPLETE",
+  "decisions_needed": []
+}

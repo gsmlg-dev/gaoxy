@@ -1,0 +1,124 @@
+{
+  "task_id": "collector_sol15_review",
+  "status": "DONE",
+  "review_verdict": "NARROW_SPEC_PASS_THEN_CODE_PASS",
+  "assignment": "direct read-only independent review; no implementation or runtime ownership",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "scope": "integration/http_fetch_contract/managed_h2_fixed_qualification.py only",
+  "before_sha256": "be4f49eae2dcfd43f051627e1d9e0f444e0974fc34000096a190eff725bfac0b",
+  "candidate_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "delta": "/tmp/gaoxy-h2-fixed-collector-sol15-v2.diff",
+  "delta_sha256": "31e5deff540fff5b0aaaa364ba7799a90d97c5a8f2957940414afa6e82275385",
+  "previous_failed_review": "/tmp/gaoxy-h2-fixed-collector-sol15-spec-finding1.json",
+  "resolved_findings": [
+    {
+      "id": "SPEC-1",
+      "status": "RESOLVED",
+      "evidence": "clean now assigns the returned wait_clean state; terminal branch returns complete state and recursion preserves collected receipts/originals. Predicates, assertions and deadline are unchanged."
+    }
+  ],
+  "spec_review": {
+    "status": "PASS",
+    "checks": [
+      {
+        "requirement": "same callback event filter",
+        "result": "PASS",
+        "evidence": "out/noreply app_state filter and activation condition preserved; only additional trace.failed suppression after explicit collector overflow."
+      },
+      {
+        "requirement": "complete snapshot/schema/invariants unchanged",
+        "result": "PASS",
+        "evidence": "admission_snapshot exact text unchanged, sha2569f157af4ce1450f3ee17ed74251e5d12e0bc3bdcbd0bcdf27d74fe1a19634c99. Equality retained_bytes=lease_bytes+cleanup_bytes remains asserted."
+      },
+      {
+        "requirement": "snapshot/sort/hash/dedup off Gate",
+        "result": "PASS",
+        "evidence": "Only filter, raw credit accounting, immutable state send and submission index remain in callback. Observer performs complete snapshots and SHA256 dedup."
+      },
+      {
+        "requirement": "same1024 distinct receipts and first-distinct sequence",
+        "result": "PASS",
+        "evidence": "Same digest over snapshot before sequence insertion; count<1024 before emit; contiguous sequence asserted at live/terminal fences."
+      },
+      {
+        "requirement": "bounded1024 pending raw and sticky failure",
+        "result": "PASS",
+        "evidence": "Credit increment before admission, no raw send above1024, overflowing increment undone; credit returned after processing. Raw ordinals checked; overflow/snapshot failures retained and prevent prefix success."
+      },
+      {
+        "requirement": "HOST/Gate/observer monitors and authentic joins",
+        "result": "PASS",
+        "evidence": "Observer monitors HOST and Gate; HOST spawn_monitor observer; terminal path requires closed summary plus matching monitor DOWN :normal, zero outstanding, exact terminal receipt count. Cached authentic join supports already-dead Gate negative observations."
+      },
+      {
+        "requirement": "Gate-origin FIFO live fence",
+        "result": "PASS",
+        "evidence": "Own-Gaoxy :sys.replace_state identity callback sends marker with self() from Gate; observer handles it after prior Gate raw messages and emits acknowledgment after receipt sends."
+      },
+      {
+        "requirement": "no new deadline slack",
+        "result": "PASS",
+        "evidence": "New setup/fence/terminal/join waits share command expires; affected clean/request_clean existing waits use that same absolute5000 expiry."
+      },
+      {
+        "requirement": "unchanged135 identities/cohorts/assertions/reserves/production50ms",
+        "result": "PASS",
+        "evidence": "All22 Python top-level functions/classes structurally unchanged; all top-level assignments except HOST unchanged. Exact135 case lists unchanged. Collector-only delta does not change production source."
+      }
+    ]
+  },
+  "code_review": {
+    "status": "PASS",
+    "findings": [],
+    "checks": [
+      "Reviewed successful/failed raw snapshot credit return, overflow undo/suppression and sticky fail propagation.",
+      "Reviewed Gate/observer signal ordering, selective receive followed by prefix collection, terminal summary and authentic monitor join.",
+      "Reviewed live-to-dead Gate race: :sys failure falls back to terminal handling only when Gate actually dead.",
+      "Reviewed already-cached terminal join revalidation and final late receipt/Service failure collection.",
+      "Reviewed corrected wait_clean state threading, command failure cache and immutable prefix coverage label.",
+      "Failure-report fallback emits admission_collector_failure and rethrows original command failure; unavailable fence yields UNCONFIRMED_PREFIX and cannot manufacture PASS."
+    ]
+  },
+  "verification": [
+    {
+      "command": "sha256sum candidate, before and delta",
+      "outcome": "PASS exact freeze hashes"
+    },
+    {
+      "command": "read-only Python ast.parse + AST comparison + exact admission_snapshot text comparison",
+      "outcome": "PASS exit0;22 functions/classes unchanged; only HOST assignment changes;135 case lists unchanged"
+    },
+    {
+      "command": "read-only source/diff review",
+      "outcome": "PASS narrow SPEC then CODE; no remaining actionable findings"
+    },
+    {
+      "command": "runtime/Mix/format/matrix/browser checks",
+      "outcome": "NOT RUN by reviewer; root owns execution"
+    }
+  ],
+  "counters": {
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 10,
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 11,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0,
+    "same_round_pre_green_spec_correction": 1
+  },
+  "repository_edits": [],
+  "review_output_files": [
+    "/tmp/gaoxy-h2-fixed-collector-sol15-spec-finding1.json",
+    "/tmp/gaoxy-h2-fixed-collector-sol15-review.json"
+  ],
+  "commands_finished": true,
+  "limitations": [
+    "Source review does not establish complete matrix or stage acceptance. Root must run required real-peer/browser and full stage fresh gates.",
+    "Existing Gaoxy.stop5000/helper-settlement fresh deadline/per-actor5000 joins are unchanged legacy behavior explicitly outside Sol15 repair; no aggregate existing stop<=5seconds claim.",
+    "Diagnostic4 six-cohort causal result predates canonical v2 candidate and does not validate it at runtime."
+  ],
+  "stage_acceptance": "INCOMPLETE",
+  "decisions_needed": []
+}

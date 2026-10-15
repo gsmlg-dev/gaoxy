@@ -1,0 +1,220 @@
+{
+  "task_id": "public_cancel_einval_failure_diagnosis_sol",
+  "phase": "SPEC_THEN_CODE_COMPLETE",
+  "status": "DONE",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "timestamp_utc": "2026-10-14T18:37:43.244243+00:00",
+  "spec_reasoning": {
+    "contract": "Request headers fully observed by real peer, no response head sent. Public original completion.await0 must remain cleanup_pending; abort_and_await3000 returnsok; Promise.await3000 returns exactly erroraborted; real peerclosure and repeatedoriginalcompletion assertions remain. No timeout extension, assertion weakening, privateTaskstateinspection or dependency patches.",
+    "preserved_evidence": "full58FAIL845/1exit2stable exactPromiseeinval; same-source seed33011 scopedPASS5/0 does not erase nondeterministic full failure.",
+    "investigation": "Trace public RequestCompletion\u2192Task/Promise cancellation propagation, controller/socket-close side effects, socket setup/recv error conversion, and precedence of cancellation relative to transport error. Determine whether fixture barrier proves reading response started (headers received alone may precede clientsetopts/recv). Distinguish supported source race from proven actual failing interleaving.",
+    "allowed_outcome": "Source-backed upstreamrequired bug with minimum public reproduction,or bounded public-only realwire probe proposal for Root. No localworkaround or new strict ownershipproof."
+  },
+  "code_not_yet_read": false,
+  "findings": [
+    {
+      "id": "UPSTREAM_CANCEL_ERROR_PRECEDENCE",
+      "severity": "blocker_for_exact_existing_public_cancellation_gate",
+      "owner": "gsmlg-dev/http_fetch coordinated http_fetch/http_core packages",
+      "root_cause": "Lifecycle cancellation directly closes the tracked TCP socket while H1 owner still performs send/activation; synchronous error handling can forwardeinval before processing queuedabort. No cancellation cause arbitration on these error branches.",
+      "confidence": "Mechanism source-backed; actual failed-call operation/interleaving untraced.",
+      "refs": [
+        "deps/http_fetch/lib/http/request_completion.ex:99",
+        "deps/http_core/lib/http/request_lifecycle.ex:373",
+        "deps/http_core/lib/http/request_lifecycle.ex:475",
+        "deps/http_fetch/lib/http/socket_client.ex:558",
+        "deps/http_fetch/lib/http/socket_client.ex:1765",
+        "deps/http_fetch/lib/http/socket_client.ex:1954",
+        "deps/http_fetch/lib/http/socket_client.ex:1567",
+        "deps/http_fetch/lib/http/socket_client.ex:1664",
+        "deps/http_fetch/lib/http.ex:371",
+        "deps/http_fetch/lib/http/promise.ex:104"
+      ]
+    }
+  ],
+  "verdict": "SOURCE_BACKED_UPSTREAM_CANCELLATION_RACE_IDENTIFIED_ACTUAL_INTERLEAVING_UNPROVEN",
+  "spec_checkpoint": {
+    "sha256": "23040a0ddf6cc4326124e8a8ff2f3107db13f7f2a445c62ba035f830c7d70707",
+    "written_before_code_read": true,
+    "reasoning": {
+      "contract": "Request headers fully observed by real peer, no response head sent. Public original completion.await0 must remain cleanup_pending; abort_and_await3000 returnsok; Promise.await3000 returns exactly erroraborted; real peerclosure and repeatedoriginalcompletion assertions remain. No timeout extension, assertion weakening, privateTaskstateinspection or dependency patches.",
+      "preserved_evidence": "full58FAIL845/1exit2stable exactPromiseeinval; same-source seed33011 scopedPASS5/0 does not erase nondeterministic full failure.",
+      "investigation": "Trace public RequestCompletion\u2192Task/Promise cancellation propagation, controller/socket-close side effects, socket setup/recv error conversion, and precedence of cancellation relative to transport error. Determine whether fixture barrier proves reading response started (headers received alone may precede clientsetopts/recv). Distinguish supported source race from proven actual failing interleaving.",
+      "allowed_outcome": "Source-backed upstreamrequired bug with minimum public reproduction,or bounded public-only realwire probe proposal for Root. No localworkaround or new strict ownershipproof."
+    }
+  },
+  "timestamp_completed_utc": "2026-10-14T18:43:41.888239+00:00",
+  "causal_path": [
+    "Public abort_and_await sends tracker:abort and then awaits logical cleanup.",
+    "Tracker iterates registered resources; owner receivesabort,socket concurrently linger/close. Map traversal order is not a semantic synchronization barrier; sendingabort before close also does not force owner receive before synchronoussetopts.",
+    "Peer full-header receipt may precede send-worker result processing and owneractive:once; no response sent. Client H1 reads active socket messages, not passive clientrecv in this phase.",
+    "Pending ownerabort can coexist with successful send result already queued; post-send activate_socket has no intervening request_ready or cancellationcause query. Closed-portsetopts can returneinval; racing send error is secondary possible provenance.",
+    "fail only normalizes timeout at actualdeadline; all other errors pass to http_fetch_error\u2192await_owner\u2192handle_async_request raw error\u2192Taskresult\u2192Promise.await.",
+    "Owner/task complete markers and genuine resourceDOWNs settle latchok regardless of error classification. Therefore cleanupok does not imply Promiseaborted."
+  ],
+  "preserved_results": {
+    "full58": {
+      "status": "FAIL",
+      "executed": 845,
+      "failures": 1,
+      "exit": 2,
+      "seed": 33011,
+      "source_stable": true,
+      "original_cleanup_abort": ":ok",
+      "promise": "{:error,:einval}",
+      "peerclosure_and_repeated_completion_after_line21": "NOT_EXECUTED due original exact failing assertion"
+    },
+    "same_seed_scoped": {
+      "status": "PASS",
+      "executed": 5,
+      "failures": 0,
+      "exit": 0,
+      "source_stable": true,
+      "limits": "Single successful rerun cannot rule out schedulingrace or erase fullFAIL."
+    }
+  },
+  "provenance": {
+    "upstream": "https://github.com/gsmlg-dev/http_fetch",
+    "installed_cohort": [
+      "http_core0.21.4",
+      "http_runtime0.21.4",
+      "http_fetch0.21.4"
+    ],
+    "v0_21_4_commit": "264fb3e4388b98f34b26f16199a0ad4fb278a4fc",
+    "latest_public_release": "v0.21.8",
+    "latest_release_commit": "0ca9cf01ad07b568c80e0e3d6ea84c2c6f0ee3ea",
+    "latest_release_published_at": "2026-10-14T10:42:42Z",
+    "latest_code_fix": "NO:SocketClient and RequestLifecycle identicalbytes to installed0.21.4;latestDialerchanges address connectionworkertermination before requestheaders.",
+    "public_error_mode": "raw;request_modeproxy does not imply structurederror mode;no layer normalizes cancelledsocket errors."
+  },
+  "existing_issue_search": {
+    "queries": [
+      "abort einval (Root result[])",
+      "einval",
+      "pre-head cancellation",
+      "cancellation race",
+      "abort socket",
+      "header cancellation",
+      "Promise aborted",
+      "open abort"
+    ],
+    "matching_existing_issue": null,
+    "related_but_distinct": [
+      {
+        "number": 98,
+        "state": "CLOSED",
+        "reason": "Postresponsehead parser error preservation for streams,not prehead abortedPromiseclassification."
+      },
+      {
+        "number": 6,
+        "state": "CLOSED",
+        "reason": "Legacy:httpc backend cancellationdidnotinterrupt,errorreason now nativeTCP."
+      },
+      {
+        "number": 60,
+        "state": "CLOSED",
+        "reason": "Original publicrequestcleanupfeature,not this race."
+      }
+    ],
+    "external_mutations": "NONE;issue creation/TODO routing owned by Root."
+  },
+  "bounded_public_probe_proposal": {
+    "status": "NOT_RUN",
+    "owner": "Root only after canonical135 runtime finishes;serialize allruntime",
+    "rounds": 32,
+    "seed": 33011,
+    "max_cases": 1,
+    "script": "ExUnit.start(seed: 33011, max_cases: 1)\n\ndefmodule GaoxyPublicPreHeadCancelRepeatProbe do\n  use ExUnit.Case, async: false\n  alias HTTP.{Promise, RequestCompletion}\n  @timeout 3_000\n\n  # Exactly32 distinct tests; retain every result and all failures. No retry-to-green.\n  for index <- 1..32 do\n    @probe_index index\n    test \"public pre-head cancellation round #{index}\" do\n      {url, peer} = peer(fn socket, owner ->\n        recv_head(socket)\n        send(owner, {:request_headers, self()})\n        :gen_tcp.recv(socket, 0, @timeout)\n      end)\n      promise = fetch(url)\n      completion = Promise.completion(promise)\n      headers = receive do\n        {:request_headers, ^peer} -> :received\n      after\n        @timeout -> :request_headers_timeout\n      end\n      before_abort = capture(fn -> RequestCompletion.await(completion, 0) end)\n      abort = capture(fn -> RequestCompletion.abort_and_await(completion, @timeout) end)\n      promise_result = capture(fn -> Promise.await(promise, @timeout) end)\n\n      # Capture both peer result and real owned-peer DOWN even if Promise is unexpected.\n      peer_monitor = Process.monitor(peer)\n      peer_terminal = receive do\n        {:peer_result, ^peer, value} -> value\n        {:peer_error, ^peer, error} -> {:peer_error, error}\n      after\n        @timeout -> :peer_result_timeout\n      end\n      peer_down = receive do\n        {:DOWN, ^peer_monitor, :process, ^peer, reason} -> reason\n      after\n        @timeout -> :peer_down_timeout\n      end\n      Process.demonitor(peer_monitor, [:flush])\n      repeated = capture(fn -> RequestCompletion.abort_and_await(completion, 0) end)\n      row = %{round: @probe_index, request_headers: inspect(headers),\n        cleanup_before_abort: inspect(before_abort), abort_and_await: inspect(abort),\n        promise: inspect(promise_result), peer_result: inspect(peer_terminal),\n        peer_down: inspect(peer_down), repeated_original_completion: inspect(repeated)}\n      IO.puts(\"PUBLIC_CANCEL_REPEAT \" <> JSON.encode!(row))\n\n      assert headers == :received\n      assert {:error, :cleanup_pending} = before_abort\n      assert :ok = abort\n      assert {:error, :aborted} = promise_result\n      assert {:error, :closed} = peer_terminal\n      assert peer_down in [:normal, :noproc]\n      assert :ok = repeated\n    end\n  end\n\n  defp capture(fun) do\n    try do\n      fun.()\n    rescue\n      error -> {:exception, error.__struct__, Exception.message(error)}\n    catch\n      kind, reason -> {:caught, kind, reason}\n    end\n  end\n\n  defp fetch(url, opts \\\\ []) do\n    HTTP.fetch(\n      url,\n      Keyword.merge(\n        [\n          http_version: :http1,\n          http1_reuse: false,\n          tls_backend: :ssl,\n          redirect: :manual,\n          decode_body: false,\n          request_mode: :proxy,\n          timeout: @timeout\n        ],\n        opts\n      )\n    )\n  end\n\n  defp peer(fun) do\n    {:ok, listener} =\n      :gen_tcp.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}, reuseaddr: true])\n\n    {:ok, {_, port}} = :inet.sockname(listener)\n    owner = self()\n\n    pid =\n      spawn(fn ->\n        try do\n          {:ok, socket} = :gen_tcp.accept(listener, @timeout)\n\n          try do\n            send(owner, {:peer_result, self(), fun.(socket, owner)})\n          after\n            :gen_tcp.close(socket)\n          end\n        rescue\n          error ->\n            send(owner, {:peer_error, self(), Exception.format(:error, error, __STACKTRACE__)})\n        after\n          :gen_tcp.close(listener)\n        end\n      end)\n\n    on_exit(fn ->\n      stop_process(pid)\n      :gen_tcp.close(listener)\n    end)\n\n    {\"http://127.0.0.1:#{port}/\", pid}\n  end\n\n  defp recv_head(socket, bytes \\\\ \"\") do\n    if :binary.match(bytes, \"\\r\\n\\r\\n\") == :nomatch do\n      {:ok, chunk} = :gen_tcp.recv(socket, 0, @timeout)\n      recv_head(socket, bytes <> chunk)\n    else\n      bytes\n    end\n  end\n\n  defp stop_process(pid) do\n    monitor = Process.monitor(pid)\n    if Process.alive?(pid), do: Process.exit(pid, :kill)\n\n    receive do\n      {:DOWN, ^monitor, :process, ^pid, _reason} -> :ok\n    after\n      @timeout -> raise \"test process did not stop\"\n    end\n  end\nend\n",
+    "script_sha256": "b61f3fe49da2c00e3e7c35e42c3c12148a3501f2715ef7bd2ecf444c3a736fa6",
+    "source_helpers": "Copied current original test fetch/peer/recv_head/stop_process helpers byte-for-byte; omitted unused peer_result helper because diagnostic explicitly captures actual result and DOWN before unchanged exact assertions. Original peer wire barrier, all3s public waits, exact closure and repeated original completion retained. Test-owned on_exit disposal cannot establish public completion.",
+    "commands_proposed": [
+      "Root extract script into its own/tmp probeexs; collect frozeninventory/sourcebefore; run nixdevelop envERL_FLAGS=+S2:2 MIX_ENV=test mixrun --no-start -e Application.ensure_all_started(:gaoxy_proxy) then ExUnit script under outerwalltimeout",
+      "Preferred concrete argument list: nix develop --command env ERL_FLAGS=+S 2:2 MIX_ENV=test mix run --no-start -e '{:ok, _} = Application.ensure_all_started(:gaoxy_proxy); Code.require_file(\"<Root-owned-temp-probe.exs>\")'"
+    ],
+    "outer_deadline_seconds": 300,
+    "acceptance": "Exactly32 emittedrows and32executedtests/no skips,originalpercall3s and exactaborted/cleanup/peerclosed/repeatedcompletion/normalornoprocDOWN. Any aborted/einval/other/caught/timeout retained;aggregateactualcounts and exit. Any unexpected row isFAIL even if laterrowsPASS. Preserve earlierfullFAIL irrespective32outcome. If deadline aborts,markNOT_RUNremaining and stoppedactors,neverPASS.",
+    "summary_fields": [
+      "attempted",
+      "aborted",
+      "einval",
+      "other",
+      "cleanup_before_abort",
+      "abort_and_await",
+      "peerclosed",
+      "peerother",
+      "peerDOWN",
+      "repeatedoriginalcompletion",
+      "caught_exceptions",
+      "actual_exit",
+      "source_stable"
+    ],
+    "limits": "Public repeatedcases are schedulingreproduction,not deterministicproof of exactoperation. No privateclientready barrier,Taskfields,stateinspection,suspension,dependency patch,retries until success,or #97 nativecertification."
+  },
+  "upstream_issue_draft": {
+    "title": "[internal] Pre-head HTTP1 cancellation can expose einval after confirmed cleanup",
+    "type": "Bug",
+    "label": "internal request",
+    "severity": "blocker",
+    "body": "**Requesting repo:** gsmlg-opt/gaoxy on branch `codex/m3-h1-resource-foundation`\n\n**Severity:** blocker for the existing exact public pre-response-head cancellation compatibility gate. Other unblocked work can continue. No local workaround or assertion relaxation is proposed.\n\nWith the coordinated Hex HTTP Fetch/http_core/http_runtime 0.21.4 cohort, cancelling a real direct HTTP/1 request after the peer receives the complete request headers and before it sends any response sometimes returns `{:error, :einval}` from the original Promise although `HTTP.RequestCompletion.abort_and_await(original, 3000)` returned `:ok`. Expected Promise result is exactly `{:error, :aborted}`; the original cleanup handle, actual peer closure and repeated completion must still succeed within their existing finite deadlines.\n\n**Minimal public reproduction:** use a passive loopback TCP listener; after accepting, receive until `\\r\\n\\r\\n`, notify the caller, send no response, and wait for closure. Call `HTTP.fetch(url, http_version: :http1, http1_reuse: false, tls_backend: :ssl, redirect: :manual, decode_body: false, request_mode: :proxy, timeout: 3000)`. Retain `HTTP.Promise.completion(promise)`. After the peer's real header notification, require `RequestCompletion.await(original, 0) == {:error, :cleanup_pending}`, then call `RequestCompletion.abort_and_await(original, 3000)`, `Promise.await(promise, 3000)`, observe peer closure and joined peer DOWN, and repeat `RequestCompletion.abort_and_await(original, 0)`. No response head, private process state inspection, suspension, or dependency patch is involved.\n\n**Observed requesting-repo evidence:** unchanged `apps/gaoxy_proxy/test/http_fetch_completion_test.exs:8` failed at its exact Promise assertion (line21) in source-stable full58:845 executed/1 failure, exit2, seed33011, `ERL_FLAGS=+S 2:2`. Abort cleanup returned:ok before the failing Promise returnedeinval; subsequent peer/repeated assertions were not executed after that failure. Same-source same-seed whole-file rerun5/0 does not erase this failure. Original test SHA25629d88592b122693154e4e0d5197910c65a2a5b2de4bcfe201f651afc474c09e6. Evidence root `docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590`; full receipt `pre-floor-full58-1792000443558300185.json`, log SHA256624260543bec4ab490c3cd738805d3026b4d53e3ebcf93298f7302971fc23f91. Add the bounded-repeat actual results only after execution; none are claimed here.\n\n**Source-supported race (exact failing operation remains untraced):** public RequestCompletion sends tracker:abort. `apps/http_core/lib/http/request_lifecycle.ex:373-375` sends owner:abort and directly cancels the tracked socket;475-477 applies linger and closes it. In `apps/http_fetch/lib/http/socket_client.ex:558-568`, successful buffered sending is followed by `activate_socket` before `owner_loop` consumes pendingabort. `activate_socket:1954-1962` calls `setopts(active: :once)` and returns its raw error; `fail:1567-1584` preserves non-timeout errors; `await_owner:1664-1666` forwards them; the Fetch task returns that result and Promise awaits it unchanged. Closing the socket in this interval can therefore leak socketeinval instead ofaborted. A racing final send error after partial/complete bytes reached the peer is another possible error path. The failure log alone does not identify the exact syscall/interleaving. Cleanup success is consistent: owner/task complete and DOWN settle the logical barrier, independently of the Promise error reason.\n\n**Latest release check:** v0.21.8 published2026-10-14T10:42:42Z, commit0ca9cf01ad07b568c80e0e3d6ea84c2c6f0ee3ea. Its SocketClient and RequestLifecycle are byte-identical to installed0.21.4 (SHA2563bfd24c17fb9f3237c2c259fdc366c2df48304a0f58faf308ee87d0523519f88 and21cf5d861399587e596f1829acfef83b7ca2bbfa1d4787adee48752fbe900e89). The newer Dialer worker-exit repair does not alter this post-send cancellation path. Searches found no existing issue matching this trigger. Closed#98 concerns preserving parser errors for streamed readers; closed#6 concerns the old:httpc abort implementation; neither describes this direct-TCP pre-head Promise race.\n\n**Expected fix and regression:** upstream must preserve cancellation classification when its own cleanup closes this still-pending request socket, while retaining genuine independent send/protocol/transport failures and all cleanup guarantees. Add deterministic upstream coverage of cancellation during post-send activation and, if applicable, final-send completion, then publish a coordinated compatible release. Requalify the unchanged public reproduction and exact requesting-repo gate. This concerns Promise cancellation reason with real wire synchronization and logical completion; no native timer/alias/ERTS ownership certification is requested.\n",
+    "status": "DRAFT_ONLY_NOT_CREATED",
+    "trigger": "Full real requestheaders received,no responsehead;publicoriginalabort confirmscleanup thenPromiseeinval insteadaborted.",
+    "expected_before_after": "Before:classificationdepends on close/send/activation scheduling. After:cancellation-induced closed-socket error preserves exactaborted,withunchanged3slogicalcleanup/peerclosure/repeatedhandlechecks."
+  },
+  "hashes": {
+    "apps/gaoxy_proxy/test/http_fetch_completion_test.exs": "29d88592b122693154e4e0d5197910c65a2a5b2de4bcfe201f651afc474c09e6",
+    "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+    "deps/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+    "deps/http_fetch/lib/http/socket_client.ex": "3bfd24c17fb9f3237c2c259fdc366c2df48304a0f58faf308ee87d0523519f88",
+    "deps/http_fetch/lib/http.ex": "b86d8cc723cbab453e04dee8cf2a8bd99ca5a08d638c07a1d677ef501a495f7b",
+    "deps/http_core/lib/http/request_lifecycle.ex": "21cf5d861399587e596f1829acfef83b7ca2bbfa1d4787adee48752fbe900e89",
+    "deps/http_core/lib/http/transport/tcp.ex": "2685ee728c19fc21014972792e5d71560fc8b08f5553b9a3874707fe534a7c9d",
+    "deps/http_runtime/lib/http/runtime/dialer.ex": "bcbd4263b27d92097366c20b8d72a56c954ba468681f7120e1a9a7c814e30cba",
+    "deps/http_fetch/mix.exs": "f09e5a9a84d642a9b163cec9c822504df81555e6ac08823579b77bf29164b9f1",
+    "deps/http_core/mix.exs": "61866e83f7b5240e60c4f4e476c2c2af82f64be9af9016f07ba311c4c5a28f31",
+    "deps/http_runtime/mix.exs": "0e56b64cf5efc09a8e42a94365f6d513eca96f71eb27a71e1c0b693505339742",
+    "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/pre-floor-full58-1792000443558300185.json": "8657a9efd21ad452d6de5cd972577d5d52d0082f100bad4f89acdd68fc2a6a4d",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/pre-floor-full58-1792000443558300185.log": "624260543bec4ab490c3cd738805d3026b4d53e3ebcf93298f7302971fc23f91",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/public-pre-head-cancel-diagnostic1-1792000897358685197.json": "16bf48ac5b5f1a895b21ee485a321f67ffe0ef9dad80ee8a4ab91b42add7a509",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/public-pre-head-cancel-diagnostic1-1792000897358685197.log": "0f7d4e4e86c464762153e53dcf3398833b946ff7e75f3f727707349fb38ffd84"
+  },
+  "verification": {
+    "original_test_equals_HEAD": true,
+    "originaltestmatches_both_receipts": true,
+    "receipt_log_hash_bindings": true,
+    "latest0_21_8_relevant_modules_byte_identical": true,
+    "verification_commands": [
+      "rg --files public package paths before reads",
+      "Read normative failure contractandlogs;saveSPECbefore CODE",
+      "nl/read publiccompletion,promise,fetch,lifecycle,TCP,dialer,send/activation/errorforwarding",
+      "read-only gh issue searches/views/latestrelease/compare/sourcecontents/tags",
+      "Python in-memoryremotecontentdecode/SHA compare;source/logreceipt hashes;HEADtest byteidentity"
+    ],
+    "runtime_or_mix": "NOT_RUN;Root ownsprobeexecution",
+    "command_issues": "Hex packagesomit tests;search deps/http_fetch/test anddeps/http_core/test returnednormalmissingdirectories. Read shippedtest filesvia ghreadonly. Initial broadupstreamcompareoutputtruncated;followup filteredexactrelevantmodules retrievedcompletepatch. No implementationfailureor repair."
+  },
+  "counters_retained": {
+    "fixed_sol": 18,
+    "fixed_unsuccessful_green": 14,
+    "collector_sol": 16,
+    "collector_unsuccessful_green": 12,
+    "matrix_failed_runs": 11,
+    "browser_failed_runs": 5,
+    "r32_diagnostic_failed_runs": 5,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "reviewer_sol_repair_rounds": 0
+  },
+  "repository_edits": [],
+  "external_mutations": [],
+  "commands_finished": true,
+  "command_shutdown": "All own read-only commandscompleted;no runtime/backgroundsessions launched;others processes untouched.",
+  "remaining_risks": [
+    "Preserved failingrun has no socketoperationtrace;cannot claimsetoptsinterleavingactuallyobserved.",
+    "32boundedpublicrepeats may fail to reproduce despite source-supportedrace;preservefull58failure.",
+    "Fixmustcomefromupstreamcompatiblecohort;no localerrorrewrites/assertionrelaxation."
+  ],
+  "decisions_needed": [],
+  "stage_status": "INCOMPLETE. Root newly reports canonical matrix-green11 FAIL87/135, exit1/source stable on H2\u2192TLS head-bytes-exact Python peer metadata limit. Diagnosis assigned elsewhere; full58 FAIL845/1 retained. This independent cancellation diagnosis does not clear either failure."
+}

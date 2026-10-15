@@ -1,0 +1,1154 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 33590, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  1) test managed H2 actual trailers retain exact128 ordered duplicates and reject129 before filtering (Gaoxy.Proxy.HTTPHeadersTest)
+     [1m[30mapps/gaoxy_proxy/test/http_headers_test.exs:261[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Headers.trailers(exact, forged)
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [{"x-check", "1"}, {"x-check", "2"}, {"x-check", "3"}, {"x-check", "4"}, {"x-check", "5"}, {"x-check", "6"}, {"x-check", "7"}, {"x-check", "8"}, {"x-check", "9"}, {"x-check", "10"}, {"x-check", "11"}, {"x-check", "12"}, {"x-check", "13"}, {"x-check", "14"}, {"x-check", "15"}, {"x-check", "16"}, {"x-check", "17"}, {"x-check", "18"}, {"x-check", "19"}, {"x-check", "20"}, {"x-check", "21"}, {"x-check", "22"}, {"x-check", "23"}, {"x-check", "24"}, {"x-check", "25"}, {"x-check", "26"}, {"x-check", "27"}, {"x-check", "28"}, {"x-check", "29"}, {"x-check", "30"}, {"x-check", "31"}, {"x-check", "32"}, {"x-check", "33"}, {"x-check", "34"}, {"x-check", "35"}, {"x-check", "36"}, {"x-check", "37"}, {"x-check", "38"}, {"x-check", "39"}, {"x-check", "40"}, {"x-check", "41"}, {"x-check", "42"}, {"x-check", "43"}, {"x-check", "44"}, {"x-check", "45"}, {"x-check", "46"}, {"x-check", "47"}, {"x-check", "48"}, {"x-check", ...}, {...}, ...]
+            }
+     [36mstacktrace:[0m
+       test/http_headers_test.exs:284: anonymous fn/2 in Gaoxy.Proxy.HTTPHeadersTest."test managed H2 actual trailers retain exact128 ordered duplicates and reject129 before filtering"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http_headers_test.exs:277: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  2) test managed H2 trailer and Connection declarations count repeated tokens before deduplication (Gaoxy.Proxy.HTTPHeadersTest)
+     [1m[30mapps/gaoxy_proxy/test/http_headers_test.exs:189[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} = Headers.request(%{request | request: %{request.request | headers: [{field, over}]}})
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [{"x-forwarded-for", "127.0.0.1"}, {"x-forwarded-host", "downstream.example"}, {"x-forwarded-proto", "http"}],
+              [32m%{
+                dropped: ["connection", "proxy-connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade", "x-check"],
+                allowed: [],
+                max_bytes: 65536,
+                max_count: 128
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/http_headers_test.exs:218: anonymous fn/2 in Gaoxy.Proxy.HTTPHeadersTest."test managed H2 trailer and Connection declarations count repeated tokens before deduplication"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http_headers_test.exs:200: (test)
+
+[32m.[0m[32m.[0m
+
+  3) test managed H2 header backing and improper lists reject before normalization or token splitting (Gaoxy.Proxy.HTTPHeadersTest)
+     [1m[30mapps/gaoxy_proxy/test/http_headers_test.exs:229[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, _} =
+              Headers.request(%{bounded | request: %{bounded.request | headers: fields, body: :chunked}})
+     [36mleft:  [0m{[31m:error[0m, _}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [{"trailer", "x-checkxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}, {"x-forwarded-for", "127.0.0.1"}, {"x-forwarded-host", "downstream.example"}, {"x-forwarded-proto", "http"}],
+              [32m%{
+                dropped: ["connection", "proxy-connection", "keep-alive", "proxy-authenticate", "proxy-authorization", "te", "trailer", "transfer-encoding", "upgrade"],
+                allowed: ["x-checkxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"],
+                max_bytes: 65536,
+                max_count: 128
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/http_headers_test.exs:251: anonymous fn/2 in Gaoxy.Proxy.HTTPHeadersTest."test managed H2 header backing and improper lists reject before normalization or token splitting"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http_headers_test.exs:244: (test)
+
+[32m.[0m[32m.[0m
+
+  4) test forged prepared H2 routers cannot bypass the public or direct Store activation gate (Gaoxy.Proxy.ManagedH2GenerationExclusionTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs:33[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, config} = ProxyHTTP.init(h2_options(protocol))
+     [36mleft:  [0m{[31m:ok[0m, config}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_generation_exclusion_test.exs:38: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GenerationExclusionTest."test forged prepared H2 routers cannot bypass the public or direct Store activation gate"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_generation_exclusion_test.exs:37: (test)
+
+
+
+  5) test H1 preparation activation and initial routes retain their accepted Generation behavior (Gaoxy.Proxy.ManagedH2GenerationExclusionTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs:62[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.HTTP.generation_validate/1 is undefined or private[0m
+     [36mcode: [0massert :ok = apply(ProxyHTTP, :generation_validate, [config])
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.HTTP.generation_validate(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "example.test", userinfo: nil, host: "example.test", port: 80, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: nil, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient})
+       test/managed_h2_generation_exclusion_test.exs:64: (test)
+
+
+
+  6) test static fixed H2 routes compile but both Store paths reject without contacting an owner (Gaoxy.Proxy.ManagedH2GenerationExclusionTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs:8[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, config} = ProxyHTTP.init(options)
+     [36mleft:  [0m{[31m:ok[0m, config}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_generation_exclusion_test.exs:14: anonymous fn/4 in Gaoxy.Proxy.ManagedH2GenerationExclusionTest."test static fixed H2 routes compile but both Store paths reject without contacting an owner"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_generation_exclusion_test.exs:12: (test)
+
+
+
+  7) test polling uses submitted URL context and returns the same exact four-key shell (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:201[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.poll_headers/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert {{:headers, 200, fields}, updated} = call(:poll_headers, [{handle, request().url}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.poll_headers({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.381.0>, pid: #PID<0.381.0>, ref: #Reference<0.3474737434.564920321.208603>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"})
+       test/managed_h2_client_test.exs:204: (test)
+
+
+
+  8) test task errors and malformed successful wrappers retain only finite atoms (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:296[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor result <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.382.0>, pid: #PID<0.382.0>, ref: #Reference<0.3474737434.564920321.208611>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {#Reference<0.3474737434.564920321.208611>, {:error, {:tcp, :econnreset}}})
+       test/managed_h2_client_test.exs:308: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test task errors and malformed successful wrappers retain only finite atoms"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_client_test.exs:299: (test)
+
+
+
+  9) test open rejects expanded maps, aliases and omissions before creating an upload or Fetch (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:52[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.open/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor bad <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.open(nil)
+       test/managed_h2_client_test.exs:67: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test open rejects expanded maps, aliases and omissions before creating an upload or Fetch"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:55: (test)
+
+
+
+ 10) test wrong task refs and stream PIDs drop unknown payloads without retaining them (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:256[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor message <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.384.0>, pid: #PID<0.384.0>, ref: #Reference<0.3474737434.564920321.208646>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {#Reference<0.3474737434.564920321.208647>, %HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-repeat", "first"}, {"x-repeat", "second"}]}, body: #PID<0.384.0>, body_used: false, url: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: "/a", query: "", fragment: nil}, redirected: false, type: :basic, stream: #PID<0.384.0>, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}})
+       test/managed_h2_client_test.exs:268: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test wrong task refs and stream PIDs drop unknown payloads without retaining them"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_client_test.exs:260: (test)
+
+
+
+ 11) test subscribe emits exactly the public ACK-mode read request (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:466[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.subscribe/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert :ok = call(:subscribe, [original])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.subscribe(%{stream: #PID<0.385.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.385.0>, pid: #PID<0.385.0>, ref: #Reference<0.3474737434.564920321.208655>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}})
+       test/managed_h2_client_test.exs:468: (test)
+
+
+
+ 12) test opening timeouts and signed64 deadlines reject malformed and overflowing arithmetic (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:75[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.open/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor key <- [:timeout, :opening_timeout, :write_timeout],
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.open(%{timeout: 0, request: %{protocol: :h2c, fields: [], target: "/a?", url: "http://upstream.test/a?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: -576460740635, write_timeout: 5000, managed_transport: %{fetch_options: [http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false], policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :h2c, origin: "http://upstream.test", scheme: :http, host: "upstream.test", port: 80, connect_address: {127, 0, 0, 1}, open_options: [origin: "http://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}}, opening_timeout: 5000, opening_deadline: -576460740635})
+       test/managed_h2_client_test.exs:80: anonymous fn/4 in Gaoxy.Proxy.ManagedH2ClientTest."test opening timeouts and signed64 deadlines reject malformed and overflowing arithmetic"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:78: (test)
+
+
+
+ 13) test upload accepts exact64KiB using public Stream and finish joins its actor (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:474[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.write_body/3 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert :ok = call(:write_body, [stream, payload, 1000])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.write_body(#PID<0.388.0>, "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu" <> ..., 1000)
+       test/managed_h2_client_test.exs:478: (test)
+
+
+
+ 14) test unresolved task polling is nonblocking and does not invent a head or completion (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:211[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.poll_headers/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert {:none, ^handle} = call(:poll_headers, [{handle, request().url}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.poll_headers({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.390.0>, pid: #PID<0.390.0>, ref: #Reference<0.3474737434.564920321.208693>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"})
+       test/managed_h2_client_test.exs:213: (test)
+
+
+
+ 15) test real lazy public scope opens exact handle and binds original completion before cleanup (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:132[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.open/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert {:ok, handle, nil} = call(:open, [input])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.open(%{timeout: 5000, request: %{protocol: :h2c, fields: [], target: "/a?", url: "http://upstream.test:42313/a?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: -576460740584, write_timeout: 5000, managed_transport: %{fetch_options: [http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false], policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :h2c, origin: "http://upstream.test:42313", scheme: :http, host: "upstream.test", port: 42313, connect_address: {127, 0, 0, 1}, open_options: [origin: "http://upstream.test:42313", connect_address: {127, 0, 0, 1}, http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: #PID<0.392.0>, latch: #Reference<0.3474737434.565051393.208705>, identity: <<27, 111, 200, 232, 106, 190, 201, 39, 235, 252, 13, 165, 158, 70, 89, 191, 75, 234, 32, 165, 244, 142, 173, 204, 243, 75, 216, 68, 31, 55, 63, 184>>, ingress: #Reference<0.3474737434.565051393.208721>, configuration: #Reference<0.3474737434.565051393.208722>, gate: #Reference<0.3474737434.565051393.208723>, max_requests: 32}}, opening_timeout: 5000, opening_deadline: -576460740584})
+       test/managed_h2_client_test.exs:164: (test)
+
+
+
+ 16) test terminal trailers preserve duplicate order at128 and reject native-valid129 (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:417[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mcall(:event, [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.397.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.397.0>, pid: #PID<0.397.0>, ref: #Reference<0.3474737434.564920321.208747>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {:stream_trailers, #PID<0.397.0>, %HTTP.Headers{headers: [{"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", ...}, {...}, ...]}})
+       test/managed_h2_client_test.exs:422: (test)
+
+
+
+ 17) test resolved handles ignore repeated task results while preserving original completion (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:316[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mcall(:event, [{original, nil}, {original.promise.task.ref, response()}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.398.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.398.0>, pid: #PID<0.398.0>, ref: #Reference<0.3474737434.564920321.208755>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {#Reference<0.3474737434.564920321.208755>, %HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-repeat", "first"}, {"x-repeat", "second"}]}, body: #PID<0.398.0>, body_used: false, url: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: "/a", query: "", fragment: nil}, redirected: false, type: :basic, stream: #PID<0.398.0>, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}})
+       test/managed_h2_client_test.exs:320: (test)
+
+
+
+ 18) test task DOWN authenticates task PID and normalizes arbitrary diagnostics to finite error (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:272[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor reason <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.399.0>, pid: #PID<0.399.0>, ref: #Reference<0.3474737434.564920321.208763>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {:DOWN, #Reference<0.3474737434.564920321.208763>, :process, #PID<0.399.0>, :normal})
+       test/managed_h2_client_test.exs:283: anonymous fn/5 in Gaoxy.Proxy.ManagedH2ClientTest."test task DOWN authenticates task PID and normalizes arbitrary diagnostics to finite error"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:277: (test)
+
+
+
+ 19) test bodyless head and status responses leave stream nil without fabricating completion (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:329[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor status <- [200, 204, 205, 304], body <- [nil, ""] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.400.0>, pid: #PID<0.400.0>, ref: #Reference<0.3474737434.564920321.208771>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {#Reference<0.3474737434.564920321.208771>, %HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-repeat", "first"}, {"x-repeat", "second"}]}, body: nil, body_used: false, url: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: "/a", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}})
+       test/managed_h2_client_test.exs:335: anonymous fn/3 in Gaoxy.Proxy.ManagedH2ClientTest."test bodyless head and status responses leave stream nil without fabricating completion"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:330: (test)
+
+
+
+ 20) test task-message delivery authenticates ref and extracts only bounded head and stream (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:183[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mcall(:event, [{handle, request().url}, {handle.promise.task.ref, response}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.401.0>, pid: #PID<0.401.0>, ref: #Reference<0.3474737434.564920322.200517>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {#Reference<0.3474737434.564920322.200517>, %HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-repeat", "first"}, {"x-repeat", "second"}]}, body: #PID<0.401.0>, body_used: false, url: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: "/a", query: "", fragment: nil}, redirected: false, type: :basic, stream: #PID<0.401.0>, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}})
+       test/managed_h2_client_test.exs:188: (test)
+
+
+
+ 21) test DATA above16KiB through exact1MiB remains one event and only explicit ACK sends credit (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:366[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor bytes <- [16_385, 65_536, 1_048_576] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.402.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.402.0>, pid: #PID<0.402.0>, ref: #Reference<0.3474737434.564920321.208781>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {:stream_chunk, #PID<0.402.0>, "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" <> ..., #Reference<0.3474737434.564920321.208782>})
+       test/managed_h2_client_test.exs:374: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test DATA above16KiB through exact1MiB remains one event and only explicit ACK sends credit"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_client_test.exs:369: (test)
+
+
+
+ 22) test DATA logical backing and scalar failures never acknowledge rejected bytes (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:383[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor payload <- [:binary.copy("d", 1_048_577), oversized_slice(1_048_577), ["body"]] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.403.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.403.0>, pid: #PID<0.403.0>, ref: #Reference<0.3474737434.564920321.208788>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {:stream_chunk, #PID<0.403.0>, "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd" <> ..., #Reference<0.3474737434.564920321.208790>})
+       test/managed_h2_client_test.exs:390: anonymous fn/3 in Gaoxy.Proxy.ManagedH2ClientTest."test DATA logical backing and scalar failures never acknowledge rejected bytes"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:386: (test)
+
+
+
+ 23) test open nested envelopes and checked clients reject aliases, forged structs and protocol mismatch (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:111[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.open/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor bad <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.open(%{timeout: 5000, request: %{protocol: :h2c, fields: [], target: "/a?", url: "http://upstream.test/a?", headers: [], method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}}, deadline: -576460740509, write_timeout: 5000, managed_transport: %{fetch_options: [http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false], policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :h2c, origin: "http://upstream.test", scheme: :http, host: "upstream.test", port: 80, connect_address: {127, 0, 0, 1}, open_options: [origin: "http://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}}, opening_timeout: 5000, opening_deadline: -576460740509})
+       test/managed_h2_client_test.exs:128: anonymous fn/1 in Gaoxy.Proxy.ManagedH2ClientTest."test open nested envelopes and checked clients reject aliases, forged structs and protocol mismatch"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_client_test.exs:114: (test)
+
+
+
+ 24) test cleanup and waits normalize opaque unsupported completion to a finite error only (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:516[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.cleanup/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor abort? <- [true, false] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.cleanup(%{stream: #PID<0.405.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: :http_version}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.405.0>, pid: #PID<0.405.0>, ref: #Reference<0.3474737434.564920321.208808>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: :http_version}}}, true)
+       test/managed_h2_client_test.exs:522: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test cleanup and waits normalize opaque unsupported completion to a finite error only"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/managed_h2_client_test.exs:521: (test)
+
+
+
+ 25) test adapter exports only the existing callbacks and has no begin_cleanup variant (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:29[0m
+     [31mExpected truthy, got false[0m
+     [36mcode: [0massert Code.ensure_loaded?(@client)
+     [36marguments:[0m
+
+         # 1
+         Gaoxy.Proxy.ManagedH2Client
+
+     [36mstacktrace:[0m
+       test/managed_h2_client_test.exs:30: (test)
+
+
+
+ 26) test admissible backed DATA is copied compactly after preflight (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:404[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mcall(:event, [{original, nil}, {:stream_chunk, self(), payload, ref}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.407.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.407.0>, pid: #PID<0.407.0>, ref: #Reference<0.3474737434.564920322.200536>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {:stream_chunk, #PID<0.407.0>, "ssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssssss", #Reference<0.3474737434.564920322.200537>})
+       test/managed_h2_client_test.exs:410: (test)
+
+
+
+ 27) test terminal and stream errors retain original completion with finite normalized reason (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:452[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0massert {:end, ^original} = call(:event, [{original, nil}, {:stream_end, self()}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: #PID<0.408.0>, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: true, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.408.0>, pid: #PID<0.408.0>, ref: #Reference<0.3474737434.564920322.200541>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, nil}, {:stream_end, #PID<0.408.0>})
+       test/managed_h2_client_test.exs:454: (test)
+
+
+
+ 28) test upload finish validates128 proper ordered trailers before public Stream.finish (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:503[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.finish_body/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfinite_error(call(:finish_body, [stream, fields ++ [{"x-check", "over"}]]))
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.finish_body(#PID<0.410.0>, [{"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", "value"}, {"x-check", ...}, {...}, ...])
+       test/managed_h2_client_test.exs:507: (test)
+
+
+
+ 29) test rejected upload logical backing and timeout inputs send no public chunk (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:485[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.write_body/3 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor payload <- [:binary.copy("u", 65_537), oversized_slice(65_537), ["body"]] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.write_body(#PID<0.413.0>, "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu" <> ..., 1000)
+       test/managed_h2_client_test.exs:490: anonymous fn/3 in Gaoxy.Proxy.ManagedH2ClientTest."test rejected upload logical backing and timeout inputs send no public chunk"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:489: (test)
+
+
+
+ 30) test handle context validates exact handle Promise and Task public shells before use (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:217[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.poll_headers/1 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor bad <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.poll_headers({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, url: "http://upstream.test/a?", promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.415.0>, pid: #PID<0.415.0>, ref: #Reference<0.3474737434.564920321.208827>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"})
+       test/managed_h2_client_test.exs:246: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ClientTest."test handle context validates exact handle Promise and Task public shells before use"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_client_test.exs:220: (test)
+
+
+
+ 31) test encoded compression and Content-Length pass unchanged through head and DATA (Gaoxy.Proxy.ManagedH2ClientTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_client_test.exs:344[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.event/2 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mcall(:event, [{original, request().url}, {original.promise.task.ref, response}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.event({%{stream: nil, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}, resolved: false, promise: %HTTP.Promise{task: %Task{mfa: {:erlang, :apply, 2}, owner: #PID<0.416.0>, pid: #PID<0.416.0>, ref: #Reference<0.3474737434.564920321.208833>}, completion: %HTTP.RequestCompletion{tracker: nil, latch: nil, unsupported: nil}}}, "http://upstream.test/a?"}, {#Reference<0.3474737434.564920321.208833>, %HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"content-encoding", "gzip"}, {"content-length", "35"}]}, body: #PID<0.416.0>, body_used: false, url: %URI{scheme: "http", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 80, path: "/a", query: "", fragment: nil}, redirected: false, type: :basic, stream: #PID<0.416.0>, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}})
+       test/managed_h2_client_test.exs:356: (test)
+
+
+
+ 32) test http1 -> h2c streamed bytes response trailers and bodyless framing (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:537[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:538: (test)
+
+
+
+ 33) test http2 -> http2 streamed bytes response trailers and bodyless framing (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:537[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:538: (test)
+
+
+
+ 34) test http1 -> http2 streamed bytes response trailers and bodyless framing (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:537[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:538: (test)
+
+
+
+ 35) test fixed managed H2 initialization is pure and protocol/scheme mismatches dedicated H2 and managed H3 reject (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:720[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, config} =
+              ProxyHTTP.init(%{upstream: origin, upstream_protocol: protocol, transport: handle})
+     [36mleft:  [0m{[31m:ok[0m, config}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:725: anonymous fn/3 in Gaoxy.Proxy.ManagedH2FixedEndpointTest."test fixed managed H2 initialization is pure and protocol/scheme mismatches dedicated H2 and managed H3 reject"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_fixed_endpoint_test.exs:724: (test)
+
+
+
+ 36) test http1 -> h2c simultaneous requests multiplex one connection and reset preserves healthy sibling (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:625[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:626: (test)
+
+
+
+ 37) test http1 -> http2 safe duplicate request trailers reach the peer in order (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:656[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:657: (test)
+
+
+
+ 38) test http1 -> http2 original binding precedes producer bytes and actual PID preserves raw Content-Length (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:568[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:569: (test)
+
+
+
+ 39) test http1 -> h2c safe duplicate request trailers reach the peer in order (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:656[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:657: (test)
+
+
+
+ 40) test http1 -> h2c original binding precedes producer bytes and actual PID preserves raw Content-Length (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:568[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:569: (test)
+
+
+
+ 41) test http1 -> http2 simultaneous requests multiplex one connection and reset preserves healthy sibling (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:625[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:626: (test)
+
+
+
+ 42) test http2 -> h2c early final response finishes an incomplete upload without replay (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:610[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:611: (test)
+
+
+
+ 43) test http2 -> http2 original binding precedes producer bytes and actual PID preserves raw Content-Length (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:568[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:569: (test)
+
+
+
+ 44) test http2 -> http2 exact escaped targets duplicate fields raw gzip manual redirect and sequential reuse (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:498[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:499: (test)
+
+
+
+ 45) test http2 -> http2 early final response finishes an incomplete upload without replay (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:610[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:611: (test)
+
+
+
+ 46) test http1 -> h2c exact escaped targets duplicate fields raw gzip manual redirect and sequential reuse (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:498[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:499: (test)
+
+
+
+ 47) test http2 -> h2c exact escaped targets duplicate fields raw gzip manual redirect and sequential reuse (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:498[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:499: (test)
+
+
+
+ 48) test http2 -> h2c streamed bytes response trailers and bodyless framing (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:537[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:538: (test)
+
+
+
+ 49) test http1 -> http2 early final response finishes an incomplete upload without replay (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:610[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:611: (test)
+
+
+
+ 50) test C2 R32 P0 refuses the33rd simultaneous request without hidden pending Fetch or replay (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:690[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:691: (test)
+
+
+
+ 51) test http1 -> http2 exact escaped targets duplicate fields raw gzip manual redirect and sequential reuse (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:498[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:499: (test)
+
+
+
+ 52) test http2 -> h2c original binding precedes producer bytes and actual PID preserves raw Content-Length (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:568[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:569: (test)
+
+
+
+ 53) test http2 -> h2c simultaneous requests multiplex one connection and reset preserves healthy sibling (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:625[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:626: (test)
+
+
+
+ 54) test http2 -> h2c safe duplicate request trailers reach the peer in order (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:656[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:657: (test)
+
+
+
+ 55) test http2 -> http2 safe duplicate request trailers reach the peer in order (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:656[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:657: (test)
+
+
+
+ 56) test http1 -> h2c early final response finishes an incomplete upload without replay (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:610[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:611: (test)
+
+
+
+ 57) test http2 -> http2 simultaneous requests multiplex one connection and reset preserves healthy sibling (Gaoxy.Proxy.ManagedH2FixedEndpointTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:625[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_endpoint_test.exs:626: (test)
+
+
+
+ 58) test a cancelled Session without Service activation never checks out or starts Fetch (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:74[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:75: (test)
+
+
+
+ 59) test transport owner death at original binding joins public completion but cannot issue Service receipt (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:749[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:750: (test)
+
+
+
+ 60) test h2c one tracked poll timer and residual submitted URL clear at validated head (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:145[0m
+     [31mindependent peer did not report ready[0m
+     [36mcode: [0mf = F.fixture(@protocol, :http1, ["--manual"])
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:26: Gaoxy.Proxy.ManagedH2FixedFixture.peer/2
+       test/managed_h2_fixed_endpoint_test.exs:90: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:146: (test)
+
+
+
+ 61) test field_count malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 62) test GOAWAY never replays a failed request and a later request opens a healthy connection (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:499[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:500: (test)
+
+
+
+ 63) test http2 timed-out opening aborts and joins original completion with no replay (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:180[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:182: (test)
+
+
+
+ 64) test overlapping authenticated DATA fails without retaining a second event (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:396[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:397: (test)
+
+
+
+ 65) test improper malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 66) test native-valid terminal trailer129 rejects before Session cache or successful downstream termination (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:419[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:420: (test)
+
+
+
+ 67) test cancelled late authenticated handoff is revoked before checkout and emits no Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:783[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:784: (test)
+
+
+
+ 68) test public producer death aborts the request and joins its original completion (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:518[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:519: (test)
+
+
+
+ 69) test validated response head clears submitted URL while preserving original cleanup identity (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:650[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:651: (test)
+
+
+
+ 70) test http2 pending original completion retains token pins and combined Service reserve after consumption (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:102[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:103: (test)
+
+
+
+ 71) test body malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 72) test bounded instance stop joins a held original completion and every owner helper (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:548[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:549: (test)
+
+
+
+ 73) test session_cancel joins a real held completion and preserves healthy connection siblings (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:326[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:327: (test)
+
+
+
+ 74) test Session death retains owner token and Service budget until real completion then reports missing receipt (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:717[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:718: (test)
+
+
+
+ 75) test h2c timed-out opening aborts and joins original completion with no replay (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:180[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:182: (test)
+
+
+
+ 76) test h2c pending original completion retains token pins and combined Service reserve after consumption (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:102[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:103: (test)
+
+
+
+ 77) test authenticated public DATA accepts16385 65536 and1MiB and rejects logical/backing excess before copying (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:209[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:210: (test)
+
+
+
+ 78) test limits malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 79) test authenticated metadata and raw task errors normalize before Session or pump cache (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:273[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:274: (test)
+
+
+
+ 80) test exact seven-key open receives the original eight-key envelope and checked client before original binding (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:568[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:569: (test)
+
+
+
+ 81) test disconnect joins a real held completion and preserves healthy connection siblings (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:326[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:327: (test)
+
+
+
+ 82) test backing malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 83) test native final headers at256 fields fit and257 rejects before a downstream head (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:484[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:486: anonymous fn/2 in Gaoxy.Proxy.ManagedH2FixedLifecycleTest."test native final headers at256 fields fit and257 rejects before a downstream head"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_fixed_lifecycle_test.exs:485: (test)
+
+
+
+ 84) test target malformed request rejects400 before Session admission checkout upload or Fetch bytes (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:55[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:57: (test)
+
+
+
+ 85) test pump_owner_death joins a real held completion and preserves healthy connection siblings (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:326[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:327: (test)
+
+
+
+ 86) test upload65536 reaches a public Stream while65537 and retained backing reject without a chunk message (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:672[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Client.write_body/3 is undefined (module Gaoxy.Proxy.ManagedH2Client is not available)[0m
+     [36mcode: [0mfor bytes <- [over, retained, ["improper-type"]] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Client.write_body(#PID<0.1589.0>, "uuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuuu" <> ..., 5000)
+       test/managed_h2_fixed_lifecycle_test.exs:691: anonymous fn/3 in Gaoxy.Proxy.ManagedH2FixedLifecycleTest."test upload65536 reaches a public Stream while65537 and retained backing reject without a chunk message"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_fixed_lifecycle_test.exs:690: (test)
+
+
+
+ 87) test whole downstream write precedes exactly one ACK and failed write sends no ACK (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:347[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:349: anonymous fn/2 in Gaoxy.Proxy.ManagedH2FixedLifecycleTest."test whole downstream write precedes exactly one ACK and failed write sends no ACK"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_fixed_lifecycle_test.exs:348: (test)
+
+
+
+ 88) test native informational128 blocks validate before final head and129 rejects with finite502 (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:462[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:464: anonymous fn/2 in Gaoxy.Proxy.ManagedH2FixedLifecycleTest."test native informational128 blocks validate before final head and129 rejects with finite502"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_fixed_lifecycle_test.exs:463: (test)
+
+
+
+ 89) test exact128 native trailer fields retain ordered duplicates through downstream completion (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:443[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:444: (test)
+
+
+
+ 90) test http2 one tracked poll timer and residual submitted URL clear at validated head (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:145[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:146: (test)
+
+
+
+ 91) test authenticated terminal Headers enforce128 fields before cache and reject malformed backing (Gaoxy.Proxy.ManagedH2FixedLifecycleTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs:241[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, spec} = Gaoxy.HTTP.service_spec(service_options)
+     [36mleft:  [0m{[31m:ok[0m, spec}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_endpoint_test.exs:168: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4
+       test/managed_h2_fixed_lifecycle_test.exs:242: (test)
+
+[32m.[0m[32m.[0m
+
+ 92) test managed init rejects expanded handles, overrides, raw options and unqualified protocols (Gaoxy.Proxy.UpstreamTransportProxyTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:63[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, qualified} =
+              ProxyHTTP.init(%{upstream: upstream, upstream_protocol: protocol, transport: handle})
+     [36mleft:  [0m{[31m:ok[0m, qualified}
+     [36mright: [0m{[32m:error[0m, :invalid_http_proxy_options}
+     [36mstacktrace:[0m
+       test/upstream_transport_proxy_test.exs:68: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportProxyTest."test managed init rejects expanded handles, overrides, raw options and unqualified protocols"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_proxy_test.exs:67: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 67.8 seconds (6.9s async, 60.9s sync)
+[31m135 tests, 92 failures[0m
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 506, in main
+    peer.stop()
+    ~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 293, in stop
+    self.emit("joined", accepts=self.accepts, requests=self.requests, forced=forced, live=live, failed=self.failed)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 41, in emit
+    print(line, flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 516, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 508, in main
+    peer.fail(error)
+    ~~~~~~~~~^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 45, in fail
+    self.emit("failure", reason=repr(error)[:1024])
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 41, in emit
+    print(line, flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+Exception ignored on flushing sys.stdout:
+BrokenPipeError: [Errno 32] Broken pipe

@@ -1,0 +1,32 @@
+{
+  "task_id": "sol17_native_h1_poll_floor_independent_spec_actual_finding",
+  "status": "DONE",
+  "verdict": "FAIL_NEW_REPEAT_CLOSE_TEST_EXPECTATION",
+  "assignment": "direct bounded read-only review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "source_review_checkpoint": "Initial narrow static SPEC report preserved; CODE not advanced after actual focused failure.",
+  "root_actual_green_reported": {
+    "tests": 67,
+    "failures": 1,
+    "exit": 2,
+    "skipped": 0,
+    "source_stable": true,
+    "scope": "All9new regressions,H1partial/nativeNetwork/H2Facade passed; sole newly added second peer-close poll assertion failed."
+  },
+  "findings": [
+    {
+      "id": "SOL17-SPEC-ERRNO-1",
+      "location": "apps/gaoxy_http/test/connection_poll_test.exs repeat close assertion",
+      "severity": "required test-contract correction",
+      "evidence": "Root reports first TCP close poll returned :closed and preserved buffer/body/deadline/floor; repeated recv on now-disconnected native TCP socket returned :enotconn. Original HEAD required only first close poll.",
+      "recommended_repair": "Change only new second-close expected errno to :enotconn; keep pinned entire Exchange and all first-close/ledger/no-consume/buffer/deadline assertions. No production repair or weakened timeout/byte assertions."
+    }
+  ],
+  "runtime": "NOT RUN by reviewer; actual GREEN outcome attributed to Root, receipt pending",
+  "repository_edits": [],
+  "commands_finished": true,
+  "counters_retained": "fixed Sol18 tests-only repair pending; unsuccessful GREEN13;collector15;R32diagFAIL4;nativepollRED2fixturecorr2;Astra2of2",
+  "required_next": "Parent refreezes one-line corrected test/hash; fresh narrow SPEC recheck precedes CODE. No collector proposal acceptance included.",
+  "decisions_needed": []
+}

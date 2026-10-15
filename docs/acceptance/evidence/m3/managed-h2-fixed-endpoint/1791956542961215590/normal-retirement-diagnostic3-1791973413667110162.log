@@ -1,0 +1,65 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+PEER_NORMAL_DIAGNOSTIC {"event":"ready","protocol":"h2c","port":48843,"ca":"/tmp/nix-shell.bzoQcS/gaoxy-fixed-h2-uuz862dd/ca.pem","cert":"/tmp/nix-shell.bzoQcS/gaoxy-fixed-h2-uuz862dd/cert.pem","key":"/tmp/nix-shell.bzoQcS/gaoxy-fixed-h2-uuz862dd/key.pem","identity":{"python":"/tmp/gaoxy-m3-h2-soak-venv/bin/python","python_version":"3.13.15 (main, Aug  5 2026, 12:25:43) [GCC 15.2.0]","packages":{"h2":"4.3.0","hpack":"4.1.0","hyperframe":"6.1.0"},"python_openssl":"OpenSSL 3.6.3 9 Jun 2026","openssl":"OpenSSL 3.6.5 29 Sep 2026 (Library: OpenSSL 3.6.5 29 Sep 2026)\nbuilt on: Tue Sep 29 13:57:30 2026 UTC\nplatform: linux-x86_64\noptions:  bn(64,64)\ncompiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG\nOPENSSLDIR: \"/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5/etc/ssl\"\nENGINESDIR: \"/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5/lib/engines-3\"\nMODULESDIR: \"/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5/lib/ossl-modules\"\nSeeding source: os-specific\nCPUINFO: OPENSSL_ia32cap=0x7ffef3ffffebffff:0x00000000021cbfbb:0x000000009c000400:0x0000000000000000:0x0000000000000000\n","source_sha256":"90feece94533be73135f55c69738595c977f9b9d561400302ab202db2c02e91b","certificate_sha256":"34ded09c908b192ab623954cf9fa471e8b59420cca967d5d6f31d29276952afe"}}
+NORMAL_COMPLETION {"protocol":"h2c","completion":"ok","target":"/a%2Fb?","body_bytes":7}
+NORMAL_COMPLETION {"protocol":"h2c","completion":"ok","target":"/empty?","body_bytes":7}
+** (MatchError) no match of right hand side value: false
+    docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/normal-retirement-diagnostic3.exs:21: FixedH2NormalRetirementDiagnostic.read/4
+    docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/normal-retirement-diagnostic3.exs:55: anonymous fn/5 in FixedH2NormalRetirementDiagnostic.run/1
+    (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+    docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/normal-retirement-diagnostic3.exs:47: FixedH2NormalRetirementDiagnostic.run/1
+    (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+    docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/normal-retirement-diagnostic3.exs:79: (file)
+Exception in thread Thread-2 (serve):
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 126, in serve
+    data = sock.recv(65536)
+ConnectionResetError: [Errno 104] Connection reset by peer
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/run/current-system/sw/lib/python3.13/threading.py", line 1044, in _bootstrap_inner
+    self.run()
+    ~~~~~~~~^^
+  File "/run/current-system/sw/lib/python3.13/threading.py", line 995, in run
+    self._target(*self._args, **self._kwargs)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 180, in serve
+    self.emit("handshake_failed" if client["h2"] is None else "connection_reset",
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              connection=number, reason=repr(error)[:512])
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 41, in emit
+    print(line, flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 506, in main
+    peer.stop()
+    ~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 293, in stop
+    self.emit("joined", accepts=self.accepts, requests=self.requests, forced=forced, live=live, failed=self.failed)
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 41, in emit
+    print(line, flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 516, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 508, in main
+    peer.fail(error)
+    ~~~~~~~~~^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 45, in fail
+    self.emit("failure", reason=repr(error)[:1024])
+    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 41, in emit
+    print(line, flush=True)
+    ~~~~~^^^^^^^^^^^^^^^^^^
+BrokenPipeError: [Errno 32] Broken pipe
+Exception ignored on flushing sys.stdout:
+BrokenPipeError: [Errno 32] Broken pipe

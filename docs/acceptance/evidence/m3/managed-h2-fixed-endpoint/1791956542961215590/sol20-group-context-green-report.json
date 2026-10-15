@@ -1,0 +1,274 @@
+{
+  "task_id": "sol20-group-context",
+  "status": "DONE",
+  "assignment": "direct bounded read-only context diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "branch": "codex/m3-h1-resource-foundation",
+  "handoff_state": "Root-owned RED completed34/22 exit2/source stable; GREEN patch delivered with static checks, pending independent SPEC/apply/runtime.",
+  "source_hashes": {
+    "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "7f084902d1fa6f332d0164f3c352a5f9d505dafca0f0add9819b6d4b763e7f40",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "89c95bd92bd6f5bfbcdb8671dade0a7cf7f9fdcfd0ec04878224ed31bc80ceab",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "fe1e50fa6aae73ef15b07a0dadcd0c5c8adbb5d08d348ecd52605157b20a597e"
+  },
+  "repo_writes": false,
+  "owned_outputs": [
+    "/tmp/gaoxy-sol20-group-context.json",
+    "/tmp/gaoxy-sol20-group-context.md"
+  ],
+  "observations": [
+    {
+      "status": "SOURCE_CONFIRMED",
+      "finding": "ExUnit on_exit executes in a separate process after the original test process exits with :shutdown.",
+      "evidence": "Installed Elixir1.18.5 ExUnit.Callbacks source lines42-56 and468-473; source path recorded in Markdown. The selected Nix source is same version as failure stacktrace, not verified runtime store identity."
+    },
+    {
+      "status": "SOURCE_CONFIRMED",
+      "finding": "Embedding is unlinked spawn, owns listener and embedding transport baselines. Owners/groups/instance are unlinked from embedding. Peer is unlinked spawn; sending unexpected_upstream to dead test parent has no source-level shutdown action.",
+      "evidence": "upstream_group_transport_test.exs:574-647,690ff (helper shifted18 lines by root diagnostic patch)"
+    },
+    {
+      "status": "SOURCE_CONFIRMED",
+      "finding": "The test preparer DOWN does not retire active transport entries; only :opening entries are abandoned. Preparation and group-baseline pins are explicitly released before test exits, embedding baselines remain.",
+      "evidence": "upstream_transports.ex:693-695; upstream_group_transport_test.exs:234-269"
+    },
+    {
+      "status": "SOURCE_CONFIRMED_LIFETIME_HAZARD",
+      "finding": "Transport owner can terminate itself normally after instance DOWN once records/tokens are empty. Fixture then asserts calls against that same owner after Gaoxy.stop(instance).",
+      "evidence": "upstream_transports.ex:658-671 sets instance_down and advances retirement;1660-1664 schedules check_owner_retirement after10ms;488-493 self-stops when complete. Fixture cleanup lines665-677 sequentially stop instance, release baselines, empty/stop groups, retire/await/status/stop owners."
+    },
+    {
+      "status": "HYPOTHESIS_ONLY",
+      "finding": "Different scheduler timing can expose owner termination before baseline release/retire/await/status; with two owners, the second owner may terminate while cleanup handles groups or first owner.",
+      "evidence": "Independent messages/timer versus sequential cleanup; actual full58 inner assertion absent. Do not attribute failure or select repair until root diagnostic supplies assertion and result."
+    },
+    {
+      "status": "SOURCE_CONFIRMED",
+      "finding": "Group probe helper paths are unreachable because reservation denial prevents startup. Group owner itself monitors instance but has no auto-stop callback.",
+      "evidence": "upstream_groups.ex:233,495-499,715-784; probe_bytes=1 vs strictly larger HTTPFetchClient.reservation."
+    },
+    {
+      "status": "NO_DIRECT_CROSS_TEST_PATH_FOUND",
+      "finding": "Fixture does not use global registered owner names/shared destination, inherited test links, or capture_io/capture_log. on_exit cannot receive test mailbox messages and intentionally uses fresh caller pid with direct embedding reply.",
+      "evidence": "fixture and cleanup source; ExUnit lifecycle. max_cases1 does not imply unlinked background processes from earlier tests have vanished. No assertion that a background leak occurred."
+    },
+    {
+      "status": "SOURCE_CONFIRMED",
+      "finding": "Peer monitor is installed before fixture closes listener. Original test exit does not close embedding-owned listener or terminate unlinked peer. A normal peer exit before monitoring would yield :noproc, but no such early-exit path is demonstrated.",
+      "evidence": "fixture cleanup681-682 and preparation_peer clauses; no parent monitor/link."
+    },
+    {
+      "status": "NO_ENVIRONMENT_LEAK_EVIDENCE",
+      "finding": "In-scope HTTP2 capacity tests temporarily alter kernel inet_backend/SSL internal_active_n and restore them in try/after. Source evidence does not establish persistent mutation. Different suite composition changes seed-based ordering and background/scheduler context.",
+      "evidence": "http2_capacity_test.exs:69-90,216-227; full58 versus single-file file lists differ."
+    }
+  ],
+  "root_cause": "Actual sibling failure confirms owner unavailable during post-instance status check; original group failure exact assertion remains unknown.",
+  "recommendations": [
+    "Wait for root-owned diagnostic2; do not rerun or edit while it runs.",
+    "Use original inner stacktrace and assertion values to choose the next narrowly bounded trace.",
+    "If post-stop owner call fails, correlate same owner identity and normal DOWN with instance DOWN; if instance-stop assertion fails, parent core-lifecycle investigation owns it.",
+    "Do not replace required status/retirement assertions with liveness checks or change deadlines to obtain green.",
+    "Root confirms baseline release itself may return not_running after owner normal DOWN; include it as earliest owner-call boundary in diagnostic interpretation."
+  ],
+  "verification": {
+    "static_source_read": "PASS",
+    "baseline": "PASS",
+    "root_diagnostic_patch_identity": "PASS",
+    "runtime": "NOT RUN by assignment",
+    "tests": "NOT RUN by assignment",
+    "repository_writes": "NONE",
+    "commands_finished": true,
+    "shared_fixture_lifetime_trace": "PASS static: no existing test intentionally stops/kill its instance or transport owner"
+  },
+  "counters": {
+    "inherited": "FixedSol19 / unsuccessfulGREEN14 before new failure, CollectorSol17, Astra2/2 exhausted; root owns global updates",
+    "local_repair_rounds_added": 0
+  },
+  "remaining_risks": [
+    "Exact failure remains unresolved",
+    "Root diagnostic2 was running at assignment; worker did not inspect or interfere with runtime",
+    "No new production repair or test-contract change proposed"
+  ],
+  "decisions_needed": "No product decision. Parent owns runtime and repair after diagnostic evidence.",
+  "deterministic_causal_probe": {
+    "status": "DESIGN ONLY; no runtime executed or patch produced",
+    "precondition": "Use this exact fixture with two owners. Preserve all current cleanup predicates and deadlines; parent owns any temporary diagnostic code.",
+    "steps": [
+      "Before current Gaoxy.stop call, install Process.monitor(owner) for each exact fixture owner and retain {pid,ref}. Installing before stop preserves the actual exit reason.",
+      "Execute current guarded assert(:ok == Gaoxy.stop(instance,3000)) unchanged.",
+      "For each {pid,ref}, wait with existing finite3000ms bound for {:DOWN,^ref,:process,^pid,:normal}. No sleeps, late monitoring, liveness shortcuts, or alternate owners.",
+      "Then execute original assert :ok = Resources.release(baseline) unchanged. Capture its actual result via existing exception diagnostic. Root confirms this calls dead owners rather than implementing dead-idempotent release.",
+      "Keep this a causal negative diagnostic, expected to expose the scheduling hazard rather than acceptance. Matching failure demonstrates hazard only; associate original full58 only if diagnostic2 inner assertion/result also match."
+    ],
+    "finite_deadlines": "Use existing3000ms receive bound; leave stop/release/retire/await/status assertions intact. A wait timeout is a failed causal probe, not permission to increase timeouts."
+  },
+  "minimal_teardown_candidate_v1_superseded": {
+    "status": "DESIGN ONLY; wait for actual full58 inner error before implementation",
+    "change": "Move only the current guarded Gaoxy.stop(instance,3000) assertion from the start of protected cleanup to immediately after the existing for-owner retirement/status/GenServer.stop loop, before peer monitor/listener close.",
+    "order": [
+      "assert :ok = Resources.release(baseline)",
+      "eventually(groups==%{})",
+      "GenServer.stop(groups,:normal,3000)",
+      "for each owner: assert retire; assert await_retirement; assert status zero resources/pins/request_tokens/helpers; GenServer.stop(owner,:normal,3000)",
+      "existing guarded assert(:ok == Gaoxy.stop(instance,3000))",
+      "existing monitor peer; close listener; assert normal peer DOWN"
+    ],
+    "preservation": "All original release/retire/await/status/Gaoxy.stop/peer assertions, zero-count predicates, and deadlines are retained. Owner API assertions and explicit owner shutdown now occur while instance remains alive, so instance-DOWN auto-stop cannot race them.",
+    "coverage_tradeoff": "This fixture would explicitly retire/stop its owners before stopping the instance, so this teardown no longer incidentally exercises instance-driven owner retirement. The test body targets group preparation/sidecar ownership; dedicated lifecycle tests must retain instance-driven retirement coverage. Parent must verify lifecycle coordinator handles already-stopped participants; no core traversal performed by this worker.",
+    "not_a_fix_verdict": "No evidence yet that this candidate fixes original full58. Do not apply as a green-seeking workaround before exact failure evidence."
+  },
+  "minimal_teardown_candidate": {
+    "status": "Root-selected revised DESIGN ONLY; awaits diagnostic2 completion and attribution",
+    "order": [
+      "release embedding baselines unchanged",
+      "group-empty predicate and group stop unchanged",
+      "for each owner assert retire/await/zero-count status unchanged, leaving owner process alive",
+      "monitor exact owner pids before guarded Gaoxy.stop assertion unchanged",
+      "assert exact normal DOWN for each owner with existing3000ms bound",
+      "peer monitor/close/normal-DOWN unchanged"
+    ],
+    "change": "Moves owner API predicates before instance stop and replaces racy explicit GenServer.stop(owner) with a deterministic normal-DOWN join after instance stop.",
+    "coverage": "Retains registered retired owners until Gaoxy.stop drives participant acknowledgement and instance DOWN. Retains all original release/retire/await/status/instance-stop assertions and adds exact process-termination assertions.",
+    "source_compatibility": [
+      "No test using this fixture stops/kills its own instance or owners in the test body.",
+      "Early embedding baseline release test leaves an empty running owner until instance DOWN.",
+      "retirement_progress self-stop requires instance_down=true; therefore explicit retire/await/status does not itself kill owner.",
+      "Stored :ok retirement result is selected before deadline check and can send core_reply on subsequent drain. Core coordinator implementation remains root-owned."
+    ],
+    "patches": "Not generated pending root confirmation that diagnostic2 completed; no repository writes/runtime permitted."
+  },
+  "diagnostic2": {
+    "status": "FAIL",
+    "parent_receipt_counts": "853/1, exit2, source stable",
+    "log": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol20-group-cleanup-diagnostic2-full58-1792059917915540329.log",
+    "log_sha256": "69d8d4a3edf9493ea16fc5a14e29682ecf4b3c6c55c8c5d2844d291cd77b3de8",
+    "actual_failure": "UpstreamGroupTransportProbeTest :408; on_exit :517; protected inner assertion :566 expects status resources/pins/request_tokens/helpers/reserved_connections all0; actual {:error,:not_running}.",
+    "original_group_failure": "Did not reproduce; retained full58 failure remains immutable."
+  },
+  "probe_fixture_extension": {
+    "root_cause": "SOURCE AND ACTUAL FAILURE MATCH: same transport owner can self-stop after instance DOWN between guarded liveness and zero-status assertion.",
+    "critical_context": "Test :408 calls stop(fixture,peer) :429; helper :785-793 executes actual Gaoxy.stop in test body. Embedding cleanup may run after instance died while transport owner timer remains active.",
+    "affected_fields": [
+      "resources",
+      "pins",
+      "request_tokens",
+      "helpers",
+      "reserved_connections"
+    ],
+    "other_modes": "Do not modify TLS unconfirmed repeated failure/retained ledger checks. Short-stop test :432 deliberately joins owner/instance before cleanup; any monitor created only in on_exit may see noproc.",
+    "red_design_decision": "Parent selected additive stop-helper status RED; patch produced and static apply check passed; parent owns runtime.",
+    "candidate_safe_order": "For ordinary stop-helper path, original owner status predicates must execute before its actual test-body Gaoxy.stop, with preinstalled monitor and exact normal DOWN after stop. Communicate explicit completed cleanup to embedding, so it joins recorded termination rather than racing second owner API calls. Do not weaken special short-stop or TLS semantics."
+  },
+  "candidate_red_patch": {
+    "path": "/tmp/gaoxy-sol20-group-context-red.patch",
+    "sha256": "a1c5c68c35043e0828cbfc9f150d538329d13f9c1213621d4e592a8b2447207c",
+    "status": "NOT RUN; additive causal negative diagnostic for parent review",
+    "shape": "Group cleanup joins actual owner normal DOWN before unchanged baseline release. Sibling actual stop helper joins actual owner normal DOWN before additive identical five-field status assertion; original embedding assertions untouched.",
+    "assertion_contract": "All existing assertions/calls remain unchanged and in order; added owner normal-DOWN joins and sibling identical five-field status assertion only.",
+    "target_commands": [
+      [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "--seed",
+        "33011",
+        "apps/gaoxy_proxy/test/upstream_group_transport_test.exs:234"
+      ],
+      [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "--seed",
+        "33011",
+        "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs:408"
+      ]
+    ],
+    "green_patch": "Produced after parent actual RED34/22; see green_patch_delivery",
+    "git_apply_check": "PASS exit0 against current root diagnostic source"
+  },
+  "contract_amendment_for_independent_review": {
+    "status": "NECESSARY EXPLICIT TEST-CONTRACT AMENDMENT, DESIGN ONLY; no GREEN patch until actual RED receipt",
+    "body_owned_normal_stop": [
+      "Embedding preinstalls monitor for exact transport owner when fixture starts, before test can stop instance.",
+      "Keep core-driven cleanup in existing stop helper; do not pre-retire there.",
+      "Embedding joins true observed owner :normal DOWN instead of Process.alive? followed by post-mortem public calls. Existing peer/custodian joins and core-stop assertion retained."
+    ],
+    "fixture_owned_normal_stop": [
+      "If instance lifecycle is still owned by fixture cleanup, retain exact retire/await/five-field zero-status assertions before instance stop.",
+      "Keep retired owner alive for core drain acknowledgement.",
+      "Monitor predates stop and normal DOWN is asserted after unchanged Gaoxy.stop."
+    ],
+    "special_paths": "Keep negative TLS failed ledger, repeated cleanup_unconfirmed assertions, failed short-stop and worker joins unchanged. Do not generalize normal-zero cleanup to these paths.",
+    "semantic_difference": "A public status call after actor termination is invalid and returns not_running. On body-owned normal stop, replace only impossible post-termination retire/await/status calls with preobserved exact normal termination evidence; disclose this change rather than presenting it as identical API coverage. Live-owner fixture-owned path retains every public zero-field predicate.",
+    "source_proof": [
+      "check_owner_retirement:488-493 stops normally only when instance_down and records/tokens empty.",
+      "begin_retirement:1551-1556 demonitor/clears pins.",
+      "aggregate:1334-1351 derives resources/reservations/helpers from entries and request tokens; both maps empty plus cleared pins imply all five zero fields.",
+      "settle_entry:1513ff deletes entries only after transport_confirmed, custodian_down, no opening/helpers, and no token/compound-pin holds."
+    ],
+    "independent_review_questions": [
+      "Does preinstalled monitor refer to exact owner and preserve actual normal reason rather than late noproc?",
+      "Are core-driven stop and participant acknowledgement preserved on normal test-body stop?",
+      "Are all five zero fields retained on fixture-owned live-owner path?",
+      "Are negative TLS/short-stop failure assertions unchanged?",
+      "Does explicit normal-DOWN proof replace only APIs that cannot be called after successful termination, with no liveness-based skip or timing extension?"
+    ]
+  },
+  "green_patch_delivery": {
+    "status": "DONE PATCH-ONLY; runtime NOT RUN; pending independent design SPEC/root apply",
+    "path": "/tmp/gaoxy-sol20-group-context-green.patch",
+    "sha256": "baa471a9f976358249b450941cb1f0954c762a98e18dd207f12bd7b2a0d0f664",
+    "source_red_hashes": {
+      "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "556ac21d2a366dd922172b1a2ff672f635e9c1592967104318e66821e270c77f",
+      "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs": "1ee93a85d45639b6490e8141e4a75b3d39af88f32cd658a6c887f119bbce6226"
+    },
+    "proposed_green_hashes": {
+      "apps/gaoxy_proxy/test/upstream_group_transport_test.exs": "403f72df8484ce5f1f1ef57490b2f5f14d3a5bbd54144765a303b80b55af1b28",
+      "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs": "0c38f950b30c414bd64a7ba495ceb384dde69284b725cf659e246c08b604b372"
+    },
+    "static_checks": {
+      "apps/gaoxy_proxy/test/upstream_group_transport_test.exs_primary_bodies_unchanged": true,
+      "apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs_primary_bodies_unchanged": true,
+      "negative_tls_cleanup_byte_identical": true,
+      "original_probe_five_zero_fields_retained": true,
+      "group_original_status_predicate_retained": true,
+      "diagnostic_removed": true,
+      "probe_transport_liveness_gate_removed": true,
+      "green_repo_source_unmodified": true,
+      "git_apply_check": "PASS exit0 against exact current RED source",
+      "source_stable_after_checks": true
+    },
+    "red_evidence": {
+      "tests": 34,
+      "failures": 22,
+      "exit": 2,
+      "source_stable": true,
+      "log_sha256": "6fe4f0a94c470683ada9603c17c13ee06dff8020d997e59e65fbc8c219278039"
+    },
+    "runtime_validation": "NOT RUN per assignment; no GREEN verdict",
+    "changes": "Only fixture lifetime ordering, explicit owner monitor propagation/joins, and removal of temporary diagnostic/helper and RED-only post-death status copy. Primary bodies and negative TLS cleanup byte-identical.",
+    "contract_amendment": "Body-owned normal shutdown retains core-driven stop; embedding preinstalled normalDOWN proof replaces impossible post-death owner APIs. Fixture-owned path retains original live retire/await/five-zero-status before stop and joins owner after.",
+    "repair_rounds": "No local repair-validation round; parent owns global Sol counters/Astra2/2 exhausted.",
+    "command_shutdown": "All own commands completed; no runtime sessions started."
+  }
+}

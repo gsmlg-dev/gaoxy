@@ -1,0 +1,308 @@
+--- before-sol15/integration/http_fetch_contract/managed_h2_fixed_qualification.py
++++ after-sol15-v2/integration/http_fetch_contract/managed_h2_fixed_qualification.py
+@@ -74,6 +74,136 @@
+   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
+   def deadline, do: System.monotonic_time(:millisecond) + 5000
+   def emit(value), do: IO.puts("FIXED_H2_HOST " <> JSON.encode!(value))
++  defp admission_observer(host, gate, credits) do
++    host_ref = Process.monitor(host)
++    gate_ref = Process.monitor(gate)
++    send(host, {:admission_observer_ready, self()})
++    admission_observer_loop(%{host: host, host_ref: host_ref, gate: gate,
++      gate_ref: gate_ref, credits: credits, seen: MapSet.new(), count: 0,
++      received: 0, high_water: 0, failure: nil})
++  end
++  defp admission_failure(state, reason) do
++    if state.failure == nil, do: send(state.host, {:admission_observer_failure, self(), reason})
++    %{state | failure: state.failure || reason}
++  end
++  defp admission_summary(state) do
++    %{observer: inspect(self()), gate: inspect(state.gate), received_raw: state.received,
++      distinct: state.count, distinct_bound: 1024, outstanding_bound: 1024,
++      outstanding: :atomics.get(state.credits, 1), high_water: state.high_water,
++      failure: if(state.failure, do: inspect(state.failure, limit: :infinity), else: nil)}
++  end
++  defp admission_observer_loop(state) do
++    receive do
++      {:admission_raw, gate, ordinal, app_state, outstanding} when gate == state.gate ->
++        state = %{state | high_water: max(state.high_water, outstanding)}
++        state = try do
++          true = ordinal == state.received + 1
++          true = outstanding in 1..1024
++          snapshot = admission_snapshot(app_state, gate)
++          digest = :crypto.hash(:sha256, :erlang.term_to_binary(snapshot))
++          if MapSet.member?(state.seen, digest) do
++            state
++          else
++            true = state.count < 1024
++            send(state.host, {:fixed_h2_admission_receipt, Map.put(snapshot, :sequence, state.count + 1)})
++            %{state | seen: MapSet.put(state.seen, digest), count: state.count + 1}
++          end
++        rescue
++          error -> admission_failure(state, {:snapshot_exception, error, __STACKTRACE__})
++        catch
++          kind, reason -> admission_failure(state, {:snapshot_exception, kind, reason})
++        end
++        :atomics.sub(state.credits, 1, 1)
++        admission_observer_loop(%{state | received: ordinal})
++      {:admission_overflow, gate, outstanding, ordinal} when gate == state.gate ->
++        admission_observer_loop(admission_failure(state, {:collector_overflow, outstanding, ordinal}))
++      {:admission_gate_fence, gate, marker} when gate == state.gate ->
++        send(state.host, {:admission_observer_fence, self(), marker, admission_summary(state)})
++        admission_observer_loop(state)
++      {:DOWN, ref, :process, gate, reason} when ref == state.gate_ref and gate == state.gate ->
++        state = if :atomics.get(state.credits, 1) == 0, do: state,
++          else: admission_failure(state, :outstanding_raw_after_gate_down)
++        send(state.host, {:admission_observer_closed, self(),
++          Map.put(admission_summary(state), :gate_reason, inspect(reason))})
++      {:DOWN, ref, :process, host, reason} when ref == state.host_ref and host == state.host ->
++        emit(admission_summary(state) |> Map.put(:event, "admission_observer_host_down")
++          |> Map.put(:host_reason, inspect(reason)))
++    end
++  end
++  defp admission_prefix(state, summary, terminal) do
++    state = collect_originals(state)
++    true = summary.failure == nil and state.admission_observer_failure == nil
++    true = summary.distinct <= 1024 and summary.high_water <= 1024
++    count = length(state.admission_receipts)
++    true = count >= summary.distinct and (not terminal or count == summary.distinct)
++    true = Enum.map(state.admission_receipts, & &1.sequence) ==
++      (if count == 0, do: [], else: Enum.to_list(1..count))
++    state
++  end
++  defp finish_admission(%{admission_observer_join: join} = state, _) when not is_nil(join) do
++    true = join.reason == ":normal" and join.outstanding == 0
++    admission_prefix(state, join, true)
++  end
++  defp finish_admission(state, expires) do
++    observer = state.admission_observer
++    summary = receive do
++      {:admission_observer_closed, ^observer, summary} -> summary
++    after max(0, expires - System.monotonic_time(:millisecond)) ->
++      raise "Admission observer terminal fence deadline"
++    end
++    ref = state.admission_observer_ref
++    reason = receive do
++      {:DOWN, ^ref, :process, ^observer, reason} -> reason
++    after max(0, expires - System.monotonic_time(:millisecond)) ->
++      raise "Admission observer join deadline"
++    end
++    state = %{state | admission_observer_join: Map.put(summary, :reason, inspect(reason))}
++    Process.put(:fixed_h2_admission_evidence, state)
++    true = reason == :normal and summary.outstanding == 0
++    admission_prefix(state, summary, true)
++  end
++  defp flush_admission(state, expires) do
++    if Process.alive?(state.gate) do
++      marker = make_ref()
++      observer = state.admission_observer
++      try do
++        :sys.replace_state(state.gate, fn exact_state ->
++          send(observer, {:admission_gate_fence, self(), marker})
++          exact_state
++        end, max(0, expires - System.monotonic_time(:millisecond)))
++        receive do
++          {:admission_observer_fence, ^observer, ^marker, summary} ->
++            admission_prefix(state, summary, false)
++          {:DOWN, ref, :process, ^observer, reason} when ref == state.admission_observer_ref ->
++            raise "Admission observer ended before live fence: #{inspect(reason)}"
++        after max(0, expires - System.monotonic_time(:millisecond)) ->
++          raise "Admission observer fence deadline"
++        end
++      catch
++        :exit, reason ->
++          if Process.alive?(state.gate), do: exit(reason), else: finish_admission(state, expires)
++      end
++    else
++      finish_admission(state, expires)
++    end
++  end
++  defp admission_host_failure(nil, reason, _),
++    do: emit(%{event: "admission_collector_failure", reason: inspect(reason, limit: :infinity)})
++  defp admission_host_failure(state, reason, expires) do
++    state = Process.get(:fixed_h2_admission_evidence, state)
++    state = try do
++      flush_admission(state, expires)
++    rescue
++      _ -> collect_originals(Process.get(:fixed_h2_admission_evidence, state))
++    catch
++      _, _ -> collect_originals(Process.get(:fixed_h2_admission_evidence, state))
++    end
++    emit(%{event: "admission_collector_failure", reason: inspect(reason, limit: :infinity),
++      admission_receipts: state.admission_receipts, service_failures: state.failures,
++      observer_failure: inspect(state.admission_observer_failure, limit: :infinity),
++      observer_join: state.admission_observer_join, originals: original_rows(state),
++      receipt_coverage: if(state.admission_observer_join, do: "TERMINAL_FENCED", else: "UNCONFIRMED_PREFIX")})
++  end
+   def run(evidence) do
+     for app <- [:http_core, :http_runtime, :http_fetch] do
+       {:ok, _} = Application.ensure_all_started(app)
+@@ -83,6 +213,9 @@
+     emit(%{event: "ready", elixir: System.version(), otp: System.otp_release(), pid: System.pid()})
+     state = Enum.reduce(IO.stream(:stdio, :line), nil, fn line, state ->
+       command = JSON.decode!(line)
++      expires = deadline()
++      Process.put(:fixed_h2_admission_evidence, state)
++      next_state = try do
+       case command["op"] do
+         "start" ->
+           nil = state
+@@ -162,42 +295,57 @@
+             end
+           end
+           :ok = :sys.install(service, {make_ref(), service_debug, false})
++          credits = :atomics.new(1, signed: true)
++          {admission_observer, admission_observer_ref} = spawn_monitor(fn ->
++            admission_observer(caller, gate, credits)
++          end)
++          receive do
++            {:admission_observer_ready, ^admission_observer} -> :ok
++          after max(0, expires - System.monotonic_time(:millisecond)) ->
++            raise "Admission observer setup deadline"
++          end
+           admission_debug = fn trace, event, _ ->
+             app_state = case event do
+               {:out, _, _, app_state} -> app_state
+               {:noreply, app_state} -> app_state
+               _ -> nil
+             end
+-            if is_map(app_state) and (trace.active or map_size(app_state.cleanups) > 0 or app_state.mode == :failed) do
+-              snapshot = admission_snapshot(app_state, gate)
+-              digest = :crypto.hash(:sha256, :erlang.term_to_binary(snapshot))
+-              if MapSet.member?(trace.seen, digest) do
+-                trace
++            if not trace.failed and is_map(app_state) and
++                 (trace.active or map_size(app_state.cleanups) > 0 or app_state.mode == :failed) do
++              outstanding = :atomics.add_get(credits, 1, 1)
++              if outstanding <= 1024 do
++                ordinal = trace.submitted + 1
++                send(admission_observer, {:admission_raw, gate, ordinal, app_state, outstanding})
++                %{trace | active: true, submitted: ordinal}
+               else
+-                true = trace.count < 1024
+-                send(caller, {:fixed_h2_admission_receipt, Map.put(snapshot, :sequence, trace.count + 1)})
+-                %{active: true, seen: MapSet.put(trace.seen, digest), count: trace.count + 1}
++                :atomics.sub(credits, 1, 1)
++                send(admission_observer, {:admission_overflow, gate, outstanding, trace.submitted + 1})
++                %{trace | failed: true}
+               end
+             else
+               trace
+             end
+           end
+-          :ok = :sys.install(gate, {make_ref(), admission_debug, %{active: false, seen: MapSet.new(), count: 0}})
++          :ok = :sys.install(gate, {make_ref(), admission_debug, %{active: false, submitted: 0, failed: false}})
+           scope = :sys.get_state(owner).records[handle.resource].scope
+           creators = :sys.get_state(owner).records |> Map.values() |> Enum.map(& &1.custodian)
+           joins = Enum.map([instance, owner | creators], &{&1, Process.monitor(&1)})
+           state = %{instance: instance, owner: owner, pins: pins, origin: origin,
+             scope: scope, originals: %{}, reported: MapSet.new(), failures: [], joins: joins,
+             creators: creators, service: service, gate: gate, spec: spec,
+-            gate_join: {gate, Process.monitor(gate)}, native_joins: %{}, admission_receipts: []}
++            gate_join: {gate, Process.monitor(gate)}, native_joins: %{}, admission_receipts: [],
++            admission_observer: admission_observer, admission_observer_ref: admission_observer_ref,
++            admission_observer_failure: nil, admission_observer_join: nil}
+           emit(%{event: "started", port: port, origin: origin, owner: inspect(owner), instance: inspect(instance),
+             native_allowance: allowance})
+           state
+         "status" ->
++          state = flush_admission(state, expires)
+           state = collect_originals(state)
+           emit(status(state) |> Map.put(:admission_receipts, state.admission_receipts))
+           state
+         "observe" ->
++          state = flush_admission(state, expires)
+           state = collect_originals(state)
+           emit(status(state) |> Map.put(:event, "observed")
+             |> Map.put(:originals, original_rows(state))
+@@ -208,14 +356,16 @@
+             |> Map.put(:owner_ledger, owner_ledger(state.owner)))
+           state
+         "clean" ->
+-          wait_clean(state, deadline())
++          state = wait_clean(state, expires)
++          state = flush_admission(state, expires)
+           state = collect_originals(state)
+           originals = original_rows(state)
+           true = originals != [] and Enum.all?(originals, &(&1.result == ":ok"))
+           emit(status(state) |> Map.put(:event, "clean") |> Map.put(:originals, originals))
+           %{state | reported: MapSet.new(Map.keys(state.originals))}
+         "request_clean" ->
+-          {state, ledger} = wait_request_clean(state, deadline())
++          {state, ledger} = wait_request_clean(state, expires)
++          state = flush_admission(state, expires)
+           state = collect_originals(state)
+           originals = original_rows(state)
+           true = originals != [] and Enum.all?(originals, &(&1.result == ":ok"))
+@@ -223,6 +373,7 @@
+             |> Map.put(:original_repeat, original_rows(state)) |> Map.put(:native_idle, ledger))
+           state
+         "stop" ->
++          state = flush_admission(state, expires)
+           state = collect_originals(state)
+           before = status(state)
+           creators = state.creators
+@@ -249,6 +400,7 @@
+           native_joins = Enum.map(state.native_joins, fn {pid, ref} -> joined(pid, ref) end)
+           {gate, gate_ref} = state.gate_join
+           gate_join = joined(gate, gate_ref)
++          state = finish_admission(state, expires)
+           state = collect_originals(state)
+           emit(%{event: "stopped", cleanup_confirmed: confirmed, public_result: inspect(result),
+             before: before, retained: retained, originals: original_rows(state),
+@@ -256,6 +408,7 @@
+             forced_test_disposal: forced, test_disposals: disposals, joins: reasons,
+             native_joins: native_joins, gate_join: gate_join,
+             admission_receipts: state.admission_receipts, retained_owner_ledger: retained_ledger,
++            admission_observer: state.admission_observer_join,
+             helper_settlement: helper_settlement,
+             admission_terminal_failed: terminal_failed(state.admission_receipts),
+             public_stop: public_stop(result), terminal_service_alive: Process.alive?(state.service),
+@@ -268,6 +421,17 @@
+           emit(%{event: "exited"})
+           System.halt(0)
+       end
++      rescue
++        error ->
++          admission_host_failure(state, error, expires)
++          reraise error, __STACKTRACE__
++      catch
++        kind, reason ->
++          admission_host_failure(state, {kind, reason}, expires)
++          :erlang.raise(kind, reason, __STACKTRACE__)
++      end
++      Process.put(:fixed_h2_admission_evidence, next_state)
++      next_state
+     end)
+     if state != nil, do: raise("host stdin ended with live fixture")
+   end
+@@ -294,9 +458,13 @@
+         collect_originals(%{state | originals: Map.put(state.originals, token, completion)})
+       {:fixed_h2_service_failure, failure} ->
+         collect_originals(%{state | failures: [failure | state.failures]})
++      {:admission_observer_failure, observer, reason} when observer == state.admission_observer ->
++        collect_originals(%{state | admission_observer_failure: reason})
+       {:fixed_h2_admission_receipt, receipt} ->
+         collect_originals(%{state | admission_receipts: state.admission_receipts ++ [receipt]})
+-    after 0 -> state
++    after 0 ->
++      Process.put(:fixed_h2_admission_evidence, state)
++      state
+     end
+   end
+   defp original_rows(state) do
+@@ -562,10 +730,13 @@
+     end
+   end
+   defp wait_clean(state, expires) do
++    state = collect_originals(state)
+     current = status(state)
+     clean = match?(%{active: 0, cleanup_pending: 0, retained_bytes: 0, cleanup_failed: nil}, current.service) and
+       match?(%{request_tokens: 0, helpers: 0, pins: 1, resources: 1, reserved_connections: 2}, current.owner)
+-    unless clean do
++    if clean do
++      state
++    else
+       if System.monotonic_time(:millisecond) >= expires, do: raise("clean deadline: #{inspect(current)}")
+       receive do after 1 -> :ok end
+       wait_clean(state, expires)

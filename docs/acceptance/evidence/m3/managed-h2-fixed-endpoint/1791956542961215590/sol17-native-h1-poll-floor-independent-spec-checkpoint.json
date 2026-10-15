@@ -1,0 +1,48 @@
+{
+  "task_id": "sol17_native_h1_poll_floor_independent_narrow_spec",
+  "status": "DONE",
+  "verdict": "PASS_NARROW_STATIC_SPEC_AND_TEST_PRESERVATION",
+  "assignment": "direct independent read-only SPEC first, CODE later",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "source_sha256": {
+    "docs/designs/m3-managed-h2-fixed-endpoint.md": "02f3e739ce911fe3c28ba2eccf03dc5b3163bfb3ee82d46d34faa4014be2bfb0",
+    "docs/plans/m3-managed-h2-fixed-endpoint.md": "a6e933d74dbfaa44d9526ea826f3546f2909e7fbfb55e72d286e1d9e8881129d",
+    "docs/acceptance/m3-managed-h2-fixed-endpoint.md": "47091e8df63a99163245050ac176f1a123f6db80519c61ca881905de5dc11984",
+    "apps/gaoxy_http/test/native_proxy_seams_test.exs": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+    "apps/gaoxy_http/test/connection_poll_test.exs": "b20d000d25d38a1e230bf7d6783934bb8a8c2a7b7fd0dadec3959f7ec56bb8d9"
+  },
+  "criteria": [
+    "max(actual_buffer,floor), floor=max(oldfloor,2*b+2), admission before recv and original state on refusal",
+    "Every poll retains Gate check; finite original deadlines, close/error and buffer/byte limits preserved",
+    "Body/send retain floor; genuine reuse releases via native lifecycle and fresh Exchange starts0",
+    "Fixed C2/R32/P0, byte caps, slot multiplicity and cleanup50 unchanged by declared scope",
+    "ConnectionPoll contract amendment preserves behavior/error/no-consume checks and adds exact retained-floor ledger equality",
+    "Existing NativeProxySeams tests preserved; added TCP/network and deterministic trace/reuse tests match contract"
+  ],
+  "findings": [],
+  "historical_red": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/native-h1-poll-floor-red2-1791999218104148552.json",
+    "actual_status": "FAIL",
+    "tests": 30,
+    "failures": 8,
+    "executed": 30,
+    "skipped": 0,
+    "excluded": 0,
+    "exit": 2,
+    "source_stable": true,
+    "native_regression_hash_matches_red": true,
+    "connection_poll_contract_amendment_after_red": true,
+    "failure_names": "8 intended poll-floor assertions;22 other tests passed; no compiler/runtime errors"
+  },
+  "runtime": "NOT RUN by reviewer; Root focused GREEN pending",
+  "stage_acceptance": "NOT CLAIMED",
+  "repository_edits": [],
+  "counters_retained": "fixed17/failedGREEN12/collector15/R32diagFAIL4/nativepollRED2fixture1/Astra2of2",
+  "commands_finished": true,
+  "code_review": "NOT RUN at this SPEC report checkpoint",
+  "remaining_risks": [
+    "Narrow static review is not runtime or full-stage acceptance; Root GREEN and prescribed fresh broader gates required."
+  ],
+  "decisions_needed": []
+}

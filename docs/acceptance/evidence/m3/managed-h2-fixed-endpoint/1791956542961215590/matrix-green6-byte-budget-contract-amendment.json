@@ -1,0 +1,64 @@
+{
+  "kind": "BYTE_BOUNDARY_CONTRACT_AMENDMENT",
+  "status": "SOURCE_DIAGNOSIS_CONFIRMED_RUNTIME_NOT_RUN",
+  "previous_failure": "matrix-green6-1791990332003303910.json",
+  "previous_fixture": {
+    "adapter_name_value": 65522,
+    "proxy_field_wire": 65536,
+    "status": 17,
+    "connection": 19,
+    "transfer_encoding": 28,
+    "h1_full_wire": 65600
+  },
+  "caps_unchanged": {
+    "adapter_logical_backing": 65536,
+    "renderer_logical_backing_wire": 65536,
+    "h1_complete_etf": 81920,
+    "native_trailer_metadata": 65536
+  },
+  "header_fields": [
+    "content-length:0",
+    "x-pad:a*p",
+    "x:b",
+    "y:c"
+  ],
+  "header_formulas": {
+    "adapter_name_value": "p+24",
+    "native_decoded": "p+34",
+    "proxy_field_wire": "p+42",
+    "h1_full_wire": "p+78"
+  },
+  "header_h1_padding": [
+    65458,
+    65459
+  ],
+  "header_h2_padding": [
+    65494,
+    65495
+  ],
+  "trailer_padding": [
+    65497,
+    65498
+  ],
+  "trailer_formulas": {
+    "adapter_name_value": "p+7",
+    "native_metadata": "p+39",
+    "proxy_field_wire": "p+13",
+    "h1_terminal_wire": "p+16"
+  },
+  "required_cases": 135,
+  "required_cells": 4,
+  "assertions_preserved": [
+    "exact bytes and ordered fields/trailers",
+    "exact200 and pre-head empty502",
+    "post-head terminal rejection",
+    "finite deadlines and full capacity",
+    "original completion results and retained failures",
+    "zero helper and genuine peer joins",
+    "pure adapter65536/65537",
+    "public renderer65536/65537"
+  ],
+  "root_cause": "Collector conflated field-wire and complete rendered-wire/native metadata units. Strict caps reject the prior infeasible positives.",
+  "production_repair": "Tests-first mapping only uncommitted proxy response_header_limit into its existing local_fail502 cleanup path.",
+  "runtime": "NOT RUN"
+}

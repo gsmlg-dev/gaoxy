@@ -1,0 +1,91 @@
+{
+  "task_id": "sol19_local_status_review",
+  "assignment": "direct independent bounded CODE",
+  "status": "DONE",
+  "verdict": "PASS_STATIC_BOUNDED_CODE",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "identities": {
+    "canonical_http_before_sha256": "fd77c71e781454084e5dbec5de456a51d434567f0b29d86b7cd478d19d959c52",
+    "candidate_http_sha256": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+    "candidate_patch_sha256": "7bbe9583b598c5c24c5898d25139580ce0a4411e56311bd702c4c422e36797bf",
+    "canonical_test_sha256": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+    "candidate_plan_sha256": "ea3b8dfe20426a7d673bb2b0504fe6b29111d9a582cb9de3740fb9ae7bbbe465"
+  },
+  "checks": {
+    "only2_approved_source_regions_changed": true,
+    "exact_patch_matches_candidate": true,
+    "original_generic_status_mapping_preserved": true,
+    "shared_cleanup_and_head_predicate_branch_byte_identical": true,
+    "test_file_unchanged": true
+  },
+  "callers_reviewed": [
+    {
+      "caller": "Exchange.poll_connection -> local_fail",
+      "result": "native transport errors; no upstream Session error route; finite fallback preserved"
+    },
+    {
+      "caller": "Exchange.read_body_step -> local_fail",
+      "result": "authentic decoder request_error400/413/431; new guarded trusted boundary"
+    },
+    {
+      "caller": "Headers.trailers/ManagedH2Client.finish_body -> local_fail",
+      "result": "policy errors are fixed atoms; adapter finish success only :ok; all upstream nonok/rescue/catch become upstream_trailer_limit; invalid arguments invalid_request; cannot spoof request_error"
+    },
+    {
+      "caller": "Headers.response/Response.send_chunked/chunk/finish -> local_fail",
+      "result": "metadata/header/framing validators return local fixed errors, never derive request_error from remote status; Session normalized error events use dispatch error -> generic fail/2"
+    },
+    {
+      "caller": "dispatch error/guardian DOWN/await_cleanup/timeout -> fail/2",
+      "result": "finite_reason still runs before original statuscase, triple normalizes upstream_failure502; normalized reason only forwarded"
+    },
+    {
+      "caller": "nonmanaged local_fail/fail",
+      "result": "new guard excludes nonManagedH2 clients; original reason/status rules preserved; status case relocation pure and does not invoke IO/blocking or retain a new raw reason"
+    }
+  ],
+  "finite_contract": [
+    "trusted raw field matched underscore and immediately discarded; fail/3 receives only invalid_request and allowlisted integer400/413/431",
+    "generic managed fail/2 always normalizes before private fail/3",
+    "Session.cancel and demonitor flush unchanged",
+    "posthead/total expiry condition identical; no second response and close:true",
+    "raw response renderer errors unchanged outside repair scope"
+  ],
+  "scope": [
+    "no public API/dependency/Session schema/resource cap/deadline/reservation/nativeH2semantic change",
+    "no original30 or additive8 assertion change",
+    "existing upstream122 cancellation gate retained"
+  ],
+  "findings": [],
+  "runtime": "NOT RUN candidate not released; compile/format/GREEN/full peer/browser gates Root owned",
+  "not_run_by_reviewer": [
+    "Mix",
+    "format",
+    "build",
+    "runtime",
+    "peers",
+    "browser",
+    "dependency commands",
+    "upstream",
+    "commits"
+  ],
+  "writes": [
+    "/tmp/gaoxy-sol19-local-status-review-code1.json",
+    "/tmp/gaoxy-sol19-local-status-review-code1.md"
+  ],
+  "repository_writes": false,
+  "counters": {
+    "fixedSol": 18,
+    "collectorSol": 17,
+    "AstraRecovery": 2,
+    "AstraLimit": 2,
+    "localStatusREDfailed": 2,
+    "fixturecorrection": 1,
+    "review_consumed_repair_round": false
+  },
+  "astra_gate": null,
+  "command_shutdown": "all read-only commands and artifact command ended; no reviewer runtime/session",
+  "overall": "INCOMPLETE_BLOCKED_UPSTREAM122",
+  "remaining": "Root release/format; verify resulting code equivalence and run full38 endpoint GREEN plus unchanged adjacent/required gates; no new product decision"
+}

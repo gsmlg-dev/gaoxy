@@ -1,0 +1,115 @@
+{
+  "task_id": "sol17_sol18_native_h1_poll_floor_independent_narrow_spec_code",
+  "status": "DONE",
+  "assignment": "direct independent read-only narrow SPEC recheck then CODE",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "source_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+    "apps/gaoxy_http/test/native_proxy_seams_test.exs": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+    "apps/gaoxy_http/test/connection_poll_test.exs": "9100a928c7b44925e40f682716161d73fbb5c51071a06f8dadf2b775d5026027"
+  },
+  "preserved_prior_reports_sha256": {
+    "/tmp/gaoxy-sol17-native-h1-poll-floor-independent-spec.json": "dda9468edd3b64e3b7ed7fd03e5b1357d4894d93f58ed0dcbbad969507419940",
+    "/tmp/gaoxy-sol17-native-h1-poll-floor-spec-actual-errno-finding.json": "deae100f684126e3a767b8a449711dc07c8fb8f29913dcf0c965498dce1ec103"
+  },
+  "spec": {
+    "verdict": "PASS_NARROW_RECHECK",
+    "resolved_findings": [
+      "SOL17-SPEC-ERRNO-1: new second TCP close poll expects actual :enotconn; first poll still requires :closed and exact state/ledger assertions remain."
+    ],
+    "verification": "Corrected ConnectionPoll normalized in memory only reproduced prior reviewed candidate hash b20d000d25d38a1e230bf7d6783934bb8a8c2a7b7fd0dadec3959f7ec56bb8d9; exactly one expected-errno line differs. NativeSeams remains identical to observed RED2 regression hash.",
+    "test_contract_preservation": "Legacy buffer/body/deadline/error/no-consume checks retained; only temporary-credit expectations become persistent-floor equality, plus stronger new assertions."
+  },
+  "code": {
+    "verdict": "PASS_NARROW_CODE",
+    "findings": [],
+    "scope_delta_proof": "Removing only the default field, persistent native poll preflight and retained max in memory exactly reproduced RED2 preproduction Exchange hash cbb958641a2079418ef60bdaeb00678c37940205dfa4fe76893e50afc7417d50. Earlier body-reader compatibility code is pre-existing and unchanged by Sol17/Sol18.",
+    "criteria": [
+      {
+        "contract": "default0 and max(actual,floor)",
+        "evidence": "Exchange field default line26 and retained_bytes line370; fresh Exchange.new omits field so starts0."
+      },
+      {
+        "contract": "complete copy peak and admission before receive",
+        "evidence": "poll_connection lines135-160 checks finite wait/original deadline/full buffer, floor=max(oldfloor,2*b+2), calls real Admission.update for complete retained total; refusal returns original Exchange. recv_connection sees admitted candidate only."
+      },
+      {
+        "contract": "no stale Gate optimization",
+        "evidence": "Admission.update remains unconditional for every eligible poll, even unchanged floor; stale/dead gate tests reject before ObservedTCP recv and preserve actual wire input."
+      },
+      {
+        "contract": "returned total fits preflight; stable empty polls",
+        "evidence": "recv length1 appends at most1; b+1<=2*b+2, max(actual,floor) retains same admitted buffer charge; postreceive/error updates retain candidate. Empty timeout uses wait_expired with original D; close/error propagate actual errno."
+      },
+      {
+        "contract": "bounded floor and unchanged limits",
+        "evidence": "Only compute floor when b<max_buffer; integer b implies2*b+2<=2*max_buffer. Actual buffer cap, one-byte recv, request deadline and wait minimum unchanged. Exact three-hunk delta changes no C2/R32/P0, Service/Admission, cleanup50 or byte/slot limits."
+      },
+      {
+        "contract": "body/send carry persistent floor",
+        "evidence": "Body map updates preserve field, all retained base calculations use max; send_chunks transient retained+size and restore retained keep floor. Regression traces floor+read/write size and no below-floor updates."
+      },
+      {
+        "contract": "authentic request reuse release",
+        "evidence": "Unchanged Connection execute path retains byte_size(exchange.buffer) at line241 after done/keepalive, copies only actual pipeline buffer; subsequent Exchange.new resets floor0. Real socket reuse regression sees active1/retained0 between two requests, same lease/fresh field, then actual reader DOWN and active0/retained0."
+      },
+      {
+        "contract": "H2/H3 default compatibility",
+        "evidence": "Existing H2/H3 Exchange constructors omit new field and set empty buffer; transport-specific poll delegation remains before native branch. H2Facade parent focused gate passed; broader H3 gates remain required/not inferred."
+      }
+    ]
+  },
+  "parent_focused_green2": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/repair18-native-h1-poll-floor-green2-1791999670619822687.json",
+    "receipt_sha256": "0c75de6bc3309ac91ad8b09bf1af2ec44f1bbedba3f83d6737190a834e4df6d3",
+    "status": "PASS",
+    "actual_exit": 0,
+    "counts": [
+      {
+        "tests": 67,
+        "failures": 0,
+        "excluded": 0,
+        "skipped": 0,
+        "executed": 67
+      }
+    ],
+    "source_stable": true,
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "unbuffer",
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+      "apps/gaoxy_http/test/connection_poll_test.exs",
+      "apps/gaoxy_http/test/http1_partial_upload_test.exs",
+      "apps/gaoxy_http/test/http_network_test.exs",
+      "apps/gaoxy_http/test/http2_facade_test.exs"
+    ],
+    "source_before_after_current_match": true,
+    "log_sha256_verified": true,
+    "log_summary_verified": "67 tests,0 failures",
+    "attribution": "Executed by Root; independently inspected persisted receipt/log/source hashes, not executed by reviewer."
+  },
+  "historical_failures_preserved": "Diagnostic6 actual FAIL distinct1025; cleanRED2 FAIL30/8; focusedGREEN1 FAIL67/1 retained; no report overwritten.",
+  "runtime": "NOT RUN by reviewer; no Mix/format/build/peer/browser process or agent spawned",
+  "repository_edits": [],
+  "commands_finished": true,
+  "counters_retained": "fixedSol18/unsuccessfulGREEN13;collectorSol15;R32diagnosticFAIL4;nativepollRED2/fixturecorr2;Astra2of2",
+  "repair_rounds_consumed_by_reviewer": 0,
+  "stage_acceptance": "NOT ACCEPTED. This PASS is only narrow poll-floor/contract review; originalfourR32 diagnostic7, complete independent SPEC/CODE and freshfull58/format37/strictcompile/public63/matrix135/browser3 remain separate.",
+  "collector_sol16_proposal": "NOT REVIEWED in this report",
+  "remaining_risks": [
+    "Focused and static evidence does not prove collector state-space repair or complete fixed-H2 acceptance.",
+    "TLS/H3 broader stage gates remain separate from focused67 scope."
+  ],
+  "decisions_needed": []
+}

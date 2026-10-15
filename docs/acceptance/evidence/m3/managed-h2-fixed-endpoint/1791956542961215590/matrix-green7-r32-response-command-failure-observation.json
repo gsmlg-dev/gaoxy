@@ -1,0 +1,94 @@
+{
+  "kind": "MATRIX_R32_RESPONSE_COMMAND_DIAGNOSIS_PENDING",
+  "status": "FAIL47",
+  "run_receipt": "matrix-green7-1791991935716882661.json",
+  "qualification": "matrix-green7/qualification.json",
+  "source_stable": true,
+  "failure": "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py\", line 1353, in main\n    cases.append(concurrent_cohort(directory, cell + \"-\" + kind, protocol,\n                 ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                   downstream, host, actors, kind))\n                                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py\", line 1064, in concurrent_cohort\n    commands.append(peer_command(peer, request, \"respond\", fields=[[\"content-length\", str(len(body))]],\n                    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                                 body64=base64.b64encode(body).decode()))\n                                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py\", line 771, in peer_command\n    receipt = peer.event(\"command\", predicate=lambda event: event.get(\"command_id\") == identifier)\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py\", line 679, in event\n    require(event.get(\"event\") not in (\"failure\", \"process_eof\"), repr(event))\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py\", line 582, in require\n    raise AssertionError(message)\nAssertionError: {'event': 'failure', 'reason': 'StreamClosedError(19)'}\n",
+  "last_completed_cases": [
+    "h1-to-h2c/204",
+    "h1-to-h2c/205",
+    "h1-to-h2c/304",
+    "h1-to-h2c-reset",
+    "h1-to-h2c-goaway",
+    "h1-to-h2c-c2"
+  ],
+  "passed_byte_boundary_cases": [
+    {
+      "case": "h1-to-tls-head-bytes-exact",
+      "status": "PASS",
+      "proof": "H1_FULL_RENDERED_WIRE_EXACT",
+      "byte_budgets": {
+        "envelope_logical_bytes": 65482,
+        "envelope_compact_backing_bytes": 65482,
+        "native_decoded_bytes": 65492,
+        "proxy_field_wire_bytes": 65500,
+        "h1_full_render_bytes": 65536,
+        "boundary_unit": "H1_FULL_RENDERED_WIRE",
+        "boundary_bytes": 65536,
+        "boundary_limit": 65536
+      }
+    },
+    {
+      "case": "h1-to-tls-head-bytes-over",
+      "status": "PASS",
+      "proof": "H1_FULL_RENDERED_WIRE_REJECTION",
+      "byte_budgets": {
+        "envelope_logical_bytes": 65483,
+        "envelope_compact_backing_bytes": 65483,
+        "native_decoded_bytes": 65493,
+        "proxy_field_wire_bytes": 65501,
+        "h1_full_render_bytes": 65537,
+        "boundary_unit": "H1_FULL_RENDERED_WIRE",
+        "boundary_bytes": 65537,
+        "boundary_limit": 65536
+      }
+    },
+    {
+      "case": "h1-to-tls-trailer-bytes-exact",
+      "status": "PASS",
+      "proof": "NATIVE_TRAILER_METADATA_EXACT",
+      "byte_budgets": {
+        "envelope_logical_bytes": 65504,
+        "envelope_compact_backing_bytes": 65504,
+        "native_decoded_bytes": 65504,
+        "native_metadata_bytes": 65536,
+        "proxy_field_wire_bytes": 65510,
+        "h1_full_render_bytes": 65513,
+        "boundary_unit": "NATIVE_TRAILER_METADATA",
+        "boundary_bytes": 65536,
+        "boundary_limit": 65536
+      }
+    },
+    {
+      "case": "h1-to-tls-trailer-bytes-over",
+      "status": "PASS",
+      "proof": "NATIVE_TRAILER_METADATA_REJECTION_BEFORE_ADAPTER",
+      "byte_budgets": {
+        "envelope_logical_bytes": 65505,
+        "envelope_compact_backing_bytes": 65505,
+        "native_decoded_bytes": 65505,
+        "native_metadata_bytes": 65537,
+        "proxy_field_wire_bytes": 65511,
+        "h1_full_render_bytes": 65514,
+        "boundary_unit": "NATIVE_TRAILER_METADATA",
+        "boundary_bytes": 65537,
+        "boundary_limit": 65536
+      }
+    }
+  ],
+  "product_limits": "UNCHANGED",
+  "next_repair": "NOT RELEASED; read-only collector vs production-deadline diagnoses",
+  "counters": {
+    "fixed_sol_repair": 15,
+    "fixed_unsuccessful_green": 11,
+    "collector_sol_repair": 13,
+    "collector_unsuccessful_green": 8,
+    "matrix_failed_runs": 7,
+    "browser_failed_runs": 5,
+    "header_renderer_red_failed_runs": 2,
+    "upload_event_fixture_corrections": 1,
+    "astra_recovery_used": 2,
+    "astra_recovery_max": 2
+  }
+}

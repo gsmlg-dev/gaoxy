@@ -1,0 +1,109 @@
+{
+  "task_id": "collector_projection_readiness",
+  "status": "DONE",
+  "verdict": "STATIC_PROJECTION_PROOF_PASS_EMPIRICAL_NOT_RUN",
+  "assignment": "direct bounded independent read-only investigation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "canonical_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "reviewed_artifact": "/tmp/gaoxy-h2-fixed-projection-admission-diagnostic.py",
+  "artifact_sha256": "56507a52330dadc906c6de638f775f6c535222f96b9b3e0b01ca43c8cf5e009b",
+  "projection_sha256": "8cc518be7ec2a4d27700acabc97bc752937a7178a0846a76791243e84d2f3e71",
+  "support_trace_sha256": "66f74e74e1c2a584f1cce8107e13243a4d3a18096915405355671b225ce97647",
+  "failure_preserved": {
+    "source": "matrix-green10-raw-overflow-diagnosis.json",
+    "status": "FAIL",
+    "executed": 14,
+    "exit": 1,
+    "source_stable": true,
+    "failure": "{:collector_overflow, 1025, 2560}",
+    "distinct_prefix": 521,
+    "receipt_coverage": "UNCONFIRMED_PREFIX",
+    "originals": 32,
+    "original_result": "{:error, :cleanup_pending}"
+  },
+  "projection_proof": {
+    "fields": "{service, mode, bytes, map(ref => {pid, bytes, cleanup, request_active}), map(token => {lease, bytes, receipt})}",
+    "comparison": "strict === on raw maps/scalars/tuples; map insertion/enumeration order does not affect equality",
+    "implication": "For one fixed Gate, equal projections give equal raw keys and every input read by admission_snapshot. PID/reference inspection therefore yields equal identity strings. Sorted rows, counts, byte sums, retained_bytes and total-invariant outcome are equal. Original serialized snapshot and digest consequently match.",
+    "dedup_safety": "Only adjacent exact-equal projections are suppressed. The immediately previous admitted state has the same complete snapshot, so its digest is already sent to the unchanged observer. All changed projections send the complete original app_state, and observer global digest dedup/1024 distinct sequence/invariant checks remain unchanged.",
+    "failure_safety": "Trace.failed retains overflow suppression; raw ordinal/credits remain unchanged. If snapshot invariant fails on a prior admitted state, observer failure remains sticky and no prefix can pass; suppressing duplicates cannot clear that failure.",
+    "types": "Own Admission state uses raw PID/reference identities, integer byte counts, atom modes, nil/reference cleanup, and boolean request_active/receipt; no user Inspect protocol or mutable external snapshot field is involved."
+  },
+  "concrete_paths": [
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:130",
+      "path": "begin_request/begin_callback/upgrade refresh timer/token/deadline; projected bytes and request_active changes retained. Same-byte callbacks can create raw differences with unchanged snapshots."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:250",
+      "path": "begin/retain cancel or replace token/timer; projected bytes retained."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:316",
+      "path": "start_send/finish_send only change lease.send; snapshot unchanged, so exact adjacent suppression safe."
+    },
+    {
+      "source": "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex:27",
+      "path": "H2 Writer repeatedly starts/finishes sends without changing admitted lease.bytes; projected state can remain equal."
+    },
+    {
+      "source": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:331",
+      "path": "H1 send_chunks raises retained lease bytes by chunk size, starts/finishes send, then drops bytes. Adjacent volatile duplicates can be suppressed but byte raise/drop A-B-A remains admitted."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:218",
+      "path": "complete_cleanup changes cleanup.receipt false->true; included so authentic positive receipt cannot be suppressed."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:376",
+      "path": "lease/guardian DOWN changes keyed maps, cleanup links, bytes and possibly :failed mode; included so final disappearance/failure snapshot preserved."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:229",
+      "path": "drain changes mode; force/expired only-send changes can be suppressed until actual lease removal. Original snapshot semantics do not include send outcomes."
+    },
+    {
+      "source": "apps/gaoxy/lib/gaoxy/admission.ex:434",
+      "path": "rejected/high_water updates are outside snapshot; omitting them preserves original global snapshot dedup semantics."
+    }
+  ],
+  "mechanism_review": {
+    "status": "PASS_READINESS_ONLY",
+    "findings": [],
+    "same_filter": "Unchanged out/noreply activation filter; projection evaluated only under original qualification filter.",
+    "same_bounds": "Outstanding raw1024, distinct1024, original50ms timeout, full cohort source/assertions/reserves unchanged.",
+    "no_heavy_gate_ops": "Gate performs bounded map traversal/construction and exact equality; no inspect/sort/hash/serialization added. Changed state still incurs BEAM message-copy cost.",
+    "diagnostic_scope": "Four unchanged q.concurrent_cohort R32 cells cover H1/H2 downstream \u00d7 TLS/h2c upstream; runner requires4 real normal observer joins,4 trace setup/barrier/normal joins,128 :ok cleanup trace pairs, no unpaired trace calls, credit conservation and source stability.",
+    "deadline": "New diagnostic trace terminal join shares existing command expires. Previously defined experimental trace setup1000 remains finite and test-owned; production timeout unchanged."
+  },
+  "risks": [
+    "Adjacent dedup cannot remove nonadjacent recurring snapshots or interleaved stream transitions.521 distinct snapshots does not establish<=1024 raw pending. Proposed mechanism can still overflow and must preserve that failure.",
+    "Each qualifying callback now allocates two maps and compares them; traversal/copy work depends on live lease/cleanup counts. Fixture limits bound live entries, but static analysis cannot prove cleanup50ms latency with2 scheduler threads and32 clients.",
+    "Diagnostic instrumentation changes scheduling and is experimental only; do not ship its trace hooks or infer whole-stage acceptance from four R32 cells.",
+    "No new observer deadline slack is present; unchanged legacy stop/helper-settlement/per-actor waits do not establish one aggregate5second lifecycle."
+  ],
+  "empirical_status": "NOT RUN by reviewer; root sole runtime owner. No frozen diagnostic5 runtime receipt existed in this review.",
+  "next_evidence_needed": "Execute frozen diagnostic5, inspect per-cell raw candidates/suppressed/received/high-water/distinct metrics, all128 authentic cleanup results/durations and joins/source identity. Even PASS only supports releasing minimal canonical repair for new review and complete135 matrix/fresh stage gates.",
+  "verification": [
+    "Exact artifact/support/canonical hashes PASS",
+    "Python AST parse PASS without import/execution",
+    "Read-only concrete own-Gaoxy Admission/caller path tracing complete"
+  ],
+  "repository_edits": [],
+  "report_file": "/tmp/gaoxy-h2-fixed-collector-projection-readiness.json",
+  "commands_finished": true,
+  "counters": {
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  },
+  "stage_acceptance": "INCOMPLETE",
+  "canonical_change_released": false,
+  "decisions_needed": []
+}

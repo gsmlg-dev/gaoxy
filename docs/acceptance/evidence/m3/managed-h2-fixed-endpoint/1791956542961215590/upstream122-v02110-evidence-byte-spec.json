@@ -1,0 +1,121 @@
+{
+  "task_id": "v02110_evidence_byte_spec",
+  "status": "DONE",
+  "assignment": "direct bounded independent evidence-byte preservation SPEC; repository/index read-only",
+  "verdict": "PASS_BOUNDED_EVIDENCE_BYTE_PRESERVATION_SPEC",
+  "findings": [],
+  "completed_at_utc": "2026-10-15T11:27:27.507005+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "branch": "codex/m3-h1-resource-foundation",
+  "candidate_binding": {
+    "path": "/tmp/gaoxy-v02110-evidence-byte-candidate.json",
+    "sha256_before": "e0f49dcb334fa6f0f7730825556aafd7823d99ca8a76e465917aa447496cbfe4",
+    "sha256_after": "e0f49dcb334fa6f0f7730825556aafd7823d99ca8a76e465917aa447496cbfe4",
+    "files_before": {
+      ".gitattributes": "251c27be1e494d0acc4019fb37800391a35307cc47105f0d7dfd27a04d8a4835",
+      "upstream122-v02110-evidence-byte-red.json": "5af53eb9431c2e71113fda6bb4a650efb8272585e56212d245448ef4f81fe715",
+      "upstream122-v02110-evidence-byte-preservation-design-plan.md": "dd4d2bb4812aad148e0568a4991df67dbd4e5e45b94caf567183db716700b0cf",
+      "upstream122-v02110-evidence-index-audit.py": "043b1f9196579de3cb8f0b37dab6a82c2d2ad0b138ea3310638493ec448e790b"
+    },
+    "files_after": {
+      ".gitattributes": "251c27be1e494d0acc4019fb37800391a35307cc47105f0d7dfd27a04d8a4835",
+      "upstream122-v02110-evidence-byte-red.json": "5af53eb9431c2e71113fda6bb4a650efb8272585e56212d245448ef4f81fe715",
+      "upstream122-v02110-evidence-byte-preservation-design-plan.md": "dd4d2bb4812aad148e0568a4991df67dbd4e5e45b94caf567183db716700b0cf",
+      "upstream122-v02110-evidence-index-audit.py": "043b1f9196579de3cb8f0b37dab6a82c2d2ad0b138ea3310638493ec448e790b"
+    }
+  },
+  "source_binding": {
+    "closure_candidate_sha256_before": "68e59fb9b2f08bd3db90509bfc52dfb811e42d1ece6a49928064cb32f3150869",
+    "closure_candidate_sha256_after": "68e59fb9b2f08bd3db90509bfc52dfb811e42d1ece6a49928064cb32f3150869",
+    "owned52_authorities5_before_and_after_match": true,
+    "source_test_dependency_collector_and_four_closure_docs_unchanged": true,
+    "immutable_inventory_sha256": "5131f111e4bc4fd8d6ff0494852a8aa6b54f20f6b4b88e323e386fc93595f0a0"
+  },
+  "root_cause_and_red": {
+    "git_core_autocrlf": "input; read only, unchanged",
+    "original_log": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-local-status-red2-1792007163419366469.log",
+    "disk_and_immutable_receipt_sha256": "5d6ac162ec0e109ffbf76719773e4b02638f283257cbbf1a953e3cfdb01c85cb",
+    "disk_bytes": 9584,
+    "disk_crlf": 32,
+    "index_sha256": "ccff6c0031cc2be1dc0a9b3d543dee5c84a639cf6df4c7f50088a00d866b6121",
+    "index_bytes": 9552,
+    "index_crlf": 0,
+    "exact_crlf_to_lf_transformation": true,
+    "original_runtime_receipt": "Sol19 RED2 remains38 tests/8 failures/exit2; never promoted to runtime PASS",
+    "current_index_status": "RETAINED_REPRODUCED_RED; no reviewer re-staging or renormalization"
+  },
+  "spec_assessment": [
+    {
+      "requirement": "Narrow byte preservation scope",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Only exact fixed-endpoint evidence directory .gitattributes uses * -text. git check-attr reports text unset on original log; no nested .gitattributes override found. No global/repository config change or runtime contract change."
+    },
+    {
+      "requirement": "Preserve original evidence",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Original disk SHA equals immutable receipt and old inventory. Repair replaces normalized staged representation from preserved disk bytes; does not rewrite logs, source snapshots, historical receipts or assertions."
+    },
+    {
+      "requirement": "Exact staged evidence scope",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Audit requires nonempty unique NUL-delimited allowlist under exact evidence prefix and exact equality with git diff --cached --name-only -z. Current8085 staged names are evidence-only. Deletions/nonfiles/symlinks fail."
+    },
+    {
+      "requirement": "Immutable prior inventory",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Audit pins exact inventory5131f111..., requires all historical evidence paths included, and checks old SHA256 plus length before inspecting each actual staged blob. Current old inventory hash independently verified."
+    },
+    {
+      "requirement": "Actual byte-level staged proof",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Audit streams git cat-file --batch blob bytes, validates blob header/type/size and trailer, computes staged SHA256, compares SHA and length with raw disk, accumulates all actual mismatches and returns FAIL/exit1. Normalization never counts as equivalence."
+    },
+    {
+      "requirement": "Source freeze and child shutdown",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Pinned closure manifest; all52 source+5 authority hashes checked before and after audit. cat-file normal wait has30-second bound; finally terminates/waits5 then kills/waits5 on exceptional paths. Successful receipt requires actual child exit0. No separate global wall-time guarantee for each pipe read is asserted."
+    },
+    {
+      "requirement": "Review and execution ordering",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Plan requires independent SPEC then CODE before exact allowlist re-stage/renormalize, then fresh full audit. Appended review/audit records must be explicit and separately byte-checked before commit; inventory self/audit outputs are not falsely claimed covered before production."
+    },
+    {
+      "requirement": "Scope of acceptance and counters",
+      "result": "PASS_STATIC_SPEC",
+      "evidence": "Evidence-only archive repairSol1; six functional gates and closure review bindings stay unchanged. Current archive RED and future audit NOT RUN remain distinct. No new functional pass, publication, deployment or whole-stage completion is inferred; previous counters and Astra2/2 remain preserved."
+    }
+  ],
+  "verification_commands": [
+    "Read-only Python SHA256/JSON checks for candidate4, closure52+5, inventory and immutable receipt before/after",
+    "Read-only git rev-parse/config --get core.autocrlf/check-attr/diff --cached --name-only -z/show :original-log; exact disk/index byte and CRLF comparison",
+    "Read bounded design/plan, .gitattributes, diagnostic RED and complete audit helper; ast.parse only, without importing or executing helper"
+  ],
+  "fresh_full_index_audit": "NOT_RUN; root must run after bounded independent CODE PASS and exact re-staging. Review does not claim current index is repaired.",
+  "task_diff": {
+    "repository_writes": [],
+    "index_writes": [],
+    "owned_outputs": [
+      "/tmp/gaoxy-v02110-evidence-byte-spec.json",
+      "/tmp/gaoxy-v02110-evidence-byte-spec.md"
+    ]
+  },
+  "repair_counters": {
+    "evidence_byte_repair_sol": 1,
+    "review_repair_rounds_consumed": 0,
+    "previous_fixed_sol": 19,
+    "previous_fixture_sol": 20,
+    "previous_collector_sol": 17,
+    "previous_counters": "unchanged",
+    "astra_recovery": 2,
+    "astra_limit": 2,
+    "astra_gate": null
+  },
+  "command_shutdown": "All reviewer read-only commands finished. No Mix/build/format/test/peer/browser/network actors started; no process state altered. Audit helper not executed. Only two assigned /tmp reports written.",
+  "remaining_risks": [
+    "Current index intentionally retains the evidenced RED until root applies reviewed rule and re-stages. Fresh actual all-blob audit and appended-output byte checks are required before evidence commit.",
+    "Archive audit is static-reviewed here; no claim that it has executed or passed. Root retains exclusive source/index/runtime ownership."
+  ],
+  "decisions_needed": []
+}

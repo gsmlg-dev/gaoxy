@@ -1,0 +1,39 @@
+--- a/apps/gaoxy_proxy/test/upstream_group_transport_test.exs
++++ b/apps/gaoxy_proxy/test/upstream_group_transport_test.exs
+@@ -662,7 +662,13 @@
+       {:cleanup, caller} ->
+         result =
+           diagnose_cleanup(fn ->
++            owner_monitors = for owner <- owners, do: {owner, Process.monitor(owner)}
+             if Process.alive?(instance), do: assert(:ok == Gaoxy.stop(instance, 3_000))
++
++            for {owner, owner_monitor} <- owner_monitors do
++              assert_receive {:DOWN, ^owner_monitor, :process, ^owner, :normal}, 3_000
++            end
++
+             assert :ok = Resources.release(baseline)
+             eventually(fn -> :sys.get_state(groups).groups == %{} end)
+             GenServer.stop(groups, :normal, 3_000)
+--- a/apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs
++++ b/apps/gaoxy_proxy/test/upstream_group_transport_probe_test.exs
+@@ -784,7 +784,20 @@
+ 
+   defp stop(fixture, peer) do
+     send(peer, :finish)
++    transports = fixture.transports
++    transport_monitor = Process.monitor(transports)
+     assert :ok = Gaoxy.stop(fixture.instance, @timeout)
++    assert_receive {:DOWN, ^transport_monitor, :process, ^transports, :normal}, @timeout
++
++    assert {:ok,
++            %{
++              resources: 0,
++              pins: 0,
++              request_tokens: 0,
++              helpers: 0,
++              reserved_connections: 0
++            }} = Transports.status(transports)
++
+     assert_receive {:peer_done, ^peer}, @timeout
+     monitor = Process.monitor(peer)
+ 

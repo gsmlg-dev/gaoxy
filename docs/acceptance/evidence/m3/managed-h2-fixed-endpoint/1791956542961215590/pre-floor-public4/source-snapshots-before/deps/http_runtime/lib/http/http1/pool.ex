@@ -1,0 +1,238 @@
+defmodule HTTP.HTTP1.Pool do
+  @moduledoc false
+  use GenServer
+
+  alias HTTP.HTTP2.PoolKey
+
+  @max_idle 256
+  @expiry_interval 1_000
+
+  def start_link(opts) do
+    name =
+      if Keyword.has_key?(opts, :name), do: Keyword.take(opts, [:name]), else: [name: __MODULE__]
+
+    GenServer.start_link(__MODULE__, opts, Enum.reject(name, fn {_, value} -> value == nil end))
+  end
+
+  def checkout(request) do
+    case key(request) do
+      {:ok, key} -> GenServer.call(pool(request), {:checkout, key})
+      _ -> :none
+    end
+  end
+
+  def checkin(request, transport, socket) do
+    with {:ok, key} <- key(request),
+         :ok <- transport.setopts(socket, active: false),
+         {:ok, token} <- GenServer.call(pool(request), {:prepare, key, transport, socket}),
+         :ok <- transport.controlling_process(socket, pool(request)) do
+      GenServer.call(pool(request), {:activate, token, HTTP.RequestLifecycle.current()})
+    else
+      _ -> transport.close(socket)
+    end
+  end
+
+  defp pool(request),
+    do: Keyword.get(request.transport_options, :http1_pool, Process.whereis(__MODULE__))
+
+  defp key(request) do
+    opts = request.transport_options
+    protocol = if request.url.scheme == "https", do: :h2, else: :h2c
+
+    cond do
+      opts[:managed_pool_key] != nil ->
+        {:ok, opts[:managed_pool_key]}
+
+      Keyword.get(opts, :http1_reuse, false) ->
+        identity_request = %{
+          request
+          | transport_options: Keyword.put(opts, :http2_scope, Keyword.get(opts, :http1_scope))
+        }
+
+        with {:ok, key} <- PoolKey.build(identity_request, :native_v1, protocol) do
+          {:ok,
+           Map.merge(key, %{
+             protocol: :http1,
+             http1_policy:
+               {Keyword.get(opts, :http1_pool_size, 2),
+                Keyword.get(opts, :http1_idle_timeout, 30_000)}
+           })}
+        end
+
+      true ->
+        :disabled
+    end
+  end
+
+  @impl true
+  def init(_opts), do: {:ok, %{entries: %{}, retiring?: false, expiry_timer: nil}}
+
+  @impl true
+  def handle_call({:prepare, key, transport, socket}, {owner, _}, state) do
+    {limit, idle_timeout} = key.http1_policy
+    count = Enum.count(state.entries, fn {_, entry} -> entry.key == key end)
+
+    if not state.retiring? and count < limit and map_size(state.entries) < @max_idle do
+      token = make_ref()
+
+      entry = %{
+        key: key,
+        transport: transport,
+        socket: socket,
+        status: :pending,
+        owner: owner,
+        monitor: Process.monitor(owner),
+        idle_timeout: idle_timeout,
+        expires_at: now() + 1_000
+      }
+
+      {:reply, {:ok, token}, schedule_expiry(put_in(state.entries[token], entry))}
+    else
+      {:reply, :full, state}
+    end
+  end
+
+  def handle_call({:activate, token}, from, state),
+    do: handle_call({:activate, token, nil}, from, state)
+
+  def handle_call({:activate, token, tracker}, {owner, _}, state) do
+    current_time = now()
+
+    case Map.fetch(state.entries, token) do
+      {:ok, %{status: :pending} = entry} when entry.expires_at <= current_time ->
+        {:reply, :expired, discard(state, token)}
+
+      {:ok, %{status: :pending, owner: ^owner} = entry} ->
+        with :ok <- entry.transport.setopts(entry.socket, active: :once),
+             true <- entry.expires_at > now(),
+             true <- Process.alive?(owner),
+             :ok <- HTTP.RequestLifecycle.handoff_socket(tracker, entry.socket, entry.expires_at) do
+          Process.demonitor(entry.monitor, [:flush])
+
+          entry = %{
+            entry
+            | status: :idle,
+              owner: nil,
+              monitor: nil,
+              expires_at: now() + entry.idle_timeout
+          }
+
+          {:reply, :ok, put_in(state.entries[token], entry)}
+        else
+          false -> {:reply, :expired, discard(state, token)}
+          {:error, _} -> {:reply, :closed, discard(state, token)}
+        end
+
+      _ ->
+        {:reply, :expired, state}
+    end
+  end
+
+  def handle_call({:checkout, key}, {owner, _}, state) do
+    case Enum.find(state.entries, fn {_, entry} -> entry.status == :idle and entry.key == key end) do
+      nil ->
+        {:reply, :none, state}
+
+      {token, entry} ->
+        case lease(entry, owner) do
+          :ok -> {:reply, {:ok, entry.socket}, remove(state, token)}
+          _ -> handle_call({:checkout, key}, {owner, nil}, discard(state, token))
+        end
+    end
+  end
+
+  defp lease(entry, owner) do
+    with false <- entry.expires_at <= now(),
+         :ok <- entry.transport.setopts(entry.socket, active: false),
+         {:error, :timeout} <- entry.transport.recv(entry.socket, 0, 0),
+         false <- queued_socket_event?(entry),
+         true <- entry.expires_at > now() and Process.alive?(owner),
+         :ok <- entry.transport.controlling_process(entry.socket, owner),
+         true <- entry.expires_at > now() do
+      :ok
+    end
+  end
+
+  @impl true
+  def handle_cast(:close_idle, state) do
+    tokens = Map.keys(state.entries)
+    {:noreply, %{Enum.reduce(tokens, state, &discard(&2, &1)) | retiring?: true}}
+  end
+
+  @impl true
+  def terminate(_, state) do
+    Enum.each(state.entries, fn {_, entry} -> entry.transport.close(entry.socket) end)
+    :ok
+  end
+
+  @impl true
+  def handle_info({:expire, token}, state) do
+    current_time = now()
+
+    case Map.fetch(state.entries, token) do
+      {:ok, entry} when entry.expires_at <= current_time -> {:noreply, discard(state, token)}
+      _ -> {:noreply, state}
+    end
+  end
+
+  def handle_info({:timeout, timer, :expire}, %{expiry_timer: timer} = state)
+      when is_reference(timer) do
+    current_time = now()
+    tokens = for {token, entry} <- state.entries, entry.expires_at <= current_time, do: token
+    state = Enum.reduce(tokens, %{state | expiry_timer: nil}, &discard(&2, &1))
+    {:noreply, schedule_expiry(state)}
+  end
+
+  def handle_info({:timeout, _timer, :expire}, state), do: {:noreply, state}
+
+  def handle_info({:DOWN, monitor, :process, _, _}, state) do
+    tokens = for {token, entry} <- state.entries, entry.monitor == monitor, do: token
+    {:noreply, Enum.reduce(tokens, state, &discard(&2, &1))}
+  end
+
+  def handle_info(message, state) do
+    tokens =
+      for {token, entry} <- state.entries,
+          entry.transport.normalize_message(message, entry.socket) != :unknown,
+          do: token
+
+    {:noreply, Enum.reduce(tokens, state, &discard(&2, &1))}
+  end
+
+  defp queued_socket_event?(entry) do
+    {:messages, messages} = Process.info(self(), :messages)
+    Enum.any?(messages, &(entry.transport.normalize_message(&1, entry.socket) != :unknown))
+  end
+
+  defp now, do: System.monotonic_time(:millisecond)
+
+  # Removing/replacing an entry never cancels this timer. The pool consumes its
+  # tick before scheduling another; checkout/activation enforce their own deadlines.
+  # This bounds logical tick state, not retired ERTS timer allocations.
+  defp schedule_expiry(%{expiry_timer: nil, entries: entries} = state)
+       when map_size(entries) > 0,
+       do: %{state | expiry_timer: :erlang.start_timer(@expiry_interval, self(), :expire)}
+
+  defp schedule_expiry(state), do: state
+
+  defp discard(state, token) do
+    case Map.fetch(state.entries, token) do
+      {:ok, entry} -> entry.transport.close(entry.socket)
+      :error -> :ok
+    end
+
+    remove(state, token)
+  end
+
+  defp remove(state, token) do
+    case Map.fetch(state.entries, token) do
+      {:ok, entry} ->
+        if entry.monitor, do: Process.demonitor(entry.monitor, [:flush])
+
+      :error ->
+        :ok
+    end
+
+    %{state | entries: Map.delete(state.entries, token)}
+  end
+end

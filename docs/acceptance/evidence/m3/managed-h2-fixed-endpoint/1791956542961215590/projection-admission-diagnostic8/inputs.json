@@ -1,0 +1,49 @@
+{
+  "kind": "EXPERIMENT_ONLY_FOUR_CELL_ADJACENT_PROJECTION",
+  "cells": [
+    [
+      "h1",
+      "tls"
+    ],
+    [
+      "h1",
+      "h2c"
+    ],
+    [
+      "h2",
+      "tls"
+    ],
+    [
+      "h2",
+      "h2c"
+    ]
+  ],
+  "cohorts": 4,
+  "kind_each": "r32",
+  "distinct_bound": 1024,
+  "outstanding_raw_bound": 1024,
+  "canonical_collector_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "canonical_concurrent_cohort_sha256": "8672b0513aa0f39f8a57a2f33ab8ba77a8779cfb2eed2632b9e2e6f80de5f1c0",
+  "canonical_host_sha256": "723ced73197605faac09f0273e41f283e87638a79609c9b4c1a98fe50280907d",
+  "injected_host_sha256": "ba1e457434f95120335f80fcdc6f7ebc951c652a0756789664ed71fedca0652e",
+  "runner_sha256": "8effe9b4ca3cad0a91808ed5d11c4d76016aae53cd65f55cc2342b2e9d9a6239",
+  "trace_support_source_sha256": "66f74e74e1c2a584f1cce8107e13243a4d3a18096915405355671b225ce97647",
+  "production_admission_timeout_ms": 50,
+  "changed_repository_files": [],
+  "equivalence_proof": {
+    "projection": "service, mode, bytes; leases ref -> (pid, bytes, cleanup, request_active); cleanups token -> (lease, bytes, receipt)",
+    "comparison": "strict ===; only adjacent equal projections suppressed",
+    "fixed_scope": "One Gate PID per observer; gate snapshot identity is unchanged.",
+    "equivalence": "Equal raw references/scalars/maps imply identical inspected identities, sorted snapshot rows, row counts, byte sums and total-invariant outcome. Thus original serialized snapshot and digest are identical. An adjacent duplicate was already rejected by the unchanged observer seen-set.",
+    "excluded": [
+      "lease.monitor",
+      "lease.timer",
+      "lease.token",
+      "lease.deadline",
+      "lease.send",
+      "other fields not read by admission_snapshot"
+    ],
+    "capture": "Changed projection sends original complete app_state; original snapshot/hash/global dedup/distinct cap/invariants run unchanged in observer.",
+    "cost": "Projection/equality and BEAM send-copy scale with bounded lease/cleanup counts; no Gate inspect, sorting, hashing or serialization."
+  }
+}

@@ -1,0 +1,145 @@
+{
+  "task_id": "collector_global_projection_readiness",
+  "status": "DONE",
+  "verdict": "STATIC_GLOBAL_PROJECTION_PROOF_PASS_EMPIRICAL_NOT_RUN",
+  "assignment": "direct bounded independent read-only investigation",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "canonical_sha256": "ca7e48cecabfb332eee7a5769cb4b03d64cb1fc331d133316294d7528003eb16",
+  "reviewed_artifact": "/tmp/gaoxy-h2-fixed-global-projection-admission-diagnostic.py",
+  "artifact_sha256": "69f475f31e531febfa7a5c1666c7faca4c22c9f1263ac58987a299bcffcfb30e",
+  "projection_sha256": "8cc518be7ec2a4d27700acabc97bc752937a7178a0846a76791243e84d2f3e71",
+  "projected_debug_sha256": "60733750965391a9543d4e1a7705d4db1a7996bb91312227de8be9ac3bbf7d9c",
+  "prior_readiness": "/tmp/gaoxy-h2-fixed-collector-projection-readiness.json remains immutable static PASS/empirical NOT RUN at its review time",
+  "diagnostic5_later_actual_result": {
+    "status": "FAIL",
+    "attempted": 1,
+    "passed": 0,
+    "elapsed_ms": 11000,
+    "source_stable": true,
+    "actual_exit": 1,
+    "cleanup_trace_pairs": 0,
+    "accepted_observer_joins": 0,
+    "host_down_observation": {
+      "event": "admission_observer_host_down",
+      "failure": "{:collector_overflow, 1025, 2745}",
+      "received_raw": 2744,
+      "distinct": 939,
+      "raw_candidates": 2761,
+      "adjacent_suppressed": 16,
+      "outstanding": 0,
+      "high_water": 1024
+    },
+    "receipt_scope": "Authentic HOSTDOWN log is failure evidence, not accepted Gate termination/normal observer join.",
+    "retained_prefix": {
+      "count": 939,
+      "coverage": "UNCONFIRMED_PREFIX",
+      "sequence": [
+        1,
+        939
+      ],
+      "unique_lease_identities": 17,
+      "maximum_active": 17,
+      "maximum_cleanups": 17,
+      "distinct_at_active16": 354,
+      "distinct_at_active17": 284,
+      "bytes_range": [
+        0,
+        143
+      ],
+      "distinct_bytes_per_lease": [
+        2,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4,
+        4
+      ]
+    }
+  },
+  "proof": {
+    "projection": "{service, mode, bytes, map(ref => {pid, bytes, cleanup, request_active}), map(token => {lease, bytes, receipt})}",
+    "equal_projection_implies_equal_snapshot": "For one fixed Gate, every admission_snapshot input is equal; raw reference/PID identity inspection, sorted rows, byte sums, counts, mode/service identity and retained_bytes equality/invariant result therefore match. Gate identity is constant. Projection text exactly equals diagnostic5.",
+    "exact_set_semantics": "MapSet uses exact Erlang map-key equality for membership. Native typed PID/reference/int/atom/boolean fields remain distinct without numeric coercion. Internal hash collisions still use exact key comparison.",
+    "first_occurrence_stream": "Gate sends the complete original app_state only at the first occurrence of each exact projection. A removed repeat produces the same original snapshot/digest as its already-admitted first occurrence. The unchanged observer global SHA dedup would have removed it. Removing these repeats preserves the first occurrence order of every original digest and contiguous first-distinct receipt sequence.",
+    "no_reverse_injectivity_dependency": "Projection differences that render the same snapshot/digest can result in extra original states sent to observer; observer unchanged dedup removes them. The extra1024 projection cap can conservatively reject but cannot permit a PASS beyond the original1024 distinct snapshot cap.",
+    "invariant_preservation": "Changed keys send complete original state; original admission_snapshot retained-byte equality and full schema remain unchanged. A previously admitted invalid state sets sticky observer failure; subsequent equal-key suppression cannot clear it.",
+    "bounded_failure": "At projected key1025, callback sends admission_capture_failure with projection_distinct_limit and sets trace.failed without adding the key/raw credit. Observer handles it via sticky admission_failure; live/terminal prefix requires no failure. Raw overflow retains unchanged rollback/message/fail behavior. No eviction, reset, cap increase or silent drop appears."
+  },
+  "source_evidence": [
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:146",
+      "fact": "poll_connection reserves retained_bytes+buffer_bytes+1 before a one-byte closure recv."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:175",
+      "fact": "recv_connection timeout restores retained_bytes. Concurrent held H1 requests repeatedly produce observable base/+1 lease-byte combinations."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:331",
+      "fact": "send_chunks raises/drops lease bytes; start/finish send fields alone excluded, byte changes remain observable."
+    },
+    {
+      "path": "apps/gaoxy/lib/gaoxy/admission.ex:218",
+      "fact": "complete_cleanup receipt false->true included; cannot lose authentic positive receipt."
+    },
+    {
+      "path": "apps/gaoxy/lib/gaoxy/admission.ex:376",
+      "fact": "lease/guardian DOWN map removal, cleanup link/bytes/mode changes included; failed terminal receipt preserved."
+    },
+    {
+      "path": "apps/gaoxy/lib/gaoxy/admission.ex:130",
+      "fact": "timer/token/deadline changes excluded only where original snapshot excludes them; bytes/request_active changes retained."
+    }
+  ],
+  "risk_assessment": [
+    "939 distinct snapshots already arose with17 unique leases in diagnostic5. Exact global suppression cannot remove genuinely distinct base/+1 combinations; projection_distinct_limit1025 before the32held barrier is a substantial empirical risk.",
+    "Gate now performs two map traversals/constructions, MapSet internal term hashing and exact equality, plus full-state send copying for first keys. At most1024 stored projections and fixture-bounded entries keep memory finite; static review cannot establish cleanup50ms latency under2 schedulers and32 actors.",
+    "No Gate inspect/sort/crypto SHA/serialization is added, but internal MapSet hashing is real synchronous work and must be admitted in diagnostic timing evidence.",
+    "Four R32 cells/128 :ok cleanup traces only qualify this bounded experiment. Full135 canonical matrix, narrow canonical review and fresh complete stage gates remain required after any empirical PASS/release.",
+    "Experimental trace hooks must remain outside shipped canonical code. Existing legacy stop/helper/per-actor timeout behavior is unchanged and no aggregate5second lifecycle claim follows."
+  ],
+  "experiment_contract": {
+    "source": "PASS static review",
+    "cells": "Unchanged original q.concurrent_cohort for H1/H2 \u00d7 TLS/h2c, R32",
+    "timings": "Requires128 paired original complete_cleanup calls returning :ok and no unpaired calls; actual durations captured.",
+    "joins": "Requires4 normal observer terminal joins with zero outstanding/failure,4 normal trace joins/setup/barriers.",
+    "bounds": "Requires received_raw<=1024, distinct<=1024, high_water<=1024, rejected_candidates0; successful candidates=received_raw+global_suppressed.",
+    "error_capture": "Observer HOSTDOWN/collector failure events retained separately; never used as accepted normal joins.",
+    "deadline": "New trace terminal receive shares command expires; production50 timeout and original cohort deadlines unchanged."
+  },
+  "verification": [
+    "Exact artifact/canonical hashes PASS",
+    "Read-only Python ast.parse PASS; projection exact identical to diagnostic5",
+    "Concrete own-Gaoxy call paths read and diagnostic5 failure fields independently parsed"
+  ],
+  "empirical_status": "NOT RUN for diagnostic6 by reviewer; root sole runtime owner",
+  "findings": [],
+  "canonical_release_authorized_by_this_report": false,
+  "stage_acceptance": "INCOMPLETE",
+  "repository_edits": [],
+  "commands_finished": true,
+  "counters": {
+    "r32_diagnostic_failed_runs": 3,
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  },
+  "decisions_needed": []
+}

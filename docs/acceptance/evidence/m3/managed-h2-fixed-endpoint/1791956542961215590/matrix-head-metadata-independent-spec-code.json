@@ -1,0 +1,152 @@
+{
+  "task_id": "matrix_head_metadata_independent_review",
+  "status": "DONE",
+  "assignment": "direct narrow independent SPEC first then CODE;read-only checkout",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "timestamp_utc": "2026-10-14T19:00:39.664031+00:00",
+  "verdict": "FAIL_NARROW_CODE_NEEDS_TARGETED_DEADLINE_REPAIR",
+  "spec_checkpoint": {
+    "path": "/tmp/gaoxy-matrix-head-metadata-independent-spec.json",
+    "sha256": "705cb9cf306daa1b9359f98d4daa5d01aeae34d5a0abdfdfaa4aa0bef8471675",
+    "verdict": "PASS_NARROW_SPEC_READY_FOR_CODE",
+    "written_before_candidate_code": true
+  },
+  "findings": [
+    {
+      "id": "HEADER_ACK_DEADLINE_FIRST_REQUEST",
+      "severity": "actionable_required_before_candidate_release",
+      "refs": [
+        {
+          "path": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py",
+          "line": 410,
+          "role": "Initialsettingssend beforedeadlineboundedtimeout"
+        },
+        {
+          "path": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py",
+          "line": 434,
+          "role": "ACKoutboundsend uses pre-recvremainingtimeout"
+        },
+        {
+          "path": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py",
+          "line": 437,
+          "role": "Finallyrestoresoriginaltimeout"
+        },
+        {
+          "path": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py",
+          "line": 452,
+          "role": "After matchedACK returns,firstsend has nofreshdeadlinecheck"
+        }
+      ],
+      "problem": "NewmanagedACKwait isinside originalabsolute20sdeadline, but helpercanfinishmatchedACKprocessing afterthatdeadline and returnswitholdsockettimeoutrestored. client_h2 immediatelysend_headers/sendall withoutrecheckingdeadline orboundingfirstsend tocurrentremainingbudget. LateACKcanthereforeinitiatefirstrequestafterabsoluteexpiry;eventclientoriginaltimeout20s can also extendthe newphase sendwait. NewACK-phasependingwrites reuse timeout computedbefore blockingrecv,which maybe staleafterrecv.",
+      "evidence": "Pure AST-extractedcandidatehelper + realpublich2SETTINGS bytes/event replay withcontrolledclock19.999 atrecvcheck and20.001 duringfinaltimeoutrestore returnedmatchedACK. Following exactcandidatefirstsendstatements producedserverRequestReceived afterdeadline withrestored5s timeout. Thisisalgorithm/control-flowcounterexample,NOT actualsocketruntime orperformanceclaim.",
+      "required_repair": "InnewmanagedACKphase, fresh remainingdeadlinecheck and min(originalsockettimeout,remaining) before eachnewsendall; immediatelyrecheckoriginalmanageddeadline andboundfirstrequestsend afterhelperreturns. Do not resetdeadline orrelaxACK/caps. The preservedresponse/parser/uploadlogic staysscoped."
+    }
+  ],
+  "code_passes": {
+    "candidate_AST_parse": "PASS2/2",
+    "original_collector_require_AST_calls": 120,
+    "new_ACK_require_AST_calls": 2,
+    "identity_assignments": "7identical",
+    "required_unique_identities": 135,
+    "HOST_AST": "identicalSol16",
+    "changed_peer_functions": [
+      "client_h2",
+      "independent_client",
+      "main"
+    ],
+    "added_peer_function": "acknowledge_managed_fixed_header_list",
+    "changed_collector_functions": [
+      "downstream_client",
+      "client_actor",
+      "client_result"
+    ],
+    "all_other_function_class_AST": "identical",
+    "candidate_private_h2_decoder_or_control_access": "NONE;type(event).__name__ ispreexistingtypeintrospection,notH2privateaccess",
+    "standalone_profile": "Newargstore_true defaultsFalse;allmanagedbehaviorgated,oldclientsettings131072 anddefaultresponse deadlinepath retained. CLIrejectsflagwithH1. Public63sourcesuntouched.",
+    "product_limits": "65536/count256/257,renderer/nativeguards,cohortrequests/bodies,collector1024caps andall135casesunchanged.",
+    "ACK_receipt": "PublicSettingsAcknowledged.changed_settings mustcontainMAX_HEADER_LIST_SIZEoriginal/new131072. EmptychangedACKignored;RemoteSettingsChanged alonecannotpass. Firstrequestsourceorder isafterproof,butexpiredproofprocessing gapisfinding."
+  },
+  "public_API_proof": {
+    "mechanism": "Settings(initial_values131072) initially has no pendingchange; publicupdate_settings131072 appendsactualsamevaluependingchange. A realwireACKreturnsChangedSetting131072\u2192131072, andpinnedh2internallyupdatesdecodercapbeforeSettingsAcknowledged eventreturned. No candidateprivateaccess.",
+    "ACK_association_limit": "WithinitialsettingsandupdatequeuedbeforepeerACK,firstpublicACKcanapplysamevaluependingchangewhileanotherACKisempty. ProofcertifiesactualACKofexistingadvertised131072 andactualdecodertransition;doesnotclaimsecondframeACKordinalortransaction-specificcorrelation.",
+    "public_versions": {
+      "h2": "4.3.0",
+      "hpack": "4.1.0",
+      "hyperframe": "6.1.0"
+    },
+    "RFC_exact_math": "regular65518+status10+5*32=65688;proxywire65536. Existingmetadata131072 unchanged.",
+    "conservative_envelope_math": "65536+10+32*(256+1)=73770<131072;countboundaccountsstatusplusregularandgeneratedCLincludedinrenderedlogicalguard."
+  },
+  "independent_static_replay": {
+    "execution": "PinnedvenvPython;ASTextractonlynewpurehelper,nocandidatemoduleimport/top-levelrunner;realpublich2connections exchangedbytesinmemory. No sockets/network/peers/runtime/Mix.",
+    "baseline_initial_ACK_changed_settings_count": 0,
+    "baseline_exact65688": "DenialOfServiceError observed",
+    "matched_same_value_ACK": {
+      "original_value": 131072,
+      "new_value": 131072
+    },
+    "candidate_exact65688": "PASS all5exactorderedfields,status200,StreamEndedthroughpublicreceive_data",
+    "request_barrier": "ZeroRequestReceivedduringhelper;1afterproof",
+    "finite131072": "PASS all3971fields decoded exactly",
+    "finite131073": "PASS overrejectedDenialOfServiceError",
+    "emptyChangedACKpredicate": "PASS no match",
+    "EOF": "PASS failclosed0requests",
+    "GOAWAY": "PASS failclosed0requests",
+    "withheldACK": "PASS controlledclock20s expiry0requests",
+    "lateACKdeadline": "FAIL helperreturnsafter20s,firstrequestsentbyfollowingcandidatecode;sourcefindingabove"
+  },
+  "hashes": {
+    "/tmp/gaoxy-matrix-green11-h2-head-metadata-diagnosis.json": "bf00c71063f7e4be252248b7139abd9ba81c7bd1ade17c4dc44674c1989a0070",
+    "/tmp/gaoxy-matrix-head-metadata-fixture-proposal.diff": "607f285179339181d969ceb15ab5fc5a69145523093e3f7fa65dbb4a2e47bc82",
+    "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py": "cc2497510fee91c2de5ce492fa1c5e3f63eb8456b7d6fc7b1be6322329fc1a20",
+    "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "7165205443b68137de65dfd9ee7ae583927e5db95ec079208e944fa2b4ed6271",
+    "integration/http_fetch_contract/managed_h2_fixed_qualification.py": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+    "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/qualification.json": "ccc5931e74d412258eb6a23108c532de9454545e4f25d7bb259a9f4388d94c68",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/h2-to-tls-head-bytes-exact-client.log": "0b2a06a6c9337e14a2e2373724401fcebabb9d096d092036cfb14f723ee1724b"
+  },
+  "source_binding": "Allcurrentcanonical/product/evidencehashes equal authorreportedbaselines atcompletion;candidatehashes match proposal.",
+  "historical_evidence": "matrixgreen11 FAIL87/135 remains;full58FAIL845/1 andpubliccancelupstreamblock separate. No immutableevidencechanged orfailure relabelled.",
+  "runtime_validation": "NOT RUN by reviewer;actual networkandfreshgatesownedRootaftertargetedrepair+recheck.",
+  "repository_edits": [],
+  "owned_outputs": [
+    "/tmp/gaoxy-matrix-head-metadata-independent-spec.json",
+    "/tmp/gaoxy-matrix-head-metadata-independent-spec-code.json"
+  ],
+  "counters_retained": {
+    "fixed_sol": 18,
+    "fixed_unsuccessful_green": 14,
+    "collector_sol": 16,
+    "collector_unsuccessful_green": 12,
+    "matrix_failed_runs": 11,
+    "browser_failed_runs": 5,
+    "r32_diagnostic_failed_runs": 5,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "reviewer_sol_repair_rounds": 0
+  },
+  "astra_gate": null,
+  "verification_commands": [
+    "Readnormativedesign/plan/acceptance andauthordiagnosisbeforeSPECcheckpoint",
+    "Readcandidateunifieddiff/client/collector/publich2Settings/events/source",
+    "ASTparsebothcandidates,compareallfunction/classASTand120originalrequirecalls/7identityassignments/HOST",
+    "Pure135identityconstantsextraction,source/candidate/evidencehashbindings",
+    "PureASThelper+publich2in-memoryreplay ACK/exact65688/finite131072-131073/emptyACK/EOF/GOAWAY/withheldACK/lateACKdeadline",
+    "Finalbaselineandcanonical/production/evidencehashassertions"
+  ],
+  "command_outcomes": "Finalchecks exit0 andreportedlateACKcounterexamplefailsintendeddeadlinecontract. Firstreplayscript hadoneinlineSyntaxError from else21missingwhitespace;correctedread-onlyscript rerunexit0. Noimplementationedits/repairs resulted.",
+  "commands_finished": true,
+  "command_shutdown": "Allowncommandsfinished;no backgroundsessions orruntimeprocesses;othersprocessesuntouched.",
+  "workspace_freeze": "Maintained;no production/canonical changes",
+  "remaining_risks": [
+    "Deadlinefindingrequiresauthorboundedrepairandfreshindependentrecheckbeforecandidateapplication.",
+    "In-memoryprotocolreplayisnotrealGaoxy/networkacceptance;Rootmustrunprescribednarrownegative/positivegatesandfull135."
+  ],
+  "decisions_needed": []
+}

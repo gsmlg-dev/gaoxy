@@ -1,0 +1,28 @@
+{
+  "command": [
+    "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+    "-B",
+    "-c",
+    "\nimport hashlib, importlib.metadata, json, shutil, ssl, subprocess, sys\nfrom pathlib import Path\nimport h2.config, h2.connection, h2.events, hpack, hyperframe\nexecutable = Path(sys.executable).resolve()\nopenssl = Path(shutil.which(\"openssl\")).resolve()\nprint(json.dumps({\"python\": str(executable), \"python_sha256\": hashlib.sha256(executable.read_bytes()).hexdigest(),\n \"python_version\": sys.version, \"packages\": {p: importlib.metadata.version(p) for p in (\"h2\", \"hpack\", \"hyperframe\")},\n \"package_sources\": {p: {\"path\": m.__file__, \"sha256\": hashlib.sha256(Path(m.__file__).read_bytes()).hexdigest()}\n                     for p, m in ((\"h2\", h2), (\"hpack\", hpack), (\"hyperframe\", hyperframe))},\n \"python_openssl\": ssl.OPENSSL_VERSION, \"openssl\": str(openssl),\n \"openssl_sha256\": hashlib.sha256(openssl.read_bytes()).hexdigest(),\n \"openssl_version\": subprocess.run([str(openssl), \"version\", \"-a\"], check=True, capture_output=True, text=True, timeout=10).stdout}))\n"
+  ],
+  "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "elapsed_seconds": 0.4358988627791405,
+  "environment": {
+    "ERL_FLAGS": "+S 2:2",
+    "HTTP_FETCH_PEER_PYTHON": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+    "HTTP_FETCH_PROBE_LIBRARY": null,
+    "IN_NIX_SHELL": "impure",
+    "MIX_ENV": "test"
+  },
+  "exit": 0,
+  "group_shutdown_confirmed": true,
+  "log": "peer-environment.log",
+  "log_bytes": 1816,
+  "log_sha256": "20a000c4b40bb7337f12afa06644780f8689f51358161d3390f3896884849977",
+  "process_group": 3574537,
+  "remaining_after_cleanup": [],
+  "remaining_before_cleanup": [],
+  "status": "PASS_COMMAND",
+  "timed_out": false,
+  "timeout_seconds": 30
+}

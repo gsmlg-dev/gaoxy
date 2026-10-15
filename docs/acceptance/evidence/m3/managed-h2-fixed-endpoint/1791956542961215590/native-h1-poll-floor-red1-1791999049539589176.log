@@ -1,0 +1,223 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 990290, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+01:31:06.875 [error] GenServer #PID<0.372.0> terminating
+** (CaseClauseError) no case clause matching: {:error, :closed}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:214: Gaoxy.HTTP.Connection.respond/3
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:3: Gaoxy.HTTP.Connection.handle_info/2
+    (stdlib 7.3.0.3) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.3) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.3) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Process Label: {:thousand_island, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 56054}}}
+Last message: {:tcp, #Port<0.47>, "GET / HTTP/1.1\r\nHost: localhost\r\n\r\n"}
+State: {%ThousandIsland.Socket{socket: #Port<0.47>, transport_module: ThousandIsland.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2291843088.638320642.96678>, start_time: -576460748673115949, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 56054, telemetry_span_context: #Reference<0.2291843088.638320642.96678>, parent_telemetry_span_context: #Reference<0.2291843088.638320641.102281>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.2291843088.638320642.96678>}}, read_timer: #Reference<0.2291843088.638320642.96686>, read_deadline: -576460718671, timer_deadline: -576460718671}, %{scope: %{instance: #Reference<0.2291843088.638320642.96575>, service: :http, generation: #Reference<0.2291843088.638320642.96594>}, buffer: "", instance: #PID<0.360.0>, closing: false, service: #PID<0.362.0>, spec: %{id: :http, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, transport: :tcp, dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, callback_timeout: 5000, drain_timeout: 5000, max_output: 65507, max_state: 65536}, handler_options: %{protocols: [:http1], initialized: true, h2c: :disabled, endpoint: {Gaoxy.HTTP.NativeProxySeamsTest.Endpoint, #Function<10.73016274/1 in Gaoxy.HTTP.NativeProxySeamsTest."test native keepalive reuse releases the prior poll floor and admits a fresh request"/1>}, http_limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_trailer_bytes: 8192, max_trailers: 32, max_read_chunk: 16384, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, request_timeout: 30000, write_timeout: 5000}, h2_limits: %{max_streams: 32, max_frame: 16384, receive_window: 65535, max_header_block: 16384, table_size: 4096, control_rate: 256, control_turn: 32, frame_timeout: 5000}}, handler_mode: :native, quic: %{}, capabilities: []}, deadline: nil, phase: :idle, lease: #Reference<0.2291843088.638320642.96684>, gate: #PID<0.363.0>, limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_trailer_bytes: 8192, max_trailers: 32, max_read_chunk: 16384, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, request_timeout: 30000, write_timeout: 5000}, websocket: nil, header_token: nil, header_timer: nil, startup_token: #Reference<0.2291843088.638320641.102176>}}
+[0m
+
+  1) test native keepalive reuse releases the prior poll floor and admits a fresh request (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:383[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Exchange.retained_bytes(first_polled) == first_base + 2
+     [36mleft:  [0m7[31m0[0m
+     [36mright: [0m7[32m2[0m
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:412: (test)
+
+[32m.[0m
+
+  2) test body consumption and response writes preserve the admitted poll floor (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:358[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Exchange.retained_bytes(next) == floor
+     [36mleft:  [0m7[31m0[0m
+     [36mright: [0m7[32m6[0m
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:368: (test)
+
+
+
+  3) test a retained poll floor still validates the gate and lease before every recv (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:343[0m
+     [31m** (EXIT from #PID<0.382.0>) killed[0m
+
+[32m.[0m
+
+  4) test repeated empty polls retain the complete copy floor for "" (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:238[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Enum.uniq(updates) == [expected]
+     [36mleft:  [0m~c"[31mGF[0m"
+     [36mright: [0m~c"[32mH[0m"
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:259: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+  5) test one byte short of the full poll copy peak refuses without consuming input (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:288[0m
+     [31mmatch (=) failed
+     The following variables were pinned:
+       observed = %Gaoxy.HTTP.Exchange{request: %Gaoxy.HTTP.Request{method: "GET", target: "/", target_form: :origin, version: :"HTTP/1.1", path: "/", query_string: "", host: "localhost", port: nil, scheme: nil, peer: nil, local: nil, head_bytes: 35, headers: [{"host", "localhost"}], body: :none, keep_alive: true, expect_continue: false}, socket: %ThousandIsland.Socket{socket: {#Port<0.80>, #PID<0.422.0>, #PID<0.421.0>}, transport_module: Gaoxy.HTTP.NativeProxySeamsTest.ObservedTCP, read_timeout: 1000, handshake_timeout: 1000, silent_terminate_on_error: false, span: %ThousandIsland.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2291843088.638320641.102804>, start_time: -576460748555578204, start_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.2291843088.638320641.102804>}, handler: Gaoxy.HTTP.NativeProxySeamsTest, span_metadata: %{handler: Gaoxy.HTTP.NativeProxySeamsTest, telemetry_span_context: #Reference<0.2291843088.638320641.102804>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, gate: #PID<0.422.0>, lease: #Reference<0.2291843088.638320641.102798>, deadline: -576460747556, limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_trailer_bytes: 8192, max_trailers: 32, max_write_chunk: 1024, max_read_chunk: 16384, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, request_timeout: 30000, write_timeout: 5000}, body: %Gaoxy.HTTP.HTTP1.Body{phase: :done, total: 0, trailers: [], trailer_bytes: 0, limits: %{max_buffer_bytes: 65536, read_timeout: 5000, max_trailer_bytes: 8192, max_trailers: 32, max_write_chunk: 1024, max_read_chunk: 16384, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, request_timeout: 30000, write_timeout: 5000}}, buffer: "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp", peer: {{127, 0, 0, 1}, 59114}, local: {{127, 0, 0, 1}, 38003}, service: nil, instance: nil, response: :unset, response_trailers: [], close: false, route_bytes: 0, resource_pins: [], protocol_bytes: 0, transport: nil, transport_state: nil, secure: nil, ssl: nil, peer_cert: nil, expect_sent: false}[0m
+     [36mcode:  [0massert {:error, :byte_limit, ^observed} = Exchange.poll_connection(observed, 100)
+     [36mleft:  [0m{[31m:error[0m, [31m:byte_limit[0m, [31m^observed[0m}
+     [36mright: [0m{
+              [32m:more[0m,
+              [32m%Gaoxy.HTTP.Exchange{
+                close: false,
+                local: {{127, 0, 0, 1}, 38003},
+                request: %Gaoxy.HTTP.Request{
+                  local: nil,
+                  port: nil,
+                  scheme: nil,
+                  version: :"HTTP/1.1",
+                  path: "/",
+                  host: "localhost",
+                  peer: nil,
+                  target: "/",
+                  body: :none,
+                  keep_alive: true,
+                  headers: [{"host", "localhost"}],
+                  head_bytes: 35,
+                  expect_continue: false,
+                  target_form: :origin,
+                  query_string: "",
+                  method: "GET"
+                },
+                buffer: "ppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppz",
+                ssl: nil,
+                socket: %ThousandIsland.Socket{
+                  read_timer: nil,
+                  socket: {#Port<0.80>, #PID<0.422.0>, #PID<0.421.0>},
+                  span: %ThousandIsland.Telemetry{
+                    handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                    start_metadata: %{
+                      handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                      telemetry_span_context: #Reference<0.2291843088.638320641.102804>
+                    },
+                    telemetry_span_context: #Reference<0.2291843088.638320641.102804>,
+                    span_name: :connection,
+                    start_time: -576460748555578204,
+                    span_metadata: %{
+                      handler: Gaoxy.HTTP.NativeProxySeamsTest,
+                      telemetry_span_context: #Reference<0.2291843088.638320641.102804>
+                    }
+                  },
+                  transport_module: Gaoxy.HTTP.NativeProxySeamsTest.ObservedTCP,
+                  read_timeout: 1000,
+                  handshake_timeout: 1000,
+                  silent_terminate_on_error: false,
+                  read_deadline: nil,
+                  timer_deadline: nil
+                },
+                instance: nil,
+                service: nil,
+                peer: {{127, 0, 0, 1}, 59114},
+                deadline: -576460747556,
+                response: :unset,
+                body: %Gaoxy.HTTP.HTTP1.Body{
+                  total: 0,
+                  phase: :done,
+                  limits: %{
+                    max_buffer_bytes: 65536,
+                    read_timeout: 5000,
+                    max_trailer_bytes: 8192,
+                    max_trailers: 32,
+                    max_write_chunk: 1024,
+                    max_read_chunk: 16384,
+                    header_timeout: 5000,
+                    max_body_bytes: 8388608,
+                    max_chunk_line: 1024,
+                    max_header_bytes: 32768,
+                    max_headers: 100,
+                    max_request_line: 8192,
+                    request_timeout: 30000,
+                    write_timeout: 5000
+                  },
+                  trailers: [],
+                  trailer_bytes: 0
+                },
+                transport: nil,
+                lease: #Reference<0.2291843088.638320641.102798>,
+                gate: #PID<0.422.0>,
+                limits: %{
+                  max_buffer_bytes: 65536,
+                  read_timeout: 5000,
+                  max_trailer_bytes: 8192,
+                  max_trailers: 32,
+                  max_write_chunk: 1024,
+                  max_read_chunk: 16384,
+                  header_timeout: 5000,
+                  max_body_bytes: 8388608,
+                  max_chunk_line: 1024,
+                  max_header_bytes: 32768,
+                  max_headers: 100,
+                  max_request_line: 8192,
+                  request_timeout: 30000,
+                  write_timeout: 5000
+                },
+                expect_sent: false,
+                peer_cert: nil,
+                secure: nil,
+                protocol_bytes: 0,
+                resource_pins: [],
+                response_trailers: [],
+                route_bytes: 0,
+                transport_state: nil
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:296: (test)
+
+[32m.[0m
+
+  6) test repeated empty polls retain the complete copy floor for "GET /next" (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:238[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Enum.uniq(updates) == [expected]
+     [36mleft:  [0m~c"[31mYO[0m"
+     [36mright: [0m~c"[32mZ[0m"
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:259: (test)
+
+
+
+  7) test poll floor survives deadline and peer close without renewing the request (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:316[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Exchange.retained_bytes(expired) == base + 2
+     [36mleft:  [0m7[31m0[0m
+     [36mright: [0m7[32m2[0m
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:327: (test)
+
+[32m.[0m[32m.[0m
+
+  8) test poll copy peak is admitted before recv and returned charge fits the exact cap (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:265[0m
+     [31mAssertion failed, no matching message after 100ms
+     The following variables were pinned:
+       expected = 200
+     Showing 1 of 1 message in the mailbox[0m
+     [36mcode: [0massert_receive {:poll_recv_charge, ^expected}
+     [36mmailbox:[0m
+       [36mpattern: [0m{:poll_recv_charge, [31m^expected[0m}
+       [36mvalue:   [0m{:poll_recv_charge, [32m199[0m}
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:275: (test)
+
+
+
+  9) test maximum poll floor stays bounded and a full buffer refuses the following byte (Gaoxy.HTTP.NativeProxySeamsTest)
+     [1m[30mapps/gaoxy_http/test/native_proxy_seams_test.exs:302[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert Exchange.retained_bytes(next) == base + 2 * next.limits.max_buffer_bytes
+     [36mleft:  [0m7[31m2[0m
+     [36mright: [0m7[32m4[0m
+     [36mstacktrace:[0m
+       test/native_proxy_seams_test.exs:310: (test)
+
+[32m.[0m[32m.[0m
+Finished in 2.1 seconds (2.1s async, 0.00s sync)
+[31m30 tests, 9 failures[0m

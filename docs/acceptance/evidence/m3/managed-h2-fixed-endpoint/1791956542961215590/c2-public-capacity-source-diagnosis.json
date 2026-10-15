@@ -1,0 +1,68 @@
+{
+  "kind": "C2_PUBLIC_CAPACITY_NORMALIZATION_SOURCE_DIAGNOSIS",
+  "status": "LOCAL_ROOT_CAUSE_PROVEN_LIVE_RAW_RESULT_NOT_RECORDED",
+  "reviewer": "/root/fixed_h2_envelope",
+  "timestamp_ns": 1791985963690492642,
+  "failure_receipt": "matrix-green2/qualification.json",
+  "public_contract": "HTTP.ManagedTransport documents {:error,{:transport_scope_capacity,:requests|:connections}}",
+  "source_chain": [
+    {
+      "file": "deps/http_runtime/lib/http/managed_transport.ex",
+      "line": 49,
+      "evidence": "Supported public capacity error contract"
+    },
+    {
+      "file": "deps/http_fetch/lib/http/socket_client.ex",
+      "line": 485,
+      "evidence": "C2 scoped pending_capacity returns transport_scope_capacity/connections"
+    },
+    {
+      "file": "deps/http_fetch/lib/http.ex",
+      "line": 439,
+      "evidence": "Raw default async error result preserved into public Task"
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex",
+      "line": 443,
+      "evidence": "head_result normalizes unsupported tuple to upstream_failure"
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "line": 598,
+      "evidence": "finite_reason preserves upstream_failure atom"
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "line": 892,
+      "evidence": "upstream_failure ->502; unavailable ->503"
+    }
+  ],
+  "source_sha256": {
+    "deps/http_runtime/lib/http/managed_transport.ex": "2f89d9535c116dfc129f7e64c36d54256271a24405d1f860d58911e2bc397e5a",
+    "deps/http_fetch/lib/http/socket_client.ex": "3bfd24c17fb9f3237c2c259fdc366c2df48304a0f58faf308ee87d0523519f88",
+    "deps/http_fetch/lib/http.ex": "b86d8cc723cbab453e04dee8cf2a8bd99ca5a08d638c07a1d677ef501a495f7b",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e5623c8a3a40d49f35517a29b6a6894c19f244b35475bce2f8d5e15166bf1c6a",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "4dc775d5395bf92cd1e1dab234a9625f086cc29dca977444cf0af901a83a6df3"
+  },
+  "required_repair": "Exact normalize({:transport_scope_capacity,kind},_) guard for requests/connections ->unavailable; retain all malformed diagnostics fallback and no payload retention",
+  "required_regression": [
+    "event and poll_headers each for requests/connections, exact authenticated Task identity, resolved handle and original completion unchanged",
+    "Unknown kind/extra tuple/oversized wrapped error stays upstream_failure",
+    "Live raw public Task/Promise diagnostic and exact C2 blank503/no replay/two healthy held streams"
+  ],
+  "upstream_bug": false,
+  "upstream_issue_required": false,
+  "private_dependency_probe": false,
+  "runtime_identity_limit": "Old logs have response502 and public ledger but not raw Task result. Source chain is proven; live raw identity still to record.",
+  "counters": {
+    "fixed_sol_repair": 9,
+    "fixed_unsuccessful_green": 9,
+    "collector_sol_repair": 10,
+    "collector_unsuccessful_green": 3,
+    "matrix_failed_runs": 2,
+    "browser_failed_runs": 5,
+    "astra_recovery_used": 2,
+    "astra_recovery_max": 2
+  }
+}

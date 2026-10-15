@@ -1,0 +1,42 @@
+{
+  "kind": "TASK7_OBSERVED_RED_AND_SOL_REPAIR4_RELEASE",
+  "status": "FAIL_PRESERVED_REPAIR4_PENDING",
+  "receipt": "task7-lifecycle-red1-1791974811171563423.json",
+  "counts": [
+    {
+      "tests": 76,
+      "failures": 8,
+      "excluded": 0,
+      "skipped": 0,
+      "executed": 76
+    }
+  ],
+  "actual_exit": 2,
+  "failures": {
+    "h2_flow_credit_write_deadline_runtime_gap": 1,
+    "guardian_vs_pump_pin_release_fixture": 2,
+    "uncertain_public_stop_deadline_vs_inner_shutdown_shape": 3,
+    "abrupt_instance_original_uncertainty": 1,
+    "transport_owner_death_requires_custodian_session_ordering": 1
+  },
+  "production_red_evidence": "real managed-H2/native-H2 endpoint80ms write timeout, total5000ms; no reset within2000ms",
+  "test_repairs": "exact identities/results and deterministic Gaoxy barriers; no successful cleanup inferred from uncertainty",
+  "new_compatibility_scope": [
+    "native HTTP2.Transport",
+    "HTTP2.Connection",
+    "HTTP2.Writer",
+    "HTTP2.Stream if needed",
+    "existing HTTP2NetworkTest + Task7 exact real tests"
+  ],
+  "architecture_choice": "hard per-operation deadline; unsent writes expire safely; partial HEADERS closes connection, ordinary reset drains CONTINUATION unchanged",
+  "sol_repair_round": 4,
+  "fixed_prior_unsuccessful_green": 3,
+  "task7_observed_red": 1,
+  "astra_recovery": {
+    "used": 2,
+    "max": 2,
+    "remaining": 0
+  },
+  "inherited": "kickoff-ownership.json#inherited_preparation_counters",
+  "whole_m3": "NOT_ACCEPTED"
+}

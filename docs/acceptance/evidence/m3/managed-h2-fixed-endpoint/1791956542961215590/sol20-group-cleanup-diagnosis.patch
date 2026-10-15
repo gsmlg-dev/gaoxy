@@ -1,0 +1,36 @@
+--- a/apps/gaoxy_proxy/test/upstream_group_transport_test.exs
++++ b/apps/gaoxy_proxy/test/upstream_group_transport_test.exs
+@@ -661,7 +661,7 @@
+ 
+       {:cleanup, caller} ->
+         result =
+-          Lifecycle.protect(fn ->
++          diagnose_cleanup(fn ->
+             if Process.alive?(instance), do: assert(:ok == Gaoxy.stop(instance, 3_000))
+             assert :ok = Resources.release(baseline)
+             eventually(fn -> :sys.get_state(groups).groups == %{} end)
+@@ -685,6 +685,24 @@
+ 
+         send(caller, {:fixture_cleaned, self(), result})
+     end
++  end
++
++  defp diagnose_cleanup(fun) do
++    Lifecycle.protect(fn ->
++      try do
++        fun.()
++      rescue
++        error ->
++          stacktrace = __STACKTRACE__
++
++          IO.puts(
++            :stderr,
++            "GROUP_FIXTURE_CLEANUP_DIAGNOSTIC\n" <> Exception.format(:error, error, stacktrace)
++          )
++
++          reraise error, stacktrace
++      end
++    end)
+   end
+ 
+   defp preparation_peer(listener, parent) do

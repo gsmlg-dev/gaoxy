@@ -1,0 +1,658 @@
+{
+  "task_id": "matrix_head_metadata_diagnosis",
+  "status": "DONE",
+  "assignment": "direct narrow reviewed /tmp candidate deadline repair; no repository edits or release",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "source_read_yet": true,
+  "spec_sources": [
+    {
+      "path": "docs/designs/m3-managed-h2-fixed-endpoint.md",
+      "lines": "481-529"
+    },
+    {
+      "path": "docs/plans/m3-managed-h2-fixed-endpoint.md",
+      "lines": "492-555"
+    },
+    {
+      "path": "docs/acceptance/m3-managed-h2-fixed-endpoint.md",
+      "lines": "420-445"
+    }
+  ],
+  "preserved_contract": [
+    "135 unchanged matrix identities including256/257 and65536/65537 boundaries",
+    "Product fields<=256 and name+value/backing<=65536",
+    "H2 proxy field-wire<=65536; native decoded head includes status",
+    "Existing public63 client defaults/assertions unchanged",
+    "All parser validation, ordered fields, bytes, status, body, trailers unchanged",
+    "All deadlines/capacity/observer1024 caps unchanged"
+  ],
+  "spec_finding": "Existing design explicitly lists downstream decoded65688 for H2 exact-byte response; RFC metadata accounting differs from proxy field-wire65536. Determine actual client finite bound/settings semantics before proposing compatibility adjustment.",
+  "code_review_started": true,
+  "counters": {
+    "fixedSol": 18,
+    "fixedUnsuccessfulGreen": 14,
+    "collectorSol": 16,
+    "collectorUnsuccessfulGreen": 12,
+    "matrixFailed": 11,
+    "browserFailed": 5,
+    "r32DiagnosticFailed": 5,
+    "astraRecovery": 2,
+    "astraRecoveryLimit": 2
+  },
+  "runtime_validation": "NOT RUN per assignment",
+  "commands_finished": true,
+  "spec_amendment": {
+    "profile": "--managed-fixed-client boolean, H2 matrix clients only; standalone default unchanged",
+    "unit": "RFC header-list metadata: UTF-8 encoded name/value octets plus32 per field; count includes pseudo-fields",
+    "ceiling": 131072,
+    "derivation": "65536 rendered regular name+value guard +10 status name/value +32*(256 rendered regular +1 status). Upstream native max256 counts status =>255 regular; normalization replaces >=1 trailer declaration fields with1 and otherwise removes fields; downstream streamed205 can add at most1 CL0 regular field. Existing post-generation RendererBounds regular logical guard<=65536 includes supplied/generated CL. Total257 fields and status200..599 length3. This is a conservative complete envelope, not proof all maxima are simultaneously network reachable. Existing finite fixture advertised ceiling131072 already exceeds73770 by57302; retain131072, do not add a new limit or adjustable config.",
+    "native_reachable_tighter_bound": "Proxy field-wire<=65536 bounds pre-generation regular logical<=65534-4n; n<=255 and at most generatedCL0 addition15+32 gives RFC metadata<=65534+28*255+42+47=72763. This corroborates the conservative product-envelope73770, without redefining product boundaries.",
+    "initialization": "Retain existing initial Settings advertised131072. Managed-only public H2Connection.update_settings({MAX_HEADER_LIST_SIZE:131072}) creates a pending same-value change. Send initial preface/settings and wait for actual public SettingsAcknowledged.changed_settings with new_value131072 before sending request. The public library applies the pending change to its finite decoder internally; candidate neither reads nor writes decoder/private attributes.",
+    "acceptance": "Required exact H2 four-field response at proxy field-wire65536 must decode65,688 metadata and retain exact ordered fields incl suppliedCL0; over65537 must still produce complete empty502. Native256/257 negatives and pure adapter256/257 and65536/65537 identities remain.",
+    "derived_product_envelope": 73770,
+    "deadline": "Managed ACK wait starts existing absolute20-second deadline after initiate_connection and before sending initial preface/settings; reuses same deadline for subsequent response/upload processing. Every ACK recv is capped by original socket timeout and remaining deadline. Standalone deadline/init path unchanged. Managed response socket recv also uses min(original socket timeout, remaining shared deadline), so ACK waiting cannot restart or extend the response deadline. Reviewed repair adds the same fresh budget check immediately before initial SETTINGS/pending ACK writes, first managed request HEADERS construction and first actual request sendall; protocol encoding time between checks is included. The original timeout is cached and never becomes a new deadline.",
+    "ack_semantics": "With initial_values131072, Settings stores deque([131072]). Public update_settings(131072) invokes Settings.__setitem__ and appends131072, yielding deque([131072,131072]); actual ACK changes131072->131072; h2 _local_settings_acked applies new_value to decoder before returning public SettingsAcknowledged. Initial and update SETTINGS may receive separate ACKs; matched changed-setting ACK proves decoder sync regardless of same-value ACK ordinal. Empty changed_settings or RemoteSettingsChanged alone cannot open the request barrier.",
+    "evidence": "H2 client result includes managed_fixed_header_list_ack original_value/new_value and collector requires both131072. Standalone output fields remain unchanged."
+  },
+  "root_cause": {
+    "classification": "FIXTURE_DIMENSION_AND_INITIAL_SETTINGS_DECODER_MISMATCH",
+    "production_failure_established": false,
+    "native_product_unsupported_established": false,
+    "summary": "Required H2 exact field-wire65536 maps to RFC metadata65688. Existing fixture advertises131072 via replacement initial Settings, but h2 decoder remains default65536. Initial Settings entries each contain a single current value; ACK reports no changes, so _local_settings_acked never updates decoder. hpack denies65688>65536 and h2 translates OversizedHeaderListError into observed DenialOfServiceError. This is a fixture correction; no dependency feature/bug or production limit expansion is needed."
+  },
+  "arithmetic": {
+    "status": {
+      "name_octets": 7,
+      "value_octets": 3,
+      "overhead": 32,
+      "metadata_bytes": 42
+    },
+    "content_length_zero": {
+      "name_octets": 14,
+      "value_octets": 1,
+      "overhead": 32,
+      "metadata_bytes": 47
+    },
+    "exact_h2_response": {
+      "fields": [
+        [
+          ":status",
+          "200"
+        ],
+        [
+          "content-length",
+          "0"
+        ],
+        [
+          "x-pad",
+          "a*65494"
+        ],
+        [
+          "x",
+          "b"
+        ],
+        [
+          "y",
+          "c"
+        ]
+      ],
+      "regular_name_value": 65518,
+      "native_name_value_including_status": 65528,
+      "proxy_field_wire": 65536,
+      "rfc_metadata": 65688,
+      "rfc_count": 5
+    },
+    "hypothetical_over_head_if_it_escaped": {
+      "proxy_field_wire": 65537,
+      "rfc_metadata": 65689,
+      "required_actual_result": "empty502; neveraccept forwarded over-limit fields"
+    },
+    "regular_count_bound": 256,
+    "rendered_regular_logical_bound": 65536,
+    "complete_rfc_ceiling": 73770
+  },
+  "evidence": {
+    "qualification": {
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/qualification.json",
+      "actual_executed": 87,
+      "required": 135,
+      "cases": 87,
+      "candidate_identity": null,
+      "status": "FAIL"
+    },
+    "failure_client_log": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/h2-to-tls-head-bytes-exact-client.log",
+    "collector_sol16_expected_sha256": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d"
+  },
+  "root_cause_refs": [
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "lines": "405-413",
+      "role": "initial Settings replacement does not set decoder"
+    },
+    {
+      "path": "integration/http_fetch_contract/managed_h2_fixed_qualification.py",
+      "lines": "1376-1395",
+      "role": "exact independent field-wire fixture"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex",
+      "lines": "46-58,109-110,208-220",
+      "role": "finite product bounds and count-preserving normalization"
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex",
+      "lines": "124-159",
+      "role": "nil-size streamed205 generatesCL0 only; other regular fields unchanged"
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "lines": "644-671",
+      "role": "regular rendered bound includes CL; status separate"
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex",
+      "lines": "4,26-32",
+      "role": "finite regular logical cap65536"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/connection.py",
+      "lines": "330-358,1980-1994,2089-2110",
+      "role": "decoder default; only ACK changed setting updates cap; DoS error translation"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/settings.py",
+      "lines": "127-174",
+      "role": "initial values single deque; ACK changes only pending deque>1"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/hpack/hpack.py",
+      "lines": "405-437,521-527",
+      "role": "public Decoder.max_header_list_size finite guard and documentation"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/connection.py",
+      "lines": "516-537,1108-1122",
+      "role": "public initiate and update settings ordering"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/events.py",
+      "lines": "513-527",
+      "role": "public SettingsAcknowledged.changed_settings receipt"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/settings.py",
+      "lines": "274-289",
+      "role": "pending same-value setting appended; no private candidate access"
+    }
+  ],
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "7165205443b68137de65dfd9ee7ae583927e5db95ec079208e944fa2b4ed6271",
+    "integration/http_fetch_contract/managed_h2_fixed_qualification.py": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+    "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex": "e62583799659f2c0a897507a40db6a5d3dad566ac3f26d0dc4dab10c58359730",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+    "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+    "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/connection.py": "001ac10ddb176742575dbc6b1c77471113d885f0ce0860b65e56269adc0f9419",
+    "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/settings.py": "8d10648219e222250642fd7ad90de6cd64139a2d05e395269b32078dbe0cbb55",
+    "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/hpack/hpack.py": "06abd248e677400807e63e59457e4ca77712c71e6a7bfa3883f78ee311cc03c2",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/qualification.json": "ccc5931e74d412258eb6a23108c532de9454545e4f25d7bb259a9f4388d94c68",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/matrix-green11/h2-to-tls-head-bytes-exact-client.log": "0b2a06a6c9337e14a2e2373724401fcebabb9d096d092036cfb14f723ee1724b"
+  },
+  "decisions_needed": [],
+  "candidate_ownership": [
+    {
+      "target": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "source": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py",
+      "baseline_sha256": "7165205443b68137de65dfd9ee7ae583927e5db95ec079208e944fa2b4ed6271",
+      "candidate_sha256": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9"
+    },
+    {
+      "target": "integration/http_fetch_contract/managed_h2_fixed_qualification.py",
+      "source": "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_qualification.py",
+      "baseline_sha256": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d",
+      "candidate_sha256": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af"
+    }
+  ],
+  "candidate_diff": {
+    "path": "/tmp/gaoxy-matrix-head-metadata-fixture-proposal.diff",
+    "sha256": "241eeda883061154ea0cbceaa6c0f78a6d641467e1bbf9edacce1ac376ed454d"
+  },
+  "static_checks": {
+    "candidate_ast_parse": "PASS2/2",
+    "source_collector_sol16_identity": "PASS SHA117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d",
+    "runtime": "NOT RUN",
+    "all_original_collector_require_calls": "PASS preserved 120 AST calls",
+    "matrix_identity_definitions": "PASS7 unchanged AST assignments; required135 maintained",
+    "candidate_private_decoder_access": "PASS absent",
+    "ceiling_arithmetic": "PASS static ASCII octet math; exact65688, product envelope73770<existing131072; negative metadata vectors131072/131073",
+    "repository_edits_this_assignment": "NONE; owned /tmp outputs only; both intended target sources still baseline-identical",
+    "deadline_counterexample_models": "PASS12/12 after repair; pre-repair exact-source replay reproduces request at20.001 with5s restored timeout",
+    "HOST_AST": "PASS unchanged"
+  },
+  "counterexample_plan": [
+    {
+      "case": "Baseline default rejects documented exact response metadata65688",
+      "check": "Isolated real public h2 peer/client test sends exact5-field65688 metadata with original default, confirms DenialOfServiceError. This reproduces the observed failed matrix error; product caps are unchanged.",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "Managed public-settings ACK establishes decoder sync",
+      "check": "Real h2 peer receives same-value SETTINGS131072 and returns ACK; client observes public SettingsAcknowledged changed131072->131072 before request, decodes exact65688 ordered fields/CL0/status200 and empty body, retains actualreceipt. Compare initial advertised setting131072 and ACK event; no decoder/private access.",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "Finite existing decoder ceiling exact/over131072/131073",
+      "check": "Isolated public h2 protocol qualification (not product-positive matrix): response :status200 (42 bytes)+3969 ordered x empty pairs(33each)+y with20 or21 ASCII b bytes(53/54) yields exactly131072/131073 RFC metadata; exact decodes all fields, over raises public DenialOfServiceError, not filtered/truncated success. This tests a finite HPACK expansion guard independently of product renderer caps.",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "Withheld ACK / empty changed-settings / EOF / GOAWAY",
+      "check": "Actual network peer withholds or sends no matching changed-setting ACK; client must send zero request HEADERS and fail within original shared20s deadline. RemoteSettingsChanged or empty SettingsAcknowledged alone cannot pass. EOF beforeACK and GOAWAY fail and sockets/helperjoins remain exact. Use deterministic peerbarriers and finite deadlines.",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "Protocol parser checks remain active",
+      "check": "Public peer counterexamples for invalid pseudo-header order, forbidden connection field and invalid content-length framing still fail via unchanged h2 parser validation; no skip/validate_inbound_headers overrides.",
+      "status": "NOT RUN"
+    },
+    {
+      "case": "Original product over/field/native budgets",
+      "check": "Complete unfiltered135 matrix; exactH2 field-wire65536 retains all orderedfields/status/body/trailers; over65537 remains completeempty502. Native256/257 negatives, trailer128/129/native-byte exact/over and pure adapter256/257/65536/65537 identities remain. Run fresh public63 with original default profile and required scoped gates separately.",
+      "status": "NOT RUN"
+    }
+  ],
+  "remaining_risks": [
+    "Candidate has static and in-memory public-protocol evidence only; Root must obtain fresh independent recheck and actual network qualification before release/application.",
+    "Complete matrix remains FAIL87/135; public845/1 unrelated abort->einval upstream failure is owned by another agent, not investigated or fixed here.",
+    "Same-value ACK correctness derives from public h2 settings/event API with pinned4.3.0 semantics; a live peer test remains necessary.",
+    "Existing client131072 is a header-list metadata ceiling, not a product logical/wire/backing/capacity increase or native-memory certificate."
+  ],
+  "repair_rounds_this_assignment": 1,
+  "repair_released": false,
+  "astra_gate": null,
+  "final_scope_source_stability": "PASS both intended target sources byte-identical to diagnosis baselines; no repository mutations",
+  "deadline_repair": {
+    "finding": "HEADER_ACK_DEADLINE_FIRST_REQUEST",
+    "reviewer_report": "/tmp/gaoxy-matrix-head-metadata-independent-spec-code.json",
+    "contract": "Fresh remaining original deadline check and min(original socket timeout,remaining) immediately before every ACK-phase sendall and first managed request send. Check also before first managed conn.send_headers. ACK and first request share original20s absolute deadline; no decoder/private access, default unchanged.",
+    "before_sha256": {
+      "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py": "cc2497510fee91c2de5ce492fa1c5e3f63eb8456b7d6fc7b1be6322329fc1a20",
+      "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af"
+    },
+    "before_diff_sha256": "607f285179339181d969ceb15ab5fc5a69145523093e3f7fa65dbb4a2e47bc82",
+    "release": "NOT RELEASED; Root owns counters/runtime/application",
+    "counterexamples": [
+      "Matching ACK finishes after20s and helper restores5s/20s original timeout => no firstrequest queued/sent",
+      "ACK parsing or pending-byte generation consumes remaining time => no outboundACK afterexpiry",
+      "First HEADERS encoding/data_to_send consumes remaining time => no actual firstrequest sendall afterexpiry",
+      "With spare time, all new sends use min(originaltimeout,remaining), matching realACK passes and exact65688 response succeeds"
+    ],
+    "pure_replay": {
+      "mode": "AST extraction only; real pinned public h2 bytes/events in memory; fake socket and controlled clock; no network/process/peer/Mix/browser runtime",
+      "before_reviewed_candidate_counterexample": {
+        "case": "late_finally_restore",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 1,
+        "request_times": [
+          20.001
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "clock": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "clock": 19.999,
+            "timeout": 5.0,
+            "bytes": 9
+          },
+          {
+            "clock": 20.001,
+            "timeout": 5.0,
+            "bytes": 29
+          }
+        ],
+        "response_exact": false,
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        }
+      },
+      "after_cases": [
+        {
+          "case": "initial_settings_expiry",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [],
+          "response_exact": false,
+          "ack": null
+        },
+        {
+          "case": "initial_settings_expiry",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [],
+          "response_exact": false,
+          "ack": null
+        },
+        {
+          "case": "pending_ack_expiry",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 84
+            }
+          ],
+          "response_exact": false,
+          "ack": null
+        },
+        {
+          "case": "pending_ack_expiry",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 84
+            }
+          ],
+          "response_exact": false,
+          "ack": null
+        },
+        {
+          "case": "late_finally_restore",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.999,
+              "timeout": 0.0010000000000012221,
+              "bytes": 9
+            }
+          ],
+          "response_exact": false,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "late_finally_restore",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 0,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.999,
+              "timeout": 0.0010000000000012221,
+              "bytes": 9
+            }
+          ],
+          "response_exact": false,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "headers_encoding_expiry",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.999,
+              "timeout": 0.0010000000000012221,
+              "bytes": 9
+            }
+          ],
+          "response_exact": false,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "headers_encoding_expiry",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": "TimeoutError",
+          "requests": 0,
+          "request_times": [],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.999,
+              "timeout": 0.0010000000000012221,
+              "bytes": 9
+            }
+          ],
+          "response_exact": false,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "success",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": null,
+          "requests": 1,
+          "request_times": [
+            0.0
+          ],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 84
+            },
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 9
+            },
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 29
+            }
+          ],
+          "response_exact": true,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "success",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": null,
+          "requests": 1,
+          "request_times": [
+            0.0
+          ],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 84
+            },
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 9
+            },
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 29
+            }
+          ],
+          "response_exact": true,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "near_deadline_success",
+          "original_timeout": 5.0,
+          "managed": true,
+          "error": null,
+          "requests": 1,
+          "request_times": [
+            19.75
+          ],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 5.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.75,
+              "timeout": 0.25,
+              "bytes": 9
+            },
+            {
+              "clock": 19.75,
+              "timeout": 0.25,
+              "bytes": 29
+            }
+          ],
+          "response_exact": true,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        },
+        {
+          "case": "near_deadline_success",
+          "original_timeout": 20.0,
+          "managed": true,
+          "error": null,
+          "requests": 1,
+          "request_times": [
+            19.75
+          ],
+          "headers_constructed": 1,
+          "sends": [
+            {
+              "clock": 0.0,
+              "timeout": 20.0,
+              "bytes": 84
+            },
+            {
+              "clock": 19.75,
+              "timeout": 0.25,
+              "bytes": 9
+            },
+            {
+              "clock": 19.75,
+              "timeout": 0.25,
+              "bytes": 29
+            }
+          ],
+          "response_exact": true,
+          "ack": {
+            "original_value": 131072,
+            "new_value": 131072
+          }
+        }
+      ],
+      "after_count": 12,
+      "after_pass": 12,
+      "standalone_default_negative": {
+        "case": "success",
+        "original_timeout": 5.0,
+        "managed": false,
+        "error": "DenialOfServiceError",
+        "requests": 1,
+        "request_times": [
+          0.0
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "clock": 0.0,
+            "timeout": 5.0,
+            "bytes": 98
+          }
+        ],
+        "response_exact": false,
+        "ack": null
+      },
+      "status": "PASS12/12 managed models plus standalone unchanged default denial",
+      "not_network_acceptance": true
+    },
+    "sol_repair_rounds_this_assignment": 1,
+    "after_sha256": {
+      "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+      "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af"
+    },
+    "after_diff_sha256": "241eeda883061154ea0cbceaa6c0f78a6d641467e1bbf9edacce1ac376ed454d",
+    "rationale": "The old helper restored the original socket timeout after a near-expiry matching ACK and returned without another deadline check; first HEADERS could be constructed and sent at20.001. Pending ACK sends also reused the pre-recv timeout. New shared helper checks the original deadline freshly and installs min(originaltimeout,remaining) before every new ACK send and before first managed HEADERS construction and actual send; protocol encoding delay between construction/send is checked separately. Original131072/public matchingACK/defaultstandalone/caps/deadlines/assertions unchanged.",
+    "validation": "PASS static AST2/2,120 original require calls,7 identity assignments plusHOST unchanged,12/12 public-h2 in-memory controlled-clock models and unchanged standalone default denial. Actual network/Mix/browser NOT RUN."
+  }
+}

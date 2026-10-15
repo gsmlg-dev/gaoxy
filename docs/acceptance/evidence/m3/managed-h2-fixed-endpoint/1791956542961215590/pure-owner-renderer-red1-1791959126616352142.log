@@ -1,0 +1,766 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 229433, max_cases: 1
+
+
+
+  1) test H2 rejects oversized or backed blocks and unbounded queue controls before enqueue (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:85[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.header_frames/5 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0mapply(@bounds, :header_frames, [:binary.copy("x", 65_537), 1, false, from, 0])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.header_frames("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" <> ..., 1, false, {#PID<0.323.0>, #Reference<0.700248596.4024696833.66841>}, 0)
+       test/managed_proxy_renderer_test.exs:89: (test)
+
+
+
+  2) test H1 rejects improper fields and declaration amplification before rendering (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:120[0m
+     [31m** (FunctionClauseError) no function clause matching in Enum.predicate_list/3[0m
+
+     The following arguments were given to Enum.predicate_list/3:
+
+         # 1
+         :improper
+
+         # 2
+         true
+
+         # 3
+         #Function<16.28822332/1 in Gaoxy.HTTP.HTTP1.Response.validate_headers/1>
+
+     Attempted function clauses (showing 2 out of 2):
+
+         defp predicate_list([31m[h | t][0m, initial, fun)
+         defp predicate_list([31m[][0m, initial, _)
+
+     [36mcode: [0mResponse.send_chunked(exchange(), 200, [{"x", "a"} | :improper])
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:4314: Enum.predicate_list/3
+       (gaoxy_http 0.3.0) lib/gaoxy/http/http1/response.ex:253: Gaoxy.HTTP.HTTP1.Response.validate_headers/1
+       (gaoxy_http 0.3.0) lib/gaoxy/http/http1/response.ex:195: Gaoxy.HTTP.HTTP1.Response.stream_headers/3
+       (gaoxy_http 0.3.0) lib/gaoxy/http/http1/response.ex:37: Gaoxy.HTTP.HTTP1.Response.send_chunked/3
+       test/managed_proxy_renderer_test.exs:122: (test)
+
+
+
+  3) test field preflight bounds proper pairs, count, logical bytes and backing (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:47[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.fields/3 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert :ok = apply(@bounds, :fields, [[{"x", :binary.copy("a", 65_535)}], 256, 65_536])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.fields([{"x", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" <> ...}], 256, 65536)
+       test/managed_proxy_renderer_test.exs:48: (test)
+
+
+
+  4) test finite constructor count and nesting depth reject before serialization (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:30[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.iodata/2 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert {:ok, 0} = apply(@bounds, :iodata, [List.duplicate("", 4_096), 131_072])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.iodata(["", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ...], 131072)
+       test/managed_proxy_renderer_test.exs:32: (test)
+
+
+
+  5) test complete rendered external representation is separately limited (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:41[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.iodata/2 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert {:ok, 3} = apply(@bounds, :iodata, [["abc"], 15])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.iodata(["abc"], 15)
+       test/managed_proxy_renderer_test.exs:43: (test)
+
+
+
+  6) test rendered backing is bounded before conversion even for a short subbinary (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:15[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.iodata/2 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert {:error, :renderer_limit} = apply(@bounds, :iodata, [[short], 131_072])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.iodata(["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"], 131072)
+       test/managed_proxy_renderer_test.exs:19: (test)
+
+
+
+  7) test proper rendered iodata accepts exactly 64KiB and rejects excess wire bytes (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:6[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.iodata/2 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert {:ok, 65_536} = apply(@bounds, :iodata, [[:binary.copy("x", 65_536)], 81_920])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.iodata(["xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" <> ...], 81920)
+       test/managed_proxy_renderer_test.exs:7: (test)
+
+
+
+  8) test malformed iodata cannot enter a renderer traversal or raise (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:22[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.iodata/2 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0mfor value <- [nil, :unexpected, 256, -1, [256], [-1], ["x" | "tail"], [{"x"}], [<<1::1>>]] do
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.iodata(nil, 131072)
+       test/managed_proxy_renderer_test.exs:24: anonymous fn/2 in Gaoxy.HTTP.ManagedProxyRendererTest."test malformed iodata cannot enter a renderer traversal or raise"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_proxy_renderer_test.exs:23: (test)
+
+
+
+  9) test H1 rejects oversized field backing before final commitment or any write (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:113[0m
+     [31m** (KeyError) key :head_bytes not found in: %{version: :"HTTP/1.1", method: "GET"}[0m
+     [36mcode: [0massert {:error, :response_header_limit} = Response.send_chunked(exchange(), 200, headers)
+     [36mstacktrace:[0m
+       (gaoxy_http 0.3.0) lib/gaoxy/http/exchange.ex:342: Gaoxy.HTTP.Exchange.retained_bytes/1
+       (gaoxy_http 0.3.0) lib/gaoxy/http/exchange.ex:311: Gaoxy.HTTP.Exchange.send_chunks/3
+       (gaoxy_http 0.3.0) lib/gaoxy/http/http1/response.ex:39: Gaoxy.HTTP.HTTP1.Response.send_chunked/3
+       test/managed_proxy_renderer_test.exs:116: (test)
+
+
+
+ 10) test H2 compact header block produces at most four bounded queue frames (Gaoxy.HTTP.ManagedProxyRendererTest)
+     [1m[30mapps/gaoxy_http/test/managed_proxy_renderer_test.exs:68[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.HTTP.RendererBounds.header_frames/5 is undefined (module Gaoxy.HTTP.RendererBounds is not available)[0m
+     [36mcode: [0massert {:ok, entries} = apply(@bounds, :header_frames, [block, 3, true, from, -1])
+     [36mstacktrace:[0m
+       Gaoxy.HTTP.RendererBounds.header_frames("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" <> ..., 3, true, {#PID<0.332.0>, #Reference<0.700248596.4024696833.66889>}, -1)
+       test/managed_proxy_renderer_test.exs:71: (test)
+
+
+
+ 11) test compiled_bound enforces the hook without knowing endpoint configuration shape (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:135[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :unsupported_generation_endpoint} = Store.compiled_bound(denied, limits)
+     [36mleft:  [0m[31m{:error, :unsupported_generation_endpoint}[0m
+     [36mright: [0m[32m:ok[0m
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:142: (test)
+
+
+
+ 12) test direct Store activation also validates forged prepared routers (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:74[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :unsupported_generation_endpoint} =
+              GenServer.call(
+                store,
+                {:activate, current, forged, Gaoxy.Lifecycle.deadline(1000)},
+                2000
+              )
+     [36mleft:  [0m{[31m:error[0m, [31m:unsupported_generation_endpoint[0m}
+     [36mright: [0m{[32m:ok[0m, [32m#Reference<0.700248596.4024696834.57807>[0m}
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:84: (test)
+
+
+
+ 13) test invalid return values and all exception classes have one finite error on both Store paths (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:97[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :invalid_generation_endpoint} = Generation.prepare(store, routes(Checked, invalid))
+     [36mleft:  [0m{[31m:error[0m, [31m:invalid_generation_endpoint[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%Gaoxy.HTTP.Router{
+                generation: #Reference<0.700248596.4024696834.57843>,
+                routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.HTTP.GenerationEndpointValidationTest.Checked, nil}}],
+                resources: []
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:114: anonymous fn/5 in Gaoxy.HTTP.GenerationEndpointValidationTest."test invalid return values and all exception classes have one finite error on both Store paths"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/generation_endpoint_validation_test.exs:101: (test)
+
+
+
+ 14) test every compiled route is validated at preparation and activation (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:41[0m
+     [31mAssertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       first = #Reference<0.700248596.4024696834.57870>
+     The process mailbox is empty.[0m
+     [36mcode: [0massert_receive {:generation_validated, ^first}
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:52: (test)
+
+
+
+ 15) test the generation validation callback is optional and legacy endpoints still prepare and activate (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:29[0m
+     [31mAssertion with in failed[0m
+     [36mcode:  [0massert {:generation_validate, 1} in callbacks
+     [36mleft:  [0m[31m{:generation_validate, 1}[0m
+     [36mright: [0m[32m[resources: 1, init: 1, call: 2, absolute_form_scheme?: 1][0m
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:32: (test)
+
+
+
+ 16) test static compilation allows a denied endpoint but preparation and activation preserve snapshot (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:59[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :unsupported_generation_endpoint} = Generation.prepare(store, routes(Checked, :deny))
+     [36mleft:  [0m{[31m:error[0m, [31m:unsupported_generation_endpoint[0m}
+     [36mright: [0m{
+              [32m:ok[0m,
+              [32m%Gaoxy.HTTP.Router{
+                generation: #Reference<0.700248596.4024696834.57921>,
+                routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.HTTP.GenerationEndpointValidationTest.Checked, :deny}}],
+                resources: []
+              }[0m
+            }
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:64: (test)
+
+
+
+ 17) test initial routes and initial compiled routers cannot bypass validation (Gaoxy.HTTP.GenerationEndpointValidationTest)
+     [1m[30mapps/gaoxy_http/test/generation_endpoint_validation_test.exs:145[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :unsupported_generation_endpoint} = Generation.start_link(routes: routes(Checked, :deny))
+     [36mleft:  [0m{[31m:error[0m, [31m:unsupported_generation_endpoint[0m}
+     [36mright: [0m{[32m:ok[0m, [32m#PID<0.362.0>[0m}
+     [36mstacktrace:[0m
+       test/generation_endpoint_validation_test.exs:148: (test)
+
+
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+[31m17 tests, 17 failures[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 229433, max_cases: 1
+
+
+
+  1) test complete validated request, config and both pump policies each measured once (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:182[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:183: (test)
+
+
+
+  2) test evaluator rejects logical and referenced backing excess before accounting (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:246[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:247: (test)
+
+
+
+  3) test evaluator authenticates config origin and protocol against the request (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:145[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:146: (test)
+
+
+
+  4) test facade validates finite proper fields and logical backing before returning a constant (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:101[0m
+     [31mExpected exception ArgumentError but got UndefinedFunctionError (function Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes/3 is undefined or private)[0m
+     [36mcode: [0mfor fields <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes(nil, 1, 1)
+       test/managed_h2_activation_reservation_test.exs:113: anonymous fn/2 in Gaoxy.Proxy.ManagedH2ActivationReservationTest."test facade validates finite proper fields and logical backing before returning a constant"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_activation_reservation_test.exs:102: (test)
+
+
+
+  5) test evaluator requires the exact six-key input with request and config mandatory (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:122[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:123: (test)
+
+
+
+  6) test closed activation contract names every complete slot, owner, release and multiplicity (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:46[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Reservation.activation_contract/0 is undefined or private[0m
+     [36mcode: [0massert call(:activation_contract, []) == %{
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Reservation.activation_contract()
+       test/managed_h2_activation_reservation_test.exs:47: (test)
+
+[32m.[0m
+
+  7) test activation ledger sums complete bounded slots without changing historical worksheet (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:25[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes/3 is undefined or private[0m
+     [36mcode: [0massert call(:reservation_bytes, [[], 1, 1]) == 9_444_956
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes([], 1, 1)
+       test/managed_h2_activation_reservation_test.exs:43: (test)
+
+
+
+  8) test reservation facade never discounts small request or absent later values (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:65[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes/3 is undefined or private[0m
+     [36mcode: [0mfor fields <- [
+     [36mstacktrace:[0m
+       (gaoxy_proxy 0.3.0) Gaoxy.Proxy.ManagedH2Reservation.reservation_bytes([], 1, 1)
+       test/managed_h2_activation_reservation_test.exs:74: anonymous fn/4 in Gaoxy.Proxy.ManagedH2ActivationReservationTest."test reservation facade never discounts small request or absent later values"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_activation_reservation_test.exs:66: (test)
+
+
+
+  9) test metadata projection excludes separately charged initial heads and drops opaque body (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:213[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:214: (test)
+
+
+
+ 10) test checked-client projection uses typed public scope marker without serializing interiors (Gaoxy.Proxy.ManagedH2ActivationReservationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs:153[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_request/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mvalid = values()
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_request(%{protocol: :http2, fields: [{"content-length", "3"}], target: "/a?", url: "https://upstream.test/a?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_activation_reservation_test.exs:423: Gaoxy.Proxy.ManagedH2ActivationReservationTest.values/0
+       test/managed_h2_activation_reservation_test.exs:154: (test)
+
+     [33mwarning:[0m the call to list_to_pid/1 will fail with a 'badarg' exception
+     │
+ 465 │           %{response() | body: self(), stream: :erlang.list_to_pid("<0.1.0>")},
+     │ [33m                                                       ~[0m
+     │
+     └─ test/managed_h2_envelope_test.exs:465:56
+
+
+
+ 11) test H2 delegation authenticates holder and operation then consumes the captured right once (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:261[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:262: (test)
+
+
+
+ 12) test joined H2 owner death returns not_running for validation and authenticated delegation (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:340[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:341: (test)
+
+
+
+ 13) test malformed ports expanded identities backing and protocol scheme mismatch reject before admission (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:181[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:182: (test)
+
+
+
+ 14) test matching H2 identities normalize host case and effective port on both paths (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:126[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:128: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportH2IdentityTest."test matching H2 identities normalize host case and effective port on both paths"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_h2_identity_test.exs:127: (test)
+
+
+
+ 15) test authority and instance mismatches leave the authentic H2 source right untouched (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:148[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:151: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportH2IdentityTest."test authority and instance mismatches leave the authentic H2 source right untouched"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_h2_identity_test.exs:150: (test)
+
+
+
+ 16) test H1 and h2c at the same HTTP authority cannot alias on validation or delegation (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:70[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:71: (test)
+
+
+
+ 17) test both H2 protocols open a real scope and checkout the exact immutable native profile (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:30[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:33: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportH2IdentityTest."test both H2 protocols open a real scope and checkout the exact immutable native profile"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transport_h2_identity_test.exs:32: (test)
+
+
+
+ 18) test TLS H2 and TLS H1 cannot alias even with identical verified authority (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:99[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:100: (test)
+
+
+
+ 19) test a queued H2 delegation expires without consuming its source right or publishing a late grant (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:312[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:313: (test)
+
+
+
+ 20) test stale epochs wrong resources and expanded handles cannot validate or delegate H2 (Gaoxy.Proxy.UpstreamTransportH2IdentityTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:234[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, handle, preparation} = Transports.prepare(owner, source, self(), f.deadline)
+     [36mleft:  [0m{[31m:ok[0m, handle, [31mpreparation[0m}
+     [36mright: [0m{[32m:error[0m, :invalid_policy}
+     [36mstacktrace:[0m
+       test/upstream_transport_h2_identity_test.exs:373: Gaoxy.Proxy.UpstreamTransportH2IdentityTest.fixture/3
+       test/upstream_transport_h2_identity_test.exs:235: (test)
+
+
+
+ 21) test trailer policy has exactly four keys, compact lowercase token lists and finite maxima (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:388[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_trailer_policy/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0massert :ok == call(:validate_trailer_policy, [trailer_policy()])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_trailer_policy(%{dropped: ["connection"], allowed: ["x-trace"], max_bytes: 65536, max_count: 128})
+       test/managed_h2_envelope_test.exs:389: (test)
+
+
+
+ 22) test informational block count and aggregate field count have independent ceilings (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:542[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_response/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mcall(:validate_response, [%{response() | informational: info}, source().url])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_response(%HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-trace", "first"}, {"x-trace", "second"}]}, body: nil, body_used: false, url: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: "/a%2Fb", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [{103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ""}, {"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{"x", ...}, {...}, ...]}}, {103, %HTTP.Headers{headers: [{...}, ...]}}, {103, %HTTP.Headers{headers: [...]}}, {103, %HTTP.Headers{...}}, {103, ...}, {...}, ...], trailers: %HTTP.Headers{headers: []}}, "https://upstream.test/a%2Fb?")
+       test/managed_h2_envelope_test.exs:546: (test)
+
+
+
+ 23) test effective native count includes four pseudo fields and generated user-agent (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:211[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0massert {:ok, _} = call(:prepare, [config(), %{source() | fields: raw, body_mode: :none}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.473.0>, resource: #Reference<0.700248596.4024696834.59264>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59263>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:213: (test)
+
+
+
+ 24) test Response and Headers reject forged or expanded wrappers and nonstreamed bodies (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:452[0m
+     [31m** (ArgumentError) errors were found at the given arguments:
+
+       * 1st argument: not a list
+     [0m
+     [36mcode: [0m%{response() | body: self(), stream: :erlang.list_to_pid("<0.1.0>")},
+     [36mstacktrace:[0m
+       :erlang.list_to_pid("<0.1.0>")
+       test/managed_h2_envelope_test.exs:465: (test)
+
+
+
+ 25) test Response extraction preserves ordered duplicate initial fields and only bounded head (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:437[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_response/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor status <- [200, 599],
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_response(%HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-trace", "first"}, {"x-trace", "second"}]}, body: nil, body_used: false, url: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: "/a%2Fb", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}, "https://upstream.test/a%2Fb?")
+       test/managed_h2_envelope_test.exs:444: anonymous fn/4 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test Response extraction preserves ordered duplicate initial fields and only bounded head"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:438: (test)
+
+
+
+ 26) test initial heads enforce exact count and bytes before normalization or backing copy (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:517[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_response/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor fields <- [List.duplicate({"x", ""}, 256), [{"x", :binary.copy("v", 65_535)}]] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_response(%HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ""}, {"x", ...}, {...}, ...]}, body: nil, body_used: false, url: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: "/a%2Fb", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}, "https://upstream.test/a%2Fb?")
+       test/managed_h2_envelope_test.exs:520: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test initial heads enforce exact count and bytes before normalization or backing copy"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:518: (test)
+
+
+
+ 27) test compiled config is an exact canonical HTTP struct and handle (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:259[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_config/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_config(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.479.0>, resource: #Reference<0.700248596.4024696834.59321>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59320>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client})
+       test/managed_h2_envelope_test.exs:261: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test compiled config is an exact canonical HTTP struct and handle"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:260: (test)
+
+
+
+ 28) test feasible exact URL bound uses finite raw port text with a small target (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:154[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0massert {:ok, %{url: ^url}} = call(:prepare, [config(), %{source() | url: url}])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.480.0>, resource: #Reference<0.700248596.4024696834.59330>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59329>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"content-length", "3"}, {"x-trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", url: "https://upstream.test:000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000" <> ..., method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:164: (test)
+
+
+
+ 29) test exact effective limits and upload bounds reject malformed or expanded maps (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:92[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor bytes <- [1, 65_536] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.481.0>, resource: #Reference<0.700248596.4024696833.68167>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696833.68166>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"content-length", "3"}, {"x-trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 1, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:94: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test exact effective limits and upload bounds reject malformed or expanded maps"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:93: (test)
+
+
+
+ 30) test checked client uses only exact public options and matching prepared H2 policy (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:350[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_checked_client/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_checked_client(%{fetch_options: [http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, http2_reuse: true, redirect: :manual, request_mode: :proxy, decode_body: false, stream_response: true, telemetry: false], policy: %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :http2, origin: "https://upstream.test", scheme: :https, host: "upstream.test", port: 443, connect_address: {127, 0, 0, 1}, open_options: [origin: "https://upstream.test", connect_address: {127, 0, 0, 1}, http_version: :http2, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [verify: :verify_peer, depth: 4, versions: [:"tlsv1.3", :"tlsv1.2"], cacerts: [<<48, 3, 2, 1, 1>>], server_name_indication: ~c"upstream.test"], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}, transport_scope: %HTTP.ManagedTransport{coordinator: nil, latch: nil, identity: nil, ingress: nil, configuration: nil, gate: nil, max_requests: nil}}, :http2)
+       test/managed_h2_envelope_test.exs:352: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test checked client uses only exact public options and matching prepared H2 policy"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:351: (test)
+
+
+
+ 31) test submitted origin and raw target must agree including present empty query (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:126[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor {url, target} <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.483.0>, resource: #Reference<0.700248596.4024696833.68198>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696833.68197>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"content-length", "3"}, {"x-trace", "first"}, {"x-trace", "second"}], target: "/", url: "https://upstream.test/", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:134: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test submitted origin and raw target must agree including present empty query"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:127: (test)
+
+
+
+ 32) test informational aggregate bytes includes per-field32 overhead and source backing (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:561[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_response/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mcall(:validate_response, [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_response(%HTTP.Response{status: 200, status_text: "OK", ok: true, headers: %HTTP.Headers{headers: [{"x-trace", "first"}, {"x-trace", "second"}]}, body: nil, body_used: false, url: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: "/a%2Fb", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [{103, %HTTP.Headers{headers: [{"x", "vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv" <> ...}]}}], trailers: %HTTP.Headers{headers: []}}, "https://upstream.test/a%2Fb?")
+       test/managed_h2_envelope_test.exs:566: (test)
+
+
+
+ 33) test metadata status text and submitted-derived URI validate logical and backing bounds (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:485[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_response/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mcall(:validate_response, [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_response(%HTTP.Response{status: 200, status_text: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", ok: true, headers: %HTTP.Headers{headers: [{"x-trace", "first"}, {"x-trace", "second"}]}, body: nil, body_used: false, url: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: "/a%2Fb", query: "", fragment: nil}, redirected: false, type: :basic, stream: nil, http_version: :http2, informational: [], trailers: %HTTP.Headers{headers: []}}, "https://upstream.test/a%2Fb?")
+       test/managed_h2_envelope_test.exs:487: (test)
+
+
+
+ 34) test source and envelope schemas reject aliases, omissions, forged structs and arbitrary payloads (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:34[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor bad <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.486.0>, resource: #Reference<0.700248596.4024696834.59372>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59371>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, nil)
+       test/managed_h2_envelope_test.exs:585: Gaoxy.Proxy.ManagedH2EnvelopeTest.reject/2
+       test/managed_h2_envelope_test.exs:46: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test source and envelope schemas reject aliases, omissions, forged structs and arbitrary payloads"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:35: (test)
+
+
+
+ 35) test complete trailer policy fits its payload and external constructor ceilings (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:420[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_trailer_policy/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0massert :ok == call(:validate_trailer_policy, [value])
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_trailer_policy(%{dropped: ["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb" <> ..., "drop-1", "drop-2", "drop-3", "drop-4", "drop-5", "drop-6", "drop-7", "drop-8", "drop-9", "drop-10", "drop-11", "drop-12", "drop-13", "drop-14", "drop-15", "drop-16", "drop-17", "drop-18", "drop-19", "drop-20", "drop-21", "drop-22", "drop-23", "drop-24", "drop-25", "drop-26", "drop-27", "drop-28", "drop-29", "drop-30", "drop-31", "drop-32", "drop-33", "drop-34", "drop-35", "drop-36", "drop-37", "drop-38", "drop-39", "drop-40", "drop-41", "drop-42", "drop-43", "drop-44", "drop-45", "drop-46", "drop-47", "drop-48", ...], allowed: ["allowed-1aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-2aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-3aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-4aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-5aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-6aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-7aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-8aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-9aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-10aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-11aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-12aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-13aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-14aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-15aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-16aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-17aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-18aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-19aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-20aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-21aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-22aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-23aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-24aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-25aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-26aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-27aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-28aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-29aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-30aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-31aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-32aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-33aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-34aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-35aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-36aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-37aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-38aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-39aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-40aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-41aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-42aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-43aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-44aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-45aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-46aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-47aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "allowed-48aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", ...], max_bytes: 65536, max_count: 128})
+       test/managed_h2_envelope_test.exs:433: (test)
+
+
+
+ 36) test canonical config URI validates numeric authorities, ports and finite host bounds (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:301[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_config/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor origin <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_config(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "127.0.0.1", userinfo: nil, host: "127.0.0.1", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.488.0>, resource: #Reference<0.700248596.4024696834.59388>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59387>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client})
+       test/managed_h2_envelope_test.exs:309: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test canonical config URI validates numeric authorities, ports and finite host bounds"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:302: (test)
+
+
+
+ 37) test pre-Session envelope preserves raw Content-Length, duplicate order and empty query (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:17[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor protocol <- [:http2, :h2c], position <- [0, 1, 2], supplied_type <- [false, true] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.489.0>, resource: #Reference<0.700248596.4024696834.59398>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59397>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"Content-Length", "3"}, {"X-Trace", "first"}, {"x-trace", "second"}], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:23: anonymous fn/4 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test pre-Session envelope preserves raw Content-Length, duplicate order and empty query"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:18: (test)
+
+
+
+ 38) test fixed config five limits retain bounded integer timeouts and chunk size (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:329[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.validate_config/1 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor key <- Map.keys(config().limits) do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.validate_config(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.490.0>, resource: #Reference<0.700248596.4024696834.59411>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59410>}, limits: %{idle_timeout: 1, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client})
+       test/managed_h2_envelope_test.exs:335: anonymous fn/3 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test fixed config five limits retain bounded integer timeouts and chunk size"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:333: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test fixed config five limits retain bounded integer timeouts and chunk size"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:330: (test)
+
+
+
+ 39) test methods and body modes have finite enums and unsigned64 lengths (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:67[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor method <- [:get, :head, :post, :put, :patch, :delete, :options],
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.491.0>, resource: #Reference<0.700248596.4024696833.68244>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696833.68243>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :get, body_mode: :none, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:71: anonymous fn/3 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test methods and body modes have finite enums and unsigned64 lengths"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:68: (test)
+
+
+
+ 40) test URL, target and fields backing is checked before copying and admissible slices compact (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:227[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor key <- [:url, :target] do
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.492.0>, resource: #Reference<0.700248596.4024696833.68260>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696833.68259>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"content-length", "3"}, {"x-trace", "first"}, {"x-trace", "second"}], target: "/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", url: "https://upstream.test/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:585: Gaoxy.Proxy.ManagedH2EnvelopeTest.reject/2
+       test/managed_h2_envelope_test.exs:235: anonymous fn/3 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test URL, target and fields backing is checked before copying and admissible slices compact"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:231: (test)
+
+
+
+ 41) test source pair grammar rejects improper lists, nonbinary leaves and forbidden fields (Gaoxy.Proxy.ManagedH2EnvelopeTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_envelope_test.exs:187[0m
+     [31m** (UndefinedFunctionError) function Gaoxy.Proxy.ManagedH2Envelope.prepare/2 is undefined (module Gaoxy.Proxy.ManagedH2Envelope is not available)[0m
+     [36mcode: [0mfor fields <- [
+     [36mstacktrace:[0m
+       Gaoxy.Proxy.ManagedH2Envelope.prepare(%Gaoxy.Proxy.HTTP{uri: %URI{scheme: "https", authority: "upstream.test", userinfo: nil, host: "upstream.test", port: 443, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.493.0>, resource: #Reference<0.700248596.4024696834.59431>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.700248596.4024696834.59430>}, limits: %{idle_timeout: 60000, write_timeout: 5000, max_chunk_bytes: 65536, opening_timeout: 5000, max_lifetime: 30000}, upstream_protocol: :http2, client: Gaoxy.Proxy.ManagedH2Client}, %{fields: [{"x", "v"} | :improper], target: "/a%2Fb?", url: "https://upstream.test/a%2Fb?", method: :post, body_mode: {:length, 3}, max_upload_bytes: 65536, request_limits: %{max_headers: 256, max_header_bytes: 65536, max_trailers: 128, max_trailer_bytes: 65536}})
+       test/managed_h2_envelope_test.exs:585: Gaoxy.Proxy.ManagedH2EnvelopeTest.reject/2
+       test/managed_h2_envelope_test.exs:207: anonymous fn/2 in Gaoxy.Proxy.ManagedH2EnvelopeTest."test source pair grammar rejects improper lists, nonbinary leaves and forbidden fields"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/managed_h2_envelope_test.exs:188: (test)
+
+[32m.[0m
+
+ 42) test dispatches H2 requests through accepted canonical preparation without mutating policy (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:201[0m
+     [31mmatch (=) failed
+     The following variables were pinned:
+       expected = %Gaoxy.Proxy.ManagedH2Preparation.Request{url: "http://example.test/upload?", method: :post, fields: [{"x-repeat", "first"}, {"x-repeat", "second"}, {"user-agent", "gaoxy"}], body: nil, trailers: [], timeout: 1000, connect_timeout: 500, target: "/upload?"}[0m
+     [36mcode:  [0massert {:ok, ^expected, accounting} = Options.prepare_request(policy, request)
+     [36mleft:  [0m{[31m:ok[0m, [31m^expected[0m, [31maccounting[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_policy[0m}
+     [36mstacktrace:[0m
+       test/upstream_transports_options_test.exs:206: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test dispatches H2 requests through accepted canonical preparation without mutating policy"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:202: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+
+ 43) test H2 dispatch preserves finite invalid-source and backing errors without option aliases (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:231[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:error, :source_backing_limit} = Options.prepare_policy(%{source | origin: retained})
+     [36mleft:  [0m{:error, [31m:source_backing_limit[0m}
+     [36mright: [0m{:error, [32m:invalid_policy[0m}
+     [36mstacktrace:[0m
+       test/upstream_transports_options_test.exs:242: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test H2 dispatch preserves finite invalid-source and backing errors without option aliases"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:232: (test)
+
+[32m.[0m[32m.[0m
+
+ 44) test dispatches both H2 policies with exact accepted preparation and complete owner accounting (Gaoxy.Proxy.UpstreamTransports.OptionsTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transports_options_test.exs:175[0m
+     [31mmatch (=) failed
+     The following variables were pinned:
+       expected = %Gaoxy.Proxy.ManagedH2Preparation.Policy{protocol: :h2c, origin: "http://example.test", scheme: :http, host: "example.test", port: 80, connect_address: {127, 0, 0, 1}, open_options: [origin: "http://example.test", connect_address: {127, 0, 0, 1}, http_version: :h2c, tls_backend: :ssl, http2_profile: :native_v1, max_requests: 32, max_connections: 2, max_pending: 0, idle_timeout: 30000, ssl: [], socket_opts: [buffer: 8192, recbuf: 8192, sndbuf: 8192, nodelay: true, send_timeout: 30000, send_timeout_close: true]]}[0m
+     [36mcode:  [0massert {:ok, ^expected, accounting} = Options.prepare_policy(source)
+     [36mleft:  [0m{[31m:ok[0m, [31m^expected[0m, [31maccounting[0m}
+     [36mright: [0m{[32m:error[0m, [32m:invalid_policy[0m}
+     [36mstacktrace:[0m
+       test/upstream_transports_options_test.exs:180: anonymous fn/2 in Gaoxy.Proxy.UpstreamTransports.OptionsTest."test dispatches both H2 policies with exact accepted preparation and complete owner accounting"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/upstream_transports_options_test.exs:178: (test)
+
+[32m.[0m
+Finished in 1.7 seconds (1.7s async, 0.00s sync)
+[31m53 tests, 44 failures[0m

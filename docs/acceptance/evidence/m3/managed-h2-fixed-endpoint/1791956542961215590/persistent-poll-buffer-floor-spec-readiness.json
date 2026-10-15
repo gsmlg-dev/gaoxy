@@ -1,0 +1,47 @@
+{
+  "task_id": "persistent_poll_whole_buffer_floor_spec_readiness",
+  "status": "DONE",
+  "verdict": "SPEC_ARITHMETIC_PASS_READY_FOR_TESTS_ONLY_RED",
+  "assignment": "direct independent read-only revised proposal assessment",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "candidate": "poll_buffer_bytes:0; retained buffer term=max(actual buffer bytes,poll_buffer_bytes); pre-poll floor=max(oldfloor,2*b+2); Admission.update full total before recv1; floor retained over timeout/close/read/send; true idle reuse releases floor via Admission.retain(actual buffer bytes).",
+  "proof": {
+    "variables": "b=current actual buffer length>=0;F=previous floor>=0;C=other retained components unchanged during poll;M=max_buffer_bytes.",
+    "pre_recv": "Fnew=max(F,2b+2);pre_total=C+max(b,Fnew)=C+Fnew.",
+    "copy_peak": "oldbuffer b + received inputbyte1 + new appended buffer(b+1)=2b+2<=Fnew.",
+    "returned_total": "After one byte bnew=b+1, returned_total=C+max(b+1,Fnew)=C+Fnew=pre_total; no additional returned byte escapes preflight.",
+    "pending_stability": "On unchanged buffer, nextfloor=max(Fnew,2b+2)=Fnew; repeated pending/timeout polls do not oscillate lease bytes.",
+    "extent_bound": "With initial floor0 and guard b<M,2b+2<=2M;by inductionF<=2M. Actual buffer remains capped atM; service cap is unchanged.",
+    "accounting": "Floor is conservative real buffer/workspace capacity inside retained_bytes; all native re-accounting reads the same floor. No collector snapshot field is hidden or assertion reduced.",
+    "errors_and_handoff": "Rejecting preflight can return original Exchange before recv; timeout/close retain truthful floor until real terminal/idle handoff. Connection.respond retain(actualbuffer) releases request-local floor at existing genuine reuse boundary; nextExchange resets0.",
+    "transport_compatibility": "Default0 yields max(actualbuffer,0)=actualbuffer. H2/H3 delegated poll behavior remains unchanged if source implements this proposal faithfully."
+  },
+  "required_red": [
+    "Exact/one-short floor capacity before socket recv; expired/invalid/full-buffer cases no read.",
+    "Empty/nonempty append peak, exact returned lease equality, preserved incoming/pipelined bytes.",
+    "Repeated pending polls stable ledger under controlled concurrency and original deadline.",
+    "max_buffer-1 one-byte append to max then buffer_limit rejection;floor<=2max_buffer.",
+    "Plain TCP/passive TLS EOF/reset/error and cleanup joins/no replay.",
+    "Real keep-alive idle/new-request floor release while managed cleanup reserve remains until original completion.",
+    "Body/read/write/renderer restoration carries floor; H2/H3 default0 compatibility."
+  ],
+  "historical_findings": "Earlier additive b+1 proposal findings preserved in /tmp/gaoxy-h2-fixed-persistent-poll-root-candidate-spec-readiness.json; revised max-buffer floor explicitly resolves transient copy and returned-total issues.",
+  "implementation_review": "NOT RUN production source frozen",
+  "runtime_tests": "NOT RUN by reviewer; root tests-only owner assigned native_proxy_seams_test.exs",
+  "repository_edits": [],
+  "commands_finished": true,
+  "stage_acceptance": "INCOMPLETE",
+  "production_release": "NOT_GRANTED_BY_THIS_SOURCELESS_READINESS",
+  "counters": {
+    "r32_diagnostic_failed_runs": 4,
+    "fixed_sol_repairs": 16,
+    "fixed_unsuccessful_green_runs": 12,
+    "collector_sol_repairs": 15,
+    "collector_unsuccessful_green_runs": 11,
+    "matrix_failed_runs": 10,
+    "astra_recovery_rounds": 2,
+    "astra_max_rounds": 2,
+    "reviewer_repair_edits": 0
+  }
+}

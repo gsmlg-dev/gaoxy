@@ -1,0 +1,747 @@
+{
+  "task_id": "sol19_full_stage_code",
+  "assignment": "direct independent FULL STATIC CODE re-review after full SPEC PASS; read-only frozen worktree",
+  "status": "DONE",
+  "verdict": "PASS_FULL_STATIC_CODE",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "scope": "All46 owned candidate files. Forty exact unchanged file checks reused only after independent source-hash and complete Sol17 CODE proof-scope authentication; six changed files directly audited. No runtime or stage acceptance.",
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "LOCAL_REQUEST_ERROR_STATUS_LOST",
+      "prior_priority": "P2",
+      "prior_status": "FAIL_FULL_STATIC_CODE",
+      "status": "RESOLVED_STATIC_CODE",
+      "root_cause": "ManagedH2 finite normalization erased local native request_error400/413/431 before response status selection.",
+      "current_ref": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:869",
+      "evidence": "Trusted local_fail allowlists ManagedH2Client only400/413/431, discards raw third element, calls private fail/3 with :invalid_request. Generic fail/2 still normalizes first. Genuine original-code RED2 reached wire502 rather than400x2/413x2/431x4; repaired GREEN38/0 and affected141/0 retained."
+    }
+  ],
+  "source_identity": {
+    "manifest_path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-final-static-review-candidate-manifest.json",
+    "manifest_sha256_before": "d47e946ec25ce921d2d99746cfbae8fa53d8cb19ac2e1cccf8fbf1bacbf1126f",
+    "manifest_sha256_after": "d47e946ec25ce921d2d99746cfbae8fa53d8cb19ac2e1cccf8fbf1bacbf1126f",
+    "full_spec_path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/managed-h2-fixed-full-static-spec-sol19.json",
+    "full_spec_sha256_before": "0db77a5de8ac342cf35d620c7acf12fcf22fe3c11aaa5e12e0dd89ca115c493a",
+    "full_spec_sha256_after": "0db77a5de8ac342cf35d620c7acf12fcf22fe3c11aaa5e12e0dd89ca115c493a",
+    "full_spec_verdict": "PASS_FULL_STATIC_SPEC",
+    "full_spec_findings": 0,
+    "full_spec_contracts": 17,
+    "source_count": 46,
+    "source_sha256_before": {
+      "apps/gaoxy_http/lib/gaoxy/http/endpoint.ex": "47583a44f422da86bfd98054ce148328f53a79b6b11ce0d85cf2c45cf721ab93",
+      "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+      "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "6fdea8ef311ecb7a2c52e02cf11ba0a96ab90ddc3d8fc61e0197756476fad24c",
+      "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+      "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+      "apps/gaoxy_http/test/connection_poll_test.exs": "9100a928c7b44925e40f682716161d73fbb5c51071a06f8dadf2b775d5026027",
+      "apps/gaoxy_http/test/generation_endpoint_validation_test.exs": "b54a53a266622e29bcd1992bc5411593222e2208534195373196bf87f2417ccc",
+      "apps/gaoxy_http/test/http1_partial_upload_test.exs": "835144fe10c7225f645791d3225511805c5c2bfa6ec393c2a9aba170ef3657fc",
+      "apps/gaoxy_http/test/http2_network_test.exs": "a0ea219b743b651eea25098ef6bd3c2fd8631fc6faa2aa75a373a023b49884bf",
+      "apps/gaoxy_http/test/managed_proxy_renderer_test.exs": "a683ab58d90bd38f2471d1f3f6b91b5c2626b3f2005bbbcbb507a25650e4d3ea",
+      "apps/gaoxy_http/test/native_proxy_seams_test.exs": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "6a8433c9b5b309b1996d58895115f12004d53dbddc22204ac47106fbd76cd50a",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+      "apps/gaoxy_proxy/test/http_fetch_completion_test.exs": "e8e3ca047559598abc22a09adac9945a62cc0deb0d601bde05dd6d0a10558fc3",
+      "apps/gaoxy_proxy/test/http_headers_test.exs": "9163be89af3abafc34d99c5b5f8d89686e134db9149da7c0620b6b187c5d51bc",
+      "apps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs": "a3423d905ad2a23a967144238360d449d4ab67a2fad096a4bcb4b4ed8aeb941a",
+      "apps/gaoxy_proxy/test/managed_h2_client_test.exs": "6f2589b54270c71e29928e98732bc58add253bbb0beca1aa16dfa0afdff45b15",
+      "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_control_bounds_test.exs": "a6ab15aa0a25bde48ad5f513467e963beb4e9e407b18986ed65adeb73e1e6691",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs": "31b58d5187ba76a5d20abcb5bba83718d773b8e670a71bf79a381c041ba5a416",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+      "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+      "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+      "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+      "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs": "28ed90ca1a0050828c39bf334bed2b6d3838516e7087ec788af9c6febeac2741",
+      "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+      "apps/gaoxy_proxy/test/upstream_transports_options_test.exs": "586272ed6d002fd63b337ed8efa11a4cb2f0f42ebe066b066054ffb2f3f831a9",
+      "docs/acceptance/m3-managed-h2-fixed-endpoint.md": "ab45e3867b6eccb786b334da2bdd5e3440c0aa8c75ec459dea00748d233888ed",
+      "docs/designs/m3-managed-h2-fixed-endpoint.md": "093d1899893e04ad2f612c6825c5a8064419cf27615c59a6c5608af4cac52f20",
+      "docs/plans/m3-managed-h2-fixed-endpoint.md": "b7690723479fb42a8f3a1a2191b144dcb38089fbc4a6892fc353601a73950284",
+      "implement-plan.md": "3e81b7a9d67a3afba4add711d6742470cd0ee659cfbd8cb54a26fb1700ce84ee",
+      "integration/http_fetch_contract/managed_h2_fixed_browser.mjs": "aa37489913d0d7e791b92c72fdb1dd1241bcf24052a801c45c218bd93117d08a",
+      "integration/http_fetch_contract/managed_h2_fixed_browser.py": "5efd3d7451c81732773609e0956a147acf034d7fc7dae2398bd521f65e5fbd58",
+      "integration/http_fetch_contract/managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af"
+    },
+    "source_sha256_after": {
+      "apps/gaoxy_http/lib/gaoxy/http/endpoint.ex": "47583a44f422da86bfd98054ce148328f53a79b6b11ce0d85cf2c45cf721ab93",
+      "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+      "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "6fdea8ef311ecb7a2c52e02cf11ba0a96ab90ddc3d8fc61e0197756476fad24c",
+      "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+      "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+      "apps/gaoxy_http/test/connection_poll_test.exs": "9100a928c7b44925e40f682716161d73fbb5c51071a06f8dadf2b775d5026027",
+      "apps/gaoxy_http/test/generation_endpoint_validation_test.exs": "b54a53a266622e29bcd1992bc5411593222e2208534195373196bf87f2417ccc",
+      "apps/gaoxy_http/test/http1_partial_upload_test.exs": "835144fe10c7225f645791d3225511805c5c2bfa6ec393c2a9aba170ef3657fc",
+      "apps/gaoxy_http/test/http2_network_test.exs": "a0ea219b743b651eea25098ef6bd3c2fd8631fc6faa2aa75a373a023b49884bf",
+      "apps/gaoxy_http/test/managed_proxy_renderer_test.exs": "a683ab58d90bd38f2471d1f3f6b91b5c2626b3f2005bbbcbb507a25650e4d3ea",
+      "apps/gaoxy_http/test/native_proxy_seams_test.exs": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "6a8433c9b5b309b1996d58895115f12004d53dbddc22204ac47106fbd76cd50a",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+      "apps/gaoxy_proxy/test/http_fetch_completion_test.exs": "e8e3ca047559598abc22a09adac9945a62cc0deb0d601bde05dd6d0a10558fc3",
+      "apps/gaoxy_proxy/test/http_headers_test.exs": "9163be89af3abafc34d99c5b5f8d89686e134db9149da7c0620b6b187c5d51bc",
+      "apps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs": "a3423d905ad2a23a967144238360d449d4ab67a2fad096a4bcb4b4ed8aeb941a",
+      "apps/gaoxy_proxy/test/managed_h2_client_test.exs": "6f2589b54270c71e29928e98732bc58add253bbb0beca1aa16dfa0afdff45b15",
+      "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_control_bounds_test.exs": "a6ab15aa0a25bde48ad5f513467e963beb4e9e407b18986ed65adeb73e1e6691",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs": "31b58d5187ba76a5d20abcb5bba83718d773b8e670a71bf79a381c041ba5a416",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+      "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+      "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+      "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+      "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs": "28ed90ca1a0050828c39bf334bed2b6d3838516e7087ec788af9c6febeac2741",
+      "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+      "apps/gaoxy_proxy/test/upstream_transports_options_test.exs": "586272ed6d002fd63b337ed8efa11a4cb2f0f42ebe066b066054ffb2f3f831a9",
+      "docs/acceptance/m3-managed-h2-fixed-endpoint.md": "ab45e3867b6eccb786b334da2bdd5e3440c0aa8c75ec459dea00748d233888ed",
+      "docs/designs/m3-managed-h2-fixed-endpoint.md": "093d1899893e04ad2f612c6825c5a8064419cf27615c59a6c5608af4cac52f20",
+      "docs/plans/m3-managed-h2-fixed-endpoint.md": "b7690723479fb42a8f3a1a2191b144dcb38089fbc4a6892fc353601a73950284",
+      "implement-plan.md": "3e81b7a9d67a3afba4add711d6742470cd0ee659cfbd8cb54a26fb1700ce84ee",
+      "integration/http_fetch_contract/managed_h2_fixed_browser.mjs": "aa37489913d0d7e791b92c72fdb1dd1241bcf24052a801c45c218bd93117d08a",
+      "integration/http_fetch_contract/managed_h2_fixed_browser.py": "5efd3d7451c81732773609e0956a147acf034d7fc7dae2398bd521f65e5fbd58",
+      "integration/http_fetch_contract/managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af"
+    },
+    "authority_sha256_before": {
+      "AGENTS.md": "73b78c7642c2a38061aa23a36d4ffc2014e97ba7129766fbdb0d10f7e5fde9d4",
+      "mix.exs": "28ff09d55e29e3e8303f915f8deb3cf0cc6cb81d5231744ee82b74810defeae3",
+      "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+      "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+      "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459"
+    },
+    "authority_sha256_after": {
+      "AGENTS.md": "73b78c7642c2a38061aa23a36d4ffc2014e97ba7129766fbdb0d10f7e5fde9d4",
+      "mix.exs": "28ff09d55e29e3e8303f915f8deb3cf0cc6cb81d5231744ee82b74810defeae3",
+      "mix.lock": "aa9220766e1699f5cfa9d8513df95910a613cf2cbba37e8ce977267e3b68d9ab",
+      "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+      "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459"
+    },
+    "all46_match_manifest_before_and_after": true,
+    "all5_authorities_match_manifest_before_and_after": true,
+    "head_branch_stable": true,
+    "tracked_diff_sha256_before": "b83b15f390d50722430e908fd4fb55cbd8d2c75c0c22a53c0774d0a2b1b7f088",
+    "tracked_diff_sha256_after": "b83b15f390d50722430e908fd4fb55cbd8d2c75c0c22a53c0774d0a2b1b7f088",
+    "prior_code_path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/managed-h2-fixed-full-static-code-sol17.json",
+    "prior_code_sha256": "681280124dfb35523350c26bed508796c267294db186bc80b2725cda4baaff0b",
+    "prior_code_verdict": "FAIL_FULL_STATIC_CODE",
+    "prior_code_sole_finding": "LOCAL_REQUEST_ERROR_STATUS_LOST",
+    "prior_code_complete_proof_scope": "All46 source/test/docs/collector files and14 explicit review areas; sole P2 retained and resolved, no blanket prior PASS inferred.",
+    "changed_since_sol17": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "docs/acceptance/m3-managed-h2-fixed-endpoint.md",
+      "docs/designs/m3-managed-h2-fixed-endpoint.md",
+      "docs/plans/m3-managed-h2-fixed-endpoint.md",
+      "implement-plan.md"
+    ],
+    "unchanged_since_sol17_count": 40,
+    "file_reviews": [
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/endpoint.ex",
+        "sha256_before": "47583a44f422da86bfd98054ce148328f53a79b6b11ce0d85cf2c45cf721ab93",
+        "sha256_after": "47583a44f422da86bfd98054ce148328f53a79b6b11ce0d85cf2c45cf721ab93",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+        "sha256_before": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+        "sha256_after": "9e0c90640fb057108e3dcd174b56186e8194f8f06bf946cdf03bcc68ac12bf71",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/generation.ex",
+        "sha256_before": "6fdea8ef311ecb7a2c52e02cf11ba0a96ab90ddc3d8fc61e0197756476fad24c",
+        "sha256_after": "6fdea8ef311ecb7a2c52e02cf11ba0a96ab90ddc3d8fc61e0197756476fad24c",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex",
+        "sha256_before": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+        "sha256_after": "dbf43ff0ee063758125093505749c8941fe2d4bda7f4d6b9429fe907f19cca85",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "sha256_before": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+        "sha256_after": "7327d4e1fe79676efdb6ad973389a6d4e78adb8d3f1fecb747f8c180b40e2584",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex",
+        "sha256_before": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+        "sha256_after": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex",
+        "sha256_before": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+        "sha256_after": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/renderer_bounds.ex",
+        "sha256_before": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+        "sha256_after": "7e036cb514f0937ec351b94aaa83ac4e6d8ad8536bea30bcab318fc23c7815cf",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/connection_poll_test.exs",
+        "sha256_before": "9100a928c7b44925e40f682716161d73fbb5c51071a06f8dadf2b775d5026027",
+        "sha256_after": "9100a928c7b44925e40f682716161d73fbb5c51071a06f8dadf2b775d5026027",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/generation_endpoint_validation_test.exs",
+        "sha256_before": "b54a53a266622e29bcd1992bc5411593222e2208534195373196bf87f2417ccc",
+        "sha256_after": "b54a53a266622e29bcd1992bc5411593222e2208534195373196bf87f2417ccc",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/http1_partial_upload_test.exs",
+        "sha256_before": "835144fe10c7225f645791d3225511805c5c2bfa6ec393c2a9aba170ef3657fc",
+        "sha256_after": "835144fe10c7225f645791d3225511805c5c2bfa6ec393c2a9aba170ef3657fc",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/http2_network_test.exs",
+        "sha256_before": "a0ea219b743b651eea25098ef6bd3c2fd8631fc6faa2aa75a373a023b49884bf",
+        "sha256_after": "a0ea219b743b651eea25098ef6bd3c2fd8631fc6faa2aa75a373a023b49884bf",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/managed_proxy_renderer_test.exs",
+        "sha256_before": "a683ab58d90bd38f2471d1f3f6b91b5c2626b3f2005bbbcbb507a25650e4d3ea",
+        "sha256_after": "a683ab58d90bd38f2471d1f3f6b91b5c2626b3f2005bbbcbb507a25650e4d3ea",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "sha256_before": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+        "sha256_after": "3833df7d1d19819751de67ab96f41741b96e7afb19d30120110677bf674b9099",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "sha256_before": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+        "sha256_after": "1dfe2b052de4cbcb3fa6eae4288f728e0c14da147825180b677be91d8a43d36e",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex",
+        "sha256_before": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+        "sha256_after": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+        "sha256_before": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+        "sha256_after": "ecc5738b4591dc82d7804f67bca40ea3292e6155d7a437cdb00efad406e886cd",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex",
+        "sha256_before": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+        "sha256_after": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex",
+        "sha256_before": "6a8433c9b5b309b1996d58895115f12004d53dbddc22204ac47106fbd76cd50a",
+        "sha256_after": "6a8433c9b5b309b1996d58895115f12004d53dbddc22204ac47106fbd76cd50a",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex",
+        "sha256_before": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+        "sha256_after": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+        "sha256_before": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+        "sha256_after": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex",
+        "sha256_before": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+        "sha256_after": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/http_fetch_completion_test.exs",
+        "sha256_before": "e8e3ca047559598abc22a09adac9945a62cc0deb0d601bde05dd6d0a10558fc3",
+        "sha256_after": "e8e3ca047559598abc22a09adac9945a62cc0deb0d601bde05dd6d0a10558fc3",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "sha256_before": "9163be89af3abafc34d99c5b5f8d89686e134db9149da7c0620b6b187c5d51bc",
+        "sha256_after": "9163be89af3abafc34d99c5b5f8d89686e134db9149da7c0620b6b187c5d51bc",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_activation_reservation_test.exs",
+        "sha256_before": "a3423d905ad2a23a967144238360d449d4ab67a2fad096a4bcb4b4ed8aeb941a",
+        "sha256_after": "a3423d905ad2a23a967144238360d449d4ab67a2fad096a4bcb4b4ed8aeb941a",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_client_test.exs",
+        "sha256_before": "6f2589b54270c71e29928e98732bc58add253bbb0beca1aa16dfa0afdff45b15",
+        "sha256_after": "6f2589b54270c71e29928e98732bc58add253bbb0beca1aa16dfa0afdff45b15",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs",
+        "sha256_before": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+        "sha256_after": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_fixed_control_bounds_test.exs",
+        "sha256_before": "a6ab15aa0a25bde48ad5f513467e963beb4e9e407b18986ed65adeb73e1e6691",
+        "sha256_after": "a6ab15aa0a25bde48ad5f513467e963beb4e9e407b18986ed65adeb73e1e6691",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+        "sha256_before": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+        "sha256_after": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs",
+        "sha256_before": "31b58d5187ba76a5d20abcb5bba83718d773b8e670a71bf79a381c041ba5a416",
+        "sha256_after": "31b58d5187ba76a5d20abcb5bba83718d773b8e670a71bf79a381c041ba5a416",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs",
+        "sha256_before": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+        "sha256_after": "51a72d2f78481d27a000111543276fdd6211b5212d24f051af55db2ee724eddb",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs",
+        "sha256_before": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+        "sha256_after": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs",
+        "sha256_before": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+        "sha256_after": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/managed_h2_reservation_test.exs",
+        "sha256_before": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+        "sha256_after": "8f7ce34624e8f446148fcf72bb2b10a0940aa33c3c24bd83f60bc68f1d060a4b",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs",
+        "sha256_before": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+        "sha256_after": "ed8a57fec9cab080680e477f71e8cd9ef07b428aa7fa93f79b2e4cdcb0f4d34f",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "sha256_before": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+        "sha256_after": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs",
+        "sha256_before": "28ed90ca1a0050828c39bf334bed2b6d3838516e7087ec788af9c6febeac2741",
+        "sha256_after": "28ed90ca1a0050828c39bf334bed2b6d3838516e7087ec788af9c6febeac2741",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+        "sha256_before": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+        "sha256_after": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "sha256_before": "586272ed6d002fd63b337ed8efa11a4cb2f0f42ebe066b066054ffb2f3f831a9",
+        "sha256_after": "586272ed6d002fd63b337ed8efa11a4cb2f0f42ebe066b066054ffb2f3f831a9",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "docs/acceptance/m3-managed-h2-fixed-endpoint.md",
+        "sha256_before": "ab45e3867b6eccb786b334da2bdd5e3440c0aa8c75ec459dea00748d233888ed",
+        "sha256_after": "ab45e3867b6eccb786b334da2bdd5e3440c0aa8c75ec459dea00748d233888ed",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "docs/designs/m3-managed-h2-fixed-endpoint.md",
+        "sha256_before": "093d1899893e04ad2f612c6825c5a8064419cf27615c59a6c5608af4cac52f20",
+        "sha256_after": "093d1899893e04ad2f612c6825c5a8064419cf27615c59a6c5608af4cac52f20",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "docs/plans/m3-managed-h2-fixed-endpoint.md",
+        "sha256_before": "b7690723479fb42a8f3a1a2191b144dcb38089fbc4a6892fc353601a73950284",
+        "sha256_after": "b7690723479fb42a8f3a1a2191b144dcb38089fbc4a6892fc353601a73950284",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "implement-plan.md",
+        "sha256_before": "3e81b7a9d67a3afba4add711d6742470cd0ee659cfbd8cb54a26fb1700ce84ee",
+        "sha256_after": "3e81b7a9d67a3afba4add711d6742470cd0ee659cfbd8cb54a26fb1700ce84ee",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "DIRECT_CHANGED_FILE_STATIC_AUDIT"
+      },
+      {
+        "path": "integration/http_fetch_contract/managed_h2_fixed_browser.mjs",
+        "sha256_before": "aa37489913d0d7e791b92c72fdb1dd1241bcf24052a801c45c218bd93117d08a",
+        "sha256_after": "aa37489913d0d7e791b92c72fdb1dd1241bcf24052a801c45c218bd93117d08a",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "integration/http_fetch_contract/managed_h2_fixed_browser.py",
+        "sha256_before": "5efd3d7451c81732773609e0956a147acf034d7fc7dae2398bd521f65e5fbd58",
+        "sha256_after": "5efd3d7451c81732773609e0956a147acf034d7fc7dae2398bd521f65e5fbd58",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      },
+      {
+        "path": "integration/http_fetch_contract/managed_h2_fixed_qualification.py",
+        "sha256_before": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af",
+        "sha256_after": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af",
+        "hash_match_manifest": true,
+        "hash_match_before_after": true,
+        "review": "AUTHENTICATED_UNCHANGED_FULL_SOL17_CODE_CHECK_REUSE"
+      }
+    ],
+    "format_paths_count": 38,
+    "format_paths_unique": true,
+    "complete_scoped_test_paths_count": 58,
+    "complete_scoped_test_paths_unique_and_exist": true,
+    "production_reverse_patch_hunks": 2,
+    "production_reverse_reconstructed_prior_sha256": "fd77c71e781454084e5dbec5de456a51d434567f0b29d86b7cd478d19d959c52",
+    "original30_tests_reverse_reconstructed_prior_sha256": "f6fc63344779f78e7787865882f0f1b2a948668326547f2b8a813ba88625a0bb",
+    "original30_tests_byte_identical": true,
+    "new8_status_completion_cleanup_assertions_preserved": true
+  },
+  "direct_code_checks": [
+    {
+      "check": "trusted parser provenance and finite retention",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex:43",
+        "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex:70",
+        "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex:86",
+        "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex:93",
+        "apps/gaoxy_http/lib/gaoxy/http/http1/body.ex:122",
+        "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:231",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:639",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:869"
+      ],
+      "evidence": "Native H1 decoder produces the preserved statuses. local_fail permits only400/413/431 for ManagedH2Client. Raw reason is matched underscore, never passed into cancel/state/reply; private fail receives :invalid_request and one bounded integer."
+    },
+    {
+      "check": "every local_fail source and spoofed upstream reason boundary",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:622",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:676",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:764",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:800",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:815",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex:46",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:162",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:437",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:293",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:825"
+      ],
+      "evidence": "Exchange poll/body are native downstream sources. Header/trailer/renderer validators produce fixed local errors. ManagedH2 finish returns fixed upstream_trailer_limit for all nonok/rescue/catch. Public upstream Task/Stream errors normalize in adapter and Session and enter generic HTTP fail/2; remote request_error triples cannot select local400/413/431."
+    },
+    {
+      "check": "generic status mapping and nonmanaged compatibility",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:900",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:597"
+      ],
+      "evidence": "Generic ManagedH2 finite normalization precedes original status mapping (timeout/request_timeout504, unavailable503, default502). Other clients retain prior mapping. Moving pure statuscase before shared cancellation changes no IO, deadline or status rule."
+    },
+    {
+      "check": "all cleanup, unset-head, expiry and close paths",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:849",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:864",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:915"
+      ],
+      "evidence": "Shared fail/3 retains Session.cancel, demonitor flush, exact response-unset and total_expired predicates, bounded error_response and close:true. timeout handling unchanged. Final head sets upload_stopped; no invented malformed post-head upload route. NativeH2 oversized DATA remains existing reset(CANCEL), no semantic expansion."
+    },
+    {
+      "check": "preflight, accounting, identities, original binding, ACK and release order",
+      "result": "PASS_STATIC_CODE_WITH_AUTHENTICATED_UNCHANGED_REUSE",
+      "refs": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:395",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:483",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:800",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:234"
+      ],
+      "evidence": "Two-region reverse patch reproduces exact old entire HTTP.ex SHA. All envelope/owner/reservation/Session/renderer/peer/collector files are exact unchanged from complete Sol17 CODE review. Identity, preflight-before-serialization, opaque accounting multiplicities, original completion binding, full-write-before-ACK and all cleanup release paths retain authenticated checks."
+    },
+    {
+      "check": "real regression fidelity",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:655",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:687",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:703",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:722"
+      ],
+      "evidence": "Eight nativeH1 real-wire cases cover TLS-H2/h2c malformed_chunk400, body413, trailer_count431 and trailer_bytes431. Manual independent peer withholds final head; exact request pseudoheaders/hop-field rejection, authentic original completion equality/pending, token1/pins3/helper0 and reserve>=9444956 precede malformed bytes. Exact empty status wire, original completion :ok twice, normal guardian DOWN and zero-upload/no-replay/clean retirement follow. Original30 tests reconstruct byte-identically. Fixture correction replaces invalid Trailer expectation with authentic stricter pseudoheader/hop-field assertions, preserving every status/cleanup assertion."
+    },
+    {
+      "check": "four changed documents and scope/evidence honesty",
+      "result": "PASS_STATIC_CODE",
+      "refs": [
+        "docs/designs/m3-managed-h2-fixed-endpoint.md:3",
+        "docs/designs/m3-managed-h2-fixed-endpoint.md:907",
+        "docs/acceptance/m3-managed-h2-fixed-endpoint.md:3",
+        "docs/plans/m3-managed-h2-fixed-endpoint.md:799",
+        "implement-plan.md:3"
+      ],
+      "evidence": "Current execution sections and repair plan accurately retain RED1 fixture failure, genuine RED2, bounded review/GREEN results, pre-Sol19 historical135/3 and uncertain negativeTLS cleanup, complete full58 blocker and fresh post-full-review gates pending. No nativeH2/posthead expansion or completion/commit/successor claim. Existing established product scope/restrictions preserved."
+    }
+  ],
+  "retained_receipts": [
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-local-status-red1-1792006913602299860.json",
+      "sha256": "31b4baff214385965c2186fac6f7e22ad6a07e8d0ab785f9600576a774371357",
+      "status": "FAIL_FIXTURE",
+      "counts": "38 executed/8 failures/0excluded/0skipped",
+      "exit": 2,
+      "source_stable": true
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-local-status-red2-1792007163419366469.json",
+      "sha256": "52478da70b257d5de5b41c6265a8a6caa85406115aa1477667f500dc6b956fa9",
+      "status": "FAIL_GENUINE_DEFECT_RED",
+      "counts": "38 executed/8 failures/0excluded/0skipped",
+      "exit": 2,
+      "source_stable": true,
+      "evidence": "ANSI-stripped authenticated log directly confirms8 precise wire assertion failures at test:726; left502, right400x2/413x2/431x4."
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-local-status-green1-1792007571476389384.json",
+      "sha256": "e642485f161fc05ac5e597a73f7518e5f47bfc998264319a941b212619a445be",
+      "status": "PASS_RETAINED_SCOPED",
+      "counts": "38executed/0failures/0excluded/0skipped",
+      "exit": 0,
+      "source_stable": true,
+      "matched_current_owned": 42,
+      "changed_only_later_docs": 4,
+      "missing_owned": 0
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/sol19-local-status-compatibility-green1-1792007650541686642.json",
+      "sha256": "b5d9669c66b8f73539b4040abcaf460e335912d6ecca6777f7330d8f553f6409",
+      "status": "PASS_RETAINED_SCOPED",
+      "counts": "21nativeHTTP+120proxy=141executed/0failures/0excluded/0skipped",
+      "exit": 0,
+      "source_stable": true,
+      "matched_current_owned": 42,
+      "changed_only_later_docs": 4,
+      "missing_owned": 0
+    }
+  ],
+  "evidence_binding": {
+    "all4_new_receipt_and_log_hashes_authenticated": true,
+    "new_receipts_source_before_equals_after": true,
+    "all14_prior_SPEC_evidence_hashes_authenticated": true,
+    "prior_CODE3_recorded_runtime_receipt_hashes_authenticated": true,
+    "historical_matrix": "GREEN12 PASS135/fourcells; unchanged collector retains original135 identities and120 original assertions, raw/distinct1024 caps and deadlines; static reuse only.",
+    "historical_browser": "browser-sol17-1 PASS3; retained unforced exit0/profile removals and artifact bindings; static reuse only.",
+    "historical_source_boundary": "Prior matrix/browser match45of46 old owned sources, omit implement-plan.md; current40 match/fivecaptured differ/implement-plan absent. No fresh pass inferred.",
+    "new_receipt_source_boundary": "New GREENs capture46owned+AGENTS, match42currentowned including exact repaired HTTP.ex/test, differonly4laterdocs. Final manifest separately authenticates current docs; old receipts unchanged.",
+    "negative_cleanup": "UNCONFIRMED_WITH_RETAINED_FAILURE. WrongCA/name cleanup_unconfirmed retains exact reserve/token/missingService failure; forced disposal is never cleanup confirmation.",
+    "runner3": "Forward-only AGENTS.md/implement-plan.md source capture addition SHA79e03d4544252267ab68b5a0c5c232d1bf58fc5be037bdc9e00ef5a02b0477b9 authenticated in new receipts; no old receipt rewritten."
+  },
+  "gates": {
+    "full_static_spec": "PASS_FULL_STATIC_SPEC",
+    "full_static_code": "PASS_FULL_STATIC_CODE",
+    "post_review_format38": "NOT_RUN_PARENT_PENDING",
+    "post_review_strict_compile": "NOT_RUN_PARENT_PENDING",
+    "post_review_public63": "NOT_RUN_PARENT_PENDING",
+    "post_review_matrix135": "NOT_RUN_PARENT_PENDING",
+    "post_review_browser3": "NOT_RUN_PARENT_PENDING",
+    "complete_full58": "BLOCKED_UPSTREAM122",
+    "stage_acceptance": false,
+    "stage_commit": "NOT_CLEARED",
+    "successor_execution": "NOT_CLEARED",
+    "reviewer_runtime": "NOT_RUN_READ_ONLY_ASSIGNMENT"
+  },
+  "upstream_blocker": {
+    "issue": "https://github.com/gsmlg-dev/http_fetch/issues/122",
+    "status": "BLOCKED_UPSTREAM122",
+    "saved_current_check": "OPEN/latestv0.21.9/main81ad386f fixes119,not122; installedcohort0.21.4. Saved evidence statically inspected; no live recheck.",
+    "immutable_full58": "FAIL845/1 exit2/source-stable/0omissions; originalPromise expected{:error,:aborted}, actual{:error,:einval}; original abort cleanup:ok.",
+    "assertion_preserved": true,
+    "local_workaround": false,
+    "exclusion": false,
+    "retry": false,
+    "resume_condition": "Actual upstream122 repair and compatible dependency update, then unchanged complete full58 and all required fresh gates/reviews PASS.",
+    "dismissed_issue97": "No pursuit or replacement requirement."
+  },
+  "repair_counters": {
+    "fixedSol": 19,
+    "unsuccessfulGREEN": 14,
+    "collectorSol": 17,
+    "collectorUnsuccessfulGREEN": 12,
+    "matrixFailed": 11,
+    "browserFailed": 5,
+    "R32DiagnosticFailed": 5,
+    "localStatusRED": 2,
+    "localStatusFixture": 1,
+    "fullCODEFailed": 1,
+    "AstraRecovery": 2,
+    "AstraLimit": 2,
+    "review_consumed_Sol_repairs": 0,
+    "review_consumed_Astra_repairs": 0,
+    "counters_unchanged": true,
+    "astra_gate": null
+  },
+  "verification_commands": "Read-only pwd/git status/rev-parse/branch/diff, scoped rg/nl/sed/cat, Python SHA256/JSON/log authentication and in-memory reverse patches. All final acceptance scripts exit0. No Mix/format/build/network/test/peer/browser/dependency/upstream/commit commands.",
+  "incidental_reviewer_script_failures": [
+    "Initial relative Path('.') parents lookup raised IndexError; corrected to Path.cwd(), no mutation.",
+    "Exact unformatted fixture2 patch reverse encountered formatter-added blank line; reconstructed the exact formatted changed region in memory, then reverse test-only patch recovered authenticated prior test hash. No source change or implementation failure."
+  ],
+  "task_diff": {
+    "repository_writes": false,
+    "changed_files": [
+      "/tmp/gaoxy-managed-h2-fixed-full-static-code-sol19.json",
+      "/tmp/gaoxy-managed-h2-fixed-full-static-code-sol19.md"
+    ]
+  },
+  "command_shutdown_status": "All reviewer commands finished. No reviewer runtime/session/process launched or remaining; others' processes untouched. Parent reports all writers frozen and all46+5 source hashes/HEAD/diff remain unchanged.",
+  "remaining_risks": [
+    "Required full58 upstream122 unresolved; no stage closure.",
+    "Fresh post-full-review format38/strictcompile/public63/matrix135/browser3 not run.",
+    "NegativeTLS/native rejection cleanup uncertainty remains explicit.",
+    "Static CODE PASS is not runtime/VM/native-memory/hosted/publication/deployment/production acceptance."
+  ],
+  "decisions_needed": [],
+  "publication_or_stage_advancement_authorized_by_review": false
+}

@@ -1,0 +1,827 @@
+{
+  "task_id": "matrix_head_metadata_independent_deadline_recheck",
+  "status": "DONE",
+  "assignment": "direct narrow independent re-review; read-only frozen checkout and candidates",
+  "timestamp_utc": "2026-10-14T19:11:03.330921+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "31f23eb2d915ba715a1016f254b90d9805f18a1a",
+  "branch": "codex/m3-h1-resource-foundation",
+  "verdict": "PASS_NARROW_SPEC_AND_CODE_ZERO_ACTIONABLE_FINDINGS",
+  "spec_checkpoint": {
+    "path": "/tmp/gaoxy-matrix-head-metadata-independent-deadline-recheck-spec.json",
+    "sha256": "a0e96b3049aa21a284af99e004a2e48ea027c8c9b7d9f4d9c94ff1df3f71ed5e",
+    "verdict": "PASS_NARROW_SPEC_READY_FOR_CODE",
+    "written_before_code_reevaluation_and_replay": true
+  },
+  "finding_resolution": {
+    "id": "HEADER_ACK_DEADLINE_FIRST_REQUEST",
+    "status": "RESOLVED",
+    "evidence": "All new ACK-phase sends and first managed request construction/send have fresh checks against original20s deadline. Late ACK processing/finally restoration and HEADERS encoding/data drain expiry send zero requests. Near-deadline success uses remaining0.25s; no reset or relaxation."
+  },
+  "findings": [],
+  "static_checks": {
+    "AST_parse": "PASS2/2",
+    "original_require_calls": 120,
+    "new_require_calls": 2,
+    "all_original_require_AST_calls_preserved": true,
+    "matrix_identity_assignments_unchanged": [
+      "CELLS",
+      "FUNCTIONAL",
+      "CONCURRENT",
+      "CONTROLLED",
+      "BOUNDARIES",
+      "NEGATIVES",
+      "REQUIRED_CASES"
+    ],
+    "unique_required_identities": 135,
+    "HOST_AST_unchanged": true,
+    "peer_changed_existing_functions": [
+      "client_h2",
+      "independent_client",
+      "main"
+    ],
+    "peer_added_functions": [
+      "acknowledge_managed_fixed_header_list",
+      "managed_fixed_socket_timeout"
+    ],
+    "collector_changed_functions": [
+      "downstream_client",
+      "client_actor",
+      "client_result"
+    ],
+    "all_other_function_class_AST_unchanged": true,
+    "candidate_private_decoder_access": "NONE",
+    "default_standalone": "store_true defaultsFalse; managed behavior gated; standalone/public63 untouched",
+    "product_caps_and_cohorts": "No product source edits in proposal;65536/count256/257/collector1024/cohort bodies and all120 original requires unchanged"
+  },
+  "proof_scope": "Pinned public h2 bytes/events in memory through AST-extracted actual candidate functions; fake socket/controlled monotonic clock. Qualification module not imported. No network/runtime/Mix/browser. Empty-ACK negative suppresses update in wrapper solely to feed real empty SettingsAcknowledged event. Pure replay is not actual socket acceptance.",
+  "versions": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0"
+  },
+  "deadline_models": {
+    "pass": 24,
+    "count": 24,
+    "cases": [
+      {
+        "case": "initial_settings_expiry",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "initial_settings_expiry",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "initial_settings_expiry",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "pending_ack_expiry",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "pending_ack_expiry",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "pending_ack_expiry",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "late_finally_restore",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "late_finally_restore",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "late_finally_restore",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "headers_encoding_expiry",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "headers_encoding_expiry",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "headers_encoding_expiry",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "request_drain_expiry",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "request_drain_expiry",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "request_drain_expiry",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.999,
+            "timeout": 0.0010000000000012221,
+            "bytes": 9
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": false
+      },
+      {
+        "case": "ack_processing_expiry",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "ack_processing_expiry",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "ack_processing_expiry",
+        "original_timeout": null,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "success",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          0.0
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 9
+          },
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      },
+      {
+        "case": "success",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          0.0
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 9
+          },
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      },
+      {
+        "case": "success",
+        "original_timeout": null,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          0.0
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 9
+          },
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      },
+      {
+        "case": "near_deadline_success",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          19.75
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 9
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      },
+      {
+        "case": "near_deadline_success",
+        "original_timeout": 20.0,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          19.75
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 9
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      },
+      {
+        "case": "near_deadline_success",
+        "original_timeout": null,
+        "managed": true,
+        "error": null,
+        "requests": 1,
+        "request_times": [
+          19.75
+        ],
+        "headers_constructed": 1,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 20.0,
+            "bytes": 84
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 9
+          },
+          {
+            "at": 19.75,
+            "timeout": 0.25,
+            "bytes": 29
+          }
+        ],
+        "ack": {
+          "original_value": 131072,
+          "new_value": 131072
+        },
+        "response_exact": true
+      }
+    ]
+  },
+  "fail_closed_models": {
+    "pass": 4,
+    "count": 4,
+    "cases": [
+      {
+        "case": "eof",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "EOFError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "goaway",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "RuntimeError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "withheld_ack",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 84
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      },
+      {
+        "case": "empty_ack",
+        "original_timeout": 5.0,
+        "managed": true,
+        "error": "TimeoutError",
+        "requests": 0,
+        "request_times": [],
+        "headers_constructed": 0,
+        "sends": [
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 69
+          },
+          {
+            "at": 0.0,
+            "timeout": 5.0,
+            "bytes": 9
+          }
+        ],
+        "ack": null,
+        "response_exact": false
+      }
+    ]
+  },
+  "default_negative": {
+    "error": "DenialOfServiceError",
+    "requests": 1,
+    "ack": null
+  },
+  "finite_cap_models": [
+    {
+      "metadata": 131072,
+      "fields": 3971,
+      "error": null,
+      "response_exact": true
+    },
+    {
+      "metadata": 131073,
+      "fields": 3971,
+      "error": "DenialOfServiceError",
+      "response_exact": false
+    }
+  ],
+  "exact_response": "Five exact ordered collector fields :status200/content-length0/x-pad65494/x:b/y:c produce65688 metadata; all preserved on success",
+  "ACK_association_limit": "Actual matching public ChangedSetting131072->131072 proves acknowledged existing finite cap and decoder synchronization; no second-frame ACK ordinal claim.",
+  "hashes": {
+    "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_peer.py": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+    "/tmp/gaoxy-matrix-head-metadata-managed_h2_fixed_qualification.py": "3c1f4eb5975736b45d01d4f3180a41e9c5b28b861b28996dc657d74ad63864af",
+    "/tmp/gaoxy-matrix-head-metadata-fixture-proposal.diff": "241eeda883061154ea0cbceaa6c0f78a6d641467e1bbf9edacce1ac376ed454d",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "7165205443b68137de65dfd9ee7ae583927e5db95ec079208e944fa2b4ed6271",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/http_fetch_contract/managed_h2_fixed_qualification.py": "117d1139bc1204e0ab17c332ebecf022c8edb73b64ddc54953911a3513c8436d"
+  },
+  "repository_edits": [],
+  "candidate_edits": [],
+  "owned_outputs": [
+    "/tmp/gaoxy-matrix-head-metadata-independent-deadline-recheck-spec.json",
+    "/tmp/gaoxy-matrix-head-metadata-independent-deadline-recheck-code.json"
+  ],
+  "verification_commands": [
+    "PinnedPython-B inline AST/hash/120require/135identities/HOST checks and24 public-h2 controlled-clock deadline models +4 fail-closed models + standalone default denial +2 finite-cap models",
+    "Freshfinal canonical/candidate hashes and gitHEAD binding"
+  ],
+  "command_outcomes": "All final assertions PASS; final script exit0 on report creation. First independent replay attempt stopped before candidate execution on reviewer response-vector arithmetic typo; corrected to exact collector fields. Broad initial /tmp filename listing encountered unrelated permissions and was not used for any acceptance claim.",
+  "runtime_validation": "NOT RUN; Root owns actual network/full135/Mix/browser",
+  "historical_evidence": "MatrixGREEN11FAIL87/135/full58FAIL845/1 remain; upstream122 cancellation blocker separately ownedRoot",
+  "counters_retained": {
+    "fixed_sol": 18,
+    "fixed_unsuccessful_green": 14,
+    "collector_sol": 16,
+    "collector_unsuccessful_green": 12,
+    "matrix_failed_runs": 11,
+    "browser_failed_runs": 5,
+    "r32_diagnostic_failed_runs": 5,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "reviewer_sol_repair_rounds": 0
+  },
+  "astra_gate": null,
+  "commands_finished": true,
+  "command_shutdown": "All own commands synchronous and finished; no backgrounds/peer/runtime/network processes launched; others processes untouched",
+  "remaining_risks": [
+    "Actual network negatives/positives and full135matrix remain required; narrow review is not stage acceptance"
+  ],
+  "decisions_needed": [],
+  "reviewer_replay_attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 1,
+      "exact_error": "Traceback (most recent call last):\n  File \"<stdin>\", line 39, in <module>\nAssertionError",
+      "phase": "response-vector arithmetic assertion before any candidate-function execution",
+      "incorrect_response_vector": [
+        [
+          ":status",
+          "200"
+        ],
+        [
+          "x",
+          "a repeated65487"
+        ],
+        [
+          "y",
+          ""
+        ],
+        [
+          "z",
+          ""
+        ],
+        [
+          "content-length",
+          "0"
+        ]
+      ],
+      "actual_metadata": 65675,
+      "asserted_metadata": 65688,
+      "correction": "Use exact original collector ordered fields: :status200,content-length0,x-pad with65494 a bytes,x:b,y:c. Metadata65518+10+5*32=65688. No candidate/source/assertion/cap/deadline change."
+    },
+    {
+      "attempt": 2,
+      "exit_code": 0,
+      "actual_checks": "24/24 deadline models;4/4 fail-closed; default unchanged DenialOfServiceError; finite131072 exact and131073 rejection;120 original requires and135 identities unchanged"
+    }
+  ],
+  "reviewer_failure_counter_effect": "No product, matrix, collector, browser, R32 or Astra counter change; no implementation repair. ReviewerSolrepairrounds0."
+}
