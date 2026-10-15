@@ -1,6 +1,6 @@
 # Native Generation capture worksheet acceptance
 
-Status: **PASS_PURE_IMPLEMENTATION — local commit pending**. Independent SPEC then CODE PASS with no findings; fresh post-review focused **24 tests / 0 failures**. Full M3 remains IN PROGRESS.
+Status: **PASS_PURE_IMPLEMENTATION — locally committed at94d47d11fbd9040bd49e15829e8405d82fd0618d**. Independent SPEC then CODE PASS with no findings; fresh post-review focused **24 tests / 0 failures**. Full M3 remains IN PROGRESS.
 
 This slice adds `ManagedGenerationAccounting` only: a conditional source-role worksheet, original-operand cons/append preflight and finite checked-error normalization. Generation, Resources, Admission, owners, native workers and the shared validator remain unchanged. No runtime reservation or H2 Generation activation is accepted.
 
@@ -24,3 +24,9 @@ The accepted pure worksheet reports34 complete named source roles, separately pa
 Service9,444,956/group16,478,862/startup5,963,776, legacy generic pins and the H2 Generation exclusion remain unchanged. Worksheet failedGREEN1/test-contract repair1/production repair0; separate pre-RED fixture compatibility correction1 and pre-runtime adoption tooling failure1 remain recorded. Inherited group24/root events27 and exhausted Astra2/2 are preserved without reset.
 
 The next authorized stage is checked native Generation capture with its own complete constructor derivation, real public-owner/Admission barriers and finite cleanup behavior. No push/publication/deployment, production/Vault, operational certificates, public management or disabled release-artifact E2E change.
+
+Local feature custody: E3 `actual-feature-commit1.json`, parent48a71a70acbe9cb46f99b82e4062c6f5f25d9667/tree2ec620969b72757f00943a1b77531294aa627ff9,77 files/1,320,230 bytes, all actual blobs equal frozen index/disk and protected files unchanged. `gaoxy-native-generation-worksheet-closure-tail1.json` independently accepts the documentation and post-review test tail. The raw staged whitespace check FAIL for two byte-preserved archival report EOF blanks remains explicit in `precommit-whitespace1.json`; strict check for every other staged file PASS. No source assertion or runtime gate was relaxed.
+
+## Later checked-capture source finding: historical model is not a runtime bound
+
+The next-stage independent readiness review identified an additional supported constructor: `UpstreamTransports.pin_many/5` sends its own cancellation after an owner success fails its deadline/holder postcheck, then checked Store rollback sends cancellation from the original ledger. With64 started batches,65 asynchronous cancellation controls may coexist. The historical worksheet intentionally retains its64-control arithmetic and exact old assertions; it remains a conditional model and cannot qualify the current or proposed checked runtime. The runtime profile must separately budget65 and test this postcheck/rollback path before Admission activation. No historical failed evidence, source assertion or numeric constant is rewritten. This source-design finding is not an executed runtime failure; the next-stage readiness revision and same-stage constructor gate resolve it before effects are enabled.
