@@ -1,6 +1,6 @@
 # Managed H2 group Probe and owner transfer boundary — design version4
 
-Status: VERIFIED FOR LOCAL COMMIT. Independent FULL IMPLEMENTATION SPEC1 PASS (30 requirements/zero findings), CODE1 PASS (15 checks/zero findings), then fresh format, forced strict compile, complete pure141/0 and six-file real H1 compatibility70/0 all PASS; zero skips/exclusions, joined commands and stable source. Local commit follows document rebind and raw/index byte audit. H2 group/probe activation remains ACCOUNTING_NOT_READY.
+Status: DONE locally at `1f32850e4d1cfd2e5c5b913e12bb574bfe924f5b`, tree `b4185c690df1ad113618fda7b0de63ec7a0d917d`. Independent implementation SPEC30/0, CODE15/0 and fresh format/forced strict compile/pure141/0/H1 compatibility70/0 passed. Final document rebind passed after one retained docs-only failure/repair; raw disk/index audit and all131 actual feature-tree paths authenticated. No activation or publication.
 
 ## Chosen bounded result
 
@@ -203,3 +203,7 @@ Evidence is in `docs/acceptance/evidence/m3/managed-h2-group-probe-boundary/1792
 Status: VERIFIED FOR LOCAL COMMIT. Independent FULL IMPLEMENTATION SPEC1 PASS (30 requirements/zero findings), CODE1 PASS (15 checks/zero findings), then fresh format, forced strict compile, complete pure141/0 and six-file real H1 compatibility70/0 all PASS; zero skips/exclusions, joined commands and stable source. Local commit follows document rebind and raw/index byte audit. H2 group/probe activation remains ACCOUNTING_NOT_READY.
 
 `fresh-complete-green1.json` binds exact SPEC/CODE and fresh receipts/logs to implementation candidate SHA256bbc55d849a69962f2dc655d1ee9d793e89e83d1c4da1d0a0e8f9466cdd142beb. All43 original tests remain byte-identical. Implementation1/repairSol1/owner unsuccessfulGREEN1 remain unchanged; current report custodyfailure1 records an early /tmp read rejected before final reviewer delivery/adoption. It changed no source or implementation result; final report hash was authenticated after delivery. All inherited counters/failures and Astra2/2 exhausted remain retained. Only review-status/evidence documentation changed after runtime gates; production/test bytes are unchanged. The exact local commit/tree is recorded after commit, without predicting its identity here.
+
+## Actual local commit closure
+
+Actual local-commit receipt is preserved in `docs/acceptance/evidence/m3/managed-h2-group-startup-controls/1792074225504017906/predecessor-local-commit1.json`, SHA256d05f47eb1a789e07924df732958dacfed1b1710b36332142748ab485f70b6e81. It authenticates131 committed paths, protected root files unchanged and clean worktree after commit. Earlier PENDING statuses above describe pre-commit snapshots, not current state. The bounded startup controls catalog now passed FULL SPEC39/39/CODE23/23 and all fresh gates; its final documentation rebind/byte audit/local commit receipt are pending. All aggregate/recovery limitations remain.

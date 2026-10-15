@@ -1,0 +1,100 @@
+{
+  "task_id": "probe_owner_author/group-recovery-coupling-investigation1",
+  "status": "DONE",
+  "completion_scope": "assigned read-only source investigation only",
+  "assignment": "direct",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_head": "1f32850e4d1cfd2e5c5b913e12bb574bfe924f5b",
+  "verdict": {
+    "strict_transport_before_group_recovery_release_required_for_separate_ledgers": false,
+    "strict_recovery_order_implemented": false,
+    "normal_consumer_transport_before_group_order": true,
+    "group_refund_implies_transport_refund": false,
+    "source_proves_complete_memory_or_process_bound": false,
+    "h2_group_activation": "DENIED_UNCHANGED"
+  },
+  "guarantees": [
+    "Pending transport tokens remain charged against global token, per-resource32 and owned serialized payload admission.",
+    "Transport request abort helper slot requires result plus DOWN before removal; token additionally requires successful public await.",
+    "Group and transport recovery independently use the original bound completion; no original-guardian impersonation is permitted.",
+    "Nil-completion group/transport holds are retained and fail closed; no eventual cleanup guarantee is supplied.",
+    "Group configuration reconciliation cannot remove transport tokens or resource charges."
+  ],
+  "count_bounds": {
+    "group_selection_records": "G <= Gmax",
+    "group_probe_records": "P <= Pmax; sum(stored H1 probe reserves) <= probe_bytes",
+    "transport_request_tokens": "T <= Tmax; tokens per resource <=32",
+    "transport_request_abort_helpers": "Ht <= T",
+    "tracked_group_recovery_helpers": "Hg_tracked <= G+P",
+    "all_group_recovery_helpers": "Hg <= G+P+U; no configured bound on result-accepted/pre-exit U derived from source",
+    "scope": "per owner; finite fixed owner set may sum limits; no total VM/native/opaque memory claim"
+  },
+  "prebind_cases": {
+    "transport_bound_group_nil": "T may reclaim independently; G/P fails and retains charge",
+    "both_nil": "both owners retain their own holds",
+    "group_bound_transport_nil": "not produced by traced transport-first consumers when both ledgers exist; independent APIs do not create cross-owner refund authority"
+  },
+  "separate_gap": {
+    "name": "group recovery success-result accepted before helper exit",
+    "evidence": [
+      "upstream_groups.ex:750-759",
+      "upstream_groups/probe.ex:686-690",
+      "application.ex:8-12"
+    ],
+    "production_bug_claim": false,
+    "runtime_reproduced": false,
+    "strict_cross_owner_order_alone_closes_gap": false,
+    "normal_probe_exit_overlap_also_unproved": true,
+    "existing_ledger_limit_violation_proved": false
+  },
+  "recommendation": "First state the finite group-local lifecycle contract. Existing count limits apply held records, not all exiting helper processes. If a future accepted contract charges one slot through recovery-helper exit, the minimal mechanism stores authenticated result and monitor-DOWN facts and settles once after both; strict T/G release ordering is unnecessary.",
+  "unchanged_boundaries": {
+    "fixed_reserve": 9444956,
+    "hypotheses_only": [
+      "9Q/8C/4K",
+      "extra2097152",
+      "total11542108"
+    ],
+    "dismissed_upstream_issue": "http_fetch#97 not pursued or recreated",
+    "runtime_activation": false,
+    "publication": false,
+    "deployment": false,
+    "vault_or_production": false
+  },
+  "counters": {
+    "this_task_sol_repair_rounds": 0,
+    "parent_cumulative_sol": "unchanged; numeric total not supplied",
+    "astra_recovery_used": 2,
+    "astra_recovery_max": 2,
+    "astra_gate": null
+  },
+  "source_hashes_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "6b4aa4be3ab570c9698979bb464b5b8279e0aebf7b291248f593cdff7e35fd65",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "cc20a304f5d4c5930224a989a2ed65ee7f3162fe86a95276132c584e741f6473",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "9f3de8e0fc74f8ebfe358629d3e11ca6c65ee20c34fe4043b4b2770f199bcd63",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "82fa47d3cd53343b64afce1e9703defbe09dead95b8133baa86d455e604fdce1",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "a4f6e5f6a2e7212ab641c8a33bb10d177d9ffba008362945620b6aa6e402cf22",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/application.ex": "0142d4ba20e942f702fab7b99a0938d3efcbb61253cb2f102d9f8c72e6fbc708"
+  },
+  "verification": {
+    "source_reads": "PASS exit0",
+    "tests": "NOT RUN assigned source-only",
+    "build": "NOT RUN assigned source-only",
+    "runtime": "NOT RUN assigned source-only",
+    "network": "NOT RUN assigned source-only",
+    "repository_changes_by_this_task": [],
+    "all_task_commands_finished": true,
+    "artifact_validation": "PASS: JSON parse; eight stable source hashes; assigned HEAD; Markdown hash linkage; output existence",
+    "final_head": "1f32850e4d1cfd2e5c5b913e12bb574bfe924f5b"
+  },
+  "remaining_risks": [
+    "Result-before-exit helper overlap is source-derived but unmeasured.",
+    "No complete byte/process bound or nil-completion liveness proof.",
+    "Parent owns subsequent stage scope and runtime verification."
+  ],
+  "decisions_needed": [],
+  "report_markdown_sha256": "0cb0fc8726f15216d74fa67c46a639906d799b9a9bc24cde256ffe885fe94f95"
+}

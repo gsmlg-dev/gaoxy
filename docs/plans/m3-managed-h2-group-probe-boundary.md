@@ -94,7 +94,7 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test apps
 
 - [x] Record exact command/source/runtime identity/nonzero executed counts/exits and no skips/exclusions. Relevant implementation failures enter diagnosis; unrelated failures remain visible and are not repaired outside scope. Environment blocks remain BLOCKED/NOT RUN; no gate promoted to PASS by inference.
 - [x] Root updates scoped source-linked inventory/documentation with actual args6/args7/state18/state23 and args4/state5, real generated child spec and complete GenServer/from/reply wrappers; four startup semantic roots for normal/recovery, added H in each relevant H2 root and claim transfer, retained failed-child/owner recovery overlap, payload release boundaries and unchanged opaque completion. Canonical executable/source binding and maximal aggregate accounting remain separate later gates.
-- [ ] After distinct design-readiness SPEC, FULL IMPLEMENTATION SPEC, CODE and all fresh scoped gates pass, root stages only four task code/test files plus adopted scoped docs/evidence and makes one local conventional commit: `feat(proxy): stage managed H2 group probe boundaries`. No push/release/deploy. Record ACCOUNTING_NOT_READY and literal denial; H2 network/browser/real protocol acceptance NOT RUN. No inferred strict cross-owner recovery ordering.
+- [x] After distinct design-readiness SPEC, FULL IMPLEMENTATION SPEC, CODE and all fresh scoped gates pass, root stages only four task code/test files plus adopted scoped docs/evidence and makes one local conventional commit: `feat(proxy): stage managed H2 group probe boundaries`. No push/release/deploy. Record ACCOUNTING_NOT_READY and literal denial; H2 network/browser/real protocol acceptance NOT RUN. No inferred strict cross-owner recovery ordering.
 
 ## Historical compile evidence and inherited counters
 
@@ -132,3 +132,7 @@ Status: VERIFIED FOR LOCAL COMMIT. Independent FULL IMPLEMENTATION SPEC1 PASS (3
 Exact initial and fresh receipts/reviews are in `fresh-complete-green1.json`. Current report custodyfailure1 is separately retained; implementation1/repairSol1/owner unsuccessfulGREEN1 and all inherited counters/assertions are unchanged. The final local-commit checkbox intentionally awaits the actual raw/index audit and commit receipt; no SHA is predicted.
 
 Documentation repair1 closes the stale opening/current-checkpoint wording from `document-rebind-spec1.json` (FAIL retained). No production/test bytes changed; initial/fresh gate results and implementation counters remain unchanged. Renewed document SPEC/CODE rebind is required before local commit.
+
+## Actual local commit closure
+
+DONE locally at1f32850e4d1cfd2e5c5b913e12bb574bfe924f5b/treeb4185c690df1ad113618fda7b0de63ec7a0d917d. Actual receipt in the startup-controls evidence directory records audit/actual tree131 paths and clean worktree. All earlier pending local-commit statuses are historical. The startup catalog now passed FULL SPEC39/39/CODE23/23 and all fresh gates; its final documentation rebind/byte audit/local commit receipt are pending. No routine approval pause.
