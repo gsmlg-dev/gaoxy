@@ -10,21 +10,27 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
   def peer(protocol, options \\ []) do
     caller = self()
     script = Path.expand("support/managed_h2_fixed_peer.py", __DIR__)
-    args = [script, "--protocol", if(protocol == :http2, do: "tls", else: "h2c")] ++ options
+
+    args =
+      [script, "--staged-start", "--protocol", if(protocol == :http2, do: "tls", else: "h2c")] ++
+        options
 
     pid =
       spawn(fn ->
+        monitor = Process.monitor(caller)
+
         port =
           Port.open(
             {:spawn_executable, ~c"/tmp/gaoxy-m3-h2-soak-venv/bin/python"},
             [:binary, :exit_status, {:line, 2_097_152}, {:args, args}]
           )
 
-        peer_loop(port, caller, "")
+        try do
+          peer_loop(port, caller, monitor, "")
+        catch
+          kind, reason -> peer_failed(port, kind, reason, __STACKTRACE__)
+        end
       end)
-
-    ready = event(pid, "ready")
-    Process.put({__MODULE__, :observed_requests, pid}, 0)
 
     ExUnit.Callbacks.on_exit(fn ->
       if Process.alive?(pid) do
@@ -34,29 +40,81 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
       end
     end)
 
+    # TLS preparation retains its twenty-second budget plus bounded cleanup;
+    # the listener-ready handshake still has the original five-second deadline.
+    event(pid, "prepared", 25_000)
+    send(pid, {:command, %{"op" => "start"}})
+    ready = event(pid, "ready")
+    Process.put({__MODULE__, :observed_requests, pid}, 0)
     {pid, ready}
   end
 
-  defp peer_loop(port, caller, carry) do
+  defp peer_loop(port, caller, monitor, carry) do
     receive do
       {^port, {:data, {:noeol, bytes}}} ->
-        peer_loop(port, caller, carry <> bytes)
+        peer_loop(port, caller, monitor, carry <> bytes)
 
       {^port, {:data, {:eol, bytes}}} ->
         value = JSON.decode!(carry <> bytes)
         send(caller, {:fixed_h2_peer, self(), value})
-        peer_loop(port, caller, "")
+        peer_loop(port, caller, monitor, "")
 
       {^port, {:exit_status, status}} ->
         send(caller, {:fixed_h2_peer_exit, self(), status})
 
       {:command, value} ->
         true = Port.command(port, [JSON.encode!(value), "\n"])
-        peer_loop(port, caller, carry)
+        peer_loop(port, caller, monitor, carry)
+
+      {:DOWN, ^monitor, :process, ^caller, _reason} ->
+        true = Port.command(port, [JSON.encode!(%{"op" => "stop"}), "\n"])
+        peer_stopping(port, System.monotonic_time(:millisecond) + @timeout)
     after
       120_000 ->
         Port.close(port)
         exit(:peer_collector_deadline)
+    end
+  end
+
+  defp peer_failed(port, kind, reason, stacktrace) do
+    stop =
+      try do
+        if Port.info(port) != nil do
+          true = Port.command(port, [JSON.encode!(%{"op" => "stop"}), "\n"])
+        end
+
+        :ok
+      catch
+        failure_kind, failure -> {:error, {failure_kind, failure}}
+      end
+
+    # A failed stop write must not bypass observation of the owned port exit.
+    join =
+      try do
+        peer_stopping(port, System.monotonic_time(:millisecond) + @timeout)
+      catch
+        failure_kind, failure -> {:error, {failure_kind, failure}}
+      end
+
+    case {stop, join} do
+      {:ok, :ok} ->
+        :erlang.raise(kind, reason, stacktrace)
+
+      cleanup ->
+        exit({:peer_collector_failed, {kind, reason, stacktrace}, {:cleanup_failed, cleanup}})
+    end
+  end
+
+  defp peer_stopping(port, expires) do
+    remaining = max(0, expires - System.monotonic_time(:millisecond))
+
+    receive do
+      {^port, {:data, _bytes}} -> peer_stopping(port, expires)
+      {^port, {:exit_status, _status}} -> :ok
+    after
+      remaining ->
+        if Port.info(port) != nil, do: Port.close(port)
+        exit(:peer_collector_stop_deadline)
     end
   end
 
@@ -73,23 +131,34 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
     event(peer, "command")
   end
 
-  def event(peer, name) do
-    receive do
-      {:fixed_h2_peer, ^peer, %{"event" => ^name} = value} ->
-        if name == "request" do
-          key = {__MODULE__, :observed_requests, peer}
-          Process.put(key, Process.get(key, 0) + 1)
-        end
+  def event(peer, name), do: event(peer, name, @timeout)
 
-        value
+  defp event(peer, name, timeout) do
+    monitor = Process.monitor(peer)
 
-      {:fixed_h2_peer, ^peer, %{"event" => "failure"} = value} ->
-        flunk(inspect(value))
+    try do
+      receive do
+        {:fixed_h2_peer, ^peer, %{"event" => ^name} = value} ->
+          if name == "request" do
+            key = {__MODULE__, :observed_requests, peer}
+            Process.put(key, Process.get(key, 0) + 1)
+          end
 
-      {:fixed_h2_peer_exit, ^peer, status} ->
-        flunk("peer exited #{status} before #{name}")
+          value
+
+        {:fixed_h2_peer, ^peer, %{"event" => "failure"} = value} ->
+          flunk(inspect(value))
+
+        {:fixed_h2_peer_exit, ^peer, status} ->
+          flunk("peer exited #{status} before #{name}")
+
+        {:DOWN, ^monitor, :process, ^peer, reason} ->
+          flunk("peer collector exited #{inspect(reason)} before #{name}")
+      after
+        timeout -> flunk("independent peer did not report #{name}")
+      end
     after
-      @timeout -> flunk("independent peer did not report #{name}")
+      Process.demonitor(monitor, [:flush])
     end
   end
 

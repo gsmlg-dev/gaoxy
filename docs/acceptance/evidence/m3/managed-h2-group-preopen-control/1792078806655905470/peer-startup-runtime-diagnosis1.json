@@ -1,0 +1,69 @@
+{
+  "peer_sha256": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+  "script_sha256": "fd667a0957705a79c6fdd6e9cb384e9b00def5417866616163e734d64522bb15",
+  "reports": [
+    {
+      "scenario": "h2c-without-openssl",
+      "pid": 3723911,
+      "actual_exit": 1,
+      "joined": true,
+      "elapsed_ms": 291,
+      "key_pid": null,
+      "barrier_seconds": null,
+      "ready_seconds": null,
+      "stdout_before_five_second_deadline": null,
+      "events": [
+        {
+          "event": "failure",
+          "reason": "CalledProcessError(1, ['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-fixed-h2-jx9mwd_j'])"
+        }
+      ],
+      "stderr": "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", line 697, in main\n    peer.start()\n    ~~~~~~~~~~^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", line 55, in start\n    subprocess.run([\"bash\", str(root / \"scripts/generate-fixtures.sh\"), str(certdir)],\n    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=20)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/run/current-system/sw/lib/python3.13/subprocess.py\", line 577, in run\n    raise CalledProcessError(retcode, process.args,\n                             output=stdout, stderr=stderr)\nsubprocess.CalledProcessError: Command '['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-fixed-h2-jx9mwd_j']' returned non-zero exit status 1.\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", line 714, in <module>\n    sys.exit(main())\n             ~~~~^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", line 708, in main\n    peer.stop()\n    ~~~~~~~~~^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", line 292, in stop\n    self.listener.close()\n    ^^^^^^^^^^^^^\nAttributeError: 'Peer' object has no attribute 'listener'\n",
+      "causal_limit": "controlled reproduction only; original failed run timing remains unproved"
+    },
+    {
+      "scenario": "h2c-controlled-key-barrier",
+      "pid": 3727474,
+      "actual_exit": 0,
+      "joined": true,
+      "elapsed_ms": 5586,
+      "key_pid": 3731203,
+      "barrier_seconds": 0.3505407962948084,
+      "ready_seconds": 5.46272411569953,
+      "stdout_before_five_second_deadline": false,
+      "events": [
+        {
+          "event": "ready",
+          "protocol": "h2c",
+          "port": 46603,
+          "ca": "/tmp/gaoxy-fixed-h2-9trfbvds/ca.pem",
+          "cert": "/tmp/gaoxy-fixed-h2-9trfbvds/cert.pem",
+          "key": "/tmp/gaoxy-fixed-h2-9trfbvds/key.pem",
+          "identity": {
+            "python": "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+            "python_version": "3.13.15 (main, Aug  5 2026, 12:25:43) [GCC 15.2.0]",
+            "packages": {
+              "h2": "4.3.0",
+              "hpack": "4.1.0",
+              "hyperframe": "6.1.0"
+            },
+            "python_openssl": "OpenSSL 3.6.3 9 Jun 2026",
+            "openssl": "OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)\nbuilt on: Tue Jun  9 11:46:57 2026 UTC\nplatform: linux-x86_64\noptions:  bn(64,64)\ncompiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG\nOPENSSLDIR: \"/nix/store/14cfdqp8w2iw188vhjfaz2wg8pzbghp3-openssl-3.6.3/etc/ssl\"\nENGINESDIR: \"/nix/store/14cfdqp8w2iw188vhjfaz2wg8pzbghp3-openssl-3.6.3/lib/engines-3\"\nMODULESDIR: \"/nix/store/14cfdqp8w2iw188vhjfaz2wg8pzbghp3-openssl-3.6.3/lib/ossl-modules\"\nSeeding source: os-specific\nCPUINFO: OPENSSL_ia32cap=0x7ffef3ffffebffff:0x00000000021cbfbb:0x000000009c000400:0x0000000000000000:0x0000000000000000\n",
+            "source_sha256": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+            "certificate_sha256": "e016014a413d55e4fc4972ed4511c7f0d827795a981b4fcb6a7824594e0a65fc"
+          }
+        },
+        {
+          "event": "joined",
+          "accepts": 0,
+          "requests": 0,
+          "forced": 0,
+          "live": 0,
+          "failed": false
+        }
+      ],
+      "stderr": "",
+      "causal_limit": "controlled reproduction only; original failed run timing remains unproved"
+    }
+  ]
+}

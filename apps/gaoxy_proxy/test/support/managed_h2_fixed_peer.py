@@ -6,8 +6,11 @@ import gzip
 import hashlib
 import importlib.metadata
 import json
+import os
 from pathlib import Path
 import select
+import shutil
+import signal
 import socket
 import ssl
 import subprocess
@@ -22,6 +25,35 @@ import h2.events
 import h2.settings
 
 
+class Commands:
+    """One bounded stdin buffer shared by preparation and normal commands."""
+    def __init__(self):
+        self.buffer = b""
+        self.eof = False
+
+    def read(self, timeout=None):
+        deadline = None if timeout is None else time.monotonic() + timeout
+        while True:
+            if b"\n" in self.buffer:
+                line, self.buffer = self.buffer.split(b"\n", 1)
+                if len(line) > 2097152:
+                    raise RuntimeError("fixture command line bound exceeded")
+                return json.loads(line)
+            if len(self.buffer) > 2097152:
+                raise RuntimeError("fixture command line bound exceeded")
+            if self.eof:
+                if self.buffer:
+                    line, self.buffer = self.buffer, b""
+                    return json.loads(line)
+                return {"op": "stop"}
+            remaining = None if deadline is None else max(0, deadline - time.monotonic())
+            if not select.select([sys.stdin], [], [], remaining)[0]:
+                return None
+            data = os.read(sys.stdin.fileno(), 65536)
+            self.buffer += data
+            self.eof = not data
+
+
 class Peer:
     def __init__(self, protocol, manual, alpn, max_streams=None):
         self.protocol, self.manual, self.alpn = protocol, manual, alpn
@@ -32,6 +64,8 @@ class Peer:
         self.failed, self.accepts, self.requests = False, 0, 0
         self.temp = tempfile.TemporaryDirectory(prefix="gaoxy-fixed-h2-")
         self.context = None
+        self.listener, self.acceptor = None, None
+        self.joined = False
         self.deadline = time.monotonic() + 180
 
     def emit(self, event, **values):
@@ -46,21 +80,107 @@ class Peer:
         self.failed = True
         self.emit("failure", reason=repr(error)[:1024])
 
-    def start(self):
+    def preparation_command(self, args, commands, deadline):
+        # The certificate script and its descendants belong to this one group.
+        # Its scratch directories also belong to the peer, including on failure.
+        if time.monotonic() >= deadline:
+            raise TimeoutError("fixture TLS preparation timed out")
+        with tempfile.TemporaryFile(dir=self.temp.name) as output, tempfile.TemporaryFile(dir=self.temp.name) as errors:
+            process = subprocess.Popen(args, stdout=output,
+                                       stderr=errors, env=dict(os.environ, TMPDIR=self.temp.name),
+                                       start_new_session=True)
+            succeeded = False
+            try:
+                while process.poll() is None:
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise TimeoutError("fixture TLS preparation timed out")
+                    command = commands.read(min(0.05, remaining))
+                    if command is not None:
+                        if command["op"] != "stop":
+                            raise RuntimeError("fixture only accepts stop during preparation")
+                        self.stopping.set()
+                        return None
+                if time.monotonic() >= deadline:
+                    raise TimeoutError("fixture TLS preparation timed out")
+                if process.returncode:
+                    errors.seek(0)
+                    diagnostic = errors.read().decode(errors="replace")[-2048:]
+                    raise RuntimeError(f"fixture preparation command exited {process.returncode}: {diagnostic}")
+                output.seek(0)
+                result = output.read().decode()
+                succeeded = True
+                return result
+            finally:
+                if not succeeded:
+                    primary = sys.exc_info()[1]
+                    try:
+                        self.join_preparation(process)
+                    except Exception as cleanup:
+                        raise RuntimeError(f"{primary!r}; {cleanup}") from cleanup
+
+    @staticmethod
+    def join_preparation(process):
+        # Wait for the group, not just its shell leader: a descendant may still
+        # be unwinding after the leader reports its exit status.
+        for termination in (signal.SIGTERM, signal.SIGKILL):
+            try:
+                os.killpg(process.pid, termination)
+            except ProcessLookupError:
+                process.wait(timeout=2)
+                return
+            deadline = time.monotonic() + 2
+            while True:
+                process.poll()
+                try:
+                    os.killpg(process.pid, 0)
+                except ProcessLookupError:
+                    process.wait(timeout=max(0, deadline - time.monotonic()))
+                    return
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    break
+                select.select([], [], [], min(0.01, remaining))
+        raise RuntimeError("fixture preparation process group did not join")
+
+    def prepare(self, commands):
+        deadline = time.monotonic() + 20
         versions = {p: importlib.metadata.version(p) for p in ("h2", "hpack", "hyperframe")}
         if versions != {"h2": "4.3.0", "hpack": "4.1.0", "hyperframe": "6.1.0"}:
             raise RuntimeError("BLOCKED_ENV: independent peer dependencies differ from pinned requirements")
-        root = Path(__file__).resolve().parents[4]
-        certdir = Path(self.temp.name)
-        subprocess.run(["bash", str(root / "scripts/generate-fixtures.sh"), str(certdir)],
-                       check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=20)
-        ca, cert, key = [str(certdir / n) for n in ("ca.pem", "cert.pem", "key.pem")]
+        self.ca, self.cert, self.key = None, None, None
+        self.identity = {"python": sys.executable, "python_version": sys.version,
+                         "packages": versions, "python_openssl": ssl.OPENSSL_VERSION,
+                         "openssl": None, "openssl_executable": None,
+                         "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                         "certificate_sha256": None}
         if self.protocol == "tls":
+            selected = os.environ.get("OPENSSL_BIN") or "openssl"
+            openssl = shutil.which(selected)
+            if openssl is None:
+                raise RuntimeError(f"OPENSSL_BIN must select an available executable: {selected}")
+            root = Path(__file__).resolve().parents[4]
+            result = self.preparation_command(
+                ["bash", str(root / "scripts/generate-fixtures.sh"), self.temp.name], commands, deadline)
+            if result is None:
+                return False
+            metadata = self.preparation_command([openssl, "version", "-a"], commands, deadline)
+            if metadata is None:
+                return False
+            self.ca, self.cert, self.key = [str(Path(self.temp.name) / n)
+                                            for n in ("ca.pem", "cert.pem", "key.pem")]
             self.context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-            self.context.load_cert_chain(cert, key)
+            self.context.load_cert_chain(self.cert, self.key)
             self.context.set_alpn_protocols([self.alpn])
             self.context.set_servername_callback(
                 lambda sock, name, _context: setattr(sock, "_gaoxy_sni", name))
+            self.identity.update(openssl=metadata, openssl_executable=openssl,
+                                 certificate_sha256=hashlib.sha256(Path(self.cert).read_bytes()).hexdigest())
+            if time.monotonic() >= deadline:
+                raise TimeoutError("fixture TLS preparation timed out")
+        return True
+
+    def start(self):
         self.listener = socket.socket()
         self.listener.bind(("127.0.0.1", 0))
         self.listener.listen(8)
@@ -68,12 +188,8 @@ class Peer:
         self.port = self.listener.getsockname()[1]
         self.acceptor = threading.Thread(target=self.accept)
         self.acceptor.start()
-        self.emit("ready", protocol=self.protocol, port=self.port, ca=ca, cert=cert, key=key,
-                  identity={"python": sys.executable, "python_version": sys.version,
-                            "packages": versions, "python_openssl": ssl.OPENSSL_VERSION,
-                            "openssl": subprocess.check_output(["openssl", "version", "-a"], text=True),
-                            "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-                            "certificate_sha256": hashlib.sha256(Path(cert).read_bytes()).hexdigest()})
+        self.emit("ready", protocol=self.protocol, port=self.port, ca=self.ca, cert=self.cert, key=self.key,
+                  identity=self.identity)
 
     def accept(self):
         try:
@@ -288,23 +404,30 @@ class Peer:
         return True
 
     def stop(self):
+        if self.joined:
+            return
         self.stopping.set()
-        self.listener.close()
-        self.acceptor.join(2)
-        forced = 0
-        for client in self.clients.values():
-            if not client["eof"]:
-                forced += 1
-                try:
-                    client["socket"].shutdown(socket.SHUT_RDWR)
-                except OSError:
-                    pass
-        for worker in self.workers:
-            worker.join(2)
-        live = int(self.acceptor.is_alive()) + sum(w.is_alive() for w in self.workers)
+        try:
+            if self.listener is not None:
+                self.listener.close()
+            if self.acceptor is not None:
+                self.acceptor.join(2)
+            forced = 0
+            for client in self.clients.values():
+                if not client["eof"]:
+                    forced += 1
+                    try:
+                        client["socket"].shutdown(socket.SHUT_RDWR)
+                    except OSError:
+                        pass
+            for worker in self.workers:
+                worker.join(2)
+            live = int(self.acceptor is not None and self.acceptor.is_alive()) + sum(w.is_alive() for w in self.workers)
+        finally:
+            self.temp.cleanup()
+        self.joined = True
         self.emit("joined", accepts=self.accepts, requests=self.requests, forced=forced, live=live, failed=self.failed)
-        self.temp.cleanup()
-        if live or self.failed:
+        if live:
             raise RuntimeError("fixture join failed")
 
 
@@ -665,6 +788,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--protocol", choices=("tls", "h2c"))
     parser.add_argument("--manual", action="store_true")
+    parser.add_argument("--staged-start", action="store_true")
     parser.add_argument("--max-streams", type=int, choices=range(1, 129))
     parser.add_argument("--alpn", default="h2", choices=("h2", "http/1.1"))
     parser.add_argument("--client", action="store_true")
@@ -693,21 +817,27 @@ def main():
     if args.protocol is None:
         parser.error("peer requires --protocol")
     peer = Peer(args.protocol, args.manual, args.alpn, args.max_streams)
+    commands = Commands()
     try:
-        peer.start()
-        for line in sys.stdin:
-            if len(line) > 2097152:
-                raise RuntimeError("fixture command line bound exceeded")
-            if not peer.command(json.loads(line)):
-                break
-        else:
-            peer.stop()
+        if peer.prepare(commands):
+            if args.staged_start:
+                peer.emit("prepared", protocol=peer.protocol)
+                command = commands.read(5)
+                if command is None:
+                    raise TimeoutError("fixture staged listener start timed out")
+                if command["op"] == "stop":
+                    peer.stopping.set()
+                elif command["op"] != "start":
+                    raise RuntimeError("fixture requires explicit listener start")
+            if not peer.stopping.is_set():
+                peer.start()
+                while peer.command(commands.read()):
+                    pass
     except Exception as error:
         peer.fail(error)
-        if not peer.stopping.is_set():
-            peer.stop()
-        return 1
-    return 0
+    finally:
+        peer.stop()
+    return int(peer.failed)
 
 
 if __name__ == "__main__":

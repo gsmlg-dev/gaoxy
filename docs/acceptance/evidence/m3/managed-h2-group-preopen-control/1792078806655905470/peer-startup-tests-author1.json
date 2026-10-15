@@ -1,0 +1,92 @@
+{
+  "task_id": "peer_startup_python_red_draft1",
+  "status": "DRAFT_READY_FOR_ROOT_RED",
+  "assignment": "direct_source_only_test_authoring",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "b30bdb0dcbdd3bc33b3b8e06a6f691e3584e42f1",
+  "artifact": "/tmp/gaoxy-h2-peer-startup-test1.py",
+  "destination": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py",
+  "artifact_sha256": "f2844797780c6187cf60ab980af030a50c506ae1460001c6977157db0987c12a",
+  "test_count": 11,
+  "predicted_baseline": {
+    "FAIL": 10,
+    "PASS": 1,
+    "runtime": "NOT_RUN_BY_AUTHOR"
+  },
+  "tests": [
+    {
+      "name": "test_h2c_without_openssl_serves_real_h2_and_joins",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_default_tls_auto_start_keeps_real_tls_response_and_join",
+      "expected_baseline": "PASS"
+    },
+    {
+      "name": "test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_staged_h2c_prepares_without_openssl_then_real_h2",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_staged_stop_after_prepared_joins_without_listener",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_stop_during_real_certificate_preparation_joins_owned_process_group",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_eof_during_real_certificate_preparation_joins_owned_process_group",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_preparation_timeout_reports_failure_and_joins_owned_process_group",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_metadata_timeout_is_within_preparation_and_joins_owned_process_group",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_metadata_failure_preserves_primary_diagnostic_without_listener",
+      "expected_baseline": "FAIL"
+    },
+    {
+      "name": "test_preparation_executable_failure_preserves_diagnostic_and_partial_stop",
+      "expected_baseline": "FAIL"
+    }
+  ],
+  "mechanism": "Real independent subprocess peer and h2 wire/TLS exchange; FIFO barrier around real selected OpenSSL key or identity operation; actual owned child process identities; no synthetic ready or H2 success. Stop/EOF/key-timeout exercise default auto-start so baseline reaches synchronous preparation defect. Staged tests initially fail due to missing opt-in flag. Default TLS success retains compatibility baseline. h2c null values require keys retained. Metadata timeout requires all TLS subprocess work to finish before prepared.",
+  "static_checks": {
+    "python_outer_ast": "PASS",
+    "embedded_certificate_barrier_ast": "PASS",
+    "exact_11_named_tests": "PASS",
+    "session_and_198_tests_frozen_hashes": "PASS",
+    "runtime_diagnosis_receipt_hash": "PASS"
+  },
+  "input_hashes": {
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/designs/m3-managed-h2-group-preopen-control.md": "ff71c630d70db66c16c54760913f51c42655d40328f0a6f2d88e15e112324937",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/plans/m3-managed-h2-group-preopen-control.md": "2e5eb0d07685ece4f7d48665866bc311b8fcbf2c379d1ae4d0f3aea18de57d52",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1439f773d8d4eb24b029bea706810241d52d0c1ecba53c2cd2ec3291500ce8b9",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e451fe402e55b08e288593818e9c14de7a232658cd42c4c5a4d5d2fcef0fa780",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "c80d8e60c2973dbfedd78761c81ccc142f90f486268b36c03ff29746f521d99f",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs": "922c9da3880979633f18aea1f94cffcb17f3e823fe577bdb264e74d3fed022be",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/peer-startup-runtime-diagnosis1.json": "59024b040b924433de36f5cf6cbf618c6bf902433f4ccf9a1c2f3a03806144aa"
+  },
+  "counters": {
+    "implementation": 1,
+    "repairSol": 0,
+    "expectedRED": 1,
+    "failedFreshGate": 1,
+    "failedInitialGate": 0,
+    "authorStaticCheckerFailure": 1,
+    "astra": "2/2 exhausted; inherited counters retained"
+  },
+  "implementation": "NOT_STARTED; root must authenticate runtime RED and explicitly release implementation",
+  "exunit_test_ownership": "Root; obsolete /tmp collector draft not delivered for adoption",
+  "command_shutdown": "All static/read commands finished. No project/runtime/build/test commands, no runtime processes, no repository/Git/index changes, no delegation.",
+  "recorded_at_utc": "2026-10-15T16:34:18.773335+00:00"
+}

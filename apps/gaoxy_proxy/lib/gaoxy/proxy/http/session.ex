@@ -301,9 +301,9 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   @impl true
   def handle_continue(:group_open, state) do
-    now = Lifecycle.now()
-
     with {:ok, options} <- staged_group_options(state),
+         :clear <- queued_group_terminal(state),
+         now = Lifecycle.now(),
          :ok <- group_local_status(state, state.deadline, state.opening_deadline, now) do
       options = %{
         options
@@ -314,8 +314,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
       state = %{state | request_options: {:group_prepared, options}}
 
       # No caller, configuration or pure profile marker can enable this branch.
-      # Queued cancel/expired/DOWN handling is required before future gate removal:
-      # handle_continue executes before mailbox delivery.
+      # The queued-terminal check above precedes this group open boundary.
       # Keep the staged consumer compilable with the literal denial installed.
       # This public callee and its arguments are fixed, with no override.
       case apply(ManagedH2GroupBoundary, :activation, []) do
@@ -340,6 +339,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           local_group_fail(drop_group_opening(state), :unavailable)
       end
     else
+      {:handled, result} -> result
       {:error, reason} -> local_group_fail(drop_group_opening(state), reason)
     end
   end
@@ -353,6 +353,7 @@ defmodule Gaoxy.Proxy.HTTP.Session do
          true <- is_binary(state.submitted_url) and byte_size(state.submitted_url) in 1..65_536,
          true <-
            :binary.referenced_byte_size(state.submitted_url) == byte_size(state.submitted_url),
+         :clear <- queued_group_terminal(state),
          :ok <- group_local_status(state, state.deadline, state.opening_deadline, Lifecycle.now()) do
       # bind/1 preserves the original public completion and binds transport first.
       case bind(state) do
@@ -364,8 +365,36 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           fail(drop_group_opening(state), reason)
       end
     else
+      {:handled, result} -> result
       {:error, reason} -> local_group_fail(drop_group_opening(state), reason)
       _ -> local_group_fail(drop_group_opening(state), :invalid_request)
+    end
+  end
+
+  # One pending recognized event wins in mailbox order. Unmatched traffic and
+  # later terminal events stay queued; the scan itself has no size/time bound.
+  defp queued_group_terminal(state) do
+    token = state.token
+    monitors = state.monitors
+
+    receive do
+      {:"$gen_cast", event} when event in [:cancel, :expire, :consumed] ->
+        {:handled, handle_cast(event, drop_group_opening(state))}
+
+      {:gaoxy_cleanup_cancel, ^token, _reason, deadline} = event
+      when is_integer(deadline) and deadline >= -9_223_372_036_854_775_808 and
+             deadline <= @signed_max ->
+        {:handled, handle_info(event, drop_group_opening(state))}
+
+      {:DOWN, ref, :process, pid, _reason} = event
+      when is_reference(ref) and is_pid(pid) and is_map_key(monitors, ref) and
+             :erlang.map_get(ref, monitors) === pid ->
+        {:handled, handle_info(event, drop_group_opening(state))}
+
+      event when event in [:opening_expired, :total_expired] ->
+        {:handled, handle_info(event, drop_group_opening(state))}
+    after
+      0 -> :clear
     end
   end
 

@@ -1,0 +1,388 @@
+{
+  "task_id": "preopen_implementation_spec",
+  "status": "PASS",
+  "assignment": "direct_independent_read_only_FULL_implementation_SPEC_review",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "b30bdb0dcbdd3bc33b3b8e06a6f691e3584e42f1",
+  "baseline_tree": "c9717cef5296b12d27b50b058fa5e033670be5ac",
+  "branch": "codex/m3-h1-resource-foundation",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/implementation-candidate1.json",
+    "sha256": "2c8e4bb86a265a81ffd17c8a077ae6ae635c680ef51fd06b95970472c802fad3"
+  },
+  "auth": {
+    "source_hashes": 94,
+    "original_existing_tests": 47,
+    "baseline_tests_match_HEAD": true,
+    "immutable_review_documents": 7,
+    "evidence_manifest_entries": 51,
+    "all_matched": true,
+    "end_reauthentication": true
+  },
+  "review_scope": "Full actual Session diff and entire new198-test file against frozen adopted design+plan, including both real continuation wiring and ordinary callback semantics. Not helper-only or readiness review.",
+  "checks": [
+    {
+      "id": "H2GPC-IMPL-SPEC-001",
+      "status": "PASS",
+      "check": "Baseline identity and worktree match assigned HEAD/tree/branch.",
+      "evidence": "git rev-parse HEAD HEAD^{tree}; git branch --show-current"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-002",
+      "status": "PASS",
+      "check": "Candidate SHA256 matches assigned immutable candidate.",
+      "evidence": "implementation-candidate1.json"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-003",
+      "status": "PASS",
+      "check": "All94 candidate source hashes independently recomputed and matched, rechecked at review end.",
+      "evidence": "candidate.source_hashes"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-004",
+      "status": "PASS",
+      "check": "All47 pre-existing test hashes match candidate and git HEAD bytes.",
+      "evidence": "candidate.original_existing_test_hashes"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-005",
+      "status": "PASS",
+      "check": "All7 immutable design/plan/acceptance and pointer documents match candidate hashes.",
+      "evidence": "candidate.immutable_review_documents"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-006",
+      "status": "PASS",
+      "check": "All51 evidence-manifest entries match independently recomputed SHA256.",
+      "evidence": "candidate.evidence_files"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-007",
+      "status": "PASS",
+      "check": "Tests-first source authentication: RED Session equals baseline; complete new test bytes unchanged from RED to candidate.",
+      "evidence": "red1-1792079680360597465.json source_before; git show HEAD:apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-008",
+      "status": "PASS",
+      "check": "Complete RED log independently contains146 matching named assertion failures, all queued recognized-event refute_receive failures;198 tests/52 baseline passes, exit2.",
+      "evidence": "red1-1792079680360597465.log; complete-behavioral-red-authentication1.json"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-009",
+      "status": "PASS",
+      "check": "Accepted serial format and forced warnings-as-errors compile receipts/logs show exit0, joined, stable source; overlapping format remains NONACCEPTED.",
+      "evidence": "format-1792079977914592811.json; compile-1792079998981661832.json; command-sequencing-correction1.json"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-010",
+      "status": "PASS",
+      "check": "Initial complete nine-file pure gate log/receipt agrees452 executed/0 failures/skips/exclusions, exit0.",
+      "evidence": "green-1792080020277400276.json/.log"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-011",
+      "status": "PASS",
+      "check": "Initial complete36-file compatibility log/receipt agrees31+572=603 executed/0 failures/skips/exclusions, exit0.",
+      "evidence": "compatibility-1792080033401152739.json/.log"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-012",
+      "status": "PASS",
+      "check": "Initial accepted gates use candidate executable/test bytes; only4 explicitly declared post-gate documents differ, and timestamps confirm serial accepted gates.",
+      "evidence": "accepted command source_before/source_after maps; candidate.post_gate_documentation_only_updates"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-013",
+      "status": "PASS",
+      "check": "Complete production diff is Session only; one new complete198-test file, no pre-existing test changes.",
+      "evidence": "git diff -- apps; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-014",
+      "status": "PASS",
+      "check": "Open continuation validates existing staged/source shape before mailbox check.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:303-307; staged_group_options/1:743-782"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-015",
+      "status": "PASS",
+      "check": "Bind continuation validates upload, sanitized controls, nil options, original handle equality and compact submitted URL before mailbox check.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:347-357"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-016",
+      "status": "PASS",
+      "check": "One private helper called at only the two real continuation sites; no exported helper/API.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:305,356,376"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-017",
+      "status": "PASS",
+      "check": "Exactly one explicit selective receive after0; no recursion/drain or blocking receive.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:376-399"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-018",
+      "status": "PASS",
+      "check": "Cast schemas exactly $gen_cast cancel/expire/consumed; expanded or other cast payloads not matched.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:381-382"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-019",
+      "status": "PASS",
+      "check": "Cleanup schema exact arity4, pinned token equality, integer inclusive signed64 bounds; unmatched traffic never consumed then rejected.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:384-387"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-020",
+      "status": "PASS",
+      "check": "DOWN schema exact arity5/process tag, reference and PID types, ref membership AND strict stored PID identity.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:389-392"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-021",
+      "status": "PASS",
+      "check": "Opening/total timer atoms match ordinary existing authority with no invented stronger authentication.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:394-395; ordinary handlers:256-283"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-022",
+      "status": "PASS",
+      "check": "Single receive chooses oldest recognized message across clauses and returns after it; later recognized events remain pending.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:380-398; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:94-120"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-023",
+      "status": "PASS",
+      "check": "Wrong cleanup tokens/deadlines, wrong DOWN ref/PID/type/arity and unrelated traffic remain pending.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:384-395; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:21-37,65-92,339-387"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-024",
+      "status": "PASS",
+      "check": "Every recognized event drops opening aliases before dispatch to its existing matching handler.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:381-395"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-025",
+      "status": "PASS",
+      "check": "Existing callback result wrapped only for with discrimination then returned unchanged, with no new group continuation or fabricated uniform error.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:342,368,381-395"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-026",
+      "status": "PASS",
+      "check": "Cancel/authenticated DOWN retain ordinary cancellation flags/outcome and no error notification.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:67,250-253,955-956,981-984; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:248-291"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-027",
+      "status": "PASS",
+      "check": "Expire retains ordinary timeout versus request_timeout based on original total deadline.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:69-79; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:172-184,283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-028",
+      "status": "PASS",
+      "check": "Consumed retains existing success/consumed semantics and token=nil noreply, with no invented error.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:82-83,984; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:248-275"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-029",
+      "status": "PASS",
+      "check": "Service cleanup retains supplied cleanup-request deadline while original total/open deadlines stay unchanged; reasons discarded by ordinary handler.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:241-247; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:141-155,258-275"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-030",
+      "status": "PASS",
+      "check": "Opening-expired preserves stage-specific original-handler outcome: no original handle local cancellation versus captured handle upstream failure.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:264-274,945-952; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:251-256,283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-031",
+      "status": "PASS",
+      "check": "Total-expired retains ordinary group request_timeout semantics and local failure handling.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:279-283; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-032",
+      "status": "PASS",
+      "check": "Drop/check preserve original request/completion, G/T selection identities, pins, monitors, timer refs and original deadlines for existing settlement; no refund/new cleanup protocol.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:444-463,981-1008; apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:263-281"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-033",
+      "status": "PASS",
+      "check": "Open computes fresh now after mailbox check; only remaining timeout values derived from original absolute deadlines.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:305-315; group_local_status/4:712-741"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-034",
+      "status": "PASS",
+      "check": "Bind computes fresh now after mailbox check against original absolute deadlines.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:356-357"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-035",
+      "status": "PASS",
+      "check": "Group open still dominated by unchanged literal ManagedH2GroupBoundary.activation denial; no config/profile override.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:317-339; apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex:68"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-036",
+      "status": "PASS",
+      "check": "Bind guard precedes first actual UpstreamTransports/UpstreamGroups bind and ready; original completion retained, no reopen/replay.",
+      "evidence": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:358-363,1228-1239"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-037",
+      "status": "PASS",
+      "check": "Fixtures use real pure preparation/group_open_result for both http2/h2c stages, structural identities and token=nil; no owner/client/activation reply fabrication.",
+      "evidence": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:433-604"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-038",
+      "status": "PASS",
+      "check": "Independently enumerated12 macroblocks generate198 tests:28+60+30+20+16+8+8+4+2+2+16+4.",
+      "evidence": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:51-246"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-039",
+      "status": "PASS",
+      "check": "Tests compare exact returned state/result, notifications, no continuation/ready, reason nonexecution/nonretention and original public handle/completion custody.",
+      "evidence": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:248-323,390-403"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-040",
+      "status": "PASS",
+      "check": "No-message open denial and local flags/deadlines tested; no-message bind clear path verified by source only per explicit contract.",
+      "evidence": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:198-227; apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:347-370"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-041",
+      "status": "PASS",
+      "check": "Malformed stage validation precedes consumption; both protocols/stages tested. Finite receive deadlines and no arbitrary sleeps.",
+      "evidence": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs:229-246; all receive assertions"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-042",
+      "status": "PASS",
+      "check": "No new production process/timer/config callback/API, dependency patch, owner/probe/Options/Envelope/reservation/admission change.",
+      "evidence": "complete Session diff; unchanged candidate source hashes"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-043",
+      "status": "PASS",
+      "check": "Finite queued-schema scope stated honestly: no atomic cancellation barrier, constant scan bound, after-check arrivals guarantee, live no-Fetch/cleanup/runtime-memory proof.",
+      "evidence": "immutable preopen design Finite behavior and implementation choice; Tests and acceptance"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-044",
+      "status": "PASS",
+      "check": "Current and predecessor counters preserved separately; expected RED/static checker/root overlap distinct from Sol repairs; Astra2/2 exhausted.",
+      "evidence": "candidate.current_slice_counters; candidate.predecessor_counters; initial-complete-green1.json"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-045",
+      "status": "PASS",
+      "check": "Future-package source recommendation remains NOT RUN/unadopted arithmetic and is not implementation/acceptance evidence for this slice.",
+      "evidence": "next-package-md:1-15; next-package-json; unchanged fixed reservation sources"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-046",
+      "status": "PASS",
+      "check": "No assertion weakening/skips/exclusions or legacy evidence rewriting used to obtain GREEN; source+test authentication remains intact.",
+      "evidence": "RED versus candidate new test hash;47 baseline tests; accepted logs"
+    },
+    {
+      "id": "H2GPC-IMPL-SPEC-047",
+      "status": "PASS",
+      "check": "FULL CODE, fresh prescribed gates, final docs/byte audit and actual local commit remain pending; initial evidence is not presented as completion of these gates.",
+      "evidence": "immutable preopen plan steps6-8; initial-complete-green1.json remaining"
+    }
+  ],
+  "check_count": 47,
+  "passed": 47,
+  "failed": 0,
+  "actionable_findings": [],
+  "root_cause_and_result": "Continuation-before-ordinary-mailbox ordering is addressed by one finite private queued-terminal selective receive after staged shape validation at both group continuations. Seven recognized control schemas retain existing handler semantics after alias drop. Literal activation denial remains unchanged.",
+  "authenticated_prior_execution": {
+    "runtime_executed_by_reviewer": false,
+    "RED": {
+      "tests": 198,
+      "failures": 146,
+      "baseline_passes": 52,
+      "exit": 2,
+      "failure_names_and_assertions_independently_matched": 146
+    },
+    "initial_serial_format_exit": 0,
+    "initial_forced_strict_compile_exit": 0,
+    "initial_pure": {
+      "files": 9,
+      "tests": 452,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "exit": 0
+    },
+    "initial_compatibility": {
+      "files": 36,
+      "tests": 603,
+      "failures": 0,
+      "skips": 0,
+      "exclusions": 0,
+      "exit": 0
+    },
+    "root_overlap": "retained NONACCEPTED; later serial check authenticated"
+  },
+  "reviewer_changes": [
+    "/tmp/gaoxy-h2-group-preopen-control-implementation-spec1.json"
+  ],
+  "current_slice_counters": {
+    "implementation": 1,
+    "repairSol": 0,
+    "expectedRED": 1,
+    "failedInitialGate": 0,
+    "failedReview": 0,
+    "author_static_checker_failure": 1,
+    "root_command_overlap": 1,
+    "root_command_overlap_repair": 1,
+    "astra": "2/2 exhausted"
+  },
+  "predecessor_counters": {
+    "implementation": 1,
+    "repairSol": 2,
+    "unsuccessful_GREEN": 1,
+    "metadata_failed": 1,
+    "initial_complete_gate_failures": 2,
+    "expected_RED": 1,
+    "readiness_failedSPEC": 1,
+    "author_checker_failure": 1,
+    "documentation_revision": 1,
+    "astra": "2/2 exhausted",
+    "finalization_audit_failure": 1,
+    "finalization_audit_repair": 1
+  },
+  "sol_repair_rounds_this_review": 0,
+  "received_astra_counter": "2/2 exhausted",
+  "astra_gate": null,
+  "command_shutdown": "All reviewer commands finished with no active command/session. No runtime/test/build/format/network command or Git mutation, repo edit or delegation performed. Authenticated root execution receipts record joined commands.",
+  "limits": [
+    "PASS applies to FULL implementation SPEC review only.",
+    "Finite queued-message transition behavior under gated group.",
+    "No-message bind source-reviewed only, as prescribed.",
+    "No assertion of live owner authority, cleanup success, no-Fetch causality, mailbox scan-time cap, atomic barrier, runtime/native/private memory bound or third Astra permission.",
+    "Do not pursue or recreate dismissed http_fetch#97.",
+    "Future accounting/activation recommendation is source-only; fixed9444956 and ACCOUNTING_NOT_READY unchanged."
+  ],
+  "remaining": [
+    "Independent FULL CODE review.",
+    "Fresh prescribed format/forced strict compile/pure and compatibility gates after both reviews.",
+    "Final documentation rebind/raw-index byte audit/local commit by root."
+  ],
+  "decisions_needed": [],
+  "recorded_at_utc": "2026-10-15T16:08:16.054418+00:00"
+}

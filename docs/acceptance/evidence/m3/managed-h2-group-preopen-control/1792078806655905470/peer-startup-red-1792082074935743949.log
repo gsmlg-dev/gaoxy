@@ -1,0 +1,224 @@
+test_default_tls_auto_start_keeps_real_tls_response_and_join (__main__.PeerStartupTest.test_default_tls_auto_start_keeps_real_tls_response_and_join) ... ok
+test_eof_during_real_certificate_preparation_joins_owned_process_group (__main__.PeerStartupTest.test_eof_during_real_certificate_preparation_joins_owned_process_group) ... FAIL
+test_h2c_without_openssl_serves_real_h2_and_joins (__main__.PeerStartupTest.test_h2c_without_openssl_serves_real_h2_and_joins) ... FAIL
+test_metadata_failure_preserves_primary_diagnostic_without_listener (__main__.PeerStartupTest.test_metadata_failure_preserves_primary_diagnostic_without_listener) ... FAIL
+test_metadata_timeout_is_within_preparation_and_joins_owned_process_group (__main__.PeerStartupTest.test_metadata_timeout_is_within_preparation_and_joins_owned_process_group) ... FAIL
+test_preparation_executable_failure_preserves_diagnostic_and_partial_stop (__main__.PeerStartupTest.test_preparation_executable_failure_preserves_diagnostic_and_partial_stop) ... FAIL
+test_preparation_timeout_reports_failure_and_joins_owned_process_group (__main__.PeerStartupTest.test_preparation_timeout_reports_failure_and_joins_owned_process_group) ... FAIL
+test_staged_h2c_prepares_without_openssl_then_real_h2 (__main__.PeerStartupTest.test_staged_h2c_prepares_without_openssl_then_real_h2) ... FAIL
+test_staged_stop_after_prepared_joins_without_listener (__main__.PeerStartupTest.test_staged_stop_after_prepared_joins_without_listener) ... FAIL
+test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls (__main__.PeerStartupTest.test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls) ... FAIL
+test_stop_during_real_certificate_preparation_joins_owned_process_group (__main__.PeerStartupTest.test_stop_during_real_certificate_preparation_joins_owned_process_group) ... FAIL
+
+======================================================================
+FAIL: test_eof_during_real_certificate_preparation_joins_owned_process_group (__main__.PeerStartupTest.test_eof_during_real_certificate_preparation_joins_owned_process_group)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 377, in test_eof_during_real_certificate_preparation_joins_owned_process_group
+    self.assert_cancel_preparation(True)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 366, in assert_cancel_preparation
+    self.assert_joined(peer)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 238, in assert_joined
+    joined = peer.event("joined")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 141, in event
+    raise AssertionError(f"missing real peer event {name}: {''.join(self.lines)}") from None
+AssertionError: missing real peer event joined: 
+
+======================================================================
+FAIL: test_h2c_without_openssl_serves_real_h2_and_joins (__main__.PeerStartupTest.test_h2c_without_openssl_serves_real_h2_and_joins)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 288, in test_h2c_without_openssl_serves_real_h2_and_joins
+    ready = peer.event("ready")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 147, in event
+    raise AssertionError(f"peer failed before {name}: {value}")
+AssertionError: peer failed before ready: {'event': 'failure', 'reason': "CalledProcessError(1, ['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-peer-startup-regression-7u9e0tf_/peer-0/owned/gaoxy-fixed-h2-fcbmn2go'])"}
+
+======================================================================
+FAIL: test_metadata_failure_preserves_primary_diagnostic_without_listener (__main__.PeerStartupTest.test_metadata_failure_preserves_primary_diagnostic_without_listener)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 419, in test_metadata_failure_preserves_primary_diagnostic_without_listener
+    self.assertIn("fixture metadata identity failure", failure["reason"])
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'fixture metadata identity failure' not found in "CalledProcessError(73, ['openssl', 'version', '-a'])"
+
+======================================================================
+FAIL: test_metadata_timeout_is_within_preparation_and_joins_owned_process_group (__main__.PeerStartupTest.test_metadata_timeout_is_within_preparation_and_joins_owned_process_group)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 394, in test_metadata_timeout_is_within_preparation_and_joins_owned_process_group
+    identities = barrier.entered()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 85, in entered
+    raise AssertionError("real certificate key operation did not reach barrier")
+AssertionError: real certificate key operation did not reach barrier
+
+======================================================================
+FAIL: test_preparation_executable_failure_preserves_diagnostic_and_partial_stop (__main__.PeerStartupTest.test_preparation_executable_failure_preserves_diagnostic_and_partial_stop)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 428, in test_preparation_executable_failure_preserves_diagnostic_and_partial_stop
+    self.assert_joined(peer, failed=True)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 238, in assert_joined
+    joined = peer.event("joined")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 145, in event
+    raise AssertionError(f"peer exited before {name}: {''.join(self.lines)}")
+AssertionError: peer exited before joined: {"event":"failure","reason":"CalledProcessError(1, ['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-peer-startup-regression-eddm4goy/peer-0/owned/gaoxy-fixed-h2-iri813ap'])"}
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 697, in main
+    peer.start()
+    ~~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 55, in start
+    subprocess.run(["bash", str(root / "scripts/generate-fixtures.sh"), str(certdir)],
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=20)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/run/current-system/sw/lib/python3.13/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-peer-startup-regression-eddm4goy/peer-0/owned/gaoxy-fixed-h2-iri813ap']' returned non-zero exit status 1.
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 714, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 708, in main
+    peer.stop()
+    ~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 292, in stop
+    self.listener.close()
+    ^^^^^^^^^^^^^
+AttributeError: 'Peer' object has no attribute 'listener'
+
+
+======================================================================
+FAIL: test_preparation_timeout_reports_failure_and_joins_owned_process_group (__main__.PeerStartupTest.test_preparation_timeout_reports_failure_and_joins_owned_process_group)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 385, in test_preparation_timeout_reports_failure_and_joins_owned_process_group
+    self.assert_joined(peer, failed=True)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 238, in assert_joined
+    joined = peer.event("joined")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 145, in event
+    raise AssertionError(f"peer exited before {name}: {''.join(self.lines)}")
+AssertionError: peer exited before joined: {"event":"failure","reason":"TimeoutExpired(['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-peer-startup-regression-ycsd1afm/peer-0/owned/gaoxy-fixed-h2-hjpehti5'], 20)"}
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 697, in main
+    peer.start()
+    ~~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 55, in start
+    subprocess.run(["bash", str(root / "scripts/generate-fixtures.sh"), str(certdir)],
+    ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                   check=True, stdout=subprocess.DEVNULL, stderr=subprocess.PIPE, timeout=20)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/run/current-system/sw/lib/python3.13/subprocess.py", line 556, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/run/current-system/sw/lib/python3.13/subprocess.py", line 1222, in communicate
+    stdout, stderr = self._communicate(input, endtime, timeout)
+                     ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/run/current-system/sw/lib/python3.13/subprocess.py", line 2155, in _communicate
+    self._check_timeout(endtime, orig_timeout, stdout, stderr)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/run/current-system/sw/lib/python3.13/subprocess.py", line 1269, in _check_timeout
+    raise TimeoutExpired(
+    ...<2 lines>...
+            stderr=b''.join(stderr_seq) if stderr_seq else None)
+subprocess.TimeoutExpired: Command '['bash', '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/scripts/generate-fixtures.sh', '/tmp/gaoxy-peer-startup-regression-ycsd1afm/peer-0/owned/gaoxy-fixed-h2-hjpehti5']' timed out after 20 seconds
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 714, in <module>
+    sys.exit(main())
+             ~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 708, in main
+    peer.stop()
+    ~~~~~~~~~^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py", line 292, in stop
+    self.listener.close()
+    ^^^^^^^^^^^^^
+AttributeError: 'Peer' object has no attribute 'listener'
+
+
+======================================================================
+FAIL: test_staged_h2c_prepares_without_openssl_then_real_h2 (__main__.PeerStartupTest.test_staged_h2c_prepares_without_openssl_then_real_h2)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 337, in test_staged_h2c_prepares_without_openssl_then_real_h2
+    prepared = peer.event("prepared")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 145, in event
+    raise AssertionError(f"peer exited before {name}: {''.join(self.lines)}")
+AssertionError: peer exited before prepared: usage: managed_h2_fixed_peer.py [-h] [--protocol {tls,h2c}] [--manual]
+                                [--max-streams {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128}]
+                                [--alpn {h2,http/1.1}] [--client]
+                                [--managed-fixed-client] [--events]
+                                [--controlled] [--allow-incomplete]
+                                [--downstream {h1,h2}] [--port PORT]
+                                [--target TARGET]
+                                [--method {GET,HEAD,POST,PUT,PATCH,OPTIONS,DELETE}]
+                                [--body64 BODY64]
+                                [--headers-json HEADERS_JSON] [--tls]
+                                [--ca CA] [--hostname HOSTNAME]
+managed_h2_fixed_peer.py: error: unrecognized arguments: --staged-start
+
+
+======================================================================
+FAIL: test_staged_stop_after_prepared_joins_without_listener (__main__.PeerStartupTest.test_staged_stop_after_prepared_joins_without_listener)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 350, in test_staged_stop_after_prepared_joins_without_listener
+    peer.event("prepared", timeout=25)
+    ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 145, in event
+    raise AssertionError(f"peer exited before {name}: {''.join(self.lines)}")
+AssertionError: peer exited before prepared: usage: managed_h2_fixed_peer.py [-h] [--protocol {tls,h2c}] [--manual]
+                                [--max-streams {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,82,83,84,85,86,87,88,89,90,91,92,93,94,95,96,97,98,99,100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119,120,121,122,123,124,125,126,127,128}]
+                                [--alpn {h2,http/1.1}] [--client]
+                                [--managed-fixed-client] [--events]
+                                [--controlled] [--allow-incomplete]
+                                [--downstream {h1,h2}] [--port PORT]
+                                [--target TARGET]
+                                [--method {GET,HEAD,POST,PUT,PATCH,OPTIONS,DELETE}]
+                                [--body64 BODY64]
+                                [--headers-json HEADERS_JSON] [--tls]
+                                [--ca CA] [--hostname HOSTNAME]
+managed_h2_fixed_peer.py: error: unrecognized arguments: --staged-start
+
+
+======================================================================
+FAIL: test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls (__main__.PeerStartupTest.test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 315, in test_staged_tls_preparation_barrier_then_explicit_start_and_real_tls
+    identities = barrier.entered()
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 85, in entered
+    raise AssertionError("real certificate key operation did not reach barrier")
+AssertionError: real certificate key operation did not reach barrier
+
+======================================================================
+FAIL: test_stop_during_real_certificate_preparation_joins_owned_process_group (__main__.PeerStartupTest.test_stop_during_real_certificate_preparation_joins_owned_process_group)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 374, in test_stop_during_real_certificate_preparation_joins_owned_process_group
+    self.assert_cancel_preparation(False)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 366, in assert_cancel_preparation
+    self.assert_joined(peer)
+    ~~~~~~~~~~~~~~~~~~^^^^^^
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 238, in assert_joined
+    joined = peer.event("joined")
+  File "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py", line 141, in event
+    raise AssertionError(f"missing real peer event {name}: {''.join(self.lines)}") from None
+AssertionError: missing real peer event joined: 
+
+----------------------------------------------------------------------
+Ran 11 tests in 44.077s
+
+FAILED (failures=10)

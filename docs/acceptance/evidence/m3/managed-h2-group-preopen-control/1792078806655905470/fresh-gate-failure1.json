@@ -1,0 +1,33 @@
+{
+  "kind": "FRESH_GATE_FAILURE1_AUTHENTICATED",
+  "status": "FAIL_DIAGNOSIS_IN_PROGRESS",
+  "receipt": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/fresh-compatibility-1792080874178616116.json",
+    "sha256": "259a38a0276d33228b4d4a5532b330c0bdfdf960a67cad192c0dad0a887a21cc"
+  },
+  "executed": 603,
+  "failures": 1,
+  "skips": 0,
+  "exclusions": 0,
+  "actual_exit": 2,
+  "source_stable": true,
+  "process_joined": true,
+  "timed_out": false,
+  "failure_block": "1) test instance death confirms the original request but cannot manufacture a Service receipt (Gaoxy.Proxy.ManagedH2FixedReleaseOrderTest)\n     apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs:217\n     independent peer did not report ready\n     code: f = F.fixture(:h2c, :http1, [\"--manual\"])\n     stacktrace:\n       test/managed_h2_fixed_endpoint_test.exs:26: Gaoxy.Proxy.ManagedH2FixedFixture.peer/2\n       test/managed_h2_fixed_endpoint_test.exs:141: Gaoxy.Proxy.ManagedH2FixedFixture.fixture/4\n       test/managed_h2_fixed_release_order_test.exs:218: (test)\n",
+  "failure_location": "Gaoxy.Proxy.ManagedH2FixedFixture.peer/2 readiness before any Gaoxy instance/session in fixture",
+  "hypothesis": "Peer certificate-generation/setup can exceed5s outer readiness while allowing20s subprocess; no deterministic cause asserted yet. Cleanup registration currently after ready is a source-evidenced leak path on readiness failure.",
+  "test_failure_not_success": true,
+  "current_slice_counters": {
+    "implementation": 1,
+    "repairSol": 0,
+    "expectedRED": 1,
+    "failedInitialGate": 0,
+    "failedFreshGate": 1,
+    "failedReview": 0,
+    "author_static_checker_failure": 1,
+    "root_command_overlap": 1,
+    "root_command_overlap_repair": 1,
+    "astra": "2/2 exhausted"
+  },
+  "next": "source diagnosis and bounded runtime startup/lifetime observation, assertion-preserving repair if confirmed; fresh gate must pass after review"
+}

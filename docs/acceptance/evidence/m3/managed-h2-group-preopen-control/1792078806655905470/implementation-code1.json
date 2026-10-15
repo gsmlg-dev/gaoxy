@@ -1,0 +1,447 @@
+{
+  "kind": "INDEPENDENT_FULL_IMPLEMENTATION_CODE_REVIEW1",
+  "task_id": "/root/preopen_implementation_code",
+  "status": "PASS",
+  "task_status": "DONE",
+  "assignment": "direct delegated independent read-only FULL CODE review",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "b30bdb0dcbdd3bc33b3b8e06a6f691e3584e42f1",
+  "baseline_tree": "c9717cef5296b12d27b50b058fa5e033670be5ac",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/implementation-candidate1.json",
+    "sha256": "2c8e4bb86a265a81ffd17c8a077ae6ae635c680ef51fd06b95970472c802fad3",
+    "authenticated": true
+  },
+  "preceding_full_spec": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/implementation-spec1.json",
+    "sha256": "6380177b7e3c7bf85b250be27b19034dd50979f23a9fb2f07f25a045ece8d151",
+    "authenticated": true,
+    "checks": 47,
+    "passed": 47,
+    "findings": 0
+  },
+  "input_authentication": {
+    "candidate_source_files": 94,
+    "original_tests_against_candidate_and_actual_HEAD": 47,
+    "immutable_documents": 7,
+    "candidate_evidence_files": 51,
+    "all_match": true,
+    "initial_gate_candidate_differences": "Only the four explicitly listed post-gate documentation updates; production/test source unchanged. RED additionally differs only by baseline Session implementation.",
+    "current_session_sha256": "c80d8e60c2973dbfedd78761c81ccc142f90f486268b36c03ff29746f521d99f",
+    "complete_test_sha256": "922c9da3880979633f18aea1f94cffcb17f3e823fe577bdb264e74d3fed022be"
+  },
+  "root_cause_and_result": "GenServer continuations precede ordinary mailbox dispatch. The narrowly added private selective receive recognizes one queued terminal event after valid staged shape and before staged open/first owner bind, drops opening aliases and returns the original handler callback unchanged. No actionable semantic, security, race, regression, test-validity or scope flaw found within the finite queued-schema contract.",
+  "checks": [
+    {
+      "id": "H2GPC-IMPL-CODE-001",
+      "status": "PASS",
+      "check": "Workspace and actual HEAD/tree match the assigned baseline; pre-existing root-owned changes preserved.",
+      "evidence": "git rev-parse HEAD and HEAD^{tree}; git status --short"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-002",
+      "status": "PASS",
+      "check": "Candidate bytes authenticate against the assigned SHA256.",
+      "evidence": "implementation-candidate1.json: 2c8e4bb86a265a81ffd17c8a077ae6ae635c680ef51fd06b95970472c802fad3"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-003",
+      "status": "PASS",
+      "check": "Preceding FULL SPEC report authenticates and records actual 47/47 PASS with zero findings.",
+      "evidence": "implementation-spec1.json: 6380177b7e3c7bf85b250be27b19034dd50979f23a9fb2f07f25a045ece8d151"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-004",
+      "status": "PASS",
+      "check": "All94 candidate source hashes independently match current files.",
+      "evidence": "candidate.source_hashes:94/94"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-005",
+      "status": "PASS",
+      "check": "All47 protected pre-existing test files match both candidate hashes and actual git show HEAD bytes.",
+      "evidence": "candidate.original_existing_test_hashes:47/47; git show HEAD:path"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-006",
+      "status": "PASS",
+      "check": "All7 immutable review documents and all51 candidate evidence entries authenticate.",
+      "evidence": "candidate.immutable_review_documents and candidate.evidence_files"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-007",
+      "status": "PASS",
+      "check": "Production diff is only Session +33/-4; complete new198-test file is the only test addition. No owner, Probe, Options, Envelope, reservation or dependency code edits.",
+      "evidence": "git diff --numstat; candidate94 source authentication; test file"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-008",
+      "status": "PASS",
+      "check": "New helper is private with only two group-continuation callsites; no new public API/process/timer/config/client override.",
+      "evidence": "session.ex:303-398; complete Session diff"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-009",
+      "status": "PASS",
+      "check": "Open check follows successful existing staged_group_options validation and dominates the only staged group open.",
+      "evidence": "session.ex:303-322,743-783"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-010",
+      "status": "PASS",
+      "check": "Bind check follows upload, sanitized-control, original-handle, request identity and detached submitted-URL validation.",
+      "evidence": "session.ex:347-357"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-011",
+      "status": "PASS",
+      "check": "Bind queue check precedes the FIRST actual owner bind and ready notification; transport completion still binds before group completion.",
+      "evidence": "session.ex:356-363,1226-1240"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-012",
+      "status": "PASS",
+      "check": "Open computes fresh current time after the mailbox check and derives only remaining timeouts.",
+      "evidence": "session.ex:305-315"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-013",
+      "status": "PASS",
+      "check": "Bind computes fresh current time after the mailbox check.",
+      "evidence": "session.ex:356-357"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-014",
+      "status": "PASS",
+      "check": "Original absolute total/open deadlines are unchanged; existing local deadline/flag checks still run on clear.",
+      "evidence": "session.ex:303-315,347-357,712-741"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-015",
+      "status": "PASS",
+      "check": "Public cast schemas match exact two-element gen_cast tuples and only cancel/expire/consumed atoms.",
+      "evidence": "session.ex:381-382"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-016",
+      "status": "PASS",
+      "check": "Cleanup schema requires exact four-element tuple and pinned token identity; unmatched tokens are not consumed.",
+      "evidence": "session.ex:384-387; test.exs:339-362"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-017",
+      "status": "PASS",
+      "check": "Cleanup deadline guard accepts signed64 integers including endpoints and rejects malformed/out-of-range values before consuming.",
+      "evidence": "session.ex:385-386; test.exs:141-155,346-359"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-018",
+      "status": "PASS",
+      "check": "DOWN requires exact shape, reference, process PID, map membership and exact stored PID identity; wrong reference/PID/type/arity remains pending.",
+      "evidence": "session.ex:389-392; test.exs:364-377"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-019",
+      "status": "PASS",
+      "check": "Only exact opening_expired/total_expired timer atoms match; no new or stronger timer-message authority is claimed.",
+      "evidence": "session.ex:394-395; unchanged ordinary handlers:255-283"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-020",
+      "status": "PASS",
+      "check": "Selective receive leaves unmatched traffic queued rather than consuming then rejecting it.",
+      "evidence": "session.ex:380-398; test.exs:66-94"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-021",
+      "status": "PASS",
+      "check": "Erlang selective-receive mailbox order selects the earliest recognized event across clauses; later recognized events and sentinel remain queued.",
+      "evidence": "session.ex:380-398; test.exs:96-119"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-022",
+      "status": "PASS",
+      "check": "Exactly one receive with after0, no recursion or mailbox drain; clear path returns only :clear without state mutation.",
+      "evidence": "session.ex:376-398"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-023",
+      "status": "PASS",
+      "check": "Tagged callback result is unwrapped and returned unchanged in both continuations; no new continuation is introduced for terminal results.",
+      "evidence": "session.ex:342,368,382,387,392,395"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-024",
+      "status": "PASS",
+      "check": "Each recognized event drops opening aliases before dispatch to existing matching handle_cast/handle_info.",
+      "evidence": "session.ex:381-395; drop_group_opening:444-463"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-025",
+      "status": "PASS",
+      "check": "Consumed retains existing success/consumed semantics, including token=nil noreply; no invented terminal error.",
+      "evidence": "session.ex:82-83,984; test.exs:248-275"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-026",
+      "status": "PASS",
+      "check": "Cancel and authenticated DOWN retain existing cancellation flags/outcome and notification behavior.",
+      "evidence": "session.ex:67,250-253,955-956,981-984; test.exs:248-291"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-027",
+      "status": "PASS",
+      "check": "Expire retains total-expired request_timeout versus opening timeout behavior and existing already-terminal guards.",
+      "evidence": "session.ex:69-79; test.exs:172-184,283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-028",
+      "status": "PASS",
+      "check": "Cleanup request deadline is retained without extending original total/open deadlines; raw cleanup/DOWN reasons are ignored by ordinary handlers.",
+      "evidence": "session.ex:241-253; test.exs:126-155,258-281"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-029",
+      "status": "PASS",
+      "check": "Opening-expired preserves original stage-sensitive behavior: local cancellation without original handle; upstream failure with captured handle.",
+      "evidence": "session.ex:264-274,945-952; test.exs:251-256,283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-030",
+      "status": "PASS",
+      "check": "Total-expired retains existing group request_timeout/local failure semantics.",
+      "evidence": "session.ex:279-283; test.exs:283-286"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-031",
+      "status": "PASS",
+      "check": "Original public request/completion is retained for cleanup and completion binding; no replay or reconstructed public handle.",
+      "evidence": "session.ex:477-486,987-1008,1226-1240; managed_h2_client.ex:55-86; test.exs:277-281"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-032",
+      "status": "PASS",
+      "check": "Dropping opening payloads retains G/T selections/tokens, pins, monitors, original handles, timers and original deadlines.",
+      "evidence": "session.ex:444-463; test.exs:263-281,315-323"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-033",
+      "status": "PASS",
+      "check": "Existing settlement/cleanup authority and finish sequencing remain intact; no local refund or invented owner-cleanup protocol.",
+      "evidence": "session.ex:981-1074,1242-1284; complete production diff"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-034",
+      "status": "PASS",
+      "check": "Literal ManagedH2GroupBoundary.activation denial is unchanged and dominates staged open, with no profile/config bypass.",
+      "evidence": "session.ex:317-339; managed_h2_group_boundary.ex:68"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-035",
+      "status": "PASS",
+      "check": "No-message open still reaches literal denial; no-message bind clear path is source-reviewed through unchanged bind, without owner fabrication.",
+      "evidence": "session.ex:303-370; test.exs:198-203"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-036",
+      "status": "PASS",
+      "check": "Malformed stage/carrier validation returns before queue consumption; both protocols/stages cover retained cancel.",
+      "evidence": "session.ex:304,348-355; test.exs:229-246"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-037",
+      "status": "PASS",
+      "check": "Independently enumerated12 test blocks yield198 tests:28+60+30+20+16+8+8+4+2+2+16+4.",
+      "evidence": "complete managed_h2_group_preopen_control_test.exs:51-246"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-038",
+      "status": "PASS",
+      "check": "Both http2/h2c and actual open/bind continuations use real pure prepare_group_open/group_open_result fixtures and explicitly structural identities.",
+      "evidence": "test.exs:48-50,433-604"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-039",
+      "status": "PASS",
+      "check": "Expected terminal semantics are independently encoded from ordinary handlers; tests do not obtain expected results by invoking the same handlers. Exact full-state/callback assertions preserve custody and outcomes.",
+      "evidence": "test.exs:248-323; session.ex:67-83,241-283,981-984"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-040",
+      "status": "PASS",
+      "check": "Tests prove consumption, invalid-message retention, oldest-recognized selection and later-event retention with exact pinned receives.",
+      "evidence": "test.exs:51-119"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-041",
+      "status": "PASS",
+      "check": "Function/large binary reasons are covered directly and in opaque maps; exact state and notification assertions prevent reason retention/execution in modeled callbacks.",
+      "evidence": "test.exs:126-139,289-290,390-403"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-042",
+      "status": "PASS",
+      "check": "No Fake Fetch, owner reply fabrication, activation/client override or injected cleanup authority is used. token=nil fixtures honestly stop short of live owner cleanup.",
+      "evidence": "complete new test file; test.exs:48-50,433-604"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-043",
+      "status": "PASS",
+      "check": "Tests use finite receive deadlines and deterministic prequeued self-messages; no arbitrary sleep or spawned helper process.",
+      "evidence": "complete new test file"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-044",
+      "status": "PASS",
+      "check": "Retained tests-first RED has unchanged complete test hash,198 executed/146 intended assertion failures/52 baseline passes, zero skips/exclusions; Session was baseline.",
+      "evidence": "red1 receipt and log; complete-behavioral-red-authentication1.json; RED source_before/after"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-045",
+      "status": "PASS",
+      "check": "Initial accepted serial format/forced strict compile/pure9-file452/0/compatibility36-file603/0 receipts/logs authenticate with exits0, stable sources and joined commands. The earlier overlap stays NONACCEPTED.",
+      "evidence": "initial-complete-green1.json; format-1792079977914592811.json; compile/green/compatibility receipts; command-sequencing-correction1.json"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-046",
+      "status": "PASS",
+      "check": "Finite queued-schema claim is honest; no atomic cancellation barrier, constant scan-time bound, after-check guarantee, live no-Fetch, runtime/private/native memory or helper-through-exit proof is introduced. Future accounting proposal remains unexecuted.",
+      "evidence": "immutable design/acceptance documents; helper comment:374-375; next-package-md/json; unchanged activation/reservation"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-047",
+      "status": "PASS",
+      "check": "Current slice/predecessor counters remain separate, repairSol0 for this slice and predecessor repairSol2; Astra2/2 exhausted; no third Astra request.",
+      "evidence": "candidate.current_slice_counters; candidate.predecessor_counters"
+    },
+    {
+      "id": "H2GPC-IMPL-CODE-048",
+      "status": "PASS",
+      "check": "Final source and evidence reauthentication remains clean; reviewer commands finished and only assigned /tmp report is written. Fresh root gates/final documentation/byte audit/commit remain pending.",
+      "evidence": "final authentication during report generation; synchronous read-only commands"
+    }
+  ],
+  "check_count": 48,
+  "passed": 48,
+  "failed": 0,
+  "actionable_findings": [],
+  "changed_files_task_diff": {
+    "production": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex +33/-4",
+    "new_complete_test": "apps/gaoxy_proxy/test/managed_h2_group_preopen_control_test.exs;198 tests",
+    "reviewer_repository_changes": [],
+    "reviewer_only_output": "/tmp/gaoxy-h2-group-preopen-control-implementation-code1.json"
+  },
+  "verification": {
+    "reviewer_runtime_tests_build_format_network": "NOT RUN as assigned",
+    "reviewer_commands": [
+      "pwd",
+      "git rev-parse HEAD and HEAD^{tree}",
+      "git status --short",
+      "git diff -- Session and --numstat",
+      "git show HEAD:path for47 baseline tests and source comparison",
+      "rg source/file searches",
+      "cat/sed/nl scoped source, docs, reports and receipts",
+      "python3 read-only SHA256, receipt/log/count/source checks; final JSON write only to assigned /tmp path"
+    ],
+    "authenticated_root_initial_gates": {
+      "format": {
+        "receipt": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/format-1792079977914592811.json",
+        "actual_exit": 0,
+        "tests_executed": 0,
+        "failures": 0,
+        "skips": 0,
+        "exclusions": 0,
+        "process_joined": true,
+        "source_stable": true,
+        "reviewer_executed": false
+      },
+      "compile": {
+        "receipt": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/compile-1792079998981661832.json",
+        "actual_exit": 0,
+        "tests_executed": 0,
+        "failures": 0,
+        "skips": 0,
+        "exclusions": 0,
+        "process_joined": true,
+        "source_stable": true,
+        "reviewer_executed": false
+      },
+      "pure": {
+        "receipt": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/green-1792080020277400276.json",
+        "actual_exit": 0,
+        "tests_executed": 452,
+        "failures": 0,
+        "skips": 0,
+        "exclusions": 0,
+        "process_joined": true,
+        "source_stable": true,
+        "reviewer_executed": false
+      },
+      "compatibility": {
+        "receipt": "docs/acceptance/evidence/m3/managed-h2-group-preopen-control/1792078806655905470/compatibility-1792080033401152739.json",
+        "actual_exit": 0,
+        "tests_executed": 603,
+        "failures": 0,
+        "skips": 0,
+        "exclusions": 0,
+        "process_joined": true,
+        "source_stable": true,
+        "reviewer_executed": false
+      }
+    },
+    "authenticated_red": {
+      "executed": 198,
+      "failures": 146,
+      "baseline_passes": 52,
+      "exit": 2,
+      "skips": 0,
+      "exclusions": 0,
+      "same_test_bytes": true,
+      "root_authentication_preserved": true
+    },
+    "nonaccepted_overlap": "Retained NONACCEPTED initial overlapping format check; accepted serial format receipt independently authenticated."
+  },
+  "current_slice_counters": {
+    "implementation": 1,
+    "repairSol": 0,
+    "expectedRED": 1,
+    "failedInitialGate": 0,
+    "failedReview": 0,
+    "author_static_checker_failure": 1,
+    "root_command_overlap": 1,
+    "root_command_overlap_repair": 1,
+    "astra": "2/2 exhausted"
+  },
+  "predecessor_counters": {
+    "implementation": 1,
+    "repairSol": 2,
+    "unsuccessful_GREEN": 1,
+    "metadata_failed": 1,
+    "initial_complete_gate_failures": 2,
+    "expected_RED": 1,
+    "readiness_failedSPEC": 1,
+    "author_checker_failure": 1,
+    "documentation_revision": 1,
+    "astra": "2/2 exhausted",
+    "finalization_audit_failure": 1,
+    "finalization_audit_repair": 1
+  },
+  "sol_repair_rounds_this_review": 0,
+  "received_astra_counter": "2/2 exhausted",
+  "astra_gate": null,
+  "command_shutdown": "All own commands completed synchronously; no active reviewer session/process. No runtime/test/build/format/network command, Git/repo mutation or delegation. Only assigned /tmp report written.",
+  "limitations": [
+    "PASS is independent FULL CODE review only, not final slice acceptance or live group activation.",
+    "No-message bind clear path source-reviewed only as prescribed; no fabricated owner authority.",
+    "token=nil structural callback tests do not prove real owner cleanup success or live no-Fetch causality.",
+    "No mailbox scan-time bound, atomic cancellation barrier, guarantee for arrivals after check, runtime/native/private memory bound or helper-through-exit claim.",
+    "Dismissed http_fetch#97 is neither pursued nor recreated.",
+    "Literal ACCOUNTING_NOT_READY and fixed9444956 remain unchanged; future-package accounting proposal remains unexecuted."
+  ],
+  "remaining": [
+    "Root fresh prescribed format/forced strict compile/pure/compatibility gates after both independent reviews.",
+    "Root final documentation rebind, raw/index byte audit and actual local conventional commit."
+  ],
+  "decisions_needed": [],
+  "recorded_at_utc": "2026-10-15T16:12:51.880378+00:00"
+}
