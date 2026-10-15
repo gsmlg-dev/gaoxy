@@ -25,10 +25,20 @@ remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
 new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
 remains exhausted.
 
-Runtime verification is complete. Final documentation-only independent review
-and the authorized local conventional commit remain pending. Managed H2
-groups/probes is the next bounded slice after this closure; its design draft
-does not activate it. Generation, standalone/load, hosted CI, publication,
+Fixed-endpoint activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`, with qualification evidence committed
+at `5516ea1b398d7970e861cabdb2c2c3075be7eeae`. Final documentation-only SPEC then
+CODE and the bounded evidence-byte repair reviews passed with zero findings.
+The fresh Git-index audit checked8096 evidence files (1081175548 bytes),
+preserved all8084 immutable inventory entries and found zero mismatches; the
+two appended audit/binding outputs were separately byte-checked. The accepted
+52 source/5 authority hashes matched the actual feature commit.
+
+The `upstream122-v02110-local-commit-closure.json` receipt in the evidence
+directory records both actual commits and trees, clean index/worktree, and
+preserved user files. Managed H2 groups/probes begins with non-live accounting
+readiness; its extra2097152-byte draft remains PROPOSED_UNPROVED and
+ACCOUNTING_NOT_READY. Generation, standalone/load, hosted CI, publication,
 deployment and production acceptance retain their separate gates.
 
 ## Historical checkpoints before the final runtime gates
@@ -225,8 +235,20 @@ The [H2 preparation package](docs/plans/m3-managed-h2-preparation.md) is **DONE 
 at `c871e3d9ee87cf802acf764d7d7622e0a7b611d6`: complete independent SPEC/CODE, fresh scoped format/strict compile97/0
 and public63/0 with zero exclusions/skips. Its source/peer/evidence identities
 and historical assertions are preserved in its [acceptance](docs/acceptance/m3-managed-h2-preparation.md).
-Fixed-H2 activation is IN PROGRESS under its
-[design and plan](docs/plans/m3-managed-h2-fixed-endpoint.md). Pure/owner/renderer
+Fixed-H2 activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`; evidence commit
+`5516ea1b398d7970e861cabdb2c2c3075be7eeae` preserves every historical failure.
+Complete independent SPEC/CODE and final documentation reviews PASS; fresh
+format43/strict compile/full58 **853/0**/public63/matrix135/browser3 PASS with
+zero skips or exclusions and stable source. Lossless index audit checked8096
+evidence files and two appended outputs; actual committed52+5 source identities
+match the accepted candidate. Negative TLS/browser cleanup remains
+UNCONFIRMED_WITH_RETAINED_FAILURE. Managed H2 groups/probes next enters only
+non-live accounting readiness; its proposed extra2097152 bytes is unproved.
+The [plan](docs/plans/m3-managed-h2-fixed-endpoint.md) and
+[acceptance](docs/acceptance/m3-managed-h2-fixed-endpoint.md) retain exact receipts.
+
+Historical fixed-H2 execution checkpoints follow: Pure/owner/renderer
 GREEN2 passed237/0, while client/integration GREEN2 remains a preserved194/30
 failure. Task7 RED76/8 and unfiltered H2 network RED28/4 exposed a downstream H2
 write-deadline gap. Repair4 strict compile passed and combined759/4 remains a

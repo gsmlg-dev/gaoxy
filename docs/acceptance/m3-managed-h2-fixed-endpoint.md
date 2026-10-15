@@ -25,10 +25,20 @@ remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
 new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
 remains exhausted.
 
-Runtime verification is complete. Final documentation-only independent review
-and the authorized local conventional commit remain pending. Managed H2
-groups/probes is the next bounded slice after this closure; its design draft
-does not activate it. Generation, standalone/load, hosted CI, publication,
+Fixed-endpoint activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`, with qualification evidence committed
+at `5516ea1b398d7970e861cabdb2c2c3075be7eeae`. Final documentation-only SPEC then
+CODE and the bounded evidence-byte repair reviews passed with zero findings.
+The fresh Git-index audit checked8096 evidence files (1081175548 bytes),
+preserved all8084 immutable inventory entries and found zero mismatches; the
+two appended audit/binding outputs were separately byte-checked. The accepted
+52 source/5 authority hashes matched the actual feature commit.
+
+The `upstream122-v02110-local-commit-closure.json` receipt in the evidence
+directory records both actual commits and trees, clean index/worktree, and
+preserved user files. Managed H2 groups/probes begins with non-live accounting
+readiness; its extra2097152-byte draft remains PROPOSED_UNPROVED and
+ACCOUNTING_NOT_READY. Generation, standalone/load, hosted CI, publication,
 deployment and production acceptance retain their separate gates.
 
 ## Historical checkpoints before the final runtime gates
@@ -333,7 +343,7 @@ artifact E2E restrictions remain. `http_fetch#97` or equivalent proof is exclude
 | Required gate | Required evidence | Current status |
 | --- | --- | --- |
 | Accepted pure preparation predecessor | Actual commit/source, complete reviews, fresh97/0+63/0 | PASS predecessor only |
-| Fixed design/plan independent readiness | Exact source, complete interface/schema/ledger coverage | PASS complete SPEC/CODE; final evidence-only document delta pending review |
+| Fixed design/plan independent readiness | Exact source, complete interface/schema/ledger coverage | PASS complete SPEC/CODE and precommit documentation closure; actual-commit status update has a separate bounded review |
 | Verified execution kickoff | Baseline/diff/untracked/source/lock/cohort; serialized ownership/counters | PASS recorded kickoff |
 | Observed tests-first RED | Nonzero executed RED before repairs, preserved failures | PASS preserved pure/owner/client/integration/renderer/native/fixture RED receipts |
 | Pure envelope/client/reservation and owner tests | Complete malformed/backing, identity, closed slots | PASS fresh full58 853/0; historical failures retained |
@@ -345,8 +355,8 @@ artifact E2E restrictions remain. `http_fetch#97` or equivalent proof is exclude
 | Affected H1/H2/H3 and Generation/group compatibility | All58 canonical paths, exact nonzero counts/exits/source identities | PASS fresh853/0, exit0, source stable, zero skips/exclusions |
 | Complete independent SPEC then CODE | Full frozen52+5 candidate; resolved findings/cumulative counters | PASS ready-spec then ready-code, zero findings |
 | Fresh post-review canonical gates | Format43/forced strict compile/full58/public63/matrix135/browser3 | PASS all six; complete evidence audit verifies artifacts and joins |
-| Final documentation-only review | Runtime unchanged; actual current ledger/checklist/evidence bindings | NOT RUN |
-| Safe owned shutdown and local commit | Commands/actors joined; preserved user inventory; exact local commit | Runtime joins PASS; final inventory/local commit NOT RUN |
+| Final documentation-only review | Runtime unchanged; actual current ledger/checklist/evidence bindings | PASS precommit closure-spec then closure-code; subsequent actual-commit status update reviewed separately |
+| Safe owned shutdown and local commit | Commands/actors joined; preserved user inventory; exact local commit | PASS; evidence5516ea1/featurebbbc50d;8098/53 explicit paths and accepted52+5 hashes verified |
 
 PASS requires actual executed assertions and zero required failures. Preserve
 FAIL, BLOCKED and NOT RUN distinctly. A unit mock, public dependency supplement,
@@ -618,10 +628,10 @@ IDs/counts and bounded joins. Do not preassign an activation test count.
   and actual evidence; findings/counters and all failed receipts remain. Fresh
   post-review canonical format/strict compile/scoped/public/network/browser pass
   after any repairs. No failed/blocked/unexecuted gate is promoted to PASS.
-- [ ] Parent confirms all own commands/actors safely stopped or explicitly
+- [x] Parent confirms all own commands/actors safely stopped or explicitly
   unconfirmed, preserves user files/unrelated edits, stages only task-owned
   files and records actual local conventional commit. No generated-by/AI trailer.
-- [ ] Only complete passing acceptance marks this fixed slice DONE. Continuing
+- [x] Only complete passing acceptance marks this fixed slice DONE. Continuing
   authorization then advances to written managed-H2 groups/probes, later
   Generation and standalone/load plans. Whole M3, hosted, release/deploy and
   production acceptance remain separate and are not inferred.

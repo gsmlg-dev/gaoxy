@@ -25,10 +25,20 @@ remain distinct. FixedSol19, collectorSol17, fixtureSol20 RED1/GREEN1,
 new-cohort full58failed2 and all earlier counters persist; Astra recovery2/2
 remains exhausted.
 
-Runtime verification is complete. Final documentation-only independent review
-and the authorized local conventional commit remain pending. Managed H2
-groups/probes is the next bounded slice after this closure; its design draft
-does not activate it. Generation, standalone/load, hosted CI, publication,
+Fixed-endpoint activation is **DONE locally** at
+`bbbc50dc628d4d82fde7377b5bcff68bb35e1867`, with qualification evidence committed
+at `5516ea1b398d7970e861cabdb2c2c3075be7eeae`. Final documentation-only SPEC then
+CODE and the bounded evidence-byte repair reviews passed with zero findings.
+The fresh Git-index audit checked8096 evidence files (1081175548 bytes),
+preserved all8084 immutable inventory entries and found zero mismatches; the
+two appended audit/binding outputs were separately byte-checked. The accepted
+52 source/5 authority hashes matched the actual feature commit.
+
+The `upstream122-v02110-local-commit-closure.json` receipt in the evidence
+directory records both actual commits and trees, clean index/worktree, and
+preserved user files. Managed H2 groups/probes begins with non-live accounting
+readiness; its extra2097152-byte draft remains PROPOSED_UNPROVED and
+ACCOUNTING_NOT_READY. Generation, standalone/load, hosted CI, publication,
 deployment and production acceptance retain their separate gates.
 
 ## Historical checkpoints before the final runtime gates
