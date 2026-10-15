@@ -2,6 +2,10 @@
 
 ## Current checkpoint — 2026-10-15
 
+The pure [managed H2 group source foundation](docs/acceptance/m3-managed-h2-group-source-foundation.md) is now **DONE locally** at `060f92641ae12345b7121e220549222418a40b0e`. Complete independent SPEC2 then CODE1 and fresh scoped format, forced strict compile and five-file tests passed: **107 executed/0 failures/0 skips/0 exclusions**, exit0, with all33 reviewed source identities stable. The raw disk/index audit authenticated63 files/484475 bytes, separately checked its appended output and verified all64 paths against the actual feature tree. The exact candidate, review, gate/log and local commit identities are retained in the stage ledger.
+
+The initial zero-test custody failure, intended16/16 missing-functionRED, first implementation SPEC failure and additive exact65536 boundary repair remain preserved. Source repairSol1/failedSPEC1, unsuccessfulGREEN0, custody failure1 and intendedRED1 are separate from inherited counters; Astra2/2 remains exhausted. The next group opening-boundary design is in independent readiness/repair. Actual selected-envelope release, startup/recovery accounting, live groups/probes, Generation and standalone/load retain their separate gates; no new group reserve, network/browser or publication result follows from pure-source acceptance.
+
 All six fresh post-review runtime gates PASS for the managed H2 fixed-endpoint
 candidate at baseline `31f23eb2d915ba715a1016f254b90d9805f18a1a`. Complete independent
 [SPEC](docs/acceptance/evidence/m3/managed-h2-fixed-endpoint/1791956542961215590/upstream122-v02110-ready-spec.json) then

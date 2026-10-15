@@ -1,6 +1,6 @@
 # M3 managed H2 group source foundation
 
-Status: implemented under continuing authorization; non-live design readiness, intended tests-first RED, preliminary107/0 GREEN, scoped format and forced strict compile are recorded. Complete implementation SPEC1 found the missing feasible joined65536 regression; seven additive test lines repaired coverage and full107/0 GREEN plus format/strict compile passed again. Re-SPEC/CODE and fresh final gates are pending. This is the first non-live dependency of managed H2 groups/probes, after fixed-endpoint commit `bbbc50dc628d4d82fde7377b5bcff68bb35e1867` and evidence commit `5516ea1b398d7970e861cabdb2c2c3075be7eeae`.
+Status: DONE locally at `060f92641ae12345b7121e220549222418a40b0e`. Complete SPEC2 then CODE1 and fresh scoped format, forced strict compile and107/0 five-file tests passed with zero skips/exclusions and stable reviewed source. Exact commit/tree and raw evidence-byte custody are recorded in the companion acceptance ledger. This completes only the pure source representation, not live group/probe or accounting acceptance.
 
 ## Goal and choice
 
