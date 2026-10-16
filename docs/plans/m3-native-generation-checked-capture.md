@@ -1,0 +1,210 @@
+# Native Generation checked capture Implementation Plan2
+
+> **For agentic workers:** Execute task-by-task under continuing authorization; parent owns delegation and repository writes. Source-only reviewers own separate /tmp reports. Use executing-plans for implementation. No additional routine approval prompt.
+
+**Goal:** Complete one accounted native Generation runtime path from Admission through Store/public G/T receipts and Router to finite bounded cleanup, preserving legacy/core isolation.
+
+**Architecture:** An optional gaoxy_http accounting behavior delegates managed schema/arithmetic/release to proxy. Store owns pre-invocation original ledger and rollback; requester owns compact Admission charge, checked append, exact Router outcome precedence and once-only cleanup event.
+
+**Tech Stack:** Current Elixir1.18.5/OTP28.5.0.7 source-bound ETF, existing GenServer/Admission/native H1/H2/public managed owner APIs; no dependency or process addition.
+
+---
+
+Read paired `docs/designs/m3-native-generation-checked-capture.md` for exact constructors/custody/error/deadline table. Repository `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, revision1 baseline48a71a70acbe9cb46f99b82e4062c6f5f25d9667; revision2 read-only rebind94d47d11fbd9040bd49e15829e8405d82fd0618d with parent-owned worksheet docs/closure receipts in progress. Preserve parent changes. Revision1/readiness1 FAIL findings remain immutable; this source-only documentation correction is not a runtime repair round. The original source-only revision2 plan is preserved in evidence. Execution is bound below to committed predecessore189894 and actual Task3.5 constructor reviews before the identical caller is connected. Final full-stage SPEC/CODE and post-review fresh acceptance now PASS; index/blob custody and local commit remain pending. Stage arithmetic is part of runtime implementation, not a separate prerequisite slice.
+
+## Ownership and scope
+
+One parent repository writer serializes dependent edits and actual test/evidence/Git. Independent Sol SPEC/CODE reviewers can run in parallel after candidate and evidence freeze, with separate source-only /tmp reports. Parent may parallelize disjoint-source test proposals and source constructor review; no second concurrent repository writer for Generation/Resources/accounting/owners. Keep inherited counters worksheet1 failedGREEN/1 test-contract repair/0 production repair, group24/root27/Astra2of2; preserve later counters, no third Astra/reset.
+
+Planned production files:
+
+- Create `apps/gaoxy_http/lib/gaoxy/http/generation/accounting.ex`: seven-callback optional behavior, no proxy references.
+- Modify `apps/gaoxy_http/lib/gaoxy/http/generation.ex`: explicit opt-in init/config/call, checked arity4 request/Store clause, exact outcome/telemetry ownership; retain all legacy clauses.
+- Modify `apps/gaoxy_http/lib/gaoxy/http/resources.ex`: additive checked acquire/release only; authentic ledger, no generic changes.
+- Modify `apps/gaoxy_proxy/lib/gaoxy/proxy/managed_generation_accounting.ex`: compact numeric reservation/2, explicit diagnostic runtime_worksheet/2 with exact53 role keys/return grammar from design2, and manifest/correlation/deadline-release callbacks; keep worksheet report/old totals intact.
+- Modify `apps/gaoxy/lib/gaoxy/admission.ex`: additive explicit-timeout update/4 only; update/3 remains5000ms default.
+- Modify `apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex` and `upstream_transports.ex`: additive public release/2 absolute deadline; unchanged release/1 behavior.
+- No expected Exchange runtime change: its retained_bytes already includes route_bytes. If exact scoped tests reveal a changed-path absolute update dropping route_bytes, parent makes only the necessary compatibility repair and expands fresh scoped checks/source table; do not redesign ownership.
+
+Tests: add `apps/gaoxy/test/admission_timeout_test.exs` for explicit-timeout API regressions; retain existing Admission assertions in native_stream_test.exs and cleanup_attachment_test.exs. Add `apps/gaoxy_http/test/generation_checked_capture_test.exs`; add `apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs`; extend existing `managed_generation_accounting_test.exs`, G/T owner tests and Admission tests only where new public compatibility forms need direct regressions. Keep original worksheet/native/legacy/exclusion assertions. New runtime design/plan/acceptance and exact candidate evidence under `docs/{designs,plans,acceptance}/m3-native-generation-checked-capture*` are parent-owned implementation artifacts. Existing historical evidence stays immutable.
+
+## Task 0: Bind predecessor and source identity
+
+- [x] Record pwd, branch, HEAD, status/diff/untracked, toolchain receipt and source hashes. Preserve pre-existing worksheet/codex/user files. Verify exact predecessor committed bytes and completed independentSPEC/CODE/fresh nonzero result; no claim that this source-only plan closes them.
+- [x] Read paired design and loaded OTP constructor-premises receipt `/tmp/gaoxy-native-generation-constructor-premises1.json`, immutable-source qualification vs runtime boundary distinction. Rebind actual loaded gen/gen_server/Elixir sources; PID29/ref35 are samples, not caps. Preserve constants9444956/16478862/5963776 and H2 Generation exclusion.
+- [x] Publish candidate contract and owner map before writers start. Every following command is run by parent with finite collector, joined exit, exact source identity, environment, nonzero executed count and no silent excluded required tests.
+
+## Task 1: Red tests for compact reservation and original operand/correlation
+
+- [x] Extend worksheet test with independent complete runtime-profile algebra, full ledger L4=H+64*(A+S+F+5), three ledger roots, current-entry, manifest/partition scratch, complete validation-result and acquisition-control wrappers, error triples, preflight summaries, timing/scalar/config roots and full snapshot/descriptor rows. Runtime cancel_control multiplicity is65, subtotal65*Ccancel, from64 possible Store ledger sends plus one current T postcheck send. Preserve historical worksheet multiplicity64, its old numerical assertions and all24 predecessor tests/assertions and old totals as the explicitly conditional historical model, not a complete current public path/runtimeB. Test M65536/default1048576 and integer size boundaries around255/256, signed32 and BIG_EXT length changes using independently written ETF sums.
+- [x] Tag every new constructor/direct checked-Store/public-API checkpoint case `@tag :checked_capture_constructor` when first written; Admission-consuming/native/C5 cases use `@tag :checked_capture_runtime` and never carry the constructor tag. Add explicit runtime_worksheet/2 return/error/profile/qualification/full53-role-order tests against design2; assert runtime cancel count65 while worksheet/2 stays historical64. New behavior test asserts `reservation(M,context)` returns exactly `{:ok,{:native_generation_capture_v1,M,65536,65536,B}}`; no report/map/rows is retained. Source/code review also verifies it never invokes report constructors before Admission; runtime returned shape alone is insufficient evidence. Compare B with independently summed actual complete runtime profile; no oldB fixture reuse.
+- [x] Table-driven correlation cases mutate each actual complete receipt field independently: provider, owner, epoch, operation, handles ordering/content, kind and T.holder; original authentic facts supplied separately. A structurally valid substituted receipt must fail. G has exactly7 keys, T8; reject invented holder/key on G. Existing generic5/6-key pins and kinds are tested via legacy functions unchanged.
+- [x] Keep exact Q boundary preflight cases: pin E=Q-6 fits singleton, Q-5 fails before cons;64/65 count; two individuallyQ capture operands prospective131065/128 fail before append. Do not create candidate list for production validation. Test malformed improper/forged stats input.
+
+Initial behavior RED command, expected absent reservation/correlation/API failures, not compile/fixture errors:
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/managed_generation_accounting_test.exs apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs
+```
+
+- [x] Implement runtime numeric fixed-point sum directly with numeric expressions, no row list/report/map. Implement diagnostic runtime_worksheet/2 exactly as design2 (conditional qualification, native_generation_checked_capture profile, full53 roles/bounds/prerequisites/total/iterations); historical worksheet/2 stays unchanged. Implement selected callbacks and behavior contract exactly as design; all result/error/status constructors must appear in revised arithmetic before using B.
+
+Concrete compact callback shape (the named private numeric function is introduced in this task):
+
+```elixir
+def reservation(m, context) do
+  with :ok <- validate_runtime_context(m, context),
+       {:ok, b} <- settle_runtime_numeric(m, elem(context, 6), 0, 0) do
+    {:ok, {:native_generation_capture_v1, m, 65_536, 65_536, b}}
+  end
+end
+# settle_runtime_numeric uses only scalar sum_runtime_numeric(m,retained,b).
+# If next===b return {:ok,b}; at64 iterations return finite capacity error.
+# It does not call worksheet/2, rows/3, role_specs/1 or build a bounds map.
+```
+
+- [x] Run this focused group GREEN and capture actual new B/row subtotals/counts/exits. This is an internal checkpoint; proceed to runtime integration under continuing authorization.
+
+## Task 2: Necessary bounded public API compatibility
+
+- [x] Add owner tests: release/1 existing default/guard/error assertions stay; release/2 with one absolute deadline succeeds on real accepted receipt, refuses/returns finite error when owner unavailable or deadline exhausted, and cannot restart a fresh timeout. Add Admission.update/4 tests using the real gate suspended behind a controlled barrier; chosen finite timeout expires, no later stage starts, release original barrier, joined gate remains consistent. update/3 behavior unchanged.
+- [x] Implement additive APIs:
+
+```elixir
+# Admission: retain existing update/3; add finite timeout form.
+def update(gate, lease, bytes, timeout) when is_integer(timeout) and timeout > 0,
+  do: GenServer.call(gate, {:update, lease, bytes}, timeout)
+# G/T: retain release/1 exact old semantics; add public absolute deadline form
+# with matching existing pin guards and Lifecycle.call(owner,{:release,pin},deadline).
+# Checked accounting.release(pin,Dc) validates provider and dispatches its public release/2.
+```
+
+- [x] Test all synchronous checked cleanup uses shared Dc=D+1000, not64 renewed waits. Use controlled owners and an expired absolute deadline: first blocked release consumes remaining budget; later release-dispatch barriers must never fire. Join every task and restore only test-owned suspended processes in after. At deadline return unconfirmed, preserve charge and primary; async cancels are not confirmation. Test malformed deadline fails finitely without dispatch.
+- [x] Run scoped owner/Admission checks below. Derive actual descriptor timeout terms/source hashes; do not modify generic Lifecycle.
+
+## Task 3: Checked Resources and Store custody
+
+- [x] Write checked Resources/Store tests with instrumented provider callback and a separate authentic original ledger. At provider entry record actual received original operation, caller, holder and complete batch in the test-owned provider. Source review verifies ledger-cons precedes invocation; black-box malformed-current-receipt failure proves even the failing operation is in rollback. Do not add a production test hook or retain debug ledger state. Trigger prior-success/current malformed-success rollback; expected cancellations reference EXACT original provider/owner/operation for EVERY started batch. Corrupt pin identities must not redirect cleanup. Unknown raw huge/deep reasons normalize without retention.
+- [x] Store direct-call wrong-holder test sends holder different from GenServer caller; assert `{:error,:invalid_resource_holder,:clean}` and zero provider messages. Retain legacy arity3 direct/public tests. Expire D while provider result waits behind barrier; release it and assert no successful snapshot publication, original cancels and finite uncertainty. Actual checked caller timeout emits later only in requester, not Store.
+- [x] Implement checked reduce with entry-before-invocation order:
+
+```elixir
+operation = make_ref()
+entry = {provider, owner, operation, batch}
+ledger = [entry | ledger]
+# invoke protected provider using original batch/holder/:request/operation/D
+# correlate complete pin against entry and original holder
+# preflight_cons(pin,pins), then and only then [pin | pins]
+# failure -> cancel every original ledger entry, return {:error,finite,:cleanup_unconfirmed}
+```
+
+Do not expose private numeric stats as authority, do not reuse generic rollback that reads pin identities, and do not send the ledger in snapshot error. release_checked iterates accepted pins under one Dc and reports finite status; no errors list/history/new worker.
+- [x] Add REAL T post-owner-reply postcheck regression: actual T.pin_many/5 must receive a real owner success, then fail original D or holder-liveness postcheck under a deterministic test-owned barrier/BEAM trace synchronization. Its existing T.cancel/2 sends one current-operation control; checked Store then rolls back ALL original ledger entries, including that operation again. Observe TWO sends for the same original current operation/acquirer, one per earlier started entry, finite cleanup_unconfirmed and no Router/early refund. Preserve production T semantics, no fabricated receipt/provider or dedup workaround. A small real path plus independent65*Ccancel maximum-role assertion suffices; maxPID or64 fake identities do not.
+- [x] Add arity4/Store message handling with holder===caller and final D/live-holder check; no effect on start/options/prepare/activate/preparation baseline accounting. Success complete generation/router/pins shape stays unchanged; errors triple status is checked-only. Run focused core HTTP tests.
+
+## Task 3.5: Mandatory actual-source constructor gate BEFORE first Admission use
+
+This is part of the SAME runtime stage. Earlier independent RED and direct checked-Store/owner/constructor tests remain authorized; they do not qualify B for Admission. Task4 must not first charge B and defer constructor validation to Task6.
+
+- [x] Freeze actual implemented Task1–3 source, including actual compact/requester context/plan/call constructors needed by Task4. Stage constructor implementation without activating the B-consuming endpoint connection; no runtime toggle/helper/process is authorized for this staging. Complete binding lists every actual tuple/list/map/wire/alias/known-descriptor/control constructor, owner/lifetime/multiplicity/timeout. Source hashes and current loaded toolchain must identify the exact candidate. A design-only proposed constructor table does not pass this gate.
+- [x] Independently rederive the WHOLE runtime fixed point, all numeric roles and subtotals from that actual source. Set cancel_control multiplicity65 and check65*Ccancel vs historical64*Ccancel explicitly; preserve historical worksheet tests/old totals under conditional qualification. Include real T self-cancel plus complete Store ledger rollback, full acquire/control/result wrappers, actual public release/2 shared deadline, update/4 actual timeout, compact constructor and timing/scalar roots. Do not charge oldB or a guessed delta.
+- [x] Assign bounded independent SPEC and CODE reviews of actual candidate+numeric table+all subtotals. BOTH must PASS. Record source hashes, complete row table and exact rederived B, explicit conclusions for double-send65 and no report/rows pre-Admission. These are constructor reviews in addition to the final full-stage reviews; no Astra third round/reset.
+- [x] After any review repairs, run FRESH exact focused nonzero tests with warnings-as-errors and joined exits on the reviewed candidate:
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 --only checked_capture_constructor apps/gaoxy_proxy/test/managed_generation_accounting_test.exs apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs apps/gaoxy_http/test/generation_checked_capture_test.exs apps/gaoxy_http/test/generation_resources_test.exs apps/gaoxy_proxy/test/upstream_transports_test.exs apps/gaoxy_proxy/test/upstream_groups_test.exs apps/gaoxy/test/admission_timeout_test.exs
+```
+
+This exact tag-filtered command executes every required checkpoint constructor/direct checked-Store/real-T-postcheck/public-API case; all were tagged checked_capture_constructor when first written. Record actual executed and excluded counts separately; do not claim whole files passed. Runtime-consuming cases are explicitly later-stage acceptance tests and remain NOT RUN until this checkpoint closes. Verify each required checkpoint case is selected and nonzero; a missing/tagged-out required case fails the gate. Run full unfiltered groups at final acceptance. No B-consuming Admission integration test may execute before gate closure.
+
+- [x] Parent issues gate receipt with actual candidate hashes, independent SPEC/CODE PASS, fresh counts/exits, full runtime table and exactB. THEN connect the reviewed compact B to Admission in Task4 and run those tests. Any wiring/repair changing charged constructors/wrappers/timeouts/lifetimes/multiplicities reopens this SAME gate BEFORE further B-consuming execution. Final Task6 independent end-to-end review remains required.
+
+## Task 4: Admission-before-effects and C5 requester integration
+
+Entry requires completed Task3.5 receipt. No runtime B is charged before that receipt.
+
+- [x] New `generation_checked_capture_test.exs` uses a REAL Admission lease owned by the actual Generation caller. Put Store/provider at deterministic barriers. Reject exactly one byte short of requiredB; assert no snapshot request/provider entry/Router entry and unchanged real gate charge. At exact required charge, block provider at its entry and inspect actual public Admission.status: charge includes retained+B before provider entry. A mocked Admission callback or synthetic observation is insufficient.
+- [x] Opt-in call must construct only original bounded context plus five-tuple before update. Relative update timeout=min(5000,remainingD); zero refuses before dispatch. On admitted Store success preflight actual new+existing captures then append. On append error bounded-release accepted new pins; keep finite primary and one acquisition event only for uncertainty.
+- [x] Table-driven real Generation.call C5 tests cover Router success, returned error with arbitrary original reason, raise exception struct, throw exact nested value, exit exact reason; combine each with release success/error/raise/throw/exit/shared-deadline. Observe exact original result/class/value/stack (use a stable endpoint stack marker, not newly generated stacks). Assert Router called once, each accepted release at most once, primary never replaced, no raw errors in telemetry. Raising/throwing/exiting observer also cannot replace primary or trigger a second event.
+- [x] Implement narrowly scoped Router try/catch and safe cleanup per paired design. Only requester emits bounded empty-scope event; Store/Resources do not. Success+failed release returns finite `generation_pin_release_failed` with latest exchange; failed/raised Router retains exact original outcome. No second wire response claim.
+- [x] Drive ordinary Exchange body poll, retained buffer updates, response send/trailers/finalize and error result; public gate status must retainB until normal lease teardown. Confirm async cancel sent / cleanup timeout / release success does not refund. No worker-transfer assumptions or new Exchange field.
+
+Run focused integration group:
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_http/test/generation_checked_capture_test.exs apps/gaoxy_http/test/generation_resources_test.exs apps/gaoxy_http/test/generation_test.exs apps/gaoxy_proxy/test/managed_generation_accounting_test.exs apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs
+```
+
+## Task 5: Genuine owner boundaries and native capture endpoint
+
+- [x] Build REAL managed T and G-H1 resources through current public prepare/activate/handles APIs (existing `upstream_transport_generation_test.exs` fixtures show live Transports, Groups, health peer and SnapshotEndpoint barrier). Acquire via checked Store, not a fabricated provider model. Capture complete G7/T8 public receipts and verify exact constructor formulas/correlation/release. Source R proof remains the conservative73862/75921 scalar-profile maxima; observed small native node/PID/ref samples do not claim those maxima.
+- [x] Genuine >Q case: create a real G-H1 near-H valid batch using public handles and bounded actual resources, with a deterministic source-derived count/payload choice yielding valid manifestETF<=H but complete returned pin singleton>Q (choose manifest in last available bytes belowH; pin overhead measured from complete source constructor with actual public PID/ref/epoch values). Keep exact complete receipt and public acquisition evidence; reject capacity BEFORE accumulator cons, cancel original Store operation, confirm no Router dispatch and uncertainty until public cleanup evidence. Do not invent maxPID, stuff fake owner fields, weaken grammar or shrink the genuine pin. Retain positive real T boundary and complete G/T result/alias arithmetic evidence; scalar maximum proof is source-derived. Test-controlled fixture extension may populate supported bounded handle metadata only where genuine public APIs actually admit it.
+- [x] Native H1: real listener at loopback, endpoint `{Generation,{store,accounting: ManagedGenerationAccounting}}`, real live G-H1/T router resources and raw TCP client. Barrier at endpoint capture proves requester/holder===native process, actual accepted pins and full charged gate status. Return actual HTTP response and release barrier; verify wire completion, owner/public release and ordinary gate teardown. At least one old/new snapshot capture preserves existing native fixture semantics. No claimed native worker transfer.
+- [x] Native downstream-H2: real prior-knowledge loopback TCP preface/SETTINGS/HPACK HEADERS, actual HTTP2 stream worker runs same checked Generation with H1/static managed target. Verify request/response/end-stream, actual G/T capture holder===that worker, Admission before public owner effects, finite deadline, and teardown. Reuse framing idioms from `http2_network_test.exs`; this is downstreamH2 only. Existing upstreamH2 Generation activation exclusion remains tested and unchanged.
+- [x] For both protocols block owner callback behind a finite barrier and verify sibling/listener remains usable where current scope requires; release/join all test-owned peers/tasks/monitors with finite deadlines. No arbitrary sleeps as proof, no private runtime state substituted for actual Admission/public capture boundary. Private test fixture inspection can corroborate, not replace public evidence.
+
+Native focused command (all new acceptance tests in dedicated file; existing regression groups scoped):
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs apps/gaoxy_proxy/test/upstream_transport_generation_test.exs apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs apps/gaoxy_http/test/http2_network_test.exs apps/gaoxy_http/test/native_proxy_seams_test.exs
+```
+
+Stage endpoint requires BOTH protocol smokes; a pure helper/model pass does not satisfy it. A genuine public-owner fixture impossibility is evidenced and diagnosed without faking the receipt or declaring PASS; all unblocked stage work continues.
+
+## Task 6: Fresh qualification, independent review and local commit
+
+- [x] Run new/affected tests above plus direct public owner/API tests, including the new admission_timeout_test.exs and unchanged native_stream/cleanup_attachment regressions; both isolated consumers, strict compile and scoped format pass. Final review and post-review fresh acceptance remain separate below. Do not silently run full umbrella. Exact public API checks:
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy/test/admission_timeout_test.exs apps/gaoxy/test/native_stream_test.exs apps/gaoxy/test/cleanup_attachment_test.exs apps/gaoxy_proxy/test/upstream_groups_test.exs apps/gaoxy_proxy/test/upstream_transports_test.exs
+nix develop --command env 'ERL_FLAGS=+S 2:2' bash scripts/external-consumer.sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' bash scripts/http-consumer.sh
+```
+
+Both consumer scripts create isolated fresh consumers; record actual nonzero executed tests. Core-only result must prove no optional HTTP/proxy/Plug/Bandit/QUIC dependency activation. HTTP consumer proves generic seam compiles with proxy absent. Run strict compile and format ONLY explicit changed production/test files (use exact file list from candidate diff, no repository-wide formatter):
+
+```sh
+nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix compile --warnings-as-errors
+```
+
+- [x] Freeze candidate source/evidence hashes and assign independent Sol SPEC and CODE. SPEC checks Task3.5 actual-source pre-Admission receipt and every design requirement including runtime65-vs-historical64 cancellation coverage, real T postcheck+Store rollback, genuine>Q, raw operands, pre-effect charge, C5 exact precedence, sharedDc, legacy and H2 exclusion. CODE checks complete source role arithmetic/compact numeric-only compute, original ledger-before-effect/authority, no unchecked cons/append in checked path, no ignored release, finite error projection and once-only event. These are actual source+evidence reviews, not a request to spend third Astra recovery.
+- [x] Resolve actionable findings without weakening assertions; log cumulative failures/repair counters. Run fresh affected gates after final candidate changes. Unrelated out-of-scope failures stay visible; stop affected broadening and report them, never repair them silently. Required failed/blocked/unexecuted gate prevents runtime acceptance.
+- [x] Parent writes final stage design/plan/acceptance plus immutable source/toolchain/env/commands/counts/exits/B/role subtotals and genuine peer receipts. Classify PASS/FAIL/BLOCKED/NOT RUN distinctly. Verify all owned commands exited/terminated safely, test-owned suspension restored and no peers/helpers left alive. No touching others' processes.
+- [ ] Stage ONLY owned changed files; inspect index/blob vs frozen candidate. Make local conventional commit `feat(http): account checked native generation captures`. No commit before SPEC+CODE+fresh gates pass. No push/release/deploy/production/certs/Vault/public management/artifact E2E. Finish this one stage at this endpoint; native-worker transfer and upstream-H2 Generation activation remain explicitly deferred to their separately written next bounded stage.
+
+No routine user decision is needed. Completion verdict must state actual commit/source, executed scoped counts/exits, review/fresh gate results and residual boundaries; prepared docs or conditional arithmetic alone must never be reported as completed runtime accounting.
+
+## Execution binding and precision clarification
+
+Execution baseline e189894882bb6a530f2c38538be4efaf384be261. Predecessor feature94d47d11 and closuree189894 have actual committed/index/disk audit, independent SPEC/CODE and fresh24/0 receipts; the earlier conditional preparation language above is historical. Readiness2 PASS_READY_FOR_GATED_RUNTIME_TDD closes design findings only. This paragraph records the initial execution binding; current Task3.5 and runtime outcomes are recorded in the later checkpoint sections.
+
+For conservative known-call-failure/DOWN arithmetic choose max(historical finite-call-reason bound,complete checked err3). validate_manifest/1 and correlate/3 reject with {:error,:invalid_generation_capture}; capacity errors belong to arithmetic/preflight. Descriptor spelling is descriptive; exact row name/order/owner/lifetime/multiplicity/cap/subtotal is normative. New release/2 explicitly checks positive remaining absolute deadline before Lifecycle.call; expired calls return {:error,:deadline_exceeded} without dispatch. release/1 remains unchanged. No new product decision or runtime failure is implied.
+
+Metadata precision: checked_preflight_result uses caller/preflight_return; finite_control_status uses caller/request_end; numeric M/retained/B/retained+B/Bnext/iterations use requester/reservation_return; numeric_timing and cleanup_deadline use requester/cleanup_end; original_deadline uses caller/request_end. All are conservative aggregated roots. Normalize exactly {:deadline_exceeded,:cleanup_pending} to :deadline_exceeded for the real Lifecycle/T public pending outcome; unknown nested reasons still map nonrecursively to generation_unavailable. This keeps the finite vocabulary and constructor caps unchanged.
+
+Execution checkpoints: Task0 source/kickoff/readiness binding recorded; loaded toolchain rebind in progress. Task2 additive public APIs implemented after expected RED58/6 (six missing capability assertions), initial GREEN58/0 with warnings-as-errors, joined/source-stable. Final reviews/fresh constructor gate remain open. No checked budget has been connected to Admission.
+
+## Pre-RED complete callback-envelope correction
+
+A source-only precision audit found two result envelopes omitted from the prepared caps. Keep all53 role identifiers and multiplicities, strengthen plan to max(Pinner,T(E(:ok),Pinner)), where Pinner is the compact five-tuple; strengthen checked_preflight_result to max(T(E(:ok),Map(count:E(64),bytes:E(Q))),T(E(:error),E(:invalid_generation_capture)),T(E(:error),E(:generation_capture_capacity))). These are full original callback results, not projected payloads. Preserve frozen revision2/proposal1 evidence; revised independent test table and every fixed point/precision boundary must be rederived before production adoption. This pre-RED source correction is not a runtime failed GREEN or production repair. No B has been consumed by Admission.
+
+## Constructor gate closure and browser acceptance binding
+
+Tasks0–3.5 completed at pre-admission-constructor-gate1.json: independent actual-source SPEC then CODE PASS, fresh49 executed constructor tests/0 failures/0 warnings. New runtime profile53 roles uses65 cancel controls and B5350589 for M65536/retained0 or11248829 for defaultM/retained0; historical24/0 and64-cancel arithmetic remain unchanged. The exact staged caller body is now moved/renamed into call/2, with byte-identity receipt and no charged-constructor change. Runtime/native acceptance remains open.
+
+Task5 also includes the existing AGENTS local browser requirement: one actual Chrome/CDP loopback H1 navigation through opt-in checked Generation to a real public G-H1/T route and independent raw H1 peer. Verify visible page, actual captured receipts and public Admission charge, successful request-pin release, browser/lease/owner teardown and finite joined children. This verifies the same seam without adding product scope or changing disabled release-artifact E2E. The existing downstream-H2 independent-peer test remains required.
+
+
+## Runtime verification checkpoint — 2026-10-16
+
+Task4 passes integration-green2:221/0 (HTTP171/proxy50), with all120 named C5 combinations and33 internal contract subcases retained. Task5 passes native-green1:144/0, including real public G7/T8, genuine manifest<=H/complete-pin singleton>Q, old/new native H1 and downstream-H2 capture, sibling/PING progress and teardown. http-green1 executes243/0; compat-green1 executes82/0. Both isolated consumers pass with1 and2 executed tests using a separately fsck-qualified temporary Git source at the exact unchanged thousand_island lock. Direct network and first local-route failures stay immutable and are not acceptance. Strict compile and scoped format both pass. These commands overlap; counts are executions per command, not summed distinct cases.
+
+The source-reviewed browser runner2 passes browser-green2/qualification.json:one complete actual Chrome/CDP H1 case, independently calculated B11248838 at retained1336, public gate11250174 before both owner effects, real receipt correlation, zero native lease/cleanup accounting, public resource teardown and all actor groups joined with exit0 and no forced cleanup. browser-green1 remains FAIL because its raw peer treated idle recv reset as an error. The bounded reviewed fixture repair accepts reset only after complete response writes with no partial request; original acceptance assertions remain.
+
+Counters now:current completed failedGREEN6 (5ExUnit +1browser), aborted orchestration1, production repair1, post-GREEN fixture repairs5, pre-GREEN fixture correction1; inherited group24/root27 yields cumulative group30/root34. Consumer transport failures are separate environment events. Astra2/2 remains exhausted. Final full-stage SPEC then CODE, fresh scoped union and local commit are still required.
+
+## Full-stage review and fresh acceptance closure — 2026-10-16
+
+The preceding runtime checkpoint is historical. candidate-freeze1.json binds230 source hashes and164 evidence hashes. Independent full-stage SPEC then CODE both PASS with no actionable findings (gaoxy-native-generation-full-spec1.json and gaoxy-native-generation-full-code1.json). Post-review acceptance-fresh1.json executes the unfiltered scoped union including compatibility after the actual call/2 connection:core27/0,HTTP300/0,proxy166/0,493 executed tests,zero warnings/skips/exclusions,exit0. Source stays identical to both reviews, and the direct process/group joined without termination. Final documentation/evidence closeout does not change charged constructors.
+
+metadata-precheck-failure1.json preserves the parent's separate schema/precheck error and missing exit check before starting that valid fresh run; actual reviews already passed, no source/assertion changed. Cumulative group failedGREEN30/root failure events35 now include the extra metadata event; immutable review/freeze counters retain their original root34. Stage failedGREEN6, runtime abort1, metadata failure1, production repair1, post-GREEN fixture repairs5, pre-GREEN fixture correction1, Astra2/2 unchanged. Index/blob custody and the local feature commit are the remaining stage actions.

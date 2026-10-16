@@ -20,6 +20,10 @@ defmodule Gaoxy.Admission do
   def begin(gate, lease, bytes), do: GenServer.call(gate, {:begin, lease, bytes})
   def retain(gate, lease, bytes), do: GenServer.call(gate, {:retain, lease, bytes})
   def update(gate, lease, bytes), do: GenServer.call(gate, {:update, lease, bytes})
+
+  def update(gate, lease, bytes, timeout) when is_integer(timeout) and timeout > 0,
+    do: GenServer.call(gate, {:update, lease, bytes}, timeout)
+
   def adjust_bytes(gate, lease, delta), do: GenServer.call(gate, {:adjust_bytes, lease, delta})
   def start_send(gate, lease, bytes), do: GenServer.call(gate, {:start_send, lease, bytes})
 

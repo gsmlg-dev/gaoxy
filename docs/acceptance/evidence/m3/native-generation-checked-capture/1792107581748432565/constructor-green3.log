@@ -1,0 +1,94 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:checked_capture_constructor]
+
+[32m.[0m[32m.[0m[32m.[0m
+Finished in 5.5 seconds (5.5s async, 0.00s sync)
+[32m3 tests, 0 failures[0m
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:checked_capture_constructor]
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 4.6 seconds (4.6s async, 0.00s sync)
+[32m152 tests, 0 failures, 134 excluded[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:checked_capture_constructor]
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m      [33mwarning:[0m comparison between distinct types found:
+
+          protocol == :http1
+
+      given types:
+
+          :http2 == :http1
+
+      where "protocol" was given the type:
+
+          # type: :http2
+          # from: test/managed_generation_checked_capture_test.exs:1190:16
+          protocol = :http2
+
+      While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+      typing violation found at:
+      │
+ 1231 │       socket = if protocol == :http1, do: connect(f.instance), else: socket
+      │ [33m                           ~[0m
+      │
+      └─ test/managed_generation_checked_capture_test.exs:1231:28: Gaoxy.Proxy.ManagedGenerationCheckedNativeTest."test http2 checked native old and new captures pay Admission before real owners and finish wire cleanup"/1
+
+      [33mwarning:[0m comparison between distinct types found:
+
+          protocol == :http1
+
+      given types:
+
+          :http2 == :http1
+
+      where "protocol" was given the type:
+
+          # type: :http2
+          # from: test/managed_generation_checked_capture_test.exs:1190:16
+          protocol = :http2
+
+      While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+      typing violation found at:
+      │
+ 1234 │         if protocol == :http1 do
+      │ [33m                    ~[0m
+      │
+      └─ test/managed_generation_checked_capture_test.exs:1234:21: Gaoxy.Proxy.ManagedGenerationCheckedNativeTest."test http2 checked native old and new captures pay Admission before real owners and finish wire cleanup"/1
+
+      [33mwarning:[0m unknown key .active in expression:
+
+          baseline.active
+
+      the given type does not have the given key:
+
+          dynamic(%{retained_bytes: integer()})
+
+      where "baseline" was given the type:
+
+          # type: dynamic(%{retained_bytes: integer()})
+          # from: test/managed_generation_checked_capture_test.exs:1203:16
+          baseline = protocol_baseline(socket, f.instance, protocol)
+
+      typing violation found at:
+      │
+ 1239 │             status.active == baseline.active and status.retained_bytes == baseline.retained_bytes
+      │ [33m                                      ~~~~~~[0m
+      │
+      └─ test/managed_generation_checked_capture_test.exs:1239:39: Gaoxy.Proxy.ManagedGenerationCheckedNativeTest."test http1 checked native old and new captures pay Admission before real owners and finish wire cleanup"/1
+
+[32m.[0m[32m.[0m[32m.[0m
+Finished in 5.5 seconds (4.8s async, 0.7s sync)
+[32m105 tests, 0 failures, 77 excluded[0m
+[31m
+ERROR! Test suite aborted after successful execution due to warnings while using the --warnings-as-errors option[0m

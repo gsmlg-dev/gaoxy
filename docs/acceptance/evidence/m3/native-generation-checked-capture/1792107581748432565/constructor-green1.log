@@ -1,0 +1,39 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:checked_capture_constructor]
+
+[32m.[0m[32m.[0m[32m.[0m
+Finished in 5.3 seconds (5.3s async, 0.00s sync)
+[32m3 tests, 0 failures[0m
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:checked_capture_constructor]
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m     [31merror:[0m cannot invoke remote function request.token/0 inside a match
+     │
+ 957 │       refute_receive {token, :snapshot_entered, _, _, _, _} when token == request.token, 0
+     │ [31m                                                                                  ^[0m
+     │
+     └─ test/generation_checked_capture_test.exs:957:83: Gaoxy.HTTP.GenerationCheckedRuntimeTest."test one byte short of fixture B refuses before Store provider or Router effects"/1
+
+     [31merror:[0m cannot find or invoke local when/2 inside a match. Only macros can be invoked inside a match and they must be defined before their invocation. Called as: {token, :snapshot_entered, _, _, _, _} when token == request.token
+     │
+ 957 │       refute_receive {token, :snapshot_entered, _, _, _, _} when token == request.token, 0
+     │ [31m                                                            ^[0m
+     │
+     └─ test/generation_checked_capture_test.exs:957:61: Gaoxy.HTTP.GenerationCheckedRuntimeTest."test one byte short of fixture B refuses before Store provider or Router effects"/1
+
+
+== Compilation error in file test/generation_checked_capture_test.exs ==
+** (CompileError) test/generation_checked_capture_test.exs: cannot compile module Gaoxy.HTTP.GenerationCheckedRuntimeTest (errors have been logged)
+    (stdlib 7.3.0.3) lists.erl:2466: :lists.foldl/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (ex_unit 1.18.5) expanding macro: ExUnit.Assertions.refute_receive/2
+    test/generation_checked_capture_test.exs:957: Gaoxy.HTTP.GenerationCheckedRuntimeTest."test one byte short of fixture B refuses before Store provider or Router effects"/1

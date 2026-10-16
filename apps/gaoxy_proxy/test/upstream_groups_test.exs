@@ -209,6 +209,102 @@ defmodule Gaoxy.Proxy.UpstreamGroupsTest do
     assert {:error, :stale_group} = UpstreamGroups.status(handle)
   end
 
+  @tag :checked_capture_constructor
+  test "deadline release/2 releases a real request pin and release/1 keeps its contract" do
+    assert_release_deadline_api!()
+    {_owner, handle, baseline} = release_deadline_group_fixture()
+    d = Lifecycle.deadline(5000)
+    assert {:ok, [request]} = Resources.pin_many([handle], self(), :request, d)
+    assert %{pins: 2} = UpstreamGroups.status(handle)
+    assert :ok = apply(UpstreamGroups, :release, [request, d])
+    assert %{pins: 1} = UpstreamGroups.status(handle)
+    assert :ok = UpstreamGroups.release(baseline)
+    assert {:error, :stale_group} = UpstreamGroups.status(handle)
+  end
+
+  @tag :checked_capture_constructor
+  test "deadline release/2 rejects expired work without dispatch and reuses one absolute deadline" do
+    assert_release_deadline_api!()
+    {owner, handle, baseline} = release_deadline_group_fixture()
+    {debug, trace} = release_deadline_spy(owner)
+
+    try do
+      before = UpstreamGroups.status(handle)
+      assert %{pins: 1} = before
+
+      assert {:error, :deadline_exceeded} =
+               apply(UpstreamGroups, :release, [baseline, Lifecycle.now() - 1])
+
+      assert ^before = UpstreamGroups.status(handle)
+      refute_receive {:release_deadline_dispatch, ^trace, _}, 0
+      assert :ok = :sys.suspend(owner, 1000)
+
+      try do
+        d = Lifecycle.deadline(50)
+
+        assert {:error, {:deadline_exceeded, :cleanup_pending}} =
+                 apply(UpstreamGroups, :release, [baseline, d])
+
+        assert Lifecycle.remaining(d) == 0
+        assert {:error, :deadline_exceeded} = apply(UpstreamGroups, :release, [baseline, d])
+      after
+        assert :ok = :sys.resume(owner, 1000)
+      end
+
+      # The first timed-out call was already queued. Its eventual release is
+      # real, but the expired retry must never dispatch a second request.
+      assert {:error, :stale_group} = UpstreamGroups.status(handle)
+      assert_receive {:release_deadline_dispatch, ^trace, ^baseline}, 1000
+      refute_receive {:release_deadline_dispatch, ^trace, _}, 0
+    after
+      if Process.alive?(owner), do: :sys.remove(owner, debug, 1000)
+    end
+  end
+
+  defp assert_release_deadline_api! do
+    assert Code.ensure_loaded?(UpstreamGroups)
+
+    assert function_exported?(UpstreamGroups, :release, 2),
+           "missing additive UpstreamGroups.release/2 absolute-deadline API"
+  end
+
+  defp release_deadline_group_fixture do
+    owner = start_supervised!({UpstreamGroups, instance: self(), limits: %{probe_bytes: 1}})
+
+    assert {:ok, config} =
+             UpstreamGroups.compile(%{
+               id: "deadline",
+               members: [%{id: "a", upstream: "http://127.0.0.1:1"}]
+             })
+
+    d = Lifecycle.deadline(5000)
+    assert {:ok, handle, preparation} = UpstreamGroups.prepare(owner, config, self(), d)
+    assert {:ok, [baseline]} = Resources.pin_many([handle], self(), :baseline, d)
+    assert :ok = Resources.release(preparation)
+    assert %{pins: 1, lifecycle: :active} = UpstreamGroups.status(handle)
+    {owner, handle, baseline}
+  end
+
+  defp release_deadline_spy(owner) do
+    observer = self()
+    trace = make_ref()
+
+    debug = fn state, event, _ ->
+      case event do
+        {:in, {:"$gen_call", {_caller, _tag}, {:release, pin}}} ->
+          send(observer, {:release_deadline_dispatch, trace, pin})
+
+        _ ->
+          :ok
+      end
+
+      state
+    end
+
+    assert :ok = :sys.install(owner, {debug, nil}, 1000)
+    {debug, trace}
+  end
+
   defp head_peer do
     {:ok, listener} = :gen_tcp.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}])
     {:ok, {_, port}} = :inet.sockname(listener)

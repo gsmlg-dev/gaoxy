@@ -104,6 +104,19 @@ defmodule Gaoxy.HTTP.Generation do
   def reload(_, _, _), do: {:error, :invalid_reload_timeout}
 
   @impl Gaoxy.HTTP.Endpoint
+  def init({store, [accounting: accounting]}) do
+    with true <- checked_accounting?(accounting),
+         true <- is_pid(store) or valid_name?(store),
+         pid when is_pid(pid) <- GenServer.whereis(store),
+         {:ok, limits} <- request(pid, :limits) do
+      {:ok, %{store: pid, max_config_bytes: limits.max_config_bytes, accounting: accounting}}
+    else
+      _ -> {:error, :invalid_generation_store}
+    end
+  rescue
+    ArgumentError -> {:error, :invalid_generation_store}
+  end
+
   def init(store) do
     with true <- is_pid(store) or valid_name?(store),
          pid when is_pid(pid) <- GenServer.whereis(store),
@@ -117,6 +130,41 @@ defmodule Gaoxy.HTTP.Generation do
   end
 
   @impl Gaoxy.HTTP.Endpoint
+  def call(exchange, %{store: store, max_config_bytes: m, accounting: accounting}) do
+    context =
+      {store, self(), exchange.gate, exchange.lease, :request, exchange.deadline,
+       Exchange.retained_bytes(exchange)}
+
+    with {:ok, {:native_generation_capture_v1, ^m, 65_536, 65_536, b}} <-
+           checked_reservation(accounting, m, context) do
+      charged = %{exchange | route_bytes: exchange.route_bytes + b}
+
+      with :ok <- checked_admission(charged, accounting),
+           {:ok, _generation, router, pins} <-
+             snapshot_for_request(store, self(), charged.deadline, accounting) do
+        case checked_append(accounting, pins, charged.resource_pins) do
+          :ok ->
+            checked_router(charged, router, pins, store, accounting)
+
+          {:error, reason} ->
+            checked_cleanup(pins, charged, store, accounting, :acquisition)
+            {:error, reason, charged}
+        end
+      else
+        {:error, reason} ->
+          {:error, reason, charged}
+
+        {:error, reason, status} ->
+          if status == :cleanup_unconfirmed,
+            do: checked_observe(charged, store, :acquisition)
+
+          {:error, reason, charged}
+      end
+    else
+      {:error, reason} -> {:error, reason, exchange}
+    end
+  end
+
   def call(exchange, %{store: store, snapshot_bytes: bytes}) do
     exchange = Map.update!(exchange, :route_bytes, &(&1 + bytes))
 
@@ -132,6 +180,192 @@ defmodule Gaoxy.HTTP.Generation do
     else
       {:error, reason} -> {:error, reason, exchange}
     end
+  end
+
+  @checked_min -9_223_372_036_854_775_808
+  @checked_max 9_223_372_036_854_775_807
+  @checked_reasons ~w(invalid_generation_capture generation_capture_capacity generation_unavailable
+    generation_pin_release_failed cleanup_unconfirmed invalid_resource_holder byte_limit
+    stale_generation deadline_exceeded cleanup_pending)a
+  @accounting_callbacks [
+    reservation: 2,
+    validate_manifest: 1,
+    correlate: 3,
+    preflight_cons: 2,
+    preflight_append: 2,
+    finite_checked_reason: 1,
+    release: 2
+  ]
+
+  def snapshot_for_request(store, holder, deadline, accounting) do
+    remaining = if checked_deadline?(deadline), do: checked_remaining(deadline), else: 0
+
+    cond do
+      not checked_deadline?(deadline) ->
+        {:error, :invalid_generation_capture, :clean}
+
+      remaining == 0 ->
+        {:error, :deadline_exceeded, :clean}
+
+      true ->
+        case GenServer.call(
+               store,
+               {:snapshot_for_request, holder, deadline, accounting},
+               remaining
+             ) do
+          {:ok, _, %Router{}, pins} = result when is_list(pins) ->
+            result
+
+          {:error, reason, status} when status in [:clean, :cleanup_unconfirmed] ->
+            {:error, checked_reason(accounting, reason), status}
+
+          _ ->
+            {:error, :generation_unavailable, :cleanup_unconfirmed}
+        end
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :deadline_exceeded, :cleanup_unconfirmed}
+    _, _ -> {:error, :generation_unavailable, :cleanup_unconfirmed}
+  end
+
+  defp checked_accounting?(module) do
+    is_atom(module) and Code.ensure_loaded?(module) and
+      Enum.all?(@accounting_callbacks, fn {name, arity} ->
+        function_exported?(module, name, arity)
+      end)
+  end
+
+  defp checked_deadline?(deadline),
+    do: is_integer(deadline) and deadline >= @checked_min and deadline <= @checked_max - 1_000
+
+  defp checked_remaining(deadline) do
+    now = Lifecycle.now()
+    remaining = deadline - now
+
+    if now >= @checked_min and now <= @checked_max and remaining in 1..@checked_max,
+      do: remaining,
+      else: 0
+  end
+
+  defp checked_reservation(accounting, m, context) do
+    case accounting.reservation(m, context) do
+      {:ok, {:native_generation_capture_v1, ^m, 65_536, 65_536, b}} = result
+      when is_integer(b) and b >= 0 ->
+        result
+
+      {:error, reason} ->
+        {:error, checked_reason(accounting, reason)}
+
+      {:ok, _} ->
+        {:error, :invalid_generation_capture}
+
+      _ ->
+        {:error, :generation_unavailable}
+    end
+  catch
+    _, _ -> {:error, :generation_unavailable}
+  end
+
+  defp checked_admission(exchange, accounting) do
+    remaining =
+      if checked_deadline?(exchange.deadline), do: checked_remaining(exchange.deadline), else: 0
+
+    if remaining > 0 do
+      case Admission.update(
+             exchange.gate,
+             exchange.lease,
+             Exchange.retained_bytes(exchange),
+             min(5_000, remaining)
+           ) do
+        :ok -> :ok
+        {:error, reason} -> {:error, checked_reason(accounting, reason)}
+        _ -> {:error, :generation_unavailable}
+      end
+    else
+      {:error, :deadline_exceeded}
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :deadline_exceeded}
+    _, _ -> {:error, :generation_unavailable}
+  end
+
+  defp checked_append(accounting, pins, existing) do
+    case accounting.preflight_append(pins, existing) do
+      {:ok, %{count: count, bytes: bytes} = summary}
+      when map_size(summary) == 2 and count in 0..64 and bytes in 2..65_536 ->
+        :ok
+
+      {:error, reason} ->
+        {:error, checked_reason(accounting, reason)}
+
+      _ ->
+        {:error, :generation_unavailable}
+    end
+  catch
+    _, _ -> {:error, :generation_unavailable}
+  end
+
+  defp checked_router(exchange, router, pins, store, accounting) do
+    captured = %{exchange | resource_pins: pins ++ exchange.resource_pins}
+
+    result =
+      try do
+        Router.call(captured, router)
+      catch
+        kind, value ->
+          stack = __STACKTRACE__
+          checked_cleanup(pins, exchange, store, accounting, :release)
+          :erlang.raise(kind, value, stack)
+      end
+
+    case checked_cleanup(pins, exchange, store, accounting, :release) do
+      :ok ->
+        result
+
+      {:error, :generation_pin_release_failed} ->
+        case result do
+          {:ok, latest} -> {:error, :generation_pin_release_failed, latest}
+          _ -> result
+        end
+    end
+  end
+
+  defp checked_cleanup(pins, exchange, store, accounting, stage) do
+    case Resources.release_checked(pins, exchange.deadline + 1_000, accounting) do
+      :ok ->
+        :ok
+
+      _ ->
+        checked_observe(exchange, store, stage)
+        {:error, :generation_pin_release_failed}
+    end
+  catch
+    _, _ ->
+      checked_observe(exchange, store, stage)
+      {:error, :generation_pin_release_failed}
+  end
+
+  defp checked_observe(exchange, store, stage) do
+    Gaoxy.Telemetry.emit(:generation_capture_cleanup, %{count: 1}, %{}, %{
+      store: store,
+      holder: self(),
+      lease: exchange.lease,
+      stage: stage,
+      cleanup: :cleanup_unconfirmed
+    })
+
+    :ok
+  catch
+    _, _ -> :ok
+  end
+
+  defp checked_reason(accounting, raw) do
+    case accounting.finite_checked_reason(raw) do
+      reason when reason in @checked_reasons -> reason
+      _ -> :generation_unavailable
+    end
+  catch
+    _, _ -> :generation_unavailable
   end
 
   defp options(options) do
@@ -203,6 +437,17 @@ defmodule Gaoxy.HTTP.Generation.Store do
       {:reply, {:ok, state.router.generation, state.router, pins}, state}
     else
       {:error, reason} -> {:reply, {:error, reason}, state}
+    end
+  end
+
+  def handle_call({:snapshot_for_request, holder, deadline, accounting}, {caller, _}, state) do
+    if holder === caller do
+      case Resources.pin_many_checked(state.router.resources, holder, deadline, accounting) do
+        {:ok, pins} -> {:reply, {:ok, state.router.generation, state.router, pins}, state}
+        {:error, _, _} = error -> {:reply, error, state}
+      end
+    else
+      {:reply, {:error, :invalid_resource_holder, :clean}, state}
     end
   end
 

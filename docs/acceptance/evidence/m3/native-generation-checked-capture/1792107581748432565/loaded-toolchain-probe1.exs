@@ -1,0 +1,2 @@
+info = %{otp: System.otp_release(), elixir: System.version(), erts: to_string(:erlang.system_info(:version)), node: node(), node_etf_bytes: :erlang.external_size(node()), local_pid_etf_bytes: :erlang.external_size(self()), local_reference_etf_bytes: :erlang.external_size(make_ref()), sources: Enum.map([:gen, :gen_server, GenServer], fn m -> %{module: m, beam: to_string(:code.which(m)), compile: inspect(m.module_info(:compile))} end), stdlib_dir: to_string(:code.lib_dir(:stdlib)), elixir_dir: to_string(:code.lib_dir(:elixir))}
+IO.puts(JSON.encode!(info))

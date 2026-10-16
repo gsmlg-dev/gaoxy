@@ -357,6 +357,14 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
   def release(%{owner: owner} = pin),
     do: Lifecycle.call(owner, {:release, pin}, Lifecycle.deadline(100))
 
+  def release(%{owner: owner} = pin, deadline) when is_pid(owner) and is_integer(deadline) do
+    if Lifecycle.remaining(deadline) > 0,
+      do: Lifecycle.call(owner, {:release, pin}, deadline),
+      else: {:error, :deadline_exceeded}
+  end
+
+  def release(_, _), do: {:error, :invalid_resource_pin}
+
   @impl Gaoxy.HTTP.Resources
   def cancel(owner, operation) do
     send(owner, {:cancel_pin, self(), operation})

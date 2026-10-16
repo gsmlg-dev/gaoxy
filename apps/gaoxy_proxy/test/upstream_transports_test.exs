@@ -1770,6 +1770,94 @@ defmodule Gaoxy.Proxy.UpstreamTransportsTest do
     barrier
   end
 
+  @tag :checked_capture_constructor
+  test "deadline release/2 releases a real request pin and release/1 keeps its contract" do
+    assert_release_deadline_api!()
+    {_instance, owner} = owner()
+    d = deadline()
+    assert {:ok, handle, preparation} = Transports.prepare(owner, policy_source(), self(), d)
+    assert {:ok, [baseline]} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :baseline, d)
+    assert :ok = Gaoxy.HTTP.Resources.release(preparation)
+    assert {:ok, [request]} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :request, d)
+    assert {:ok, %{pins: 2}} = Transports.status(owner)
+    assert :ok = apply(Transports, :release, [request, d])
+    assert {:ok, %{pins: 1}} = Transports.status(owner)
+    assert :ok = Transports.release(baseline)
+    assert {:ok, %{pins: 0}} = Transports.status(owner)
+    eventually(fn -> match?({:ok, %{resources: 0, helpers: 0}}, Transports.status(owner)) end)
+  end
+
+  @tag :checked_capture_constructor
+  test "deadline release/2 rejects expired work without dispatch and reuses one absolute deadline" do
+    assert_release_deadline_api!()
+    {_instance, owner} = owner()
+    d = deadline()
+    assert {:ok, handle, preparation} = Transports.prepare(owner, policy_source(), self(), d)
+    assert {:ok, [baseline]} = Gaoxy.HTTP.Resources.pin_many([handle], self(), :baseline, d)
+    assert :ok = Gaoxy.HTTP.Resources.release(preparation)
+    {debug, trace} = release_deadline_spy(owner)
+
+    try do
+      assert {:ok, before} = Transports.status(owner)
+      assert %{pins: 1} = before
+
+      assert {:error, :deadline_exceeded} =
+               apply(Transports, :release, [baseline, Gaoxy.Lifecycle.now() - 1])
+
+      assert {:ok, ^before} = Transports.status(owner)
+      refute_receive {:release_deadline_dispatch, ^trace, _}, 0
+      assert :ok = :sys.suspend(owner, 1000)
+
+      try do
+        absolute = Gaoxy.Lifecycle.deadline(50)
+
+        assert {:error, {:deadline_exceeded, :cleanup_pending}} =
+                 apply(Transports, :release, [baseline, absolute])
+
+        assert Gaoxy.Lifecycle.remaining(absolute) == 0
+
+        assert {:error, :deadline_exceeded} =
+                 apply(Transports, :release, [baseline, absolute])
+      after
+        assert :ok = :sys.resume(owner, 1000)
+      end
+
+      assert {:ok, %{pins: 0}} = Transports.status(owner)
+      assert_receive {:release_deadline_dispatch, ^trace, ^baseline}, 1000
+      refute_receive {:release_deadline_dispatch, ^trace, _}, 0
+      eventually(fn -> match?({:ok, %{resources: 0, helpers: 0}}, Transports.status(owner)) end)
+    after
+      if Process.alive?(owner), do: :sys.remove(owner, debug, 1000)
+    end
+  end
+
+  defp assert_release_deadline_api! do
+    assert Code.ensure_loaded?(Transports)
+
+    assert function_exported?(Transports, :release, 2),
+           "missing additive UpstreamTransports.release/2 absolute-deadline API"
+  end
+
+  defp release_deadline_spy(owner) do
+    observer = self()
+    trace = make_ref()
+
+    debug = fn state, event, _ ->
+      case event do
+        {:in, {:"$gen_call", {_caller, _tag}, {:release, pin}}} ->
+          send(observer, {:release_deadline_dispatch, trace, pin})
+
+        _ ->
+          :ok
+      end
+
+      state
+    end
+
+    assert :ok = :sys.install(owner, {debug, nil}, 1000)
+    {debug, trace}
+  end
+
   defp owner(owner_limits \\ limits()) do
     {:ok, instance} = Gaoxy.start_link()
     Process.unlink(instance)

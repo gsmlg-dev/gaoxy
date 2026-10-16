@@ -133,6 +133,15 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   def release(_), do: {:error, :invalid_resource_pin}
 
+  def release(%{provider: __MODULE__, owner: owner} = pin, deadline)
+      when is_pid(owner) and is_integer(deadline) do
+    if Lifecycle.remaining(deadline) > 0,
+      do: Lifecycle.call(owner, {:release, pin}, deadline),
+      else: {:error, :deadline_exceeded}
+  end
+
+  def release(_, _), do: {:error, :invalid_resource_pin}
+
   @impl true
   def cancel(owner, operation) when is_pid(owner) and is_reference(operation) do
     send(owner, {:cancel_pins, self(), operation})

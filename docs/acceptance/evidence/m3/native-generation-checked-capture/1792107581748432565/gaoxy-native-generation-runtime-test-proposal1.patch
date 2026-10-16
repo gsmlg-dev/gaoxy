@@ -1,0 +1,628 @@
+diff --git a/apps/gaoxy_http/test/generation_checked_capture_test.exs b/apps/gaoxy_http/test/generation_checked_capture_test.exs
+--- a/apps/gaoxy_http/test/generation_checked_capture_test.exs
++++ b/apps/gaoxy_http/test/generation_checked_capture_test.exs
+@@ -628,0 +629,624 @@
++
++
++# Runtime cases are deliberately excluded from the Task 3.5 constructor gate.
++# Execute only after the parent closes that gate on actual source constructors.
++defmodule Gaoxy.HTTP.GenerationCheckedRuntimeTest do
++  use ExUnit.Case, async: false
++  @moduletag capture_log: true
++  alias Gaoxy.Admission
++  alias Gaoxy.HTTP.{Exchange, Generation, Request, Response, Router}
++  alias Gaoxy.HTTP.GenerationCheckedCaptureTest.{Accounting, Provider}
++  @fixture_budget 16_384
++  @prior_route_bytes 37
++
++  defmodule RuntimeAccounting do
++    @budget 16_384
++    def reservation(m, context) do
++      %{observer: observer, token: token} = Process.get(__MODULE__)
++      plan = {:native_generation_capture_v1, m, 65_536, 65_536, @budget}
++      send(observer, {token, :reservation, self(), context, {:ok, plan}})
++      {:ok, plan}
++    end
++
++    defdelegate validate_manifest(handles), to: Accounting
++    defdelegate correlate(pin, entry, holder), to: Accounting
++    defdelegate preflight_cons(pin, pins), to: Accounting
++    defdelegate preflight_append(new, old), to: Accounting
++    defdelegate finite_checked_reason(reason), to: Accounting
++
++    def release(pin, dc) do
++      %{observer: observer, token: token, cleanup: cleanup} = Process.get(__MODULE__)
++      send(observer, {token, :release_attempt, self(), pin, dc})
++      case cleanup do
++        :ok -> Provider.release(pin, dc)
++        :error -> {:error, {:release_raw, token, String.duplicate("r", 70_000)}}
++        :raise -> raise "release fixture raised"
++        :throw -> throw({:release_fixture_throw, token})
++        :exit -> exit({:release_fixture_exit, token})
++        :shared_deadline ->
++          receive do
++          after
++            max(dc - System.monotonic_time(:millisecond), 0) -> {:error, :deadline_exceeded}
++          end
++      end
++    end
++  end
++
++  defmodule Target do
++    def init(options), do: {:ok, options}
++    def resources(options), do: options.handles
++
++    def call(exchange, options) do
++      send(options.observer, {options.token, :router_entered, self(), exchange})
++      latest = %{exchange | close: true}
++      case options.primary do
++        :ok ->
++          result = {:ok, latest}
++          send(options.observer, {options.token, :router_expected, result})
++          result
++        :returned_error ->
++          result = {:error, options.raw, latest}
++          send(options.observer, {options.token, :router_expected, result})
++          result
++        kind when kind in [:raise, :throw, :exit] ->
++          original_marker(options.observer, options.token, kind, options.raw)
++        :ordinary_io -> ordinary_io(latest, options)
++      end
++    end
++
++    # The exact captured stack is evidence; independently invoking a throwing
++    # endpoint and comparing two newly generated stacks would be insufficient.
++    def original_marker(observer, token, kind, raw) do
++      try do
++        case kind do
++          :raise -> raise RuntimeError, message: inspect(raw, limit: :infinity)
++          :throw -> throw(raw)
++          :exit -> exit(raw)
++        end
++      catch
++        class, value ->
++          stack = __STACKTRACE__
++          send(observer, {token, :router_original_abnormal, class, value, stack})
++          :erlang.raise(class, value, stack)
++      end
++    end
++
++    defp ordinary_io(exchange, options) do
++      {:more, polled} = Exchange.poll_connection(exchange, 500)
++      checkpoint(options, :poll, polled)
++      {body, read} = read_all(polled, "", options)
++      true = body == "abc"
++      true = Exchange.request_trailers(read) == [{"x-proof", "kept"}]
++      checkpoint(options, :body_and_request_trailers, read)
++      {:ok, chunked} = Response.send_chunked(read, 200, [{"trailer", "x-out"}])
++      checkpoint(options, :response_head, chunked)
++      :ok = Response.chunk(chunked, "reply")
++      checkpoint(options, :response_chunk, chunked)
++      {:ok, finished} = Response.finish(chunked, [{"x-out", "kept"}])
++      checkpoint(options, :response_trailers_and_finish, finished)
++      send(options.observer, {options.token, :io_finished, self(), finished})
++      receive do
++        {:peer_closed, token} when token == options.token -> :ok
++      after
++        2_000 -> raise "ordinary I/O peer-close barrier not released"
++      end
++      {:error, :closed, failed} = Exchange.poll_connection(finished, 500)
++      checkpoint(options, :peer_error, failed)
++      result = {:error, {:ordinary_peer_error, :closed}, failed}
++      send(options.observer, {options.token, :router_expected, result})
++      result
++    end
++
++    defp read_all(exchange, acc, options) do
++      case Exchange.read_body_step(exchange, 3, 500) do
++        {:more, bytes, next} ->
++          checkpoint(options, :body_piece, next)
++          read_all(next, acc <> bytes, options)
++        {:ok, bytes, next} -> {acc <> bytes, next}
++        {:pending, next} ->
++          if Gaoxy.Lifecycle.remaining(next.deadline) <= 0,
++            do: raise("ordinary body deadline exceeded")
++          read_all(next, acc, options)
++      end
++    end
++
++    defp checkpoint(options, stage, exchange) do
++      send(options.observer, {options.token, :retained_checkpoint, stage, exchange,
++        Admission.status(exchange.gate)})
++    end
++  end
++
++  setup do
++    assert Code.ensure_loaded?(Gaoxy.HTTP.Resources)
++    assert function_exported?(Gaoxy.HTTP.Resources, :pin_many_checked, 4)
++    assert function_exported?(Gaoxy.HTTP.Resources, :release_checked, 3)
++    assert function_exported?(Generation, :snapshot_for_request, 4)
++    :ok
++  end
++
++  @tag :checked_capture_runtime
++  test "one byte short of fixture B refuses before Store provider or Router effects" do
++    fixture = fixture(:ok, @fixture_budget - 1)
++    request = request(fixture, :ok)
++    snapshot_debug = observe_snapshots(fixture, request.token, false)
++    handlers = observe_cleanup(request, :ok)
++    d = deadline(1_000)
++    try do
++      send(request.caller, {:run, d})
++      assert_reservation(fixture, request, d)
++      assert_receive {token, :outcome, {:returned, {:error, :byte_limit, charged}}}
++        when token == request.token, 1_000
++      assert charged.route_bytes == @prior_route_bytes + @fixture_budget
++      assert Admission.status(fixture.gate).retained_bytes == request.initial
++      assert Admission.status(fixture.gate).active == 1
++      assert GenServer.call(hd(fixture.owners), :count) == 1
++      refute_receive {token, :snapshot_entered, _, _, _, _} when token == request.token, 0
++      refute_receive {:checked_provider_entered, _, _, _}, 0
++      refute_receive {token, :router_entered, _, _} when token == request.token, 0
++      refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++      refute_receive {token, :release_attempt, _, _, _} when token == request.token, 0
++    after
++      remove_snapshots(fixture.store, snapshot_debug)
++      detach(handlers)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  @tag :checked_capture_runtime
++  test "real gate contains prior route bytes plus B at Store entry and held provider entry" do
++    fixture = fixture(:ok, @fixture_budget)
++    owner = hd(fixture.owners)
++    :ok = GenServer.call(owner, {:mode, :pause})
++    request = request(fixture, :ok)
++    debug = observe_snapshots(fixture, request.token, true)
++    d = deadline(1_000)
++    try do
++      send(request.caller, {:run, d})
++      assert_reservation(fixture, request, d)
++      assert_receive {token, :snapshot_entered, store_caller, holder, ^d, at_store}
++        when token == request.token, 1_000
++      assert store_caller === request.caller and holder === request.caller
++      assert at_store.retained_bytes == request.initial + @fixture_budget
++      assert_receive {:checked_provider_paused, store, pin} when store == fixture.store, 1_000
++      try do
++        assert pin.holder === request.caller
++        assert Admission.status(fixture.gate).retained_bytes == request.initial + @fixture_budget
++        assert Admission.status(fixture.gate).active == 1
++        refute_receive {token, :router_entered, _, _} when token == request.token, 0
++      after
++        send(fixture.store, {:continue_checked_pin, pin.operation, :normal})
++      end
++      assert_receive {token, :outcome, {:returned, {:ok, _}}} when token == request.token, 1_000
++      assert Admission.status(fixture.gate).retained_bytes == request.initial + @fixture_budget
++      assert GenServer.call(owner, :count) == 1
++    after
++      remove_snapshots(fixture.store, debug)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  @tag :checked_capture_runtime
++  test "suspended real gate timeout starts no Store provider or Router and does not refund a queued update" do
++    fixture = fixture(:ok, @fixture_budget)
++    request = request(fixture, :ok)
++    debug = observe_snapshots(fixture, request.token, false)
++    handlers = observe_cleanup(request, :ok)
++    :ok = :sys.suspend(fixture.gate)
++    assert :erlang.trace(request.caller, true, [:send, {:tracer, self()}]) == 1
++    d = deadline(100)
++    try do
++      send(request.caller, {:run, d})
++      assert_reservation(fixture, request, d)
++      caller = request.caller
++      lease = request.lease
++      gate = fixture.gate
++      charged_bytes = request.initial + @fixture_budget
++      assert_receive {:trace, ^caller, :send,
++        {:"$gen_call", {^caller, _}, {:update, ^lease, ^charged_bytes}}, ^gate}, 1_000
++      assert_receive {token, :outcome, {:returned, {:error, :deadline_exceeded, charged}}}
++        when token == request.token, 1_000
++      assert charged.route_bytes == @prior_route_bytes + @fixture_budget
++      refute_receive {token, :snapshot_entered, _, _, _, _} when token == request.token, 0
++      refute_receive {:checked_provider_entered, _, _, _}, 0
++      refute_receive {token, :router_entered, _, _} when token == request.token, 0
++      refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++      :ok = :sys.resume(fixture.gate)
++      assert Admission.status(fixture.gate).retained_bytes == charged_bytes
++      assert GenServer.call(hd(fixture.owners), :count) == 1
++    after
++      if Process.alive?(fixture.gate), do: :sys.resume(fixture.gate)
++      if Process.alive?(request.caller), do: :erlang.trace(request.caller, false, [:send])
++      remove_snapshots(fixture.store, debug)
++      detach(handlers)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  for observer <- [:ok, :raise, :throw, :exit] do
++    @tag :checked_capture_runtime
++    test "acquisition uncertainty preserves finite primary with observer #{observer}" do
++      run_acquisition_failure(unquote(observer))
++    end
++  end
++
++  for primary <- [:ok, :returned_error, :raise, :throw, :exit],
++      cleanup <- [:ok, :error, :raise, :throw, :exit, :shared_deadline],
++      observer <- [:ok, :raise, :throw, :exit] do
++    @tag :checked_capture_runtime
++    test "C5 #{primary} / release #{cleanup} / observer #{observer}" do
++      run_c5(unquote(primary), unquote(cleanup), unquote(observer))
++    end
++  end
++
++  @tag :checked_capture_runtime
++  test "ordinary body poll retained updates sends trailers finalization and peer error preserve B until teardown" do
++    fixture = fixture(:ordinary_io, @fixture_budget + 65_536)
++    {template, client, raw} = socket_exchange(fixture)
++    request = request(fixture, :ok, template)
++    :ok = :gen_tcp.controlling_process(raw, request.caller)
++    update_debug = observe_updates(fixture.gate, request)
++    handlers = observe_cleanup(request, :ok)
++    d = deadline(3_000)
++    try do
++      :ok = :gen_tcp.send(client, "3\r\nabc\r\n0\r\nx-proof: kept\r\n\r\n")
++      send(request.caller, {:run, d})
++      assert_receive {token, :io_finished, caller, finished}
++        when token == request.token, 2_000
++      assert caller === request.caller
++      assert finished.response === :sent
++      assert finished.response_trailers == []
++      assert finished.route_bytes == @prior_route_bytes + @fixture_budget
++      wire = receive_until(client, "0\r\nx-out: kept\r\n\r\n", deadline(1_000), "")
++      assert wire =~ "HTTP/1.1 200"
++      assert wire =~ "5\r\nreply\r\n"
++      :ok = :gen_tcp.close(client)
++      send(request.caller, {:peer_closed, request.token})
++      assert_receive {token, :router_expected, expected} when token == request.token, 1_000
++      assert_receive {token, :outcome, {:returned, actual}} when token == request.token, 1_000
++      assert actual === expected
++      assert {:error, {:ordinary_peer_error, :closed}, latest} = actual
++      assert Admission.status(fixture.gate).retained_bytes == Exchange.retained_bytes(latest)
++      checkpoints = drain_checkpoints(request.token, [])
++      stages = Enum.map(checkpoints, &elem(&1, 0))
++      for required <- [:poll, :body_and_request_trailers, :response_head,
++        :response_chunk, :response_trailers_and_finish, :peer_error], do: assert(required in stages)
++      for {_stage, exchange, status} <- checkpoints do
++        assert exchange.route_bytes == @prior_route_bytes + @fixture_budget
++        assert status.retained_bytes == Exchange.retained_bytes(exchange)
++        assert status.retained_bytes >= @prior_route_bytes + @fixture_budget
++        assert status.active == 1
++      end
++      updates = drain_updates(request.token, [])
++      assert length(updates) >= 8
++      assert Enum.all?(updates, &(&1 >= @prior_route_bytes + @fixture_budget))
++      assert GenServer.call(hd(fixture.owners), :count) == 1
++      refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++    after
++      :gen_tcp.close(client)
++      remove_snapshots(fixture.gate, update_debug)
++      detach(handlers)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  defp run_acquisition_failure(observer) do
++    fixture = fixture(:ok, @fixture_budget)
++    owner = hd(fixture.owners)
++    :ok = GenServer.call(owner, {:mode, :pause})
++    request = request(fixture, :ok)
++    handlers = observe_cleanup(request, observer)
++    d = deadline(1_000)
++    try do
++      send(request.caller, {:run, d})
++      assert_reservation(fixture, request, d)
++      assert_receive {:checked_provider_paused, store, pin} when store == fixture.store, 1_000
++      raw = {:provider_raw, String.duplicate("a", 70_000)}
++      send(fixture.store, {:continue_checked_pin, pin.operation, {:return, {:error, raw}}})
++      assert_receive {token, :outcome, {:returned, {:error, :generation_unavailable, charged}}}
++        when token == request.token, 1_000
++      assert charged.route_bytes == @prior_route_bytes + @fixture_budget
++      operation = pin.operation
++      store = fixture.store
++      assert_receive {:checked_cancelled, ^owner, ^store, ^operation}, 1_000
++      assert GenServer.call(owner, :count) == 1
++      assert Admission.status(fixture.gate).retained_bytes == request.initial + @fixture_budget
++      assert Admission.status(fixture.gate).active == 1
++      assert_receive {token, :cleanup_event, [:gaoxy, :generation_capture_cleanup], measurements, metadata}
++        when token == request.token, 0
++      assert measurements === %{count: 1}
++      assert metadata === %{store: fixture.store, holder: request.caller, lease: request.lease,
++        stage: :acquisition, cleanup: :cleanup_unconfirmed}
++      assert_receive {token, :observer_invoked} when token == request.token, 0
++      refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++      refute_receive {token, :observer_invoked} when token == request.token, 0
++      refute_receive {token, :router_entered, _, _} when token == request.token, 0
++      refute_receive {token, :release_attempt, _, _, _} when token == request.token, 0
++    after
++      detach(handlers)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  defp run_c5(primary, cleanup, observer) do
++    fixture = fixture(primary, @fixture_budget, 2)
++    request = request(fixture, cleanup)
++    handlers = observe_cleanup(request, observer)
++    d = deadline(500)
++    try do
++      send(request.caller, {:run, d})
++      assert_reservation(fixture, request, d)
++      assert_receive {token, :router_entered, caller, captured} when token == request.token, 1_000
++      assert caller === request.caller
++      assert length(captured.resource_pins) == 2
++      assert Enum.all?(captured.resource_pins, &(&1.holder === caller and &1.kind === :request))
++      assert_receive {token, :outcome, observed} when token == request.token, 2_500
++      if primary in [:ok, :returned_error] do
++        assert_receive {token, :router_expected, original} when token == request.token, 0
++        expected = case {original, cleanup} do
++          {{:ok, latest}, failed} when failed != :ok -> {:error, :generation_pin_release_failed, latest}
++          _ -> original
++        end
++        assert observed === {:returned, expected}
++      else
++        assert_receive {token, :router_original_abnormal, class, value, stack}
++          when token == request.token, 0
++        assert observed === {:caught, class, value, stack}
++        assert Enum.any?(stack, fn
++          {Target, :original_marker, _, _} -> true
++          _ -> false
++        end)
++      end
++      # Call result is joined before checking synchronous callbacks/events.
++      # The requester remains live so its real lease and failed pins persist.
++      assert Process.alive?(request.caller)
++      assert Admission.status(fixture.gate).retained_bytes == request.initial + @fixture_budget
++      assert Admission.status(fixture.gate).active == 1
++      attempts = drain_releases(request.token, [])
++      assert attempts != []
++      assert length(attempts) <= length(captured.resource_pins)
++      refs = Enum.map(attempts, fn {who, pin, dc} ->
++        assert who === request.caller
++        assert pin in captured.resource_pins
++        assert dc === d + 1_000
++        pin.ref
++      end)
++      assert length(refs) == length(Enum.uniq(refs))
++      if cleanup == :ok, do: assert(length(attempts) == 2)
++      if cleanup == :shared_deadline, do: assert(length(attempts) == 1)
++      if cleanup == :ok do
++        refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++        refute_receive {token, :observer_invoked} when token == request.token, 0
++        for owner <- fixture.owners, do: assert(GenServer.call(owner, :count) == 1)
++      else
++        assert_receive {token, :cleanup_event, [:gaoxy, :generation_capture_cleanup], measurements, metadata}
++          when token == request.token, 0
++        assert measurements === %{count: 1}
++        assert metadata === %{store: fixture.store, holder: request.caller, lease: request.lease,
++          stage: :release, cleanup: :cleanup_unconfirmed}
++        assert :erlang.external_size({measurements, metadata}) < 1_024
++        assert_receive {token, :observer_invoked} when token == request.token, 0
++        refute_receive {token, :cleanup_event, _, _, _} when token == request.token, 0
++        refute_receive {token, :observer_invoked} when token == request.token, 0
++        for owner <- fixture.owners, do: assert(GenServer.call(owner, :count) == 2)
++      end
++      refute_receive {token, :router_entered, _, _} when token == request.token, 0
++      refute_receive {token, :release_attempt, _, _, _} when token == request.token, 0
++    after
++      detach(handlers)
++      finish_request(request, fixture.gate)
++    end
++  end
++
++  defp fixture(primary, available, owner_count \\ 1) do
++    token = make_ref()
++    owners = for i <- 1..owner_count,
++      do: start_supervised!({Provider, self()}, id: {:runtime_provider, i})
++    handles = Enum.map(owners, fn owner ->
++      %{provider: Provider, owner: owner, owner_epoch: make_ref(), resource: make_ref()}
++    end)
++    raw = {:router_raw, token, [String.duplicate("p", 70_000), %{nested: {:exact, token}}]}
++    options = %{observer: self(), token: token, handles: handles, primary: primary, raw: raw}
++    assert {:ok, router} = Router.compile([%{target: {Target, options}}])
++    store = start_supervised!({Generation, router: router})
++    assert {:ok, spec} = Gaoxy.HTTP.service_spec(endpoint: {Target, options})
++    template = %Exchange{request: %Request{method: "GET", path: "/", host: "localhost",
++      version: :"HTTP/1.1", head_bytes: 0, keep_alive: true}, buffer: "", route_bytes: @prior_route_bytes,
++      limits: spec.handler_options.http_limits, body: Gaoxy.HTTP.HTTP1.Body.new(:none),
++      instance: make_ref(), service: :runtime_fixture}
++    initial = Exchange.retained_bytes(template)
++    gate = start_supervised!({Admission, {%{spec.limits | max_bytes: initial + available},
++      %{scope_marker: :must_not_appear_in_cleanup}}})
++    %{store: store, owners: owners, gate: gate, token: token, template: template,
++      http_limits: spec.handler_options.http_limits, available: available}
++  end
++
++  defp request(fixture, cleanup, template \\ nil) do
++    template = template || fixture.template
++    observer = self()
++    token = fixture.token
++    gate = fixture.gate
++    store = fixture.store
++    initial = Exchange.retained_bytes(template)
++    {caller, monitor} = spawn_monitor(fn ->
++      {:ok, lease} = Admission.acquire(gate, initial)
++      {:ok, config} = Generation.init({store, accounting: RuntimeAccounting})
++      exchange = %{template | gate: gate, lease: lease}
++      Process.put(RuntimeAccounting, %{observer: observer, token: token, cleanup: cleanup})
++      send(observer, {token, :request_ready, self(), lease})
++      receive do
++        {:run, d} ->
++          outcome = try do
++            {:returned, Generation.call(%{exchange | deadline: d}, config)}
++          catch
++            class, value -> {:caught, class, value, __STACKTRACE__}
++          end
++          send(observer, {token, :outcome, outcome})
++          receive do :finish -> :ok after 4_000 -> exit(:runtime_requester_not_finished) end
++        :finish -> :ok
++      after
++        4_000 -> exit(:runtime_requester_not_started)
++      end
++    end)
++    on_exit(fn -> join_or_finish(caller) end)
++    assert_receive {^token, :request_ready, ^caller, lease}, 1_000
++    %{caller: caller, monitor: monitor, token: token, lease: lease, initial: initial}
++  end
++
++  defp assert_reservation(fixture, request, d) do
++    assert_receive {token, :reservation, caller, context, result} when token == request.token, 1_000
++    assert caller === request.caller
++    assert context === {fixture.store, request.caller, fixture.gate, request.lease, :request, d, request.initial}
++    assert result === {:ok, {:native_generation_capture_v1, 1_048_576, 65_536, 65_536, @fixture_budget}}
++  end
++
++  defp observe_snapshots(fixture, token, capture_status) do
++    observer = self()
++    id = make_ref()
++    gate = fixture.gate
++    :ok = :sys.install(fixture.store, {id, fn state, event, _ ->
++      case event do
++        {:in, {:"$gen_call", {caller, _}, {:snapshot_for_request, holder, d, RuntimeAccounting}}} ->
++          status = if capture_status, do: Admission.status(gate), else: nil
++          send(observer, {token, :snapshot_entered, caller, holder, d, status})
++        _ -> :ok
++      end
++      state
++    end, nil})
++    id
++  end
++
++  defp observe_updates(gate, request) do
++    observer = self()
++    id = make_ref()
++    lease = request.lease
++    token = request.token
++    :ok = :sys.install(gate, {id, fn state, event, _ ->
++      case event do
++        {:in, {:"$gen_call", _, {:update, ^lease, bytes}}} ->
++          send(observer, {token, :gate_update, bytes})
++        _ -> :ok
++      end
++      state
++    end, nil})
++    id
++  end
++
++  defp remove_snapshots(pid, id) do
++    if Process.alive?(pid), do: :sys.remove(pid, id)
++  end
++
++  defp observe_cleanup(request, mode) do
++    witness = make_ref()
++    failing_observer = make_ref()
++    config = %{observer: self(), holder: request.caller, lease: request.lease,
++      token: request.token, mode: mode}
++    :ok = :telemetry.attach(witness, [:gaoxy, :generation_capture_cleanup],
++      &__MODULE__.cleanup_witness/4, config)
++    :ok = :telemetry.attach(failing_observer, [:gaoxy, :generation_capture_cleanup],
++      &__MODULE__.cleanup_observer/4, config)
++    [witness, failing_observer]
++  end
++
++  def cleanup_witness(event, measurements, metadata, config) do
++    if metadata[:holder] === config.holder and metadata[:lease] === config.lease,
++      do: send(config.observer, {config.token, :cleanup_event, event, measurements, metadata})
++  end
++
++  def cleanup_observer(_, _, metadata, config) do
++    if metadata[:holder] === config.holder and metadata[:lease] === config.lease do
++      send(config.observer, {config.token, :observer_invoked})
++      case config.mode do
++        :ok -> :ok
++        :raise -> raise "cleanup observer raised"
++        :throw -> throw({:observer_throw, config.token})
++        :exit -> exit({:observer_exit, config.token})
++      end
++    end
++  end
++
++  defp detach(ids), do: Enum.each(ids, &:telemetry.detach/1)
++
++  defp finish_request(request, gate) do
++    send(request.caller, :finish)
++    assert_receive {:DOWN, monitor, :process, caller, :normal}
++      when monitor == request.monitor and caller == request.caller, 4_000
++    eventually(fn -> Admission.status(gate).active == 0 and Admission.status(gate).retained_bytes == 0 end,
++      deadline(1_000))
++  end
++
++  defp join_or_finish(caller) do
++    monitor = Process.monitor(caller)
++    send(caller, :finish)
++    receive do
++      {:DOWN, ^monitor, :process, ^caller, _} -> :ok
++    after
++      4_000 -> flunk("runtime test-owned caller did not join")
++    end
++  end
++
++  defp eventually(fun, d) do
++    unless fun.() do
++      assert System.monotonic_time(:millisecond) < d
++      receive do after 2 -> :ok end
++      eventually(fun, d)
++    end
++  end
++
++  defp drain_releases(token, acc) do
++    receive do
++      {^token, :release_attempt, caller, pin, dc} -> drain_releases(token, [{caller, pin, dc} | acc])
++    after
++      0 -> Enum.reverse(acc)
++    end
++  end
++
++  defp drain_checkpoints(token, acc) do
++    receive do
++      {^token, :retained_checkpoint, stage, exchange, status} ->
++        drain_checkpoints(token, [{stage, exchange, status} | acc])
++    after
++      0 -> Enum.reverse(acc)
++    end
++  end
++
++  defp drain_updates(token, acc) do
++    receive do
++      {^token, :gate_update, bytes} -> drain_updates(token, [bytes | acc])
++    after
++      0 -> Enum.reverse(acc)
++    end
++  end
++
++  defp socket_exchange(fixture) do
++    {:ok, request, ""} = Gaoxy.HTTP.HTTP1.Parser.parse_head(
++      "POST / HTTP/1.1\r\nHost: localhost\r\nTransfer-Encoding: chunked\r\n\r\n", fixture.http_limits)
++    {:ok, listener} = :gen_tcp.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}])
++    {:ok, {ip, port}} = :inet.sockname(listener)
++    {:ok, client} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
++    {:ok, raw} = :gen_tcp.accept(listener, 1_000)
++    :ok = :gen_tcp.close(listener)
++    on_exit(fn ->
++      :gen_tcp.close(client)
++      :gen_tcp.close(raw)
++    end)
++    socket = struct!(ThousandIsland.Socket, socket: raw,
++      transport_module: ThousandIsland.Transports.TCP, read_timeout: 1_000,
++      handshake_timeout: 1_000, silent_terminate_on_error: false,
++      span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__}))
++    exchange = Exchange.new(request, socket, nil, nil, deadline(3_000), fixture.http_limits, "")
++    {%{exchange | route_bytes: @prior_route_bytes}, client, raw}
++  end
++
++  defp receive_until(client, suffix, d, acc) do
++    if String.ends_with?(acc, suffix) do
++      acc
++    else
++      remaining = max(d - System.monotonic_time(:millisecond), 0)
++      assert remaining > 0
++      assert {:ok, bytes} = :gen_tcp.recv(client, 0, remaining)
++      receive_until(client, suffix, d, acc <> bytes)
++    end
++  end
++
++  defp deadline(ms), do: System.monotonic_time(:millisecond) + ms
++end

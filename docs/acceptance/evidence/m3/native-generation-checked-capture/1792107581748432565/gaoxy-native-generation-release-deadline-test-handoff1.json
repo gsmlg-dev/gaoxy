@@ -1,0 +1,130 @@
+{
+  "task_id": "native_generation_deadline_api_test_proposals",
+  "assignment": "direct source-only test proposal",
+  "status": "PROPOSAL_READY_NOT_RUN",
+  "otp_debug_input_source": {"file": "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/lib/stdlib-7.3.0.3/src/gen_server.erl", "sha256": "66a4a649c8ed58f3c9ed317047f28ea2e2a61b38032cc467565fbad2c53a09db", "lines": [2393, 2686, 2687, 2688, 2689], "confirms": "sys debug input event is {in, full_gen_call_message}; source read only"},
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_parent": "e189894882bb6a530f2c38538be4efaf384be261",
+  "scope": {
+    "repo_writes": false,
+    "runtime_execution": false,
+    "test_execution": false,
+    "format_execution": false,
+    "git_mutations": false,
+    "only_assigned_tmp_writes": true
+  },
+  "artifacts": [
+    {
+      "file": "/tmp/gaoxy-native-generation-admission-timeout-test-proposal1.exs",
+      "sha256": "ebc96c34f13ec8ccb5ec823f3e1dbb2cf0612cd8ee30f39365182a544012479e",
+      "target": "apps/gaoxy/test/admission_timeout_test.exs",
+      "new_tests": 3
+    },
+    {
+      "file": "/tmp/gaoxy-native-generation-release-deadline-test-proposal1.patch",
+      "sha256": "17d2d06e100a6e58ce250b802f13ff485b6c6513f70c2f3eda46d7eab642c8b4",
+      "new_tests": 4,
+      "insertions": [
+        {
+          "file": "apps/gaoxy_proxy/test/upstream_groups_test.exs",
+          "before_line": 212,
+          "anchor": "defp head_peer do",
+          "new_tests": 2
+        },
+        {
+          "file": "apps/gaoxy_proxy/test/upstream_transports_test.exs",
+          "before_line": 1773,
+          "anchor": "defp owner(owner_limits \\\\ limits()) do",
+          "new_tests": 2
+        }
+      ]
+    }
+  ],
+  "source": [
+    {
+      "file": "apps/gaoxy/lib/gaoxy/admission.ex",
+      "sha256": "169f311b2a4995b3de901ac41b5c2768208c8f8c3e26d2e57a58fdefdc013a75"
+    },
+    {
+      "file": "apps/gaoxy/lib/gaoxy/lifecycle.ex",
+      "sha256": "7f673e89f59b41af72057ce1afa553fa6c62e56125b450e6d09e58da0a434f75"
+    },
+    {
+      "file": "apps/gaoxy/test/native_stream_test.exs",
+      "sha256": "fbde6f0efc90fd10cfa90626d0dbed081fc41c146d7e60c43a0998b9c70dc1ad"
+    },
+    {
+      "file": "apps/gaoxy/test/cleanup_attachment_test.exs",
+      "sha256": "f3a2457c52fda27c039e35ba16d1dfd8958e85dbde1541e920a77f09f34682c4"
+    },
+    {
+      "file": "apps/gaoxy/test/quic_context_test.exs",
+      "sha256": "e9bd176c8d3c5c41da3d159d6ba55d73dcd3e8aedde0e265680fda31588ab3e4"
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex",
+      "sha256": "b0330019d771b9f58f6f15eba555cd77ec0ce0fcf2843bd9e19619d65b2ae2c7"
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "sha256": "f6f638d1f1f88b53c8282dc121466eb0614d241fe8ec56cc57a8a2a8b0d4096e"
+    },
+    {
+      "file": "apps/gaoxy_proxy/test/upstream_groups_test.exs",
+      "sha256": "395cb0def7dff55acabd682f7a234ebbf08b270c587b97af0a69b19b67edf632"
+    },
+    {
+      "file": "apps/gaoxy_proxy/test/upstream_transports_test.exs",
+      "sha256": "a74e5b19e9d1f0a1725f2df57cf29d38b6ede2d8a042cb900bf2702ebec7c208"
+    }
+  ],
+  "contracts": {
+    "admission": "Additive update(gate,lease,bytes,positive_integer_timeout) calls same real {:update,lease,bytes} using explicit timeout. Legacy update/3 keeps actual default5000.",
+    "expired_release": "Parent-confirmed release/2 prechecks positive remaining(D); expired returns {:error,:deadline_exceeded} before owner dispatch. release/1 unchanged.",
+    "live_release_timeout": "Lifecycle.call(owner,{:release,pin},D) returns {:error,{:deadline_exceeded,:cleanup_pending}} if real owner remains suspended. A queued call may still execute later; no cancellation or refund inferred.",
+    "same_deadline_retry": "Retry with same now-expired absolute D returns flat deadline_exceeded and creates no second owner request."
+  },
+  "test_cases": [
+    "Admission actual caller-owned lease update37 observed in real public status",
+    "Admission suspended gate explicit25ms timeout; exact real GenServer descriptor then queued update observed honestly after resume",
+    "Legacy Admission update/3 success and actual5000ms timeout, preserving default contract",
+    "Groups real prepare/baseline/request pin release/2 success and direct release/1 preservation",
+    "Groups expired no-dispatch/no-status-mutation plus live suspended timeout/same-D retry with exactly one real queued release",
+    "Transports real instance/owner/scope prepare/baseline/request pin release/2 success and release/1 preservation",
+    "Transports expired no-dispatch/no-status-mutation plus live suspended timeout/same-D retry with exactly one real queued release"
+  ],
+  "fixtures": {
+    "admission": "Real supervised Admission; lease acquired by calling test actor. Limits map source-bound to QUICContextTest, scope as cleanup/native fixtures; no mock handler/socket.",
+    "groups": "Real existing UpstreamGroups supervisor fixture; compile + prepare + public baseline activation. Existing probe_bytes1 config prevents independent health probe work; no peer necessary for metadata API.",
+    "transports": "Existing owner()/policy_source()/deadline()/eventually helpers unchanged; real Gaoxy instance, owner, HTTP.ManagedTransport scope. No fake transport or dependency private client.",
+    "synchronization": "Synchronous sys.suspend then actual API timeout; sys.install debug observes actual owner calls; public status response gives same-sender barrier. No sleep added.",
+    "cleanup": "Every suspend has try/after resume. Debug callback removed in outer after. No helper caller spawned. Supervised gate/group owner joined by ExUnit; existing transport owner() cleanup monitors/joins actual creators/helpers. Public retirement awaited using existing bounded condition."
+  },
+  "expected_red": "Code.ensure_loaded existing module succeeds; function_exported assertion explains missing additive API before fixture creation; apply prevents undefined remote-call compile warnings. Legacy Admission test may pass independently.",
+  "commands_not_run": [
+    "nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy/test/admission_timeout_test.exs",
+    "nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstream_groups_test.exs apps/gaoxy_proxy/test/upstream_transports_test.exs"
+  ],
+  "verification": "Seven proposed test blocks statically counted; source hashes/anchors read. No parse/compile/format/test result claimed. Parent owns adoption and fresh joined scoped collectors.",
+  "counters": {
+    "inherited_group_failed_green": 24,
+    "inherited_root_events": 27,
+    "inherited_worksheet_failed_green": 1,
+    "inherited_worksheet_test_repairs": 1,
+    "inherited_worksheet_production_repairs": 0,
+    "inherited_astra_used": 2,
+    "inherited_astra_limit": 2,
+    "this_assignment_runtime_attempts": 0,
+    "this_assignment_repair_rounds": 0
+  },
+  "shutdown": {
+    "all_own_commands_finished": true,
+    "background_started": false
+  },
+  "risks": [
+    "Proposal syntax and fixture behavior await parent run.",
+    "Legacy default timeout test intentionally spends actual5000ms in GenServer.call, with10s ExUnit deadline; this is not an arbitrary sleep.",
+    "Conditional old64-cancel worksheet is not a runtime reserve; revised65-cancel constructor ledger is independent parent work.",
+    "No native generation/Admission next-stage/runtime or release acceptance claim."
+  ]
+}

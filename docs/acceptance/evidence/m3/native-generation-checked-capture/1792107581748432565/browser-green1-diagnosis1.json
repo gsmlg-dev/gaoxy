@@ -1,0 +1,62 @@
+{
+  "status": "BROWSER_PEER_FIXTURE_REPAIR_NOT_REVERIFIED",
+  "at_utc": "2026-10-16T00:40:35.865484+00:00",
+  "failed_qualification": "browser-green1/qualification.json",
+  "browser_navigation_attempted": 1,
+  "accepted_complete_cases": 0,
+  "browser_document_subchecks": "PASS in immutable browser-green1/browser.log; not complete acceptance",
+  "cause": "Raw origin peer recv raised ConnectionResetError on idle keep-alive after all required HEAD/GET response writes and host public resource shutdown. Original browser/charge/pin/lease assertions passed; final peer errors assertion failed and runner forced host to exit.",
+  "repair": "Handle reset only inside recv when no partial request and at least one completed sendall response. Mid-request reset, sendall reset, raw request-row equality, errors, browser, charge and all joins remain asserted; EOF partial-request assertion strengthened.",
+  "changed_application_source": false,
+  "constructor_gate_reopened": false,
+  "before_runner_sha256": "8e9762c2f5b7f0c8131ae94d8c988c6fd44ac8690e5b32d15118896d730e1bb5",
+  "after_runner_sha256": "929c5a16f20900d61b73ea3ca719f553440f5f317e214d004bb46f83992b3c90",
+  "failed_command_joins": [
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "mix",
+        "run",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/native-generation-checked-capture/1792107581748432565/gaoxy-native-generation-checked-browser-host1.exs",
+        "45521",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/native-generation-checked-capture/1792107581748432565/browser-green1"
+      ],
+      "pid": 4161688,
+      "exit": 0,
+      "forced": true,
+      "reader_joined": true,
+      "owned_group_gone": true
+    },
+    {
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/native-generation-checked-capture/1792107581748432565/gaoxy-native-generation-checked-browser-runner1.py",
+        "--peer"
+      ],
+      "pid": 4160312,
+      "exit": 1,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true
+    }
+  ],
+  "counters": {
+    "current_completed_failed_GREEN": 6,
+    "current_failed_GREEN_exunit": 5,
+    "current_failed_GREEN_browser": 1,
+    "current_aborted_orchestration": 1,
+    "current_production_repairs": 1,
+    "current_post_GREEN_fixture_repairs": 5,
+    "current_pre_GREEN_fixture_repairs": 1,
+    "cumulative_completed_group_failed_GREEN": 30,
+    "cumulative_root_failure_events": 34,
+    "astra_used": 2,
+    "astra_max": 2
+  }
+}
