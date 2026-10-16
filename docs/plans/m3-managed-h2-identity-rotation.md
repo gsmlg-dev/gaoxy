@@ -1,0 +1,83 @@
+# Managed H2 Identity Rotation Implementation Plan
+
+> **For agentic workers:** Use subagent-driven-development and executing-plans task by task. Root exclusively writes repository/evidence/Git and executes runtime/build/tests/browser; delegated Sol workers own explicit proposal/review files only. Continuing authorization selects the recommended approach and advances passed gates automatically.
+
+**Goal:** Qualify same-authority TLS trust/numeric-address rotation through real fixed and group checked Generations, including caller-side same-path CA replacement and independent resource retirement.
+
+**Architecture:** Extend the accepted fixed/group Generation fixtures and independent H2 peer; preserve supported compact DER/address APIs and all existing bounds. Fixed and group browser fixtures each execute native H1/H2→TLS-H2, yielding four positive trust rows.
+
+**Tech stack:** Existing Nix Elixir1.18.5/OTP28, HTTP Fetch/Runtime0.21.10, Python `/tmp/gaoxy-m3-h2-soak-venv/bin/python` with h2=4.3.0/hpack=4.1.0/hyperframe=6.1.0, OpenSSL3, Chrome/CDP and Node.
+
+Status: IMPLEMENTING after independent readiness SPEC1→CODE1 PASS; successor runtime NOT RUN. Design: `docs/designs/m3-managed-h2-identity-rotation.md`. Baseline `4f08008f2bdb830bbc0191ba9db39786bb7ea905`; evidence `docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/`.
+
+## Ownership and files
+
+Root owns the two canonical documents, matching acceptance and evidence, `apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs`, `apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs`, and `apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py`. The fixture-defining `managed_h2_fixed_endpoint_test.exs` or existing lifecycle/identity files may receive a necessary bounded test helper/negative-case extension; no production edit is presumed. Preserve existing test cases, assertions, dependency/lock bytes, protected prompts and historical evidence. A new test helper must justify its use; no general fixture refactor.
+
+### Task0: Readiness and frozen baseline
+
+- [x] Verify predecessor feature/document commits, actual tree and38 changed closure paths,402 accepted sources, protected files and clean worktree. Preserve the actual receipt in kickoff1 rather than making another self-referential closure commit.
+- [x] Map existing fixed/group/peer/browser seams with independent read-only workers. Keep their original reports and all recovered tooling errors.
+- [x] Finish design/plan self-review and exact source/counter manifest. Complete independent readiness SPEC then CODE. Both passed with no findings; original candidate/report hashes are preserved.
+- [x] Qualify the actual pinned peer interpreter/packages, Nix/unbuffer, OpenSSL3, Node and Chrome. `environment-preflight1.json` records passing tool prerequisites and0 protocol tests; system Python's absent h2 is an unused-interpreter fact.
+
+### Task1: Bounded concurrent peer identities
+
+- [ ] Add explicit loopback address and listen-port options to `managed_h2_fixed_peer.py`, retaining existing default127.0.0.1:0 and existing client `--port` semantics. Constructor/start changes are:
+
+```python
+self.bind_address = bind_address
+self.listen_port = listen_port
+self.listener.bind((self.bind_address, self.listen_port))
+```
+
+The CLI accepts only127.0.0.1 through127.0.0.4 and listen-port0..65535; ready reports the actual address/port. No fallback/retry to another authority.
+- [ ] Use two/four actual peers at one OS-selected port. Assert all numeric socket tuples distinct, all authorities equal and every chain/leaf distinct. Keep finite launch/handshake/process shutdown and actual zero forced/live counters.
+- [ ] Add bounded caller-side PEM read and same-path replacement helpers inside existing Generation tests. Decode before the supported four-key preparation call:
+
+```elixir
+%{protocol: :http2, origin: "https://localhost:#{port}",
+  connect_address: address, trust: certificates}
+```
+
+Read no more than1,048,577 bytes before PEM decode; reject oversized source. Record old/new public PEM/DER/leaf hashes. Never expose key material.
+
+### Task2: Fixed rotation and rejection witnesses
+
+- [ ] Keep the original four fixed standard cells intact; add TLS `:rotated` identity cases for each native downstream. Reuse `candidate/3`, `activate/3`, `capture/4`, `bound/3`, `complete_return/7`, original source release and `finish/3`.
+- [ ] Prepare OLD from stable PEM, capture before checkout, replace same path, prepare/activate NEW with equal origin and different address/DER, invalidate the path, and dispatch. Assert actual retained policy and distinct resource identities; h2 ALPN/SNI/authority, exact target/bytes and peer counts must match. Both handshakes occur after path replacement.
+- [ ] Send synthetic old/new Proxy-Authorization values and assert both stripped; any normal Authorization marker must remain confined to its own actual request. No new origin-credential filtering policy.
+- [ ] Complete NEW while OLD pending; complete OLD but retain source until endpoint return. Preserve original completion/source/custodian/socket ordering and exact all-zero/normal-join/rebind assertions.
+- [ ] Add three native-H1 fixed TLS denial cases: oldCA/newIP, newCA/oldIP, and wrong hostname/trusted CA. Capture actual original completion at bind, prove finite502/handshake rejection/zero application requests/no fallback or replay. Validate the complete actual confirmed or sticky-unconfirmed accounting branch; preserve failed receipts and separate failed-fixture disposal.
+- [ ] Prove equal authority does not permit new T to use an old authentic source capture. Refuse before checkout/bind/Fetch/fallback, preserve genuine originals for cleanup, and keep existing unrelated negative assertions unchanged.
+- [ ] Freeze changed fixture/test sources, complete bounded SPEC→CODE, then run the full defining endpoint plus fixed Generation suites with nonzero counts. Any real failure enters diagnosis and source re-review before another run. No artificial RED is required for qualification of existing behavior; a production fix requires its genuine failing regression.
+
+### Task3: Group rotation and cold identity
+
+- [ ] Keep standard group cells/reuse assertions intact; add TLS `:rotated` native-H1/H2 cells using the existing0→1→0 old/new captures and authentic G+[A,B] batches.
+- [ ] Prepare/complete real health HEADs and original probe completions. Send existing peer `goaway` with completed HEAD stream and error0, then await its exact physical termination. No owner/client state mutation.
+- [ ] Replace per-member stable PEM contents between OLD/NEW preparations at equal authority/common port, invalidate the paths, and CAS while OLD sources remain captured. A dedicated rotation request helper requires a fresh accept/TLS/connection for each first member GET, distinct from its HEAD connection. Further A GETs reuse that fresh connection.
+- [ ] Assert socket peers each accept2; A has3 requests, B2. Preserve independent G/T original completion, selected children, unselected-B last-source retention, actual resource/custodian joins and final fresh-connection retirement.
+- [ ] Add equal-authority cross-group negative dispatch with authentic OLD captures and explicit NEW endpoint input; prove finite refusal before selection/delegation/checkout/Fetch, unchanged source pins and no alternate peer request. Preserve existing group TLS negative/lifecycle scope; do not call probe refusal selected forwarding denial.
+- [ ] Freeze/review complete group changes SPEC→CODE and run unfiltered group/fixed/defining-endpoint suites. Preserve genuine failed evidence and finite deadlines.
+
+### Task4: Four real TLS browser rows
+
+- [ ] Derive fresh fixed host from accepted `managed-h2-fixed-generation/1792147726386855423/fixed-generation-browser-host3.exs` and group host from accepted `managed-h2-group-generation/1792155884508467786/group-generation-browser-host4.exs`; derive each runner4. Copy the corresponding unchanged cohort with its hash. New names are `fixed-identity-rotation-browser-host1.exs`, `fixed-identity-rotation-browser-runner1.py`, `group-identity-rotation-browser-host1.exs`, `group-identity-rotation-browser-runner1.py`, with matching explicitly inventoried cohorts.
+- [ ] Adapt actual numeric identities, stable same-path public CA replacement, retained policy/DER proofs and group completed-HEAD cold connection schedule. Preserve genuine captures, native95/accounting, original completions, every Actor/process-group/reader/adopted-child join and source/BEAM before/after checks.
+- [ ] Copy the accepted collector3 to `browser-command-collector1.py`; make its explicit endpoint manifest require exactly two rows `{h1,http2},{h2,http2}` per invocation, inventory the actual new host/runner/cohort/peer sources, and aggregate two receipts as four rows. Never count navigations as rows.
+- [ ] Freeze exact sources and command/row inventory. Complete fixture SPEC→CODE; check Python and extracted JavaScript syntax/host+cohort formatting before browser execution.
+- [ ] Run fixed two rows, then group two rows. Require actual public h2 handshakes at old/new numeric peers, visible DOM/title/URL/status/protocol and console silence; root views all8 images. Browser selects A only; sockets establish B/wraparound.
+- [ ] Preserve request_clean while native connection lives, explicit Chrome close, actual terminal groups/readers/children, final owner/Service/Gate/cohort zero+normal joins and rebind. Health closure is separate from selected GET retirement. Denials are separately labeled socket tests with their exact cleanup outcome.
+
+### Task5: Final review and fresh verification
+
+- [ ] Freeze full implementation candidate and complete independent full-stage SPEC then CODE. Bind all new test/fixture operands and previous unchanged contracts. Resolve every actionable finding.
+- [ ] Freeze exact argv/collector/timeouts before execution. Use unfiltered `mix test --warnings-as-errors --max-cases 1` with `MIX_ENV=test`, `ERL_FLAGS=+S 2:2`, Nix and unbuffer. Always include the complete defining `managed_h2_fixed_endpoint_test.exs` when F is used.
+- [ ] Run relevant union: fixed/group Generation and endpoint/lifecycle/release-order/failure/native-TLS suites; preparation and H2 identity; H1 Generation/failure/handoff/group compatibility; checked capture/accounting, group sources/envelope and generic Generation/native-H2 startup/stale-start seams. Serialize batches to avoid competing runtime; exact full file lists belong in the frozen inventory, with no excludes/skips or waived warnings.
+- [ ] Force strict compile; check every changed active Elixir source and exact active host/cohort formatting, all changed Python and extracted runner JavaScript syntax. Static gates execute0 tests.
+- [ ] Run separate core/HTTP isolated consumers and fresh post-review browser2+2. Record executed counts/exits, every actual wait status, nonforced terminal custody and matching source/artifact hashes; never translate signal termination to exit0.
+- [ ] Write exact acceptance, retain failed/UNKNOWN/sticky history and cumulative counters, complete independent document SPEC→CODE and disk/index/blob checks, then make local conventional commits and verify actual committed bytes. Documentation-only postcommit identity may be recorded in the next kickoff to avoid an endless closure loop.
+- [ ] Advance automatically to the next existing bounded requirement (H2 active/idle reload plateau) only after this slice actually closes. Broader Task5/M3 and all other remaining gates stay open.
+
+No publication/deployment/production/Vault/operational-certificate/public-management/account change or disabled release-artifact E2E activation follows. Astra remains2/2 exhausted; ordinary failures enter authorized Sol diagnosis without weakening assertions or requesting routine approval.

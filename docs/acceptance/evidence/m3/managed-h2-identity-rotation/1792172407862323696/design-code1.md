@@ -1,0 +1,54 @@
+# Managed H2 identity rotation dependent CODE/readiness review
+
+**PASS — ready for implementation only.** No actionable findings. This report does not qualify successor code, tests, protocol behavior or browser acceptance.
+
+Task `h2_identity_design_code` — DONE. Direct read-only assignment after SPEC PASS. Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, HEAD `4f08008f2bdb830bbc0191ba9db39786bb7ea905`, tree `727c9bf62dd4109eddf4c5dac2361bf07ade8141`. Root is sole repository/evidence/Git writer and runtime operator. Only the two assigned `/tmp` review files are written.
+
+## Hash binding
+
+Candidate SHA256 `f6f51196d4e83d11663e4c8999f1a4971a77519fc1b67c5b3188c83e86fff480`.
+Dependent SPEC SHA256 `8b6122603c15fecc3bda9e38dc2bacbd989aec5178fb32f20ec6db0a1d2336db`.
+Design SHA256 `376da6a391cdf64cc5780ad48574a661b8bc154b77bb2b5165ee40131a77c000`.
+Plan SHA256 `af4efa0187411acd5709b566a32ba986ebdbb2b09ce13e5db2787817b7c1da09`.
+Separate prerequisite receipt SHA256 `14c951bafc44e36099336a4d5d5a4b821c4bb19b26074650d4ebd930ffe6654f`.
+
+Fresh checks: documents2, evidence6, protected2, source402; zero hash mismatches. Candidate and predecessor HEAD/tree unchanged.
+
+## Findings
+
+None. Planned changes are feasible against the exact existing APIs and are limited to qualification fixtures/tests plus additive loopback bind controls. No production change is justified by current evidence.
+
+## Readiness checks
+
+- **C1 Smallest supported implementation scope — PASS_READINESS_ONLY.** Design11-15,51; plan15,26-43. Extend existing fixed/group tests and additive peer launch controls; no production or dependency change presumed. managed_h2_preparation.ex42-77,618-644 accepts exact four-key DER/numeric policy, copies each DER and retains URL host/SNI separately. upstream_transports.ex290-310 allocates real resource from that policy.
+- **C2 Real same-authority distinct physical endpoints and same-path preparation schedule — PASS_READINESS_ONLY.** Design19-29; plan26-48. Peer.start183-192 is the single bind seam; CLI main retains separate downstream --port. Existing peer.prepare145-181 independently generates test chains and reports public certificate hashes. F.peer10-49 forwards additive options. New helper can bound public PEM input before decode; F.certificates309-311 currently reads unbounded and must not be reused unchanged for the new bounded read requirement. Old/new exact common port and numeric address must be asserted, with no fallback.
+- **C3 Actual immutable retained policy witness and cold OLD fixed TLS — PASS_READINESS_ONLY.** Fixed candidate1036-1111 prepares through authenticated coordinator and real CAS, capture1151-1205 retains authentic Store pin, CapturedFixed58-88 blocks before HTTP.call. request_at1283-1299 already correlates accept/TLS h2/SNI/authority. New local helper must assert old/new records policy DER/address after path replacement/invalidation; copied metadata alone is insufficient. Existing paths permit this without production interface change.
+- **C4 Probe-complete GOAWAY and fresh group forward feasibility — PASS_READINESS_ONLY.** Group healthy897-955 awaits original probe completion and normal worker DOWN before returning, retains exact peer/request identities; peer.command393-395 sends real GOAWAY and serve245-253 reports client EOF. group lifecycle18-40 and group_browser_peer62-87 supply source precedents. Completed HEAD last_stream graceful schedule remains NOT RUN. Design33-37/plan58-60 require exact health close then new accept/TLS/connection; dedicated rotation helper preserves existing request_at1237 warmed reuse assertion. Final cleanup must consume connection2 separately from already consumed health1.
+- **C5 Authentication semantics unchanged — PASS_READINESS_ONLY.** http/headers.ex5-6,12-35,88-109 strips Proxy-Authorization hop fields while ordinary Authorization remains forwarded. F.send_request326-353 accepts extra headers for both native downstreams. Design41/plan49 correctly require distinct synthetic markers to remain confined to their own request; no origin Authorization/Cookie filter or userinfo allowance is added.
+- **C6 Finite new-endpoint/old-capture misuse refusal — PASS_READINESS_ONLY.** HTTP.call282-327 checks exact selected handle membership in captured pins before Session dispatch; GroupEndpoint27-43 requires complete G+T resource sidecar. Existing fixed FailureFixed169-232 and group CapturedGroup336-408 retain genuine original Exchange for Generation finally cleanup; small explicit negative dispatch-config extension can select NEW T/G without mutating owner records or claiming forged captures. Design45/plan52,61 requires refusal before checkout/bind/Fetch/fallback and unchanged originals. Existing two finite barriers remain available.
+- **C7 Real TLS denial and exact original completion at bind — PASS_READINESS_ONLY.** Design43/plan51 requires three native-H1 fixed cases, actual handshake failure/finite502/zero HTTP/no alternate replay. Peer303-311 reports handshake_failed distinctly; upstream_transport_generation_test448-620,2114-2141 supplies actual bind barrier and sticky retained-failure ledger precedent. H2 qualification1270-1390 explicitly validates both terminal confirmed and cleanup_unconfirmed branches; fixed lifecycle1090-1114 forbids turning physical close into original success. Current positive bound1301-1344 polls pending token and must not substitute for bind-time capture in racing denial. New denial helper must validate its full actual branch and separately dispose failed fixture actors.
+- **C8 Source-derived accounting, caps, and independent retirement — PASS_READINESS_ONLY.** Fixed capture1151-1205 and group1080-1145 retain independent B/native/accounting assertions; group1241-1350 correlates identical original G/T completion, real selected child source_ref and startup cuts. Fixed complete_return1363-1392 preserves authentic source after tokens/child retire. Group517-587 retains unselected B through last A batch. Existing finish helpers demand exact zero/normal joins/rebind and peer forced0/live0. Design49-51 retains fixed9444956/group16478862/startup5963776, C2/R32/P0 and strict test caps. Dedicated rotated termination/count handling is necessary, and planned; no cap expansion justified.
+- **C9 Separate fixed/group browser2+2 preserves existing lifecycle custody — PASS_READINESS_ONLY.** Canonical F host3/runner4/cohort2 and G host4/runner4/cohort1 are real inputs verified by browser-map1; runner Actor318-396 owns actual process/reader/group joins, host request_clean1702-1727 precedes authorize_browser_close1730-1754. Group runner506-531 has four real HEAD originals; successors must separately close all health sockets, then selected A GET uses fresh TLS and final close of that connection. Design53/plan66-71 preserves loaded source/BEAM, request_clean while native live, explicit Chrome exit, final original owner/Service/Gate/cohort zero, normal joins and rebind. Browser B remains health/retirement only.
+- **C10 Exact successor inventory and row collection is feasible — PASS_READINESS_ONLY.** Accepted collector3 inventories source before/after actual600s bounded runner and enforces actual exits/artifact hashes/adopted descendants, but lines111,161-165 have predecessor glob and four h2c/TLS expectations. Plan68 explicitly replaces these with actual new host/runner/cohort/peer inventory and exact two TLS rows per endpoint invocation, aggregated2+2. No reuse of historical receipt as successor qualification is allowed.
+- **C11 Status and gate sequencing are truthful — PASS_READINESS_ONLY.** Canonical full design/plan remain implementation/runtime NOT RUN. Independent SPEC is PASS with no findings and exact candidate binding; this CODE review is dependent readiness only. environment-preflight1 is separate PASS_TOOL_PREREQUISITES_ONLY with tests/builds/browser0, not protocol proof. Plan53,62,69,75-80 requires frozen fixture and final implementation SPEC then CODE, fresh unfiltered scoped suites/static/strict compile/isolated consumers/browser2+2 before local commits. No publication/deployment expansion follows.
+
+## Concrete implementation checkpoints
+
+- **Derived fixed browser strict T limits.** Accepted fixed host3 lines728-733 uses32 resources/4096pins/64MiB; socket fixed/group and group host4 use4/256/8MiB. Design51 deliberately selects stricter4 resources/256pins/64tokens/8388608bytes also for derived fixed browser. Root confirmed this implementation operand choice; implement explicitly rather than blindly copy predecessor literals. Full initialized operand/custody review before runtime remains required. This narrows fixture limits and does not expand caps.
+- **Runtime uncertainties remain acceptance gates.** Actual127.0.0.1-.4 same-port binds; original-complete graceful GOAWAY physical close followed by fresh TLS; exact three TLS denial outcomes; new negative explicit endpoint config; full independently recomputed accounting; real browser2+2 all remain NOT RUN. Diagnose real results with original assertions; no design readiness report qualifies runtime.
+
+## Verification and limits
+
+Read-only pwd/git status/rev-parse, rg --files inventory before source lookup, complete canonical design and plan, both fixture maps, exact selected existing production/test/peer/browser sources, dependent SPEC JSON, separate environment-preflight receipt; Python stdlib SHA256 validation twice over supplied manifests. All shell exits0. Truncated combined tool output was reread in bounded targeted ranges.
+
+PASS: documents2/evidence6/protected2/source402 all unchanged; exact candidate and SPEC hashes match.
+
+**Runtime/build/tests/browser/network: NOT RUN; tests executed0.** Existing prerequisite receipt proves executable/version/package availability only. Readiness PASS permits implementation and its prescribed reviews; it never means runtime acceptance.
+
+## Counters and command events
+
+Candidate immutable cutoff root140/orchestration68/successor-tooling8; current root-supplied root142/orchestration70/successor-tooling10. Group54, Astra2/2 exhausted; successor runtime-failed-green0/production-repair0/fixture-repair0. Own genuine failed command/path events0, own runtime failures0, Sol repair rounds0/Astra rounds0. No counters reset. No fabricated repairs.
+
+All own commands finished; running sessions0. No foreign process touched. No repository mutation, tests/runtime/browser/network, Git mutation, private-key/raw-NetLog/prohibited-trace read. Root-owned untracked files preserved. No external approval, product decision or escalation needed.
+
+Remaining runtime risks are explicit: exact concurrent same-port bind, graceful physical health close/fresh TLS, complete actual TLS-denial terminal branch, and inherited independent accounting/custody must be proved by the forthcoming implementation gates.

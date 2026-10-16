@@ -1,0 +1,80 @@
+{
+  "kind": "IDENTITY_ROTATION_PREREQUISITE_CHECK1",
+  "status": "PASS_TOOL_PREREQUISITES_ONLY",
+  "tests_executed": 0,
+  "builds": 0,
+  "browser_sessions": 0,
+  "commands": [
+    {
+      "argv": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "-c",
+        "import importlib.metadata,json,ssl,sys; print(json.dumps({\"executable\":sys.executable,\"python\":sys.version,\"packages\":{p:importlib.metadata.version(p) for p in (\"h2\",\"hpack\",\"hyperframe\")},\"openssl\":ssl.OPENSSL_VERSION}))"
+      ],
+      "exit": 0,
+      "output": "{\"executable\": \"/tmp/gaoxy-m3-h2-soak-venv/bin/python\", \"python\": \"3.13.15 (main, Aug  5 2026, 12:25:43) [GCC 15.2.0]\", \"packages\": {\"h2\": \"4.3.0\", \"hpack\": \"4.1.0\", \"hyperframe\": \"6.1.0\"}, \"openssl\": \"OpenSSL 3.6.3 9 Jun 2026\"}\n"
+    },
+    {
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "unbuffer",
+        "elixir",
+        "--version"
+      ],
+      "session_id": 82137,
+      "exit": 0,
+      "outputs": [
+        {
+          "chunk_id": "4a44ee",
+          "wall_time_seconds": 1.001133979,
+          "session_id": 82137,
+          "original_token_count": 0,
+          "output": ""
+        },
+        {
+          "chunk_id": "3a3889",
+          "wall_time_seconds": 5.000863255,
+          "session_id": 82137,
+          "original_token_count": 0,
+          "output": ""
+        },
+        {
+          "chunk_id": "63a2cf",
+          "wall_time_seconds": 0.000018732,
+          "exit_code": 0,
+          "original_token_count": 36,
+          "output": "Erlang/OTP 28 [erts-16.4.0.6] [source] [64-bit] [smp:2:2] [ds:2:2:10] [async-threads:1] [jit:ns]\n\nElixir 1.18.5 (compiled with Erlang/OTP 28)\n"
+        }
+      ],
+      "joined": true
+    },
+    {
+      "argv": [
+        "node",
+        "--version"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "chromium",
+        "--version"
+      ],
+      "exit": 0
+    },
+    {
+      "argv": [
+        "openssl",
+        "version"
+      ],
+      "exit": 0
+    }
+  ],
+  "metadata_command_output": "{\"argv\": [\"node\", \"--version\"], \"exit\": 0, \"stdout\": \"v24.19.0\", \"stderr\": \"\"}\n{\"argv\": [\"chromium\", \"--version\"], \"exit\": 0, \"stdout\": \"Chromium 152.0.7977.64\", \"stderr\": \"\"}\n{\"argv\": [\"openssl\", \"version\"], \"exit\": 0, \"stdout\": \"OpenSSL 3.6.3 9 Jun 2026 (Library: OpenSSL 3.6.3 9 Jun 2026)\", \"stderr\": \"\"}\n",
+  "limits": "Executable/version/package prerequisites only. No protocol, fixture, runtime acceptance, source mutation or success inferred from these checks. System Python h2 absence remains an unused-interpreter fact; pinned peer Python versions match. All invoked commands completed, no running exec session."
+}
