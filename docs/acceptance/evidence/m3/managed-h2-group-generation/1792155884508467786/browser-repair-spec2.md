@@ -1,0 +1,19 @@
+# Browser baseline repair SPEC2 re-review
+
+**group_generation_browser_repair_spec2 — DONE; verdict PASS.** Actionable findings: **[]**. Direct delegated bounded read-only SPEC re-review.
+
+Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`; branch `codex/m3-h1-resource-foundation`; baseline `8131af39a846c292a022ccbfd32c53376cd57887`. Root exclusively owns repository/evidence/Git/runtime; concurrent work preserved. Only the two assigned /tmp reports written.
+
+**BRSPEC_REPAIR1-F1 RESOLVED.** Host2:1706 now asserts `ghold.keys === [Fixed.key(fresh.group)]` after the sole G owner ref, Store holder/acquirer, matching operation and baseline-kind checks1701-1705, before request_clean emits baseline_genuine. This executes for both old/new request_clean cuts. Archived failed-SPEC1 host SHA matches the original reviewed host exactly. Its diff to current host is exactly this one assertion; no other host delta. Archived SPEC1 reports match their original /tmp bytes; original FAIL remains intact.
+
+Proposal2 declarations match all three sources. Current host2 SHA `1b017c4da8014868c3b0402f19c6f215f7cc600cbd374cd8fbba5adce8fc969e`; runner2 SHA `c16d52dc8c3687a771af511b0c04e6a05211ef9859df414ce0a8db15036a8f2e`; repair design SHA `2810b10f536c6c35c5335f2d8031074bc49e42402ee6ad3b66500ae17faf3f4b`. Proposal2 SHA `7616ec8fa5f348b950fb3435e03c07e78192163975154655f61551b9eaa7c357`; prior-proposal declaration matches immutable proposal1 SHA `34b69307759e5d40a32fee2e7c1ac6bfd1d52b54b059b94ca8ef4432b8d46ca6`.
+
+All prior SPEC1 proofs rebind: weighted T holds2 in one genuine two-handle Store baseline receipt; exactly two Store provider receipts; sole genuine T owner record/public identity/Store holder/acquirer/no-derived marker; sole exact new G baseline owner key. Runner census assertions still apply to both navigations. Genuine G7/T8, full initialized endpoint/native95/P/N/W/B/Exchange operands/full Gate cohort, four HEAD/original completions/normal Probe DOWN, original G/T completion and independent source-child-custodian lifetimes, both B retirements, all Actor/CDP/readers/process-group/adopted custody, live-before-close/explicit Browser.close, all-zero/rebind, four Chrome rows/two A-only navigations/eight future screenshots retain unchanged source proofs. No production source/API/cap/deadline/constructor operand change.
+
+All159 captured input/protected hashes match BEFORE/AFTER; complete maps are in JSON. Relative to SPEC1's153 inputs, only the authorized host2 source changed. Canonical design/plan remain the previously acknowledged stale bytes and are outside this bounded review. Excluded changing new test/private raw terminal trace/raw NetLogs/keys were not read.
+
+Browser-green1 remains immutable FAIL: first h2-h2c old navigation/probe/screenshot only, host exit1 in request_clean, five forced Actors, outer collector nonforced, adopted_remaining empty; new navigation and other3 rows NOT RUN. Failed-time exact owner census was not retained. Pins2 remains a source-derived diagnosis, not a retrospectively observed census or whole-stage pass.
+
+Verification: read-only proposal/prior-report/archive hashes, one-line diff and bounded source inspection, all159 before/after hashes; commands exit0 and finished synchronously. Tests executed0; corrected runtime/browser NOT_RUN. No runtime/build/network/Git write, process start/stop/signal, or agent operation. Source PASS authorizes the next independent CODE review only; prescribed root runtime and full-stage verification/review remain open.
+
+Counters preserved: cumulative failedGREEN48/root90/orchestration26; stage failedGREEN3/productionRepair1/fixtureRepair4/orchestrationRepair19; Astra2/2 exhausted. Root's reported increments88 observer sourceQA/89 SPEC1 finding/90 recovered zsh glob are retained. Reviewer repair edits0, no escalation/reset/third recovery. No product decisions needed.

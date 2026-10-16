@@ -1,0 +1,86 @@
+{
+  "kind": "BOUNDED_STOP_RACE_FIXTURE_REPAIR1",
+  "status": "AWAITING_SPEC_THEN_CODE",
+  "at_utc": "2026-10-16T16:33:48.969199+00:00",
+  "predecessor_candidate": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/full-stage-candidate1.json",
+    "sha256": "307ea59084be7051a5fa19eceb72524ccd02ee73ed483adabc89d100c5726b1c"
+  },
+  "source_changes": {
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": {
+      "before_sha256": "9d8ed544c79c45b8313f8187d68d281ab9f302460f7f9ef70e4e04ce36b28c68",
+      "after_sha256": "c6e835ea1b5ce084db60a3b84920965ff4cc2660082f3f47490ce21a72179c40"
+    }
+  },
+  "failure": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/scoped-final4.json",
+    "sha256": "522a233ae76ed567aa6f46832e22972cf11ae58ef993bdf8f3a7c6344630147a",
+    "actual": "FAIL475/1/exit2, zero compiler-test warnings/skips/exclusions, stable/nonforced/clean",
+    "classification": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/scoped-final4-classification.json"
+  },
+  "diagnosis": "Consumed original startup success leaves native worker:nil/startup pending. RST sends asynchronous cancel_spawn, then empty draining native can process localclose before Gate kills linked worker. Exact expected killed races valid owner-close link termination.",
+  "repair": "Only dispatch_wait test installs finite post-RST :noreply owner barrier; dedicated worker monitor established before RST observes exact killed, then release before original final joins. Try/after and on_exit release/removal. No fake receipts/new production changes/alternate reasons/timeouts/retries.",
+  "format": {
+    "command": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "mix",
+      "format",
+      "apps/gaoxy_http/test/http2_worker_startup_test.exs"
+    ],
+    "actual_exit": 0,
+    "notice": "Nix dirty-tree notice only"
+  },
+  "inventory": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/final-gate-command-inventory6.json",
+    "sha256": "e5f06f571e9067b5fd2104db63a8bc8021531071dc92775f224f60d7ba3a93d6"
+  },
+  "diagnostic_argv": [
+    "python3",
+    "-B",
+    "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/command-collector3.py",
+    "--name",
+    "stop-race-green1",
+    "--timeout",
+    "600",
+    "--kind",
+    "green",
+    "--",
+    "nix",
+    "develop",
+    "--command",
+    "env",
+    "ERL_FLAGS=+S 2:2",
+    "MIX_ENV=test",
+    "unbuffer",
+    "mix",
+    "test",
+    "--warnings-as-errors",
+    "--max-cases",
+    "1",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs"
+  ],
+  "required": "Independent SPEC then CODE rebind, complete startup file diagnostic, all three fresh 9+7+17 batches plus remaining five gates/freshbrowser/8rootviews, then docs/custody/localcommit",
+  "accounting": "Test-only monitor/debug synchronization not in initialized production retained constructors. Native95/P/N/W/B and production caps/lifetimes unchanged.",
+  "counters": {
+    "group_failed_green": 54,
+    "root_failure_events": 120,
+    "orchestration": 48,
+    "stage_failed_green": 9,
+    "stage_production_repair": 2,
+    "stage_fixture_repair": 11,
+    "stage_orchestration_repair": 41,
+    "stage_invalid_red": 1,
+    "stage_valid_red": 1,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "additional_readonly_events": {
+    "119": "Worker rg guessed absent admission_test.exs, recovered actual admitted_spawn_test.exs",
+    "120": "Worker report guard noticed test source differed from old receipt during announced root patch; no report written; recover with explicit before/after source identity"
+  },
+  "protected": "All protected/docs/old evidence maps unchanged; forbidden trace/NetLogs/privatekeys not read"
+}

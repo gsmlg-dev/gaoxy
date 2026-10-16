@@ -463,14 +463,8 @@ defmodule Gaoxy.Proxy.HTTP do
            },
            max_upload_bytes: config.limits.max_chunk_bytes
          },
-         :ok <- ManagedH2Envelope.validate_group_source(source) do
-      {:ok,
-       %{
-         source
-         | target: :binary.copy(target),
-           fields:
-             Enum.map(fields, fn {key, value} -> {:binary.copy(key), :binary.copy(value)} end)
-       }}
+         {:ok, prepared} <- ManagedH2Envelope.prepare_group_source(source) do
+      {:ok, prepared}
     else
       _ -> {:error, :invalid_request}
     end
@@ -1084,6 +1078,13 @@ defmodule Gaoxy.Proxy.HTTP do
     do: ManagedH2GroupAccounting.validate({:control, family}, original)
 
   defp account_control(_, _, _), do: :ok
+
+  defp account_pin_reply(%{group: %{execution_profile: :managed_h2}}, {:error, reason}),
+    do:
+      ManagedH2GroupAccounting.validate(
+        {:owner_reply, :transport, :pin},
+        {:error, Session.finite_reason(reason)}
+      )
 
   defp account_pin_reply(%{group: %{execution_profile: :managed_h2}}, result),
     do: ManagedH2GroupAccounting.validate({:owner_reply, :transport, :pin}, result)

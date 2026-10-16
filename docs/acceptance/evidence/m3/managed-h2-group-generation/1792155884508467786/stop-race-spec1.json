@@ -1,0 +1,170 @@
+{
+  "task_id": "/root/group_generation_full_spec1",
+  "review_id": "gaoxy-group-generation-stop-race-spec1",
+  "status": "DONE",
+  "verdict": "PASS_BOUNDED_STOP_RACE_SPEC_REBIND_READY_FOR_CODE",
+  "assignment": "direct delegated bounded source SPEC/rebind, reports-only; root sole repository/evidence/Git/runtime owner",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "identity_note": "pwd confirmed worktree. Parent/frozen manifests supply unchanged branch/HEAD; no Git operation run. Other writers task ownership preserved.",
+  "findings": [],
+  "hashes": {
+    "proposal": "fcac05e9ca337ce112f4765ab7aa3bf0588151c35b5dd8cf47b40c9e0a2a0181",
+    "candidate2": "b8ecf718e2ca840cc3099f6efc54583785e93ad20bee1ab6462a1b802a5935de",
+    "inventory6": "e5f06f571e9067b5fd2104db63a8bc8021531071dc92775f224f60d7ba3a93d6",
+    "failed_final4_receipt": "522a233ae76ed567aa6f46832e22972cf11ae58ef993bdf8f3a7c6344630147a",
+    "failed_final4_log": "9a5bbddbed97c86038c0b1d86453d091d356379cfe172fef929d72e3a4465cfa",
+    "test_before": "9d8ed544c79c45b8313f8187d68d281ab9f302460f7f9ef70e4e04ce36b28c68",
+    "test_after": "c6e835ea1b5ce084db60a3b84920965ff4cc2660082f3f47490ce21a72179c40"
+  },
+  "source_rebind": {
+    "sole_changed_source": "apps/gaoxy_http/test/http2_worker_startup_test.exs",
+    "exact_delta": "Replace dispatch_wait send_reset call with helper; add service_stop_reset_and_join helper only. Reconstructed predecessor by removing helper and restoring one call; SHA equals exact candidate1 before hash. Thus final original reasons/joins/zero/deadlines/caps/assertions are byte-identical.",
+    "maps": {
+      "source": {
+        "count": 402,
+        "mismatches": [],
+        "changed_from_candidate1": [
+          "apps/gaoxy_http/test/http2_worker_startup_test.exs"
+        ]
+      },
+      "documents": {
+        "count": 9,
+        "mismatches": [],
+        "prior_changes": []
+      },
+      "evidence": {
+        "count": 458,
+        "mismatches": [],
+        "prior_entries_unchanged": 424,
+        "additive_entries": 34
+      },
+      "protected": {
+        "count": 2,
+        "mismatches": [],
+        "prior_changes": []
+      }
+    },
+    "production_accounting": "No production source, initialized endpoint/Exchange, native95/P/N/W/B constructor operand, cap, grammar, dependency, policy or retained lifetime changed. New monitor/debug terms are test-actor synchronization, outside initialized production retained constructors. Prior complete full-stage SPEC/CODE binding can carry forward only with this explicit sole test delta independently reviewed."
+  },
+  "failure_evidence": {
+    "status": "FAIL preserved",
+    "tests": 475,
+    "failures": 1,
+    "exit": 2,
+    "app_summaries": [
+      "gaoxy_http260/1",
+      "gaoxy_proxy215/0"
+    ],
+    "compiler_test_warnings": 0,
+    "skipped": 0,
+    "excluded": 0,
+    "source_stable": true,
+    "process_joined": true,
+    "forced": false,
+    "group_descendants_remaining": [],
+    "source": "Underlying log independently confirms one service_stop dispatch_wait failure at original helper906: expected reasons[worker] :killed, actual {:shutdown,:local_closed}. All12 previous missing-fixture errors and6 warnings absent. Log hash equals receipt; receipt equals repair-proposal hash. No failed receipt reclassified."
+  },
+  "end_to_end_trace": [
+    {
+      "step": "Retained genuine startup success",
+      "evidence": "Existing retain_native_success3 consumes original alias reply inside native debug callback but leaves stream3 worker/lease/monitor nil and startup pending. Gate phase actually running with original worker/lease; assert_running_dispatch_wait! confirms worker links/monitors to owner/Gate and no dispatch. Service drain notification is retained at real worker wait; no fake startup/public receipt."
+    },
+    {
+      "step": "Real RST cancellation",
+      "evidence": "send_reset sends actual type3 CANCEL frame over client socket. ThousandIsland Handler handles TCP/SSL data\u2192Gaoxy.HTTP.Connection.handle_data\u2192HTTP2.Connection.data/parse\u2192receive_frame type3\u2192discard. discard calls cancel_start for original startup, which sends Admission.cancel_spawn via gen_server.send_request, retires aliases locally, cancels startup timer and removes stream3/starting; it does not synchronously wait for Gate."
+    },
+    {
+      "step": "Competing valid terminals",
+      "evidence": "Gate handle_call authenticates original owner/parent_lease/token; cancel_operation directly Process.exit(worker,:kill), marks cancelled and settles only after actual DOWN plus EXIT. Concurrent native schedule detects draining+streams empty and queues :h2_close; next info returns stop {:shutdown,:local_closed}. WorkerBootstrap/Stream links original owner, so native owner exit may reach worker first. That explains the original exact-reason race without production defect claim."
+    },
+    {
+      "step": "Valid genuine callback boundary",
+      "evidence": "Helper creates dedicated Process.monitor(worker) before RST and installs owner sys hook before sending actual frame. ThousandIsland handle_continuation transforms {:continue,state} to {:noreply,{socket,state}}; installed OTP gen_server source emits {noreply,NState} via sys:handle_debug before next loop. Predicate requires phase http2/draining true/starting nil/no stream3; this is real post-removal state, not a synthesized notification."
+    },
+    {
+      "step": "No wait cycle or alternate kill",
+      "evidence": "Native owner waits only for token-scoped release in its post-RST callback. Gate cancellation directly kills the linked worker and needs no owner callback. Test observer waits exact dedicated original-worker DOWN :killed, then sends release. It never kills worker itself or substitutes another reason/receipt. Original final worker monitor stays separate and still must observe exact :killed; all other original joins/zero/completed/rebind assertions remain."
+    },
+    {
+      "step": "Finite cleanup and hook disposal",
+      "evidence": "Deadline is min(original drain_deadline, Lifecycle.deadline(existing @wait3000)), reused for installation/cut/DOWN/callback wait; no reset/extension. try/after sends release on success or failed assertions; registered on_exit also sends release and bounded sys.remove100 if owner alive. Successful callback returns :done, which sys removes automatically. sys catches callback timeout exit and drops hook; observer still requires cut and exact DOWN within deadline, so timeout cannot become pass. Original seeded/client/stopper on_exit and final actor joins remain. No enduring block or fake completion introduced."
+    }
+  ],
+  "inventory_review": {
+    "batch_argv_equal_inventory5": [
+      true,
+      true,
+      true
+    ],
+    "fresh_batch_names": [
+      "scoped-final5",
+      "scoped-final6",
+      "scoped-final7"
+    ],
+    "file_counts": [
+      9,
+      7,
+      17
+    ],
+    "total_entries": 33,
+    "distinct_paths": 32,
+    "all_paths_exist": true,
+    "assertions_flags_filters": "All existing paths/order/strict --warnings-as-errors and --max-cases1 flags unchanged; no skips/exclusions/filters. Existing fixture-defining file remains in batches1/3.",
+    "format_delta": "Only append changed http2_worker_startup_test.exs to existing format argv.",
+    "other_gates": "Compile/core/HTTP-consumer/syntax argv and all remaining collector prefixes unchanged; final browser object unchanged. Five remaining gates preserved, including expanded format check.",
+    "diagnostic": "Complete startup test file diagnostic with same strict flags, distinct stop-race-green1 name, only after bounded SPEC\u2192CODE; NOT RUN. Does not replace any full batch/final gate.",
+    "execution_status": "All future diagnostic/final5/6/7/static/consumer/syntax/final browser receipt/run names unused at inspection. All new runtime gates NOT RUN. Previous final1/2 historical passes not reused against new candidate; all3 rerun fresh.",
+    "inherited_initial_browser": "browser_initial remains old pre-execution snapshot; actual initial browser-green4 PASS4/8 separately recorded. Neither replaces fresh finalbrowser."
+  },
+  "verification": {
+    "commands": "pwd; rg/rg --files; bounded sed; Python JSON/hash/log/difflib/argv/path inspections. Read only installed gen_server/sys source and public dependency adapter source to verify event contract. No Git/runtime/build/browser/network invocation.",
+    "actual_results": "Candidate2 all402source/9docs/458evidence/2protected hashes match. Candidate1 maps unchanged except sole exact source delta and34 additive evidence entries. Reconstructed exact old test hash matches. Actual failed log/receipt verified. Inventory union/argv/format/future-name checks pass.",
+    "own_inspection_failure": "One rg regex used unescaped { and printed regex parse error; enclosing multi-command shell later exit0. Corrected immediately with rg -F; no mutation/runtime effect. Explicitly reported to root, which advanced live root121/orchestration49/stageorchestration42. All other inspections completed successfully.",
+    "runtime_tests": "NOT RUN by reviewer; no passing diagnostic/new gate claimed"
+  },
+  "frozen_counters": {
+    "group_failed_green": 54,
+    "root_failure_events": 120,
+    "orchestration": 48,
+    "stage_failed_green": 9,
+    "stage_production_repair": 2,
+    "stage_fixture_repair": 11,
+    "stage_orchestration_repair": 41,
+    "stage_invalid_red": 1,
+    "stage_valid_red": 1,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "current_counters_parent_confirmed": {
+    "group_failed_green": 54,
+    "root_failure_events": 121,
+    "orchestration": 49,
+    "stage_failed_green": 9,
+    "stage_production_repair": 2,
+    "stage_fixture_repair": 11,
+    "stage_orchestration_repair": 42,
+    "stage_invalid_red": 1,
+    "stage_valid_red": 1,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "own_inspection_failures": 1,
+  "own_sol_repair_rounds": 0,
+  "received_astra_counter": "2/2 exhausted",
+  "astra_gate": null,
+  "own_changed_files": [
+    "/tmp/gaoxy-group-generation-stop-race-spec1.md",
+    "/tmp/gaoxy-group-generation-stop-race-spec1.json"
+  ],
+  "repository_changes": "None by reviewer; frozen repository inputs untouched, parent owns source patch/additive evidence.",
+  "command_shutdown": "All own commands finished synchronously; no runtime/session actors launched; parent processes untouched.",
+  "remaining_risks": [
+    "Source review establishes no deadlock or invalid debug-event dependency in the bounded helper; actual complete startup diagnostic and all new gates still require execution and can fail.",
+    "Bounded rebind is not new full-stage acceptance; retain all prior FAIL/UNKNOWN and editorial N1 pending final docs. Broader stage/M3 boundaries, restricted operations and no third Astra remain."
+  ],
+  "decisions_needed": [],
+  "next_parent_step": "Archive reports additively; bounded CODE against exact unchanged candidate2/proposal/inventory6, then complete startup diagnostic, fresh all3 batches, remaining5 gates/freshbrowser4/root8views and Task6 custody/localcommit."
+}

@@ -1,0 +1,161 @@
+{
+  "task_id": "gaoxy-group-generation-source-repair2-spec1",
+  "assignment": "direct bounded read-only SPEC/constructor review",
+  "status": "BLOCKED_HANDOFF",
+  "verdict": "FAIL_VERSION1; revised test requires a frozen version2 rebind",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "scope": {
+    "allowed_writes": [
+      "/tmp/gaoxy-group-generation-source-repair2-spec1.md",
+      "/tmp/gaoxy-group-generation-source-repair2-spec1.json"
+    ],
+    "repository_mutations": false,
+    "runtime_or_import_or_tests_or_build": false,
+    "network": false,
+    "agents": false,
+    "git_writes": false
+  },
+  "findings": [
+    {
+      "id": "C1",
+      "severity": "required regression correction",
+      "status": "OPEN against frozen version1",
+      "location": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:624-690",
+      "evidence": "Frozen test asserts a noncompact x-slice header in the captured original native Exchange, but HTTP.Headers.request/1 invokes normalize/1 before HTTP.group_request_options/5, and normalize/1 copies each name and value. '/new-slice' is only 10 bytes, so the frozen regression does not require a noncompact target at the changed constructor.",
+      "impact": "The test does not force the old validate-before-copy branch to reject and cannot establish a regression for the production repair.",
+      "requested_change": "Send a valid >64B and <127B plain HPACK :path and assert the actual original captured Exchange target equals it, with logical bytes < referenced backing <=65536; retain exact x-slice forwarding, independent accounting, completion and joins."
+    }
+  ],
+  "source_assessment": {
+    "production_diff": "Only HTTP.group_request_options/5 switches strict retained-source validation/manual copies to existing prepare_group_source/1. The previous owner-reply accounting normalization remains unchanged.",
+    "raw_preflight": "Existing target/path/query/time/URL bounds remain. prepare_group_source validates the exact six-key source, method/body/limits, original logical/backing bounds, field shape/grammar/count and aggregate, and ETF cap before copying.",
+    "retained_boundaries": "validate_group_source remains strict and unchanged at neutral/accounting/startup/Session/selected request retained boundaries.",
+    "constructor_checkpoint": "The prepared result has the same closed six-key schema and compact target/pairs as the prior manual-copy result; no added cap/schema/provider/process/ref/timer/monitor/lifetime. Added header operands enter existing original native95/P/N/W/B arithmetic rather than copied prior W. Full-stage acceptance is not granted.",
+    "regression_unchanged_contracts": "Frozen insertion preserves original two-provider capture, authentic G7/T8, old generation retirement, original native completion, accounting/effects/cleanup, native/connection/Writer/owner/peer joins and rebind. Four HEAD plus two GET peer totals remain explicit.",
+    "actionable_production_findings": []
+  },
+  "checks": [
+    {
+      "check": "Initial frozen proposal source manifest/hash binding",
+      "outcome": "PASS",
+      "detail": "All nine declared source/design/evidence hashes matched; proposal hash also recorded; baseline and branch matched."
+    },
+    {
+      "check": "Bounded production/constructor and raw-vs-retained source inspection",
+      "outcome": "PASS with no actionable production concern",
+      "detail": "Read exact constructor, original bounded preparer, strict retained validators, header normalization chain and compatibility tests; no code execution."
+    },
+    {
+      "check": "Regression suitability against repaired boundary",
+      "outcome": "FAIL_VERSION1",
+      "detail": "C1: noncompact header is copied before changed boundary; target witness required."
+    },
+    {
+      "check": "Sanitized prior browser diagnostic source/evidence binding",
+      "outcome": "PASS as historical evidence only",
+      "detail": "Qualification and host/browser hashes matched. Absolute source_before and source_after HTTP keys both identify pre-repair 76ec5ad7e9cf3c986b8da97be191fd7463a417cc0a4d5851f8bdf209004ddb98. No private trace, raw NetLog or keys read."
+    },
+    {
+      "check": "Historical browser diagnostic",
+      "outcome": "FAIL (unchanged)",
+      "detail": "Executed1 row h2-h2c; fresh native on same connection/Writer passed captured_resources, group accounting and adjust_bytes, then strict validate_group_source returned invalid_group_source; actual browser HTTP400 / net::ERR_HTTP_RESPONSE_CODE_FAILURE. Exact offending Chrome input predicate UNKNOWN; not reclassified as browser-green2."
+    },
+    {
+      "check": "Final source stability against frozen version1",
+      "outcome": "BLOCKED_HANDOFF",
+      "detail": "Root announced correction and current test hash changed d880b64ffa62644b2e939c1b66b806d76ad88ae92ba66be05b026c01e4d15408 -> c9ec261257168ca66ec33872f7994855d6e570ab3c731b102b7c8283f495ad0b while proposal/design remained version1. Other20 inputs stable. Current revised test not reviewed."
+    },
+    {
+      "check": "Runtime/tests/build/import",
+      "outcome": "NOT_RUN",
+      "detail": "Forbidden in this bounded reviewer scope. Expected initial combined test count93 is proposal-only, not an executed result."
+    },
+    {
+      "check": "Metadata read commands",
+      "outcome": "One exit1, recovered exit0",
+      "detail": "Prior relative-key lookup of qualification source_before raised KeyError; recovered via actual absolute key suffix inspection. No write/runtime action. Root notified to record any required counter update."
+    }
+  ],
+  "hashes": {
+    "before": {
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+      "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "d880b64ffa62644b2e939c1b66b806d76ad88ae92ba66be05b026c01e4d15408",
+      "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs": "c998127c7690f04f0b303be40991f91528b1bd39676cd6aa30e57bf6d9ea31cb",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1-classification.json": "1c0aace9f9fa4fdafb829f08bd9cac87ef612f877cfe23c12b44fd8cba119d33",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-design.md": "6d1fc736578e4db538e2d546429ff0c39b06544d9731a25dcaaac48e97be8216",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-http-before.ex": "76ec5ad7e9cf3c986b8da97be191fd7463a417cc0a4d5851f8bdf209004ddb98",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-proposal.json": "44b9c9f98aa9c8fd93a9450fa7ee20b5f19b4ab81f275f063b43c810f5dae07b",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-test-before.exs": "489ae6a6617e52c3c7d42a06a5b0cd8e8170ed0ba5b2fd53c6c6b91a298cc23b",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/frame.ex": "319d286ef3d9bbe1185ae93b51f8e9af090c02b438de8c1f45118f7300016f9d",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "9c135f7dad3918f8c2ef4375aecc5a3eb99a536ffa9ea36a9f866747221e5c5a",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/browser.log": "c47880421c9e6d16d18c7f06aca8f86fc9631d859132064cd0d98a8c5886cb35",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/host.log": "ad0a0642603c953230f35c96448dc739ee58d5a04cd969e9c9f2e8573820e750",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/qualification.json": "c6b9ba92c5edf1402f3f320ca2be0678a29fad8b439374794341c00e5c097e45"
+    },
+    "after": {
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/frame.ex": "319d286ef3d9bbe1185ae93b51f8e9af090c02b438de8c1f45118f7300016f9d",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "f8d922deee2f7a45ecf3070498a3f82a50af47b5fbe0007545ab11bf3cf831ab",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "9c135f7dad3918f8c2ef4375aecc5a3eb99a536ffa9ea36a9f866747221e5c5a",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex": "03fb7c9e22b4ca7b64c8967cf0c06f8e964897fc6ab400b76cd39fe361f13d91",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "apps/gaoxy_proxy/test/managed_h2_envelope_test.exs": "cbfa2487ad1191d32b7f9ec0d36bf00644e8b48d93db02f7bf62c41c14f2b338",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "c9ec261257168ca66ec33872f7994855d6e570ab3c731b102b7c8283f495ad0b",
+      "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs": "c998127c7690f04f0b303be40991f91528b1bd39676cd6aa30e57bf6d9ea31cb",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1-classification.json": "1c0aace9f9fa4fdafb829f08bd9cac87ef612f877cfe23c12b44fd8cba119d33",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/browser.log": "c47880421c9e6d16d18c7f06aca8f86fc9631d859132064cd0d98a8c5886cb35",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/host.log": "ad0a0642603c953230f35c96448dc739ee58d5a04cd969e9c9f2e8573820e750",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/qualification.json": "c6b9ba92c5edf1402f3f320ca2be0678a29fad8b439374794341c00e5c097e45",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-design.md": "6d1fc736578e4db538e2d546429ff0c39b06544d9731a25dcaaac48e97be8216",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-http-before.ex": "76ec5ad7e9cf3c986b8da97be191fd7463a417cc0a4d5851f8bdf209004ddb98",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-proposal.json": "44b9c9f98aa9c8fd93a9450fa7ee20b5f19b4ab81f275f063b43c810f5dae07b",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/source-repair2-test-before.exs": "489ae6a6617e52c3c7d42a06a5b0cd8e8170ed0ba5b2fd53c6c6b91a298cc23b"
+    },
+    "supporting_hash_capture_note": "The original ten were captured before review. Eleven supporting inputs were first hashed after their bounded reads, then compared at finalization; they were unchanged."
+  },
+  "counters": {
+    "received_frozen_proposal": {
+      "group_failed_green": 51,
+      "root_failure_events": 97,
+      "orchestration": 29,
+      "stage_failed_green": 6,
+      "stage_production_repair": 2,
+      "stage_fixture_repair": 7,
+      "stage_orchestration_repair": 22,
+      "astra_used": 2,
+      "astra_limit": 2
+    },
+    "reviewer_sol_repair_rounds": 0,
+    "received_astra_recovery_used": 2,
+    "received_astra_recovery_limit": 2,
+    "metadata_read_event_counter_update": "PENDING root; reviewer did not invent increment"
+  },
+  "astra_gate": null,
+  "own_changed_files": [
+    "/tmp/gaoxy-group-generation-source-repair2-spec1.md",
+    "/tmp/gaoxy-group-generation-source-repair2-spec1.json"
+  ],
+  "command_shutdown": "All own commands finished synchronously; no session, background command or process created. No runtime/process ownership action performed.",
+  "remaining_limitations": [
+    "Frozen version1 regression fails suitability review.",
+    "Root-owned revised test requires frozen version2 proposal/design/hash binding and review.",
+    "Independent CODE review must follow source PASS; scoped compatibility/runtime/browser/full-stage gates remain pending.",
+    "No production publication/deployment acceptance."
+  ],
+  "decisions_needed": "No product decision or extra permission. Root must freeze/rebind corrected version2 and provide updated counters."
+}

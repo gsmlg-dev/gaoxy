@@ -1,0 +1,16 @@
+--- a/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
++++ b/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex
+@@ -1085,6 +1085,13 @@
+ 
+   defp account_control(_, _, _), do: :ok
+ 
++  defp account_pin_reply(%{group: %{execution_profile: :managed_h2}}, {:error, reason}),
++    do:
++      ManagedH2GroupAccounting.validate(
++        {:owner_reply, :transport, :pin},
++        {:error, Session.finite_reason(reason)}
++      )
++
+   defp account_pin_reply(%{group: %{execution_profile: :managed_h2}}, result),
+     do: ManagedH2GroupAccounting.validate({:owner_reply, :transport, :pin}, result)
+ 

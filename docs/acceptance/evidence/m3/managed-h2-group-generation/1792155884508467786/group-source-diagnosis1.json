@@ -1,0 +1,284 @@
+{
+  "task_id": "gaoxy-group-generation-group-source-diagnosis1",
+  "status": "DONE",
+  "assignment": "direct independent bounded read-only diagnosis of actual browser-diagnostic1",
+  "verdict": "ACTUAL_INVALID_GROUP_SOURCE_BOUNDARY_CONFIRMED; RAW_TO_COMPACT_CALLSITE_REPAIR_RECOMMENDED; EXACT_FIELD_PREDICATE_UNKNOWN",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "evidence": {
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-command-diagnostic1.json",
+    "qualification": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/qualification.json",
+    "status": "FAIL",
+    "first_row": "h2-h2c",
+    "executed_rows": 1,
+    "elapsed_ms": 38905,
+    "source_stable": true,
+    "actual_boundary": [
+      {
+        "host_log_line": 48,
+        "label": "new",
+        "event": "captured",
+        "native": "#PID<0.424.0>",
+        "finding": "Real fresh checked capture after old genuine request_clean"
+      },
+      {
+        "host_log_line": 49,
+        "ordinal": 1,
+        "boundary": "HTTP.captured_resources?/2",
+        "result": true
+      },
+      {
+        "host_log_line": 50,
+        "ordinal": 2,
+        "boundary": "ManagedH2GroupAccounting.validate/2",
+        "result": "ok",
+        "limit": "Actual admission-validation call identified by source sequence; return event does not retain selector."
+      },
+      {
+        "host_log_line": 51,
+        "ordinal": 3,
+        "boundary": "Admission.adjust_bytes/3",
+        "result": "ok"
+      },
+      {
+        "host_log_line": 52,
+        "ordinal": 4,
+        "boundary": "ManagedH2Envelope.validate_group_source/1",
+        "result": [
+          "error",
+          "invalid_group_source"
+        ]
+      },
+      {
+        "host_log_line": 53,
+        "ordinal": 5,
+        "boundary": "Admission.adjust_bytes/3",
+        "result": "ok",
+        "meaning": "Original startup allowance refunded"
+      },
+      {
+        "host_log_line": 54,
+        "event": "returned_observed_v1",
+        "tag": "ok",
+        "response": "sent",
+        "close": true,
+        "phase": "pre_bound",
+        "bound_present": false,
+        "session_present": false,
+        "native_matches": true,
+        "token_matches": true,
+        "deadline_remaining_ms": 14973
+      },
+      {
+        "host_log_line": 55,
+        "event": "MatchError false",
+        "at": "host3:1651 original bound assertion"
+      },
+      {
+        "browser_log_line": 3,
+        "event": "navigation_error_observed_v1",
+        "label": "new",
+        "response_heads": [
+          {
+            "status": 400,
+            "protocol": "h2"
+          }
+        ],
+        "extra_statuses": [
+          {
+            "status": 400
+          }
+        ]
+      }
+    ],
+    "old_request": "Old actual200 navigation/custody/bound/original completion/source cleanup succeeded; host log47 exact genuine T1record/2weightedholds/G1record baseline and connection alive.",
+    "interpretation": "This run localizes failure to the native group_request_options source-validation boundary, before its compact copy and before Session startup. Source failure is mapped to invalid_request and empty400; raw original endpoint return is therefore ok/sent/close=true. Far-from-expired deadline, actual source validation result and actual CDP400 agree.",
+    "unknowns": [
+      "The trace exposes invalid_group_source, not whether group_source_shape, compact target or compact fields failed. It contains no original target/header backing measurements.",
+      "The exact offending Chrome field/predicate remains UNKNOWN; do not infer cookie/accept/HPACK/dynamic-table ownership from this boundary.",
+      "Browser-green2 was a different uninstrumented run; its initiating cause stays UNKNOWN. Matching symptom is not retrospective proof."
+    ],
+    "cleanup": {
+      "collector_status": "FAIL",
+      "actual_exit_code": 1,
+      "joined": true,
+      "owned_group_gone": true,
+      "timed_out": false,
+      "wait_error": null,
+      "collector_descendant_forced": false,
+      "collector_descendant_remaining": [],
+      "collector_reap_deadline_exhausted": [],
+      "inner_actor_peers_forced": 4,
+      "inner_peer_exit_codes": [
+        -15,
+        -15,
+        -15,
+        -15
+      ],
+      "all_six_readers_joined": true,
+      "all_six_groups_gone": true,
+      "adopted_children_joined": 7,
+      "adopted_remaining": [],
+      "limit": "Collector's clean own descendants do not override failed fixture actors/forced peer cleanup or failed protocol assertions."
+    }
+  },
+  "root_cause_analysis": {
+    "confirmed_callsite_mismatch": "HTTP.group_request_options calls retained compact validator on raw ingress source at http.ex:466, then manually copies at467-473 only after validator succeeds. Thus admissible bounded noncompact input is rejected before the code intended to compact it can run.",
+    "API_distinction": {
+      "prepare_group_source": "managed_h2_envelope.ex:43-46 validates raw group_source_shape first, then copies target and all field name/value binaries.",
+      "validate_group_source": "managed_h2_envelope.ex:49-55 validates the same raw shape plus retained compactness; correct for already-prepared values."
+    },
+    "source_supported_counterexample": "Existing managed_h2_group_source_test:189-204 constructs target/name/value slices with backing4096 and logical~100 bytes, proves retained validation rejects them, prepare succeeds with equal byte values and compact output, then retained and selected validation succeed. This is source-reviewed test coverage, not executed this turn.",
+    "actual_limit": "The callsite misuse is proven for allowed noncompact inputs. Actual diag1 proves failure at that callsite but does not prove its raw shape was otherwise valid; the recommended repair must earn fresh runtime acceptance."
+  },
+  "recommended_minimal_change": {
+    "status": "PROPOSED_ONLY; NOT_IMPLEMENTED; NOT_RUN",
+    "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+    "location": "group_request_options/5 lines466-473",
+    "edit": "Replace :ok <- ManagedH2Envelope.validate_group_source(source) with {:ok, compact_source} <- ManagedH2Envelope.prepare_group_source(source); return {:ok, compact_source}; remove now-duplicated manual target/field binary copies. Preserve the existing else mapping to {:error,:invalid_request}.",
+    "retained_proofs": [
+      "All outer target/path/query backing and signed-time guards stay unchanged.",
+      "Existing selected maximum origin+target<=65536 stays unchanged.",
+      "prepare_group_source invokes the identical group_source_shape before any copies: exact six-key map; method/body/upload/limit enums and ranges; origin-form target grammar.",
+      "Target logical and referenced backing each<=65536; proper fields<=256 and field logical/backing totals each<=65536; complete target+fields logical/backing totals<=131072.",
+      "Complete original raw source external_size<=205337 remains checked only after bounded shape/pair traversal and before binary.copy.",
+      "Output preserves byte values, field order/duplicates and target/query escapes while making retained binaries compact.",
+      "Subsequent ManagedH2GroupAccounting.validate(:neutral,neutral), startup accounting, Session retained validators and all owner/custody/bound/cleanup gates remain unchanged."
+    ],
+    "exclusions": "No validator weakening, preflight bypass, copying before raw checks, new cap/deadline/lifetime, guessed field-specific repair, dependency patch or public interface change."
+  },
+  "regression_plan": {
+    "primary_file": "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs",
+    "placement": "Existing downstream/protocol matrix near line18-80, bounded additional H2-downstream grouped-endpoint case for upstream http2/h2c.",
+    "existing_helpers": [
+      "G.fixture(protocol,:http2) uses real native H2 service and real independently hosted managed upstream peer",
+      "G.connect/1",
+      "G.send_request/7 supports explicit stream IDs",
+      "G.response/4 supports explicit stream IDs",
+      "G.event/2 and G.command/4 for exact peer effects",
+      "G.clean/1 and G.close/1 for original cleanup",
+      "Fixture endpoint_module override at support/managed_h2_group_fixture.exs:165-168 supports a passive test observer if actual representation witness is needed"
+    ],
+    "reuse": "Keep one socket: request stream1 and response, then request stream3 and response. Do not use G.request/4 for this regression: it opens/closes a fresh connection per call at fixture:249-255.",
+    "deterministic_input": "Send an explicit non-Huffman HPACK literal origin-form path or benign field >64 bytes and well below all bounds, e.g '/' followed by100 '~' bytes. Existing Frame.encode/4 and direct :gen_tcp.send path used by current tests permits literal HEADERS with END_HEADERS|END_STREAM. A passive endpoint observer may assert actual native input byte_size<referenced_byte_size<=65536 and delegate unchanged; record only bounded sizes/booleans. Do not mutate Exchange or force caller backing by copying before ingress.",
+    "witness": "Assert the actual noncompact bounded native representation in the regression. Do not merely assume repetition or client encoding produces it; no conditional skip or weakened expectation if witness absent.",
+    "assertions": [
+      "Both responses200 and exact echoed targets",
+      "Exact peer GET/:path/benign field and intended upstream identity",
+      "Same actual downstream socket/stream1 then3; no retry/replay",
+      "Original genuine G/T cleanup/completion assertions and G.clean/G.close",
+      "Existing raw oversize/malformed tests remain unchanged and passing"
+    ],
+    "supplementary_existing_tests": "managed_h2_group_source_test:152-204 already exercises raw backing-before-copy and retained-validation distinctions; retain it. No redundant helper-only test can substitute for the real H2 endpoint regression or fresh browser matrix.",
+    "required_execution": "Root should run deterministic RED before implementation, focused GREEN after, relevant source/endpoint compatibility gates and fresh independently reviewed browser matrix. No test executed or failure fixed by this diagnosis.",
+    "root_selected_alternative": {
+      "status": "ROOT_PLAN_ACKNOWLEDGED; NOT_IMPLEMENTED_OR_RUN_BY_WORKER",
+      "location": "Existing GroupGeneration tests using CapturedGroup wrapper and helpers; exact file not newly inspected in this report update.",
+      "choice": "Use existing wrapper rather than add a new passive observer.",
+      "recipe": "Two cases for upstream http2/h2c: old stream1 capture/CAS/complete/old-retire, then fresh stream3 on the same open connection with plain literal HPACK benign x-slice100 bytes.",
+      "witness": "Existing capture sees unchanged actual Exchange; assert real noncompact header backing<=65536 and original native95/R/B/W/custody.",
+      "acceptance": "Dispatch, exact peer headers and response200, original joins/all-zero cleanup; no new constructor shape/cap or wrapper.",
+      "limit": "Parent communicated this narrower alternative; no repository/runtime operation was performed by worker to implement or validate it."
+    }
+  },
+  "verification": {
+    "input_count": 16,
+    "before": {
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "76ec5ad7e9cf3c986b8da97be191fd7463a417cc0a4d5851f8bdf209004ddb98",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+      "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs": "c998127c7690f04f0b303be40991f91528b1bd39676cd6aa30e57bf6d9ea31cb",
+      "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced",
+      "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs": "a3dd5731a954f509ed724fa77910eb9ab377466f0c03d7434cf3444997eb51a4",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner3.py": "7739650e7b07f0b25448bf32a5f2c36e875f4efbd136645747429d94a3038757",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-observation-proposal1.json": "08ed2d49489ab65ed9c44cce9949114efd44cd505a34dbb006095581abe96b12",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-command-diagnostic1.json": "550ad41d1196cb6474828b5e0eb195d7527c952374637ad64a47f7f1d47ce891",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/qualification.json": "c6b9ba92c5edf1402f3f320ca2be0678a29fad8b439374794341c00e5c097e45",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/host.log": "ad0a0642603c953230f35c96448dc739ee58d5a04cd969e9c9f2e8573820e750",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/browser.log": "c47880421c9e6d16d18c7f06aca8f86fc9631d859132064cd0d98a8c5886cb35"
+    },
+    "after": {
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "76ec5ad7e9cf3c986b8da97be191fd7463a417cc0a4d5851f8bdf209004ddb98",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+      "apps/gaoxy_proxy/test/managed_h2_group_source_test.exs": "c998127c7690f04f0b303be40991f91528b1bd39676cd6aa30e57bf6d9ea31cb",
+      "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced",
+      "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs": "a3dd5731a954f509ed724fa77910eb9ab377466f0c03d7434cf3444997eb51a4",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner3.py": "7739650e7b07f0b25448bf32a5f2c36e875f4efbd136645747429d94a3038757",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-observation-proposal1.json": "08ed2d49489ab65ed9c44cce9949114efd44cd505a34dbb006095581abe96b12",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-command-diagnostic1.json": "550ad41d1196cb6474828b5e0eb195d7527c952374637ad64a47f7f1d47ce891",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/qualification.json": "c6b9ba92c5edf1402f3f320ca2be0678a29fad8b439374794341c00e5c097e45",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/host.log": "ad0a0642603c953230f35c96448dc739ee58d5a04cd969e9c9f2e8573820e750",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-diagnostic1/h2-h2c/browser.log": "c47880421c9e6d16d18c7f06aca8f86fc9631d859132064cd0d98a8c5886cb35"
+    },
+    "drift": [],
+    "actual_run_source_matches": 5,
+    "actual_run_artifact_matches": 2,
+    "commands": [
+      {
+        "command": "Bounded sanitized actual host/browser/qualification/collector metadata reads",
+        "exit": 0,
+        "result": "Confirmed new ordinals1..5, actual400, original assertion and failed cleanup receipts"
+      },
+      {
+        "command": "Scoped source/API/raw bounds/test-helper reads",
+        "exit": 0,
+        "result": "Existing prepare/raw-vs-retained contract and actual H2 helper locations traced"
+      },
+      {
+        "command": "Initial guessed support/managed_h2_fixed_fixture.exs search",
+        "exit": 2,
+        "result": "No file; resolved fixture definition in managed_h2_fixed_endpoint_test.exs with rg; no runtime claim"
+      },
+      {
+        "command": "16-file before/after hashes, five actual-run source hashes, two artifact receipts and baseline",
+        "exit": 0,
+        "result": "PASS all match/no drift"
+      },
+      {
+        "command": "Tests/Mix/build/source imports/network/browser/process actions",
+        "exit": null,
+        "result": "NOT RUN by assignment; tests executed0"
+      }
+    ],
+    "tests_executed": 0,
+    "repository_changes": [],
+    "raw_netlogs_read": false,
+    "private_keys_read": false,
+    "forbidden_terminal_trace_read": false,
+    "command_shutdown": "All own read-only commands completed synchronously; no own running background command/session. No target runtime imported/launched/signalled; root operations untouched."
+  },
+  "counters": {
+    "group_failedGREEN": 51,
+    "root_failure_events": 97,
+    "orchestration": 29,
+    "stage_failedGREEN": 6,
+    "stage_production": 1,
+    "stage_fixture": 7,
+    "stage_orchestration": 22,
+    "own_sol_repair_rounds": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_gate": null
+  },
+  "written_files": [
+    "/tmp/gaoxy-group-generation-group-source-diagnosis1.md",
+    "/tmp/gaoxy-group-generation-group-source-diagnosis1.json"
+  ],
+  "remaining_risks": [
+    "Actual exact field predicate and earlier green2 cause stay UNKNOWN.",
+    "Minimal source repair and regression design need implementation/independent review/fresh actual verification.",
+    "Passing raw preflight is deliberately narrower than accepting malformed/unbounded input; do not bypass it.",
+    "All failed rows, original caps/assertions and cumulative counters remain preserved."
+  ],
+  "decisions_needed": "No user product/permission decision. Root owns narrow implementation, deterministic regression and subsequent review/runtime operations."
+}

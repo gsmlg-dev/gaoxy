@@ -194,5 +194,5 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' bash scripts/http-consumer.sh
 - [x] Stage only task-owned files and record actual disk/index/blob identities;
   local conventional feature commit, then verify actual commit/tree/captured
   bytes and clean task tree. Root owns Git; no push/publication/deployment.
-- [ ] After closure, prepare next bounded existing M3 requirement with written
+- [x] After closure, prepare next bounded existing M3 requirement with written
   design/plan/review automatically; no claim that full Task5 or M3 is complete.

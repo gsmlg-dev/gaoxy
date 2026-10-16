@@ -1,0 +1,148 @@
+{
+  "task_id": "gaoxy-group-generation-ready-reap-code2",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent bounded CODE2 review of collector3; source-only",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "prerequisite": {
+    "kind": "Independent SPEC2",
+    "status": "PASS",
+    "root_confirmation_received": true,
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/ready-reap-spec2.json",
+    "sha256": "a7cdf065f4fcff9f8cfeb3ef222aa5473a3c3c8258f314ca2a11b6497d5bd78f",
+    "findings": [],
+    "input_count": 12,
+    "drift": [],
+    "limit": "Distinct SPEC2 verdict; root notification received before this CODE verdict"
+  },
+  "actionable_findings": [],
+  "resolved_findings": [
+    {
+      "id": "C1",
+      "previous_verdict": "collector2 CODE1 FAIL retained",
+      "status": "RESOLVED_IN_SOURCE",
+      "files": [
+        "command-collector3.py:56-70,74,89-98",
+        "browser-command-collector3.py:48-62,66,81-90"
+      ],
+      "evidence": "Shared deadline is checked before every nonblocking wait in both phases. Exhaustion is recorded by phase and conservatively propagated to forced before/after force; even empty later census cannot make exhaustion pass. No budget reset or extension."
+    }
+  ],
+  "source_checks": {
+    "command_main_byte_identical_to2": true,
+    "browser_main_byte_identical_to2": true,
+    "command_children_byte_identical_to2": true,
+    "browser_children_byte_identical_to2": true,
+    "collector_cleanup_source_byte_identical": true,
+    "diffs_confined_to_cleanup_descendants": true,
+    "absolute15second_deadline_starts_at_entry": true,
+    "monotonic_check_before_every_wait": true,
+    "before_force_exhaustion_recorded_and_fails": true,
+    "after_force_exhaustion_recorded_and_fails": true,
+    "empty_census_does_not_clear_exhaustion": true,
+    "actual_nonblocking_waits_before_force": true,
+    "exact_original_wait_statuses_retained": true,
+    "initial_post_reap_final_census_retained": true,
+    "late_pending_and_lookup_races_conservatively_forced": true,
+    "signal_attempt_outcome_receipts_preserved": true,
+    "term_first3seconds_then_kill_preserved": true,
+    "force_poll_20ms_preserved": true,
+    "process_name_pid_status_exemptions_added": false,
+    "grace_retry_or_sleep_added": false,
+    "deadlines_caps_or_production_interfaces_changed": false,
+    "popen_finally_actual_join_reconciliation_unchanged": true,
+    "green_nonzero_test_failure_warning_skip_exclusion_gates_unchanged": true,
+    "browser_four_rows_sources_artifacts_exit0_nonforced_reader_group_gates_unchanged": true,
+    "protocol_actor_peer_bound_completion_service_gate_source_lifetime_assertions_changed": false,
+    "proposal_all6_source_bindings_match": true
+  },
+  "mocked_regressions": {
+    "source_expected_count": 17,
+    "enumeration": "3 original main timeout/wait regressions + 2 collectors x5 original cleanup scenarios + 2 collectors x2 productive-ready phases",
+    "source_review_status": "PASS",
+    "executed_by_reviewer": 0,
+    "original13_preserved": "Only collector version bindings and deterministic clock/control expectations adjusted as required by added checks; original ready/live/lookup/late/deadline and main failure assertions retained.",
+    "before_force_productive_ready": "Clock sequence reaches deadline after one real mocked wait receipt; subsequent wait is prevented; exact receipt remains before_force, exhaustion lists before_force and after_force, KILL is recorded, forced=true and remaining child retained.",
+    "after_force_productive_ready": "Initial ready scan returns pid0; TERM occurs; one mocked after_force receipt is retained; next deadline check prevents further wait, records after_force exhaustion, keeps forced=true and remaining child.",
+    "no_runtime_claim": "No target file imported or executed; mocks not run by reviewer. Root must execute17 mocks and required scoped/runtime gates."
+  },
+  "inputs_before": {
+    "collector-ready-reap-proposal2.json": "c34b34978b8c388af7cc718422888006ea28eb83371471e65c6eeda9f4c3f704",
+    "collector-ready-reap-design2.md": "928f3e222c75ce2f71351292840d961f9f9991542f7bb2fa48e308b304d6ee43",
+    "command-collector2.py": "33780fb0131ec06ff58dc29c6d4e8025be181ef0990b2b84a0306f7bd0fffb1f",
+    "command-collector3.py": "aeff8b310f5f0a296ed79d915d9f8beb4f57b2e2d782a857de85779c298d27ee",
+    "browser-command-collector2.py": "f6019937b2c9dd6cf460e3ff5004331493412acd56b0daeeaaa485de2782ebd3",
+    "browser-command-collector3.py": "008687f0d21470e8fcb4fcf6cca3f46b86b9e3cec394ead06a14106899f9a0c5",
+    "collector-regression3-source.py": "6491d7524ced362c5ce93d4b8b089c8bb51013fe822b394d742ba2d014a31a9c"
+  },
+  "inputs_after": {
+    "collector-ready-reap-proposal2.json": "c34b34978b8c388af7cc718422888006ea28eb83371471e65c6eeda9f4c3f704",
+    "collector-ready-reap-design2.md": "928f3e222c75ce2f71351292840d961f9f9991542f7bb2fa48e308b304d6ee43",
+    "command-collector2.py": "33780fb0131ec06ff58dc29c6d4e8025be181ef0990b2b84a0306f7bd0fffb1f",
+    "command-collector3.py": "aeff8b310f5f0a296ed79d915d9f8beb4f57b2e2d782a857de85779c298d27ee",
+    "browser-command-collector2.py": "f6019937b2c9dd6cf460e3ff5004331493412acd56b0daeeaaa485de2782ebd3",
+    "browser-command-collector3.py": "008687f0d21470e8fcb4fcf6cca3f46b86b9e3cec394ead06a14106899f9a0c5",
+    "collector-regression3-source.py": "6491d7524ced362c5ce93d4b8b089c8bb51013fe822b394d742ba2d014a31a9c"
+  },
+  "input_count": 7,
+  "drift": [],
+  "verification": [
+    {
+      "command": "Read bounded proposal2/design2/collector3/regression3 sources and both collector2→3 diffs",
+      "exit": 1,
+      "result": "diff exits1 are expected changed source; edits confined to cleanup function"
+    },
+    {
+      "command": "AST-only parsing and exact function source extraction; no target imports",
+      "exit": 0,
+      "result": "main/children unchanged, cleanup identical, syntax parsed,17 cases statically enumerated"
+    },
+    {
+      "command": "Verify all6 proposal source bindings and7 before/after input digests",
+      "exit": 0,
+      "result": "PASS all hashes match, no drift"
+    },
+    {
+      "command": "Read/verify archived SPEC2 after root confirmation; git rev-parse HEAD",
+      "exit": 0,
+      "result": "PASS SPEC2 hash/status and baseline verified"
+    },
+    {
+      "command": "Target mocks/scoped tests/Mix/build/browser/network/process actions",
+      "exit": null,
+      "result": "NOT RUN; tests executed0"
+    }
+  ],
+  "tests_executed": 0,
+  "runtime": "NOT RUN by reviewer",
+  "repository_changes": [],
+  "written_files": [
+    "/tmp/gaoxy-group-generation-ready-reap-code2.md",
+    "/tmp/gaoxy-group-generation-ready-reap-code2.json"
+  ],
+  "counters": {
+    "group_failedGREEN": 50,
+    "root_failure_events": 96,
+    "group_orchestration": 29,
+    "stage_failedGREEN": 5,
+    "stage_production": 1,
+    "stage_fixture": 6,
+    "stage_orchestration": 22,
+    "own_sol_repair_rounds": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_gate": null,
+    "note": "Latest parent counters retained. Proposal2 root95/orchestration28 and stage orchestration21 remain immutable historical values; no reset or third Astra."
+  },
+  "command_shutdown": "All own read-only commands finished synchronously. No own background command/session remains. No target runtime process was launched or signalled; target modules were not imported.",
+  "remaining_risks": [
+    "PASS is limited to CODE2 source review, after distinct SPEC2 PASS.",
+    "17 mocked regressions, fresh exact scoped91 and final browser/protocol/consumer gates remain root-owned and unexecuted by this review.",
+    "Historical collector2 CODE FAIL and all scoped/browser failed receipts remain unchanged.",
+    "Browser-green2 discarded-return cause remains UNKNOWN pending separately reviewed observations."
+  ],
+  "decisions_needed": "No user product/permission decision. Root may proceed through17 mocks and required subsequent gates under existing authorization; no runtime acceptance is implied."
+}
+

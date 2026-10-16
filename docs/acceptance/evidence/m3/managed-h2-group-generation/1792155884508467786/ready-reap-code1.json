@@ -1,0 +1,167 @@
+{
+  "task_id": "gaoxy-group-generation-ready-reap-code1",
+  "status": "DONE",
+  "verdict": "FAIL",
+  "assignment": "direct independent bounded CODE review; no implementation or runtime authority",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "specification_review": {
+    "status": "PASS",
+    "source": "/tmp/gaoxy-group-generation-ready-reap-spec1.json",
+    "sha256": "c584920991abcdfb5ffa957c2b0fb148b6043cf65197d15a4df50c4055d2e32d",
+    "limit": "Distinct independent SPEC1 verdict; does not imply CODE or runtime pass"
+  },
+  "actionable_findings": [
+    {
+      "id": "C1",
+      "priority": "P2",
+      "title": "Ready reap loop can exhaust the absolute cleanup deadline before force/census",
+      "locations": [
+        {
+          "file": "command-collector2.py",
+          "lines": "53-68,85"
+        },
+        {
+          "file": "browser-command-collector2.py",
+          "lines": "45-60,77"
+        }
+      ],
+      "evidence": "reap_ready loops until waitpid returns pid0 or ChildProcessError. It has no time.monotonic/deadline check; the first deadline check is after this helper and the signal pass. The same unchecked helper is called after force.",
+      "trigger": "A live adopted descendant can continually create orphaned children that become immediately waitable by the subreaper. If waitpid keeps returning completed children, the before_force drain never returns even after the shared15s budget; no force, post-reap census or immutable final receipt is reached.",
+      "distinction": "The original post-force wait loop also lacked a deadline check. Collector2 adds this unchecked drain before any force, despite the selected design requiring an absolute15-second cleanup bound from entry. This is a narrow acceptance gap in the changed cleanup path, not a request to broaden protocol assertions.",
+      "requested_change": "Preserve version2. In a new version, check the shared absolute deadline on each reap pass; explicitly record exhaustion and make it a nonpassing cleanup input. Preserve bounded safe cleanup/census and actual wait statuses. Do not reset/extend deadline, mark incomplete drain naturally clean or weaken main/Actor predicates.",
+      "regression": "Add deterministic before-force and after-force mocks for each collector: waitpid remains immediately productive across advancing time; assert return within budget, explicit exhaustion/FAIL and no silently omitted receipt. Existing deadline mock only returns pid0 in reap_ready and checks the later force path.",
+      "production_impact": "Collector can fail to terminate/report within required budget. No production protocol defect established."
+    }
+  ],
+  "source_checks": {
+    "command_main_byte_identical": true,
+    "browser_main_byte_identical": true,
+    "cleanup_function_byte_identical_between_collectors": true,
+    "changes_confined_to_cleanup_descendants": true,
+    "genuine_nonblocking_wait_before_force": true,
+    "original_wait_statuses_preserved": true,
+    "no_process_name_exemption": true,
+    "pending_after_ready_marks_forced_conservatively": true,
+    "empty_initial_late_pending_marks_forced": true,
+    "getpgid_lookup_race_remains_forced": true,
+    "actual_signal_attempts_recorded": true,
+    "force_phase_term_first3seconds_then_kill_preserved": true,
+    "condition_poll_20ms_preserved": true,
+    "absolute_cleanup_deadline_fully_enforced": false,
+    "main_popen_finally_reaped_status_reconciliation_unchanged": true,
+    "green_test_nonzero_failures_warnings_skip_exclusion_gates_unchanged": true,
+    "browser_four_rows_artifact_hashes_actor_exit0_nonforced_reader_group_checks_unchanged": true,
+    "protocol_bound_peer_service_gate_source_assertions_unchanged_by_diff": true,
+    "source_manifest_gates_unchanged": true,
+    "not_claimed": "No runtime or all-stage gate passed by this review."
+  },
+  "mocked_regression_review": {
+    "expected_tests": 13,
+    "enumeration": "3 original command timeout/wait regressions + 2 collectors x5 cleanup scenarios (ready/live/lookup/late/deadline)",
+    "source_only": true,
+    "executed": 0,
+    "positive_checks": "Ready scenario requires actual wait receipts for exit0 and signal10, zero signal/getpgid calls, empty pending/remaining. Live/late/lookup preserve forced classification. Force deadline keeps residue and KILL. Original command join/reconciliation remains covered.",
+    "gap": "No scenario keeps reap_ready productive while deadline expires, either before or after force. Collector2 is not accepted merely because existing13 mocks are expected to pass."
+  },
+  "historical_evidence": {
+    "receipt": "scoped-diagnostic1.json",
+    "verdict": "FAIL retained",
+    "executed_tests": 91,
+    "failures": 0,
+    "warnings": 0,
+    "actual_exit": 0,
+    "source_stable": true,
+    "descendants_initial": [
+      4026134,
+      4029165
+    ],
+    "pre_signal_states": [
+      "Z",
+      "Z"
+    ],
+    "actual_wait_statuses": [
+      10,
+      0
+    ],
+    "remaining": [],
+    "observation_complete": false,
+    "observation_errors": 12,
+    "limit": "Original force happened; not retrospectively reclassified. Earlier initial1/2 identities remain UNKNOWN."
+  },
+  "input_hashes_before": {
+    "collector-ready-reap-proposal1.json": "69aff5dfa9a653fb88c583dd3eb2057ffc07c885ba29d84c8dfeaf259d73a268",
+    "collector-ready-reap-design1.md": "a93f91fd72b309c90a52794ff0ba4814c083aa82412169877e361f26e7116495",
+    "command-collector1.py": "5f4a4c11372c01b634d05d3f6a504d7a91e5ad225db17c7dae53d51bb39f0753",
+    "command-collector2.py": "33780fb0131ec06ff58dc29c6d4e8025be181ef0990b2b84a0306f7bd0fffb1f",
+    "browser-command-collector1.py": "f0ba7e4e38950a80bfa74ce9c0b003d67b3f43b8f47a9223d9a768e7c991053f",
+    "browser-command-collector2.py": "f6019937b2c9dd6cf460e3ff5004331493412acd56b0daeeaaa485de2782ebd3",
+    "collector-regression2-source.py": "e88e6f2c3f21aeaf77964390a99bb08b641e3500777406b14ba089ab473581fa",
+    "scoped-diagnostic1.json": "a4f6b84e0bb6aacceadd6237cd93275e4f1b71525a4976c003bd4d3dbaa40ac8",
+    "scoped-diagnostic1-classification.json": "8335a7c198c2ad6b7d5571d17880b14e7c9c62ef73240123e3429ee57bc5c635"
+  },
+  "input_hashes_after": {
+    "collector-ready-reap-proposal1.json": "69aff5dfa9a653fb88c583dd3eb2057ffc07c885ba29d84c8dfeaf259d73a268",
+    "collector-ready-reap-design1.md": "a93f91fd72b309c90a52794ff0ba4814c083aa82412169877e361f26e7116495",
+    "command-collector1.py": "5f4a4c11372c01b634d05d3f6a504d7a91e5ad225db17c7dae53d51bb39f0753",
+    "command-collector2.py": "33780fb0131ec06ff58dc29c6d4e8025be181ef0990b2b84a0306f7bd0fffb1f",
+    "browser-command-collector1.py": "f0ba7e4e38950a80bfa74ce9c0b003d67b3f43b8f47a9223d9a768e7c991053f",
+    "browser-command-collector2.py": "f6019937b2c9dd6cf460e3ff5004331493412acd56b0daeeaaa485de2782ebd3",
+    "collector-regression2-source.py": "e88e6f2c3f21aeaf77964390a99bb08b641e3500777406b14ba089ab473581fa",
+    "scoped-diagnostic1.json": "a4f6b84e0bb6aacceadd6237cd93275e4f1b71525a4976c003bd4d3dbaa40ac8",
+    "scoped-diagnostic1-classification.json": "8335a7c198c2ad6b7d5571d17880b14e7c9c62ef73240123e3429ee57bc5c635"
+  },
+  "input_count": 9,
+  "drift": [],
+  "verification": [
+    {
+      "command": "diff -u collector1/collector2 pairs",
+      "exit": 1,
+      "result": "Expected differences; only cleanup_descendants changed"
+    },
+    {
+      "command": "AST parse/extract exact main and cleanup function source; bounded proposal/receipt parsing",
+      "exit": 0,
+      "result": "PASS static syntax and unchanged gate evidence"
+    },
+    {
+      "command": "Nine input digest checks before/after",
+      "exit": 0,
+      "result": "PASS no source drift"
+    },
+    {
+      "command": "collector regression suite, actual scoped command, browser, Mix/build/network/process actions",
+      "exit": null,
+      "result": "NOT RUN by assignment; tests executed0"
+    }
+  ],
+  "counters": {
+    "group_failedGREEN": 50,
+    "root_failure_events": 92,
+    "group_orchestration": 26,
+    "stage_failedGREEN": 5,
+    "stage_production": 1,
+    "stage_fixture": 5,
+    "stage_orchestration": 19,
+    "own_sol_repair_rounds": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_gate": null,
+    "limit": "Inherited counters preserved; report is review only and does not reset/increment repair history. Proposal/classification contain earlier historical values."
+  },
+  "written_files": [
+    "/tmp/gaoxy-group-generation-ready-reap-code1.md",
+    "/tmp/gaoxy-group-generation-ready-reap-code1.json"
+  ],
+  "repository_changes": [],
+  "tests_executed": 0,
+  "command_shutdown": "All own read-only commands completed synchronously. No spawned process/session remains. No runtime process was touched.",
+  "remaining_risks": [
+    "Collector2 must not be used as a passing finite-deadline collector before C1 is repaired and independently reviewed.",
+    "Source review and mocked checks cannot establish scoped/browser/protocol acceptance.",
+    "Browser-green2 early return remains unresolved as separately diagnosed."
+  ],
+  "decisions_needed": "No user product/permission decision. Parent confirmed preserving2 and creating3 with per-pass monotonic checks, explicit exhaustion failure input and deterministic deadline mocks; parent owns repair and subsequent independent review/execution."
+}
+

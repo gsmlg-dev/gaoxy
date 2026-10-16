@@ -1,0 +1,9 @@
+# Ready-reap collector finite deadline correction3
+
+Status: proposed, NOT RUN. Collector2 SPEC1 PASS and independent CODE1 FAIL remain immutable. C1 correctly identifies that continuously ready waitpid children can prevent before-force or after-force draining from reaching the existing absolute15s check. This is an orchestration defect; prior scoped failures remain FAIL.
+
+Collector3 preserves2 and adds a monotonic deadline check before every nonblocking wait call, in both phases. Deadline exhaustion is explicit in reap_deadline_exhausted and conservatively makes forced=true even if a later census is empty. The original15s starts at cleanup entry; original TERM-first3s/KILL-after, force-path polling, exact signal/wait receipts and main/browser/Actor predicates remain. No grace period, name/PID/status exception, cap/deadline increase, skipped child or success rewrite. Both collectors share byte-identical cleanup and unchanged main/children against1/2.
+
+Regression3 retains the13 original mocked cases and adds before-force and after-force productive-ready deadline cases for both collectors:17 mocks. Finite mocked clocks and wait sequences must finish with explicit exhaustion/forced=true/remaining child and expected TERM or KILL. These are collector regressions, not network/browser acceptance. Independent SPEC→CODE required before root mocks and fresh scoped91. Original source2/design/proposal/SPEC1/CODE1 and all historical receipts preserved. Astra2/2 exhausted. Root owns repo/runtime/Git; reviewers reports only.
+
+Current after application: groupfailedGREEN50/root95/orchestration28; stagefailedGREEN5/production1/fixture6/orchestration21. Root95 is the CODE1 deadline finding. Browser diagnostic source observation adds a separate fixture attempt7; no failed runtime/counter reset is implied.

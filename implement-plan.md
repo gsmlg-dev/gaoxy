@@ -1,8 +1,39 @@
 # Gaoxy Implementation Plan
 
-Status: fixed prepared-T upstream-H2 Generation DONE LOCALLY at feature `bd740b0d4fd53fc680e95fb9430aa9ad914a747b`; full reviews, fresh537/0, isolated consumers, reviewed browser four rows/eight images and actual committed-byte custody PASS. Whole M3 remains incomplete.
+Status: managed H2 group Generation VERIFIED LOCALLY ON DISK; final independent
+document/custody review and local commit pending. Whole M3/composite Task5 remain
+incomplete. [Design](docs/designs/m3-managed-h2-group-generation.md),
+[plan](docs/plans/m3-managed-h2-group-generation.md),
+[acceptance](docs/acceptance/m3-managed-h2-group-generation.md).
 
-Latest bounded stage: [fixed prepared-T upstream-H2 Generation](docs/acceptance/m3-managed-h2-fixed-generation.md), [design](docs/designs/m3-managed-h2-fixed-generation.md), [plan](docs/plans/m3-managed-h2-fixed-generation.md). The canonical guard enables only validated compiled H2 configurations; genuine checked Store/native capture, Session delegation and original completion custody are unchanged. Final full-stage SPEC1→CODE1, document SPEC2→CODE/custody, fresh19-file537/0, strict compile/format/syntax, core consumer1/0, HTTP consumer2/0 and diagnostic4 browser four rows/eight viewed images passed. feature-commit1.json verifies all395 actual feature blobs, including388 snapshot2 paths. Historical final2 remains FAIL/UNKNOWN; no production close repair is claimed, and incomplete NetLogs cannot explain it. Cumulative group45/root66/Astra2/2 exhausted; stage failedGREEN4/fixture3/production0/orchestration7; final document SPEC1 FAIL/factual repair remain preserved. Automatically prepare bounded group Generation next. Composite Task5, full matrix, trust/IP rotation, H2 twenty reloads, standalone/load, H3 worker accounting and publication retain separate gates.
+Latest bounded stage: one transport owner, two members per old/new H8 checked
+Generation; upstream h2c/TLS-H2 × native H1/H2, serial0→1→0, authentic G7/T8,
+selected-only child, native95 P/N/W/B, original completion/source lifetimes,
+unselected-B retention and shared-T dedup. Full-stage SPEC1→CODE1 and bounded
+startup-test cancellation-order SPEC1→CODE1 preceded fresh239+170+475=884/0
+invocations over32 distinct paths. Strict compile/complete active format/syntax,
+separate startup19/0 and isolated consumers1/0+2/0 pass. Fresh final browser4/4,
+all8 root-viewed images and98 artifact hashes pass;24 direct Actors exited0/
+nonforced with readers joined/groups absent. Separately21 adopted waits are
+17status0/four signal10(-10), none remaining. Historical final3 FAIL437/12 and
+final4 FAIL475/1, earlier failures/UNKNOWN causes and sticky failed receipts
+remain immutable. Cumulative group54/root129/orchestration57/stagefailed9/
+production2/fixture11/stageorchestration50/invalidRED1/validRED1/Astra2/2 exhausted.
+Exact candidate2/inventory6/commands/browser facts are in the stage ledger;
+actual document/index/blob/commit custody is a distinct unfinished gate.
+
+Previous fixed prepared-T upstream-H2 Generation is DONE LOCALLY at feature
+`bd740b0d4fd53fc680e95fb9430aa9ad914a747b` and documentation
+`8131af39a846c292a022ccbfd32c53376cd57887`, with full reviews/fresh537/0,
+isolated consumers, four-row browser and actual committed-byte custody.
+Its browser-final2 stays FAIL/UNKNOWN; no production close repair is claimed.
+After current local closure, the next bounded existing requirement is
+same-authority managed-H2 trust/numeric-address rotation, fixed then group using
+existing compact DER/address preparation APIs, with written design/plan and
+independent review before runtime. Full streaming matrix, multi-owner,
+selected-A R32/B-available saturation, H2 twenty active/idle reloads, standalone
+managed integration, two ≥600-second load profiles, H3 worker accounting and
+publication retain their own gates.
 
 Predecessor status: native downstream-H2 worker startup/dispatch implementation and final prescribed runtime gates VERIFIED LOCALLY after full independent SPEC2 then CODE2. Fresh561/0 across30 unique files, strict compile/format, real Chrome TLS/H2+H1 and isolated consumers1/0+2/0 PASS. Bounded independent documentation rebind and local feature commit `a39c821bb09dcdc78f4626305350dcff4dddfdb0`/500blob custody PASS; whole M3 is incomplete.
 

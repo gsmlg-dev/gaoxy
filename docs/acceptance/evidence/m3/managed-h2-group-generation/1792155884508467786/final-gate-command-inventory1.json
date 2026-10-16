@@ -1,0 +1,160 @@
+{
+  "commands": [
+    {
+      "name": "scoped-final1",
+      "kind": "green",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_lifecycle_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_failure_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_native_tls_ownership_test.exs"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "scoped-final2",
+      "kind": "green",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_failure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs",
+        "apps/gaoxy_proxy/test/upstream_group_transport_test.exs",
+        "apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs",
+        "apps/gaoxy_proxy/test/managed_generation_accounting_test.exs"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "scoped-final3",
+      "kind": "green",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/managed_h2_group_accounting_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_accounting_owner_activation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_accounting_session_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_accounting_probe_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_group_pin_response_test.exs",
+        "apps/gaoxy_http/test/generation_endpoint_validation_test.exs",
+        "apps/gaoxy_http/test/generation_resource_consistency_test.exs",
+        "apps/gaoxy_http/test/generation_resources_test.exs",
+        "apps/gaoxy_http/test/generation_checked_capture_test.exs",
+        "apps/gaoxy_http/test/generation_release_deadline_test.exs",
+        "apps/gaoxy_http/test/generation_test.exs",
+        "apps/gaoxy_http/test/http2_worker_startup_test.exs",
+        "apps/gaoxy_http/test/http2_stale_start_test.exs"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "strict-compile1",
+      "kind": "static",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "format-final1",
+      "kind": "static",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host1.exs",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-cohort1.exs"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "consumer-core1",
+      "kind": "green",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    },
+    {
+      "name": "consumer-http1",
+      "kind": "green",
+      "argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "bash",
+        "scripts/http-consumer.sh"
+      ],
+      "status": "NOT RUN; requires final full-stage SPEC then CODE"
+    }
+  ],
+  "browser": "initial browser-green1 then fresh post-fullreview browser-final1, each via reviewed browser-command-collector1 and root8screenshotviews",
+  "syntax": "changedPython compile + extractedBROWSER node--check with source hashes",
+  "boundary": "no invocation in this inventory; names must be unique immutable receipt paths"
+}

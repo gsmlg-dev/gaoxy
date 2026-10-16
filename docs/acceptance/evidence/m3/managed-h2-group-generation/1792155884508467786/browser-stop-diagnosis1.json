@@ -1,0 +1,140 @@
+{
+  "task_id": "gaoxy-group-generation-browser-stop-diagnosis1",
+  "status": "DONE",
+  "verdict": "SOURCE_CONFIRMED_FIXTURE_STOP_OMISSION; runtime final group-owner terminal state UNKNOWN; no acceptance",
+  "assignment": "direct bounded read-only diagnosis; no implementation/runtime",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "identity_note": "Worktree identity inherited unchanged; qualification head matches baseline. No Git command run.",
+  "skill": "systematic-debugging: source/evidence tracing phases only, no reproduction or implementation authorized",
+  "findings": [
+    {
+      "id": "D1",
+      "severity": "blocks browser fixture successful stop",
+      "location": "E3/group-generation-browser-host3.exs:1978-1979",
+      "diagnosis": "The host fixture starts UpstreamGroups directly and requires its original normal monitor terminal, but never requests that owner's shutdown. Gaoxy.stop stops the instance and lifecycle participants; UpstreamGroups is not such a participant and only enters mode:draining on instance DOWN. Its normal alive path cannot produce the terminal awaited here.",
+      "evidence": [
+        "Host run1039-1040 calls UpstreamGroups.start_link(instance:instance) and monitors it; registry1174 records original group_owner PID/ref with reason:normal and joined:false.",
+        "Host finish1940-1966 verifies empty transport/group ledgers and joins custodians, then calls only Gaoxy.stop(instance,10000)1978 before join_roles group_owner1979.",
+        "UpstreamGroups.start_link218-226 starts ordinary GenServer linked to caller; init443-464 merely monitors instance, schedules probes, and initializes state. No lifecycle registration is present.",
+        "UpstreamGroups.handle_info802-812 cancels tokens/probes on matching instance DOWN and returns {:noreply, mode:draining}; no stop callback/result. Repeated probes773-776 and catchall881 retain process.",
+        "Contrasting transport owner init217-239 registers lifecycle participation and check_owner_retirement497-502 stops normally on instance_down with empty records/tokens.",
+        "Existing scoped group-generation test environment1631-1633 explicitly calls GenServer.stop(groups,:normal,@timeout) after Gaoxy.stop(instance)."
+      ],
+      "confidence": "Definite source contract/fixture ownership omission. Actual failed group's final liveness or unmatched terminal reason is not in the recorded evidence."
+    }
+  ],
+  "monitor_custody": {
+    "track": "Host track1272-1287 preserves existing PID monitor, exact reason and unjoined state, or creates a fresh authentic monitor for a live actor.",
+    "receive_and_mark": "Actual host3 helper is mark_joined1290-1294; no mark_actor_down function exists. Main loop DOWN1757-1760 fetches exact ref, asserts PID/reason, and records joined state. Trace handlers only match trace/cohort_trace/EXIT forms.",
+    "joins": "join_tracked1296-1310 either confirms saved joined actor dead or selectively receives original ref/PID/exact reason within5000ms. An unexpected reason remains unmatched and would time out; it is not accepted or marked joined.",
+    "drains": "No host generic DOWN drain was found. stop_join2396-2404 creates/receives only its own temporary monitor. Fixed Probe/Session/custodian receives are guarded by their own original monitor identities. Gaoxy.stop48-66 uses a private fresh instance monitor and flushes only that ref. Lifecycle.collect broad receive is in Instance.operation's spawned coordinator (instance287-304), not the host mailbox.",
+    "answer": "No source-evidenced route consumes or ignores the registered group-owner normal DOWN before custody is recorded. Missing explicit owner stop is sufficient to explain the normal-path timeout. The log alone does not rule out an unmatched unexpected reason or prove actual PID liveness at timeout."
+  },
+  "minimal_recommended_repair": {
+    "scope": "Versioned host fixture only; no production lifecycle/API change",
+    "insertion": "Immediately after successful Gaoxy.stop(s.instance,10000), before existing join_roles owner/instance join, call :ok = GenServer.stop(s.groups,:normal,5000).",
+    "rationale": "Host owns this directly started group process; after unchanged empty-ledger/custodian checks, request its normal termination explicitly, matching existing scoped fixture ownership. Leave original groups_monitor in registry and require its existing exact normal DOWN. Direct GenServer.stop adds no replacement monitor receipt or optional-liveness bypass.",
+    "preserve": [
+      "All prior zero-ledger/Gate/nativecohort/peer-closed/completion checks and finite deadlines.",
+      "Original group_owner monitor ref/PID/reason:normal and existing join_roles assertion; no demonitor/flush, widened reason or alive-only substitute.",
+      "Stopped/source-identity/rebind, graceful host/browser/peer joins and all four rows/eight screenshots remain required."
+    ],
+    "validation_recommendation": "Root should independently review the bounded versioned diff, then rerun required fresh browser matrix and exact actor/peer normal joins. Record original failure unchanged; this diagnosis grants no runtime pass."
+  },
+  "actual_evidence": [
+    {
+      "source": "browser-green3/qualification.json",
+      "outcome": "FAIL",
+      "detail": "executed1 h2-h2c;source_stabletrue;elapsed22918ms. Browser exit0/forcedfalse,hostexit1/forcedfalse,four peers forcedtrue/exit-15;all6 readersjoined and ownedgroupsgone;adopted_remaining[]."
+    },
+    {
+      "source": "browser-green3/h2-h2c/browser.log:2-5",
+      "outcome": "Partial observed PASS only",
+      "detail": "Both old/new probe events statusPASS,visibletrue,exactDOM/title/URL,networkh2/status200;Chrome closed code0/signalnull and joinedpassedtrue."
+    },
+    {
+      "source": "browser-green3/h2-h2c/host.log:45,47,85-92",
+      "outcome": "Partial source/completion/native cleanup observed; stop FAIL",
+      "detail": "Both original completions ok/request_clean,authentic source/child gone and joined. Final closed_browser_clean Gateactive0/retained0/cleanup0/failednil;cohort target/native connections peer_closed and nonconnections normal. Then exact group_owner terminal missing atjoin_tracked1308/finish1979. No stopped/exited event,group owner actual PID state/reason absent."
+    },
+    {
+      "source": "Parent report",
+      "outcome": "Only2 screenshots viewed by root",
+      "detail": "Reviewer did not view screenshots and does not infer full4row/8image coverage."
+    }
+  ],
+  "checks": [
+    {
+      "name": "Source/evidence bounded read-only diagnosis",
+      "outcome": "PASS as diagnosis",
+      "detail": "Exact stop/registry/selective receive/state transitions plus working scoped fixture compared. No reproduction authorized/performed."
+    },
+    {
+      "name": "Before/after input stability",
+      "outcome": "PASS",
+      "detail": "All10 recorded input hashes unchanged; supporting code initial hashes captured after first bounded reads then rechecked."
+    },
+    {
+      "name": "Repair/runtime validation",
+      "outcome": "NOT_RUN",
+      "detail": "No repair written; tests/build/browser/runtime forbidden."
+    }
+  ],
+  "hashes": {
+    "before": {
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/host.log": "eab74ec8e5af3b9c2fe8c44115bc4101d7abd396569ddc4e9f07c01df5a23ed3",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/qualification.json": "1bf70fe99997b439f129a43cfe8f80f1f2ff5da2e0726e5fa187c974e1596204",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs": "a3dd5731a954f509ed724fa77910eb9ab377466f0c03d7434cf3444997eb51a4",
+      "apps/gaoxy/lib/gaoxy.ex": "f996f20926086b80f79aa66c82253164430616ffac15118f87bd8a88bc00fa5e",
+      "apps/gaoxy/lib/gaoxy/instance.ex": "510bcf614c5a289fbd6c454693930b68c09bd9bdd8510a547e458cca54838dcf",
+      "apps/gaoxy/lib/gaoxy/lifecycle.ex": "7f673e89f59b41af72057ce1afa553fa6c62e56125b450e6d09e58da0a434f75",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "e80503bb68521d29fa3423a3c93c9059598d0602eec1858cd1c751aba759a2fa",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/browser.log": "4f4714a5a2c5552c7a8997aed205ccd9654996c414c48f6c2b0fde01609c8185"
+    },
+    "after": {
+      "apps/gaoxy/lib/gaoxy.ex": "f996f20926086b80f79aa66c82253164430616ffac15118f87bd8a88bc00fa5e",
+      "apps/gaoxy/lib/gaoxy/instance.ex": "510bcf614c5a289fbd6c454693930b68c09bd9bdd8510a547e458cca54838dcf",
+      "apps/gaoxy/lib/gaoxy/lifecycle.ex": "7f673e89f59b41af72057ce1afa553fa6c62e56125b450e6d09e58da0a434f75",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "e80503bb68521d29fa3423a3c93c9059598d0602eec1858cd1c751aba759a2fa",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/browser.log": "4f4714a5a2c5552c7a8997aed205ccd9654996c414c48f6c2b0fde01609c8185",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/host.log": "eab74ec8e5af3b9c2fe8c44115bc4101d7abd396569ddc4e9f07c01df5a23ed3",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/qualification.json": "1bf70fe99997b439f129a43cfe8f80f1f2ff5da2e0726e5fa187c974e1596204",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs": "a3dd5731a954f509ed724fa77910eb9ab377466f0c03d7434cf3444997eb51a4"
+    },
+    "initial_capture_note": "Host/log/qualification first hashes captured at initial read; browser.log before parsing; six supporting source/test hashes first captured after bounded reads and then rechecked."
+  },
+  "counters": {
+    "group_failed_green": 52,
+    "root_failure_events": 106,
+    "stage_failed_green": 7,
+    "orchestration": 35,
+    "stage_orchestration_repair": 28,
+    "stage_production_repair": 2,
+    "stage_fixture_repair": 9,
+    "stage_invalid_red": 1,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "reviewer_sol_repair_rounds": 0,
+    "reset": false
+  },
+  "astra_gate": null,
+  "own_changed_files": [
+    "/tmp/gaoxy-group-generation-browser-stop-diagnosis1.md",
+    "/tmp/gaoxy-group-generation-browser-stop-diagnosis1.json"
+  ],
+  "command_shutdown": "All own source/hash/log inspection commands completed synchronously exit0; no live sessions/processes, no runtime/build/tests/browser/Git/network/agents or repository/evidence writes.",
+  "remaining_risks": [
+    "Source-supported missing explicit stop requires root-owned repair/review/verification; no new runtime success.",
+    "Actual failed group PID liveness/unmatched DOWN reason remains UNKNOWN.",
+    "Earlier browser-green2 cause and browser-diagnostic1 exact rejected field remain UNKNOWN; no reclassification.",
+    "Full-stage,Task5,M3,release/deployment acceptance remains open."
+  ],
+  "decisions_needed": "No product decision needed; root owns narrowly scoped host fixture repair and independent review/verification."
+}

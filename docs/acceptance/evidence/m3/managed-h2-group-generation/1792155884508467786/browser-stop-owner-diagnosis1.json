@@ -1,0 +1,117 @@
+{
+  "task_id": "gaoxy-group-generation-browser-stop-owner-diagnosis1",
+  "status": "DONE",
+  "verdict": "CONFIRMED_GROUP_OWNER_LIFETIME_MISMATCH; MINIMAL_EXPLICIT_NORMAL_STOP_RECOMMENDED",
+  "assignment": "direct bounded independent read-only source diagnosis; group owner stop contract only; mailbox diagnosis delegated elsewhere",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "identity_note": "Parent-confirmed baseline/branch, no Git operation.",
+  "observed_failure": {
+    "run": "browser-green3",
+    "status": "FAIL",
+    "executed": 1,
+    "row": "h2-h2c",
+    "source_stable": true,
+    "elapsed_ms": 22918,
+    "failure": "Host original actor exact terminal missing: :group_owner at join_tracked1308/finish1979",
+    "observed_before_failure": "Both old/new actual browser200/h2 DOM/title/URL probes, completion and request_clean succeeded; Chrome gracefulclose/join exit0; host closed_browser_clean shows original native cohort/observer joins and Gateactive0/retained0/cleanup0/failednil. Full row still FAIL: stopped/rebind/final joins not reached, hostexit1 and four peer actors forcedTERM/-15.",
+    "limit": "No runtime owner-alive-at-timeout snapshot is recorded here. Missing exact DOWN alone is not an independent liveness measurement; source proves omitted stop and no automatic normal owner exit contract."
+  },
+  "source_contract": [
+    {
+      "location": "upstream_groups.ex215-225",
+      "finding": "child_spec restarttemporary; start_link is direct GenServer.start_link, linking owner to calling browser host, not to instance/supervisor child ownership."
+    },
+    {
+      "location": "upstream_groups.ex443-461",
+      "finding": "Owner init stores instance monitor and ready/empty ledgers. It does not register Gaoxy lifecycle participant and exposes no owner-specific stop API or terminate callback."
+    },
+    {
+      "location": "upstream_groups.ex802-812",
+      "finding": "Instance DOWN cancels live selections/probes then returns noreply mode:draining; it does not terminate even when all ledgers are empty."
+    },
+    {
+      "location": "upstream_groups.ex773-775/1069-1080",
+      "finding": "Probe tick continues normal noreply scheduling; draining launch is inert. Final group removal only deletes group key/subtracts bytes. No idle/allzero owner auto-stop exists."
+    },
+    {
+      "location": "upstream_transports.ex217-239/497-502/667-680 and gaoxy.ex47-58",
+      "finding": "Transport owner is deliberately different: registers lifecycle participant, tracks instance_down, and stops normal when instance down and records/tokens empty. Gaoxy.stop covers registered participants; group owner cannot inherit transport lifecycle."
+    },
+    {
+      "location": "browser-host3.exs1039-1040/1174/1939-1979",
+      "finding": "Host starts/monitors group owner expecting exact normal. finish stops Store, proves T/group allzero, joins custodians/removes hooks, then only Gaoxy.stop(instance), followed by original group-owner join. No explicit groups stop occurs."
+    },
+    {
+      "location": "managed_h2_group_generation_test.exs1631-1634/1730-1735",
+      "finding": "Existing passing socket embedding owns a finite normal groups stop after Gaoxy.stop; finish then consumes original normal owner monitor. This demonstrates intended embedding responsibility."
+    }
+  ],
+  "recommended_minimal_correction": {
+    "status": "PROPOSED_ONLY_NOT_IMPLEMENTED_NOT_RUN",
+    "file": "versioned successor of group-generation-browser-host3.exs (preserve failed host3 immutable)",
+    "placement": "After successful existing Gaoxy.stop(s.instance,10_000), before existing join_roles(s,[:transport_owner,:group_owner,:instance]) and after all existing allzero/custodian/hook gates.",
+    "operation": ":ok = GenServer.stop(s.groups, :normal, 5_000)",
+    "rationale": "Host created/owns this independent GenServer. Supported finite normal stop requests its exact expected terminal; existing original groups_monitor remains installed, and unchanged join_roles must consume authentic DOWN reason:normal. Existing stop_join helper is an alternative with an extra local monitor but must not replace the original tracked join.",
+    "preserve": [
+      "Exact original group_owner monitor/PID/reason:normal assertion and finite5000ms join deadline",
+      "All original group/T/custodian/native/peer cleanup, allzero/failednil/rebind gates",
+      "Existing caps/deadlines/reservations/completions and successful observable data-path checks",
+      "Historical browsergreen3 FAIL and source/logs/receipts unchanged"
+    ],
+    "excluded": "No production lifecycle redesign, no guessed timeout increase, no any-reason terminal acceptance, synthetic DOWN, Process.exit workaround, assertion skip or whole-stage PASS."
+  },
+  "verification": {
+    "input_sha256": {
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "e80503bb68521d29fa3423a3c93c9059598d0602eec1858cd1c751aba759a2fa",
+      "apps/gaoxy/lib/gaoxy.ex": "f996f20926086b80f79aa66c82253164430616ffac15118f87bd8a88bc00fa5e",
+      "apps/gaoxy/lib/gaoxy/instance.ex": "510bcf614c5a289fbd6c454693930b68c09bd9bdd8510a547e458cca54838dcf",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs": "a3dd5731a954f509ed724fa77910eb9ab377466f0c03d7434cf3444997eb51a4",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/host.log": "eab74ec8e5af3b9c2fe8c44115bc4101d7abd396569ddc4e9f07c01df5a23ed3",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/h2-h2c/browser.log": "4f4714a5a2c5552c7a8997aed205ccd9654996c414c48f6c2b0fde01609c8185",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green3/qualification.json": "1bf70fe99997b439f129a43cfe8f80f1f2ff5da2e0726e5fa187c974e1596204",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-command-green3.json": "153e12e0026a984bd2ce6ac19f5b0355233ccf6287e69dcfa8afd5f6d0770358"
+    },
+    "actual_run_source_matches": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "apps/gaoxy/lib/gaoxy.ex",
+      "apps/gaoxy/lib/gaoxy/instance.ex",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host3.exs"
+    ],
+    "artifact_checks": "Both observed host/browser log digests match qualification artifact manifest; qualification digest matches outer browser-command receipt.",
+    "tests_executed": 0,
+    "runtime_build_browser_Git_network_agent_actions": "NOT RUN",
+    "commands": "Scoped source/evidence metadata reads and hashlib/json checks; all completed. One initial rg command had unescaped { causing regex parse error2; recovered with scoped valid patterns, subsequent commands exit0. No source/process effects. Parent notified; parent owns any counter update.",
+    "repository_changes": [],
+    "command_shutdown": "All own commands finished synchronously; no own background process/session/runtime actor remains."
+  },
+  "counters": {
+    "received_group_failed_green": 52,
+    "received_root_failure_events": 106,
+    "received_orchestration": 35,
+    "received_stage_failed_green": 7,
+    "received_stage_production_repair": 2,
+    "received_stage_fixture_repair": 9,
+    "received_stage_orchestration_repair": 28,
+    "received_stage_invalid_red": 1,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "own_sol_repair_rounds": 0,
+    "reset": false,
+    "read_error_event": "Disclosed scoped rg parse error; cumulative parent update not invented."
+  },
+  "astra_gate": null,
+  "remaining_risks": [
+    "Other reviewer owns mailbox receipt handling; this assignment does not clear that separate issue.",
+    "Versioned minimal fixture repair needs independent SPEC/CODE, exact source rebind and fresh four-row/eight-screenshot browser/final gates.",
+    "Historical diagnostic1 rejected field/green2 cause remain UNKNOWN; no stage/fullTask5/M3 acceptance."
+  ],
+  "decisions_needed": "None for bounded fixture ownership correction under existing authorization. Root selects/implements/reviews any new fixture version."
+}

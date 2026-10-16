@@ -869,7 +869,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
         # The real client cancels its stream AFTER service drain began.
         # Without that cancellation this is not a graceful-finish test.
         assert_native_draining_dispatch_wait!(context, cut.receipt, draining.drain_deadline)
-        send_reset(context.socket, 3)
+        service_stop_reset_and_join(context, worker, token, draining.drain_deadline)
 
       :endpoint_blocked ->
         # Drain must allow existing admitted work to finish; no forced cleanup
@@ -924,6 +924,62 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
     # Hook lives only on the now genuinely joined Gate. No :sys call is made
     # against a dead actor; on_exit also releases it on earlier failures.
     assert is_reference(hook)
+  end
+
+  defp service_stop_reset_and_join(context, worker, token, drain_deadline) do
+    observer = self()
+    owner = context.owner
+    monitor = Process.monitor(worker)
+    hook = make_ref()
+    deadline = min(Lifecycle.deadline(@wait), drain_deadline)
+    release = {:service_stop_reset_release, token}
+
+    # RST queues Gate cancellation asynchronously. Keep the native owner at its
+    # genuine post-RST callback until that cancellation joins the child, before
+    # the owner's already-queued local close can propagate through their link.
+    assert :ok =
+             :sys.install(
+               owner,
+               {hook,
+                fn previous, event, _ ->
+                  case event do
+                    {:noreply,
+                     {_socket, %{phase: :http2, draining: true, starting: nil, streams: streams}}}
+                    when not is_map_key(streams, 3) ->
+                      send(observer, {:service_stop_reset_cut, token, self()})
+
+                      receive do
+                        ^release -> :done
+                      after
+                        Lifecycle.remaining(deadline) -> exit(:service_stop_reset_join_timeout)
+                      end
+
+                    _ ->
+                      previous
+                  end
+                end, nil},
+               Lifecycle.remaining(deadline)
+             )
+
+    on_exit(fn ->
+      send(owner, release)
+
+      if Process.alive?(owner) do
+        try do
+          :sys.remove(owner, hook, 100)
+        catch
+          :exit, _ -> :ok
+        end
+      end
+    end)
+
+    try do
+      send_reset(context.socket, 3)
+      assert_receive {:service_stop_reset_cut, ^token, ^owner}, Lifecycle.remaining(deadline)
+      assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}, Lifecycle.remaining(deadline)
+    after
+      send(owner, release)
+    end
   end
 
   defp assert_native_draining_dispatch_wait!(context, receipt, drain_deadline) do

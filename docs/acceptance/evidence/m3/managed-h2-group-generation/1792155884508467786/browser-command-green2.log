@@ -1,0 +1,182 @@
+{
+  "status": "FAIL",
+  "head": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "executed": 1,
+  "elapsed_ms": 37486,
+  "source_stable": true,
+  "failure": "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner2.py\", line 552, in run_case\n    request = peer.event('request')\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner2.py\", line 345, in event\n    event = self.events.get(timeout=max(.001, end-time.monotonic()))\n  File \"/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/queue.py\", line 209, in get\n    raise Empty\n_queue.Empty\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner2.py\", line 729, in main\n    run_case(mode,upstream_protocol,evidence/(mode+'-'+upstream_protocol),certificates,spki,cases,joins)\n    ~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner2.py\", line 700, in run_case\n    raise AssertionError('owned browser/host/peer shutdown failed or required forcing')\nAssertionError: owned browser/host/peer shutdown failed or required forcing\n",
+  "joins": [
+    {
+      "command": [
+        "node",
+        "-e",
+        "\nconst assert = require('node:assert/strict');\nconst fs = require('node:fs/promises');\nconst os = require('node:os');\nconst path = require('node:path');\nconst {spawn} = require('node:child_process');\nconst readline = require('node:readline');\n(async () => {\n const [origin, directory, protocol, spki, netlogPath] = process.argv.slice(1);\n assert(['h2','http/1.1'].includes(protocol));\n const originURL=new URL(origin);\n assert.equal(originURL.hostname,'127.0.0.1');assert.match(originURL.port,/^[0-9]+$/);\n assert.equal(originURL.protocol,protocol==='h2'?'https:':'http:');\n assert.equal(originURL.origin,origin);\n const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'gaoxy-native-worker-browser-'));\n const chrome = spawn(process.env.GAOXY_CHROME_BIN || 'chromium', ['--headless=new','--no-first-run','--no-default-browser-check',\n  '--disable-background-networking','--disable-component-update','--disable-sync','--disable-extensions',\n  '--remote-debugging-port=0',`--user-data-dir=${profile}`,\n  `--log-net-log=${netlogPath}`,'--net-log-capture-mode=Default',\n  ...(protocol==='h2'?[`--ignore-certificate-errors-spki-list=${spki}`]:[]),'about:blank'], {stdio:['ignore','ignore','pipe']});\n let stderr = '', socket, serial = 0, passed = false, closeRequested = false;\n let chromeError;\n chrome.on('error', e => { chromeError = e; });\n const exited = new Promise(resolve => chrome.once('exit', (code, signal) => resolve({code, signal})));\n chrome.stderr.on('data', bytes => { stderr = (stderr + bytes.toString()).slice(-65536); });\n const pending = new Map(), events = [];\n const emit = v => process.stdout.write(JSON.stringify(v)+'\\n');\n const bounded = (promise, ms, label) => {\n  let timer;\n  return Promise.race([promise,new Promise((_, reject) => {timer=setTimeout(()=>reject(Error(label)),ms);})])\n   .finally(()=>clearTimeout(timer));\n };\n async function until(predicate, label) {\n  const end = Date.now()+15000;\n  while (!await predicate()) {\n   assert(Date.now()<end && !chromeError && chrome.exitCode===null, label+': '+stderr);\n   await new Promise(resolve=>setTimeout(resolve,10));\n  }\n }\n function request(method, params={}) {\n  const id=++serial;\n  return bounded(new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));}),15000,method)\n   .finally(()=>pending.delete(id));\n }\n const input = readline.createInterface({input:process.stdin});\n const commands=[], waiters=[];\n input.on('line',line=>{const c=JSON.parse(line);if(waiters.length)waiters.shift()(c);else commands.push(c);});\n const command=()=>bounded(commands.length?Promise.resolve(commands.shift()):new Promise(resolve=>waiters.push(resolve)),20000,'browser command deadline');\n try {\n  let port;\n  await until(async()=>{\n   try { port=Number((await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).split('\\n')[0]); }\n   catch(e){assert.equal(e.code,'ENOENT');} return !!port;\n  },'Chrome startup deadline');\n  const targets=await bounded(fetch(`http://127.0.0.1:${port}/json/list`).then(r=>r.json()),5000,'CDP discovery deadline');\n  const page=targets.find(t=>t.type==='page'&&t.url==='about:blank');assert(page);\n  socket=new WebSocket(page.webSocketDebuggerUrl);\n  socket.addEventListener('message', message=>{\n   const value=JSON.parse(message.data);\n   if(value.id){const p=pending.get(value.id);if(p){value.error?p.reject(Error(JSON.stringify(value.error))):p.resolve(value.result);}}\n   else {assert(events.length<2048,'CDP event bound');events.push(value);}\n  });\n  socket.addEventListener('close',()=>{for(const p of pending.values())p.reject(Error('CDP closed'));pending.clear();});\n  await bounded(new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});}),5000,'CDP open deadline');\n  await request('Page.enable');await request('Network.enable');await request('Runtime.enable');\n  await request('Network.setBlockedURLs',{urls:['*favicon.ico']});\n  const version=await request('Browser.getVersion');\n  emit({event:'browser_ready',version,node:process.version});\n  for(const label of ['old','new']) {\n  const c=await command();assert.deepEqual(c,{op:'navigate',label,target:label==='old'?'/old%2Fpath?raw=%2F':'/new%2Fpath?raw=%2F'});\n  const target=c.target, title='Gaoxy group H2 Generation '+label, marker='Gaoxy checked group H2 Generation '+label;\n  const nav=await request('Page.navigate',{url:origin+target});assert(!nav.errorText,nav.errorText);\n  let response;\n  await until(()=>{\n   response=events.find(e=>e.method==='Network.responseReceived'&&e.params.response.url===origin+target)?.params;\n   return response&&events.some(e=>e.method==='Network.loadingFinished'&&e.params.requestId===response.requestId);\n  },'page load deadline');\n  assert.equal(response.response.protocol,protocol);assert.equal(response.response.status,200);assert.equal(response.type,'Document');\n  if(protocol==='h2')assert.match(response.response.securityDetails.protocol,/^TLS/);\n  const result=await request('Runtime.evaluate',{expression:'({title:document.title,text:document.querySelector(\"#checked\")?.textContent,url:location.href})',returnByValue:true});\n  assert(!result.exceptionDetails);assert.deepEqual(result.result.value,{title,text:marker,url:origin+target});\n  const visible=await request('Runtime.evaluate',{expression:'(()=>{const e=document.querySelector(\"#checked\"),r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility===\"visible\";})()',returnByValue:true});\n  assert(!visible.exceptionDetails);assert.equal(visible.result.value,true);\n  assert(!events.some(e=>e.method==='Runtime.exceptionThrown'||e.method==='Runtime.consoleAPICalled'));\n  const screenshot=await request('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});\n  await fs.writeFile(path.join(directory,label+'-browser.png'),Buffer.from(screenshot.data,'base64'));\n  await fs.writeFile(path.join(directory,label+'-browser-events.json'),JSON.stringify(events,null,2)+'\\n');\n  emit({event:'probe',status:'PASS',label,version,node:process.version,document:result.result.value,visible:true,network:response});\n  }\n  assert.deepEqual(await command(),{op:'exit'});\n  closeRequested=true;\n  let closeReply='confirmed';\n  try { await request('Browser.close'); }\n  catch(e) { assert.equal(e.message,'CDP closed'); closeReply='CDP closed while graceful browser shutdown was pending'; }\n  const join=await bounded(exited,10000,'Chrome graceful join deadline');assert.equal(join.code,0);assert.equal(join.signal,null);\n  emit({event:'chrome_closed',close_reply:closeReply,process:join});\n  passed=true;\n } finally {\n  input.close();socket?.close();\n  if(chrome.exitCode===null&&chrome.signalCode===null&&!chromeError){\n   chrome.kill('SIGTERM');\n   try{await bounded(exited,5000,'Chrome TERM join deadline');}\n   catch(e){chrome.kill('SIGKILL');await bounded(exited,5000,'Chrome KILL join deadline');}\n  }\n  await fs.writeFile(path.join(directory,'chrome-stderr.log'),stderr);\n  await fs.rm(profile,{recursive:true,force:true});\n  emit({event:'joined',passed,close_requested:closeRequested,profile_removed:true,chrome_exit:chrome.exitCode,chrome_signal:chrome.signalCode});\n }\n})().catch(e=>{console.error(e.stack);process.exitCode=1;});\n",
+        "https://127.0.0.1:40683",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green2/h2-h2c",
+        "h2",
+        "qKzSskxM0uynxyKGAMa0/VR5D4/OIYgEV0PdfFQch5w=",
+        "/tmp/gaoxy-group-generation-netlog-k65hnol_/chrome-netlog.json"
+      ],
+      "pid": 2351619,
+      "exit": 1,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "mix",
+        "run",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-host2.exs",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green2/h2-h2c/peer-ready.json",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green2/h2-h2c",
+        "h2",
+        "/tmp/gaoxy-native-worker-test-certs-zs9ioats",
+        "h2c"
+      ],
+      "pid": 2231727,
+      "exit": 1,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "h2c"
+      ],
+      "pid": 2228088,
+      "exit": -15,
+      "forced": true,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "h2c"
+      ],
+      "pid": 2224129,
+      "exit": -15,
+      "forced": true,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "h2c"
+      ],
+      "pid": 2220985,
+      "exit": -15,
+      "forced": true,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "h2c"
+      ],
+      "pid": 2216907,
+      "exit": -15,
+      "forced": true,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-h2c"
+    }
+  ],
+  "adopted_joins": [
+    {
+      "pid": 2259496,
+      "wait_status": 10,
+      "exit": -10
+    },
+    {
+      "pid": 2353612,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2353452,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2353584,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2353489,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2354838,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2354968,
+      "wait_status": 0,
+      "exit": 0
+    }
+  ],
+  "adopted_remaining": [],
+  "fixture_development_cutoff": "group45/root71/orchestration12/Astra2of2; group Generation qualification, all inherited failures retained",
+  "artifact_sha256": {
+    "certificate-tool.log": "e3e7635fef7fa2a664e1e3ee33f54c19030e3a25ca4cec9f772308c67488cf09",
+    "h2-h2c/browser.log": "73ee4c02b772e975b64704cfa488c279e08bb180872ef78f026ae2dda33fd260",
+    "h2-h2c/causal-metadata.log": "29ad2f010a1a5c5ff4fcb23cbbc55a1e8e6184593fc40ffd3e84fce54ed19c8c",
+    "h2-h2c/chrome-net-metadata-final.json": "efa77397e1a3ced3e41d8a4f0bc4df18e3518b6678f9605d659e70154f537171",
+    "h2-h2c/chrome-stderr.log": "ce129495c234e6b62be7eb54bd4087aca042378d0a7567e6c2e8f43d67f81b63",
+    "h2-h2c/diagnostic-raw-custody.json": "3f93116604aa35b3c1bf3f7a0ddb975a2b12ac28e239a876b384621da400a191",
+    "h2-h2c/failure-cohort.log": "b14ab2c4f96eb22bb83e28e56784b34c3aa32ab3ac11975996a2b43d2278256c",
+    "h2-h2c/host-loaded-before.json": "3131e7d05180964362b89899db9f2272fc48a44632fa50627d858ec5b69fc9cf",
+    "h2-h2c/host.log": "6fb6495a1f33e036cf88c8305354512bd94e66abb54300d68c6be015d1dcf2d7",
+    "h2-h2c/new-capture-cohort.log": "4a052b9d8e2b45ecdedceaa4221b9b8ddc4870eff0f2f4c6627a5aa8bcaf7dd1",
+    "h2-h2c/new_a-peer.log": "7de0116893f48d8638f1f66bf8c722e061992477490164d59e7ed87b64ed415e",
+    "h2-h2c/new_b-peer.log": "de014eaa148c6b7e6a9c0d609eff9f7ba648057b65c42358842e7d2b23833636",
+    "h2-h2c/old-browser-events.json": "269e3408cd073522e7460b1aa2877de7ba3aa724f27c1f47257158f9d110f38f",
+    "h2-h2c/old-browser.png": "dca224118157689f52a69c525f5c1004027fa86a034a436f0bef1c796ac343cf",
+    "h2-h2c/old-capture-cohort.log": "385bc746ff14f82d4dc07e86e04da7de2d4b14b461405843f00eb533a5d2a403",
+    "h2-h2c/old-chrome-net-metadata.json": "2ec054af31df45685212efe45cbe7ec80cba515ec41b85138dab3ac861778f40",
+    "h2-h2c/old-request-clean-cohort.log": "bb1c88eaf4484ece48d894dc15185d2257914b2cce172e5e0143f2a4302cace3",
+    "h2-h2c/old_a-peer.log": "cac4e602b39478f40e25cc89260a99b44307132f72311c6e868d0e2db138cc95",
+    "h2-h2c/old_b-peer.log": "e37f0a98a7aa9cd6f85ead3cc085ed89805b82e467d3e57dce7e5821e49557b2",
+    "h2-h2c/peer-ready.json": "9ffc394f0cb4f16533ea0ae221fbdc0f459965b1622b82fc187210f417f7a8c8",
+    "test-certificate-identity.json": "23db4b34f81273744b95ec64b65a1c76433199a718e8d6ce1a2bf2f9e53b6302"
+  }
+}

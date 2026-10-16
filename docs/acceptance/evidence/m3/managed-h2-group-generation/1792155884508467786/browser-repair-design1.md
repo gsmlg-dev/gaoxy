@@ -1,0 +1,13 @@
+# Browser request-clean two-member baseline correction
+
+Status: PROPOSED; runtime NOT RUN. Initial browser-green1 is immutable FAIL: only h2-h2c started, host exited1 while awaiting request_clean after original old completion/source/custodian retirement; runner forcibly disposed browser and four peers. Outer collector joined without forcing. Exactly one old screenshot was produced and root viewed it: visible correct old group Generation marker. Other three rows and new navigation NOT RUN.
+
+The host copied a fixed one-T cleanup scalar: resources2/pins1. The active replacement has two distinct T records under a single genuine Store baseline receipt, so T.status weighted holds must be exactly2. The owner sums handle counts, while Store batches by provider/owner. The socket91/0 behavioral result and genuine two-T constructor trace support this diagnosis; the failed-time exact owner census was not retained, so do not claim it was observed.
+
+The versioned host2 corrects only pins1→2, retains all source deletion, G/token/probe/control, T token, native, Cohort and live-before-close assertions, and adds exact baseline custody after the wait: Store has exactly two provider receipts; one T pin record has both new Ts, genuine Store holder/acquirer and no derived marker; its weighted sum is2; one G baseline record has the exact new group, operation, holder and acquirer. This excludes leaked preparation/probe/request/child receipts. request_clean emits exact verified counts; versioned runner2 requires them for both navigations and references only host2. Prior host1/runner1 and failed snapshots are preserved.
+
+No product source/API/cap/constructor/native Exchange operand, held Session lifetime, deadline, health profile or production dependency changes. New emitted fields are fixture evidence from verified host state. Root source constructor checkpoint must confirm actual full initialized endpoint/native95/P/N/W/B identities, original G/T completion, B lifetime, all Actor/CDP/Cohort/process-group/reader/adopted custody, explicit close/all-zero/rebind remain.
+
+Root owns repo/evidence/Git and all runtime. Independently SPEC then CODE review this bounded correction before runtime. New four-row browser-green2 needs unique receipt/path and eight root screenshot views. This is a fixture correction, not stage acceptance. Original failed browser, scoped-initial2 custody FAIL91/0 and predecessor browser-final2 FAIL/UNKNOWN remain. No third Astra; no assertion weakening.
+
+Counters after applying the proposed fixture correction: cumulative group failedGREEN48/root87/orchestration24; stage failedGREEN3/productionRepair1/fixtureRepair3/orchestrationRepair17; Astra2/2 exhausted.

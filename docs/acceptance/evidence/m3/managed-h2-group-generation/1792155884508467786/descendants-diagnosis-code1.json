@@ -1,0 +1,191 @@
+{
+  "task_id": "group_generation_descendants_code1",
+  "status": "DONE",
+  "assignment": "Direct read-only source investigation",
+  "diagnosis": "FAIL condition established; historical descendant actor identity/live-versus-zombie state unresolved",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8131af39a846c292a022ccbfd32c53376cd57887",
+  "branch": "codex/m3-h1-resource-foundation",
+  "source_identity": {
+    "hashes": {
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/scoped-initial2.json": "607aa797fda868de46cb1365248d2fb3c2237c59261b75e57e567ef553110b0c",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/scoped-initial2.log": "5ac989c9293f6e257016c61a2169f8dd920b582ad6a7705676425dc5d6bba2c0",
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/command-collector1.py": "5f4a4c11372c01b634d05d3f6a504d7a91e5ad225db17c7dae53d51bb39f0753",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "489ae6a6617e52c3c7d42a06a5b0cd8e8170ed0ba5b2fd53c6c6b91a298cc23b",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+      "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+      "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/.unbuffer-wrapped": "a5b27490ad1af65f07c25b16e7a246ed15744e0018f97c1a1bbfc691b166fb24",
+      "/nix/store/5y0714j8czhkjbmjb6l6m46n5w5fyr6q-erlang-28.5.0.5/lib/erlang/lib/kernel-10.6.3.3/src/inet_gethost_native.erl": "1486b1bd3cddfaf855ae6141c9b41d96a168fa68f22a4463694c32caddb32a19"
+    },
+    "receipt_matches": {
+      "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/command-collector1.py": true,
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": true,
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": true
+    },
+    "receipt_log_match": true,
+    "head": "8131af39a846c292a022ccbfd32c53376cd57887",
+    "branch": "codex/m3-h1-resource-foundation",
+    "receipt_summary": {
+      "name": "scoped-initial2",
+      "kind": "green",
+      "verdict": "FAIL",
+      "at_utc": "2026-10-16T14:03:26.973238+00:00",
+      "elapsed_seconds": 138.1912193018943,
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "unbuffer",
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--max-cases",
+        "1",
+        "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+      "environment": {
+        "MIX_ENV": "test",
+        "ERL_FLAGS": "+S 2:2"
+      },
+      "pid": 127922,
+      "actual_exit": 0,
+      "forced": false,
+      "wait_error": null,
+      "process_joined": true,
+      "process_group_remaining": [],
+      "descendant_cleanup": {
+        "forced": true,
+        "initial": [
+          155438,
+          157671
+        ],
+        "reaped": [
+          {
+            "pid": 157671,
+            "wait_status": 10
+          },
+          {
+            "pid": 155438,
+            "wait_status": 0
+          }
+        ],
+        "remaining": []
+      },
+      "tests": 91,
+      "reported_tests": 91,
+      "failures": 0,
+      "skipped": 0,
+      "excluded": 0,
+      "warnings": [],
+      "source_stable": true,
+      "browser": null,
+      "source_changes": [],
+      "log": "scoped-initial2.log",
+      "log_sha256": "5ac989c9293f6e257016c61a2169f8dd920b582ad6a7705676425dc5d6bba2c0",
+      "collector_sha256": "5f4a4c11372c01b634d05d3f6a504d7a91e5ad225db17c7dae53d51bb39f0753"
+    }
+  },
+  "findings": [
+    {
+      "id": "DESC1-F1",
+      "kind": "EVIDENCE_GAP",
+      "source": "command-collector1.py:35-75",
+      "proof": "Only numeric initial/reaped PIDs; signals before wait; forced=bool(initial); no pre-signal state/identity/signal-result. Historical live leak versus waitable exit cannot be decided.",
+      "proposal": "Timestamped PID/starttime/stat/comm/exe/ancestry snapshots before signal/reap; record every signal and terminal status; preserve strict FAIL."
+    },
+    {
+      "id": "DESC1-F2",
+      "kind": "LIMITED_FALLBACK_OBSERVABILITY",
+      "source": "managed_h2_fixed_endpoint_test.exs:35-41,69-71,79-118",
+      "proof": "Fallback only normal collector DOWN; peer_stopping accepts any port exit_status without recording it. Normal fixed/group finish paths require exact joined/exit0/DOWN.",
+      "proposal": "Emit supported Port OS PID once and preserve exact original exit status on normal/fallback paths; do not infer this caused historical descendants."
+    }
+  ],
+  "certainty": {
+    "confirmed": [
+      "91/0 actual_exit0/no warnings/source stable, overall FAIL retained",
+      "collector adopts and signals before reaping",
+      "status0 exited0/status10 SIGUSR1 local decoding",
+      "normal fixture peer joins explicit; fallback status not retained",
+      "local non-pipeline unbuffer waits direct spawned child"
+    ],
+    "unknown": [
+      "identity of155438/157671",
+      "state/waitability before cleanup",
+      "actual signal attempts/results/causal sender",
+      "exact wrappers/BEAM job executable versions",
+      "live actor leak versus already dead/transient helper"
+    ]
+  },
+  "local_source": {
+    "unbuffer": "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/.unbuffer-wrapped:25-30",
+    "otp": "/nix/store/5y0714j8czhkjbmjb6l6m46n5w5fyr6q-erlang-28.5.0.5/lib/erlang/lib/kernel-10.6.3.3/src/inet_gethost_native.erl:411-420",
+    "boundary": "Installed illustrative sources not proven exact job versions; no local Nix develop.cc/erl_child_setup.c found. No PID identity inferred."
+  },
+  "proposal": {
+    "preserve": [
+      "all historical FAIL receipts",
+      "no forced-cleanup PASS",
+      "original finite deadlines and protocol/join/zero/rebind assertions"
+    ],
+    "capture": [
+      "PID/starttime/state/comm/PPID/PGRP/SID/exe and owned parent/thread edges",
+      "monotonic spawn/command-terminal/pre-signal/pre-reap snapshots",
+      "safe Port.info OS PID correlation/exact port exit status",
+      "signal target identity/PGID/group members/signal/result/errno",
+      "waitid WNOWAIT where supported before reap, then actual waitpid"
+    ],
+    "safety": "No environ/raw secret argv; redacted allowlisted command identity only. No helper-name exemption, arbitrary sleep, counter reset or retrospective status change.",
+    "validation": "Root-owned deterministic zombies/live TERM-KILL/signal races/PID reuse/separate-session/wait-error cases followed by fresh scoped runtime."
+  },
+  "commands": [
+    {
+      "command": "pwd/git status/HEAD/branch, assigned source searches/reads",
+      "exit": 0
+    },
+    {
+      "command": "scoped-initial2 JSON/log focused summary and source/receipt/log hashes",
+      "exit": 0
+    },
+    {
+      "command": "local installed Nix/Expect/OTP source path lookup; read actual .unbuffer-wrapped and bounded OTP source; pure os wait-status decoding",
+      "exit": 0,
+      "result": "Local source limits explicit; exploratory nl wrapper was ELF, then corrected text target read; no executable launched"
+    },
+    {
+      "command": "fresh assigned source hash comparison against immutable initial2 and log hash",
+      "exit": 0,
+      "result": "collector/both tests/log exact"
+    },
+    {
+      "command": "exclusive creation assigned /tmp reports",
+      "exit": 0
+    }
+  ],
+  "tests_executed": 0,
+  "runtime": "NOT_RUN",
+  "repository_changes": [],
+  "written_files": [
+    "/tmp/gaoxy-group-generation-descendants-code1.md",
+    "/tmp/gaoxy-group-generation-descendants-code1.json"
+  ],
+  "sol_repair_rounds": 0,
+  "astra_recovery": "2/2 exhausted, not invoked",
+  "astra_gate": null,
+  "assignment_counters": "failedGREEN47/root86/stagefailedGREEN2; orchestration24/stage17",
+  "latest_parent_counters": "failedGREEN48/root87/stagefailedGREEN3; production1/fixture2 pending/orchestration24/stage17; browser outside diagnosis",
+  "command_shutdown": "All own synchronous commands finished; no runtime/build/browser/test actors launched/stopped/signalled; others untouched",
+  "remaining_risks": [
+    "Cannot reconstruct historical PID identities after reap",
+    "Fresh pre-signal identity capture/root runtime required",
+    "No stage pass or code change proposed without evidence"
+  ],
+  "decisions_needed": [],
+  "created_at_utc": "2026-10-16T14:11:07.930Z",
+  "markdown_sha256": "e435fc7706e3cf726673ba2dc39fc6f103445e1425955e19c9738a3a2065371b"
+}

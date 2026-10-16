@@ -1,0 +1,49 @@
+{
+  "kind": "OBSERVATIONAL_DESCENDANT_COLLECTOR_PROPOSAL",
+  "status": "NOT_RUN",
+  "sources_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/command-collector-diagnostic1.py": "0e1c17517c7aad38b65c0257039f078ec6349a9a4a53a63c1da68c6cbf2ffe5c"
+  },
+  "base_sha256": "5f4a4c11372c01b634d05d3f6a504d7a91e5ad225db17c7dae53d51bb39f0753",
+  "preserved": [
+    "cleanup ordering",
+    "15second deadline",
+    "actual TERM/KILL",
+    "force predicate",
+    "green/FAIL predicates",
+    "original finally wait reconciliation"
+  ],
+  "limitations": [
+    "No change or coverage claim for browser-specific collector",
+    "No historical descendant identity conclusion",
+    "Observation necessarily perturbs timing",
+    "Per-thread discovery unchanged from base; only current ancestry captured",
+    "No argv/environ/secret/private trace reads"
+  ],
+  "command": [
+    "python3",
+    "-B",
+    "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/command-collector-diagnostic1.py",
+    "--name",
+    "scoped-diagnostic1",
+    "--timeout",
+    "600",
+    "--kind",
+    "green",
+    "--",
+    "nix",
+    "develop",
+    "--command",
+    "env",
+    "ERL_FLAGS=+S 2:2",
+    "MIX_ENV=test",
+    "unbuffer",
+    "mix",
+    "test",
+    "--warnings-as-errors",
+    "--max-cases",
+    "1",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs"
+  ]
+}
