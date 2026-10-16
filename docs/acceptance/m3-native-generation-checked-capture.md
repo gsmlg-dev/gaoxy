@@ -1,6 +1,6 @@
 # Native Generation checked capture acceptance
 
-Status: RUNTIME ACCEPTED; independent full-stage SPEC/CODE and post-review fresh verification PASS. Index/blob custody and local commit PENDING. Entire M3 remains incomplete.
+Status: DONE — runtime, independent full-stage SPEC/CODE, post-review fresh verification, index/blob custody and local feature commit PASS. Entire M3 remains incomplete.
 
 Baseline:e189894882bb6a530f2c38538be4efaf384be261 on codex/m3-h1-resource-foundation. Design/plan:docs/designs/m3-native-generation-checked-capture.md and docs/plans/m3-native-generation-checked-capture.md. Evidence:docs/acceptance/evidence/m3/native-generation-checked-capture/1792107581748432565/ (E4). Root runs actual commands under Nix, Elixir1.18.5, OTP package28.5.0.7/ERTS16.4.0.6, ERL_FLAGS=+S 2:2 and MIX_ENV=test.
 
@@ -26,6 +26,8 @@ pre-admission-constructor-gate1.json binds independent actual-source SPEC then C
 | Full-stage independent specification review | gaoxy-native-generation-full-spec1.json |PASS, no actionable findings |
 | Full-stage independent code review | gaoxy-native-generation-full-code1.json |PASS, no actionable findings |
 | Post-review fresh scoped union | acceptance-fresh1.json |493 tests/0 failures,0 warnings/skips/exclusions,exit0 |
+| Index/blob custody | index-custody1.json |191 final task-owned staged files equal disk/commit |
+| Local feature commit | feature-commit1.json |c4c4239c7d23f2e8d621c0359c75046cda8ac264,exit0 |
 
 All passing test commands above joined, preserved source guards and had zero unexpected warnings/skips. All unfiltered groups had zero exclusions. These groups overlap; do not add their counts as distinct tests. C5 executes120 named primary/cleanup/observer combinations. Seven additional contract tests include33 internal subcases and the actual63 existing plus2 new receipt append rejection; these subcases are not extra ExUnit counts.
 
@@ -45,4 +47,6 @@ metadata-precheck-failure1.json records one parent orchestration error:the archi
 
 Counters:inherited group failedGREEN24/root failure events27; current completed failedGREEN6 (5ExUnit +1browser), aborted runtime orchestration1, metadata precheck failure1, production repair1, post-GREEN fixture repairs5 and pre-GREEN fixture correction1; cumulative group failedGREEN30/root failure events35. The immutable freeze/full-review snapshots predate the metadata event and retain root34. Consumer environment failures and reviewer-only harness errors are separate from implementation repair rounds. Astra2/2 exhausted, no reset/third round.
 
-Index/blob custody and local feature commit remain PENDING. Native worker startup/dispatch accounting and upstream-H2 Generation activation are deferred to separately designed next bounded stages, advanced automatically under continuing authorization. This is scoped serialized-constructor accounting, not a physical-memory/load/full M3 acceptance claim. No push/publication/deployment, production data/certificates, Vault, public management or disabled release-artifact E2E changes.
+Feature c4c4239c7d23f2e8d621c0359c75046cda8ac264 (tree5d1587a046718a7fe70f2b83f258b933773cee81) contains only the12 assigned application/test files,3 canonical documents and176 evidence files. index-custody1.json audits190 staged files; the final commit also includes that audit receipt, with all191 committed blobs verified against disk in feature-commit1.json. All227 noncanonical frozen sources and164 frozen evidence files remain exact; the3 canonical changes are reviewed closure text. Raw staged diff-check exits2 solely for immutable archived logs' whitespace; strict nonarchive check exits0. Protected user files remain byte-identical and unstaged. This documentation-only closure records the actual feature identity without changing executable source or repeating already-passing runtime gates.
+
+Native worker startup/dispatch accounting and upstream-H2 Generation activation are deferred to separately designed next bounded stages, advanced automatically under continuing authorization. This is scoped serialized-constructor accounting, not a physical-memory/load/full M3 acceptance claim. No push/publication/deployment, production data/certificates, Vault, public management or disabled release-artifact E2E changes.
