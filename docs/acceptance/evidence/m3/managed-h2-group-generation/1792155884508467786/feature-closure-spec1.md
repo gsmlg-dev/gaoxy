@@ -1,0 +1,13 @@
+# Feature closure SPEC1 review
+
+DONE — FAIL: one factual count wording correction required. No dependent CODE/closure-commit approval.
+
+Candidate `4231c0932f700b2cfc51a8dbcb1c9f7f7405beb5884d2e660436f76083adcfcb`; feature receipt `68a12c643200989b3ba348c487a9ba53dfb71f47f1b2af8600e7f96fbfcca8b4`. Actual feature f7b4c32c24a33b5e34c4ce909943846d5335bc0d/tree4ee48e50a450902d03c78645bb8f8d622915c3e8/parent8131af39a846c292a022ccbfd32c53376cd57887 independently match Git.
+
+F1(P3): acceptance:40/:128,design:82,plan:133 call1035 “distinct actual blobs”/“distinct Git blobs.”1035 is the count of unique path-addressed checks;actual Git objects have963 distinct blob OIDs.646 changed feature paths have585 unique OIDs;402 accepted source paths have391 unique OIDs. All1035 path-addressed bytes match recorded hashes. Change current prose to1035 distinct paths/path-bound blob checks;preserve immutable receipt field combined_unique_verified_blob_count and explain its path meaning additively if needed. No source/runtime defect or rerun is indicated.
+
+All402source/9docs/648evidence/2protected hashes match,9 closure snapshots match current,9 final-doc-candidate2 snapshots remain immutable. Source unchanged. Actual646 changed paths/all402 accepted source files were independently read from Git;mode/OID/length/SHA agree. Exactly5 current-doc differences from feature are intentional closure edits. Old docs bind Git/final-docs-candidate2;current docs bind closure candidate/snapshots. Captured641 index records equal feature records;prior CODE642 plus append-only646 provenance is accurate. Actual feature receipt/log references and final SPEC2/CODE1/checkpoint hashes match. Current index empty;tracked diff is exactly5 closure docs. Immediate postcommit clean state remains historical evidence.
+
+Exact bounded doc diff keeps completed feature checkboxes factual,wholeM3/compositeTask5 and broad exclusions open,and successor unchecked/separate. Postfeature receipt/log and documentation descendant explanation are accurate;actual closure documentation commit remains pending. Counters131/59/52 reconcile supplement3;all prior failures/history/cutoffs retained. No blanket comparison of historical command-audit doc hashes to current closure docs.
+
+Worktree `.trees/m3-h1-resource-foundation`,branch codex/m3-h1-resource-foundation.7 own commands all exit0;0 failed inspections/runtime/tests/build/browser/network/source edits. git cat-file batch finished exit0;all sessions finished,no background. Only assigned /tmp reports written. Source repairs0,Astra2of2 exhausted,no new round. JSON contains exact inputs/counts/checks/limits. Parent must repair F1 and obtain bounded SPEC re-review before dependent CODE/closure commit.

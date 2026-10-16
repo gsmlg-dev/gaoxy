@@ -8,7 +8,7 @@
 
 **Tech stack:** Elixir1.18.5/OTP28 Nix environment, HTTP Fetch/Runtime0.21.10, Python h2 peers, native H1/H2 and Chrome/CDP.
 
-Status: VERIFIED LOCALLY ON DISK; final document/custody review and local commit pending. Complete full-stage SPEC1→CODE1 and bounded stop-race SPEC1→CODE1 passed before fresh final gates. Three serialized batches executed239+170+475=884 test invocations over32 distinct paths, zero failures/skips/exclusions/compiler-test warnings, exit0; strict compile, complete active format/syntax and isolated consumers1/0+2/0 passed. Final browser4/4 and all8 root-viewed images passed. Historical failures remain unchanged; whole M3/composite Task5 remain incomplete. See the matching acceptance and evidence final-acceptance-facts1.json for exact source, commands and scope.
+Status: DONE LOCALLY at feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`. Full-stage SPEC1→CODE1, bounded stop-race SPEC1→CODE1 and final document SPEC2→CODE1/index custody passed. Fresh239+170+475=884 scoped test invocations/0 failures, strict compile/complete active format/syntax, separate startup19/0 and consumers1/0+2/0 pass. Final browser4/4 and8 root-viewed images pass. All646 changed feature paths and all402 accepted source files match the committed tree; whole M3/composite Task5 remain incomplete. Historical failures are preserved. This factual documentation descendant records the verified feature identity without self-reference.
 
 ## Files and serialized ownership
 
@@ -111,14 +111,40 @@ exact inputs and scope.
 ### Task6: Acceptance, custody and local commit
 
 - [x] Write acceptance with exact single-owner/two-member/dedup/browser-A-only scope, complete commands/counts/exits/source hashes, retained failures/counters and fresh post-review results. Keep multi-owner, selected-A R32/B-available saturation, trust/IP rotation/reload/full matrix/standalone/load/H3 accounting and wholeTask5/M3 open.
-- [ ] Complete current roadmap sync, independent document SPEC then CODE and exact disk/index/blob custody audit. Prior nine-document review inputs remain in pre-final-docs1; all failed evidence, unrelated prompts and private-trace/key restrictions are preserved.
-- [ ] Root stages only task-owned files, makes a local conventional feature commit, verifies actual commit/tree/blobs against disk/index, then records separately reviewed factual closure. No push/publication/deployment.
+- [x] Complete current roadmap sync, independent document SPEC2 then CODE1 and exact disk/index/blob custody audit. Prior nine-document review inputs remain in pre-final-docs1; all failed evidence, unrelated prompts and private-trace/key restrictions are preserved.
+- [x] Root staged only task-owned files, made local feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`, and verified all646 changed feature paths plus all402 accepted source files against the committed tree/disk/captured index. This separately reviewed factual descendant records the real feature identity. No push/publication/deployment.
+### Successor workflow after this slice
+
 - [ ] After actual local closure, automatically design/plan/review and execute the next existing bounded requirement: managed-H2 same-authority trust/numeric-address rotation, fixed then group using existing compact DER/address APIs. The successor mapping is preparation only until that kickoff.
 
-Current cumulative counters: group failedGREEN54/root129/orchestration57; stage failedGREEN9/productionRepair2/fixtureRepair11/orchestrationRepair50/invalidRED1/validRED1; Astra2/2 exhausted. No reset or third Astra recovery. Frozen earlier receipts retain their original cutoffs. Root124–126 are recovered read-only browser-report schema errors; root127 is the independent command-audit integer-count-key JSON round-trip error. Root128 is a recovered read-only optional H1 accounting display TypeError; H1 legitimately has no H2 worker-accounting object. These report-only recoveries change no runtime/source result.
+Counters at factual-document freeze: group failedGREEN54/root132/orchestration60; stage failedGREEN9/productionRepair2/fixtureRepair11/orchestrationRepair53/invalidRED1/validRED1; Astra2/2 exhausted. No reset or third Astra recovery. Frozen earlier receipts retain their original cutoffs. Root124–126 are recovered read-only browser-report schema errors; root127 is the independent command-audit integer-count-key JSON round-trip error. Root128 is a recovered read-only optional H1 accounting display TypeError; H1 legitimately has no H2 worker-accounting object. These report-only recoveries change no runtime/source result. Cumulative final-document failedSPEC2 includes postfeature SPEC1; no new failedGREEN.
 
 Restrictions remain production data/certificates, Vault, public management,
 disabled release-artifact E2E and account/quota changes; history97 dismissal is
 preserved. Stop only for genuine new external permissions/product decisions or
 an external blocker, continuing other unblocked work. All original failures,
 UNKNOWN causes and sticky cleanup failures remain in acceptance/evidence.
+
+## Actual feature and factual descendant
+
+Feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`, tree `4ee48e50a450902d03c78645bb8f8d622915c3e8`,
+parent `8131af39a846c292a022ccbfd32c53376cd57887`. `feature-commit1.json` verifies
+all646 changed paths and all402 accepted source files against actual committed
+bytes, current disk and captured index:1035 distinct file paths verified against their committed blobs (963 distinct Git blob OIDs). The feature
+log and postcommit receipt are appended in this factual documentation descendant;
+a feature cannot contain its own identity. No new runtime/source/test change.
+Final document SPEC1 FAIL D1, SPEC2 PASS and CODE1/index PASS remain immutable.
+Their document counter freeze is129. CODE's two recovered read-only audit-schema
+checks are root130/131; `final-counter-supplement3.json` records current
+root131/orchestration59/stageorchestration52 without new failedGREEN or repair.
+The source and original gates remain bound to their reviewed cutoffs. No push,
+publication or deployment occurred. The successor kickoff will record the real
+factual documentation commit identity after its own verification.
+
+Postfeature closure SPEC1 retained FAIL for the distinct-object wording. The
+original receipt's combined_unique_verified_blob_count=1035 is a count of
+unique file paths. Its bytes and name remain immutable; the additive
+feature-object-count-clarification1.json records1035 paths/963 distinct blob
+OIDs, feature646 paths/585 OIDs and accepted source402 paths/391 OIDs. Every
+original path check succeeded; no source/runtime result changes. Root132 is
+this documentation correction only; candidate1 and original FAIL are preserved.

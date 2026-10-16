@@ -1,0 +1,99 @@
+# Managed H2 Group Generation Design
+
+Status: DONE LOCALLY at feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`. Full-stage SPEC1→CODE1, bounded stop-race SPEC1→CODE1 and final document SPEC2→CODE1/index custody passed. Fresh239+170+475=884 scoped test invocations/0 failures, strict compile/complete active format/syntax, separate startup19/0 and consumers1/0+2/0 pass. Final browser4/4 and8 root-viewed images pass. All646 changed feature paths and all402 accepted source files match the committed tree; whole M3/composite Task5 remain incomplete. Historical failures are preserved. This factual documentation descendant records the verified feature identity without self-reference.
+
+Worktree `.trees/m3-h1-resource-foundation`, branch `codex/m3-h1-resource-foundation`, source baseline `8131af39a846c292a022ccbfd32c53376cd57887`. Evidence root `docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786`. Counters at factual-document freeze: group failedGREEN54/root132/orchestration60; stage failedGREEN9/productionRepair2/fixtureRepair11/orchestrationRepair53/invalidRED1/validRED1; Astra2/2 exhausted. No reset or third Astra recovery. Frozen earlier receipts retain their original cutoffs. Root124–126 are recovered read-only browser-report schema errors; root127 is the independent command-audit integer-count-key JSON round-trip error. Root128 is a recovered read-only optional H1 accounting display TypeError; H1 legitimately has no H2 worker-accounting object. These report-only recoveries change no runtime/source result. Cumulative final-document failedSPEC2 includes postfeature SPEC1; no new failedGREEN.
+
+## Goal, bound and smallest change
+
+Qualify one genuine managed-H2 H8 group with two distinct prepared T4 members per old/new snapshot, on one transport owner. Cover upstream `:h2c` and TLS `:http2` crossed with native downstream H1/H2. Each socket cell exercises three old requests captured before CAS and three fresh requests, selected serially0→1→0. Add a separate two-member/shared-T dedup case for each upstream protocol. Browser retains four rows and two navigations per row, using genuine two-member groups but selecting memberA only; socket tests establish B and wraparound.
+
+The production composition is already reachable. GroupEndpoint has no Generation exclusion; its pure init/resources contract compiles canonical H8 and flattened resources. Expected changes are qualification tests, browser fixtures and documents. No artificial RED, new guard, provider API, process, cap, dependency or production refactor is justified. A real failing behavior triggers targeted diagnosis with unchanged assertions; a new retained constructor, multiplicity or lifetime reopens independent constructor SPEC→CODE before runtime consumption.
+
+One group/one member is the mathematical minimum but does not prove selection/unselected lifetime. Two members fit existing1..32 schemas. This slice excludes multi-owner groups, mixed-protocol members, trust/IP rotation, H2 reload/load, complete streaming matrix, standalone managed integration and H3 worker accounting. Established broader gates remain open; complete Task5/M3 is not claimed.
+
+## Existing source contracts retained
+
+- **Preparation and sidecar:** `upstream_groups.ex:259-310,319-342,396-409` prepares dependencies in the actual holder/coordinator and derives first-occurrence dedup. `group_endpoint.ex:9-24` and `upstream_groups/options.ex:55-80` validate canonical homogeneous members/resources without live owner calls. Store baseline must cover the complete sidecar before the holder releases all T/G preparation receipts.
+- **Checked capture:** `generation.ex:133-147,443-451` precharges B in the actual native Gate lease, then atomically captures current Router and genuine request receipts inside Store. `resources.ex:76-109` batches by `{provider,owner}`. Distinct-member manifest `[G,T_A,T_B]` yields exactly two provider effects: G7 `handles:[G]` and T8 `handles:[T_A,T_B]`; do not assume batch iteration order. Both owner records show native holder/Store acquirer; G7 lacks a public holder field. No manually acquired/injected source pins.
+- **CAS and old admission:** `generation.ex:517-528` acquires replacement baseline, publishes and releases old baseline. Group becomes retiring, cancels probes and refuses new pins/probes; authenticated old request checkout remains valid (`upstream_groups.ex:549-614,1041-1088,1501-1535`). T ordinary admission closes while authentic source rights retain active custody (`upstream_transports.ex:1117-1137`). Barriers live in actual native actors after Store reply; never hold Store across CAS.
+- **Selection and delegation:** `http.ex:576-623,940-995` retains G source in Session selector and T source in one-use native handoff. `session.ex:1443-1513` selects once after real Service cleanup activation. Only selected T gets a child: public `holder=Session`, stored `acquirer=native`, original `source_ref`, distinct ref/operation, `handles:[selected_T]`. No Session G child is invented. Owner authenticates exact stored source, native holder, protocol/authority/instance/deadline and per-resource one-use marker (`upstream_transports.ex:348-374,1010-1089`). No admission-open check is added to authorized old delegation/checkout.
+- **Independent original completion:** Session stores G/T selections separately, opens once and binds the identical original `RequestCompletion` to T then G before ready/upload (`session.ex:1576-1605,1681-1708`). Confirmed public cleanup precedes T finish/child release, G finish, Service cleanup and Session normal DOWN (`1398-1417,1711-1758,1791-1799`). Native G/T sources release only after actual endpoint return (`generation.ex:308-340`). Whole-owner abort/instance stop overrides ordinary old rights.
+- **Supported dependency:** keep HTTP Fetch/Runtime0.21.10 unchanged. Use public `HTTP.fetch`, Promise completion, `HTTP.RequestCompletion` and `HTTP.ManagedTransport.open/retire/await_retired`; Gaoxy Custodian owns scope lifetime. No private Fetch state/process inspection or deps patches. Source contracts: `managed_h2_client.ex:55-65,245-300`, `custodian.ex:123-124,162-175,256-279`, `deps/http_runtime/lib/http/managed_transport.ex:3-16,40-52,85-98`.
+
+## Accounting and finite fixture topology
+
+Resource H and captured Q are separate65,536-byte bounds; <=64 resource handles and <=64 capture receipts; H8 contains1..32 dedup T4s. This topology uses three handles/two receipts; shared-T uses two handles/two receipts. Full batch correlation, ordered handles, epochs and operations remain exact (`managed_generation_accounting.ex:410-470`; `managed_h2_group_accounting.ex:438-486`).
+
+Keep fixed9,444,956 + group7,033,906 = **16,478,862** request/normal-Probe cleanup reservation, and temporary startup **5,963,776**. Group record cap12,582,912, control total16,777,216, pin196,608 and selection/probe32,768 remain unchanged. Owner reserves before monitor/timer/token effects and reconciles actual record charges. Assert sum of actual control bytes and actual configuration bytes, separate from probe/T/Service ledgers.
+
+Checked B converges using actual retained R and configured M. For default M1,048,576 the independent existing helper uses:
+
+`Bnext=6M+4,957,373+3*(ETF(R)-3)+5*(ETF(B)-6)+4*(ETF(R+B)-6)`.
+
+Observe original Gate lease=R+B before both owner effects, plus independent connection baseline. Native H2 must independently calculate actual native95 P/N/W with the complete new initialized wrapper/Exchange; never copy the fixed wrapper's W. Source B/grammar: `managed_generation_accounting.ex:384-406,499-578`; independent helper `managed_h2_fixed_generation_test.exs:1250-1262`. Preserve complete cohort accounting and original operand lifetimes; no physical-memory-bound claim.
+
+Four T resources fit the existing fixed environment max_resources4/pins256/tokens64/payload8MiB. Six simultaneous G cleanup reservations total98,873,172, within existing service536,870,912 before additional actual R/B/W operands; actual Admission must verify full overlap. No cap increase follows from these arithmetic observations.
+
+## Acceptance contracts
+
+- [x] **Genuine admission:** both protocols pass prepare, public compiled activation, raw Store activation and initial routes/router. Invalid sidecars fail before new provider effects. Real candidate/coordinator owns preparation through full baseline publication.
+- [x] **Real health:** four independent primary peers, actual HEAD per member, recovery_threshold1/jitter0/long finite freshness; wait original Probe completion, normal DOWN, probes0/probe_bytes0, healthy/nonstale members and exact control refund. Do not mutate health/cursor. Count probes separately from forwards.
+- [x] **Four socket cells:** capture three old native requests, correlate both genuine batches and independent precharge, CAS/release preparations, assert old G retiring/probes0 and both Ts admission closed. Fresh ordinary admission fails. Serially release dispatch and await exact selected owner index/token, wire identity and original bind before next: old0→1→0; fresh independently0→1→0. Each Session derives/checkout/opens only selected T once; no retry/fallback/replay. Exact default peer requests: oldA3/oldB2/newA3/newB2 (four HEAD+six GET).
+- [x] **Independent lifetimes:** complete fresh three while old completions pending. Complete old three and hold all native returns: original completions successful, Session normal DOWN and all selected children/G/T tokens gone, but genuine source G/T batches, old G and both custodians remain. Release oldA0 and oldB1 returns; last source belongs to selectedA2 yet retains unselectedB. Only releasing A2 return allows old G deletion, both genuine custodian normal DOWNs and physical peer EOF/reset.
+- [x] **Dedup both protocols:** two unique member IDs share same-authority genuine T. Keep two real per-member HEADs and independent selected indices/tokens; H8.transports `[T]`, sidecar `[G,T]`, one authentic T batch/selected child per native. Assert no duplicate outer acquisition and actual final all-zero/joins. Distinct Ts alone do not qualify dedup.
+- [x] **Candidate failures:** stale CAS, invalid prepared route, prepublication preparation/coordinator death and abandoned candidate release only candidate resources; current snapshot/baseline/forwarding stay exact. Preserve generic partial-provider rollback compatibility; multi-owner H2 remains open.
+- [x] **Capture/authority failures:** genuine Store death after capture permits old right, fresh request fails finitely before selection/delegation/Fetch. Nonempty missing G, missing selected or unselected T, forged G ref/operation/epoch, forged T ref/holder and genuine identity mismatch fail at the actual boundary without duplicate allocation. Never erase receipts to [] and invent Generation provenance.
+- [x] **Cancellation/capacity:** hold exact original selected delegation input, cancel actual native/Session actor, release input and verify that same operation revoked/no checkout/Fetch. For bounded capacity failure use a separate fixture with owner `max_request_tokens:1` and group `max_probes:1`; complete both real HEADs serially, hold one genuine group forward at its original public completion, then admit a second native group request. Its G selection occurs but the same-owner T token limit denies before Fetch; assert cancelled second G outcome, unchanged health, no alternate checkout/Fetch and authentic cleanup, then release/join the original held forward. This proves global denial only. Selected-resource R32 saturation with B available remains a separate broader gate; if included, use32 actual held A requests and original public cleanup, no unbound-token shortcut or altered canonical profile.
+- [x] **Late cleanup:** one short-stop/late-original-completion case retains charged G/T/Service custody and original sticky failed/expired receipt. Late joins may clear real ledgers but never rewrite failure. Confirm normal paths separately reach actual Gate0/cleanup0/failed nil, all-zero owners, real actors/peer exit0/forced0/live0, exact totals and listener rebind.
+- [x] **Browser:** four rows Chrome TLS HTTP/2 or clear HTTP/1.1 × h2c/TLS-H2, genuine old/new two-member groups and complete three-handle/two-receipt capture. Two old/new labeled navigations exercise A only; B has genuine HEAD/custody but no browser-forward claim. Keep latest fixed Actor/CDP/Cohort/native95/W+B, visible DOM/title/URL/status/protocol, console silence, all eight root-viewed screenshots, request_clean/live-before-close, explicit browser close, all child/group/reader joins, final ledgers and rebind.
+- [x] **Review/closure:** complete readiness SPEC→CODE; complete adapted browser fixture SPEC→CODE before runtime; final full-stage SPEC→CODE; fresh exact three-batch scoped union, strict compile, active format/syntax, both isolated consumers and four browser rows; document/index/blob custody audit and root-owned local conventional commit.
+
+## Ownership, evidence and boundaries
+
+Root owns all repository/runtime/evidence/Git writes and serialized Mix/build/browser commands. Delegates own explicit proposal/review reports only, preserve concurrent work, never run competing runtime or revert edits. New canonical test is `apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs`; root creates matching design/plan/acceptance and a unique evidence root after predecessor closure. Reuse real fixed checked fixture, H1 group Generation ownership, existing group health/control helpers and latest fixed browser runner; no unconditional production edit list.
+
+Archive every failed run and real counts/exits/hashes/command joins, preserving PASS/FAIL/BLOCKED/NOT RUN. No publication, deployment, production data, operational certificates, Vault changes, public management, account/quota changes or disabled release-artifact E2E activation. History97 is dismissed; preserve evidence without reintroducing equivalent requirements. Broader existing gates and unknown combined-runtime behavior stay explicit until executed.
+
+## Observed bounded implementation repair
+
+The initial foreign-instance regression preserves exact503 and exposed a pump accounting defect: raw `transport_endpoint_mismatch` was rejected before its existing normalization. The repair only normalizes the error supplied to the existing finite owner-reply accounting constructor; the supported raw result sent to Session, capability checks, revocation, deadlines and lifetimes remain intact. No grammar, API, constructor shape or cap changes. Independent bounded SPEC passed; `repair-design1.md` and `repair-spec1` in the stage evidence record proof and failed evidence. H2 socket qualification uses one actual connection per old/new snapshot with three real streams, retaining native95/P/N/W/B, all stream/connection/Writer joins and unchanged512MiB. Late cleanup requires five weighted handle holds in three authentic pin records. The corrected first browser source review passed before its actual FAIL. Versioned host2/runner2 corrected weighted baseline2 with exact genuine receipt identities and passed bounded SPEC2→CODE1. Browser-green2 actually proved that baseline after old navigation, but the new request returned before Session custody/bind; initiating cause remains UNKNOWN. Diagnostic1 observed ready adopted children before actual signals. Collector3 SPEC2→CODE2,17 mocked regressions and initial3 actual91 passed. The host3/runner3 browser diagnostic passed bounded SPEC1→CODE1 and actually FAILed as recorded above. Repair2 now reuses existing prepare_group_source after bounded SPEC3→CODE2: actual raw-target expected RED2 and fresh93/0 GREEN pass. Headers.normalize copies fields before this boundary, so the111-byte raw target is the deterministic witness. Invalid RED1 KeyError and all original failures remain immutable. Host4/runner4 correct only explicit owned group normal stop; bounded SPEC1→CODE1, active syntax and initial browser4x2 passed. Full-stage SPEC1→CODE1, bounded cancellation-order SPEC1→CODE1, fresh884/0, strict compile/active format/syntax, isolated consumers and final four-row browser now pass. Final document SPEC2→CODE1/index custody and actual local feature commit/tree/blob verification now pass; the factual documentation descendant records that completed feature identity.
+
+## Final startup compatibility repair
+
+The unfiltered final4 run executed475 tests with one failure: the dispatch_wait
+service-stop test sometimes observed the worker exit through its native link
+before the asynchronous RST cancellation reached Gate. Its original exact
+`:killed` assertion is retained. The test now holds the native owner only at the
+actual post-RST callback, waits for the independently monitored worker's exact
+`:killed` DOWN, then releases that owner. Existing drain deadline and finite
+waits, zero/stop/rebind assertions, failure-safe hook removal and releases remain.
+No production HTTP2 startup change follows. Bounded SPEC1→CODE1 preceded the
+full19/0 diagnostic and all three fresh batches. Original final4 remains FAIL;
+final3's missing fixture definition and its six warnings also remain preserved.
+The final command inventory6 explicitly loads the whole defining fixed-endpoint
+file in batch3; no test filter, assertion weakening or deadline increase is used.
+
+## Actual feature and factual descendant
+
+Feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`, tree `4ee48e50a450902d03c78645bb8f8d622915c3e8`,
+parent `8131af39a846c292a022ccbfd32c53376cd57887`. `feature-commit1.json` verifies
+all646 changed paths and all402 accepted source files against actual committed
+bytes, current disk and captured index:1035 distinct file paths verified against their committed blobs (963 distinct Git blob OIDs). The feature
+log and postcommit receipt are appended in this factual documentation descendant;
+a feature cannot contain its own identity. No new runtime/source/test change.
+Final document SPEC1 FAIL D1, SPEC2 PASS and CODE1/index PASS remain immutable.
+Their document counter freeze is129. CODE's two recovered read-only audit-schema
+checks are root130/131; `final-counter-supplement3.json` records current
+root131/orchestration59/stageorchestration52 without new failedGREEN or repair.
+The source and original gates remain bound to their reviewed cutoffs. No push,
+publication or deployment occurred. The successor kickoff will record the real
+factual documentation commit identity after its own verification.
+
+Postfeature closure SPEC1 retained FAIL for the distinct-object wording. The
+original receipt's combined_unique_verified_blob_count=1035 is a count of
+unique file paths. Its bytes and name remain immutable; the additive
+feature-object-count-clarification1.json records1035 paths/963 distinct blob
+OIDs, feature646 paths/585 OIDs and accepted source402 paths/391 OIDs. Every
+original path check succeeded; no source/runtime result changes. Root132 is
+this documentation correction only; candidate1 and original FAIL are preserved.

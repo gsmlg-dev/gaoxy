@@ -1,7 +1,8 @@
 # Gaoxy Implementation Plan
 
-Status: managed H2 group Generation VERIFIED LOCALLY ON DISK; final independent
-document/custody review and local commit pending. Whole M3/composite Task5 remain
+Status: managed H2 group Generation DONE LOCALLY at feature
+`f7b4c32c24a33b5e34c4ce909943846d5335bc0d`; final document SPEC2→CODE1/index review
+and actual646-feature-blob/402-source committed custody PASS. Whole M3/composite Task5 remain
 incomplete. [Design](docs/designs/m3-managed-h2-group-generation.md),
 [plan](docs/plans/m3-managed-h2-group-generation.md),
 [acceptance](docs/acceptance/m3-managed-h2-group-generation.md).
@@ -17,17 +18,18 @@ all8 root-viewed images and98 artifact hashes pass;24 direct Actors exited0/
 nonforced with readers joined/groups absent. Separately21 adopted waits are
 17status0/four signal10(-10), none remaining. Historical final3 FAIL437/12 and
 final4 FAIL475/1, earlier failures/UNKNOWN causes and sticky failed receipts
-remain immutable. Cumulative group54/root129/orchestration57/stagefailed9/
-production2/fixture11/stageorchestration50/invalidRED1/validRED1/Astra2/2 exhausted.
+remain immutable. Cumulative group54/root132/orchestration60/stagefailed9/
+production2/fixture11/stageorchestration53/invalidRED1/validRED1/Astra2/2 exhausted.
 Exact candidate2/inventory6/commands/browser facts are in the stage ledger;
-actual document/index/blob/commit custody is a distinct unfinished gate.
+final document SPEC2→CODE1/index custody and actual feature/tree/blob checks
+are complete; postcommit feature-commit1.json records the real identity.
 
 Previous fixed prepared-T upstream-H2 Generation is DONE LOCALLY at feature
 `bd740b0d4fd53fc680e95fb9430aa9ad914a747b` and documentation
 `8131af39a846c292a022ccbfd32c53376cd57887`, with full reviews/fresh537/0,
 isolated consumers, four-row browser and actual committed-byte custody.
 Its browser-final2 stays FAIL/UNKNOWN; no production close repair is claimed.
-After current local closure, the next bounded existing requirement is
+After the factual local documentation descendant, the next bounded existing requirement is
 same-authority managed-H2 trust/numeric-address rotation, fixed then group using
 existing compact DER/address preparation APIs, with written design/plan and
 independent review before runtime. Full streaming matrix, multi-owner,

@@ -527,18 +527,17 @@ browser-final2 FAIL/UNKNOWN stays preserved; no production close repair claimed.
 NetLog projections remain incomplete. Group45/root66/stage failedGREEN4;
 fixture3/production0/orchestration7/Astra2/2 exhausted; final document SPEC1 FAIL
 and factual repair preserved. Current bounded [group Generation](m3-managed-h2-group-generation.md)
-is VERIFIED LOCALLY ON DISK, with document/index/blob review and local commit
-pending. Full-stage SPEC1→CODE1 and bounded native-stop-test SPEC1→CODE1 passed;
+is DONE LOCALLY at feature `f7b4c32c24a33b5e34c4ce909943846d5335bc0d`, with final document SPEC2→CODE1, exact index review and actual646-feature-blob/402-source committed custody PASS. Full-stage SPEC1→CODE1 and bounded native-stop-test SPEC1→CODE1 passed;
 fresh32-distinct-path batches239+170+475=884/0, strict compile/complete active
 format/syntax, isolated consumers1/0+2/0 and final browser4/4 with8 root-viewed
 images/98 artifact hashes pass. All24 direct browser Actors exit0/nonforced;
 21 adopted waits are17status0/four signal10(-10), none remaining. Earlier failed
 runs, UNKNOWN initiating causes and sticky cleanup failures remain immutable.
-Counters group54/root129/orchestration57/stagefailed9/production2/fixture11/
-stageorchestration50/invalidRED1/validRED1/Astra2/2 exhausted. Single-owner,
+Counters group54/root132/orchestration60/stagefailed9/production2/fixture11/
+stageorchestration53/invalidRED1/validRED1/Astra2/2 exhausted. Single-owner,
 two-member old/new0→1→0 and shared-T dedup qualify; whole composite Task5/M3,
 full matrix, trust/IP rotation, twenty H2 reloads, selected-A R32/B-available,
-standalone/load and H3 accounting remain open. After actual local closure,
+standalone/load and H3 accounting remain open. After the factual local documentation descendant closes,
 automatically design/plan/review and execute same-authority trust/numeric-address
 rotation using existing compact DER/address APIs. Continuing authorization
 advances verified/reviewed slices without routine approval stops.
