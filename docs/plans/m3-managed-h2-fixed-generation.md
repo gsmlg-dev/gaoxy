@@ -16,19 +16,17 @@ constructor or dependency change; reopen source checkpoint if that changes.
 **Tech Stack:** Elixir1.18.5/OTP28, Nix, HTTP0.21.10, real Python h2 peers,
 native downstream H1/H2 and Chrome/CDP. See the matching design for contracts.
 
-Status: Tasks0–6 prescribed implementation/runtime gates VERIFIED LOCALLY.
-Full final-stage SPEC1 then CODE1 PASS on candidate2; fresh19-file tests537/0,
-strict compile/format/syntax, core consumer1/0 and HTTP consumer2/0 PASS.
-Reviewed diagnostic4 browser four rows PASS, eight images viewed; aggregate
-final-gates1.json PASS. Historical browser-final2 FAIL and UNKNOWN initiating
-cause remain preserved; no production repair is claimed. Independent disposition
-accepts the fresh gate without further speculative tracing or a duplicate
-regression. NetLog projections remain incomplete. Final document/custody review
-and local commit remain pending. Counters: group45/root65/Astra2of2 exhausted,
-successor failedGREEN4/productionRepair0/fixtureRepair3/orchestrationRepair6.
-Root64/65 are document-only atomic patch rejections after the root63 runtime audit;
-final document SPEC1 FAIL and its factual repair are preserved separately.
-Earlier source candidates, reviews, gates and failures remain immutable.
+Status: prescribed implementation, runtime, full independent reviews, final
+document SPEC2→CODE/custody and local feature commit VERIFIED LOCALLY at
+`bd740b0d4fd53fc680e95fb9430aa9ad914a747b`. Fresh537/0, strict compile/format/syntax,
+core consumer1/0, HTTP consumer2/0 and reviewed browser diagnostic4 four rows/
+eight viewed images PASS. feature-commit1.json verifies every actual feature
+blob against its captured index and disk. This factual documentation descendant
+records closure; automatic successor preparation remains the last follow-on.
+Historical browser-final2 FAIL/UNKNOWN and incomplete NetLogs remain unchanged;
+no production close repair is claimed. Counters group45/root66/stage failedGREEN4,
+fixture3/production0/orchestration7/Astra2/2 exhausted; final document SPEC1 FAIL
+and factual repair preserved separately. Whole M3 remains incomplete.
 
 ## Files and ownership
 
@@ -190,10 +188,10 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' bash scripts/http-consumer.sh
 
 - [x] Write matching acceptance with commands/counts/exits/source/evidence,
   original failures/counters, exact accepted singleton profile and open gates.
-- [ ] Factual current-status sync in design/plan/implement-plan/upstream Task5.
+- [x] Factual current-status sync in design/plan/implement-plan/upstream Task5.
   Independent document and exact-byte/index custody audit; preserve archive
   bytes and both unrelated user prompts. No private key/raw sensitive trace.
-- [ ] Stage only task-owned files and record actual disk/index/blob identities;
+- [x] Stage only task-owned files and record actual disk/index/blob identities;
   local conventional feature commit, then verify actual commit/tree/captured
   bytes and clean task tree. Root owns Git; no push/publication/deployment.
 - [ ] After closure, prepare next bounded existing M3 requirement with written

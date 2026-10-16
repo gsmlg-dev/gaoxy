@@ -518,19 +518,16 @@ Current bounded successor: compiled Router route/resource-sidecar consistency,
 native checked Generation capture and native downstream-H2 worker accounting
 are completed locally at their recorded commits. The
 [fixed prepared-T upstream-H2 Generation](m3-managed-h2-fixed-generation.md)
-slice begins at aa272c3d; readiness and browser-fixture SPEC1→CODE1 passed.
-The minimal canonical guard and genuine fixed-T old/new/failure tests are
-implemented. Initial GREEN5/6 each83/0 and browserGREEN1 four rows/eight viewed
-images remain historical. Full-stage SPEC1→CODE1 passed candidate2; fresh19-file
-537/0, strict compile/format/syntax, core consumer1/0 and HTTP consumer2/0 passed.
-Reviewed diagnostic4 browser four rows/eight viewed images and aggregate audit
-PASS. Final document/custody review and local commit remain pending. Historical
-browser-final2 FAIL/UNKNOWN stays preserved; no production repair is claimed.
-NetLog projections remain incomplete. Group45/root65/stage failedGREEN4;
-repairs fixture3/production0/orchestration6, Astra2/2 exhausted. Root64/65 are
-document-only patch rejections after the root63 runtime audit. Final document
-SPEC1 FAIL and its factual repair remain preserved. This does
-not qualify group Generation or the composite Task5 checkboxes below. Continuing
+slice is DONE LOCALLY at feature `bd740b0d4fd53fc680e95fb9430aa9ad914a747b`. The canonical
+validation guard and genuine fixed-T old/new/failure tests passed full-stage
+SPEC1→CODE1, document SPEC2→CODE/custody and fresh19-file537/0, strict compile/
+format/syntax, core consumer1/0, HTTP consumer2/0, reviewed diagnostic4 browser
+four rows/eight viewed images and actual committed-byte custody. Historical
+browser-final2 FAIL/UNKNOWN stays preserved; no production close repair claimed.
+NetLog projections remain incomplete. Group45/root66/stage failedGREEN4;
+fixture3/production0/orchestration7/Astra2/2 exhausted; final document SPEC1 FAIL
+and factual repair preserved. Automatically prepare bounded group Generation
+next; this does not qualify the composite Task5 checkboxes below. Continuing
 authorization advances verified/reviewed slices without routine approval stops.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,

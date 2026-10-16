@@ -1,12 +1,12 @@
 # Managed H2 Fixed-Transport Generation Acceptance
 
-Status: prescribed implementation/runtime gates VERIFIED LOCALLY. Full
-final-stage SPEC1 then CODE1 passed on frozen candidate2; fresh tests537/0,
-strict compile/format/syntax, core consumer1/0 and HTTP consumer2/0 passed.
-Fresh reviewed diagnostic4 browser four rows PASS; root viewed all eight images.
-Aggregate final-gates1.json PASS. Final document/custody review and local commit
-remain pending; this is not whole-M3 acceptance. Historical browser-final2
-remains FAIL with initiating cause UNKNOWN and no production repair claimed.
+Status: DONE LOCALLY at feature `bd740b0d4fd53fc680e95fb9430aa9ad914a747b`. Full final-stage
+SPEC1→CODE1 and final document SPEC2→CODE/custody passed. Fresh19-file537/0,
+strict compile/format/syntax, core consumer1/0, HTTP consumer2/0 and reviewed
+diagnostic4 browser four rows/eight root-viewed images PASS. Exact actual
+feature/index/blob custody PASS. Historical browser-final2 remains FAIL with
+initiating cause UNKNOWN; no production close repair is claimed. Whole M3 and
+composite upstream Task5 remain incomplete.
 
 Source baseline: `aa272c3dca700a9275a00bd23920d09bbd4748a1`, worktree
 `.trees/m3-h1-resource-foundation`, branch `codex/m3-h1-resource-foundation`.
@@ -88,9 +88,9 @@ native downstream H1/H2, genuine checked Store snapshot and old/new CAS.
 Group Generation, full streaming matrix, trust/IP rotation, H2 twenty reloads,
 standalone/load and H3 worker accounting remain separate. Whole M3 incomplete.
 
-Counters at this document cutoff: cumulative group failedGREEN45/root65,
+Counters at this document cutoff: cumulative group failedGREEN45/root66,
 Astra2/2 exhausted; successor failedGREEN4/productionRepair0/fixtureRepair3/
-orchestrationRepair6. Runtime final-gates1 and independent runtime/disposition
+orchestrationRepair7. Runtime final-gates1 and independent runtime/disposition
 reports retain their earlier root63/orchestration4 cutoff. Intended RED is
 separate. Historical initial root54,
 readiness root55, collector correction root56, overlap root57 and compile root58
@@ -110,10 +110,31 @@ production change. Root65 is another atomic document-patch rejection for a
 no-op context hunk; original candidate1 documents remained byte-identical. Exact
 whole-string replacement then performed the factual sync. Final document SPEC1
 FAIL found one stale design-tail counter/disposition paragraph; its original
-report and candidate1 bytes are archived, with factual re-review pending. No
+report and candidate1 bytes are archived; SPEC2 then CODE/custody passed. No
 runtime/test/production change or new failed GREEN resulted. Diagnostic
 instrumentation is not a production repair.
 Predecessor failures and UNKNOWN initiating cause remain unchanged.
 
 HTTP Fetch0.21.10 and lock unchanged. No publication/deployment, production/Vault/
 public-management, operational certificates or release-artifact E2E authority.
+
+## Local commit custody
+
+Actual feature `bd740b0d4fd53fc680e95fb9430aa9ad914a747b`, tree `7db8c465bb55ff56aec715d8b5661086be48fdec`,
+parent `aa272c3dca700a9275a00bd23920d09bbd4748a1`. `feature-commit1.json` verifies all
+395 actual feature paths against disk and captured index, including the
+388 snapshot2 paths and separately appended receipt/review/checkpoint bytes.
+The feature log and postcommit receipt live in this factual documentation
+descendant because a commit cannot contain its own identity. Original final
+SPEC1 FAIL and document candidates remain immutable; final SPEC2 and CODE PASS
+are bound by `precommit-review-checkpoint1.json`. The postcommit factual diff
+and source/commit custody are reviewed separately before its local docs commit.
+No new runtime/source/test change follows from this factual sync. The actual
+documentation commit identity will be recorded in the successor kickoff closure
+receipt; no publication or deployment occurred.
+
+Root66 records the precommit review-schema guard failure (status DONE versus
+verdict PASS). No source/runtime/Git mutation occurred before those guards
+stopped; exact verdict/DONE/empty-findings checks corrected the root script.
+The final document review cutoff65/6 remains immutable; current counters66/7
+include this orchestration event without a new failed GREEN or production repair.
