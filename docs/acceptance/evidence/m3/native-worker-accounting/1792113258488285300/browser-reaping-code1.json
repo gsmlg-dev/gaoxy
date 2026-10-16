@@ -1,0 +1,102 @@
+{
+  "task_id": "browser_cohort_code/browser_reaping_code1",
+  "assignment": "direct_independent_read_only_CODE",
+  "status": "DONE",
+  "verdict": "PASS",
+  "verdict_scope": "Bounded child-reaping correction CODE review only",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "source_before": {
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "1b7e3caf6f99352f622f3243dbf3c1742a039182779af06c0ae5fe94eaa708a4",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "a7a9b40eff405c91ada7b705fcc1535496000f4d19b295e95f9cff8843f7ae89",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-command-collector3.py": "d6fe52c75dc1167921bede4ee2738de12914500ae9c5c177f448d84c5efce6f7",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-reaping-regression1.json": "e7be19c18421c195d41bae67778bea73aac20760fb2558831702b91acfcdd03a",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-reaping-regression1.py": "2093e1ce5690cf493051bb5498c2a6621eb1f6a72dcc085305e3ae3a3d16f7af",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-cohort3.exs": "86776f89816c8659b01d2b3e32133dc6af06eb1d212a4d26bd07993af81c2d8c",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host6.exs": "8ac22d7b73c1fdceeae380b04df2d5b757901d57b08097d822b3abadc6c0d675",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-runner8.py": "fd70cd829238a2ed046f7c5b5bc42f15554ff3c92b4d515904d3ca297b7cccea",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/scoped-command-collector4.py": "60d10d102c44730c90ac753cdbe065989f54417532e995934ddb12396a1f8971",
+    "docs/acceptance/m3-native-worker-startup-accounting.md": "335f7fdbf7eec9a558dbd37d2360813d2e577b52be568c4cf26291f237f1a752",
+    "docs/designs/m3-native-worker-startup-accounting.md": "353c0bb5e57f113b58d570559017298ad672e89681083fdd51adfbf4930ad4a8",
+    "docs/plans/m3-native-worker-startup-accounting.md": "e38c1aa70efde8bf55ce25e349c3b2a5c250c64f05fdf2dd9a3d8a35b59ec814"
+  },
+  "source_after": {
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "1b7e3caf6f99352f622f3243dbf3c1742a039182779af06c0ae5fe94eaa708a4",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "a7a9b40eff405c91ada7b705fcc1535496000f4d19b295e95f9cff8843f7ae89",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-command-collector3.py": "d6fe52c75dc1167921bede4ee2738de12914500ae9c5c177f448d84c5efce6f7",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-reaping-regression1.json": "e7be19c18421c195d41bae67778bea73aac20760fb2558831702b91acfcdd03a",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-reaping-regression1.py": "2093e1ce5690cf493051bb5498c2a6621eb1f6a72dcc085305e3ae3a3d16f7af",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-cohort3.exs": "86776f89816c8659b01d2b3e32133dc6af06eb1d212a4d26bd07993af81c2d8c",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host6.exs": "8ac22d7b73c1fdceeae380b04df2d5b757901d57b08097d822b3abadc6c0d675",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-runner8.py": "fd70cd829238a2ed046f7c5b5bc42f15554ff3c92b4d515904d3ca297b7cccea",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/scoped-command-collector4.py": "60d10d102c44730c90ac753cdbe065989f54417532e995934ddb12396a1f8971",
+    "docs/acceptance/m3-native-worker-startup-accounting.md": "335f7fdbf7eec9a558dbd37d2360813d2e577b52be568c4cf26291f237f1a752",
+    "docs/designs/m3-native-worker-startup-accounting.md": "353c0bb5e57f113b58d570559017298ad672e89681083fdd51adfbf4930ad4a8",
+    "docs/plans/m3-native-worker-startup-accounting.md": "e38c1aa70efde8bf55ce25e349c3b2a5c250c64f05fdf2dd9a3d8a35b59ec814"
+  },
+  "candidate12_match": true,
+  "source_stable": true,
+  "findings": [],
+  "reviewed_changes": [
+    "Checked Linux PR_SET_CHILD_SUBREAPER is enabled before fixture Actors start.",
+    "Reaping enumerates only direct owned children and uses exact-PID nonblocking waitpid; no added signals.",
+    "Live registered primary Actor PIDs are excluded, preserving Popen poll/wait ownership. Registration precedes reader-thread start.",
+    "Natural finite adopted-child drain precedes existing owned-group failure/forcing checks; actual primary exit 0, nonforced, reader join and group disappearance requirements remain.",
+    "Final adopted-child drain is finite and remaining children make qualification FAIL. Internal adopted-child raw wait statuses and exit conversions are separately recorded.",
+    "Browser JavaScript literal is AST-extracted and exactly identical in runner7/runner8. Protocol, native and browser assertions are retained.",
+    "Production, host6, cohort3, collector3, scoped collector4 and previously reviewed 95-checkpoint source identities remain unchanged."
+  ],
+  "regression_evidence": {
+    "receipt": "browser-reaping-regression1.json",
+    "status": "PASS (saved actual infrastructure evidence; not rerun by reviewer)",
+    "red": "runner7 EXPECTED_RED: primary parent 0; original owned-group assertion failed; actual adopted child wait returned 0 and cleanup removed group",
+    "green": "runner8 primary Actor 0, forced false, reader joined, group gone; adopted child exact wait status 0; no remaining adopted child",
+    "source_and_script_hash_binding": true,
+    "full_browser": "NOT_RUN",
+    "runner7_sha256": "635d82d85ff2a1d7aea6b2f49aefcceb126dba1b44423a8644b6032f68d2dcba"
+  },
+  "verification": [
+    {
+      "check": "Read exact runner7-to-runner8 diff, changed reaping/dispose/main sections, regression script/receipt, frozen manifest, bounded SPEC report and canonical child-reaping contract",
+      "result": "PASS"
+    },
+    {
+      "check": "Python static AST extraction: BROWSER literals identical",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "check": "SHA256 saved regression runner7/runner8 sources and regression script match receipt",
+      "result": "PASS",
+      "exit": 0
+    },
+    {
+      "check": "All twelve candidate hashes match before and after review and bounded SPEC identities",
+      "result": "PASS",
+      "exit": 0
+    }
+  ],
+  "lookup_note": "Earlier source lookup exit 2 was solely absent /usr/lib/python3.13; installed-source paths were found. No runtime failure is inferred.",
+  "historical": {
+    "browserGREEN4": "FAIL preserved; H1 NOT_RUN. Seven outer-collected internal child statuses remain six exit 0 and one signal 10.",
+    "browserGREEN2_cause": "UNKNOWN",
+    "nativeGREEN5": "Separate existing PASS 94/0 evidence; not rerun or newly accepted by this review"
+  },
+  "runtime_executed_by_reviewer": false,
+  "tests_executed_by_reviewer": false,
+  "browser_executed_by_reviewer": false,
+  "git_or_network_commands_by_reviewer": false,
+  "repository_or_evidence_writes_by_reviewer": false,
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-browser-reaping-code1.md",
+    "/tmp/gaoxy-native-worker-browser-reaping-code1.json"
+  ],
+  "repair_rounds_added": 0,
+  "counters": "group40/root52/stage10/Astra2of2 exhausted; nonaccepted diagnostics4",
+  "astra_gate": null,
+  "command_shutdown": "All reviewer static-read, hash, AST and report-writing commands completed; no fixture actor, browser, test or runtime launched.",
+  "remaining_risks": [
+    "Fresh complete H2 and H1 browser qualification remains required; static review and infrastructure regression do not establish protocol/browser acceptance."
+  ],
+  "decisions_needed": []
+}

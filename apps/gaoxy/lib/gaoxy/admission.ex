@@ -1,11 +1,19 @@
 defmodule Gaoxy.Admission do
   @moduledoc false
   use GenServer
-  alias Gaoxy.Telemetry
+  alias Gaoxy.{Lifecycle, Telemetry}
+  alias Gaoxy.Admission.WorkerBootstrap
 
   def start_link({limits, scope}), do: GenServer.start_link(__MODULE__, {limits, scope})
   def acquire(gate, bytes), do: acquire(gate, bytes, [])
   def acquire(gate, bytes, options), do: GenServer.call(gate, {:acquire, bytes, options})
+
+  def spawn_request(gate, parent_lease, token, bytes, deadline, mfa),
+    do:
+      :gen_server.send_request(gate, {:spawn_request, parent_lease, token, bytes, deadline, mfa})
+
+  def cancel_spawn(gate, parent_lease, token),
+    do: :gen_server.send_request(gate, {:cancel_spawn, parent_lease, token})
 
   def begin_request(gate, lease, bytes, deadline),
     do: GenServer.call(gate, {:begin_request, lease, bytes, deadline})
@@ -44,23 +52,134 @@ defmodule Gaoxy.Admission do
   def complete_cleanup(gate, token), do: GenServer.call(gate, {:complete_cleanup, token}, 50)
 
   @impl true
-  def init({limits, scope}),
-    do:
-      {:ok,
-       %{
-         limits: limits,
-         scope: Map.delete(scope, :service_pid),
-         service: Map.get(scope, :service_pid),
-         mode: :ready,
-         drain_deadline: nil,
-         leases: %{},
-         cleanups: %{},
-         bytes: 0,
-         high_water: 0,
-         rejected: 0
-       }}
+  def init({limits, scope}) do
+    Process.flag(:trap_exit, true)
+
+    {:ok,
+     %{
+       limits: limits,
+       scope: Map.delete(scope, :service_pid),
+       service: Map.get(scope, :service_pid),
+       mode: :ready,
+       drain_deadline: nil,
+       leases: %{},
+       cleanups: %{},
+       spawns: %{},
+       bytes: 0,
+       high_water: 0,
+       rejected: 0
+     }}
+  end
 
   @impl true
+  def handle_call(
+        {:spawn_request, parent_lease, token, bytes, deadline, mfa},
+        {owner, _} = from,
+        state
+      ) do
+    cond do
+      not parent_owned?(state, parent_lease, owner) ->
+        {:reply, {:error, :stale_generation}, state}
+
+      not is_reference(token) or Map.has_key?(state.spawns, token) or not scalar_mfa?(mfa) ->
+        reject(state, :invalid_spawn_request)
+
+      state.mode != :ready ->
+        reject(state, spawn_mode(state.mode))
+
+      not is_integer(deadline) or deadline <= Lifecycle.now() ->
+        reject(state, :deadline_exceeded)
+
+      map_size(state.leases) >= state.limits.max_active ->
+        reject(state, :active_limit)
+
+      not is_integer(bytes) or bytes < 0 or state.bytes + bytes > state.limits.max_bytes ->
+        reject(state, :byte_limit)
+
+      true ->
+        # This callback cannot interleave another admission. Commit this exact
+        # reserved byte/slot transition before the separate activation callback.
+        reserved = %{bytes: state.bytes + bytes, active: map_size(state.leases) + 1}
+        activation = make_ref()
+        ref = make_ref()
+        watchdog = make_ref()
+        gate = self()
+
+        spawned =
+          try do
+            :erlang.spawn_opt(WorkerBootstrap, :run, [gate, owner, activation, deadline, mfa], [
+              :link,
+              :monitor
+            ])
+          catch
+            _, _ -> :error
+          end
+
+        case spawned do
+          {worker, monitor} ->
+            lease = %{
+              pid: worker,
+              monitor: monitor,
+              bytes: bytes,
+              token: watchdog,
+              timer: nil,
+              send: nil,
+              drain_notify: true,
+              request_active: true,
+              cleanup: nil,
+              deadline: deadline
+            }
+
+            operation = %{
+              owner: owner,
+              parent_lease: parent_lease,
+              worker: worker,
+              lease: ref,
+              activation: activation,
+              from: from,
+              deadline: deadline,
+              phase: :pending_activation,
+              exit_seen: false,
+              down_seen: false
+            }
+
+            state = %{
+              state
+              | bytes: reserved.bytes,
+                leases: Map.put(state.leases, ref, lease),
+                spawns: Map.put(state.spawns, token, operation)
+            }
+
+            case spawn_timer(ref, watchdog, deadline) do
+              {:ok, timer} ->
+                state = put_in(state.leases[ref].timer, timer)
+                send(self(), {:activate_spawn, token})
+                {:noreply, sample(state)}
+
+              :error ->
+                # A PID already exists: retain its ordinary lease through its
+                # real terminal pair even if arming the watchdog fails.
+                {:noreply, sample(cancel_operation(state, token, :worker_capacity))}
+            end
+
+          :error ->
+            reject(state, :worker_capacity)
+        end
+    end
+  end
+
+  def handle_call({:cancel_spawn, parent_lease, token}, {owner, _}, state) do
+    case state.spawns[token] do
+      %{owner: ^owner, parent_lease: ^parent_lease} ->
+        if parent_owned?(state, parent_lease, owner),
+          do: {:reply, :ok, cancel_operation(state, token, :cancelled)},
+          else: {:reply, {:error, :stale_generation}, state}
+
+      _ ->
+        {:reply, {:error, :stale_generation}, state}
+    end
+  end
+
   def handle_call({:acquire, bytes, options}, {pid, _}, state) do
     cond do
       state.mode != :ready ->
@@ -364,6 +483,59 @@ defmodule Gaoxy.Admission do
   end
 
   @impl true
+  def handle_info({:activate_spawn, token}, state) do
+    case state.spawns[token] do
+      %{phase: :pending_activation} = operation ->
+        reason =
+          cond do
+            not parent_owned?(state, operation.parent_lease, operation.owner) ->
+              :stale_generation
+
+            state.mode != :ready ->
+              spawn_mode(state.mode)
+
+            operation.deadline <= Lifecycle.now() ->
+              :deadline_exceeded
+
+            operation.down_seen or operation.exit_seen or not Process.alive?(operation.worker) ->
+              :worker_capacity
+
+            true ->
+              nil
+          end
+
+        if reason do
+          {:noreply, cancel_operation(state, token, reason)}
+        else
+          send(
+            operation.worker,
+            {:gaoxy_admitted_worker_activate, operation.activation, operation.lease}
+          )
+
+          GenServer.reply(operation.from, {:ok, operation.worker, operation.lease})
+          running = %{operation | phase: :running, from: nil, activation: nil}
+          {:noreply, put_in(state.spawns[token], running)}
+        end
+
+      _ ->
+        {:noreply, state}
+    end
+  end
+
+  def handle_info({:EXIT, pid, reason}, state) do
+    case Enum.find(state.spawns, fn {_, operation} -> operation.worker == pid end) do
+      {token, operation} ->
+        state = put_in(state.spawns[token], %{operation | exit_seen: true})
+        {:noreply, settle_spawn(state, token)}
+
+      nil when reason == :normal ->
+        {:noreply, state}
+
+      nil ->
+        {:stop, reason, state}
+    end
+  end
+
   def handle_info({:expired, ref, token}, state) do
     case state.leases[ref] do
       %{token: ^token, pid: pid} = lease ->
@@ -377,18 +549,30 @@ defmodule Gaoxy.Admission do
     end
   end
 
-  def handle_info({:DOWN, monitor, :process, _pid, reason}, state) do
-    case Enum.find(state.leases, fn {_, lease} -> lease.monitor == monitor end) do
+  def handle_info({:DOWN, monitor, :process, pid, reason}, state) do
+    case Enum.find(state.leases, fn {_, lease} ->
+           lease.monitor == monitor and lease.pid == pid
+         end) do
       {ref, lease} ->
         cancel(lease)
         send_outcome(state, lease.send, {:unknown, :owner_exit})
 
-        {:noreply,
-         sample(%{
-           state
-           | leases: Map.delete(state.leases, ref),
-             bytes: state.bytes - lease.bytes
-         })}
+        state = kill_owned_children(state, ref, lease.pid)
+
+        case Enum.find(state.spawns, fn {_, operation} -> operation.lease == ref end) do
+          {token, operation} ->
+            state = put_in(state.leases[ref], %{lease | timer: nil, send: nil})
+            state = put_in(state.spawns[token], %{operation | down_seen: true})
+            {:noreply, settle_spawn(state, token)}
+
+          nil ->
+            {:noreply,
+             sample(%{
+               state
+               | leases: Map.delete(state.leases, ref),
+                 bytes: state.bytes - lease.bytes
+             })}
+        end
 
       nil ->
         case Enum.find(state.cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end) do
@@ -422,6 +606,71 @@ defmodule Gaoxy.Admission do
         send_outcome(state, lease.send, {:unknown, :forced_cleanup})
         Process.exit(lease.pid, :kill)
       end)
+
+  defp parent_owned?(state, ref, owner) do
+    case state.leases[ref] do
+      %{pid: ^owner} -> node(owner) == node() and Process.alive?(owner)
+      _ -> false
+    end
+  end
+
+  defp scalar_mfa?({module, function, args}) when is_atom(module) and is_atom(function),
+    do: scalar_args?(args)
+
+  defp scalar_mfa?(_), do: false
+  defp scalar_args?([]), do: true
+
+  defp scalar_args?([arg | rest])
+       when is_atom(arg) or is_integer(arg) or is_pid(arg) or is_reference(arg),
+       do: scalar_args?(rest)
+
+  defp scalar_args?(_), do: false
+
+  defp spawn_mode(mode) when mode in [:paused, :draining, :failed], do: mode
+  defp spawn_mode(_), do: :invalid_spawn_request
+
+  defp spawn_timer(ref, token, deadline) do
+    try do
+      {:ok, Process.send_after(self(), {:expired, ref, token}, Lifecycle.remaining(deadline))}
+    catch
+      _, _ -> :error
+    end
+  end
+
+  defp cancel_operation(state, token, reason) do
+    operation = state.spawns[token]
+    Process.exit(operation.worker, :kill)
+    if operation.from, do: GenServer.reply(operation.from, {:error, reason})
+    put_in(state.spawns[token], %{operation | from: nil, activation: nil, phase: :cancelled})
+  end
+
+  defp kill_owned_children(state, parent_lease, owner) do
+    Enum.reduce(state.spawns, state, fn
+      {token, %{parent_lease: ^parent_lease, owner: ^owner}}, state ->
+        cancel_operation(state, token, :stale_generation)
+
+      _, state ->
+        state
+    end)
+  end
+
+  defp settle_spawn(state, token) do
+    operation = state.spawns[token]
+
+    if operation.down_seen and operation.exit_seen do
+      if operation.from, do: GenServer.reply(operation.from, {:error, :worker_capacity})
+      lease = state.leases[operation.lease]
+
+      sample(%{
+        state
+        | spawns: Map.delete(state.spawns, token),
+          leases: Map.delete(state.leases, operation.lease),
+          bytes: state.bytes - lease.bytes
+      })
+    else
+      state
+    end
+  end
 
   defp send_outcome(_, nil, _), do: :ok
 

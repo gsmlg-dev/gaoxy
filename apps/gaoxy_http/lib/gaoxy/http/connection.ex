@@ -13,32 +13,35 @@ defmodule Gaoxy.HTTP.Connection do
   def handle_connection(socket, %{spec: spec} = context) do
     case protocol(socket, spec.handler_options) do
       :http2 ->
-        {:ok, peer} = ThousandIsland.Socket.peername(socket)
-        {:ok, local} = ThousandIsland.Socket.sockname(socket)
+        with {:ok, peer} <- ThousandIsland.Socket.peername(socket),
+             {:ok, local} <- ThousandIsland.Socket.sockname(socket) do
+          ssl =
+            case ThousandIsland.Socket.connection_information(socket) do
+              {:ok, value} -> value
+              _ -> nil
+            end
 
-        ssl =
-          case ThousandIsland.Socket.connection_information(socket) do
-            {:ok, value} -> value
-            _ -> nil
-          end
+          cert =
+            case ThousandIsland.Socket.peercert(socket) do
+              {:ok, value} -> value
+              _ -> nil
+            end
 
-        cert =
-          case ThousandIsland.Socket.peercert(socket) do
-            {:ok, value} -> value
-            _ -> nil
-          end
-
-        Gaoxy.HTTP.HTTP2.Connection.start(
-          socket,
-          Map.merge(context, %{
-            owner: self(),
-            peer: peer,
-            local: local,
-            secure: ThousandIsland.Socket.secure?(socket),
-            ssl: ssl,
-            peer_cert: cert
-          })
-        )
+          Gaoxy.HTTP.HTTP2.Connection.start(
+            socket,
+            Map.merge(context, %{
+              owner: self(),
+              peer: peer,
+              local: local,
+              secure: ThousandIsland.Socket.secure?(socket),
+              ssl: ssl,
+              peer_cert: cert
+            })
+          )
+        else
+          {:error, reason} when reason in [:closed, :einval, :enotconn] -> {:close, context}
+          {:error, reason} -> {:error, reason, context}
+        end
 
       :http1 ->
         start_http1(socket, context)

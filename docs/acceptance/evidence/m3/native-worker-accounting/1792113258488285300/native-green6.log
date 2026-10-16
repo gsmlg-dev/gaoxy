@@ -1,0 +1,290 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m     [33mwarning:[0m comparison between distinct types found:
+
+         mode == :normal
+
+     given types:
+
+         :kill == :normal
+
+     where "mode" was given the type:
+
+         # type: :kill
+         # from: test/http2_worker_startup_test.exs:661:12
+         mode = :kill
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 674 │         if mode == :normal do
+     │ [33m                ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:674:17: Gaoxy.HTTP2WorkerStartupExtendedTest."test native owner kill death after activation before success handling joins child"/1
+
+     [33mwarning:[0m comparison between distinct types found:
+
+         mode == :normal
+
+     given types:
+
+         :kill == :normal
+
+     where "mode" was given the type:
+
+         # type: :kill
+         # from: test/http2_worker_startup_test.exs:661:12
+         mode = :kill
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 683 │         assert reason == if(mode == :normal, do: :normal, else: :killed)
+     │ [33m                                 ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:683:34: Gaoxy.HTTP2WorkerStartupExtendedTest."test native owner kill death after activation before success handling joins child"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :pending_activation
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :dispatch_wait
+
+     typing violation found at:
+     │
+ 855 │         :pending_activation ->
+     │         [33m~~~~~~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:855: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at dispatch_wait joins admitted worker and native listener"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :pending_activation
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :endpoint_blocked
+
+     typing violation found at:
+     │
+ 855 │         :pending_activation ->
+     │         [33m~~~~~~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:855: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at endpoint_blocked joins admitted worker and native listener"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :dispatch_wait
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :endpoint_blocked
+
+     typing violation found at:
+     │
+ 860 │         :dispatch_wait ->
+     │         [33m~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:860: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at endpoint_blocked joins admitted worker and native listener"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :dispatch_wait
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :pending_activation
+
+     typing violation found at:
+     │
+ 860 │         :dispatch_wait ->
+     │         [33m~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:860: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at pending_activation joins admitted worker and native listener"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :endpoint_blocked
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :dispatch_wait
+
+     typing violation found at:
+     │
+ 867 │         :endpoint_blocked ->
+     │         [33m~~~~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:867: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at dispatch_wait joins admitted worker and native listener"/1
+
+     [33mwarning:[0m the following clause will never match:
+
+         :endpoint_blocked
+
+     because it attempts to match on the result of:
+
+         stage
+
+     which has type:
+
+         :pending_activation
+
+     typing violation found at:
+     │
+ 867 │         :endpoint_blocked ->
+     │         [33m~~~~~~~~~~~~~~~~~~~~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:867: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at pending_activation joins admitted worker and native listener"/1
+
+     [33mwarning:[0m comparison between distinct types found:
+
+         stage == :endpoint_blocked
+
+     given types:
+
+         :dispatch_wait == :endpoint_blocked
+
+     where "stage" was given the type:
+
+         # type: :dispatch_wait
+         # from: test/http2_worker_startup_test.exs:818:13
+         stage = :dispatch_wait
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 899 │       assert reasons[worker] == if(stage == :endpoint_blocked, do: :normal, else: :killed)
+     │ [33m                                         ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:899:42: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at dispatch_wait joins admitted worker and native listener"/1
+
+     [33mwarning:[0m comparison between distinct types found:
+
+         stage == :endpoint_blocked
+
+     given types:
+
+         :pending_activation == :endpoint_blocked
+
+     where "stage" was given the type:
+
+         # type: :pending_activation
+         # from: test/http2_worker_startup_test.exs:818:13
+         stage = :pending_activation
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 899 │       assert reasons[worker] == if(stage == :endpoint_blocked, do: :normal, else: :killed)
+     │ [33m                                         ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:899:42: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at pending_activation joins admitted worker and native listener"/1
+
+     [33mwarning:[0m comparison between distinct types found:
+
+         stage != :endpoint_blocked
+
+     given types:
+
+         :dispatch_wait != :endpoint_blocked
+
+     where "stage" was given the type:
+
+         # type: :dispatch_wait
+         # from: test/http2_worker_startup_test.exs:818:13
+         stage = :dispatch_wait
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 903 │       if stage != :endpoint_blocked do
+     │ [33m               ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:903:16: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at dispatch_wait joins admitted worker and native listener"/1
+
+     [33mwarning:[0m comparison between distinct types found:
+
+         stage != :endpoint_blocked
+
+     given types:
+
+         :pending_activation != :endpoint_blocked
+
+     where "stage" was given the type:
+
+         # type: :pending_activation
+         # from: test/http2_worker_startup_test.exs:818:13
+         stage = :pending_activation
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 903 │       if stage != :endpoint_blocked do
+     │ [33m               ~[0m
+     │
+     └─ test/http2_worker_startup_test.exs:903:16: Gaoxy.HTTP2WorkerStartupExtendedTest."test real service stop at pending_activation joins admitted worker and native listener"/1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+16:31:15.919 [info] The function passed as a handler with ID {Gaoxy.HTTP2WorkerStartupExtendedTest, #Reference<0.2504484423.1537998849.127335>} is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[22m
+16:31:16.051 [info] The function passed as a handler with ID {Gaoxy.HTTP2WorkerStartupExtendedTest, #Reference<0.2504484423.1537998849.128324>} is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m[32m.[0m[32m.[0m[32m.[0m[22m
+16:31:16.076 [info] The function passed as a handler with ID {Gaoxy.HTTP2WorkerStartupExtendedTest, #Reference<0.2504484423.1537998849.129041>} is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+[0m
+
+  1) test real service stop at dispatch_wait joins admitted worker and native listener (Gaoxy.HTTP2WorkerStartupExtendedTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_startup_test.exs:816[0m
+     [31mactivated child did not await real dispatch[0m
+     [36mcode: [0massert_running_dispatch_wait!(context, cut.receipt)
+     [36mstacktrace:[0m
+       test/http2_worker_startup_test.exs:790: Gaoxy.HTTP2WorkerStartupExtendedTest.await_native_dispatch_wait/4
+       test/http2_worker_startup_test.exs:864: (test)
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 12.2 seconds (7.9s async, 4.2s sync)
+[31m71 tests, 1 failure[0m
+==> gaoxy_proxy
+Running ExUnit with seed: 1, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m
+Finished in 4.1 seconds (3.0s async, 1.1s sync)
+[32m29 tests, 0 failures[0m

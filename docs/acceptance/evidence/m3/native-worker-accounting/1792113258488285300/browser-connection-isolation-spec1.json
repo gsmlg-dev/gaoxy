@@ -1,0 +1,149 @@
+{
+  "task_id": "native_worker_constructor_spec/browser_connection_isolation_spec1",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC investigation",
+  "verdict": "NO_EXISTING_EXPOSED_SUPPORTED_ISOLATION_OPTION_ESTABLISHED",
+  "qualification": "SOURCE_ONLY; no runtime or browser acceptance",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Git baseline not independently inspected: Git prohibited by assignment; source identities bound below",
+  "counters": {
+    "group_failedGREEN": 37,
+    "root_failedGREEN": 47,
+    "stage_failedGREEN": 7,
+    "astra_recovery_rounds_used": 2,
+    "astra_recovery_rounds_limit": 2,
+    "new_failedGREEN": 0,
+    "sol_repair_rounds_this_assignment": 0
+  },
+  "observed": {
+    "trace": "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-diagnostic2/h2/terminal-trace.redacted.log",
+    "read_scope": "lines 1-6 only",
+    "prefix_sha256": "c444fea562e6171c194769c52129b120074a9b9c5a52be7101bbf2de8083d716",
+    "global_active": 5,
+    "global_bytes": 357680540,
+    "target_actors": [
+      "connection #PID<0.339.0>",
+      "writer #PID<0.345.0>",
+      "requestworker #PID<0.346.0>"
+    ],
+    "extra_actors": [
+      "connection #PID<0.343.0>",
+      "writer #PID<0.344.0>"
+    ],
+    "connection_bytes_each": 173039655,
+    "writer_bytes_each": 66560,
+    "worker_bytes": 11468110,
+    "expected_target_three_actor_bytes": 184574325,
+    "extra_pair_bytes": 173106215,
+    "target_settings_ack": true,
+    "target_closing": false,
+    "target_draining": false,
+    "prior_writer_before_authorization_cause": "UNKNOWN"
+  },
+  "findings": [
+    {
+      "id": "ISOLATION-F1",
+      "severity": "blocking_for_existing_option_only_route",
+      "finding": "Gaoxy has no separately exposed physical-connection limit. HTTP and core service validators reject unknown options. Service.start_backend sets num_acceptors=1, num_connections=spec.limits.max_active, retry_count=0.",
+      "sources": [
+        "apps/gaoxy_http/lib/gaoxy/http.ex:4-17,31-47,52-78",
+        "apps/gaoxy/lib/gaoxy/config.ex:3-29,40-64,119-123,145-149",
+        "apps/gaoxy/lib/gaoxy/service.ex:941-962"
+      ]
+    },
+    {
+      "id": "ISOLATION-F2",
+      "severity": "mechanism_available_but_not_exposed_independently",
+      "finding": "ThousandIsland supports a start-time per-acceptor live-handler cap. DynamicSupervisor max_children enforces it. At capacity it closes the accepted raw socket before starting a handler, returns too_many_connections, and emits acceptor spawn_error. No public runtime setter was found.",
+      "sources": [
+        "deps/thousand_island/lib/thousand_island.ex:130-141,192-378",
+        "deps/thousand_island/lib/thousand_island/acceptor_supervisor.ex:51",
+        "deps/thousand_island/lib/thousand_island/connection.ex:35-44,71-75,98-113",
+        "deps/thousand_island/lib/thousand_island/acceptor.ex:60-82"
+      ]
+    },
+    {
+      "id": "ISOLATION-F3",
+      "severity": "rejected_alternative",
+      "finding": "Lowering Gate max_active to 1 changes accounting admission and cannot retain the required connection, writer and worker leases. Fixture currently overrides max_bytes only; max_active defaults to64. Exact global active==3 is an assertion, not a configured max_active==3.",
+      "sources": [
+        "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host3.exs:513-518",
+        "apps/gaoxy/lib/gaoxy/config.ex:3-12"
+      ]
+    },
+    {
+      "id": "ISOLATION-F4",
+      "severity": "rejected_alternative",
+      "finding": "One acceptor serializes accepts but does not cap concurrent handlers to one. Public pause/suspend is not an atomic first-connection limit: Gaoxy pause changes Gate mode; TI suspend retains existing connections and observing a first connection races additional accepts.",
+      "sources": [
+        "apps/gaoxy/lib/gaoxy/service.ex:204-218,957-959",
+        "deps/thousand_island/lib/thousand_island.ex:226-255"
+      ]
+    },
+    {
+      "id": "ISOLATION-F5",
+      "severity": "not_established",
+      "finding": "No installed documented Chrome option reviewed establishes one socket per listener. Installed manpage explicitly says undocumented flags change; documented flags have no connection-count limiter. No guessed Chromium flags, feature names, binary-string semantics, external docs, network or browser execution used. This is a bounded negative result, not proof that all Chromium versions lack such an option.",
+      "sources": [
+        "/nix/store/y6z5sxiypp0kq9y88i5jlamkqp818n8i-google-chrome-152.0.7977.64/share/man/man1/google-chrome-stable.1.gz"
+      ]
+    },
+    {
+      "id": "ISOLATION-F6",
+      "severity": "causality_boundary",
+      "finding": "Diagnostic2 global accounting failure is exactly explained by two real C/R pairs plus worker. Keep every actor visible and the exact global3/byte assertions unchanged. This evidence does not establish why the prior run target writer exited before authorization."
+    }
+  ],
+  "accepted_rejected_lifecycle": {
+    "accepted": "A started native connection and its writer are genuine Gate owners. Both extra leases stay included globally until authentic teardown and cleanup.",
+    "capacity_rejected": "With a separately configured TI handler cap1 and one acceptor, excess TCP sockets can still be accepted then immediately closed; no native handler/connection writer or Gate lease is created for a max_children rejection. Preserve spawn_error/rejection evidence.",
+    "limits": "Cap1 prevents concurrent native handlers, not Chrome connection attempts, and does not guarantee Chrome chooses the surviving connection for navigation. Browser behavior, complete response and authentic joins still need fresh qualification."
+  },
+  "decisions_needed": [
+    "If exact global3 must be made deterministic using the listener, parent must authorize/design a separate validated listener connection cap propagated through Gaoxy lifecycle; existing exposed configuration cannot express it. This is a Gaoxy configuration seam, not a demonstrated ThousandIsland defect.",
+    "Do not substitute direct TI ownership, private supervisor/state mutation, arbitrary killing or subtraction of extra actors, or unverified Chrome flags."
+  ],
+  "upstream": {
+    "repository": "mtrudel/thousand_island",
+    "locked_ref": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+    "issue_needed": false,
+    "reason": "Required cap exists upstream; missing independent propagation belongs to Gaoxy. No dependency bug established."
+  },
+  "verification": {
+    "performed": "Read-only source/manpage inspection and SHA256 binding. Safe redacted trace lines1-6 only. No raw trace or full sys.get_state reply read.",
+    "not_run": [
+      "Mix/tests",
+      "browser/runtime/network",
+      "Git commands"
+    ],
+    "search_errors": [
+      "Two read-only searches included nonexistent guessed paths (connection_supervisor.ex and runner4.mjs); corrected using bounded file search. No implementation/test failure."
+    ],
+    "shutdown": "All own commands completed. Earlier broad rg session42661 was interrupted and exited130 as recorded in handoff; no ongoing own command."
+  },
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-browser-connection-isolation-spec1.md",
+    "/tmp/gaoxy-native-worker-browser-connection-isolation-spec1.json"
+  ],
+  "repository_edits": [],
+  "source_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http.ex": "e08385455d89ab422e4d3b8e4d68c0d555343986e32c59faff5dbcef5cef489c",
+    "apps/gaoxy/lib/gaoxy/config.ex": "3054657e55350afeb23f0690a4c3d6d0d3df352e564184ce5579cb6f30583cde",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy/lib/gaoxy.ex": "f996f20926086b80f79aa66c82253164430616ffac15118f87bd8a88bc00fa5e",
+    "deps/thousand_island/lib/thousand_island.ex": "a8ad44777b99c609d27ff7bf3e0882a31b23dcbbb39b31f285f1a950057b2300",
+    "deps/thousand_island/lib/thousand_island/acceptor.ex": "f778919a231f53fdd25a6e7dd35a2577272c690a6fa99d20aa6cb198d3f1c04a",
+    "deps/thousand_island/lib/thousand_island/connection.ex": "3b1b1f6f3a9eb82adab2d6c342b1bc461520c2692e99cbe596c068dae522f19c",
+    "deps/thousand_island/lib/thousand_island/server_config.ex": "c7bb46e23fcfc3d1ed3d0cefbbde5ca2df8fda2d8c2cfc283a8de9bbcd2e5136",
+    "deps/thousand_island/lib/thousand_island/acceptor_supervisor.ex": "4169ef08b8d14d12a533e6550760edb41d24b3065a540d22c33feb2198745c24",
+    "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host3.exs": "21280c6be63e9bef1956fa5fb30002896a7bd25e36583d2f8af1ec3f340b7778",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-runner4.py": "eed9867759952b77a2d53a21e0fd717af08281cc8c416483232697ad3d8c51e6",
+    "/nix/store/y6z5sxiypp0kq9y88i5jlamkqp818n8i-google-chrome-152.0.7977.64/share/man/man1/google-chrome-stable.1.gz": "ad37f9b838c98c8fabc6ec8b9d54781286ea79bd577566920a276f0df4b2979b"
+  },
+  "remaining_risks": [
+    "No runtime qualification of separate cap option exists.",
+    "Current browser gate remains open and exact assertions remain binding.",
+    "Prior writer-before-auth cause remains UNKNOWN."
+  ]
+}

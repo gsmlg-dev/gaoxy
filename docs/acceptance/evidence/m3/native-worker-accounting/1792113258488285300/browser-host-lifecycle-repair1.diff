@@ -1,0 +1,120 @@
+--- native-worker-browser-host1.exs
++++ native-worker-browser-host2.exs
+@@ -589,6 +589,8 @@
+       session_monitor: nil,
+       session_joined: false,
+       native_joined: false,
++      request_cleaned: false,
++      browser_close_authorized: false,
+       custody: nil
+     })
+   end
+@@ -777,6 +779,7 @@
+         wait_until(fn -> Admission.status(s.gate).cleanup_pending == 0 end, deadline())
+         s = join_session(s)
+         s = request_native_clean(s)
++        s = %{s | request_cleaned: true}
+ 
+         emit("request_clean", %{
+           session: inspect(s.session),
+@@ -795,7 +798,23 @@
+ 
+         loop(s)
+ 
++      {:command, %{"op" => "authorize_browser_close"}} ->
++        true = s.request_cleaned and not s.browser_close_authorized
++        true = Process.alive?(s.connection) and not s.connection_joined
++        if s.mode == "h1", do: true = not s.native_joined
++        s = %{s | browser_close_authorized: true}
++
++        emit("browser_close_authorized", %{
++          mode: s.mode,
++          connection: inspect(s.connection),
++          connection_alive: true
++        })
++
++        loop(s)
++
+       {:command, %{"op" => "stop"}} ->
++        true = s.request_cleaned and s.browser_close_authorized
++
+         wait_until(
+           fn ->
+             match?(
+@@ -806,14 +825,23 @@
+           deadline()
+         )
+ 
+-        join_native(s.native, s.native_monitor, s.native_joined)
++        native_reason = if s.mode == "h1", do: {:shutdown, :peer_closed}, else: :normal
++        join_native(s.native, s.native_monitor, s.native_joined, native_reason)
+ 
+         if s.connection_monitor,
+-          do: join_native(s.connection, s.connection_monitor, s.connection_joined)
++          do:
++            join_native(
++              s.connection,
++              s.connection_monitor,
++              s.connection_joined,
++              {:shutdown, :peer_closed}
++            )
+ 
+         if s.writer_monitor, do: join_native(s.writer, s.writer_monitor, s.writer_joined)
+ 
+         emit("closed_browser_clean", %{
++          connection_joined: true,
++          connection_reason: inspect({:shutdown, :peer_closed}),
+           service:
+             Map.take(Gaoxy.status(s.instance, :http), [
+               :active,
+@@ -929,16 +957,22 @@
+         true = s.attachment == nil
+         loop(%{s | attachment: {session, token, owner, lease, bytes, d}})
+ 
+-      {:DOWN, monitor, :process, owner, :normal}
+-      when monitor == s.connection_monitor and owner == s.connection ->
+-        loop(%{s | connection_joined: true})
++      {:DOWN, monitor, :process, owner, {:shutdown, :peer_closed}}
++      when s.browser_close_authorized and owner == s.connection and
++             (monitor == s.connection_monitor or
++                (s.mode == "h1" and monitor == s.native_monitor)) ->
++        loop(%{
++          s
++          | connection_joined: true,
++            native_joined: if(s.mode == "h1", do: true, else: s.native_joined)
++        })
+ 
+       {:DOWN, monitor, :process, writer, :normal}
+       when monitor == s.writer_monitor and writer == s.writer ->
+         loop(%{s | writer_joined: true})
+ 
+       {:DOWN, monitor, :process, native, :normal}
+-      when monitor == s.native_monitor and native == s.native ->
++      when s.mode == "h2" and monitor == s.native_monitor and native == s.native ->
+         loop(%{s | native_joined: true})
+ 
+       {:DOWN, monitor, :process, session, :normal}
+@@ -1129,17 +1163,19 @@
+     %{s | native_joined: true}
+   end
+ 
+-  def join_native(pid, monitor, true) do
++  def join_native(pid, monitor, joined, reason \\ :normal)
++
++  def join_native(pid, monitor, true, _reason) do
+     true = not Process.alive?(pid)
+     true = is_reference(monitor)
+     :ok
+   end
+ 
+-  def join_native(pid, monitor, false) do
++  def join_native(pid, monitor, false, reason) do
+     receive do
+-      {:DOWN, ^monitor, :process, ^pid, :normal} -> :ok
++      {:DOWN, ^monitor, :process, ^pid, ^reason} -> :ok
+     after
+-      5000 -> raise "actual native/session normal join missing"
++      5000 -> raise "actual native/session exact terminal join missing: #{inspect(reason)}"
+     end
+ 
+     true = not Process.alive?(pid)

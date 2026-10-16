@@ -3,7 +3,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, HTTP2.Frame, HTTP2.Headers, HTTP2.Limits, HTTP2.Settings}
   alias Gaoxy.HTTP.RendererBounds
-  alias Gaoxy.HTTP.HTTP2.{Stream, Writer, Transport}
+  alias Gaoxy.HTTP.HTTP2.{Stream, Writer, Transport, WorkerAccounting}
   alias ThousandIsland.Socket
   @preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
   @max_window 2_147_483_647
@@ -504,6 +504,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
                 worker: nil,
                 monitor: nil,
                 lease: nil,
+                startup: nil,
                 request: request,
                 deadline: Lifecycle.deadline(state.limits.request_timeout),
                 input: "",
@@ -541,26 +542,39 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
         state
 
       {id, stream} ->
-        owner = self()
+        case WorkerAccounting.reservation(state, stream) do
+          {:ok, {:native_http2_worker_v1, protocol_bytes, bytes}} ->
+            request =
+              Admission.spawn_request(
+                state.gate,
+                state.lease,
+                stream.token,
+                bytes,
+                stream.deadline,
+                {Stream, :run,
+                 [self(), id, stream.token, state.gate, protocol_bytes, stream.deadline]}
+              )
 
-        case Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fn ->
-               Stream.run(
-                 owner,
-                 id,
-                 stream.token,
-                 state.gate,
-                 state.reserves.stream,
-                 stream.deadline
-               )
-             end) do
-          {:ok, worker} ->
-            put_in(%{state | starting: id}.streams[id], %{
-              stream
-              | worker: worker,
-                monitor: Process.monitor(worker)
-            })
+            timer =
+              Process.send_after(
+                self(),
+                {:h2_worker_start_timeout, id, stream.token},
+                Lifecycle.remaining(stream.deadline)
+              )
 
-          _ ->
+            startup = %{
+              request: request,
+              timer: timer,
+              token: stream.token,
+              parent_lease: state.lease,
+              protocol_bytes: protocol_bytes,
+              bytes: bytes,
+              deadline: stream.deadline
+            }
+
+            put_in(%{state | starting: id}.streams[id], %{stream | startup: startup})
+
+          {:error, :worker_capacity} ->
             reset(state, id, :refused_stream)
         end
     end
@@ -1031,63 +1045,10 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
-  defp message(state, {:h2_stream_ready, worker, id, token, lease}) do
-    case state.streams[id] do
-      %{worker: ^worker, token: ^token} = stream ->
-        request = stream.request
-        limits = Map.put(state.limits, :max_write_chunk, 16_384)
-
-        exchange = %Exchange{
-          request: request,
-          gate: state.gate,
-          lease: lease,
-          deadline: stream.deadline,
-          limits: limits,
-          body: %{
-            phase: if(stream.initial_eof, do: :done, else: :data),
-            total: 0,
-            trailers: [],
-            trailer_bytes: 0
-          },
-          buffer: "",
-          transport: Transport,
-          transport_state: {self(), id, token},
-          peer: state.peer,
-          local: state.local,
-          secure: state.secure,
-          # Full TLS metadata stays on this connection's existing lease.
-          # Stream callers query it through their authenticated transport.
-          ssl: nil,
-          peer_cert: state.peer_cert,
-          service: Map.get(state, :service),
-          instance: Map.get(state, :instance),
-          protocol_bytes: state.reserves.stream
-        }
-
-        send(worker, {:h2_dispatch, self(), exchange, state.spec.handler_options.endpoint})
-
-        start_next(
-          put_in(%{state | starting: nil, accepted: max(state.accepted, id)}.streams[id], %{
-            stream
-            | lease: lease
-          })
-        )
-
-      _ ->
-        Process.exit(worker, :kill)
-        state
-    end
-  end
-
-  defp message(state, {:h2_stream_failed, worker, id, token, _}) do
-    case state.streams[id] do
-      %{worker: ^worker, token: ^token, lease: nil} when state.starting == id ->
-        start_next(reset(%{state | starting: nil}, id, :refused_stream))
-
-      _ ->
-        state
-    end
-  end
+  # Only the original public async Admission response can grant worker custody.
+  # Old worker-supplied ready/failure envelopes carry no such authority.
+  defp message(state, {:h2_stream_ready, _, _, _, _}), do: state
+  defp message(state, {:h2_stream_failed, _, _, _, _}), do: state
 
   defp message(state, {:h2_stream_done, worker, id, token, {:error, :endpoint_failed}}) do
     case state.streams[id] do
@@ -1115,7 +1076,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
-  defp message(state, {:DOWN, monitor, :process, _, _}) do
+  defp message(state, {:DOWN, monitor, :process, _, _} = message) do
     if monitor == state.writer_monitor do
       :close
     else
@@ -1130,7 +1091,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           )
 
         nil ->
-          state
+          startup_response(state, message)
       end
     end
   end
@@ -1164,6 +1125,16 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
+  defp message(state, {:h2_worker_start_timeout, id, token}) do
+    case state.streams[id] do
+      %{token: ^token, startup: startup} when not is_nil(startup) ->
+        reset(state, id, :refused_stream)
+
+      _ ->
+        state
+    end
+  end
+
   defp message(state, {:h2_start_timeout, token}) do
     if token == state.start_token and not state.settings_ack,
       do: failure(state, :settings_timeout),
@@ -1189,7 +1160,84 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp message(_state, :h2_close), do: :close
-  defp message(state, _), do: state
+  defp message(state, message), do: startup_response(state, message)
+
+  defp startup_response(state, message) do
+    case state.streams[state.starting] do
+      %{startup: %{request: request} = startup} = stream ->
+        case :gen_server.check_response(message, request) do
+          {:reply, {:ok, worker, lease}} when is_pid(worker) and is_reference(lease) ->
+            if startup.token == stream.token and startup.parent_lease == state.lease and
+                 startup.deadline == stream.deadline and node(worker) == node() and
+                 Process.alive?(worker) and Lifecycle.remaining(stream.deadline) > 0 do
+              Process.cancel_timer(startup.timer)
+              dispatch(state, stream, worker, lease, startup.protocol_bytes)
+            else
+              reset(state, stream.id, :refused_stream)
+            end
+
+          :no_reply ->
+            state
+
+          _ ->
+            reset(state, stream.id, :refused_stream)
+        end
+
+      _ ->
+        state
+    end
+  end
+
+  defp dispatch(state, stream, worker, lease, protocol_bytes) do
+    id = stream.id
+    token = stream.token
+
+    exchange = %Exchange{
+      request: stream.request,
+      gate: state.gate,
+      lease: lease,
+      deadline: stream.deadline,
+      limits: Map.put(state.limits, :max_write_chunk, 16_384),
+      body: %{
+        phase: if(stream.initial_eof, do: :done, else: :data),
+        total: 0,
+        trailers: [],
+        trailer_bytes: 0
+      },
+      buffer: "",
+      transport: Transport,
+      transport_state: {self(), id, token},
+      peer: state.peer,
+      local: state.local,
+      secure: state.secure,
+      ssl: nil,
+      peer_cert: state.peer_cert,
+      service: Map.get(state, :service),
+      instance: Map.get(state, :instance),
+      protocol_bytes: protocol_bytes
+    }
+
+    send(worker, {:h2_dispatch, self(), exchange, state.spec.handler_options.endpoint})
+
+    start_next(
+      put_in(
+        %{state | starting: nil, accepted: max(state.accepted, id)}.streams[id],
+        %{stream | worker: worker, monitor: Process.monitor(worker), lease: lease, startup: nil}
+      )
+    )
+  end
+
+  defp cancel_start(state, %{startup: startup}) when not is_nil(startup) do
+    # Retiring an alias is local only. Gate still owns the known child and its
+    # charge until actual DOWN plus EXIT, even when this connection drops its row.
+    cancel = Admission.cancel_spawn(state.gate, startup.parent_lease, startup.token)
+    Process.cancel_timer(startup.timer)
+    :gen_server.receive_response(startup.request, 0)
+    :gen_server.receive_response(cancel, 0)
+    :ok
+  end
+
+  defp cancel_start(_, _), do: :ok
 
   defp written(state, nil, _), do: state
   defp written(state, {:header_fragment, _id}, _), do: state
@@ -1317,6 +1365,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           GenServer.reply(stream.write.from, {:error, :closed})
         end
 
+        cancel_start(state, stream)
         if stream.monitor, do: Process.demonitor(stream.monitor, [:flush])
         if kill and stream.worker, do: Process.exit(stream.worker, :kill)
 
@@ -1361,6 +1410,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
   def close(state) when is_map(state) do
     Enum.each(state.streams, fn {_, stream} ->
+      cancel_start(state, stream)
       if stream.worker, do: Process.exit(stream.worker, :kill)
     end)
 

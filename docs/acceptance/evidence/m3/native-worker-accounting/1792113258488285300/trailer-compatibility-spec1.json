@@ -1,0 +1,95 @@
+{
+  "task_id": "native_worker_trailer_compatibility_spec1",
+  "status": "DONE_SOURCE_ANALYSIS",
+  "assignment": "bounded direct read-only compatibility analysis",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda (frozen parent receipt; no Git command)",
+  "recorded_at_utc": "2026-10-16T02:28:47.286871+00:00",
+  "runtime_observation": "NOT RUN by reviewer; native trailer regression has not been executed per parent assignment",
+  "root_cause": {
+    "path": "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex",
+    "lines": "65,67-77",
+    "source_evidence": "Admission is restored to retained(old exchange) before the returned body/trailer state is constructed. The post-read body changes trailer_bytes while retained_bytes adds twice that field.",
+    "predicted_regression_trailer_bytes": 87,
+    "predicted_current_undercharge_delta": 174,
+    "derivation": "Headers.bytes = sum(name_bytes+value_bytes+32): (7+5+32)+(7+4+32)=87; returned retained delta2*87=174. This is source arithmetic, not observed runtime failure."
+  },
+  "recommended_smallest_repair": [
+    "Keep the existing credit validation/clamping and pre-read Admission.update(retained_bytes(exchange)+2*credit) before operation. A refusal still prevents the read operation.",
+    "Remove the unconditional ignored restore against old exchange before result matching.",
+    "For {:ok|:more, bytes, ended, trailers}, build body and next=%{exchange|body:body}; then Admission.update(next.gate,next.lease,Exchange.retained_bytes(next)) before returning success.",
+    "On exact post-read update :ok return {kind,bytes,next}. On {:error,reason}, return {:error,reason,next}, matching existing HTTP1 Exchange.decode_body semantics: preserve consumed framing/metadata and expose admission failure; never report successful exact accounting for a refused update.",
+    "For :pending, restore old retained_bytes(exchange); return {:pending,exchange} only on :ok; propagate finite {:error,reason,exchange} on restore refusal.",
+    "For operation {:error,reason}, perform the existing best-effort restore of old retained bytes and return the original {:error,reason,exchange}; do not replace original error with nested raw cleanup diagnostics.",
+    "Preserve maybe_continue errors, original N/route_bytes/resource pins/deadline/lease identity, body total/phase/trailers semantics, response/error handling and paired Gate cleanup. No new helper process, public API or limit is needed."
+  ],
+  "checkpoint1_reopens": false,
+  "checkpoint1_basis": [
+    "This method is reached from the endpoint after Stream.run receives its admitted full dispatch and invokes module.call. It does not execute on the pre-admission or startup path.",
+    "Connection.dispatch and WorkerAccounting still build the identical initial body %{phase:data|done,total:0,trailers:[],trailer_bytes:0}; all complete initial Exchange/default/request/endpoint fields remain unchanged.",
+    "No calculator input, EFT constructor shape, role cap, count, owner, lifetime, alias/spawn/activation/cancel wrapper, bootstrap apply argument, link/monitor/timer root or whole equation is modified.",
+    "The same current ordinary lease is updated using Exchange.retained_bytes(next), which already includes unchanged protocol_bytes N and any route_bytes B. Runtime trailers are the existing dynamic 2*trailer_bytes obligation, not a new startup allowance.",
+    "Gate ordinary-lease schema/ownership/paired DOWN+EXIT release remain unchanged and terminal refund already subtracts current lease.bytes. There is no lease transfer or early worker refund.",
+    "The startup rows named body_map,parent_exchange,dispatch_envelope,child_exchange refer to the complete initial dispatch shapes. Later body-read mutations are existing runtime operations; they do not create another initial dispatch or extend any startup role lifetime.",
+    "Although the Transport source hash changes, the checkpoint reopening condition is a changed charged constructor/lifetime/multiplicity/equation, not every unrelated source byte. Preserve checkpoint1 immutably and record/review the exact new Transport hash and this semantic rebind before running the affected native test."
+  ],
+  "semantic_no_reopen_condition": "Only Transport.read_body_step post-operation accounting/result handling changes. Any edit to startup/dispatch/calculator/core lease grammar/ownership/lifetime/multiplicity/equation requires a fresh determination and can reopen the SAME checkpoint.",
+  "verification_required": [
+    "Existing terminal-trailers regression must retain body-incomplete/empty initial trailers, explicit read consumption, returned exact trailer bytes and retained lease assertion, poll persistence, normal wire response and real worker/Gate cleanup.",
+    "Existing full-N read/poll/validation-error/normal-response regression remains exact. Keep original stale-start/control responsiveness/error assertions.",
+    "Preserve pre-read byte-limit refusal and finite pending/error paths; final update refusal must not return {:ok|:more,...}. An admitted return must have lease.bytes==Exchange.retained_bytes(returned).",
+    "Small read credits do not bound trailer size. With credit1 and these87bytes of trailers, final retained old+174 exceeds read precharge old+2; post-read update may require a real extra admission. Propagate refusal honestly; do not assume every final update is a shrink or invent a larger always-reserved trailer maximum for this narrow repair. This mirrors existing H1 post-decode admission-error behavior.",
+    "Fresh affected scoped native tests and final full-stage independent review on the repaired source are required. This source-only analysis is neither observed runtime failure nor repaired-runtime PASS."
+  ],
+  "verification_performed": [
+    "Read-only nl/sed/rg source and regression inspection",
+    "SHA256 relevant9 sources vs freeze2",
+    "Independent trailer retained-byte arithmetic",
+    "Constructor-checkpoint1 scope/reopening-rule read"
+  ],
+  "source_hashes_before": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "2276f9bfb14053ff853a13b564397ba82e5ad685a1451619dde89e398980a581",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "1d806feb85fbdb56793b61671198eb876b6f8f91280ea67cc3e3c5336a530eaa",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "81c96e55e56d514f4bd93cecb7af906a55279927d3f100f7b2045181f1eaf107",
+    "apps/gaoxy/lib/gaoxy/admission/worker_bootstrap.ex": "e24ec80af091bef950964dedd5a2dcc61cc35dcc71e5e8bc99f77de9cd303236"
+  },
+  "source_hashes_after": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "b497b15778847aa56f3f0a0e5ec5aa68323fcd609c8b9d0aa091e4c1e9200302",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "2276f9bfb14053ff853a13b564397ba82e5ad685a1451619dde89e398980a581",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "1d806feb85fbdb56793b61671198eb876b6f8f91280ea67cc3e3c5336a530eaa",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "81c96e55e56d514f4bd93cecb7af906a55279927d3f100f7b2045181f1eaf107",
+    "apps/gaoxy/lib/gaoxy/admission/worker_bootstrap.ex": "e24ec80af091bef950964dedd5a2dcc61cc35dcc71e5e8bc99f77de9cd303236"
+  },
+  "relevant_source_stable": true,
+  "checkpoint1_sha256": "76aa418d71b9c82675cbb86f3ed0043797e2bae5cd7faa338fd9b1b40f4c2f4f",
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-trailer-compatibility-spec1.md",
+    "/tmp/gaoxy-native-worker-trailer-compatibility-spec1.json"
+  ],
+  "counters": {
+    "effective_group_failed_GREEN": 32,
+    "effective_root_failure_events": 37,
+    "stage_failed_GREEN": 2,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "review_added_runtime_attempts": 0,
+    "review_added_repairs": 0
+  },
+  "shutdown": "All own commands synchronous and complete. No repository/evidence writes, runtime/build/test/network/Git/delegation/background process. Root retains all implementation/runtime/evidence ownership.",
+  "remaining_risks": [
+    "Repair not implemented by reviewer",
+    "No runtime PASS/FAIL observed here",
+    "Post-read final admission can grow beyond2*body credit when trailers arrive; explicit failure branch required",
+    "General arbitrary endpoint result/diagnostic bounds and broader runtime accounting remain outside this bounded analysis"
+  ],
+  "decisions_needed": []
+}

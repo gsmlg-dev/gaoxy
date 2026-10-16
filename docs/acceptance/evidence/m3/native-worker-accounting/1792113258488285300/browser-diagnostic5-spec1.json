@@ -1,0 +1,110 @@
+{
+  "task_id": "native_worker_constructor_spec/browser_diagnostic5_actual_spec1",
+  "status": "DONE",
+  "assignment": "direct independent actual-source read-only SPEC re-review",
+  "verdict": "PASS",
+  "qualification": "SOURCE_ONLY_FOR_NONACCEPTED_DIAGNOSTIC; not runtime GREEN or full acceptance",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Git prohibited; exact immutable tuple hashes verified before/after review",
+  "source_sha256": {
+    "native-worker-browser-diagnostic-host4.exs": "1c2b98b459c3d15d3fad7d5c20d73e7a5b7629c1a507da0ead62e8c929d15113",
+    "native-worker-browser-diagnostic-runner5.py": "35e7e0fc6d7c5e34b107257a19d1d9a89488884776a1d1908e24a82daf92d502",
+    "native-worker-browser-frontdoor2.py": "dd53b803832545b1b68897141da8c7fd2e4a09c78a534ff16d6421cd844f43cc"
+  },
+  "prior_failure": {
+    "report": "/tmp/gaoxy-native-worker-browser-diagnostic4-spec1.md",
+    "sha256": "f5529632536fc9e5096e2b5dae9871e9331c5164ca95778c609f978be12a0c11",
+    "finding": "DIAG4-SPEC-F1",
+    "disposition": "RESOLVED_ON_NEW_TUPLE; prior tuple/report unchanged"
+  },
+  "findings": [],
+  "checks": [
+    {
+      "id": "F1-resolution",
+      "status": "PASS_SOURCE",
+      "source": "frontdoor2.py:61-93,96-130",
+      "evidence": "Selected reads/writes/EOF run before control. recv EOF before authorization raises immediately. Parsed authorize sets pending_authorize only. Authorization commits only with same pair, no EOF, empty queues, and fresh select(pair,[],[],0) no readable socket; otherwise pending request defers to next iteration with authorized false. Duplicate authorize and stop while pending assert. Errors abort process; no catch clears prior failure."
+    },
+    {
+      "id": "single-backend",
+      "status": "PASS_SOURCE",
+      "source": "frontdoor2.py:46-60",
+      "evidence": "Irreversible selected latch; exactly one create_connection call attempt to fixed loopback native ready port with5s timeout; extras close immediately before backend creation. No replacement/retry/protocol handling."
+    },
+    {
+      "id": "raw-byte-identity",
+      "status": "PASS_SOURCE",
+      "source": "frontdoor2.py:21-29,41-44,61-87",
+      "evidence": "Raw socket recv/send only; order preserved. Fixed16384 read chunks and65536 queue limit/backpressure. Correct partial-send hashing/counting. Positive each-direction received counts, reversed received/sent equality and per-direction SHA256 equality required before connection_complete."
+    },
+    {
+      "id": "half-close-and-join",
+      "status": "PASS_SOURCE",
+      "source": "frontdoor2.py:79-93,109-120,131-134; runner5.py:388-407,430-444",
+      "evidence": "Only actual authorized read EOF propagates destination write-half-close after queue drain; reverse I/O continues to actual EOF. Both EOF/halfclose/empty queues required before pair close. Stop requires completed/authorized/no pair, closes listener and returns0; runner requires exact complete payload plus counts/hashes/highwaters, actor process0/logreader joins/no forced cleanup. Exceptions remain failure while finally closes owned sockets."
+    },
+    {
+      "id": "finite-io",
+      "status": "PASS_SOURCE",
+      "source": "frontdoor2.py:30,38,45,56,58-59; runner5.py:256-303",
+      "evidence": "90s absolute relay bound, nonblocking sockets/select0.1, backend connect5s; inherited actor event/join/disposal finite bounds unchanged. No timeouts weakened."
+    },
+    {
+      "id": "existing-native-and-peer-contract",
+      "status": "PASS_SOURCE",
+      "source": "host4 unchanged; runner5 versus runner4 exact one-line helper path diff",
+      "evidence": "All reviewed host exact global3/bytes and postrequest exact2/bytes, custody, requestworker/Session normal joins, zero cleanup/native terminal reasons retained. Browser native TLS/ALPN and CDP h2/visible-page/screenshot checks unchanged; H1 sequential same-source case, strict independent upstream peer and forced-failure disposition unchanged."
+    },
+    {
+      "id": "authorization-orchestration",
+      "status": "PASS_SOURCE",
+      "source": "runner5.py:376-407; host4.py/exs authorize_browser_close branch",
+      "evidence": "Host requestclean and same captured connection+writer live/unjoined authorization precede relay authorize ack; Browser.close sent only after exact relay ack. Relay complete and join precede host stop; cannot use local cleanup to manufacture accepted EOF."
+    },
+    {
+      "id": "scope-and-evidence",
+      "status": "PASS_SOURCE",
+      "source": "runner5.py:309-313,477-480; host4.exs:1284-1303",
+      "evidence": "Only test evidence fixtures; helper included in before/after source inventory, metadata explicitly NONACCEPTED_BROWSER_DIAGNOSTIC and single-selected-raw-tcp-connection. Host safe exact sys-reply projection unchanged from reviewed host4. No production API/dependency/Gate accounting changes."
+    }
+  ],
+  "limits": [
+    "Observed quiet authorization boundary cannot establish unknowable remote physical FIN timing; helper comments explicitly state observed boundary.",
+    "Runtime browser behavior, byte counters and clean actual joins remain NOT RUN. Planned execution is expressly diagnostic, not acceptance.",
+    "No endpoint-tuple event was added; the fixed backend/native ready port and exact global lease assertions still bind source topology. No direct TCP-topology or broad multi-connection acceptance claim.",
+    "Historical entry_counters text in runner remains lineage metadata; current parent counters remain group37/root47/stage7/Astra2.",
+    "Prior target writer-beforeauth cause remains UNKNOWN; isolation is not root-cause proof."
+  ],
+  "verification": {
+    "performed": "Read-only helper2 full source; exact helper1\u2192helper2 and runner4\u2192runner5 diffs; host4 hash equality; frozen hashes rechecked. Expected diff exit1 indicates changes, not test failure.",
+    "parent_reported": "AST parse PASS, not independently rerun or promoted to runtime proof.",
+    "not_run": [
+      "runtime",
+      "browser",
+      "network",
+      "Mix/tests",
+      "Git"
+    ],
+    "raw_archive_read": false,
+    "shutdown": "All own commands completed; no actor launched."
+  },
+  "counters": {
+    "group_failedGREEN": 37,
+    "root_failure_events": 47,
+    "stage_failedGREEN": 7,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "this_review_failedGREEN": 0,
+    "this_review_sol_repair_rounds": 0
+  },
+  "repository_edits": [],
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-browser-diagnostic5-spec1.md",
+    "/tmp/gaoxy-native-worker-browser-diagnostic5-spec1.json"
+  ],
+  "remaining_risks": [
+    "Actual runtime qualification remains unexecuted.",
+    "Full current stage remains OPEN."
+  ],
+  "decisions_needed": []
+}

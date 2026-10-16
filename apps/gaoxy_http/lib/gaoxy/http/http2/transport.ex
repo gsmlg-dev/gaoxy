@@ -62,8 +62,6 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
               {:read, credit, min(wait, Lifecycle.remaining(exchange.deadline))}
             )
 
-          _ = Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
-
           case result do
             {kind, bytes, ended, trailers} when kind in [:ok, :more] ->
               body = %{
@@ -74,12 +72,27 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
                   total: exchange.body.total + byte_size(bytes)
               }
 
-              {kind, bytes, %{exchange | body: body}}
+              next = %{exchange | body: body}
+
+              case Admission.update(next.gate, next.lease, Exchange.retained_bytes(next)) do
+                :ok -> {kind, bytes, next}
+                {:error, reason} -> {:error, reason, next}
+              end
 
             :pending ->
-              {:pending, exchange}
+              case Admission.update(
+                     exchange.gate,
+                     exchange.lease,
+                     Exchange.retained_bytes(exchange)
+                   ) do
+                :ok -> {:pending, exchange}
+                {:error, reason} -> {:error, reason, exchange}
+              end
 
             {:error, reason} ->
+              _ =
+                Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
+
               {:error, reason, exchange}
           end
         else

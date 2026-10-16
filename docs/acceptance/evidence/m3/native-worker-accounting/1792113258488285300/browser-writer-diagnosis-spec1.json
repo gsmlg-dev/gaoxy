@@ -1,0 +1,103 @@
+{
+  "task_id": "/root/native_worker_constructor_spec/browser_writer_diagnosis_spec1",
+  "status": "DONE",
+  "assignment": "direct bounded source-only diagnosis",
+  "verdict": "CAUSE_UNDETERMINED_NO_ASSERTION_RELAXATION_JUSTIFIED",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda archived source identity; no Git commands",
+  "confirmed_observations": [
+    "BrowserGREEN2 is FAIL: executed1 H2, H1 NOT RUN, source_stable true. Host3 raises on actual writer PID #PID<0.348.0> normal DOWN before request_clean response; browser/peer require forced SIGTERM cleanup and no acceptance is claimed.",
+    "Captured actual H2 actors are worker #PID<0.349.0>, connection #PID<0.347.0>, writer #PID<0.348.0>. Custody event was emitted, but no request_clean, browser_close_authorized or stopped event exists in host log.",
+    "Chrome CDP recorded protocol h2/TLS1.3, status200, full Network.loadingFinished, expected visible DOM and screenshot; no loadingFailed in recorded CDP events. This is intermediate complete-page evidence only, not native lifecycle acceptance.",
+    "Raw peer emitted real HEAD /health and GET /checked and later idle_connection_closed reset with completed_responses2. It did not reach its normal joined event; post-host-failure upstream reset cannot explain the preceding downstream writer trigger."
+  ],
+  "requirement_analysis": [
+    {
+      "source": "docs/plans/m3-native-worker-startup-accounting.md:115-119",
+      "meaning": "Product-stage acceptance requires real negotiated H2 and H1 page, actual capture ownership/accounting, complete wire response, request+Session childpin+ordinary lease cleanup, finite actual normal owned actors/profile exits and final zero accounting. It does not require a browser keepalive connection to survive until an explicit process-close command."
+    },
+    {
+      "source": "browser-notes1.md:90-96; host1/host3 request_native_clean",
+      "meaning": "Existing source-reviewed fixture contract adds an intermediate exact original connection+writer lease set, active2 and bytesC+R after request cleanup, before explicit Chrome close. This is a real existing fixture assertion, so cannot be silently erased; it is stronger ordering than the product plan."
+    },
+    {
+      "source": "actual lifecycle SPEC1/SPEC2",
+      "meaning": "The auth-phase writer-survival guard was derived to preserve that stronger fixture profile and reject ambiguous early death. Source PASS proved implementation matches that profile, not that Chrome/native connection necessarily maintains it. Runtime now disproves its applicability to this execution, without proving the alternative benign."
+    }
+  ],
+  "writer_normal_exit_source_paths": [
+    {
+      "path": "Writer receives exact owner monitor DOWN, any owner reason",
+      "terminal": "Writer returns :ok -> normal",
+      "risk": "Underlying owner may have peer_closed, local_closed, read_timeout, protocol error, service failure or another terminal reason."
+    },
+    {
+      "path": "Writer receives :stop",
+      "terminal": "Writer returns :ok -> normal",
+      "risk": "Connection.close sends :stop on handle_close/error/shutdown. Trigger may be legitimate peer close or a fault; writer normal alone does not identify it."
+    },
+    {
+      "path": "Writer h2_write result outside [:ok,:expired]",
+      "terminal": "Writer emits h2_written with actual error then stops normally",
+      "risk": "Socket.setopts/send, owner liveness, or Admission.start_send refusal can terminate writer normally; success of the earlier document does not prove later control sends succeeded."
+    }
+  ],
+  "unknowns": [
+    "No authentic connection monitor DOWN/exit reason is present before host raises; no recorded writer triggering receive or last h2_written result. Exact production connection-close cause is UNKNOWN.",
+    "Candidate source paths include peer EOF; incoming GOAWAY->drain->h2_close/local_closed; protocol/control/frame/start timeout->failure/local close; socket/write error; native owner/service termination. None is established for this run.",
+    "Service idle default30s and configured request15s do not explain a whole case elapsed10.799s without more timing evidence. Frame/settings/write defaults5s exist; no observed timer/input associates them with this failure. Do not invent a deadline explanation."
+  ],
+  "diagnostic_recommendation": [
+    "Root may create a new immutable diagnostic-only fixture variant, leaving host3/runner4, all assertions and browserGREEN2 failure unchanged. Do not change production, startup95, public APIs, deadlines or acceptance rules.",
+    "Before releasing the existing capture/dispatch barrier, trace only the actual captured connection+writer (and existing Session/native request monitors) with a dedicated owned collector: send, receive and process-exit events with monotonic timestamps and exact real PIDs/monitor refs. No fake DOWNs, arbitrary sleeps, broad trace-on-spawn, or success after force cleanup.",
+    "Record the writer triggering input: :stop; exact owner DOWN reason; or h2_write token/deadline plus matching h2_written outcome. Record connection socket close/error; h2_written/error, writer DOWN, drain/control timeout and h2_close input; authentic connection exit and its monitor DOWN.",
+    "For inbound decrypted SSL/TCP data, retain a bounded independent framing summary sufficient to identify actual GOAWAY(last_stream,error_code), RST_STREAM and SETTINGS/partial-frame completion. Preserve partial carry and stream IDs; never infer a full control frame from a partial delivery. Byte counts/hashes and finite event/byte bounds keep diagnostics reviewable.",
+    "Record ordered phase markers at capture/dispatch, Chrome probe receipt, request_clean command receipt and each cleanup checkpoint, authorization request+ack, Chrome close command and genuine terminal observations. Correlate sequence IDs through the control channel instead of assuming unrelated monotonic clock epochs align.",
+    "Flush and join the diagnostic collector on both success and failure with finite deadlines; preserve exact source hashes, process groups and actual exits. All existing strict peers, :normal Session/H2 request-worker/writer joins, exact connection reason expectation, Gate/resource zeros and forcedFAIL assertions remain until diagnostics justify a reviewed contract update."
+  ],
+  "acceptance_policy": [
+    "Do not simply remove the phase guard, classify every normal writer DOWN as harmless, accept arbitrary connection reasons, skip the C+R checkpoint, increase timeouts speculatively, or claim browser acceptance from DOM/CDP alone.",
+    "If authentic diagnostics prove complete request+response+Session/native cleanup followed by valid peer EOF or an actual NO_ERROR GOAWAY, a separately reviewed fixture contract may model that concrete naturally closed branch with exact connection reason, corresponding normal writer/worker/Session joins and final Gate0. The live C+R branch must still assert its exact lease set when live; no broad terminal-reason allowlist.",
+    "If diagnostics instead show failed write, protocol error, timeout, missing cleanup or unexplained owner death, diagnose that concrete failure. Product completion still requires H2 and H1 full lifecycle and normal owned actor exits."
+  ],
+  "source_sha256": {
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-green2/qualification.json": "6d7f2e8eab8e57d68c86a6b24d0882eec900a77f90f2884ad485315a76853d05",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-green2/h2/host.log": "ae198558145f276c33bcade0fccc5cea7867814f4976dee3598eeb8bb20e9c7c",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-green2/h2/browser.log": "0132eebc1cc60d35c15e398792487fa3e47a9604495603cc9af7a4f95099f070",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-green2/h2/peer.log": "14417a7d5537c65fa08d7675b89eca40e8f9c0025d8917181a9cad124bf38328",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-green2/h2/browser-events.json": "e2b95e1ffda0abdc67e2061bf91de7a52b75dfe9b6cf7714cdf1388e73420427",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host3.exs": "21280c6be63e9bef1956fa5fb30002896a7bd25e36583d2f8af1ec3f340b7778",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-runner4.py": "eed9867759952b77a2d53a21e0fd717af08281cc8c416483232697ad3d8c51e6",
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-notes1.md": "46455356d1f463acbbd2e101cf6649b9d0d83e2eca93d01d6c8495bc71639a4d",
+    "docs/plans/m3-native-worker-startup-accounting.md": "618eb0867caf36517c5a9399a1941d91ccd9ef761fd3d0148a733a54b1e5c017",
+    "docs/designs/m3-native-worker-startup-accounting.md": "696c2bd45219224867c44af32f88d28d1330915b9643413d9dd223720f8fa959",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319",
+    "apps/gaoxy/lib/gaoxy/config.ex": "3054657e55350afeb23f0690a4c3d6d0d3df352e564184ce5579cb6f30583cde"
+  },
+  "verification": {
+    "read_parse_hash": "PASS",
+    "CDP_loadingFinished": "observed archived event",
+    "runtime_tests_mix_browser_build_network_git": "NOT RUN by reviewer",
+    "repository_edits": [],
+    "only_written": [
+      "/tmp/gaoxy-native-worker-browser-writer-diagnosis-spec1.md",
+      "/tmp/gaoxy-native-worker-browser-writer-diagnosis-spec1.json"
+    ]
+  },
+  "counters": {
+    "group": 37,
+    "root": 44,
+    "stage_failed_green": 7,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "review_added_failed_green": 0,
+    "review_added_repairs": 0
+  },
+  "astra_gate": null,
+  "shutdown": "All reviewer commands finished; no runtime/background actors started; root trace/runtime ownership untouched.",
+  "remaining_risks": "Authentic terminal cause and chronology require bounded diagnostic runtime owned by root. Existing writer-survival fixture contract may be stricter than necessary, but current logs do not prove a benign alternative.",
+  "decisions_needed": []
+}

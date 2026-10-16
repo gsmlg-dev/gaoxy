@@ -30,7 +30,10 @@ defmodule Gaoxy.HTTP2StaleStartTest do
       old =
         await_owner(owner, fn state ->
           state.starting == 3 and
-            match?(%{worker: worker, lease: nil} when is_pid(worker), state.streams[3])
+            match?(
+              %{worker: nil, lease: nil, startup: %{request: request}} when is_reference(request),
+              state.streams[3]
+            )
         end).streams[3]
 
       :ok = :gen_tcp.send(socket, Frame.encode(3, 0, 3, <<Frame.code(:cancel)::32>>))
@@ -40,18 +43,23 @@ defmodule Gaoxy.HTTP2StaleStartTest do
       before_receipt =
         await_owner(owner, fn state ->
           state.starting == 5 and not Map.has_key?(state.streams, 3) and
-            match?(%{worker: worker, lease: nil} when is_pid(worker), state.streams[5]) and
-            match?(%{worker: nil}, state.streams[7])
+            match?(
+              %{worker: nil, lease: nil, startup: %{request: request}} when is_reference(request),
+              state.streams[5]
+            ) and
+            match?(%{worker: nil, startup: nil}, state.streams[7])
         end)
 
-      # Controlled simulation of a legitimate receipt already sent by the old
-      # worker but delivered after peer RST and replacement admission. Identity
-      # is captured from that real starter; this does not claim a natural race.
-      send(owner, {:h2_stream_failed, old.worker, 3, old.token, {:error, :active_limit}})
+      # Schedule a delayed receipt using the actual canceled public request id.
+      # No child exists before the Gate accepts the new pre-admitted startup.
+      send(owner, {[:alias | old.startup.request], {:error, :active_limit}})
       {_socket, after_receipt} = :sys.get_state(owner, @timeout)
       assert after_receipt.starting == 5
       assert after_receipt.streams[5].worker == before_receipt.streams[5].worker
+      assert after_receipt.streams[5].startup == before_receipt.streams[5].startup
+      assert after_receipt.streams[5].token == before_receipt.streams[5].token
       assert after_receipt.streams[7].worker == nil
+      assert after_receipt.streams[7].startup == nil
 
       :ok = :sys.resume(gate)
 

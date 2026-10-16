@@ -1,0 +1,81 @@
+{
+  "task_id": "native_worker_constructor_spec/browser_diagnostic6_actual_spec1",
+  "status": "DONE",
+  "assignment": "direct independent bounded actual-source logging-only SPEC review",
+  "verdict": "FAIL",
+  "scope": "NONACCEPTED diagnostic6 host6/runner6/frontdoor3; source only",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Git prohibited; frozen source hashes verified before/after review",
+  "source_sha256": {
+    "native-worker-browser-diagnostic-host6.exs": "ec16bd51ba5e9c5f9925931ee3ced8c573ea8d9f78a862c703118a85e020e6af",
+    "native-worker-browser-diagnostic-runner6.py": "54586cdd23b800b60a114c1c2de529d2138c92dbff09020cd03f7578f3fdd8db",
+    "native-worker-browser-frontdoor3.py": "2049619b2e77073af8c4269eec1ddf307db64d0a0656f1b1b4cfa0e6a02ac2b1"
+  },
+  "findings": [
+    {
+      "id": "DIAG6-SPEC-F1",
+      "severity": "blocking_for_bounded_logging_contract",
+      "file": "native-worker-browser-diagnostic-host6.exs",
+      "lines": "460-464,669-673",
+      "title": "Terminal reason projection has no hard depth/size bound",
+      "evidence": "Each allowed wrapper recursively calls terminal_reason/1 without reducing a depth budget; any finite nested shutdown/handshake/tls_alert chain is fully retained and inspect(limit:infinity) writes the full chain. Integer reasons are also retained without a representation bound. Public metadata.error/reason type is arbitrary term. Thus callback/log projection is not bounded independently of the input, contrary to the assigned bounded safe projection contract. No runtime trigger is claimed.",
+      "required_repair": "Use a small explicit depth budget and fixed omitted marker at exhaustion; allow only bounded scalar values (e.g. literal safe atom allowlist, and omit or bound integer values). Do not stringify/hash/inspect unknown raw reasons or include full state. Keep callback send-only and all assertions unchanged."
+    },
+    {
+      "id": "DIAG6-SPEC-N1",
+      "severity": "nonblocking_observability_limit",
+      "file": "native-worker-browser-diagnostic-host6.exs",
+      "lines": "439-442",
+      "title": "Missing error key and explicit nil are indistinguishable",
+      "evidence": "metadata[:error] returns nil for both absent key and explicit error:nil; safe_metadata always inserts error field. New error:nil log cannot prove original error absence. Even proven error absence would still conflate local_closed/peer_closed/shutdown in TI.",
+      "recommended_repair": "Add error_present=Map.has_key?(metadata,:error), and optionally reason_present/kind_present. In all cases retain UNKNOWN causal interpretation; do not replace monitor or terminal assertions."
+    }
+  ],
+  "preserved_contract": [
+    "Host4\u2192host6 diff adds only telemetry callback/projector/registration and receive logging branch; original Gate/custody/actor/terminal assertions and exact safe sys-state projection remain unchanged.",
+    "Exact public connection start/ready/stop/exception whitelist; handler==Gaoxy.HTTP.Connection; attach returns:ok before native service start. Exported callback self() captures true emitter PID. Callback performs maps/pure reason projection/monotonic read/send only: no file I/O, socket/state calls, waiting or original metadata forwarding.",
+    "Remote address/port/span refs and integer measurement keys are safe under the inspected supported TI event source. Full error/reason structs, binaries, stacktrace and socket/TLS state are omitted by fallback; no listener/data events subscribed.",
+    "Frontdoor2\u21923 adds diagnostics at first positive per-direction reads/writes, before EOF assertion, exception/rethrow and before/after closure. Endpoint role/direction and scalar byte/queue/state counters reveal source direction without printing data. Original earlyEOF assert, authorization ordering, raw bytes/hashes/deadlines/halfclose/final joins remain unchanged.",
+    "Runner5\u21926 changes only host/helper filenames; all assertions, NONACCEPTED diagnostic classification, profile, inventory and exit/forced cleanup checks retained. No synthetic acceptance or raw-data protocol substitution."
+  ],
+  "limitations": [
+    "This is not runtime/diagnostic PASS. Prior diagnostic3 early EOF cause remains UNKNOWN and Chrome abandonment is not inferred.",
+    "TI missing stop.error never proves peer closure; shutdown/local_closed/peer_closed all omit it. Exception replaces stop, and early failures/kill can lack lifecycle events.",
+    "Host recorder is main hostloop, not separate persistent collector; pending telemetry during blocked/failing host code may not reach connection-terminals.log. Missing events remain UNKNOWN. No completeness acceptance is added.",
+    "Helper diagnostic sink OSError is ignored for logging-only noninterference; missing diagnostic lines cannot support a causal conclusion. Original assertion/actor failure still fails case.",
+    "No explicit telemetry detach is added; handler lifetime is bounded by existing owned host VM teardown. This does not substitute for actual process-group join evidence."
+  ],
+  "verification": {
+    "performed": "Read-only predecessor diffs, exact added source lines, frozen SHA256 recheck. Expected diff exit1 means changes, not tests.",
+    "not_run": [
+      "runtime",
+      "browser",
+      "network",
+      "Mix/tests",
+      "Git",
+      "CODE-agent AST equivalence check"
+    ],
+    "raw_archive_read": false,
+    "shutdown": "All own commands completed; no runtime actor launched."
+  },
+  "counters": {
+    "group_failedGREEN": 37,
+    "root_failure_events": 48,
+    "stage_failedGREEN": 7,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "diagnostic_failures": 3,
+    "this_review_failedGREEN": 0,
+    "this_review_sol_repairs": 0
+  },
+  "repository_edits": [],
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-browser-diagnostic6-spec1.md",
+    "/tmp/gaoxy-native-worker-browser-diagnostic6-spec1.json"
+  ],
+  "remaining_risks": [
+    "Unbounded reason projection must be corrected for the requested bounded diagnostic contract.",
+    "Actual runtime diagnosis and full-stage acceptance remain OPEN."
+  ],
+  "decisions_needed": []
+}

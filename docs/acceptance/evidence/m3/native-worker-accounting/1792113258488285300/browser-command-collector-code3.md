@@ -1,0 +1,18 @@
+# Browser command collector actual CODE3
+
+Task ID: browser_cohort_code/browser-command-collector-CODE3. Direct independent source-only bounded correction review. **DONE; PASS for collector3 source correction.** Prior F2 is resolved; no new actionable code finding in this scope. No collector/runtime/regression/browser test was executed by this reviewer.
+
+Worktree: `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`; saved baseline `58307a7084298db309a93697b9102b2cc4c87eda` (no Git refresh). Root owns repository/runtime/evidence/Git. Only these two assigned /tmp reports were created; no repository/evidence file was edited.
+
+## Resolution and retained behavior
+
+- `browser-command-collector3.py:95-126` closes F2. A finally now covers launch, normal wait, timeout, signaling and wait errors. Both timeout TERM/KILL calls catch ProcessLookupError, then still perform the finite actual runner wait. A runner failing to join after both signals produces a recorded wait_error. Descendant cleanup runs even if launch/wait raises; it is no longer skipped when the runner group disappears concurrently.
+- If cleanup itself reaps the runner, lines120-124 recover its actual waitpid status with os.waitstatus_to_exitcode and set Popen.returncode from that same receipt. Otherwise Popen.poll may obtain the actual status. This avoids claiming a fabricated successful exit merely because another waitpid already collected the runner.
+- The collector2 subreaper/discovery/cleanup code at27-68 and88-91 remains unchanged: PR_SET_CHILD_SUBREAPER precedes launch, discovery starts at this collector's /proc children, signals address descendant groups and reject the collector's own group, and finite TERM/KILL cleanup records real waitpid reaps and remaining descendants. No global process-name or user-wide signal scan is introduced. The normal-orphan cleanup and timeout cleanup share this path. Source review does not replace root's real Linux detached-child regression.
+- The PASS conjunction at130-142 rejects timed_out, wait_error, absent process, forced cleanup, remaining descendants, nonzero/unknown actual exit or missing runner join/group disappearance. It also retains source equality, qualificationPASS, exactly2 executed/case rows with H2+H1 and both casePASS, reported nonforced exit0 actor/group/reader joins and artifact hash equality. Receipt fields distinguish actual runner join/group state, timeout, wait_error, cleanup details and source/qualification/log hashes. A failed, forced, timed-out or unjoined execution cannot satisfy this conjunction.
+
+Exact collector SHA256 before/after: `d6fe52c75dc1167921bede4ee2738de12914500ae9c5c177f448d84c5efce6f7`.
+
+Verification performed: numbered actual source read, Python source-only unified diff versus immutable collector2, ast.parse without importing/executing the file, and fresh SHA256 equality checks before/after; all commands exit0. The source diff contains only the targeted wait/finally/error/status-reporting correction. Collector2's detached-child regression PASS is parent-reported prior evidence, not a collector3 runtime result verified here. Required collector3 cleanup/race runtime checks and any full browser rerun remain NOT RUN by this reviewer. Prior cohort fixture CODE PASS and production peername regression work are separate scopes.
+
+All own commands finished; no owned process remains running. Counters inherited unchanged: group38/root49/stage8/Astra2of2 exhausted/nonaccepted diagnostic failures4. Added runtime attempts0, Sol repair rounds0 and Astra recoveries0; astra_gate none. No unresolved actionable source finding or new user decision/permission remains for the next bounded collector verification.

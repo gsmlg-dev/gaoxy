@@ -1087,7 +1087,11 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
   @tag :checked_capture_constructor
   @tag timeout: 120_000
   test "real near H G H1 public manifest yields genuine singleton above Q before checked cons" do
-    f = fixture()
+    # This constructor case needs genuine prepared handles without dispatch.
+    # Keep unrelated health traffic outside its supported probe budget so
+    # releasing the sample/final anchors cannot cancel an in-flight peer reply.
+    f = fixture(probe_bytes: 1)
+    assert :sys.get_state(f.groups).limits.probe_bytes == 1
     peer = peer(:above_q)
     prepared = for _ <- 1..32, do: prepare_transport(f, peer.source)
     transports = Enum.map(prepared, &elem(&1, 0))
@@ -1126,7 +1130,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
     # T preparations intentionally remain held: this no-dispatch manifest test
     # exposes only real G handles and must not retire their genuine dependencies.
     assert :ok == Resources.release(group_preparation)
-    baseline_pins = UpstreamGroups.status(first_g).pins
+    assert %{pins: baseline_pins, probes: 0, probe_bytes: 0} = UpstreamGroups.status(first_g)
     assert baseline_pins == 1
     observe_owners(f, store, :observe)
     trace_replies(f)
@@ -1178,6 +1182,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
     assert {:ok, generation, ^router} = Generation.snapshot(store)
     assert generation === router.generation
     refute_receive {:unexpected_checked_manifest_dispatch, _}, 0
+    assert %{probes: 0, probe_bytes: 0} = UpstreamGroups.status(first_g)
     stop_store(store)
     finish(f, [peer], transport_preparation)
   end
@@ -1270,7 +1275,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
     finish(f, [old_peer, new_peer], [])
   end
 
-  defp fixture do
+  defp fixture(options \\ []) do
     {:ok, instance} = Gaoxy.start_link()
     Process.unlink(instance)
 
@@ -1294,6 +1299,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
           max_groups: 64,
           max_pins: 1024,
           max_probes: 1,
+          probe_bytes: Keyword.get(options, :probe_bytes, 67_108_864),
           max_config_bytes: 67_108_864
         }
       )

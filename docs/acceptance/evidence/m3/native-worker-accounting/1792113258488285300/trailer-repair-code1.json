@@ -1,0 +1,93 @@
+{
+  "task_id": "native_worker_trailer_repair_code1",
+  "status": "PASS",
+  "completion_status": "DONE",
+  "assignment": "direct bounded independent CODE source review after actual SPEC PASS, not final stage",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "baseline_verification": "freeze2 parent baseline receipt; no Git command/direct HEAD diff",
+  "at_utc": "2026-10-16T02:38:31.149351+00:00",
+  "spec_sha256": "a8256194f8e6868e24df4c1b69b31c49046a89912cd37337e77ea11b82e51aa3",
+  "findings": [],
+  "checks": {
+    "pre_effect_lease_authority": "PASS source: credit/wait validation and clamping unchanged; owned ordinary lease update retained(old)+2credit must return :ok before native operation. Admission update authenticates worker PID, only alters lease.bytes, preserves timer/deadline/request flags/cleanup and aggregate uses delta.",
+    "successful_read_exact_charge": "PASS source: real connection deliver consumes input/framing and returns bytes/ended/trailers. Transport66-80 constructs complete body/next first, preserving originalN,routeB,pins,gate,lease,D and other metadata; Admission.update(retained(next)) checked before :ok/:more return. Full trailer byte contribution accounted even when credit1 and empty body.",
+    "final_update_refusal": "PASS source: returns {:error,reason,next}, retaining already-consumed progress/body phase/trailers/total, without claiming successful admission. Gate rejection leaves accepted precharge unchanged. Existing H1 Exchange decode_body/recv contracts likewise return progressed metadata on final update refusal.",
+    "pending_restore": "PASS source: pending branch checks exact old-state restoration before returning pending; refusal returns finite error with unchanged state instead of false pending success.",
+    "primary_operation_error": "PASS source: original {:error,reason} is returned after best-effort old-state restore; returned restoration errors do not replace primary reason. Existing Admission call exit behavior not broadened/shielded by this narrow repair. Validation/maybe_continue error shapes unchanged.",
+    "successful_regression": "PASS source: original terminal trailers test retains unconsumed initial state, full original trailer pairs and exact owned-charge assertions, poll preservation, native response and teardown. Explicit credit1 strengthens it:87-byte trailers require174retainedbytes beyondW, not bounded by2credit.",
+    "final_refusal_regression": "PASS source: real public configured capacity calibrated for identical native path/headers/endpoint; calibration reset/DOWN/close joined. Exact initialW reasserted under baseline+W+2. Credit1 read must return byte_limit with complete progressed trailers/bodyphase/total0 and retainedW+174; actual Gate child lease owned by worker remainsW+2 and aggregatebaseline+W+2. Real RST childDOWN then baseline/zero cleanup required. No mocked lease or fake terminal replaces authority.",
+    "assertions_and_scope": "PASS source: no successful-charge equality weakened; existing fullN body/read/poll/invalid-read exact-state assertions preserved. New fixture read command carries supplied credit; all call sites send explicit credit. Deadlines and cleanup remain finite; no skipped tests or sleeps.",
+    "constructor_checkpoint": "UNCHANGED semantically: Transport branch is postdispatch endpoint bodyread, while startup body remains emptytrailers/zero bytes and all seven reviewed constructor/authority production modules match freeze2. No95 role shapes/inputs/caps/counts/owners/lifetimes or A/J/N/W equation altered. Dynamic2trailer_bytes was already an existing current-lease obligation. Preserve checkpoint1 immutable; rebind repaired source/test hashes and run fresh affected gates."
+  },
+  "source_hashes_before": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "9c135f7dad3918f8c2ef4375aecc5a3eb99a536ffa9ea36a9f866747221e5c5a",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "2276f9bfb14053ff853a13b564397ba82e5ad685a1451619dde89e398980a581",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "1244d4dc4369e92ef818cd2e3774b90a72143624d464c74b858e0f4cb1f5d0f7",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "81c96e55e56d514f4bd93cecb7af906a55279927d3f100f7b2045181f1eaf107",
+    "apps/gaoxy/lib/gaoxy/admission/worker_bootstrap.ex": "e24ec80af091bef950964dedd5a2dcc61cc35dcc71e5e8bc99f77de9cd303236"
+  },
+  "source_hashes_after": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "9c135f7dad3918f8c2ef4375aecc5a3eb99a536ffa9ea36a9f866747221e5c5a",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "2276f9bfb14053ff853a13b564397ba82e5ad685a1451619dde89e398980a581",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "a3908c7ba3c61a90b78537ce58d062ac188d0f741972064b34bb4bdf58f24090",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "1244d4dc4369e92ef818cd2e3774b90a72143624d464c74b858e0f4cb1f5d0f7",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "81c96e55e56d514f4bd93cecb7af906a55279927d3f100f7b2045181f1eaf107",
+    "apps/gaoxy/lib/gaoxy/admission/worker_bootstrap.ex": "e24ec80af091bef950964dedd5a2dcc61cc35dcc71e5e8bc99f77de9cd303236"
+  },
+  "production_source_comparison": {
+    "frozen_entries": 90,
+    "unchanged": 89,
+    "changed": [
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex"
+    ],
+    "comparison_basis": "freeze2 current checkpoint source, prior Transport was unchanged baseline according to binding; no live Git command"
+  },
+  "startup_constructor_95_reopens": false,
+  "numeric_change": "None; no fresh95worksheet derivation warranted for this bounded postdispatch repair.",
+  "native_failure_retained": {
+    "receipt_sha256": "cc5d998e43c78d67bf7e0f6d40f13f15a84ff1102ef52c10285ec237780c35ea",
+    "executed": 90,
+    "failures": 1,
+    "exit": 2,
+    "joined": true,
+    "source_stable": true,
+    "observed_old_lease": 607735,
+    "observed_returned_retained": 607909,
+    "missing": 174,
+    "review_runtime": "NOT RUN"
+  },
+  "coverage_limits": [
+    "New success-growth and final-refusal tests are source-reviewed, not executed by reviewer.",
+    "Pending restore-refusal branch is source-checked; no claim of executed regression for it.",
+    "Primary error preservation covers returned Admission results; unchanged ordinary Admission exits are not newly wrapped.",
+    "Source PASS does not qualify final stage/native/runtime/browser/deployment/release."
+  ],
+  "counters": {
+    "group_failed_GREEN": 34,
+    "root_failure_events": 39,
+    "stage_failed_GREENs": 4,
+    "production_repairs": 2,
+    "fixture_repairs": 3,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "review_live_attempts": 0,
+    "review_repairs": 0,
+    "sol_repair_rounds_this_assignment": 0,
+    "received_cumulative_sol_rounds": "not separately supplied; parent counters preserved, no reset"
+  },
+  "astra_gate": null,
+  "decisions_needed": [],
+  "required_remaining": [
+    "root fresh native gate including credit1 success and final-refusal cases",
+    "fresh relevant remaining complete-stage gates and final independent reviews"
+  ],
+  "shutdown": "All own read/hash/parse commands finished synchronously. No repository/evidence writes, runtime/build/test/format/network/browser/Git/delegation/background process. Only assigned /tmp reports written."
+}

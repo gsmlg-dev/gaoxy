@@ -1,0 +1,44 @@
+{
+  "kind": "REAL_ADOPTED_ZOMBIE_ACTOR_REGRESSION",
+  "status": "PASS",
+  "red": {
+    "status": "EXPECTED_RED",
+    "parent_exit": 0,
+    "child_exit": 0,
+    "child_joined": true,
+    "original_group_assertion_failed": true,
+    "group_gone_after_test_cleanup": true
+  },
+  "green": {
+    "status": "PASS",
+    "actor": {
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "-B",
+        "-c",
+        "import subprocess,sys,json; child=subprocess.Popen([sys.executable,\"-B\",\"-c\",\"import sys; sys.stdin.read()\"],stdin=subprocess.PIPE); print(json.dumps(dict(event=\"child\",pid=child.pid)),flush=True)"
+      ],
+      "pid": 3277359,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true
+    },
+    "adopted_joins": [
+      {
+        "pid": 3278239,
+        "wait_status": 0,
+        "exit": 0
+      }
+    ],
+    "group_gone": true,
+    "no_adopted_children": true
+  },
+  "source": {
+    "native-worker-browser-runner7.py": "635d82d85ff2a1d7aea6b2f49aefcceb126dba1b44423a8644b6032f68d2dcba",
+    "native-worker-browser-runner8.py": "fd70cd829238a2ed046f7c5b5bc42f15554ff3c92b4d515904d3ca297b7cccea"
+  },
+  "source_stable": true,
+  "script_sha256": "2093e1ce5690cf493051bb5498c2a6621eb1f6a72dcc085305e3ae3a3d16f7af",
+  "full_browser": "NOT_RUN"
+}

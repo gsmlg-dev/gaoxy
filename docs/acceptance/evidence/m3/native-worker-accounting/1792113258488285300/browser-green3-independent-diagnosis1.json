@@ -1,0 +1,125 @@
+{
+  "task_id": "native_worker_constructor_spec/browser-green3-diagnosis1",
+  "status": "DONE",
+  "assignment": "direct bounded independent source diagnosis and unrun regression proposal",
+  "runtime_acceptance": "NOT RUN by this assignment; saved BrowserGREEN3 FAIL remains FAIL",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "saved_baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "evidence_root": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300",
+  "saved_run": {
+    "status": "FAIL",
+    "executed": 1,
+    "mode": "h2",
+    "h1": "NOT RUN",
+    "elapsed_ms": 10375,
+    "source_before_equals_after": true
+  },
+  "finding": {
+    "actor": "pre-admission native C #PID<0.349.0>",
+    "exception": "MatchError",
+    "rhs": "{:error, :einval}",
+    "source": "apps/gaoxy_http/lib/gaoxy/http/connection.ex:16",
+    "operation": "ThousandIsland.Socket.peername(socket)",
+    "cause": "Gaoxy pattern-matches a documented fallible socket metadata API as guaranteed success. This is not setopts.",
+    "no_ordinary_acquisition": true,
+    "no_writer": true
+  },
+  "distinct_target": {
+    "connection": "#PID<0.345.0>",
+    "writer": "#PID<0.350.0>",
+    "worker": "#PID<0.351.0>",
+    "writer_results": "five h2_written :ok, then actual :stop received from target C",
+    "connection_terminal": "{:shutdown, :peer_closed}",
+    "writer_terminal": ":normal"
+  },
+  "limits": [
+    "Socket retirement after TLS/ALPN is consistent with the failure, but exact packet/closure timing is not independently proved.",
+    "Saved final cohort snapshot does not exist: validation failed before its write. Prior final-cut validation completion is control-flow inference only.",
+    "Original BrowserGREEN2 target writer cause remains UNKNOWN. A new run does not retroactively establish it."
+  ],
+  "recommended_repair": {
+    "metadata": "with peername and sockname successful results before unchanged H2 initialization",
+    "closed_errors": [
+      "closed",
+      "einval",
+      "enotconn"
+    ],
+    "closed_return": "{:close, context}",
+    "other_errors": "{:error, reason, context}",
+    "forbidden": [
+      "fabricated peer/local",
+      "retry",
+      "broad rescue",
+      "blanket error acceptance",
+      "forged peer_closed provenance"
+    ]
+  },
+  "terminal_contract": {
+    "supported_close_terminal": "{:shutdown, :local_closed}",
+    "change": "Disclosed correction: accept this orderly local_closed only for proved pre-admission native C handled by the new startup close path.",
+    "preserve": [
+      "target/admitted C peer_closed",
+      "writers normal",
+      "reject unknown/crash reasons"
+    ],
+    "unrelated_closed_alpn": "Existing unsupported_protocol behavior is not broadened."
+  },
+  "dependency_bug_identified": false,
+  "upstream_issue_needed": false,
+  "proposal": {
+    "path": "/tmp/gaoxy-native-worker-startup-metadata-tests1.exs",
+    "sha256": "4376ae4487f65a66296d1d9949c704b5d3bb3a8f6f81ea1061e05b9e1d184f68",
+    "compile": "NOT RUN",
+    "tests": "NOT RUN",
+    "cases": [
+      "closed real TCP peername exact callback close and zero acquisition",
+      "real TCP closure after successful peername tests sockname failure",
+      "actual real TLS h2 ALPN held, actual peer closed, server recv closed and peername error before callback release; generated handle_continue shutdown/local_closed, normal owned-worker join and zero Gate acquisition"
+    ],
+    "parent_adoption_corrections": [
+      "Root will remove tautological literal-IP match.",
+      "Root will set TLS listener ip: {127, 0, 0, 1}."
+    ],
+    "source_api_checks": [
+      "Admission.acquire sends {:acquire, bytes, options}, matching debug input observer.",
+      "Admission.status uses same Gate GenServer.call barrier.",
+      "TI Socket.getstat calls transport getstat/1.",
+      "Generated shutdown terminate invokes handle_close and do_socket_close."
+    ]
+  },
+  "counters": {
+    "group": 38,
+    "root": 49,
+    "stage": 8,
+    "astra": "2of2 exhausted",
+    "diagnostic_failures": 4,
+    "assignment_added_runtime_attempts": 0,
+    "assignment_added_repair_rounds": 0
+  },
+  "scope": "Only three authorized /tmp outputs; no repository/evidence edits, Git, network, Mix, browser, test execution, delegation, or raw diagnostic2 archive reads.",
+  "current_source_note": "Parent is implementing concurrently. Current source was read only for API checks; saved-run source identities below describe GREEN3 before that work.",
+  "commands": "Source reads/searches and Python safe scalar projection/hashing/report writes finished. One initial rg path was absent; corrected to apps/gaoxy/lib/gaoxy/admission.ex. No processes launched.",
+  "remaining_risks": [
+    "Proposal is uncompiled/unrun; parent owns RED/GREEN and adoption corrections.",
+    "No new browser acceptance claimed."
+  ],
+  "decisions_needed": [],
+  "astra_gate": null,
+  "input_sha256": {
+    "browser-green3/qualification.json": "c13a6b262f3b70c79d29ace33233245a1172fa5294085078e31e0af088d95ab4",
+    "browser-green3/h2/host.log": "81ed2cd05e6bcc77ca0483817ec8713870380bbb30fba585bd910d1e427f1c01",
+    "browser-green3/h2/failure-cohort.log": "9e37ab9a871852c70b94766425e92b37c6a33cc280bfbae15ed827ca0bfec95e",
+    "browser-green3/h2/browser.log": "1fbe6b37c4f4e85395a8eb98e9f49cac5ecc40af958573103d75932445ea03e4",
+    "browser-green3/h2/causal-metadata.log": "ad8201002d024305ad59a534d91ac2d0463a4025d3d2578f2d522754041ce945",
+    "browser-green3/h2/request-clean-cohort.log": "f606454d8e6aed7e6e21fadda0b80e25b171d018cdbbec22573f018230b83251",
+    "browser-green3/h2/peer.log": "a6c7f2c859429144bfe08835e6f337f1e5c34444219cb357e620ee06d3211781",
+    "native-worker-browser-host5.exs": "547df33f444a59a99d61f656f0ff50b53e4caa4d5388883169ea5b5ab2abb213",
+    "native-worker-browser-runner6.py": "649b61d108ecb291f411d6029f41bfcd1d352e4bbff292b965b699b5393c5dc2",
+    "native-worker-browser-cohort2.exs": "8b2f2d374ae01b8fa0e490d7d02161c134a4fce97e3cb62debc16e5cfeda1406"
+  },
+  "saved_production_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a"
+  }
+}

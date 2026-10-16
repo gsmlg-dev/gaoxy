@@ -1,0 +1,432 @@
+{
+  "task_id": "native_worker_full_spec1",
+  "assignment": "direct independent FULL-STAGE specification review; read-only",
+  "review_completed": true,
+  "status": "FAIL",
+  "worker_status": "DONE_REVIEW_WITH_ACTIONABLE_FINDINGS",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "candidate_sha256": "9ee11ab2c847c90ef64ce8c4766d116563380ee24a1c368d9e967d1c70766982",
+  "recorded_at_utc": "2026-10-16T08:20:31.085241+00:00",
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "kind": "missing_prescribed_lifecycle_race_acceptance",
+      "requirement": "docs/plans/m3-native-worker-startup-accounting.md:40,90-91; Task1 and Task3",
+      "source": "apps/gaoxy/test/admitted_spawn_test.exs:228,245,444,471; apps/gaoxy_http/test/http2_worker_startup_test.exs:320; apps/gaoxy_http/test/http2_stale_start_test.exs:19",
+      "finding": "No deterministic barrier covers original-owner death after activation before native success processing, or after success before dispatch. No authenticated cancel is tested after activation before response processing. The only delayed old async native receipt is an error; no late canceled genuine success is exercised. Existing alias-retirement cancel is issued before release_barrier, so it is pre-activation.",
+      "required_repair": "Add test-owned barriers on these exact cuts using genuine Gate-produced success, authenticated cancellation and real worker monitors. Prove zero endpoint dispatch on winning death/reset/cancel, current/queued identity preservation, exact current W+B retained until genuine child DOWN+EXIT, sibling preservation and final single refund. Include late-success/stale/repeated cancellation handling as prescribed; preserve existing tests."
+    },
+    {
+      "id": "F2",
+      "priority": "P1",
+      "kind": "missing_activation_revalidation_acceptance",
+      "requirement": "docs/plans/m3-native-worker-startup-accounting.md:94",
+      "source": "apps/gaoxy/test/admitted_spawn_test.exs:135,149,301; apps/gaoxy/lib/gaoxy/admission.ex:490-508",
+      "finding": "Paused/draining and expired-deadline tests reject before spawn; the watchdog test starts after endpoint entry. No test commits a real charged child, then changes Gate to paused/draining or lets original D expire before its activation callback. These distinct next-callback revalidation branches are marked checked without runtime proof.",
+      "required_repair": "Hold an actually committed pre-activation child, apply pause/drain or expire original D, then release the authentic continuation. Require finite refusal, zero target/endpoint entry, genuine child DOWN+EXIT and retained ordinary charge until that pair, with exact once refund and no orphan."
+    },
+    {
+      "id": "F3",
+      "priority": "P1",
+      "kind": "missing_native_service_shutdown_acceptance",
+      "requirement": "docs/plans/m3-native-worker-startup-accounting.md:94",
+      "source": "apps/gaoxy/test/admitted_spawn_test.exs:335,360; apps/gaoxy_http/test/http2_worker_startup_test.exs:536",
+      "finding": "Isolated Gate-stop tests establish core termination, and the native queued-close case establishes peer-close before child admission. Native/browser Gaoxy.stop calls occur after request cleanup/global zero. No real service stop while a newly admitted worker is pending/waiting for dispatch or blocked inside endpoint asserts the required worker, native connection, writer and listener joins.",
+      "required_repair": "Add scoped real native service-stop cases at the pending/bootstrap and active endpoint cuts with finite genuine actor monitors, listener closure and actual zero/confirmed cleanup. A fixture on_exit cleanup or isolated Gate stop is insufficient for this explicit service acceptance item."
+    }
+  ],
+  "scope": "Entire native downstream-H2 startup/initial Exchange dispatch implementation, constructor checkpoint, Tasks0-6 initial prescribed gates, compatibility changes and browser assertion semantics. Task7 final full CODE/fresh gates/commit are explicitly pending, not failed merely for pending state.",
+  "manifest_verification": {
+    "source_manifest": {
+      "entries": 245,
+      "mismatches": []
+    },
+    "evidence_manifest": {
+      "entries": 409,
+      "mismatches": []
+    }
+  },
+  "manifest_before_and_after": "All245 source and409 evidence identities verified before and after source review; no mismatch. Both protected file hashes match.",
+  "protected": {
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/codex-prompt.md": "87112f8eb621966e0062c8611054bda49af0508693c46fa621de87a2b774038c",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/gaoxy-m1.1-fix-prompt.md": "7982874aacafe8bc4f4814740f25d1bd1e5bb35cbdc3938338ab132f2cdf9f1f"
+  },
+  "constructor_checkpoint": {
+    "status": "PASS_REBOUND_UNCHANGED_CONSTRUCTORS",
+    "checkpoint": "constructor-checkpoint1.json",
+    "candidate": "constructor-candidate-freeze2.json",
+    "ordered_roles": 95,
+    "reports": 12,
+    "row_checks": 1140,
+    "whole_equations_checked": 12,
+    "method": "Current source metadata, multiplicities, cap-times-count subtotals and whole P+A+J=N,W=N+2head checked against all12 preserved reports. Earlier independent SPEC2 cap/ETF/whole fixed-point derivation rebound by identical exact charged-source hashes; no claim of rerunning ExUnit.",
+    "production_deltas_since_checkpoint": [
+      "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex"
+    ],
+    "startup_constructor_semantics_changed": false,
+    "numeric_results": [
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 131226,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest.Endpoint",
+          "request_etf": 310,
+          "original_limits_etf": 275
+        },
+        "A": 11213,
+        "J": 399226,
+        "N": 607047,
+        "W": 607175
+      },
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 310,
+          "original_limits_etf": 72
+        },
+        "A": 11183,
+        "J": 4752,
+        "N": 212543,
+        "W": 212671
+      },
+      {
+        "inputs": {
+          "p": 0,
+          "deadline": -1,
+          "head_bytes": 0,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 310,
+          "original_limits_etf": 94
+        },
+        "A": 11171,
+        "J": 4752,
+        "N": 15923,
+        "W": 15923
+      },
+      {
+        "inputs": {
+          "p": 255,
+          "deadline": -256,
+          "head_bytes": 255,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 310,
+          "original_limits_etf": 94
+        },
+        "A": 11171,
+        "J": 4752,
+        "N": 16178,
+        "W": 16688
+      },
+      {
+        "inputs": {
+          "p": 256,
+          "deadline": -257,
+          "head_bytes": 256,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 313,
+          "original_limits_etf": 94
+        },
+        "A": 11195,
+        "J": 4764,
+        "N": 16215,
+        "W": 16727
+      },
+      {
+        "inputs": {
+          "p": 2147483647,
+          "deadline": -2147483648,
+          "head_bytes": 2147483647,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 313,
+          "original_limits_etf": 96
+        },
+        "A": 11285,
+        "J": 4782,
+        "N": 2147499714,
+        "W": 6442467008
+      },
+      {
+        "inputs": {
+          "p": 2147483648,
+          "deadline": -2147483649,
+          "head_bytes": 2147483648,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 315,
+          "original_limits_etf": 96
+        },
+        "A": 11369,
+        "J": 4798,
+        "N": 2147499815,
+        "W": 6442467111
+      },
+      {
+        "inputs": {
+          "p": 18446744073709551616,
+          "deadline": -18446744073709551617,
+          "head_bytes": 18446744073709551616,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 320,
+          "original_limits_etf": 101
+        },
+        "A": 11767,
+        "J": 4883,
+        "N": 18446744073709568266,
+        "W": 55340232221128671498
+      },
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 310,
+          "original_limits_etf": 94
+        },
+        "A": 11183,
+        "J": 4752,
+        "N": 212543,
+        "W": 212671
+      },
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 12304,
+          "original_limits_etf": 94
+        },
+        "A": 11210,
+        "J": 388728,
+        "N": 596546,
+        "W": 596674
+      },
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 73,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest",
+          "request_etf": 310,
+          "original_limits_etf": 94
+        },
+        "A": 11183,
+        "J": 4752,
+        "N": 212543,
+        "W": 212671
+      },
+      {
+        "inputs": {
+          "p": 196608,
+          "deadline": -1,
+          "head_bytes": 64,
+          "endpoint_etf": 82,
+          "endpoint_module": "Gaoxy.HTTP.HTTP2.WorkerAccountingTest.Endpoint",
+          "request_etf": 310,
+          "original_limits_etf": 275
+        },
+        "A": 11198,
+        "J": 5794,
+        "N": 213600,
+        "W": 213728
+      }
+    ]
+  },
+  "checklist": [
+    {
+      "task": 0,
+      "verdict": "PASS",
+      "coverage": "Current path/HEAD/branch/status, frozen manifest and protected files; retained predecessor closure and source-bound public primitives."
+    },
+    {
+      "task": 1,
+      "verdict": "FAIL_MISSING_REQUIRED_TEST_CUTS",
+      "coverage": "Actual pre-admission W calculation, generic scalar API, public atomic link+monitor spawn, postcommit activation, authenticated native success and complete dispatch implemented. F1 identifies missing late-success/race acceptance."
+    },
+    {
+      "task": 2,
+      "verdict": "PASS_REBOUND",
+      "coverage": "Exact unchanged95-role constructors,12 reports, signed/ETF widths, full initialized valid public default/large endpoint, P+A+J and W equation; prior SPEC2 then CODE1 then fresh9/0 checkpoint precedes W execution."
+    },
+    {
+      "task": 3,
+      "verdict": "FAIL",
+      "coverage": "Real W-1/exactW/active limit, ownership, pre-activation barriers, owner normal/abnormal endpoint death, Gate kill/normal stop, actual OTP parent closure, reverse child failure, authentic paired DOWN/EXIT current W+B and duplicate normal terminal behavior covered. F1-F3 remain required."
+    },
+    {
+      "task": 4,
+      "verdict": "PASS_EXISTING_INITIAL_GATES_WITH_F1_RACE_GAP",
+      "coverage": "Raw native H2 full endpoint/exchange and exact capacity, original canceled3/current5/queued7 failure regression, Gate-paused PING/RST parse+resume wireACK, Gate-running stalled endpoint responsiveness, returned-trailer exact admission success/refusal, read/poll/response/error N retention, Generation G7/T8 capture/custody and independent TCP+TLS h2 source/evidence."
+    },
+    {
+      "task": 5,
+      "verdict": "PASS_INITIAL_BROWSER_AT_RECORDED_CUTOFF",
+      "coverage": "Reviewed host6/cohort3/runner8/collector3 direct Chrome TLS/H2 and H1 source contract: exact target95/W+B/G7/T8, all-ever acquisition attribution, same-callback public status+lease snapshots before original effects, strict live target before close, actual normal native/Session/worker joins, complete peer framing/full send, final Gate0, authentic Actor0 versus separate internal child statuses. Historical failures remain FAIL and GREEN2 cause UNKNOWN."
+    },
+    {
+      "task": 6,
+      "verdict": "PASS_INITIAL_AT_RECORDED_CUTOFF",
+      "coverage": "Recorded core68/0 native94/0 preservation230/0+161/0 core1/0 HTTP2/0 consumers, strict initial compile/format. Fresh final union/compile/format/browser/consumers remain planned after reviews."
+    },
+    {
+      "task": 7,
+      "verdict": "OPEN_CORRECTLY_NOT_CLAIMED_COMPLETE",
+      "coverage": "This FULL SPEC1 is FAIL. Independent full CODE, fresh final union/strict checks/both browser modes/both isolated consumers, final docs/committed-blob custody/local conventional commit remain OPEN. No publication/deployment/fullM3 claim."
+    }
+  ],
+  "initial_receipts_read_only": {
+    "core-green2": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 68
+      },
+      "unexpected_warning_lines": []
+    },
+    "native-green5": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 94
+      },
+      "unexpected_warning_lines": []
+    },
+    "preserve-http-green1": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 230
+      },
+      "unexpected_warning_lines": []
+    },
+    "preserve-compat-green1": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 161
+      },
+      "unexpected_warning_lines": []
+    },
+    "core-consumer-green1": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 1
+      },
+      "unexpected_warning_lines": []
+    },
+    "http-consumer-green1": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 2
+      },
+      "unexpected_warning_lines": []
+    },
+    "metadata-close-green2": {
+      "status": "PASS",
+      "actual_exit_code": 0,
+      "joined": true,
+      "source_stable": true,
+      "counts": {
+        "doctests": 0,
+        "excluded": 0,
+        "failures": 0,
+        "properties": 0,
+        "skipped": 0,
+        "tests": 13
+      },
+      "unexpected_warning_lines": []
+    }
+  },
+  "compatibility_review": {
+    "transport": "Post-read progressed body/trailers constructed before checked final exact Admission.update; pending restore checked; operation error preserved. No startup constructor change. Real finite-budget final refusal assertions retain progressed metadata and actual W+2 lease.",
+    "outer_connection": "Only H2 pre-admission peer/local metadata failures closed/einval/enotconn return explicit close with original context; other error original reason retained. No lease, endpoint or worker constructed on this path. Real TCP/sockname/TLS after-ALPN barriers and preserved RED13/3 -> accepted GREEN2 13/0 bind correction."
+  },
+  "implementation_source_verdict": "No production specification violation established by static tracing; acceptance FAIL comes from explicitly prescribed missing deterministic lifecycle coverage, not an observed runtime failure.",
+  "constraints": "No tests/runtime/browser/build/format/network/Git mutation or repository writes by reviewer. No access to forbidden sensitive raw TLS trace. Only two assigned /tmp report writes.",
+  "verification_commands": "Synchronous git status/rev-parse/branch/diff, rg/sed/nl reads, Python JSON/SHA256/role metadata/subtotal/equation checks. Every command exited0 and joined; normal rg searches with no match were not implementation failures.",
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-full-spec1.md",
+    "/tmp/gaoxy-native-worker-full-spec1.json"
+  ],
+  "repository_diff_by_reviewer": [],
+  "counters": {
+    "astra_limit": 2,
+    "astra_used": 2,
+    "group_failed_GREEN": 40,
+    "nonaccepted_diagnostic_failures": 4,
+    "root_failure_events": 52,
+    "stage_completed_fixture_repairs": 6,
+    "stage_failed_GREEN": 10,
+    "stage_production_repairs": 3
+  },
+  "sol_repair_rounds_added": 0,
+  "astra_repair_rounds_received": 2,
+  "source_review_failures_added": 1,
+  "source_review_failure_label": "full-stage-SPEC1; separate from runtime failedGREEN/repair counters",
+  "shutdown": "All reviewer commands finished; no background command, runtime actor, trace, suspension or test process created.",
+  "decisions_needed": [],
+  "remaining_risks": "Missing exact race/shutdown proofs must be added and reviewed before final-stage acceptance; all final post-review checks remain unexecuted by this reviewer."
+}

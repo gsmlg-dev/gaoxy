@@ -1,0 +1,116 @@
+{
+  "task_id": "checked_capture_full_code/native-worker-direct-spawn-lifecycle-audit1",
+  "status": "DONE",
+  "assignment": "direct bounded source-only lifecycle audit",
+  "verdict": "CONDITIONALLY_FEASIBLE_WITH_REQUIRED_CUSTODY_DESIGN",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "owned_outputs": [
+    "/tmp/gaoxy-native-worker-direct-spawn-lifecycle-audit1.md",
+    "/tmp/gaoxy-native-worker-direct-spawn-lifecycle-audit1.json"
+  ],
+  "scope": "Only downstream native H2 stream creation replacement feasibility/lifecycle; no implementation, accounting arithmetic, or full architecture design. Writer stays unchanged.",
+  "findings": [
+    {
+      "id": "L1",
+      "severity": "required_design_condition",
+      "claim": "spawn_monitor-only and bootstrap-only gate monitoring cannot terminate an endpoint-blocked child when Admission is killed. Use atomic linked+monitored gate-child creation or an equivalently evidenced fatal-custody mechanism. A later child-side link has a startup gap.",
+      "sources": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex:14-62",
+        "apps/gaoxy/lib/gaoxy/admission.ex:419-424"
+      ]
+    },
+    {
+      "id": "L2",
+      "severity": "required_design_condition",
+      "claim": "Admission must trap child exits if linked to its children; isolate a worker crash, retain monitor-driven lease refund, and explicitly preserve non-child linked lifecycle policy. Actual OTP parent exits are intercepted before Admission.handle_info. Actual-parent normal exit now terminates when trapped; document and verify that behavior. scope.service_pid is not automatically OTP parent.",
+      "sources": [
+        "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/lib/stdlib-7.3.0.3/src/gen_server.erl:2373-2386",
+        "apps/gaoxy/lib/gaoxy/admission.ex:47-61",
+        "apps/gaoxy/lib/gaoxy/admission.ex:380-424",
+        "apps/gaoxy/lib/gaoxy/service.ex:30-38"
+      ]
+    },
+    {
+      "id": "L3",
+      "severity": "required_design_condition",
+      "claim": "Track and charge every pending and active known PID before dispatch, preserve original deadline, and retain custody through DOWN. Original-owner link kills on abnormal exit; monitor/explicit gate owner cleanup is needed for normal exit and startup handoff races. Normal gate termination must kill pending children as well as leased active workers.",
+      "sources": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex:6-12",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:538-565",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:1034-1080",
+        "apps/gaoxy/lib/gaoxy/admission.ex:290-298",
+        "apps/gaoxy/lib/gaoxy/admission.ex:367-424"
+      ]
+    },
+    {
+      "id": "L4",
+      "severity": "scope_boundary",
+      "claim": "Production Service gate-failure cleanup forces native backend/owner teardown, but does not establish isolated gate custody. Keep Lifecycle.resources ownership filtering intact. Current Task streams inherit global Task supervisor ancestry, so losing service ancestry is not established as a new regression; raw-child blanket inclusion would violate existing isolation tests.",
+      "sources": [
+        "apps/gaoxy/lib/gaoxy/service.ex:441-469",
+        "apps/gaoxy/lib/gaoxy/service.ex:662-678",
+        "apps/gaoxy/lib/gaoxy/lifecycle.ex:64-124",
+        "apps/gaoxy/test/lifecycle_ownership_test.exs:51-102",
+        "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/lib/elixir/lib/elixir/lib/dynamic_supervisor.ex:757-769",
+        "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/lib/elixir/lib/elixir/lib/task/supervised.ex:9-10,65-80",
+        "apps/gaoxy_http/lib/gaoxy/http/application.ex:5-6"
+      ]
+    },
+    {
+      "id": "L5",
+      "severity": "compatibility_boundary",
+      "claim": "Source search found no stream Task-supervisor membership, Task handle, or callers-metadata consumer in searched Gaoxy core/HTTP/proxy lib/test scope. Writer Task.Supervisor creation and explicit writer membership assertion remain required and unchanged. Keep H2 worker/token/lease identity checks, RST cancellation, DOWN handling, close callbacks, single-deadline drain and retained write/cleanup accounting.",
+      "sources": [
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:24-34,1034-1136,1179-1188,1231-1245,1280-1332,1362-1371",
+        "apps/gaoxy_http/lib/gaoxy/http/connection.ex:352-373",
+        "deps/thousand_island/lib/thousand_island/handler.ex:455-508",
+        "apps/gaoxy_http/test/http2_network_test.exs:361-371,843-853,1098-1111,1475-1484"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "apps/gaoxy/lib/gaoxy/admission.ex": "d307fc8c5c62d57555df72fc896cd83c18a9c973ca8bca40ba9a08cb33471dff",
+    "apps/gaoxy/lib/gaoxy/lifecycle.ex": "7f673e89f59b41af72057ce1afa553fa6c62e56125b450e6d09e58da0a434f75",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "5696219cf250cada82badd531d1f28869b3a4145b78dc7ec43af956d7f765400",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "1693bb01f12347a4497bc46b166beeb1ac5fc1102091f1825aac7461a5393a53",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "d74a1ea9b35e996db51da5b698390afd3cdc5c47eb2c499d35c3af69de46d3f2",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319",
+    "/nix/store/vp5phkfsvnldrznkzy0qkcgm8fi0pdc5-erlang-28.5.0.7/lib/erlang/lib/stdlib-7.3.0.3/src/gen_server.erl": "66a4a649c8ed58f3c9ed317047f28ea2e2a61b38032cc467565fbad2c53a09db",
+    "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/lib/elixir/lib/elixir/lib/task/supervised.ex": "67b42ec112c6e532def22e1a4aecd0bed85d54bcfda6670f7631688d33cbed38",
+    "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/lib/elixir/lib/elixir/lib/task/supervisor.ex": "f09f012c438d67a26b236eb75acb5cfbcbfbae3531011820065b552c394b95fb",
+    "/nix/store/jc6g5l4a2qg89s3mng0p18r9dbijc28d-elixir-1.18.5/lib/elixir/lib/elixir/lib/dynamic_supervisor.ex": "75dad290cf34294824d2d0f0741f0d1db2f2ff5533658adab54b0349b3050a62"
+  },
+  "verification": {
+    "source_reads": "PASS",
+    "installed_otp_parent_exit_source": "PASS",
+    "task_ancestry_source": "PASS",
+    "metadata_and_supervisor_consumer_search": "PASS within apps/gaoxy,gaoxy_http,gaoxy_proxy lib/test",
+    "runtime_tests": "NOT RUN (source-only assignment)",
+    "builds": "NOT RUN",
+    "network": "NOT RUN",
+    "repository_writes": "NONE",
+    "git_mutations": "NONE",
+    "tracked_diff": "empty",
+    "initial_status": "clean",
+    "final_status": "untracked docs/acceptance/evidence/m3/native-worker-accounting/ appeared during audit; outside owned scope, consistent with concurrent parent/design work; untouched"
+  },
+  "repair_counters": {
+    "group_sol": 30,
+    "root_sol": 35,
+    "astra": 2,
+    "astra_limit": 2,
+    "audit_added": 0
+  },
+  "astra_gate": null,
+  "command_shutdown_status": "all own read-only shell commands completed; no live command sessions",
+  "remaining_risks": [
+    "No direct-spawn implementation exists in reviewed source; required custody conditions need implementation and deterministic runtime evidence.",
+    "No test execution or protocol acceptance is claimed.",
+    "Task membership query search is scoped to named lib/test trees; external consumers are outside this audit."
+  ],
+  "decisions_needed": "Designer chooses bounded custody contract and implementation details; no user decision requested."
+}

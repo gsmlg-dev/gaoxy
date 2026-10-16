@@ -1,0 +1,45 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[31m
+15:45:46.482 [error] Process #PID<0.599.0> raised an exception
+** (MatchError) no match of right hand side value: {:error, :einval}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:16: Gaoxy.HTTP.Connection.handle_connection/2
+    (thousand_island 1.5.0) lib/thousand_island/handler.ex:633: ThousandIsland.Handler.invoke_callback/2
+    (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:3: Gaoxy.HTTP.Connection.handle_continue/2
+    test/http2_worker_startup_test.exs:1032: anonymous fn/4 in Gaoxy.HTTP2StartupMetadataTest."test real TLS peer closes after actual h2 ALPN and generated startup ends orderly"/1
+[0m
+
+  1) test real TLS peer closes after actual h2 ALPN and generated startup ends orderly (Gaoxy.HTTP2StartupMetadataTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_startup_test.exs:1012[0m
+     [31mAssertion with == failed[0m
+     [36mcode:  [0massert terminal == :normal
+     [36mleft:  [0m[31m{{:badmatch, {:error, :einval}}, [{Gaoxy.HTTP.Connection, :handle_connection, 2, [file: ~c"lib/gaoxy/http/connection.ex", line: 16]}, {ThousandIsland.Handler, :invoke_callback, 2, [file: ~c"lib/thousand_island/handler.ex", line: 633]}, {Gaoxy.HTTP.Connection, :handle_continue, 2, [file: ~c"lib/gaoxy/http/connection.ex", line: 3]}, {Gaoxy.HTTP2StartupMetadataTest, :"-test real TLS peer closes after actual h2 ALPN and generated startup ends orderly/1-fun-1-", 4, [file: ~c"test/http2_worker_startup_test.exs", line: 1032]}]}[0m
+     [36mright: [0m[32m:normal[0m
+     [36mstacktrace:[0m
+       test/http2_worker_startup_test.exs:1056: (test)
+
+
+
+  2) test real socket closure after peername handles sockname failure without admission (Gaoxy.HTTP2StartupMetadataTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_startup_test.exs:1000[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :einval}[0m
+     [36mcode: [0massert {:close, ^context} = Connection.handle_connection(socket, context)
+     [36mstacktrace:[0m
+       (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:17: Gaoxy.HTTP.Connection.handle_connection/2
+       test/http2_worker_startup_test.exs:1004: (test)
+
+
+
+  3) test closed real TCP metadata ends startup without admission (Gaoxy.HTTP2StartupMetadataTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_startup_test.exs:990[0m
+     [31m** (MatchError) no match of right hand side value: {:error, :einval}[0m
+     [36mcode: [0massert {:close, ^context} = Connection.handle_connection(socket, context)
+     [36mstacktrace:[0m
+       (gaoxy_http 0.3.0) lib/gaoxy/http/connection.ex:16: Gaoxy.HTTP.Connection.handle_connection/2
+       test/http2_worker_startup_test.exs:996: (test)
+
+
+Finished in 4.4 seconds (0.00s async, 4.4s sync)
+[31m13 tests, 3 failures[0m

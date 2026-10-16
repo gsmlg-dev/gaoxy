@@ -1,0 +1,79 @@
+{
+  "task_id": "native_worker_constructor_spec/browser_diagnostic4_actual_spec1",
+  "status": "DONE",
+  "assignment": "direct independent actual-source read-only SPEC review",
+  "verdict": "FAIL",
+  "scope": "Frozen diagnostic4 host+runner+frontdoor1, NONACCEPTED diagnostic, not GREEN or full-stage qualification",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Git forbidden by assignment; exact frozen hashes verified before/after review",
+  "source_sha256": {
+    "native-worker-browser-diagnostic-host4.exs": "1c2b98b459c3d15d3fad7d5c20d73e7a5b7629c1a507da0ead62e8c929d15113",
+    "native-worker-browser-diagnostic-runner4.py": "aa592a2825a49978ca97c7e96886b4dcb07d67c14c1d56d469089c6a05bd6961",
+    "native-worker-browser-frontdoor1.py": "8015508ae56c3b4b33220536000ca96bda3ab12bfb505ba812a91c16eada1a4c"
+  },
+  "predecessor_sha256": {
+    "native-worker-browser-diagnostic-host3.exs": "f95204ac08d3dee75c7e576a406a4e324502369a7cc70214715c4ebd9797dcbb",
+    "native-worker-browser-diagnostic-runner3.py": "31a6abfecd1bfb42736481cc89e3935635f93ce390a45e6881450f81f2c9a57d"
+  },
+  "findings": [
+    {
+      "id": "DIAG4-SPEC-F1",
+      "severity": "blocking",
+      "status": "OPEN_ON_FROZEN_SOURCE",
+      "file": "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-frontdoor1.py",
+      "lines": "45-60,87-98",
+      "title": "Control-first authorization accepts an already-readable preauthorization EOF",
+      "evidence": "select.select may return both stdin authorize_close and a selected socket with EOF. The control branch runs first (47-60), verifies only cached eof flags, sets authorized=True, and emits close_authorized. The selected recv branch then sees b-empty (89,96), tests the newly true authorized flag (97), and records EOF without failure. Thus an EOF observable before authorization can be recategorized as authorized. Host live-actor handshake does not remove this race.",
+      "required_repair": "Process selected ready socket I/O before authorization; parse authorize command into a pending request. Keep authorized false until same selected pair remains live, no eof/error/failure exists, both queues are empty, and a fresh zero-time selected-socket read readiness check is empty. Readable socket defers authorization and is serviced while still unauthorized. Duplicate/malformed/other control while pending fails. Acknowledge only after commit at this observed quiet boundary. Preserve finite deadline and normal joins.",
+      "qualification": "Proposed repair assessed at concept level only; revised helper/runner must receive actual-source review. Observed order cannot establish unknowable remote physical FIN ordering."
+    }
+  ],
+  "preserved_checks": [
+    "Host4 versus diagnostic-host3 diff adds only exact connection sys-state-reply projection through diagnostic_log; every Gate/custody/requestclean/native-actor/terminal assertion retained.",
+    "Runner4 versus diagnostic-runner3 retains existing strict checks and adds frontdoor source inventory, launch, host authorization then relay authorization ack then Browser.close, relay complete/join, and explicit NONACCEPTED_BROWSER_DIAGNOSTIC/single-selected profile metadata.",
+    "Frontdoor first socket selected irreversibly; only one backend create_connection call site; later accepted sockets closed with no backend; loopback only; 5s backend connect bound; 90s absolute relay bound; nonblocking per-direction I/O with at most65536 queued bytes.",
+    "Frontdoor tracks positive traffic, partial sends, per-direction receive/send length+streaming SHA256 equality, ordered bytes, true EOF flags, queues empty, write-half-close after corresponding source EOF+drain, pair close and process return0 only after authorized completed stop.",
+    "Any unhandled selected reset/write/read/timeout error exits nonzero; runner checks actual actor exit0/logreader join/group disposal, and forced cleanup marks FAIL. Strict independent upstream raw peer is unchanged."
+  ],
+  "nonblocking_notes": [
+    "No endpoint-tuple event is added; configured backend port is source-bound to the native host ready port and exact global lease assertions still bind captured native actors. Add endpoint/case mapping if broader diagnostic attribution is needed.",
+    "Result entry_counters retains historical group30/root35 text from predecessor; current parent counters remain group37/root47/stage7/Astra2. Distinguish lineage metadata from actual runtime entry in parent evidence.",
+    "Frontdoor1 has no internal threads; inherited Actor logreader threads retain finite joins. All new evidence is scalar counts/hashes, not TLS payload/key data.",
+    "Projection matches the exact targeted alias sys-state reply shape and retains event timing/actor/tag/destination. No raw trace archive or sys-state reply was read during review; other shape coverage is not inferred."
+  ],
+  "repair_proposal_received": "Parent helper2 pending-authorize + selected-I/O-first + empty queues + zero-time readable check is conceptually suitable; actual source NOT REVIEWED in this report.",
+  "verification": {
+    "performed": "Scoped source reads, predecessor diffs, SHA256 verification; both diff commands exit1 because expected changes exist, not test failures.",
+    "not_run": [
+      "browser",
+      "runtime",
+      "network",
+      "Mix/tests",
+      "Git"
+    ],
+    "source_parse": "Parent reported formatter/AST parse exit0; not independently rerun or counted as runtime acceptance.",
+    "raw_archive_read": false,
+    "shutdown": "All own commands completed; no actor launched."
+  },
+  "counters": {
+    "group_failedGREEN": 37,
+    "root_failure_events": 47,
+    "stage_failedGREEN": 7,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "this_review_failedGREEN": 0,
+    "this_review_sol_repair_rounds": 0
+  },
+  "repository_edits": [],
+  "changed_files": [
+    "/tmp/gaoxy-native-worker-browser-diagnostic4-spec1.md",
+    "/tmp/gaoxy-native-worker-browser-diagnostic4-spec1.json"
+  ],
+  "root_cause": "Prior target writer-beforeauth cause remains UNKNOWN. No root-cause claim follows from isolation profile.",
+  "remaining_risks": [
+    "F1 blocks this frozen candidate from meeting its own isolation contract.",
+    "New helper version and runner binding need actual SPEC/CODE review before planned diagnostic.",
+    "No runtime acceptance or full-stage PASS demonstrated."
+  ],
+  "decisions_needed": []
+}

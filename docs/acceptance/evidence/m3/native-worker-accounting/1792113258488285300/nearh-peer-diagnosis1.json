@@ -1,0 +1,76 @@
+{
+  "task_id": "native-worker-nearh-peer-diagnosis1",
+  "status": "DONE",
+  "assignment": "direct read-only diagnosis",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_parent_receipt": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "verdict": "PASS_SOURCE_DIAGNOSIS_AND_PROPOSED_FIXTURE_ISOLATION; IMPLEMENTATION_AND_FRESH_RUNTIME_NOT_RUN",
+  "observed_failure": {
+    "receipt": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-green3.json",
+    "receipt_sha256": "a2e239fc18f0ef0e53b2db4f16f18fab03c82701f3a96009a68e4271ae07d8ed",
+    "log_sha256": "cabe0b4f72a38d9bb174a45dc539849c955fdffad20acd116f379399738cda37",
+    "executed": 91,
+    "failures": 1,
+    "exit": 2,
+    "http": [
+      62,
+      0
+    ],
+    "proxy": [
+      29,
+      1
+    ],
+    "joined": true,
+    "source_stable": true,
+    "warning_note": "Expected Nix dirty-tree warning present; no compiler warning or skipped/excluded test reported."
+  },
+  "source_hashes": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex": "a4f6e5f6a2e7212ab641c8a33bb10d177d9ffba008362945620b6aa6e402cf22",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/options.ex": "3b87a1655cbeb08e088b9810c7180fa4d56acca9850a6319ecc29bd3eefca186",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups/probe.ex": "44978c228e41316cac42608b39ef98272e33d1db2c0494580bc886e25c291a68",
+    "apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs": "6510bed801ef21e7d0b30d169ab821074ca623e5a13005611ef02c0088edf4ef"
+  },
+  "confirmed_cause": "Peer received complete HEAD /health, then strict response send returned {:error, :closed}; worker crashed and could not report normal joined completion. This is not idle close.",
+  "cancellation_inference": "Unanchored group retirement cancels its live probes. Both immediate sample preparation release and final store baseline release can race health response send. The failed log does not identify the cancelled group or directly trace the initiating cancellation.",
+  "recommendation": {
+    "scope": "Only no-dispatch near-H manifest constructor fixture; configure at fixture creation",
+    "owner_limit": {
+      "probe_bytes": 1
+    },
+    "public_validity": "Options.owner accepts positive integer1; max_probes0 is invalid.",
+    "minimum_h1_reservation": 7225384,
+    "admission_proof": "reserve = 7225384 + 8*chunk_bytes + 2*external_size({fields,url}); launch_h1_probe requires probe_bytes+reserve <= limit before DynamicSupervisor.start_child. Budget1 cannot admit an H1 probe.",
+    "preserve": [
+      "Default native/healthy fixtures",
+      "Real public group/transport preparation, G7/T8, pins, exact near-H size, above-Q singleton, correlation, cancellation and cleanup",
+      "Strict complete peer response sends, request/reset proof, normal worker/listener joins and deadlines"
+    ],
+    "corroboration": [
+      "Assert supported configured owner probe_bytes1 and computed reservation>1",
+      "Assert public owner/group probes0/probe_bytes0 where available",
+      "Audit peer health requests/accepted connections with deterministic peer completion, preserving strict send semantics"
+    ],
+    "trace_caution": "Tracing only Groups process for procs does not capture DynamicSupervisor-owned Probe spawn. Use source admission proof plus correct supervisor/peer audit if adding negative spawn evidence.",
+    "alternative": "Await all initial health probes with deterministic completed-response barrier; costly for64 groups x up to32 members at max_probes1 and must include sample before its release."
+  },
+  "changes": [
+    "Only these two assigned /tmp diagnosis reports; no repository/evidence edits."
+  ],
+  "verification": "Read/hash/JSON parse/source arithmetic only; no tests, builds, Git, network or browser commands run.",
+  "counters": {
+    "group": 35,
+    "root": 40,
+    "stage_failed_greens": 5,
+    "astra_recovery_used": 2,
+    "astra_recovery_max": 2,
+    "new_sol_repair_rounds": 0,
+    "source": "parent handoff; preserved"
+  },
+  "shutdown": "All own commands completed synchronously; no processes launched in background.",
+  "remaining_risks": [
+    "Parent must implement, independently review and freshly execute required gates before claiming repair or acceptance.",
+    "Exact cancellation timing/group identity is inferred, not traced."
+  ],
+  "decisions_needed": []
+}

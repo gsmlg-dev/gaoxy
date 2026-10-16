@@ -1,0 +1,105 @@
+{
+  "task_id": "/root/native_worker_constructor_code/browser-diagnostic6-code1",
+  "status": "DONE",
+  "assignment": "direct bounded independent CODE review",
+  "verdict": "FAIL",
+  "diagnostic6_may_start": false,
+  "acceptance": false,
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda",
+  "frozen_source_sha256": {
+    "native-worker-browser-diagnostic-host6.exs": "ec16bd51ba5e9c5f9925931ee3ced8c573ea8d9f78a862c703118a85e020e6af",
+    "native-worker-browser-diagnostic-runner6.py": "54586cdd23b800b60a114c1c2de529d2138c92dbff09020cd03f7578f3fdd8db",
+    "native-worker-browser-frontdoor3.py": "2049619b2e77073af8c4269eec1ddf307db64d0a0656f1b1b4cfa0e6a02ac2b1"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "blocking for logging-only diagnostic6",
+      "location": "native-worker-browser-diagnostic-host6.exs:461-464 and :673",
+      "problem": "terminal_reason/1 recursively accepts arbitrary-depth shutdown/handshake/tls_alert tuples; the result is subsequently inspected with limit: :infinity. Therefore the callback projection/log output has no explicit depth/size bound for accepted nested terminal reasons.",
+      "required_change": "Create a separately hashed revision with a finite depth bound and finite scalar policy; retain every original assertion. Do not run frozen diagnostic6."
+    }
+  ],
+  "observations": [
+    {
+      "id": "O1",
+      "location": "native-worker-browser-diagnostic-host6.exs:442-445",
+      "problem": "metadata[:error] conflates absent error with an explicitly present nil. A presence flag would make safe terminal telemetry unambiguous."
+    }
+  ],
+  "checks": [
+    {
+      "condition": "Frozen source identities",
+      "result": "PASS",
+      "evidence": "sha256sum matches all three assigned hashes; baseline identity matches archived handoff."
+    },
+    {
+      "condition": "Real supported telemetry events",
+      "result": "PASS",
+      "evidence": "Read installed ThousandIsland.Telemetry documentation and emitted start/ready/stop/exception paths; attach_many uses public telemetry API. Actual span metadata carries handler for all four events."
+    },
+    {
+      "condition": "Callback avoids blocking observation/state calls",
+      "result": "PASS_SOURCE",
+      "evidence": "Native handler function head filters Gaoxy.HTTP.Connection. Callback only projects maps, classifies terminal values, reads local monotonic clock and sends projected data to host; host performs file write. No state/socket/GenServer call or receive is added to callback."
+    },
+    {
+      "condition": "Sensitive data projection",
+      "result": "PASS_SOURCE_WITH_F1",
+      "evidence": "No socket/state, payload, stacktrace or TLS material selected. Remote endpoints and span references are projected; scalar/tagged reason filter omits unknown composite values. Explicit bound still fails F1."
+    },
+    {
+      "condition": "Original assertions and control contract",
+      "result": "PASS_SOURCE_PRESERVATION",
+      "evidence": "Host4-to-host6 full diff adds only telemetry callback/helper, attachment and host-loop logging clause. Runner5-to-runner6 exact text equal after two helper path substitutions. Frontdoor3 stripping only diagnostic additions gives complete frontdoor2 AST equality."
+    },
+    {
+      "condition": "Frontdoor bounded metadata and strict EOF",
+      "result": "PASS_SOURCE",
+      "evidence": "At most four positive-I/O events, two EOF events, one exception and two finally events. No byte payload recorded; counts/flags/socket metadata only. Strict unauthorized EOF assertion and original exception re-raise preserved. No client/backend EOF origin inferred."
+    },
+    {
+      "condition": "Failure path",
+      "result": "PASS_SOURCE",
+      "evidence": "Host normal loop logs projected events; existing diagnostic_receive generic branch can preserve projected telemetry while draining a failure. No new success/close authorization or accepted terminal reason is introduced."
+    }
+  ],
+  "verification": {
+    "commands": [
+      "sha256sum frozen tuple and reviewed predecessors",
+      "diff -u host4 host6",
+      "diff -u runner5 runner6",
+      "diff -u frontdoor2 frontdoor3",
+      "rg/sed supported telemetry documentation/emission and host failure paths",
+      "python source-only ast.parse and exact equivalence checks"
+    ],
+    "actual_results": "All source checks completed. Both Python AST parses PASS; runner substitution equivalence PASS; frontdoor diagnostics-stripped full AST equivalence PASS. Diff exit1 means expected changes, not runtime failure. Initial rg included an absent root evidence path (exit2) and found assigned files in correct worktree; subsequent exact paths succeeded.",
+    "runtime_mix_browser_tests_network": "NOT RUN",
+    "git_read_only_commands": "git rev-parse HEAD and git status --short were inadvertently run despite parent Git ownership; no mutation. Reported to parent.",
+    "repository_or_evidence_edits": [],
+    "only_written": [
+      "/tmp/gaoxy-native-worker-browser-diagnostic6-code1.md",
+      "/tmp/gaoxy-native-worker-browser-diagnostic6-code1.json"
+    ]
+  },
+  "counters": {
+    "group": 37,
+    "root": 48,
+    "stage_failed_green": 7,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "nonaccepted_diagnostic_failures": 3,
+    "review_added_repairs": 0,
+    "review_added_failed_green": 0,
+    "source": "parent handoff preserved"
+  },
+  "shutdown": "All own commands completed synchronously. No runtime/background process started; others processes untouched.",
+  "remaining_risks": [
+    "Frozen diagnostic6 must not run; host7/runner7 require separate review.",
+    "Earlier writer exit and selected EOF direction/cause remain UNKNOWN. Historical failures remain FAIL.",
+    "No product/W/browser acceptance established by source review or relay-only preflight."
+  ],
+  "decisions_needed": [],
+  "astra_gate": null
+}

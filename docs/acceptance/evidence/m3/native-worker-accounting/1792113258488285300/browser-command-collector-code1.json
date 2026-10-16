@@ -1,0 +1,47 @@
+{
+  "task_id": "browser_cohort_code/browser-command-collector-CODE1",
+  "assignment": "direct_read_only",
+  "delivery_status": "DONE_REVIEW",
+  "verdict": "FAIL",
+  "scope": "outer_browser_command_collector_only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "58307a7084298db309a93697b9102b2cc4c87eda (saved; no Git refresh)",
+  "source": {
+    "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-command-collector1.py": "98ae90f1d6c388b4c14660313f683c57c93289ecb34437fe088ba7a0154ee523"
+  },
+  "supporting_runner_sha256": "649b61d108ecb291f411d6029f41bfcd1d352e4bbff292b965b699b5393c5dc2",
+  "source_hash_before_after_match": true,
+  "actionable_findings": [
+    {
+      "id": "F1",
+      "severity": "material",
+      "file": "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/browser-command-collector1.py",
+      "lines": [
+        48,
+        59
+      ],
+      "title": "Timeout kills runner group but leaves separately session-owned actors unjoined",
+      "evidence": "runner6 Actor lines235-236 use start_new_session; collector signals runner PGID only; peer control EOF lines93-103 does not set stopping; accept loop107-115 remains live",
+      "required_change": "Boundedly stop and join every separately owned actor group on timeout while preserving FAIL and forced-cleanup rejection"
+    }
+  ],
+  "runtime": "NOT_RUN",
+  "tests": "NOT_RUN",
+  "no_failed_exit_can_pass": true,
+  "all_own_commands_finished": true,
+  "repo_or_evidence_edits": false,
+  "counters": {
+    "group_failed_GREEN": 37,
+    "root_failure_events": 48,
+    "stage_failed_GREEN": 7,
+    "astra": "2/2 exhausted",
+    "nonaccepted_diagnostic_failures": 4
+  },
+  "added_runtime_attempts": 0,
+  "added_sol_repair_rounds": 0,
+  "added_astra_recoveries": 0,
+  "astra_gate": null,
+  "decisions_needed": [],
+  "report_sha256": "935ae74da1594e025b80d5b5ad8a1ef023f86b39aada72bb48cabc38eb1ff43f",
+  "at_utc": "2026-10-16T07:37:02.610621+00:00"
+}

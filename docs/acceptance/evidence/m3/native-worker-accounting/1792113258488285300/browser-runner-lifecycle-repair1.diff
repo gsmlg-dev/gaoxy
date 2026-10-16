@@ -1,0 +1,37 @@
+--- native-worker-browser-runner2.py
++++ native-worker-browser-runner3.py
+@@ -19,7 +19,7 @@
+ import traceback
+ 
+ ROOT = Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+-HOST = Path(__file__).resolve().with_name('native-worker-browser-host1.exs')
++HOST = Path(__file__).resolve().with_name('native-worker-browser-host2.exs')
+ MARKER = 'Gaoxy checked Generation browser capture'
+ HTML = ('<!doctype html><html><head><title>Gaoxy checked Generation</title>'
+         '<link rel="icon" href="data:,"></head><body><h1 id="checked">' + MARKER + '</h1></body></html>').encode()
+@@ -370,9 +370,16 @@
+         assert probe['document'] == dict(title='Gaoxy checked Generation', text=MARKER, url=origin+'/checked')
+         host.send({'op': 'request_clean'})
+         request_clean = host.event('request_clean')
+-        assert request_clean['session_joined'] and request_clean['custody'] == custody
++        assert request_clean['session_joined']
++        assert custody == dict(event='session_custody', **request_clean['custody'])
+         if mode == 'h2':
+             assert request_clean['native_worker_joined']
++        host.send({'op': 'authorize_browser_close'})
++        close_authorized = host.event('browser_close_authorized')
++        assert close_authorized['mode'] == mode and close_authorized['connection_alive']
++        expected_connection = (captured['native_ids']['connection'] if mode == 'h2'
++                               else captured['holder'])
++        assert close_authorized['connection'] == expected_connection
+         browser.send({'op': 'exit'})
+         browser_join = browser.event('joined')
+         assert browser_join['passed'] and browser_join['profile_removed']
+@@ -380,6 +387,7 @@
+         browser.join()
+         host.send({'op': 'stop'})
+         clean = host.event('closed_browser_clean')
++        assert clean['connection_joined'] and clean['connection_reason'] == '{:shutdown, :peer_closed}'
+         assert clean['service'] == dict(active=0, retained_bytes=0, cleanup_pending=0, cleanup_failed=None)
+         stopped = host.event('stopped')
+         assert stopped['cleanup_confirmed'] and stopped['source_stable'] and stopped['captures'] == 1

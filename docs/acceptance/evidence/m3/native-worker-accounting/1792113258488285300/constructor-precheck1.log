@@ -1,0 +1,391 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy
+Compiling 2 files (.ex)
+Generated gaoxy app
+==> gaoxy_http
+Compiling 3 files (.ex)
+     [33mwarning:[0m Tuple.append/2 is deprecated. Use insert_at instead
+     │
+ 350 │     Tuple.append(raw, summary_size(e(raw), e(raw)))
+     │ [33m          ~[0m
+     │
+     └─ lib/gaoxy/http/http2/worker_accounting.ex:350:11: Gaoxy.HTTP.HTTP2.WorkerAccounting.caps/7
+
+     [33mwarning:[0m this clause of defp l/1 is never used
+     │
+ 360 │   defp l([]), do: 2
+     │ [33m       ~[0m
+     │
+     └─ lib/gaoxy/http/http2/worker_accounting.ex:360:8: Gaoxy.HTTP.HTTP2.WorkerAccounting.l/1
+
+Generated gaoxy_http app
+==> gaoxy
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:native_worker_constructor]
+
+[32m.[0m[32m.[0m
+Finished in 1.6 seconds (0.00s async, 1.6s sync)
+[32m34 tests, 0 failures, 32 excluded[0m
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:native_worker_constructor]
+
+
+
+  1) test limits insertion accounts for the absent original max_write_chunk key (Gaoxy.HTTP.HTTP2.WorkerAccountingTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_accounting_test.exs:73[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.HTTP.Exchange (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.HTTP.Exchange{
+           request: %Gaoxy.HTTP.Request{
+             method: "GET",
+             target: "/",
+             target_form: :origin,
+             version: :http2,
+             path: "/",
+             query_string: "",
+             host: nil,
+             port: nil,
+             scheme: nil,
+             peer: nil,
+             local: nil,
+             head_bytes: 64,
+             headers: [{"host", "localhost"}],
+             body: :none,
+             keep_alive: false,
+             expect_continue: false
+           },
+           socket: nil,
+           gate: #PID<0.431.0>,
+           lease: #Reference<0.1343194744.2279604226.243309>,
+           deadline: -1,
+           limits: %{
+             max_header_bytes: 32768,
+             request_timeout: 30000,
+             max_write_chunk: 16384,
+             max_read_chunk: 16384
+           },
+           body: %{total: 0, phase: :done, trailers: [], trailer_bytes: 0},
+           buffer: "",
+           peer: {{127, 0, 0, 1}, 42},
+           local: {{127, 0, 0, 1}, 443},
+           service: :test_service,
+           instance: :test_instance,
+           response: :unset,
+           response_trailers: [],
+           close: false,
+           route_bytes: 0,
+           resource_pins: [],
+           protocol_bytes: 212543,
+           poll_buffer_bytes: 0,
+           transport: Gaoxy.HTTP.HTTP2.Transport,
+           transport_state: {#PID<0.431.0>, 1,
+            #Reference<0.1343194744.2279604225.252794>},
+           secure: true,
+           ssl: nil,
+           peer_cert: <<1, 2, 3>>,
+           expect_sent: false
+         }
+     [0m
+     [36mcode: [0mverify(%{state | limits: Map.delete(state.limits, :max_write_chunk)}, stream)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       test/http2_worker_accounting_test.exs:404: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.cap/2
+       test/http2_worker_accounting_test.exs:375: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.constructors/3
+       test/http2_worker_accounting_test.exs:124: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.verify/2
+       test/http2_worker_accounting_test.exs:75: (test)
+
+     [33mwarning:[0m Tuple.append/2 is deprecated. Use insert_at instead
+     │
+ 398 │     actual = e(Tuple.append(caps, assumed))
+     │ [33m                     ~[0m
+     │
+     └─ test/http2_worker_accounting_test.exs:398:22: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.summary_size/2
+
+
+
+  2) test original signed deadlines, complete request and integer widths are measured (Gaoxy.HTTP.HTTP2.WorkerAccountingTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_accounting_test.exs:27[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.HTTP.Exchange (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.HTTP.Exchange{
+           request: %Gaoxy.HTTP.Request{
+             method: "GET",
+             target: "/",
+             target_form: :origin,
+             version: :http2,
+             path: "/",
+             query_string: "",
+             host: nil,
+             port: nil,
+             scheme: nil,
+             peer: nil,
+             local: nil,
+             head_bytes: 0,
+             headers: [{"host", "localhost"}],
+             body: :none,
+             keep_alive: false,
+             expect_continue: false
+           },
+           socket: nil,
+           gate: #PID<0.433.0>,
+           lease: #Reference<0.1343194744.2279604225.252818>,
+           deadline: -1,
+           limits: %{
+             max_header_bytes: 32768,
+             request_timeout: 30000,
+             max_write_chunk: 16384,
+             max_read_chunk: 16384
+           },
+           body: %{total: 0, phase: :done, trailers: [], trailer_bytes: 0},
+           buffer: "",
+           peer: {{127, 0, 0, 1}, 42},
+           local: {{127, 0, 0, 1}, 443},
+           service: :test_service,
+           instance: :test_instance,
+           response: :unset,
+           response_trailers: [],
+           close: false,
+           route_bytes: 0,
+           resource_pins: [],
+           protocol_bytes: 15923,
+           poll_buffer_bytes: 0,
+           transport: Gaoxy.HTTP.HTTP2.Transport,
+           transport_state: {#PID<0.433.0>, 1,
+            #Reference<0.1343194744.2279604226.243326>},
+           secure: true,
+           ssl: nil,
+           peer_cert: <<1, 2, 3>>,
+           expect_sent: false
+         }
+     [0m
+     [36mcode: [0mfor value <- [0, 255, 256, 2_147_483_647, 2_147_483_648, 18_446_744_073_709_551_616] do
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       test/http2_worker_accounting_test.exs:404: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.cap/2
+       test/http2_worker_accounting_test.exs:375: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.constructors/3
+       test/http2_worker_accounting_test.exs:124: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.verify/2
+       test/http2_worker_accounting_test.exs:35: anonymous fn/3 in Gaoxy.HTTP.HTTP2.WorkerAccountingTest."test original signed deadlines, complete request and integer widths are measured"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/http2_worker_accounting_test.exs:30: (test)
+
+
+
+  3) test every Exchange field and original initialized endpoint changes the charged envelope (Gaoxy.HTTP.HTTP2.WorkerAccountingTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_accounting_test.exs:40[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.HTTP.Exchange (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.HTTP.Exchange{
+           request: %Gaoxy.HTTP.Request{
+             method: "GET",
+             target: "/",
+             target_form: :origin,
+             version: :http2,
+             path: "/",
+             query_string: "",
+             host: nil,
+             port: nil,
+             scheme: nil,
+             peer: nil,
+             local: nil,
+             head_bytes: 64,
+             headers: [{"host", "localhost"}],
+             body: :none,
+             keep_alive: false,
+             expect_continue: false
+           },
+           socket: nil,
+           gate: #PID<0.434.0>,
+           lease: #Reference<0.1343194744.2279604225.252826>,
+           deadline: -1,
+           limits: %{
+             max_header_bytes: 32768,
+             request_timeout: 30000,
+             max_write_chunk: 16384,
+             max_read_chunk: 16384
+           },
+           body: %{total: 0, phase: :done, trailers: [], trailer_bytes: 0},
+           buffer: "",
+           peer: {{127, 0, 0, 1}, 42},
+           local: {{127, 0, 0, 1}, 443},
+           service: :test_service,
+           instance: :test_instance,
+           response: :unset,
+           response_trailers: [],
+           close: false,
+           route_bytes: 0,
+           resource_pins: [],
+           protocol_bytes: 212543,
+           poll_buffer_bytes: 0,
+           transport: Gaoxy.HTTP.HTTP2.Transport,
+           transport_state: {#PID<0.434.0>, 1,
+            #Reference<0.1343194744.2279604226.243339>},
+           secure: true,
+           ssl: nil,
+           peer_cert: <<1, 2, 3>>,
+           expect_sent: false
+         }
+     [0m
+     [36mcode: [0m{_n0, w0} = verify(state, stream)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       test/http2_worker_accounting_test.exs:404: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.cap/2
+       test/http2_worker_accounting_test.exs:375: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.constructors/3
+       test/http2_worker_accounting_test.exs:124: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.verify/2
+       test/http2_worker_accounting_test.exs:42: (test)
+
+[32m.[0m
+
+  4) test large initialized endpoint is retained in full with no invented configuration ceiling (Gaoxy.HTTP.HTTP2.WorkerAccountingTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_accounting_test.exs:14[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.HTTP.Exchange (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.HTTP.Exchange{
+           request: %Gaoxy.HTTP.Request{
+             method: "GET",
+             target: "/",
+             target_form: :origin,
+             version: :http2,
+             path: "/",
+             query_string: "",
+             host: nil,
+             port: nil,
+             scheme: nil,
+             peer: nil,
+             local: nil,
+             head_bytes: 64,
+             headers: [{"host", "localhost"}],
+             body: :none,
+             keep_alive: false,
+             expect_continue: false
+           },
+           socket: nil,
+           gate: #PID<0.436.0>,
+           lease: #Reference<0.1343194744.2279604225.252844>,
+           deadline: -1,
+           limits: %{
+             max_header_bytes: 32768,
+             request_timeout: 30000,
+             max_write_chunk: 16384,
+             max_read_chunk: 16384
+           },
+           body: %{total: 0, phase: :done, trailers: [], trailer_bytes: 0},
+           buffer: "",
+           peer: {{127, 0, 0, 1}, 42},
+           local: {{127, 0, 0, 1}, 443},
+           service: :test_service,
+           instance: :test_instance,
+           response: :unset,
+           response_trailers: [],
+           close: false,
+           route_bytes: 0,
+           resource_pins: [],
+           protocol_bytes: 605990,
+           poll_buffer_bytes: 0,
+           transport: Gaoxy.HTTP.HTTP2.Transport,
+           transport_state: {#PID<0.436.0>, 1,
+            #Reference<0.1343194744.2279604225.252842>},
+           secure: true,
+           ssl: nil,
+           peer_cert: <<1, 2, 3>>,
+           expect_sent: false
+         }
+     [0m
+     [36mcode: [0m{n, w} = verify(state, stream)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       test/http2_worker_accounting_test.exs:404: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.cap/2
+       test/http2_worker_accounting_test.exs:375: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.constructors/3
+       test/http2_worker_accounting_test.exs:124: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.verify/2
+       test/http2_worker_accounting_test.exs:22: (test)
+
+
+
+  5) test whole post-fixed point pays every complete constructor and its numeric summaries (Gaoxy.HTTP.HTTP2.WorkerAccountingTest)
+     [1m[30mapps/gaoxy_http/test/http2_worker_accounting_test.exs:9[0m
+     [31m** (Protocol.UndefinedError) protocol Enumerable not implemented for type Gaoxy.HTTP.Exchange (a struct). This protocol is implemented for the following type(s): Date.Range, File.Stream, Function, GenEvent.Stream, HashDict, HashSet, IO.Stream, Jason.OrderedObject, List, Map, MapSet, Range, Stream
+
+     Got value:
+
+         %Gaoxy.HTTP.Exchange{
+           request: %Gaoxy.HTTP.Request{
+             method: "GET",
+             target: "/",
+             target_form: :origin,
+             version: :http2,
+             path: "/",
+             query_string: "",
+             host: nil,
+             port: nil,
+             scheme: nil,
+             peer: nil,
+             local: nil,
+             head_bytes: 64,
+             headers: [{"host", "localhost"}],
+             body: :none,
+             keep_alive: false,
+             expect_continue: false
+           },
+           socket: nil,
+           gate: #PID<0.437.0>,
+           lease: #Reference<0.1343194744.2279604225.252855>,
+           deadline: -1,
+           limits: %{
+             max_header_bytes: 32768,
+             request_timeout: 30000,
+             max_write_chunk: 16384,
+             max_read_chunk: 16384
+           },
+           body: %{total: 0, phase: :done, trailers: [], trailer_bytes: 0},
+           buffer: "",
+           peer: {{127, 0, 0, 1}, 42},
+           local: {{127, 0, 0, 1}, 443},
+           service: :test_service,
+           instance: :test_instance,
+           response: :unset,
+           response_trailers: [],
+           close: false,
+           route_bytes: 0,
+           resource_pins: [],
+           protocol_bytes: 212543,
+           poll_buffer_bytes: 0,
+           transport: Gaoxy.HTTP.HTTP2.Transport,
+           transport_state: {#PID<0.437.0>, 1,
+            #Reference<0.1343194744.2279604225.252854>},
+           secure: true,
+           ssl: nil,
+           peer_cert: <<1, 2, 3>>,
+           expect_sent: false
+         }
+     [0m
+     [36mcode: [0mverify(state, stream)
+     [36mstacktrace:[0m
+       (elixir 1.18.5) lib/enum.ex:1: Enumerable.impl_for!/1
+       (elixir 1.18.5) lib/enum.ex:166: Enumerable.reduce/3
+       (elixir 1.18.5) lib/enum.ex:4515: Enum.reduce/3
+       test/http2_worker_accounting_test.exs:404: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.cap/2
+       test/http2_worker_accounting_test.exs:375: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.constructors/3
+       test/http2_worker_accounting_test.exs:124: Gaoxy.HTTP.HTTP2.WorkerAccountingTest.verify/2
+       test/http2_worker_accounting_test.exs:11: (test)
+
+
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+[31m6 tests, 5 failures[0m

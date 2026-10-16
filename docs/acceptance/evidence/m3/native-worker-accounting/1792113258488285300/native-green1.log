@@ -1,0 +1,26 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_http
+Running ExUnit with seed: 1, max_cases: 1
+
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m     [31merror:[0m cannot invoke remote function context.gate/0 inside a match
+     │
+ 248 │         refute_receive {:trace, gate, :spawn, _, _} when gate == context.gate, 0
+     │ [31m                                                                         ^[0m
+     │
+     └─ test/http2_worker_startup_test.exs:248:74: Gaoxy.HTTP2WorkerStartupExtendedTest."test real configured capacity refuses W-1 and accepts exact startup W"/1
+
+     [31merror:[0m cannot find or invoke local when/2 inside a match. Only macros can be invoked inside a match and they must be defined before their invocation. Called as: {:trace, gate, :spawn, _, _} when gate == context.gate
+     │
+ 248 │         refute_receive {:trace, gate, :spawn, _, _} when gate == context.gate, 0
+     │ [31m                                                    ^[0m
+     │
+     └─ test/http2_worker_startup_test.exs:248:53: Gaoxy.HTTP2WorkerStartupExtendedTest."test real configured capacity refuses W-1 and accepts exact startup W"/1
+
+
+== Compilation error in file test/http2_worker_startup_test.exs ==
+** (CompileError) test/http2_worker_startup_test.exs: cannot compile module Gaoxy.HTTP2WorkerStartupExtendedTest (errors have been logged)
+    (stdlib 7.3.0.3) lists.erl:2466: :lists.foldl/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (ex_unit 1.18.5) expanding macro: ExUnit.Assertions.refute_receive/2
+    test/http2_worker_startup_test.exs:248: Gaoxy.HTTP2WorkerStartupExtendedTest."test real configured capacity refuses W-1 and accepts exact startup W"/1
