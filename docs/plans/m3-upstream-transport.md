@@ -514,11 +514,24 @@ are unchanged; cumulative24 failed GREEN attempts/27 ordered root events and
 Astra2/2 remain retained. Complete Task5/M3, H2 Generation, standalone integration,
 reload/rotation and sustained load retain their separate gates.
 
-Next prerequisite: compiled Router route/resource-sidecar consistency before any
-new Generation baseline pin, followed by separate native Generation accounting
-and actual H2 Generation qualification. A reachable path is not an accepted
-Generation capability. The continuing authorization advances these bounded
-slices after their verification and independent review; no routine approval stop.
+Current bounded successor: compiled Router route/resource-sidecar consistency,
+native checked Generation capture and native downstream-H2 worker accounting
+are completed locally at their recorded commits. The
+[fixed prepared-T upstream-H2 Generation](m3-managed-h2-fixed-generation.md)
+slice begins at aa272c3d; readiness and browser-fixture SPEC1→CODE1 passed.
+The minimal canonical guard and genuine fixed-T old/new/failure tests are
+implemented. Initial GREEN5/6 each83/0 and browserGREEN1 four rows/eight viewed
+images remain historical. Full-stage SPEC1→CODE1 passed candidate2; fresh19-file
+537/0, strict compile/format/syntax, core consumer1/0 and HTTP consumer2/0 passed.
+Reviewed diagnostic4 browser four rows/eight viewed images and aggregate audit
+PASS. Final document/custody review and local commit remain pending. Historical
+browser-final2 FAIL/UNKNOWN stays preserved; no production repair is claimed.
+NetLog projections remain incomplete. Group45/root65/stage failedGREEN4;
+repairs fixture3/production0/orchestration6, Astra2/2 exhausted. Root64/65 are
+document-only patch rejections after the root63 runtime audit. Final document
+SPEC1 FAIL and its factual repair remain preserved. This does
+not qualify group Generation or the composite Task5 checkboxes below. Continuing
+authorization advances verified/reviewed slices without routine approval stops.
 
 Modify: `apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex`, `http/session.ex`,
 `http_fetch_client.ex`, `group_endpoint.ex`, `upstream_groups.ex`,

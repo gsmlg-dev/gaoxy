@@ -1,0 +1,85 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 586694, max_cases: 1
+Excluding tags: [:test]
+Including tags: [:fixed_generation_red]
+
+
+
+  1) test http2 genuine prepared fixed route passes public Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, generation} = Generation.activate(f.store, current, router)
+     [36mleft:  [0m{[31m:ok[0m, generation}
+     [36mright: [0m{[32m:error[0m, :unsupported_generation_endpoint}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:37: (test)
+
+
+
+  2) test http2 genuine prepared fixed route passes direct Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, generation} =
+              GenServer.call(
+                f.store,
+                {:activate, current, router, Lifecycle.deadline(@timeout)},
+                @timeout
+              )
+     [36mleft:  [0m{[31m:ok[0m, generation}
+     [36mright: [0m{[32m:error[0m, :unsupported_generation_endpoint}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:43: (test)
+
+
+
+  3) test http2 genuine prepared fixed route passes prepare Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %Router{}} = Generation.prepare(f.store, routes)
+     [36mleft:  [0m{[31m:ok[0m, [31m%Gaoxy.HTTP.Router{}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:unsupported_generation_endpoint[0m}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:33: (test)
+
+
+
+  4) test h2c genuine prepared fixed route passes prepare Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, %Router{}} = Generation.prepare(f.store, routes)
+     [36mleft:  [0m{[31m:ok[0m, [31m%Gaoxy.HTTP.Router{}[0m}
+     [36mright: [0m{[32m:error[0m, [32m:unsupported_generation_endpoint[0m}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:33: (test)
+
+
+
+  5) test h2c genuine prepared fixed route passes direct Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, generation} =
+              GenServer.call(
+                f.store,
+                {:activate, current, router, Lifecycle.deadline(@timeout)},
+                @timeout
+              )
+     [36mleft:  [0m{[31m:ok[0m, generation}
+     [36mright: [0m{[32m:error[0m, :unsupported_generation_endpoint}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:43: (test)
+
+
+
+  6) test h2c genuine prepared fixed route passes public Generation boundary (Gaoxy.Proxy.ManagedH2FixedGenerationTest)
+     [1m[30mapps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:18[0m
+     [31mmatch (=) failed[0m
+     [36mcode:  [0massert {:ok, generation} = Generation.activate(f.store, current, router)
+     [36mleft:  [0m{[31m:ok[0m, generation}
+     [36mright: [0m{[32m:error[0m, :unsupported_generation_endpoint}
+     [36mstacktrace:[0m
+       test/managed_h2_fixed_generation_test.exs:37: (test)
+
+
+Finished in 8.3 seconds (0.00s async, 8.3s sync)
+[31m44 tests, 6 failures, 38 excluded[0m

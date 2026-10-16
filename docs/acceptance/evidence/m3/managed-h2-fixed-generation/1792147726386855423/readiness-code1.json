@@ -1,0 +1,220 @@
+{
+  "task_id": "/root/fixed_h2_generation_readiness_code1",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent read-only readiness source-feasibility review; not completed implementation review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "aa272c3dca700a9275a00bd23920d09bbd4748a1",
+  "candidate": "docs/acceptance/evidence/m3/managed-h2-fixed-generation/1792147726386855423/readiness-candidate1.json",
+  "candidate_sha256": "03aed2ba43d08ed7020ca3da400aa3e140ae78c3f976112f7e35b929e8b4e4ce",
+  "candidate_hash_check_before": "PASS",
+  "candidate_hash_check_after": "PASS",
+  "candidate_entries_verified_before": 23,
+  "candidate_entries_verified_after": 23,
+  "source_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "72f70becc478fe0e864015c033bcb1fec5f6aa51a8639cc9b35a0173191b6738",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex": "c8a63c08ce6852d73a094e9172d5ca61817d68744db949ce478c7aa656831947",
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "4eeaa5bb6bcc65d181cec52a7fbcd9344c7d327746ef9ec8a10cec0a3cb7630c",
+    "apps/gaoxy_http/lib/gaoxy/http/resources.ex": "0a1afd048e559f98aa7d18031989d33eb1b8a6882803679f1e79612ecdebc8b2",
+    "apps/gaoxy_http/lib/gaoxy/http/router.ex": "513db9910d6f0beabf1038db8bc1539ee5c5e8731ace0f6d349b9f2f2db96abd",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_generation_accounting.ex": "a6abfb614b3bcc869473486e817786105e907a41e968ef7c84beb4a2c3a7e921",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex": "3ee7f96df0c1394d25354280f77bba71ae59defd6fd252702f1847fcf58b78a7",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex": "8e897af16bb69c30751a36f9d6f0f0aeff83bcff2b571a6bac9dc270bf5b2100",
+    "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs": "cd4f4d05cdc2ab0ea4f055f13b5c34a9fed5f14e85cef6b9b6e077bd74efba05",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs": "63c521979cee9ecea809c1bf78e00e121f97e7b7a65d416d70cf5b620a84b9f4",
+    "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6",
+    "AGENTS.md": "73b78c7642c2a38061aa23a36d4ffc2014e97ba7129766fbdb0d10f7e5fde9d4",
+    "docs/designs/m3-managed-h2-fixed-generation.md": "ee7f1b0056323e519e53224264d6b5829463bafa13463ac70ddbeaedb681efb9",
+    "docs/plans/m3-managed-h2-fixed-generation.md": "ec78343e207697f33a6f3ed2378513c44dec0807f51aeb91814577ad4ef2f052",
+    "docs/acceptance/m3-managed-h2-fixed-generation.md": "801c6b5492cbde8b8d56ea0b6e871ce3a20625063267fe46c00570a5a89afd64",
+    "docs/plans/m3-upstream-transport.md": "44389c963bb192050eeebe969240a109c8a86369134313e9fb9ba7a2a8aa74bf"
+  },
+  "investigation_sha256": {
+    "source-map1.md": "ec92c75dc222154ea7f2e8606a09aa9a58c37aa2eb0d6e8aebae2d48f738f54a",
+    "source-map1.json": "980d30eeea2a237e4110e689bda77f1a81ce4a9f2495059a1332f154a74a1d58",
+    "test-map1.md": "100d088ef772f7e82596ba9aebf54a7c2fbb5091f3443f1d71f6e5cae63edcbc",
+    "test-map1.json": "d053376b5009d1e8b315616a187908c79724c63f965d17e90ccc632150c201c6"
+  },
+  "nested_map_source_identities_verified_after": 34,
+  "spec_additional_source_identities_verified_after": 34,
+  "archived_spec1": {
+    "verdict": "PASS",
+    "json_sha256": "fec991516949566b08c6317113792b8a22dd0f28789bbf1efbda4c647c011433",
+    "markdown_sha256": "4ccb5d86ca4bd834d80072a168bfcb1b7e25ab0f450530773de1834ce797ae44",
+    "markdown_hash_check": "PASS"
+  },
+  "findings": [],
+  "checks": [
+    {
+      "id": "C1",
+      "requirement": "Exact pure validator and proposed guard",
+      "verdict": "PASS",
+      "analysis": "The proposed code at design:30-38 is directly compatible with the existing validate_config/1 return contract. The validator accepts exactly the eight-key HTTP struct, ManagedH2Client, nil direct trust/address overrides, exact four-field T4, bounded limits and canonical compact root URI, with explicit protocol/scheme and ETF ceilings. Every validation rejection returns {:error,:invalid_config}; mapping that exact result to the existing unsupported error preserves the compiled boundary. No live owner preflight, new process or API is required.",
+      "evidence": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:141-145,158-160,237-246",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex:80-105,312-342,463-510",
+        "docs/designs/m3-managed-h2-fixed-generation.md:26-56"
+      ]
+    },
+    {
+      "id": "C2",
+      "requirement": "Pure T4 schema versus authenticated live identity",
+      "verdict": "PASS",
+      "analysis": "T4 has provider/owner/owner_epoch/resource only. Pure validation cannot authenticate liveness, protocol, authority or instance, and the plan does not claim it can. Fake/stale handles fail owner record/baseline acquisition; a genuine mismatched handle may legitimately acquire baseline and source pins, then immutable protocol/authority/instance binding refuses delegation before deriving a child or checkout/Fetch. Relabelled non-H2 structs are outside this change's validator contract. Groups remain separately unqualified with no new group denial.",
+      "evidence": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:335-377,889-907,1365-1377,1379-1420,1472-1473",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_envelope.ex:330-342",
+        "docs/designs/m3-managed-h2-fixed-generation.md:41-56,194-198"
+      ]
+    },
+    {
+      "id": "C3",
+      "requirement": "Compiled boundary and sidecar ordering",
+      "verdict": "PASS",
+      "analysis": "Generation.prepare compiles and applies compiled_bound; public activation applies it before the Store call; raw Store activation rechecks it before baseline pin_many; both initial routes/router startup paths activate through that same boundary. compiled_bound checks endpoint validation before exact sidecar consistency, then bounds the complete Router. Router compares the validated resource union to endpoint-declared resources. Thus after the guard change malformed H2 config retains unsupported, while canonical H2 with missing/extra/substituted sidecar reaches invalid_endpoint_resources before baseline acquisition. Accepted positive activation must contact a genuine owner.",
+      "evidence": [
+        "apps/gaoxy_http/lib/gaoxy/http/generation.ex:14-29,75-92,517-533,638-645,685-724",
+        "apps/gaoxy_http/lib/gaoxy/http/router.ex:17-38,43-85,111-123",
+        "apps/gaoxy_proxy/test/managed_h2_generation_exclusion_test.exs:8-59"
+      ]
+    },
+    {
+      "id": "C4",
+      "requirement": "Genuine Store capture and post-CAS old delegation",
+      "verdict": "PASS",
+      "analysis": "Checked Generation reserves B and updates the original Gate lease before Store/provider request-pin effects. Store serializes current-router capture, authenticates holder==caller and obtains real pins through pin_many_checked. The original operation is recorded before the effect and checked correlation preserves full handles and holder. Router receives those pins in the original Exchange. CAS replaces baseline/router and queues old baseline release. With preparation pins gone, close_unpinned closes ordinary admission but retains the active resource while source pin/token holds exist. Fresh pin_many requires open admission; authenticated delegation and checkout intentionally require active/unretired resource rather than open admission. This permits the planned old request without re-fetching the router or outer reacquisition.",
+      "evidence": [
+        "apps/gaoxy_http/lib/gaoxy/http/generation.ex:133-165,200-229,269-281,308-345,443-451,517-529,572-580,608-612",
+        "apps/gaoxy_http/lib/gaoxy/http/resources.ex:76-118,234-245",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:335-425,889-907,1010-1099,1117-1137",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:277-321,572-607,936-998"
+      ]
+    },
+    {
+      "id": "C5",
+      "requirement": "One-use handoff and original completion custody",
+      "verdict": "PASS",
+      "analysis": "HTTP retains one source-pin handoff, marks it used before delegation, and revokes the original operation on deadline/Session/downstream failure. Owner authenticates exact stored public source pin, native holder, request kind/non-derived source, selected handle, immutable identity, distinct live guardian and original admission deadline. A resource grants one child, with same guardian/operation idempotence only. Session starts inactive until real Service cleanup activation, validates its exact child T8, checks out once, opens through the public managed facade and binds the original Promise completion before ready. Cleanup uses original_request; confirmed public completion precedes owner finish, child release, Service receipt and Session normal DOWN. HTTP awaits that DOWN; checked Generation releases its source only after endpoint returns. The return barrier can therefore prove source lifetime independently of original completion.",
+      "evidence": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:635-674,936-998,1051-1055,1112-1129",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:46-82,140-158,235-265,1202-1223,1346-1418,1626-1637,1683-1739",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:55-83,177-205,294-309",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:347-377,427-456,1010-1099,1260-1269"
+      ]
+    },
+    {
+      "id": "C6",
+      "requirement": "Existing constructors and lifetime/accounting reuse",
+      "verdict": "PASS",
+      "analysis": "The only proposed production edit is transient pure configuration validation; no retained constructor, multiplicity, lifetime or public interface changes. Existing fixed endpoint already contains the source handoff/one child/original completion. Checked accounting accepts protocol-neutral exact T4/T8 and genuine correlation. Native H2 accounting measures the actual complete initialized endpoint, request and Exchange operands, so the new wrapper must be measured rather than assigned guessed headroom. Preserve native95 and P/N/W, H/Q65536, fixed9444956, group16478862 and startup5963776. The plan correctly reopens independent constructor SPEC then CODE if an actual repair introduces a charged operand/lifetime; this readiness change itself requires no new constructor checkpoint. No physical-memory claim follows.",
+      "evidence": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:572-607,635-674",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_generation_accounting.ex:62-73,385-428,460-473",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex:63-91,99-117",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex:17-48",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex:75-89",
+        "docs/designs/m3-managed-h2-fixed-endpoint.md:880-915",
+        "docs/designs/m3-managed-h2-fixed-generation.md:88-102"
+      ]
+    },
+    {
+      "id": "C7",
+      "requirement": "Fixture, finite deadline and join feasibility",
+      "verdict": "PASS",
+      "analysis": "The plan identifies required new test-local wrapper and genuine Store fixture, rather than treating existing fixtures as ready. Both old H1 SnapshotEndpoint and checked CapturedEndpoint omit generation_validate and cannot be copied unchanged; the planned wrapper forwards init/resources/generation_validate and original Exchange/result. Existing F.peer/connect/send_request/response/manual command APIs supply actual socket peers; static F.fixture/clean/close carry one-baseline assumptions and are source patterns only. Holder-owned coordinators, bounded native dispatch/return barriers after Store reply, release of the owner-input probe before CAS, exact peer+connection+stream identity, normal custodian/native/owner joins, final peer counts/exit0 and listener rebind are feasible without new production APIs. Existing failure/handoff patterns support stale CAS, candidate abandonment, Store death, original-operation cancellation, genuine mismatches and sticky late cleanup. New fixtures must implement those cleanup obligations, including intentional RED failure paths.",
+      "evidence": [
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:10-163,209-371,541-647",
+        "apps/gaoxy_proxy/test/upstream_transport_generation_test.exs:14-38,267-341,1092-1172,2323-2423,2446-2454",
+        "apps/gaoxy_proxy/test/managed_generation_checked_capture_test.exs:993-1010,1385-1435,1479-1555",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_release_order_test.exs:109-165",
+        "apps/gaoxy_proxy/test/upstream_transport_handoff_test.exs:278-315,378-389",
+        "docs/plans/m3-managed-h2-fixed-generation.md:53-150"
+      ]
+    },
+    {
+      "id": "C8",
+      "requirement": "Browser adaptation is bounded proposed work",
+      "verdict": "PASS",
+      "analysis": "The predecessor browser host prepares an H1 group, executes at file top level, and its runner navigates once; neither can be executed unchanged as fixed-H2 Generation proof. The plan explicitly requires a new frozen host/runner adaptation and independent fixture SPEC then CODE. Unchanged copied/hash-bound Cohort and current Actor/CDP custody provide real cohort cuts, all-actor terminals, process-group/reader joins and explicit browser cleanup. Two commands/navigations and fixed one-effect/one-source expectations are test fixture changes; complete native95/W+B, old/new genuine capture/CAS/retirement, visible exact documents, TLS/h2 versus clear H1 rows, close-after-request-clean, profile removal/Gate0/rebind remain required. No unknown production capability is assumed.",
+      "evidence": [
+        "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-cohort3.exs:13-72",
+        "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-runner8.py:128-228,253-341,352-458",
+        "docs/acceptance/evidence/m3/native-worker-accounting/1792113258488285300/native-worker-browser-host6.exs:428-473,643-698,822-875,923-985,1579-1583",
+        "docs/plans/m3-managed-h2-fixed-generation.md:134-150"
+      ]
+    },
+    {
+      "id": "C9",
+      "requirement": "Scoped gate coverage and security/compatibility",
+      "verdict": "PASS",
+      "analysis": "The 19-file final unfiltered union covers new profile/exclusion, fixed endpoint/lifecycle/release order, immutable identity/handoff/H1 preservation, checked capture/accounting, generic endpoint/sidecar/resources/Generation and H2 worker startup/stale-start seams. Eighteen files exist; the new fixed-generation test is intentionally future work. Six separate genuine behavioral RED cases avoid optional-hook bypass and distinguish denial from fixture/compile failures. Both core and HTTP isolated consumers and forced strict compile/changed-source format are prescribed; no full unrelated suite is introduced. Existing raw/manual/no-redirect/no-replay managed client uses immutable owner policy/scope with protocol and authority checks. No unprepared direct upstream H2, group qualification, trust/IP rotation, load/reload/H3 acceptance or publication is inferred.",
+      "evidence": [
+        "docs/plans/m3-managed-h2-fixed-generation.md:53-88,152-187",
+        "apps/gaoxy_proxy/test/upstream_transport_h2_identity_test.exs:70-225,261-337",
+        "apps/gaoxy_http/test/generation_endpoint_validation_test.exs:29-151",
+        "apps/gaoxy_http/test/generation_resource_consistency_test.exs:135-155,446-452",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:1379-1435",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:177-205,245-309",
+        "scripts/external-consumer.sh:1-14",
+        "scripts/http-consumer.sh:1-15"
+      ]
+    }
+  ],
+  "root_cause": "Existing intentional blanket denial for canonical H2 config at http.ex:242-246. Proposed transient pure validation reuses the authenticated live selection/delegation path.",
+  "repository_edits": [],
+  "owned_outputs": [
+    "/tmp/gaoxy-fixed-h2-generation-readiness-code1.md",
+    "/tmp/gaoxy-fixed-h2-generation-readiness-code1.json"
+  ],
+  "preexisting_changes": "Parent roadmap modification and untracked stage design/plan/acceptance/evidence preserved; all frozen identities unchanged.",
+  "runtime": "NOT RUN",
+  "tests": "NOT RUN",
+  "build": "NOT RUN",
+  "browser": "NOT RUN",
+  "network": "NOT RUN",
+  "git_mutation": "NOT RUN",
+  "verification_commands": [
+    "pwd; git status --short; git rev-parse HEAD; git branch --show-current; git diff --stat; scoped git diff (read-only)",
+    "rg/cat/nl/sed complete design/plan/acceptance/SPEC1/maps and relevant source/tests/browser/consumer scripts",
+    "Python standard-library JSON/hashlib candidate before/after and nested/source/spec report checks",
+    "Python static scoped-gate path inventory: 19 paths, 18 existing, one planned new test file"
+  ],
+  "verification_outcomes": "All inspection commands exit0 and all required static identity checks PASS. No runtime or implementation check executed.",
+  "command_shutdown": "All commands finished synchronously; no background commands or runtime actors started.",
+  "counters": {
+    "group_failed_green": 41,
+    "root_failure_events": 55,
+    "astra_recovery": 2,
+    "astra_max": 2,
+    "successor_failed_green": 0,
+    "successor_production_repairs": 0,
+    "successor_fixture_repairs": 0,
+    "added_sol_repairs": 0,
+    "added_failed_green": 0
+  },
+  "astra_gate": null,
+  "remaining_risks": [
+    "Source feasibility is not implementation acceptance or runtime evidence.",
+    "New genuine Store/socket/failure fixtures and browser host/runner are planned, not present or reviewed implementation.",
+    "Loaded-code identity stability and actual runtime/compatibility gates remain execution responsibilities.",
+    "Actual changes introducing a charged operand/lifetime require the prescribed independent constructor SPEC then CODE."
+  ],
+  "decisions_needed": [],
+  "memory_use": "Scope orientation only: MEMORY.md:234-236; current claims independently source-verified.",
+  "markdown_sha256": "19d1574b723ae1cf1590a079e30fb81092506526bfff327e5a9f504e424d2587",
+  "environment_preflight": {
+    "provenance": "parent execution; artifact/log inspection only by reviewer",
+    "toolchain_json_sha256": "4ec6f7c606853d965f3e8d1bcf8a1d82c881647a880106cee7697178e15e2c26",
+    "environment_json_sha256": "a5afb1fa83acc175e2078b22d7fcd035d2badcfc4437f1cfe1aa7b4f777fb37a",
+    "log_sha256": "7dfb9f73da8ae28f8ec75e8349961ab17ccc7ccff4126e19530d53dd1dd91944",
+    "status": "PASS",
+    "actual_exit": 0,
+    "process_joined": true,
+    "tests": 0,
+    "source_stable": true
+  }
+}

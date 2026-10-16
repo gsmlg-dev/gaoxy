@@ -1,0 +1,26 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 754593, max_cases: 1
+
+     [31merror:[0m cannot invoke remote function old.creator/0 inside a match
+     │
+ 144 │       refute_receive {:DOWN, _, :process, old_creator, _} when old_creator == old.creator, 0
+     │ [31m                                                                                  ^[0m
+     │
+     └─ test/managed_h2_fixed_generation_test.exs:144:83: Gaoxy.Proxy.ManagedH2FixedGenerationTest."test http1 to h2c checked old snapshot survives CAS and independent completion then source-pin release"/1
+
+     [31merror:[0m cannot find or invoke local when/2 inside a match. Only macros can be invoked inside a match and they must be defined before their invocation. Called as: {:DOWN, _, :process, old_creator, _} when old_creator == old.creator
+     │
+ 144 │       refute_receive {:DOWN, _, :process, old_creator, _} when old_creator == old.creator, 0
+     │ [31m                                                          ^[0m
+     │
+     └─ test/managed_h2_fixed_generation_test.exs:144:59: Gaoxy.Proxy.ManagedH2FixedGenerationTest."test http1 to h2c checked old snapshot survives CAS and independent completion then source-pin release"/1
+
+
+== Compilation error in file test/managed_h2_fixed_generation_test.exs ==
+** (CompileError) test/managed_h2_fixed_generation_test.exs: cannot compile module Gaoxy.Proxy.ManagedH2FixedGenerationTest (errors have been logged)
+    (stdlib 7.3.0.3) lists.erl:2466: :lists.foldl/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (stdlib 7.3.0.3) lists.erl:2673: :lists.mapfoldl_1/3
+    (ex_unit 1.18.5) expanding macro: ExUnit.Assertions.refute_receive/2
+    test/managed_h2_fixed_generation_test.exs:144: Gaoxy.Proxy.ManagedH2FixedGenerationTest."test http1 to h2c checked old snapshot survives CAS and independent completion then source-pin release"/1

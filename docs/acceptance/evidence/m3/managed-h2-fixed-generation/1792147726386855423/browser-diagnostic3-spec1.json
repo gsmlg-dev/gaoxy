@@ -1,0 +1,69 @@
+{
+  "task_id": "fixed_generation_browser_diagnostic3_spec1",
+  "assignment": "direct read-only independent diagnostic SPEC",
+  "verdict": "FAIL",
+  "candidate": "docs/acceptance/evidence/m3/managed-h2-fixed-generation/1792147726386855423/browser-diagnostic3-candidate1.json",
+  "candidate_sha256": "7103057d22847a45ed5f3d0443dac68b6bc68c7886f0a734b1669391e0cb926a",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "aa272c3dca700a9275a00bd23920d09bbd4748a1",
+  "manifest_verification": {
+    "sources": 400,
+    "evidence": 242,
+    "missing": 0,
+    "mismatches": 0,
+    "rechecked_before_report": true
+  },
+  "findings": [
+    {
+      "id": "SPEC-DIAG-1",
+      "severity": "P2",
+      "path": "docs/acceptance/evidence/m3/managed-h2-fixed-generation/1792147726386855423/fixed-generation-browser-runner3.py",
+      "line": 630,
+      "end_line": 635,
+      "title": "Final raw-NetLog projection/removal must wait for proved process-group joins",
+      "trigger": "Any actor.dispose raises before proving owned_group_gone/reader_joined (e.g. lines386-390 assertions or wait exception).",
+      "actual": "Except branch records cleanup_failed; final projection and diagnostic.cleanup still run unconditionally, potentially reading/removing raw log while Chrome remains alive. Later FAIL does not restore required custody ordering.",
+      "required": "Retain exact owned temp directory on an unproven join, record explicit ownership and failure, and project/remove only after actual process-group join proof (possibly root/collector completion). Forced but proven joined groups may project then remove. Do not change original acceptance assertions or deadlines."
+    }
+  ],
+  "confirmed": {
+    "host3_delta": "Only Cohort2 paths and diagnostic comment; exact original acceptance predicates/deadlines unchanged",
+    "runner_assertions": "88 original Python AST Assert nodes equal in original order",
+    "unchanged_ast": [
+      "Actor",
+      "assert_capture",
+      "adopted_children",
+      "reap_adopted",
+      "event_one_of",
+      "certificate_spki",
+      "inventory",
+      "main"
+    ],
+    "cohort_delta": "Add finite h2_stream_done/ssl_closed/tcp_closed/h2_close metadata; original census/identity/trace-delivery/joins/caps untouched",
+    "production_delta_vs_final_candidate2": "NONE; only five factual canonical docs changed and three new diagnostic source files added",
+    "netlog_projection": "8MiB read and8192 scanned-event bound; scalar/enum allowlist; URLs/headers/cookies/certificates/debug strings/raw payload excluded",
+    "normal_path_cleanup": "All Actor.dispose results prove group absence before final projection/removal"
+  },
+  "runtime_checks": "NOT RUN by explicit read-only assignment; AST/hash/static checks only",
+  "mutations": [
+    "/tmp/gaoxy-fixed-generation-browser-diagnostic3-spec1.md",
+    "/tmp/gaoxy-fixed-generation-browser-diagnostic3-spec1.json"
+  ],
+  "counter_received": {
+    "group_failed_green": 45,
+    "root_failure_events": 63,
+    "stage_failed_green": 4,
+    "fixture_repairs": 3,
+    "production_repairs": 0,
+    "orchestration_repairs": 4,
+    "astra": "2/2 exhausted"
+  },
+  "worker_repair_round_increment": 0,
+  "process_shutdown": "all commands finished; no runtime or background process launched",
+  "decisions_needed": [],
+  "remaining_risks": [
+    "Diagnostic candidate not qualified until SPEC-DIAG-1 addressed and independent review repeated.",
+    "Original target-close initiating cause remains UNPROVEN.",
+    "Stage/whole M3 incomplete; this review does not replace original full-stage SPEC/CODE."
+  ]
+}

@@ -1,0 +1,111 @@
+# SOURCE-ONLY ADDITIVE PROPOSAL. NOT PARSED, COMPILED, OR RUN.
+# OTP >=27 dynamic trace API; observed local OTP source is 28/stdlib7.3.0.1.
+# Root retains existing B arithmetic and all original completion/join assertions.
+# Before Gaoxy.stop0, after native suspension and pending real delivery:
+#
+# service_state = :sys.get_state(service)
+# session_token = :sys.get_state(session).token  # NOT held.token (transport token)
+# gate = captured.exchange.gate
+# lease = captured.exchange.lease
+# observed = failure_late_ledgers(service, gate, native, lease, session, session_token)
+#
+# After failed stop + all three existing barriers held + native:killed:
+# require real original Gate force-input metadata and original Gate:killed:
+# assert_receive {:trace, ^gate, :call, {Gaoxy.Admission, :handle_call, 3},
+#   {:fixed_late_gate_force, 1, 1, total, native_bytes, cleanup_bytes,
+#    true, true, true, false}}, @timeout
+# assert {total, native_bytes, cleanup_bytes} == observed.charged
+# gate_monitor = observed.gate_monitor
+# assert_receive {:DOWN, ^gate_monitor, :process, ^gate, :killed}, @timeout
+#
+# MINIMAL CAUSAL FIX: owner lifecycle and Session cancellation remain held here.
+# assert :ok = HTTP.RequestCompletion.abort_and_await(completion, @timeout)
+# assert :ok = HTTP.RequestCompletion.await(completion, 0)
+# Send owner continuation and obtain/await original retirement receipt as before.
+# Its original issued deadline is expired, so require the SAME exact failed receipt.
+# Then release Session cancellation and require the SAME :ok + normal Session DOWN.
+# Read F.physical_termination at existing point AFTER owner retirement; do not
+# require EOF before retiring the reusable managed scope merely from completion.
+#
+# Also require the genuine Service receipt observer packet below, then terminal:
+# assert_receive {:fixed_late_service_receipt, ^service, true, 1, nil}, @timeout
+# assert_receive {:trace, ^service, :call, {Gaoxy.Service, :terminate, 2},
+#   {:fixed_late_service_terminal, :normal, :stopped, 0, nil, true}}, @timeout
+# Keep original actual Service:normal DOWN, ownerzero, sticky failure, port rebind,
+# peer forced0/live0/Python0/collector joins and all remaining original assertions.
+# The force-input checkpoint is charged real Gate state; it is NEVER Gate0.
+
+  defp failure_late_ledgers(service, gate, native, lease_ref, guardian, cleanup_token) do
+    caller = self()
+    original = :sys.get_state(gate)
+    original_lease = Map.fetch!(original.leases, lease_ref)
+    original_cleanup = Map.fetch!(original.cleanups, cleanup_token)
+    assert original_lease.pid == native
+    assert original_lease.cleanup == cleanup_token
+    assert original_cleanup.lease == lease_ref
+    assert original_cleanup.receipt == false
+    assert map_size(original.leases) == 1
+    assert map_size(original.cleanups) == 1
+    assert original.bytes == original_lease.bytes + original_cleanup.bytes
+    assert original_lease.bytes > 0 and original_cleanup.bytes > 0
+    gate_monitor = Process.monitor(gate)
+
+    trace_session = :trace.session_create(:fixed_generation_late_ledger, caller, [])
+    on_exit(fn -> :trace.session_destroy(trace_session) end)
+
+    # Only compact integers/booleans leave the match specification. :arity means
+    # the call trace contains MFA arity, NEVER the actual state argument.
+    lease = {:map_get, lease_ref, :"$1"}
+    cleanup = {:map_get, cleanup_token, :"$2"}
+    gate_projection =
+      {{:fixed_late_gate_force, {:map_size, :"$1"}, {:map_size, :"$2"}, :"$3",
+        {:map_get, :bytes, lease}, {:map_get, :bytes, cleanup},
+        {:"=:=", {:map_get, :pid, lease}, native},
+        {:"=:=", {:map_get, :cleanup, lease}, cleanup_token},
+        {:"=:=", {:map_get, :lease, cleanup}, lease_ref},
+        {:map_get, :receipt, cleanup}}}
+
+    gate_pattern = [
+      {[:force, {service, :_},
+        %{service: service, leases: :"$1", cleanups: :"$2", bytes: :"$3"}],
+       [], [{:message, gate_projection}]}
+    ]
+
+    service_pattern = [
+      {[:"$1", %{gate: gate, generation: :"$2", mode: :"$3",
+                  cleanups: :"$4", cleanup_failed: :"$5", drain: :"$6"}],
+       [{:"=:=", :"$2", {:const, :sys.get_state(service).generation}}],
+       [{:message, {{:fixed_late_service_terminal, :"$1", :"$3",
+                      {:map_size, :"$4"}, :"$5", {:"=:=", :"$6", nil}}}}]}
+    ]
+
+    assert :trace.function(trace_session, {Gaoxy.Admission, :handle_call, 3},
+                          gate_pattern, [:local]) == 1
+    assert :trace.function(trace_session, {Gaoxy.Service, :terminate, 2},
+                          service_pattern, [:local]) == 1
+    assert :trace.process(trace_session, gate, true, [:call, :arity]) == 1
+    assert :trace.process(trace_session, service, true, [:call, :arity]) == 1
+
+    # Real post-receipt callback state is safe through :sys here: this Service
+    # cannot process its guardian DOWN until its own current debug hook returns.
+    receipt_debug = fn phase, event, _ ->
+      case {phase, event} do
+        {:waiting, {:in, {:"$gen_call", {^guardian, _},
+                          {:complete_cleanup, ^cleanup_token}}}} ->
+          :receipt
+
+        {:receipt, {:out, :ok, _, actual}} ->
+          send(caller,
+            {:fixed_late_service_receipt, service,
+             actual.cleanups[cleanup_token].receipt,
+             map_size(actual.cleanups), actual.cleanup_failed})
+          :done
+
+        _ -> phase
+      end
+    end
+    :ok = :sys.install(service, {make_ref(), receipt_debug, :waiting})
+
+    %{trace_session: trace_session, gate_monitor: gate_monitor,
+      charged: {original.bytes, original_lease.bytes, original_cleanup.bytes}}
+  end

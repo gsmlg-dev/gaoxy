@@ -239,9 +239,13 @@ defmodule Gaoxy.Proxy.HTTP do
       do: ManagedH2Client
 
   @impl true
-  def generation_validate(%__MODULE__{upstream_protocol: protocol})
-      when protocol in [:http2, :h2c],
-      do: {:error, :unsupported_generation_endpoint}
+  def generation_validate(%__MODULE__{upstream_protocol: protocol} = config)
+      when protocol in [:http2, :h2c] do
+    case ManagedH2Envelope.validate_config(config) do
+      :ok -> :ok
+      {:error, :invalid_config} -> {:error, :unsupported_generation_endpoint}
+    end
+  end
 
   def generation_validate(_), do: :ok
 
