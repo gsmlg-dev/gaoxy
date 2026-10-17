@@ -1,5 +1,16 @@
 # Managed-H1 Matrix Implementation Plan
 
+## Actual managed-H1 matrix local closure — 2026-10-18
+
+The bounded eight-row/two-family managed-H1 matrix is **DONE LOCALLY** at `deef3b0f41b55d30d83fc615998c1fad16e7b4a4` (parent `1426657e65d726629d618dcf03880df718375dd1`). Final independent SPEC1→CODE1 passed with zero findings. Actual postcommit custody `docs/acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/h1-matrix-postcommit-custody1.json` (SHA256 `1d6e74e923e9f467ccdd7b140a4055760eabe381cde6651fc3df270aea5896f7`) verifies226 task files,401 source pins,11 installed dependency disk pins and617 union committed blobs, exact disk/index/commit bytes, empty index diff and clean task/source tracked diff at closure.
+
+First2 matrix16/0, fresh related96/0, Python11 methods, finite standalone16/0 and separate browser2rows/four actual root image opens passed with explicit candidate4/candidate5 cohorts. Historical first1 FAIL16/12, both diagnostic FAIL1/1 and browser1 overall FAIL remain immutable. Task source/canonical-doc staged whitespace passed0; immutable whole-archive whitespace retains actualexit2. Counter22 froze root519/orchestration418/H1tool29/Sol4/Astra2/2; successor counter1 preserves the later successful-commit display incident and adoption-tool key correction without runtime or repair deltas.
+
+WholeTask6/Task5/M3 remain **OPEN**. Automatically execute the separately bounded native-H2 downstream × fixed/group × h2c/TLS-H2 combined slow-peer/queue/peak/live-sibling profile under continuing authorization. Its adoption used this actual HEAD; the successor now has focused4/0, fresh related94/0, Python11 and ordinary browser2rows/four fresh root image opens qualified. See the [current H2 acceptance](../acceptance/m3-managed-h2-slow-peer.md); final successor document review/local commit/custody remain pending, and the H1 closure itself is unchanged. Other H1 pressure/disconnect, standalone/load/composition and remaining product gates stay separate. No publication, deployment or excluded operation follows.
+
+## Frozen precommit checkpoints — unchanged
+
+
 > **For agentic workers:** Use the project's approved executing-plans or subagent-driven workflow only after the parent-owned cancellation gates pass. The predecessor is closed; local runtime gates now pass, with final independent document review and actual local commit/custody still required.
 
 **Goal:** Complete eight managed-H1 configuration rows and a genuinely finite integration entry using existing independent drivers.
@@ -83,7 +94,7 @@ Use the already-qualified Python executable/environment if this shell does not e
 
 - [x] Complete necessary separate independent-peer/browser acceptance using the accepted group native-H1/H2→TLS-H1 two-row/four fresh root-image-open pattern with test-only local TLS, actual readiness/browser receipts and finite cleanup. Source tests or synthetic pages do not substitute. Freeze real addresses/paths at execution; no operational certificates or protected E4/private/key reads.
 - [x] Retain exact candidate/dirty-source hashes, Python/packages, connection/request IDs, byte/digest and ordered field/trailer receipts, barrier order, completion/accounting and joined states. Keep PASS/FAIL/BLOCKED/NOT RUN explicit. Never overwrite historical receipts or describe unrun browser/integration as PASS.
-- [ ] Review final evidence; run scoped diff/whitespace checks; stage explicit owned files and make a local conventional commit without generated/co-author trailers. No push/publication/deployment. Update canonical slice status from actual evidence; Task6/Task5/M3 remain OPEN.
+- [x] Review final evidence; run scoped diff/whitespace checks; stage explicit owned files and make a local conventional commit without generated/co-author trailers. No push/publication/deployment. Update canonical slice status from actual evidence; Task6/Task5/M3 remain OPEN.
 
 Traceability: design temporal/trailer requirements → Tasks2–3 temporal family; empty/fixed/gzip/bodyless/upstream reuse → Task3 representation family; runnable finite entry → Task3 adapter/coordinator; prescribed source/implementation review, fresh scoped tests/browser/local commit → Task4.
 

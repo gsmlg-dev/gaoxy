@@ -1,3 +1,5 @@
+Code.require_file("managed_h2_fixed_fixture.exs", __DIR__)
+
 defmodule Gaoxy.Proxy.ManagedH2GroupFixture do
   @moduledoc false
   import ExUnit.Assertions

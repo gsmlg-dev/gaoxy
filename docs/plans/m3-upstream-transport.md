@@ -1,3 +1,29 @@
+## Current managed-H2 slow-peer qualification — 2026-10-18
+
+The bounded native-H2 downstream × fixed/group × h2c/TLS-H2 upstream profile is **RUNTIME QUALIFIED; final independent document review and local commit/custody pending**. Corrected source candidate2 has403 source pins,5 owned test/fixture files and12 installed dependency pins. Source SPEC2→CODE1 and focused implementation/evidence SPEC1→CODE1 passed with no remaining findings. No production source was changed.
+
+Actual focused `first1`4/0 and fresh related `fresh1`94/0 passed, with0 skipped/excluded, no compiler/test warnings, stable source and normal collector joins. Nix reported the expected dirty working-tree warning. The94 comprise slow4 + streaming28 + fixed-write6 + group-lifecycle18 + fixed-endpoint38, including extraction compatibility; the first4 overlap the fresh94, so this is not98 unique cases. Strict compile, scoped format and Python AST passed; those static checks execute0 tests. Separately,11 actual Python startup methods passed. Ordinary browser default regression passed2rows/four pages (group native-H1/H2→TLS-H1), followed by four fresh actual root image opens. All8 Chrome adopted waits were raw0; unreported helper statuses are not asserted to be0.
+
+Every profile row observed the real upload window1 hold and16,384 unconsumed response bytes with stream credit0 and positive connection credit. Healthy stream5 completed before either release. The original request accounting reached3→2→1→0, upload completed while response3 stayed held, and five explicit consumption commands acknowledged only actual held bytes16,384×4+1. Both65,537-byte bodies have SHA256 `2deb0bd2129a9d3aed91e3cff58b3993752be549642890a3e853ec1065f9b617`. Nonempty native queues and bounded pending writes were observed. Timer/barrier sampled maxima remain distinct from the persistent Service retained high-water counter. Original request deadlines remain fixed10s/group30s, native write2s; local observation barriers never extend the original deadline.
+
+Design SPEC1 and concrete source SPEC1 failures remain immutable. Source Sol repair1 corrected exact fixed9,444,956/group16,478,862 cleanup charges and clipped public status observations to the original deadline with actual normal helper joins; timed-out observations always fail after bounded cleanup. There has been no profile runtime failure or production repair. Counter15 preserves all inherited categories; Astra2/2 remains exhausted.
+
+WholeTask6/Task5/M3 remain **OPEN**. Native-H1 actual socket-pressure, true upstream blocked-reader and sole blocked-upload disconnect, standalone slow-peer registry, sustained load/composition and other remaining gates are separate. The ordinary browser result does not establish controlled browser slow consumption. After actual local closure, automatically adopt/re-pin/review and execute the next bounded H1 pressure slice under continuing authorization. No push, publication, deployment, production/certificate/Vault/public-management/account change or disabled release-artifact E2E activation follows.
+
+Evidence: [final-nonbrowser-audit1.json](../acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/final-nonbrowser-audit1.json) and the separate browser/root-image audits in the same cohort. Exact pre-overlay document bytes are retained by `pre-final-documents1.json`.
+
+## Frozen prior checkpoints — unchanged below
+
+## Actual managed-H1 matrix local closure — 2026-10-18
+
+The bounded eight-row/two-family managed-H1 matrix is **DONE LOCALLY** at `deef3b0f41b55d30d83fc615998c1fad16e7b4a4` (parent `1426657e65d726629d618dcf03880df718375dd1`). Final independent SPEC1→CODE1 passed with zero findings. Actual postcommit custody `docs/acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/h1-matrix-postcommit-custody1.json` (SHA256 `1d6e74e923e9f467ccdd7b140a4055760eabe381cde6651fc3df270aea5896f7`) verifies226 task files,401 source pins,11 installed dependency disk pins and617 union committed blobs, exact disk/index/commit bytes, empty index diff and clean task/source tracked diff at closure.
+
+First2 matrix16/0, fresh related96/0, Python11 methods, finite standalone16/0 and separate browser2rows/four actual root image opens passed with explicit candidate4/candidate5 cohorts. Historical first1 FAIL16/12, both diagnostic FAIL1/1 and browser1 overall FAIL remain immutable. Task source/canonical-doc staged whitespace passed0; immutable whole-archive whitespace retains actualexit2. Counter22 froze root519/orchestration418/H1tool29/Sol4/Astra2/2; successor counter1 preserves the later successful-commit display incident and adoption-tool key correction without runtime or repair deltas.
+
+WholeTask6/Task5/M3 remain **OPEN**. Automatically execute the separately bounded native-H2 downstream × fixed/group × h2c/TLS-H2 combined slow-peer/queue/peak/live-sibling profile under continuing authorization. Its source adoption is pinned to this actual HEAD; no profile runtime or acceptance is inferred from preparation. Other H1 pressure/disconnect, standalone/load/composition and remaining product gates stay separate. No publication, deployment or excluded operation follows.
+
+## Frozen precommit checkpoints — unchanged
+
 ## Current managed-H1 matrix qualification — 2026-10-18
 
 The eight fixed/group × native cleartext H1/prior-knowledge H2 × TCP/TLS-H1 rows passed both temporal/trailer and representation/reuse families. First2 matrix16/0 and fresh related96/0 are overlapping executions; Python11 actual startup methods and finite standalone16/0 are separate. The only production change preserves explicit Content-Length0 through the existing public stream path. H1 retains16MiB; valid H2 fixtures use64MiB with40,946,727-byte reservation. Historical first1 FAIL16/12 and both diagnostic FAIL1/1 executions remain immutable.

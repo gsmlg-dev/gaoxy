@@ -1,0 +1,146 @@
+{
+  "task_id": "managed-h2-slow-peer-source-spec1",
+  "status": "DONE_REVIEW_WITH_FINDINGS",
+  "assignment": "direct full concrete-source independent SPEC review",
+  "verdict": "CHANGES_REQUIRED",
+  "findings": [
+    {
+      "id": "SOURCE-SPEC1-01",
+      "severity": "high",
+      "title": "Fixed rows assert the group-only cleanup reservation",
+      "references": [
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs:10",
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs:453-458",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:633-639",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:40-41",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_reservation.ex:17,104-109",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex:88"
+      ],
+      "evidence": "The test defines @reserve=16_478_862 and unconditionally requires each gate cleanup.bytes === @reserve. Production HTTP selects ManagedH2GroupAccounting.reservation_bytes() only for managed-H2 groups; fixed endpoints call ManagedH2Client.reservation_bytes(), delegating to ManagedH2Reservation, whose valid result is @activation_bytes=9_444_956. The first fixed upload-held checkpoint therefore cannot satisfy the equality, and its retained_bytes lower bound also uses the wrong per-request charge. Both fixed rows are structurally prevented from reaching the protocol choreography. No test execution was performed.",
+      "requested_change": "Choose the exact expected cleanup reservation by mount (fixed9_444_956, group16_478_862) and use it consistently for exact cleanup equality and count-derived retained lower bounds. Keep the assertions exact; do not raise production reservations or weaken equality.",
+      "verification_needed": "Fresh source SPEC/CODE review of corrected mount-specific accounting, then actual four-case and required fresh-group runtime gates."
+    },
+    {
+      "id": "SOURCE-SPEC1-02",
+      "severity": "medium",
+      "title": "New status observations bypass the original remaining request budget",
+      "references": [
+        "docs/designs/m3-managed-h2-slow-peer.md:24",
+        "docs/plans/m3-managed-h2-slow-peer.md:26",
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs:274-280",
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs:428,434-447,462",
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs:624-625,648-649",
+        "apps/gaoxy/lib/gaoxy.ex:94-99",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:208-212",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:388"
+      ],
+      "evidence": "system/receive waits clip via wait_budget, but controller/checkpoint and sampler call public status functions directly. Gaoxy.status starts a new5000ms deadline, transport status starts1000ms, and group status starts100ms. These waits are independent of remaining original request time and can block beyond it when an observed owner/service does not respond. A finite local timeout is not the inherited original absolute budget required by the accepted design. This is an observation-wait contract gap; no claim is made that a runtime overrun was executed.",
+      "requested_change": "Bound the new controller/sampler status observations by the remaining original deadline using a test-only mechanism and normal owned cleanup; preserve public production interfaces, request deadlines, assertions and existing separate failure-cleanup headroom. Do not merely extend timeouts.",
+      "verification_needed": "Fresh source review must trace every new blocking observation to the original remaining budget; future runtime should retain its existing deadlines and normal joins."
+    }
+  ],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "entry_head": "deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+  "at_utc": "2026-10-17T22:05:43.319442+00:00",
+  "source_candidate1_sha256": "acec0d157fba4f74aa0749cc8a2e559f48b279f5fa3050f54e18b232c9be5319",
+  "pin_checks": {
+    "source_sha256": {
+      "checked": 403,
+      "mismatches": []
+    },
+    "owned_sha256": {
+      "checked": 5,
+      "mismatches": []
+    },
+    "documents_sha256": {
+      "checked": 8,
+      "mismatches": []
+    },
+    "installed_dependency_sha256": {
+      "checked": 12,
+      "mismatches": []
+    }
+  },
+  "owned_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "04d1d209e0ab7fa05f3aabfeb5c1b24039cf264b8f03406ffc7151df812a5e2e",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_fixture.exs": "b1c1d7ce20fcd69fbf37f1f805b6f25fe24d7986a897be72f6f4ec73b959e9f5",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "d4429aa3fe49b9faca2c05bef631ef97cf6ca4f6fe69d350dea71bd147a367f0",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "9009d7ba27b184d9c8ce0743e40cb610dd20e22b4828abe34fbd299d16f74a42",
+    "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs": "76fede9b74df9d5ca67a7ba5af2afbcb625564485e393816f1a45dd2b452e3d6"
+  },
+  "documents_sha256": {
+    "docs/acceptance/m3-managed-h1-matrix.md": "f53b3958d5eab61a3d2b3c79e27524860b8e2319755cbedcdbc406db69e9912c",
+    "docs/acceptance/m3-managed-h2-slow-peer.md": "d72f628b8d60179fafd29fbf8e883b81fe7cdb059802a7b94a8bc4d72da58a3f",
+    "docs/designs/m3-managed-h1-matrix.md": "0c238ec0634aeeb4a3609493b38af64526c9a031eb0b5480850a946879c081ba",
+    "docs/designs/m3-managed-h2-slow-peer.md": "6119b9e78369f24a0b75335c8e1e4e889cd88dcdcb559298f2f282a08bd17161",
+    "docs/plans/m3-managed-h1-matrix.md": "db87f0de535a09b82355197a3acf467010dc0fc0c6776658e413c953da425242",
+    "docs/plans/m3-managed-h2-slow-peer.md": "4f2b01dc8258df9a1744c8ed7e16c381b7b51d11dd516307736f06910de024a1",
+    "docs/plans/m3-upstream-transport.md": "96f7fcbe18d6758c625f30b068c7f40989c179fffa35c82dc15c3eb40cc4cd8b",
+    "implement-plan.md": "4090e8092c2d381506c2428f4a6a44bb39c031bdad3749a9246555a53fd830b6"
+  },
+  "extraction2": {
+    "receipt_sha256": "d775d62ec9c04ec1a8f1fbe0ed6dd03cb515b54812b4e69b95dfbacf4d265da0",
+    "independent_byte_checks": {
+      "F_exact_original_with_equivalent_script_path_and_one_removed_final_blank_line": true,
+      "original_fixed_test_suffix_byte_exact_after_require": true,
+      "original_G_module_byte_exact_after_require": true
+    },
+    "runtime_compatibility38": "NOT RUN"
+  },
+  "reviewed_requirements": {
+    "four_rows": "Source loop fixed/group \u00d7 h2c/http2 produces four source-planned cases; no executed count claimed.",
+    "default_preservation": "New client path is opt-in and returns before default one-stream path; profile peer checks are conditional, strict one-byte release branch remains. Runtime Python11/browser compatibility pending.",
+    "actual_holds": "Source requires upstream actual window1 upload event/hash and native stream3 zero send credit with positive pending DATA; downstream stream3 retains16384 flow-controlled bytes without automatic ACK.",
+    "identities_and_overlap": "Same native owner/IDs1,3,5, same accepted upstream connection, distinct upstream stream IDs; original transport/group tokens, pins and completion ownership are captured and checked.",
+    "ordering_and_accounting": "Source checkpoints prescribe original3\u21922\u21921\u21920, sibling terminal/join before either release, upload-only resume/join while response stays held, then five actual-held-byte consumes. Reservation numeric bug is finding01.",
+    "queues_and_sampling": "Finite timer sampler checks parser/output/stream wire/pending DATA/mailboxes and workload ceiling64, pressure nonzero, sampled maxima distinct from persistent retained_high_water. Public status budget gap is finding02.",
+    "normal_and_failure_cleanup": "Source awaits original worker/guardian completion, stops sampler normally, retains native connection until request0 then closes client/native actors and invokes existing fixture retirement/peer joins. Failure path records sampler/client forced or unjoined outcomes and re-raises. No execution acceptance inferred.",
+    "gates": "Docs preserve focused4, fresh94, Python11 and ordinary browser2/four fresh root opens as future separate gates; Task6/Task5/M3 remain OPEN."
+  },
+  "runtime": "NOT RUN: no Mix, build, tests, browser, peer/client or candidate execution/imports. Static AST parse only; no source CODE or runtime PASS inferred.",
+  "tool_incidents_this_assignment": [
+    {
+      "id": 1,
+      "description": "One peer-source display exceeded its4400-token cap; relevant omitted lines were subsequently read in smaller exact ranges."
+    },
+    {
+      "id": 2,
+      "description": "An rg command guessed completion source under deps/http_core; absent file produced exit2. Manifest identified actual deps/http_fetch path, which was then read."
+    },
+    {
+      "id": 3,
+      "description": "Another combined exact-range source display exceeded3300-token cap by37 tokens; essential completion declaration and status/source data were visible; relevant implementation was separately inspected."
+    },
+    {
+      "id": 4,
+      "description": "An rg command included a guessed nonexistent proxy/http/options.ex path and exited2; matching existing reservation/source references were subsequently read directly."
+    },
+    {
+      "id": 5,
+      "description": "A static line projection requested lines beyond the streaming test file length and exited1 IndexError after useful output. Later projections use bounded lengths; reservation result was subsequently read successfully."
+    }
+  ],
+  "tool_incident_count_this_assignment": 5,
+  "prior_tool_incidents": "Not counted again in this assignment.",
+  "counters": {
+    "entry_root": 538,
+    "entry_orchestration": 437,
+    "entry_slowTool": 17,
+    "profile_source_failures_at_entry": 0,
+    "profile_runtime_failures": 0,
+    "profile_sol_repairs": 0,
+    "inherited_H1_sol_repairs": 4,
+    "astra_repairs": "2/2 exhausted",
+    "this_review_repairs": 0,
+    "astra_gate": null
+  },
+  "verification_commands": "Static Python JSON/SHA256/AST/byte comparisons and bounded source reads only. All own commands finished; no sessions/processes remain.",
+  "repository_writes": false,
+  "writes": [
+    "/tmp/gaoxy-managed-h2-slow-peer-source-spec1.json",
+    "/tmp/gaoxy-managed-h2-slow-peer-source-spec1.md"
+  ],
+  "ownership": "Returned to root for targeted repair, fresh freeze, independent SPEC then CODE, and future runtime/Git/evidence.",
+  "remaining_risks": "Runtime registration/timing/window behavior, complete receipts and normal cleanup remain unexecuted. Two findings require repair before runtime.",
+  "decisions_needed": "No user decision or new product scope needed."
+}

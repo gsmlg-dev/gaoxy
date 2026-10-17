@@ -57,9 +57,11 @@ class Commands:
 
 class Peer:
     def __init__(self, protocol, manual, alpn, max_streams=None,
-                 bind_address="127.0.0.1", listen_port=0, hold_upload_credit=False):
+                 bind_address="127.0.0.1", listen_port=0, hold_upload_credit=False,
+                 slow_peer_profile=False):
         self.protocol, self.manual, self.alpn = protocol, manual, alpn
         self.hold_upload_credit = hold_upload_credit
+        self.slow_peer_profile, self.profile_commands = slow_peer_profile, 0
         self.max_streams = max_streams
         self.bind_address, self.listen_port = bind_address, listen_port
         self.lock = threading.RLock()
@@ -299,6 +301,12 @@ class Peer:
                             client["uploads"][event.stream_id] = bytearray()
                             fields = event.headers
                             target = dict(fields)[":path"]
+                            if self.slow_peer_profile:
+                                shapes = {"/health": "HEAD", "/hold/upload-credit": "POST",
+                                          "/hold/slow-response": "GET", "/hold/healthy": "GET"}
+                                if (target not in shapes or dict(fields)[":method"] != shapes[target] or
+                                        target in client["targets"].values()):
+                                    raise RuntimeError("slow-peer unexpected/replayed application request")
                             client["targets"][event.stream_id] = target
                             self.emit("request", connection=number, stream=event.stream_id,
                                       headers=fields, target=target, ended=event.stream_ended is not None)
@@ -309,6 +317,10 @@ class Peer:
                             upload.extend(event.data)
                             if len(upload) > 1048576:
                                 raise RuntimeError("fixture upload bound exceeded")
+                            if (self.slow_peer_profile and
+                                    client["targets"][event.stream_id] == "/hold/upload-credit" and
+                                    len(upload) > 65537):
+                                raise RuntimeError("slow-peer upload body bound exceeded")
                             self.emit("upload", connection=number, stream=event.stream_id,
                                       chunk_bytes=len(event.data), total_bytes=len(upload),
                                       sha256=hashlib.sha256(upload).hexdigest())
@@ -344,6 +356,10 @@ class Peer:
                                 upload_values["body64"] = base64.b64encode(
                                     client["uploads"].get(event.stream_id, b"")).decode("ascii")
                             self.emit("upload_end", connection=number, stream=event.stream_id, **upload_values)
+                            if (self.slow_peer_profile and
+                                    client["targets"][event.stream_id] == "/hold/upload-credit" and
+                                    len(client["uploads"][event.stream_id]) != 65537):
+                                raise RuntimeError("slow-peer upload ended at incorrect length")
                             if (not self.manual and event.stream_id not in client["responses"]
                                     and client["targets"][event.stream_id].split("?", 1)[0] != "/hold"):
                                 body = bytes(client["uploads"].get(event.stream_id, b""))
@@ -474,6 +490,12 @@ class Peer:
             self.stop()
             return False
         with self.lock:
+            if self.slow_peer_profile:
+                self.profile_commands += 1
+                if self.profile_commands > 32:
+                    raise RuntimeError("slow-peer fixture command bound exceeded")
+                if op not in ("respond", "resume_upload_profile", "profile_snapshot"):
+                    raise RuntimeError("operation outside bounded slow-peer fixture profile")
             client = self.clients[value["connection"]]
             if client["write_closed"] or client["tls_close_request"] is not None:
                 raise RuntimeError("fixture command after write half-close")
@@ -482,9 +504,24 @@ class Peer:
                 body = base64.b64decode(value.get("body64", ""), validate=True)
                 if len(body) > 1048576:
                     raise RuntimeError("fixture command body bound exceeded")
+                if self.slow_peer_profile and (stream in client["responses"] or
+                        sum(len(p[0]) for p in client["pending"].values()) + len(body) > 1048576):
+                    raise RuntimeError("slow-peer response replay/pending bound exceeded")
+                if self.slow_peer_profile:
+                    target = client["targets"].get(stream)
+                    expected = {"/health": b"", "/hold/upload-credit": b"u",
+                                "/hold/slow-response": bytes(range(256)) * 256 + b"\x00",
+                                "/hold/healthy": b"s"}.get(target)
+                    if (body != expected or value.get("status", 200) != 200 or
+                            not value.get("ended", True) or value.get("trailers", [])):
+                        raise RuntimeError("slow-peer response outside exact finite profile")
+                    if target == "/hold/upload-credit" and len(client["uploads"][stream]) != 65537:
+                        raise RuntimeError("slow-peer upload response preceded full original upload")
                 self.respond(client, stream, value.get("status", 200), value.get("fields", []),
                              body, value.get("trailers", []), value.get("ended", True))
             elif op == "data":
+                if self.slow_peer_profile:
+                    raise RuntimeError("slow-peer profile requires one finite whole response")
                 body = base64.b64decode(value["body64"], validate=True)
                 client["pending"][stream] = [body, value.get("trailers", []), value.get("ended", False)]
             elif op == "inform":
@@ -510,11 +547,44 @@ class Peer:
                 conn.increment_flow_control_window(1, stream)
                 conn.increment_flow_control_window(1)
                 client["credit_released"].add(stream)
+            elif op == "resume_upload_profile":
+                if (not self.slow_peer_profile or not self.hold_upload_credit or
+                        value.get("credit_bytes") != 65536 or
+                        client["targets"].get(stream) != "/hold/upload-credit" or
+                        stream not in client["credit_holds"] or
+                        stream in client["credit_released"] or
+                        len(client["uploads"][stream]) != 1 or
+                        conn.remote_flow_control_window(stream) != 0 or
+                        conn.inbound_flow_control_window <= 0):
+                    raise RuntimeError("slow-peer resume outside original exact hold")
+                conn.increment_flow_control_window(65536, stream)
+                conn.increment_flow_control_window(1)
+                client["credit_released"].add(stream)
+            elif op == "profile_snapshot":
+                if not self.slow_peer_profile:
+                    raise RuntimeError("slow-peer snapshot requires profile")
             elif op == "settings":
                 conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value["max_streams"]})
             else:
                 raise RuntimeError("unknown fixture operation")
             self.flush(client)
+            if self.slow_peer_profile:
+                pending_bytes = sum(len(p[0]) for p in client["pending"].values())
+                if pending_bytes > 1048576:
+                    raise RuntimeError("slow-peer pending response bound exceeded")
+                self.emit("profile_peer_state", op=op, command_id=value.get("command_id"),
+                          accepts=self.accepts, requests=self.requests,
+                          connection=value["connection"], stream=stream,
+                          upload_bytes=len(client["uploads"].get(stream, b"")),
+                          upload_sha256=hashlib.sha256(client["uploads"].get(stream, b"")).hexdigest(),
+                          credit_released=stream in client["credit_released"],
+                          upload_window=(conn.remote_flow_control_window(stream)
+                                         if stream in client["credit_holds"] and
+                                         stream not in client["credit_released"] else None),
+                          connection_receive_window=conn.inbound_flow_control_window,
+                          connection_send_window=conn.outbound_flow_control_window,
+                          pending_bytes=pending_bytes,
+                          stream_pending_bytes=len(client["pending"].get(stream, [b""])[0]))
             if op == "write_half_close":
                 if isinstance(client["socket"], ssl.SSLSocket):
                     # No ACK until the original reader completes TLS then SHUT_WR.
@@ -524,6 +594,8 @@ class Peer:
                 socket.socket.shutdown(client["socket"], socket.SHUT_WR)
                 client["write_closed"] = True
             credit_values = {"credit_bytes": 1} if op == "release_upload_credit" else {}
+            if op == "resume_upload_profile":
+                credit_values = {"credit_bytes": 65536, "connection_credit_bytes": 1}
             self.emit("command", op=op, connection=value["connection"], stream=stream,
                       command_id=value.get("command_id"), code=value.get("code"),
                       last_stream=value.get("last_stream"), max_streams=value.get("max_streams"),
@@ -828,6 +900,176 @@ def client_head(args, status, headers, informational):
                               informational=informational)), flush=True)
 
 
+def slow_peer_client(sock, args):
+    """One opt-in consumer: receive/demultiplex continuously, consume stream3 explicitly."""
+    conn = h2.connection.H2Connection(config=h2.config.H2Configuration(
+        client_side=True, header_encoding="utf-8"))
+    conn.local_settings = h2.settings.Settings(client=True, initial_values={
+        h2.settings.SettingCodes.MAX_HEADER_LIST_SIZE: 131072,
+        h2.settings.SettingCodes.INITIAL_WINDOW_SIZE: 16384})
+    conn.initiate_connection()
+    deadline = time.monotonic() + 20
+    acknowledged = acknowledge_managed_fixed_header_list(conn, sock, deadline)
+    commands, count, consumed, events = Commands(), 0, 0, 0
+    streams, upload, upload_sent, finished = {}, b"", 0, False
+    pattern = bytes(range(256)) * 256 + b"\x00"
+    shapes = {1: ("POST", "/hold/upload-credit"),
+              3: ("GET", "/hold/slow-response"), 5: ("GET", "/hold/healthy")}
+
+    def emit(event, **values):
+        nonlocal events
+        events += 1
+        line = json.dumps(dict(event=event, **values), separators=(",", ":"))
+        if events > 256 or len(line) > 262144:
+            raise RuntimeError("slow-peer client event bound exceeded")
+        print(line, flush=True)
+
+    def flush():
+        pending = conn.data_to_send()
+        if pending:
+            managed_fixed_socket_timeout(sock, deadline, 0.1)
+            sock.sendall(pending)
+
+    def state(stream):
+        value = streams[stream]
+        return dict(stream=stream, received_bytes=len(value["data"]),
+                    body_sha256=hashlib.sha256(value["data"]).hexdigest(),
+                    held_bytes=value["held"], ended=value["ended"],
+                    stream_window=(conn.remote_flow_control_window(stream)
+                                   if not value["ended"] and not value["wire_ended"] else None),
+                    connection_window=conn.inbound_flow_control_window)
+
+    emit("profile_client_ready", initial_window=16384, safety_seconds=20,
+         header_list_ack=acknowledged)
+    try:
+        while not finished:
+            if time.monotonic() >= deadline:
+                raise TimeoutError("independent slow-peer client deadline")
+            command = commands.read(0)
+            if command is not None:
+                count += 1
+                if count > 32:
+                    raise RuntimeError("slow-peer client command bound exceeded")
+                op, command_id = command.get("op"), command.get("command_id")
+                allowed = {"op", "command_id"}
+                if op == "consume_response":
+                    allowed.add("bytes")
+                if op == "snapshot":
+                    allowed.add("stream")
+                if (set(command) != allowed or type(command_id) is not int or command_id <= 0):
+                    raise RuntimeError("slow-peer invalid command shape/identity")
+                if op in ("open_upload", "open_response", "open_sibling"):
+                    stream = {"open_upload": 1, "open_response": 3, "open_sibling": 5}[op]
+                    if stream in streams or sorted(streams) != [s for s in (1, 3, 5) if s < stream]:
+                        raise RuntimeError("slow-peer duplicate/out-of-order open")
+                    method, target = shapes[stream]
+                    fields = [(":method", method), (":scheme", "http"),
+                              (":authority", f"{args.hostname}:{args.port}"), (":path", target)]
+                    if stream == 1:
+                        fields += [("content-length", "65537")]
+                        upload = pattern
+                    streams[stream] = dict(data=bytearray(), held=0, ended=False, wire_ended=False, status=None)
+                    conn.send_headers(stream, fields, end_stream=stream != 1)
+                    emit("profile_client_open", stream=stream, target=target, command_id=command_id)
+                elif op == "consume_response":
+                    if 3 not in streams or not streams.get(1, {}).get("ended") or not streams.get(5, {}).get("ended"):
+                        raise RuntimeError("slow-peer consumption preceded other original successes")
+                    value, amount = streams[3], command.get("bytes")
+                    if (type(amount) is not int or not 1 <= amount <= 16384 or
+                            amount != value["held"] or consumed >= 5):
+                        raise RuntimeError("slow-peer consume requires actual entire bounded held bytes")
+                    before = value["held"]
+                    conn.acknowledge_received_data(amount, 3)
+                    value["held"] -= amount
+                    consumed += 1
+                    emit("profile_client_consumed", command_id=command_id, count=consumed,
+                         before=before, bytes=amount, after=value["held"], **state(3))
+                elif op == "snapshot":
+                    if command.get("stream") not in streams:
+                        raise RuntimeError("slow-peer snapshot unknown stream")
+                    emit("profile_client_state", command_id=command_id, **state(command["stream"]))
+                elif op == "finish":
+                    if (sorted(streams) != [1, 3, 5] or not all(v["ended"] for v in streams.values()) or
+                            streams[3]["held"] != 0 or upload or upload_sent != 65537):
+                        raise RuntimeError("slow-peer finish preceded complete consumed originals")
+                    finished = True
+                    emit("profile_client_finished", command_id=command_id, commands=count,
+                         consume_commands=consumed, upload_bytes=upload_sent,
+                         socket_closed=False, forced=0, live=0)
+                elif op == "stop":
+                    raise RuntimeError("slow-peer client stopped before normal finish")
+                else:
+                    raise RuntimeError("unknown slow-peer client command")
+            while upload and conn.local_flow_control_window(1) > 0:
+                amount = min(len(upload), conn.local_flow_control_window(1), conn.max_outbound_frame_size)
+                piece, upload = upload[:amount], upload[amount:]
+                conn.send_data(1, piece, end_stream=not upload)
+                upload_sent += amount
+            flush()
+            if finished:
+                break
+            managed_fixed_socket_timeout(sock, deadline, 0.1)
+            ready, _, _ = select.select([sock, sys.stdin], [], [], min(0.1, deadline - time.monotonic()))
+            if sock not in ready:
+                continue
+            try:
+                data = sock.recv(65536)
+            except socket.timeout:
+                continue
+            if not data:
+                raise EOFError("slow-peer downstream closed before explicit finish")
+            for event in conn.receive_data(data):
+                stream = getattr(event, "stream_id", None)
+                if isinstance(event, (h2.events.ResponseReceived, h2.events.DataReceived,
+                                      h2.events.StreamEnded, h2.events.TrailersReceived)):
+                    if stream not in streams:
+                        raise RuntimeError("slow-peer response for unknown original")
+                    value = streams[stream]
+                    if isinstance(event, h2.events.ResponseReceived):
+                        if value["status"] is not None:
+                            raise RuntimeError("slow-peer duplicate response head")
+                        value["status"] = int(dict(event.headers)[":status"])
+                        if value["status"] != 200:
+                            raise RuntimeError("slow-peer non-success response")
+                        emit("profile_client_head", stream=stream, status=value["status"])
+                    elif isinstance(event, h2.events.DataReceived):
+                        value["data"].extend(event.data)
+                        value["wire_ended"] = event.stream_ended is not None
+                        if sum(len(v["data"]) for v in streams.values()) > 1048576:
+                            raise RuntimeError("slow-peer aggregate response bound exceeded")
+                        if stream == 3:
+                            if event.flow_controlled_length != len(event.data):
+                                raise RuntimeError("slow-peer unexpected padding")
+                            value["held"] += event.flow_controlled_length
+                            if value["held"] > 16384:
+                                raise RuntimeError("slow-peer unconsumed response bound exceeded")
+                        else:
+                            conn.acknowledge_received_data(event.flow_controlled_length, stream)
+                        emit("profile_client_data", **state(stream))
+                    elif isinstance(event, h2.events.StreamEnded):
+                        expected = pattern if stream == 3 else b"s" if stream == 5 else b"u"
+                        if value["status"] != 200 or bytes(value["data"]) != expected or value["ended"]:
+                            raise RuntimeError("slow-peer terminal body/status/identity mismatch")
+                        value["ended"] = True
+                        emit("profile_client_end", status=value["status"], complete=True,
+                             body64=base64.b64encode(value["data"]).decode("ascii"), **state(stream))
+                    else:
+                        raise RuntimeError("slow-peer unexpected response trailers")
+                elif isinstance(event, (h2.events.StreamReset, h2.events.ConnectionTerminated,
+                                        h2.events.InformationalResponseReceived)):
+                    raise RuntimeError("slow-peer unexpected terminal/informational event: " + repr(event))
+                elif not isinstance(event, (h2.events.RemoteSettingsChanged, h2.events.SettingsAcknowledged,
+                                            h2.events.WindowUpdated, h2.events.PriorityUpdated)):
+                    raise RuntimeError("unexpected slow-peer H2 event: " + repr(event))
+            flush()
+        return dict(event="profile_client_joined", socket_closed=True, forced=0, live=0,
+                    commands=count, consume_commands=consumed, upload_bytes=upload_sent,
+                    protocol="h2c", source_sha256=hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+                    packages={p: importlib.metadata.version(p) for p in ("h2", "hpack", "hyperframe")})
+    finally:
+        sock.close()
+
+
 def upload_command():
     if not select.select([sys.stdin], [], [], 0)[0]:
         return None
@@ -879,6 +1121,19 @@ def independent_client(args):
         raise ValueError("client requires downstream and finite port")
     if args.managed_fixed_client and args.downstream != "h2":
         raise ValueError("managed fixed client profile requires downstream H2")
+    if args.slow_peer_profile:
+        if (args.downstream != "h2" or not args.controlled or not args.events or args.tls or
+                args.allow_incomplete or args.managed_fixed_client or args.observe_prefix_bytes is not None or
+                args.body64 or args.headers_json != "[]" or args.method != "GET" or args.target != "/probe"):
+            raise ValueError("slow-peer client requires isolated controlled native H2 profile")
+        sock = socket.create_connection(("127.0.0.1", args.port), timeout=5)
+        sock.settimeout(0.1)
+        try:
+            result = slow_peer_client(sock, args)
+        finally:
+            sock.close()
+        print(json.dumps(result, separators=(",", ":")), flush=True)
+        return 0
     body = base64.b64decode(args.body64, validate=True)
     fields = json.loads(args.headers_json)
     if (len(body) > 1048576 or not args.target.startswith("/") or
@@ -944,6 +1199,7 @@ def main():
     parser.add_argument("--protocol", choices=("tls", "h2c"))
     parser.add_argument("--manual", action="store_true")
     parser.add_argument("--hold-upload-credit", action="store_true")
+    parser.add_argument("--slow-peer-profile", action="store_true")
     parser.add_argument("--staged-start", action="store_true")
     parser.add_argument("--bind-address", default="127.0.0.1",
                         choices=("127.0.0.1", "127.0.0.2", "127.0.0.3", "127.0.0.4"))
@@ -983,8 +1239,10 @@ def main():
             return 1
     if args.protocol is None:
         parser.error("peer requires --protocol")
+    if args.slow_peer_profile and (not args.manual or not args.hold_upload_credit):
+        parser.error("slow-peer fixture requires --manual and --hold-upload-credit")
     peer = Peer(args.protocol, args.manual, args.alpn, args.max_streams,
-                args.bind_address, args.listen_port, args.hold_upload_credit)
+                args.bind_address, args.listen_port, args.hold_upload_credit, args.slow_peer_profile)
     commands = Commands()
     try:
         if peer.prepare(commands):

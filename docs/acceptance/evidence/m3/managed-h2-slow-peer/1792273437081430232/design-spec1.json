@@ -1,0 +1,100 @@
+{
+  "task_id": "managed-h2-slow-peer-design-spec1",
+  "status": "DONE_REVIEW_WITH_FINDINGS",
+  "assignment": "direct independent read-only design SPEC review",
+  "verdict": "CHANGES_REQUIRED",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch_from_adoption": "codex/m3-h1-resource-foundation",
+  "entry_head_from_custody": "deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+  "at_utc": "2026-10-17T21:48:31.692261+00:00",
+  "candidate_sha256": "7425942b8d47b87ce7d9807dfc11020457ddba7c182cba8ae08e7c4631aaa256",
+  "source_adoption_sha256": "1416cdf115f5a79957948f639fb7c948e5e9e3d10b970cd737fafbcb798df1e7",
+  "predecessor_custody_sha256": "1d6e74e923e9f467ccdd7b140a4055760eabe381cde6651fc3df270aea5896f7",
+  "pin_checks": {
+    "current_input25_sha256": {
+      "count": 25,
+      "mismatches": []
+    },
+    "documents_sha256": {
+      "count": 8,
+      "mismatches": []
+    }
+  },
+  "findings": [
+    {
+      "id": "SPEC1-01",
+      "severity": "medium",
+      "title": "Retain ordinary browser and default Python startup regression gates for the changed shared peer",
+      "references": [
+        "AGENTS.md:72-73",
+        "docs/designs/m3-managed-h2-slow-peer.md:53-55",
+        "docs/plans/m3-managed-h2-slow-peer.md:41-46",
+        "docs/acceptance/m3-managed-h2-slow-peer.md:7",
+        "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:722-820",
+        "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:968-1008"
+      ],
+      "problem": "The design makes a focused browser row conditional on a browser slow-consumption claim, while plan/acceptance closure gates omit a fresh ordinary browser compatibility regression. The shared Python peer will change, so predecessor browser receipts alone do not qualify its new bytes. Plan also relies on selected ExUnit suites for default isolation without explicitly retaining the existing 11-method Python startup check. AGENTS retains required local browser verification.",
+      "requested_change": "Add the existing ordinary browser two-row/four-image regression and the existing Python 11-method startup checks to the plan, design gate and acceptance gates. Bind actual results to the final changed helper/source candidate, preserve normal cleanup and actual image opens. Explicitly label the browser run as compatibility evidence, not browser slow-consumption acceptance; do not add a browser slow-consumption oracle or enlarge production scope.",
+      "validation": "Narrow static review of the synchronized document delta, then future actual nonzero browser/startup results with source identity and exits. Runtime is NOT RUN in this review."
+    }
+  ],
+  "other_design_result": "No other known protocol design blocker found in the bounded static review. This is not concrete-source CODE review or runtime acceptance.",
+  "source_feasibility_references": [
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:398-407 (queued inbound wire)",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:708-728 (one pending DATA write <=16384)",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:736-778 (delivery and credit accounting)",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex:843-848 (output queue bound)",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex:8-16 (normalized defaults)",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex:298-303 (H2 app state wrapper contract)",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:315-328 (actual upload hold)",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:502-512 (strict default release)",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:265-284 (endpoint override and fixed deadlines)",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs:157-180 (group override and deadlines)"
+  ],
+  "checks_performed": [
+    "Static Python JSON/SHA256 inspection: 25 source input pins and 8 document pins matched, freshly rechecked before report.",
+    "Candidate/adoption/counter hashes matched provided identities.",
+    "Actual predecessor E12 custody hash matched and named entry head matched; no Git commands run.",
+    "Historical source-adoption overlay differs only in upstream plan from current candidate; treated as historical repin, not current drift.",
+    "Targeted static source/document reads only; no candidate imports/execution."
+  ],
+  "runtime": "NOT RUN: no Mix/build/tests/browser/peer/client execution",
+  "tool_incidents": [
+    {
+      "id": 1,
+      "description": "Guessed E11 custody file path absent; static read exited1 FileNotFoundError. Correct exact E12 path supplied by root and verified."
+    },
+    {
+      "id": 2,
+      "description": "An rg source projection exceeded its output cap; truncated display."
+    },
+    {
+      "id": 3,
+      "description": "A later aggregate tool display exceeded output cap despite individual caps; narrowed source ranges re-read."
+    },
+    {
+      "id": 4,
+      "description": "Browser-reference rg was too broad and display truncated; no further historical exploration performed."
+    }
+  ],
+  "counters": {
+    "entry": "root521/orchestration420/H1tool30/newslowTool1",
+    "inherited_sol_repairs": 4,
+    "inherited_astra_repairs": "2/2 exhausted",
+    "new_profile_sol_repairs": 0,
+    "this_review_tool_incidents": 4,
+    "astra_gate": null
+  },
+  "writes": [
+    "/tmp/gaoxy-managed-h2-slow-peer-design-spec1.json",
+    "/tmp/gaoxy-managed-h2-slow-peer-design-spec1.md"
+  ],
+  "repository_writes": false,
+  "command_shutdown": "All own commands finished; no running sessions, runtime processes, Git commands or mutations.",
+  "ownership": "Returned to root; root owns canonical docs/source/Git/runtime/evidence.",
+  "remaining_risks": [
+    "Concrete native Handler wrapper decoding, overlap witnesses, mailbox ceiling and unchanged finite deadlines remain implementation/runtime checks.",
+    "Task6/Task5/M3 and separate standalone/native-H1/managed-H1 slow-peer profiles remain OPEN."
+  ],
+  "decisions_needed": "No user decision; root already authorized the bounded browser/default-startup gate correction."
+}

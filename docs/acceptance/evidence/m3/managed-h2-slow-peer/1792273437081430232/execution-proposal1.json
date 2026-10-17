@@ -1,0 +1,105 @@
+{
+  "at_utc": "2026-10-17T21:56:39.479403+00:00",
+  "commands": {
+    "browser": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GAOXY_SOURCE_REVISION=deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+      "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+      "-B",
+      "integration/upstream_transport/browser.py",
+      "--evidence-dir",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/browser-final1"
+    ],
+    "compile": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GAOXY_SOURCE_REVISION=deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+      "unbuffer",
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    "final94": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GAOXY_SOURCE_REVISION=deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+      "unbuffer",
+      "mix",
+      "test",
+      "--trace",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs",
+      "apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs"
+    ],
+    "first4": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GAOXY_SOURCE_REVISION=deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+      "unbuffer",
+      "mix",
+      "test",
+      "--trace",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs"
+    ],
+    "python11": [
+      "nix",
+      "develop",
+      "--command",
+      "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+      "-B",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py",
+      "-v"
+    ]
+  },
+  "entry_head": "deef3b0f41b55d30d83fc615998c1fad16e7b4a4",
+  "format_paths": [
+    "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_fixture.exs",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs"
+  ],
+  "kind": "MANAGED_H2_SLOW_PEER_EXECUTION_PROPOSAL1",
+  "limits": "Full source/owned/document/dependency pins and concrete expected case registry must be frozen after all ownership handoffs; sourceSPEC\u2192CODE before first actual profile. Actual counts/exits/joins mandatory, not inferred from proposal. First4 overlaps final94; no98 unique-test claim. Browser does not qualify controlled slow consumption.",
+  "source_planned_counts": {
+    "final94_by_file": {
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": 38,
+      "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs": 6,
+      "apps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs": 18,
+      "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs": 4,
+      "apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs": 28
+    },
+    "first4": 4,
+    "fresh_root_images": 4,
+    "ordinary_browser_rows": 2,
+    "python_actual_methods_expected": 11
+  },
+  "status": "NOT RUN; candidate not frozen while author works",
+  "syntax_paths": [
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py"
+  ]
+}
