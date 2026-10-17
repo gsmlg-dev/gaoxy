@@ -1,21 +1,12 @@
 # Managed H2 Group Reload Plateau
 
-Status — 2026-10-17: **Runtime qualification PASS; final document review and local commit pending.**
-Candidate3 passed source SPEC3 (12 checks)→CODE2 (14 checks), then the full
-unfiltered defining run passed104/0 at220.474s with401 stable source pins.
-Strict DATA audit passed8 contexts/200 events/160 full-vector equalities and
-8 final-zero snapshots. Full implementation SPEC1 (16 checks)→CODE1 (17 checks)
-passed with0 findings. Fresh compile/format/syntax, scoped264/0+304/0+475/0,
-isolated Core1/0, effective HTTP2/0,11 Python startup methods/0fail and both
-actual group browser rows passed. Root opened all4 OLD/NEW PNGs. The two HTTP
-zero-test environmental FAILs remain immutable; reviewed transport3 proved
-fresh locked fetch/checkout before the unchanged HTTP consumer passed.
-`final-nonbrowser-audit1.json` and `browser-root-audit1.json` bind actual results.
-Final factual document review and actual local committed-byte custody remain
-pending at this frozen review snapshot. Subsequent review/adoption and
-successor postcommit receipts control closure. Whole Task5/M3 remains open.
-Counter37 preserves root320/orchestration226/groupTool71, group runtime1,
-environment2, fixture/Sol2, diagnostics2 and Astra2/2 exhausted.
+Status — 2026-10-17: **DONE LOCALLY** at `94381bfcc55474d3b617764a2601b5b3b31015f1`.
+All defining/scoped/static/consumer/peer/browser gates and final document SPEC2
+(15 checks)→CODE1 (15 checks) passed. Successor `group-postcommit-custody1.json`
+SHA256 `d818e6cf93195fe0f0672f2b303d66e800e1de844ee63cb7aabfd773f74acbf0` verifies351 task files/401 source
+pins against actual committed blobs/disk, with clean tracked tree and empty index
+before successor entry. Exact reviewed documents are archived in E7. Response-prefix local qualification passed: initial46/0 including all8 cases, final46/0+134/0+168/0, Core1/0+HTTP2/0, Python11 methods and current group browser2rows/4root-viewed PNGs. Independent final document review/local commit remain pending in the response-prefix checkpoint; next credit-control drafting has not entered runtime. Whole Task5/M3 remains open.
+Counter39 in E6 and counter1 in E7 preserve cumulative history/Astra2/2 exhaustion.
 
 Historical first qualification remains FAIL: candidate2 executed104/8. Four
 active profiles waited on a derived child as though it were an original source;

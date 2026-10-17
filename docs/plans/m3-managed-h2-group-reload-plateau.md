@@ -41,9 +41,10 @@ proved actual independent fresh fetch/locked checkout before the unchanged
 HTTP consumer passed. Actual group browser passed both nativeH1/H2→TLS-H2 rows;
 root opened all4 OLD/NEW PNGs. final-nonbrowser-audit1.json and
 browser-root-audit1.json verify actual receipts/source/BEAM/joins/artifacts.
-Final factual document review and local commit/custody remain pending at this
-frozen review snapshot; subsequent review/adoption and successor postcommit
-receipts control closure. Counter37 retains root320/orchestration226/groupTool71,
+Final document SPEC2 (15 checks)→CODE1 (15 checks) passed, then actual local
+commit `94381bfcc55474d3b617764a2601b5b3b31015f1` and successor group-postcommit-custody1.json
+verified351 task files/401 source pins at a clean tracked/index snapshot.
+Response-prefix local qualification passed: initial46/0 including all8 cases, final46/0+134/0+168/0, Core1/0+HTTP2/0, Python11 methods and current group browser2rows/4root-viewed PNGs. Independent final document review/local commit remain pending in the response-prefix checkpoint; next credit-control drafting has not entered runtime. Counter37 retains root320/orchestration226/groupTool71,
 group fixture/Sol2, defining runtime failedGREEN1, environmental failedGREEN2,
 diagnostics2 and Astra2/2 exhausted; categories remain separate from tests.
 
@@ -118,5 +119,5 @@ assert firststeady != nil
 ## Task7: Accepted documentation and local commit
 
 - [x] Write factual `docs/acceptance/m3-managed-h2-group-reload-plateau.md`, update this plan/design and parent Task5 plans with exact source/receipts/counts/exits/limits and cumulative counters; preserve fixed and older immutable evidence. Whole Task5/M3 stays open.
-- [ ] Complete independent document SPEC then CODE, resolve findings, fresh changed-file checks and disk/index/blob audit. Stage only task-owned files; no private key/raw NetLog, prompts or unrelated E4 files. Local conventional commit plus actual postcommit source/file custody.
-- [ ] Automatically prepare next bounded full-matrix/multi-owner/selected-A capacity stage after actual group closure. No publication/deployment or other excluded operation; two≥600s loads, standalone and H3 accounting remain separate open work.
+- [x] Complete independent document SPEC then CODE, resolve findings, fresh changed-file checks and disk/index/blob audit. Stage only task-owned files; no private key/raw NetLog, prompts or unrelated E4 files. Local conventional commit plus actual postcommit source/file custody.
+- [x] Automatically prepare the separate positive response-prefix stage after actual group closure; its actual qualification is recorded in its own checkpoint. No publication/deployment or other excluded operation; two≥600s loads, standalone and H3 accounting remain separate open work.

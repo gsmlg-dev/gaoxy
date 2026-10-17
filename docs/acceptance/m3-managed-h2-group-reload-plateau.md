@@ -1,17 +1,15 @@
 # Managed H2 Group Reload Plateau Acceptance
 
-Status — 2026-10-17: **Runtime qualification PASS; final document review and local commit pending.**
-Repaired candidate3 passed104 tests/0 failures/0 skips/0 exclusions/0 product
-warnings, payload/collector exit0,220.474s. All8 profiles completed; strict DATA
-audit passed their complete ledgers. Full implementation SPEC→CODE passed.
-Fresh scoped batches passed264/0+304/0+475/0 (1043 invocations over38 distinct
-paths), strict compile/format/syntax passed, isolated Core1/0 and HTTP2/0 passed,
-11 Python startup unittest methods passed, and the actual group browser passed
-both nativeH1/H2→TLS-H2 rows. Counts remain separate. Root inspected all4
-OLD/NEW PNGs. The final factual document review and actual local commit/custody
-remain separate gates at this frozen review snapshot; their subsequent receipts
-control closure. Whole Task5/M3 remains IN PROGRESS. Fixed plateau closure is
-separate at `e4a7660baa61a792f4245f511b190a0fcfcbf920`.
+Status — 2026-10-17: **DONE LOCALLY** at `94381bfcc55474d3b617764a2601b5b3b31015f1`.
+Defining104/0, DATA8contexts/160equalities, fresh scoped264/0+304/0+475/0,
+static compile/format/syntax, isolated Core1/0+HTTP2/0,11 Python startup methods
+and group browser2rows/4root-viewed PNGs passed. Final document SPEC2 (15 checks)
+→CODE1 (15 checks) passed0findings after correcting the preserved SPEC1 wording
+finding. Successor `group-postcommit-custody1.json` verifies351 task files and401
+source pins against actual committed blobs/disk at a clean tracked/index snapshot.
+Exact reviewed precommit documents remain in E6 candidate2 and E7 archives.
+Response-prefix local qualification passed: initial46/0 including all8 cases, final46/0+134/0+168/0, Core1/0+HTTP2/0, Python11 methods and current group browser2rows/4root-viewed PNGs. Independent final document review/local commit remain pending in the response-prefix checkpoint; next credit-control drafting has not entered runtime. Whole
+Task5/M3 remains IN PROGRESS; fixed closure remains separate at `e4a7660b`.
 
 Evidence E6:
 `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898`.
@@ -39,8 +37,8 @@ original limits/clocks, complete numeric vectors and genuine G/T custody.
 | Full implementation SPEC→CODE | PASS:SPEC1 16 checks→CODE1 17 checks/0findings; implementation-adoption1.json |
 | Fresh scoped/static/consumer/peer-startup gates | PASS: compile/format/syntax static0; scoped264/0+304/0+475/0,1043 invocations/38 distinct paths; original Core1/0 at533.602s and effective HTTP2/0 at137.735s, each within original600s. Python11 unittest methods/0fail, method runtime46.403s/collector48.900s/static0. Nine effective receipts independently cross-checked by final-nonbrowser-audit1.json. Two original HTTP zero-test environment FAILs remain immutable |
 | Fresh actual group browser / root image inspection | PASS:2 rows, collector exit0/44.018s; group-browser-command1.json. All4 OLD/NEW PNGs opened by root. browser-root-audit1.json verifies54 artifact hashes,401 current source pins,399 collector pins,286 normalized qualification pins,204 loaded module records (194 disk BEAM/source and10 inline source/module-MD5),12 named Actor joins and11 raw adopted waits |
-| Final factual documents SPEC→CODE | Pending at this frozen review snapshot; final-document-spec2.json and final-document-code1.json and final-document-adoption1.json will record actual outcomes without changing these reviewed bytes |
-| Local commit and committed-byte custody | Pending at this frozen review snapshot; actual postcommit custody belongs in successor evidence and cannot be included in its own commit |
+| Final factual documents SPEC→CODE | PASS:SPEC2 15/15→CODE1 15/15,0findings; final-document-adoption1.json. Original SPEC1 14/15 wording FAIL and exact input archives preserved |
+| Local commit and committed-byte custody | PASS:actual commit `94381bfcc55474d3b617764a2601b5b3b31015f1`; E7/group-postcommit-custody1.json,351 task files/401 source pins equal committed blobs/disk; empty index/clean tracked tree before successor entry |
 
 The defining repaired run actually recorded23 G,46 distinct T,22 replacement
 CAS plus initial publication,46 HEAD completions, active112 GET or idle46 GET,
@@ -115,9 +113,9 @@ markers written after OLD/NEW policy preparation; they are not PEM certificates.
 Original public-DER identities remain in the genuine rotation metadata. The browser
 qualifies current group/native boundaries, not twenty reloads.
 
-The next bounded slice is positive response-prefix-before-upstream-EOF over
-fixed/group × nativeH1/H2 × upstream h2c/TLS-H2. Its preparation reviews do not
-establish entry or runtime acceptance before this group slice actually closes.
+Positive response-prefix-before-upstream-EOF now has its own actual qualification
+for fixed/group × nativeH1/H2 × upstream h2c/TLS-H2. Next upstream-credit-control
+preparation remains separate from entry/runtime and does not close the broader matrix.
 The broader streaming/cancellation matrix, multi-owner, selected-A R32/B-
 available, standalone, two≥600s real managed loads and H3 accounting remain
 open. No publication/deployment, production data/certificates, Vault, public

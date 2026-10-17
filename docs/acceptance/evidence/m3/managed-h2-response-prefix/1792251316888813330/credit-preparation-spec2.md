@@ -1,0 +1,13 @@
+# Upstream-credit preparation SPEC2
+
+BLOCKED_SPEC_FINDING — FAIL_PREPARATION_SPEC_ONLY:18/19checks passed;1actionableP2 finding. Direct preparation-only review at HEAD94381bfcc55474d3b617764a2601b5b3b31015f1. No nextstage entry/runtime.
+
+Original SPEC1 F1 is RESOLVED: plan2:50 seeds current public local_settings.items() in hold mode before stream-window1/explicit-max-streams overrides. This preserves advertised100/65536 defaults and exact prior mode-off behavior. Complete draft diff/technical transaction was reviewed; public zero-stream/positive-connection witness, full native2byte/trailer submission, original held/pending ownership, explicit real WINDOW_UPDATE1, exact remaining upload/trailers/end and successcleanup are sound as a proposed bounded proof.
+
+POST HEADERS may establish the lazy fixed connection before the real SETTINGS ACK; ACK must precede positive DATA. Static public HTTP.fetch path opens the H2stream before body credit. Group additionally has existing real zero-body /health HEAD. No invented warm-up requirement was introduced.
+
+F2 — repair-history contradiction: design2:47 says `Preparation introduced no repair attempt.` Acceptance2:42 says `Preparation repair counts remain0.` Proposal2 records preparatory draft repair round1 and retained SPEC1 FAIL17/18. Correct those two current claims to distinguish prep draft repair1 from unchanged prefix runtime/fixture/Sol0 and exhaustedAstra2/2; qualify original draft1 zero counts as historical if retained. This is a narrow preparation-document blocker and does not affect prefix gates or the corrected technical SETTINGS proposal.
+
+Original16context was validated accurately as13unchanged live inputs +3exact archived original docs through root overlay SHAe656e2724d3e6fdf6d52390afb247511796a47e9ef6e42ddd1e3fdcaf548d659. Current3canonical docs are separately pinned; their qualification/status/checkbox deltas keep code fences identical and do not enter credit runtime. All5draft1 files remain immutable. All3draft2 document pins match. No16livepins-unchanged claim is made.
+
+New reviewer tooling incidents3:1bounded-output truncation recovered,1unmatched zsh searchglob,1read-only search of2missing guessed dependency paths. No runtime/fixture/Sol/Astra repair added. Counter7root344/orch250/prefixTool17/creditTool1/creditPrepFailedSPEC1 and prep draftrepair1 pending merge remain received history; parent accounts this new failed preparation SPEC separately. All own commands finished; only assigned /tmp reports written. Reviewer executed0tests/builds/browser/format/consumer/network operations. No product decision needed. Revised preparation SPEC->CODE and actual prefix closure/nextentry binding remain required.

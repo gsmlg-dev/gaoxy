@@ -357,7 +357,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
       else: :gen_tcp.send(socket, bytes)
   end
 
-  def response(f, socket, method \\ "GET", id \\ 1) do
+  def response(f, socket, method \\ "GET", id \\ 1, progress \\ nil) do
     if f.downstream == :http2,
       do:
         h2_response(
@@ -365,10 +365,16 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
           id,
           %{status: nil, headers: [], body: "", trailers: [], inform: []},
           "",
-          HPAX.new(4_096)
+          HPAX.new(4_096),
+          progress
         ),
-      else: h1_response(socket, method, [])
+      else: h1_response(socket, method, [], progress)
   end
+
+  defp observed_body(nil, _body, _ended), do: :ok
+
+  defp observed_body(progress, body, ended),
+    do: progress.(%{body: body, ended: ended})
 
   def request(f, method, target, fields \\ []) do
     socket = connect(f)
@@ -391,7 +397,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
         )
   end
 
-  defp h1_response(socket, method, inform) do
+  defp h1_response(socket, method, inform, progress) do
     [line | lines] = h1_head(socket) |> String.trim_trailing("\r\n\r\n") |> String.split("\r\n")
     [_, code, _] = String.split(line, " ", parts: 3)
     status = String.to_integer(code)
@@ -403,7 +409,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
       end)
 
     if status < 200 do
-      h1_response(socket, method, inform ++ [{status, fields}])
+      h1_response(socket, method, inform ++ [{status, fields}], progress)
     else
       {body, trailers} =
         cond do
@@ -411,7 +417,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
             {"", []}
 
           List.keyfind(fields, "transfer-encoding", 0) == {"transfer-encoding", "chunked"} ->
-            h1_chunks(socket, "")
+            h1_chunks(socket, "", progress)
 
           length_field = List.keyfind(fields, "content-length", 0) ->
             {_, value} = length_field
@@ -433,7 +439,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
     end
   end
 
-  defp h1_chunks(socket, acc) do
+  defp h1_chunks(socket, acc, progress) do
     size = until(socket, "\r\n") |> String.trim_trailing("\r\n") |> String.to_integer(16)
 
     if size == 0 do
@@ -442,7 +448,9 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
       assert {:ok, <<bytes::binary-size(size), "\r\n">>} =
                :gen_tcp.recv(socket, size + 2, @timeout)
 
-      h1_chunks(socket, acc <> bytes)
+      next = acc <> bytes
+      observed_body(progress, next, false)
+      h1_chunks(socket, next, progress)
     end
   end
 
@@ -480,19 +488,19 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
     {type, flags, id, payload}
   end
 
-  defp h2_response(socket, id, result, block, decoder) do
+  defp h2_response(socket, id, result, block, decoder, progress) do
     {type, flags, stream, payload} = frame(socket)
 
     cond do
       type == 4 and flags == 0 ->
         :ok = :gen_tcp.send(socket, Frame.encode(4, 1, 0, ""))
-        h2_response(socket, id, result, block, decoder)
+        h2_response(socket, id, result, block, decoder, progress)
 
       type in [1, 9] and stream == id ->
         block = block <> payload
 
         if Bitwise.band(flags, 4) == 0 do
-          h2_response(socket, id, result, block, decoder)
+          h2_response(socket, id, result, block, decoder, progress)
         else
           assert {:ok, fields, decoder} = HPAX.decode(block, decoder)
 
@@ -512,7 +520,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
 
           if Bitwise.band(flags, 1) == 1,
             do: result,
-            else: h2_response(socket, id, result, "", decoder)
+            else: h2_response(socket, id, result, "", decoder, progress)
         end
 
       type == 0 and stream == id ->
@@ -526,15 +534,18 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
 
         result = %{result | body: result.body <> payload}
 
+        if byte_size(payload) > 0,
+          do: observed_body(progress, result.body, Bitwise.band(flags, 1) == 1)
+
         if Bitwise.band(flags, 1) == 1,
           do: result,
-          else: h2_response(socket, id, result, block, decoder)
+          else: h2_response(socket, id, result, block, decoder, progress)
 
       type in [3, 7] ->
         flunk("unexpected downstream control #{inspect({type, stream, payload})}")
 
       true ->
-        h2_response(socket, id, result, block, decoder)
+        h2_response(socket, id, result, block, decoder, progress)
     end
   end
 

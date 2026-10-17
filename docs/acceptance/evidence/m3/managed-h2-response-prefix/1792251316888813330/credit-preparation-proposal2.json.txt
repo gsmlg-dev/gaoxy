@@ -1,0 +1,263 @@
+{
+  "task_id": "upstream_credit_preparation_draft2_repair",
+  "status": "DONE_PREPARATION_DRAFT_REPAIR_ONLY",
+  "assignment": "direct bounded repair of preparatory SPEC1 F1; no implementation or runtime",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "preparation_HEAD": "94381bfcc55474d3b617764a2601b5b3b31015f1",
+  "next_stage_entered": false,
+  "review_inputs": [
+    {
+      "path": "/tmp/gaoxy-upstream-credit-preparation-spec1.json",
+      "sha256": "bc4862db1fa6ae43765acc5560fd3c511da1e1b667df2a4903011bc846bbd8d5",
+      "verdict": "FAIL17/18 with one P2 F1"
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-preparation-spec1.md",
+      "sha256": "d2d2a855b7604ea4b188be0671c932b3af7ebefef69a9c347cb25334bebb7a08"
+    }
+  ],
+  "root_cause": "Fresh h2.settings.Settings omitted H2Connection advertised MAX_CONCURRENT_STREAMS100 and MAX_HEADER_LIST_SIZE65536 in proposed hold mode.",
+  "correction": "Seed initial_values=dict(conn.local_settings.items()) if self.hold_upload_credit else {}, then retain original explicit max-streams and new INITIAL_WINDOW_SIZE1 overrides. Only this one code-block line changed.",
+  "branch_semantics": [
+    {
+      "hold": false,
+      "max_streams": null,
+      "result": "No Settings reassignment; exact old H2Connection behavior."
+    },
+    {
+      "hold": false,
+      "max_streams": "explicit N",
+      "result": "Fresh Settings from explicit max-streams only, exactly matching pre-existing peer behavior; no adjacent repair."
+    },
+    {
+      "hold": true,
+      "max_streams": null,
+      "result": "Copy all current values, including max-streams100/header-list65536; override only stream window1."
+    },
+    {
+      "hold": true,
+      "max_streams": "explicit N",
+      "result": "Copy all current values; override explicit max-streamsN and stream window1; preserve header-list65536 and all other copied values."
+    }
+  ],
+  "ownership": [
+    "/tmp/gaoxy-upstream-credit-design2.md",
+    "/tmp/gaoxy-upstream-credit-plan2.md",
+    "/tmp/gaoxy-upstream-credit-acceptance2.md",
+    "/tmp/gaoxy-upstream-credit-proposal2.json",
+    "/tmp/gaoxy-upstream-credit-proposal2.md"
+  ],
+  "outputs": [
+    {
+      "path": "/tmp/gaoxy-upstream-credit-design2.md",
+      "sha256": "ded59491ca30234e1f5dcaaa064f7ff36c6bea0313a3a012e3bf9c26da291106",
+      "bytes": 11593,
+      "lines": 47
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-plan2.md",
+      "sha256": "03b3bf69cfbb9720c725761de75cc358af1336b6822753c5781463b668e8ef5f",
+      "bytes": 23532,
+      "lines": 353
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-acceptance2.md",
+      "sha256": "3de6cb6dae114a6214ae8fb0942b88ed2ab16fc6aca3640bf323e9bd79ed0c96",
+      "bytes": 6074,
+      "lines": 42
+    }
+  ],
+  "source_inputs": [
+    {
+      "path": "docs/plans/m3-upstream-transport.md",
+      "sha256": "35e31ce6a4e2fc797f9ec9d4ffc769356f8fb210e2d11c25aeeb73b635e71e9f",
+      "bytes": 56259,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "docs/designs/m3-managed-h2-response-prefix.md",
+      "sha256": "6075262ab6609fb656aac08bb3b63e4e866a8056858dec7cd7e2780e85c9791e",
+      "bytes": 9775,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "docs/plans/m3-managed-h2-response-prefix.md",
+      "sha256": "6bcb1f7beb99b2ab00067dcaf903380a5f8f3e323db4fb0c92e5069cf8754958",
+      "bytes": 15648,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs",
+      "sha256": "684dc971c95c04ff69462ccab5cf0767b54d6016b4b7ca6a4ea568775e1b3887",
+      "bytes": 7894,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "sha256": "2b53e3848a286147ff1b00ac10b5364238b070396d30cb729fcd12300f17dbc8",
+      "bytes": 37573,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+      "sha256": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+      "bytes": 14221,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "sha256": "70475d2609de54cd9f74090b12d48bf4650bd7b530aa0a4d0b49993b056599c1",
+      "bytes": 46749,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py",
+      "sha256": "f2844797780c6187cf60ab980af030a50c506ae1460001c6977157db0987c12a",
+      "bytes": 18690,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs",
+      "sha256": "d2887a75d72e33ea247bac51ad0466263c27024e0ddeaa30a701a4c4900ac7d4",
+      "bytes": 19430,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "sha256": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+      "bytes": 68221,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex",
+      "sha256": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+      "bytes": 17995,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "sha256": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+      "bytes": 40925,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/connection.py",
+      "sha256": "001ac10ddb176742575dbc6b1c77471113d885f0ce0860b65e56269adc0f9419",
+      "bytes": 86876,
+      "kind": "installed public hyper-h2 API source"
+    },
+    {
+      "path": "/tmp/gaoxy-m3-h2-soak-venv/lib/python3.13/site-packages/h2/settings.py",
+      "sha256": "8d10648219e222250642fd7ad90de6cd64139a2d05e395269b32078dbe0cbb55",
+      "bytes": 12323,
+      "kind": "installed public hyper-h2 API source"
+    },
+    {
+      "path": "scripts/external-consumer.sh",
+      "sha256": "649f6250641b09dcd0773cdd9ca57f9b7fc46f1068130072f0fed08c74435b36",
+      "bytes": 579,
+      "kind": "preparation repository source"
+    },
+    {
+      "path": "scripts/http-consumer.sh",
+      "sha256": "16633262966d02229f37aa364c3f75fd8085fb1880d60ab5dbc96774bf9f9c0b",
+      "bytes": 705,
+      "kind": "preparation repository source"
+    }
+  ],
+  "source_pin_recheck": {
+    "count": 16,
+    "initial_and_final_hash_bytes_unchanged": true
+  },
+  "draft1_immutable": [
+    {
+      "path": "/tmp/gaoxy-upstream-credit-design1.md",
+      "sha256": "262bb227082bd4eefdde9563733fc6964c229935d1641538fe964db6464d3e7d",
+      "unchanged": true
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-plan1.md",
+      "sha256": "34b5ce3216951caf614116928ccf267c1cf5dbc49594037028566ca8efc72280",
+      "unchanged": true
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-acceptance1.md",
+      "sha256": "e8dec97bc1aad7c45a7659a6e8f80162e11126946eee9987869a34248dc12c93",
+      "unchanged": true
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-proposal1.json",
+      "sha256": "89344202718ea3feb9cfc9e3b71897c09ba73eb5041594adfb33b8115dd2723d",
+      "unchanged": true
+    },
+    {
+      "path": "/tmp/gaoxy-upstream-credit-proposal1.md",
+      "sha256": "c92a72416137b8370849dc5a9a91336ea96e021754134ffdff2d2f234c7f9bac",
+      "unchanged": true
+    }
+  ],
+  "self_review": {
+    "exact_formal_finding_read_and_hash_verified": true,
+    "installed_Settings_MutableMapping_items_current_value_semantics_read": true,
+    "Settings_constructor_installs_initial_values_immediately": true,
+    "H2Connection_current_advertised_defaults_read": true,
+    "existing_no_hold_no_max_and_explicit_max_behavior_preserved": true,
+    "only_one_plan_code_fence_line_changed_all_other_code_fences_byte_identical": true,
+    "design_acceptance_preservation_contract_updated": true,
+    "parent_reported_prefix_final_gates_pass_but_docs_commit_custody_pending": true,
+    "no_successor_entry_claim": true,
+    "all_original_ownership_windows_trailers_cleanup_and_gate_assertions_unchanged": true,
+    "all16_input_pins_and_all5draft1_files_rechecked_immutable": true
+  },
+  "verification": [
+    {
+      "kind": "source/doc integrity",
+      "command": "read exact SPEC1 reports, installed public h2 settings/connection and current peer seam",
+      "result": "Finding confirmed; correction follows current public API semantics, no imports or runtime."
+    },
+    {
+      "kind": "document integrity",
+      "command": "Python hash/byte checks and Markdown code-fence equality comparison",
+      "result": "PASS:16pins stable;5draft1 files immutable; all plan code fences unchanged except corrected seed line; balanced fences and unchecked boxes."
+    },
+    {
+      "kind": "independent draft2 review",
+      "result": "NOT RUN by author; revised SPEC then CODE required."
+    },
+    {
+      "kind": "test/build/format/browser/implementation",
+      "result": "NOT RUN / NOT ENTERED."
+    }
+  ],
+  "counters": {
+    "received_SPEC_counter": 6,
+    "received_root": 342,
+    "received_orchestration": 248,
+    "received_prefixTool": 16,
+    "received_creditTool": 1,
+    "preparatory_draft_repair_rounds": 1,
+    "prefix_runtime_fixture_Sol_rounds_added": 0,
+    "Astra_rounds_added": 0,
+    "Astra_used": 2,
+    "Astra_limit": 2,
+    "historical_categories": "retained without reset; original preparation tooling incident remains1"
+  },
+  "new_incidents": [],
+  "historical_incidents": [
+    {
+      "kind": "aggregate read output truncation",
+      "count": 1,
+      "detail": "One batched read exceeded aggregate output budget. All relevant peer/API/helper/Task6 sections re-read in bounded calls. No source/runtime/fixture/Sol repair attempted."
+    }
+  ],
+  "repository_mutations": false,
+  "runtime_commands_run": false,
+  "protected_inputs_read": false,
+  "commands_shutdown": "All own commands finished; no own live session/process.",
+  "remaining_risks": [
+    "Draft2 requires independent revised SPEC then CODE.",
+    "Prefix final documents/local commit/custody and actual successor source/HEAD binding remain prerequisites; parent-reported prefix gates do not establish entry.",
+    "No runtime verification of the future credit mode is claimed."
+  ],
+  "decisions_needed": []
+}

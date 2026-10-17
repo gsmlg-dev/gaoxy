@@ -1,0 +1,192 @@
+{
+  "task_id": "response_prefix_implementation",
+  "status": "DONE_SOURCE_PROPOSAL_ONLY",
+  "assignment": "direct source proposal only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "94381bfcc55474d3b617764a2601b5b3b31015f1",
+  "source_inputs": [
+    {
+      "path": "docs/designs/m3-managed-h2-response-prefix.md",
+      "sha256": "6075262ab6609fb656aac08bb3b63e4e866a8056858dec7cd7e2780e85c9791e",
+      "bytes": 9775
+    },
+    {
+      "path": "docs/plans/m3-managed-h2-response-prefix.md",
+      "sha256": "de583dd800f976294f2eb32dd61b02e0342cf5c278c04e173fe2daa8360af4af",
+      "bytes": 15486
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "sha256": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+      "bytes": 37095,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+      "sha256": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+      "bytes": 14221,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs",
+      "sha256": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced",
+      "bytes": 25302,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "sha256": "70475d2609de54cd9f74090b12d48bf4650bd7b530aa0a4d0b49993b056599c1",
+      "bytes": 46749,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_boundary.ex",
+      "sha256": "a199ff7de93d1f695693d9125cd70514dfc41768d30fecc1b8928ba1361dfdf8",
+      "bytes": 5625,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "sha256": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+      "bytes": 68221,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "sha256": "c4ac0347e312f9dfe93b99bd37b180dc8180ec1015f0b541eeedd01d736176c5",
+      "bytes": 137173,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "sha256": "4e112506f2ee90883e5d42048d4f0886936dfa2f252c59c3add4631a783998db",
+      "bytes": 182733,
+      "matches_HEAD_bytes": true
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_pin_response_test.exs",
+      "sha256": "863d974ff56cd00cbfe8a6ae568cf31db88d7587444a828577086dd2b2eec7eb",
+      "bytes": 3620,
+      "matches_HEAD_bytes": true
+    }
+  ],
+  "ownership": [
+    "/tmp/gaoxy-response-prefix-fixture1.exs.txt",
+    "/tmp/gaoxy-response-prefix-tests1.exs.txt",
+    "/tmp/gaoxy-response-prefix-implementation1.json",
+    "/tmp/gaoxy-response-prefix-implementation1.md"
+  ],
+  "repository_mutations": false,
+  "runtime_commands_run": false,
+  "outputs": [
+    {
+      "path": "/tmp/gaoxy-response-prefix-fixture1.exs.txt",
+      "proposed_repository_path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "sha256": "2b53e3848a286147ff1b00ac10b5364238b070396d30cb729fcd12300f17dbc8",
+      "bytes": 37573,
+      "lines": 1095
+    },
+    {
+      "path": "/tmp/gaoxy-response-prefix-tests1.exs.txt",
+      "proposed_repository_path": "apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs",
+      "sha256": "684dc971c95c04ff69462ccab5cf0767b54d6016b4b7ca6a4ea568775e1b3887",
+      "bytes": 7894,
+      "lines": 192
+    }
+  ],
+  "root_cause": "Existing positive full-response coverage does not prove downstream prefix arrival before upstream END_STREAM. Existing manual peer and decoder can qualify the temporal contract without production changes.",
+  "changes": [
+    "F: optional nil-default fifth response argument, existing H1 and H2 decoder progress threading, two nonempty real-body observation sites.",
+    "New eight-case fixed/group x native H1/H2 x h2c/TLS-H2 source with original T/G/guardian/completion/request/pin checks and callback-only suffix release."
+  ],
+  "self_review": {
+    "all_h1_informational_and_chunk_recursions_forward_progress": true,
+    "all_five_h2_recursive_branches_forward_progress": true,
+    "callback_same_socket_reading_test_process": true,
+    "callback_after_real_nonempty_body_append": true,
+    "h2_callback_reports_actual_DATA_END_STREAM_bit": true,
+    "empty_h2_DATA_has_no_callback": true,
+    "old_response_2_3_4_nil_default_equivalent": true,
+    "original_F_outside_exact_decoder_seams_byte_identical": true,
+    "listed_seam_replacements_reverse_to_original_F_exactly": true,
+    "all_nine_read_tracked_sources_match_HEAD_bytes": true,
+    "new_repository_test_path_still_absent": true,
+    "authentic_pin_list_explicitly_nonempty_at_capture_and_prefix": true,
+    "public_original_completion_awaited_directly_never_serialized": true,
+    "group_only_public_activation_setup_precedes_F_G_fixture": true,
+    "group_prefix_inflight1_cleanup16478862_exact_controls": true,
+    "prefix_only_ended_false_before_downstream_read": true,
+    "suffix_ordered_duplicate_trailers_ended_true_only_inside_exact_prefix_callback": true,
+    "actual_same_connection_stream_command_ACKs_asserted": true,
+    "exact_final_binary_status_content_type_trailers_chunked_H1_and_one_tag_asserted": true,
+    "close_socket_clean_original_completion_await_close_order_retained": true,
+    "fixture_joins_caps_timeouts_and_original_test_assertions_unchanged": true,
+    "no_production_dependency_or_Python_changes": true,
+    "no_new_process_timer_sleep_timeout_override_synthetic_completion_or_private_Fetch_access": true
+  },
+  "case_identities": [
+    "fixed managed H2 response prefix http1 -> h2c observes original held prefix before suffix and ordered terminal trailers",
+    "fixed managed H2 response prefix http1 -> http2 observes original held prefix before suffix and ordered terminal trailers",
+    "fixed managed H2 response prefix http2 -> h2c observes original held prefix before suffix and ordered terminal trailers",
+    "fixed managed H2 response prefix http2 -> http2 observes original held prefix before suffix and ordered terminal trailers",
+    "group managed H2 response prefix http1 -> h2c observes original held prefix before suffix and ordered terminal trailers",
+    "group managed H2 response prefix http1 -> http2 observes original held prefix before suffix and ordered terminal trailers",
+    "group managed H2 response prefix http2 -> h2c observes original held prefix before suffix and ordered terminal trailers",
+    "group managed H2 response prefix http2 -> http2 observes original held prefix before suffix and ordered terminal trailers"
+  ],
+  "verification": [
+    {
+      "kind": "read_only_baseline",
+      "command": "git rev-parse HEAD; git status --short",
+      "result": "HEAD matches assignment; pre-existing parent documentation/evidence changes preserved"
+    },
+    {
+      "kind": "source_integrity",
+      "command": "python3 source proposal construction and reverse-substitution byte assertion",
+      "result": "PASS: complete F proposal reverses exactly to original source; bytes outside decoder seams unchanged"
+    },
+    {
+      "kind": "source_integrity",
+      "command": "python3 SHA256 and git show HEAD:<read tracked path> byte comparisons",
+      "result": "PASS: 9 tracked input sources equal HEAD bytes; original F SHA256 stable; new repository test file absent"
+    },
+    {
+      "kind": "self_review",
+      "command": "read generated complete tests and unified fixture diff; enumerate callback and recursion lines",
+      "result": "PASS: source-only review; no language parser/compiler/runtime claims"
+    },
+    {
+      "kind": "runtime",
+      "command": null,
+      "result": "NOT RUN: tests, compile, formatter, browser, peer, consumers exclusively parent-owned after source SPEC then CODE"
+    }
+  ],
+  "plan_detail": "Unused new-test @timeout omitted under explicit parent instruction to preserve warnings-as-errors. Existing F socket5000 and fixture clocks unchanged.",
+  "repair_counters": {
+    "prefix_source": 0,
+    "prefix_runtime": 0,
+    "prefix_fixture": 0,
+    "cumulative_root": 325,
+    "cumulative_orchestration": 231,
+    "cumulative_groupTool": 76,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2
+  },
+  "incidents": [
+    {
+      "kind": "tool_output_truncation",
+      "count": 1,
+      "detail": "One batched source-read result exceeded aggregate output budget. Relevant source sections re-read with bounded outputs. Reported to parent; parent owns cumulative entry-counter update. No repair counter increment."
+    }
+  ],
+  "normal_no_match_results": [
+    "Memory registry query for response-prefix returned no hits; no relevant memory used.",
+    "rg --files for absent new upstream_transport_streaming_test.exs returned no matches as expected."
+  ],
+  "commands_shutdown": "All commands finished with no active exec/session/process owned by this worker.",
+  "remaining_risks": [
+    "Independent complete source SPEC then CODE remain required before root runtime.",
+    "Compilation, formatting, eight real cases and all compatibility/acceptance gates NOT RUN by this worker; source enumeration is not executed test evidence."
+  ],
+  "decisions_needed": []
+}

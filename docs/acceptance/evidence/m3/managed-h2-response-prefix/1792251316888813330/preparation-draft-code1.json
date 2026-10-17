@@ -1,0 +1,169 @@
+{
+  "task_id": "response-prefix-draft-code1",
+  "assignment": "direct read-only independent technical CODE review",
+  "status": "DONE",
+  "verdict": "PASS",
+  "classification": "PREPARATION_ONLY_NOT_STAGE_ENTRY_IMPLEMENTATION_OR_ACCEPTANCE",
+  "at_utc": "2026-10-17T15:18:30.619593+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_head": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "input_sha256": {
+    "/tmp/gaoxy-response-prefix-design1.md": "90271aca37f4a0170bf7ffc3fd6ccd9bbbc0c46bddcdd8fc5918f3e74489a8de",
+    "/tmp/gaoxy-response-prefix-plan1.md": "8f83b20ba6034c544759446d0315061bb355050cc04a78601d1bf8d4abfa0708",
+    "/tmp/gaoxy-response-prefix-prep1.json": "1f9bccca7455cab9eb6e913edbeab6675ea00e676f7a15e145a9668cf46221a6",
+    "/tmp/gaoxy-response-prefix-draft-spec1.json": "c785e91190ed9f75d941205fb90d6ddf5d2c0b572cb32cbc8870cd07eb585fd0",
+    "/tmp/gaoxy-response-prefix-draft-spec1.md": "4b42fc96a629a49860fbdf68b13aacf1b126af528cfb9e34f1daebe8e160f344"
+  },
+  "source_sha256_before_and_after": {
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced",
+    "apps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs": "92ec2f5ecad11f03a7028d07e8f1191144f04384a211fa83076294cdd57bd21c",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "70475d2609de54cd9f74090b12d48bf4650bd7b530aa0a4d0b49993b056599c1"
+  },
+  "source_stable": true,
+  "checks": [
+    {
+      "id": "draft-and-source-identity",
+      "result": "PASS",
+      "evidence": "All draft hashes match; five source pins verified twice with no drift; planned target absent."
+    },
+    {
+      "id": "eight-cases",
+      "result": "PASS",
+      "evidence": "Fixed/single-member group x nativeH1/H2 x h2c/TLS yields eight individually named positive cases; actual execution is required."
+    },
+    {
+      "id": "manual-peer-barrier",
+      "result": "PASS",
+      "evidence": "Existing manual respond retains ended:false; flush sends available prefix before command ACK. Suffix/trailers are not submitted until callback; data uses actual original connection/stream."
+    },
+    {
+      "id": "h1-progress",
+      "result": "PASS",
+      "evidence": "Observer after exact positive chunk read/accumulation preserves chunk framing, zero chunk/trailers, bodyless/nonchunked paths and 5000ms waits. Required chunked assertion prevents an unobserved fallback."
+    },
+    {
+      "id": "h2-progress",
+      "result": "PASS",
+      "evidence": "Observer after nonempty DATA append reports actual END_STREAM bit. Original flow credits occur before callback; existing frame, SETTINGS, HPAX, headers/trailers/control handling stays intact."
+    },
+    {
+      "id": "existing-arities",
+      "result": "PASS",
+      "evidence": "Optional fifth argument with default nil retains response/2,/3,/4 behavior; private recursive branches must all thread progress and callback return does not change response result."
+    },
+    {
+      "id": "temporal-proof",
+      "result": "PASS",
+      "evidence": "All fragments before exact prefix must match its binary slice and be nonterminal. Only exact-prefix callback can release suffix/EOF, so whole-response buffering cannot complete this test."
+    },
+    {
+      "id": "single-observation",
+      "result": "PASS",
+      "evidence": "Nonempty-only callback and increasing accumulated length give one exact-prefix release without mutable helper state; unique tag is asserted once. Observation is distinguished from public completion."
+    },
+    {
+      "id": "authentic-request",
+      "result": "PASS",
+      "evidence": "Hold exposes actual guardian/completion. Planned captures bind T handle/token, original request completion, URL and transport selection; group additionally binds actual G token/selection/inflight1."
+    },
+    {
+      "id": "pins-and-controls",
+      "result": "PASS",
+      "evidence": "Plan requires retained original guardian-owned request pins, authentic completion pending, and unchanged group exact controls/reserve. Implementation must explicitly require expected nonempty pin identity; vacuous empty Enum.all? is insufficient."
+    },
+    {
+      "id": "terminal-success",
+      "result": "PASS",
+      "evidence": "Exact prefix+suffix binary bytes, status/content-type, ordered duplicate safe trailers and observation required; premature terminal, callback absence or trailer loss fails."
+    },
+    {
+      "id": "lifecycle-and-deadlines",
+      "result": "PASS",
+      "evidence": "Original socket waits, ExUnit/peer/fixture/request deadlines unchanged; no timer/sleep release. Socket close -> full clean -> original public completion await0 -> full close retains physical termination/nonforced actor and peer joins."
+    },
+    {
+      "id": "compatibility-gates",
+      "result": "PASS",
+      "evidence": "Unfiltered defining-F scope plus endpoint/lifecycle/Generation compatibility, exact source re-freeze and complete source/implementation reviews prescribed before acceptance. New file requires recomputed source map."
+    },
+    {
+      "id": "stage-and-scope",
+      "result": "PASS",
+      "evidence": "Preparation only; actual group document/commit custody and root-bound entry required. No production/dependency/peer changes, runtime success or full Task6 streaming acceptance inferred."
+    }
+  ],
+  "findings": [],
+  "implementation_checkpoints": [
+    "Thread observer through every original recursion with nil behavior equivalent.",
+    "Require expected nonempty original T request pin identity/guardian/kind; for group also retain original G token/selection and supported exact controls.",
+    "No suffix release except exact-prefix callback after authentic pending/held checks.",
+    "Actual eight outcomes and fresh required gates remain NOT RUN."
+  ],
+  "verification": {
+    "source_pins_checked_twice": 5,
+    "source_mismatches": 0,
+    "executed_tests": 0,
+    "runtime_status": "NOT RUN: read-only preparation review",
+    "commands": "Bounded draft/source reads, exact SHA256 comparisons, planned-target existence, baseline/branch Git metadata, source-path discovery.",
+    "command_outcomes": "All own commands finished; one read-only rg exited2 on incorrect paths, recovered using rg --files; remaining commands exit0.",
+    "runtime_build_browser_fetch_git_mutations": 0,
+    "prohibited_E4_raw_private_prompt_access": false
+  },
+  "changes": {
+    "repository_files": [],
+    "report_files": [
+      "/tmp/gaoxy-response-prefix-draft-code1.json",
+      "/tmp/gaoxy-response-prefix-draft-code1.md"
+    ],
+    "others_changes": "Preserved; root alone owns repository/runtime/Git."
+  },
+  "tooling_incidents": [
+    {
+      "kind": "output_truncation",
+      "count": 1,
+      "detail": "Combined initial draft read truncated plan excerpt; recovered exact plan Task3-Task5 in bounded subsequent read."
+    },
+    {
+      "kind": "incorrect_source_paths",
+      "count": 1,
+      "detail": "Read-only rg used nonexistent managed_h2 directory and proxy/session.ex paths, exit2; recovered exact http/session.ex through rg --files."
+    },
+    {
+      "kind": "output_truncation",
+      "count": 1,
+      "detail": "Combined source read truncated28tokens in F.command excerpt; recovered exact lines120-139 in bounded subsequent read."
+    }
+  ],
+  "counters": {
+    "review_tooling_incidents_added": 3,
+    "Sol_repair_rounds_added": 0,
+    "Astra_repair_rounds_added": 0,
+    "Astra_recovery": "2/2 exhausted unchanged",
+    "historical_prep_and_SPEC_incidents": "Preserved; not recounted. Root must merge this review3 separately."
+  },
+  "execution_status": {
+    "all_own_commands_finished": true,
+    "live_own_commands": 0,
+    "runtime_commands_executed": 0
+  },
+  "remaining_gates": [
+    "Actual current group closure/final documents/local commit custody and root-bound entry",
+    "Implementation, self-review and complete frozen source SPEC/CODE",
+    "Eight actual temporal cases and full prescribed compatibility/fresh acceptance gates",
+    "Independent implementation/final-document review and local committed-byte custody"
+  ],
+  "decisions_needed": [],
+  "memory_used_this_assignment": false,
+  "skills_used": [
+    "using-elixir-skills",
+    "elixir-thinking"
+  ],
+  "limitations": [
+    "Draft technical PASS is not group closure, next-stage entry or runtime acceptance.",
+    "Callback and held-pin assertions are planned code, not implemented or executed.",
+    "Credit exhaustion/backpressure and deferred Task6 cells remain separate."
+  ]
+}
