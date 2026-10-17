@@ -1,0 +1,249 @@
+from pathlib import Path
+import ast
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+import re
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-downstream-cancel-e10.path').read_text().strip())
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def load(name):
+    return json.loads((E / name).read_bytes())
+
+
+def plain_log(path):
+    return re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', path.read_text())
+
+
+def summary(plain):
+    summaries = re.findall(r'(\d+) tests?, (\d+) failures?([^\n]*)', plain)
+    reported = sum(int(row[0]) for row in summaries)
+    failures = sum(int(row[1]) for row in summaries)
+    skipped = sum(int(n) for n in re.findall(r'(\d+) skipped', plain))
+    excluded = sum(int(n) for n in re.findall(r'(\d+) excluded', plain))
+    return reported, failures, skipped, excluded
+
+
+def completed_cases(plain, names):
+    rows = []
+    lines = plain.splitlines()
+    for name in names:
+        pattern = re.compile(r'\s*\* ' + re.escape(name) +
+                             r' \([0-9.]+ms\) \[L#[0-9]+\]')
+        matches = [line for line in lines if pattern.fullmatch(line)]
+        assert len(matches) == 1, (name, matches)
+        rows.append({'name': name, 'completed_trace_line': matches[0]})
+    return rows
+
+
+candidate = load('source-candidate4.json')
+inventory = load('command-inventory3.json')
+expected = candidate['actual_command_source_sha256']
+assert expected == inventory['actual_command_source_sha256']
+assert candidate['actual_command_source_count'] == len(expected) > 0
+spec = importlib.util.spec_from_file_location('early_final_collector_audit', E / 'command-collector1.py')
+collector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(collector)
+actual = collector.source_manifest()
+assert actual == expected and len(actual) == candidate['actual_command_source_count']
+assert all(sha(W / name) == value for name, value in expected.items())
+assert all(sha(W / name) == value for name, value in candidate['documents_sha256'].items())
+new_names = candidate['expected_case_names']
+original_names = candidate['original_case_names']
+assert len(new_names) == len(set(new_names)) == 4
+assert len(original_names) == len(set(original_names)) == 24
+assert not set(new_names).intersection(original_names)
+expected_kinds = {
+    'downstream-cancel-final-compile3': 'static',
+    'downstream-cancel-final-format3': 'static',
+    'downstream-cancel-final-syntax3': 'static',
+    'downstream-cancel-final-defining3': 'green',
+    'downstream-cancel-final-lifecycle3': 'green',
+    'downstream-cancel-final-generation3': 'green',
+    'downstream-cancel-final-python-startup3': 'static',
+    'downstream-cancel-final-core-consumer3': 'green',
+    'downstream-cancel-final-http-consumer3': 'green',
+}
+assert len(inventory['final_commands']) == len(expected_kinds) == 9
+assert {row['name'] for row in inventory['final_commands']} == set(expected_kinds)
+rows = []
+all_waits = []
+final_new_cases = []
+final_original_cases = []
+for planned in inventory['final_commands']:
+    name = planned['name']
+    assert planned['kind'] == expected_kinds[name]
+    receipt_path = E / (name + '.json')
+    receipt = load(receipt_path.name)
+    assert receipt['name'] == name
+    assert receipt['command'] == planned['argv']
+    assert planned['timeout_seconds'] == 600
+    assert receipt['cwd'] == str(W)
+    assert receipt['verdict'] == 'PASS'
+    assert receipt['actual_exit'] == 0 and not receipt['forced']
+    assert receipt['wait_error'] is None and receipt['process_joined']
+    assert receipt['source_stable'] and receipt['source_changes'] == []
+    assert receipt['source_before'] == receipt['source_after'] == expected
+    assert not receipt['process_group_remaining'] and not receipt['warnings']
+    assert receipt['collector_sha256'] == sha(E / 'command-collector1.py')
+    cleanup = receipt['descendant_cleanup']
+    assert not cleanup['forced'] and not cleanup['remaining']
+    assert not cleanup['initial_after_reap'] and not cleanup['signal_attempts']
+    assert not cleanup['reap_deadline_exhausted']
+    assert cleanup['reaped'] == cleanup['reaped_before_force']
+    waits = []
+    for raw in cleanup['reaped']:
+        assert raw['phase'] == 'before_force'
+        waits.append(dict(raw, decoded_exit=os.waitstatus_to_exitcode(raw['wait_status'])))
+    all_waits.extend(dict(row, command=name) for row in waits)
+    log_path = E / receipt['log']
+    assert log_path.name == name + '.log'
+    assert sha(log_path) == receipt['log_sha256']
+    plain = plain_log(log_path)
+    warnings = [line for line in plain.splitlines() if 'warning:' in line
+                and not line.startswith('warning: Git tree ')]
+    assert warnings == []
+    reported, failures, skipped, excluded = summary(plain)
+    assert reported == receipt['reported_tests']
+    assert failures == receipt['failures'] == 0
+    assert skipped == receipt['skipped'] == 0
+    assert excluded == receipt['excluded'] == 0
+    assert reported - skipped - excluded == receipt['tests']
+    if planned['kind'] == 'green':
+        assert reported > 0
+    else:
+        assert planned['kind'] == 'static' and reported == 0
+    row = dict(name=name, kind=planned['kind'], verdict='PASS', actual_exit=0,
+               executed_exunit_tests=receipt['tests'], reported_tests=reported,
+               failures=0, skipped=0, excluded=0, product_warnings=[],
+               elapsed_seconds=receipt['elapsed_seconds'],
+               receipt_sha256=sha(receipt_path), log_sha256=sha(log_path),
+               command=receipt['command'], source_pins_verified=len(expected),
+               forced=False, process_joined=True, process_group_remaining=[],
+               genuine_adopted_waits=waits)
+    if name == 'downstream-cancel-final-defining3':
+        assert '--trace' in receipt['command']
+        final_new_cases = completed_cases(plain, new_names)
+        final_original_cases = completed_cases(plain, original_names)
+        row['four_new_cases'] = final_new_cases
+        row['original_cases'] = final_original_cases
+    if name == 'downstream-cancel-final-generation3':
+        assert '--trace' in receipt['command']
+        generation_rows = re.findall(r'(?m)^\s*\* test .+? \([0-9.]+ms\) \[L#[0-9]+\]$', plain)
+        assert len(generation_rows) == reported
+        row['completed_generation_rows'] = len(generation_rows)
+        row['preserved_store_death_cases'] = completed_cases(plain, [
+            'test h2c Store death leaves genuine old G T rights valid and fresh admission fails before effects',
+            'test http2 Store death leaves genuine old G T rights valid and fresh admission fails before effects'])
+    if name == 'downstream-cancel-final-python-startup3':
+        source = W / 'apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py'
+        tree = ast.parse(source.read_text())
+        methods = sorted(node.name for cls in tree.body if isinstance(cls, ast.ClassDef)
+                         and cls.name == 'PeerStartupTest' for node in cls.body
+                         if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'))
+        observed = re.findall(r'(?m)^(test_\w+) \(__main__\.PeerStartupTest\.\w+\) \.\.\. ok$', plain)
+        assert len(methods) == len(observed) == len(set(observed)) == 11
+        assert sorted(observed) == methods
+        assert re.search(r'(?m)^Ran 11 tests in [0-9.]+s$', plain)
+        assert plain.rstrip().endswith('\nOK')
+        assert not re.search(r'(?m)^(ERROR|FAIL|FAILED)\b', plain)
+        row['python_unittest_methods'] = methods
+        row['python_unittest_executed'] = 11
+        row['python_unittest_failures'] = row['python_unittest_errors'] = row['python_unittest_skipped'] = 0
+        row['python_unittest_source_sha256'] = sha(source)
+    if name == 'downstream-cancel-final-core-consumer3':
+        assert receipt['tests'] == 1
+    if name == 'downstream-cancel-final-http-consumer3':
+        assert receipt['tests'] == 2
+    rows.append(row)
+
+first = load('first-qualification-audit3.json')
+assert first['verdict'] == 'PASS_FIRST_GENUINE_QUALIFICATION'
+first_log = E / 'downstream-cancel-first3.log'
+assert sha(first_log) == first['log_sha256']
+plain = plain_log(first_log)
+reported, failures, skipped, excluded = summary(plain)
+assert failures == skipped == excluded == 0
+assert first['executed_tests'] == reported - skipped - excluded > 0
+first_new = completed_cases(plain, new_names)
+first_original = completed_cases(plain, original_names)
+assert len(first['four_new_cases']) == 4
+assert len(first['original_cases']) == 24
+assert {row['name']: row['completed_trace_line'] for row in first['four_new_cases']} == {
+    row['name']: row['completed_trace_line'] for row in first_new}
+assert {row['name']: row['completed_trace_line'] for row in first['original_cases']} == {
+    row['name']: row['completed_trace_line'] for row in first_original}
+assert len(final_new_cases) == 4 and len(final_original_cases) == 24
+scoped_names = {'downstream-cancel-final-' + part + '3' for part in ['defining', 'lifecycle', 'generation']}
+scoped = [row for row in rows if row['name'] in scoped_names]
+assert len(scoped) == 3
+consumer_names = {'downstream-cancel-final-core-consumer3', 'downstream-cancel-final-http-consumer3'}
+predecessor = W / candidate['predecessor_evidence_rel']
+retained_failure_path = predecessor / 'early-final-final-generation1.json'
+retained_failure = json.loads(retained_failure_path.read_bytes())
+entry_candidate = json.loads((predecessor / 'source-candidate1.json').read_bytes())
+assert retained_failure['verdict'] == 'FAIL' and retained_failure['actual_exit'] == 2
+assert retained_failure['tests'] == 184 and retained_failure['failures'] == 1
+assert retained_failure['skipped'] == retained_failure['excluded'] == 0
+assert not retained_failure['forced'] and retained_failure['process_joined']
+assert not retained_failure['process_group_remaining'] and retained_failure['source_stable']
+assert retained_failure['source_before'] == retained_failure['source_after'] == entry_candidate['actual_command_source_sha256']
+assert sha(predecessor / retained_failure['log']) == retained_failure['log_sha256']
+retained_failure_record = {'verdict': 'FAIL', 'executed_tests': 184, 'failures': 1,
+                           'actual_exit': 2, 'forced': False, 'process_joined': True,
+                           'receipt_sha256': sha(retained_failure_path),
+                           'log_sha256': retained_failure['log_sha256']}
+out = dict(kind='DOWNSTREAM_CANCEL_FINAL_NONBROWSER_AUDIT3',
+           at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), verdict='PASS',
+           retained_failed_generation1=retained_failure_record,
+           audit_tool_sha256=sha(Path(__file__)),
+           source_candidate_sha256=sha(E / 'source-candidate4.json'),
+           command_inventory_sha256=sha(E / 'command-inventory3.json'),
+           actual_source_pins=len(expected), source_stable=True,
+           commands=rows, scoped_exunit_invocations=sum(row['executed_exunit_tests'] for row in scoped),
+           scoped_counts=[row['executed_exunit_tests'] for row in scoped],
+           isolated_consumers={row['name']: row['executed_exunit_tests'] for row in rows
+                               if row['name'] in consumer_names},
+           python_unittest_executed=11, static_test_count=0,
+           first_qualification_audit_sha256=sha(E / 'first-qualification-audit3.json'),
+           first_executed_tests=first['executed_tests'], four_new_cases=first_new,
+           original_cases=first_original, final_four_new_cases=final_new_cases,
+           final_original_cases=final_original_cases, genuine_adopted_waits=all_waits,
+           limits='Scoped invocation counts are not unique tests. Python11, isolated Core1/HTTP2, static0 and browser2 rows are separate. Top-level commands exit0/nonforced; genuine raw adopted waits and decoded signals are retained rather than described as all exit0. The predecessor Generation1 failure remains FAIL; its repaired cohort2 is locally closed. These fresh commands qualify only the new downstream-cancel slice.')
+retained_first_path = E / 'downstream-cancel-first1.json'
+retained_first = json.loads(retained_first_path.read_bytes())
+retained_candidate = json.loads((E / 'source-candidate2.json').read_bytes())
+assert retained_first['verdict'] == 'FAIL' and retained_first['actual_exit'] == 2
+assert retained_first['tests'] == 66 and retained_first['failures'] == 4
+assert retained_first['skipped'] == retained_first['excluded'] == 0
+assert retained_first['source_stable'] and retained_first['process_joined'] and not retained_first['forced']
+assert not retained_first['process_group_remaining']
+assert retained_first['source_before'] == retained_first['source_after'] == retained_candidate['actual_command_source_sha256']
+assert sha(E / retained_first['log']) == retained_first['log_sha256']
+out['retained_first_phase_failure'] = {'receipt_sha256': sha(retained_first_path), 'log_sha256': retained_first['log_sha256'], 'verdict': 'FAIL', 'actual_exit': 2, 'tests': 66, 'failures': 4, 'limits': 'All4 failed before RST; precise fixture phase repair, not an established upstream bug.'}
+retained_second_path = E / 'downstream-cancel-first2.json'
+retained_second = json.loads(retained_second_path.read_bytes())
+retained_second_candidate = json.loads((E / 'source-candidate3.json').read_bytes())
+assert retained_second['verdict'] == 'FAIL' and retained_second['actual_exit'] == 2
+assert retained_second['tests'] == 66 and retained_second['failures'] == 2
+assert retained_second['skipped'] == retained_second['excluded'] == 0
+assert retained_second['source_stable'] and retained_second['process_joined'] and not retained_second['forced']
+assert not retained_second['process_group_remaining']
+assert retained_second['source_before'] == retained_second['source_after'] == retained_second_candidate['actual_command_source_sha256']
+assert sha(E / retained_second['log']) == retained_second['log_sha256']
+out['retained_second_setup_count_failure'] = {'receipt_sha256': sha(retained_second_path), 'log_sha256': retained_second['log_sha256'], 'verdict': 'FAIL', 'actual_exit': 2, 'tests': 66, 'failures': 2, 'limits': 'Both group cases failed total3vs2 after causal checks, before full close. Known setup health HEAD included by strict fixed0/group1+2 repair, no protocol/upstream defect established.'}
+p = E / 'final-nonbrowser-audit3.json'
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+print(json.dumps({k: out[k] for k in ['verdict', 'actual_source_pins', 'scoped_counts',
+                                    'scoped_exunit_invocations', 'isolated_consumers',
+                                    'python_unittest_executed', 'static_test_count']}))
+print('audit_sha256', sha(p))

@@ -332,6 +332,192 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
     end
   end
 
+  for mount <- [:fixed, :group] do
+    describe "#{mount} managed H2 downstream reset at exhausted upload credit" do
+      if mount == :group do
+        setup do
+          assert :ok === boundary(:activation)
+          :ok
+        end
+      end
+
+      for upstream <- [:h2c, :http2] do
+        @cancel_mount mount
+        @cancel_upstream upstream
+        test "http2 -> #{@cancel_upstream} native reset at exhausted upload credit preserves simultaneous same-socket stream3 sibling" do
+          body = <<0, 255>>
+          upload_prefix = <<0>>
+          prefix = <<0, "managed-h2-prefix", 255>>
+          suffix = <<128, "|suffix", 0>>
+          trailers = [{"x-check", "first"}, {"x-check", "second"}]
+
+          f =
+            fixture(@cancel_mount, @cancel_upstream, :http2, [
+              "--manual",
+              "--hold-upload-credit"
+            ])
+
+          baseline = capture_cancel_baseline(@cancel_mount, f)
+
+          {socket, seen, guardian, completion} =
+            hold_upload(@cancel_mount, f, "/hold/upload-credit")
+
+          held =
+            capture_cancel_original(@cancel_mount, f, guardian, completion, "/hold/upload-credit")
+
+          worker = held.worker
+          worker_monitor = Process.monitor(worker)
+          guardian_monitor = Process.monitor(guardian)
+          assert Process.alive?(worker)
+          assert Process.alive?(guardian)
+          connection = seen["connection"]
+          stream = seen["stream"]
+
+          assert %{"connection" => ^connection, "initial_window" => 1} =
+                   F.event(f.peer, "settings_ack")
+
+          if @cancel_upstream == :http2,
+            do:
+              assert(
+                %{"connection" => ^connection, "alpn" => "h2", "sni" => "localhost"} =
+                  F.event(f.peer, "tls")
+              )
+
+          # Submission does not establish pump parsing or an upstream trailer queue.
+          :ok = F.send_body(f, socket, body, false, 1)
+          {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+          :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
+
+          assert %{"connection" => ^connection, "stream" => ^stream, "total_bytes" => 1} =
+                   F.upload_through(f.peer, seen, upload_prefix)
+
+          prefix_hash = Base.encode16(:crypto.hash(:sha256, upload_prefix), case: :lower)
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => ^stream,
+                   "total_bytes" => 1,
+                   "held_bytes" => 1,
+                   "stream_window" => 0,
+                   "connection_window" => connection_window,
+                   "sha256" => ^prefix_hash
+                 } = F.event(f.peer, "upload_credit_held")
+
+          assert connection_window > 0
+          assert_cancel_holds(@cancel_mount, f, baseline, [held])
+          :ok = F.send_request(f, socket, "GET", "/hold/response-prefix", [], true, 3)
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => sibling_stream,
+                   "target" => "/hold/response-prefix"
+                 } = sibling_seen = F.event(f.peer, "request")
+
+          assert [":method", "GET"] in sibling_seen["headers"]
+          refute sibling_stream === stream
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => ^sibling_stream,
+                   "total_bytes" => 0
+                 } = F.event(f.peer, "upload_end")
+
+          {sibling_guardian, sibling_completion} =
+            cancel_original_for_target(@cancel_mount, f, "/hold/response-prefix")
+
+          sibling =
+            capture_cancel_original(
+              @cancel_mount,
+              f,
+              sibling_guardian,
+              sibling_completion,
+              "/hold/response-prefix"
+            )
+
+          refute sibling_guardian === guardian
+          refute sibling_completion === completion
+          refute sibling.worker === worker
+          refute sibling.original_request === held.original_request
+          refute sibling.transport_token === held.transport_token
+          assert_cancel_holds(@cancel_mount, f, baseline, [held, sibling])
+          tag = make_ref()
+
+          assert %{"op" => "respond", "connection" => ^connection, "stream" => ^sibling_stream} =
+                   F.command(f.peer, sibling_seen, "respond", %{
+                     "status" => 200,
+                     "fields" => [
+                       ["content-type", "application/octet-stream"],
+                       ["trailer", "x-check"]
+                     ],
+                     "body64" => Base.encode64(prefix),
+                     "ended" => false
+                   })
+
+          progress = fn %{body: received, ended: ended} ->
+            if byte_size(received) <= byte_size(prefix) do
+              assert received === binary_part(prefix, 0, byte_size(received))
+              refute ended
+
+              if received === prefix do
+                refute_receive {:downstream_cancel_prefix_observed, ^tag, _}, 0
+                assert_cancel_holds(@cancel_mount, f, baseline, [held, sibling], sibling_guardian)
+                send(self(), {:downstream_cancel_prefix_observed, tag, received})
+
+                :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(3, 0, 1, <<8::32>>))
+
+                assert %{
+                         "connection" => ^connection,
+                         "stream" => ^stream,
+                         "code" => 8,
+                         "upload_credit" => %{
+                           "total_bytes" => 1,
+                           "body64" => "AA==",
+                           "sha256" => ^prefix_hash,
+                           "credit_released" => false,
+                           "response_started" => false
+                         }
+                       } = F.event(f.peer, "reset")
+
+                assert_receive {:DOWN, ^worker_monitor, :process, ^worker, :killed}, 5_000
+                assert :ok = HTTP.RequestCompletion.await(completion, 5_000)
+                assert :ok = HTTP.RequestCompletion.await(completion, 0)
+                assert_receive {:DOWN, ^guardian_monitor, :process, ^guardian, :normal}, 5_000
+                assert_cancel_holds(@cancel_mount, f, baseline, [sibling], sibling_guardian)
+
+                assert %{
+                         "op" => "data",
+                         "connection" => ^connection,
+                         "stream" => ^sibling_stream
+                       } =
+                         F.command(f.peer, sibling_seen, "data", %{
+                           "body64" => Base.encode64(suffix),
+                           "trailers" => [["x-check", "first"], ["x-check", "second"]],
+                           "ended" => true
+                         })
+              end
+            end
+          end
+
+          result = F.response(f, socket, "GET", 3, progress)
+          assert result.status === 200
+          assert result.body === prefix <> suffix
+          assert result.trailers === trailers
+          assert {"content-type", "application/octet-stream"} in result.headers
+          assert_receive {:downstream_cancel_prefix_observed, ^tag, ^prefix}, 0
+          refute_receive {:downstream_cancel_prefix_observed, ^tag, _}, 0
+          :ok = :gen_tcp.close(socket)
+          clean(@cancel_mount, f)
+          assert :ok = HTTP.RequestCompletion.await(completion, 0)
+          assert :ok = HTTP.RequestCompletion.await(sibling_completion, 0)
+          assert_cancel_holds(@cancel_mount, f, baseline, [])
+          assert Process.get({F, :observed_requests, f.peer}, 0) === baseline.setup_requests + 2
+          F.no_event(f.peer, "request")
+          close(@cancel_mount, f)
+        end
+      end
+    end
+  end
+
   defp fixture(mount, upstream, downstream, peer_options \\ ["--manual"])
 
   defp fixture(:fixed, upstream, downstream, peer_options),
@@ -457,6 +643,263 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
         assert %{inflight: 1} = UpstreamGroups.status(f.group)
         assert G.assert_cleanup(f, 1) === @reserve
         G.assert_exact_controls(:sys.get_state(f.groups))
+    end
+  end
+
+  defp cancel_transport_pins(f) do
+    Map.new(:sys.get_state(f.owner).pins, fn {ref, held} -> {ref, held.public} end)
+  end
+
+  defp capture_cancel_baseline(mount, f) do
+    setup_requests = Process.get({F, :observed_requests, f.peer}, 0)
+    assert setup_requests === if(mount == :group, do: 1, else: 0)
+    transport = :sys.get_state(f.owner)
+    assert transport.tokens === %{}
+    transport_pins = cancel_transport_pins(f)
+    assert Enum.all?(transport_pins, fn {_, pin} -> pin.kind === :baseline end)
+    assert %{cleanup_pending: 0} = Gaoxy.status(f.instance, :http)
+
+    group_pins =
+      if mount == :group do
+        group = :sys.get_state(f.groups)
+        assert group.tokens === %{}
+        assert Enum.all?(group.pins, fn {_, pin} -> pin.kind === :baseline end)
+        group.pins
+      else
+        %{}
+      end
+
+    %{transport_pins: transport_pins, group_pins: group_pins, setup_requests: setup_requests}
+  end
+
+  defp cancel_original_for_target(mount, f, target) do
+    F.eventually(fn ->
+      Enum.any?(:sys.get_state(f.owner).tokens, fn {_, held} ->
+        match?(%HTTP.RequestCompletion{}, held.completion) and
+          :sys.get_state(held.guardian).submitted_url === f.origin <> target
+      end)
+    end)
+
+    if mount == :group, do: F.eventually(fn -> G.held_selection(f, target) != nil end)
+
+    [{_, held}] =
+      Enum.filter(:sys.get_state(f.owner).tokens, fn {_, held} ->
+        :sys.get_state(held.guardian).submitted_url === f.origin <> target
+      end)
+
+    {held.guardian, held.completion}
+  end
+
+  defp capture_cancel_original(mount, f, guardian, completion, target, phase \\ :before_headers) do
+    transport = :sys.get_state(f.owner)
+
+    [{transport_token, transport_hold}] =
+      Enum.filter(transport.tokens, fn {_, held} ->
+        held.guardian === guardian and held.completion === completion
+      end)
+
+    assert transport_hold.guardian === guardian
+    assert transport_hold.completion === completion
+    assert transport_hold.resource === f.handle.resource
+    assert %HTTP.RequestCompletion{} = completion
+    state = :sys.get_state(guardian)
+    worker = state.owner
+    assert is_pid(worker)
+    assert Process.alive?(worker)
+    assert Process.alive?(guardian)
+    refute worker === guardian
+    assert state.client.completion(state.original_request) === completion
+    assert state.transport_selection === {f.handle, transport_token}
+    assert state.managed_path === true
+    assert state.managed_transport === nil
+    assert state.request_options === nil
+    assert state.selector === nil
+    assert state.awaiting_transport === nil
+
+    case phase do
+      :before_headers ->
+        assert state.headers === false
+        assert state.submitted_url === f.origin <> target
+
+        assert :binary.referenced_byte_size(state.submitted_url) ===
+                 byte_size(state.submitted_url)
+
+      :after_headers ->
+        assert state.headers === true
+        assert state.submitted_url === nil
+    end
+
+    assert Enum.sort(Map.keys(state.request)) === [:completion, :promise, :resolved, :stream]
+    assert [_ | _] = state.transport_pins
+
+    request_pins =
+      Map.new(
+        for {ref, pin} <- cancel_transport_pins(f),
+            pin.kind === :request and pin.holder in [worker, guardian],
+            do: {ref, pin}
+      )
+
+    assert map_size(request_pins) > 0
+
+    for {ref, pin} <- request_pins do
+      assert pin.ref === ref
+      assert pin.provider === UpstreamTransports
+      assert pin.owner === f.owner
+      assert pin.holder in [worker, guardian]
+      assert pin.kind === :request
+      assert pin.handles === [f.handle]
+      assert transport.pins[ref].public === pin
+    end
+
+    assert Enum.any?(request_pins, fn {_, pin} -> pin.holder === worker end)
+
+    for pin <- state.transport_pins do
+      assert pin.provider === UpstreamTransports
+      assert pin.owner === f.owner
+      assert pin.holder === guardian
+      assert pin.kind === :request
+      assert pin.handles === [f.handle]
+      assert transport.pins[pin.ref].public === pin
+      assert request_pins[pin.ref] === pin
+    end
+
+    held = %{
+      guardian: guardian,
+      completion: completion,
+      worker: worker,
+      target: target,
+      transport_token: transport_token,
+      transport_selection: state.transport_selection,
+      original_request: state.original_request,
+      transport_pins: state.transport_pins,
+      request_pins: request_pins
+    }
+
+    case mount do
+      :fixed ->
+        assert state.selection === nil
+        held
+
+      :group ->
+        group = :sys.get_state(f.groups)
+
+        [{group_token, group_hold}] =
+          Enum.filter(group.tokens, fn {_, group_hold} ->
+            group_hold.guardian === guardian and group_hold.completion === completion
+          end)
+
+        assert group_hold.guardian === guardian
+        assert group_hold.completion === completion
+        refute group_token === transport_token
+        assert state.selection === {f.group, group_token}
+
+        group_pins =
+          Map.new(
+            for {ref, pin} <- group.pins,
+                pin.kind === :request and pin.holder in [worker, guardian],
+                do: {ref, pin}
+          )
+
+        assert map_size(group_pins) > 0
+
+        for {_, pin} <- group_pins do
+          assert pin.kind === :request
+          assert pin.holder in [worker, guardian]
+          assert pin.keys === [group_hold.key]
+        end
+
+        Map.merge(held, %{
+          group_token: group_token,
+          selection: state.selection,
+          group_pins: group_pins
+        })
+    end
+  end
+
+  defp assert_cancel_holds(mount, f, baseline, originals, responded_guardian \\ nil) do
+    if responded_guardian != nil do
+      assert Enum.count(originals, &(&1.guardian === responded_guardian)) === 1
+    end
+
+    count = length(originals)
+    token_keys = MapSet.new(originals, & &1.transport_token)
+    assert MapSet.size(token_keys) === count
+
+    expected_pins =
+      Enum.reduce(originals, baseline.transport_pins, fn held, pins ->
+        assert MapSet.disjoint?(
+                 MapSet.new(Map.keys(pins)),
+                 MapSet.new(Map.keys(held.request_pins))
+               )
+
+        Map.merge(pins, held.request_pins)
+      end)
+
+    {group_token_keys, expected_group_pins} =
+      if mount == :group do
+        tokens = MapSet.new(originals, & &1.group_token)
+        assert MapSet.size(tokens) === count
+
+        pins =
+          Enum.reduce(originals, baseline.group_pins, fn held, pins ->
+            assert MapSet.disjoint?(
+                     MapSet.new(Map.keys(pins)),
+                     MapSet.new(Map.keys(held.group_pins))
+                   )
+
+            Map.merge(pins, held.group_pins)
+          end)
+
+        {tokens, pins}
+      else
+        {MapSet.new(), %{}}
+      end
+
+    F.eventually(fn ->
+      transport = :sys.get_state(f.owner)
+
+      group_settled =
+        if mount == :group do
+          group = :sys.get_state(f.groups)
+
+          MapSet.new(Map.keys(group.tokens)) === group_token_keys and
+            group.pins === expected_group_pins
+        else
+          true
+        end
+
+      MapSet.new(Map.keys(transport.tokens)) === token_keys and
+        cancel_transport_pins(f) === expected_pins and
+        Gaoxy.status(f.instance, :http).cleanup_pending === count and group_settled
+    end)
+
+    assert cancel_transport_pins(f) === expected_pins
+    assert MapSet.new(Map.keys(:sys.get_state(f.owner).tokens)) === token_keys
+    expected_pin_count = Enum.sum(for {_, pin} <- expected_pins, do: length(pin.handles))
+
+    assert {:ok, %{request_tokens: ^count, pins: ^expected_pin_count}} =
+             UpstreamTransports.status(f.owner)
+
+    assert %{cleanup_pending: ^count} = Gaoxy.status(f.instance, :http)
+
+    for held <- originals do
+      assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(held.completion, 0)
+      assert Process.alive?(held.worker)
+      assert Process.alive?(held.guardian)
+
+      phase = if held.guardian === responded_guardian, do: :after_headers, else: :before_headers
+
+      assert capture_cancel_original(mount, f, held.guardian, held.completion, held.target, phase) ===
+               held
+    end
+
+    if mount == :group do
+      group = :sys.get_state(f.groups)
+      assert MapSet.new(Map.keys(group.tokens)) === group_token_keys
+      assert group.pins === expected_group_pins
+      assert %{inflight: ^count} = UpstreamGroups.status(f.group)
+      assert G.assert_cleanup(f, count) === count * @reserve
+      G.assert_exact_controls(group)
     end
   end
 

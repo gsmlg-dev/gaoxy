@@ -1,0 +1,837 @@
+#!/usr/bin/env python3
+"""Group same-authority TLS identity rotation: two native browser rows.
+Derived accepted lifecycle/CDP/Actor gates; execution is owned by root.
+"""
+import argparse
+import ctypes
+import base64
+import hashlib
+import json
+import os
+from pathlib import Path
+import queue
+import re
+import signal
+import shutil
+import socket
+import subprocess
+import sys
+import threading
+import tempfile
+import time
+import traceback
+
+ROOT = Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+HOST = Path(__file__).resolve().with_name('group-identity-rotation-browser-host1.exs')
+COHORT = ROOT/'docs/acceptance/evidence/m3/managed-h2-downstream-cancel/1792264566506557815/group-identity-rotation-browser-cohort1.exs'
+PEER = ROOT/'apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py'
+PEER_PYTHON = '/tmp/gaoxy-m3-h2-soak-venv/bin/python'
+TARGETS = {'old':'/old%2Fpath?raw=%2F', 'new':'/new%2Fpath?raw=%2F'}
+def document(label):
+    title = 'Gaoxy group H2 Generation '+label
+    marker = 'Gaoxy checked group H2 Generation '+label
+    html = ('<!doctype html><html><head><title>'+title+'</title>'
+            '<link rel="icon" href="data:,"></head><body><h1 id="checked">'+marker+'</h1></body></html>').encode()
+    return title, marker, html
+
+BROWSER = r'''
+const assert = require('node:assert/strict');
+const crypto = require('node:crypto');
+const fs = require('node:fs/promises');
+const os = require('node:os');
+const path = require('node:path');
+const {spawn} = require('node:child_process');
+const readline = require('node:readline');
+(async () => {
+ const [origin, directory, protocol, spki, netlogPath] = process.argv.slice(1);
+ assert(['h2','http/1.1'].includes(protocol));
+ const originURL=new URL(origin);
+ assert.equal(originURL.hostname,'127.0.0.1');assert.match(originURL.port,/^[0-9]+$/);
+ assert.equal(originURL.protocol,protocol==='h2'?'https:':'http:');
+ assert.equal(originURL.origin,origin);
+ const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'gaoxy-native-worker-browser-'));
+ const chrome = spawn(process.env.GAOXY_CHROME_BIN || 'chromium', ['--headless=new','--no-first-run','--no-default-browser-check',
+  '--disable-background-networking','--disable-component-update','--disable-sync','--disable-extensions',
+  '--remote-debugging-port=0',`--user-data-dir=${profile}`,
+  `--log-net-log=${netlogPath}`,'--net-log-capture-mode=Default',
+  ...(protocol==='h2'?[`--ignore-certificate-errors-spki-list=${spki}`]:[]),'about:blank'], {stdio:['ignore','ignore','pipe']});
+ let stderr = '', socket, serial = 0, passed = false, closeRequested = false;
+ let chromeError;
+ chrome.on('error', e => { chromeError = e; });
+ const exited = new Promise(resolve => chrome.once('exit', (code, signal) => resolve({code, signal})));
+ chrome.stderr.on('data', bytes => { stderr = (stderr + bytes.toString()).slice(-65536); });
+ const pending = new Map(), events = [];
+ const emit = v => process.stdout.write(JSON.stringify(v)+'\n');
+ const bounded = (promise, ms, label) => {
+  let timer;
+  return Promise.race([promise,new Promise((_, reject) => {timer=setTimeout(()=>reject(Error(label)),ms);})])
+   .finally(()=>clearTimeout(timer));
+ };
+ async function until(predicate, label) {
+  const end = Date.now()+15000;
+  while (!await predicate()) {
+   assert(Date.now()<end && !chromeError && chrome.exitCode===null, label+': '+stderr);
+   await new Promise(resolve=>setTimeout(resolve,10));
+  }
+ }
+ function request(method, params={}) {
+  const id=++serial;
+  return bounded(new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));}),15000,method)
+   .finally(()=>pending.delete(id));
+ }
+ const input = readline.createInterface({input:process.stdin});
+ const commands=[], waiters=[];
+ input.on('line',line=>{const c=JSON.parse(line);if(waiters.length)waiters.shift()(c);else commands.push(c);});
+ const command=()=>bounded(commands.length?Promise.resolve(commands.shift()):new Promise(resolve=>waiters.push(resolve)),20000,'browser command deadline');
+ try {
+  let port;
+  await until(async()=>{
+   try { port=Number((await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).split('\n')[0]); }
+   catch(e){assert.equal(e.code,'ENOENT');} return !!port;
+  },'Chrome startup deadline');
+  const targets=await bounded(fetch(`http://127.0.0.1:${port}/json/list`).then(r=>r.json()),5000,'CDP discovery deadline');
+  const page=targets.find(t=>t.type==='page'&&t.url==='about:blank');assert(page);
+  socket=new WebSocket(page.webSocketDebuggerUrl);
+  socket.addEventListener('message', message=>{
+   const value=JSON.parse(message.data);
+   if(value.id){const p=pending.get(value.id);if(p){value.error?p.reject(Error(JSON.stringify(value.error))):p.resolve(value.result);}}
+   else {assert(events.length<2048,'CDP event bound');events.push(value);}
+  });
+  socket.addEventListener('close',()=>{for(const p of pending.values())p.reject(Error('CDP closed'));pending.clear();});
+  await bounded(new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});}),5000,'CDP open deadline');
+  await request('Page.enable');await request('Network.enable');await request('Runtime.enable');
+  await request('Network.setBlockedURLs',{urls:['*favicon.ico']});
+  const version=await request('Browser.getVersion');
+  emit({event:'browser_ready',version,node:process.version});
+  for(const label of ['old','new']) {
+  const c=await command();assert.deepEqual(c,{op:'navigate',label,target:label==='old'?'/old%2Fpath?raw=%2F':'/new%2Fpath?raw=%2F'});
+  const target=c.target, title='Gaoxy group H2 Generation '+label, marker='Gaoxy checked group H2 Generation '+label;
+  // Chromium rejects Proxy-Authorization injection; sockets prove its stripping.
+  await request('Network.setExtraHTTPHeaders',{headers:{'Authorization':'Bearer synthetic-origin-'+label}});
+  const nav=await request('Page.navigate',{url:origin+target});
+  const diagnosticRequestIds=new Set(events.filter(e=>e.method==='Network.requestWillBeSent'&&e.params.request.url===origin+target).map(e=>e.params.requestId));
+  if(nav.errorText)emit({event:'navigation_error_observed_v1',schema:1,label,error:nav.errorText.slice(0,128),
+   response_heads:events.filter(e=>e.method==='Network.responseReceived'&&e.params.response.url===origin+target).slice(-4).map(e=>({status:e.params.response.status,protocol:e.params.response.protocol})),
+   extra_statuses:events.filter(e=>e.method==='Network.responseReceivedExtraInfo'&&diagnosticRequestIds.has(e.params.requestId)).slice(-4).map(e=>({status:e.params.statusCode}))});
+  assert(!nav.errorText,nav.errorText);
+  let response;
+  await until(()=>{
+   response=events.find(e=>e.method==='Network.responseReceived'&&e.params.response.url===origin+target)?.params;
+   return response&&events.some(e=>e.method==='Network.loadingFinished'&&e.params.requestId===response.requestId);
+  },'page load deadline');
+  assert.equal(response.response.protocol,protocol);assert.equal(response.response.status,200);assert.equal(response.type,'Document');
+  const responseBody=await request('Network.getResponseBody',{requestId:response.requestId});
+  const responseBytes=Buffer.from(responseBody.body,responseBody.base64Encoded?'base64':'utf8');
+  const expectedHTML='<!doctype html><html><head><title>'+title+'</title><link rel="icon" href="data:,"></head><body><h1 id="checked">'+marker+'</h1></body></html>';
+  assert.deepEqual(responseBytes,Buffer.from(expectedHTML));
+  if(protocol==='h2')assert.match(response.response.securityDetails.protocol,/^TLS/);
+  const result=await request('Runtime.evaluate',{expression:'({title:document.title,text:document.querySelector("#checked")?.textContent,url:location.href})',returnByValue:true});
+  assert(!result.exceptionDetails);assert.deepEqual(result.result.value,{title,text:marker,url:origin+target});
+  const visible=await request('Runtime.evaluate',{expression:'(()=>{const e=document.querySelector("#checked"),r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility==="visible";})()',returnByValue:true});
+  assert(!visible.exceptionDetails);assert.equal(visible.result.value,true);
+  assert(!events.some(e=>e.method==='Runtime.exceptionThrown'||e.method==='Runtime.consoleAPICalled'));
+  const screenshot=await request('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});
+  await fs.writeFile(path.join(directory,label+'-browser.png'),Buffer.from(screenshot.data,'base64'));
+  await fs.writeFile(path.join(directory,label+'-browser-events.json'),JSON.stringify(events,null,2)+'\n');
+  emit({event:'probe',status:'PASS',label,version,node:process.version,document:result.result.value,visible:true,network:response,response_bytes:responseBytes.length,response_sha256:crypto.createHash('sha256').update(responseBytes).digest('hex')});
+  }
+  assert.deepEqual(await command(),{op:'exit'});
+  closeRequested=true;
+  let closeReply='confirmed';
+  try { await request('Browser.close'); }
+  catch(e) { assert.equal(e.message,'CDP closed'); closeReply='CDP closed while graceful browser shutdown was pending'; }
+  const join=await bounded(exited,10000,'Chrome graceful join deadline');assert.equal(join.code,0);assert.equal(join.signal,null);
+  emit({event:'chrome_closed',close_reply:closeReply,process:join});
+  passed=true;
+ } finally {
+  input.close();socket?.close();
+  if(chrome.exitCode===null&&chrome.signalCode===null&&!chromeError){
+   chrome.kill('SIGTERM');
+   try{await bounded(exited,5000,'Chrome TERM join deadline');}
+   catch(e){chrome.kill('SIGKILL');await bounded(exited,5000,'Chrome KILL join deadline');}
+  }
+  await fs.writeFile(path.join(directory,'chrome-stderr.log'),stderr);
+  await fs.rm(profile,{recursive:true,force:true});
+  emit({event:'joined',passed,close_requested:closeRequested,profile_removed:true,chrome_exit:chrome.exitCode,chrome_signal:chrome.signalCode});
+ }
+})().catch(e=>{console.error(e.stack);process.exitCode=1;});
+'''
+
+MAX_BYTES = 8 * 1024 * 1024
+MAX_EVENTS = 8192
+_EVENT_NAMES = {
+    'SOCKET_ALIVE', 'SOCKET_CLOSED', 'SOCKET_BYTES_SENT', 'SOCKET_BYTES_RECEIVED',
+    'TCP_CONNECT', 'TCP_CONNECT_ATTEMPT', 'SSL_CONNECT', 'SSL_HANDSHAKE_ERROR',
+    'SSL_SHUTDOWN', 'HTTP_STREAM_JOB_BOUND_TO_REQUEST',
+    'HTTP_STREAM_REQUEST_BOUND_TO_JOB', 'HTTP2_STREAM',
+}
+_INT_KEYS = {
+    'stream_id', 'last_stream_id', 'error_code', 'net_error', 'byte_count',
+    'size', 'flags', 'active_streams', 'max_concurrent_streams',
+}
+_BOOL_KEYS = {'fin', 'end_stream'}
+_ERROR_NAMES = {
+    'NO_ERROR', 'PROTOCOL_ERROR', 'INTERNAL_ERROR', 'FLOW_CONTROL_ERROR',
+    'SETTINGS_TIMEOUT', 'STREAM_CLOSED', 'FRAME_SIZE_ERROR', 'REFUSED_STREAM',
+    'CANCEL', 'COMPRESSION_ERROR', 'CONNECT_ERROR', 'ENHANCE_YOUR_CALM',
+    'INADEQUATE_SECURITY', 'HTTP_1_1_REQUIRED',
+}
+
+
+def _integer(value):
+    return type(value) is int and -(2**63) <= value < 2**63
+
+
+def _enum(value):
+    return isinstance(value, str) and re.fullmatch(r'[A-Z][A-Z0-9_]{0,95}', value)
+
+
+def _source(value, names):
+    if not isinstance(value, dict):
+        return None
+    if not _integer(value.get('id')) or not _integer(value.get('type')):
+        return None
+    result = {'id': value['id'], 'type': value['type']}
+    name = names.get(value['type'])
+    if _enum(name):
+        result['type_name'] = name
+    return result
+
+
+def _projection(event, event_names, source_names):
+    if not isinstance(event, dict):
+        return None
+    name = event_names.get(event.get('type'))
+    if not _enum(name) or not (name.startswith('HTTP2_SESSION') or name in _EVENT_NAMES):
+        return None
+    result = {'event': name}
+    if _integer(event.get('phase')):
+        result['phase'] = event['phase']
+    time = event.get('time')
+    if isinstance(time, str) and re.fullmatch(r'-?[0-9]{1,24}(?:\.[0-9]{1,9})?', time):
+        result['time'] = time
+    elif _integer(time):
+        result['time'] = time
+    source = _source(event.get('source'), source_names)
+    if source is not None:
+        result['source'] = source
+    params = event.get('params')
+    if isinstance(params, dict):
+        projected = {key: params[key] for key in sorted(_INT_KEYS) if _integer(params.get(key))}
+        projected.update({key: params[key] for key in sorted(_BOOL_KEYS) if type(params.get(key)) is bool})
+        error_code = params.get('error_code')
+        if isinstance(error_code, str) and error_code in _ERROR_NAMES:
+            projected['error_code'] = error_code
+        dependency = _source(params.get('source_dependency'), source_names)
+        if dependency is not None:
+            projected['source_dependency'] = dependency
+        if projected:
+            result['params'] = projected
+    return result
+
+
+def project_netlog(raw_path):
+    """Read a finite prefix, including an unclosed live Chromium JSON array."""
+    raw_path = Path(raw_path)
+    result = {'schema': 1, 'status': 'NOT_STARTED', 'read_complete': False,
+              'byte_limit': MAX_BYTES, 'event_limit': MAX_EVENTS, 'events': []}
+    try:
+        with raw_path.open('rb') as raw:
+            data = raw.read(MAX_BYTES + 1)
+    except FileNotFoundError:
+        return result
+    truncated = len(data) > MAX_BYTES
+    data = data[:MAX_BYTES]
+    result.update(status='INCOMPLETE_HEADER', read_bytes=len(data), byte_limit_reached=truncated)
+    text = data.decode('utf-8', errors='ignore')
+    decoder = json.JSONDecoder()
+    header = re.match(r'\s*\{\s*"constants"\s*:\s*', text)
+    if not header:
+        result['status'] = 'UNRECOGNIZED_HEADER'
+        return result
+    try:
+        constants, position = decoder.raw_decode(text, header.end())
+    except json.JSONDecodeError:
+        return result
+    if not isinstance(constants, dict):
+        result['status'] = 'UNRECOGNIZED_CONSTANTS'
+        return result
+    marker = re.match(r'\s*,\s*"events"\s*:\s*\[', text[position:])
+    if not marker:
+        result['status'] = 'INCOMPLETE_EVENT_HEADER'
+        return result
+    position += marker.end()
+    event_names = {v: k for k, v in constants.get('logEventTypes', {}).items() if _integer(v)}
+    source_names = {v: k for k, v in constants.get('logSourceType', {}).items() if _integer(v)}
+    seen = 0
+    while seen < MAX_EVENTS:
+        whitespace = re.match(r'\s*', text[position:])
+        position += whitespace.end()
+        if position >= len(text):
+            break
+        if text[position] == ']':
+            tail = text[position + 1:]
+            result['read_complete'] = not truncated and re.fullmatch(r'\s*}\s*', tail) is not None
+            break
+        if text[position] == ',':
+            position += 1
+            continue
+        try:
+            event, end = decoder.raw_decode(text, position)
+        except json.JSONDecodeError:
+            break
+        position = end
+        seen += 1
+        projected = _projection(event, event_names, source_names)
+        if projected is not None:
+            result['events'].append(projected)
+    result.update(status='PROJECTED', scanned_events=seen, projected_events=len(result['events']),
+                  event_limit_reached=seen == MAX_EVENTS)
+    if seen == MAX_EVENTS:
+        result['read_complete'] = False
+    return result
+
+
+def write_netlog_projection(raw_path, artifact_path):
+    value = project_netlog(raw_path)
+    with Path(artifact_path).open('x') as artifact:
+        json.dump(value, artifact, indent=2, sort_keys=True)
+        artifact.write('\n')
+    return value
+
+ACTOR_PROCESSES = {}
+ADOPTED_JOINS = []
+
+def adopted_children():
+    values = Path(f'/proc/{os.getpid()}/task/{os.getpid()}/children').read_text().split()
+    return {int(value) for value in values
+            if int(value) not in ACTOR_PROCESSES or
+            ACTOR_PROCESSES[int(value)].returncode is not None}
+
+def reap_adopted():
+    # Chrome may orphan internal children. Reap their genuine terminal statuses;
+    # never consume a fixture Actor's Popen wait or signal an already-dead child.
+    for pid in adopted_children():
+        try:
+            joined, status = os.waitpid(pid, os.WNOHANG)
+        except ChildProcessError:
+            continue
+        if joined:
+            ADOPTED_JOINS.append(dict(pid=joined, wait_status=status,
+                                      exit=os.waitstatus_to_exitcode(status)))
+    return adopted_children()
+
+class Actor:
+    def __init__(self, command, logfile, prefix=''):
+        self.command, self.prefix = command, prefix
+        self.log = logfile.open('x')
+        self.events, self.seen, self.backlog = queue.Queue(), [], []
+        self.process = subprocess.Popen(command, cwd=ROOT, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
+                                        stderr=subprocess.STDOUT, text=True, bufsize=1, start_new_session=True)
+        ACTOR_PROCESSES[self.process.pid] = self.process
+        self.reader = threading.Thread(target=self.read)
+        self.reader.start()
+        self.forced = False
+    def read(self):
+        for line in self.process.stdout:
+            self.log.write(line)
+            self.log.flush()
+            if line.startswith(self.prefix):
+                try:
+                    event = json.loads(line[len(self.prefix):])
+                except json.JSONDecodeError:
+                    continue
+                self.seen.append(event)
+                self.events.put(event)
+        self.events.put({'event': 'process_eof'})
+    def send(self, value):
+        self.process.stdin.write(json.dumps(value)+'\n')
+        self.process.stdin.flush()
+    def event(self, name, timeout=25):
+        for index, event in enumerate(self.backlog):
+            if event.get('event') == name:
+                return self.backlog.pop(index)
+        end = time.monotonic()+timeout
+        while time.monotonic() < end:
+            event = self.events.get(timeout=max(.001, end-time.monotonic()))
+            assert event.get('event') != 'process_eof', (self.command, self.process.poll())
+            if event.get('event') == name:
+                return event
+            self.backlog.append(event)
+        raise TimeoutError('missing '+name)
+    def join(self):
+        assert self.process.wait(timeout=15) == 0, self.command
+        self.reader.join(5)
+        assert not self.reader.is_alive(), 'actor log reader join deadline'
+    def dispose(self):
+        def group_alive():
+            reap_adopted()
+            try:
+                os.killpg(self.process.pid, 0)
+                return True
+            except ProcessLookupError:
+                return False
+        if self.process.poll() is not None:
+            end = time.monotonic() + 3
+            while group_alive() and time.monotonic() < end:
+                time.sleep(.02)
+        if self.process.poll() is None or group_alive():
+            self.forced = True
+            try:
+                os.killpg(self.process.pid, signal.SIGTERM)
+            except ProcessLookupError:
+                pass  # The owned group completed between the liveness check and signal.
+            try:
+                self.process.wait(timeout=7)
+            except subprocess.TimeoutExpired:
+                os.killpg(self.process.pid, signal.SIGKILL)
+                self.process.wait(timeout=7)
+            if group_alive():
+                try:
+                    os.killpg(self.process.pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+        self.reader.join(5)
+        end = time.monotonic() + 3
+        while group_alive() and time.monotonic() < end:
+            time.sleep(.02)
+        assert not group_alive(), 'owned process group did not join'
+        assert not self.reader.is_alive(), 'actor log reader did not join'
+        self.log.close()
+        return dict(command=self.command, pid=self.process.pid, exit=self.process.returncode,
+                    forced=self.forced, reader_joined=True, owned_group_gone=True)
+
+def digest(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def inventory():
+    paths = [path for folder in ('apps', 'config') for path in (ROOT/folder).rglob('*')
+             if path.is_file() and path.suffix in ('.ex', '.exs') and not any(
+                 part in ('deps', '_build') for part in path.relative_to(ROOT).parts)]
+    paths += [ROOT/'mix.exs', ROOT/'mix.lock', ROOT/'scripts/generate-fixtures.sh', HOST, COHORT, PEER, Path(__file__).resolve(), Path(__file__).resolve().with_name('browser-command-collector1.py')]
+    return {str(path): digest(path) for path in sorted(paths)}
+
+
+def certificate_spki(certificates):
+    openssl = os.environ.get('OPENSSL_BIN', 'openssl')
+    public_key = subprocess.run([openssl, 'x509', '-in', str(certificates/'cert.pem'),
+                                 '-pubkey', '-noout'], check=True, capture_output=True, timeout=10).stdout
+    der = subprocess.run([openssl, 'pkey', '-pubin', '-outform', 'DER'], input=public_key,
+                         check=True, capture_output=True, timeout=10).stdout
+    return base64.b64encode(hashlib.sha256(der).digest()).decode('ascii')
+
+def event_one_of(actor, names, timeout=25):
+    # Preserve Actor implementation unchanged; use its bounded queue/backlog.
+    for index, value in enumerate(actor.backlog):
+        if value.get('event') in names:
+            return actor.backlog.pop(index)
+    end = time.monotonic()+timeout
+    while time.monotonic() < end:
+        value = actor.events.get(timeout=max(.001,end-time.monotonic()))
+        assert value.get('event') not in ('process_eof','failure'), value
+        if value.get('event') in names:
+            return value
+        actor.backlog.append(value)
+    raise TimeoutError('missing '+repr(names))
+
+def assert_capture(captured, mode, label):
+    assert captured['mode'] == mode and captured['label'] == label
+    assert captured['original_owner_effects'] == 2
+    assert len(captured['pins']) == 2
+    pins = {p['provider']: p for p in captured['pins']}
+    assert len(pins) == 2
+    assert pins['Elixir.Gaoxy.Proxy.UpstreamGroups']['fields'] == 7
+    assert pins['Elixir.Gaoxy.Proxy.UpstreamGroups']['handles'] == 1
+    assert pins['Elixir.Gaoxy.Proxy.UpstreamTransports']['fields'] == 8
+    assert pins['Elixir.Gaoxy.Proxy.UpstreamTransports']['handles'] == 2
+    assert captured['reservation'] > 0
+    target_bytes = captured['retained']+captured['reservation']
+    def check_cohort(cut):
+        roles = cut['roles']
+        assert cut['active'] == len(roles)
+        assert len({item['lease'] for item in roles}) == len(roles)
+        assert len({item['pid'] for item in roles}) == len(roles)
+        assert cut['target_bytes'] == target_bytes
+        assert cut['retained_bytes'] == sum(item['bytes'] for item in roles)
+        target = [item for item in roles if item['pid'] == captured['holder']]
+        assert len(target) == 1 and target[0]['bytes'] == target_bytes
+        for item in roles:
+            if item['pid'] == captured['holder']:
+                assert item['role'] == ('request_worker' if mode == 'h2' else 'connection')
+            elif item['role'] == 'connection':
+                assert item['bytes'] == (captured['worker_accounting']['connection_bytes'] if mode == 'h2' else 0)
+            else:
+                assert mode == 'h2' and item['role'] == 'writer'
+                assert item['bytes'] == captured['worker_accounting']['writer_bytes']
+    check_cohort(captured['cohort'])
+    assert captured['gate_bytes'] == captured['cohort']['retained_bytes']
+    assert len(captured['original_cohorts']) == 2
+    for cut in captured['original_cohorts']:
+        check_cohort(cut)
+    assert captured['original_gate_bytes'] == [cut['retained_bytes'] for cut in captured['original_cohorts']]
+    if mode == 'h2':
+        accounting = captured['worker_accounting']
+        assert accounting['bytes'] == captured['retained']
+        assert accounting['worker_bytes'] == target_bytes
+        assert len(accounting['rows']) == 95
+        assert accounting['downstream_alpn'] == 'h2' and accounting['secure']
+        assert captured['native_ids']['worker'] != captured['native_ids']['connection']
+    else:
+        assert captured['worker_accounting'] is None
+
+
+def health_phase(host, peers, phase, case, health, completions):
+    pending = host.event('health_pending',120)
+    assert pending['phase'] == phase and pending['members'] == 2 and pending['genuine_probes'] == 2
+    for member in ('a','b'):
+        name = phase+'_'+member
+        peer, ready = peers[name]
+        accept = peer.event('accept')
+        request = peer.event('request')
+        fields = dict(request['headers'])
+        assert request['target'] == '/health' and request['ended']
+        assert fields[':method'] == 'HEAD' and fields[':path'] == '/health'
+        assert [v for k,v in request['headers'] if k in ('authorization','proxy-authorization')] == []
+        assert fields[':authority'] == 'localhost:'+str(ready['port']) and fields[':scheme'] == 'https'
+        assert request['connection'] == accept['connection']
+        upload = peer.event('upload_end')
+        assert upload['connection'] == request['connection'] and upload['stream'] == request['stream']
+        assert upload['total_bytes'] == 0
+        tls = peer.event('tls')
+        assert tls['connection'] == request['connection'] and tls['alpn'] == 'h2' and tls['sni'] == 'localhost'
+        command_id = case+'-'+name+'-health'
+        peer.send(dict(op='respond',connection=request['connection'],stream=request['stream'],
+                       fields=[['content-length','0']],ended=True,command_id=command_id))
+        ack = peer.event('command')
+        assert ack['op'] == 'respond' and ack['command_id'] == command_id
+        assert ack['connection'] == request['connection'] and ack['stream'] == request['stream']
+        health[name] = dict(accept=accept,request=request,tls=tls,peer_pid=peer.process.pid,
+                            bind_address=ready['bind_address'],port=ready['port'])
+    complete = host.event('health_complete')
+    assert complete['phase'] == phase
+    assert complete['original_completions'] == 2 and complete['normal_probe_downs'] == 2
+    assert complete['probes'] == 0 and complete['probe_bytes'] == 0
+    completions.append(complete)
+    for member in ('a','b'):
+        name = phase+'_'+member
+        peer, _ = peers[name]
+        request = health[name]['request']
+        command_id = case+'-'+name+'-health-goaway'
+        peer.send(dict(op='goaway',connection=request['connection'],stream=request['stream'],
+                       last_stream=request['stream'],code=0,command_id=command_id))
+        ack = peer.event('command')
+        assert ack['op'] == 'goaway' and ack['command_id'] == command_id and ack['code'] == 0
+        assert ack['last_stream'] == request['stream']
+        assert ack['connection'] == request['connection'] and ack['stream'] == request['stream']
+        # GOAWAY alone does not promise physical close. Preserve the TLS reader
+        # while explicitly ending only this completed health socket's write side.
+        close_command_id = case+'-'+name+'-health-write-half-close'
+        peer.send(dict(op='write_half_close',connection=request['connection'],
+                       stream=request['stream'],command_id=close_command_id))
+        close_ack = peer.event('command')
+        assert close_ack['op'] == 'write_half_close' and close_ack['command_id'] == close_command_id
+        assert close_ack['connection'] == request['connection'] and close_ack['stream'] == request['stream']
+        physical = event_one_of(peer,('eof','connection_reset'))
+        assert physical['connection'] == request['connection']
+        health[name].update(goaway=ack,write_half_close=close_ack,physical_close=physical,
+                            original_completion_before_goaway=True)
+    host.send(dict(op='health_closed',phase=phase))
+
+
+def run_case(mode, upstream_protocol, evidence, certificates, spki, cases, joins):
+    evidence.mkdir()
+    case = mode+'-'+upstream_protocol
+    assert upstream_protocol == 'http2'
+    row = dict(case='group-'+case, endpoint='group', status='FAIL', mode=mode, upstream_protocol=upstream_protocol)
+    cases.append(row)
+    actors, peers, captures, observations = [], {}, {}, []
+    diagnostic = Path(tempfile.mkdtemp(prefix='gaoxy-group-generation-netlog-'))
+    raw_netlog = diagnostic/'chrome-netlog.json'
+    try:
+        addresses = {'old_a':'127.0.0.1','new_a':'127.0.0.2','old_b':'127.0.0.3','new_b':'127.0.0.4'}
+        common_port = 0
+        for label in ('old_a','new_a','old_b','new_b'):
+            actor = Actor([PEER_PYTHON,'-B',str(PEER),'--staged-start','--manual',
+                           '--protocol','tls','--bind-address',addresses[label],
+                           '--listen-port',str(common_port)], evidence/(label+'-peer.log'))
+            actors.append(actor)
+            actor.event('prepared',25)
+            actor.send({'op':'start'})
+            ready = actor.event('ready',5)
+            assert ready['protocol'] == 'tls' and ready['bind_address'] == addresses[label]
+            assert ready['identity']['source_sha256'] == digest(PEER)
+            with Path(ready['ca']).open('rb') as public_ca:
+                ca_bytes = public_ca.read(1048577)
+            assert 0 < len(ca_bytes) <= 1048576
+            ready['caller_ca_sha256'] = hashlib.sha256(ca_bytes).hexdigest()
+            if common_port:
+                assert ready['port'] == common_port
+            else:
+                common_port = ready['port']
+                assert type(common_port) is int and 0 < common_port <= 65535
+            peers[label] = (actor,ready)
+        assert len({p.process.pid for p,_ in peers.values()}) == len(addresses)
+        assert len({(r['bind_address'],r['port']) for _,r in peers.values()}) == len(addresses)
+        assert {r['port'] for _,r in peers.values()} == {common_port}
+        assert len({r['identity']['certificate_sha256'] for _,r in peers.values()}) == len(addresses)
+        assert len({r['caller_ca_sha256'] for _,r in peers.values()}) == len(addresses)
+        manifest = evidence/'peer-ready.json'
+        manifest.write_text(json.dumps({label: [peers[label+'_a'][1], peers[label+'_b'][1]]
+                                       for label in ('old','new')})+'\n')
+        command = ['nix','develop','--command','env','ERL_FLAGS=+S 2:2','MIX_ENV=test',
+                   'mix','run',str(HOST),str(manifest),str(evidence),mode,str(certificates),upstream_protocol]
+        host = Actor(command,evidence/'host.log','NATIVE_WORKER_BROWSER ')
+        actors.append(host)
+        health, health_completions = {}, []
+        health_phase(host, peers, 'old', case, health, health_completions)
+        ready = host.event('ready')
+        assert ready['mode'] == mode and ready['upstream_protocol'] == upstream_protocol
+        protocol = 'h2' if mode == 'h2' else 'http/1.1'
+        origin = ('https' if mode == 'h2' else 'http')+'://127.0.0.1:'+str(ready['port'])
+        browser = Actor(['node','-e',BROWSER,origin,str(evidence),protocol,spki,str(raw_netlog)],evidence/'browser.log')
+        actors.append(browser)
+        browser.event('browser_ready')
+        for label in ('old','new'):
+            browser.send(dict(op='navigate',label=label,target=TARGETS[label]))
+            captured = host.event('captured')
+            assert_capture(captured,mode,label)
+            captures[label] = captured
+            if label == 'old':
+                health_phase(host, peers, 'new', case, health, health_completions)
+                rotation = host.event('identity_rotation')
+                assert rotation['same_path_replaced'] and rotation['source_invalidated']
+                assert rotation['retained_policies_checked'] and rotation['old_capture_before_replacement']
+                assert len(rotation['rows']) == 2
+                for identity in rotation['rows']:
+                    assert identity['origin'] == 'https://localhost:'+str(common_port)
+                    assert identity['host'] == 'localhost' and identity['port'] == common_port
+                    assert identity['old_policy_unchanged']
+                    assert identity['old']['resource'] != identity['new']['resource']
+                    assert identity['old']['der_sha256'] != identity['new']['der_sha256']
+                    assert identity['old']['pem_sha256'] != identity['new']['pem_sha256']
+                    assert identity['old']['leaf_sha256'] != identity['new']['leaf_sha256']
+                cas = host.event('cas')
+                assert cas['old_admission_closed'] and cas['old_source_alive']
+                assert cas['old_custodian_alive'] and cas['fresh_old_denied']
+                assert cas['snapshot_changed'] and cas['preparation_released_by_holder']
+            if label == 'old':
+                for p,_ in peers.values():
+                    requests = [e for e in p.seen if e.get('event') == 'request']
+                    assert len(requests) == 1 and dict(requests[0]['headers'])[':method'] == 'HEAD'
+            host.send(dict(op='dispatch',label=label))
+            peer, peer_ready = peers[label+'_a']
+            accept = peer.event('accept')
+            request = peer.event('request')
+            headers = dict(request['headers'])
+            assert request['target'] == TARGETS[label] and request['ended']
+            upload = peer.event('upload_end')
+            assert upload['connection'] == request['connection'] and upload['stream'] == request['stream']
+            assert upload['total_bytes'] == 0
+            assert headers[':path'] == TARGETS[label] and headers[':method'] == 'GET'
+            assert [v for k,v in request['headers'] if k == 'proxy-authorization'] == []
+            assert [v for k,v in request['headers'] if k == 'authorization'] == ['Bearer synthetic-origin-'+label]
+            assert headers[':authority'] == 'localhost:'+str(peer_ready['port'])
+            assert headers[':scheme'] == ('https' if upstream_protocol == 'http2' else 'http')
+            assert request['connection'] == accept['connection']
+            assert request['connection'] != health[label+'_a']['request']['connection']
+            tls = None
+            if upstream_protocol == 'http2':
+                tls = peer.event('tls')
+                assert tls['connection'] == request['connection'] and tls['alpn'] == 'h2' and tls['sni'] == 'localhost'
+            custody = host.event('session_custody')
+            assert custody['label'] == label and custody['derived']
+            assert custody['native'] == captured['holder'] and custody['session'] != captured['holder']
+            assert custody['public_t8_fields'] == 8 and custody['acquirer'] == captured['holder']
+            assert custody['cleanup_bytes'] > 0
+            host.send(dict(op='prove_bound',label=label))
+            bound = host.event('bound')
+            assert bound['label'] == label and bound['original_completion_equal'] and bound['pending']
+            assert bound['source_genuine'] and bound['child_genuine'] and bound['token_genuine']
+            assert bound['session'] == custody['session']
+            title, marker, html = document(label)
+            command_id = case+'-'+label+'-response'
+            peer.send(dict(op='respond',connection=request['connection'],stream=request['stream'],
+                           fields=[['content-type','text/html; charset=utf-8'],['cache-control','no-store']],
+                           body64=base64.b64encode(html).decode(),command_id=command_id))
+            ack = peer.event('command')
+            assert ack['command_id'] == command_id and ack['op'] == 'respond'
+            assert ack['connection'] == request['connection'] and ack['stream'] == request['stream']
+            held = host.event('returned_source_held')
+            assert held['label'] == label and held['original_completion_ok'] and held['session_joined']
+            assert held['child_gone'] and held['token_gone'] and held['source_genuine']
+            assert held['custodian_alive'] and not held['retirement_requested']
+            host.send(dict(op='release_return',label=label))
+            if label == 'old':
+                retired = host.event('old_retired')
+                assert retired['source_gone'] and retired['record_gone'] and retired['custodian_normal_down']
+                physical = event_one_of(peer,('eof','connection_reset'))
+                assert physical['connection'] == request['connection']
+            probe = browser.event('probe')
+            write_netlog_projection(raw_netlog, evidence/(label+'-chrome-net-metadata.json'))
+            assert probe['label'] == label and probe['status'] == 'PASS' and probe['visible']
+            assert probe['network']['response']['protocol'] == protocol
+            assert probe['network']['response']['status'] == 200
+            assert probe['response_bytes'] == len(html) and probe['response_sha256'] == hashlib.sha256(html).hexdigest()
+            assert probe['document'] == dict(title=title,text=marker,url=origin+TARGETS[label])
+            host.send(dict(op='request_clean',label=label))
+            clean = host.event('request_clean')
+            assert clean['label'] == label and clean['session_joined'] and clean['original_source_gone']
+            assert clean['baseline_t_records'] == 1 and clean['baseline_t_holds'] == 2
+            assert clean['baseline_g_records'] == 1 and clean['baseline_genuine']
+            assert custody == dict(event='session_custody', **clean['custody'])
+            if mode == 'h2':
+                assert clean['native_worker_joined']
+            assert clean['complete_cohort_validated'] and clean['connection_alive']
+            observations.append(dict(label=label,captured=captured,custody=custody,bound=bound,
+                                     held=held,request=request,peer_pid=peer.process.pid,
+                                     peer_ready=peer_ready,tls=tls,browser=probe,request_clean=clean))
+        # Identity includes ACTUAL peer process/ready port, not just stream/conn1.
+        assert observations[0]['peer_pid'] != observations[1]['peer_pid']
+        assert observations[0]['peer_ready']['port'] == observations[1]['peer_ready']['port'] == common_port
+        assert observations[0]['peer_ready']['bind_address'] == '127.0.0.1'
+        assert observations[1]['peer_ready']['bind_address'] == '127.0.0.2' 
+        host.send({'op':'authorize_browser_close'})
+        close_authorized = host.event('browser_close_authorized')
+        assert close_authorized['mode'] == mode and close_authorized['connection_alive']
+        expected_connection = (captures['new']['native_ids']['connection'] if mode == 'h2' else captures['new']['holder'])
+        assert close_authorized['connection'] == expected_connection
+        browser.send({'op':'exit'})
+        browser_join = browser.event('joined')
+        assert browser_join['passed'] and browser_join['profile_removed'] and browser_join['close_requested']
+        assert browser_join['chrome_exit'] == 0 and browser_join['chrome_signal'] is None
+        browser.join()
+        host.send({'op':'stop'})
+        clean = host.event('closed_browser_clean')
+        assert clean['connection_joined'] and clean['connection_reason'] == '{:shutdown, :peer_closed}'
+        assert clean['observer_joined'] and clean['cohort_joins']
+        assert len({v['pid'] for v in clean['cohort_joins']}) == len(clean['cohort_joins'])
+        assert all(v['genuine_terminal'] for v in clean['cohort_joins'])
+        for captured in captures.values():
+            assert any(v['pid'] == captured['native_ids']['connection'] for v in clean['cohort_joins'])
+        assert clean['service'] == dict(active=0,retained_bytes=0,cleanup_pending=0,cleanup_failed=None)
+        stopped = host.event('stopped')
+        assert stopped['cleanup_confirmed'] and stopped['source_stable'] and stopped['captures'] == 2
+        assert stopped['sessions_joined'] == 2 and stopped['native_actors_joined']
+        assert stopped['custodians_normal_down'] == 4 and stopped['owner_normal_down']
+        assert stopped['group_owner_normal_down']
+        assert stopped['instance_normal_down'] and stopped['listener_rebound']
+        physical = event_one_of(peers['new_a'][0],('eof','connection_reset'))
+        assert physical['connection'] == observations[1]['request']['connection']
+        peer_joins = {}
+        for label,(peer,_) in peers.items():
+            peer.send({'op':'stop'})
+            joined = peer.event('joined')
+            assert joined['requests'] == (2 if label.endswith('_a') else 1)
+            assert joined['accepts'] == (2 if label.endswith('_a') else 1)
+            assert joined['forced'] == 0 and joined['live'] == 0 and not joined['failed']
+            peer.join()
+            peer_joins[label] = joined
+        host.send({'op':'exit'})
+        host.process.stdin.close()
+        host.event('exited')
+        host.join()
+        assert json.loads((evidence/'host-loaded-before.json').read_text()) == json.loads((evidence/'host-loaded-after.json').read_text())
+        for label in ('old','new'):
+            assert (evidence/(label+'-browser.png')).stat().st_size > 0
+        assert sum(v['original_completions'] for v in health_completions) == 4
+        assert sum(v['normal_probe_downs'] for v in health_completions) == 4
+        row.update(status='PASS',health=health,health_complete=health_completions,identity_rotation=rotation,observations=observations,closed_browser_cleanup=clean,
+                   stopped=stopped,browser_join=browser_join,peer_joins=peer_joins)
+    except Exception:
+        row['failure'] = traceback.format_exc()
+        raise
+    finally:
+        cleanup_errors = []
+        for actor in reversed(actors):
+            try:
+                joined = actor.dispose()
+                joined['case'] = case
+                joins.append(joined)
+            except Exception:
+                cleanup_errors.append(traceback.format_exc())
+                joins.append(dict(case=case,command=actor.command,pid=actor.process.pid,
+                                  exit=actor.process.poll(),forced=True,cleanup_failed=True))
+        # A failed Actor.dispose does not prove Chrome has stopped writing.
+        # Retain exactly this owned raw directory for root's post-collector
+        # cleanup when any actor group/reader join is unproven.
+        case_joins = [value for value in joins if value['case'] == case]
+        groups_joined = (len(case_joins) == len(actors) and
+                         all(value.get('owned_group_gone') and value.get('reader_joined')
+                             for value in case_joins))
+        try:
+            write_netlog_projection(raw_netlog, evidence/'chrome-net-metadata-final.json')
+        except Exception as error:
+            cleanup_errors.append(type(error).__name__+': diagnostic NetLog projection failed')
+        raw_removed = False
+        if groups_joined:
+            try:
+                shutil.rmtree(diagnostic)
+                raw_removed = True
+            except Exception as error:
+                cleanup_errors.append(type(error).__name__+': owned diagnostic directory cleanup failed')
+        with (evidence/'diagnostic-raw-custody.json').open('x') as artifact:
+            json.dump(dict(status='REMOVED_AFTER_ACTOR_GROUP_JOINS' if raw_removed else
+                           'RETAINED_PENDING_ROOT_GROUP_JOIN_AND_CLEANUP',
+                           creator_pid=os.getpid(), directory=str(diagnostic), raw_file=str(raw_netlog),
+                           actor_groups_joined=groups_joined, raw_removed=raw_removed,
+                           directory_exists=diagnostic.exists(),
+                           actor_pids=[actor.process.pid for actor in actors]), artifact, indent=2)
+            artifact.write('\n')
+        if cleanup_errors or any(v['forced'] or v['exit'] != 0 for v in joins if v['case'] == case):
+            row['status'] = 'FAIL'
+            row['cleanup_errors'] = cleanup_errors
+            raise AssertionError('owned browser/host/peer shutdown failed or required forcing')
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--evidence-dir', '--evidence', dest='evidence', type=Path, required=True)
+    args = parser.parse_args()
+    evidence = args.evidence.resolve()
+    evidence.mkdir(parents=True, exist_ok=False)
+    libc = ctypes.CDLL(None, use_errno=True)
+    if libc.prctl(36, 1, 0, 0, 0) != 0:
+        raise OSError(ctypes.get_errno(), 'PR_SET_CHILD_SUBREAPER')
+    joins, cases, failure = [], [], None
+    before = inventory()
+    head = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
+    started = time.monotonic()
+    passed = False
+    try:
+        # Ephemeral TEST certificates only; no leaf private key is an evidence artifact.
+        with tempfile.TemporaryDirectory(prefix='gaoxy-native-worker-test-certs-') as certificate_path:
+            certificates = Path(certificate_path)
+            fixture = subprocess.run(['bash', str(ROOT/'scripts/generate-fixtures.sh'), str(certificates)],
+                                     cwd=ROOT, capture_output=True, text=True, check=True, timeout=30)
+            (evidence/'certificate-tool.log').write_text(fixture.stdout+fixture.stderr)
+            spki = certificate_spki(certificates)
+            (evidence/'test-certificate-identity.json').write_text(json.dumps(
+                dict(leaf_sha256=digest(certificates/'cert.pem'),ca_sha256=digest(certificates/'ca.pem'),
+                     chrome_spki_allowlist=spki,ephemeral_test_only=True), indent=2)+'\n')
+            for mode in ('h2','h1'):
+                run_case(mode,'http2',evidence/(mode+'-http2'),certificates,spki,cases,joins)
+        assert not certificates.exists(), 'ephemeral test certificate directory remains'
+        passed = len(cases) == 2 and all(row['status'] == 'PASS' for row in cases)
+    except Exception:
+        failure = traceback.format_exc()
+    finally:
+        end = time.monotonic() + 10
+        while reap_adopted() and time.monotonic() < end:
+            time.sleep(.02)
+        remaining = sorted(reap_adopted())
+        after = inventory()
+        passed = passed and not remaining and before == after and all(not row['forced'] and row['exit'] == 0 for row in joins)
+        result = dict(status='PASS' if passed else 'FAIL', head=head, executed=len(cases), cases=cases,
+                      elapsed_ms=round((time.monotonic()-started)*1000), source_before=before,
+                      source_after=after, source_stable=before == after, failure=failure, joins=joins,
+                      adopted_joins=ADOPTED_JOINS, adopted_remaining=remaining,
+                      endpoint='group', fixture_development_cutoff='root143/orchestration71/tooling11/group54; identity runtime0/production0/fixture0; Astra2of2 exhausted')
+        result['artifact_sha256'] = {str(path.relative_to(evidence)): digest(path)
+                                    for path in sorted(evidence.rglob('*')) if path.is_file()}
+        (evidence/'qualification.json').write_text(json.dumps(result, indent=2)+'\n')
+        print(json.dumps({key: value for key, value in result.items()
+                          if key not in ('source_before','source_after','cases')}, indent=2))
+    return 0 if passed else 1
+
+if __name__ == '__main__':
+    sys.exit(main())
+

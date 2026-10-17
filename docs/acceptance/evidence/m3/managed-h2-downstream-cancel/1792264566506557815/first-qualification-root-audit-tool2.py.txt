@@ -1,0 +1,79 @@
+from pathlib import Path
+import datetime, hashlib, importlib.util, json, os, re
+
+W = Path.cwd()
+E = Path('/tmp/gaoxy-downstream-cancel-e10.path').read_text().strip()
+E = Path(E)
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+load = lambda name: json.loads((E / name).read_bytes())
+c = load('source-candidate2.json')
+i = load('command-inventory1.json')
+p = i['first']
+rp = E / (p['name'] + '.json')
+r = load(rp.name)
+expected = c['actual_command_source_sha256']
+assert expected == i['actual_command_source_sha256']
+assert len(expected) == c['actual_command_source_count'] == i['source_count']
+spec = importlib.util.spec_from_file_location('early_final_collector', E / 'command-collector1.py')
+m = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(m)
+assert m.source_manifest() == expected
+assert all(sha(W / name) == h for name, h in expected.items())
+assert all(sha(W / name) == h for name, h in c['documents_sha256'].items())
+assert r['name'] == p['name'] and r['command'] == p['argv']
+assert p['timeout_seconds'] == 600 and p['kind'] == r['kind'] == 'green'
+assert r['cwd'] == str(W) and r['verdict'] == 'PASS'
+assert r['actual_exit'] == 0 and not r['forced'] and r['wait_error'] is None
+assert r['process_joined'] and not r['process_group_remaining']
+assert r['source_before'] == r['source_after'] == expected
+assert r['source_stable'] and not r['source_changes']
+assert r['collector_sha256'] == sha(E / 'command-collector1.py')
+d = r['descendant_cleanup']
+assert not d['forced'] and not d['remaining'] and not d['initial_after_reap']
+assert not d['signal_attempts'] and not d['reap_deadline_exhausted']
+assert d['reaped'] == d['reaped_before_force']
+waits = []
+for row in d['reaped']:
+    assert row['phase'] == 'before_force'
+    waits.append(dict(row, decoded_exit=os.waitstatus_to_exitcode(row['wait_status'])))
+lp = E / r['log']
+assert lp.name == p['name'] + '.log' and sha(lp) == r['log_sha256']
+plain = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', lp.read_text())
+summaries = re.findall(r'(\d+) tests?, (\d+) failures?([^\n]*)', plain)
+reported = sum(int(row[0]) for row in summaries)
+failures = sum(int(row[1]) for row in summaries)
+assert reported == r['reported_tests'] == r['tests'] and reported > 0
+assert failures == r['failures'] == 0
+assert not r['skipped'] and not r['excluded'] and not r['warnings']
+assert not re.search(r'\b[1-9]\d* (skipped|excluded)\b', plain)
+assert not [line for line in plain.splitlines() if 'warning:' in line and not line.startswith('warning: Git tree ')]
+
+def cases(names):
+    rows = []
+    for name in names:
+        pattern = re.compile(r'\s*\* ' + re.escape(name) + r' \([0-9.]+ms\) \[L#\d+\]')
+        lines = [line for line in plain.splitlines() if pattern.fullmatch(line)]
+        assert len(lines) == 1, (name, lines)
+        rows.append({'name': name, 'completed_trace_line': lines[0]})
+    assert len({row['name'] for row in rows}) == len(names)
+    return rows
+
+assert len(c['expected_case_names']) == 4 and len(c['original_case_names']) == 24
+assert set(c['expected_case_names']).isdisjoint(c['original_case_names'])
+new = cases(c['expected_case_names'])
+original = cases(c['original_case_names'])
+assert reported >= len(new) + len(original)
+out = {'kind': 'DOWNSTREAM_CANCEL_FIRST_QUALIFICATION_AUDIT1', 'at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+       'verdict': 'PASS_FIRST_GENUINE_QUALIFICATION', 'audit_tool_sha256': sha(Path(__file__)),
+       'source_candidate_sha256': sha(E / 'source-candidate2.json'), 'command_inventory_sha256': sha(E / 'command-inventory1.json'),
+       'receipt_sha256': sha(rp), 'log_sha256': sha(lp), 'executed_tests': reported,
+       'failures': 0, 'excluded': 0, 'skipped': 0, 'four_new_cases': new, 'original_cases': original,
+       'actual_source_pins': len(expected), 'actual_exit': r['actual_exit'], 'forced': False,
+       'process_joined': True, 'genuine_adopted_waits': waits,
+       'limits': 'First actual defining batch only, including four new cases and preserved original twenty-four. No unique-total, fresh-final, browser or full Task6/M3 claim.'}
+p = E / 'first-qualification-audit1.json'
+with p.open('x') as f:
+    json.dump(out, f, sort_keys=True, indent=2)
+    f.write('\n')
+print(json.dumps({k: out[k] for k in ['verdict', 'executed_tests', 'actual_source_pins']}))
+print('audit_sha256', sha(p))

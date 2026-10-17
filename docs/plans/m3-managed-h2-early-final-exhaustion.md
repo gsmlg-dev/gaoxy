@@ -1,5 +1,16 @@
 # Managed H2 Early Final at Exhaustion Implementation Plan
 
+## Actual early-final local closure — 2026-10-18
+
+The bounded early-final-at-exhaustion slice is **DONE LOCALLY** at `e40284971ac1df030ef8bcb46e07b0b3838a3c53` (parent `ceb3c0c953d930768023da85875a95672876ce39`). Final document independent SPEC32→CODE30 passed with no unresolved findings. Actual successor custody `docs/acceptance/evidence/m3/managed-h2-downstream-cancel/1792264566506557815/early-final-postcommit-custody2.json` (SHA256 `07fcd76d5dd818140596b48a4150770a4475ce63fa626a8eef17ecd713f59ecd`) verifies290 task files,402 source pins,10 installed dependency pins and680 union committed blobs, exact disk/index/commit bytes, empty index and clean tracked tree at closure. E9 final-document-adoption2 binds the actual runtime and review evidence; its pending commit text is now historical.
+
+All eight temporal cases passed; fresh defining62/0, lifecycle150/0 and Generation184/0 are396 overlapping invocations, separate from first62/0, Python11, Core1/HTTP2 and two group browser rows/four root image opens. Historical Generation1 FAIL184/1 remains preserved and its initiating noproc cause UNKNOWN; the exact monitor repair passed Generation2. Whole-archive whitespace check retains exit2 for immutable historical logs/copies, while executable/canonical-document staged diff check passed0; no archival bytes were rewritten. Latest E9counter15 is root431/orchestration336/earlyTool31/downstreamTool2, runtime failed-green1/fixture1/Sol1 qualified, Astra2/2 exhausted. All inherited categories remain intact.
+
+FullTask6/Task5/M3 remain OPEN. Automatically advance the separate four-case native-H2 downstream-cancel-at-exhaustion/live-sibling slice under continuing authorization. No parsed/queued upstream-trailer inference, H1 disconnect acceptance, publication, deployment or excluded operation follows.
+
+## Frozen precommit and earlier checkpoints — unchanged
+
+
 Status — 2026-10-18: **LOCAL RUNTIME QUALIFICATION PASS for repaired cohort2.** Independent final document SPEC→CODE, the authorized local commit and actual successor committed-byte custody remain **PENDING**. This is not fullTask6/Task5/M3 closure.
 
 ## Current source, execution and scope

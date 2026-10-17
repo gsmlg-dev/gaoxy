@@ -1,4 +1,39 @@
+## Current downstream-cancellation qualification — 2026-10-18
+
+The bounded four-case native-H2 cancellation slice has **PASS local runtime qualification** on entry commit `e40284971ac1df030ef8bcb46e07b0b3838a3c53`. Final documentation review, index/commit custody and the local commit are still pending; this checkpoint does not claim local closure. Evidence: `docs/acceptance/evidence/m3/managed-h2-downstream-cancel/1792264566506557815`. The source candidate4 hash is `202ec7ed68b3c814e5e36171834cef153eaffe8244454f94f1228adb7a582405`; inventory3 is `9ba4963e98b0f5367d02d718062dbd1a86f029aae68690f0193a5e4c0a610dc0`. Actual runtime bindings are402 source files,11 entry documents and11 installed dependency files. Installed HTTP packages remain0.21.10; no dependency or production edit was needed here.
+
+All four fixed/group × h2c/TLS-H2 upstream cases passed with native-H2 downstream. The original stream1 and live stream3 sibling share the actual downstream socket and upstream connection. After exact sibling prefix receipt, the sole native RST(CANCEL) produced actual upstream reset8 at exhausted upload credit. The original worker died `killed`, public completion succeeded and guardian died `normal`; original pins were removed and exact resource/accounting holds changed2→1 before sibling suffix/trailers were released. The original24 cases/helpers remain byte-identical. Socket submission does not establish parsed or queued upload trailers.
+
+| Executed gate | Actual result |
+| --- | --- |
+| First repaired defining suite |66 tests,0 failures, exit0 |
+| Independent source SPEC3→CODE3 |22/24 checks PASS, no unresolved findings |
+| Independent implementation SPEC1→CODE1 |26/26 checks PASS, no unresolved findings |
+| Fresh strict force compile / seven-path format / syntax |exit0 each; static0 tests |
+| Fresh defining / lifecycle / unfiltered Generation traces |66/0,154/0,188/0; exit0 each |
+| Python startup / isolated Core / isolated HTTP |11 actual methods successful; Core1/0 and HTTP2/0 |
+| Group browser |two nativeH1/H2→TLS-H2 rows PASS; four new root image opens |
+
+The three fresh ExUnit batches are408 overlapping invocations, not unique tests. First66, Python11, consumer counts and browser rows are separate. Nonbrowser audit3 SHA256 `f9489e386d959ef2a7dc09c91d0e1d0b5b7632bad72e5f4a2bf0eef693742150` verifies all nine final commands and exact case traces. Browser audit3 SHA256 `12ce1c5f45ea42072a7a404ad30e0409c3fa65882e211159d32ab900b03fda55` verifies54 artifacts,204 loaded bindings (194 file-BEAM plus10 inline source/module-MD5 records),12 named actors exit0/nonforced and the four root image inspections. All outer commands joined without forced cleanup or residue. Adopted nonbrowser child waits decode to {-10: 17, 0: 10}; browser adopted waits decode to {-10: 2, 0: 10}. These genuine reclaimed waits include signal10 and must not be described as all child exits0. Browser coverage is separate from the four temporal cancellation proofs.
+
+Historical first1 FAIL66/4/exit2 and first2 FAIL66/2/exit2 remain immutable. Sol repair1 corrected the exact H2 before/after-header phase contract; Sol repair2 strictly asserts fixed0/group1 setup requests plus exactly two application requests, hence final totals fixed2/group3. Neither weakens assertions or changes deadlines. Counter12 (`b7a8d5949a4370df46ea19b3c23fadb965fc17f8ddf75e9825a93475e7503457`) preserves root469/orchestration374, downstream tooling27/runtime failed-green2/fixture2/Sol2 and all inherited categories. Astra2/2 remains exhausted; counters are distinct categories, not additive totals.
+
+The original text and preparation checklists below are preserved historical checkpoints. Exact eleven-document pre-overlay bytes are archived by `pre-final-document-cohort1.json` (`624912cf72d405e77420e976e5b8659e8061696bfcc985479387799ebec8eacd`). This current overlay governs runtime status; final independent document review and actual commit custody remain pending. WholeTask6/Task5/M3 stay **OPEN**. After actual local closure, automatically implement the prepared managed-H1 eight-row/two-family matrix and finite integration entry. Sole blocked-H1 disconnect, combined slow-peer/queue/peak/sibling qualification and other remaining product gates remain separate. No push, release, deployment, production/Vault/operational-certificate/public-management/account change or disabled E2E activation follows.
+
+## Frozen earlier checkpoints — unchanged
+
 # Gaoxy Implementation Plan
+
+## Actual early-final local closure — 2026-10-18
+
+The bounded early-final-at-exhaustion slice is **DONE LOCALLY** at `e40284971ac1df030ef8bcb46e07b0b3838a3c53` (parent `ceb3c0c953d930768023da85875a95672876ce39`). Final document independent SPEC32→CODE30 passed with no unresolved findings. Actual successor custody `docs/acceptance/evidence/m3/managed-h2-downstream-cancel/1792264566506557815/early-final-postcommit-custody2.json` (SHA256 `07fcd76d5dd818140596b48a4150770a4475ce63fa626a8eef17ecd713f59ecd`) verifies290 task files,402 source pins,10 installed dependency pins and680 union committed blobs, exact disk/index/commit bytes, empty index and clean tracked tree at closure. E9 final-document-adoption2 binds the actual runtime and review evidence; its pending commit text is now historical.
+
+All eight temporal cases passed; fresh defining62/0, lifecycle150/0 and Generation184/0 are396 overlapping invocations, separate from first62/0, Python11, Core1/HTTP2 and two group browser rows/four root image opens. Historical Generation1 FAIL184/1 remains preserved and its initiating noproc cause UNKNOWN; the exact monitor repair passed Generation2. Whole-archive whitespace check retains exit2 for immutable historical logs/copies, while executable/canonical-document staged diff check passed0; no archival bytes were rewritten. Latest E9counter15 is root431/orchestration336/earlyTool31/downstreamTool2, runtime failed-green1/fixture1/Sol1 qualified, Astra2/2 exhausted. All inherited categories remain intact.
+
+FullTask6/Task5/M3 remain OPEN. Automatically advance the separate four-case native-H2 downstream-cancel-at-exhaustion/live-sibling slice under continuing authorization. No parsed/queued upstream-trailer inference, H1 disconnect acceptance, publication, deployment or excluded operation follows.
+
+## Frozen precommit and earlier checkpoints — unchanged
+
 
 ## Current early-final successor — local runtime qualification PASS
 
