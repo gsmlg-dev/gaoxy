@@ -1,0 +1,109 @@
+# Managed H2 Fixed Active/Idle Reload Plateau — Design
+
+Entry — 2026-10-17: identity rotation is locally closed by `88e435a73429666717a4d20a83f9fca13e0a67e9`.
+The postcommit audit is `docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/identity-postcommit-custody1.json`
+(SHA256 `6a8e6264cba5dfe33859f1968ce6c5063df3ad45e53b9c79cfc8c3d4ee97b77b`): 973 task files, 415 source pins and committed bytes verified;
+tracked tree clean and index empty before this kickoff. Identity final fixed6/group2
+provided four actual rows/eight root-viewed images; the seven unchanged-input
+nonbrowser gates remain explicitly reused historical evidence, not new executions.
+Historical FAIL/UNKNOWN/sticky receipts remain immutable. Counter62 is inherited
+without reset; Astra2/2 is exhausted. Fixed plateau is now in kickoff review;
+all new runtime gates remain NOT RUN. E5 is `docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527`.
+
+## Requirement and acceptance boundary
+
+Qualify the existing Task5 twenty active/idle H2 reload requirement for fixed endpoints first. Each profile performs initial activation, two warmup CAS reloads and twenty measured successful CAS reloads without replacing its actual Gaoxy instance, transport owner/epoch or Store PID. It proves exact compact resource-accounting plateau, genuine active/idle connection retirement, held-retirement capacity rejection, original public retirement confirmation/refund, physical peer close and final zeros/normal joins/rebind.
+
+Eight additive socket profiles are the recommended bounded scope: native downstream H1/H2 × upstream h2c/TLS-H2 × active/idle. Each is independently qualified and has its own persistent SUT. There is no aggregation of twenty samples across multiple SUTs or tests. h2c and TLS results remain separately identifiable; this slice makes no new trust-rotation claim. Fixed endpoints have no group health probes: each configured resource is exercised by a genuine GET. Group HEAD/selection/accounting qualification is a later independently designed slice.
+
+No production/dependency changes, constructor/API redesign or cap/deadline increases are planned. Whole Task5/M3, group reloads, full streaming matrix, multi-owner composition, selected-A R32/B-available saturation, standalone integration, the two ≥600s load profiles and H3 accounting remain open. Existing publication/deployment/production/Vault/operational-certificate/public-management/account and disabled release-artifact E2E restrictions remain.
+
+## Compared approaches
+
+1. **Recommend: three fixed peer epochs per profile, one persistent SUT.** Prepare three independent bounded peers at one common actual authority/port on127.0.0.1/.2/.3. Assign successive configured resources in batches8/8/7. Keep one constant public trust bundle containing all three actual CA DER values for TLS sources. Each old epoch is physically closed/publicly confirmed/joined before its process is stopped and its address rebound. This respects accept8/180s while keeping numeric/source serialization classes constant. It needs a small epoch ledger and fresh-versus-reuse request helper.
+2. **One peer with23 fresh resource connections.** Simpler fixture shape, but exceeds its unchanged8-accept cap; reject. Raising the cap or silently reusing a retired resource would erase the intended qualification boundary.
+3. **Recreate peers and SUT/Store per sample, or restart one peer repeatedly at one address with newly generated trust each time.** Recreating SUT/Store invalidates same-owner plateau. Replacing certificates/trust each epoch changes compact source sizes or requires a new peer certificate-import API. Neither is necessary for this bounded slice; reject.
+
+There is no need to split the recommended eight profiles further before execution. If an actual unchanged deadline/cap prevents this schedule, preserve the failure, diagnose its exact timing/extra connection, and revise the written fixture schedule with independent review. Do not lower twenty, reset SUTs, omit a cell, silently lengthen a deadline or treat partial fixed evidence as Task5 completion.
+
+## Persistent fixture and finite epochs
+
+Reuse `environment/2`, `candidate/3`, `activate/3`, `add_listener/1`, `observe_owner/1`, genuine capture/dispatch/bound/completion/source-return helpers, creator monitors and final `finish/3` in `managed_h2_fixed_generation_test.exs`. Add only private test helpers and eight tests in that file. Do not refactor existing helpers or cases; defining F and peer source are read-only unless a later evidenced helper gap receives bounded review.
+
+The inherited outer ExUnit per-test timeout is60,000ms: it starts before the first of all three peer setups and includes their preparation/readiness, source-size preflight, SUT schedule and in-test final teardown. Existing module/test_helper/argv supply no timeout tag or override. Launch all three peers before `environment/2`; this does not suspend or restart ExUnit's60s clock. Each peer TLS preparation has its own20s subprocess budget, a25s prepared-event wait and the existing5s listener-ready wait. These are bounded suboperations within the same outer test budget, never additional available profile time.
+
+The Gaoxy embedding has a separate120,000ms receive lifetime, beginning later inside `environment/2` after peer setup; it is not a120s profile ceiling. Each peer's180s lifetime begins at its own construction and includes its preparation and waiting. Keep all these clocks and caps unchanged and qualify the complete profile within every applicable deadline, including the outer60s; feasible aggregate duration is NOT established before actual execution. Record test-entry diagnostic timestamps, each peer preparation/ready duration, embedding start/lifetime and profile/teardown elapsed times without replacing the actual ExUnit timer. If timing fails, preserve failure and diagnose the schedule; any later timeout proposal requires explicit bounded independent review and is not authorized here. Do not remove cells, warmups, twenty measured reloads or assertions.
+
+First peer chooses actual P; other peers must bind the same P at their distinct allowed loopback addresses, with no fallback. Use the existing test CA generator: RSA2048 CA and leaf, SHA256, localhost DNS certificate and existing validity/SAN profile. Do not alter it or assume exact generated DER lengths.
+
+For TLS, read/copy only public CAs once in epoch order, validate exactly three nonempty distinct certificates, each≤65,536 bytes and total≤1,048,576, and use byte-identical `[DER1,DER2,DER3]` in every preparation. Sources are exactly the supported four-key maps; protocol/origin/trust are invariant and only connect_address changes among equal encoded-size tuples. Compute and freeze all three actual source/policy/manifest serialization sizes and public DER hashes before the SUT profile. Assert equality of the relevant numeric size classes; a mismatch fails preparation of the fixture schedule. Never pad, discard a certificate, normalize a measured number or infer that three randomly generated certificates have equal lengths. The bundle itself, not each individual CA length, is constant. h2c uses trust:nil and the same common authority/port.
+
+Generation indices0..22 map to epochs `div(index,8)` and expected per-epoch fresh connection ordinal `rem(index,8)+1`. These are schedule budgets, not observed acceptance counts. Every actual accept/TLS/request/stream/EOF/reset must match the ledger. No extra accept is silently tolerated, including at handoff or retry. Every resource gets one fresh selected connection; old active requests must reuse that resource's current connection. First fresh TLS request requires actual h2 ALPN/SNI localhost. Subsequent reuse requires an actual request barrier before checking absence of extra accept/TLS.
+
+At each epoch handoff, NEW is prepared/activated on the next already-ready peer before the previous peer is stopped. Wait for the previous epoch's last resource original public receipt, helper/custodian normal joins and exact physical close before stop. Require peer forced0/live0/failedfalse, exact accepts/requests, real exit0 and collector normal DOWN. Rebind its exact numeric address/P, then close the rebound listener. Keep an immutable epoch/PID/address/port/resource/connection/request/stream ledger even after the process exits. Peer turnover is not SUT turnover and never resets owner/Store counters.
+
+## Active profile schedule
+
+Install initial generation0 and listener/observers. Send/complete/return/close a seed GET on generation0; keep its actual upstream connection idle under the baseline pin.
+
+For each of22 CAS reloads:
+
+1. When this is cycle3 (first measured cycle), prearrange two extra preparation-only resources before the timed retirement hold. They use the same bounded source class and create no HTTP requests or peer accepts.
+2. On OLD, create a genuine checked capture and dispatch a second GET over its existing upstream connection. Require the authentic source, derived Session child, original pending completion and actual request event. This request remains active across CAS.
+3. Prepare NEW using the selected epoch source and constant label `:reload`; install read-only retirement observation before any final pin can drop. CAS with OLD's actual generation; join coordinator and preparation-pin release. OLD admission closes while the genuine original source/token remains.
+4. Send a fresh NEW GET; require its first accept/TLS/current epoch connection and complete original response/session. Return its endpoint, release source, close native socket/actors and prove its upstream connection is still idle.
+5. Complete OLD original response/session while its source still holds the retiring resource. Return OLD endpoint. On cycle3, perform the held-capacity transaction below before resuming the actual custodian input. Preserve original request effect counts for both GETs.
+6. Observe OLD original public retirement receipt, actual public await_retired:ok, original helper normal DOWN, genuine owner confirmation, custodian normal DOWN/resource removal and exact peer physical EOF/reset. Close/join OLD native actors. Stop/join/rebind any completed peer epoch, then take the same-phase sample.
+
+All resources0..21 have a seed GET plus an active held GET; final resource22 has its seed only. The source-derived planned ledger is23 fresh connections and45 GETs, distributed per epoch accepts8/8/7 and requests16/16/13. These numbers are recomputed from the frozen implemented call schedule before runtime; only actual event/count receipts may report execution. They are not an ExUnit count or a forecast PASS.
+
+## Idle profile schedule
+
+Initial generation0 likewise receives a complete/returned GET and retains one actual idle upstream connection under its baseline. Before every CAS, prove OLD has no original request source, Session child, request token, completion helper or live native request; its configured baseline and idle upstream connection remain real.
+
+Prepare/activate NEW, allowing OLD baseline release to initiate true retirement. On cycle3 prearrange the same two preparation-only filler resources and held-capacity transaction. After release, join OLD original public retirement/normal actors/exact physical close. Then send/complete/return/close NEW's genuine first GET and retain its upstream connection idle. Join coordinator/source cleanup and stop/join/rebind completed peer epochs before sampling.
+
+The planned idle ledger is23 connections and23 GETs, accepts8/8/7 and requests8/8/7. No HEAD is substituted for a required GET and no group health result is claimed. All budgets remain prospective until a source freeze and actual events prove them.
+
+## Held retirement, exact capacity and refund
+
+Cycle3 of EACH active/idle profile uses the existing read-only `:sys.install` custodian `:retire` input barrier with its unchanged2000ms timeout. It must block the actual original input, not manufacture a retirement receipt or suspend/replace dependency client state. Install it before OLD can retire. Prepare both filler scopes and their original-release/monitor/receipt observers before the barrier is entered.
+
+At the held point OLD, NEW and two fillers retain four actual records. OLD has no request source/token but is unconfirmed and charged. Require resource4/reserved_connections8/pins3/request_tokens0/helpers0/failed_resources0 with exact independently summed payload bytes; NEW's baseline is the only configured route. Verify OLD original record remains transport_confirmed:false/custodian_down:false with unchanged charged payload. Pin counts here are derived from one NEW baseline and two actual filler preparation pins, not assumed from H1 group totals.
+
+Within the same2s window, call the result-preserving public `Transports.prepare` attempt once and require `{:error,{:capacity,:resources}}`. Compare exact provider status/record identities/serialized bytes before and after, current Store route/generation unchanged, and no unexpected peer application request/accept. Distinguish this from Store stale-generation/resource_release_pending or request-token capacity; none is an acceptable replacement witness.
+
+Release the two actual admitted-prefix preparation pins using `Resources.release`, record their original handles/receipts, and send the barrier's real continue in an unconditional after block. Do not wait for sockets, spawn peers, compile routes, poll a held custodian or perform multi-second joins inside the hold. Those operations occur before or after it. Always preserve an assertion failure; cleanup release is not normal acceptance.
+
+After continuation, use only the original public receipts from actual custodian retire_result messages. Assert supported `HTTP.ManagedTransport.await_retired(receipt, existing_timeout)` returns:ok, original helper DOWN reason normal, authentic owner confirmation and custodian normal DOWN; only then may resource count/bytes/refund converge. Join both filler scopes even though they opened no TCP connection. Never call whole-owner retire during a reload, rewrite a failed receipt, inject custodian messages, patch deps, or equate source release with physical socket close.
+
+## Exact plateau and independent accounting
+
+Take firststeady after warmup2, then20 samples after measured cycles3..22. All20 equal firststeady exactly. Each sample follows original completion/source release, OLD public confirmation/helper/custodian normal joins/physical close, coordinator join, completed-epoch custody/rebind, current seed GET completion/native close, and Store retired[]/preparation:nil.
+
+Bind actual invariant tuple `{instance,owner,owner_epoch,store}` at profile startup and check identity/liveness at every CAS and sample. Changing generation/resource/peer/connection/ref/PID values belong to the identity ledger, not scalar equality. The current topology and phase are constant: one configured fixed T resource with one baseline source pin and one idle upstream connection; no native downstream connection or active request remains.
+
+The frozen scalar vector includes:
+
+- T lifecycle/limits, resources1, pins1, request_tokens0, helpers0, reserved_connections2, failed_resources0 and exact owned_serialized_payload_bytes. Independently recompute bytes from `external_size(entry.payload)`, complete retained pin records and token payloads, checking every stored payload_bytes value. Never subtract a changing numeric field to make equality pass.
+- Store resource count1, baseline count1, retired count0, preparation:nil, exact router and baseline external sizes. Current generation ref and actual identities are logged separately, not replaced in terms before size measurement.
+- Service active0/retained_bytes0/cleanup_pending0/cleanup_failed:nil; Gate lease count0/cleanup record count0/active0/retained_bytes0/cleanup_pending0/queued_items0/queued_bytes0 with independent byte sums. Gate high-water/rejected and other intentional cumulative counters are inventoried separately and excluded in the written vector before runtime.
+- Actual retained source/policy/trust size class as frozen before the profile, including the unchanged DER bundle bytes; no group metrics because this slice creates no group owner.
+
+Structural1/1/2 counts follow the read aggregate/baseline code and the defined phase, not a copied H1 assumption. Numeric byte constants are generated from the actual frozen public fixture and the firststeady independent sum before the twenty measured samples; each preparation must independently match its frozen size class. A difference in any selected numeric field fails, even if resources/pins alone plateau.
+
+At final teardown stop the same Store, require all T counts/bytes0, Service/Gate0 and actual public confirmation/normal creator joins, then stop the actual Gaoxy instance/owner/embedding normally and rebind the downstream listener. Join final peer resource physical close before peer stop/exit/collector normal DOWN and rebind its exact address/P. No retained resource, live fixture actor, forced signal, sticky failure or unconfirmed original receipt is silently erased.
+
+## Verification and review
+
+After identity actually closes, adopt successor design/plan, preserve exact kickoff/source/counter identities and complete independent design SPEC then CODE. Root is sole repository/evidence/Git/runtime writer. Independent delegates own explicit read-only proposal/review files. Astra remains2/2 exhausted; ordinary qualification failures enter authorized Sol diagnosis with assertions intact.
+
+Freeze candidate source hashes, helper definitions, expected epoch/request schedule, exact scalar vector, original deadlines, collector argv and all scoped file lists before runtime. Existing behavior qualification needs no artificial RED. An actual production bug requires a genuine failing regression, separate bounded source review and normal upstream routing if applicable; no production edit is presumed.
+
+Run all eight new profiles with the complete defining F and fixed Generation suites; relevant owner/release-order/lifecycle/H1 compatibility/checked capture/accounting/source-release suites follow in scoped serial batches. Force strict compile and changed-source format; syntax only for actually changed/copied active Python/JavaScript fixtures. Keep separate core/HTTP consumer receipts and fresh fixed browser nativeH1/H2→TLS-H2 two rows/four root-viewed images using inherited accepted fixture semantics. The browser checks the unchanged fixed/native boundaries and current source custody; it does not prove twenty reloads. Group browser qualification is part of identity entry evidence, not duplicated as a fixed-slice claim.
+
+Final complete implementation SPEC→CODE precedes fresh scoped/static/consumer/browser gates. Require actual nonzero executed tests, no skips/exclusions/waived warnings, stable source/BEAM bindings, authentic Actor exits/raw adopted waits/readers/groups and nonforced custody. Record every FAIL/BLOCKED/NOT RUN distinctly. Finish factual acceptance and independent document SPEC→CODE/disk/index/blob custody before local conventional commits. Implementation follows independent kickoff SPEC then CODE; runtime requires the reviewed source freeze.
+
+## Self-review result
+
+Scope, same-owner identity, all20 samples per profile, constant trust/source classes, active versus idle proofs, exact cap4 rejection and admitted-prefix rollback, public receipt/confirmation/refund order, physical close, epoch8/180s budgets, unchanged2000ms barrier, final normal custody and scoped verification are each mapped to explicit plan tasks. No architecture/dependency/cap change or unsupported production API is required. Remaining risks are execution evidence (fixture duration/size classes/reuse/epoch custody), not permission requests or accepted outcomes.

@@ -1,0 +1,128 @@
+{
+  "task_id": "fixed_plateau_repair_spec3",
+  "status": "PASS_SOURCE_SPEC_ONLY",
+  "verdict": "PASS_SOURCE_SPEC_ONLY",
+  "assignment": "direct independent read-only Sol specification review of bounded corrected nativeH2 fixture ordering; not full implementation review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "input_sha256": {
+    "source-candidate3.json": "21cbb497e874dc73ea886a38324fb808615a1627a6edce8611f97e2a481cae3d",
+    "command-inventory3.json": "639d73d6c6f0516fd36b00fcecfb9f0ff3e2eb1cafc53c1bb49075c420968d06",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "c4ac0347e312f9dfe93b99bd37b180dc8180ec1015f0b541eeedd01d736176c5",
+    "native-close-repair-plan2.md": "e2c38eb9eb4b1ac761cca02409b64f7efe2fee099395443d655448561177001d",
+    "native-close-adoption2.json": "cc053dddfee12e9374a2a42fe09c8ef858b67b0336345beeb6088e6fbf6e03df",
+    "counter9.json": "eec560f2762e06be5457798dcbc9cc46d463ea365c3dac45302d56103c3aadee"
+  },
+  "findings": [],
+  "finding_count": 0,
+  "prior_finding_resolution": {
+    "id": "SPEC2-F1",
+    "state": "RESOLVED_IN_SOURCE3",
+    "evidence": "Both original additive return_endpoint calls are restored. New reload_close_native/3 is called only at the two additive close boundaries. Active order is original source return -> reload_capacity/5 (cycle3) with original unconditional prefix release and barrier continue -> original OLD/filler retirement joins -> H2-only existing F.eventually native-death wait -> unchanged close_native/3. The new wait no longer runs inside the two-second hold. Seed order is original return -> same bounded H2 wait -> original socket close/assertions.",
+    "source_locations": [
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:3017",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:3039",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs:3118"
+    ]
+  },
+  "specification_checks": {
+    "authentic_source_release_and_worker_ordering": {
+      "result": "PASS",
+      "evidence": "Endpoint return remains the original send; native worker completes through existing checked Generation source release and Stream completion. Wrapper only observes actual captured native PID liveness before socket closure, does not release pins itself or inject completion/retirement messages."
+    },
+    "exact_monitor_and_actor_assertions": {
+      "result": "PASS",
+      "evidence": "Inherited close_native/3 and return_endpoint/1 definitions are byte-equal to the initial reviewed candidate. Existing original native monitor remains unread until unchanged close_native requires H2 :normal; killed/crashed workers cannot pass. Original nativeH1 peer_closed, connection and writer actor assertions are preserved."
+    },
+    "hold_and_deadlines": {
+      "result": "PASS",
+      "evidence": "No multi-second worker wait is inserted before active capacity/continuation. Existing F.eventually five-second deadline remains; original two-second hold, monitor waits, ExUnit60s, embedding120s, peer180s and caps are unchanged. This checks source placement and constants only, not runtime timing feasibility."
+    },
+    "bounded_source_delta": {
+      "result": "PASS",
+      "evidence": "Against initial candidate: one private11-line wrapper and exactly two close call substitutions, +13/-2 lines. Original return callsites unchanged; former reload_return_endpoint helper absent. First101062 baseline bytes and final module terminator preserved; adopted baseline delta1021 additions0 removals."
+    },
+    "eight_profiles_22cas_20samples": {
+      "result": "PASS",
+      "evidence": "Full repair diff changes no profile generators, fold, warmups, samples, exact scalar comparisons, public receipt/capacity/refund/physical-close or final-zero assertions. Eight cells and each22 CAS/20 measured samples remain required in source; this is not execution evidence."
+    },
+    "pins": {
+      "result": "PASS",
+      "candidate_count": 399,
+      "inventory_count": 399,
+      "all_live_hashes_match": true,
+      "map_sets_and_hashes_equal": true,
+      "document_pin_count": 6,
+      "all_document_hashes_match": true,
+      "collector_source_count": 398,
+      "collector_union_extra": "chromium-netlog-event-enums1.json",
+      "collector_union_exact": true,
+      "prohibited_files_accessed": false
+    },
+    "qualification_inventory": {
+      "result": "PASS",
+      "evidence": "first_qualification is exactly unchanged from inventory2, including unused name fixed-plateau-first-scoped2 and original unfiltered full two-file payload. Its receipt/log do not exist. final_commands/browser/format_paths/scope1/scope2/path counts are unchanged from inventory2;8+12=20 distinct scoped paths. No exclusions, skips, warning waiver or timeout enlargement introduced."
+    },
+    "stage_scope": {
+      "result": "PASS",
+      "evidence": "Repair changes no production/dependency/browser/prefix source, no cap or deadline constant and no public API. Full implementation review and fresh final gates remain required. No extra Astra recovery requested."
+    }
+  },
+  "historical_and_runtime_state": {
+    "original_first_qualification": "FAIL;94 executed tests,4 failures,exit2; immutable failure retained",
+    "original_failure_reason_limit": "Three exact original monitors visibly killed; fourth exact reason UNKNOWN because truncated mailbox; no dynamic kill-sender proof inferred.",
+    "candidate2": "NOT RUN; source SPEC2 failed before execution",
+    "candidate3": "NOT RUN",
+    "first_scoped2": "NOT RUN; unused frozen command name",
+    "final_gates": "NOT RUN",
+    "this_reviewer_runtime": "No tests, formatting, builds, BEAM, browser, network or process manipulation executed.",
+    "forecast": "None. Source-only PASS does not establish runtime success, deadline feasibility, full implementation acceptance or stage completion."
+  },
+  "counters": {
+    "successor_sol_repair_rounds": 7,
+    "successor_fixture_repair": 7,
+    "successor_production_repair": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_state": "exhausted",
+    "fixed_plateau_fixture_repair": 2,
+    "fixed_plateau_runtime_failed_green": 1,
+    "fixed_plateau_source_failed_spec": 1,
+    "root_failure_events": 236,
+    "orchestration": 147,
+    "successor_tooling_errors": 75,
+    "new_repairs_or_failed_green_by_this_review": 0,
+    "classification": "Fresh source SPEC after correction; no second failed GREEN and no counter reset."
+  },
+  "verification_commands_and_results": [
+    {
+      "command": "Read exact plan2/adoption2/counter9 and changed source slices",
+      "result": "PASS; close-boundary order matches superseding plan and resolves prior finding"
+    },
+    {
+      "command": "git branch --show-current and git rev-parse HEAD",
+      "result": "PASS; supplied branch/baseline match"
+    },
+    {
+      "command": "Python hashlib/difflib and git show HEAD source read",
+      "result": "PASS; source/input hashes match, exact bounded diff and baseline prefix preservation"
+    },
+    {
+      "command": "Python JSON/hash inventory and document comparisons",
+      "result": "PASS;399/399 pins and6 document pins match, exact union and frozen qualification/final command equality"
+    },
+    {
+      "command": "Read-only rg --files enumeration mirrored collector selection without running collector",
+      "result": "PASS;398 collector inputs plus enumJSON equals399 union"
+    },
+    {
+      "command": "Compare inherited close_native/return_endpoint definitions and new callsites",
+      "result": "PASS; byte-equal originals, one wrapper and two additive calls only"
+    }
+  ],
+  "task_diff": "Only /tmp/gaoxy-fixed-plateau-source-spec3.json written by reviewer; repository/evidence source mutations remain root-owned and untouched.",
+  "shutdown": "All own read-only and report-write commands finished; no long-lived process launched and no process ownership/shutdown uncertainty.",
+  "remaining_risks": "Actual corrected runtime and all prescribed full implementation/final qualification remain outstanding. No result forecast.",
+  "decisions_needed": "No user/product decision or external permission needed; root can proceed to dependent independent CODE review before frozen qualification."
+}

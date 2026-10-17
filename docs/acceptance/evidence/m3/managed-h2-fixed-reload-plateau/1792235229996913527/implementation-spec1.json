@@ -1,0 +1,986 @@
+{
+  "task_id": "fixed_plateau_full_spec",
+  "status": "DONE",
+  "verdict": "PASS_IMPLEMENTATION_SPEC_ONLY",
+  "assignment": "Direct independent read-only full implementation SPEC review; successful first qualification evaluated. No runtime execution or acceptance closure by this reviewer.",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "findings": [],
+  "finding_count": 0,
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-candidate3.json": "21cbb497e874dc73ea886a38324fb808615a1627a6edce8611f97e2a481cae3d",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-spec3.json": "fe55323de93e54437ce0ba0b3e0039f1b77d9316d784044a6e4fcdda84e2212a",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-code2.json": "6637523c64e2f723a0e3d41d1f3b3f40f25c927cd0b88d53ee41512135ca9a35",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/command-inventory3.json": "639d73d6c6f0516fd36b00fcecfb9f0ff3e2eb1cafc53c1bb49075c420968d06",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/fixed-plateau-first-scoped2.json": "0819f9c0d35f007268c55a2a2c3b48f5ce536b418c04723efafe750fa4e27fa4",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/fixed-plateau-first-scoped2.log": "694a2288e1af3c5409e5f03be840d32f9a7d651b4cbee188d21b10b912322fff",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/first-scoped2-ledger-audit1.json": "0698e8f0642faffe23359b74026c0f0c6bd392b6655a9de66304f67cda7a6e61",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/first-scoped2-root-audit1.json": "1203984d9fafc4fec4e64a766c3891465d4b60087f44cdc0a65c3d04f68ec7d6",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/counter10.json": "71993511a54db697073dd3188180bb5b8120fc2d3c2fc8d7786e49f6121ea35f",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/counter11.json": "0f282a7fde4a3ae08a97f3b681a9c9f7caecfda3eb46badf875b0f437b1582c6",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/fixed-plateau-first-scoped1.json": "fa57abea28b6ac7913cb9b0fa044e78db1d9af94c2ae18b04c8ec156624ca4f8",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/command-collector1.py": "b648c6d47a8f80515db1c2150101577ad16e8c27ff2780f361f449d8e76f1af0",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-repair-plan1.md": "859e1d34d50ea67a24a970f4d0311c9476296dc87edc1e59bf034dbe9d6bad06",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-repair-plan2.md": "e2c38eb9eb4b1ac761cca02409b64f7efe2fee099395443d655448561177001d",
+    "docs/acceptance/m3-managed-h2-fixed-reload-plateau.md": "640d06ab96a9188bbdad0d21c844f4b3fcfa7fdd7e311cec92b5a2237529321a",
+    "docs/designs/m3-managed-h2-fixed-reload-plateau.md": "5ae7d46df9eb9dc7c10363bd450a10c53c3a559ed00fbb9ed7276c5dbf952a72",
+    "docs/plans/m3-managed-h2-fixed-reload-plateau.md": "5646a2ed56f1e1e9b38835509fbb7595799904db8d61df2bc6786046d6dbc9c3",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "fca5adab8a5a30278fef9704477384ee71de2ddc0ff875b0f25799f3d69e75a3",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "c4ac0347e312f9dfe93b99bd37b180dc8180ec1015f0b541eeedd01d736176c5"
+  },
+  "source_custody": {
+    "candidate_pins": 399,
+    "inventory_pins": 399,
+    "all_live_hashes_match": true,
+    "candidate_inventory_maps_equal": true,
+    "collector_inputs": 398,
+    "collector_before_after_maps_match_current_pins": true,
+    "collector_plus_enum_union_exact": true,
+    "extra_union_operand": "chromium-netlog-event-enums1.json",
+    "document_pins": 6,
+    "document_hashes_match": true,
+    "baseline_prefix_bytes": 101062,
+    "baseline_prefix_sha256": "6d3e681ffc9337130c4bf60975afd06b4582f635e840e817056e6f87d03d1523",
+    "baseline_prefix_byte_equal": true,
+    "module_terminator_preserved": true,
+    "test_diff": "+1021/-0",
+    "frozen_payload_matches_actual_receipt": true,
+    "successful_log_hash_matches_receipt": true,
+    "collector_hash_matches_receipt": true
+  },
+  "specification_checks": [
+    {
+      "requirement": "Eight cells, one persistent SUT each, initial+22CAS,2warmups+20measured",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:2775-2872,2965-2969",
+      "evidence": "Cartesian protocol/downstream/profile tests have no timeout override; environment outside fold; identity/liveness checked on both sides of each CAS and sampling. Actual192rows,176CAS,160vectors; each20vectors equals its exact warmup2 full vector."
+    },
+    {
+      "requirement": "Constant public TLS bundle and source serialization class; three actual same-port epochs",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:2875-2963,3760-3780",
+      "evidence": "Only public CA PEM/DER read. Three distinct bounded CA DERs and leaves, unchanged generator; constant bundle across all sources; exact4keymaps and source/policy/manifest/trust external sizes checked before SUT and every preparation. Actual epoch sources/classes/public-bundle hashes and bound addresses correlate in successful ledger."
+    },
+    {
+      "requirement": "Genuine active reuse and idle retirement with no invented completion/source events",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:2971-3175; inherited helpers1489-1630",
+      "evidence": "Fresh accept/request/TLS h2 ALPN+localhost SNI checked; reused requests consume genuine request event before no-extra checks and retain connection/new stream. Active OLD stays pending across successful CAS and NEW completion; original OLD completion occurs while authentic source remains. Idle OLD has baseline-only idle connection with no child/token/helper/native request. All23unique resources and exact22CASchain independently correlated per cell."
+    },
+    {
+      "requirement": "Cycle3 real finite held barrier, exact cap4 refusal/no delta/prefix rollback",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:3177-3292,3375-3502",
+      "evidence": "Generation2 watcher is installed before final pin can drop. Two genuine preparation-only fillers admitted before hold; original2000ms retire-input barrier observes actual message. Status4resources/3pins/0tokens/0helpers/reserved8/failed0, exact independently summed bytes and OLD unconfirmed+charged. Public result-preserving prepare refuses {:capacity,:resources}; status/record/pins/tokens/bytes/Store identical. No peer accept/TLS/request after barrier. Both real prefix releases and exact continuation run in after; no joins occur inside hold."
+    },
+    {
+      "requirement": "Original public receipt/helper/custodian/owner/physical close custody and refund",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:3305-3373,3504-3566",
+      "evidence": "Original retire_result receipt bound to actual resource/custodian, supported await_retired:ok, original helper slot/ref DOWN:normal, authentic owner helper started/finished/confirmation and charged-before-confirmation record, original creator DOWN:normal/resource removal; no prior removal permitted. Exact connection physicalEOF/reset required. Successful184original+16filler receipts and184physicalcloses;24epochjoins each realexit0/collectorDOWNnormal/forced0/live0/failedfalse/rebind."
+    },
+    {
+      "requirement": "Exact scalar plateau including all selected byte values and unchanged caps",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:3568-3689",
+      "evidence": "Each payload_bytes independently external_size verified; owner sum includes full payload/pin/token terms. T full status+limits/bytes, Store exact router+baseline sizes/counts, source class, selected Service/Gate zeros and independent lease+cleanup byte sums form exact vector. Identity/cumulative highwater+reject inventories predeclared separately; no numeric normalization. Caps4/256/64/8388608 unchanged. Actual H2C owner1750/router1074/baseline474; TLS owner4326/router1077/baseline474; all20 vectors strictly equal warmup2 per cell."
+    },
+    {
+      "requirement": "Unchanged60s/120s/180s clocks and original H2 native normal monitor",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:3017-3026,3118-3123,1748-1781; F.peer; managed_h2_fixed_peer.py",
+      "evidence": "Outer ExUnit60s has no tag/CLI override; all3peer preparations precede environment within same timer. Embedding120s and peer180s unchanged;20sTLS/25sprepared/5sready subbudgets not added. New existing-F.eventually wait only immediately before close_native and active after prefix release+original retirement joins. Original DOWN monitor unconsumed and unchanged exactH2:normal assertion preserved. Successful profile2657-4674ms and through-continue1-9ms;2000ms is a deadline, not a mandatory dwell."
+    },
+    {
+      "requirement": "Final same Store/owner/instance normal zeros and downstream/peer rebind",
+      "result": "PASS",
+      "source": "managed_h2_fixed_generation_test.exs:2853-2872,3691-3711; inherited finish1825-1890",
+      "evidence": "After20samples stop same Store, join final original receipt+physical peer close, finalpeer stop/rebind, exactownerrecords/pins/tokens/bytes0 and Service/Gate0. Existing finish preserves Store/instance/owner/embedding original normal joins and downstream listener rebind. Actual finished row exists for all8; assertion success is bound to full94/0exit0 receipt."
+    },
+    {
+      "requirement": "Fresh final gates and acceptance remain pending",
+      "result": "PASS_BOUNDARY_ONLY",
+      "evidence": "Inventory has exact8+12distinct scoped files, strictcompile/3activeformatpaths/syntax/core+HTTPconsumers/peerstartup and two-row/four-image browser requirements. All final statuses NOTRUN. This fullSPEC passes implementation and first successful qualification only; dependent fullCODE, fresh gates, documentSPEC/CODE and localcommit custody are still required. Python11 separate actualmethod audit required despite staticcollectorExUnit0."
+    }
+  ],
+  "actual_first_qualification": {
+    "verdict": "PASS",
+    "actual_tests": 94,
+    "failures": 0,
+    "actual_exit": 0,
+    "skipped": 0,
+    "excluded": 0,
+    "warnings": [],
+    "elapsed_seconds": 144.79713559499942,
+    "source_stable": true,
+    "forced": false,
+    "process_joined": true,
+    "remaining_group": [],
+    "actual_ledger_rows": 192,
+    "cells": 8,
+    "successful_cas": 176,
+    "measured_vectors": 160,
+    "original_retirement_receipts": 184,
+    "filler_retirement_receipts": 16,
+    "physical_closes": 184,
+    "physical_event_types": {
+      "connection_reset": 135,
+      "eof": 49
+    },
+    "epoch_joins": 24,
+    "actual_accepts": 184,
+    "actual_application_GETs": 272,
+    "adopted_waits": [
+      {
+        "pid": 1030139,
+        "wait_status": 10,
+        "phase": "before_force"
+      },
+      {
+        "pid": 1030121,
+        "wait_status": 0,
+        "phase": "before_force"
+      }
+    ],
+    "adopted_wait_limit": "Raw wait_status10 remains terminal signal10, not exit0. The two adopted descendants are not labeled normal SUT joins; no forced cleanup and no residue recorded."
+  },
+  "profiles": [
+    {
+      "cell": [
+        "http1",
+        "h2c",
+        "active"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        16,
+        16,
+        13
+      ],
+      "profile_elapsed_ms": 3365,
+      "setup_elapsed_ms": 859,
+      "teardown_elapsed_ms": 114,
+      "peer_ready_ms": [
+        291,
+        191,
+        287
+      ],
+      "hold_transaction_elapsed_ms": 1,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1074,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 1750,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 95,
+          "manifest": 888,
+          "trust": 6,
+          "policy": 560
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.8277.0>, #PID<0.8279.0>, #Reference<0.3620349361.448528385.234066>, #PID<0.8280.0>}",
+        "sha256": "4bbc40c0adedcb5ac748965de751198e9a52b9d869254f5654f7fad691b8b3d7"
+      }
+    },
+    {
+      "cell": [
+        "http1",
+        "h2c",
+        "idle"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        8,
+        8,
+        7
+      ],
+      "profile_elapsed_ms": 2821,
+      "setup_elapsed_ms": 749,
+      "teardown_elapsed_ms": 84,
+      "peer_ready_ms": [
+        211,
+        261,
+        200
+      ],
+      "hold_transaction_elapsed_ms": 9,
+      "hold_through_continue_elapsed_ms": 9,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1074,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 1750,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 95,
+          "manifest": 888,
+          "trust": 6,
+          "policy": 560
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.2957.0>, #PID<0.2959.0>, #Reference<0.3620349361.448528386.156996>, #PID<0.2960.0>}",
+        "sha256": "798330d959342695c64903a29e3f293ec6a979ce4e2d9e761fc7feb79c88f62b"
+      }
+    },
+    {
+      "cell": [
+        "http1",
+        "http2",
+        "active"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        16,
+        16,
+        13
+      ],
+      "profile_elapsed_ms": 4674,
+      "setup_elapsed_ms": 2208,
+      "teardown_elapsed_ms": 87,
+      "peer_ready_ms": [
+        576,
+        860,
+        663
+      ],
+      "hold_transaction_elapsed_ms": 1,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1077,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 4326,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 2538,
+          "manifest": 906,
+          "trust": 2446,
+          "policy": 3136
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.4185.0>, #PID<0.4187.0>, #Reference<0.3620349361.448528385.181544>, #PID<0.4188.0>}",
+        "sha256": "99db0dcb14af252d98aaf949b0d6cf8bf73ffc88a60ad7aa56674b072a6a7f3c"
+      }
+    },
+    {
+      "cell": [
+        "http1",
+        "http2",
+        "idle"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        8,
+        8,
+        7
+      ],
+      "profile_elapsed_ms": 4037,
+      "setup_elapsed_ms": 2100,
+      "teardown_elapsed_ms": 115,
+      "peer_ready_ms": [
+        602,
+        560,
+        854
+      ],
+      "hold_transaction_elapsed_ms": 1,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1077,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 4326,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 2538,
+          "manifest": 906,
+          "trust": 2446,
+          "policy": 3136
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.11458.0>, #PID<0.11460.0>, #Reference<0.3620349361.448528386.242046>, #PID<0.11461.0>}",
+        "sha256": "e349bd7a2af35425b595557f94b0d43fb688ecc23c30c49c1e1ca359c4df0453"
+      }
+    },
+    {
+      "cell": [
+        "http2",
+        "h2c",
+        "active"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        16,
+        16,
+        13
+      ],
+      "profile_elapsed_ms": 3034,
+      "setup_elapsed_ms": 767,
+      "teardown_elapsed_ms": 109,
+      "peer_ready_ms": [
+        197,
+        200,
+        285
+      ],
+      "hold_transaction_elapsed_ms": 2,
+      "hold_through_continue_elapsed_ms": 2,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1074,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 1750,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 95,
+          "manifest": 888,
+          "trust": 6,
+          "policy": 560
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.10020.0>, #PID<0.10022.0>, #Reference<0.3620349361.448528386.225322>, #PID<0.10023.0>}",
+        "sha256": "013125843512daedc0e6c762bb54bf2580cee78d329a954fb29f932670ec1249"
+      }
+    },
+    {
+      "cell": [
+        "http2",
+        "h2c",
+        "idle"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        8,
+        8,
+        7
+      ],
+      "profile_elapsed_ms": 2657,
+      "setup_elapsed_ms": 762,
+      "teardown_elapsed_ms": 127,
+      "peer_ready_ms": [
+        263,
+        183,
+        230
+      ],
+      "hold_transaction_elapsed_ms": 1,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1074,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 1750,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 95,
+          "manifest": 888,
+          "trust": 6,
+          "policy": 560
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.5225.0>, #PID<0.5227.0>, #Reference<0.3620349361.448528386.179205>, #PID<0.5228.0>}",
+        "sha256": "a45b8bc48d1d85eae149777b584d907ccc2bcf45f206a1803222131f2ee50b61"
+      }
+    },
+    {
+      "cell": [
+        "http2",
+        "http2",
+        "active"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        16,
+        16,
+        13
+      ],
+      "profile_elapsed_ms": 4176,
+      "setup_elapsed_ms": 1829,
+      "teardown_elapsed_ms": 101,
+      "peer_ready_ms": [
+        560,
+        611,
+        607
+      ],
+      "hold_transaction_elapsed_ms": 0,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1077,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 4326,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 2538,
+          "manifest": 906,
+          "trust": 2446,
+          "policy": 3136
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.6355.0>, #PID<0.6357.0>, #Reference<0.3620349361.448528385.208449>, #PID<0.6358.0>}",
+        "sha256": "d0154ffb4b3f3f75e15ab6519c6e229013e77d72d5210573395e4dae6b11f3a6"
+      }
+    },
+    {
+      "cell": [
+        "http2",
+        "http2",
+        "idle"
+      ],
+      "successful_cas": 22,
+      "warmups": 2,
+      "measured_samples": 20,
+      "fresh_connections": 23,
+      "requests_per_epoch": [
+        8,
+        8,
+        7
+      ],
+      "profile_elapsed_ms": 4225,
+      "setup_elapsed_ms": 2301,
+      "teardown_elapsed_ms": 113,
+      "peer_ready_ms": [
+        906,
+        609,
+        717
+      ],
+      "hold_transaction_elapsed_ms": 1,
+      "hold_through_continue_elapsed_ms": 1,
+      "warmup2_vector": {
+        "service": {
+          "active": 0,
+          "retained_bytes": 0,
+          "cleanup_failed": null,
+          "cleanup_pending": 0
+        },
+        "store": {
+          "retired": 0,
+          "preparation": null,
+          "resources": 1,
+          "baselines": 1,
+          "router_bytes": 1077,
+          "baseline_bytes": 474
+        },
+        "transport": {
+          "limits": {
+            "max_resources": 4,
+            "max_pins": 256,
+            "max_request_tokens": 64,
+            "max_owned_payload_bytes": 8388608
+          },
+          "request_tokens": 0,
+          "helpers": 0,
+          "pins": 1,
+          "resources": 1,
+          "reserved_connections": 2,
+          "owned_serialized_payload_bytes": 4326,
+          "failed_resources": 0,
+          "lifecycle": "running"
+        },
+        "gate": {
+          "active": 0,
+          "retained_bytes": 0,
+          "leases": 0,
+          "cleanup_pending": 0,
+          "cleanup_bytes": 0,
+          "cleanups": 0,
+          "lease_bytes": 0,
+          "queued_items": 0,
+          "queued_bytes": 0
+        },
+        "source_class": {
+          "source": 2538,
+          "manifest": 906,
+          "trust": 2446,
+          "policy": 3136
+        }
+      },
+      "invariant_identity": {
+        "inspect": "{#PID<0.7442.0>, #PID<0.7444.0>, #Reference<0.3620349361.448528385.223750>, #PID<0.7445.0>}",
+        "sha256": "bcffa65f13d0cd0c8da13e437e1d3dcd8235a59aa21cc4d5faccd78b5fbf7657"
+      }
+    }
+  ],
+  "tls_public_bundle_evidence": [
+    {
+      "cell": [
+        "http1",
+        "http2",
+        "active"
+      ],
+      "public_bundle": [
+        {
+          "bytes": 808,
+          "sha256": "e20728fb00e057c6cc0a07c84d1f4b4ace5c53f14c60009302f9953bd4933556"
+        },
+        {
+          "bytes": 808,
+          "sha256": "7b8e97d8d13f13286965e713d154159173bd10363c59441d4a163099953c09d5"
+        },
+        {
+          "bytes": 808,
+          "sha256": "e76214c31190520ae8b8cce1307a8584367f69cb4620b7a4924f15e746cc68ea"
+        }
+      ]
+    },
+    {
+      "cell": [
+        "http1",
+        "http2",
+        "idle"
+      ],
+      "public_bundle": [
+        {
+          "bytes": 808,
+          "sha256": "ac9798aa41ff42ff217d0d0a56ca9edc2f8f5ea6c6a97ff8f2d2d92b5044228b"
+        },
+        {
+          "bytes": 808,
+          "sha256": "dfb9ba907bc43c49c2c4a54254518ad42da922161dedf24373c991846c4b7de4"
+        },
+        {
+          "bytes": 808,
+          "sha256": "deb50215e71523d063ff78394db184fbd9ebd98aef1000dcbabbe51196b354b4"
+        }
+      ]
+    },
+    {
+      "cell": [
+        "http2",
+        "http2",
+        "active"
+      ],
+      "public_bundle": [
+        {
+          "bytes": 808,
+          "sha256": "0aa584944e6494fbe133cf89f0cb5504922209ab9410dd2ec6b49b65714c373d"
+        },
+        {
+          "bytes": 808,
+          "sha256": "6f344ab34c2dc8cd2e7fd461d355788543cd83652e34adc59970d3b9c149c3f4"
+        },
+        {
+          "bytes": 808,
+          "sha256": "5434c1b17bbb606df4e42749c8923910086b4ce996776714da96aad4950440ce"
+        }
+      ]
+    },
+    {
+      "cell": [
+        "http2",
+        "http2",
+        "idle"
+      ],
+      "public_bundle": [
+        {
+          "bytes": 808,
+          "sha256": "17ff159512e9c261d9860613aa73e63666c28fcc7afc32fd4caac46bd23378bf"
+        },
+        {
+          "bytes": 808,
+          "sha256": "53242cd68d3cfe061f744dafdb7757e56d016fa6cc10238b3e60bfc84416c57b"
+        },
+        {
+          "bytes": 808,
+          "sha256": "2e3041f833898708cafbed733ea8582f4d510a1c8f21fe0dff7928bfbeda383a"
+        }
+      ]
+    }
+  ],
+  "historical_evidence": {
+    "first_scoped1": {
+      "verdict": "FAIL",
+      "tests": 94,
+      "failures": 4,
+      "actual_exit": 2,
+      "immutable_receipt_hash_matches_inventory": true
+    },
+    "candidate2": "SPECFAIL;NOTRUN; preserved",
+    "prior_source_reviews": "Accepted sourceSPEC3/CODE2 remain source-only historical receipts; their NOTRUN forecast state was correct at creation and is not retroactively rewritten."
+  },
+  "pending_gates": {
+    "dependent_full_CODE": "NOT RUN at this SPEC review",
+    "fresh_final_compile_format_syntax_scoped1_scoped2": "NOT RUN",
+    "fresh_final_core_http_consumers": "NOT RUN",
+    "fresh_peerstartup11audit": "NOT RUN",
+    "fresh_fixed_browser2rows4rootimages": "NOT RUN",
+    "acceptance_document_checkboxes_and_closure": "NOT DONE; root updates after final gates",
+    "document_SPEC_CODE_and_local_committed_custody": "NOT RUN",
+    "Task5_M3_group_fullstreaming_multiowner_R32_standalone_load_H3": "OPEN"
+  },
+  "counters": {
+    "astra_limit": 2,
+    "astra_used": 2,
+    "current_group_failed_green": 64,
+    "current_orchestration": 149,
+    "current_root_failure_events": 238,
+    "environment_plan_self_review_errors": 2,
+    "fixed_plateau_audit_proposal_repairs": 1,
+    "fixed_plateau_fixture_repair": 2,
+    "fixed_plateau_runtime_failed_green": 1,
+    "fixed_plateau_source_failed_spec": 1,
+    "fixed_plateau_tooling_errors": 14,
+    "inherited": {
+      "astra_limit": 2,
+      "astra_used": 2,
+      "group_failed_green": 54,
+      "orchestration": 60,
+      "root_failure_events": 132,
+      "stage_failed_green": 9,
+      "stage_final_document_failed_spec": 2,
+      "stage_fixture_repair": 11,
+      "stage_invalid_red": 1,
+      "stage_orchestration_repair": 53,
+      "stage_postfeature_document_failed_spec": 1,
+      "stage_production_repair": 2,
+      "stage_valid_red": 1
+    },
+    "next_stage_preparatory_failed_spec": 1,
+    "successor_checkpoint_document_failed_code": 1,
+    "successor_diagnostic_failed_spec": 1,
+    "successor_diagnostic_readiness_repairs": 1,
+    "successor_diagnostic_startup_failures": 1,
+    "successor_environment_file_preparation_failures": 2,
+    "successor_environment_helper_repairs": 4,
+    "successor_environment_materialization_timeouts": 1,
+    "successor_environment_readiness_cancelled": 1,
+    "successor_environment_readiness_timeouts": 2,
+    "successor_environment_recovery_failed_code": 1,
+    "successor_environment_recovery_failed_spec": 2,
+    "successor_environment_transfer_failed_commands": 4,
+    "successor_evidence_tooling_failed_code": 1,
+    "successor_evidence_tooling_repair": 2,
+    "successor_final_document_failed_spec": 1,
+    "successor_final_inventory_failed_spec": 3,
+    "successor_fixture_repair": 7,
+    "successor_production_repair": 0,
+    "successor_runtime_failed_green": 10,
+    "successor_sol_repair_rounds": 7,
+    "successor_source_failed_spec": 4,
+    "successor_tooling_errors": 77
+  },
+  "counter_policy": "Latest counter11 inherited without reset; successorSol7fixture7production0 and Astra2/2 exhausted; fixedfixture2/runtimefailedGREEN1/sourcefailedSPEC1 unchanged. No repair or runtime execution by this reviewer.",
+  "reviewer_tooling_incident": {
+    "count": 1,
+    "type": "Read-summary printer TypeError: object of type NoneType has no len() while handling browser:null",
+    "effect": "Read-only commandexit1 before any write; corrected printer completed. No fixture/source/test/runtime effect. Reported separately to parent for cumulative tooling accounting; not included in inherited counter11."
+  },
+  "verification_commands_and_actual_results": [
+    {
+      "command": "pwd;gitstatus--short;gitrev-parseHEAD;gitdiff--numstat;gitshowHEAD:testsource (all read-only)",
+      "result": "PASS: supplied worktree/baseline verified, unrelated edits preserved, additive1021/0 and original101062prefix bytes/module terminator preserved"
+    },
+    {
+      "command": "Read canonical design/plan, all1021added testsource lines and inherited request/complete/finish/peer/custodian context",
+      "result": "PASS: all bounded implementation requirements traced to concrete source;0actionable findings"
+    },
+    {
+      "command": "Pythonhashlib+JSON comparisons of399pins,6docs,398collectorinputs+enum,receipt/log/collector bindings",
+      "result": "PASS:0mismatches; actual unfiltered command equals frozen inventory; rechecked immediately before report write"
+    },
+    {
+      "command": "Static Python parse of actual firstscoped2log and auditrows (not auditcollector or tests execution)",
+      "result": "PASS:192rows exactly match adopted audit;8cells/22CAS/20fullvectors; original-resource/CAS/connection/stream/epoch/publicbundle/capacity/retirement identities correlated; all totals above obtained from observed rows"
+    },
+    {
+      "command": "Read latest rootrawreadback and counter11 plus retained firstscoped1receipt",
+      "result": "PASS: supplied SHA256s match; historical FAIL94/4exit2 retained; rootreadback compatible; counter11 copied unchanged"
+    },
+    {
+      "command": "Read-summary printer first attempt",
+      "result": "FAIL_TOOLING_ONLY:TypeErrorlen(None); fixed read-only reexecution passed; no repository/runtime effect"
+    }
+  ],
+  "task_diff": [
+    "/tmp/gaoxy-fixed-plateau-full-spec1.json"
+  ],
+  "mutations": "Only this exclusive new /tmp JSON report written; no repository/evidence/Git writes, builds/tests/browser/collectors, network or process manipulation.",
+  "command_shutdown_status": "All own read-only commands and isolated report write finished. No long-lived process/session launched; no process ownership or shutdown uncertainty.",
+  "boundaries": "No push/release/deploy/Vault/productiondata/operationalcertificates/publicmanagement/E2Eactivation. Forbidden E4files/privatekeys/rawNetLog/promptfile contents were not read/hashed/statted. No memory write.",
+  "remaining_risks": [
+    "First qualification is one successful local execution, not final fresh acceptance.",
+    "Erlang term SHA256 wrappers are correlated as opaque original identities; never recomputed from truncated inspect strings.",
+    "Some receipt conclusions (normal SUT joins/finalzeros) rely on source assertions plus successful testexit, while ledger emits bounded identities/results rather than every raw VM event.",
+    "WholeTask5/M3,groupqualifications and broader product scope remain open."
+  ],
+  "decisions_needed": "None for this bounded review. Root can perform dependent independent fullCODE before fresh final gates.",
+  "memory_note": "Quick memory registry used only to reinforce repository-specific current-source verification; live worktree and supplied canonical documents govern this review."
+}

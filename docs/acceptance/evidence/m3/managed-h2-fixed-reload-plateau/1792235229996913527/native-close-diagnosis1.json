@@ -1,0 +1,172 @@
+{
+  "task_id": "fixed_reload_native_diagnosis",
+  "status": "DONE",
+  "assignment": "direct read-only diagnosis and tmp-only proposal",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "head": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "scope": "No repository/source/dependency edits, no formatting, tests, build, BEAM, browser, network or process manipulation. Only assigned /tmp outputs written.",
+  "input": {
+    "test_source_sha256": "c1823bedb8eaaf987d5caa50f8ee617e6f656b375b9902da84af4f23b40cb116",
+    "first_scoped_log": "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/fixed-plateau-first-scoped1.log",
+    "first_scoped_log_sha256": "ff812b227d7756701dc151a967ecdcd3d78d8ac8ac554329f70ba9b3ddf24999",
+    "root_collector_sha256": "fa57abea28b6ac7913cb9b0fa044e78db1d9af94c2ae18b04c8ec156624ca4f8",
+    "actual_tests": 94,
+    "failures": 4,
+    "root_reported_actual_exit": 2
+  },
+  "root_cause": "Additive reload_complete sends endpoint return and immediately closes TCP. Endpoint return is asynchronous; native H2 worker still must finish Generation source release, finish response, send h2_stream_done and exit. Peer-close termination kills registered stream workers. This creates a race against the existing required normal worker exit.",
+  "classification": "Fixture schedule race; no evidenced product defect or dependency blocker. Stale monitor correlation disproved by exact expected PID/ref with :killed in three failures.",
+  "runtime_evidence": [
+    {
+      "cell": "native H2 -> h2c idle",
+      "log_lines": "93-206",
+      "ref": "#Reference<0.1957209147.177733633.161977>",
+      "native": "#PID<0.4157.0>",
+      "expected": "normal",
+      "observed": "killed",
+      "phase": "initial seed"
+    },
+    {
+      "cell": "native H2 -> TLS-H2 idle",
+      "log_lines": "270-383",
+      "ref": "#Reference<0.1957209147.177733633.189199>",
+      "native": "#PID<0.6154.0>",
+      "expected": "normal",
+      "observed": "killed",
+      "phase": "initial seed"
+    },
+    {
+      "cell": "native H2 -> TLS-H2 active",
+      "log_lines": "390-579",
+      "ref": "#Reference<0.1957209147.177733634.176475>",
+      "native": "#PID<0.6486.0>",
+      "expected": "normal",
+      "observed": "not shown among 10 of 54 mailbox messages; do not assert exact reason",
+      "phase": "new seed inside reload_step after one logged successful cycle"
+    },
+    {
+      "cell": "native H2 -> h2c active",
+      "log_lines": "680-793",
+      "ref": "#Reference<0.1957209147.177733634.197049>",
+      "native": "#PID<0.8328.0>",
+      "expected": "normal",
+      "observed": "killed",
+      "phase": "initial seed"
+    }
+  ],
+  "source_trace": [
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "lines": "69-88",
+      "meaning": "Captured endpoint reports proxy result before blocking on :return; sending :return supplies no completion acknowledgement."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "lines": "1368-1452",
+      "meaning": "connect waits active counts; capture correlates actual stream worker/token/lease and installs original monitor while worker blocked. No stale native PID selected."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "lines": "1569-1597",
+      "meaning": "complete_return proves downstream response, original upstream completion and Session normal DOWN, then endpoint return report/source pin still live; no native worker completion yet."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "lines": "3029-3030,3108-3112",
+      "meaning": "New immediate seed return/close pair races; active held return also lacks explicit native completion before later close."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "lines": "1610-1620",
+      "meaning": "close_native closes socket first, then requires original native :normal H2 or peer_closed H1 and exact connection/writer exits."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "lines": "313-349,483-539",
+      "meaning": "Passive TCP independent native H2 client sends END_STREAM GET and returns response at wire END_STREAM, independently of endpoint barrier and worker completion."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/generation.ex",
+      "lines": "304-338",
+      "meaning": "Generation performs checked source-pin release after Router.call/endpoint returns."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+      "lines": "23-62",
+      "meaning": "Worker completes endpoint, finishes response, sends authentic h2_stream_done, then returns normal."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/framed_response.ex",
+      "lines": "73-79",
+      "meaning": "Already sent/bodyless response finish is local success; client need not close TCP to unblock worker completion."
+    },
+    {
+      "path": "deps/thousand_island/lib/thousand_island/handler.ex",
+      "lines": "416-422,495-497",
+      "meaning": "Actual TCP host receives tcp_closed, stops peer_closed and invokes HTTP connection handle_close. Abyss is not this TCP host."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "lines": "355-360",
+      "meaning": "Native H2 peer-close/error handlers call Gaoxy H2 Connection.close."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "lines": "1060-1075,1368-1370,1411-1418",
+      "meaning": "Normal h2_stream_done discards completed stream without kill; connection close kills all still-registered stream workers and stops writer. Expected cancellation behavior."
+    },
+    {
+      "path": "apps/gaoxy/lib/gaoxy/service.ex",
+      "lines": "941-949",
+      "meaning": "Native TCP host is ThousandIsland with spec.handler Gaoxy.HTTP.Connection."
+    }
+  ],
+  "minimum_proposal": {
+    "path": "/tmp/gaoxy-fixed-plateau-native-proposal1.exs",
+    "sha256": "7f8a31bdd3a6f26e54a8ac0710ed4264189a69ba91d0dc49b7a99ab3c7dd6daa",
+    "diff_added_lines": 12,
+    "diff_removed_lines": 2,
+    "change": "Only two additive reload return callsites switch to reload_return_endpoint/2; additive helper sends existing return, then only for native H2 uses existing F.eventually to wait not Process.alive?(captured.native).",
+    "ordering_proof": "Local native PID is already monitored and held alive at endpoint barrier. F.eventually condition false->true means process exited before TCP close; closing cannot retroactively change exit reason. Original monitor remains unread, and inherited normal exit assertion rejects killed or any other reason. No fresh late monitor/noproc race and no fabricated messages.",
+    "preserved": {
+      "committed_prefix_bytes": 101062,
+      "committed_prefix_sha256": "6d3e681ffc9337130c4bf60975afd06b4582f635e840e817056e6f87d03d1523",
+      "committed_prefix_byte_equal": true,
+      "final_module_terminator_equal": true,
+      "close_native_definition_byte_equal": true,
+      "all8profiles_22cas_20samples_unchanged": true,
+      "http1_return_close_order_unchanged": true,
+      "timeouts_caps_and_http_fetch_0_21_10_unchanged": true
+    },
+    "barrier_budget": "Existing F.eventually uses original @timeout=5000 deadline; no constant, original monitor deadline, outer60s, embedding120s or peer180s increase. This introduces a bounded ordering wait; it does not claim total profile time is unchanged or validated."
+  },
+  "risks_and_limits": [
+    "Static causal trace plus exact monitor failure evidence; no dynamic trace identifies the actual Process.exit sender. Third failure exit reason omitted by ExUnit mailbox display.",
+    "Proposal unexecuted and unformatted by assignment. Needs independent review, root adoption, original full two-file qualification and later unchanged final gates.",
+    "All eight profiles,22 CAS and20 measured samples must execute successfully; root collector94tests4failures remains FAIL.",
+    "Normal H2 worker exit does not imply admission/downstream connection zero yet; original close_native actor assertions and subsequent reload_idle/service/gate checks remain mandatory.",
+    "Other plateau/deadline/capacity failures may emerge after this fixture ordering repair. No forecast PASS."
+  ],
+  "verification": {
+    "static_checks": [
+      "Exact input/proposal SHA256",
+      "Two exact callsite substitutions",
+      "Only additive section changes",
+      "Committed prefix and final module terminator byte preservation",
+      "Existing original close_native body and deadlines preserved",
+      "Full first log failure stacks reviewed"
+    ],
+    "tests_build_browser": "NOT RUN by assignment",
+    "shutdown": "All own read-only and tmp-write commands exited; no long-lived command/process launched. Root exclusively owns its collector/processes."
+  },
+  "counters": {
+    "successor_sol": 5,
+    "fixture": 5,
+    "production": 0,
+    "astra_recovery": "2/2 exhausted",
+    "new_slice_repairs_executed_by_this_agent": 0,
+    "root_latest_counter": "counter7: root232/group64/runtimefailed10, as parent supplied"
+  },
+  "decisions_needed": "Root independent review and adoption; no user/product decision or external permission needed."
+}

@@ -1,0 +1,38 @@
+{
+  "task_id": "fixed_plateau_evidence_audit_warning_contract_alignment",
+  "status": "DONE",
+  "assignment": "direct bounded tmp-only correction",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "root_found_issue": "Root static review identified an audit-only false positive before execution: accepted Nix collector logs contain warning: Git tree ... is dirty, explicitly exempted by the existing command collector but rejected by audit1 regex.",
+  "source_contract": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/command-collector1.py",
+    "lines": "167-168",
+    "actual_expression": "[line for line in plain.splitlines() if \"warning:\" in line and not line.startswith(\"warning: Git tree \")]"
+  },
+  "predecessor": {
+    "path": "/tmp/gaoxy-fixed-plateau-audit1.py",
+    "sha256": "dba914e91c93224931aecedb593838851c96a742d308b85bc7e28915efc855f6",
+    "byte_unchanged": true
+  },
+  "proposal": {
+    "path": "/tmp/gaoxy-fixed-plateau-audit2.py",
+    "sha256": "03dbb3f9a2b847533d4da3c2142f60dc74025d93107b77b069dc109ba49f9a1e",
+    "usage": "python3 -B /tmp/gaoxy-fixed-plateau-audit2.py WORKSPACE RECEIPT OUTPUT",
+    "added_lines": 3,
+    "removed_lines": 1
+  },
+  "change": "Only the independent original-log warning scan now uses the collector-identical literal warning: match and exact startswith(\"warning: Git tree \") exemption. No whitespace stripping, prefix broadening or case normalization. The receipt warnings==[] requirement remains byte-identical.",
+  "preserved": "All8cell/22CAS/20measuredwholevectorbyte-equality, source/custody/receipt/epoch/capacity/clock checks unchanged. No SUT, runtime, test assertion, collector or repository change.",
+  "self_review": {
+    "replacement_count": 1,
+    "reversing_sole_replacement_restores_audit1": true,
+    "audit1_still_matches_original_bytes": true,
+    "utility_import_compile_run": "NOT RUN by assignment",
+    "runtime_tests_build_browser": "NOT RUN by assignment",
+    "commands": "All own commands finished; no long-lived process started."
+  },
+  "risk": "Unexecuted audit utility still requires root review, syntax validation and execution. This corrects an independent audit tool-contract mismatch; no SUT regression or runtime acceptance is claimed.",
+  "counters": "No runtime repair-validation round executed by this agent; no SUT repair counter changed.",
+  "decisions_needed": "Root review/adoption/operation; no user/product decision."
+}

@@ -1,0 +1,610 @@
+#!/usr/bin/env python3
+"""Audit frozen fixed-H2 plateau evidence; never invoke tests or processes.
+
+Root usage: python3 -B /tmp/gaoxy-fixed-plateau-audit1.py WORKSPACE RECEIPT OUTPUT
+OUTPUT must not exist. Exit 0 means this evidence audit passes, not stage acceptance.
+Reads only the receipt, its log and sibling frozen command inventories. Historical
+source maps are compared to the matching frozen inventory, not to today's source.
+Erlang term hashes are opaque recorded identities, never recomputed from inspect.
+"""
+import argparse
+from collections import Counter
+import hashlib
+import itertools
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+HEX = re.compile(r"[0-9a-f]{64}\Z")
+PID = r"#PID<[^>]+>"
+REF = r"#Reference<[^>]+>"
+EVENTS = tuple("fixed_h2_reload_" + x for x in ("setup", "cycle", "finished"))
+CELLS = set(itertools.product(("http1", "http2"), ("h2c", "http2"), ("active", "idle")))
+LIMITS = {"max_resources": 4, "max_pins": 256, "max_request_tokens": 64,
+          "max_owned_payload_bytes": 8388608}
+SERVICE_ZERO = {"active": 0, "retained_bytes": 0, "cleanup_failed": None, "cleanup_pending": 0}
+GATE_ZERO = {"active": 0, "retained_bytes": 0, "leases": 0, "cleanup_pending": 0,
+             "cleanup_bytes": 0, "cleanups": 0, "lease_bytes": 0,
+             "queued_items": 0, "queued_bytes": 0}
+PROTECTED_NAMES = {"codex-prompt.md", "gaoxy-m1.1-fix-prompt.md",
+                   "gaoxy-native-worker-browser-diagnostic2-raw-terminal-trace.log"}
+E4_NAMES = {"close-diagnostic-proposal1.json", "close-diagnostic-proposal1.md",
+            "close-diagnostic-runner1.py.txt", "close-diagnostic-syntax1.json"}
+
+
+class Invalid(ValueError):
+    pass
+
+
+def need(condition, message):
+    if not condition:
+        raise Invalid(message)
+
+
+def exact(a, b):
+    """Elixir-like structural equality: bool/int/float types stay distinct."""
+    if type(a) is not type(b):
+        return False
+    if isinstance(a, dict):
+        return a.keys() == b.keys() and all(exact(a[k], b[k]) for k in a)
+    if isinstance(a, list):
+        return len(a) == len(b) and all(exact(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def encoded(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False,
+                      allow_nan=False).encode("utf-8")
+
+
+def object_unique(pairs):
+    value = {}
+    for key, item in pairs:
+        need(key not in value, "duplicate JSON key: " + key)
+        value[key] = item
+    return value
+
+
+def parse_json(text):
+    def invalid_constant(value):
+        raise Invalid("non-finite JSON number: " + value)
+    return json.loads(text, object_pairs_hook=object_unique, parse_constant=invalid_constant)
+
+
+def safe_input(path, workspace):
+    # Reject protected operands lexically before resolve/read; no protected stat/hash.
+    path = Path(path)
+    need(path.name not in PROTECTED_NAMES, "protected input name")
+    need(path.name not in E4_NAMES, "forbidden E4 input name")
+    need("netlog" not in path.name.lower() or path.name == "chromium-netlog-event-enums1.json",
+         "raw NetLog input forbidden")
+    need(path.suffix not in (".pem", ".key", ".p12", ".pfx"), "certificate/private-key input forbidden")
+    resolved = path.resolve()
+    need(resolved.is_relative_to(workspace), "input outside workspace")
+    need(resolved.name not in PROTECTED_NAMES | E4_NAMES, "protected resolved input")
+    return resolved
+
+
+def integer(value, minimum=0):
+    return type(value) is int and value >= minimum
+
+
+def digest(value):
+    return isinstance(value, str) and HEX.fullmatch(value) is not None
+
+
+def ident(value, label, pattern=None):
+    need(isinstance(value, dict) and set(value) == {"inspect", "sha256"}, label + ": identity shape")
+    need(isinstance(value["inspect"], str) and digest(value["sha256"]), label + ": identity fields")
+    if pattern:
+        need(re.fullmatch(pattern, value["inspect"]) is not None, label + ": identity kind")
+    return value["sha256"]
+
+
+def distinct(values, label):
+    need(len(values) == len(set(values)), label + ": duplicate identity")
+
+
+def transport_status(value, records, pins, reserved):
+    need(isinstance(value, dict), "transport status object missing")
+    expected = {"limits": LIMITS, "request_tokens": 0, "helpers": 0, "pins": pins,
+                "resources": records, "reserved_connections": reserved,
+                "failed_resources": 0, "lifecycle": "running"}
+    need(set(value) == set(expected) | {"owned_serialized_payload_bytes"}, "transport status fields changed")
+    for key, wanted in expected.items():
+        need(exact(value[key], wanted), "transport status mismatch: " + key)
+    need(integer(value["owned_serialized_payload_bytes"], 1), "transport bytes must be positive")
+
+
+def sample_check(sample, source_class):
+    need(isinstance(sample, dict) and set(sample) == {"transport", "store", "source_class", "service", "gate"},
+         "sample vector fields changed")
+    need(exact(sample["service"], SERVICE_ZERO), "sample Service is not original scalar zero vector")
+    need(exact(sample["gate"], GATE_ZERO), "sample Gate is not original scalar zero vector")
+    transport_status(sample["transport"], 1, 1, 2)
+    store = sample["store"]
+    need(isinstance(store, dict) and set(store) == {"retired", "preparation", "resources", "baselines", "router_bytes", "baseline_bytes"},
+         "Store sample fields changed")
+    for key, value in {"retired": 0, "preparation": None, "resources": 1, "baselines": 1}.items():
+        need(exact(store[key], value), "Store sample mismatch: " + key)
+    for key in ("router_bytes", "baseline_bytes"):
+        need(integer(store[key], 1), "Store bytes must be positive")
+    need(exact(sample["source_class"], source_class), "sample source class changed")
+
+
+def retirement_check(row, seed=None, creator=None):
+    need(isinstance(row, dict), "retirement object missing")
+    for key, value in {"public_await": "ok", "helper_down": "normal", "owner_confirmed": True,
+                       "creator_down": "normal", "removed": True}.items():
+        need(exact(row.get(key), value), "retirement original confirmation mismatch: " + key)
+    for key, pattern in (("resource", REF), ("creator", PID), ("capability", REF),
+                         ("helper", PID), ("helper_monitor", REF)):
+        ident(row[key], "retirement " + key, pattern)
+    ident(row["receipt"], "original retirement receipt")
+    need(row["receipt"]["inspect"].startswith("%HTTP.ManagedTransport.Receipt{"), "wrong retirement receipt type")
+    need(integer(row["charged_until_confirmation_bytes"], 1), "retirement payload was not positively charged")
+    if creator is not None:
+        need(exact(row["creator"], creator), "retirement custodian differs from earlier inventory")
+    if seed is None:
+        need(row.get("epoch") is None and row.get("physical") is None, "preparation-only filler has network/epoch evidence")
+    else:
+        need(exact(row["resource"], seed["resource"]), "retirement source resource mismatch")
+        need(exact(row["epoch"], seed["epoch"]), "retirement epoch mismatch")
+        physical = row["physical"]
+        need(isinstance(physical, dict) and physical.get("event") in ("eof", "connection_reset"), "no physical retirement close")
+        need(exact(physical.get("connection"), seed["request"]["connection"]), "physical close connection mismatch")
+
+
+def request_check(row, index, kind, peers, owner, owner_epoch, upstream, previous=None):
+    need(isinstance(row, dict), "request receipt missing")
+    epoch = index // 8
+    peer = peers[epoch]
+    need(exact(row["epoch"], epoch) and exact(row["peer"], peer["peer"]), "request peer/epoch mismatch")
+    for key, pattern in (("resource", REF), ("generation", REF), ("token", REF), ("native", PID), ("session", PID)):
+        ident(row[key], "request " + key, pattern)
+    need(not exact(row["native"], row["session"]), "source worker aliases Session child")
+    for key in ("source", "child", "completion"):
+        ident(row[key], "request " + key)
+    need(row["completion"]["inspect"].startswith("%HTTP.RequestCompletion{") and
+         "unsupported: nil" in row["completion"]["inspect"], "original supported completion missing")
+    need(not exact(row["source"], row["child"]), "request child aliases source")
+    for key, holder in (("source", row["native"]), ("child", row["session"])):
+        text = row[key]["inspect"]
+        for operand in ("owner: " + owner, "owner_epoch: " + owner_epoch,
+                        "resource: " + row["resource"]["inspect"], "holder: " + holder["inspect"], "kind: :request"):
+            need(operand in text, key + " inspect custody correlation missing: " + operand)
+    need(row.get("original_complete") == "ok" and row.get("child_and_token_removed_before_source") is True,
+         "original completion/source ordering evidence missing")
+    request = row["request"]
+    need(exact(request.get("connection"), index % 8 + 1), "request connection ordinal mismatch")
+    need(integer(request.get("stream"), 1) and request["stream"] % 2 == 1 and request.get("ended") is True,
+         "request stream/END_STREAM mismatch")
+    target = "/reload/" + kind + "/" + str(index if kind == "seed" else index + 1).zfill(2) + "?raw=%2F"
+    need(request.get("target") == target, "request target mismatch")
+    fields = request["headers"]
+    need(isinstance(fields, list) and all(isinstance(x, list) and len(x) == 2 and all(isinstance(y, str) for y in x) for x in fields),
+         "request headers shape")
+    for name, value in ((":method", "GET"), (":scheme", "https" if upstream == "http2" else "http"),
+                        (":authority", "localhost:" + str(peer["port"])), (":path", target)):
+        need([x for x in fields if x[0] == name] == [[name, value]], "request pseudoheader mismatch: " + name)
+    observed = row["connection_observation"]
+    if kind == "seed":
+        need(exact(observed, {"accept_connection_correlated_by_original_helper": True,
+                             "alpn_h2_sni_localhost_asserted": upstream == "http2"}), "fresh accept/TLS observation mismatch")
+    else:
+        need(previous is not None, "held request lacks old seed")
+        for key in ("resource", "generation", "peer", "epoch"):
+            need(exact(row[key], previous[key]), "held reuse differs from old seed: " + key)
+        need(request["stream"] > previous["request"]["stream"], "held stream did not advance on original connection")
+        need(exact(observed, {"reuse_connection": previous["request"]["connection"],
+                             "no_extra_accept_or_tls_after_request": True}), "held reuse observation mismatch")
+
+
+def capacity_check(row, old_seed, seed, fillers, retiring):
+    need(isinstance(row, dict), "cycle3 capacity receipt missing")
+    need(row.get("no_delta") is True, "capacity no_delta missing")
+    for key in ("bytes_before", "bytes_after", "original_old_payload_bytes"):
+        need(integer(row[key], 1), "capacity positive bytes missing: " + key)
+    need(exact(row["bytes_before"], row["bytes_after"]), "capacity bytes changed")
+    need(exact(row["status_before"], row["status_after"]), "capacity status changed")
+    transport_status(row["status_before"], 4, 3, 8)
+    need(exact(row["bytes_before"], row["status_before"]["owned_serialized_payload_bytes"]), "capacity independent bytes/status disagree")
+    need(exact(row["original_old_payload_bytes"], retiring["charged_until_confirmation_bytes"]), "held original charge mismatch")
+    need(row.get("prefix_releases") == ["ok", "ok"], "two prefix releases not both ok")
+    need(len(fillers) == 2 and len(row["prefixes"]) == 2 and len(row["records"]) == 4, "capacity record/prefix/filler counts")
+    ident(row["result"], "capacity rejection")
+    need(row["result"]["inspect"] == "{:error, {:capacity, :resources}}", "wrong capacity rejection")
+    ident(row["store_snapshot"], "capacity Store snapshot")
+    need(seed["generation"]["inspect"] in row["store_snapshot"]["inspect"] and
+         seed["resource"]["inspect"] in row["store_snapshot"]["inspect"], "capacity Store snapshot not current")
+    actual_records = [ident(x, "capacity record", REF) for x in row["records"]]
+    wanted_records = [ident(x["resource"], "capacity correlated resource", REF) for x in [old_seed, seed] + fillers]
+    distinct(actual_records, "capacity records")
+    need(set(actual_records) == set(wanted_records), "capacity four records do not correlate old/new/fillers")
+    for prefix, filler in zip(row["prefixes"], fillers):
+        need(exact(prefix["resource"], filler["resource"]), "capacity prefix/filler resource mismatch")
+        ident(prefix["pin"], "capacity preparation pin")
+        need("kind: :preparation" in prefix["pin"]["inspect"] and
+             "resource: " + filler["resource"]["inspect"] in prefix["pin"]["inspect"], "genuine preparation prefix missing")
+    for key in ("hold_transaction_elapsed_ms", "hold_through_continue_elapsed_ms"):
+        need(integer(row[key]) and row[key] < 2000, "capacity hold reached unchanged 2000ms budget")
+    need(row["hold_transaction_elapsed_ms"] <= row["hold_through_continue_elapsed_ms"], "capacity hold clock order")
+
+
+def epoch_check(row, epoch, peer, originals, requests):
+    need(isinstance(row, dict), "epoch join missing")
+    for key, wanted in (("epoch", epoch), ("port", peer["port"]), ("peer", peer["peer"]),
+                        ("address", peer["address"]), ("exit", 0), ("collector_down", "normal"), ("rebound", True)):
+        need(exact(row.get(key), wanted), "epoch join mismatch: " + key)
+    need(exact(row["resources"], originals), "epoch resource ledger differs from original retirement rows")
+    accepts = len(originals)
+    need(accepts == (8 if epoch < 2 else 7), "epoch original physical count")
+    need([x["physical"]["connection"] for x in originals] == list(range(1, accepts + 1)), "epoch physical connection order")
+    need(exact(row["joined"], {"event": "joined", "forced": 0, "live": 0, "failed": False,
+                               "accepts": accepts, "requests": requests}), "peer joined actual counts/custody mismatch")
+
+
+def profile_audit(rows, cell):
+    downstream, upstream, profile = cell
+    need([x["row"]["event"] for x in rows] == [EVENTS[0]] + [EVENTS[1]] * 22 + [EVENTS[2]],
+         "need one setup, 22 ordered cycles and one finished, with no duplicate or missing event")
+    setup, finished = rows[0]["row"], rows[-1]["row"]
+    cycles = [x["row"] for x in rows[1:-1]]
+    need([x["cycle"] for x in cycles] == list(range(1, 23)), "cycle indices not exactly1..22")
+    identity = setup["identity"]
+    ident(identity, "persistent SUT identity")
+    match = re.fullmatch(r"\{(" + PID + r"), (" + PID + r"), (" + REF + r"), (" + PID + r")\}", identity["inspect"])
+    need(match is not None, "persistent instance/owner/epoch/Store tuple missing")
+    instance, owner, owner_epoch, store = match.groups()
+    distinct([instance, owner, store], "persistent SUT PIDs")
+    need(setup["scalar_fields"] == ["transport", "store", "source_class", "service", "gate"], "scalar fields changed")
+    need(setup["separate_fields"] == ["identities", "retirements", "peer_epochs", "retained_high_water", "rejected"], "separate fields changed")
+    need(exact(setup["planned_accepts"], [8, 8, 7]), "accept budget changed")
+    expected_requests = [16, 16, 13] if profile == "active" else [8, 8, 7]
+    need(exact(setup["planned_requests"], expected_requests), "request budget changed")
+    for key, wanted in (("outer_exunit_timeout_ms", 60000), ("embedding_lifetime_ms", 120000), ("peer_lifetime_ms", 180000)):
+        need(exact(setup[key], wanted), "original clock changed: " + key)
+    entered = setup["entered_monotonic_ms"]
+    interval = setup["embedding_creation_interval_monotonic_ms"]
+    need(type(entered) is int and isinstance(interval, list) and len(interval) == 2 and
+         all(type(v) is int for v in interval) and entered <= interval[0] <= interval[1], "embedding clock order")
+    need(integer(setup["setup_elapsed_ms"]) and setup["setup_elapsed_ms"] < 60000 and
+         interval[1] - entered <= setup["setup_elapsed_ms"], "setup clock outside original test budget")
+    peers = setup["peers"]
+    need(isinstance(peers, list) and len(peers) == 3, "three peer epochs required")
+    need([x["epoch"] for x in peers] == [0, 1, 2], "peer epoch order")
+    ports = [x["port"] for x in peers]
+    need(all(integer(x, 1) and x <= 65535 for x in ports) and len(set(ports)) == 1, "peers do not share actual port")
+    distinct([ident(x["peer"], "epoch peer", PID) for x in peers], "epoch peer PIDs")
+    need([x["address"]["inspect"] for x in peers] == ["{127, 0, 0, 1}", "{127, 0, 0, 2}", "{127, 0, 0, 3}"], "three exact loopback addresses required")
+    for peer in peers:
+        ident(peer["address"], "epoch address")
+        need(integer(peer["observed_setup_to_ready_ms"]) and peer["observed_setup_to_ready_ms"] <= setup["setup_elapsed_ms"], "peer ready clock")
+        need(digest(peer["source_hash"]), "invalid source hash")
+        need(digest(peer["peer_identity"]["source_sha256"]), "peer implementation hash missing")
+    distinct([x["source_hash"] for x in peers], "actual source hashes")
+    source_class = peers[0]["source_class"]
+    need(set(source_class) == {"source", "manifest", "trust", "policy"} and all(integer(v, 1) for v in source_class.values()), "source numeric class missing")
+    need(all(exact(x["source_class"], source_class) for x in peers), "three source classes differ")
+    need(len({x["peer_identity"]["source_sha256"] for x in peers}) == 1, "peer implementation changes within profile")
+    if upstream == "http2":
+        bundle = peers[0]["public_ca_bundle"]
+        need(isinstance(bundle, list) and len(bundle) == 3, "constant three-CA bundle missing")
+        need(all(isinstance(x, dict) and set(x) == {"bytes", "sha256"} and integer(x["bytes"], 1) and
+                 x["bytes"] <= 65536 and digest(x["sha256"]) for x in bundle), "public CA bounds/hash")
+        need(sum(x["bytes"] for x in bundle) <= 1048576, "public CA total bound")
+        distinct([x["sha256"] for x in bundle], "public CAs")
+        leaves = [x["peer_identity"]["certificate_sha256"] for x in peers]
+        need(all(digest(x) for x in leaves), "actual TLS leaf hashes missing")
+        distinct(leaves, "TLS leaves")
+        need(all(exact(x["public_ca_bundle"], bundle) and
+                 x["certificate_profile"] == "unchanged RSA2048 CA/leaf SHA256 localhost SAN fixture" for x in peers), "TLS constant bundle/profile changed")
+    else:
+        need(all(x["public_ca_bundle"] == [] and x["certificate_profile"] is None and
+                 x["peer_identity"]["certificate_sha256"] is None for x in peers), "h2c unexpectedly has CA/leaf data")
+    initial = setup["initial"]
+    request_check(initial, 0, "seed", peers, owner, owner_epoch, upstream)
+    seeds, held, originals, fillers, inventories, epochs = [initial], [], [], [], [], []
+    samples = []
+    last_elapsed = setup["setup_elapsed_ms"]
+    for number, cycle in enumerate(cycles, 1):
+        need(exact(cycle["measured"], number > 2), "warmup/measured mask changed")
+        need(integer(cycle["elapsed_ms"]) and last_elapsed <= cycle["elapsed_ms"] < 60000, "cycle clock order/budget")
+        last_elapsed = cycle["elapsed_ms"]
+        ledger = cycle["ledger"]
+        required = {"seed", "capacity", "retirement", "fillers", "cas", "epoch_join", "inventory"}
+        if profile == "active":
+            required.add("held_request")
+        need(set(ledger) == required, "active/idle ledger shape changed")
+        previous = seeds[-1]
+        seed = ledger["seed"]
+        request_check(seed, number, "seed", peers, owner, owner_epoch, upstream)
+        need(exact(ledger["cas"]["expected"], previous["generation"]) and
+             exact(ledger["cas"]["activated"], seed["generation"]), "CAS chain breaks at cycle " + str(number))
+        if profile == "active":
+            old_request = ledger["held_request"]
+            request_check(old_request, number - 1, "held", peers, owner, owner_epoch, upstream, previous)
+            held.append(old_request)
+        retirement_check(ledger["retirement"], previous, inventories[-1]["creator"] if inventories else None)
+        originals.append(ledger["retirement"])
+        inventory = ledger["inventory"]
+        for key, wanted in (("identity", identity), ("resource", seed["resource"]), ("generation", seed["generation"])):
+            need(exact(inventory[key], wanted), "current inventory mismatch: " + key)
+        for key in ("creator", "gate", "service"):
+            ident(inventory[key], "inventory " + key, PID)
+            if inventories and key in ("gate", "service"):
+                need(exact(inventory[key], inventories[0][key]), "service/gate identity replaced")
+        for key in ("service_retained_high_water", "service_rejected", "gate_retained_high_water", "gate_rejected"):
+            need(integer(inventory[key]), "cumulative inventory counter invalid")
+            if inventories:
+                need(inventory[key] >= inventories[-1][key], "cumulative high-water/rejection counter decreased")
+        if number == 3:
+            need(isinstance(ledger["fillers"], list) and len(ledger["fillers"]) == 2, "cycle3 two fillers missing")
+            for filler in ledger["fillers"]:
+                retirement_check(filler)
+            capacity_check(ledger["capacity"], previous, seed, ledger["fillers"], ledger["retirement"])
+            fillers.extend(ledger["fillers"])
+        else:
+            need(ledger["capacity"] is None and ledger["fillers"] == [], "capacity/filler evidence outside cycle3")
+        if number in (8, 16):
+            epoch = number // 8 - 1
+            epoch_check(ledger["epoch_join"], epoch, peers[epoch], originals[epoch * 8:(epoch + 1) * 8], expected_requests[epoch])
+            epochs.append(ledger["epoch_join"])
+        else:
+            need(ledger["epoch_join"] is None, "unexpected epoch turnover")
+        sample_check(cycle["sample"], source_class)
+        samples.append(cycle["sample"])
+        seeds.append(seed)
+        inventories.append(inventory)
+    measured = samples[2:]
+    need(len(measured) == 20 and all(exact(x, samples[1]) for x in measured), "20 exact sample vectors differ from warmup2")
+    for key, wanted in (("measured_samples", len(measured)), ("successful_cas", len(cycles)), ("resources_seeded", len(seeds))):
+        need(exact(finished[key], wanted), "finished count disagrees with actual ledger: " + key)
+    retirement_check(finished["final_retirement"], seeds[-1], inventories[-1]["creator"])
+    originals.append(finished["final_retirement"])
+    epoch_check(finished["final_epoch"], 2, peers[2], originals[16:], expected_requests[2])
+    epochs.append(finished["final_epoch"])
+    need(integer(finished["teardown_elapsed_ms"]) and integer(finished["profile_elapsed_ms"]) and
+         last_elapsed + finished["teardown_elapsed_ms"] <= finished["profile_elapsed_ms"] < 60000,
+         "finished profile/teardown outside original clock")
+    for key in ("resource", "generation"):
+        distinct([ident(x[key], "seed " + key) for x in seeds], "23 seeded " + key)
+    requests = seeds + held
+    for key in ("native", "session", "source", "child", "token", "completion"):
+        distinct([ident(x[key], "request " + key) for x in requests], "actual request " + key)
+    for key in ("resource", "creator", "capability", "helper", "helper_monitor", "receipt"):
+        distinct([ident(x[key], "retirement " + key) for x in originals + fillers], "25 original/filler " + key)
+    need(len(seeds) == 23 and len(originals) == 23 and len(fillers) == 2, "original resource/retirement counts")
+    actual_requests = [sum(x["epoch"] == i for x in requests) for i in range(3)]
+    need(actual_requests == expected_requests and len(held) == (22 if profile == "active" else 0), "actual per-epoch request ledger counts")
+    return {"persistent_identity": identity, "instance": instance, "owner": owner, "owner_epoch": owner_epoch,
+            "store": store, "observed_metrics": {"fresh_seeds": len(seeds), "held_reuse_requests": len(held),
+            "successful_cas_links": len(cycles), "measured_exact_vectors": len(measured),
+            "original_retirement_receipts": len(originals), "filler_retirement_receipts": len(fillers),
+            "physical_closes": sum(x["physical"] is not None for x in originals),
+            "peer_epochs_joined": len(epochs), "actual_requests_per_epoch": actual_requests,
+            "profile_elapsed_ms": finished["profile_elapsed_ms"]},
+            "warmup2_vector": samples[1], "all_cycle_vectors": samples, "measured_vectors": measured,
+            "capacity": cycles[2]["ledger"]["capacity"], "original_retirements": originals,
+            "filler_retirements": fillers, "epoch_summaries": epochs, "peers": peers,
+            "inventories": inventories, "seed_identities": seeds, "held_request_identities": held,
+            "ledger_sha256": sha(encoded([setup["initial"]] + [x["ledger"] for x in cycles] + [finished]))}
+
+
+def receipt_audit(receipt, clean_log, errors):
+    def check(condition, message):
+        if not condition:
+            errors.append("receipt: " + message)
+    check(receipt.get("verdict") == "PASS", "verdict is not PASS")
+    check(exact(receipt.get("actual_exit"), 0), "actual exit is not0")
+    check(integer(receipt.get("tests"), 1), "no nonzero executed test count")
+    check(exact(receipt.get("tests"), receipt.get("reported_tests")), "executed/reported tests disagree")
+    for key in ("failures", "skipped", "excluded"):
+        check(exact(receipt.get(key), 0), key + " is not0")
+    for key, wanted in (("forced", False), ("wait_error", None), ("process_joined", True),
+                        ("process_group_remaining", []), ("warnings", []),
+                        ("source_stable", True), ("source_changes", [])):
+        check(exact(receipt.get(key), wanted), "custody/warnings/source mismatch: " + key)
+    check(integer(receipt.get("pid"), 1), "actual owned command PID missing")
+    cleanup = receipt.get("descendant_cleanup", {})
+    for key, wanted in (("forced", False), ("initial_after_reap", []), ("signal_attempts", []),
+                        ("reap_deadline_exhausted", []), ("remaining", [])):
+        check(exact(cleanup.get(key), wanted), "adopted descendant custody mismatch: " + key)
+    reaped = cleanup.get("reaped", [])
+    check(isinstance(reaped, list), "adopted waits missing")
+    waits = []
+    if isinstance(reaped, list):
+        check(exact(reaped, cleanup.get("reaped_before_force")), "adopted waits include post-force/unaccounted entries")
+        initial = cleanup.get("initial", [])
+        check(isinstance(initial, list) and all(integer(x, 1) for x in initial), "initial descendant PID list invalid")
+        seen = set()
+        for row in reaped:
+            if not isinstance(row, dict):
+                check(False, "adopted wait row invalid")
+                continue
+            pid, status = row.get("pid"), row.get("wait_status")
+            check(integer(pid, 1) and pid not in seen, "adopted PID duplicate/invalid")
+            seen.add(pid)
+            check(row.get("phase") == "before_force" and integer(status), "adopted raw wait phase/status invalid")
+            decoded = {"raw": row}
+            if integer(status) and os.WIFEXITED(status):
+                decoded.update({"kind": "exit", "exit": os.WEXITSTATUS(status)})
+                check(os.WEXITSTATUS(status) == 0, "adopted descendant exited nonzero")
+            elif integer(status) and os.WIFSIGNALED(status):
+                signal = os.WTERMSIG(status)
+                decoded.update({"kind": "signal", "signal": signal,
+                                "not_exit_zero": True, "allowed_recorded_terminal_signal10": signal == 10})
+                check(signal == 10, "adopted descendant unexpected raw signal")
+            else:
+                decoded["kind"] = "invalid_or_unjoined"
+                check(False, "adopted wait is not a terminal exit/signal")
+            waits.append(decoded)
+        if isinstance(initial, list):
+            check(set(initial) == seen, "initial adopted descendants not exactly accounted by terminal waits")
+    summaries = re.findall(r"(?m)(\d+) tests?, (\d+) failures?(?:, (\d+) skipped)?(?:, (\d+) excluded)?", clean_log)
+    check(len(summaries) == 1, "need one actual ExUnit summary")
+    if len(summaries) == 1:
+        tests, failures, skipped, excluded = [int(x or 0) for x in summaries[0]]
+        check(exact(tests, receipt.get("tests")) and failures == skipped == excluded == 0,
+              "log summary disagrees or contains failure/skip/exclude")
+    log_warnings = [line for line in clean_log.splitlines() if "warning:" in line
+                    and not line.startswith("warning: Git tree ")]
+    check(log_warnings == [], "warning in original log")
+    check(re.search(r"(?im)^\s*(?:Excluding|Including) tags:", clean_log) is None, "tag-filtered log")
+    command = receipt.get("command", [])
+    check(isinstance(command, list) and all(isinstance(x, str) for x in command), "command argv missing")
+    if isinstance(command, list) and all(isinstance(x, str) for x in command):
+        check(not any(x in ("--exclude", "--only", "--include") or
+                      x.startswith(("--exclude=", "--only=", "--include=")) for x in command), "filtered command argv")
+        check("apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs" in command and
+              "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs" in command, "defining-F/full fixed suite operands missing")
+    return waits
+
+
+def frozen_source_audit(workspace, receipt_path, receipt):
+    before, after = receipt["source_before"], receipt["source_after"]
+    need(isinstance(before, dict) and exact(before, after), "receipt before/after source maps differ")
+    need(len(before) == 398 and all(isinstance(k, str) and digest(v) for k, v in before.items()), "command source map must contain398 valid pins")
+    matched = []
+    for path in sorted(receipt_path.parent.glob("command-inventory*.json")):
+        path = safe_input(path, workspace)
+        data = path.read_bytes()
+        candidate = parse_json(data.decode("utf-8"))
+        frozen = candidate.get("source_sha256")
+        if not isinstance(frozen, dict) or len(frozen) != 399:
+            continue
+        commands = [candidate.get("first_qualification", {})] + candidate.get("final_commands", [])
+        if not any(exact(x.get("payload_argv"), receipt.get("command")) and
+                   Path(x.get("receipt", "")).name == receipt_path.name for x in commands):
+            continue
+        if not set(before).issubset(frozen) or not all(before[k] == frozen[k] for k in before):
+            continue
+        extra = sorted(set(frozen) - set(before))
+        if len(extra) != 1 or Path(extra[0]).name != "chromium-netlog-event-enums1.json":
+            continue
+        need(all(isinstance(k, str) and digest(v) for k, v in frozen.items()), "frozen source map has invalid pins")
+        matched.append({"path": str(path), "sha256": sha(data), "frozen_union_count": len(frozen),
+                        "frozen_union_sha256": sha(encoded(frozen)), "extra_frozen_only": {k: frozen[k] for k in extra},
+                        "frozen_union_source_map": frozen})
+    need(len(matched) >= 1, "no matching frozen399 inventory for exact receipt argv/name and command398source map")
+    return {"command_map_count": len(before), "command_map_sha256": sha(encoded(before)),
+            "source_before": before, "source_after": after, "matching_frozen_inventories": matched,
+            "live_source_rehashed": False,
+            "scope": "Historical receipt before/after maps match frozen inventory; no source files or raw NetLog read."}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("workspace", type=Path)
+    parser.add_argument("receipt", type=Path)
+    parser.add_argument("output", type=Path)
+    args = parser.parse_args()
+    workspace = args.workspace.resolve()
+    errors = []
+    output = {"kind": "FIXED_H2_PLATEAU_EVIDENCE_AUDIT1", "verdict": "FAIL",
+              "script": str(Path(__file__).resolve()), "script_sha256": sha(Path(__file__).read_bytes()),
+              "workspace": str(workspace), "profiles": [], "errors": errors,
+              "scope": "Evidence consistency only. Does not replace independent SPEC/CODE, scoped tests or browser gates.",
+              "identity_hash_semantics": "Recorded Erlang external-term SHA256 wrappers are correlated unchanged; not recomputed from inspect text."}
+    input_paths = {Path(__file__).resolve()}
+    try:
+        receipt_path = safe_input(args.receipt if args.receipt.is_absolute() else workspace / args.receipt, workspace)
+        input_paths.add(receipt_path)
+        data = receipt_path.read_bytes()
+        receipt = parse_json(data.decode("utf-8"))
+        output["receipt"] = {"path": str(receipt_path), "sha256": sha(data), "collector_sha256": receipt.get("collector_sha256"),
+                             "actual_tests": receipt.get("tests"), "actual_failures": receipt.get("failures"),
+                             "actual_exit": receipt.get("actual_exit"), "original_verdict": receipt.get("verdict")}
+        need(receipt.get("cwd") == str(workspace), "receipt workspace mismatch")
+        need(isinstance(receipt.get("log"), str) and Path(receipt["log"]).name == receipt["log"], "log must be receipt-local basename")
+        log_path = safe_input(receipt_path.parent / receipt["log"], workspace)
+        input_paths.add(log_path)
+        log_data = log_path.read_bytes()
+        output["log"] = {"path": str(log_path), "sha256": sha(log_data), "receipt_log_sha256": receipt.get("log_sha256")}
+        if not digest(receipt.get("log_sha256")) or sha(log_data) != receipt["log_sha256"]:
+            errors.append("original log SHA256 does not match receipt")
+        clean = ANSI.sub("", log_data.decode("utf-8"))
+        output["adopted_waits"] = receipt_audit(receipt, clean, errors)
+        try:
+            output["source_binding"] = frozen_source_audit(workspace, receipt_path, receipt)
+        except (Invalid, KeyError, TypeError, ValueError, OSError, AttributeError) as exc:
+            errors.append("source binding: " + str(exc))
+        profiles = {}
+        for lineno, line in enumerate(clean.splitlines(), 1):
+            stripped = line.lstrip().lstrip(".").lstrip()
+            if not any('"' + event + '"' in stripped for event in EVENTS):
+                continue
+            try:
+                row = parse_json(stripped)
+                need(isinstance(row, dict) and row.get("event") in EVENTS, "unknown plateau event")
+                cell = (row.get("downstream"), row.get("upstream"), row.get("profile"))
+                need(cell in CELLS, "unexpected Cartesian cell")
+                profiles.setdefault(cell, []).append({"line": lineno, "json_line_sha256": sha(stripped.encode("utf-8")), "row": row})
+            except (Invalid, ValueError, TypeError) as exc:
+                errors.append("log line " + str(lineno) + ": " + str(exc))
+        for cell, rows in sorted(profiles.items()):
+            raw_cycles = [x["row"] for x in rows if x["row"]["event"] == EVENTS[1]]
+            raw_finished = [x["row"] for x in rows if x["row"]["event"] == EVENTS[2]]
+            raw_ledgers = [x.get("ledger") for x in raw_cycles if isinstance(x.get("ledger"), dict)]
+            item = {"cell": dict(zip(("downstream", "upstream", "profile"), cell)),
+                    "verdict": "FAIL", "observed_event_counts": dict(Counter(x["row"]["event"] for x in rows)),
+                    "observed_row_count": len(rows), "observed_rows": rows,
+                    "observed_unvalidated_counts": {
+                        "cycle_rows": len(raw_cycles),
+                        "measured_cycle_rows": sum(x.get("measured") is True for x in raw_cycles),
+                        "original_retirement_rows": sum(isinstance(x.get("retirement"), dict) for x in raw_ledgers)
+                            + sum(isinstance(x.get("final_retirement"), dict) for x in raw_finished),
+                        "filler_retirement_rows": sum(len(x["fillers"]) for x in raw_ledgers if isinstance(x.get("fillers"), list))},
+                    "rows_sha256": sha(encoded(rows))}
+            try:
+                item.update(profile_audit(rows, cell))
+                item["verdict"] = "PASS"
+            except (Invalid, KeyError, TypeError, ValueError, IndexError, AttributeError) as exc:
+                item["error"] = str(exc)
+                errors.append("profile " + "/".join(cell) + ": " + str(exc))
+            output["profiles"].append(item)
+        output["observed_cell_count"] = len(profiles)
+        output["observed_cells"] = [list(x) for x in sorted(profiles)]
+        output["missing_cells"] = [list(x) for x in sorted(CELLS - set(profiles))]
+        if set(profiles) != CELLS:
+            errors.append("need exact8 Cartesian profiles; missing " + repr(output["missing_cells"]))
+        output["observed_profile_passes"] = sum(x["verdict"] == "PASS" for x in output["profiles"])
+        output["verified_original_retirement_receipts"] = sum(
+            x["observed_metrics"]["original_retirement_receipts"]
+            for x in output["profiles"] if x["verdict"] == "PASS")
+        output["verified_filler_retirement_receipts"] = sum(
+            x["observed_metrics"]["filler_retirement_receipts"]
+            for x in output["profiles"] if x["verdict"] == "PASS")
+        if not errors:
+            identities = [x["persistent_identity"]["sha256"] for x in output["profiles"]]
+            try:
+                distinct(identities, "independent eight profile SUTs")
+            except Invalid as exc:
+                errors.append(str(exc))
+    except (Invalid, OSError, ValueError, TypeError, KeyError, AttributeError) as exc:
+        errors.append("input/schema: " + str(exc))
+    output["verdict"] = "PASS" if not errors else "FAIL"
+    # One exclusive new output write only: never overwrite immutable evidence.
+    target = args.output.absolute()
+    need(target.name not in PROTECTED_NAMES | E4_NAMES, "protected output name")
+    resolved_output = target.resolve()
+    need(resolved_output not in input_paths, "output aliases input")
+    need(not (resolved_output.name.startswith("command-inventory") and resolved_output.suffix == ".json"), "output cannot replace a frozen inventory")
+    with target.open("x", encoding="utf-8") as stream:
+        json.dump(output, stream, indent=2, ensure_ascii=False, allow_nan=False)
+        stream.write("\n")
+    print(json.dumps({"verdict": output["verdict"], "output": str(target),
+                      "errors": len(errors), "observed_cells": output.get("observed_cell_count", 0),
+                      "observed_profile_passes": output.get("observed_profile_passes", 0)}, sort_keys=True))
+    return 0 if not errors else 1
+
+
+if __name__ == "__main__":
+    sys.exit(main())

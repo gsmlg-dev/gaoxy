@@ -1,0 +1,576 @@
+#!/usr/bin/env python3
+"""Root-run read-only E5 browser evidence audit. Never starts processes.
+Usage: python3 -B SCRIPT WORKSPACE RECEIPT FROZEN_INVENTORY OUTPUT
+Only OUTPUT is created (exclusive new file). Four PNG hashes are checked; root
+must view those images separately. Raw NetLog contents are never opened.
+"""
+import argparse
+import ast
+import base64
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import struct
+import sys
+
+ANSI = re.compile(r"\x1b\[[0-?]*[ -/]*[@-~]")
+HEX = re.compile(r"[0-9a-f]{64}\Z")
+MD5 = re.compile(r"[0-9a-f]{32}\Z")
+TARGETS = {"old": "/old%2Fpath?raw=%2F", "new": "/new%2Fpath?raw=%2F"}
+ROWS = {("fixed", "h1", "http2"), ("fixed", "h2", "http2")}
+ZERO = {"active": 0, "retained_bytes": 0, "cleanup_pending": 0, "cleanup_failed": None}
+TOMBSTONE = b"invalid public trust source after preparation\n"
+PROTECTED = {"codex-prompt.md", "gaoxy-m1.1-fix-prompt.md",
+             "close-diagnostic-proposal1.json", "close-diagnostic-proposal1.md",
+             "close-diagnostic-runner1.py.txt", "close-diagnostic-syntax1.json",
+             "gaoxy-native-worker-browser-diagnostic2-raw-terminal-trace.log"}
+FIXTURES = {"Elixir.NativeWorkerBrowserHost", "Elixir.FixedH2GenerationBrowserDraft",
+            "Elixir.FixedH2GenerationBrowserDraft.Captured", "Elixir.NativeWorkerBrowserArithmetic",
+            "Elixir.NativeWorkerBrowserCohort"}
+
+
+class Invalid(ValueError):
+    pass
+
+
+def need(condition, text):
+    if not condition:
+        raise Invalid(text)
+
+
+def exact(a, b):
+    if type(a) is not type(b):
+        return False
+    if isinstance(a, dict):
+        return a.keys() == b.keys() and all(exact(a[k], b[k]) for k in a)
+    if isinstance(a, list):
+        return len(a) == len(b) and all(exact(x, y) for x, y in zip(a, b))
+    return a == b
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), allow_nan=False).encode()
+
+
+def integer(value, minimum=0):
+    return type(value) is int and value >= minimum
+
+
+def digest(value):
+    return isinstance(value, str) and HEX.fullmatch(value) is not None
+
+
+def unique(values, label):
+    need(len(values) == len(set(values)), label + ": duplicate")
+
+
+def pairs(items):
+    result = {}
+    for key, value in items:
+        need(key not in result, "duplicate JSON key: " + key)
+        result[key] = value
+    return result
+
+
+def json_value(data):
+    def invalid(value):
+        raise Invalid("non-finite JSON number: " + value)
+    return json.loads(data, object_pairs_hook=pairs, parse_constant=invalid)
+
+
+class Reader:
+    def __init__(self, workspace):
+        self.workspace = workspace
+        self.reads = {}
+
+    def safe(self, path, public_trust=False):
+        path = Path(path)
+        # Lexical guards run before resolve/stat/open of any supplied operand.
+        need(not any(part in PROTECTED for part in path.parts), "protected operand")
+        need(not path.is_relative_to(Path('/proc')) and not path.is_relative_to(Path('/sys')), "process operand forbidden")
+        need('netlog' not in path.name.lower() or path.name == 'chromium-netlog-event-enums1.json', "raw NetLog operand forbidden")
+        need(path.suffix.lower() not in ('.key', '.p12', '.pfx', '.der'), "key/raw certificate operand forbidden")
+        need(path.suffix.lower() != '.pem' or public_trust, "unlisted PEM operand forbidden")
+        # Normalize lexically, then reject symlink components before following
+        # any input. A safe listed name must never redirect to raw/private data.
+        resolved = Path(os.path.abspath(path))
+        need(resolved.is_relative_to(self.workspace), "input outside workspace")
+        need(not any(part in PROTECTED for part in resolved.parts), "protected resolved operand")
+        need('netlog' not in resolved.name.lower() or resolved.name == 'chromium-netlog-event-enums1.json', "resolved raw NetLog operand forbidden")
+        need(resolved.suffix.lower() not in ('.key', '.p12', '.pfx', '.der'), "resolved key operand forbidden")
+        need(resolved.suffix.lower() != '.pem' or public_trust, "resolved unlisted PEM operand forbidden")
+        cursor = self.workspace
+        for part in resolved.relative_to(self.workspace).parts:
+            cursor = cursor / part
+            need(not cursor.is_symlink(), "symlink input forbidden")
+        return resolved
+
+    def read(self, path, expected=None, public_trust=False):
+        path = self.safe(path, public_trust)
+        if public_trust:
+            with path.open('rb') as stream:
+                data = stream.read(1048577)
+            need(0 < len(data) <= 1048576, "public trust artifact exceeds finite bound")
+        else:
+            data = path.read_bytes()
+        actual = sha(data)
+        if expected is not None:
+            need(digest(expected) and actual == expected, "hash mismatch: " + str(path))
+        self.reads[str(path)] = actual
+        return data
+
+    def json(self, path, expected=None):
+        return json_value(self.read(path, expected).decode('utf-8'))
+
+
+def terminal_waits(rows, recorded_exit):
+    need(isinstance(rows, list), "adopted wait list missing")
+    result = []
+    for row in rows:
+        need(isinstance(row, dict) and integer(row.get('pid'), 1) and integer(row.get('wait_status')), "invalid adopted raw wait")
+        # Decoding a recorded integer performs no wait/process operation.
+        decoded = os.waitstatus_to_exitcode(row['wait_status'])
+        if recorded_exit:
+            need(exact(row.get('exit'), decoded), "adopted exit differs from actual raw wait decoding")
+        result.append({'raw': row, 'decoded_exit': decoded,
+                       'termination': 'signal' if decoded < 0 else 'exit',
+                       'signal': -decoded if decoded < 0 else None,
+                       'decoded_without_relabelling': True, 'nonzero_decoded_exit': decoded != 0})
+    unique([x['raw']['pid'] for x in result], "adopted waits")
+    return result
+
+
+def actors_checked(qualification, receipt, runner, host, peer, browser_source):
+    for key, wanted in (('kind', 'ACTUAL_NATIVE_BROWSER_COMMAND'), ('status', 'PASS'), ('endpoint', 'fixed'), ('actual_exit_code', 0),
+                        ('joined', True), ('owned_group_gone', True), ('wait_error', None),
+                        ('timed_out', False), ('source_stable', True), ('executed', 2)):
+        need(exact(receipt.get(key), wanted), "command receipt mismatch: " + key)
+    need(integer(receipt.get('pid'), 1), "runner PID missing")
+    cleanup = receipt['descendant_cleanup']
+    for key, wanted in (('forced', False), ('initial_after_reap', []), ('signal_attempts', []),
+                        ('reap_deadline_exhausted', []), ('remaining', [])):
+        need(exact(cleanup.get(key), wanted), "outer adopted cleanup mismatch: " + key)
+    need(exact(cleanup['reaped'], cleanup['reaped_before_force']), "outer adopted waits include force phase")
+    outer_waits = terminal_waits(cleanup['reaped'], False)
+    need(all(x['raw'].get('phase') == 'before_force' for x in outer_waits), "outer adopted wait phase")
+    need(set(cleanup['initial']) == {x['raw']['pid'] for x in outer_waits}, "outer initial/adopted terminal coverage")
+    need(qualification.get('status') == 'PASS' and qualification.get('endpoint') == 'fixed' and
+         qualification.get('executed') == 2 and qualification.get('failure') is None,
+         "qualification status/actual rows/failure mismatch")
+    need(qualification.get('adopted_remaining') == [], "runner adopted descendants remain")
+    inner_waits = terminal_waits(qualification['adopted_joins'], True)
+    rows = qualification['cases']
+    need(len(rows) == 2 and {(x['endpoint'], x['mode'], x['upstream_protocol']) for x in rows} == ROWS,
+         "need exactly nativeH1/H2 to TLS-H2 fixed rows")
+    need(exact(receipt['expected_rows'], [list(x) for x in sorted(ROWS)]), "outer expected rows mismatch")
+    need(all(x.get('status') == 'PASS' for x in rows), "non-PASS browser case")
+    joins = qualification['joins']
+    need(isinstance(joins, list) and len(joins) == 8, "need actual eight named Actor joins")
+    unique([x['pid'] for x in joins], "named Actor PIDs")
+    roles = {}
+    for row in joins:
+        for key, wanted in (('exit', 0), ('forced', False), ('reader_joined', True), ('owned_group_gone', True)):
+            need(exact(row.get(key), wanted), "Actor real exit/group/reader mismatch: " + key)
+        need(integer(row['pid'], 1) and row.get('cleanup_failed') is not True, "Actor cleanup failure")
+        case, command = row['case'], row['command']
+        need(case in ('h1-http2', 'h2-http2') and isinstance(command, list) and all(isinstance(x, str) for x in command), "Actor command/case")
+        if command[:2] == ['node', '-e']:
+            role = 'browser'
+            need(command[2] == browser_source, "actual inline browser source differs from pinned runner")
+        elif str(host) in command and 'mix' in command and 'run' in command:
+            role = 'host'
+        elif str(peer) in command:
+            need('--manual' in command and '--staged-start' in command and command[command.index('--protocol') + 1] == 'tls', "peer actor command")
+            address = command[command.index('--bind-address') + 1]
+            need(address in ('127.0.0.1', '127.0.0.2'), "peer Actor address")
+            role = 'old_peer' if address == '127.0.0.1' else 'new_peer'
+        else:
+            raise Invalid("unrecognized named Actor command")
+        need((case, role) not in roles, "duplicate named Actor role")
+        roles[(case, role)] = row
+    need(set(roles) == {(case, role) for case in ('h1-http2', 'h2-http2') for role in ('browser', 'host', 'old_peer', 'new_peer')},
+         "missing named Actor role")
+    # All named Actors and outer custody are proven before any raw-dir lstat.
+    return roles, {'outer': outer_waits, 'runner': inner_waits}
+
+
+def events(data, prefix=''):
+    rows = []
+    for line in ANSI.sub('', data.decode('utf-8')).splitlines():
+        if prefix and not line.startswith(prefix):
+            continue
+        value = line[len(prefix):] if prefix else line
+        if not value.startswith('{'):
+            continue
+        try:
+            row = json_value(value)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(row, dict) and isinstance(row.get('event'), str):
+            rows.append(row)
+    return rows
+
+
+def one(rows, event, label=None):
+    found = [x for x in rows if x.get('event') == event and (label is None or x.get('label') == label)]
+    need(len(found) == 1, "need one event: " + event + '/' + str(label))
+    return found[0]
+
+
+def public_trust_check(data):
+    if data == TOMBSTONE:
+        return {'classification': 'TOMBSTONE_AFTER_PREPARATION', 'bytes': len(data), 'sha256': sha(data), 'certificates': 0}
+    need(b'PRIVATE KEY' not in data, "private-key bytes in public trust artifact")
+    pattern = rb'\s*(?:-----BEGIN CERTIFICATE-----\s+[A-Za-z0-9+/=\s]+-----END CERTIFICATE-----\s*)+'
+    need(re.fullmatch(pattern, data) is not None, "public trust must be CERTIFICATE-only PEM or exact invalidation tombstone")
+    blocks = re.findall(rb'-----BEGIN CERTIFICATE-----\s+([A-Za-z0-9+/=\s]+)-----END CERTIFICATE-----', data)
+    ders = [base64.b64decode(re.sub(rb'\s+', b'', value), validate=True) for value in blocks]
+    need(ders and all(value.startswith(b'\x30') for value in ders), "public certificate DER shape")
+    return {'classification': 'PUBLIC_CERTIFICATE_ONLY', 'bytes': len(data), 'sha256': sha(data),
+            'certificates': len(ders), 'der_sha256': [sha(value) for value in ders]}
+
+
+def capture_check(captured, mode):
+    need(captured['original_owner_effects'] == 1 and len(captured['pins']) == 1 and
+         captured['pins'][0]['fields'] == 8 and captured['pins'][0]['kind'] == 'request' and
+         captured['pins'][0]['provider'] == 'Elixir.Gaoxy.Proxy.UpstreamTransports', "genuine source capture/pin")
+    need(integer(captured['reservation'], 1) and integer(captured['retained'], 1), "positive independent reservation")
+    target = captured['retained'] + captured['reservation']
+    cuts = [captured['cohort']] + captured['original_cohorts']
+    need(len(captured['original_cohorts']) == 1, "original capture cohort count")
+    for cut in cuts:
+        roles = cut['roles']
+        need(cut['active'] == len(roles) and cut['target_bytes'] == target and
+             cut['retained_bytes'] == sum(x['bytes'] for x in roles), "complete cohort arithmetic")
+        unique([x['pid'] for x in roles], 'cohort PIDs')
+        unique([x['lease'] for x in roles], 'cohort leases')
+        held = [x for x in roles if x['pid'] == captured['holder']]
+        need(len(held) == 1 and held[0]['bytes'] == target and
+             held[0]['role'] == ('request_worker' if mode == 'h2' else 'connection'), "target cohort role/bytes")
+        for item in roles:
+            if item['pid'] == captured['holder']:
+                continue
+            if item['role'] == 'connection':
+                need(item['bytes'] == (captured['worker_accounting']['connection_bytes'] if mode == 'h2' else 0), "connection accounting")
+            else:
+                need(mode == 'h2' and item['role'] == 'writer' and
+                     item['bytes'] == captured['worker_accounting']['writer_bytes'], "writer accounting")
+    need(captured['gate_bytes'] == captured['cohort']['retained_bytes'] and
+         captured['original_gate_bytes'] == [x['retained_bytes'] for x in captured['original_cohorts']], "original Gate cut bytes")
+    if mode == 'h2':
+        accounting = captured['worker_accounting']
+        need(accounting['bytes'] == captured['retained'] and accounting['worker_bytes'] == target and
+             accounting['secure'] is True and accounting['downstream_alpn'] == 'h2' and
+             isinstance(accounting['rows'], list) and len(accounting['rows']) > 0, "native H2 worker reservation metadata")
+        need(captured['native_ids']['worker'] == captured['holder'] and
+             captured['native_ids']['worker'] != captured['native_ids']['connection'], "native worker/connection custody")
+    else:
+        need(captured['worker_accounting'] is None, "H1 unexpectedly has H2 worker accounting")
+
+
+def loaded_check(before, after, reader, inner, outer, host, cohort):
+    need(isinstance(before, list) and before and exact(before, after), "loaded source/BEAM identity before != after")
+    unique([x['module'] for x in before], "loaded module rows")
+    fixture_rows, disk_rows = [], []
+    for row in before:
+        source = reader.safe(row['source'])
+        need(inner.get(str(source)) == row['source_sha256'] and outer.get(str(source.relative_to(reader.workspace))) == row['source_sha256'], "loaded source not in both stable snapshots")
+        reader.read(source, row['source_sha256'])
+        need(isinstance(row['loaded_md5'], str) and MD5.fullmatch(row['loaded_md5']) and row['loaded_md5'] != '0' * 32, "missing in-memory module MD5 attestation")
+        if 'beam' in row:
+            beam = reader.safe(row['beam'])
+            need(beam.is_relative_to(reader.workspace / '_build/test/lib') and beam.name == row['module'] + '.beam', "loaded BEAM outside actual test build")
+            data = reader.read(beam, row['beam_sha256'])
+            need(data[:4] == b'FOR1' and data[8:12] == b'BEAM', "loaded BEAM file format")
+            need(row['module'].startswith('Elixir.Gaoxy'), "unexpected application module")
+            disk_rows.append(row)
+        else:
+            need(row['module'] in FIXTURES and source in (host, cohort), "unrecognized source-loaded fixture module")
+            fixture_rows.append(row)
+    need({x['module'] for x in fixture_rows} == FIXTURES and disk_rows, "loaded application/fixture coverage")
+    return {'entries': len(before), 'disk_beam_entries': len(disk_rows), 'source_loaded_fixture_entries': len(fixture_rows),
+            'rows': before, 'rows_sha256': sha(canonical(before)),
+            'in_memory_scope': 'Host runtime identity asserts code object bytes equal disk and beam_lib.md5 equal module_info MD5. Audit hashes disk and source pins and preserves equal before/after MD5 attestations; no live process/BEAM execution.'}
+
+
+def metadata_check(value):
+    # Safe finite projection only; neither read_complete nor GOAWAY is a gate.
+    need(value.get('schema') == 1 and value.get('status') == 'PROJECTED', "safe metadata projection schema/status")
+    need(value.get('byte_limit') == 8388608 and value.get('event_limit') == 8192, "safe metadata projection limits changed")
+    need(type(value.get('read_complete')) is bool, "safe projection read_complete missing")
+    need(integer(value.get('read_bytes')) and value['read_bytes'] <= value['byte_limit'], "safe projection read bytes")
+    need(integer(value.get('scanned_events')) and value['scanned_events'] <= value['event_limit'], "safe projection event count")
+    need(isinstance(value.get('events'), list) and value.get('projected_events') == len(value['events']), "safe projected event count")
+    for key in ('event_name_unknown_events', 'event_name_omitted_events'):
+        need(integer(value.get(key)), "safe metadata actual event-name counters missing")
+    return {key: value[key] for key in ('status', 'read_complete', 'read_bytes', 'byte_limit_reached',
+            'scanned_events', 'projected_events', 'event_limit_reached', 'event_name_unknown_events', 'event_name_omitted_events')}
+
+
+def case_check(row, artifacts, artifact_bytes, roles, receipt, reader, inner, outer, host, cohort):
+    mode = row['mode']
+    case = mode + '-http2'
+    need(row['case'] == 'fixed-' + case and row['status'] == 'PASS', "case name/status mismatch")
+    def data(name):
+        key = case + '/' + name
+        need(key in artifacts, "required listed artifact missing: " + key)
+        return artifact_bytes[key]
+    def value(name):
+        return json_value(data(name).decode('utf-8'))
+    host_events = events(data('host.log'), 'NATIVE_WORKER_BROWSER ')
+    browser_events = events(data('browser.log'))
+    sequence = [(x['event'], x.get('label')) for x in host_events if x['event'] != 'down_diagnostic']
+    expected = [('ready', None), ('captured', 'old'), ('identity_rotation', None), ('cas', None),
+                ('session_custody', 'old'), ('bound', 'old'), ('returned_source_held', 'old'),
+                ('old_retired', None), ('request_clean', 'old'), ('captured', 'new'),
+                ('session_custody', 'new'), ('bound', 'new'), ('returned_source_held', 'new'),
+                ('request_clean', 'new'), ('browser_close_authorized', None),
+                ('closed_browser_clean', None), ('stopped', None), ('exited', None)]
+    need(sequence == expected, "host authentic completion/clean/close event order")
+    ready = one(host_events, 'ready')
+    need(ready['mode'] == mode and ready['upstream_protocol'] == 'http2', "actual native downstream row")
+    need([(x['event'], x.get('label')) for x in browser_events] ==
+         [('browser_ready', None), ('probe', 'old'), ('probe', 'new'), ('chrome_closed', None), ('joined', None)], "explicit Chrome close/browser event order")
+    closed = one(browser_events, 'chrome_closed')
+    need(exact(closed['process'], {'code': 0, 'signal': None}) and
+         closed['close_reply'] in ('confirmed', 'CDP closed while graceful browser shutdown was pending'), "Chrome.close actual normal process exit")
+    need(exact(one(browser_events, 'joined'), row['browser_join']), "browser joined receipt/log mismatch")
+    for key, wanted in (('passed', True), ('close_requested', True), ('profile_removed', True), ('chrome_exit', 0), ('chrome_signal', None)):
+        need(exact(row['browser_join'].get(key), wanted), "Chrome explicit graceful close mismatch: " + key)
+    rotation = one(host_events, 'identity_rotation')
+    need(exact(rotation, row['identity_rotation']), "rotation log/qualification mismatch")
+    for key in ('same_path_replaced', 'source_invalidated', 'retained_policies_checked', 'old_capture_before_replacement'):
+        need(rotation.get(key) is True, "rotation original-policy custody missing: " + key)
+    need(len(rotation['rows']) == 1, "fixed rotation row count")
+    identity = rotation['rows'][0]
+    need(identity['old_policy_unchanged'] is True and identity['host'] == 'localhost' and
+         identity['origin'] == 'https://localhost:' + str(identity['port']), "same-authority actual trust rotation")
+    for key in ('resource', 'pem_sha256', 'der_sha256', 'leaf_sha256'):
+        need(identity['old'][key] != identity['new'][key], "OLD/NEW actual identity did not rotate: " + key)
+    cas = one(host_events, 'cas')
+    for key in ('old_admission_closed', 'old_source_alive', 'old_custodian_alive', 'fresh_old_denied', 'snapshot_changed', 'preparation_released_by_holder'):
+        need(cas.get(key) is True, "genuine checked CAS missing: " + key)
+    observations = row['observations']
+    need([x['label'] for x in observations] == ['old', 'new'], "OLD/NEW observations missing or unordered")
+    peers, clean_rows = {}, []
+    for observation in observations:
+        label = observation['label']
+        for key, event in (('captured', 'captured'), ('custody', 'session_custody'), ('bound', 'bound'),
+                           ('held', 'returned_source_held'), ('request_clean', 'request_clean')):
+            need(exact(observation[key], one(host_events, event, label)), "observation/log mismatch: " + key)
+        captured, custody, bound, held, clean = [observation[x] for x in ('captured', 'custody', 'bound', 'held', 'request_clean')]
+        need(captured['mode'] == mode, "capture native mode mismatch")
+        capture_check(captured, mode)
+        need(custody['native'] == captured['holder'] == custody['acquirer'] and custody['session'] != custody['native'] and
+             custody['derived'] is True and custody['public_t8_fields'] == 8 and integer(custody['cleanup_bytes'], 1), "authentic Session child custody")
+        need(custody['source_ref'] != custody['child_ref'], "Session aliases original source")
+        for key in ('original_completion_equal', 'pending', 'source_genuine', 'child_genuine', 'token_genuine'):
+            need(bound.get(key) is True, "bound original pending completion/source/child/token: " + key)
+        need(bound['session'] == custody['session'], "bound Session changed")
+        for key, wanted in (('original_completion_ok', True), ('session_joined', True), ('child_gone', True),
+                            ('token_gone', True), ('source_genuine', True), ('custodian_alive', True), ('retirement_requested', False)):
+            need(exact(held.get(key), wanted), "source-held original completion mismatch: " + key)
+        for key in ('session_joined', 'original_source_gone', 'complete_cohort_validated', 'connection_alive'):
+            need(clean.get(key) is True, "request_clean while native connection alive missing: " + key)
+        need(exact(clean['native_worker_joined'], mode == 'h2') and
+             exact({'event': 'session_custody', **clean['custody']}, custody), "request_clean original child/native joins")
+        request, tls, peer_ready = observation['request'], observation['tls'], observation['peer_ready']
+        need(observation['peer_pid'] == roles[(case, label + '_peer')]['pid'], "actual peer Actor PID mismatch")
+        need(peer_ready['protocol'] == 'tls' and peer_ready['bind_address'] == ('127.0.0.1' if label == 'old' else '127.0.0.2') and
+             peer_ready['port'] == identity['port'], "actual peer authority/address mismatch")
+        need(peer_ready['caller_ca_sha256'] == identity[label]['pem_sha256'] and
+             peer_ready['identity']['certificate_sha256'] == identity[label]['leaf_sha256'], "peer/policy actual CA/leaf identity correlation")
+        need(request['ended'] is True and request['target'] == TARGETS[label] and integer(request['connection'], 1) and integer(request['stream'], 1), "actual GET target/stream")
+        fields = request['headers']
+        for name, expected_value in ((':method', 'GET'), (':path', TARGETS[label]), (':scheme', 'https'),
+                                     (':authority', 'localhost:' + str(identity['port'])), ('authorization', 'Bearer synthetic-origin-' + label)):
+            need([x for x in fields if x[0] == name] == [[name, expected_value]], "actual request header mismatch: " + name)
+        need(not [x for x in fields if x[0] == 'proxy-authorization'], "proxy credentials escaped origin boundary")
+        need(tls['connection'] == request['connection'] and tls['alpn'] == 'h2' and tls['sni'] == 'localhost', "upstream TLS/H2 ALPN/SNI")
+        peer_events = events(data(label + '-peer.log'))
+        need(exact(one(peer_events, 'request'), request) and exact(one(peer_events, 'tls'), tls), "independent peer request/TLS log mismatch")
+        accept, upload = one(peer_events, 'accept'), one(peer_events, 'upload_end')
+        need(accept['connection'] == upload['connection'] == request['connection'] and
+             upload['stream'] == request['stream'] and upload['total_bytes'] == 0, "independent accept/upload correlation")
+        physical = [x for x in peer_events if x['event'] in ('eof', 'connection_reset')]
+        need(len(physical) == 1 and physical[0]['connection'] == request['connection'], "original peer physical EOF/reset missing")
+        joined = one(peer_events, 'joined')
+        need(exact(joined, row['peer_joins'][label]) and exact(joined, {'event': 'joined', 'accepts': 1, 'requests': 1, 'forced': 0, 'live': 0, 'failed': False}), "peer actual joins/zero/reuse count")
+        probe = observation['browser']
+        need(exact(probe, one(browser_events, 'probe', label)) and probe['status'] == 'PASS' and probe['visible'] is True,
+             "actual browser visible probe")
+        protocol = 'h2' if mode == 'h2' else 'http/1.1'
+        origin = ('https' if mode == 'h2' else 'http') + '://127.0.0.1:' + str(ready['port'])
+        title, marker = 'Gaoxy fixed H2 Generation ' + label, 'Gaoxy checked fixed H2 Generation ' + label
+        html = ('<!doctype html><html><head><title>' + title + '</title><link rel="icon" href="data:,"></head><body><h1 id="checked">' + marker + '</h1></body></html>').encode()
+        need(exact(probe['document'], {'title': title, 'text': marker, 'url': origin + TARGETS[label]}) and
+             probe['response_bytes'] == len(html) and probe['response_sha256'] == sha(html), "browser actual document/body hash")
+        need(probe['network']['response']['protocol'] == protocol and probe['network']['response']['status'] == 200 and
+             probe['network']['response']['url'] == origin + TARGETS[label], "Chrome actual native protocol/status/URL")
+        peers[label] = {'pid': observation['peer_pid'], 'ready': peer_ready, 'physical': physical[0], 'joined': joined}
+        clean_rows.append(clean)
+    need(peers['old']['pid'] != peers['new']['pid'], "OLD/NEW peer processes alias")
+    retired = one(host_events, 'old_retired')
+    need(all(retired.get(key) is True for key in ('source_gone', 'record_gone', 'custodian_normal_down')), "original OLD retirement not joined")
+    authorization = one(host_events, 'browser_close_authorized')
+    new_capture = observations[1]['captured']
+    expected_connection = new_capture['native_ids']['connection'] if mode == 'h2' else new_capture['holder']
+    need(authorization['mode'] == mode and authorization['connection_alive'] is True and authorization['connection'] == expected_connection,
+         "explicit close authorized only after real clean live connection")
+    cleanup = row['closed_browser_cleanup']
+    need(exact(cleanup, one(host_events, 'closed_browser_clean')) and cleanup['connection_joined'] is True and
+         cleanup['observer_joined'] is True and cleanup['connection_reason'] == '{:shutdown, :peer_closed}' and
+         exact(cleanup['service'], ZERO), "final native connection/observer/Service zero")
+    cohort_joins = cleanup['cohort_joins']
+    need(cohort_joins and all(x['genuine_terminal'] is True and x['admitted'] is True for x in cohort_joins), "native cohort terminal authenticity")
+    unique([x['pid'] for x in cohort_joins], "native joined cohort PIDs")
+    for joined in cohort_joins:
+        need(joined['reason'] == ('{:shutdown, :peer_closed}' if joined['connection'] else ':normal'), "native cohort normal/peer-close reason")
+    need(all(any(x['pid'] == v['captured']['native_ids']['connection'] for x in cohort_joins) for v in observations), "captured native connections not joined")
+    stopped = row['stopped']
+    need(exact(stopped, one(host_events, 'stopped')) and stopped['mode'] == mode, "host stopped receipt/log mismatch")
+    for key, wanted in (('captures', 2), ('sessions_joined', 2), ('custodians_normal_down', 2), ('cleanup_confirmed', True),
+                        ('source_stable', True), ('native_actors_joined', True), ('owner_normal_down', True),
+                        ('instance_normal_down', True), ('listener_rebound', True)):
+        need(exact(stopped.get(key), wanted), "final zero/normal joins/rebind: " + key)
+    downs = [x for x in host_events if x['event'] == 'down_diagnostic']
+    need(all(x['pid_equal'] is True and x['reason_equal'] is True and x['expected_pid'] == x['actual_pid'] and
+             exact(x['expected_reason'], x['actual_reason']) for x in downs), "original monitor correlation/reason mismatch")
+    final_cohort = data('final-cohort.log').decode('utf-8')
+    status = re.match(r'%\{status: %\{([^}]+)\}, bytes: 0,', final_cohort)
+    need(status is not None and all(re.search(r'\b' + key + r': 0(?:,|$)', status.group(1)) for key in
+         ('active', 'retained_bytes', 'cleanup_pending', 'queued_items', 'queued_bytes')) and
+         all(key + ': %{}' in final_cohort for key in ('leases', 'cleanups', 'spawns')), "final authenticated cohort Gate zeros")
+    loaded = loaded_check(value('host-loaded-before.json'), value('host-loaded-after.json'), reader, inner, outer, host, cohort)
+    custody = value('diagnostic-raw-custody.json')
+    for key, wanted in (('status', 'REMOVED_AFTER_ACTOR_GROUP_JOINS'), ('creator_pid', receipt['pid']),
+                        ('actor_groups_joined', True), ('raw_removed', True), ('directory_exists', False)):
+        need(exact(custody.get(key), wanted), "raw directory recorded custody mismatch: " + key)
+    need(custody['actor_pids'] == [roles[(case, role)]['pid'] for role in ('old_peer', 'new_peer', 'host', 'browser')], "raw custody Actor identities differ")
+    raw_dir = Path(custody['directory'])
+    need(raw_dir.is_absolute() and raw_dir.parent == Path('/tmp') and re.fullmatch(r'gaoxy-fixed-generation-netlog-[A-Za-z0-9_-]+', raw_dir.name), "recorded raw directory unsafe")
+    need(custody['raw_file'] == str(raw_dir / 'chrome-netlog.json') and roles[(case, 'browser')]['command'][-1] == custody['raw_file'], "recorded raw path/custody mismatch")
+    # No resolve/exists/read/glob of raw contents: one directory lstat only,
+    # after all eight named Actor joins plus outer/runner custody passed.
+    try:
+        os.lstat(raw_dir)
+        absent = False
+    except FileNotFoundError:
+        absent = True
+    need(absent, "recorded owned raw directory remains after Actor joins")
+    metadata = {name: metadata_check(value(name)) for name in
+                ('old-chrome-net-metadata.json', 'new-chrome-net-metadata.json', 'chrome-net-metadata-final.json')}
+    return {'case': case, 'status': 'PASS', 'loaded': loaded, 'actual_down_diagnostics': len(downs),
+            'request_clean': clean_rows, 'browser_close_authorized': authorization, 'chrome_closed': closed,
+            'browser_join': row['browser_join'], 'peers': peers, 'stopped': stopped, 'final_cleanup': cleanup,
+            'raw_custody': custody, 'raw_directory_lstat_after_all_actor_joins': 'ABSENT', 'safe_metadata': metadata,
+            'observations_sha256': sha(canonical(observations)), 'observations': observations}
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    for name in ('workspace', 'receipt', 'inventory', 'output'):
+        parser.add_argument(name, type=Path)
+    args = parser.parse_args()
+    workspace = args.workspace.resolve()
+    reader = Reader(workspace)
+    result = {'kind': 'FIXED_PLATEAU_BROWSER_RECEIPT_AUDIT1', 'status': 'FAIL',
+              'script_sha256': sha(Path(__file__).read_bytes()), 'rows': [], 'root_viewed_images': [],
+              'limits': 'Evidence audit only. Four PNGs require separate root viewing. No raw NetLog/keys read; no live process operations. Finite safe metadata neither proves complete NetLog nor requires GOAWAY.'}
+    try:
+        receipt_path = reader.safe(args.receipt if args.receipt.is_absolute() else workspace / args.receipt)
+        inventory_path = reader.safe(args.inventory if args.inventory.is_absolute() else workspace / args.inventory)
+        receipt = reader.json(receipt_path)
+        inventory = reader.json(inventory_path)
+        frozen = inventory['source_sha256']
+        need(isinstance(frozen, dict) and len(frozen) == 399, "chosen current frozen inventory must have399pins; snapshots/loaded/artifacts counted independently")
+        for name, expected in frozen.items():
+            need(not Path(name).is_absolute() and '..' not in Path(name).parts, "frozen source relative path invalid")
+            reader.read(workspace / name, expected)
+        outer = receipt['source_before']
+        need(isinstance(outer, dict) and outer and exact(outer, receipt['source_after']), "outer source snapshot changed")
+        need(set(outer).issubset(frozen) and all(outer[k] == frozen[k] for k in outer), "browser outer snapshot not exact subset of frozen399pins")
+        for name, expected in outer.items():
+            reader.read(workspace / name, expected)
+        qualification_path = reader.safe(receipt['qualification'])
+        qualification = reader.json(qualification_path, receipt['qualification_sha256'])
+        need(qualification_path.parent.parent == receipt_path.parent, "qualification outside chosen receipt evidence directory")
+        inner = qualification['source_before']
+        need(isinstance(inner, dict) and inner and exact(inner, qualification['source_after']) and qualification['source_stable'] is True, "inner source snapshot changed")
+        for name, expected in inner.items():
+            path = reader.safe(name)
+            need(frozen.get(str(path.relative_to(workspace))) == expected, "inner source not exact subset of frozen399pins")
+            reader.read(path, expected)
+        runner = reader.safe(receipt['command'][2])
+        host, cohort = [runner.with_name('fixed-identity-rotation-browser-' + x + '1.exs') for x in ('host', 'cohort')]
+        peer = workspace / 'apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py'
+        for path in (runner, host, cohort, peer):
+            need(str(path.relative_to(workspace)) in outer and str(path) in inner, "actual browser fixture source missing from snapshots")
+        collector = receipt_path.parent / 'browser-command-collector1.py'
+        need(frozen.get(str(collector.relative_to(workspace))) == receipt['collector_sha256'], "actual browser collector hash/source pin mismatch")
+        tree = ast.parse(reader.read(runner).decode('utf-8'))
+        literals = [ast.literal_eval(x.value) for x in tree.body if isinstance(x, ast.Assign) and
+                    any(isinstance(t, ast.Name) and t.id == 'BROWSER' for t in x.targets)]
+        need(len(literals) == 1 and isinstance(literals[0], str), "pinned runner inline browser literal missing")
+        roles, adopted = actors_checked(qualification, receipt, runner, host, peer, literals[0])
+        result['actors'] = [{'case': case, 'role': role, **{k: row[k] for k in ('pid', 'exit', 'forced', 'reader_joined', 'owned_group_gone')},
+                             'command_sha256': sha(canonical(row['command']))} for (case, role), row in sorted(roles.items())]
+        result['adopted_raw_waits'] = adopted
+        log = reader.read(receipt['log'], receipt['log_sha256'])
+        summary = json_value(log.decode('utf-8'))
+        for key in ('status', 'executed', 'endpoint', 'joins', 'adopted_joins', 'adopted_remaining', 'artifact_sha256', 'source_stable'):
+            need(exact(summary.get(key), qualification.get(key)), "runner original log/qualification summary mismatch: " + key)
+        artifacts, blobs, trust = qualification['artifact_sha256'], {}, {}
+        need(isinstance(artifacts, dict) and artifacts, "complete artifact hash map missing")
+        for name, expected in artifacts.items():
+            relative = Path(name)
+            need(not relative.is_absolute() and '..' not in relative.parts, "artifact path traversal")
+            public = name in ('h1-http2/trust-a.pem', 'h2-http2/trust-a.pem')
+            need(relative.suffix in ('.json', '.log', '.png') or public, "unlisted unsafe artifact type")
+            blobs[name] = reader.read(qualification_path.parent / relative, expected, public)
+            if public:
+                trust[name] = public_trust_check(blobs[name])
+        images = [name for name in artifacts if Path(name).suffix == '.png']
+        need(set(images) == {case + '/' + label + '-browser.png' for case in ('h1-http2', 'h2-http2') for label in ('old', 'new')}, "need exactly4 named OLD/NEW PNG images")
+        result['images'] = []
+        for name in sorted(images):
+            value = blobs[name]
+            need(len(value) > 24 and value[:8] == b'\x89PNG\r\n\x1a\n' and value[12:16] == b'IHDR', "PNG signature/header")
+            width, height = struct.unpack('>II', value[16:24])
+            need(width > 0 and height > 0, "empty PNG dimensions")
+            result['images'].append({'path': str(qualification_path.parent / name), 'sha256': sha(value),
+                                     'bytes': len(value), 'width': width, 'height': height, 'root_viewed': False})
+        result['public_trust_artifacts'] = trust
+        for row in qualification['cases']:
+            result['rows'].append(case_check(row, artifacts, blobs, roles, receipt, reader, inner, outer, host, cohort))
+        result.update(status='PASS', receipt_sha256=reader.reads[str(receipt_path)],
+                      qualification_sha256=receipt['qualification_sha256'], log_sha256=receipt['log_sha256'],
+                      frozen_inventory_sha256=reader.reads[str(inventory_path)], actual_snapshot_counts={'outer': len(outer), 'inner': len(inner), 'frozen_union': len(frozen)},
+                      artifact_hashes=len(artifacts), actual_named_actors=len(roles), actual_images=len(images),
+                      executed_rows=len(qualification['cases']), loaded_entries_by_case={x['case']: x['loaded']['entries'] for x in result['rows']},
+                      source_maps={'outer_before': outer, 'outer_after': receipt['source_after'], 'inner_before': inner, 'inner_after': qualification['source_after']},
+                      source_before_after_stable=True, source_current_pins_verified=len(frozen))
+    except (Invalid, OSError, ValueError, KeyError, TypeError, IndexError, AttributeError, SyntaxError) as exc:
+        result['error'] = type(exc).__name__ + ': ' + str(exc)
+    result['actual_unique_safe_file_reads'] = len(reader.reads)
+    result['verified_file_sha256'] = reader.reads
+    # Only this new output is written; no overwriting immutable receipts/scripts.
+    target = args.output.absolute()
+    need(not any(part in PROTECTED for part in target.parts) and 'netlog' not in target.name.lower(), "protected/raw output forbidden")
+    need(target.resolve() not in {Path(x) for x in reader.reads} | {Path(__file__).resolve()}, "output aliases input")
+    with target.open('x', encoding='utf-8') as stream:
+        json.dump(result, stream, indent=2, allow_nan=False)
+        stream.write('\n')
+    print(json.dumps({key: result.get(key) for key in ('status', 'error', 'actual_snapshot_counts', 'artifact_hashes',
+                      'actual_named_actors', 'actual_images', 'executed_rows', 'loaded_entries_by_case', 'actual_unique_safe_file_reads')}, sort_keys=True))
+    return 0 if result['status'] == 'PASS' else 1
+
+
+if __name__ == '__main__':
+    sys.exit(main())

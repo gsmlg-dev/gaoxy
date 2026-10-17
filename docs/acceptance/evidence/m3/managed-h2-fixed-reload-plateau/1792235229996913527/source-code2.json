@@ -1,0 +1,141 @@
+{
+  "task_id": "fixed_plateau_repair_code2",
+  "status": "DONE",
+  "verdict": "PASS_SOURCE_CODE_ONLY",
+  "finding_count": 0,
+  "findings": [],
+  "assignment": "Dependent independent read-only Sol CODE review of bounded candidate3 nativeH2 close ordering fixture correction; not full implementation review or runtime qualification.",
+  "at_utc": "2026-10-17T11:45:07.864114+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "identity_note": "Worktree cwd verified. Branch/baseline supplied by parent and freshly verified by pinned independent SPEC3. This reviewer did not invoke Git, per root-exclusive operator assignment.",
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-spec3.json": "fe55323de93e54437ce0ba0b3e0039f1b77d9316d784044a6e4fcdda84e2212a",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-candidate3.json": "21cbb497e874dc73ea886a38324fb808615a1627a6edce8611f97e2a481cae3d",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/command-inventory3.json": "639d73d6c6f0516fd36b00fcecfb9f0ff3e2eb1cafc53c1bb49075c420968d06",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-before1.exs.txt": "c1823bedb8eaaf987d5caa50f8ee617e6f656b375b9902da84af4f23b40cb116",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-repair-plan2.md": "e2c38eb9eb4b1ac761cca02409b64f7efe2fee099395443d655448561177001d",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-adoption2.json": "cc053dddfee12e9374a2a42fe09c8ef858b67b0336345beeb6088e6fbf6e03df",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-spec2.json": "4375f20bfb6c253ae3514de622501f782f4fe3c3d85756e0c8333ae3306fc2b7",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/first-failure-audit1.json": "6f99b5e6d4e2eeea863b6bb338b094ff3506ddb1de5542c30e6126fc355f82d5",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/native-close-diagnosis1.json": "fddf37ec2d674583fdffa1843047e6323b5728c56bfe7a10d6a305e1b73e46a8",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/counter9.json": "eec560f2762e06be5457798dcbc9cc46d463ea365c3dac45302d56103c3aadee",
+    "docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527/source-code1.json": "a9a9dcae3ab39374e957be6fe81e076b093c27d3de0fd06ba9cc5e5b7b0a35ee",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "c4ac0347e312f9dfe93b99bd37b180dc8180ec1015f0b541eeedd01d736176c5"
+  },
+  "review_scope": {
+    "predecessor": "Pinned source-code1.json passes original large implementation source CODE review; this review retains that bounded predecessor evidence and independently examines the correction and its causal trace.",
+    "repair_delta": "Against native-close-before1.exs.txt: +13/-2; one additive 11-line private helper and two close call substitutions only. Both original return_endpoint sites remain. Former reload_return_endpoint helper absent.",
+    "baseline_prefix_bytes": 101062,
+    "baseline_prefix_sha256": "6d3e681ffc9337130c4bf60975afd06b4582f635e840e817056e6f87d03d1523",
+    "baseline_prefix_byte_equal": true,
+    "final_module_terminator_equal": true,
+    "candidate_pin_map_change_from_original_reviewed1": [
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs"
+    ],
+    "prior_review_bindings": 21,
+    "prior_review_binding_mismatches_except_intentional_test_repair": [],
+    "production_dependency_browser_source_unchanged": true,
+    "protected_files_private_keys_raw_netlog_accessed": false
+  },
+  "semantic_checks": [
+    {
+      "area": "Static causal repair",
+      "result": "PASS",
+      "evidence": "Captured endpoint return is asynchronous. Existing checked Generation cleanup executes after Router.call returns; H2 Stream then finishes the already sent response, sends authentic h2_stream_done and exits. Peer close can kill a still-live registered worker. H2-only reload_close_native waits for actual captured native PID death before closing TCP, so that later close cannot change its exit reason. This is supported static causal reasoning, not dynamic kill-sender proof."
+    },
+    {
+      "area": "Original monitor and exact reason",
+      "result": "PASS",
+      "evidence": "capture installs original monitor while native worker is held alive. New helper only reads Process.alive? and uses existing F.eventually; it never consumes/replaces/demonitors the monitor or injects DOWN. Unchanged close_native still requires that exact original PID/ref to report :normal for H2, followed by exact connection/writer exits. A killed/crashed worker remains a failure. H1 immediately uses unchanged close_native and retains peer_closed/actor assertions."
+    },
+    {
+      "area": "Seed and active close ordering",
+      "result": "PASS",
+      "evidence": "Seed order at3039-3041 is original endpoint return then wrapper then original close/assertions. Active order at3118-3123 is original endpoint return, optional cycle3 reload_capacity, genuine OLD and filler retirement joins, then wrapper and original close/assertions. The seed for NEW completes before OLD original return can trigger the held retirement. No new worker wait occurs inside the active2s hold."
+    },
+    {
+      "area": "Capacity cleanup and joins",
+      "result": "PASS",
+      "evidence": "reload_capacity retains its try/after that releases real filler prefix pins and sends exact custodian continuation unconditionally. Original before/through-continue elapsed<2000 assertions remain. OLD/filler public await_retired, authentic receipt/helper slot/normal DOWN, owner charged-until-confirmed, custodian normal DOWN/removal and physical peer-close joins are unchanged and precede active wrapper."
+    },
+    {
+      "area": "Profiles, scalar assertions and finite clocks",
+      "result": "PASS",
+      "evidence": "Exact full repair diff changes no eight-profile generator,22CAS/2warmup/20sample fold, scalar/identity/capacity/refund/physical/finalzero assertion or byte value. Existing F.eventually is bounded by unchanged5000ms deadline; no deadline constant changes. Original2s hold,60s ExUnit outer,120s embedding,180s peer and resource/request/byte caps remain. Source-only timing placement is checked; actual aggregate duration is unvalidated."
+    },
+    {
+      "area": "Pinned inventory",
+      "result": "PASS",
+      "evidence": "All399 current candidate pins match live files and inventory map. All6 document pins match. Independent rg enumeration using the read collector selection yields398; union with pinned enumJSON is exactly399. Counts were verified, never rewritten. Prior21 reviewed bindings remain equal except the intentional fixture correction; both separately pinned http_runtime dependency source files match."
+    },
+    {
+      "area": "Frozen verification contract",
+      "result": "PASS",
+      "evidence": "first_qualification equals inventory2 exactly, including unused fixed-plateau-first-scoped2 name; receipt and log absent. Payload equals original inventory1 full unfiltered endpoint+generation two-file command with warnings-as-errors/max-cases1. Final commands/browser/format paths/scope1/scope2/path counts equal inventory2;8+12=20distinct paths. No filter,skip,timeout or warning relaxation."
+    }
+  ],
+  "first_failure_and_runtime": {
+    "original_first_command": "FAIL:94 executed tests,4 failures,exit2. Immutable first failure retained; all four new nativeH2 profiles failed and all four H1 profiles finished.",
+    "reason_limits": "Three exact original native monitors visibly report :killed; the remaining exact reason is UNKNOWN due to truncated mailbox. No dynamic kill sender is established.",
+    "candidate2": "NOT RUN; prior sourceSPEC2 P1 placement failure preserved.",
+    "candidate3": "NOT RUN; repaired runtime not executed by this reviewer.",
+    "final_gates": "NOT RUN; full implementation SPEC/CODE and fresh final scoped/static/consumer/Python11/browser gates remain required.",
+    "forecast": "None. PASS_SOURCE_CODE_ONLY establishes no runtime/profile/timing/full-stage acceptance."
+  },
+  "verification_commands_and_results": [
+    {
+      "command": "Read AGENTS, superseding plan2, adoption2, failedSPEC2, first-failure audit, diagnosis, counter9, independentSPEC3 and predecessorCODE1.",
+      "result": "PASS; bounded intent, failure evidence and counters consistent."
+    },
+    {
+      "command": "Read exact changed fixture/helper/capacity/retirement context and Generation/H2 Stream/FramedResponse/H2 Connection source trace.",
+      "result": "PASS; no actionable ordering or monitor-preservation issue."
+    },
+    {
+      "command": "Python hashlib/difflib static inspection (no fixture imports or execution).",
+      "result": "PASS; all supplied input hashes match, exact+13/-2 delta,101062prefix bytes and terminator preserved."
+    },
+    {
+      "command": "Read-only rg --files plus Python JSON/hash comparisons.",
+      "result": "PASS;399/399 live pins,6/6 document pins,398collector+enum union, predecessor21bindings and exact frozen payload/final20scope comparisons."
+    }
+  ],
+  "counters": {
+    "root_failure_events": 236,
+    "orchestration": 147,
+    "successor_tooling_errors": 75,
+    "successor_sol_repair_rounds": 7,
+    "successor_fixture_repair": 7,
+    "successor_production_repair": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_state": "exhausted",
+    "fixed_plateau_fixture_adoptions": 2,
+    "fixed_plateau_runtime_failed_green": 1,
+    "fixed_plateau_source_failed_spec": 1,
+    "new_repairs_or_failed_green_by_this_review": 0,
+    "no_counter_reset": true
+  },
+  "task_diff": [
+    "/tmp/gaoxy-fixed-plateau-source-code2.json"
+  ],
+  "mutations": "Only designated tmp report written. Repository/evidence/Git/runtime ownership remains exclusively root; other edits preserved.",
+  "runtime_actions": {
+    "tests": 0,
+    "formatting": 0,
+    "builds": 0,
+    "BEAM": 0,
+    "browser": 0,
+    "network": 0,
+    "process_manipulation": 0,
+    "git": 0
+  },
+  "command_shutdown_status": "All own static read/hash/diff and tmp-write commands completed; no long-lived command/session/process launched.",
+  "remaining_risks": [
+    "Corrected candidate runtime and aggregate original deadlines remain unvalidated.",
+    "Source-only bounded repair review does not replace required first qualification, full implementation independent review, fresh final gates or stage acceptance."
+  ],
+  "decisions_needed": "None for this bounded CODE review; root may execute the same frozen unused qualification2. No extra Astra recovery authorized or requested."
+}

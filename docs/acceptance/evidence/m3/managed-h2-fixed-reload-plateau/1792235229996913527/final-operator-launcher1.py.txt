@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+import datetime, hashlib, json, os, re, subprocess
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+inv=json.loads((E/'command-inventory3.json').read_text())
+for name,expected in [('implementation-spec1.json','PASS_IMPLEMENTATION_SPEC_ONLY'),('implementation-code1.json','PASS_IMPLEMENTATION_CODE_ONLY')]:
+    r=json.loads((E/name).read_text()); assert r['verdict']==expected and r['findings']==[]
+results=[]
+for gate in inv['final_commands']:
+    assert all(sha(W/p)==h for p,h in inv['source_sha256'].items())
+    assert not (W/gate['receipt']).exists() and not (W/gate['log']).exists()
+    print('ROOT_START '+gate['name'],flush=True)
+    rc=subprocess.run(gate['outer_argv'],cwd=W).returncode
+    receipt=json.loads((W/gate['receipt']).read_text())
+    log=W/gate['log']; plain=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',log.read_text())
+    assert rc==0 and receipt['verdict']=='PASS' and receipt['actual_exit']==0
+    assert receipt['log_sha256']==sha(log) and receipt['process_joined']
+    assert not receipt['forced'] and not receipt['descendant_cleanup']['forced']
+    assert receipt['descendant_cleanup']['remaining']==[] and receipt['process_group_remaining']==[]
+    assert receipt['wait_error'] is None and receipt['source_stable']
+    assert receipt['source_before']==receipt['source_after']
+    assert all(inv['source_sha256'][p]==h for p,h in receipt['source_before'].items())
+    assert receipt['failures']==receipt['skipped']==receipt['excluded']==0 and receipt['warnings']==[]
+    if gate['kind']=='green':assert receipt['tests']>0
+    item={k:receipt[k] for k in ['name','kind','verdict','actual_exit','tests','failures','skipped','excluded','elapsed_seconds']}
+    item.update(receipt_sha256=sha(W/gate['receipt']),log_sha256=sha(log),source_count=len(receipt['source_before']),adopted_raw_waits=[{**r,'decoded_exit_or_signal':os.waitstatus_to_exitcode(r['wait_status'])} for r in receipt['descendant_cleanup']['reaped']])
+    if gate['name']=='fixed-plateau-final-peer-startup1':
+        summaries=re.findall(r'^Ran (\d+) tests? in ([^\n]+)',plain,re.M)
+        methods=re.findall(r'^test_[^\n]+\.\.\. ok$',plain,re.M)
+        assert len(summaries)==1 and summaries[0][0]=='11' and len(methods)==11
+        assert re.search(r'^OK\s*$',plain,re.M) and not re.search(r'^(FAILED|ERROR:|FAIL:)',plain,re.M)
+        item.update(unittest_actual_tests=11,unittest_errors=0,unittest_skips=0,unittest_methods=methods,collector_tests_are_static_zero=receipt['tests']==0)
+    results.append(item)
+    print('ROOT_VERIFIED '+json.dumps(item,sort_keys=True),flush=True)
+report={'kind':'ROOT_POSTREVIEW_FINAL_NONBROWSER_GATES_AUDIT1','at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'verdict':'PASS_NONBROWSER_ONLY','inventory_sha256':sha(E/'command-inventory3.json'),'spec_sha256':sha(E/'implementation-spec1.json'),'code_sha256':sha(E/'implementation-code1.json'),'current_source_pins':len(inv['source_sha256']),'gates':results,'limits':'Static/ExUnit/isolated consumers/Python actual counts stay separate. Browser, images, final docs and local commit still pending. Raw signal10 is never exit0.'}
+with (E/'final-nonbrowser-root-audit1.json').open('x') as f:json.dump(report,f,indent=2,sort_keys=True);f.write('\n')
+print('ROOT_ALL_NONBROWSER_PASS '+sha(E/'final-nonbrowser-root-audit1.json'),flush=True)

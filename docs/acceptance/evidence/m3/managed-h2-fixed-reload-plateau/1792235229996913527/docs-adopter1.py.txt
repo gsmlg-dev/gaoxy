@@ -1,0 +1,93 @@
+#!/usr/bin/env python3
+import datetime, hashlib, json, re
+from pathlib import Path
+
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527'
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def write_json(p,d):
+    with p.open('x') as f: json.dump(d,f,indent=2,sort_keys=True); f.write('\n')
+P=Path('/tmp/gaoxy-fixed-plateau-docs-proposal1.json')
+A=Path('/tmp/gaoxy-fixed-plateau-acceptance-proposal1.md')
+assert sha(P)=='02ca9c7783d913db0c39f0cc24bd0b85fd3cfb76937c71c0d2289218c64d1301'
+assert sha(A)=='309e4be7cdf544ce1b60ce7732ae39ad2a8be8f927c98c7b01ad8af5a651945e'
+p=json.loads(P.read_text()); n=json.loads((E/'final-nonbrowser-root-audit1.json').read_text())
+b=json.loads((E/'fixed-browser-root-audit1.json').read_text()); images=json.loads((E/'fixed-browser-image-review1.json').read_text())
+assert n['verdict']=='PASS_NONBROWSER_ONLY' and b['status']=='PASS' and images['verdict']=='PASS_IMAGES_ONLY'
+assert len(b['rows'])==2 and len(images['images'])==4 and all(x['root_viewed'] for x in images['images'])
+inv=json.loads((E/'command-inventory3.json').read_text())
+assert len(inv['source_sha256'])==399 and all(sha(W/f)==h for f,h in inv['source_sha256'].items())
+assert all(sha(W/f)==h for f,h in p['input_sha256'].items())
+updates={}
+for proposal in p['proposals']:
+    s=(W/proposal['path']).read_text()
+    for edit in proposal['edits']:
+        assert edit['operation']=='replace_once' and s.count(edit['old'])==1
+        s=s.replace(edit['old'],edit['new'],1)
+    updates[proposal['path']]=s
+old='Core consumer passed1/0; HTTP consumer is PENDING (running at this checkpoint), Python startup and fixed browser are NOT RUN. Document review, local commit and committed-byte custody remain PENDING. This is a partial verification checkpoint, not fixed-slice closure.'
+new='Core consumer passed1/0 and HTTP consumer passed2/0. Pinned Python startup passed11 unittest methods (the ExUnit-only collector remains static0). Fresh fixed browser passed two actual nativeH1/H2→TLS-H2 rows; root opened all four OLD/NEW PNGs. Implementation and runtime gates are PASS. Final independent document review, local commit and committed-byte custody remain pending and are recorded separately before fixed-slice closure.'
+for path,s in updates.items():
+    assert s.count(old)==1
+    updates[path]=s.replace(old,new,1)
+design='docs/designs/m3-managed-h2-fixed-reload-plateau.md'
+updates[design]=updates[design].replace('Remaining acceptance work is the explicitly pending consumer/startup/browser/document/local-custody gates; broader Task5/M3 stays open.','All prescribed consumer/startup/browser gates passed; final document review and local committed-byte custody remain. Broader Task5/M3 stays open.')
+plan='docs/plans/m3-managed-h2-fixed-reload-plateau.md'
+s=updates[plan]
+s=s.replace('Core consumer is PASS1/0; HTTP consumer is PENDING (running), Python startup and browser are NOT RUN at this checkpoint. Root serializes remaining commands under its adopted E5 custody collector.','Core consumer passed1/0, HTTP passed2/0, pinned Python startup passed11 methods (collector static0), and browser passed two actual rows/four root-viewed images. Root serialized all commands under the adopted E5 custody collectors; original receipts are immutable.')
+for prefix in ['Run core and HTTP consumers separately;', 'Derive the fresh E5 fixed browser host/runner/cohort/collector', 'Run fresh fixed browser nativeH1/H2', 'If an active copied/changed Python peer dependency', 'Reconcile final verification coverage', 'Write acceptance with actual source/ref/environment,']:
+    pattern=r'^- \[ \] '+re.escape(prefix)
+    s,count=re.subn(pattern,'- [x] '+prefix,s,count=1,flags=re.M); assert count==1
+s=s.replace('Current runtime results are limited to the audited gates above; pending consumer/startup/browser/document/local-commit custody is not implied complete. Task8 checkboxes remain pending until actual independent document review and local committed-byte custody.','All required runtime gates above passed with the original assertions and clocks. Task8 factual acceptance is written; final document review, local committed-byte custody and successor preparation remain separately pending until performed.')
+updates[plan]=s
+identity='docs/plans/m3-managed-h2-identity-rotation.md'
+updates[identity]=updates[identity].replace('the current successor status is the partial fixed-plateau verification checkpoint that follows it.','the current successor runtime verification checkpoint follows it; final document/local-commit custody remains separate.')
+for f in ['docs/plans/m3-upstream-transport.md','implement-plan.md']:
+    updates[f]=updates[f].replace('Its current partial verification is recorded above.','Its current runtime verification is recorded above; final document/local-commit custody remains separate.')
+acceptance=A.read_text()
+acceptance=acceptance.replace('**PARTIALLY VERIFIED; closure PENDING.** Fresh final scoped/static gates and the core consumer passed. HTTP consumer is running; Python startup, fresh fixed browser, final independent document review and local committed-byte custody are pending.','**PASS for fixed reload plateau implementation/runtime gates; final closure PENDING.** All prescribed scoped/static, separate consumers, pinned Python startup and fresh fixed browser gates passed. Final independent document review and local committed-byte custody are pending and must be completed before advancement.')
+bindings={
+ 'FINAL_STATIC_RECEIPT_BINDINGS':'`fixed-plateau-final-compile1.json`, `fixed-plateau-final-format1.json`, `fixed-plateau-final-syntax1.json`; hashes and commands in `final-nonbrowser-root-audit1.json`',
+ 'FINAL_SCOPED1_RECEIPT_BINDING':'`fixed-plateau-final-scoped1.json`, SHA256 `54b2ec151574348825f1f57b77fef2a10d66754ad1de3fb93e86b6bfb1e9de08`',
+ 'FINAL_SCOPED2_RECEIPT_BINDING':'`fixed-plateau-final-scoped2.json`, SHA256 `1f9d4c70880b1d0fc3774b129aa8020111a4f20bb90895bd943f958e668c5867`',
+ 'CORE_CONSUMER_RECEIPT_BINDING':'`fixed-plateau-final-consumer-core1.json`, SHA256 `7420236b0befa0b234178a50018d7b629d4e8908231f6c8e312532973ada8597`',
+ 'HTTP_CONSUMER_ACTUAL_RESULT_AND_RECEIPT':'PASS2/0;373.729s; `fixed-plateau-final-consumer-http1.json`, SHA256 `7b5a1c6871692f3d7945ca834f116957f40e02c041fbd70b02befa9b391a7803`',
+ 'PYTHON_STARTUP_ACTUAL_RESULT_AND_RECEIPT':'PASS11 unittest methods/0 failures/0 skips;48.533s; `fixed-plateau-final-peer-startup1.json`, SHA256 `98ee0f68357378ae74adb11a33dec12b84b261c04313484d86ca8db520e51ee3`; collector static0',
+ 'BROWSER_ACTUAL_ROWS_IMAGES_CUSTODY_AND_RECEIPTS':'PASS2 actual rows/4 root-viewed images;32.840s; `fixed-browser-command1.json`, `fixed-browser-root-audit1.json` SHA256 `'+sha(E/'fixed-browser-root-audit1.json')+'`, `fixed-browser-image-review1.json` SHA256 `'+sha(E/'fixed-browser-image-review1.json')+'`',
+ 'DOCUMENT_REVIEWS_AND_FINDINGS':'PENDING; separate immutable document SPEC then dependent CODE reports must be adopted before local commit; this row does not forecast their verdicts',
+ 'LOCAL_COMMIT_AND_CUSTODY':'PENDING; exact feature commit and postcommit blob audit will be recorded by the successor kickoff after actual local commit, avoiding self-reference',
+ 'FINAL_EXIT_SKIP_EXCLUSION_WARNING_AND_SOURCE_STABILITY_BINDINGS':'`final-nonbrowser-root-audit1.json` SHA256 `'+sha(E/'final-nonbrowser-root-audit1.json')+'` records all eight final command exits0, skipped0, excluded0, product-warning0, stable before/after source, normal joined command actors, no forced cleanup or remaining groups. Nix dirty-tree metadata warnings remain in logs under the existing collector exemption. Adopted raw wait signal10 remains decoded−10, never exit0. Browser source snapshots independently contain396 outer and287 inner entries; the399-entry frozen union remains current. All102 loaded BEAM/MD5 entries per browser row were stable before/after.',
+ 'ACTUAL_ARCHIVE_PATH_HASH_BINDINGS':'`before-final-documents1.json` maps each original path/SHA256 to its exclusive archive and rebinds the historical candidate3 document pins without rewriting that manifest',
+}
+for key,value in bindings.items():
+    assert acceptance.count('{{'+key+'}}')==1
+    acceptance=acceptance.replace('{{'+key+'}}',value,1)
+acceptance=acceptance.replace('| Isolated HTTP consumer | PENDING; running at this checkpoint; count/exit unknown |','| Isolated HTTP consumer | PASS2/0 |')
+acceptance=acceptance.replace('| Pinned Python peer startup | NOT RUN |','| Pinned Python peer startup | PASS11-method unittest; collector static0 |')
+acceptance=acceptance.replace('| Fresh fixed browser nativeH1/H2→TLS-H2,2 rows/4 root-viewed images | NOT RUN |','| Fresh fixed browser nativeH1/H2→TLS-H2,2 rows/4 root-viewed images | PASS |')
+acceptance=acceptance.replace('browser custody remains a separate pending gate.','browser custody passed separately: eight named Actors exited0 with joined readers/gone groups, four original upstream connections closed by actual connection_reset, and both requests per row were clean while the actual native connection remained alive before explicit confirmed Chrome.close. H2 native workers and all final downstream actors joined through their recorded genuine terminal reasons. Twelve adopted runner waits were ten exits0 plus two signal10/decoded−10; raw statuses are retained. Safe metadata is deliberately partial (`read_complete:false`,8192-event cap), and both raw directories were absent only after all Actors joined. The two qualification-listed `trust-a.pem` artifacts are exact46-byte post-preparation invalidation tombstones, not certificates; runtime retained the prepared public DER. No raw NetLog or private key was read or committed.')
+assert '{{' not in acceptance
+updates['docs/acceptance/m3-managed-h2-fixed-reload-plateau.md']=acceptance
+assert all('HTTP consumer is PENDING' not in x for x in updates.values())
+archives=['before-final-design.txt','before-final-plan.txt','before-final-acceptance.txt','before-final-identity-plan.txt','before-final-upstream-plan.txt','before-final-implement-plan.txt']
+paths=[design,plan,'docs/acceptance/m3-managed-h2-fixed-reload-plateau.md',identity,'docs/plans/m3-upstream-transport.md','implement-plan.md']
+assert all(not (E/f).exists() for f in archives)
+before={}
+for path,name in zip(paths,archives):
+    raw=(W/path).read_bytes()
+    with (E/name).open('xb') as f:f.write(raw)
+    before[path]={'sha256':sha(W/path),'archive':str((E/name).relative_to(W)),'archive_sha256':sha(E/name)}
+candidate=json.loads((E/'source-candidate3.json').read_text())
+rebound={}
+for path,h in candidate['documents_sha256'].items():
+    location=before[path]['archive'] if path in before else path
+    assert sha(W/location)==h
+    rebound[path]={'sha256':h,'current_preserved_location':location}
+write_json(E/'before-final-documents1.json',{'kind':'SIX_CANONICAL_PRE_FINAL_ARCHIVES1','at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'archives':before,'historical_candidate_sha256':sha(E/'source-candidate3.json'),'historical_document_pins_rebound':rebound,'limits':'Historical candidate is immutable; current canonical docs may advance. Source399 pins remain unchanged.'})
+for src,name in [(P,'docs-proposal1.json'),(A,'acceptance-proposal1.md.txt')]:
+    with (E/name).open('xb') as f:f.write(src.read_bytes())
+for path,s in updates.items():(W/path).write_text(s)
+assert all(sha(W/f)==h for f,h in inv['source_sha256'].items())
+write_json(E/'docs-adoption1.json',{'kind':'ROOT_DOCUMENT_PROPOSAL_ADOPTION1','at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'proposal_sha256':sha(P),'acceptance_proposal_sha256':sha(A),'script_sha256':sha(Path(__file__)),'archive_manifest_sha256':sha(E/'before-final-documents1.json'),'documents_after_sha256':{f:sha(W/f) for f in paths},'source_pins_unchanged':399,'status':'RUNTIME_PASS_DOCUMENT_REVIEW_PENDING','limits':'No fixed final closure, document-review pass, local commit or group execution is forecast. Final closure is recorded after actual custody.'})
+with (E/'docs-adopter1.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'documents':len(paths),'source_pins':399,'archive_manifest_sha256':sha(E/'before-final-documents1.json'),'adoption_sha256':sha(E/'docs-adoption1.json'),'review':'PENDING'}))

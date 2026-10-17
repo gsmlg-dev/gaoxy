@@ -2768,4 +2768,1025 @@ defmodule Gaoxy.Proxy.ManagedH2FixedGenerationTest do
       label: :rotation_misuse
     }
   end
+
+  # Fixed before execution: only these scalar fields participate in plateau
+  # equality. Real identities and cumulative high-water/rejection counters are
+  # retained separately; no serialized term is rewritten before measuring it.
+  for protocol <- [:h2c, :http2], downstream <- [:http1, :http2], profile <- [:active, :idle] do
+    @reload_protocol protocol
+    @reload_downstream downstream
+    @reload_profile profile
+    @tag :managed_h2_fixed_reload_plateau
+    @tag reload_profile: profile, reload_upstream: protocol, reload_downstream: downstream
+    test "#{downstream} to #{protocol} fixed #{profile} twenty reloads retain exact plateau" do
+      entered = System.monotonic_time(:millisecond)
+      peers = reload_peers(@reload_protocol)
+      planned_requests = if @reload_profile == :active, do: [16, 16, 13], else: [8, 8, 7]
+
+      for {epoch, requests} <- Enum.zip(peers, planned_requests),
+          do: Process.put({__MODULE__, :reload_expected_requests, epoch.peer}, requests)
+
+      embedding_before = System.monotonic_time(:millisecond)
+      f = environment(@reload_protocol, @reload_downstream)
+      embedding_after = System.monotonic_time(:millisecond)
+      f = Map.put(f, :reload_class, hd(peers).class)
+      profile = @reload_profile
+      context = %{upstream: @reload_protocol, downstream: @reload_downstream, profile: profile}
+      initial = candidate(f, hd(peers).source, :reload)
+      reload_assert_class(f, initial)
+      reload_watch_retirement(f, initial, false)
+      assert {:ok, generation, _} = Generation.snapshot(f.store)
+      current = activate(f, initial, generation)
+      add_listener(f)
+      observe_owner(f)
+      identity = reload_identity(f, current)
+      {connection, initial_ledger} = reload_seed(f, current, hd(peers), 0)
+
+      reload_emit(context, "setup", %{
+        identity: reload_id(identity),
+        scalar_fields: [:transport, :store, :source_class, :service, :gate],
+        separate_fields: [
+          :identities,
+          :retirements,
+          :peer_epochs,
+          :retained_high_water,
+          :rejected
+        ],
+        entered_monotonic_ms: entered,
+        setup_elapsed_ms: System.monotonic_time(:millisecond) - entered,
+        embedding_creation_interval_monotonic_ms: [embedding_before, embedding_after],
+        embedding_lifetime_ms: 120_000,
+        outer_exunit_timeout_ms: 60_000,
+        peer_lifetime_ms: 180_000,
+        planned_accepts: [8, 8, 7],
+        planned_requests: planned_requests,
+        peers: Enum.map(peers, &reload_peer_public/1),
+        initial: initial_ledger
+      })
+
+      {current, connection, firststeady, samples, ledger} =
+        Enum.reduce(1..22, {current, connection, nil, [], [initial_ledger]}, fn cycle,
+                                                                                {old, conn,
+                                                                                 baseline,
+                                                                                 samples,
+                                                                                 ledger} ->
+          assert reload_identity(f, old) === identity
+          {next, next_conn, sample, row} = reload_step(f, old, conn, peers, cycle, profile)
+          assert reload_identity(f, next) === identity
+          baseline = if cycle == 2, do: sample, else: baseline
+          samples = if cycle > 2, do: [sample | samples], else: samples
+
+          reload_emit(context, "cycle", %{
+            cycle: cycle,
+            measured: cycle > 2,
+            sample: sample,
+            ledger: row,
+            elapsed_ms: System.monotonic_time(:millisecond) - entered
+          })
+
+          {next, next_conn, baseline, samples, [row | ledger]}
+        end)
+
+      assert length(samples) == 20
+      assert Enum.all?(samples, &(&1 === firststeady))
+      assert length(ledger) == 23
+      assert reload_identity(f, current) === identity
+      teardown_started = System.monotonic_time(:millisecond)
+      # Leave the Store's existing monitor unconsumed for finish/3.
+      assert :ok = GenServer.stop(f.store, :normal, @timeout)
+      final = reload_join_retired(f, current, reload_epoch(peers, 22), connection)
+      final_epoch = reload_join_peer(reload_epoch(peers, 22), connection.closed ++ [final])
+      reload_zero(f, connection.gate)
+      assert Process.alive?(f.owner)
+      finish(f, [], [])
+
+      reload_emit(context, "finished", %{
+        measured_samples: length(samples),
+        successful_cas: 22,
+        resources_seeded: 23,
+        final_retirement: final,
+        final_epoch: final_epoch,
+        teardown_elapsed_ms: System.monotonic_time(:millisecond) - teardown_started,
+        profile_elapsed_ms: System.monotonic_time(:millisecond) - entered
+      })
+    end
+  end
+
+  defp reload_peers(protocol) do
+    peers =
+      Enum.reduce(0..2, [], fn index, epochs ->
+        address = {127, 0, 0, index + 1}
+        text = "127.0.0.#{index + 1}"
+        port = if epochs == [], do: 0, else: hd(epochs).ready["port"]
+        started = System.monotonic_time(:millisecond)
+
+        {peer, ready} =
+          F.peer(protocol, [
+            "--manual",
+            "--bind-address",
+            text,
+            "--listen-port",
+            Integer.to_string(port)
+          ])
+
+        elapsed = System.monotonic_time(:millisecond) - started
+        assert ready["bind_address"] == text
+        assert ready["port"] in 1..65_535
+        if index > 0, do: assert(ready["port"] == port)
+
+        epochs ++
+          [%{index: index, peer: peer, ready: ready, address: address, ready_elapsed_ms: elapsed}]
+      end)
+
+    trust =
+      if protocol == :http2 do
+        ders =
+          Enum.map(peers, fn epoch ->
+            # Bounded public PEM read and the defining fixture's CA decoder.
+            rotation_positive_pem(epoch.ready["ca"])
+            assert [der] = F.certificates(epoch.ready["ca"])
+            assert byte_size(der) in 1..65_536
+            :binary.copy(der)
+          end)
+
+        assert length(Enum.uniq(ders)) == 3
+        assert Enum.sum(Enum.map(ders, &byte_size/1)) <= 1_048_576
+        leaves = Enum.map(peers, & &1.ready["identity"]["certificate_sha256"])
+        assert Enum.all?(leaves, &(is_binary(&1) and byte_size(&1) == 64))
+        assert length(Enum.uniq(leaves)) == 3
+        ders
+      else
+        nil
+      end
+
+    scheme = if protocol == :http2, do: "https", else: "http"
+
+    peers =
+      Enum.map(peers, fn epoch ->
+        source = %{
+          protocol: protocol,
+          origin: "#{scheme}://localhost:#{epoch.ready["port"]}",
+          connect_address: epoch.address,
+          trust: trust
+        }
+
+        Map.merge(epoch, %{source: source, class: reload_class(source)})
+      end)
+
+    assert Enum.all?(peers, &(&1.class === hd(peers).class))
+    peers
+  end
+
+  defp reload_class(source) do
+    assert Enum.sort(Map.keys(source)) == [:connect_address, :origin, :protocol, :trust]
+    assert {:ok, policy, manifest} = Gaoxy.Proxy.ManagedH2Preparation.prepare_policy(source)
+
+    %{
+      source: :erlang.external_size(source),
+      policy: :erlang.external_size(policy),
+      manifest: :erlang.external_size(manifest),
+      trust: :erlang.external_size(source.trust)
+    }
+  end
+
+  defp reload_assert_class(f, current) do
+    assert reload_class(current.source) === f.reload_class
+    record = :sys.get_state(f.owner).records[current.transport.resource]
+    assert record.policy.connect_address == current.source.connect_address
+    assert :erlang.external_size(record.policy) == f.reload_class.policy
+
+    if f.protocol == :http2,
+      do: assert(record.policy.open_options[:ssl][:cacerts] === current.source.trust),
+      else: assert(current.source.trust == nil)
+  end
+
+  defp reload_epoch(peers, index) when index in 0..22, do: Enum.at(peers, div(index, 8))
+
+  defp reload_identity(f, current) do
+    for pid <- [f.instance, f.owner, f.store], do: assert(Process.alive?(pid))
+    assert :sys.get_state(f.owner).epoch === current.transport.owner_epoch
+    {f.instance, f.owner, current.transport.owner_epoch, f.store}
+  end
+
+  defp reload_open(f, current, epoch, target, phase) do
+    {socket, baseline} = connect(f)
+    assert :ok = F.send_request(f, socket, "GET", target)
+    captured = capture(f, current, :reload, baseline)
+    dispatch(captured)
+    request = reload_request_at(f, epoch, current, target, phase)
+    bound = bound(f, current, captured)
+
+    %{
+      socket: socket,
+      captured: captured,
+      bound: bound,
+      request: request,
+      gate: captured.exchange.gate,
+      phase: phase
+    }
+  end
+
+  defp reload_request_at(f, epoch, current, target, :fresh) do
+    request = request_at(f, epoch.peer, current, target)
+    reload_request_fields(current, request, target)
+    request
+  end
+
+  defp reload_request_at(_f, epoch, current, target, {:reuse, connection}) do
+    request = F.event(epoch.peer, "request")
+    assert request["connection"] == connection
+    reload_request_fields(current, request, target)
+    # The authentic request event orders these zero-wait absence checks.
+    F.no_event(epoch.peer, "accept")
+    F.no_event(epoch.peer, "tls")
+    request
+  end
+
+  defp reload_request_fields(current, request, target) do
+    assert request["target"] == target
+    assert request["connection"] > 0 and request["stream"] > 0
+
+    assert Enum.filter(request["headers"], fn [name, _] -> name == ":method" end) == [
+             [":method", "GET"]
+           ]
+
+    assert Enum.filter(request["headers"], fn [name, _] -> name == ":authority" end) ==
+             [[":authority", URI.parse(current.source.origin).authority]]
+  end
+
+  defp reload_close_native(f, socket, captured) do
+    # Let the native H2 worker finish before closing its connection. The active
+    # path reaches here after its held capacity transaction and retirement joins.
+    # Leave the original monitor unread for close_native/3's normal-exit assertion.
+    if f.downstream == :http2 do
+      F.eventually(fn -> not Process.alive?(captured.native) end)
+    end
+
+    close_native(f, socket, captured)
+  end
+
+  defp reload_complete(f, current, epoch, opened, body) do
+    complete_return(
+      f,
+      opened.captured,
+      opened.bound,
+      epoch.peer,
+      opened.request,
+      opened.socket,
+      body
+    )
+
+    receipt = reload_request_receipt(current, epoch, opened)
+    return_endpoint(opened.captured)
+    reload_close_native(f, opened.socket, opened.captured)
+    assert_effect_counts(f, opened.captured, opened.bound)
+    reload_idle(f, current)
+    receipt
+  end
+
+  defp reload_idle(f, current) do
+    F.eventually(fn ->
+      state = :sys.get_state(f.owner)
+
+      not Enum.any?(state.pins, fn {_, hold} ->
+        current.transport in hold.public.handles and hold.public.kind == :request
+      end) and
+        not Enum.any?(state.tokens, fn {_, hold} ->
+          hold.resource == current.transport.resource
+        end)
+    end)
+
+    assert_no_child_or_token(f, current)
+    assert configured_pins(f, current.transport) == [:baseline]
+    record = :sys.get_state(f.owner).records[current.transport.resource]
+
+    assert {:ok, %{active_requests: 0, preparing_requests: 0, pending: 0, connections: 1}} =
+             HTTP.ManagedTransport.snapshot(record.scope, @timeout)
+  end
+
+  defp reload_seed(f, current, epoch, index) do
+    target = "/reload/seed/#{reload_index(index)}?raw=%2F"
+    opened = reload_open(f, current, epoch, target, :fresh)
+    assert opened.request["connection"] == rem(index, 8) + 1
+    receipt = reload_complete(f, current, epoch, opened, <<0, "seed", 255>>)
+
+    connection = %{
+      epoch: epoch.index,
+      peer: epoch.peer,
+      connection: opened.request["connection"],
+      gate: opened.gate,
+      first_stream: opened.request["stream"],
+      index: index,
+      closed: []
+    }
+
+    {connection, receipt}
+  end
+
+  defp reload_index(index), do: index |> Integer.to_string() |> String.pad_leading(2, "0")
+
+  defp reload_step(f, old, old_connection, peers, cycle, :active) do
+    old_epoch = reload_epoch(peers, cycle - 1)
+    epoch = reload_epoch(peers, cycle)
+    fillers = if cycle == 3, do: reload_fillers(f, old.source), else: []
+    target = "/reload/held/#{reload_index(cycle)}?raw=%2F"
+    opened = reload_open(f, old, old_epoch, target, {:reuse, old_connection.connection})
+    refute opened.request["stream"] == old_connection.first_stream
+    next = candidate(f, epoch.source, :reload)
+    reload_assert_class(f, next)
+    reload_watch_retirement(f, next, cycle == 2)
+    reload_identity(f, old)
+    next = activate(f, next, old.generation)
+    await_closed(f, old, opened.captured)
+    {connection, seed} = reload_seed(f, next, epoch, cycle)
+    assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(opened.bound.completion, 0)
+
+    complete_return(
+      f,
+      opened.captured,
+      opened.bound,
+      old_epoch.peer,
+      opened.request,
+      opened.socket,
+      <<255, "old", 0>>
+    )
+
+    held_request = reload_request_receipt(old, old_epoch, opened)
+    state = :sys.get_state(f.owner)
+    assert state.pins[opened.captured.pin.ref].public === opened.captured.pin
+    assert state.records[old.transport.resource].admission == :closed
+    assert Process.alive?(old.creator)
+    return_endpoint(opened.captured)
+    capacity = if cycle == 3, do: reload_capacity(f, old, next, fillers, peers), else: nil
+    retired = reload_join_retired(f, old, old_epoch, old_connection)
+    filler_receipts = Enum.map(fillers, &reload_join_retired(f, &1, nil, nil))
+    reload_close_native(f, opened.socket, opened.captured)
+    assert_effect_counts(f, opened.captured, opened.bound)
+
+    {connection, joined} =
+      reload_epoch_custody(old_epoch, epoch, old_connection, connection, retired)
+
+    sample = reload_sample(f, next, connection.gate, f.reload_class)
+
+    {next, connection, sample,
+     %{
+       cas: %{expected: reload_id(old.generation), activated: reload_id(next.generation)},
+       seed: seed,
+       held_request: held_request,
+       retirement: retired,
+       fillers: filler_receipts,
+       capacity: capacity,
+       epoch_join: joined,
+       inventory: reload_inventory(f, next, connection.gate)
+     }}
+  end
+
+  defp reload_step(f, old, old_connection, peers, cycle, :idle) do
+    reload_idle(f, old)
+    reload_service_zero(f, old_connection.gate)
+    old_epoch = reload_epoch(peers, cycle - 1)
+    epoch = reload_epoch(peers, cycle)
+    fillers = if cycle == 3, do: reload_fillers(f, old.source), else: []
+    next = candidate(f, epoch.source, :reload)
+    reload_assert_class(f, next)
+    reload_watch_retirement(f, next, cycle == 2)
+    reload_identity(f, old)
+    next = activate(f, next, old.generation)
+    capacity = if cycle == 3, do: reload_capacity(f, old, next, fillers, peers), else: nil
+    retired = reload_join_retired(f, old, old_epoch, old_connection)
+    filler_receipts = Enum.map(fillers, &reload_join_retired(f, &1, nil, nil))
+    {connection, seed} = reload_seed(f, next, epoch, cycle)
+
+    {connection, joined} =
+      reload_epoch_custody(old_epoch, epoch, old_connection, connection, retired)
+
+    sample = reload_sample(f, next, connection.gate, f.reload_class)
+
+    {next, connection, sample,
+     %{
+       cas: %{expected: reload_id(old.generation), activated: reload_id(next.generation)},
+       seed: seed,
+       retirement: retired,
+       fillers: filler_receipts,
+       capacity: capacity,
+       epoch_join: joined,
+       inventory: reload_inventory(f, next, connection.gate)
+     }}
+  end
+
+  defp reload_watch_retirement(f, candidate, hold?) do
+    parent = self()
+    resource = candidate.transport.resource
+    custodian = candidate.creator
+    record = :sys.get_state(f.owner).records[resource]
+    assert record.custodian == custodian
+    capability = record.capability
+    id = make_ref()
+    barrier = make_ref()
+
+    debug = fn seen, event, _ ->
+      case event do
+        {:in, message} when is_tuple(message) ->
+          case message do
+            {:retire, ^capability} when hold? and not seen ->
+              send(
+                parent,
+                {:reload_retirement_held, id, resource, self(), barrier,
+                 System.monotonic_time(:millisecond)}
+              )
+
+              receive do
+                {:reload_retirement_continue, ^barrier} -> :ok
+              after
+                2_000 -> raise "test-owned retirement input barrier timed out"
+              end
+
+            {:retire_result, helper, result} ->
+              send(parent, {:reload_retire_result, id, resource, self(), helper, result})
+
+            {:DOWN, monitor, :process, helper, reason} ->
+              send(parent, {:reload_helper_down, id, resource, self(), monitor, helper, reason})
+
+            _ ->
+              :ok
+          end
+
+          seen or elem(message, 0) == :retire
+
+        {:noreply, %{retire_helper: {helper, monitor}}} ->
+          send(parent, {:reload_helper_slot, id, resource, self(), helper, monitor})
+          seen
+
+        _ ->
+          seen
+      end
+    end
+
+    :ok = :sys.install(custodian, {id, debug, false})
+
+    :ok =
+      :sys.install(
+        f.owner,
+        {id,
+         fn observed, event, _ ->
+           observed =
+             case event do
+               {:in, {tag, ^resource, ^custodian, ^capability, helper}}
+               when tag in [:custodian_helper_started, :custodian_helper_finished] ->
+                 send(
+                   parent,
+                   {:reload_owner_helper, id, self(), resource, custodian, capability, tag,
+                    helper}
+                 )
+
+                 observed
+
+               {:in, {:custodian_retired, ^resource, ^custodian, ^capability}} ->
+                 send(parent, {:reload_owner_before_confirmation, id, observed.entry})
+
+                 send(
+                   parent,
+                   {:reload_owner_confirmed, id, self(), resource, custodian, capability}
+                 )
+
+                 %{observed | confirmed: true}
+
+               _ ->
+                 observed
+             end
+
+           actual =
+             case event do
+               {:out, _, _, actual} -> actual
+               {:noreply, actual} -> actual
+               _ -> nil
+             end
+
+           if is_map(actual) do
+             entry = actual.records[resource]
+
+             if entry == nil and not observed.confirmed,
+               do: send(parent, {:reload_removed_before_confirmation, id, resource})
+
+             %{observed | entry: entry}
+           else
+             observed
+           end
+         end, %{confirmed: false, entry: record}}
+      )
+
+    # Test-only metadata, bounded by the 23 candidates and two filler scopes.
+    Process.put({__MODULE__, :reload_watch, custodian}, %{
+      id: id,
+      barrier: barrier,
+      capability: capability
+    })
+
+    on_exit(fn ->
+      send(custodian, {:reload_retirement_continue, barrier})
+      reload_remove_observer(custodian, id)
+      reload_remove_observer(f.owner, id)
+    end)
+
+    :ok
+  end
+
+  defp reload_remove_observer(pid, id) do
+    if Process.alive?(pid) do
+      try do
+        :sys.remove(pid, id)
+      catch
+        :exit, {:noproc, _} -> :ok
+        :exit, {:normal, _} -> :ok
+      end
+    end
+  end
+
+  defp reload_join_retired(f, candidate, epoch, connection) do
+    custodian = candidate.creator
+    resource = candidate.transport.resource
+    %{id: id, capability: capability} = Process.get({__MODULE__, :reload_watch, custodian})
+    owner = f.owner
+
+    assert_receive {:reload_retire_result, ^id, ^resource, ^custodian, helper, {:ok, receipt}},
+                   @timeout
+
+    assert :ok = HTTP.ManagedTransport.await_retired(receipt, @timeout)
+    assert_receive {:reload_helper_slot, ^id, ^resource, ^custodian, ^helper, monitor}, @timeout
+
+    assert_receive {:reload_helper_down, ^id, ^resource, ^custodian, ^monitor, ^helper, :normal},
+                   @timeout
+
+    assert_receive {:reload_owner_helper, ^id, ^owner, ^resource, ^custodian, ^capability,
+                    :custodian_helper_started, ^helper},
+                   @timeout
+
+    assert_receive {:reload_owner_helper, ^id, ^owner, ^resource, ^custodian, ^capability,
+                    :custodian_helper_finished, ^helper},
+                   @timeout
+
+    assert_receive {:reload_owner_before_confirmation, ^id, charged}, @timeout
+    assert charged.resource === resource and charged.custodian === custodian
+    assert charged.capability === capability and charged.transport_confirmed == false
+    assert charged.payload_bytes == :erlang.external_size(charged.payload)
+    assert charged.payload_bytes > 0
+
+    assert_receive {:reload_owner_confirmed, ^id, ^owner, ^resource, ^custodian, ^capability},
+                   @timeout
+
+    join_resource(f, candidate)
+    refute_receive {:reload_removed_before_confirmation, ^id, ^resource}, 0
+    refute_receive {:reload_retire_result, ^id, ^resource, ^custodian, _, _}, 0
+
+    refute_receive {:reload_owner_helper, ^id, ^owner, ^resource, ^custodian, ^capability,
+                    :custodian_helper_started, _},
+                   0
+
+    reload_remove_observer(owner, id)
+    Process.delete({__MODULE__, :reload_watch, custodian})
+
+    physical =
+      if epoch do
+        event = F.physical_termination(epoch.peer)
+        assert event["connection"] == connection.connection
+        event
+      else
+        nil
+      end
+
+    %{
+      resource: reload_id(resource),
+      creator: reload_id(custodian),
+      capability: reload_id(capability),
+      helper: reload_id(helper),
+      helper_monitor: reload_id(monitor),
+      receipt: reload_id(receipt),
+      public_await: :ok,
+      helper_down: :normal,
+      owner_confirmed: true,
+      creator_down: :normal,
+      charged_until_confirmation_bytes: charged.payload_bytes,
+      removed: true,
+      epoch: if(epoch, do: epoch.index, else: nil),
+      physical: physical
+    }
+  end
+
+  defp reload_fillers(f, source) do
+    Enum.map(1..2, fn _ ->
+      assert {:ok, transport, preparation} =
+               reload_prepare_attempt(f, source, Lifecycle.deadline(15_000))
+
+      # Register every successful prefix before any subsequent operation can fail.
+      on_exit(fn ->
+        if Process.alive?(f.owner), do: Resources.release(preparation)
+      end)
+
+      {creator, monitor} = creator(f, transport)
+
+      filler = %{
+        transport: transport,
+        preparation: preparation,
+        creator: creator,
+        creator_monitor: monitor,
+        source: source
+      }
+
+      reload_assert_class(f, filler)
+      reload_watch_retirement(f, filler, false)
+      filler
+    end)
+  end
+
+  defp reload_prepare_attempt(f, source, deadline) do
+    Transports.prepare(f.owner, source, self(), deadline)
+  end
+
+  defp reload_capacity(f, old, next, fillers, peers) do
+    custodian = old.creator
+    resource = old.transport.resource
+    %{id: id, barrier: barrier} = Process.get({__MODULE__, :reload_watch, custodian})
+
+    assert_receive {:reload_retirement_held, ^id, ^resource, ^custodian, ^barrier, started},
+                   @timeout
+
+    result =
+      try do
+        {before, bytes, before_status} = reload_owner_bytes(f.owner)
+
+        assert %{
+                 resources: 4,
+                 pins: 3,
+                 request_tokens: 0,
+                 helpers: 0,
+                 reserved_connections: 8,
+                 failed_resources: 0
+               } = before_status
+
+        expected = [
+          resource,
+          next.transport.resource | Enum.map(fillers, & &1.transport.resource)
+        ]
+
+        assert MapSet.new(Map.keys(before.records)) == MapSet.new(expected)
+        retained = before.records[resource]
+        assert retained.transport_confirmed == false and retained.custodian_down == false
+        assert retained.admission == :closed and retained.retirement_requested
+        assert retained.payload_bytes > 0
+        store = :sys.get_state(f.store)
+        assert store.router === next.router and store.preparation == nil and store.retired == []
+        assert [baseline] = store.baseline
+        assert baseline.handles === [next.transport]
+        result = reload_prepare_attempt(f, next.source, Lifecycle.deadline(15_000))
+
+        case result do
+          {:ok, _, unexpected_pin} ->
+            on_exit(fn ->
+              if Process.alive?(f.owner), do: Resources.release(unexpected_pin)
+            end)
+
+          {:error, _} ->
+            :ok
+        end
+
+        assert result == {:error, {:capacity, :resources}}
+        {after_state, after_bytes, after_status} = reload_owner_bytes(f.owner)
+        assert after_status === before_status
+        assert after_state.records === before.records
+        assert after_state.pins === before.pins and after_state.tokens === before.tokens
+        assert after_bytes === bytes
+        assert :sys.get_state(f.store) === store
+        assert System.monotonic_time(:millisecond) - started < 2_000
+
+        for epoch <- peers do
+          F.no_event(epoch.peer, "accept")
+          F.no_event(epoch.peer, "tls")
+          F.no_event(epoch.peer, "request")
+        end
+
+        %{
+          result: reload_id(result),
+          no_delta: true,
+          bytes_before: bytes,
+          bytes_after: after_bytes,
+          status_before: before_status,
+          status_after: after_status,
+          records: Enum.map(expected, &reload_id/1),
+          store_snapshot: reload_id({store.router.generation, store.router}),
+          original_old_payload_bytes: retained.payload_bytes,
+          prefixes:
+            Enum.map(
+              fillers,
+              &%{resource: reload_id(&1.transport.resource), pin: reload_id(&1.preparation)}
+            ),
+          hold_transaction_elapsed_ms: System.monotonic_time(:millisecond) - started
+        }
+      after
+        releases =
+          Enum.map(fillers, fn filler ->
+            try do
+              Resources.release(filler.preparation)
+            catch
+              kind, reason -> {:cleanup_error, kind, reason}
+            end
+          end)
+
+        send(custodian, {:reload_retirement_continue, barrier})
+        send(self(), {:reload_prefix_releases, id, releases})
+      end
+
+    assert_receive {:reload_prefix_releases, ^id, [:ok, :ok]}, 0
+    elapsed = System.monotonic_time(:millisecond) - started
+    assert elapsed < 2_000
+    Map.merge(result, %{prefix_releases: [:ok, :ok], hold_through_continue_elapsed_ms: elapsed})
+  end
+
+  defp reload_epoch_custody(old_epoch, epoch, old_connection, connection, retired) do
+    closed = old_connection.closed ++ [retired]
+
+    if old_epoch.index == epoch.index do
+      {%{connection | closed: closed}, nil}
+    else
+      {connection, reload_join_peer(old_epoch, closed)}
+    end
+  end
+
+  defp reload_join_peer(epoch, completed) do
+    expected_accepts = if epoch.index < 2, do: 8, else: 7
+    assert length(completed) == expected_accepts
+
+    assert Enum.all?(
+             completed,
+             &(&1.epoch == epoch.index and &1.public_await == :ok and &1.owner_confirmed and
+                 &1.removed)
+           )
+
+    assert Enum.map(completed, & &1.physical["connection"]) == Enum.to_list(1..expected_accepts)
+    peer = epoch.peer
+    # Counts derive from the fixed schedule, never from observed peer totals.
+    requests = Process.get({__MODULE__, :reload_expected_requests, peer})
+    assert requests in [8, 7, 16, 13]
+    monitor = Process.monitor(peer)
+    send(peer, {:command, %{"op" => "stop"}})
+    joined = F.event(peer, "joined")
+
+    assert %{
+             "forced" => 0,
+             "live" => 0,
+             "failed" => false,
+             "accepts" => ^expected_accepts,
+             "requests" => ^requests
+           } = joined
+
+    for name <- ["accept", "tls", "request"], do: F.no_event(peer, name)
+    assert_receive {:fixed_h2_peer_exit, ^peer, 0}, @timeout
+    assert_receive {:DOWN, ^monitor, :process, ^peer, :normal}, @timeout
+
+    assert {:ok, rebound} =
+             :gen_tcp.listen(epoch.ready["port"], [
+               :binary,
+               active: false,
+               ip: epoch.address,
+               reuseaddr: true
+             ])
+
+    assert :ok = :gen_tcp.close(rebound)
+
+    %{
+      epoch: epoch.index,
+      peer: reload_id(peer),
+      address: reload_id(epoch.address),
+      port: epoch.ready["port"],
+      resources: completed,
+      joined: joined,
+      exit: 0,
+      collector_down: :normal,
+      rebound: true
+    }
+  end
+
+  defp reload_owner_bytes(owner) do
+    state = :sys.get_state(owner)
+
+    for {_, entry} <- state.records,
+        do: assert(entry.payload_bytes == :erlang.external_size(entry.payload))
+
+    bytes =
+      Enum.reduce(state.records, 0, fn {_, entry}, sum ->
+        sum + :erlang.external_size(entry.payload)
+      end) +
+        Enum.reduce(state.pins, 0, fn {_, hold}, sum -> sum + :erlang.external_size(hold) end) +
+        Enum.reduce(state.tokens, 0, fn {_, hold}, sum -> sum + hold.payload_bytes end)
+
+    assert {:ok, status} = Transports.status(owner)
+    assert status.owned_serialized_payload_bytes == bytes
+    {state, bytes, status}
+  end
+
+  defp reload_sample(f, current, gate, frozen_class) do
+    reload_identity(f, current)
+    reload_idle(f, current)
+    reload_assert_class(f, current)
+    {state, bytes, status} = reload_owner_bytes(f.owner)
+
+    assert %{
+             resources: 1,
+             pins: 1,
+             request_tokens: 0,
+             helpers: 0,
+             reserved_connections: 2,
+             failed_resources: 0,
+             lifecycle: :running
+           } = status
+
+    assert status.limits == %{
+             max_resources: 4,
+             max_pins: 256,
+             max_request_tokens: 64,
+             max_owned_payload_bytes: 8_388_608
+           }
+
+    assert [resource] = Map.keys(state.records)
+    assert resource === current.transport.resource
+    assert [{_, pin}] = Map.to_list(state.pins)
+    assert pin.public.kind == :baseline and pin.public.holder == f.store
+    assert pin.public.handles === [current.transport]
+    store = :sys.get_state(f.store)
+    assert store.preparation == nil and store.retired == []
+    assert store.router === current.router
+    assert store.router.resources === [current.transport]
+    assert [baseline] = store.baseline
+    assert baseline === pin.public
+    zero = reload_service_zero(f, gate)
+
+    %{
+      transport: Map.put(status, :owned_serialized_payload_bytes, bytes),
+      store: %{
+        resources: length(store.router.resources),
+        baselines: length(store.baseline),
+        retired: length(store.retired),
+        preparation: store.preparation,
+        router_bytes: :erlang.external_size(store.router),
+        baseline_bytes: :erlang.external_size(store.baseline)
+      },
+      source_class: frozen_class,
+      service: zero.service,
+      gate: zero.gate
+    }
+  end
+
+  defp reload_service_zero(f, gate) do
+    F.eventually(fn ->
+      match?(
+        %{active: 0, retained_bytes: 0, cleanup_pending: 0, cleanup_failed: nil},
+        Gaoxy.status(f.instance, :http)
+      ) and
+        match?(
+          %{leases: leases, cleanups: cleanups, bytes: 0}
+          when map_size(leases) == 0 and map_size(cleanups) == 0,
+          :sys.get_state(gate)
+        )
+    end)
+
+    service_status = Gaoxy.status(f.instance, :http)
+    gate_state = :sys.get_state(gate)
+    service_state = :sys.get_state(gate_state.service)
+    gate_status = Gaoxy.Admission.status(gate)
+    lease_bytes = Enum.sum(for {_, hold} <- gate_state.leases, do: hold.bytes)
+    cleanup_bytes = Enum.sum(for {_, hold} <- gate_state.cleanups, do: hold.bytes)
+    assert gate_state.bytes == lease_bytes + cleanup_bytes
+    assert lease_bytes == 0 and cleanup_bytes == 0
+    assert gate_state.leases == %{} and gate_state.cleanups == %{} and gate_state.spawns == %{}
+    assert service_state.cleanups == %{} and service_state.cleanup_failed == nil
+    assert service_state.gate == gate
+
+    assert %{active: 0, retained_bytes: 0, cleanup_pending: 0, cleanup_failed: nil} =
+             service_status
+
+    assert %{active: 0, retained_bytes: 0, cleanup_pending: 0, queued_items: 0, queued_bytes: 0} =
+             gate_status
+
+    %{
+      service:
+        Map.take(service_status, [:active, :retained_bytes, :cleanup_pending, :cleanup_failed]),
+      gate:
+        Map.merge(
+          Map.take(gate_status, [
+            :active,
+            :retained_bytes,
+            :cleanup_pending,
+            :queued_items,
+            :queued_bytes
+          ]),
+          %{
+            leases: map_size(gate_state.leases),
+            cleanups: map_size(gate_state.cleanups),
+            lease_bytes: lease_bytes,
+            cleanup_bytes: cleanup_bytes
+          }
+        )
+    }
+  end
+
+  defp reload_zero(f, gate) do
+    F.eventually(fn ->
+      match?(
+        {:ok,
+         %{
+           resources: 0,
+           pins: 0,
+           request_tokens: 0,
+           helpers: 0,
+           reserved_connections: 0,
+           failed_resources: 0,
+           owned_serialized_payload_bytes: 0
+         }},
+        Transports.status(f.owner)
+      )
+    end)
+
+    {state, bytes, _} = reload_owner_bytes(f.owner)
+    assert state.records == %{} and state.pins == %{} and state.tokens == %{} and bytes == 0
+    reload_service_zero(f, gate)
+  end
+
+  defp reload_inventory(f, current, gate) do
+    status = Gaoxy.status(f.instance, :http)
+    actual_gate = :sys.get_state(gate)
+
+    %{
+      identity: reload_id(reload_identity(f, current)),
+      generation: reload_id(current.generation),
+      resource: reload_id(current.transport.resource),
+      creator: reload_id(current.creator),
+      gate: reload_id(gate),
+      service: reload_id(actual_gate.service),
+      service_retained_high_water: status.retained_high_water,
+      service_rejected: status.rejected,
+      gate_retained_high_water: actual_gate.high_water,
+      gate_rejected: actual_gate.rejected
+    }
+  end
+
+  defp reload_request_receipt(current, epoch, opened) do
+    %{
+      epoch: epoch.index,
+      peer: reload_id(epoch.peer),
+      resource: reload_id(current.transport.resource),
+      generation: reload_id(current.generation),
+      request: Map.take(opened.request, ["connection", "stream", "target", "headers", "ended"]),
+      connection_observation:
+        case opened.phase do
+          :fresh ->
+            %{
+              accept_connection_correlated_by_original_helper: true,
+              alpn_h2_sni_localhost_asserted: current.source.protocol == :http2
+            }
+
+          {:reuse, connection} ->
+            %{reuse_connection: connection, no_extra_accept_or_tls_after_request: true}
+        end,
+      source: reload_id(opened.captured.pin),
+      child: reload_id(opened.bound.child),
+      token: reload_id(opened.bound.token),
+      completion: reload_id(opened.bound.completion),
+      native: reload_id(opened.captured.native),
+      session: reload_id(opened.bound.session),
+      original_complete: :ok,
+      child_and_token_removed_before_source: true
+    }
+  end
+
+  defp reload_peer_public(epoch) do
+    %{
+      epoch: epoch.index,
+      peer: reload_id(epoch.peer),
+      address: reload_id(epoch.address),
+      port: epoch.ready["port"],
+      observed_setup_to_ready_ms: epoch.ready_elapsed_ms,
+      source_class: epoch.class,
+      source_hash: reload_hash(epoch.source),
+      peer_identity: epoch.ready["identity"],
+      certificate_profile:
+        if(epoch.source.protocol == :http2,
+          do: "unchanged RSA2048 CA/leaf SHA256 localhost SAN fixture",
+          else: nil
+        ),
+      public_ca_bundle:
+        Enum.map(
+          epoch.source.trust || [],
+          &%{bytes: byte_size(&1), sha256: reload_hash_binary(&1)}
+        )
+    }
+  end
+
+  defp reload_id(term),
+    do: %{inspect: inspect(term, limit: 20, printable_limit: 256), sha256: reload_hash(term)}
+
+  defp reload_hash(term), do: term |> :erlang.term_to_binary() |> reload_hash_binary()
+  defp reload_hash_binary(bytes), do: Base.encode16(:crypto.hash(:sha256, bytes), case: :lower)
+
+  defp reload_emit(context, event, row),
+    do:
+      IO.puts(JSON.encode!(Map.merge(context, Map.put(row, :event, "fixed_h2_reload_#{event}"))))
 end

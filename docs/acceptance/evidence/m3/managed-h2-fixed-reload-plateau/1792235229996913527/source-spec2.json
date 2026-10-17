@@ -1,0 +1,112 @@
+{
+  "task_id": "fixed_plateau_repair_spec",
+  "status": "FAIL_SOURCE_SPEC",
+  "assignment": "direct independent read-only Sol specification review; bounded candidate2 fixture repair only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "88e435a73429666717a4d20a83f9fca13e0a67e9",
+  "input_sha256": {
+    "source-candidate2.json": "d9d6592b99c2c806d15852c043e62c50a2035051a575e13fa57d314745a95ff9",
+    "command-inventory2.json": "6504a23e74de5428f431e31f36c286cad9cb2dba1b81dc810b59340cd0c274d3",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "7f8a31bdd3a6f26e54a8ac0710ed4264189a69ba91d0dc49b7a99ab3c7dd6daa",
+    "native-close-before1.exs.txt": "c1823bedb8eaaf987d5caa50f8ee617e6f656b375b9902da84af4f23b40cb116",
+    "native-close-adoption1.json": "398f27867964d33943cc86c8f2c603cc27f037553d06bbb99e6386fb0fbaf1a4",
+    "counter8.json": "55fc8eed41a5c9644cc5763ba4633368c31335076b9a0a30edd4d8fdeb71f0a9"
+  },
+  "findings": [
+    {
+      "id": "SPEC2-F1",
+      "priority": "P1",
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "line": 3118,
+      "related_locations": [
+        {
+          "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+          "line": 3017
+        },
+        {
+          "path": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+          "line": 3190
+        },
+        {
+          "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+          "line": 629
+        },
+        {
+          "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+          "line": 1102
+        },
+        {
+          "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+          "line": 1148
+        },
+        {
+          "path": "docs/designs/m3-managed-h2-fixed-reload-plateau.md",
+          "line": 76
+        },
+        {
+          "path": "docs/plans/m3-managed-h2-fixed-reload-plateau.md",
+          "line": 84
+        }
+      ],
+      "title": "Move the native worker-exit wait outside the active cycle3 retirement hold",
+      "cause": "The new active reload_return_endpoint/2 call sends the original endpoint return and then polls native death with the existing five-second F.eventually deadline before entering reload_capacity/5. Returning the endpoint releases OLD last request source through Generation checked cleanup; upstream owner remove_pin/close_unpinned sends the authentic custodian :retire. On cycle3 that enters the unchanged two-second hold. The new native-exit polling can therefore run while this hold is active, before the capacity transaction and its unconditional continuation. This places a multi-second normal-worker join inside the hold, contrary to the explicit design/plan contract, and can consume its budget or let the held custodian time out before the required capacity/no-delta transaction. No execution is needed to establish this ordering mismatch; no actual repaired-runtime timeout is claimed.",
+      "bounded_correction": "Restore both original additive return_endpoint calls. Add a private reload_close_native(f,socket,captured) that only for downstream H2 first uses existing F.eventually(not Process.alive?(captured.native)), then calls unchanged close_native/3. Replace only the two additive close_native callsites. Seed order becomes original return -> native-death barrier -> original socket close/assertions. Active order becomes original return -> capacity transaction and unconditional continue -> original retirement/helper/custodian/physical joins -> native-death barrier -> original socket close/assertions. Keep original monitor unread, exact normal assertions, all deadlines/caps and original actors. Freeze/review the corrected source before runtime."
+    }
+  ],
+  "verified_preserved": {
+    "repair_delta_added": 12,
+    "repair_delta_removed": 2,
+    "baseline_prefix_bytes": 101062,
+    "baseline_prefix_byte_equal": true,
+    "baseline_prefix_sha256": "6d3e681ffc9337130c4bf60975afd06b4582f635e840e817056e6f87d03d1523",
+    "inherited_close_native_unchanged": true,
+    "original_monitor_not_consumed_or_replaced": true,
+    "original_normal_h2_and_original_h1_actor_assertions_preserved": true,
+    "all_eight_profiles_22_cas_20_samples_and_scalar_assertions_unchanged": true,
+    "production_dependency_and_original_deadline_cap_values_unchanged": true,
+    "candidate_pin_count": 399,
+    "inventory_union_pin_count": 399,
+    "all_399_live_pin_hashes_match": true,
+    "collector_source_count_recomputed_without_running_collector": 398,
+    "candidate_union_extra": "chromium-netlog-event-enums1.json",
+    "collector_union_exact": true,
+    "second_first_qualification_name": "fixed-plateau-first-scoped2",
+    "second_first_qualification_payload_equal_first_unfiltered_two_file_payload": true,
+    "final_commands_browser_scopes_and_format_paths_equal_predecessor_inventory": true,
+    "final_scope_path_entries": 20,
+    "final_scope_distinct_paths": 20,
+    "final_commands_and_browser_status": "NOT RUN"
+  },
+  "root_cause_review": "The static native H2 scheduling diagnosis is supported: CapturedFixed return is asynchronous; checked Generation cleanup and Stream completion happen after return; peer close kills still-registered H2 workers. The seed ordering barrier preserves authentic source release and exact original normal monitor evidence. No dynamic trace identifies the actual kill sender, and the fourth original failure exact reason remains UNKNOWN. The active hold placement is the single actionable source-spec finding.",
+  "runtime": {
+    "historical_first_command": "FAIL; 94 tests, 4 failures, exit2; preserved immutable",
+    "candidate2": "NOT RUN",
+    "this_review_tests_build_beam_browser_network": "NOT RUN by assignment",
+    "forecast": "None; this report is not full implementation review or runtime acceptance"
+  },
+  "counters": {
+    "successor_sol_repair_rounds": 6,
+    "successor_fixture_repair": 6,
+    "successor_production_repair": 0,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "astra_state": "exhausted",
+    "fixed_plateau_fixture_repair": 1,
+    "fixed_plateau_runtime_failed_green": 1,
+    "review_classification": "Source SPEC failure before repaired runtime; not a second failed GREEN",
+    "edits_or_repairs_by_this_reviewer": 0
+  },
+  "verification_commands": [
+    "Read canonical design/plan, repair plan, first-failure audit, diagnosis, adoption and counter8.",
+    "Read exact changed source/helper/Generation/Stream/H2 close/provider release trace.",
+    "Python hashlib + difflib: exact input hashes, full predecessor repair diff and baseline-prefix equality.",
+    "Python JSON/hash comparisons: all399 live source pins, exact inventory sets, predecessor payload/final gate equality.",
+    "Read-only rg --files enumeration mirrored collector source selection:398 plus pinned enum JSON gives399."
+  ],
+  "command_note": "One read-only rg used nonexistent guessed source paths and exited2; corrected with rg --files and exact source reads. No implementation/build/runtime failure or mutation resulted.",
+  "task_diff": "Only /tmp/gaoxy-fixed-plateau-source-spec2.json written by reviewer. Existing source/document/untracked changes were preserved; no repository edits.",
+  "shutdown": "All own commands finished. No long-lived process, test/build/BEAM/browser/network command or process manipulation was launched.",
+  "remaining_risks": "Corrected candidate requires fresh bounded SPEC then CODE before the complete original qualification. Full implementation review and unchanged final gates remain outstanding. No runtime forecast.",
+  "decisions_needed": "No user approval or product decision needed; root can apply bounded correction under continuing authorization."
+}
