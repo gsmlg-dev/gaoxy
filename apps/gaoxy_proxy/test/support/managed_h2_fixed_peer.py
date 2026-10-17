@@ -18,6 +18,7 @@ import sys
 import tempfile
 import threading
 import time
+import traceback
 
 import h2.config
 import h2.connection
@@ -55,9 +56,11 @@ class Commands:
 
 
 class Peer:
-    def __init__(self, protocol, manual, alpn, max_streams=None):
+    def __init__(self, protocol, manual, alpn, max_streams=None,
+                 bind_address="127.0.0.1", listen_port=0):
         self.protocol, self.manual, self.alpn = protocol, manual, alpn
         self.max_streams = max_streams
+        self.bind_address, self.listen_port = bind_address, listen_port
         self.lock = threading.RLock()
         self.stopping = threading.Event()
         self.clients, self.workers, self.events = {}, [], 0
@@ -78,7 +81,10 @@ class Peer:
 
     def fail(self, error):
         self.failed = True
-        self.emit("failure", reason=repr(error)[:1024])
+        frames = traceback.extract_tb(error.__traceback__, limit=8)
+        self.emit("failure", reason=repr(error)[:1024],
+                  frames=[dict(file=frame.filename, line=frame.lineno, function=frame.name)
+                          for frame in frames])
 
     def preparation_command(self, args, commands, deadline):
         # The certificate script and its descendants belong to this one group.
@@ -182,13 +188,14 @@ class Peer:
 
     def start(self):
         self.listener = socket.socket()
-        self.listener.bind(("127.0.0.1", 0))
+        self.listener.bind((self.bind_address, self.listen_port))
         self.listener.listen(8)
         self.listener.settimeout(0.1)
         self.port = self.listener.getsockname()[1]
         self.acceptor = threading.Thread(target=self.accept)
         self.acceptor.start()
-        self.emit("ready", protocol=self.protocol, port=self.port, ca=self.ca, cert=self.cert, key=self.key,
+        self.emit("ready", protocol=self.protocol, port=self.port,
+                  bind_address=self.listener.getsockname()[0], ca=self.ca, cert=self.cert, key=self.key,
                   identity=self.identity)
 
     def accept(self):
@@ -204,7 +211,8 @@ class Peer:
                     if number > 8:
                         raw.close()
                         raise RuntimeError("fixture connection bound exceeded")
-                    client = dict(socket=raw, h2=None, uploads={}, targets={}, pending={}, eof=False, responses=set())
+                    client = dict(socket=raw, h2=None, uploads={}, targets={}, pending={}, eof=False,
+                                  responses=set(), write_closed=False, tls_close_request=None)
                     self.clients[number] = client
                     worker = threading.Thread(target=self.serve, args=(number, client))
                     self.workers.append(worker)
@@ -216,6 +224,7 @@ class Peer:
 
     def serve(self, number, client):
         sock = client["socket"]
+        tls_unwrapped = False
         try:
             if self.context:
                 sock.settimeout(3)
@@ -243,6 +252,26 @@ class Peer:
                 client["h2"] = conn
                 sock.sendall(conn.data_to_send())
             while not self.stopping.is_set() and time.monotonic() < self.deadline:
+                with self.lock:
+                    close_request = client["tls_close_request"]
+                if close_request is not None:
+                    value, deadline = close_request
+                    try:
+                        sock = self.unwrap_health_tls(sock, deadline)
+                    except ssl.SSLError as error:
+                        # A local shutdown error is not a remote connection reset.
+                        raise RuntimeError("fixture health TLS shutdown failed: " + repr(error)) from error
+                    tls_unwrapped = True
+                    sock.settimeout(0.1)
+                    with self.lock:
+                        client["socket"] = sock
+                        socket.socket.shutdown(sock, socket.SHUT_WR)
+                        client["write_closed"] = True
+                        client["tls_close_request"] = None
+                        self.emit("command", op=value["op"], connection=number,
+                                  stream=value.get("stream", 1), command_id=value.get("command_id"),
+                                  code=value.get("code"), last_stream=value.get("last_stream"),
+                                  max_streams=value.get("max_streams"))
                 try:
                     data = sock.recv(65536)
                 except socket.timeout:
@@ -251,9 +280,13 @@ class Peer:
                     client["eof"] = True
                     self.emit("eof", connection=number)
                     return
+                if tls_unwrapped:
+                    raise RuntimeError("fixture unexpected payload after health TLS shutdown")
                 with self.lock:
                     for event in conn.receive_data(data):
                         if isinstance(event, h2.events.RequestReceived):
+                            if client["write_closed"] or client["tls_close_request"] is not None:
+                                raise RuntimeError("fixture request after write half-close")
                             self.requests += 1
                             if self.requests > 256:
                                 raise RuntimeError("fixture request bound exceeded")
@@ -310,6 +343,23 @@ class Peer:
         finally:
             sock.close()
 
+    def unwrap_health_tls(self, sock, deadline):
+        # Only the original reader may change this connection's TLS state.
+        sock.setblocking(False)
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("fixture health TLS shutdown deadline expired")
+            try:
+                return sock.unwrap()
+            except ssl.SSLWantReadError:
+                readers, writers = [sock], []
+            except ssl.SSLWantWriteError:
+                readers, writers = [], [sock]
+            remaining = deadline - time.monotonic()
+            if remaining <= 0 or not any(select.select(readers, writers, [], remaining)[:2]):
+                raise TimeoutError("fixture health TLS shutdown deadline expired")
+
     def automatic(self, number, client, stream, target, method):
         path = target.split("?", 1)[0]
         fields, trailers, status = [("x-peer", "independent-h2"), ("x-target", target)], [], 200
@@ -353,6 +403,10 @@ class Peer:
 
     def flush(self, client):
         conn = client["h2"]
+        if client["write_closed"]:
+            # No application writes remain; discard control output after SHUT_WR.
+            conn.data_to_send()
+            return
         for stream, pending in list(client["pending"].items()):
             body, trailers, ended = pending
             while body and conn.local_flow_control_window(stream) > 0:
@@ -375,6 +429,8 @@ class Peer:
             return False
         with self.lock:
             client = self.clients[value["connection"]]
+            if client["write_closed"] or client["tls_close_request"] is not None:
+                raise RuntimeError("fixture command after write half-close")
             conn, stream = client["h2"], value.get("stream", 1)
             if op == "respond":
                 body = base64.b64decode(value.get("body64", ""), validate=True)
@@ -393,11 +449,23 @@ class Peer:
             elif op == "goaway":
                 payload = value.get("last_stream", stream).to_bytes(4, "big") + value.get("code", 0).to_bytes(4, "big")
                 client["socket"].sendall(len(payload).to_bytes(3, "big") + b"\x07\x00\x00\x00\x00\x00" + payload)
+            elif op == "write_half_close":
+                if (client["targets"] != {stream: "/health"} or client["pending"]
+                        or stream not in client["responses"]):
+                    raise RuntimeError("fixture write half-close requires completed sole health response")
             elif op == "settings":
                 conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value["max_streams"]})
             else:
                 raise RuntimeError("unknown fixture operation")
             self.flush(client)
+            if op == "write_half_close":
+                if isinstance(client["socket"], ssl.SSLSocket):
+                    # No ACK until the original reader completes TLS then SHUT_WR.
+                    client["tls_close_request"] = (
+                        dict(value), min(self.deadline, time.monotonic() + 5.0))
+                    return True
+                socket.socket.shutdown(client["socket"], socket.SHUT_WR)
+                client["write_closed"] = True
             self.emit("command", op=op, connection=value["connection"], stream=stream,
                       command_id=value.get("command_id"), code=value.get("code"),
                       last_stream=value.get("last_stream"), max_streams=value.get("max_streams"))
@@ -789,6 +857,9 @@ def main():
     parser.add_argument("--protocol", choices=("tls", "h2c"))
     parser.add_argument("--manual", action="store_true")
     parser.add_argument("--staged-start", action="store_true")
+    parser.add_argument("--bind-address", default="127.0.0.1",
+                        choices=("127.0.0.1", "127.0.0.2", "127.0.0.3", "127.0.0.4"))
+    parser.add_argument("--listen-port", type=int, default=0)
     parser.add_argument("--max-streams", type=int, choices=range(1, 129))
     parser.add_argument("--alpn", default="h2", choices=("h2", "http/1.1"))
     parser.add_argument("--client", action="store_true")
@@ -806,6 +877,8 @@ def main():
     parser.add_argument("--ca")
     parser.add_argument("--hostname", default="localhost")
     args = parser.parse_args()
+    if not 0 <= args.listen_port <= 65535:
+        parser.error("--listen-port must be between 0 and 65535")
     if args.controlled:
         args.events = True
     if args.client:
@@ -816,7 +889,8 @@ def main():
             return 1
     if args.protocol is None:
         parser.error("peer requires --protocol")
-    peer = Peer(args.protocol, args.manual, args.alpn, args.max_streams)
+    peer = Peer(args.protocol, args.manual, args.alpn, args.max_streams,
+                args.bind_address, args.listen_port)
     commands = Commands()
     try:
         if peer.prepare(commands):

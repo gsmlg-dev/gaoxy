@@ -1,0 +1,50 @@
+"""Run the unchanged browser fixture with a finite, safe diagnostic projection."""
+import hashlib
+import importlib.util
+from pathlib import Path
+import sys
+
+SOURCE = Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py')
+EXPECTED_SOURCE = '478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74'
+assert hashlib.sha256(SOURCE.read_bytes()).hexdigest() == EXPECTED_SOURCE
+spec = importlib.util.spec_from_file_location('gaoxy_close_diagnostic_target', SOURCE)
+fixture = importlib.util.module_from_spec(spec)
+sys.modules[spec.name] = fixture
+spec.loader.exec_module(fixture)
+
+REASONS = {
+    'Finished going away': 'FINISHED_GOING_AWAY',
+    'Closing idle connection.': 'IDLE_CONNECTION',
+    'Connection closed': 'CONNECTION_CLOSED',
+    'Write error': 'WRITE_ERROR',
+    'Closing current sessions.': 'CURRENT_SESSIONS',
+    'Closing all sessions.': 'ALL_SESSIONS',
+}
+original_projection = fixture._projection
+original_inventory = fixture.inventory
+
+
+def diagnostic_projection(event, event_names, source_names):
+    projected = original_projection(event, event_names, source_names)
+    if projected is not None and projected['event'] == 'HTTP2_SESSION_CLOSE':
+        params = event.get('params')
+        description = params.get('description') if isinstance(params, dict) else None
+        present = isinstance(description, str)
+        safe = projected.setdefault('params', {})
+        safe['description_present'] = present
+        safe['close_reason'] = REASONS.get(description, 'OTHER') if present else 'ABSENT'
+    return projected
+
+
+def diagnostic_inventory():
+    sources = original_inventory()
+    sources[str(Path(__file__).resolve())] = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+    return sources
+
+
+fixture._EVENT_NAMES.update({
+    'NETWORK_IP_ADDRESSES_CHANGED', 'NETWORK_CONNECTIVITY_CHANGED', 'NETWORK_CHANGED',
+})
+fixture._projection = diagnostic_projection
+fixture.inventory = diagnostic_inventory
+sys.exit(fixture.main())

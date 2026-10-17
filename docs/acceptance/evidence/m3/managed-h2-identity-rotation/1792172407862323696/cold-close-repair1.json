@@ -1,0 +1,144 @@
+{
+  "task": "h2_identity_cold_close_repair1",
+  "status": "DONE_DIAGNOSIS_AND_REPAIR_PROPOSAL_ONLY_NOT_RUN",
+  "assignment": "direct bounded Sol diagnosis/repair proposal; repository read-only",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "inherited8f6b884524d81d8defa7c5081230b8ab635e8107; no Git command run; exact live file hashes below are adoption guards",
+  "root_failure_evidence": {
+    "log": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-green1.log",
+    "log_sha256": "05f8359fe479d15f698c8dc2917716240277953380c4c0c94d00dc613ce4437a",
+    "log_terminal_summary": "144 tests, 2 failures",
+    "log_elapsed": "203.9 seconds ExUnit sync total",
+    "parent_actual_exit": 2,
+    "parent_command_elapsed_seconds": 214,
+    "parent_collector_status": "FAIL, joined; no forced/live descendants or source change",
+    "failure": "both rotated native H1/H2 group tests timed out at OLD rotation_close_health/2 -> F.physical_termination/1; no physical event within unchanged5000ms",
+    "receipt_status": "Root provided terminal collector result; this worker did not query/process runtime or manufacture a receipt."
+  },
+  "root_cause": {
+    "classification": "test/fixture close schedule error; no required dependency bug established",
+    "initial_wrong_assumption": "GOAWAY error0 after completed HEAD would itself cause physical socket termination within5s. Peer command ack only proves frame send, not remote FIN or client/pool progress.",
+    "peer_source": "Peer.command goaway sends raw GOAWAY bytes then flushes/emits command; it does not shut down socket. Peer.serve emits eof only after real recv returns empty, or connection_reset after actual SSL/reset exception; finally closes its own socket.",
+    "client_source": "http_runtime0.21.10 GOAWAY handler sets lifecycle draining and schedules default30000ms drain timer, without an immediate zero-stream stop; release_stream closes if already draining when final stream releases, but this test sends GOAWAY after original health completion/release. Neither behavior promises <=5s TCP close.",
+    "browser_source": "group browser health_phase repeats same GOAWAY command/ack then physical EOF/reset wait; host already requires original completions+normal Probe DOWN/accounting and waits for runner health_closed.",
+    "design_authorization": "docs/designs/m3-managed-h2-identity-rotation.md:37 explicitly permits a bounded peer-owned close adjustment after diagnosis, never private client state or inferred closure.",
+    "existing_close_seam": "JSON-line Peer.command is existing public fixture-control seam. No per-connection close op exists there. Peer.stop uses whole-socket forced shutdown and would stop listener/actors, so do not invoke it for this schedule. integration upstream_peer close is a separate fixture, not callable through current Peer.",
+    "dependency_routing": "Source provenance http_runtime0.21.10 -> gsmlg-dev/http_fetch recorded, but no required bug/API violation established by a draining signal not guaranteeing immediate close; no upstream issue/workaround comment proposed. Reassess if real public scope admissions/completions/cleanup fail independently after actual peer closure."
+  },
+  "proposed_changes": [
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "baseline_sha256": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf",
+      "replacements": [
+        {
+          "old": "            elif op == \"settings\":\n                conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value[\"max_streams\"]})\n",
+          "new": "            elif op == \"write_half_close\":\n                if (client[\"targets\"] != {stream: \"/health\"} or client[\"pending\"]\n                        or stream not in client[\"responses\"]):\n                    raise RuntimeError(\"fixture write half-close requires completed sole health response\")\n            elif op == \"settings\":\n                conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value[\"max_streams\"]})\n"
+        },
+        {
+          "old": "            self.flush(client)\n            self.emit(\"command\", op=op, connection=value[\"connection\"], stream=stream,\n",
+          "new": "            self.flush(client)\n            if op == \"write_half_close\":\n                # Preserve SSLSocket's decoder for the real reader EOF/reset.\n                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n            self.emit(\"command\", op=op, connection=value[\"connection\"], stream=stream,\n"
+        }
+      ],
+      "proposed_unformatted_output_sha256": "b6dfb66cb0e84a1525bd8bafe437a2d161273eeb862fbc92522eaabb916f26b5",
+      "added_lines": 7,
+      "removed_lines": 0,
+      "unified_diff": "--- apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\n+++ apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py (proposed)\n@@ -396,11 +396,18 @@\n             elif op == \"goaway\":\n                 payload = value.get(\"last_stream\", stream).to_bytes(4, \"big\") + value.get(\"code\", 0).to_bytes(4, \"big\")\n                 client[\"socket\"].sendall(len(payload).to_bytes(3, \"big\") + b\"\\x07\\x00\\x00\\x00\\x00\\x00\" + payload)\n+            elif op == \"write_half_close\":\n+                if (client[\"targets\"] != {stream: \"/health\"} or client[\"pending\"]\n+                        or stream not in client[\"responses\"]):\n+                    raise RuntimeError(\"fixture write half-close requires completed sole health response\")\n             elif op == \"settings\":\n                 conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value[\"max_streams\"]})\n             else:\n                 raise RuntimeError(\"unknown fixture operation\")\n             self.flush(client)\n+            if op == \"write_half_close\":\n+                # Preserve SSLSocket's decoder for the real reader EOF/reset.\n+                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n             self.emit(\"command\", op=op, connection=value[\"connection\"], stream=stream,\n                       command_id=value.get(\"command_id\"), code=value.get(\"code\"),\n                       last_stream=value.get(\"last_stream\"), max_streams=value.get(\"max_streams\"))\n"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "baseline_sha256": "f3d2191cda2308048831d9f793d15a0a5ea89c17bb5de05817c3385b32a14b8c",
+      "replacements": [
+        {
+          "old": "        assert %{\"connection\" => 1} = termination = F.physical_termination(entry.peer)\n        F.no_event(entry.peer, \"accept\")\n",
+          "new": "        # GOAWAY is an admission/drain signal, not a TCP close guarantee.\n        # End only the peer write side; the original reader must observe EOF/reset.\n        assert %{\"op\" => \"write_half_close\", \"connection\" => 1, \"stream\" => ^stream} =\n                 close_ack = F.command(entry.peer, request, \"write_half_close\")\n\n        assert %{\"connection\" => 1} = termination = F.physical_termination(entry.peer)\n        F.no_event(entry.peer, \"accept\")\n"
+        },
+        {
+          "old": "        Map.put(entry, :physical_termination, termination)\n",
+          "new": "        entry\n        |> Map.put(:write_half_close, close_ack)\n        |> Map.put(:physical_termination, termination)\n"
+        }
+      ],
+      "proposed_unformatted_output_sha256": "4080bb4386b65eb778b2322c278989b0b47e25e474325c907315455b72c47389",
+      "added_lines": 8,
+      "removed_lines": 1,
+      "unified_diff": "--- apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs\n+++ apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs (proposed)\n@@ -1138,11 +1138,18 @@\n                } =\n                  F.command(entry.peer, request, \"goaway\", %{\"last_stream\" => stream, \"code\" => 0})\n \n+        # GOAWAY is an admission/drain signal, not a TCP close guarantee.\n+        # End only the peer write side; the original reader must observe EOF/reset.\n+        assert %{\"op\" => \"write_half_close\", \"connection\" => 1, \"stream\" => ^stream} =\n+                 close_ack = F.command(entry.peer, request, \"write_half_close\")\n+\n         assert %{\"connection\" => 1} = termination = F.physical_termination(entry.peer)\n         F.no_event(entry.peer, \"accept\")\n         F.no_event(entry.peer, \"tls\")\n         F.no_event(entry.peer, \"request\")\n-        Map.put(entry, :physical_termination, termination)\n+        entry\n+        |> Map.put(:write_half_close, close_ack)\n+        |> Map.put(:physical_termination, termination)\n       end)\n \n     assert_no_open(f, candidate)\n"
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py",
+      "baseline_sha256": "89e7106e5018f3ed4186ca2c893a7b64b6773b50d8c0302387990fd217257e6b",
+      "replacements": [
+        {
+          "old": "        physical = event_one_of(peer,('eof','connection_reset'))\n        assert physical['connection'] == request['connection']\n        health[name].update(goaway=ack,physical_close=physical,original_completion_before_goaway=True)\n",
+          "new": "        # GOAWAY alone does not promise physical close. Preserve the TLS reader\n        # while explicitly ending only this completed health socket's write side.\n        close_command_id = case+'-'+name+'-health-write-half-close'\n        peer.send(dict(op='write_half_close',connection=request['connection'],\n                       stream=request['stream'],command_id=close_command_id))\n        close_ack = peer.event('command')\n        assert close_ack['op'] == 'write_half_close' and close_ack['command_id'] == close_command_id\n        assert close_ack['connection'] == request['connection'] and close_ack['stream'] == request['stream']\n        physical = event_one_of(peer,('eof','connection_reset'))\n        assert physical['connection'] == request['connection']\n        health[name].update(goaway=ack,write_half_close=close_ack,physical_close=physical,\n                            original_completion_before_goaway=True)\n"
+        }
+      ],
+      "proposed_unformatted_output_sha256": "2f62b47e5aa650f1c19336b3a1a86598a2f478937d3091a5d76c87870a536dbf",
+      "added_lines": 10,
+      "removed_lines": 1,
+      "unified_diff": "--- docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py\n+++ docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py (proposed)\n@@ -522,9 +522,18 @@\n         assert ack['op'] == 'goaway' and ack['command_id'] == command_id and ack['code'] == 0\n         assert ack['last_stream'] == request['stream']\n         assert ack['connection'] == request['connection'] and ack['stream'] == request['stream']\n+        # GOAWAY alone does not promise physical close. Preserve the TLS reader\n+        # while explicitly ending only this completed health socket's write side.\n+        close_command_id = case+'-'+name+'-health-write-half-close'\n+        peer.send(dict(op='write_half_close',connection=request['connection'],\n+                       stream=request['stream'],command_id=close_command_id))\n+        close_ack = peer.event('command')\n+        assert close_ack['op'] == 'write_half_close' and close_ack['command_id'] == close_command_id\n+        assert close_ack['connection'] == request['connection'] and close_ack['stream'] == request['stream']\n         physical = event_one_of(peer,('eof','connection_reset'))\n         assert physical['connection'] == request['connection']\n-        health[name].update(goaway=ack,physical_close=physical,original_completion_before_goaway=True)\n+        health[name].update(goaway=ack,write_half_close=close_ack,physical_close=physical,\n+                            original_completion_before_goaway=True)\n     host.send(dict(op='health_closed',phase=phase))\n \n \n"
+    }
+  ],
+  "minimal_change_policy": {
+    "files_to_change_by_root": [
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py"
+    ],
+    "group_host": "No behavioral change. Preserve health_complete originals2/normalProbeDOWN2/zero probes+bytes and existing5s health_closed gate. Runner sends health_closed only after both actual physical terminations.",
+    "fixed_browser": "No health/GOAWAY schedule; no source behavior change. Shared peer hash must be re-frozen in both browser source inventories before final runs.",
+    "peer_semantics": "New write_half_close command accepts only completed sole /health response with no pending body. After flushing protocol output, base socket.socket.shutdown(SHUT_WR) ends only write side. It does not set eof/stopping/failed or close socket, emit physical events, alter counters/caps/deadlines, join prematurely, or swallow syscall errors. Existing recv/TLS decoder remains responsible for actual remote EOF/reset and finally close.",
+    "tls_reason": "Pinned CPython3.13.15 ssl.py:1340\u20131343 SSLSocket.shutdown clears _sslobj before invoking base shutdown. Calling socket.socket.shutdown on the actual SSLSocket deliberately uses the base public socket syscall and preserves its read decoder. Do not call client[\"socket\"].shutdown(...) or use full close plus synthetic EOF.",
+    "tls_limit": "SHUT_WR is an explicit TCP write-half-close, not a claimed graceful TLS close_notify exchange. Actual remote EOF/reset remains mandatory and observable; no network outcome is inferred from command ack.",
+    "race_limit": "Unexpected shutdown errors fail the fixture rather than being translated to success. No speculative alternate close paths are added; real validation may reveal a separately evidenced race."
+  },
+  "unchanged_acceptance": [
+    "genuine health HEAD, original public completion, normal Probe DOWN and restored accounting precede GOAWAY and half-close",
+    "GOAWAY exact completed HEAD last_stream/error0 and peer command ack retained",
+    "existing5000ms physical-close wait and actual eof/reset/connection1 assertion retained; group final selected connection2 remains distinct",
+    "all standard4/warmed-reuse assertions unchanged; rotated accepts2 and A3/B2 requests, selection0\u21921\u21920 unchanged",
+    "original G/T bindings/completions/source releases/custodian/normal Actor joins, native95/accounting/caps and final zero/rebind unchanged",
+    "browser old/new captures, DOM/CDP/Chrome close, process-group/readers/adopted-child joins/source identities unchanged",
+    "no production/dependency edits or private client process/state operations",
+    "no synthetic EOF flags/events or forced cleanup normalization; peer final joined forced0/live0/failedfalse still required"
+  ],
+  "inputs_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "f3d2191cda2308048831d9f793d15a0a5ea89c17bb5de05817c3385b32a14b8c",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py": "89e7106e5018f3ed4186ca2c893a7b64b6773b50d8c0302387990fd217257e6b",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-host1.exs": "95c3fe7a951b0c46b6a92727884b4472089fcab3c0ac678333df3c27a30229a0",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py": "9bdd56afc7f8309804bdd7fd22006cb30686c13376ff9f294c8cde3441c031ef",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs": "c85e8a6012a4e2fe472406bada763c5ec4b2c4178249c5a5a10754a73e1bf8af",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py": "f2844797780c6187cf60ab980af030a50c506ae1460001c6977157db0987c12a",
+    "docs/designs/m3-managed-h2-identity-rotation.md": "4b708279d5d49bdd9c5447f1341b60118fa4133767e39b82704247c5ca483787",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "f45d71893ee24df888f8f2ebd21e508bdca6cad5ff1c335d3432854706a72b5d",
+    "deps/http_runtime/lib/http/http2/connection_owner.ex": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615",
+    "deps/http_runtime/lib/http/http2/pool.ex": "914a5046550d21549c1cdb32b9abe5d9a888b5ba20721467d4def3cf1286391f",
+    "deps/http_core/lib/http/http2/connection.ex": "b9079e36ef4a98502852943af5d371d781094905ca0f36d45662931c7eb10716",
+    "deps/http_runtime/mix.exs": "55662fccdb0fd534e18d48419fbf7e5f2fd7219fe20c5b1388dd95645f23610a",
+    "integration/http_fetch_contract/upstream_peer.py": "f2e40b0e72362f06b4c933b14f45d49e768b2133bee4281c4241bbd122d9b95f"
+  },
+  "stdlib_source": {
+    "path": "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/ssl.py",
+    "sha256": "6deea04be4d1a5070e25f2f1523a417474cff6c28128b28dd944fb3ec3d01140",
+    "interpreter_target_resolved_by_readlink": "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/bin/python3.13",
+    "inspection_only": true
+  },
+  "verification": {
+    "this_worker": "Read-only normal source/log/hash inspection plus exact text replacements in memory; only these2 /tmp report files written.",
+    "runtime_tests_build_syntax_browser_network_trace": "NOT RUN",
+    "worker_executed_tests": 0,
+    "root_next": "Preserve group-green1 failed receipt; root applies exact guarded edits only after runtime joined, freezes changed peer/group/runner and browser manifests, obtains fresh bounded SPEC then CODE; root checks active formatting/Python/extracted-JS syntax, runs full nonzero scoped defining F+fixed+group verification and required fresh Python startup/browser gates with unchanged assertions and actual custody evidence.",
+    "post_apply_hashes": "Proposed unformatted output hashes only; any root formatter changes require new freeze/review hashes.",
+    "result_limit": "This proposal does not establish that half-close will yield remote termination within5s; root actual execution is required."
+  },
+  "counters": {
+    "latest_parent_cutoff": "root160/orch86/tooling26/groupfailed56/runtimefailed2/fixtureRepair2/Solrepair2/production0/Astra2/2",
+    "root_authorized_round": "Solrepair2 if adopted; root manages cumulative counters, this worker does not advance/reset them",
+    "worker_new_errors": 0,
+    "worker_new_runtime_failures": 0,
+    "worker_repair_validation_rounds": 0,
+    "astra_received": "2/2 exhausted"
+  },
+  "command_shutdown": "All own commands completed; no background process or competing fixture launched; no process interference.",
+  "decisions_needed": []
+}

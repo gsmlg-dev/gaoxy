@@ -1,0 +1,120 @@
+{
+  "task": "h2_identity_group_task3_proposal1",
+  "status": "DONE_PROPOSAL_ONLY_NOT_RUN",
+  "assignment": "direct bounded implementation proposal",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_inherited_not_requeried": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "baseline_source": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+  "baseline_sha256": "e80503bb68521d29fa3423a3c93c9059598d0602eec1858cd1c751aba759a2fa",
+  "proposal": "/tmp/gaoxy-h2-identity-group-proposal1-test.exs",
+  "proposal_sha256": "2d9aab594bc136cfb135bdecd15ef14edf7e4c63777ba8058308c6103e378e16",
+  "inputs_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "e80503bb68521d29fa3423a3c93c9059598d0602eec1858cd1c751aba759a2fa",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "ddc05255494fb698ca8d690254054dc22f362d6461b3f5830f55f8e961a578d7",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf",
+    "docs/designs/m3-managed-h2-identity-rotation.md": "4b708279d5d49bdd9c5447f1341b60118fa4133767e39b82704247c5ca483787",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "f45d71893ee24df888f8f2ebd21e508bdca6cad5ff1c335d3432854706a72b5d",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/group_endpoint.ex": "cf78f0bbb37bf76c0f4d9cad9b5d5843ce0f8457120f730591ba686b42459659",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_preparation.ex": "ce238f3093a944b2970dbb9cd99372466fae37ecfb5eb2c45330fde4cdc3aca5"
+  },
+  "existing_group_source_unchanged_during_preparation": true,
+  "existing_standard_four_cell_test_preserved_verbatim": true,
+  "strict_warmed_request_at_preserved_verbatim": true,
+  "native_arithmetic_module_preserved_verbatim": true,
+  "new_test_registrations_source_estimate": 3,
+  "positive_cells": [
+    "native H1 -> rotated TLS H2 group",
+    "native H2 -> rotated TLS H2 group"
+  ],
+  "negative_cell": "native H1 equal-authority NEW config with authentic OLD G+[A,B] source captures; health-only upstream traffic",
+  "positive_peer_schedule": {
+    "oldA": "127.0.0.1:P",
+    "oldB": "127.0.0.3:P",
+    "newA": "127.0.0.2:P",
+    "newB": "127.0.0.4:P",
+    "all_origins": "https://localhost:P",
+    "health": "original HEAD + original successful completion + normal Probe DOWN/accounting, GOAWAY error0 last_stream completed HEAD, exact physical connection1 termination",
+    "forward": "per-member initial GET connection2 with accept2 and real h2/localhost TLS; subsequent selected A connection2 reuse",
+    "accepts": [
+      2,
+      2,
+      2,
+      2
+    ],
+    "requests": [
+      3,
+      2,
+      3,
+      2
+    ],
+    "selection_each_generation": [
+      0,
+      1,
+      0
+    ]
+  },
+  "preserved_contracts": [
+    "all pre-existing tests/assertions/helpers except finish minimal optional fourth argument",
+    "genuine coordinator/Store CAS/preparation release/source rights",
+    "native95 independent startup/dispatch/stream calculations, original G/T completions, cleanup/token/delegated-pin zero",
+    "NEW completes before OLD, OLD endpoint returns held, last selected A original batch retains unselected B",
+    "all original caps and limits, Service/Gate/accounting/resource/custodian/socket/peer normal joins and native rebind",
+    "Proxy-Authorization stripped; unique original Authorization value per actual request remains isolated",
+    "finite deadlines, no private client or owner-state mutation"
+  ],
+  "diff_summary": {
+    "added_lines": 558,
+    "removed_lines": 2,
+    "source_lines": 3150,
+    "surgical_changes": [
+      "add RotationMisuseGroup endpoint before existing tests",
+      "insert2 rotated TLS positives and1 same-authority negative beside unchanged standard4 block",
+      "add rotation-only peer/trust/policy/health/capture/cold-forward/credential/misuse-observer helpers",
+      "candidate opts opt-in explicit_new_group retains negative NEW config inside OLD route before capture with <=1MiB route/router bounds",
+      "finish gets expected_connection default1; rotated positives pass2; no other cleanup behavior changes"
+    ]
+  },
+  "negative_schedule_exception": "As in fixed misuse, prepare NEW before OLD capture so the full explicit negative config is retained and independently charged in OLD route M; positive cells still replace caller paths only after genuine OLD captures. No config construction or exchange mutation after capture.",
+  "proposed_root_verification": {
+    "status": "NOT RUN",
+    "adoption_dependency": "fixed gate actual PASS and independent group proposal SPEC then CODE; root only adopts after verifying exact baseline hash",
+    "scoped_child_argv": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "unbuffer",
+      "mix",
+      "test",
+      "--warnings-as-errors",
+      "--max-cases",
+      "1",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs"
+    ],
+    "format": "Root-only check active changed sources after adoption; this proposal not formatted or syntax-checked.",
+    "required_results": "nonzero actual tests;0 failures/skips/exclusions/warnings; all three new registration outcomes and original four standard cells retained; root owns command custody/source receipts"
+  },
+  "verification_performed": "Read/hash, exact literal text assembly, baseline unchanged and existing block equality only. No Elixir syntax/compile/test/formatter execution.",
+  "fresh_executed_tests": 0,
+  "new_errors_this_assignment": 0,
+  "prior_disclosed_lookup_error": "Previous proposal2 broad-/tmp rg permission error disclosed to root; root owns registration. No new lookup/tooling/runtime errors in Task3.",
+  "counters_received": "Latest parent message: root159/orchestration86/tooling26/groupfailed55/runtimefailed1/Solrepair1/Astra2/2; root fixed-green2 active session23580. These are received, not advanced here.",
+  "sol_repair_rounds_this_assignment": 0,
+  "astra_repairs_received": "2/2 exhausted",
+  "command_shutdown": "All own commands completed. No background command launched; no process interference.",
+  "remaining_risks": [
+    "proposal not executed, parsed, formatted or compiled; independent review and root runtime acceptance required",
+    "GOAWAY physical close is asserted, never inferred; a real finite close failure requires root diagnosis preserving failed evidence",
+    "final source freeze may advance reference fixed/peer hashes; root checks baseline and binds actual adopted sources before verification",
+    "new receipt stdout reports are emitted only after actual assertions and joins in root-run tests; no historical acceptance reused"
+  ],
+  "decisions_needed": [],
+  "self_review_source_correction": "Actual ManagedH2Preparation policy stores http_version and verify_peer/SNI, without an ALPN SSL option. Removed that unsupported policy-key assertion before handoff; ALPN h2 is asserted on real independent-peer TLS events. No runtime/parse failure or repair round occurred."
+}

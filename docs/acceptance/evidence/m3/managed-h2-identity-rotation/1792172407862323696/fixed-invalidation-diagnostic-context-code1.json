@@ -1,0 +1,101 @@
+{
+  "task_id": "h2_observation_code/fixed-invalidation-diagnostic-context-code1",
+  "status": "DONE",
+  "verdict": "ALLOW_EXACT_OBSERVER_SOURCE_REQUALIFICATION_CAUSE_UNKNOWN",
+  "assignment": "Direct independent read-only disposition/source diagnosis. Root owns fixture edits, source rebinding, execution, counters and acceptance. No runtime or candidate execution.",
+  "workspace": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107; read-only Git identity rechecked on resume",
+  "diagnostic_status": "Parent reports actual one diagnostic PASS/exit0/36.892s/2rows. This reviewer independently inspects safe H2 metadata and public source only, not outer runtime custody or complete diagnostic acceptance.",
+  "safe_inputs_sha256": {
+    "fixed-browser-green5/h2-http2/chrome-net-metadata-at-failure.json": "fb0dbed8d8e55c2f3be8e1638dbfa3d9f610a7e54e6f3e3df5bffa7ef48aeabe",
+    "fixed-invalidation-diagnostic1/h2-http2/old-chrome-net-metadata.json": "b282a040d7ae82414cbc77aaf9e2ac78145e90c4b642edffefead1388ec45c21",
+    "fixed-invalidation-diagnostic1/h2-http2/new-chrome-net-metadata.json": "adcfc153e156afe94d2432f391daf7e41697439934f98e5bf4ad2e8a158e4c20",
+    "fixed-invalidation-diagnostic1/h2-http2/chrome-net-metadata-final.json": "a5a844ebc56a92edcf851b7727c95e159582fe47ee5af3e94b7bc38c8534c513"
+  },
+  "facts": [
+    "Failed5 targetsession60/socket55 created15984835. Other socket13/47/59 end15985033/34; OLDstream1fin15985160 then FINISHED_GOING_AWAY/net_error0 at15985161 and targetsocket55end. Failed5 safe prefix has720scanned/124projected/196208bytes, no caps, read_complete=false; failed5 lacks new census/header context.",
+    "Successful diagnostic targetsession60/socket55 created16927787. Same session carries OLDstream1fin16928066 and NEWstream3fin16928356; final close16928676 is ALL_SESSIONS/net_error-3 at browser termination. Target55 header context has TCP then SSL, no tunnel event in observed prefix.",
+    "Successful socket13 belongs to HTTP_PROXY_CONNECT_JOB; it ends16926539 before targetsession60creation. Other47/59 begin proxy tunnel reads16927778/781, finish16928078/890 after OLDfin, then beginSSL. They cannot simply be classified idle during those observed intervals. Failed5 only records end times; their exact closing reasons remain UNKNOWN.",
+    "Successful PROXY_CONFIG_CHANGED occurs only16925739/743 on sources8/18, old_config_present=false/new_config_present=true. No target-adjacent notification is present in those scanned prefixes. This is local prefix observation, not proof of absent callback or historical cause.",
+    "Successful old/new/final scans676/1156/1256events and113/210/238projected; unknown0/omitted0, no byte/event caps, allread_complete=false. Zero census omissions does not make the live-prefix capture complete."
+  ],
+  "source_explanation": [
+    {
+      "location": "net/socket/ssl_client_socket.cc300-326,398-401; net/socket/transport_client_socket_pool.cc861-883",
+      "meaning": "SSLContextConfigChanged, CertVerifierChanged and certificate database callbacks reach SSL config observers. Transport pool comment/implementation refreshes groups, flushing idle sockets and letting active sockets finish without reuse. Thus coordinated other-socket closure plus active H2 graceful drain is compatible with one SSL/verifier change, but not a unique callback fingerprint."
+    },
+    {
+      "location": "net/spdy/spdy_session_pool.cc428-439,452-480,485-518",
+      "meaning": "IP and SSL/cert/verifier paths can directly MakeUnavailable/StartGoingAway/MaybeFinishGoingAway. No wireGOAWAY is necessary for this sequence. Presence of unrelated proxy tunnels does not establish a proxy-change callback or implicate the target direct socket."
+    },
+    {
+      "location": "net/spdy/spdy_session.cc1360-1365,1419-1423,1433-1461,2701-2725",
+      "meaning": "MakeUnavailable stores initial error_on_unavailable_ only on initial AVAILABLE transition. Final MaybeFinishGoingAway drains with OK/Finished going away. The final close event therefore loses initiating error information, but the in-memory session does not erase it: GetInfoAsValue exposes error_on_unavailable while that session remains present. After session removal it is unavailable retrospectively from current safe records."
+    },
+    {
+      "location": "net/log/net_log_util.cc344-349,400-404; services/network/net_log_exporter.cc85-100",
+      "meaning": "GetNetInfo includes SpdySessionPoolInfoToValue; exporter Stop obtains that state. This is a potential future state-snapshot diagnostic seam before held stream release, not an existing reviewed CDP fixture API or initialization barrier. Full GetNetInfo also includes sensitive proxy/host/session data; any future use would require a separately bounded finite projection. No such capture is required as a product acceptance gate."
+    },
+    {
+      "location": "chrome/common/chrome_switches.cc477-479; chrome/browser/prefs/chrome_command_line_pref_store.cc120-145",
+      "meaning": "Actual supported --no-proxy-server literal means always direct connections; ApplyProxyMode constructs DIRECT preference. This is legitimate explicit fixture proxy configuration, not disabling TLS validation. ValidateProxySwitches warns on conflicting proxy options."
+    },
+    {
+      "location": "chrome/browser/net/proxy_config_monitor.cc83-105,112-129; services/network/proxy_config_service_mojo.cc38-53",
+      "meaning": "Initial proxy config is handed into NetworkContext when available; subsequent changes notify observers. FlushProxyConfig is a proxy Mojo sequencing acknowledgement only; it is not a cert verifier/SSL/IP initialization contract. It is not exposed by this fixture CDP sequence."
+    }
+  ],
+  "causal_disposition": {
+    "historical_initiating_cause": "UNKNOWN. Current records do not identify the actual SSL/cert/IP/server-specific callback or initial unavailable error in failed5. Instrumentation-only PASS does not repair or diagnose it.",
+    "reliable_initialization_boundary": "NOT_ESTABLISHED. CDP browser_ready/Network.enable and successful navigation do not prove all asynchronous SSL/cert config updates complete. No source-supported universal ready barrier was established by this review. Fixed delays, waiting for no event for Nms or unchanged repeated attempts are not justified causal fixes.",
+    "direct_flag_option": "--no-proxy-server could explicitly isolate the fixture proxy contract and remove ambient proxy-dependent background routes, subject to exact proposed-source review and effective-path verification. Target55 is already direct in observed successful prefix, and this flag does not suppress SSL/cert/IP invalidation. Therefore it is optional environment isolation, not a proven historical repair or reliable initialization barrier. Do not add it merely to explain this diagnostic PASS."
+  },
+  "recommended_minimum_next_step": {
+    "recommendation": "Proceed with exact original-assertion source qualification after independently reviewed pure-observer adoption. Do not make retrospective identification of Chrome unlogged callbacks a new product gate.",
+    "source_scope": "Adopt reviewed census/header/proxy-presence observer and finite host down_diagnostic into active final fixture with explicit original final HOST/path bindings. Do not silently substitute diagnostic paths or alter navigation, actor ordering, assertions, peer/native lifecycle, deadlines or cleanup. Bind enum JSON as executable input. Precise active-source delta needs dependent SPEC/CODE review because earlier PASS pins unadopted derived sources.",
+    "verification_plan": "Rebind exact current source/enum/host/runner/collector/argv and unchanged relevant executable-input evidence; complete prescribed necessary static/source gates and fresh-output/runtime readiness. Freeze exactly one fixed6(original2rows), then conditionalgroupfinal2(original2rows) only if fixed6passes. Retain original abort-on-first-failure behavior, assertions and independent/browser evidence gates. Failure remains FAIL with actual custody; no automatic repeated retry loop.",
+    "permitted_conclusion_if_pass": "Actual qualification of the exact reviewed instrumented source under its recorded environment/commands and original2+2 assertions. Preserve fixed2/fixed4/fixed5 failures and historical UNKNOWN. Do not claim historical failure causally fixed, startup initialization complete, stability guaranteed, or milestoneaccepted before all prescribed actual gates and independent review are complete.",
+    "why_this_is_valid": "Product acceptance requires implemented behavior and prescribed verification/review, not a new proof of every historical browser-internal cause. Timing perturbation is a disclosed limitation of the qualified source, not a reason to weaken assertions or invent an additional gate.",
+    "restrictions": "No third Astra, no http_fetch97 revival/account changes/publication/deployment/production/Vault/certificate/public-management/E2E expansion. Cause investigation may continue separately without blocking this finite exact-source qualification.",
+    "current_round_flags": "Per parent clarification: no Chrome flag changes in this round. --no-proxy-server remains an optional future isolation suggestion only; historical UNKNOWN is not a new gate."
+  },
+  "public_source_custody": {
+    "revision": "506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+    "method": "Bounded HTTPS public source reads into memory, full-body SHA256 and numbered selected excerpts; no source files persisted. Several guessed paths returned404 and were replaced with actual source paths. All commands exit0; no source/candidate execution.",
+    "sha256": {
+      "net/spdy/spdy_session.cc": "666cf33958bc3ae1364dc0c71291d13e152422b85ad9b15d138c6094985c15be",
+      "net/spdy/spdy_session_pool.cc": "8798fe4d882c55465977b1d727d104540e1140b7d44f75e97373a5c0c0c7bcbf",
+      "net/socket/ssl_client_socket.cc": "68b79c7417deddb2f2cc2ff00aeb1dbf742f39f87367b52d9f9685b3b1c88eba",
+      "net/socket/transport_client_socket_pool.cc": "49b67a506ed2710405b7f12d1dd118d52dc8b2eb8afb663719b4041b2b0e4ad4",
+      "net/http/http_network_session.cc": "dd1ded05853430c1315b0cddcc2a3b140d59cc996768fcd2f844a8b777de2b0a",
+      "net/socket/client_socket_pool_manager_impl.cc": "3b3643ab67e876fe8023be520f3a5c74a5205933b155607383e6c897b626306c",
+      "chrome/common/chrome_switches.cc": "08dc32201ee7044c7b33a4929eef228797d41a8e482a09dcc5ad0fabe6153130",
+      "chrome/browser/prefs/chrome_command_line_pref_store.cc": "fa92100cd738d896526ec6f4a7a867092a894c831ffb9d236af2682ea3092b28",
+      "chrome/browser/net/proxy_config_monitor.cc": "241320291b5c41dc5bcea1b430835fa860804829c0603edb8296a47a6f4558c9",
+      "services/network/proxy_config_service_mojo.cc": "33f2a83dcd6cd3f0f9e6fb57b9b1d0388f534d4ff11e573a8cdcb90bc371c330",
+      "services/network/net_log_exporter.cc": "0b520597c6424be701aee9e59fcc7310284eff7888923e6284d70239fd584341",
+      "net/log/net_log_util.cc": "d819eed9ce36538600732ec8f28cf6a0d2043c6e5a2e3718892e4f85640f1882"
+    }
+  },
+  "changes": {
+    "repository_evidence_git": [],
+    "only_written": "/tmp/gaoxy-h2-invalidation-diagnostic-context-code1.json"
+  },
+  "verification": {
+    "tests": 0,
+    "syntax_AST_import_compile": 0,
+    "fixture_Nix_browser_runtime": 0,
+    "raw_NetLog_privatekeys_prompts_protected_unknown_files": 0,
+    "safe_metadata_and_source_text_only": true,
+    "all_own_commands_finished": true,
+    "owned_live_processes_or_sessions": false
+  },
+  "counters": "Last received counter57root215/orch128/tooling58/runtimefailed9/group63; root controls newer accounting. Cumulative fixtureSol5/production0/Astra2of2 exhausted; this source diagnosis adds0repairrounds. No counters reset or newly inferred.",
+  "remaining_risks": "Historical intermittent browser invalidation remains unexplained. Additive observation can affect timing. No tests or final acceptance run by reviewer. Finalfixed6/group2 NOT_RUN as of this report.",
+  "decisions_needed": "No new user/product decision. Parent arranges exact observer-source proposal/review/adoption and finite qualification; no cause proof is introduced as a prerequisite.",
+  "command_shutdown_status": "All own read/network commands complete and all sessions joined; no owned live process. Root processes/writers untouched.",
+  "prior_authorized_disposition_report": {
+    "path": "/tmp/gaoxy-h2-invalidation-diagnostic-disposition-code1.json",
+    "sha256": "0e3af784c297fdab40eddaeccc10452fe7e1c5f2059590bb0f8ea4cdb9176edb"
+  }
+}

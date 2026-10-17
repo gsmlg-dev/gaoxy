@@ -1,0 +1,164 @@
+{
+  "task_id": "h2_identity_full_spec_nix_local_cache_resume_spec2",
+  "status": "BLOCKED_SPEC",
+  "verdict": "FAIL",
+  "review_completed": true,
+  "assignment": "delegated independent read-only SPEC2 review; direct assignment",
+  "at_utc": "2026-10-17T09:00:54.184404+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "baseline_basis": "Inherited frozen handoff; no Git command authorized or run for this review continuation.",
+  "ownership": "Parent owns repository, candidate helpers, evidence, Git and runtime. Reviewer preserves all pre-existing tracked/untracked changes and writes only the two assigned /tmp reports.",
+  "inputs": {
+    "final-nix-local-cache-resume-plan2.json": {
+      "sha256": "a3f79e0e8b1f4ff0d51a69028667bca709fe9ada8f1b9b806bb78dcd4dba49c6",
+      "expected_match": true
+    },
+    "/tmp/gaoxy-nix-closure-resume2.py": {
+      "sha256": "0152c743903f12af0dc85cfe56eaa5b9385ccf1820fe8c03e3223a2fed1d94f5",
+      "expected_match": true
+    },
+    "final-nix-closure-resume-helper2.py.txt": {
+      "sha256": "0152c743903f12af0dc85cfe56eaa5b9385ccf1820fe8c03e3223a2fed1d94f5",
+      "archive_equal": true
+    },
+    "final-nix-local-cache-plan2.json": {
+      "sha256": "18b7c996258e3b7c7b8b2e3e30521892ebf0d365c22f3b96790035ccb745de5f",
+      "expected_match": true
+    },
+    "final-nix-local-cache-manifest1.json": {
+      "sha256": "c0863863f89bdfd6d9a552e897d70839826dfaef480a895e94b9bef0032bb808",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1.json": {
+      "sha256": "a2ed67585cce67eb99427eeb369787ff723044ca5a4969dce043c28bfdb63e87",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1-inner1.json": {
+      "sha256": "57586ffb22b370eb8b7af2223c70c04d1f4d9befbe86000fb9b9b95ece362aeb",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1-readback1.json": {
+      "sha256": "279dbdadf1063afaa1154bb18cff4fa882d7586bbef243aa51f0181a0ad472b0",
+      "expected_match": true
+    },
+    "final-nix-curl-resume-seams1.json": {
+      "sha256": "769a0819b6ce25438b15d1d15724b8fec9a4b6d94a37d06a771fed21278f817f",
+      "expected_match": true
+    },
+    "full-stage-candidate5.json": {
+      "sha256": "d2c2d0db7445d9a8f6b3d2e65407ddf05873237eb860be553ffd86b3c823a296",
+      "expected_match": true
+    },
+    "command-collector1.py": {
+      "sha256": "bda740921e60685288adb55500b8c9256435c188abd9a6c82bc849cf15e4690f",
+      "expected_match": true
+    },
+    "counter-supplement42.json": {
+      "sha256": "234aacb6e18414a2094b6f80d5832cfb0e7248dc08e1e0e93b3895b148e88bd7",
+      "expected_match": true
+    },
+    "final-nix-local-cache-resume-plan1.json": {
+      "sha256": "1081dafa43c1eea57db2a778c0a6eeed783eb1551fe99261064b7fc54b2b3173",
+      "expected_match": true
+    },
+    "final-nix-local-cache-resume-spec1.json": {
+      "sha256": "ca59d0b215eaf5d55f4320808d0ec653fca8b1db5ea852eec8cf29d210c0a24f",
+      "expected_match": true
+    },
+    "final-nix-local-cache-resume-code1.json": {
+      "sha256": "07a1b64ec35f0545a94442db33f95e3a6fc92da6c0a08d15c4b8ce1c74a878cc",
+      "expected_match": true
+    },
+    "final-nix-curl-named-header-seams1.json": {
+      "sha256": "2927ed69a5833a150f8ea0ba330e8b8ef8e4cba3ec2048581a22ade8c208ca0b",
+      "expected_match": true
+    },
+    "counter-supplement43.json": {
+      "sha256": "6d697b0ce0e7f652d044bd160c5924de68e49769317cab2cd3de706a3e3170ad",
+      "expected_match": true
+    },
+    "flake.nix": {
+      "sha256": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+      "expected_match": true
+    },
+    "flake.lock": {
+      "sha256": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+      "expected_match": true
+    },
+    "installed_python_subprocess.py": {
+      "path": "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/subprocess.py",
+      "sha256": "594fa015cacada89eecd4f13a48664b17eb61dbb7eab77c851ef12f486beff91"
+    }
+  },
+  "findings": [
+    {
+      "id": "SPEC2-BYTE-RECEIPT",
+      "severity": "blocker",
+      "source": "/tmp/gaoxy-nix-closure-resume2.py:124-141,164-165",
+      "contract": "Plan2 promises actual returncode/stderr/forced/joined, stdout byte length/SHA256 and grammar-safe exact four-field stdout; arbitrary invalid named values are retained as hash/length only and immediately FAIL.",
+      "problem": "text=True decodes stdout and stderr inside communicate before the helper records the already-known child returncode/join or hashes raw stdout bytes. An undecodable byte in an authorized named header can raise UnicodeDecodeError before line132. The broad catch then returns FAIL with actual_exit=None, joined=False and no stdout byte length/SHA256 even though subprocess has already waited for the child. Decodable bytes are also newline-normalized before re-encoding for the claimed byte receipt.",
+      "evidence": [
+        "Helper2:124 selects text=True;127 and131 call communicate;132-134 record exit/join and len(stdout.encode())/SHA only after communicate returns;164-165 catch decoding exceptions without recovering those fields.",
+        "Installed subprocess.py:1098-1100 decodes bytes then normalizes newlines;2180 waits for the child;2185-2189 joins raw stdout/stderr bytes;2193-2199 performs text translation afterward.",
+        "Frozen installed curl named-header seam says header contents are exactly as delivered over the network except surrounding whitespace/newline trimming. Invalid header bytes therefore reach the text-mode pipe before grammar rejection."
+      ],
+      "evidence_kind": "Static source counterexample; no malformed-header server, helper invocation or actual transfer failure was executed.",
+      "required_change": "Capture stdout/stderr as bytes. Record actual exit/join/forced and original stdout byte length/SHA256 before strict ASCII/canonical grammar parsing. For invalid stdout retain only original byte length/hash and FAIL. Preserve stderr byte length/hash and an explicitly safe UTF-8 backslashreplace display, per parent-directed narrow repair. Keep all existing deadlines, offsets, integrity, custody and no-raw-header-file rules.",
+      "parent_disposition": "Parent accepted this narrow source gap and owns helper3/plan3 repair, then fresh independent SPEC followed by dependent CODE on frozen hashes. This review edits neither helper2 nor its archive."
+    }
+  ],
+  "resolved_prior_finding": {
+    "id": "CODE1-RAW-HEADERS",
+    "status": "RESOLVED_IN_SOURCE_ONLY",
+    "evidence": "helper2 removes --dump-header and persistent .response-headers; --write-out names only content-range/content-length/content-encoding and retains stdout only after bounded grammar. No helper execution occurred."
+  },
+  "source_checks": [
+    "All exact plan2 named input and flake hashes match; helper2 and archive bytes match.",
+    "All 411 implementation source pins from full-stage-candidate5 match; zero mismatches.",
+    "Plan1 to plan2 scope, actual_failure, flake_sha256, new_cache, old_cache, objects, preconditions, native_copy_argv, native_verify_argv, native_preconditions, after_native_success, unchanged_guards and limits remain unchanged.",
+    "Only two positive pinned prefixes may invoke one bounded curl each; 16 complete rows remain no-transfer. No retry or fresh fallback; HTTPS-only; two workers; finite curl and global work deadlines.",
+    "Old cache is read-only in candidate source; new cache/staging writes exclusive with no hardlinks; exact whole FileSize/FileHash required before promotion; original 18 objects rechecked after workers join.",
+    "Exact206/download N-L/Content-Range, optional exact Content-Length and identity-only encoding predicates remain; duplicate or redirect-chain named values fail closed.",
+    "Native copy and verification remain separate exact18/no-recursive300s gates with official signature/content checks,147 external refs and disk/custody checks. Cache preparation success cannot imply600s shell readiness or protocol/browser acceptance."
+  ],
+  "verification": {
+    "read_only_source_and_json_hash_commands_exit": 0,
+    "implementation_pin_count": 411,
+    "implementation_pin_mismatches": [],
+    "tests_executed": 0,
+    "helper_import_or_execution": 0,
+    "curl_or_network": 0,
+    "nix_or_store_operations": 0,
+    "browser_or_protocol_execution": 0,
+    "old_cache_byte_reads": 0,
+    "excluded_file_reads": 0,
+    "repository_writes": 0,
+    "only_writes": [
+      "/tmp/gaoxy-nix-local-cache-resume-spec2.json",
+      "/tmp/gaoxy-nix-local-cache-resume-spec2.md"
+    ],
+    "note": "Initial existence check exited2 solely because both authorized output paths did not exist; it made no mutation. Every source/hash read completed exit0. No test pass is claimed."
+  },
+  "counters_from_frozen_supplement43": {
+    "root_failure_events": 200,
+    "orchestration": 117,
+    "tooling": 48,
+    "environment_helper_repairs": 2,
+    "environment_recovery_failed_spec": 1,
+    "environment_recovery_failed_code": 1,
+    "environment_file_preparation_failures": 1,
+    "failed_curl_commands": 2,
+    "sol_repair_rounds": 5,
+    "production_repair_rounds": 0,
+    "protocol_runtime_failed_green": 7,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "counter_ownership": "No reset or reviewer increment. Parent records this additional environment/tooling SPEC FAIL and repair separately. Protocol Sol5/production0/runtime failedGREEN7/Astra2of2 remain unchanged; no third Astra.",
+  "commands_shutdown": "All reviewer commands completed; no owned live process/session. Candidate helper never imported or executed. Parent processes untouched.",
+  "unchanged_status": "Identity NOT_ACCEPTED; final fixed browser FAIL/UNKNOWN; group final browser NOT_RUN; successor plateau NOT_STARTED. No publication/deployment/production/Vault/certificate/public-management/account/E2E change.",
+  "remaining_risks": "Candidate helper2 must not execute under the frozen precondition. Runtime continuation, full-object integrity, native signature/content verification and exact locked version readiness remain NOT RUN for this candidate.",
+  "decisions_needed": "No new product decision. Parent performs narrow byte-capture receipt repair and freezes helper3/plan3 for independent SPEC then dependent CODE."
+}

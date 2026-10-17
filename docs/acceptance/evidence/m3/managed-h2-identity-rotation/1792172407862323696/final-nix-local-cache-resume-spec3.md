@@ -1,0 +1,13 @@
+# Resume plan3/helper3 independent SPEC3: PASS
+
+Task `h2_identity_full_spec_nix_local_cache_resume_spec3`; direct delegated read-only environment-delta review, status DONE. Repository `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`; inherited baseline `8f6b884524d81d8defa7c5081230b8ab635e8107`. No Git operation performed. No findings.
+
+Plan3 SHA256 `576315bf30d2ca9e92f960bf768afc5b9688e550bc95dd572ea4b225dd9827e5`; helper3/archive SHA256 `165dcf33bea8cdbc7f98b8f2e0a9ee5dc7f05d6f400cea9b597d027d2e66b726`, identical bytes. All named input/flake hashes and411 implementation pins match.
+
+SPEC2-BYTE-RECEIPT is resolved in source. Helper3:124 captures binary pipes. Lines132-136 bind actual exit/join and original stdout/stderr lengths/SHA256, with explicitly identified UTF-8 backslashreplace stderr display. Lines137-145 enforce1024 raw-byte bound, strict ASCII and canonical four-field grammar before146-148 retain text/projection. Invalid stdout retains only original byte length/hash and fails. CODE1 raw-header persistence stays removed.
+
+The complete source diff contains only that capture/receipt/parsing repair. All prior scope, original failure, objects, cache identities, flakes, preconditions, native argv/preconditions, post-native requirements, time guards and limits match plan2 exactly. Preparation argv only replaces the helper path; only file-contract entry1 changes. Exact offsets,206/range/N-L/optional length/identity, full18 size/hash before promotion, exclusive cache2/read-only original cache,2workers/no retry/fallback,1680work/1800collector and post-join original recheck remain. Native exact18/no-recursive trusted signature/content verification300s,147 external refs/trust/disk/custody and600s exact-version readiness stay separate gates.
+
+All read/hash commands completed exit0; diff exit1 denotes inspected differences. Tests/helper import/execution/network/Nix/browser/protocol/old-cache byte reads/protected reads:0. Only these two assigned reports were written; all own commands completed, no owned live process.
+
+Frozen supplement44: root201/orchestration117/tooling48; environment failedSPEC2/failedCODE1/helper repairs3; preparation failure1/curl failures2. Protocol Sol5/production0/runtime failedGREEN7/Astra2of2 unchanged; no reset or reviewer increment. Static SPEC3 PASS requires dependent CODE on identical hashes before execution; runtime/native/readiness remain NOT RUN. Identity NOT_ACCEPTED, fixed browser FAIL/UNKNOWN, group browser NOT_RUN, plateau NOT_STARTED. No publication/deployment/production/Vault/certificate/public-management/account/E2E changes; no product decision needed.

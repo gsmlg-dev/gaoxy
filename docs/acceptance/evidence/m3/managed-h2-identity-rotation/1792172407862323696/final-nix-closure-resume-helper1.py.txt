@@ -1,0 +1,200 @@
+#!/usr/bin/env python3
+"""One bounded continuation of two pinned public cache files; no Nix operations."""
+import argparse
+import concurrent.futures
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import time
+
+
+def main():
+    start = time.monotonic()
+    deadline = start + 1680
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--manifest', required=True)
+    parser.add_argument('--manifest-sha256', required=True)
+    parser.add_argument('--failure-readback', required=True)
+    parser.add_argument('--failure-readback-sha256', required=True)
+    parser.add_argument('--cache-dir', required=True)
+    args = parser.parse_args()
+
+    def check_time():
+        assert time.monotonic() < deadline, '1680s work deadline exhausted'
+
+    def digest(path):
+        value = hashlib.sha256()
+        with path.open('rb') as stream:
+            while chunk := stream.read(1048576):
+                check_time()
+                value.update(chunk)
+        check_time()
+        return value.hexdigest()
+
+    def pinned_json(name, expected):
+        path = Path(name)
+        assert digest(path) == expected, 'input hash mismatch'
+        return json.loads(path.read_bytes())
+
+    manifest = pinned_json(args.manifest, args.manifest_sha256)
+    readback = pinned_json(args.failure_readback, args.failure_readback_sha256)
+    helper_sha256 = digest(Path(__file__))
+    assert readback['status'] == 'FAIL_RETAINED'
+    assert readback['manifest_sha256'] == args.manifest_sha256
+    assert readback['complete_files'] == 16 and readback['failed_transfers'] == 2
+    assert not readback['source_mismatches'] and readback['source_pins'] == 411
+    old = Path('/tmp/gaoxy-h2-identity-nix-closure-cache1')
+    cache = Path(args.cache_dir)
+    assert cache == Path('/tmp/gaoxy-h2-identity-nix-closure-cache2')
+    assert old.is_dir() and not old.is_symlink()
+    assert not cache.exists() and not cache.is_symlink()
+    entries = manifest['entries']
+    assert len(entries) == len(readback['entries']) == 18
+    assert len({row['store_path'] for row in entries}) == 18
+    assert {row['store_path'] for row in entries} == {row['store_path'] for row in readback['entries']}
+    assert sum(row['file_size'] for row in entries) == 986177930
+    assert shutil.disk_usage('/tmp').free >= 986177930 + 1073741824
+    assert digest(old / 'nix-cache-info') == manifest['cache_info_sha256']
+    assert manifest['cache_info_text'] == 'StoreDir: /nix/store\nWantMassQuery: 1\nPriority: 40\n'
+    for entry in entries:
+        assert re.fullmatch(r'/nix/store/[0-9a-z]{32}-[^/\s]+', entry['store_path'])
+        assert re.fullmatch(r'nar/[0-9a-z]+\.nar\.zst', entry['url_relative'])
+        assert entry['compression'] == 'zstd' and 0 < entry['file_size'] <= 400000000
+        assert re.fullmatch(r'[0-9a-f]{64}', entry['file_hash_hex'])
+        meta_name = entry['store_path'].split('/')[-1].split('-', 1)[0] + '.narinfo'
+        assert digest(old / meta_name) == entry['narinfo_sha256']
+        assert hashlib.sha256(entry['narinfo_text'].encode()).hexdigest() == entry['narinfo_sha256']
+        source = next(row for row in readback['entries'] if row['store_path'] == entry['store_path'])
+        part = source['kind'] == 'UNVERIFIED_PREFIX_ONLY'
+        assert source['kind'] in ['UNVERIFIED_PREFIX_ONLY', 'COMPLETE_VERIFIED']
+        expected_path = old / (entry['url_relative'] + ('.part' if part else ''))
+        assert Path(source['source_path']) == expected_path
+        assert expected_path.is_file() and not expected_path.is_symlink()
+        assert expected_path.stat().st_size == source['bytes'] and digest(expected_path) == source['sha256']
+        assert source['original_joined'] and not source['original_forced']
+        if part:
+            assert source['original_curl_exit'] in [28, 56]
+            assert 0 < source['bytes'] < entry['file_size']
+        else:
+            assert source['original_curl_exit'] == 0
+            assert source['bytes'] == entry['file_size'] and source['sha256'] == entry['file_hash_hex']
+    check_time()
+    cache.mkdir(mode=0o700)
+    (cache / 'nar').mkdir(mode=0o700)
+    with (cache / 'nix-cache-info').open('xb') as output:
+        output.write(manifest['cache_info_text'].encode())
+    for entry in entries:
+        meta_name = entry['store_path'].split('/')[-1].split('-', 1)[0] + '.narinfo'
+        with (cache / meta_name).open('xb') as output:
+            output.write(entry['narinfo_text'].encode())
+
+    def prepare(entry):
+        source = next(row for row in readback['entries'] if row['store_path'] == entry['store_path'])
+        result = {'store_path': entry['store_path'], 'source_kind': source['kind'],
+                  'source_sha256': source['sha256'], 'offset': source['bytes'],
+                  'status': 'FAIL', 'transfer_attempted': False,
+                  'actual_exit': None, 'joined': False, 'forced': False}
+        stage = cache / (entry['url_relative'] + '.part')
+        final = cache / entry['url_relative']
+        try:
+            with Path(source['source_path']).open('rb') as original, stage.open('xb') as output:
+                while chunk := original.read(1048576):
+                    check_time()
+                    output.write(chunk)
+            assert stage.stat().st_size == source['bytes'] and digest(stage) == source['sha256']
+            if source['kind'] == 'UNVERIFIED_PREFIX_ONLY':
+                offset = source['bytes']
+                remaining = int(deadline - time.monotonic())
+                assert remaining > 5, 'work deadline exhausted before continuation'
+                limit = min(840, remaining - 2)
+                header_path = cache / (entry['url_relative'] + '.response-headers')
+                command = ['curl', '--silent', '--show-error', '--fail', '--location', '--max-redirs', '3',
+                           '--proto', '=https', '--proto-redir', '=https', '--connect-timeout', '30',
+                           '--max-time', str(limit), '--max-filesize', str(entry['file_size']), '--retry', '0',
+                           '--header', 'Accept-Encoding: identity', '--continue-at', str(offset),
+                           '--output', str(stage), '--dump-header', str(header_path),
+                           '--write-out', '%{http_code} %{size_download}\n',
+                           'https://cache.nixos.org/' + entry['url_relative']]
+                result.update(argv=command, transfer_attempted=True,
+                              started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+                process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+                result['pid'] = process.pid
+                try:
+                    stdout, stderr = process.communicate(timeout=limit + 10)
+                except subprocess.TimeoutExpired:
+                    result['forced'] = True
+                    process.kill()
+                    stdout, stderr = process.communicate(timeout=5)
+                result.update(actual_exit=process.returncode, joined=True, stdout=stdout, stderr=stderr)
+                assert process.returncode == 0 and not result['forced'], 'curl did not finish normally with exit0'
+                assert stdout.split() == ['206', str(entry['file_size'] - offset)], 'HTTP206/remaining byte count mismatch'
+                with header_path.open('rb') as stream:
+                    headers = stream.read(65537)
+                assert len(headers) <= 65536, 'response headers exceeded bound'
+                blocks = [block for block in re.split(br'\r?\n\r?\n', headers) if block.strip()]
+                assert blocks, 'missing response headers'
+                final_lines = blocks[-1].decode('iso-8859-1').splitlines()
+                assert re.fullmatch(r'HTTP/(?:1\.[01]|2|3) 206(?: .*|)', final_lines[0])
+                fields = {}
+                for line in final_lines[1:]:
+                    key, value = line.split(':', 1)
+                    fields.setdefault(key.strip().lower(), []).append(value.strip())
+                expected_range = f'bytes {offset}-{entry["file_size"] - 1}/{entry["file_size"]}'
+                result['response_projection'] = {key: fields.get(key, []) for key in ['content-range', 'content-length', 'content-encoding']}
+                result['response_headers_sha256'] = hashlib.sha256(headers).hexdigest()
+                assert fields.get('content-range') == [expected_range], 'exact Content-Range mismatch'
+                assert fields.get('content-length', [str(entry['file_size'] - offset)]) == [str(entry['file_size'] - offset)]
+                assert fields.get('content-encoding', ['identity']) == ['identity']
+            else:
+                result['joined'] = True  # No subprocess was created for this copied complete file.
+                result['no_transfer'] = True
+            assert stage.is_file() and not stage.is_symlink()
+            result['actual_file_size'] = stage.stat().st_size
+            assert result['actual_file_size'] == entry['file_size'], 'complete FileSize mismatch'
+            result['actual_file_hash_hex'] = digest(stage)
+            assert result['actual_file_hash_hex'] == entry['file_hash_hex'], 'complete compressed FileHash mismatch'
+            check_time()
+            assert not final.exists()
+            os.rename(stage, final)
+            check_time()
+            result['status'] = 'PASS_PUBLIC_FILE_ONLY'
+        except Exception as error:
+            result['error'] = type(error).__name__ + ': ' + str(error)
+        result['elapsed_seconds'] = time.monotonic() - start
+        return result
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+        results = list(pool.map(prepare, entries))
+    original_files_unchanged, original_check_error = None, None
+    try:
+        original_files_unchanged = all(Path(row['source_path']).stat().st_size == row['bytes'] and
+                                       digest(Path(row['source_path'])) == row['sha256'] for row in readback['entries'])
+    except Exception as error:
+        original_check_error = type(error).__name__ + ': ' + str(error)
+    elapsed = time.monotonic() - start
+    passed = original_files_unchanged and elapsed <= 1680 and all(
+        row['status'] == 'PASS_PUBLIC_FILE_ONLY' and row['joined'] and not row['forced'] and
+        (row.get('no_transfer') is True or row['actual_exit'] == 0) for row in results)
+    record = {'kind': 'EXPLICIT_PUBLIC_CACHE_CONTINUATION1', 'status': 'PASS' if passed else 'FAIL',
+              'at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'elapsed_seconds': elapsed,
+              'work_deadline_seconds': 1680, 'within_work_deadline': elapsed <= 1680,
+              'manifest_sha256': args.manifest_sha256, 'failure_readback_sha256': args.failure_readback_sha256,
+              'helper_sha256': helper_sha256, 'cache_dir': str(cache),
+              'original_files_unchanged': original_files_unchanged,
+              'original_check_error': original_check_error, 'entries': results,
+              'tests_executed': 0, 'nix_store_operations': 0,
+              'limits': 'One explicit attempt each for two positive offsets; no automatic retry/fresh fallback. Complete compressed integrity only; native trusted signature/content verification still required.'}
+    with (cache / 'preparation.json').open('x') as output:
+        json.dump(record, output, indent=2)
+        output.write('\n')
+    print(json.dumps({key: value for key, value in record.items() if key != 'entries'}), flush=True)
+    return 0 if passed else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

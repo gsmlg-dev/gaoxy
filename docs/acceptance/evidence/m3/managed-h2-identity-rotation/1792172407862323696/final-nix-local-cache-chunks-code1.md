@@ -1,0 +1,7 @@
+CODE1: PASS_SOURCE_CODE_ONLY; findings [].
+
+Dependent independent review of frozen chunksplan2/helper1 after SPEC1 PASS. Full helper control flow checked. All15inputs,helper/archive,2flakes and411sourcepins match.18row actual resume receipts match frozen readback. Four exact inclusive slices cover the two positive prefix remainders without gaps/overlap;193144475transfer bytes. Disk requirement2570483357bytes includes prefixes,chunks,fullstages and1GiB.
+
+Binary wait/exit and raw-byte receipts precede strictASCII safe named projection. No full-header retention. Two workers/4maximum requests/no retry/fallback; observed failure stops queued fetches, distinct NOT_RUN rows cannot pass. Per-curl840/work1680/collector1800 remain finite. All18fullFileSize/SHA checks precede publication; both oldcaches data/metadata are read-only and rechecked before/after. Nativeexact18/norecursive300/content+trustedsignatureverify300/all147individualrefs/publictrust/disk/custody and600exactversion readiness remain separate gates.
+
+Actual transfer/range/native/readiness are unexecuted for this helper. OriginalFAILs remain; HTTP1.1/smallerslices is a recovery hypothesis. No runtime/cachebytes/Git/network/Nix/browser/tests/repository edits. Only two reports written; commands finished. Counter46/root203/orch118/tooling48/helper4/Sol5/prod0/runtimefail7/Astra2of2 retained. IdentityNOT_ACCEPTED/finalbrowserFAIL_UNKNOWN/groupNOTRUN/plateauNOTSTARTED unchanged.

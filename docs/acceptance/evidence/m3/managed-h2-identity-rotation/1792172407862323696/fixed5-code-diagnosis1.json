@@ -1,0 +1,110 @@
+{
+  "task_id": "h2_observation_code/fixed5-code-diagnosis1",
+  "status": "DONE",
+  "verdict": "DIAGNOSIS_COMPLETE_INITIATING_CAUSE_UNKNOWN",
+  "assignment": "Direct bounded independent read-only source/safe-evidence diagnosis; no repair or acceptance claim.",
+  "workspace": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107 from same-task verified baseline; no new Git operation",
+  "root_cause": "UNKNOWN. Proven proximate chain is Chrome session60 drains after OLD END_STREAM, native369 receives ssl_closed, native cleanup kills still-held worker372, and host fails a DOWN expected/observed assertion. Exact initiating invalidation callback and exact offending host DOWN message are not recorded.",
+  "correction": "Host line1535 is true = entry.pid === pid and entry.reason === reason in {:DOWN,...}; it is not a native connection-live assertion. Do not attribute fixed4 native-live failure location to fixed5.",
+  "evidence": [
+    {
+      "fact": "Concrete fixed5 failure",
+      "location": "fixed-browser-green5/h2-http2/host.log terminal MatchError; active host1533-1536",
+      "details": "Last successful milestone returned_source_held; host exits at1535 before old_retired is emitted. No failing DOWN ref/pid/actual reason is printed."
+    },
+    {
+      "fact": "Chrome target socket and session",
+      "location": "chrome-net-metadata-at-failure.json events72-73,114-123 (zero-based)",
+      "details": "session60 initialized from socket55. Stream1 receives headers15985158,188B data15985160 and emptyfin15985160; sessionclose15985161 is FINISHED_GOING_AWAY/net_error0, followed by poolremove/sessionend/socketend.124projected/720scanned/196208bytes; no byte/event limit hit, but read_complete=false. Final projection is byte-identical."
+    },
+    {
+      "fact": "Native remote-close and collateral worker kill",
+      "location": "failure-cohort.log terminal/causal ledger; causal-metadata.log target369 ssl_closed",
+      "details": "Authentic target369 has observer and authenticated-gate terminal {:shutdown,:peer_closed}; writer370 normal. Causal prefix records369ssl_closed, then stop to370; owner_down received by369 identifies owner372 reason:killed. Host captured worker372 earlier. This matches production close/1 killing remaining workers, not evidence of worker-normal-DOWN initiating native closure."
+    },
+    {
+      "fact": "Source-derived local cleanup path",
+      "location": "deps/thousand_island/lib/thousand_island/handler.ex416-421,495-497; apps/gaoxy_http/lib/gaoxy/http/connection.ex355; http2/connection.ex1411-1418",
+      "details": "Matching socket ssl_closed returns {:shutdown,:peer_closed}; terminate invokes HTTP2.close/1, which kills surviving stream workers and sends writer:stop. Host tracks nativeworker expected:normal at1188-1203. Worker372:killed is a concrete plausible1535 mismatch, but exact host-received DOWN is not logged, so this is not declared the proven offending message."
+    },
+    {
+      "fact": "Gaoxy can send wire GOAWAY through specific paths",
+      "location": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex1150-1160,1383-1391",
+      "details": "Authenticated gaoxy_drain enqueues Frame.encode(7,...NO_ERROR); failure/2 enqueues Frame.encode(7,...reason) and close_after_write.Received GOAWAY type7 only sets draining at298-299. schedule871-873 sends h2_close after draining; a peer close can win the race. Current h2_written logs prove success only, not frame type or prior failure/drain state. Thus peer_closed alone does not eliminate prior server GOAWAY."
+    },
+    {
+      "fact": "FINISHED_GOING_AWAY is a local state drain result, not wire direction",
+      "location": "Chromium spdy_session.cc1360-1423,2701-2757,2937-2976 at exact revision",
+      "details": "MakeUnavailable sets STATE_GOING_AWAY and stores earlier error. StartGoingAway can preserve existing streams. Once active/created streams empty, MaybeFinishGoingAway calls DoDrainSession(OK,\"Finished going away\"). DoDrainSession does not enqueue GOAWAY when err==OK unless force_send_go_away; received wire GOAWAY has a distinct OnGoAway that emits HTTP2_SESSION_RECV_GOAWAY. Therefore observed close_reason neither proves Chrome sent GOAWAY nor proves Gaoxy sent it."
+    },
+    {
+      "fact": "Wire direction observability limit",
+      "location": "Chromium net_log_event_type_list.h2156 and full exact enum inventory",
+      "details": "HTTP2_SESSION_RECV_GOAWAY is defined; HTTP2_SESSION_SEND_GOAWAY is not defined in this revision. No RECV_GOAWAY appears in safe prefix, which is evidence within captured prefix only. Absence of a nonexistent SEND event is never proof of no transmission."
+    },
+    {
+      "fact": "Local pool invalidation does not require wire GOAWAY",
+      "location": "Chromium spdy_session_pool.cc428-439,452-518; ssl_client_socket.cc300-326,398-401",
+      "details": "Pool IP-change go-away branch and SSL/config/cert/verifier callbacks can MakeUnavailable/StartGoingAway/MaybeFinishGoingAway directly. SSLClientContext OnSSLContextConfigChanged and OnCertVerifierChanged notify pool without a dedicated NetLog or TRACE_EVENT at reviewed callback sites. Exact initial error is lost when final graceful drain logsOK."
+    }
+  ],
+  "working_hypothesis": {
+    "hypothesis": "A Chrome local pool invalidation marks session60 unavailable while OLD stream1 remains active, then finishes it at END_STREAM. Root-reported near-simultaneous idle socket closures around15985033-34 are compatible with a global event.",
+    "classification": "UNPROVEN; no target-specific callback/error witness. Not a causal repair basis.",
+    "excluded_claims": [
+      "No proof Chrome actively transmitted GOAWAY.",
+      "No proof Gaoxy sent GOAWAY.",
+      "No proof the missing notification was trust-store/IP/SSL/proxy/DNS rather than another trigger.",
+      "No proof exact1535 offender from host.log alone."
+    ]
+  },
+  "single_next_step": {
+    "recommendation": "One independently reviewed additive safe diagnostic increment, rather than an unchanged final retry: collect a bounded complete enum-name/count census for every scanned NetLog event, retain exact contextual PROXY_CONFIG_CHANGED and DNS_CONFIG_CHANGED scalar metadata, and print host DOWN expected/observed before retaining original assertion. Bind one bounded diagnostic execution separately; it is not stage acceptance.",
+    "enum_census": "Use existing8MiB/8192event prefix limits. Count names obtained from exact Chromium constant enum mapping, validate names against frozen event enum inventory, and bound distinct names/counts. No payload strings, URLs, hostnames, configs, certs or arbitrary params. Preserve read_complete and truncation flags. Counts are observations, not a completeness guarantee beyond scanned prefix.",
+    "most_useful_missing_event": "No existing missing event name is proven to discriminate the direct SSLConfigChanged/CertVerifierChanged callbacks. Of available contextual additions, PROXY_CONFIG_CHANGED and DNS_CONFIG_CHANGED can distinguish proxy/DNS notifications from the current empty context projection; neither proves target session invalidation. Prioritize census so a real emitted enum is selected from observed evidence, never invent SSL_CONFIG_CHANGED.",
+    "config_safe_projection": "PROXY_CONFIG_CHANGED: event/time/source and booleans old_config_present/new_config_present only, no config contents. DNS_CONFIG_CHANGED: event/time/source plus only separately source-verified typed scalar keys if needed; exclude nameservers/search/DoH templates/hosts and all arbitrary nested values. For SSL config/verifier callbacks, there is no dedicated NetLog event or TRACE_EVENT in reviewed exact callbacks; observing the callback identity/change enum or original error_on_unavailable_ requires a separately designed target-specific seam, not renaming an unrelated event.",
+    "down_projection": "Before original1535 assertion, emit only authentic monitor/role/pid equality, expected and actual finite terminal reason classifications and original monitor identity. Do not swallow/normalize:killed or replace expected:normal.",
+    "why_not_down_only": "It would locate assertion conflict but not initiating browser invalidation. Config/census evidence and target-specific callback gap must stay explicit."
+  },
+  "deterministic_repair_candidate": "No implementation repair is justified by current evidence. If one-time startup config invalidation is proven, a candidate is an explicit observed initialization/callback barrier before admitting measured OLD traffic, with unchanged target-live and original actor/peer assertions; such a barrier requires an actual observable causal contract. A fixed sleep, arbitrary startup delay, repeated final retry or disabled certificate/proxy/DNS checks is not an evidenced deterministic fix.",
+  "public_source_custody": {
+    "revision": "506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+    "method": "Successful bounded HTTPS reads; full response bodies SHA256 in memory and selected numbered source excerpts only. No downloaded raw source file persisted; no browser execution.",
+    "sha256": {
+      "net/spdy/spdy_session.cc": "666cf33958bc3ae1364dc0c71291d13e152422b85ad9b15d138c6094985c15be",
+      "net/spdy/spdy_session_pool.cc": "8798fe4d882c55465977b1d727d104540e1140b7d44f75e97373a5c0c0c7bcbf",
+      "net/log/net_log_event_type_list.h": "0ddf9cccfbc9868a7dc26044c493abb4c3f09e0c86e303724ac6e62ac891b1b7",
+      "net/socket/ssl_client_socket.cc": "68b79c7417deddb2f2cc2ff00aeb1dbf742f39f87367b52d9f9685b3b1c88eba",
+      "net/http/http_network_session.cc": "dd1ded05853430c1315b0cddcc2a3b140d59cc996768fcd2f844a8b777de2b0a",
+      "net/ssl/ssl_config_service.cc": "580760a6d748720065c39eabb9bbb45c8370968d34c4285b30e39950131cd89a",
+      "net/dns/dns_config.cc": "4dab27447177e50db57fc0151eb2e6947530aa19ef42f45720af043809b1131b",
+      "net/proxy_resolution/configured_proxy_resolution_service.cc": "fc311dbf4a2d840a0a01a4c9dbd64da86d3c43d1b989c980a7d75d1a2c0ed5b1",
+      "services/network/ssl_config_service_mojo.cc": "2588cd75e62c6df1ef38c9ae86b8f3f726425f896700a0dacebd72ed2f0635ac"
+    }
+  },
+  "local_inputs_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green5/h2-http2/chrome-net-metadata-at-failure.json": "fb0dbed8d8e55c2f3be8e1638dbfa3d9f610a7e54e6f3e3df5bffa7ef48aeabe",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green5/h2-http2/chrome-net-metadata-final.json": "fb0dbed8d8e55c2f3be8e1638dbfa3d9f610a7e54e6f3e3df5bffa7ef48aeabe",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green5/h2-http2/host.log": "79dc061d4a36e0def124a125cfbb68cc9e9b54dfbad1e96091756f0a0b092f3f",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green5/h2-http2/causal-metadata.log": "0d09683f20aa160b3f6f3867428b5d38a8d46964d71eaa0fe2fd152dbc985a5c",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green5/h2-http2/failure-cohort.log": "ca58b4ad5c34389b6d003710963e60a7c03a9408ea01428d84c57fe9ebbca8d8",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs": "e52b0bab2321837ab93d0b957361d4d6f5e43d8bbf9e0fc17dc139a7b7edeabd",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-cohort1.exs": "7b758fd2d105e4a9c06dafbad4b2e3687b29d3d0f5abfd4f7f630f887dcb5078",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "586db509de60712be04f5c7290adfbc6db31300a592344d54cf28e3872d24c52",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex": "6af7f110ce8a39a834f40409b08f7626ca057230ee66cab0b65304584cec562a",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "2276f9bfb14053ff853a13b564397ba82e5ad685a1451619dde89e398980a581",
+    "deps/thousand_island/lib/thousand_island/handler.ex": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319"
+  },
+  "verification": {
+    "tests": 0,
+    "syntax_compile_import": 0,
+    "fixture_browser_runtime": 0,
+    "repository_or_Git_mutations": 0,
+    "raw_NetLog_privatekeys_prompts_forbidden_four_files_reads": 0,
+    "command_status": "All own read-only commands completed; normal no-match searches exit1; all public source reads succeeded. No owned live process/session.",
+    "only_write": "/tmp/gaoxy-h2-fixed5-code-diagnosis1.json"
+  },
+  "counters": "Received counter53root210/orch124/tooling54; fixed5 FAIL and subsequent counter54/erratum accounting belongs to root. Report does not assert a final updated counter not yet received. Sol5/Astra2of2exhausted/production0 retained; this diagnosis adds0repair rounds and requests no third Astra.",
+  "decisions_needed": "No product decision or implementation authorization requested. Parent owns any diagnostic source proposal/review/execution. InitiatingcauseUNKNOWN/fixed5FAIL/groupNOT_RUN/identityNOT_ACCEPTED/plateauNOT_STARTED preserved."
+}

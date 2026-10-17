@@ -1,0 +1,179 @@
+{
+  "task_id": "h2_peer_write_close_repair",
+  "proposal_id": "h2_identity_cold_close_repair2_fresh",
+  "status": "DONE",
+  "status_scope": "Bounded read-only diagnosis and exact repair proposal only; implementation acceptance NOT RUN.",
+  "assignment": "direct fresh Sol bounded diagnosis/repair proposal, not independent review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline_head": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "ownership": "Root owns all repository/evidence/Git mutations and runtime/build/test/browser. Worker only writes this JSON and companion Markdown in /tmp; no other agent or process launched.",
+  "pre_existing_changes": {
+    "tracked": [
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py"
+    ],
+    "untracked": "Existing stage evidence files retained untouched; git status observed. No baseline/stash/reset/checkout/commit/staging performed."
+  },
+  "root_failure_evidence": {
+    "log": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-green2.log",
+    "log_sha256": "fc9e6cd3219d934b09236bb46243677e0e06629ca2898edb0d1188d2e90c48f6",
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-green2.json",
+    "receipt_sha256": "1e78a4f788a6dd09de31ed1a74568390f373c78fa7592787893ddbd138fac4dc",
+    "classification": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-green2-classification1.json",
+    "actual_exit": 2,
+    "tests": 144,
+    "failures": 2,
+    "log_lines": [
+      95,
+      98,
+      99,
+      187,
+      190,
+      191,
+      238
+    ],
+    "failure": "Both native H1/H2 rotated group tests fail at OLD rotation_close_health -> F.physical_termination after half-close ACK with peer failure BrokenPipeError(32, 'Broken pipe').",
+    "receipt_command_elapsed_seconds": 210.0259586069733,
+    "receipt_cleanup": "process_joined true, forced false, no process-group remainder; classification reports no descendant residue, source stable."
+  },
+  "root_cause": {
+    "classification": "Missing explicit peer write-side state after intentional successful TCP SHUT_WR; source-supported diagnosis, not proven Python traceback attribution.",
+    "trace": [
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:210 initializes client with eof only; there is no independent write_closed state.",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:379-410 holds self.lock through preflush and successful base socket.socket.shutdown(SHUT_WR), then command ACK at411; subsequent reader work may run after lock release.",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:250 performs unchanged real SSL recv; 257-305 acquires same lock, parses actual incoming H2 data/control events, then always calls flush.",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:357-372 drains h2 output and unconditionally sendall(outbound) on the locally write-closed socket.",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:310-314 generic BrokenPipe emits failure via fail() and finally-closes; it does not set eof or emit an authentic read EOF/reset."
+    ],
+    "certainty_limit": "Safe log records repr(error), not a Python traceback or the individual control-frame type. sendall at372 is the evidenced open path matching the state error; cannot assert that exact instruction or frame caused both observed errors. SSL recv also delegates into OpenSSL. Proposed repair must be tested; if real recv itself produces an unrelated BrokenPipe it remains a fixture failure, never converted to physical termination.",
+    "design_authorization": "docs/designs/m3-managed-h2-identity-rotation.md:37 permits a diagnosed bounded peer-owned close adjustment; line55 reserves mutations/runtime to root.",
+    "dependency_disposition": "No production/dependency defect or required dependency workaround established. No dependency edits/issues needed for this peer-owned state error."
+  },
+  "proposed_changes": [
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "baseline_sha256": "b6dfb66cb0e84a1525bd8bafe437a2d161273eeb862fbc92522eaabb916f26b5",
+      "proposed_output_sha256": "74fd98974e3e584d38d88883d569c70559ea8cc1cfd179ed1b1806cfd0aad04e",
+      "replacements": [
+        {
+          "old": "                    client = dict(socket=raw, h2=None, uploads={}, targets={}, pending={}, eof=False, responses=set())\n",
+          "new": "                    client = dict(socket=raw, h2=None, uploads={}, targets={}, pending={}, eof=False,\n                                  responses=set(), write_closed=False)\n",
+          "old_match_count": 1
+        },
+        {
+          "old": "                        if isinstance(event, h2.events.RequestReceived):\n                            self.requests += 1\n",
+          "new": "                        if isinstance(event, h2.events.RequestReceived):\n                            if client[\"write_closed\"]:\n                                raise RuntimeError(\"fixture request after write half-close\")\n                            self.requests += 1\n",
+          "old_match_count": 1
+        },
+        {
+          "old": "    def flush(self, client):\n        conn = client[\"h2\"]\n",
+          "new": "    def flush(self, client):\n        conn = client[\"h2\"]\n        if client[\"write_closed\"]:\n            # No application writes remain; discard control output after SHUT_WR.\n            conn.data_to_send()\n            return\n",
+          "old_match_count": 1
+        },
+        {
+          "old": "        with self.lock:\n            client = self.clients[value[\"connection\"]]\n            conn, stream = client[\"h2\"], value.get(\"stream\", 1)\n",
+          "new": "        with self.lock:\n            client = self.clients[value[\"connection\"]]\n            if client[\"write_closed\"]:\n                raise RuntimeError(\"fixture command after write half-close\")\n            conn, stream = client[\"h2\"], value.get(\"stream\", 1)\n",
+          "old_match_count": 1
+        },
+        {
+          "old": "                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n            self.emit(\"command\", op=op, connection=value[\"connection\"], stream=stream,\n",
+          "new": "                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n                client[\"write_closed\"] = True\n            self.emit(\"command\", op=op, connection=value[\"connection\"], stream=stream,\n",
+          "old_match_count": 1
+        }
+      ],
+      "delta": "Only peer source; initialize write_closed false, fail new RequestReceived or per-connection commands once true, drain/discard closed-side control output in flush, mark true immediately after successful actual base SHUT_WR.",
+      "adoption_guard": "Require baseline SHA match and each old fragment exactly once; abort on mismatch. Output hash is exact unformatted replacement result."
+    }
+  ],
+  "write_side_contract": {
+    "state": "write_closed is independent of eof. It becomes true only after successful socket.socket.shutdown(client['socket'], socket.SHUT_WR), before ACK, while self.lock remains held. Shutdown exceptions propagate without marking successful state.",
+    "locking": "Existing serve receive_data/flush and command paths already hold the same RLock. Request guard, flush guard, successful SHUT_WR and flag publication are serialized; no new lock or process.",
+    "queued_controls": "Once write_closed is true, flush calls public conn.data_to_send() solely to drain the in-memory output buffer, then returns before body processing/sendall. These bytes cannot be transmitted after SHUT_WR; retaining the buffer provides no protocol value and may accumulate until real remote close. No control success/physical event is fabricated.",
+    "application_safety": "The sole completed /health/no pending command precondition remains unchanged. New RequestReceived after half-close fails before automatic response creation; subsequent per-connection JSON commands fail before mutating/sending. stop remains the existing global stop path. Thus discarded output is limited to receive-side control output from an already completed stream; unexpected events/protocol errors retain existing failure handling.",
+    "error_safety": "No exception catch, retry, BrokenPipe suppression or error-to-EOF mapping is added. Every send/flush/shutdown error before successful half-close and all unrelated errors retain existing failure paths. Invalid writes after half-close become explicit fixture errors instead of being silently discarded.",
+    "read_side": "No changes to sock.recv, SSL decoding, eof flag, exception classes, physical events, original finally sock.close, stop forced accounting, worker joins or listener lifecycle. No private SSL/client state written."
+  },
+  "unchanged_oracles": [
+    "Health HEAD original completion + normal Probe DOWN + restored accounting precede GOAWAY and half-close.",
+    "GOAWAY exact completed stream/error0 and half-close command ACK remain distinct from actual physical closure.",
+    "Unchanged physical_termination accepts only real eof/connection_reset from exact health connection1, same5000ms deadline.",
+    "Fresh selected forwarding requires real accept/TLS connection2 after health closure; standard warm-reuse tests unchanged.",
+    "Socket A accepts2/requests3 and B accepts2/requests2; browser A accepts2/requests2 and B accepts1/HEAD1; no count relaxation.",
+    "Caps8 physical peers/256 requests,180s peer deadline, existing per-resource C2/R32 and all accounting caps unchanged.",
+    "No source release/completion/custodian/session/Actor/join/native/accounting/request_clean/live-before-close/Chrome/rebind assertions changed.",
+    "Final forced0/live0/failedfalse remains required; no forced cleanup normalization or synthesized events.",
+    "Production source, lock/dependencies, test assertions, group/browser schedule, tests counts/deadlines and private client actors untouched."
+  ],
+  "root_next_steps": [
+    "Preserve group-green2 failure/log/receipt and cumulative counters. Only root applies exact guarded peer replacement after confirming exclusive ownership and no active earlier runtime.",
+    "Run root-owned static/format/Python/extracted-JavaScript checks as prescribed; rehash all stage manifests and shared peer source, including both fixed/group browser inventories. Any source formatter mutation requires updated exact freeze.",
+    "Freeze adopted peer and complete fresh bounded independent SPEC then CODE; these reviews must evaluate control-output draining and retained real EOF/reset/error paths, not count this proposal as independent review.",
+    "With reviewed source frozen, run complete unfiltered three defining files, warnings-as-errors, max-cases1, actual nonzero count. Suggested exact argv is inherited group-green2 command below, under fresh receipt/log names.",
+    "Require both rotated H1/H2 positive cases actually traverse all old/new health closures, new connection2 handshakes, originals/releases/accounting/final nonforced cleanup; investigate any failure rather than altering assertions.",
+    "After group source passes, root refreshes full-stage inventories/review and prescribed remaining compile/format/syntax/isolated-consumer gates; keep prior failures immutable.",
+    "Execute fresh fixed and group browser collectors for all four nativeH1/H2→TLSH2 rows, two rows each; require original health and real close witnesses, DOM/CDP images, explicit Chrome close, process-group/readers/adopted joins, final zeros and listener rebind.",
+    "Only root determines stage completion after all prescribed actual verification and independent review; proposal alone proves no runtime outcome."
+  ],
+  "suggested_group_argv": [
+    "nix",
+    "develop",
+    "--command",
+    "env",
+    "ERL_FLAGS=+S 2:2",
+    "MIX_ENV=test",
+    "unbuffer",
+    "mix",
+    "test",
+    "--warnings-as-errors",
+    "--max-cases",
+    "1",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs"
+  ],
+  "suggested_browser_flow": "Use existing browser-command-collector1.py --endpoint fixed/group --runner fixed/group-identity-rotation-browser-runner1.py with root-selected fresh --name and --receipt; preserve existing collector custody and four-row assertions. Worker did not execute either command.",
+  "verification": {
+    "worker_executed_tests": 0,
+    "runtime": "NOT RUN",
+    "syntax_compile_import_target": "NOT RUN",
+    "browser_network_fixtures": "NOT RUN",
+    "performed": "Read AGENTS, design/plan-relevant source, prior repair1/candidate manifests, safe green2 logs/receipt/classification, Python stdlib SSL source; exact literal transforms in orchestrator memory and SHA256 via printf|sha256sum. No source import/compile/parse/execution.",
+    "proposed_output": "Hash of proposed text only; no candidate peer file written or executed.",
+    "read_errors": 0,
+    "tool_nonzero": [
+      {
+        "command": "rg --files apps/gaoxy_proxy -g AGENTS.md && git branch --show-current",
+        "exit": 1,
+        "reason": "Normal no-match for nested AGENTS files; chained branch command did not run. Branch subsequently read successfully separately."
+      }
+    ],
+    "tool_output_limits": "Some batched reads were truncated; relevant repair fields, exact error log ranges, live peer source and hashes were reread in bounded outputs. No rawNetLog, private keys or prohibited raw terminal trace opened/output.",
+    "runtime_acceptance": "NOT RUN; source-supported repair hypothesis awaits root review and actual runtime."
+  },
+  "counters": {
+    "inherited": "root165/orch90/tooling30/groupfailed57/runtimefailed3/fixture3/Sol3/production0/Astra2/2",
+    "sol_repair_rounds": 3,
+    "astra_recovery_rounds": "2/2 exhausted",
+    "worker_repair_and_validation_rounds": 0,
+    "worker_runtime_failures": 0,
+    "worker_read_errors": 0,
+    "change_policy": "Inherited cumulative counters retained; this proposal does not reset counters or claim another successful repair. Root owns subsequent cumulative updates.",
+    "astra_gate": "none; no escalation requested"
+  },
+  "remaining_risks": [
+    "No Python traceback proves the exact failed instruction/control type; actual retry can falsify the flush hypothesis.",
+    "TCP SHUT_WR is not graceful TLS close_notify; original repair's qualified read semantics and real remote EOF/reset must still hold.",
+    "Remote physical close within unchanged5s is unproven until actual scoped tests/browser run.",
+    "Shared peer affects broader fixed/group compatibility; complete three-file run and four browser rows required.",
+    "No fresh implementation, syntax, protocol/runtime, review or stage acceptance claimed."
+  ],
+  "decisions_needed": [],
+  "commands_finished": true,
+  "command_shutdown": "All own commands completed synchronously; no runtime/background process/fixture started and no other process touched.",
+  "written_files": [
+    "/tmp/gaoxy-h2-identity-cold-close-repair2-fresh.json",
+    "/tmp/gaoxy-h2-identity-cold-close-repair2-fresh.md"
+  ]
+}

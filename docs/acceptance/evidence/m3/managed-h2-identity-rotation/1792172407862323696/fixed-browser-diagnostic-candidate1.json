@@ -1,0 +1,50 @@
+{
+  "task_id": "h2_identity_fixed_browser_diagnostic_candidate1",
+  "status": "PROPOSAL_NOT_EXECUTED",
+  "assignment": "Direct bounded instrumentation proposal; ownership only assigned two /tmp files. Parent owns repository/runtime and independent review.",
+  "at_utc": "2026-10-17T10:03:02.189206+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "active_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py",
+  "active_sha256": "478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74",
+  "candidate_path": "/tmp/gaoxy-h2-fixed-browser-diagnostic-candidate1.py",
+  "candidate_sha256": "be7581fce4237b961afcc9a1fe44627b8c1d13bce5a2f71830e47c581a0583f8",
+  "changes": [
+    "Add only5exactnetwork/certnotification eventnames to existing allowlist; unchanged bounded numeric/bool/error/dependency parameter rules, no arbitraryrawparams.",
+    "Add exact6description-to-enum map withOTHER/ABSENT anddescription_present only forHTTP2_SESSION_CLOSE; originaldescription read transiently and never retained.",
+    "On existing run_case Exception, bind originaltraceback first; before Actor.dispose write one additional bounded safe chrome-net-metadata-at-failure.json. Catch diagnosticprojection Exception into separate generic failure_projection_error, then bare-raise originalexception. Existingfinally/cleanup/finalprojection/rawcustody unchanged."
+  ],
+  "reason": "Finalfixed4 had already passed the old-browser projection site before oldrequest_clean/nativeconnectionlive failed. Newfailureprojection only fills the interval between existing oldsnapshot and postdisposal finalsnapshot, separating failuretime observations fromcleanup-generated events. It cannot guarantee initiatingcausecapture because Chrome buffering/incompleteprefix/timing remain.",
+  "preserved": [
+    "Embedded BROWSER declaration byte-identical",
+    "All existing runtimeargv/HOST/COHORT/PEER/headers/mainloop/request_clean/nativeconnectionlive andotherassertions unchanged",
+    "Original guard values/ordering andActor.dispose/finalprojection/rawdirectoryretention/deletion paths unchanged",
+    "Original failuretraceback bound before diagnostic call, normalprojectionfailure cannot replace originalerror or bypassfinally",
+    "No production/sourcebehaviorfix, rootcauseclaim, finalretry or acceptance"
+  ],
+  "textual_checks": {
+    "replacement_anchors_exactly_one_each": 4,
+    "browser_declaration_utf8_bytes": 8069,
+    "browser_declaration_sha256": "d8885cdb99494f18541392d54c48091e991881a5739e1133ed6b3af444ee30ea",
+    "browser_declaration_unchanged": true,
+    "assertion_and_cleanup_anchor_counts_unchanged": true
+  },
+  "diff": "--- /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py\n\n+++ /tmp/gaoxy-h2-fixed-browser-diagnostic-candidate1.py\n\n@@ -159,6 +159,9 @@\n\n     'TCP_CONNECT', 'TCP_CONNECT_ATTEMPT', 'SSL_CONNECT', 'SSL_HANDSHAKE_ERROR',\n     'SSL_SHUTDOWN', 'HTTP_STREAM_JOB_BOUND_TO_REQUEST',\n     'HTTP_STREAM_REQUEST_BOUND_TO_JOB', 'HTTP2_STREAM',\n+    'NETWORK_IP_ADDRESSES_CHANGED', 'NETWORK_CONNECTIVITY_CHANGED', 'NETWORK_CHANGED',\n+    'CERTIFICATE_DATABASE_TRUST_STORE_CHANGED',\n+    'CERTIFICATE_DATABASE_CLIENT_CERT_STORE_CHANGED',\n }\n _INT_KEYS = {\n     'stream_id', 'last_stream_id', 'error_code', 'net_error', 'byte_count',\n@@ -170,6 +173,16 @@\n\n     'SETTINGS_TIMEOUT', 'STREAM_CLOSED', 'FRAME_SIZE_ERROR', 'REFUSED_STREAM',\n     'CANCEL', 'COMPRESSION_ERROR', 'CONNECT_ERROR', 'ENHANCE_YOUR_CALM',\n     'INADEQUATE_SECURITY', 'HTTP_1_1_REQUIRED',\n+}\n+\n+\n+_CLOSE_REASONS = {\n+    'Finished going away': 'FINISHED_GOING_AWAY',\n+    'Closing idle connection.': 'IDLE_CONNECTION',\n+    'Connection closed': 'CONNECTION_CLOSED',\n+    'Write error': 'WRITE_ERROR',\n+    'Closing current sessions.': 'CURRENT_SESSIONS',\n+    'Closing all sessions.': 'ALL_SESSIONS',\n }\n \n \n@@ -222,6 +235,12 @@\n\n             projected['source_dependency'] = dependency\n         if projected:\n             result['params'] = projected\n+    if name == 'HTTP2_SESSION_CLOSE':\n+        description = params.get('description') if isinstance(params, dict) else None\n+        present = isinstance(description, str)\n+        safe = result.setdefault('params', {})\n+        safe['description_present'] = present\n+        safe['close_reason'] = _CLOSE_REASONS.get(description, 'OTHER') if present else 'ABSENT'\n     return result\n \n \n@@ -658,6 +677,10 @@\n\n                    stopped=stopped,browser_join=browser_join,peer_joins=peer_joins)\n     except Exception:\n         row['failure'] = traceback.format_exc()\n+        try:\n+            write_netlog_projection(raw_netlog, evidence/'chrome-net-metadata-at-failure.json')\n+        except Exception as error:\n+            row['failure_projection_error'] = type(error).__name__+': diagnostic NetLog projection failed'\n         raise\n     finally:\n         cleanup_errors = []\n",
+  "adoption_requirements": "Root obtains independentSPEC thenCODE on exactcandidate/proposal hashes before adoption. Candidate retains original __file__-relative path assumptions; do not execute directly from /tmp. Root adoption into originalactive path requires refrozen source/inventory/command binding, only necessary syntax and separately revieweddiagnostic gates, no blind finalretry.",
+  "verification": {
+    "method": "Text-only exactanchor substitutions, embeddedbrowser equality, targeted unchanged anchor counts andunifieddiff; no candidate import/compile/AST/runtime executed.",
+    "tests_executed": 0,
+    "syntax_executed": 0,
+    "candidate_import_runtime_git_network_nix_browser": 0,
+    "raw_privatekeys_prompts_excludedzero_cache_process_operations": 0,
+    "repository_writes": 0,
+    "only_writes": [
+      "/tmp/gaoxy-h2-fixed-browser-diagnostic-candidate1.py",
+      "/tmp/gaoxy-h2-fixed-browser-diagnostic-candidate1.json"
+    ]
+  },
+  "counter_from_parent": "Counter49 SHA f5a83663d5cf3eb7259f280bf558474d6811228c44f383be485c1930549ce1b6;root206/group62/runtimefailed8;remainingcounter48categories/fixtureSol5/production0/helper4/Astra2of2 retained. No reviewer reset or runtimefailure increment; parent owns anyinstrumentation repair counting.",
+  "commands_shutdown": "All own source/proposal commands finished; no ownedliveprocess/session;parentprocessesuntouched.",
+  "remaining_risks": "OriginalFAIL/initiatingcauseUNKNOWN retained. Instrumentation itself may perturb timing, andprefixmetadata cannot establish globalnotificationabsence. Exceptionprojection may fail;genericerror retained andoriginalfailure continues. Syntax/runtimeverification NOT_RUN.",
+  "decisions_needed": "No productdecision. Parent reviews/adopts or repairs concreteproposal under existingauthorization."
+}

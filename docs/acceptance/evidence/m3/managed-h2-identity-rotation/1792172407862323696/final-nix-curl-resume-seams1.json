@@ -1,0 +1,196 @@
+{
+  "task_id": "nix_curl_resume_seams1",
+  "status": "DONE_READ_ONLY_INSTALLED_DOCUMENTATION_INVESTIGATION",
+  "verdict": "DOCUMENTED_RESUME_SEAM_WITH_REQUIRED_EXTERNAL_INTEGRITY_AND_RESPONSE_GATES_NOT_PLAN_APPROVAL",
+  "assignment": "direct bounded installed curl documentation investigation only; current preparation cause/outcome unknown",
+  "at_utc": "2026-10-17T08:42:23.633433+00:00",
+  "repository_from_handoff": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "installed_curl_observed": "curl8.21.0/libcurl8.21.0 x86_64-pc-linux-gnu; Release-Date2026-06-24",
+  "cli_observations": [
+    {
+      "argv": [
+        "curl",
+        "--version"
+      ],
+      "actual_exit": 0,
+      "stdout_bytes": 518,
+      "stdout_sha256": "3fc6b0caa5a1374126aede6f8071e1c6d56396fa5feefa3009721c186a33d650"
+    },
+    {
+      "argv": [
+        "curl",
+        "--help",
+        "all"
+      ],
+      "actual_exit": 0,
+      "stdout_bytes": 18131,
+      "stdout_sha256": "344bb3ba0126ca3d796e621d04db25c7894a281e0710ddeaf6c88aed3b5398cb",
+      "observed_options": [
+        "continue-at",
+        "range",
+        "retry",
+        "max-time",
+        "max-filesize",
+        "fail",
+        "output",
+        "remove-on-error",
+        "etag-compare",
+        "etag-save"
+      ]
+    },
+    {
+      "argv": [
+        "curl",
+        "--manual"
+      ],
+      "actual_exit": 0,
+      "stdout_bytes": 0,
+      "stderr": "Warning: built-in manual was disabled at build-time\n",
+      "interpretation": "No built-in manual evidence despite exit0; use separately installed matching local manpage."
+    },
+    {
+      "argv": [
+        "man",
+        "-w",
+        "curl"
+      ],
+      "actual_exit": 0,
+      "stdout": "/nix/store/745rndb9mpgp6z5312l0n73qb7zh0q1x-curl-8.21.0-man/share/man/man1/curl.1.gz\n"
+    },
+    {
+      "argv": [
+        "curl",
+        "--help",
+        "--continue-at"
+      ],
+      "actual_exit": 0,
+      "stdout_bytes": 0,
+      "stderr": "Cannot comply. This curl was built without built-in manual\n",
+      "interpretation": "Option-specific built-in prose unavailable; not a transfer or proposed recovery execution."
+    }
+  ],
+  "local_manual": {
+    "path": "/nix/store/745rndb9mpgp6z5312l0n73qb7zh0q1x-curl-8.21.0-man/share/man/man1/curl.1.gz",
+    "compressed_sha256": "ae336d6d02a03cee78c2ea9755418030d1ad3170f38963b2adf735d51ab19a66",
+    "uncompressed_sha256": "4cbd8306c179d1aa6c8ac4931171eb98f70dcea662963092e906f708ecc1f050",
+    "uncompressed_bytes": 276368,
+    "no_download": true,
+    "excerpts": {
+      "continue_at": {
+        "lines": "762-790",
+        "text": ".IP \"\\-C, \\-\\-continue\\-at <offset>\"\nResume a previous transfer from the given byte offset. The given offset is the\nexact number of bytes that are skipped, counting from the beginning of the\nsource file before it is transferred to the destination. If used with uploads,\nthe FTP server command SIZE is not used by curl.\n\nUse \"\\-C \\-\" to instruct curl to automatically find out where/how to resume the\ntransfer. It then uses the given output/input files to figure that out.\n\nWhen using this option for HTTP uploads using POST or PUT, functionality is\nnot guaranteed. The HTTP protocol has no standard interoperable resume upload\nand curl uses a set of headers for this purpose that once proved working for\nsome servers and have been left for those who find that useful.\n\nThis command line option is mutually exclusive with \\fI\\-\\-range\\fP: you can only use\none of them for a single transfer.\n\nThe \\fI\\-\\-no\\-clobber\\fP and \\fI\\-\\-remove\\-on\\-error\\fP options cannot be used together with\n\\fI\\-\\-continue\\-at\\fP.\n\nIf \\fI\\-\\-continue\\-at\\fP is provided several times, the last set value is used.\n\nExamples:\n.nf\ncurl -C - https://example.com\ncurl -C 400 https://example.com\n.fi\n\nSee also \\fI\\-\\-range\\fP."
+      },
+      "range": {
+        "lines": "4533-4582",
+        "text": ".IP \"\\-r, \\-\\-range <range>\"\n(HTTP FTP SFTP FILE) Retrieve a byte range (i.e. a partial document) from an HTTP/1.1, FTP or SFTP\nserver or a local FILE. Ranges can be specified in a number of ways.\n.RS\n.IP 0-499\nspecifies the first 500 bytes\n.IP 500-999\nspecifies the second 500 bytes\n.IP -500\nspecifies the last 500 bytes\n.IP 9500-\nspecifies the bytes from offset 9500 and forward\n.IP 0-0,-1\nspecifies the first and last byte only(*)(HTTP)\n.IP 100-199,500-599\nspecifies two separate 100\\-byte ranges(*) (HTTP)\n.RE\n.IP\n(*) = NOTE that if specifying multiple ranges and the server supports it then\nit replies with a multiple part response that curl returns as\\-is. It\ncontains meta information in addition to the requested bytes. Parsing or\notherwise transforming this response is the responsibility of the caller.\n\nOnly digit characters (0\\-9) are valid in the \\(aqstart\\(aq and \\(aqstop\\(aq fields of the\n\\(aqstart\\-stop\\(aq range syntax. If a non\\-digit character is given in the range, the\nserver\\(aqs response is unspecified, depending on the server\\(aqs configuration.\n\nMany HTTP/1.1 servers do not have this feature enabled, so that when you\nattempt to get a range, curl instead gets the whole document.\n\nFTP and SFTP range downloads only support the simple \\(aqstart\\-stop\\(aq syntax\n(optionally with one of the numbers omitted). FTP use depends on the extended\nFTP command SIZE.\n\nWhen using this option for HTTP uploads using POST or PUT, functionality is\nnot guaranteed. The HTTP protocol has no standard interoperable resume upload\nand curl uses a set of headers for this purpose that once proved working for\nsome servers and have been left for those who find that useful.\n\nThis command line option is mutually exclusive with \\fI\\-\\-continue\\-at\\fP: you can only\nuse one of them for a single transfer.\n\nIf \\fI\\-\\-range\\fP is provided several times, the last set value is used.\n\nExample:\n.nf\ncurl --range 22-44 https://example.com\n.fi\n\nSee also \\fI\\-\\-continue\\-at\\fP and \\fI\\-\\-append\\fP."
+      },
+      "retry": {
+        "lines": "4873-4897",
+        "text": ".IP \"\\-\\-retry <num>\"\nIf a transient error is returned when curl tries to perform a transfer, it\nretries this number of times before giving up. Setting the number to 0 makes\ncurl do no retries (which is the default). Transient error means either: a\ntimeout, an FTP 4xx response code or an HTTP 408, 429, 500, 502, 503, 504, 522\nor 524 response code.\n\nWhen curl is about to retry a transfer, it first waits one second and then for\nall forthcoming retries it doubles the waiting time until it reaches 10\nminutes, which then remains the set fixed delay time between the rest of the\nretries. By using \\fI\\-\\-retry\\-delay\\fP you disable this exponential backoff\nalgorithm. See also \\fI\\-\\-retry\\-max\\-time\\fP to limit the total time allowed for\nretries.\n\ncurl complies with the Retry\\-After: response header if one was present to know\nwhen to issue the next retry (added in 7.66.0).\n\nIf \\fI\\-\\-retry\\fP is provided several times, the last set value is used.\n\nExample:\n.nf\ncurl --retry 7 https://example.com\n.fi\n\nSee also \\fI\\-\\-retry\\-max\\-time\\fP, \\fI\\-\\-retry\\-connrefused\\fP and \\fI\\-\\-retry\\-delay\\fP."
+      },
+      "remove_on_error": {
+        "lines": "4749-4766",
+        "text": ".IP \"\\-\\-remove\\-on\\-error\"\nRemove the output file if an error occurs. If curl returns an error when told to\nsave output in a local file. This prevents curl from leaving a partial file in\nthe case of an error during transfer.\n\nIf the output is not a regular file, this option has no effect.\n\nThe \\fI\\-\\-continue\\-at\\fP option cannot be used together with \\fI\\-\\-remove\\-on\\-error\\fP.\n\nProviding \\fI\\-\\-remove\\-on\\-error\\fP multiple times has no extra effect.\nDisable it again with \\-\\-no-remove-on-error.\n\nExample:\n.nf\ncurl --remove-on-error -o output https://example.com\n.fi\n\nAdded in 7.83.0. See also \\fI\\-\\-fail\\fP."
+      },
+      "file_size": {
+        "lines": "2963-2986",
+        "text": ".IP \"\\-\\-max\\-filesize <bytes>\"\n(FTP HTTP MQTT) When set to a non\\-zero value, it specifies the maximum size (in bytes) of a\nfile to download. If the file requested is larger than this value, the\ntransfer does not start and curl returns with exit code 63.\n\nSetting the maximum value to zero disables the limit.\n\nA unit suffix letter can be used. Appending \\(aqk\\(aq or \\(aqK\\(aq counts the number as\nkilobytes, \\(aqm\\(aq or \\(aqM\\(aq makes it megabytes etc. The supported suffixes (k, M, G,\nT, P) are 1024\\-based. Examples: 200K, 3m and 1G.\n\n\\fBNOTE\\fP: before curl 8.4.0, when the file size is not known prior to\ndownload, for such files this option has no effect even if the file transfer\nends up being larger than this given limit.\n\nStarting with curl 8.4.0, this option aborts the transfer if it reaches the\nthreshold during transfer.\n\nStarting in curl 8.19.0, the maximum size can be specified using a fraction as\nin \"2.5M\" for two and a half megabytes. It only works with a period (\".\")\ndelimiter, independent of what your locale might prefer.\n\nSince 8.20.0, this option also stops ongoing transfers that would reach this\nthreshold due to automatic decompression using \\fI\\-\\-compressed\\fP."
+      },
+      "partial_and_http_error": {
+        "lines": "7096-7106",
+        "text": ".IP 18\nPartial file. Only a part of the file was transferred.\n.IP 19\nFTP could not download/access the given file, the RETR (or similar) command\nfailed.\n.IP 21\nFTP quote error. A quote command returned error from the server.\n.IP 22\nHTTP page not retrieved. The requested URL was not found or returned another\nerror with the HTTP error code being 400 or above. This return code only\nappears if \\fI\\-\\-fail\\fP is used."
+      },
+      "range_and_resume_errors": {
+        "lines": "7125-7132",
+        "text": ".IP 33\nHTTP range error. The range \"command\" did not work.\n.IP 34\nHTTP post error. Internal post\\-request generation error.\n.IP 35\nSSL connect error. The SSL handshaking failed.\n.IP 36\nBad download resume. Could not continue an earlier aborted download."
+      },
+      "receive_error": {
+        "lines": "7161-7164",
+        "text": ".IP 55\nFailed sending network data.\n.IP 56\nFailure in receiving network data."
+      },
+      "size_error": {
+        "lines": "7173-7174",
+        "text": ".IP 63\nMaximum file size exceeded."
+      }
+    }
+  },
+  "conclusions": [
+    {
+      "topic": "official_supported_seam",
+      "result": "SUPPORTED_DOCUMENTATION_ONLY",
+      "detail": "Installed manual explicitly defines --continue-at numeric offset as exact source bytes skipped, and -C - as automatically finding output/input resume position. A future reviewed route can use explicit actual prefix length with --output pointing to a separately staged regular file containing exactly that prefix. Prefer numeric offset recorded before invocation over implicit -C -. --continue-at and --range are mutually exclusive; do not combine them."
+    },
+    {
+      "topic": "reuse_provenance",
+      "result": "CONDITIONAL",
+      "detail": "Only after actual preparation FAIL/custody is known and all writers have stopped, a partial compressed object may supply a prefix if it is bound to the same pinned official URL/compression/narinfo/FileSize/FileHash and has actual length0<L<N. Preserve old immutable failed artifact and record its length/SHA256, then copy bytes to exclusive new staging if a separately reviewed plan permits. Prefix provenance is not a verified complete-file hash; the final whole compressed SHA256 is mandatory. Do not reuse a file after a known full FileHash mismatch or an unexplained provenance/size change."
+    },
+    {
+      "topic": "offset_zero",
+      "result": "FRESH_DOWNLOAD_BRANCH",
+      "detail": "L=0 has no reusable bytes. A future plan should make it an explicit fresh-transfer branch with expected HTTP200 and full N-byte receipt/size/hash, rather than accepting any arbitrary200/206 under one resume predicate. This manual does not establish exact continue-at0 internal header/response behavior, so no such runtime behavior is claimed here."
+    },
+    {
+      "topic": "positive_offset_response",
+      "result": "FAIL_CLOSED_POLICY_REQUIRED",
+      "detail": "For0<L<N, require actual curl exit0/nonforced/joined, final HTTP206, and the final object-response Content-Range exactly bytes L-(N-1)/N plus response transfer bytes N-L; then require final local file exactlyN and full pinned FileHash. Preserve final response metadata separately from redirects. Manual documents the feature and range-error exits but does not prove all ignored/mismatched Range responses map to a particular exit code. Exit0 or HTTP206 alone is insufficient."
+    },
+    {
+      "topic": "ignored_range_200",
+      "result": "STOP_RESUME_BRANCH",
+      "detail": "For positive offset, do not append/relabel HTTP200 as successful resumed response even if curl exits0. Manual range section explicitly warns that servers may return the whole document for --range; it does not promise an exhaustive continue-at200 fail-closed mapping. Preserve actual status/exit/file and stop. A fresh0-offset transfer would be a separate newly reviewed branch, never an automatic fallback within the failed resume attempt."
+    },
+    {
+      "topic": "range_mismatch_33_36",
+      "result": "STOP",
+      "detail": "33 is documented HTTP range error;36 is bad download resume/could not continue. Preserve actual exit/stderr/status/offset and stop the attempt. Do not translate to normal completion, lower offset, truncate the original file, retry at0, or extend guards. A wrong Content-Range/start/end/total must also fail independently of curl exit."
+    },
+    {
+      "topic": "http416",
+      "result": "STOP_NETWORK_ROUTE",
+      "detail": "HTTP416 is an HTTP status, not curl exit416. Manual gives22 for HTTP>=400 with --fail, but does not document every continue-at416 special-case interaction; do not assert416 must yield22 or can never yield0. Reject416 as a resumed-transfer acceptance status regardless of actual exit. If L==N before any HTTP, use a separate no-transfer exact FileSize+full FileHash validation branch; if it matches, count no new transfer and preserve the prior failure. If L>N or full hash mismatches, stop; do not infer completion from416 or truncate data."
+    },
+    {
+      "topic": "18_56_and_retries",
+      "result": "DIAGNOSTIC_LIMIT",
+      "detail": "18 means only part of file transferred;56 means network receive failure. Either preserves its own FAIL and may leave bytes whose usability requires provenance/length checks, not an assumption of correct prefix or a root cause. A future bounded explicit continuation after retained actual failure is distinguishable from curl automatic retries. --retry0 disables curl retries; do not enable retry-all-errors/retry-connrefused or loop attempts until green."
+    },
+    {
+      "topic": "full_hash_failure",
+      "result": "STOP_NO_PUBLICATION",
+      "detail": "Any completed/staged-file FileSize or full FileHash mismatch is an integrity failure; do not publish, import, resume that apparently complete file, change expected hash or silently redownload. Retain exact bytes/hashes/failure and diagnose before another reviewed attempt. Successful response or prefix progress never bypasses whole-file integrity or later native trusted-signature/content verification."
+    },
+    {
+      "topic": "bounded_custody_and_limits",
+      "result": "NEW_REVIEW_REQUIRED",
+      "detail": "Any future continuation needs an independently frozen finite attempt/global-work/outer-collector plan, every actual curl exit/HTTP/headers/offset/bytes and real joins retained, partial files separate from published complete files, full disk/byte bounds, unchanged source/flake/trust and native preconditions. --max-filesize can cap transfers (manual63), but is not proof of correct reconstructed total size or resume offset. No --remove-on-error (explicitly incompatible with continue-at), no no-clobber/continue-at combination, no manual decompression or store import. Existing plan2 and all guards remain unchanged."
+    }
+  ],
+  "not_established": [
+    "Current47594 actual outcome, error18/56/cause, partial contents/provenance and valid resume offset; no current artifacts inspected or modified.",
+    "Exact installed curl binary used by running preparation, as opposed to current CLI observation.",
+    "Runtime server support, actual Content-Range/206 behavior, resume output semantics,33/36/416 mappings or full-object completion.",
+    "A complete future continuation design/plan/spec/code approval or authorisation to execute it."
+  ],
+  "verification": {
+    "cli_help_version_only": true,
+    "http_requests": 0,
+    "nar_downloads": 0,
+    "candidate_imports_or_execution": 0,
+    "store_commands": 0,
+    "builds": 0,
+    "protocol_tests": 0,
+    "current_preparation_files_read_or_changed": 0,
+    "repository_writes": 0,
+    "Git": 0,
+    "commands_finished": true,
+    "documentation_limitation": "Built-in manual disabled; matching installed local compressed manpage successfully read. This is an environment documentation limitation, not a failed protocol test."
+  },
+  "counters": "Sol5/Astra2of2 exhausted preserved; root owns any newer environment counters. No new recovery/repair or runtime outcome from this investigation.",
+  "changed_files": [
+    "/tmp/gaoxy-nix-curl-resume-seams1.json",
+    "/tmp/gaoxy-nix-curl-resume-seams1.md"
+  ],
+  "frozen_report_note": "Freeze after reporting output SHA; later execution requires actual failure and separate root-authored bounded repair plan plus independent SPEC then CODE."
+}

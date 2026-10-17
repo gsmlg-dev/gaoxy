@@ -1,0 +1,15 @@
+# Conditional curl range/chunk interface map — not adopted
+
+Task `h2_identity_nix_range_chunk_seams1`, DONE documentation mapping only. Installed curl8.21.0 matching man: `/nix/store/745rndb9mpgp6z5312l0n73qb7zh0q1x-curl-8.21.0-man/share/man/man1/curl.1.gz`; compressed SHA256 `ae336d6d02a03cee78c2ea9755418030d1ad3170f38963b2adf735d51ab19a66`, decompressed `4cbd8306c179d1aa6c8ac4931171eb98f70dcea662963092e906f708ecc1f050`.
+
+Manual762–777/4572–4573: `--range S-E` and `--continue-at` are mutually exclusive. Lines4533–4540 define inclusive ranges (0-499 is500bytes). Lines4551–4561 warn that multiple ranges yield multipart bytes returned as-is, and servers can ignore Range and send the full object. Use one contiguous range per invocation; exit0 is insufficient.
+
+A future frozen candidate needs:
+
+- Actual current-session terminal custody first; preserve all failures. Bind exact public nar/official metadata/full N+FileHash and joined original prefix L+SHA. Copy and rehash into a new exclusive staging tree; preserve original prefix/cache bytes and avoid active cache2.
+- Exact object/slice/order/file/attempt/worker table. Cover each remainder once: firstS=L, nextS=previousE+1, lastE=N-1, no overlap/gap. Freeze the maximum4 interpretation; this conservative map uses at most4total slices across the attempt. No multipart/open-ended ranges, automatic extras/retries/fresh fallback.
+- Separate exclusive slice files. Every slice must exit0/nonforced/joined with206, exact `Content-Range: bytes S-E/N`, download/on-disk bytes E-S+1, optional exact Content-Length and absent/identity encoding. Reject200/416/missing/wrong/ambiguous ranges. Keep binary length/hash receipts and safe named fields; no raw-header storage.
+- Frozen finite whole-attempt limits, including copying/hashing/assembly/source rechecks. Existing plan3 remains2workers/per-curl<=840/connect30/retry0/HTTPS/maxredirect3,1680work/1800collector; no series silently exceeds total. Disk budget includes separate slices, full assembled staging and1GiBheadroom.
+- Joined slices concatenate in the frozen order after the copied prefix into a separate exclusive final staging file. Require exact full N and pinned compressed FileHash before promotion; observed chunk hashes are receipts, not signed expected hashes. Recheck source custody. Native exact18/no-recursive copy300s and explicit trusted signature/content verify300s,147refs/trust/disk checks and600s exact-version readiness remain separate and unchanged; no custom import/trust/DB/settings path.
+
+No network/curl/helper/runtime/cache/process/Git/Nix/browser/protected-file action. Only the two assigned `/tmp` reports written; all commands complete, no owned live process. This is neither route adoption nor server-range proof. Parent last reports session66308 RUNNING/terminalUNKNOWN; no cause/outcome inferred. Current plan3, deadlines, counter44, Sol5/production0/Astra2of2 and identity NOT_ACCEPTED/finalbrowserFAIL_UNKNOWN/groupNOT_RUN/plateauNOT_STARTED remain unchanged. A future candidate needs independent SPEC then dependent CODE before any execution.

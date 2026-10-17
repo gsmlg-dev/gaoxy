@@ -87,36 +87,65 @@ defmodule Gaoxy.Proxy.ManagedH2FixedGenerationTest do
     end
   end
 
-  for protocol <- [:h2c, :http2], downstream <- [:http1, :http2] do
+  for {protocol, identity} <- [{:h2c, :standard}, {:http2, :standard}, {:http2, :rotated}],
+      downstream <- [:http1, :http2] do
     @protocol protocol
     @downstream downstream
-    test "#{downstream} to #{@protocol} checked old snapshot survives CAS and independent completion then source-pin release" do
-      {old_peer, old_ready} = F.peer(@protocol, ["--manual"])
-      {new_peer, new_ready} = F.peer(@protocol, ["--manual"])
+    @identity identity
+    @tag :tmp_dir
+    test "#{downstream} to #{@protocol} #{@identity} checked old snapshot survives CAS and independent completion then source-pin release",
+         %{tmp_dir: tmp_dir} do
+      peers = rotation_positive_peers(@protocol, @identity, tmp_dir)
+
+      %{old_peer: old_peer, old_ready: old_ready, new_peer: new_peer, new_ready: new_ready} =
+        peers
+
       f = environment(@protocol, @downstream)
-      old = candidate(f, source(@protocol, old_ready), :old)
+      old = candidate(f, peers.old_source, :old)
       assert {:ok, initial, _} = Generation.snapshot(f.store)
       old = activate(f, old, initial)
+      old_policy = :sys.get_state(f.owner).records[old.transport.resource].policy
       add_listener(f)
       observe_owner(f)
       {old_socket, old_baseline} = connect(f)
-      :ok = F.send_request(f, old_socket, "GET", "/old%2Fpath?raw=%2F")
+
+      :ok =
+        F.send_request(
+          f,
+          old_socket,
+          "GET",
+          "/old%2Fpath?raw=%2F",
+          rotation_positive_fields(@identity, "old")
+        )
+
       captured = capture(f, old, :old, old_baseline)
       assert_no_open(f, old)
 
-      replacement = candidate(f, source(@protocol, new_ready), :new)
+      replacement = candidate(f, rotation_positive_replacement(peers), :new)
       replacement = activate(f, replacement, old.generation)
+      rotation_positive_policies(f, peers, old, replacement, old_policy)
       await_closed(f, old, captured)
       assert_no_open(f, old)
       dispatch(captured)
       old_request = request_at(f, old_peer, old, "/old%2Fpath?raw=%2F")
+      rotation_positive_credentials(@identity, old_request, "old")
       old_bound = bound(f, old, captured)
 
       {new_socket, new_baseline} = connect(f)
-      :ok = F.send_request(f, new_socket, "GET", "/new%2Fpath?")
+
+      :ok =
+        F.send_request(
+          f,
+          new_socket,
+          "GET",
+          "/new%2Fpath?",
+          rotation_positive_fields(@identity, "new")
+        )
+
       fresh = capture(f, replacement, :new, new_baseline)
       dispatch(fresh)
       new_request = request_at(f, new_peer, replacement, "/new%2Fpath?")
+      rotation_positive_credentials(@identity, new_request, "new")
       new_bound = bound(f, replacement, fresh)
 
       refute {old_peer, old_ready["port"], old_request["connection"], old_request["stream"]} ==
@@ -161,6 +190,183 @@ defmodule Gaoxy.Proxy.ManagedH2FixedGenerationTest do
       assert %{"connection" => connection} = F.physical_termination(new_peer)
       assert connection == new_request["connection"]
     end
+  end
+
+  defp rotation_positive_peers(protocol, :standard, _tmp_dir) do
+    {old_peer, old_ready} = F.peer(protocol, ["--manual"])
+    {new_peer, new_ready} = F.peer(protocol, ["--manual"])
+
+    %{
+      identity: :standard,
+      old_peer: old_peer,
+      old_ready: old_ready,
+      new_peer: new_peer,
+      new_ready: new_ready,
+      old_source: source(protocol, old_ready),
+      new_source: source(protocol, new_ready)
+    }
+  end
+
+  defp rotation_positive_peers(:http2, :rotated, tmp_dir) do
+    {old_peer, old_ready} =
+      F.peer(:http2, ["--manual", "--bind-address", "127.0.0.1"])
+
+    port = old_ready["port"]
+
+    {new_peer, new_ready} =
+      F.peer(:http2, [
+        "--manual",
+        "--bind-address",
+        "127.0.0.2",
+        "--listen-port",
+        Integer.to_string(port)
+      ])
+
+    assert old_ready["bind_address"] == "127.0.0.1"
+    assert new_ready["bind_address"] == "127.0.0.2"
+    assert new_ready["port"] == port
+
+    refute old_ready["identity"]["certificate_sha256"] ==
+             new_ready["identity"]["certificate_sha256"]
+
+    trust_path = Path.join(tmp_dir, "prepared-ca.pem")
+    File.cp!(old_ready["ca"], trust_path)
+    old_source = rotation_positive_source(port, {127, 0, 0, 1}, trust_path)
+
+    %{
+      identity: :rotated,
+      old_peer: old_peer,
+      old_ready: old_ready,
+      new_peer: new_peer,
+      new_ready: new_ready,
+      old_source: old_source,
+      trust_path: trust_path,
+      old_pem_sha256: :crypto.hash(:sha256, rotation_positive_pem(trust_path))
+    }
+  end
+
+  defp rotation_positive_replacement(%{identity: :standard, new_source: source}), do: source
+
+  defp rotation_positive_replacement(%{identity: :rotated} = peers) do
+    File.cp!(peers.new_ready["ca"], peers.trust_path)
+    refute :crypto.hash(:sha256, rotation_positive_pem(peers.trust_path)) == peers.old_pem_sha256
+    source = rotation_positive_source(peers.new_ready["port"], {127, 0, 0, 2}, peers.trust_path)
+    assert source.origin === peers.old_source.origin
+    refute source.trust === peers.old_source.trust
+    source
+  end
+
+  defp rotation_positive_source(port, address, path) do
+    pem = rotation_positive_pem(path)
+    assert [{:Certificate, der, :not_encrypted}] = :public_key.pem_decode(pem)
+    assert byte_size(der) in 1..65_536
+
+    %{
+      protocol: :http2,
+      origin: "https://localhost:#{port}",
+      connect_address: address,
+      trust: [:binary.copy(der)]
+    }
+  end
+
+  defp rotation_positive_pem(path) do
+    File.open!(path, [:read, :binary], fn file ->
+      pem = IO.binread(file, 1_048_577)
+      assert is_binary(pem) and byte_size(pem) in 1..1_048_576
+      pem
+    end)
+  end
+
+  defp rotation_positive_policies(_f, %{identity: :standard}, _old, _new, _policy), do: :ok
+
+  defp rotation_positive_policies(f, peers, old, new, policy) do
+    records = :sys.get_state(f.owner).records
+    assert records[old.transport.resource].policy === policy
+    current = records[new.transport.resource].policy
+    assert policy.origin === current.origin and policy.host == "localhost"
+    assert current.host == "localhost"
+    assert policy.port == current.port and policy.protocol == :http2
+    assert policy.connect_address == {127, 0, 0, 1}
+    assert current.connect_address == {127, 0, 0, 2}
+    assert policy.open_options[:ssl][:cacerts] === old.source.trust
+    assert current.open_options[:ssl][:cacerts] === new.source.trust
+    refute policy.open_options[:ssl][:cacerts] === current.open_options[:ssl][:cacerts]
+    refute old.transport.resource == new.transport.resource
+
+    old_identity =
+      rotation_positive_identity(old, peers.old_ready, peers.old_pem_sha256, policy)
+
+    new_identity =
+      rotation_positive_identity(
+        new,
+        peers.new_ready,
+        :crypto.hash(:sha256, rotation_positive_pem(peers.trust_path)),
+        current
+      )
+
+    refute old_identity.pem_sha256 == new_identity.pem_sha256
+    refute old_identity.der_sha256 == new_identity.der_sha256
+    refute old_identity.leaf_sha256 == new_identity.leaf_sha256
+    File.write!(peers.trust_path, "invalid public source after both preparations\n")
+    after_invalidation = :sys.get_state(f.owner).records
+    assert after_invalidation[old.transport.resource].policy === policy
+    assert after_invalidation[new.transport.resource].policy === current
+
+    IO.puts(
+      JSON.encode!(%{
+        event: "fixed_identity_rotation",
+        downstream: f.downstream,
+        path: peers.trust_path,
+        old: old_identity,
+        new: new_identity,
+        old_capture_before_replacement: true,
+        source_invalidated: true,
+        old_policy_unchanged: true
+      })
+    )
+
+    :ok
+  end
+
+  defp rotation_positive_identity(candidate, ready, pem_sha256, policy) do
+    leaf_sha256 =
+      :crypto.hash(:sha256, rotation_positive_pem(ready["cert"]))
+      |> Base.encode16(case: :lower)
+
+    assert leaf_sha256 == ready["identity"]["certificate_sha256"]
+
+    %{
+      origin: policy.origin,
+      host: policy.host,
+      port: policy.port,
+      connect_address: policy.connect_address |> :inet.ntoa() |> to_string(),
+      resource: inspect(candidate.transport.resource),
+      pem_sha256: Base.encode16(pem_sha256, case: :lower),
+      der_sha256:
+        Enum.map(policy.open_options[:ssl][:cacerts], fn der ->
+          :crypto.hash(:sha256, der) |> Base.encode16(case: :lower)
+        end),
+      leaf_sha256: leaf_sha256
+    }
+  end
+
+  defp rotation_positive_fields(:standard, _label), do: []
+
+  defp rotation_positive_fields(:rotated, label) do
+    [
+      {"proxy-authorization", "Basic synthetic-proxy-" <> label},
+      {"authorization", "Bearer synthetic-origin-" <> label}
+    ]
+  end
+
+  defp rotation_positive_credentials(:standard, _request, _label), do: :ok
+
+  defp rotation_positive_credentials(:rotated, request, label) do
+    assert Enum.filter(request["headers"], fn [name, _] -> name == "proxy-authorization" end) ==
+             []
+
+    assert Enum.filter(request["headers"], fn [name, _] -> name == "authorization" end) ==
+             [["authorization", "Bearer synthetic-origin-" <> label]]
   end
 
   # Failure fixtures use native H1 for both upstream protocols; the primary
@@ -1681,5 +1887,885 @@ defmodule Gaoxy.Proxy.ManagedH2FixedGenerationTest do
       assert_receive {:fixed_h2_peer_exit, ^peer, 0}, @timeout
       assert_receive {:DOWN, ^peer_monitor, :process, ^peer, :normal}, @timeout
     end
+  end
+
+  # Additive insertion before this test module's final end.
+  for denial <- [:old_ca_new_ip, :new_ca_old_ip, :wrong_host_trusted_ca] do
+    @rotation_denial denial
+    @tag :managed_h2_identity_rotation
+    @tag :tmp_dir
+    test "native H1 TLS H2 identity rotation #{@rotation_denial} rejects without replay",
+         %{tmp_dir: tmp_dir} do
+      {old_peer, old_ready} =
+        F.peer(:http2, ["--manual", "--bind-address", "127.0.0.1", "--listen-port", "0"])
+
+      {new_peer, new_ready} =
+        F.peer(:http2, [
+          "--manual",
+          "--bind-address",
+          "127.0.0.2",
+          "--listen-port",
+          Integer.to_string(old_ready["port"])
+        ])
+
+      assert old_ready["bind_address"] == "127.0.0.1"
+      assert new_ready["bind_address"] == "127.0.0.2"
+      assert old_ready["port"] == new_ready["port"]
+
+      refute old_ready["identity"]["certificate_sha256"] ==
+               new_ready["identity"]["certificate_sha256"]
+
+      path = Path.join(tmp_dir, "caller-ca.pem")
+      old_trust = rotation_denial_caller_trust(path, old_ready)
+      new_trust = rotation_denial_caller_trust(path, new_ready)
+      refute old_trust == new_trust
+      origin = "https://localhost:#{old_ready["port"]}"
+
+      {source, selected, alternate} =
+        case @rotation_denial do
+          :old_ca_new_ip ->
+            {%{
+               protocol: :http2,
+               origin: origin,
+               connect_address: {127, 0, 0, 2},
+               trust: old_trust
+             }, new_peer, old_peer}
+
+          :new_ca_old_ip ->
+            {%{
+               protocol: :http2,
+               origin: origin,
+               connect_address: {127, 0, 0, 1},
+               trust: new_trust
+             }, old_peer, new_peer}
+
+          :wrong_host_trusted_ca ->
+            {%{
+               protocol: :http2,
+               origin: "https://wrong.invalid:#{old_ready["port"]}",
+               connect_address: {127, 0, 0, 1},
+               trust: old_trust
+             }, old_peer, new_peer}
+        end
+
+      f = environment(:http2, :http1)
+      assert {:ok, expected, _} = Generation.snapshot(f.store)
+      active = activate(f, failure_candidate(f, source, :rotation_denial), expected)
+      record = :sys.get_state(f.owner).records[active.transport.resource]
+      assert record.policy.connect_address == source.connect_address
+      assert record.policy.open_options[:ssl][:cacerts] == source.trust
+      File.write!(path, "invalid after genuine preparation\n")
+      add_listener(f)
+      assert {:ok, address} = Gaoxy.info(f.instance, :http).local
+      {:ok, service, _} = GenServer.call(f.instance, {:lookup, :http})
+      gate = :sys.get_state(service).gate
+      observed = rotation_denial_observers(service, gate)
+      observe_owner(f)
+      barrier = rotation_denial_bind_barrier(f.owner)
+      {socket, baseline} = connect(f)
+      :ok = F.send_request(f, socket, "GET", "/rotation-denial%2Fnever?raw=%2F")
+      captured = capture(f, active, :rotation_denial, baseline)
+      assert captured.exchange.gate == gate and captured.exchange.service == service
+      assert_no_open(f, active)
+      dispatch(captured)
+      owner = f.owner
+      handle = active.transport
+
+      assert_receive {:rotation_denial_bind, ^owner, session, ^handle, token,
+                      %HTTP.RequestCompletion{} = completion},
+                     @timeout
+
+      session_monitor = Process.monitor(session)
+      # Session is synchronously blocked at bind: do not query it with :sys.
+      live = :sys.get_state(gate)
+      [cleanup_token] = Map.keys(live.cleanups)
+      cleanup = live.cleanups[cleanup_token]
+      lease = live.leases[captured.exchange.lease]
+      assert lease.pid == captured.native and lease.cleanup == cleanup_token
+      assert lease.request_active
+      assert cleanup.lease == captured.exchange.lease and cleanup.receipt == false
+      assert cleanup.bytes == 9_444_956
+      assert live.bytes == lease.bytes + cleanup.bytes
+      assert map_size(live.leases) == 1 and map_size(live.cleanups) == 1
+      send(owner, {:rotation_denial_bind_continue, barrier})
+
+      assert_receive {:rotation_denial_bound, ^owner, ^session, ^handle, ^token, ^completion,
+                      bound_ledger},
+                     @timeout
+
+      assert bound_ledger.tokens[token].completion === completion
+      assert bound_ledger.tokens[token].guardian == session
+      assert bound_ledger.pins[captured.pin.ref].public === captured.pin
+      [child] = for {_, hold} <- bound_ledger.pins, hold.public.holder == session, do: hold
+      assert child.derived and child.source_ref == captured.pin.ref
+      assert child.acquirer == captured.native and child.public.handles === [handle]
+
+      assert bound_ledger.pins[captured.pin.ref].delegations[handle.resource] ==
+               %{guardian: session, operation: child.public.operation, ref: child.public.ref}
+
+      assert bound_ledger.records[handle.resource].policy === record.policy
+      failure_response_return(f, socket, captured, 502)
+      accepted = F.event(selected, "accept")
+      rejected = F.event(selected, "handshake_failed")
+      assert rejected["connection"] == accepted["connection"]
+      F.no_event(selected, "tls")
+      F.no_event(selected, "request")
+      F.no_event(alternate, "accept")
+      F.no_event(alternate, "request")
+      result = HTTP.RequestCompletion.await(completion, @timeout)
+      assert result in [:ok, {:error, :cleanup_unconfirmed}]
+      assert HTTP.RequestCompletion.await(completion, 0) === result
+      assert :sys.get_state(owner).pins[captured.pin.ref].public === captured.pin
+
+      bound = %{
+        session: session,
+        monitor: session_monitor,
+        completion: completion,
+        token: token,
+        child: child.public
+      }
+
+      case result do
+        :ok ->
+          assert_receive {:DOWN, ^session_monitor, :process, ^session, :normal}, @timeout
+
+          F.eventually(fn ->
+            ledger = :sys.get_state(owner)
+
+            not Map.has_key?(ledger.tokens, token) and
+              not Map.has_key?(ledger.pins, child.public.ref) and
+              map_size(:sys.get_state(service).cleanups) == 0 and
+              map_size(:sys.get_state(gate).cleanups) == 0
+          end)
+
+          restored = :sys.get_state(gate)
+          assert restored.bytes == lease.bytes
+          assert restored.leases[captured.exchange.lease].bytes == lease.bytes
+          assert restored.leases[captured.exchange.lease].cleanup == nil
+          assert restored.mode == :ready
+          assert :sys.get_state(service).cleanup_failed == nil
+          assert :sys.get_state(owner).records[handle.resource].policy === record.policy
+          assert_no_child_or_token(f, active)
+          failure_close_returned(f, socket, captured)
+          assert_effect_counts(f, captured, bound)
+
+          finish(f, [{active.creator, active.creator_monitor}], [
+            {selected, 1, 0},
+            {alternate, 0, 0}
+          ])
+
+          service_monitor = observed.service_monitor
+          gate_monitor = observed.gate_monitor
+          assert_receive {:DOWN, ^service_monitor, :process, ^service, :normal}, @timeout
+          assert_receive {:DOWN, ^gate_monitor, :process, ^gate, :killed}, @timeout
+          rotation_denial_assert_history(observed, cleanup_token, captured, true)
+          assert :ok = HTTP.RequestCompletion.await(completion, 0)
+
+        {:error, :cleanup_unconfirmed} ->
+          assert_receive {:DOWN, ^session_monitor, :process, ^session,
+                          {:cleanup_failed, :cleanup_unconfirmed}},
+                         @timeout
+
+          assert_receive {:rotation_denial_service_down_held, ^service, ^session,
+                          {:cleanup_failed, :cleanup_unconfirmed}},
+                         @timeout
+
+          failure_close_returned(f, socket, captured)
+
+          F.eventually(fn ->
+            ledger = :sys.get_state(owner)
+            hold = ledger.tokens[token]
+
+            hold != nil and hold.guardian_down and hold.abort_helper == nil and
+              not Map.has_key?(ledger.pins, child.public.ref)
+          end)
+
+          # Failed original cleanup stops before finish_transport or Service receipt.
+          rotation_denial_failed_effects(f, captured, bound)
+
+          rotation_denial_finish_unconfirmed(
+            f,
+            active,
+            observed,
+            address,
+            completion,
+            token,
+            record,
+            selected,
+            alternate
+          )
+
+          rotation_denial_assert_history(observed, cleanup_token, captured, false)
+          assert {:error, :cleanup_unconfirmed} = HTTP.RequestCompletion.await(completion, 0)
+      end
+
+      IO.puts(
+        JSON.encode!(%{
+          event: "fixed_identity_denial",
+          case: @rotation_denial,
+          original_completion_sha256:
+            :crypto.hash(:sha256, :erlang.term_to_binary(completion))
+            |> Base.encode16(case: :lower),
+          completion_terminal: inspect(result),
+          cleanup_reservation_bytes: cleanup.bytes,
+          upstream_requests: 0,
+          failed_actor_disposal: result == {:error, :cleanup_unconfirmed}
+        })
+      )
+    end
+  end
+
+  defp rotation_denial_caller_trust(path, ready) do
+    # Public CA only: never inspect the peer's key field/path.
+    File.cp!(ready["ca"], path)
+    bytes = rotation_positive_pem(path)
+    assert [{:Certificate, der, :not_encrypted}] = :public_key.pem_decode(bytes)
+    assert byte_size(der) in 1..65_536
+    [:binary.copy(der)]
+  end
+
+  defp rotation_denial_bind_barrier(owner) do
+    parent = self()
+    barrier = make_ref()
+    id = make_ref()
+
+    debug = fn phase, event, _ ->
+      case {phase, event} do
+        {:waiting,
+         {:in, {:"$gen_call", {session, _}, {:bind_completion, handle, token, completion}}}} ->
+          send(parent, {:rotation_denial_bind, self(), session, handle, token, completion})
+
+          receive do
+            {:rotation_denial_bind_continue, ^barrier} -> :ok
+          after
+            5_000 -> raise "identity denial bind observation barrier expired"
+          end
+
+          {:binding, session, handle, token, completion}
+
+        {{:binding, session, handle, token, completion}, {:out, :ok, _, actual}} ->
+          send(
+            parent,
+            {:rotation_denial_bound, self(), session, handle, token, completion,
+             Map.take(actual, [:records, :pins, :tokens])}
+          )
+
+          :done
+
+        _ ->
+          phase
+      end
+    end
+
+    :ok = :sys.install(owner, {id, debug, :waiting})
+
+    on_exit(fn ->
+      send(owner, {:rotation_denial_bind_continue, barrier})
+      if Process.alive?(owner), do: :sys.remove(owner, id)
+    end)
+
+    barrier
+  end
+
+  defp rotation_denial_observers(service, gate) do
+    parent = self()
+    barrier = make_ref()
+    service_id = make_ref()
+    gate_id = make_ref()
+
+    service_debug = fn trace, event, _ ->
+      trace =
+        case event do
+          {:in, {:"$gen_call", _, {:attach_cleanup, _, _, guardian, _, _}}} ->
+            %{trace | guardian: guardian}
+
+          {:in, {:DOWN, _, :process, guardian, reason}}
+          when guardian == trace.guardian and reason != :normal ->
+            send(parent, {:rotation_denial_service_down_held, self(), guardian, reason})
+
+            receive do
+              {:rotation_denial_service_continue, ^barrier} -> :ok
+            after
+              5_000 -> raise "identity denial Service DOWN observation barrier expired"
+            end
+
+            trace
+
+          _ ->
+            trace
+        end
+
+      rotation_denial_observe_event(trace, event, :service, parent)
+    end
+
+    gate_debug = fn trace, event, _ ->
+      rotation_denial_observe_event(trace, event, :gate, parent)
+    end
+
+    :ok =
+      :sys.install(
+        service,
+        {service_id, service_debug, %{guardian: nil, count: 0, last: nil, overflow: false}}
+      )
+
+    :ok = :sys.install(gate, {gate_id, gate_debug, %{count: 0, last: nil, overflow: false}})
+
+    on_exit(fn ->
+      send(service, {:rotation_denial_service_continue, barrier})
+      if Process.alive?(service), do: :sys.remove(service, service_id)
+      if Process.alive?(gate), do: :sys.remove(gate, gate_id)
+    end)
+
+    %{
+      service: service,
+      service_monitor: Process.monitor(service),
+      gate: gate,
+      gate_monitor: Process.monitor(gate),
+      barrier: barrier
+    }
+  end
+
+  defp rotation_denial_observe_event(trace, event, family, parent) do
+    actual =
+      case event do
+        {:out, _, _, state} -> state
+        {:noreply, state} -> state
+        _ -> nil
+      end
+
+    if is_map(actual) do
+      projected =
+        case family do
+          :gate -> Map.take(actual, [:service, :mode, :bytes, :leases, :cleanups])
+          :service -> Map.take(actual, [:mode, :cleanups, :cleanup_failed])
+        end
+
+      cond do
+        projected === trace.last ->
+          trace
+
+        trace.count < 64 ->
+          send(parent, {:rotation_denial_ledger, self(), family, trace.count + 1, projected})
+          %{trace | count: trace.count + 1, last: projected}
+
+        trace.overflow ->
+          trace
+
+        true ->
+          send(parent, {:rotation_denial_ledger_overflow, self(), family})
+          %{trace | overflow: true}
+      end
+    else
+      trace
+    end
+  end
+
+  defp rotation_denial_assert_history(observed, token, captured, confirmed) do
+    histories = rotation_denial_collect_history(observed, %{gate: [], service: []})
+    gate = observed.gate
+    service = observed.service
+    refute_receive {:rotation_denial_ledger_overflow, ^gate, :gate}, 0
+    refute_receive {:rotation_denial_ledger_overflow, ^service, :service}, 0
+
+    for family <- [:gate, :service] do
+      rows = histories[family]
+      assert rows != []
+      assert Enum.map(rows, &elem(&1, 0)) == Enum.to_list(1..length(rows))
+    end
+
+    gates = Enum.map(histories.gate, &elem(&1, 1))
+    services = Enum.map(histories.service, &elem(&1, 1))
+
+    for snapshot <- gates do
+      lease_bytes = Enum.sum(for {_, lease} <- snapshot.leases, do: lease.bytes)
+      cleanup_bytes = Enum.sum(for {_, cleanup} <- snapshot.cleanups, do: cleanup.bytes)
+      assert snapshot.service == service
+      assert snapshot.bytes == lease_bytes + cleanup_bytes
+    end
+
+    holds = for snapshot <- gates, cleanup <- List.wrap(snapshot.cleanups[token]), do: cleanup
+    assert holds != []
+    assert Enum.all?(holds, &(&1.lease == captured.exchange.lease and &1.bytes == 9_444_956))
+
+    assert Enum.any?(gates, fn snapshot ->
+             case {snapshot.leases[captured.exchange.lease], snapshot.cleanups[token]} do
+               {%{pid: native, cleanup: ^token, request_active: true}, %{receipt: false}} ->
+                 native == captured.native
+
+               _ ->
+                 false
+             end
+           end)
+
+    if confirmed do
+      assert Enum.any?(holds, & &1.receipt)
+
+      assert Enum.any?(services, fn state ->
+               match?(%{receipt: true}, state.cleanups[token]) and state.cleanup_failed == nil
+             end)
+
+      assert Enum.all?(services, &(&1.cleanup_failed == nil))
+      refute Enum.any?(gates, &(&1.mode == :failed))
+
+      assert Enum.any?(
+               gates,
+               &(map_size(&1.leases) == 0 and
+                   map_size(&1.cleanups) == 0 and &1.bytes == 0)
+             )
+    else
+      assert Enum.all?(holds, &(&1.receipt == false))
+      refute Enum.any?(services, &match?(%{receipt: true}, &1.cleanups[token]))
+
+      assert Enum.any?(
+               services,
+               &(&1.cleanup_failed == :cleanup_receipt_missing and
+                   map_size(&1.cleanups) == 0)
+             )
+
+      assert Enum.any?(gates, &(&1.mode == :failed and map_size(&1.cleanups) == 0))
+    end
+  end
+
+  defp rotation_denial_collect_history(observed, acc) do
+    receive do
+      {:rotation_denial_ledger, pid, family, sequence, state}
+      when (family == :gate and pid == observed.gate) or
+             (family == :service and pid == observed.service) ->
+        rotation_denial_collect_history(
+          observed,
+          Map.update!(acc, family, &(&1 ++ [{sequence, state}]))
+        )
+    after
+      0 -> acc
+    end
+  end
+
+  defp rotation_denial_failed_effects(f, captured, bound) do
+    :sys.get_state(f.owner)
+    effects = collect_effects(f.owner, [])
+
+    for {caller, tag} <- [
+          {captured.native, :delegate_request_pin},
+          {bound.session, :checkout},
+          {bound.session, :bind_completion}
+        ] do
+      assert Enum.count(effects, fn {pid, operation, _} -> pid == caller and operation == tag end) ==
+               1
+    end
+
+    refute Enum.any?(effects, fn {pid, tag, _} -> pid == bound.session and tag == :finish end)
+    refute Enum.any?(effects, fn {pid, tag, _} -> pid == captured.native and tag == :pin_many end)
+  end
+
+  defp rotation_denial_owner_payload(owner) do
+    actual = :sys.get_state(owner)
+
+    bytes =
+      Enum.sum(for {_, record} <- actual.records, do: record.payload_bytes) +
+        Enum.sum(for {_, token} <- actual.tokens, do: token.payload_bytes) +
+        Enum.sum(for {_, pin} <- actual.pins, do: :erlang.external_size(pin))
+
+    assert {:ok, status} = Transports.status(owner)
+    assert status.owned_serialized_payload_bytes == bytes
+    assert bytes > 0 and bytes <= 8_388_608
+
+    assert status.limits == %{
+             max_resources: 4,
+             max_pins: 256,
+             max_request_tokens: 64,
+             max_owned_payload_bytes: 8_388_608
+           }
+
+    actual
+  end
+
+  defp rotation_denial_finish_unconfirmed(
+         f,
+         active,
+         observed,
+         {ip, port},
+         completion,
+         token,
+         original_record,
+         selected,
+         alternate
+       ) do
+    owner = f.owner
+    service = observed.service
+    gate = observed.gate
+    registration = :sys.get_state(owner).registration
+    parent = self()
+
+    {caller, caller_monitor} =
+      spawn_monitor(fn ->
+        send(parent, {:rotation_denial_stop, self(), Gaoxy.stop(f.instance, @timeout)})
+      end)
+
+    F.eventually(fn ->
+      {:messages, messages} = Process.info(service, :messages)
+      Enum.any?(messages, &match?({:"$gen_call", _, {:drain, _, _}}, &1))
+    end)
+
+    send(service, {:rotation_denial_service_continue, observed.barrier})
+
+    assert_receive {:rotation_denial_stop, ^caller,
+                    {:error,
+                     {:shutdown, [{:http, {:error, {:cleanup_failed, :cleanup_receipt_missing}}}],
+                      [{^registration, {:error, :cleanup_unconfirmed}}]}}},
+                   @timeout
+
+    assert_receive {:DOWN, ^caller_monitor, :process, ^caller, :normal}, @timeout
+    service_monitor = observed.service_monitor
+    gate_monitor = observed.gate_monitor
+    assert_receive {:DOWN, ^service_monitor, :process, ^service, :normal}, @timeout
+    assert_receive {:DOWN, ^gate_monitor, :process, ^gate, :killed}, @timeout
+    refute Process.alive?(service)
+    refute Process.alive?(gate)
+    assert {:error, :cleanup_unconfirmed} = HTTP.RequestCompletion.await(completion, 0)
+
+    assert {:error, :transport_scope_retired} =
+             HTTP.ManagedTransport.snapshot(original_record.scope, @timeout)
+
+    assert {:ok, scope_receipt} =
+             HTTP.ManagedTransport.retire(original_record.scope, mode: :abort)
+
+    assert {:error, :cleanup_unconfirmed} =
+             HTTP.ManagedTransport.await_retired(scope_receipt, @timeout)
+
+    assert {:error, :cleanup_unconfirmed} =
+             HTTP.ManagedTransport.await_retired(scope_receipt, 0)
+
+    assert :ok = GenServer.stop(f.store, :normal, @timeout)
+
+    F.eventually(fn ->
+      creator_state = :sys.get_state(active.creator)
+
+      match?(
+        {:ok,
+         %{
+           resources: 1,
+           pins: 0,
+           request_tokens: 1,
+           helpers: 0,
+           reserved_connections: 2,
+           failed_resources: 1,
+           lifecycle: :retiring
+         }},
+        Transports.status(owner)
+      ) and
+        creator_state.failed and creator_state.mode == :abort and creator_state.control_calls == 2 and
+        creator_state.retire_helper == nil and creator_state.retry_helper == nil
+    end)
+
+    actual = rotation_denial_owner_payload(owner)
+    assert [^token] = Map.keys(actual.tokens)
+    hold = actual.tokens[token]
+    assert hold.completion === completion and hold.guardian_down and hold.abort_helper == nil
+    assert hold.payload_bytes > 0
+    assert [resource] = Map.keys(actual.records)
+    assert resource == active.transport.resource
+    retained = actual.records[resource]
+    assert retained.lifecycle == :failed and not retained.transport_confirmed
+    assert retained.policy === original_record.policy and retained.scope === original_record.scope
+    assert retained.helpers === %{}
+    assert retained.opening === false
+    assert retained.payload_bytes > 0
+    creator_state = :sys.get_state(active.creator)
+    assert creator_state.failed and creator_state.confirmed == false
+    assert creator_state.initial_mode == :graceful and creator_state.mode == :abort
+    assert creator_state.control_calls == 2
+    assert creator_state.retire_helper == nil and creator_state.retry_helper == nil
+    assert {:ok, receipt} = Transports.retire(owner, Lifecycle.deadline(@timeout))
+
+    assert {:error, :cleanup_unconfirmed} =
+             Transports.await_retirement(receipt, Lifecycle.deadline(@timeout))
+
+    assert {:error, :cleanup_unconfirmed} =
+             Transports.await_retirement(receipt, Lifecycle.deadline(@timeout))
+
+    assert {:error, :cleanup_unconfirmed} = HTTP.RequestCompletion.await(completion, 0)
+    assert {:error, :cleanup_unconfirmed} = HTTP.ManagedTransport.await_retired(scope_receipt, 0)
+    assert rotation_denial_owner_payload(owner).tokens[token].completion === completion
+    # DISPOSAL OF FAILED TEST ACTORS: these normal process stops do not refund
+    # retained accounting or convert failed original/public receipts into :ok.
+    creator = active.creator
+    creator_monitor = active.creator_monitor
+    assert :ok = GenServer.stop(creator, :normal, @timeout)
+    assert_receive {:DOWN, ^creator_monitor, :process, ^creator, :normal}, @timeout
+    assert :ok = GenServer.stop(owner, :normal, @timeout)
+
+    for {pid, monitor} <- f.joins do
+      assert_receive {:DOWN, ^monitor, :process, ^pid, :normal}, @timeout
+    end
+
+    send(f.embedding, {:stop, self()})
+    embedding = f.embedding
+
+    assert_receive {:fixed_generation_environment_stopped, ^embedding, {:error, :not_running}},
+                   2 * @timeout
+
+    embedding_monitor = f.embedding_monitor
+    assert_receive {:DOWN, ^embedding_monitor, :process, ^embedding, :normal}, @timeout
+
+    assert {:ok, rebound} =
+             :gen_tcp.listen(port, [:binary, active: false, ip: ip, reuseaddr: true])
+
+    assert :ok = :gen_tcp.close(rebound)
+
+    for {peer, accepts} <- [{selected, 1}, {alternate, 0}],
+        do: rotation_denial_join_peer(peer, accepts)
+
+    assert {:error, :cleanup_unconfirmed} = HTTP.RequestCompletion.await(completion, 0)
+    assert {:error, :cleanup_unconfirmed} = HTTP.ManagedTransport.await_retired(scope_receipt, 0)
+  end
+
+  defp rotation_denial_join_peer(peer, accepts) do
+    monitor = Process.monitor(peer)
+    send(peer, {:command, %{"op" => "stop"}})
+
+    assert %{
+             "forced" => 0,
+             "live" => 0,
+             "failed" => false,
+             "accepts" => ^accepts,
+             "requests" => 0
+           } = F.event(peer, "joined")
+
+    F.no_event(peer, "tls")
+    F.no_event(peer, "request")
+    assert_receive {:fixed_h2_peer_exit, ^peer, 0}, @timeout
+    assert_receive {:DOWN, ^monitor, :process, ^peer, :normal}, @timeout
+  end
+
+  # Additive endpoint: its published resources remain OLD. The explicit negative
+  # dispatch selects NEW config only after genuine OLD capture and a real CAS.
+  # Neither Exchange nor its authentic source pin is mutated.
+  defmodule RotationMisuseFixed do
+    @behaviour Gaoxy.HTTP.Endpoint
+    def init({old_options, new_options, parent}) do
+      with {:ok, old_config} <- Gaoxy.Proxy.HTTP.init(old_options),
+           {:ok, new_config} <- Gaoxy.Proxy.HTTP.init(new_options),
+           do: {:ok, {old_config, new_config, parent}}
+    end
+
+    def resources({old_config, _, _}), do: Gaoxy.Proxy.HTTP.resources(old_config)
+
+    def generation_validate({old_config, _, _}),
+      do: Gaoxy.Proxy.HTTP.generation_validate(old_config)
+
+    def call(exchange, {_old_config, explicit_new_config, parent}) do
+      ref = make_ref()
+      send(parent, {:fixed_generation_capture, self(), ref, :rotation_misuse, exchange})
+
+      receive do
+        {:rotation_misuse_dispatch, ^ref} -> :ok
+        # Existing capture/4's failure-only on_exit releases this barrier too.
+        {:dispatch, ^ref} -> :ok
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "identity misuse dispatch barrier expired"
+      end
+
+      # Both configs were already retained inside the compiled bounded router.
+      # This operation aliases NEW; it constructs no post-capture config/options.
+      result = Gaoxy.Proxy.HTTP.call(exchange, explicit_new_config)
+      send(parent, {:fixed_generation_return, self(), ref, :rotation_misuse, result})
+
+      receive do
+        {:return, ^ref} -> result
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "identity misuse return barrier expired"
+      end
+    end
+  end
+
+  @tag :managed_h2_identity_rotation
+  @tag :tmp_dir
+  test "equal authority NEW T cannot consume authentic OLD Generation source capture",
+       %{tmp_dir: tmp_dir} do
+    {old_peer, old_ready} =
+      F.peer(:http2, ["--manual", "--bind-address", "127.0.0.1", "--listen-port", "0"])
+
+    {new_peer, new_ready} =
+      F.peer(:http2, [
+        "--manual",
+        "--bind-address",
+        "127.0.0.2",
+        "--listen-port",
+        Integer.to_string(old_ready["port"])
+      ])
+
+    assert old_ready["bind_address"] == "127.0.0.1"
+    assert new_ready["bind_address"] == "127.0.0.2"
+    assert old_ready["port"] == new_ready["port"]
+
+    refute old_ready["identity"]["certificate_sha256"] ==
+             new_ready["identity"]["certificate_sha256"]
+
+    origin = "https://localhost:#{old_ready["port"]}"
+    path = Path.join(tmp_dir, "caller-ca.pem")
+
+    old_source = %{
+      protocol: :http2,
+      origin: origin,
+      connect_address: {127, 0, 0, 1},
+      trust: rotation_denial_caller_trust(path, old_ready)
+    }
+
+    f = environment(:http2, :http1)
+    # Negative-only schedule: prepare NEW before OLD capture so its explicit
+    # denial config is already in the OLD init/route and its complete M bound.
+    new_source = %{
+      protocol: :http2,
+      origin: origin,
+      connect_address: {127, 0, 0, 2},
+      trust: rotation_denial_caller_trust(path, new_ready)
+    }
+
+    refute old_source.trust == new_source.trust
+    replacement = candidate(f, new_source, :rotation_misuse_new)
+    old = rotation_misuse_candidate(f, old_source, replacement)
+    assert {:ok, initial, _} = Generation.snapshot(f.store)
+    old = activate(f, old, initial)
+    add_listener(f)
+    observe_owner(f)
+    {socket, baseline} = connect(f)
+    :ok = F.send_request(f, socket, "GET", "/cross-generation%2Fnever?raw=%2F")
+    captured = capture(f, old, :rotation_misuse, baseline)
+    old_record = :sys.get_state(f.owner).records[old.transport.resource]
+    replacement = activate(f, replacement, old.generation)
+    assert old.source.origin == replacement.source.origin
+    refute old.transport === replacement.transport
+    await_closed(f, old, captured)
+    assert_no_child_or_token(f, old)
+    assert_no_child_or_token(f, replacement)
+    original_ledger = :sys.get_state(f.owner)
+    new_record = original_ledger.records[replacement.transport.resource]
+    assert old_record.policy === original_ledger.records[old.transport.resource].policy
+    assert old_record.policy.open_options[:ssl][:cacerts] == old_source.trust
+    assert new_record.policy.open_options[:ssl][:cacerts] == new_source.trust
+    assert old_record.policy.connect_address == {127, 0, 0, 1}
+    assert new_record.policy.connect_address == {127, 0, 0, 2}
+    File.write!(path, "invalid after both real preparations\n")
+    trace_session = rotation_misuse_observe_session_start(captured.native)
+    send(captured.native, {:rotation_misuse_dispatch, captured.ref})
+    failure_response_return(f, socket, captured, 503)
+    # Fence this process's native call trace before asserting no Session start.
+    delivered = :trace.delivered(trace_session, captured.native)
+    native = captured.native
+    assert_receive {:trace_delivered, ^native, ^delivered}, @timeout
+
+    refute_receive {:trace, ^native, :call, {DynamicSupervisor, :start_child, 2},
+                    :rotation_misuse_session_start},
+                   0
+
+    current = :sys.get_state(f.owner)
+    assert current.pins === original_ledger.pins
+    assert current.tokens === original_ledger.tokens and current.tokens == %{}
+    assert current.records === original_ledger.records
+    assert current.pins[captured.pin.ref].public === captured.pin
+    assert current.pins[captured.pin.ref].delegations == %{}
+    assert_no_child_or_token(f, old)
+    assert_no_child_or_token(f, replacement)
+    effects = collect_effects(f.owner, [])
+
+    refute Enum.any?(effects, fn {_, tag, _} ->
+             tag in [:delegate_request_pin, :checkout, :bind_completion, :finish]
+           end)
+
+    refute Enum.any?(effects, fn {pid, tag, _} -> pid == native and tag == :pin_many end)
+
+    for peer <- [old_peer, new_peer] do
+      F.no_event(peer, "accept")
+      F.no_event(peer, "tls")
+      F.no_event(peer, "request")
+    end
+
+    assert Process.alive?(old.creator)
+    failure_close_returned(f, socket, captured)
+    join_resource(f, old)
+
+    finish(f, [{replacement.creator, replacement.creator_monitor}], [
+      {old_peer, 0, 0},
+      {new_peer, 0, 0}
+    ])
+  end
+
+  defp rotation_misuse_observe_session_start(native) do
+    session = :trace.session_create(:fixed_generation_rotation_misuse, self(), [])
+    on_exit(fn -> :trace.session_destroy(session) end)
+
+    assert :trace.function(
+             session,
+             {DynamicSupervisor, :start_child, 2},
+             [{:_, [], [{:message, :rotation_misuse_session_start}]}],
+             []
+           ) == 1
+
+    assert :trace.process(session, native, true, [:call, :arity]) == 1
+    session
+  end
+
+  defp rotation_misuse_candidate(f, source, explicit_new) do
+    parent = self()
+
+    {coordinator, monitor} =
+      spawn_monitor(fn ->
+        {:ok, transport, preparation} =
+          Transports.prepare(f.owner, source, self(), Lifecycle.deadline(15_000))
+
+        try do
+          options = %{upstream: source.origin, upstream_protocol: :http2, transport: transport}
+
+          new_options = %{
+            upstream: explicit_new.source.origin,
+            upstream_protocol: :http2,
+            transport: explicit_new.transport
+          }
+
+          routes = [%{target: {RotationMisuseFixed, {options, new_options, parent}}}]
+          assert :erlang.external_size(routes) <= 1_048_576
+          {:ok, router} = Generation.prepare(f.store, routes)
+          assert :erlang.external_size(router) <= 1_048_576
+          creator = :sys.get_state(f.owner).records[transport.resource].custodian
+          send(parent, {:fixed_candidate, self(), transport, router, creator})
+
+          receive do
+            {:activate, expected} ->
+              result = Generation.activate(f.store, expected, router)
+              :ok = Resources.release(preparation)
+              send(parent, {:fixed_candidate_activation, self(), result})
+
+            :abort ->
+              :ok
+          after
+            5_000 -> raise "identity misuse candidate publication barrier expired"
+          end
+        after
+          :ok = Resources.release(preparation)
+        end
+      end)
+
+    on_exit(fn ->
+      if Process.alive?(coordinator) do
+        ref = Process.monitor(coordinator)
+        send(coordinator, :abort)
+        assert_receive {:DOWN, ^ref, :process, ^coordinator, :normal}, @timeout
+      end
+    end)
+
+    assert_receive {:fixed_candidate, ^coordinator, transport, router, creator}, @timeout
+
+    %{
+      coordinator: coordinator,
+      monitor: monitor,
+      transport: transport,
+      router: router,
+      creator: creator,
+      creator_monitor: Process.monitor(creator),
+      source: source,
+      label: :rotation_misuse
+    }
   end
 end

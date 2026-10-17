@@ -1,0 +1,17 @@
+# Frozen local-cache continuation plan1 independent SPEC review
+
+**PASS — no actionable SPEC findings.** This covers exact frozen plan `1081dafa43c1eea57db2a778c0a6eeed783eb1551fe99261064b7fc54b2b3173` and helper/archive `6018986b18a25fb6f4b9b9bb7a0bde708a10ad8585df79e1a5ade86b35ce5cd8`. Dependent independent CODE PASS on identical hashes is required before execution.
+
+All plan inputs, original-failure readback, helper/archive, collector/flakes and411implementation pins match. Exact18 readback rows correlate to original inner exit/stdout/stderr/joined/forced data and unchanged manifest. Original preparation remains FAIL/exit1/nonforced/joined/stable/no residue,1131.177s;16complete objects and2unverified prefixes are retained. Explicit offsets23802850/104643234 match the two original exit56/28 failures; remaining transfer arithmetic is382117519bytes. Prefix hashes bind old bytes only; they do not verify complete objects or diagnose network cause.
+
+Helper source only reads oldcache1 and copies into exclusive newcache2 staging. It never hardlinks, truncates, renames or writes original files. Old18 size/hash readback is repeated after joined workers. Only the two positive offsets invoke one curl each;16complete copies have explicit no_transfer and null actual_exit. They are not reported as16new successful network operations.
+
+Positive-offset acceptance separately requires actual exit0/nonforced/joined, final206, exactN-L transferred bytes and Content-Range L..N-1/N; optional length and encoding gates fail closed. Header final-block parsing and bounded read precede publication. All18objects must have exact full FileSize and compressedSHA256, with live work deadline before/after rename. No200/416/33/36 normalization, retry loop, fresh fallback, custom import or integrity bypass is present.
+
+The1680s work clock begins at main entry and includes validation/copy/hash/transfers/publication/original recheck. Final elapsed gates overallPASS. Crucially, expired final original recheck is caught as unknown/FAIL and retains all18worker results. Worker actual outcomes remain truthful; unknown joins/forced results cannot pass, and the separate1800s collector remains responsible for final owned descendant custody. This review did not execute the helper or attest a real timing/transfer result.
+
+Native exact18 no-recursive copy/content+trusted-signature verify remain separate300s gates after fresh custody/file/trust/ref/storage checks. Original readiness600s, host120s, peer180s, diagnostic600s, final-browser600s and old materialization3600s remain unchanged. Cache completion alone does not establish devShell derivation materialization, exact-version readiness or protocol acceptance.
+
+Read-only verification:0tests,0helper imports/execution,0Nix/store,0curl/downloads,0fixtures/browser,0Git,0old-cache reads/mutations and0repository/evidence writes. Only the two authorized/tmp review reports were written; all own commands completed exit0. Baseline8f6b884524d81d8defa7c5081230b8ab635e8107 is inherited, not Git-verified.
+
+Frozen counter42 retained: root199/orchestration117/tooling48/environment file-preparation failure1/failed curl commands2; Sol5/production0/Astra2of2 exhausted unchanged. Identity NOT_ACCEPTED, final browser FAIL/UNKNOWN, group final browser NOT_RUN and plateau NOT_STARTED remain. No publication/deployment or other restricted action is authorized by this SPEC PASS.

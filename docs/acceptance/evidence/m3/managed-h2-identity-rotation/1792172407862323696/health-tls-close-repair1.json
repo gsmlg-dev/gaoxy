@@ -1,0 +1,248 @@
+{
+  "task_id": "health-tls-close-research1",
+  "status": "DONE_SOURCE_ONLY_CONDITIONAL_REPAIR_PROPOSAL",
+  "assignment": "Direct bounded source-only investigation; only designated /tmp outputs written",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "preexisting_changes": "Parent-owned test/peer/evidence changes preserved; current diagnostic-only peer source hashed below.",
+  "peer_sha256": "3ef2ca19968c8e500d4d9dc64ddf4c9a81290e78c3d972a58ccfb2326b0428b8",
+  "root_cause": "Confirmed at both actual diagnostic cells: after raw SHUT_WR the original Peer.serve255 recv enters ssl.recv1285→ssl.read1140 and raises BrokenPipeError32. Source documents TLS reads may internally write. Exact internal TLS alert/message requiring a write remains UNKNOWN.",
+  "received_runtime_evidence": {
+    "group_green3": "FAIL144/2/exit2",
+    "group_diagnostic_frames1": "Terminal FAIL144/2/exit2; both cells identical exact Peer.serve255→ssl.recv1285→ssl.read1140 BrokenPipeError32",
+    "custody": "Fully joined/nonforced/source stable",
+    "adopted_raw_wait_statuses": [
+      0,
+      10
+    ],
+    "classification_receipt": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-diagnostic-frames1-classification1.json",
+    "classification_sha256": "1baa2ebda8943e344164466dbe663e3963944ff796ed6f548e60c6bba8d38039",
+    "runtime_status": "Root reports idle after complete join; no runtime performed by this assignment"
+  },
+  "public_api_comparison": [
+    {
+      "api": "SSLSocket.shutdown(SHUT_WR)",
+      "verdict": "Reject",
+      "reason": "Pinned Python implementation clears TLS decoder, so later recv becomes raw and cannot feed h2."
+    },
+    {
+      "api": "socket.socket.shutdown(ssl_socket, SHUT_WR)",
+      "verdict": "Reject for conditional next approach",
+      "reason": "Preserves decoder but kills TCP write capability while SSL_read may internally write; current cause remains unproved."
+    },
+    {
+      "api": "SSLSocket.close() / SHUT_RDWR",
+      "verdict": "Reject as acceptance witness",
+      "reason": "Local close/read shutdown is not actual remote TCP EOF/reset and would bypass original-reader terminal witness."
+    },
+    {
+      "api": "SSLSocket.unwrap() in command thread",
+      "verdict": "Reject",
+      "reason": "Reader is concurrently inside recv outside global lock; lock alone does not serialize access to the SSL object."
+    },
+    {
+      "api": "SSLSocket.unwrap() by sole reader using nonblocking WANT_READ/WANT_WRITE and select",
+      "verdict": "Recommended conditional source proposal",
+      "reason": "Public TLS handshake must finish under the existing command deadline before actual raw SHUT_WR and original ACK; afterwards existing reader independently observes TCP EOF/reset. Only reader owns unwrap."
+    },
+    {
+      "api": "Private _sslobj shutdown, ctypes/OpenSSL state mutation or MemoryBIO redesign",
+      "verdict": "Do not use",
+      "reason": "Private mutation or broad redesign unnecessary for bounded public-API investigation."
+    }
+  ],
+  "recommended_schedule": [
+    "Retain original sole completed HEAD, original completion :ok, normal Probe DOWN and exact restored ledgers before close command.",
+    "Preserve completed-stream h2 GOAWAY/error0 command and ACK.",
+    "Original write_half_close validates sole completed health and pending empty, flushes genuine queued h2 output, then queues dict(value)+deadline under RLock WITHOUT emitting command ACK.",
+    "The existing reader sees the request between0.1s recv calls; command writes after queueing are refused. It alone drives public nonblocking unwrap with WANT_READ/WANT_WRITE+select under a fixed existing5s command bound capped by peer180s.",
+    "Only after successful unwrap, restore0.1s timeout, perform public raw socket.socket.shutdown(..., SHUT_WR), mark write_closed and emit exact original command fields. Do not perform unwrap on the command thread.",
+    "Existing reader then performs real raw recv; empty bytes or real ConnectionResetError trigger the original terminal event. Unexpected payload fails before h2 parsing. ACK is not physical EOF/reset.",
+    "Original group test and physical_termination5000ms helper stay unchanged, as do first later GET accept/TLS conn2, B availability, selected sockets and resource retirement.",
+    "For h2c the original raw halfclose/ACK/read/flush behavior is unchanged; no new TLS state is entered."
+  ],
+  "references": [
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "lines": "64–72,189–220",
+      "fact": "Global RLock;180s peer lifetime;listen backlog8;accept limit8; per-connection reader threads."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "lines": "243–262,312–321",
+      "fact": "TLS reader recv is outside RLock; h2 parser/flush under lock; broad ssl.SSLError currently classified connection_reset; generic errors fail; finally closes."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "lines": "364–427",
+      "fact": "Current write_closed flush drops h2 control; command performs raw SHUT_WR under RLock while recv may be running."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "lines": "82–87",
+      "fact": "Current diagnostic addition emits bounded8-frame locations; no exact new runtime frame read by this assignment."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "lines": "1491–1535",
+      "fact": "Real sole /health HEAD, ended upload, original completion :ok, normal Probe DOWN and restored probe/transport accounting precede rotation closure."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+      "lines": "1113–1158,1218–1238",
+      "fact": "Existing closure assertions retain group ledgers, completed-stream GOAWAY, exact physical_termination and no new accepts/TLS/requests before forwarding."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs",
+      "lines": "121–159,581–594",
+      "fact": "Command ACK is separate from terminal physical event; EOF/reset only accepted; failure immediately flunks; original5000ms finite deadline."
+    },
+    {
+      "path": "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/ssl.py",
+      "lines": "1129–1148,1278–1287",
+      "fact": "recv delegates to TLS read while SSL wrapper exists; existing suppress_ragged_eofs defaults can map TLS EOF to empty bytes; not proposed as new synthetic witness."
+    },
+    {
+      "path": "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/ssl.py",
+      "lines": "1340–1352",
+      "fact": "SSLSocket.shutdown clears decoder before OS shutdown; unwrap calls TLS shutdown and clears wrapper only after successful return; exception leaves wrapper intact."
+    },
+    {
+      "path": "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_read.3ssl.gz",
+      "lines": "136–148 of decompressed man source",
+      "fact": "A TLS read may need to write non-application messages; WANT_READ/WANT_WRITE readiness is documented."
+    },
+    {
+      "path": "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_shutdown.3ssl.gz",
+      "lines": "110–137,153–182 of decompressed man source",
+      "fact": "close_notify is bidirectional TLS shutdown; TLS shutdown leaves TCP open; pending peer application data may prevent full shutdown."
+    },
+    {
+      "path": "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man7/openssl-threads.7ssl.gz",
+      "lines": "78–82,124–129 of decompressed man source",
+      "fact": "OpenSSL thread support does not make individual mutable objects simultaneously safe."
+    },
+    {
+      "path": "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_get_error.3ssl.gz",
+      "lines": "83–98 of decompressed man source",
+      "fact": "Error queue is thread-local; unexpected TCP EOF is an SSL error in OpenSSL3, not automatically ConnectionResetError."
+    }
+  ],
+  "conditional_exact_text_proposal": [
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "responses=set(), write_closed=False)",
+      "new": "responses=set(), write_closed=False, tls_close_request=None)",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Retain existing write_closed state and h2c behavior; add one bounded pending TLS-close request."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "    def serve(self, number, client):\n        sock = client[\"socket\"]",
+      "new": "    def serve(self, number, client):\n        sock = client[\"socket\"]\n        tls_unwrapped = False",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Reader-local flag distinguishes raw post-TLS bytes from unchanged h2c parsing; no private SSL state."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "            while not self.stopping.is_set() and time.monotonic() < self.deadline:\n                try:\n                    data = sock.recv(65536)",
+      "new": "            while not self.stopping.is_set() and time.monotonic() < self.deadline:\n                with self.lock:\n                    close_request = client[\"tls_close_request\"]\n                if close_request is not None:\n                    value, deadline = close_request\n                    try:\n                        sock = self.unwrap_health_tls(sock, deadline)\n                    except ssl.SSLError as error:\n                        # A local shutdown error is not a remote connection reset.\n                        raise RuntimeError(\"fixture health TLS shutdown failed: \" + repr(error)) from error\n                    tls_unwrapped = True\n                    sock.settimeout(0.1)\n                    with self.lock:\n                        client[\"socket\"] = sock\n                        socket.socket.shutdown(sock, socket.SHUT_WR)\n                        client[\"write_closed\"] = True\n                        client[\"tls_close_request\"] = None\n                        self.emit(\"command\", op=value[\"op\"], connection=number,\n                                  stream=value.get(\"stream\", 1), command_id=value.get(\"command_id\"),\n                                  code=value.get(\"code\"), last_stream=value.get(\"last_stream\"),\n                                  max_streams=value.get(\"max_streams\"))\n                try:\n                    data = sock.recv(65536)",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "The sole reader unwraps between its recv calls; only successful TLS shutdown then actual raw SHUT_WR yields the original command ACK. Restore0.1s reads so original loop remains bounded; every other error fails."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "                if not data:\n                    client[\"eof\"] = True\n                    self.emit(\"eof\", connection=number)\n                    return\n                with self.lock:\n                    for event in conn.receive_data(data):",
+      "new": "                if not data:\n                    client[\"eof\"] = True\n                    self.emit(\"eof\", connection=number)\n                    return\n                if tls_unwrapped:\n                    raise RuntimeError(\"fixture unexpected payload after health TLS shutdown\")\n                with self.lock:\n                    for event in conn.receive_data(data):",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Real raw recv EOF/reset remains the existing witness; unexpected post-TLS bytes fail and can never be mistaken for h2. h2c path is unchanged."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "    def automatic(self, number, client, stream, target, method):",
+      "new": "    def unwrap_health_tls(self, sock, deadline):\n        # Only the original reader may change this connection's TLS state.\n        sock.setblocking(False)\n        while True:\n            remaining = deadline - time.monotonic()\n            if remaining <= 0:\n                raise TimeoutError(\"fixture health TLS shutdown deadline expired\")\n            try:\n                return sock.unwrap()\n            except ssl.SSLWantReadError:\n                readers, writers = [sock], []\n            except ssl.SSLWantWriteError:\n                readers, writers = [], [sock]\n            remaining = deadline - time.monotonic()\n            if remaining <= 0 or not any(select.select(readers, writers, [], remaining)[:2]):\n                raise TimeoutError(\"fixture health TLS shutdown deadline expired\")\n\n    def automatic(self, number, client, stream, target, method):",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Public nonblocking unwrap and WANT_READ/WANT_WRITE select; no private TLS access, deadline renewal, sleeps, BrokenPipe catch or fabricated terminal event."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "            if client[\"write_closed\"]:\n                raise RuntimeError(\"fixture command after write half-close\")",
+      "new": "            if client[\"write_closed\"] or client[\"tls_close_request\"] is not None:\n                raise RuntimeError(\"fixture command after write half-close\")",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Prevent command-thread writes after queueing while keeping existing failure text and stop path."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "            if op == \"write_half_close\":\n                # Preserve SSLSocket's decoder for the real reader EOF/reset.\n                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n                client[\"write_closed\"] = True",
+      "new": "            if op == \"write_half_close\":\n                if isinstance(client[\"socket\"], ssl.SSLSocket):\n                    # No ACK until the original reader completes TLS then SHUT_WR.\n                    client[\"tls_close_request\"] = (\n                        dict(value), min(self.deadline, time.monotonic() + 5.0))\n                    return True\n                socket.socket.shutdown(client[\"socket\"], socket.SHUT_WR)\n                client[\"write_closed\"] = True",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "Existing sole-health/pending-response guard and genuine flush execute first. TLS queues original command without early ACK; h2c preserves raw SHUT_WR, write_closed and immediate original ACK."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "old": "                            if client[\"write_closed\"]:\n                                raise RuntimeError(\"fixture request after write half-close\")",
+      "new": "                            if client[\"write_closed\"] or client[\"tls_close_request\"] is not None:\n                                raise RuntimeError(\"fixture request after write half-close\")",
+      "expected_occurrences": 1,
+      "apply": false,
+      "reason": "An already-running recv may return after close enqueue: reject new application requests before response construction while allowing existing control parsing/flush to finish."
+    }
+  ],
+  "assumptions_and_diagnostic_dependencies": [
+    "Both exact diagnostic frames and terminal144/2/exit2 are now confirmed by parent; fully joined/nonforced/source stable, actual adopted raw waits0 and10. Preserve all original frame evidence. No runtime acceptance of proposed repair exists.",
+    "The specific OpenSSL internal write/alert remains UNKNOWN. Manual SSL_read semantics establish internal writes are possible; the traceback locates the actual failure at SSL read, not Python flush.",
+    "Conditional repair text requires independent root-owned bounded SPEC→CODE before adoption/runtime. It is neither implemented nor syntax-checked here. Existing failing rotated test is already a genuine witness; no assertion or observation-point changes are proposed.",
+    "Public unwrap may fail if peer H2 control/TLS application data is pending or the remote never sends reciprocal close_notify. Preserve all such errors and exact current deadlines. Never discard raw encrypted bytes or swallow BrokenPipe/SSLEOFError.",
+    "Command5s and subsequent physical_termination5s are the existing separate acknowledgement/physical gates. The internal unwrap deadline is fixed once at enqueue and capped by existing peer180s; no retry renews it.",
+    "An already-running recv may complete before queue recognition; H2 control is processed/flushed normally. A RequestReceived after enqueue fails before application response construction; command-thread writes are also refused. Original sole-target/pending guards remain unchanged.",
+    "Original external HEAD/original completion/normal Probe DOWN/allzero assertions remain authoritative. Local targets/responses/pending alone do not prove them.",
+    "After successful unwrap raw recv is used only for actual TCP EOF/reset. Unexpected bytes are rejected before conn.receive_data. Local TLS errors are wrapped as failure rather than misclassified by the existing broad SSL-error/reset handler.",
+    "Raw SHUT_WR occurs only after TLS decoder is no longer needed; it is a local action, not accepted EOF proof. Original physical_termination remains unchanged.",
+    "Only peer source is proposed. Group helper, fixture helpers, original command name/fields, h2c behavior, accept8/180s, resource2-connection cap, B availability, native accounting and resource/source/custodian assertions are preserved. Browser fixture references to original op need no operation-name migration; any source binding/review remains root-owned."
+  ],
+  "source_sha256": {
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "3ef2ca19968c8e500d4d9dc64ddf4c9a81290e78c3d972a58ccfb2326b0428b8",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "15a35022058cdb93aed572aa6c8dd97a97e1fe66bcd449924a15aa8c1b4384ab",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "/nix/store/xqnbm0vgqcq9b1b54c80qj9s0qhbwa08-python3-3.13.15/lib/python3.13/ssl.py": "6deea04be4d1a5070e25f2f1523a417474cff6c28128b28dd944fb3ec3d01140",
+    "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_read.3ssl.gz": "2acbdb97faa49d88bf62be7b8e4f705509300b82417ff269d31a56446742572a",
+    "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_shutdown.3ssl.gz": "ac87470fc0d1acc66719d93b9ce1e3fc7b7022764a1b073147ecdfedb254d96b",
+    "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man7/openssl-threads.7ssl.gz": "e4cffabccc440f41d309a67858b6aa4d193c7e6580df4b0aef997860018fae0b",
+    "/nix/store/72qwwnvy0cqigflhvy15x4g0511cdsnh-openssl-3.6.3-man/share/man/man3/SSL_get_error.3ssl.gz": "c4bdbf00b41a5b17905d7cd72210245adeac894487f7fb039bf9fbd0c81cd95e"
+  },
+  "validation": {
+    "exact_old_anchors_once": true,
+    "in_memory_sequential_substitutions_only": true,
+    "fixture_physical_termination_unchanged": true,
+    "project_imports": false,
+    "project_or_proposal_code_executed": false,
+    "syntax_compile_tests_browser_network": "NOT RUN",
+    "repository_evidence_git_writes": "NONE",
+    "new_errors": 0,
+    "own_commands": "All completed normally; no ongoing process started",
+    "conditional_text_anchors": 8,
+    "group_test_observation_point_unchanged": true,
+    "h2c_behavior": "Original raw halfclose/ACK/reader/flush branch preserved; NOT RUN",
+    "sequential_source_anchor_readback_passed": true
+  },
+  "repair_counters": {
+    "this_assignment_sol_repairs": 0,
+    "this_assignment_astra_repairs": 0,
+    "latest_root_counter_receipt": "counter-supplement20",
+    "latest_received": "root168/orch91/tool31/group59/runtimefailed5/Sol3/fixture3/Astra2/2",
+    "counter_reset": false
+  },
+  "remaining_risks": [
+    "The proposed public-unwrap repair has not been implemented, independently reviewed, syntax checked or executed.",
+    "Pending TLS application/H2 control can make unwrap fail; this remains explicit failure.",
+    "Reciprocal close_notify and later TCP FIN/reset within separate existing deadlines remain unexecuted.",
+    "No proposal syntax/runtime/review result is claimed."
+  ],
+  "decisions_needed": "Root completes independent source review and decides adoption under existing authority; runtime is now idle/joined. No new permissions requested."
+}

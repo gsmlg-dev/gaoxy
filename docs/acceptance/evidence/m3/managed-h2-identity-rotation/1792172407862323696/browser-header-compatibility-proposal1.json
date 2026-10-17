@@ -1,0 +1,107 @@
+{
+  "task_id": "h2-browser-header-compatibility-proposal1",
+  "status": "DONE_CONDITIONAL_PROPOSAL_ONLY",
+  "assignment": "direct follow-up",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "runtime_executed": false,
+  "repository_mutated": false,
+  "adoption_condition": "Root has reported pinned actual four-header differential and Chromium review; independently review these exact five replacements SPEC then CODE before execution",
+  "root_reported_chromium_contract": "IsRequestHeaderSafe rejects Proxy prefix; Fetch.continueRequest also rejects unsafe headers",
+  "chromium_contract_independently_verified_here": false,
+  "claim": "Browser origin credential isolation and proxy header presence/absence; sockets retain genuine marker-stripping proof",
+  "no_product_assertion_removed": true,
+  "browser_marker_stripping_claim": false,
+  "exact_replacements": [
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py",
+      "old": "  await request('Network.setExtraHTTPHeaders',{headers:{'Proxy-Authorization':'Basic synthetic-proxy-'+label,'Authorization':'Bearer synthetic-origin-'+label}});",
+      "new": "  await request('Network.setExtraHTTPHeaders',{headers:{'Authorization':'Bearer synthetic-origin-'+label}});",
+      "expected_occurrences": 1,
+      "source_sha256": "9bdd56afc7f8309804bdd7fd22006cb30686c13376ff9f294c8cde3441c031ef",
+      "proposed_sha256": "a3878da6b8c785575869536df4d0fa3a519c735d0f8b1154adf174c891ad3794"
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py",
+      "old": "  await request('Network.setExtraHTTPHeaders',{headers:{'Proxy-Authorization':'Basic synthetic-proxy-'+label,'Authorization':'Bearer synthetic-origin-'+label}});",
+      "new": "  await request('Network.setExtraHTTPHeaders',{headers:{'Authorization':'Bearer synthetic-origin-'+label}});",
+      "expected_occurrences": 1,
+      "source_sha256": "2f62b47e5aa650f1c19336b3a1a86598a2f478937d3091a5d76c87870a536dbf",
+      "proposed_sha256": "fd9d2e5a6b8d1dfa4f15f4395efa3d9fbadee53edbefe545368839d7b56a86e1"
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs",
+      "old": "        true =\n          Enum.filter(exchange.request.headers, fn {name, _} -> name == \"proxy-authorization\" end) ===\n            [{\"proxy-authorization\", \"Basic synthetic-proxy-\" <> to_string(label)}]",
+      "new": "        true =\n          Enum.filter(exchange.request.headers, fn {name, _} -> name == \"proxy-authorization\" end) ===\n            []",
+      "expected_occurrences": 1,
+      "source_sha256": "c85e8a6012a4e2fe472406bada763c5ec4b2c4178249c5a5a10754a73e1bf8af",
+      "proposed_sha256": "e52b0bab2321837ab93d0b957361d4d6f5e43d8bbf9e0fc17dc139a7b7edeabd"
+    },
+    {
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-host1.exs",
+      "old": "        true =\n          Enum.filter(exchange.request.headers, fn {name, _} -> name == \"proxy-authorization\" end) ===\n            [{\"proxy-authorization\", \"Basic synthetic-proxy-\" <> to_string(label)}]",
+      "new": "        true =\n          Enum.filter(exchange.request.headers, fn {name, _} -> name == \"proxy-authorization\" end) ===\n            []",
+      "expected_occurrences": 1,
+      "source_sha256": "95c3fe7a951b0c46b6a92727884b4472089fcab3c0ac678333df3c27a30229a0",
+      "proposed_sha256": "5eb9583ef7847490f8566bef8fd09f1633427a875f89fc4975d2672db14af49c"
+    },
+    {
+      "path": "docs/designs/m3-managed-h2-identity-rotation.md",
+      "old": "Use distinct synthetic `Proxy-Authorization` markers on OLD/NEW requests and assert neither reaches any upstream request. Ordinary origin `Authorization` remains an ordinary per-request field: when markers are sent, each peer must see only its own request's value. Do not introduce a new policy removing origin Authorization or Cookie. URL userinfo remains rejected by the existing preparation grammar; TLS options contain no client key/certificate callbacks.",
+      "new": "Fixed and group socket tests send distinct synthetic `Proxy-Authorization` markers on OLD/NEW native H1/H2 requests and assert neither reaches any upstream request. These socket cases prove marker stripping; their genuine native ingress and exact upstream assertions remain unchanged. Browser navigations send only the distinct OLD/NEW origin `Authorization` marker because Chromium rejects `Proxy-` headers through the public CDP request-header paths. Each browser host strictly asserts incoming proxy-header absence and its exact origin marker; each real upstream request must have proxy-header absence and only its own exact origin marker. Browser evidence is origin-credential isolation and proxy-header presence/absence, not marker-stripping proof. Pin the independent Chromium contract review and local header differential before adopting this browser fixture correction. Do not introduce a new policy removing origin Authorization or Cookie. URL userinfo remains rejected by the existing preparation grammar; TLS options contain no client key/certificate callbacks.",
+      "expected_occurrences": 1,
+      "source_sha256": "f34ba4801f0bfdda304363ecf20a4ba87e407847986a8253270cda8a04bfdc57",
+      "proposed_sha256": "f95ca096c2b1126250ba37ca15ff76b2f14c552108343a3d24c3270b44bcb2fe"
+    }
+  ],
+  "unchanged_security_sources": {
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "ddc05255494fb698ca8d690254054dc22f362d6461b3f5830f55f8e961a578d7",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "15a35022058cdb93aed572aa6c8dd97a97e1fe66bcd449924a15aa8c1b4384ab",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a"
+  },
+  "preserve": [
+    "all socket marker inputs and output assertions",
+    "host exact origin singleton check",
+    "runner exact upstream proxy absence/origin singleton check",
+    "group HEAD no authorization fields",
+    "original lifecycle/accounting/protocol/document/custody gates",
+    "all historical failures and frozen candidates"
+  ],
+  "not_proposed": [
+    "production/dependency changes",
+    "cohort/collector changes",
+    "forward proxy/auth challenge flow",
+    "Fetch unsafe-header retry",
+    "header remapping",
+    "weakened product assertions"
+  ],
+  "checks": {
+    "exact_old_occurrences": {
+      "files": 5,
+      "per_file": 1,
+      "actual": "PASS"
+    },
+    "JSON_readback": "PASS",
+    "runtime": "NOT RUN",
+    "new_repair_rounds": 0,
+    "all_commands_finished": true,
+    "owned_processes": 0
+  },
+  "artifact": {
+    "path": "/tmp/gaoxy-h2-browser-header-compatibility-proposal1.md",
+    "sha256": "fe53d46736ad8a382d52e62da7d515de02a55988b882c21275f9c9a087ed0f5b",
+    "lines": 41
+  },
+  "root_reported_diagnostic": {
+    "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/browser-header-diagnostic1/result.json",
+    "sha256": "f395cd0548e89bb019f60c96ea6768bd56858dc8d7e7311a7a0d6cf5392d04b1",
+    "none": "200 + actual server receipt",
+    "origin": "200 + actual server receipt",
+    "proxy": "ERR_INVALID_ARGUMENT + no server receipt",
+    "both": "ERR_INVALID_ARGUMENT + no server receipt",
+    "Chrome": "152/revision506c834",
+    "joins": "Root reports normal Chrome/Actor exit0, no forcing/adopted remaining",
+    "Gaoxy_tests": 0,
+    "verification_here": "parent-reported; not independently rerun"
+  }
+}

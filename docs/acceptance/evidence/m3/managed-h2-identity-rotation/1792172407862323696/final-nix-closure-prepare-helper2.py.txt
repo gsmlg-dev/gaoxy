@@ -1,0 +1,136 @@
+#!/usr/bin/env python3
+"""Prepare only pinned public binary-cache files; never open a Nix store."""
+import argparse
+import concurrent.futures
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import time
+
+
+def sha(data):
+    return hashlib.sha256(data).hexdigest()
+
+
+def main():
+    start = time.monotonic()
+    deadline = start + 1680
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--manifest', required=True)
+    parser.add_argument('--manifest-sha256', required=True)
+    parser.add_argument('--cache-dir', required=True)
+    args = parser.parse_args()
+    raw = Path(args.manifest).read_bytes()
+    assert sha(raw) == args.manifest_sha256
+    manifest = json.loads(raw)
+    entries = manifest['entries']
+    assert 1 <= len(entries) <= 18
+    assert len({entry['store_path'] for entry in entries}) == len(entries)
+    assert sum(entry['file_size'] for entry in entries) <= 1288490188
+    assert manifest['cache_info_text'] == 'StoreDir: /nix/store\nWantMassQuery: 1\nPriority: 40\n'
+    assert sha(manifest['cache_info_text'].encode()) == manifest['cache_info_sha256']
+    cache = Path(args.cache_dir)
+    assert cache.is_absolute() and cache.parent == Path('/tmp')
+    assert not cache.exists() and not cache.is_symlink()
+    assert shutil.disk_usage('/tmp').free >= sum(entry['file_size'] for entry in entries) + 1073741824
+    for entry in entries:
+        assert re.fullmatch(r'/nix/store/[0-9a-z]{32}-[^/\s]+', entry['store_path'])
+        assert re.fullmatch(r'nar/[0-9a-z]+\.nar\.zst', entry['url_relative'])
+        assert entry['compression'] == 'zstd'
+        assert 0 < entry['file_size'] <= 400000000
+        assert re.fullmatch(r'[0-9a-f]{64}', entry['file_hash_hex'])
+        assert sha(entry['narinfo_text'].encode()) == entry['narinfo_sha256']
+        metadata = {}
+        for line in entry['narinfo_text'].splitlines():
+            key, value = line.split(': ', 1)
+            metadata.setdefault(key, []).append(value)
+        for key, value in [('StorePath', entry['store_path']), ('URL', entry['url_relative']),
+                           ('Compression', entry['compression']), ('FileSize', str(entry['file_size'])),
+                           ('FileHash', entry['file_hash']), ('NarHash', entry['nar_hash']),
+                           ('NarSize', str(entry['nar_size']))]:
+            assert metadata[key] == [value]
+        assert any(sig.startswith('cache.nixos.org-1:') for sig in metadata['Sig'])
+    assert time.monotonic() < deadline, 'work deadline exhausted before cache preparation'
+    cache.mkdir(mode=0o700)
+    (cache / 'nar').mkdir(mode=0o700)
+    with (cache / 'nix-cache-info').open('xb') as output:
+        output.write(manifest['cache_info_text'].encode())
+    for entry in entries:
+        name = entry['store_path'].split('/')[-1].split('-', 1)[0] + '.narinfo'
+        with (cache / name).open('xb') as output:
+            output.write(entry['narinfo_text'].encode())
+    started = datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+    def download(entry):
+        result = {'store_path': entry['store_path'], 'started_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                  'actual_exit': None, 'joined': False, 'forced': False, 'status': 'FAIL'}
+        part = cache / (entry['url_relative'] + '.part')
+        final = cache / entry['url_relative']
+        try:
+            remaining = int(deadline - time.monotonic())
+            assert remaining > 5, 'global preparation deadline exhausted before download'
+            limit = min(840, remaining - 2)
+            command = ['curl', '--silent', '--show-error', '--fail', '--location', '--max-redirs', '3',
+                       '--proto', '=https', '--proto-redir', '=https', '--connect-timeout', '30',
+                       '--max-time', str(limit), '--max-filesize', str(entry['file_size']), '--retry', '0',
+                       '--output', str(part), '--write-out', '%{http_code} %{size_download}\n',
+                       'https://cache.nixos.org/' + entry['url_relative']]
+            result['argv'] = command
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            result['pid'] = process.pid
+            try:
+                stdout, stderr = process.communicate(timeout=limit + 10)
+            except subprocess.TimeoutExpired:
+                result['forced'] = True
+                process.kill()
+                stdout, stderr = process.communicate(timeout=5)
+            result.update(actual_exit=process.returncode, joined=True, stdout=stdout, stderr=stderr)
+            assert process.returncode == 0 and not result['forced'], 'curl did not finish normally with exit0'
+            assert stdout.split() == ['200', str(entry['file_size'])], 'full HTTP200/size receipt mismatch'
+            assert part.is_file() and not part.is_symlink()
+            size = part.stat().st_size
+            result['actual_file_size'] = size
+            assert size == entry['file_size'], 'complete compressed size mismatch'
+            digest = hashlib.sha256()
+            with part.open('rb') as content:
+                while block := content.read(1048576):
+                    assert time.monotonic() < deadline, 'work deadline exhausted while hashing'
+                    digest.update(block)
+            assert time.monotonic() < deadline, 'work deadline exhausted after hashing'
+            result['actual_file_hash_hex'] = digest.hexdigest()
+            assert digest.hexdigest() == entry['file_hash_hex'], 'compressed FileHash mismatch'
+            assert not final.exists()
+            assert time.monotonic() < deadline, 'work deadline exhausted before publication'
+            os.rename(part, final)
+            assert time.monotonic() < deadline, 'work deadline exhausted after publication'
+            result['status'] = 'PASS_PUBLIC_FILE_ONLY'
+        except Exception as error:
+            result['error'] = type(error).__name__ + ': ' + str(error)
+        result['elapsed_seconds'] = time.monotonic() - start
+        return result
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as pool:
+        results = list(pool.map(download, entries))
+    work_elapsed = time.monotonic() - start
+    within_work_deadline = work_elapsed <= 1680
+    passed = within_work_deadline and all(row['status'] == 'PASS_PUBLIC_FILE_ONLY' and row['actual_exit'] == 0 and row['joined'] and not row['forced'] for row in results)
+    record = {'kind': 'PINNED_PUBLIC_CACHE_FILES_ONLY', 'status': 'PASS' if passed else 'FAIL',
+              'at_utc': started, 'elapsed_seconds': work_elapsed, 'work_deadline_seconds': 1680,
+              'within_work_deadline': within_work_deadline,
+              'manifest_sha256': args.manifest_sha256, 'helper_sha256': sha(Path(__file__).read_bytes()),
+              'cache_dir': str(cache), 'entries': results, 'tests_executed': 0,
+              'nix_store_operations': 0, 'limits': 'Only full compressed FileSize/FileHash established. Signature/NarHash/contents verification and registration require later native Nix gates. Partial files stay partial; no retry or bypass.'}
+    with (cache / 'preparation.json').open('x') as output:
+        json.dump(record, output, indent=2)
+        output.write('\n')
+    print(json.dumps({key: value for key, value in record.items() if key != 'entries'}), flush=True)
+    return 0 if passed else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

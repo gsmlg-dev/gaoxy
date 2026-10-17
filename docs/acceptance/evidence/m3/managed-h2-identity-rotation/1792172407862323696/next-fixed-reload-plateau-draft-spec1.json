@@ -1,0 +1,95 @@
+{
+  "task_id": "h2_fixed_reload_plateau_draft_spec1",
+  "status": "REVIEW_COMPLETE_WITH_FINDING",
+  "verdict": "FAIL_DRAFT_READINESS",
+  "assignment": "direct independent read-only preparatory SPEC review; implementation/runtime not authorized by drafts",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "drafts": {
+    "/tmp/gaoxy-h2-fixed-reload-plateau-design1.md": "167c45780fc1ddfaf1e888420d571781929330376515e2f1d63874dd53448312",
+    "/tmp/gaoxy-h2-fixed-reload-plateau-plan1.md": "79b0c74eda4bbb61b3509dcd758937e9ed9364426cb1dce638f8e1d9ced908f1"
+  },
+  "stage_state": "DRAFT ONLY / NOT STARTED. Identity stage acceptance remains a mandatory external entry gate and is not inferred here.",
+  "findings": [
+    {
+      "id": "PLATEAU-SPEC-01",
+      "severity": "medium",
+      "path": "/tmp/gaoxy-h2-fixed-reload-plateau-plan1.md",
+      "lines": [
+        26,
+        114
+      ],
+      "title": "Distinguish actual ExUnit outer timeout from120s embedding lifetime",
+      "evidence": "Plan freezes120s as profile/embedding ceiling and launches three peers before environment. Existing fixed test module has only @moduletag :capture_log (line11), test_helper.exs is ExUnit.start(), and proposed mix test argv has no --timeout override or new timeout tag. Normal ExUnit per-test default is60000ms and includes peer TLS setup; embedding120000ms at environment line1779 starts only after all peers. Thus120s is not the effective available per-test budget. Peer preparation has its own20s process budget/25s prepared-event wait, in addition to180s peer lifetime.",
+      "minimal_correction": "Document and freeze outer ExUnit60s, peer-setup/readiness timing, embedding120s and each peer180s separately. Keep existing deadlines; implement/qualify within the actual effective minimum instead of assuming120s of profile time. Explicitly classify any later proposed timeout change for independent bounded review rather than silently raising a cap. No H2 cells, warmups, measured reloads, assertions or peer limits should be removed.",
+      "scope": "Small draft timing clarification; no production/API change or extra runtime acceptance requirement."
+    }
+  ],
+  "checks": [
+    {
+      "topic": "Scope and prospective arithmetic",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "Eight profiles are2downstream x2upstream x2activity. Each keeps one instance/owner/epoch/Store for initial+2warmups+20measured=23resource generations. Resources0..21 each receive seed+active GET, resource22 seed only: planned23accepts and45activeGETs, epoch requests16/16/13; idle planned23GETs epoch8/8/7. These are coherent schedule budgets, not observed execution/ExUnit counts."
+    },
+    {
+      "topic": "Existing public preparation/provider APIs",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "ManagedH2Preparation.prepare_policy/1 returns {:ok,policy,manifest} for exact four-key source map. Transports.prepare/4 requires caller==preparer and checks resource capacity before Custodian.start. Public prepare opens the managed scope, not a TCP request; preparation-only fillers are feasible without peer accepts. Result-preserving capacity helper retains real error; no hardmatch through candidate/3."
+    },
+    {
+      "topic": "Finite peer epochs and trust size classes",
+      "verdict": "PASS_SOURCE_PLAN_WITH_RUNTIME_RISKS",
+      "evidence": "Independent peer enforces8accepts,256requests,180s; three distinct loopback addresses share actual P and8/8/7 fresh connections fit. Constant three-DER bundle keeps source trust invariant even though generated certificate lengths may differ. Same address encoding class, common authority, fixed label and pre-frozen source/policy/manifest sizes are coherent. Existing generator really uses RSA2048/SHA256/2days/localhost SAN. Actual sizes/timing/reuse remain unexecuted and must fail visibly if mismatched."
+    },
+    {
+      "topic": "Active/idle original custody and watchers",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "Existing capture/dispatch/bound/complete_return/return_endpoint/close_native APIs support retaining OLD authentic source while NEW completes. complete_return joins original completion/Session and verifies source retained; return_endpoint then drops source. Idle flow clears requests before CAS. Installing one watcher on each NEW resource, with hold enabled on generation2 prepared atcycle2, correctly preinstalls cycle3OLD hold. Separate owner observer is needed because existing observe_owner/1 covers request/call effects, not lifecycle messages; draft explicitly supplies it."
+    },
+    {
+      "topic": "Real retirement hold and public receipt ordering",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "Actual custodian :retire input barrier can be observed with read-only sys debug; existing input barrier uses2000ms. Custodian emits actual {:retire_result,helper,result}, actual helper DOWN, owner helper_started/helper_finished/custodian_retired. HTTP.ManagedTransport.await_retired(receipt,timeout) is supported and verifies actual public outcome. Draft requires original identities/normal joins and physical peer EOF/reset separately, never synthetic messages/private dependency mutation. No old source/request remains at held capacity cut."
+    },
+    {
+      "topic": "Capacity4 and filler rollback",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "OLD unconfirmed + NEW +2fillers is4records; baselineNEW+2preparation pins is3pins; no tokens/helpers before original held input begins; unconfirmed resources reserve2each=8. aggregate/1 source confirms arithmetic. Two fillers prepared before hold, fifthprepare returns {:error,{:capacity,:resources}} before actor creation; owner/Store no-delta comparisons and unconditional real continuation are feasible. Prefixrelease/receipt/join required even if later setup fails. No waits/network/compile inside2s hold are planned."
+    },
+    {
+      "topic": "Exact plateau and independent byte classes",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "aggregate sums entry.payload_bytes, complete external_size(pin hold), token.payload_bytes exactly as draft independent sum; selected phase tokens empty. Resource1/pin1/reserved2, Store onebaseline/router plus no retired/preparation, Service/Gate zero with separate cumulative high-water/rejected inventories match existing state/status API. Constant DER bundle and address serialization class support equal scalar sizes without rewriting refs/PIDs or subtracting changing numeric fields. Actual equality remains untested."
+    },
+    {
+      "topic": "Final teardown and verification scope",
+      "verdict": "PASS_SOURCE_PLAN",
+      "evidence": "Existing finish/3 supplies Store/owner/instance/embedding/listener and peer terminal custody semantics; already-consumed epoch/resource monitors must stay ledger entries rather than be re-awaited, as draft states. Proposed two test batches have8+12=20distinct testpaths, all existing; format operand duplicates one testpath only for static command. Fixed browser2rows/4images is compatibility smoke, not20reload evidence; core/HTTP consumers and startup11method audit remain separately counted. No group or fullTask5/M3 completion claimed."
+    }
+  ],
+  "adoption_refresh_required": "Historical draft design lines6-7 are explicitly stale. After actual identity closure, replace only current status/kickoff/source/ref/counter statements with real accepted evidence, retaining the original failure history. Do not infer closure from preparatory review. Task0 already requires this entry gate.",
+  "root_counters": "No reset. Latest supplied identity continuation remains Sol5/Astra2of2 exhausted; root owns later runtime/counter updates. No reviewer implementation repair performed.",
+  "reviewer_repair_rounds": 0,
+  "astra_gate": null,
+  "verification": {
+    "tests": 0,
+    "builds": 0,
+    "browser_or_candidate_execution": 0,
+    "method": "Read complete frozen drafts and targeted source definitions; checked proposed testpaths and arithmetic statically. Did not import/execute candidate/dependency code.",
+    "commands_finished": true,
+    "command_notes": "Two guessed module/config paths did not exist and a zsh .exunit* no-match search was corrected with scoped rg --files/explicit paths. No runtime validation claimed; no persistent process started.",
+    "repository_files_changed": [],
+    "outputs_only": [
+      "/tmp/gaoxy-h2-fixed-reload-plateau-draft-spec1.json",
+      "/tmp/gaoxy-h2-fixed-reload-plateau-draft-spec1.md"
+    ]
+  },
+  "remaining_risks": [
+    "Actual8profile timings within effective inherited deadlines unknown.",
+    "Actual source/policy/manifest size equality and repeated managed connection reuse unknown.",
+    "Capacity hold completes within unchanged2s only with prepared scopes and bounded owner calls.",
+    "All source/runtime/consumer/browser/document acceptance belongs to future frozen implementation gates."
+  ],
+  "decisions_needed": "No user/product decision. Correct the bounded draft timeout wording and refresh identity cutoff at adoption; no production feature or broader scope required."
+}

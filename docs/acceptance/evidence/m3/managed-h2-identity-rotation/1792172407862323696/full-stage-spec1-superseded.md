@@ -1,0 +1,15 @@
+# Identity rotation full-stage SPEC1 — suspended
+
+Status: **SUPERSEDED_BY_PRELIMINARY_RUNTIME_FAILURE**. No PASS/FAIL verdict was completed. Root directed this review to stop before a verdict; this is neither CODE nor final acceptance.
+
+Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, branch `codex/m3-h1-resource-foundation`, HEAD `8f6b884524d81d8defa7c5081230b8ab635e8107`. Candidate `85a85214709b27996346faef4779f756f4d97538367d7ed33f727fc113d34363`; final-command inventory `120196a2f6558da40e833e7b5ddc82a6cd830d158404a51eb7063c48df0f1c14`.
+
+Root reported preliminary group-green2 still running, with both positive rotated-group cells failing at OLD physical termination after write-half-close ACK. Peer event is **failure**, reason `BrokenPipeError(32, 'Broken pipe')`; Root suspects existing reader flush attempts outbound write after local SHUT_WR. This worker did not execute/read current runtime or establish final suite/join status. This failure cannot be classified as physical EOF/reset or normal termination. Root will diagnose only after the complete owned suite joins.
+
+Completed read-only checks: full candidate429 mapping pins (411sources+2documents+16prior proofs) and inventory411source pins all match,840 mapping entries total. The frozen command-inventory scalar link matches. Both411-source maps equal;402 baseline matches accepted current group candidate plus9active E4 files. Fixed/browser source continuity matches prior reviewed candidate hashes. No extra production/dependency/cap change was found in the completed continuity checks.
+
+Final inventory reads confirmed11commands; scope batches9/9/17=35entries/34distinct files with complete defining F whenever used;9format operands; actual stage Python list; strict compile and extracted JavaScript syntax; isolated core/HTTP consumers; separate hash-bound fresh Python11 unittest audit while generic collector static ExUnit0 remains0 and nativeH2 startup19 remains distinct; four final Chrome rows/eight required root views.940 remains only an estimate. These are inventory facts, not executed gates.
+
+Completed contract reads covered fixed trust replacement/capture/CAS/invalidated path/credentials and lifetime schedule; fixed finite502 denial and sticky charged accounting/failed receipts versus explicit disposal; authentic fixed/group equal-authority misuse; prior full bounded group/browser contracts and cold-close source continuity. Complete full-stage coherence verdict remains unissued and requires a new repaired freeze/review.
+
+Reviewer syntax/import/format/build/tests/browser/network: NOT RUN; tests executed0. No actual read errors or command failures. An optional file discovery returned absent without a read attempt. Broad initial displays truncated; full metadata was subsequently read by bounded summaries/hash checks. All own commands completed; no background sessions, repository/evidence/Git edits, prohibited key/rawtrace/NetLog reads or original-report modifications. Only the two assigned full-spec `/tmp` reports were written. Sol2/Astra2/2 inherited unchanged; reviewer repair0; no escalation or invented source-failure counter.

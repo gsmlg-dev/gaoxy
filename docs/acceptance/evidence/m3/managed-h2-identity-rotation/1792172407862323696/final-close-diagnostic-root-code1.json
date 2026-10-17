@@ -1,0 +1,96 @@
+{
+  "task_id": "h2_identity_close_root_diagnostic_code1",
+  "status": "DONE",
+  "verdict": "PASS_SOURCE_TOOLING",
+  "findings": [],
+  "assignment": "direct independent narrow source-only CODE review of root-authored tooling; reviewer did not implement this wrapper",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch_from_handoff": "codex/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "git_verification": "NOT RUN by instruction",
+  "driver": {
+    "path": "/tmp/gaoxy-h2-identity-close-root-diagnostic1.py",
+    "sha256": "5181aa65765e25464d9ed4214b182bb1f9ef84d15256fcb2b6d5fcbd44467933",
+    "author": "root"
+  },
+  "target": {
+    "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py",
+    "sha256": "478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74",
+    "hard_bound_in_wrapper": true,
+    "reviewer_mutated": false
+  },
+  "review_checks": [
+    {
+      "name": "Original source identity and import/main control",
+      "result": "PASS_SOURCE",
+      "evidence": "SHA assertion binds exact original runner before importlib load. Non-main module name prevents its __main__ guard invoking main during load. spec_from_file_location keeps original fixture __file__, so HOST/COHORT/PEER/collector paths remain original. Wrapper calls unchanged fixture.main exactly once and propagates its return via sys.exit. sys.argv remains ordinary wrapper argv and parser consumes unchanged evidence arguments. No fixture import/execute was performed by reviewer."
+    },
+    {
+      "name": "Diagnostic-only replacements",
+      "result": "PASS_SOURCE",
+      "evidence": "Only _EVENT_NAMES set, _projection and inventory are replaced. original_projection is called first; its event validation, finite cap, integer/bool/error/source filtering all remain. New close fields are fixed enums plus boolean only. Original BROWSER/run_case/Actor/qualifying assertions/main/joins/custody/deadlines are neither replaced nor rewritten."
+    },
+    {
+      "name": "No arbitrary close description serialization",
+      "result": "PASS_SOURCE",
+      "evidence": "String description is used only for exact dictionary lookup; six static recognized strings map to fixed uppercase enums. Every other string yields OTHER with description_present true. Missing/nonstring yields ABSENT/false. Arbitrary descriptions/URLs/headers/certificates never enter output through new code."
+    },
+    {
+      "name": "Source-verified network notification names",
+      "result": "PASS_SOURCE",
+      "evidence": "Added names NETWORK_IP_ADDRESSES_CHANGED, NETWORK_CONNECTIVITY_CHANGED and NETWORK_CHANGED match inspected Chromium revision506c834ecceaa943c5f41e6cfe7f68acb5c45346 net/log/net_log_event_type_list.h lines3643-3660. No new generic string/address parameter rule is introduced."
+    },
+    {
+      "name": "Inventory binding",
+      "result": "PASS_SOURCE",
+      "evidence": "original_inventory() returns all original operand hashes, then wrapper adds resolved self path and actual self SHA. Original target __file__ remains unchanged. Intended delta +1 path, without removing active runner/HOST/collector/peer/source bindings. Original before/after inventory comparison therefore binds wrapper stability too."
+    },
+    {
+      "name": "Acceptance/custody invariant preservation",
+      "result": "PASS_SOURCE",
+      "evidence": "No try/except or success rewriting added around original main; failures retain original path. No skip/filter/row-removal/retry/deadline extension/browser flag or header change. 8MiB/8192 scanned-event bounds and all original native live-before-close assertions remain. Original actor groups/raw projection cleanup/raw deletion execute unchanged."
+    }
+  ],
+  "proposed_root_command": {
+    "collector_name": "fixed-close-diagnostic-command1",
+    "timeout_seconds": 600,
+    "kind": "static",
+    "payload": [
+      "python3",
+      "-B",
+      "/tmp/gaoxy-h2-identity-close-root-diagnostic1.py",
+      "--evidence-dir",
+      "E4/fixed-close-diagnostic1"
+    ],
+    "executed_by_reviewer": false,
+    "interpretation": "One root-owned diagnostic execution only; not final candidate5 acceptance."
+  },
+  "verification": {
+    "method": "Full wrapper text read; targeted original loader/path/inventory/projector/main control-flow source inspection; independent file SHA comparisons against assigned exact bytes.",
+    "wrapper_import": 0,
+    "wrapper_execute": 0,
+    "fixture_import": 0,
+    "runtime": 0,
+    "tests": 0,
+    "builds": 0,
+    "browser": 0,
+    "Git": 0,
+    "repository_writes": 0,
+    "command_errors": [],
+    "commands_finished": true
+  },
+  "changes": [
+    "/tmp/gaoxy-h2-identity-close-root-diagnostic-code1.json",
+    "/tmp/gaoxy-h2-identity-close-root-diagnostic-code1.md"
+  ],
+  "counters": "Sol5/Astra2of2 retained; no runtime/repair increment. Root owns current cumulative counter receipts; counter28 assignment snapshot not reset.",
+  "remaining_risks": [
+    "UNKNOWN original browser close initiator remains unresolved until actual evidence.",
+    "A recognized graceful close reason identifies a drain path, not necessarily initiating event.",
+    "Incomplete sanitized projection may omit later notifications; no observation is not proof of absence.",
+    "Original final failure remains FAIL; wrapper is diagnostic only and cannot complete final candidate5 acceptance.",
+    "Source hash check and import are separate reads; root freezes source and original before/after inventory rejects mutation as already required."
+  ],
+  "command_shutdown": "All reviewer commands finished; no reviewer-owned running process.",
+  "decisions_needed": "None for this diagnostic-tooling source review. Root owns any runtime and all repository/evidence/Git writes."
+}

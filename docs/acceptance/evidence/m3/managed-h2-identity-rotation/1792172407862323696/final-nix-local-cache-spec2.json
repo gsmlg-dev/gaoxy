@@ -1,0 +1,93 @@
+{
+  "task_id": "h2_full_stage_spec2_nix_local_cache_spec2",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "delegated independent read-only SPEC re-review of frozen plan2/helper2",
+  "at_utc": "2026-10-17T08:25:31.360841+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "baseline_current_git_verified": false,
+  "inputs_sha256": {
+    "final-nix-local-cache-plan2.json": "18b7c996258e3b7c7b8b2e3e30521892ebf0d365c22f3b96790035ccb745de5f",
+    "final-nix-local-cache-plan1.json": "457dc9600637c302fd4f79b0540edc5fdd28e6fe29c85521918e437fe42b5e14",
+    "final-nix-local-cache-seams1.json": "70a51789624103155779eb101ccce4a8d3dc8705f150795941888d33ba9dcc9a",
+    "final-nix-local-cache-seams1.md": "eb1e2721b5221d38a9a4a7cab7b5fd87be06336ce55de6a6ca9adb9e201d021e",
+    "final-nix-missing-closure1.json": "131e8a726d86427d71ec84ccbac9534b5e942f50c0e790c22efe831585718e3f",
+    "final-nix-missing-closure1.md": "b9ac30c27e1bd5e5a511f16c4576e579608281ecb5be75b5ff69c32ef9b5f2c2",
+    "final-nix-signature-settings1.json": "ed6c7190e405b5c3dc37ba3740196035c3f7a400e79cea2867ba78251681c591",
+    "final-nix-local-cache-manifest1.json": "c0863863f89bdfd6d9a552e897d70839826dfaef480a895e94b9bef0032bb808",
+    "cold-shell-materialization-plan2.json": "7932a08501625382fb9c6b978bc51390cab4c190afcad6be731830f154b38e60",
+    "final-nix-closure-prepare-helper2.py.txt": "e151f146260677e59b6c86523911aaa7da2c6f6a2d7b378f83be11e77575b9d5",
+    "command-collector1.py": "bda740921e60685288adb55500b8c9256435c188abd9a6c82bc849cf15e4690f",
+    "final-command-inventory5.json": "6d83237e1cd8c387c8b641ec6bb3e975e2ba437f8b096879a141017092466b16",
+    "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+    "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+    "/tmp/gaoxy-nix-closure-prepare2.py": "e151f146260677e59b6c86523911aaa7da2c6f6a2d7b378f83be11e77575b9d5",
+    "/tmp/gaoxy-nix-local-cache-spec1.json": "1d0cc1abbde4516800599e28523408b8a44b89429f71c832e87b3acd092f3171"
+  },
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "SPEC1-01",
+      "status": "RESOLVED_BY_STATIC_REVIEW",
+      "evidence": "Helper2 lines21-22 starts work clock at main entry, line58 rejects expired validation, lines75-77 bound transfers to remaining budget, lines102/104 gate full hashing, lines108/110 gate publication before/after rename, and lines119-121 require measured aggregate work_elapsed<=1680 for PASS after all workers join. Plan2 explicitly distinguishes1680s work completion from bounded child joins/receipt finalization within separate1800s collector. Expired work cannot yield aggregate PASS.",
+      "limits": "No runtime or deadline fixture executed. As specified, filesystem operations/child joins can return after work deadline, but deadline overrun remains FAIL; collector1800s retains cancellation/custody authority. A complete file whose publication crosses the work deadline may remain as failed evidence, but neither its row nor overall receipt can accept it."
+    }
+  ],
+  "static_checks": {
+    "plan2_expected_hash_matches": true,
+    "helper2_expected_hash_matches": true,
+    "tmp_helper_equals_archived_helper": true,
+    "all_plan_input_hashes_match": true,
+    "prior_plan1_and_spec1_fail_bound_and_preserved": true,
+    "manifest1_unchanged": true,
+    "collector_and_flake_hashes_match": true,
+    "implementation_pins_rehashed": 411,
+    "implementation_pin_mismatches": [],
+    "helper_delta": "Only main-entry deadline relocation, validation/hash/publication deadline assertions, aggregate elapsed PASS predicate and receipt fields. Existing transfer/hash/metadata/custody mechanics unchanged.",
+    "plan_delta": "Only candidate identity/hash/history/deadline clarification and helper path. Native argv, preconditions, failure policy, readiness, stage limits, compressed/NAR totals and all guards unchanged.",
+    "exact18_manifest_source_facts_from_spec1": "Unchanged hash preserves18 original narinfos/conversions;986177930 compressed bytes;3174429520 NarSize bytes;147 external refs;18 inset non-self edges;15 self references;dependency-first exact native targets."
+  },
+  "execution_conditions": [
+    "SPEC PASS is only this frozen source review. Dependent independent CODE PASS must bind identical hashes before any preparation.",
+    "If original materialization already PASS, skip preparation and run original readiness. Otherwise only public regular-file preparation may overlap parent-owned old materialization; no Nix store opening/copy/verify while it runs.",
+    "Native gate requires actual old materialization terminal receipt, joins/no residue/no relevant competition; full-file/metadata/preparation receipt revalidation;147 external refs and18 target registration refresh; unchanged trust policy/key;store free space;exact native no-recursive copy followed by contents+trusted-signature verification.",
+    "Do not count already-valid targets as newly copied. No manual decompression/import/DB mutation, metadata rewriting, new keys/signing, trust bypass, build or fallback source.",
+    "Successful preparation/native verification remains0 protocol tests. Original600s exact-version readiness and separate missing-derivation handling remain mandatory before existing diagnostic2."
+  ],
+  "verification": {
+    "commands": "Read-only source/JSON reads, full helper1-to-helper2 diff, plan1-to-plan2 field comparison, SHA256 and411pin checks; each SPEC2 reviewer command exited0.",
+    "candidate_imports_or_execution": 0,
+    "tests_executed": 0,
+    "downloads": 0,
+    "nix_commands": 0,
+    "store_operations": 0,
+    "fixtures": 0,
+    "browser": 0,
+    "git": 0,
+    "repository_or_evidence_writes": 0,
+    "review_artifact_writes": [
+      "/tmp/gaoxy-nix-local-cache-spec2.json",
+      "/tmp/gaoxy-nix-local-cache-spec2.md"
+    ],
+    "dependent_code": "NOT RUN by this reviewer",
+    "runtime_checks": "NOT RUN"
+  },
+  "counters_from_parent": {
+    "sol_cumulative": 5,
+    "production_repairs": 0,
+    "astra_recovery_rounds_used": 2,
+    "astra_recovery_rounds_max": 2,
+    "environment_recovery_failed_spec": 1,
+    "environment_helper_repair": 1,
+    "review_counter": 39,
+    "root_counter": 194,
+    "orchestration_counter": 113,
+    "tool_counter": 45,
+    "additional_repairs_by_reviewer": 0
+  },
+  "unchanged_status": "Final browser FAIL/UNKNOWN; group NOT RUN; no stage acceptance, release/publication/deployment/production/Vault/certificate/public-management/E2E change.",
+  "commands_shutdown": "All reviewer commands completed; no candidate/runtime session was started. Parent-owned session5204 not queried or touched.",
+  "remaining_risks": "Public transfers, complete-file hashes, actual signatures, native registration, refreshed effective settings/reference validity, exact-version readiness and protocol/browser acceptance remain unexecuted and conditional.",
+  "decisions_needed": "No user product decision. Proceed only to dependent CODE review of these exact frozen inputs."
+}

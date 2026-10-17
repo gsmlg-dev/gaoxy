@@ -1,0 +1,283 @@
+{
+  "status": "PASS",
+  "head": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "executed": 2,
+  "elapsed_ms": 41097,
+  "source_stable": true,
+  "failure": null,
+  "joins": [
+    {
+      "command": [
+        "node",
+        "-e",
+        "\nconst assert = require('node:assert/strict');\nconst crypto = require('node:crypto');\nconst fs = require('node:fs/promises');\nconst os = require('node:os');\nconst path = require('node:path');\nconst {spawn} = require('node:child_process');\nconst readline = require('node:readline');\n(async () => {\n const [origin, directory, protocol, spki, netlogPath] = process.argv.slice(1);\n assert(['h2','http/1.1'].includes(protocol));\n const originURL=new URL(origin);\n assert.equal(originURL.hostname,'127.0.0.1');assert.match(originURL.port,/^[0-9]+$/);\n assert.equal(originURL.protocol,protocol==='h2'?'https:':'http:');\n assert.equal(originURL.origin,origin);\n const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'gaoxy-native-worker-browser-'));\n const chrome = spawn(process.env.GAOXY_CHROME_BIN || 'chromium', ['--headless=new','--no-first-run','--no-default-browser-check',\n  '--disable-background-networking','--disable-component-update','--disable-sync','--disable-extensions',\n  '--remote-debugging-port=0',`--user-data-dir=${profile}`,\n  `--log-net-log=${netlogPath}`,'--net-log-capture-mode=Default',\n  ...(protocol==='h2'?[`--ignore-certificate-errors-spki-list=${spki}`]:[]),'about:blank'], {stdio:['ignore','ignore','pipe']});\n let stderr = '', socket, serial = 0, passed = false, closeRequested = false;\n let chromeError;\n chrome.on('error', e => { chromeError = e; });\n const exited = new Promise(resolve => chrome.once('exit', (code, signal) => resolve({code, signal})));\n chrome.stderr.on('data', bytes => { stderr = (stderr + bytes.toString()).slice(-65536); });\n const pending = new Map(), events = [];\n const emit = v => process.stdout.write(JSON.stringify(v)+'\\n');\n const bounded = (promise, ms, label) => {\n  let timer;\n  return Promise.race([promise,new Promise((_, reject) => {timer=setTimeout(()=>reject(Error(label)),ms);})])\n   .finally(()=>clearTimeout(timer));\n };\n async function until(predicate, label) {\n  const end = Date.now()+15000;\n  while (!await predicate()) {\n   assert(Date.now()<end && !chromeError && chrome.exitCode===null, label+': '+stderr);\n   await new Promise(resolve=>setTimeout(resolve,10));\n  }\n }\n function request(method, params={}) {\n  const id=++serial;\n  return bounded(new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));}),15000,method)\n   .finally(()=>pending.delete(id));\n }\n const input = readline.createInterface({input:process.stdin});\n const commands=[], waiters=[];\n input.on('line',line=>{const c=JSON.parse(line);if(waiters.length)waiters.shift()(c);else commands.push(c);});\n const command=()=>bounded(commands.length?Promise.resolve(commands.shift()):new Promise(resolve=>waiters.push(resolve)),20000,'browser command deadline');\n try {\n  let port;\n  await until(async()=>{\n   try { port=Number((await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).split('\\n')[0]); }\n   catch(e){assert.equal(e.code,'ENOENT');} return !!port;\n  },'Chrome startup deadline');\n  const targets=await bounded(fetch(`http://127.0.0.1:${port}/json/list`).then(r=>r.json()),5000,'CDP discovery deadline');\n  const page=targets.find(t=>t.type==='page'&&t.url==='about:blank');assert(page);\n  socket=new WebSocket(page.webSocketDebuggerUrl);\n  socket.addEventListener('message', message=>{\n   const value=JSON.parse(message.data);\n   if(value.id){const p=pending.get(value.id);if(p){value.error?p.reject(Error(JSON.stringify(value.error))):p.resolve(value.result);}}\n   else {assert(events.length<2048,'CDP event bound');events.push(value);}\n  });\n  socket.addEventListener('close',()=>{for(const p of pending.values())p.reject(Error('CDP closed'));pending.clear();});\n  await bounded(new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});}),5000,'CDP open deadline');\n  await request('Page.enable');await request('Network.enable');await request('Runtime.enable');\n  await request('Network.setBlockedURLs',{urls:['*favicon.ico']});\n  const version=await request('Browser.getVersion');\n  emit({event:'browser_ready',version,node:process.version});\n  for(const label of ['old','new']) {\n  const c=await command();assert.deepEqual(c,{op:'navigate',label,target:label==='old'?'/old%2Fpath?raw=%2F':'/new%2Fpath?raw=%2F'});\n  const target=c.target, title='Gaoxy fixed H2 Generation '+label, marker='Gaoxy checked fixed H2 Generation '+label;\n  // Chromium rejects Proxy-Authorization injection; sockets prove its stripping.\n  await request('Network.setExtraHTTPHeaders',{headers:{'Authorization':'Bearer synthetic-origin-'+label}});\n  const nav=await request('Page.navigate',{url:origin+target});assert(!nav.errorText,nav.errorText);\n  let response;\n  await until(()=>{\n   response=events.find(e=>e.method==='Network.responseReceived'&&e.params.response.url===origin+target)?.params;\n   return response&&events.some(e=>e.method==='Network.loadingFinished'&&e.params.requestId===response.requestId);\n  },'page load deadline');\n  assert.equal(response.response.protocol,protocol);assert.equal(response.response.status,200);assert.equal(response.type,'Document');\n  const responseBody=await request('Network.getResponseBody',{requestId:response.requestId});\n  const responseBytes=Buffer.from(responseBody.body,responseBody.base64Encoded?'base64':'utf8');\n  const expectedHTML='<!doctype html><html><head><title>'+title+'</title><link rel=\"icon\" href=\"data:,\"></head><body><h1 id=\"checked\">'+marker+'</h1></body></html>';\n  assert.deepEqual(responseBytes,Buffer.from(expectedHTML));\n  if(protocol==='h2')assert.match(response.response.securityDetails.protocol,/^TLS/);\n  const result=await request('Runtime.evaluate',{expression:'({title:document.title,text:document.querySelector(\"#checked\")?.textContent,url:location.href})',returnByValue:true});\n  assert(!result.exceptionDetails);assert.deepEqual(result.result.value,{title,text:marker,url:origin+target});\n  const visible=await request('Runtime.evaluate',{expression:'(()=>{const e=document.querySelector(\"#checked\"),r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility===\"visible\";})()',returnByValue:true});\n  assert(!visible.exceptionDetails);assert.equal(visible.result.value,true);\n  assert(!events.some(e=>e.method==='Runtime.exceptionThrown'||e.method==='Runtime.consoleAPICalled'));\n  const screenshot=await request('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});\n  await fs.writeFile(path.join(directory,label+'-browser.png'),Buffer.from(screenshot.data,'base64'));\n  await fs.writeFile(path.join(directory,label+'-browser-events.json'),JSON.stringify(events,null,2)+'\\n');\n  emit({event:'probe',status:'PASS',label,version,node:process.version,document:result.result.value,visible:true,network:response,response_bytes:responseBytes.length,response_sha256:crypto.createHash('sha256').update(responseBytes).digest('hex')});\n  }\n  assert.deepEqual(await command(),{op:'exit'});\n  closeRequested=true;\n  let closeReply='confirmed';\n  try { await request('Browser.close'); }\n  catch(e) { assert.equal(e.message,'CDP closed'); closeReply='CDP closed while graceful browser shutdown was pending'; }\n  const join=await bounded(exited,10000,'Chrome graceful join deadline');assert.equal(join.code,0);assert.equal(join.signal,null);\n  emit({event:'chrome_closed',close_reply:closeReply,process:join});\n  passed=true;\n } finally {\n  input.close();socket?.close();\n  if(chrome.exitCode===null&&chrome.signalCode===null&&!chromeError){\n   chrome.kill('SIGTERM');\n   try{await bounded(exited,5000,'Chrome TERM join deadline');}\n   catch(e){chrome.kill('SIGKILL');await bounded(exited,5000,'Chrome KILL join deadline');}\n  }\n  await fs.writeFile(path.join(directory,'chrome-stderr.log'),stderr);\n  await fs.rm(profile,{recursive:true,force:true});\n  emit({event:'joined',passed,close_requested:closeRequested,profile_removed:true,chrome_exit:chrome.exitCode,chrome_signal:chrome.signalCode});\n }\n})().catch(e=>{console.error(e.stack);process.exitCode=1;});\n",
+        "https://127.0.0.1:35163",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2",
+        "h2",
+        "YBY2j7lXVSHBm0ibtWu4b7AJbKp9a4wavG23RyUpoOc=",
+        "/tmp/gaoxy-fixed-generation-netlog-otrere9c/chrome-netlog.json"
+      ],
+      "pid": 2230391,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-http2"
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "mix",
+        "run",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/peer-ready.json",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2",
+        "h2",
+        "/tmp/gaoxy-native-worker-test-certs-ivnaqgx5",
+        "http2"
+      ],
+      "pid": 2027974,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-http2"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "tls",
+        "--bind-address",
+        "127.0.0.2",
+        "--listen-port",
+        "42235"
+      ],
+      "pid": 2020016,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-http2"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "tls",
+        "--bind-address",
+        "127.0.0.1",
+        "--listen-port",
+        "0"
+      ],
+      "pid": 2011037,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h2-http2"
+    },
+    {
+      "command": [
+        "node",
+        "-e",
+        "\nconst assert = require('node:assert/strict');\nconst crypto = require('node:crypto');\nconst fs = require('node:fs/promises');\nconst os = require('node:os');\nconst path = require('node:path');\nconst {spawn} = require('node:child_process');\nconst readline = require('node:readline');\n(async () => {\n const [origin, directory, protocol, spki, netlogPath] = process.argv.slice(1);\n assert(['h2','http/1.1'].includes(protocol));\n const originURL=new URL(origin);\n assert.equal(originURL.hostname,'127.0.0.1');assert.match(originURL.port,/^[0-9]+$/);\n assert.equal(originURL.protocol,protocol==='h2'?'https:':'http:');\n assert.equal(originURL.origin,origin);\n const profile = await fs.mkdtemp(path.join(os.tmpdir(), 'gaoxy-native-worker-browser-'));\n const chrome = spawn(process.env.GAOXY_CHROME_BIN || 'chromium', ['--headless=new','--no-first-run','--no-default-browser-check',\n  '--disable-background-networking','--disable-component-update','--disable-sync','--disable-extensions',\n  '--remote-debugging-port=0',`--user-data-dir=${profile}`,\n  `--log-net-log=${netlogPath}`,'--net-log-capture-mode=Default',\n  ...(protocol==='h2'?[`--ignore-certificate-errors-spki-list=${spki}`]:[]),'about:blank'], {stdio:['ignore','ignore','pipe']});\n let stderr = '', socket, serial = 0, passed = false, closeRequested = false;\n let chromeError;\n chrome.on('error', e => { chromeError = e; });\n const exited = new Promise(resolve => chrome.once('exit', (code, signal) => resolve({code, signal})));\n chrome.stderr.on('data', bytes => { stderr = (stderr + bytes.toString()).slice(-65536); });\n const pending = new Map(), events = [];\n const emit = v => process.stdout.write(JSON.stringify(v)+'\\n');\n const bounded = (promise, ms, label) => {\n  let timer;\n  return Promise.race([promise,new Promise((_, reject) => {timer=setTimeout(()=>reject(Error(label)),ms);})])\n   .finally(()=>clearTimeout(timer));\n };\n async function until(predicate, label) {\n  const end = Date.now()+15000;\n  while (!await predicate()) {\n   assert(Date.now()<end && !chromeError && chrome.exitCode===null, label+': '+stderr);\n   await new Promise(resolve=>setTimeout(resolve,10));\n  }\n }\n function request(method, params={}) {\n  const id=++serial;\n  return bounded(new Promise((resolve,reject)=>{pending.set(id,{resolve,reject});socket.send(JSON.stringify({id,method,params}));}),15000,method)\n   .finally(()=>pending.delete(id));\n }\n const input = readline.createInterface({input:process.stdin});\n const commands=[], waiters=[];\n input.on('line',line=>{const c=JSON.parse(line);if(waiters.length)waiters.shift()(c);else commands.push(c);});\n const command=()=>bounded(commands.length?Promise.resolve(commands.shift()):new Promise(resolve=>waiters.push(resolve)),20000,'browser command deadline');\n try {\n  let port;\n  await until(async()=>{\n   try { port=Number((await fs.readFile(path.join(profile,'DevToolsActivePort'),'utf8')).split('\\n')[0]); }\n   catch(e){assert.equal(e.code,'ENOENT');} return !!port;\n  },'Chrome startup deadline');\n  const targets=await bounded(fetch(`http://127.0.0.1:${port}/json/list`).then(r=>r.json()),5000,'CDP discovery deadline');\n  const page=targets.find(t=>t.type==='page'&&t.url==='about:blank');assert(page);\n  socket=new WebSocket(page.webSocketDebuggerUrl);\n  socket.addEventListener('message', message=>{\n   const value=JSON.parse(message.data);\n   if(value.id){const p=pending.get(value.id);if(p){value.error?p.reject(Error(JSON.stringify(value.error))):p.resolve(value.result);}}\n   else {assert(events.length<2048,'CDP event bound');events.push(value);}\n  });\n  socket.addEventListener('close',()=>{for(const p of pending.values())p.reject(Error('CDP closed'));pending.clear();});\n  await bounded(new Promise((resolve,reject)=>{socket.addEventListener('open',resolve,{once:true});socket.addEventListener('error',reject,{once:true});}),5000,'CDP open deadline');\n  await request('Page.enable');await request('Network.enable');await request('Runtime.enable');\n  await request('Network.setBlockedURLs',{urls:['*favicon.ico']});\n  const version=await request('Browser.getVersion');\n  emit({event:'browser_ready',version,node:process.version});\n  for(const label of ['old','new']) {\n  const c=await command();assert.deepEqual(c,{op:'navigate',label,target:label==='old'?'/old%2Fpath?raw=%2F':'/new%2Fpath?raw=%2F'});\n  const target=c.target, title='Gaoxy fixed H2 Generation '+label, marker='Gaoxy checked fixed H2 Generation '+label;\n  // Chromium rejects Proxy-Authorization injection; sockets prove its stripping.\n  await request('Network.setExtraHTTPHeaders',{headers:{'Authorization':'Bearer synthetic-origin-'+label}});\n  const nav=await request('Page.navigate',{url:origin+target});assert(!nav.errorText,nav.errorText);\n  let response;\n  await until(()=>{\n   response=events.find(e=>e.method==='Network.responseReceived'&&e.params.response.url===origin+target)?.params;\n   return response&&events.some(e=>e.method==='Network.loadingFinished'&&e.params.requestId===response.requestId);\n  },'page load deadline');\n  assert.equal(response.response.protocol,protocol);assert.equal(response.response.status,200);assert.equal(response.type,'Document');\n  const responseBody=await request('Network.getResponseBody',{requestId:response.requestId});\n  const responseBytes=Buffer.from(responseBody.body,responseBody.base64Encoded?'base64':'utf8');\n  const expectedHTML='<!doctype html><html><head><title>'+title+'</title><link rel=\"icon\" href=\"data:,\"></head><body><h1 id=\"checked\">'+marker+'</h1></body></html>';\n  assert.deepEqual(responseBytes,Buffer.from(expectedHTML));\n  if(protocol==='h2')assert.match(response.response.securityDetails.protocol,/^TLS/);\n  const result=await request('Runtime.evaluate',{expression:'({title:document.title,text:document.querySelector(\"#checked\")?.textContent,url:location.href})',returnByValue:true});\n  assert(!result.exceptionDetails);assert.deepEqual(result.result.value,{title,text:marker,url:origin+target});\n  const visible=await request('Runtime.evaluate',{expression:'(()=>{const e=document.querySelector(\"#checked\"),r=e.getBoundingClientRect();return r.width>0&&r.height>0&&getComputedStyle(e).visibility===\"visible\";})()',returnByValue:true});\n  assert(!visible.exceptionDetails);assert.equal(visible.result.value,true);\n  assert(!events.some(e=>e.method==='Runtime.exceptionThrown'||e.method==='Runtime.consoleAPICalled'));\n  const screenshot=await request('Page.captureScreenshot',{format:'png',captureBeyondViewport:false});\n  await fs.writeFile(path.join(directory,label+'-browser.png'),Buffer.from(screenshot.data,'base64'));\n  await fs.writeFile(path.join(directory,label+'-browser-events.json'),JSON.stringify(events,null,2)+'\\n');\n  emit({event:'probe',status:'PASS',label,version,node:process.version,document:result.result.value,visible:true,network:response,response_bytes:responseBytes.length,response_sha256:crypto.createHash('sha256').update(responseBytes).digest('hex')});\n  }\n  assert.deepEqual(await command(),{op:'exit'});\n  closeRequested=true;\n  let closeReply='confirmed';\n  try { await request('Browser.close'); }\n  catch(e) { assert.equal(e.message,'CDP closed'); closeReply='CDP closed while graceful browser shutdown was pending'; }\n  const join=await bounded(exited,10000,'Chrome graceful join deadline');assert.equal(join.code,0);assert.equal(join.signal,null);\n  emit({event:'chrome_closed',close_reply:closeReply,process:join});\n  passed=true;\n } finally {\n  input.close();socket?.close();\n  if(chrome.exitCode===null&&chrome.signalCode===null&&!chromeError){\n   chrome.kill('SIGTERM');\n   try{await bounded(exited,5000,'Chrome TERM join deadline');}\n   catch(e){chrome.kill('SIGKILL');await bounded(exited,5000,'Chrome KILL join deadline');}\n  }\n  await fs.writeFile(path.join(directory,'chrome-stderr.log'),stderr);\n  await fs.rm(profile,{recursive:true,force:true});\n  emit({event:'joined',passed,close_requested:closeRequested,profile_removed:true,chrome_exit:chrome.exitCode,chrome_signal:chrome.signalCode});\n }\n})().catch(e=>{console.error(e.stack);process.exitCode=1;});\n",
+        "http://127.0.0.1:36169",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h1-http2",
+        "http/1.1",
+        "YBY2j7lXVSHBm0ibtWu4b7AJbKp9a4wavG23RyUpoOc=",
+        "/tmp/gaoxy-fixed-generation-netlog-eg325tbw/chrome-netlog.json"
+      ],
+      "pid": 2426938,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h1-http2"
+    },
+    {
+      "command": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "mix",
+        "run",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h1-http2/peer-ready.json",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h1-http2",
+        "h1",
+        "/tmp/gaoxy-native-worker-test-certs-ivnaqgx5",
+        "http2"
+      ],
+      "pid": 2309149,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h1-http2"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "tls",
+        "--bind-address",
+        "127.0.0.2",
+        "--listen-port",
+        "42551"
+      ],
+      "pid": 2300926,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h1-http2"
+    },
+    {
+      "command": [
+        "/tmp/gaoxy-m3-h2-soak-venv/bin/python",
+        "-B",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+        "--staged-start",
+        "--manual",
+        "--protocol",
+        "tls",
+        "--bind-address",
+        "127.0.0.1",
+        "--listen-port",
+        "0"
+      ],
+      "pid": 2293809,
+      "exit": 0,
+      "forced": false,
+      "reader_joined": true,
+      "owned_group_gone": true,
+      "case": "h1-http2"
+    }
+  ],
+  "adopted_joins": [
+    {
+      "pid": 2142656,
+      "wait_status": 10,
+      "exit": -10
+    },
+    {
+      "pid": 2232609,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2232579,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2232727,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2232766,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2338359,
+      "wait_status": 10,
+      "exit": -10
+    },
+    {
+      "pid": 2428884,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2428693,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2428855,
+      "wait_status": 0,
+      "exit": 0
+    },
+    {
+      "pid": 2428667,
+      "wait_status": 0,
+      "exit": 0
+    }
+  ],
+  "adopted_remaining": [],
+  "endpoint": "fixed",
+  "fixture_development_cutoff": "root143/orchestration71/tooling11/group54; identity runtime0/production0/fixture0; Astra2of2 exhausted",
+  "artifact_sha256": {
+    "certificate-tool.log": "3e61c73b3fbac4e24fbbf01610200802b7611747f473325be508126173045c6a",
+    "h1-http2/browser.log": "3f8c3fb7a8c1da082bf5e3f5b8b79b37a9a8f7401b9ab83244c7d0240d2c4068",
+    "h1-http2/causal-metadata.log": "19dcd4716d459519d6a14a13cda6766885bd9680f44dd503852a761b2a935a3d",
+    "h1-http2/chrome-net-metadata-final.json": "523c25ab1466883e4ea684b9e7e2d840bae24f67a73668f41b8e0142409c5cad",
+    "h1-http2/chrome-stderr.log": "36cdac956e412e42e45e6757cff4ed1d519c11a926c2ebe5d17e76a1a4d83766",
+    "h1-http2/diagnostic-raw-custody.json": "026a274ddf7ed0f8b8cf80967533ed5026526eb6b64b8da848f13f3838c91867",
+    "h1-http2/final-cohort.log": "b3a21dfa3a723d3cbc4f7a92091c3bf20ea4a756a66f955ff5339ad125cbd468",
+    "h1-http2/host-loaded-after.json": "94578ef021faf8f753071e9d384d482e70f6f9f333c4a6b1e828f50e01359f2b",
+    "h1-http2/host-loaded-before.json": "94578ef021faf8f753071e9d384d482e70f6f9f333c4a6b1e828f50e01359f2b",
+    "h1-http2/host.log": "44228227d903e417f31adf99967f871c1aee17781ac04ac2da6617f7d54cd242",
+    "h1-http2/new-browser-events.json": "79cc068cead2ca29f9ebb0879bab7b256c050d259615fe036ad24baa6e418bab",
+    "h1-http2/new-browser.png": "14fa2d827bd80687a91739d3ddb8bf546d8d4bae9c6e46df93208b82980a888b",
+    "h1-http2/new-capture-cohort.log": "7b5c27829ead4b8262767684731a764fcdfedc6ceb359bae51ada7e1ca673003",
+    "h1-http2/new-chrome-net-metadata.json": "97048b1d4f8814000fc4eac0395d7f710f6b7f2cec344a8f140c8889aceec823",
+    "h1-http2/new-peer.log": "e4174eae3d2e4fb7d400d95e75b5eb8eff3bdbd06be76a952c984f531361a5aa",
+    "h1-http2/new-request-clean-cohort.log": "df258122c6663abaab8a434e6cdf06963a748c24ff1588e0d104b1482dc931e1",
+    "h1-http2/old-browser-events.json": "80ff887bebe6e82608079b61a66e9cb96013c6c6cfb1c14ad2db162bf979b65d",
+    "h1-http2/old-browser.png": "59f5d287ed26ce6fabdfb3f8d8e7cd7eeed17150671cd5d405fbfa794ec09adf",
+    "h1-http2/old-capture-cohort.log": "1d5afbaafd7f04fa94030dcba908da85b862e0dbee601dca253855805e45411d",
+    "h1-http2/old-chrome-net-metadata.json": "5693b087324815e9c9cbef4ba54278ac919a00f987966cbb48becd9ea67548d8",
+    "h1-http2/old-peer.log": "153af5b3420da7e84e360661e984ff79729d7f1c5c9a13775a6b581473bf69ce",
+    "h1-http2/old-request-clean-cohort.log": "058987dfbbf3cc239bec37b23c6112d1ec05746e72e98da0048a0f32e5739542",
+    "h1-http2/peer-ready.json": "faf32a4feb969a8127ea60e30e494780bf5068cab9bee87b0b6ca9da628f9b41",
+    "h1-http2/trust-a.pem": "de4f1768cdc0c2418420547e213ef06d79041f2376db96c5343fce331823805d",
+    "h2-http2/browser.log": "517efaf8bf71f0a22bf774cceab2d8ed24891e8f78ced903fb6cb6f91c737182",
+    "h2-http2/causal-metadata.log": "bb05a22940b9ced84edb08a21133b16ead9e55e2e19cc2278f05c234a4569ba8",
+    "h2-http2/chrome-net-metadata-final.json": "4c2913079c395d2b7936df86bf11d206b65f2404c09f7b6b0a819d9b89d9310b",
+    "h2-http2/chrome-stderr.log": "8b41d63a830d14377efbfdb9f903d680e5eb289128f7f75660e4e39060119ec2",
+    "h2-http2/diagnostic-raw-custody.json": "103557df37f1a667a2e99ccb00fbde66310f447364de8f88f166f5794c831a80",
+    "h2-http2/final-cohort.log": "9900e7eda348b8a492969b872e8efac849e501af4be9caf0fb1f66971dbaf7d8",
+    "h2-http2/host-loaded-after.json": "94578ef021faf8f753071e9d384d482e70f6f9f333c4a6b1e828f50e01359f2b",
+    "h2-http2/host-loaded-before.json": "94578ef021faf8f753071e9d384d482e70f6f9f333c4a6b1e828f50e01359f2b",
+    "h2-http2/host.log": "18377cade71e30982b1fd81b64a2a824aa8c52ea7606523d36b4428a12e965c8",
+    "h2-http2/new-browser-events.json": "0f06d599b18268656ba77c5894217910a7be16872d43dd0bc331778a80431cf7",
+    "h2-http2/new-browser.png": "14fa2d827bd80687a91739d3ddb8bf546d8d4bae9c6e46df93208b82980a888b",
+    "h2-http2/new-capture-cohort.log": "518a152a9c0ea789d16b2d288bf8e79043f8dadb4a1ab09b93e0dd7379cf9058",
+    "h2-http2/new-chrome-net-metadata.json": "eae6c63737ee9d4d20e6cf0fcc7fa111b132b1ba6b981018e3c56454fac05bea",
+    "h2-http2/new-peer.log": "8e71686dc85921572a39904f8c46890e8fde672c7bcc329534e27db6c1618cc4",
+    "h2-http2/new-request-clean-cohort.log": "b09b2be9e50e931e05350f3babf25983cda51896effbb887d42f5896ff3ea25b",
+    "h2-http2/old-browser-events.json": "d27bf811513d72e9caae1a21788ce1b10b29e3fb07199fe0c31316361d989f3c",
+    "h2-http2/old-browser.png": "59f5d287ed26ce6fabdfb3f8d8e7cd7eeed17150671cd5d405fbfa794ec09adf",
+    "h2-http2/old-capture-cohort.log": "6985291a9536acee09bdecbfe7c2f916f1b0d858177c6d6400dd7f6859728fa8",
+    "h2-http2/old-chrome-net-metadata.json": "f76acc44344361c16d9326950a4b0cba66f8564dea086d7800289feb0072f40e",
+    "h2-http2/old-peer.log": "ce86925bff905658887dddde973a72db4bfef175b6196c84c741cb2bb3dcf88e",
+    "h2-http2/old-request-clean-cohort.log": "ab26cb840c8f646de49ce259c64d31077a55f0c1a1006e3d57ca61f880cdb3b4",
+    "h2-http2/peer-ready.json": "a723b48476614a8cadfc2bb4cba6b9b1089d3278d8a5a647836d95981c8bee71",
+    "h2-http2/trust-a.pem": "de4f1768cdc0c2418420547e213ef06d79041f2376db96c5343fce331823805d",
+    "test-certificate-identity.json": "cc45b7d91198ec6a398b487a6bbb9b20253cae504ef37b4f1a6ceb2f706c0b54"
+  }
+}

@@ -1,0 +1,152 @@
+{
+  "task_id": "h2_identity_fixed_spec3",
+  "task_status": "DONE",
+  "status": "PASS",
+  "assignment": "direct independent bounded SPEC3 review only",
+  "scope": "Candidate2\u21923 fixed Generation fixture contract repair and safe terminal JSON receipt; fixed/peer source continuity only; no full-stage or runtime certification",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "candidate_sha256": "c4a196fd6d97cd49204ff54f6c07cf1483f9ae5c612b468911edf69c25678044",
+  "prior_candidate_sha256": "75473f10af4d120eeef33be1163e957b0d03c00f0097ae6654832a2f80cfc72d",
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "ddc05255494fb698ca8d690254054dc22f362d6461b3f5830f55f8e961a578d7",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf"
+  },
+  "production_contract_sha256": {
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51"
+  },
+  "documents_sha256": {
+    "docs/designs/m3-managed-h2-identity-rotation.md": "4b708279d5d49bdd9c5447f1341b60118fa4133767e39b82704247c5ca483787",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "f45d71893ee24df888f8f2ebd21e508bdca6cad5ff1c335d3432854706a72b5d"
+  },
+  "binding_verification": {
+    "documents_sha256": {
+      "count": 2,
+      "mismatches": []
+    },
+    "proposal_sha256": {
+      "count": 4,
+      "mismatches": []
+    },
+    "protected_sha256": {
+      "count": 2,
+      "mismatches": []
+    },
+    "runtime_history_sha256": {
+      "count": 6,
+      "mismatches": []
+    },
+    "snapshots_sha256": {
+      "count": 3,
+      "mismatches": []
+    },
+    "source_sha256": {
+      "count": 402,
+      "mismatches": []
+    }
+  },
+  "scalar_hash_checks": {
+    "prior_candidate_sha256": "PASS",
+    "spec1_sha256": "PASS",
+    "candidate3_expected_sha256": "PASS"
+  },
+  "findings": [],
+  "conclusions": [
+    "Production opening is a boolean: allocation true; successful opening, failed opening, retirement confirmation and real custodian updates settle to false. helpers remains a map. Separate helpers===%{} and opening===false enforce the existing exact constructor contract; nil is unsupported.",
+    "Candidate2\u21923 changes only the combined sticky helpers/opening assertion into two exact assertions and adds the terminal receipt after the result case. All other assertions, original capture/source-pin ownership, native accounting, caps, deadlines and branch cleanup checks are byte-preserved from candidate2.",
+    "Receipt hashes the actual RequestCompletion captured at owner bind and checked against the bound token. Only its SHA256 is emitted. It serializes the constrained terminal literal, validated cleanup bytes, zero HTTP requests and failed-actor-disposal boolean; no raw completion, tracker, reference, credentials, headers, certificate paths, key paths or state are emitted by this addition.",
+    "Receipt executes only after the selected branch and history checks finish and its original terminal completion is reawaited. Confirmed branch requires Session normal DOWN, cleanup/token/child restoration, normal resource/actor joins, zero owner accounting, peer exact totals and rebind. Sticky branch requires failed original/scope/owner receipts, charged retained resource+token/payload, settled helpers, explicit failed-actor disposal, normal disposal joins, zero-request peer totals and rebind. No sticky outcome is relabeled confirmed.",
+    "The peer is byte-identical to candidate2 and preserves bounded numeric-loopback bind/listen controls, original defaults and no alternate-port fallback. Production and dependency lock have no task diff."
+  ],
+  "history": {
+    "fixed_green1": "FAIL preserved",
+    "actual_exit": 2,
+    "tests": 86,
+    "failures": 3,
+    "skipped": 0,
+    "excluded": 0,
+    "warnings": [],
+    "all_three_failure": "Expected truthy, got false at assert retained.helpers == %{} and retained.opening == nil; all three reached cleanup_unconfirmed branch",
+    "cases": [
+      "wrong_host_trusted_ca",
+      "new_ca_old_ip",
+      "old_ca_new_ip"
+    ],
+    "terminal_status_caution": "adopted child wait_status10 is signal10, not exit0; receipt records no remaining descendants and no forced cleanup",
+    "suffix_after_old_failing_assertion": "NOT RUN in fixed-green1; candidate3 source review does not validate it at runtime"
+  },
+  "runtime_tests_executed": 0,
+  "not_run": [
+    "candidate3 syntax",
+    "candidate3 compile/build",
+    "candidate3 tests",
+    "candidate3 fixture runtime",
+    "network",
+    "browser",
+    "generic collector runtime certification",
+    "group rotation implementation/acceptance",
+    "full-stage review/acceptance"
+  ],
+  "verification_commands": [
+    "pwd; git status --short; git rev-parse HEAD (read-only workspace identity)",
+    "Read canonical AGENTS.md, m3-managed-h2-identity-rotation design/plan and prior bounded reports",
+    "git diff --stat; git diff -- assigned fixed test and peer; Python stdlib difflib candidate2\u21923 snapshots",
+    "Python stdlib hashlib verification of all 419 pinned files, candidate3 expected digest, candidate2 link, SPEC1 scalar link and snapshot3/current equality",
+    "Exact-path sed/nl/rg inspection of upstream_transports production constructor/transition/aggregate/settlement and fixture branch/receipt/accounting/joins",
+    "Read fixed-green1 receipt/classification and retained error diagnostics; no execution of fixtures or imports of repository code"
+  ],
+  "read_tool_errors": [
+    {
+      "error": "zsh:1: no matches found: apps/gaoxy_proxy/lib/gaoxy/proxy/*/managed_h2*",
+      "recovery": "Read exact apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex; no runtime/mutation"
+    },
+    {
+      "error": "sed: can't read apps/gaoxy_http/lib/gaoxy/http/request_completion.ex: No such file or directory",
+      "actual_exit": 2,
+      "recovery": "Stopped guessed lookup; no dependency read needed for this bounded repair; no runtime/mutation"
+    }
+  ],
+  "counter_policy": "Candidate cutoff counters remain immutable; root registers the two new read lookup errors separately.",
+  "inherited_counters": {
+    "astra_limit": 2,
+    "astra_used": 2,
+    "current_group_failed_green": 55,
+    "current_orchestration": 83,
+    "current_root_failure_events": 156,
+    "inherited": {
+      "astra_limit": 2,
+      "astra_used": 2,
+      "group_failed_green": 54,
+      "orchestration": 60,
+      "root_failure_events": 132,
+      "stage_failed_green": 9,
+      "stage_final_document_failed_spec": 2,
+      "stage_fixture_repair": 11,
+      "stage_invalid_red": 1,
+      "stage_orchestration_repair": 53,
+      "stage_postfeature_document_failed_spec": 1,
+      "stage_production_repair": 2,
+      "stage_valid_red": 1
+    },
+    "successor_fixture_repair": 1,
+    "successor_production_repair": 0,
+    "successor_runtime_failed_green": 1,
+    "successor_sol_repair_rounds": 1,
+    "successor_source_failed_spec": 2,
+    "successor_tooling_errors": 23
+  },
+  "new_read_lookup_errors": 2,
+  "sol_repair_rounds": 1,
+  "sol_repair_rounds_by_this_reviewer": 0,
+  "astra_used": 2,
+  "astra_limit": 2,
+  "astra_gate": null,
+  "owned_writes": [
+    "/tmp/gaoxy-h2-identity-fixed-spec3.md",
+    "/tmp/gaoxy-h2-identity-fixed-spec3.json"
+  ],
+  "repository_mutations": false,
+  "commands_finished": true,
+  "remaining_risks": "Candidate3 serialization, terminal suffix and protocol/lifecycle behavior require fresh root-run gates after dependent CODE review; group, browser, generic collector and whole-stage gates remain separate and pending.",
+  "decisions_needed": []
+}

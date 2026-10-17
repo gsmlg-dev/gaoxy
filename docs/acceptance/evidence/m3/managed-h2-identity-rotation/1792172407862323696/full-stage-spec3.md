@@ -1,0 +1,19 @@
+# Full-stage SPEC3
+
+**FAIL — one documentation finding; implementation review complete.**
+
+Direct independent read-only review in `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation` at `8f6b884524d81d8defa7c5081230b8ab635e8107`. Candidate SHA `7a282760d86aecd6b59a776beccd04b5f15fa4739fe1de5e929a747e5ce2cf99`; inventory SHA `0fb437a24ead6ab6550651c2df63c3bfd400e6c16a8f41c765675b91ffc8263f`; peer `70475d2609de54cd9f74090b12d48bf4650bd7b530aa0a4d0b49993b056599c1`. All411 candidate sources,2 canonical docs,44 prior proofs,411 inventory sources and4 scalar joins match.
+
+**SPEC3-DOC-01 — medium — `docs/designs/m3-managed-h2-identity-rotation.md:49`.** The unqualified NEW-first lifetime paragraph appears to apply to browser rows, but inherited browser runners complete/release/retire OLD before NEW navigation. Socket fixed/group cells actually prove NEW-first/OLD-pending. Root clarified the intended Task2/3 versus Task4 composition: sockets provide overlap/0→1→0/B-retention/denials; serial browser rows provide visible trust/coldA/DOM/protocol/fullcustody. Qualify paragraph49 as socket overlap scope and explicitly keep browser serial/no-overlap/no-B-selection/no-denial claims. Refreeze/review docs. No browser redesign or weakened socket assertion is needed.
+
+No other actionable source gap found. Reviewed real fixed/group same-path bounded public PEM→DER/address preparations; authentic OLD capture before checkout and replacement; real CAS/OLD closed admission/path invalidation; immutable retained policies; TLS/SNI/authority/target/bytes/credential isolation; NEW-first socket completions and original final-source/custodian/socket joins. Three fixed TLS denials retain genuine bind-time original completions, real handshake rejection/zero requests and both confirmed or sticky charged cleanup_unconfirmed contracts with separate failed-fixture disposal. Authentic fixed/group cross-generation negatives refuse before acquisition/dispatch effects without mutating source rights.
+
+Group real health originals/normalProbeDOWN/zero precede GOAWAY→reader-owned publicTLSunwrap→actualrawSHUTWR→ACK→actualEOF/reset. Cold GET conn2 differs from HEAD1; laterA reuse/0→1→0/lastA retainingB/G+T retirement remain asserted; strict standard warmed helper/cells preserved. No production/dependency/lock change; caps, finite deadlines and independent native95/P/N/W/B/accounting remain.
+
+Browser source review covers exact2+2TLSrows/8futureimages, actual identities/trust/credentials/bytes/visibleDOM+URL+title/status/protocol/console checks, authentic capture/child/originalcompletion/Actor/group/reader/adopted custody, source+BEAM before/after, live request_clean, explicit Chrome close, finalzero+joins+rebind. Cohorts are exact accepted copies. Browsers make no NEW-first overlap/B-selection/TLS denial claim. Raw diagnostic traces and keys were not read.
+
+Inventory has11exactcommands and scoped9/9/17=35entries/34distinct including full F in batches1+3,9formatpaths,5stagePython+peer/extractedJS, separate core/HTTP consumers, Python11 mandatory fresh hash-bound unittest audit distinct from ExUnit19/static0, finalfresh browser4rows. Source review cannot fulfill these future gates.
+
+Reviewer tests0; repaired runtime UNKNOWN. Latest root state group-green4 RUNNING; initialbrowser0rows/NOTRUN; final11NOTRUN. Historical fixed86/0 PASS and group/diagnostic144/2 FAIL remain retained on their own source pins; exact SSLread frame confirmed/internalTLSmessageUNKNOWN. No verdict was recycled from superseded SPEC2.
+
+All reviewer commands finished exit0; command errors none, no owned processes or repo edits. Only assigned /tmp reports written. Counters retained22/root169/orch92/tool32/Sol4/fixture4/group59/runtimefail5/Astra2/2; reviewer repairs0. Resolve wording before dependentCODE; no user decision required. WholeTask5/M3 and final acceptance remain open.

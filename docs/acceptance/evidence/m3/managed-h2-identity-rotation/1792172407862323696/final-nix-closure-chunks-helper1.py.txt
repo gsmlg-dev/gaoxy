@@ -1,0 +1,278 @@
+#!/usr/bin/env python3
+"""Four frozen ranges from official public cache; no Nix store operations."""
+import argparse
+import concurrent.futures
+import datetime
+import hashlib
+import json
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import threading
+import time
+
+
+def main():
+    started = time.monotonic()
+    deadline = started + 1680
+    parser = argparse.ArgumentParser()
+    for name in ('manifest', 'failure-readback', 'origin-readback', 'slice-table'):
+        parser.add_argument('--' + name, required=True)
+        parser.add_argument('--' + name + '-sha256', required=True)
+    parser.add_argument('--cache-dir', required=True)
+    args = parser.parse_args()
+
+    def check_time():
+        assert time.monotonic() < deadline, '1680s work deadline exhausted'
+
+    def digest(path):
+        value = hashlib.sha256()
+        with path.open('rb') as stream:
+            while chunk := stream.read(1048576):
+                check_time()
+                value.update(chunk)
+        check_time()
+        return value.hexdigest()
+
+    def pinned(name, expected):
+        path = Path(name)
+        assert digest(path) == expected, 'input hash mismatch'
+        return json.loads(path.read_bytes())
+
+    manifest = pinned(args.manifest, args.manifest_sha256)
+    readback = pinned(args.failure_readback, args.failure_readback_sha256)
+    origin = pinned(args.origin_readback, args.origin_readback_sha256)
+    table = pinned(args.slice_table, args.slice_table_sha256)
+    helper_sha256 = digest(Path(__file__))
+    cache = Path(args.cache_dir)
+    assert cache == Path('/tmp/gaoxy-h2-identity-nix-closure-cache3')
+    assert not cache.exists() and not cache.is_symlink()
+    assert readback['status'] == origin['status'] == 'FAIL_RETAINED'
+    assert readback['original_cache1_unchanged'] and readback['cache_metadata_unchanged']
+    assert readback['source_pins'] == 411 and not readback['source_mismatches']
+    assert readback['collector']['process_joined'] and not readback['collector']['forced']
+    assert not readback['collector']['process_group_remaining']
+    assert not readback['collector']['descendant_cleanup']['remaining']
+    assert readback['manifest_sha256'] == origin['manifest_sha256'] == args.manifest_sha256
+    assert readback['complete_files'] == 16 and readback['failed_transfers'] == 2
+    entries = manifest['entries']
+    assert len(entries) == len(readback['entries']) == len(origin['entries']) == 18
+    assert len({e['store_path'] for e in entries}) == 18
+    assert {e['store_path'] for e in entries} == {r['store_path'] for r in readback['entries']}
+    assert {e['store_path'] for e in entries} == {r['store_path'] for r in origin['entries']}
+    assert sum(e['file_size'] for e in entries) == 986177930
+    sources = {r['store_path']: r for r in readback['entries']}
+    slices = table['slices']
+    assert table['workers'] == 2 and table['maximum_requests'] == len(slices) == 4
+    assert table['per_curl_seconds'] == 840 and table['work_seconds'] == 1680
+    assert [r['index'] for r in slices] == [1, 2, 3, 4]
+    covered = set()
+    for entry in entries:
+        assert re.fullmatch(r'/nix/store/[0-9a-z]{32}-[^/\s]+', entry['store_path'])
+        assert re.fullmatch(r'nar/[0-9a-z]+\.nar\.zst', entry['url_relative'])
+        assert entry['compression'] == 'zstd' and 0 < entry['file_size'] <= 400000000
+        assert re.fullmatch(r'[0-9a-f]{64}', entry['file_hash_hex'])
+        source = sources[entry['store_path']]
+        ranges = [s for s in slices if s['store_path'] == entry['store_path']]
+        if source['kind'] == 'COMPLETE_VERIFIED':
+            assert not ranges and source['bytes'] == entry['file_size']
+            assert source['sha256'] == entry['file_hash_hex']
+            assert source['original_transfer_attempted'] is False
+        else:
+            assert source['kind'] == 'UNVERIFIED_PREFIX_ONLY'
+            assert source['original_curl_exit'] in [28, 92]
+            assert source['original_joined'] and not source['original_forced']
+            assert 0 < source['bytes'] < entry['file_size'] and ranges
+            cursor = source['bytes']
+            for row in ranges:
+                assert row['start'] == cursor and row['start'] <= row['end'] < entry['file_size']
+                assert row['bytes'] == row['end'] - row['start'] + 1
+                assert row['total'] == entry['file_size']
+                cursor = row['end'] + 1
+                covered.add(row['index'])
+            assert cursor == entry['file_size']
+    assert covered == {1, 2, 3, 4}
+    remainder = sum(s['bytes'] for s in slices)
+    assert remainder == 193144475
+    prefix_bytes = sum(r['bytes'] for r in readback['entries'] if r['kind'] == 'UNVERIFIED_PREFIX_ONLY')
+    assert shutil.disk_usage('/tmp').free >= manifest['compressed_total'] + prefix_bytes + remainder + 1073741824
+
+    def check_originals():
+        for record, old in ((origin, Path('/tmp/gaoxy-h2-identity-nix-closure-cache1')),
+                            (readback, Path('/tmp/gaoxy-h2-identity-nix-closure-cache2'))):
+            assert old.is_dir() and not old.is_symlink()
+            assert digest(old / 'nix-cache-info') == manifest['cache_info_sha256']
+            for entry in entries:
+                meta = entry['store_path'].split('/')[-1].split('-', 1)[0] + '.narinfo'
+                assert digest(old / meta) == entry['narinfo_sha256']
+                assert hashlib.sha256(entry['narinfo_text'].encode()).hexdigest() == entry['narinfo_sha256']
+                row = next(r for r in record['entries'] if r['store_path'] == entry['store_path'])
+                suffix = '.part' if row['kind'] == 'UNVERIFIED_PREFIX_ONLY' else ''
+                path = old / (entry['url_relative'] + suffix)
+                assert str(path) == row['source_path'] and path.is_file() and not path.is_symlink()
+                assert path.stat().st_size == row['bytes'] and digest(path) == row['sha256']
+
+    check_originals()
+    cache.mkdir(mode=0o700)
+    (cache / 'nar').mkdir(mode=0o700)
+    with (cache / 'nix-cache-info').open('xb') as output:
+        output.write(manifest['cache_info_text'].encode())
+    for entry in entries:
+        meta = entry['store_path'].split('/')[-1].split('-', 1)[0] + '.narinfo'
+        with (cache / meta).open('xb') as output:
+            output.write(entry['narinfo_text'].encode())
+
+    def copy_bytes(source, output):
+        with source.open('rb') as stream:
+            while chunk := stream.read(1048576):
+                check_time()
+                output.write(chunk)
+
+    stop = threading.Event()
+    slice_results, file_results, errors = [], [], []
+    original_files_unchanged, original_check_error = None, None
+
+    def fetch(row):
+        result = dict(index=row['index'], store_path=row['store_path'], start=row['start'],
+                      end=row['end'], total=row['total'], expected_bytes=row['bytes'],
+                      status='NOT_RUN', transfer_attempted=False, actual_exit=None,
+                      joined=True, forced=False)
+        if stop.is_set():
+            result['reason'] = 'earlier slice failure; no new request'
+            return result
+        path = cache / ('range-' + str(row['index']) + '.part')
+        result['output_path'] = str(path)
+        result['status'] = 'FAIL'
+        result['joined'] = False
+        try:
+            check_time()
+            remaining = int(deadline - time.monotonic())
+            assert remaining > 30, 'insufficient remaining work budget'
+            limit = min(840, remaining - 20)
+            entry = next(e for e in entries if e['store_path'] == row['store_path'])
+            with path.open('xb'):
+                pass
+            command = ['curl', '--silent', '--show-error', '--fail', '--location', '--max-redirs', '3',
+                       '--proto', '=https', '--proto-redir', '=https', '--http1.1',
+                       '--connect-timeout', '30', '--max-time', str(limit),
+                       '--max-filesize', str(row['bytes']), '--retry', '0',
+                       '--header', 'Accept-Encoding: identity',
+                       '--range', str(row['start']) + '-' + str(row['end']),
+                       '--output', str(path), '--write-out',
+                       '%{http_code} %{size_download}\n%header{content-range:all:|}\n%header{content-length:all:|}\n%header{content-encoding:all:|}\n',
+                       'https://cache.nixos.org/' + entry['url_relative']]
+            result.update(argv=command, transfer_attempted=True,
+                          started_utc=datetime.datetime.now(datetime.timezone.utc).isoformat())
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result['pid'] = process.pid
+            try:
+                stdout, stderr = process.communicate(timeout=limit + 10)
+            except subprocess.TimeoutExpired:
+                result['forced'] = True
+                process.kill()
+                stdout, stderr = process.communicate(timeout=5)
+            result.update(actual_exit=process.returncode, joined=True,
+                          stdout_bytes=len(stdout), stdout_sha256=hashlib.sha256(stdout).hexdigest(),
+                          stderr_bytes=len(stderr), stderr_sha256=hashlib.sha256(stderr).hexdigest(),
+                          stderr=stderr.decode('utf-8', errors='backslashreplace'),
+                          stderr_display_encoding='UTF-8 backslashreplace; original length/SHA256 retained')
+            assert len(stdout) <= 1024, 'named response projection exceeded byte bound'
+            try:
+                safe_stdout = stdout.decode('ascii')
+            except UnicodeDecodeError:
+                raise AssertionError('non-ASCII named response projection') from None
+            lines = safe_stdout.splitlines()
+            assert (len(lines) == 4 and re.fullmatch(r'[0-9]{3} [0-9]+', lines[0]) and
+                    (not lines[1] or re.fullmatch(r'bytes [0-9]+-[0-9]+/[0-9]+', lines[1])) and
+                    (not lines[2] or re.fullmatch(r'[0-9]+', lines[2])) and lines[3] in ['', 'identity']), \
+                'named response projection outside safe grammar'
+            result['stdout'] = safe_stdout
+            result['response_projection'] = dict(zip(
+                ['status_and_bytes', 'content-range', 'content-length', 'content-encoding'], lines))
+            assert process.returncode == 0 and not result['forced'], 'curl did not finish normally with exit0'
+            assert lines[0] == f'206 {row["bytes"]}', 'HTTP206/slice byte count mismatch'
+            assert lines[1] == f'bytes {row["start"]}-{row["end"]}/{row["total"]}', 'exact Content-Range mismatch'
+            assert lines[2] in ['', str(row['bytes'])], 'Content-Length mismatch'
+            assert lines[3] in ['', 'identity'], 'Content-Encoding mismatch'
+            assert path.is_file() and not path.is_symlink()
+            result['actual_file_size'] = path.stat().st_size
+            assert result['actual_file_size'] == row['bytes'], 'slice on-disk length mismatch'
+            result['actual_file_sha256'] = digest(path)
+            result['digest_basis'] = 'Observed slice receipt only; no signed expected chunk hash'
+            result['status'] = 'PASS_SLICE_ONLY'
+        except Exception as error:
+            result['error'] = type(error).__name__ + ': ' + str(error)
+            stop.set()
+        result['elapsed_seconds'] = time.monotonic() - started
+        return result
+
+    try:
+        for entry in entries:
+            source = sources[entry['store_path']]
+            suffix = '.prefix' if source['kind'] == 'UNVERIFIED_PREFIX_ONLY' else '.stage'
+            stage = cache / (entry['url_relative'] + suffix)
+            with stage.open('xb') as output:
+                copy_bytes(Path(source['source_path']), output)
+            assert stage.stat().st_size == source['bytes'] and digest(stage) == source['sha256']
+        with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+            slice_results = list(pool.map(fetch, slices))
+        assert all(r['status'] == 'PASS_SLICE_ONLY' and r['joined'] and not r['forced'] and
+                   r['actual_exit'] == 0 for r in slice_results), 'not all frozen slices passed'
+        for entry in entries:
+            source = sources[entry['store_path']]
+            stage = cache / (entry['url_relative'] + '.stage')
+            if source['kind'] == 'UNVERIFIED_PREFIX_ONLY':
+                prefix = cache / (entry['url_relative'] + '.prefix')
+                assert prefix.stat().st_size == source['bytes'] and digest(prefix) == source['sha256']
+                with stage.open('xb') as output:
+                    copy_bytes(prefix, output)
+                    for row in (s for s in slices if s['store_path'] == entry['store_path']):
+                        result = next(r for r in slice_results if r['index'] == row['index'])
+                        path = Path(result['output_path'])
+                        assert path.stat().st_size == row['bytes'] and digest(path) == result['actual_file_sha256']
+                        copy_bytes(path, output)
+                        assert path.stat().st_size == row['bytes'] and digest(path) == result['actual_file_sha256']
+                assert prefix.stat().st_size == source['bytes'] and digest(prefix) == source['sha256']
+            size, value = stage.stat().st_size, digest(stage)
+            assert size == entry['file_size'] and value == entry['file_hash_hex'], 'full compressed integrity mismatch'
+            file_results.append(dict(store_path=entry['store_path'], status='PASS_PUBLIC_FILE_ONLY',
+                                     actual_file_size=size, actual_file_hash_hex=value))
+        check_originals()
+        original_files_unchanged = True
+        for entry in entries:
+            final = cache / entry['url_relative']
+            assert not final.exists()
+            os.rename(cache / (entry['url_relative'] + '.stage'), final)
+            check_time()
+    except Exception as error:
+        errors.append(type(error).__name__ + ': ' + str(error))
+    try:
+        check_originals()
+        original_files_unchanged = True
+    except Exception as error:
+        original_files_unchanged = False
+        original_check_error = type(error).__name__ + ': ' + str(error)
+    elapsed = time.monotonic() - started
+    passed = (not errors and original_files_unchanged and elapsed <= 1680 and len(file_results) == 18 and
+              len(slice_results) == 4 and all(r['status'] == 'PASS_SLICE_ONLY' and r['joined'] and
+              not r['forced'] and r['actual_exit'] == 0 for r in slice_results))
+    record = dict(kind='FOUR_FROZEN_PUBLIC_CACHE_RANGES1', status='PASS' if passed else 'FAIL',
+                  at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), elapsed_seconds=elapsed,
+                  work_deadline_seconds=1680, within_work_deadline=elapsed <= 1680,
+                  manifest_sha256=args.manifest_sha256, failure_readback_sha256=args.failure_readback_sha256,
+                  origin_readback_sha256=args.origin_readback_sha256, slice_table_sha256=args.slice_table_sha256,
+                  helper_sha256=helper_sha256, cache_dir=str(cache), errors=errors,
+                  original_files_unchanged=original_files_unchanged, original_check_error=original_check_error,
+                  slice_results=slice_results, entries=file_results, tests_executed=0, nix_store_operations=0,
+                  limits='Maximum4 single-range HTTP1.1 requests/2workers/retry0; no dynamic slice/fallback. Full compressed integrity only; native trust/content verification and locked shell readiness still required.')
+    with (cache / 'preparation.json').open('x') as output:
+        json.dump(record, output, indent=2)
+        output.write('\n')
+    print(json.dumps({k: v for k, v in record.items() if k not in ['slice_results', 'entries']}), flush=True)
+    return 0 if passed else 1
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

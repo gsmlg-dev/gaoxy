@@ -1,0 +1,152 @@
+{
+  "task_id": "h2_identity_browser_spec",
+  "status": "DONE",
+  "assignment": "direct independent SPEC review",
+  "verdict": "FAIL",
+  "scope": "Bounded source-readiness SPEC only; independent CODE and full implementation acceptance not performed",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "candidate_path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/browser-fixture-candidate1.json",
+  "candidate_sha256": "5128356444a9fe150f8d564846a66d3bc5cc5c620b840006827b7bac8eda7884",
+  "source_hashes_actual": {
+    "AGENTS.md": "73b78c7642c2a38061aa23a36d4ffc2014e97ba7129766fbdb0d10f7e5fde9d4",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/browser-command-collector1.py": "54089bcbdc4ccc18153a6a4fde022a6cb5704f6614ce86fde12c2ef8ea19b392",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/command-collector1.py": "9e3086ec761498bb3611f278b61788a98350b27aeaeed8ec4374edb29821379c",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-cohort1.exs": "7b758fd2d105e4a9c06dafbad4b2e3687b29d3d0f5abfd4f7f630f887dcb5078",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs": "c85e8a6012a4e2fe472406bada763c5ec4b2c4178249c5a5a10754a73e1bf8af",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py": "9bdd56afc7f8309804bdd7fd22006cb30686c13376ff9f294c8cde3441c031ef",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-cohort1.exs": "7b758fd2d105e4a9c06dafbad4b2e3687b29d3d0f5abfd4f7f630f887dcb5078",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-host1.exs": "95c3fe7a951b0c46b6a92727884b4472089fcab3c0ac678333df3c27a30229a0",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py": "89e7106e5018f3ed4186ca2c893a7b64b6773b50d8c0302387990fd217257e6b",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/syntax-check1.py": "6984fd96748fe440aaa8ecab3c8618c10d930f8c1dcaf5f1b1fd6aa2ee195914",
+    "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6"
+  },
+  "document_hashes_actual": {
+    "docs/designs/m3-managed-h2-identity-rotation.md": "4b708279d5d49bdd9c5447f1341b60118fa4133767e39b82704247c5ca483787",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "f45d71893ee24df888f8f2ebd21e508bdca6cad5ff1c335d3432854706a72b5d"
+  },
+  "all_12_sources_and_2_documents_match": true,
+  "browser_commands": [
+    [
+      "python3",
+      "-B",
+      "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/browser-command-collector1.py",
+      "--endpoint",
+      "fixed",
+      "--name",
+      "fixed-browser-green1",
+      "--receipt",
+      "fixed-browser-command1",
+      "--runner",
+      "fixed-identity-rotation-browser-runner1.py"
+    ],
+    [
+      "python3",
+      "-B",
+      "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/browser-command-collector1.py",
+      "--endpoint",
+      "group",
+      "--name",
+      "group-browser-green1",
+      "--receipt",
+      "group-browser-command1",
+      "--runner",
+      "group-identity-rotation-browser-runner1.py"
+    ]
+  ],
+  "findings": [
+    {
+      "id": "SPEC1-01",
+      "priority": "P2",
+      "file": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/command-collector1.py",
+      "lines": [
+        106,
+        107,
+        177,
+        187,
+        190
+      ],
+      "reason": "Advertised generic --kind browser validates legacy unprefixed case names h1-http2/h2-http2. Both new runners emit fixed-/group-prefixed names, so a valid new qualification always fails that branch. It also omits the dedicated collector endpoint/artifact/Actor acceptance contract. The two exact frozen browser commands use browser-command-collector1.py and are unaffected.",
+      "requested_change": "Remove the unsupported generic browser mode and --browser-evidence/branch; keep authoritative dedicated endpoint collector. Rehash bounded candidate and re-review before CODE."
+    }
+  ],
+  "positive_checks": [
+    "Authentic OLD checked Store source capture precedes same-path replacement and NEW preparation; no forwarding dispatch precedes NEW CAS/trust-source invalidation.",
+    "PEM read is bounded at1048577 bytes;1..128 nonempty copied DER certificates, per-DER65536 and aggregate1048576 bounds; retained OLD/NEW policy DER,address,origin,host,port,SNI,verify_peer,C2/R32/P0 rechecked before dispatch.",
+    "Fixed .1/.2 and group .1/.2/.3/.4 use exact first OS-selected common port, distinct actual processes/numeric tuples/CA/leaf hashes and byte-identical upstream authority.",
+    "Group original HEAD RequestCompletion success and normal Probe DOWNs/control restoration precede exact completed-stream GOAWAY(error0), exact health physical EOF/reset acknowledgement, and fresh selected-A accept/TLS distinct from health connection. Browser B is health/retirement only.",
+    "Exact synthetic downstream Proxy-Authorization and Authorization captured; Proxy-Authorization absent upstream; each origin Authorization confined to matching OLD/NEW GET; HEAD has neither.",
+    "Four endpoint-tagged TLS rows are exactly two fixed plus two group; dedicated collector preserves actual wait/source/artifact/Actor gates; eight images remain root runtime/view gate.",
+    "Native arithmetic,request_clean,finish,native_accounting,final cohort checks are byte-identical to each accepted predecessor. Both cohorts,Actor and adopted-child helpers are byte-identical. Fixed owner tightened to required4/256/64/8388608; group retains those caps and both retain Service536870912/native95/W+B checks.",
+    "Predecessor hashes in proposal verified against current accepted files. Changed assertions relate to same-authority,cold health schedule,and TLS-only new rows; inherited completion/source/native/Service/custodian/retirement/rebind truth remains.",
+    "Peer flags retain default127.0.0.1:0 and client --port semantics, enforce allowed .1-.4/listen-port0..65535,actual numeric ready address,with no fallback.",
+    "syntax-check1.py explicitly parses active evidence Python and peer, extracts BROWSER assignments for Node --check; it claims0 tests. No syntax check executed by reviewer."
+  ],
+  "runtime": "NOT RUN",
+  "runtime_tests_executed": 0,
+  "syntax": "NOT RUN by reviewer",
+  "commands": {
+    "all_finished": true,
+    "background_sessions": 0,
+    "source_commands_only": true,
+    "command_failures": [
+      {
+        "exit": 1,
+        "tool_chunk": "86f342",
+        "error": "ValueError: substring not found",
+        "cause": "Reviewer textual preservation helper chose an end marker preceding its start; partial fixed arithmetic/request_clean/finish and all accepted input hashes printed first."
+      },
+      {
+        "exit": 1,
+        "tool_chunk": "e4123b",
+        "error": "ValueError: substring not found",
+        "cause": "Reviewer textual helper used fixed-specific module marker for group; overbroad native/Actor intervals also included intended inventory/CLI changes. These false comparisons are superseded by exact function boundaries."
+      }
+    ],
+    "lookup_errors": [
+      "Two textual helper ValueError failures above; corrected by rg-discovered module/function boundaries. No missing source path."
+    ],
+    "final_textual_compare": {
+      "tool_chunk": "5e4587",
+      "exit": 0,
+      "fixed": {
+        "arithmetic": true,
+        "request_clean": true,
+        "finish": true,
+        "native_accounting": true,
+        "native_final_checks": true,
+        "Actor": true,
+        "adopted_helpers": true
+      },
+      "group": {
+        "arithmetic": true,
+        "request_clean": true,
+        "finish": true,
+        "native_accounting": true,
+        "native_final_checks": true,
+        "Actor": true,
+        "adopted_helpers": true
+      }
+    },
+    "command_inventory": [
+      "pwd; git status --short; git rev-parse HEAD; rg --files scoped source discovery",
+      "rg memory registry; cat using-superpowers (subagent skip) and verification-before-completion skills",
+      "cat exact design,plan,candidate,proposal and collectors/syntax sources",
+      "Completed python3 -B source-only hashlib/json and difflib textual comparisons against proposal-listed predecessors",
+      "Completed nl/sed/rg source reads and git diff -- peer; git branch --show-current",
+      "Completed final python3 -B source hash recheck and write only assigned /tmp reports"
+    ]
+  },
+  "pre_existing_changes": "Root-owned fixed_generation_test.exs and peer edits,plus untracked stage evidence preserved; no repository mutation by reviewer.",
+  "changed_files": [
+    "/tmp/gaoxy-h2-identity-browser-spec1.md",
+    "/tmp/gaoxy-h2-identity-browser-spec1.json"
+  ],
+  "sol_repair_rounds": 0,
+  "received_astra_counter": "2/2 exhausted unchanged",
+  "astra_gate": null,
+  "remaining_risks": "All real same-port binds,cold trust/GOAWAY finite physical close,Chrome synthetic header delivery,syntax/build,tests,browser images,and process shutdown acceptance remain NOT RUN by reviewer. Source-only readiness cannot establish runtime acceptance.",
+  "decisions_needed": []
+}

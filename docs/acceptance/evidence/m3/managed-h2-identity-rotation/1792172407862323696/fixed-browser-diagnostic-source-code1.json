@@ -1,0 +1,102 @@
+{
+  "task_id": "h2_observation_code/fixed-browser-diagnostic-source-code1",
+  "status": "DONE",
+  "verdict": "PASS",
+  "findings": [],
+  "assignment": "Direct independent CODE review after independently authored SPEC PASS; reviewer is not implementation author. Read-only source review with only assigned /tmp report write.",
+  "workspace": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "head": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+    "verified": "git rev-parse --show-toplevel HEAD; exit0"
+  },
+  "preexisting_tracked_changes": [
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+    "docs/designs/m3-managed-h2-identity-rotation.md",
+    "docs/plans/m3-managed-h2-identity-rotation.md",
+    "docs/plans/m3-upstream-transport.md",
+    "implement-plan.md"
+  ],
+  "bindings": {
+    "active_runner_sha256": "478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74",
+    "candidate_sha256": "be7581fce4237b961afcc9a1fe44627b8c1d13bce5a2f71830e47c581a0583f8",
+    "candidate_proposal_sha256": "d66c5548f3de3aa0388346740a1c9da86586c7589c949e4e03f8c0bf3623ae70",
+    "preceding_spec_sha256": "34a76c8b542601f89c14e965fecab014cb0b6d3b0c11e1c7b4371530bac52da4",
+    "archive_candidate_proposal_and_spec_bytes_equal_to_tmp": true
+  },
+  "scope": "Only exact candidate delta against active runner. No production repair, adoption, runtime, inventory6 or source6 review is claimed.",
+  "checks": [
+    {
+      "check": "Exact change boundary",
+      "result": "PASS",
+      "evidence": "Independent diff has four insertion hunks only. Removing each exact added block once reconstructs active runner byte for byte; each block occurs exactly once. diff exit1 denotes expected differences."
+    },
+    {
+      "check": "Security and safe projection",
+      "result": "PASS",
+      "evidence": "Five exact notification event names expand the existing allowlist; existing numeric/bool/error/source dependency filtering is unchanged. HTTP2_SESSION_CLOSE descriptions are projected only through six exact static strings into fixed enum values, with OTHER for other strings and ABSENT for missing/nonstring input plus boolean description_present. Original description, arbitrary params, hosts, certificates, keys, URLs and raw payloads are not copied by the additions."
+    },
+    {
+      "check": "Original exception and failure visibility",
+      "result": "PASS",
+      "evidence": "run_case except records traceback.format_exc() before the diagnostic call. Nested projection Exception is isolated into a separate generic failure_projection_error field; the subsequent bare raise rethrows the original active exception, with no new success path or status promotion. Existing finally can still override with its cleanup AssertionError exactly as before. BaseException or catastrophic interpreter failures are outside this ordinary-Exception guarantee."
+    },
+    {
+      "check": "Finite diagnostic work",
+      "result": "PASS",
+      "evidence": "Additional failure snapshot invokes the unchanged projector once. It reads at most MAX_BYTES+1 (8MiB+1) and scans at most MAX_EVENTS=8192 events; added description mapping and event checks are finite. It creates one exclusive safe artifact; no retry loop, process, network request, deadline extension or additional raw retention is introduced. This is a finite input/work bound, not a new hard wall-clock deadline for filesystem I/O."
+    },
+    {
+      "check": "Failure-time ordering and cleanup",
+      "result": "PASS",
+      "evidence": "New snapshot runs after original failure traceback capture and before entering original Actor.dispose finally; it may capture an incomplete buffered prefix. Entire original finally beginning cleanup_errors through EOF is byte-identical, preserving actor ordering, group/reader joins, strict forced/nonzero rejection, final projection and raw-directory custody/removal."
+    },
+    {
+      "check": "Assertions and deadlines",
+      "result": "PASS",
+      "evidence": "All113 Python assert lines are identical in order. Embedded BROWSER declaration is byte-identical. Exact reconstruction proves runtime argv, host/actor ordering, readiness waits, browser command/control, requested targets, guards and existing deadlines remain unchanged. No weakening or acceptance bypass appears."
+    },
+    {
+      "check": "Acceptance semantics",
+      "result": "PASS",
+      "evidence": "This adds observation only. It cannot establish target-specific initiating cause from notification adjacency or FINISHED_GOING_AWAY. Original fixed browser failures, cause UNKNOWN, final group NOT_RUN and identity NOT_ACCEPTED remain. Instrumentation may perturb timing."
+    }
+  ],
+  "verification": {
+    "commands": [
+      "Read named source/proposal/SPEC and applicable AGENTS.md; read source sections for bounded projector, Actor, run_case and cleanup",
+      "git status --short --untracked-files=no; exit0; seven preserved tracked changes",
+      "git rev-parse --show-toplevel HEAD; exit0; exact worktree and baseline verified",
+      "git diff --stat; exit0; existing tracked diff observed only",
+      "diff -u active_runner candidate; exit1; expected four insertion hunks reviewed",
+      "Read-only Python text/hash comparison; exit0; four unique insertion removal reconstruction,113 assertion equality,BROWSER equality,finally-to-EOF equality and archive equality all true"
+    ],
+    "executed_tests": 0,
+    "syntax_or_compile": 0,
+    "candidate_import_or_execution": 0,
+    "fixtures_network_nix_chrome_runtime": 0,
+    "Git_mutations": 0,
+    "raw_NetLog_private_keys_user_prompts_or_forbidden_four_files_accessed": false,
+    "runtime_acceptance": "NOT_RUN",
+    "new_candidate_syntax": "NOT_RUN; parent must freshly run required syntax gate after adoption; original syntax gate cannot prove changed candidate syntax"
+  },
+  "changes": {
+    "repository_files_written": [],
+    "only_written": "/tmp/gaoxy-h2-fixed-browser-diagnostic-source-code1.json"
+  },
+  "counters": {
+    "received": "counter-supplement50: root207/orch121/tooling51/group62/runtimefailed8/Sol5/production0; categories are not summed",
+    "Sol_repair_rounds_this_review": 0,
+    "cumulative_protocol_Sol": 5,
+    "Astra_recovery_rounds": "2/2 exhausted; no third round",
+    "counter_reset": false
+  },
+  "commands_shutdown": "All own commands completed; no owned live process/session. Parent and peer processes untouched.",
+  "remaining_risks": [
+    "Source-only PASS supplies no runtime, syntax, final-stage or production acceptance.",
+    "Failure projection is an incomplete bounded snapshot and may perturb timing; cause capture is not guaranteed.",
+    "Nonbrowser evidence reuse depends on unchanged actual execution inputs and binding by the parent; this review does not approve new inventory6 commands."
+  ],
+  "decisions_needed": "No product decision. Parent owns adoption into original path, fresh syntax, frozen source/inventory/command binding and separately reviewed single fixed5-to-group2 runtime gate with original assertions."
+}

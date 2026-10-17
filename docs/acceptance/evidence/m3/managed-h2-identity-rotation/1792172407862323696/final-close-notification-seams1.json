@@ -1,0 +1,176 @@
+{
+  "task_id": "h2_identity_close_notification_seams1",
+  "status": "DONE_PUBLIC_SOURCE_INVESTIGATION",
+  "assignment": "direct bounded independent read-only public-source investigation; no wrapper mutation",
+  "repository_from_handoff": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "chromium_revision": "506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+  "sources": [
+    {
+      "path": "net/log/net_log_event_type_list.h",
+      "origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/log/net_log_event_type_list.h",
+      "sha256_complete_body": "0ddf9cccfbc9868a7dc26044c493abb4c3f09e0c86e303724ac6e62ac891b1b7",
+      "body_bytes": 196817,
+      "lines": 5256,
+      "custody": "Entire successful curl response body streamed through SHA256; only hash and selected numbered excerpts returned. No downloaded source file persisted."
+    },
+    {
+      "path": "net/spdy/spdy_session_pool.cc",
+      "origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/spdy/spdy_session_pool.cc",
+      "sha256_complete_body": "8798fe4d882c55465977b1d727d104540e1140b7d44f75e97373a5c0c0c7bcbf",
+      "body_bytes": 41137,
+      "lines": 1055,
+      "custody": "Entire successful curl response body streamed through SHA256; only hash and selected numbered excerpts returned. No downloaded source file persisted."
+    },
+    {
+      "path": "net/socket/ssl_client_socket.cc",
+      "origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/socket/ssl_client_socket.cc",
+      "sha256_complete_body": "68b79c7417deddb2f2cc2ff00aeb1dbf742f39f87367b52d9f9685b3b1c88eba",
+      "body_bytes": 14849,
+      "lines": 411,
+      "custody": "Entire successful curl response body streamed through SHA256; only hash and selected numbered excerpts returned. No downloaded source file persisted."
+    },
+    {
+      "path": "net/base/logging_network_change_observer.cc",
+      "origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/base/logging_network_change_observer.cc",
+      "sha256_complete_body": "ea344a30d14326b7a25403a122b64a741990b1eff49d187f19d00a7d4b5bd02b",
+      "body_bytes": 5360,
+      "lines": 143,
+      "custody": "Entire successful curl response body streamed through SHA256; only hash and selected numbered excerpts returned. No downloaded source file persisted."
+    },
+    {
+      "path": "net/cert/cert_database.cc",
+      "origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/cert/cert_database.cc",
+      "sha256_complete_body": "ad23fabc63f4dd04408679f4bdfcd664434e71fc24f5b0be911c0e1888e8f72e",
+      "body_bytes": 2132,
+      "lines": 65,
+      "custody": "Entire successful curl response body streamed through SHA256; only hash and selected numbered excerpts returned. No downloaded source file persisted."
+    }
+  ],
+  "findings": [
+    {
+      "initiator": "Global trust-store/certificate database change",
+      "real_netlog_event": "CERTIFICATE_DATABASE_TRUST_STORE_CHANGED",
+      "safe_fields": "Event name, phase, time, numeric source identity only; emission has no params.",
+      "source_chain": [
+        "event_type_list.h3750-3752 defines event",
+        "cert_database.cc37-46 emits global event before notifying OnTrustStoreChanged observers",
+        "ssl_client_socket.cc312-313 maps OnTrustStoreChanged to kCertDatabaseChanged",
+        "spdy_session_pool.cc476-477 maps kCertDatabaseChanged to MakeCurrentSessionsGoingAway(ERR_CERT_DATABASE_CHANGED)"
+      ],
+      "diagnostic_value": "A real global trust-store change witness and plausible originating callback class; temporal correlation alone does not prove this exact session received that callback."
+    },
+    {
+      "initiator": "Client certificate-store change",
+      "real_netlog_event": "CERTIFICATE_DATABASE_CLIENT_CERT_STORE_CHANGED",
+      "safe_fields": "Event name/phase/time/numeric source only; no params.",
+      "source_chain": [
+        "event_type_list.h3753 defines event",
+        "cert_database.cc49-58 emits global event before notifying OnClientCertStoreChanged",
+        "ssl_client_socket.cc316-326 returns immediately when cached servers empty, otherwise clears cached client auth/session entries and notifies servers",
+        "spdy_session_pool.cc485-518 makes matching server/proxy sessions go away"
+      ],
+      "diagnostic_value": "Detects real client-cert DB notification; cannot imply target session affected, especially without cached client-auth servers."
+    },
+    {
+      "initiator": "IP-address change",
+      "real_netlog_event": "NETWORK_IP_ADDRESSES_CHANGED",
+      "safe_fields": "Event/time/source; logging emitter does not preserve change_type parameter.",
+      "source_chain": [
+        "event_type_list.h3643-3645 defines event",
+        "logging_network_change_observer.cc79-84 emits event without parameters",
+        "spdy_session_pool.cc452-467 ignores selected temporary IPv6 changes or chooses going-away vs immediate-close by go_away_on_ip_change flag"
+      ],
+      "diagnostic_value": "IP-change notification witness, not exact target-session/branch proof; current safe event does not distinguish change_type."
+    },
+    {
+      "initiator": "Connectivity/general network notification",
+      "real_netlog_events": [
+        "NETWORK_CONNECTIVITY_CHANGED",
+        "NETWORK_CHANGED"
+      ],
+      "safe_fields": "Names/time/source suffice. new_connection_type is an actual string from ConnectionTypeToString, not an integer; retain only after exact finite mapping is separately verified, otherwise omit.",
+      "source_chain": [
+        "event_type_list.h3647-3660",
+        "logging_network_change_observer.cc87-108 uses AddEventWithStringParams"
+      ],
+      "diagnostic_value": "Contextual network notification timing. Pool is directly subscribed to IP change in the inspected callback path; these events alone do not prove a target-session closure cause."
+    },
+    {
+      "initiator": "Global SSL context config change",
+      "real_dedicated_netlog_event": "NONE_FOUND_IN_REVIEWED_DEFINITIONS_AND_CALLBACKS",
+      "safe_fields": "No logged callback enum/integer available on this path. Do not invent SSL_CONFIG_CHANGED event.",
+      "source_chain": [
+        "ssl_client_socket.cc300-305 refreshes config/cache and NotifySSLConfigChanged(kSSLConfigChanged)",
+        "ssl_client_socket.cc398-401 only invokes observers",
+        "spdy_session_pool.cc473-474 makes sessions going away with ERR_NETWORK_CHANGED"
+      ],
+      "diagnostic_value": "Inspected source has no direct reason event. Final zero-error close can lose this earlier reason."
+    },
+    {
+      "initiator": "Cert verifier change",
+      "real_dedicated_netlog_event": "NONE_FOUND_IN_REVIEWED_DEFINITIONS_AND_CALLBACKS",
+      "safe_fields": "No logged callback enum/integer available here. CERT_VERIFIER_REQUEST/JOB/TASK events concern verification work, not a change notification.",
+      "source_chain": [
+        "ssl_client_socket.cc308-309 calls NotifySSLConfigChanged(kCertVerifierChanged)",
+        "ssl_client_socket.cc398-401 only invokes observers",
+        "spdy_session_pool.cc479-480 calls MakeCurrentSessionsGoingAway(ERR_CERT_VERIFIER_CHANGED)"
+      ],
+      "diagnostic_value": "Do not infer verifier change from a verification request or invent CERT_VERIFIER_CHANGED event."
+    },
+    {
+      "initiator": "Per-server SSL/client-certificate configuration",
+      "real_auxiliary_netlog_events": [
+        "CLEAR_CACHED_CLIENT_CERT",
+        "CLEAR_MATCHING_CACHED_CLIENT_CERT"
+      ],
+      "safe_fields": "Potential bool is_cleared for the former; do not expose host/certificates/hosts fields. These are optional follow-on seams, not recommended first expansion.",
+      "source_chain": [
+        "ssl_client_socket.cc329-358 emits CLEAR_CACHED_CLIENT_CERT then may notify servers",
+        "ssl_client_socket.cc361-395 emits CLEAR_MATCHING_CACHED_CLIENT_CERT then may notify servers",
+        "spdy_session_pool.cc485-518 maps matching server invalidation to going-away"
+      ],
+      "diagnostic_value": "Some per-server client-cert cache paths have events, but they do not cover all config/verifier changes. No target host/cert material should be projected."
+    }
+  ],
+  "pool_observability_limits": [
+    "MakeCurrentSessionsGoingAway(error), pool.cc428-439, does not emit initiating error in a dedicated NetLog event; it calls MakeUnavailable/StartGoingAway/MaybeFinishGoingAway.",
+    "RemoveUnavailableSession, pool.cc389-394, emits HTTP2_SESSION_POOL_REMOVE_SESSION with no parameter payload in actual source. It is downstream removal evidence, not an initiation-reason field.",
+    "Previously inspected spdy_session.cc excerpt1419-1423 turns completed GOING_AWAY into DoDrainSession(OK,\"Finished going away\"). That file body was not re-read/hashed in this task, and the earlier excerpt is not claimed as a full-file hash here.",
+    "Event header2150-2156 defines GOAWAY last_accepted_stream_id/active_streams/unclaimed_streams/error_code as safe integer candidates if an actual GOAWAY event is present; these describe a wire GOAWAY, not SSL/verifier callback identity. Never retain arbitrary debug_data.",
+    "Global notification and session-close timestamps may be correlated across source IDs, but asynchronous observer delivery and incomplete live JSON forbid treating absence or adjacency as exact causal proof."
+  ],
+  "minimal_proposal": {
+    "recommended_next_projection_if_root_chooses": "Add only CERTIFICATE_DATABASE_TRUST_STORE_CHANGED and CERTIFICATE_DATABASE_CLIENT_CERT_STORE_CHANGED to exact event-name allowlist, preserving existing param filter and metadata. No raw certificate/host/string fields and no new integer needed.",
+    "existing_wrapper": "Leave unchanged in this task. Any root-authored new bytes require frozen hash and independent source-tooling review before use.",
+    "network_projection": "Existing three network events already provide safe notification timing. Do not treat new_connection_type as an integer or adopt arbitrary uppercase string passthrough.",
+    "no_guarantee": "Even a FINISHED_GOING_AWAY plus cert/network event may identify only a plausible notification class. If source cannot supply target-specific initiating proof, report UNKNOWN rather than widen evidence/acceptance claims."
+  },
+  "verification": {
+    "method": "Successful bounded public curl full-body hashes plus numbered source excerpt inspection. No fixture/source execution or import.",
+    "runtime": 0,
+    "tests": 0,
+    "builds": 0,
+    "browser": 0,
+    "Git": 0,
+    "repo_writes": 0,
+    "wrapper_changes": 0,
+    "read_raw_or_private_or_protected": false,
+    "command_errors": [
+      "Initial guessed net/log/net_log_network_change_observer.cc returnedHTTP404; its empty-body digest is explicitly excluded as source evidence. Located actual net/base/logging_network_change_observer.cc and successfully hashed/read it."
+    ],
+    "commands_finished": true
+  },
+  "changes": [
+    "/tmp/gaoxy-h2-identity-close-notification-seams1.json",
+    "/tmp/gaoxy-h2-identity-close-notification-seams1.md"
+  ],
+  "counters": "Sol5/Astra2of2 retained without reset or repair increment; root owns readiness/environment totals.",
+  "command_shutdown": "All reviewer commands finished; no reviewer-owned running process.",
+  "remaining_risks": [
+    "Current original close cause remains UNKNOWN.",
+    "No diagnostic runtime evidence established by this public-source investigation.",
+    "Global observer NetLog events cannot necessarily identify one target session or every callback class."
+  ],
+  "decisions_needed": "None for source investigation. Root owns any projection change and actual diagnostic execution."
+}

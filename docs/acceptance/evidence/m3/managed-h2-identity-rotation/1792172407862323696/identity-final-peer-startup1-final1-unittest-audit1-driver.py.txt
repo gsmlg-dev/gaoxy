@@ -1,0 +1,77 @@
+"""Read-only audit of the frozen Python unittest command; runs no tests."""
+import ast
+import hashlib
+import json
+from pathlib import Path
+import re
+import sys
+import traceback
+
+ROOT=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+BASE=ROOT/'docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696'
+NAME='identity-final-peer-startup1-final1'
+AUDIT=NAME+'-unittest-audit1'
+SUITE='apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py'
+PEER='apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py'
+COLLECTOR=str((BASE/'command-collector1.py').relative_to(ROOT))
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+result=dict(kind='FROZEN_PYTHON_UNITTEST_EVIDENCE_AUDIT',status='FAIL',additional_tests_executed=0,driver_sha256=sha(Path(__file__)),tests_run=None,executed=None,failures=None,errors=None,skipped=None,expected_failures=None,unexpected_successes=None,exclusions=None)
+try:
+ inputs=dict(inventory=BASE/'final-command-inventory5.json',candidate=BASE/'full-stage-candidate5.json',receipt=BASE/(NAME+'.json'),log=BASE/(NAME+'.log'),collector=ROOT/COLLECTOR,suite=ROOT/SUITE,peer=ROOT/PEER,review=BASE/'startup-unittest-audit-code2.json',archived_driver=BASE/(AUDIT+'-driver.py.txt'))
+ result['actual_input_sha256']={name:sha(path) if path.is_file() else None for name,path in inputs.items()}
+ assert len(sys.argv)==2 and re.fullmatch('[0-9a-f]{64}',sys.argv[1]),'expected accepted review SHA256 argument'
+ assert result['actual_input_sha256']['inventory']=='6d83237e1cd8c387c8b641ec6bb3e975e2ba437f8b096879a141017092466b16'
+ assert result['actual_input_sha256']['candidate']=='d2c2d0db7445d9a8f6b3d2e65407ddf05873237eb860be553ffd86b3c823a296'
+ assert result['actual_input_sha256']['review']==sys.argv[1]
+ review=json.loads(inputs['review'].read_text())
+ result['reviewer']=dict(agent='/root/h2_identity_full_code',task_id=review.get('task_id'),report=str(inputs['review']),report_sha256=result['actual_input_sha256']['review'],verdict=review.get('verdict'))
+ assert review['verdict']=='PASS_SOURCE_TOOLING' and review['findings']==[]
+ assert review['reviewed_script_sha256']==result['driver_sha256']==result['actual_input_sha256']['archived_driver']
+ inv=json.loads((BASE/'final-command-inventory5.json').read_text())
+ cand=json.loads((BASE/'full-stage-candidate5.json').read_text())
+ command=next(c for c in inv['commands'] if c['name']==NAME)
+ receipt_path=BASE/(NAME+'.json')
+ log_path=BASE/(NAME+'.log')
+ receipt=json.loads(receipt_path.read_text())
+ raw=log_path.read_text()
+ clean=re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]','',raw)
+ summaries=re.findall(r'^Ran ([0-9]+) tests? in [^\n]+$',clean,re.M)
+ rows=re.findall(r'^(test_[A-Za-z0-9_]+) \(([^)\n]+)\) \.\.\. ([^\n]+)$',clean,re.M)
+ result.update(actual_summary_counts=summaries,actual_verbose_rows=[dict(method=m,identifier=i,outcome=o) for m,i,o in rows],actual_terminal_ok_lines=re.findall(r'^OK$',clean,re.M),receipt_terminal_custody={k:receipt.get(k) for k in ['kind','verdict','tests','reported_tests','actual_exit','forced','wait_error','process_joined','process_group_remaining','descendant_cleanup','source_stable','source_changes','warnings','failures','skipped','excluded']},canonical_child_argv=receipt.get('command'),cwd=receipt.get('cwd'))
+ if len(summaries)==1:result.update(tests_run=int(summaries[0]),executed=int(summaries[0]))
+ assert receipt['kind']=='static' and receipt['tests']==receipt['reported_tests']==0
+ assert receipt['verdict']=='PASS' and receipt['actual_exit']==0 and receipt['process_joined']
+ assert not receipt['forced'] and receipt['wait_error'] is None and not receipt['process_group_remaining']
+ cleanup=receipt['descendant_cleanup']
+ assert not cleanup['forced'] and not cleanup['remaining'] and not cleanup['signal_attempts'] and not cleanup['reap_deadline_exhausted']
+ assert receipt['source_stable'] and receipt['source_before']==receipt['source_after'] and not receipt['source_changes']
+ assert receipt['warnings']==[] and receipt['failures']==receipt['skipped']==receipt['excluded']==0
+ assert receipt['command']==command['argv'] and receipt['cwd']==str(ROOT)
+ assert receipt['log_sha256']==sha(log_path)
+ assert receipt['collector_sha256']==inv['sources_sha256'][COLLECTOR]==sha(ROOT/COLLECTOR)
+ for path in [SUITE,PEER]:
+  expected=inv['sources_sha256'][path]
+  assert expected==cand['source_sha256'][path]==sha(ROOT/path)
+  assert receipt['source_before'][path]==receipt['source_after'][path]==expected
+ summaries=re.findall(r'^Ran ([0-9]+) tests? in [^\n]+$',clean,re.M)
+ assert len(summaries)==1 and int(summaries[0])==11,summaries
+ assert len(re.findall(r'^OK$',clean,re.M))==1 and re.search(r'^OK\s*\Z',clean,re.M)
+ assert not re.search(r'^(?:FAILED|FAIL:|ERROR:|Traceback)|\b(?:skipped|expected failure|unexpected success)\b|\b[A-Za-z]*Warning:',clean,re.M|re.I)
+ tree=ast.parse((ROOT/SUITE).read_text())
+ cls=next(n for n in tree.body if isinstance(n,ast.ClassDef) and n.name=='PeerStartupTest')
+ expected_methods=sorted(n.name for n in cls.body if isinstance(n,ast.FunctionDef) and n.name.startswith('test_'))
+ assert len(expected_methods)==11
+ rows=re.findall(r'^(test_[A-Za-z0-9_]+) \(([^)\n]+)\) \.\.\. ([^\n]+)$',clean,re.M)
+ assert len(rows)==11 and sorted(r[0] for r in rows)==expected_methods
+ for method,identifier,outcome in rows:
+  assert outcome=='ok' and (identifier=='__main__.PeerStartupTest' or identifier=='__main__.PeerStartupTest.'+method),(method,identifier,outcome)
+ result.update(status='PASS',tests_run=int(summaries[0]),executed=int(summaries[0]),failures=0,errors=0,skipped=0,expected_failures=0,unexpected_successes=0,exclusions=0,actual_verbose_rows=[dict(method=m,identifier=i,outcome=o) for m,i,o in rows],frozen_expected_methods=expected_methods,canonical_child_argv=receipt['command'],cwd=receipt['cwd'],collector_static_tests=receipt['tests'],collector_static_reported_tests=receipt['reported_tests'],receipt_sha256=sha(receipt_path),log_sha256=sha(log_path),collector_sha256=receipt['collector_sha256'],inventory_sha256=sha(BASE/'final-command-inventory5.json'),candidate_sha256=sha(BASE/'full-stage-candidate5.json'),suite_sha256=sha(ROOT/SUITE),peer_sha256=sha(ROOT/PEER),source_stable=receipt['source_stable'],process_joined=receipt['process_joined'],actual_exit=receipt['actual_exit'],forced=receipt['forced'],descendant_cleanup=cleanup,limits='11 parsed actual unittest successes; original static collector remains tests0. This audit runs0tests and is not a twelfth protocol command.')
+except BaseException:
+ result['failure']=traceback.format_exc()
+with (BASE/(AUDIT+'.json')).open('x') as f:json.dump(result,f,indent=2);f.write('\n')
+with (BASE/(AUDIT+'.md')).open('x') as f:
+ f.write('# Python startup unittest audit\n\n'+result['status']+'; additional tests executed0.\n\n')
+ if result['status']=='PASS':f.write('Actual fresh suite: '+str(result['executed'])+' executed,0 failures/errors/skips/expected failures/unexpected successes/exclusions. Exact11 verbose success IDs, unique terminal Ran11/OK, original collector tests0 and normal custody/source pins verified.\n')
+ else:f.write('Required evidence audit failed; inspect preserved JSON failure. No browser gate may advance.\n')
+print(json.dumps(result,indent=2))
+sys.exit(0 if result['status']=='PASS' else 1)

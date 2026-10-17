@@ -1,0 +1,122 @@
+{
+  "task_id": "h2_full_stage_spec2/final-fixed4-close-diagnosis-spec1",
+  "status": "DONE",
+  "assignment": "direct independent read-only SPEC diagnosis; no runtime authorization",
+  "review_result": "EVIDENCE_BOUNDED_CAUSE_UNKNOWN",
+  "workspace": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "sha": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+    "provenance": "parent handoff; Git intentionally not run"
+  },
+  "reviewed_sha256": {
+    "fixed-browser-green4/h2-http2/host.log": "0fa8aafb3e7ab00fd5aa14e975380fafbcb007349b21d6c2db7f4f635ced0ddc",
+    "fixed-browser-green4/h2-http2/causal-metadata.log": "d4060541be2b07b4633b1104f2fe38fec4c61d214e4271f8b41ad841ecd731b3",
+    "fixed-browser-green4/h2-http2/old-chrome-net-metadata.json": "5d0c113ecdf1980f8d4b8e725f99deffe39e44b1a326f46bacb3c7e33fc6c220",
+    "fixed-browser-green4/h2-http2/chrome-net-metadata-final.json": "5d0c113ecdf1980f8d4b8e725f99deffe39e44b1a326f46bacb3c7e33fc6c220",
+    "fixed-browser-green4/h2-http2/diagnostic-raw-custody.json": "2317b23a0e8d4ffe74707f2181a1856d7d6d859ad918daec1a0406023fe29ce8",
+    "fixed-identity-rotation-browser-runner1.py": "478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74",
+    "fixed-identity-rotation-browser-host1.exs": "e52b0bab2321837ab93d0b957361d4d6f5e43d8bbf9e0fc17dc139a7b7edeabd"
+  },
+  "actual_runtime_status_parent_reported": {
+    "fixed_browser_green4": "FAIL",
+    "exit": 1,
+    "elapsed_seconds": 13.319,
+    "rows_attempted": 1,
+    "rows_passed": 0,
+    "group_browser_green2": "NOT_RUN",
+    "outer_collector": {
+      "forced": false,
+      "joined": true,
+      "stable": true,
+      "residue": false
+    },
+    "inner_shutdown": "three Actors forced with exit -15; host exit 1; preserve adopted -15/-9/-10; not normal-exit acceptance",
+    "provenance": "parent message; command receipt and qualification not independently inspected in this bounded assignment"
+  },
+  "independently_observed": [
+    {
+      "finding": "Original native connection-live assertion really failed",
+      "evidence": "host.log records old capture, identity_rotation, cas, session_custody, bound, returned_source_held and old_retired, then MatchError false in assert_target_live/3 line2048 called from request_clean/1 line1615; connection #PID<0.369.0>, writer #PID<0.370.0>, worker #PID<0.372.0>."
+    },
+    {
+      "finding": "A native TLS close was observed shortly after old stream completion",
+      "evidence": "causal-metadata.log: connection #PID<0.369.0> receives h2_stream_done outcome :ok at -576460743093952234ns, receives worker DOWN :normal 9858ns later, receives ssl_closed at -576460743093143184ns (0.80905ms after stream_done), then sends writer stop. This is one BEAM clock domain; not synchronized to Chromium time."
+    },
+    {
+      "finding": "Chromium session closure is present in the pre-request_clean projection",
+      "evidence": "old projection session60 depends on socket55, sends stream1, receives headers at14936980 and DATA188 plus empty END_STREAM at14936982; HTTP2_SESSION_CLOSE net_error0 occurs at14936982; pool remove/session end at14936983. The original runner writes this projection at line595 before sending request_clean at line601."
+    },
+    {
+      "finding": "The observed pre-request_clean Chromium close is not an artifact introduced only by subsequent failure cleanup",
+      "evidence": "Projection serialization precedes request_clean command. Browser.close is only requested after both old/new cases and authorize_browser_close (runner616-626; embedded browser133-138). Later forced Actor disposal remains a separate real cleanup failure, not the source of the already projected close."
+    },
+    {
+      "finding": "Old and final projections are identical bounded incomplete snapshots",
+      "evidence": "Both SHA256 5d0c113ecdf1980f8d4b8e725f99deffe39e44b1a326f46bacb3c7e33fc6c220; read_complete=false, byte_limit_reached=false, event_limit_reached=false, read_bytes194726, scanned_events708, projected_events124. No global absence claims are supported."
+    },
+    {
+      "finding": "Raw custody metadata reports removal after Actor group/reader joins",
+      "evidence": "diagnostic-raw-custody.json: REMOVED_AFTER_ACTOR_GROUP_JOINS, actor_groups_joined=true, raw_removed=true, directory_exists=false. Forced joins may satisfy containment but do not satisfy successful lifecycle acceptance. Raw path was not opened or inspected."
+    }
+  ],
+  "root_cause": {
+    "status": "UNKNOWN",
+    "bounded_conclusion": "Old downstream H2 session ended before the required live checkpoint. Both Chromium session-close and native ssl_closed facts are observed. Chromium net_error=0 describes the session result; it does not prove who initiated closure or the triggering reason, and it does not make the required live assertion pass.",
+    "original_fixed_browser2_cause": "UNKNOWN; unchanged",
+    "diagnostic2": "Previously passed instrumented diagnostic did not establish a fix and cannot substitute for this failed original final sequence.",
+    "cannot_conclude": [
+      "No causal cross-clock ordering between Chromium and BEAM without an explicit mapping.",
+      "No global absence of GOAWAY, RST_STREAM or other events from incomplete projected NetLog.",
+      "No claim that Chromium autonomously initiated closure, that native server initiated closure, or that identity retirement caused closure."
+    ]
+  },
+  "minimal_evidence_next_step": {
+    "first": "Perform a bounded static comparison of the final and diagnostic browser/host command sequence, and inspect the Chromium source matching the already recorded browser version for HTTP2_SESSION_CLOSE net_error0 call sites and the exact close-description field. Do not retry final acceptance merely to seek a green run.",
+    "if_static_evidence_does_not_resolve": "Prepare one reviewed diagnostic-only instrumentation delta preserving the original failing sequence, all live assertions and existing deadlines. Project the session60-equivalent HTTP2_SESSION_CLOSE reason through an exact static allowlist into a safe enum, alongside existing numeric IDs/dependencies and GOAWAY error/stream metadata. Unknown free-form strings must remain omitted. Add metadata-only native outbound GOAWAY/local-close decisions with connection PID and monotonic timestamp so received ssl_closed can be distinguished from locally initiated close. No headers, bodies, raw debug_data, unrestricted description strings or private keys in artifacts.",
+    "runtime_gate": "Root owns proposal/source pins, fresh independent SPEC then dependent CODE, readiness and runtime. This report does not authorize a command or an instrumentation repair. Retain original failure and diagnostic evidence immutably.",
+    "acceptance": "Once cause is evidenced and a targeted repair is reviewed, the original full fixed and then dependent group sequence must pass unchanged, including live checkpoints, source/BEAM identity, root-viewed images and normal lifecycle joins. Diagnostic results never replace final acceptance."
+  },
+  "counter49_parent_declared": {
+    "root": 206,
+    "group": 62,
+    "runtime_failed_green": 8,
+    "orchestration": 120,
+    "tooling": 50,
+    "environment_helper_repairs": 4,
+    "environment_recovery_failed_spec": 2,
+    "environment_recovery_failed_code": 1,
+    "environment_preparation_fail": 2,
+    "environment_failed_curl": 4,
+    "protocol_sol": 5,
+    "production": 0,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "provenance": "root/group/runtime from latest parent instruction; remaining values carried from counter48 handoff; counter49 file not reviewed",
+    "no_counter_reset": true,
+    "third_astra_allowed": false
+  },
+  "changes": {
+    "repository": [],
+    "reports": [
+      "/tmp/gaoxy-h2-final-fixed4-close-diagnosis-spec1.json"
+    ]
+  },
+  "verification": {
+    "method": "Read/hash only seven named safe files; parse safe JSON; inspect source lines. No helper imports/execution.",
+    "tests_executed": 0,
+    "runtime_executed": 0,
+    "git_commands": 0,
+    "network_commands": 0,
+    "raw_access": false,
+    "all_own_commands_finished": true,
+    "owned_live_processes_or_sessions": false,
+    "repair_rounds_this_assignment": 0
+  },
+  "remaining_risks": [
+    "M4/identity remains NOT_ACCEPTED; fixed4 FAIL, group final NOT_RUN, plateau NOT_STARTED.",
+    "Initiating cause remains UNKNOWN.",
+    "Counter49 and outer/inner aggregate outcomes are parent-reported facts outside this seven-file independent readback."
+  ],
+  "restrictions": "No third Astra, assertion/deadline weakening, raw access, publication, deployment, production/Vault/certificate/public-management/account changes or disabled release-artifact E2E changes.",
+  "decisions_needed": "No new product decision identified; root may arrange bounded static diagnosis and a reviewed evidence-only diagnostic if necessary."
+}

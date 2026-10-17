@@ -1,0 +1,114 @@
+{
+  "task_id": "h2_identity_full_code_nix_local_cache_resume_code1",
+  "status": "DONE",
+  "verdict": "FAIL",
+  "assignment": "delegated independent read-only dependent CODE review",
+  "at_utc": "2026-10-17T08:56:26.500402+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "baseline_verified": true,
+  "preexisting_changes": "Root-owned tracked and untracked implementation/evidence changes observed; reviewer changed none.",
+  "inputs": {
+    "final-nix-local-cache-plan2.json": {
+      "sha256": "18b7c996258e3b7c7b8b2e3e30521892ebf0d365c22f3b96790035ccb745de5f",
+      "expected_match": true
+    },
+    "final-nix-local-cache-manifest1.json": {
+      "sha256": "c0863863f89bdfd6d9a552e897d70839826dfaef480a895e94b9bef0032bb808",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1.json": {
+      "sha256": "a2ed67585cce67eb99427eeb369787ff723044ca5a4969dce043c28bfdb63e87",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1-inner1.json": {
+      "sha256": "57586ffb22b370eb8b7af2223c70c04d1f4d9befbe86000fb9b9b95ece362aeb",
+      "expected_match": true
+    },
+    "final-nix-local-cache-prepare1-readback1.json": {
+      "sha256": "279dbdadf1063afaa1154bb18cff4fa882d7586bbef243aa51f0181a0ad472b0",
+      "expected_match": true
+    },
+    "final-nix-curl-resume-seams1.json": {
+      "sha256": "769a0819b6ce25438b15d1d15724b8fec9a4b6d94a37d06a771fed21278f817f",
+      "expected_match": true
+    },
+    "full-stage-candidate5.json": {
+      "sha256": "d2c2d0db7445d9a8f6b3d2e65407ddf05873237eb860be553ffd86b3c823a296",
+      "expected_match": true
+    },
+    "command-collector1.py": {
+      "sha256": "bda740921e60685288adb55500b8c9256435c188abd9a6c82bc849cf15e4690f",
+      "expected_match": true
+    },
+    "counter-supplement42.json": {
+      "sha256": "234aacb6e18414a2094b6f80d5832cfb0e7248dc08e1e0e93b3895b148e88bd7",
+      "expected_match": true
+    },
+    "final-nix-local-cache-resume-plan1.json": {
+      "sha256": "1081dafa43c1eea57db2a778c0a6eeed783eb1551fe99261064b7fc54b2b3173"
+    },
+    "final-nix-local-cache-resume-spec1.json": {
+      "sha256": "ca59d0b215eaf5d55f4320808d0ec653fca8b1db5ea852eec8cf29d210c0a24f"
+    },
+    "final-nix-closure-resume-helper1.py.txt": {
+      "sha256": "6018986b18a25fb6f4b9b9bb7a0bde708a10ad8585df79e1a5ade86b35ce5cd8"
+    },
+    "/tmp/gaoxy-nix-closure-resume1.py": {
+      "sha256": "6018986b18a25fb6f4b9b9bb7a0bde708a10ad8585df79e1a5ade86b35ce5cd8",
+      "archive_equal": true
+    }
+  },
+  "findings": [
+    {
+      "id": "CODE1-RAW-HEADERS",
+      "severity": "blocker",
+      "source": "/tmp/gaoxy-nix-closure-resume1.py:115-120,136-152",
+      "problem": "curl --dump-header writes all response headers, including redirect blocks and unrelated header fields, into persistent new-cache .response-headers files. The helper never removes these files. The 65536-byte test occurs only after curl completion, so it limits a later read/acceptance rather than disk retention.",
+      "evidence": "header_path constructed at115 and passed through --dump-header at120; read65537 and bound at136-138; parsing and projection at139-152 leave original header_path untouched.",
+      "required_change": "Remove raw-header file storage. Extract only the authorized named fields through supported installed curl APIs, validate a canonical exact Content-Range and optional numeric Content-Length/identity Content-Encoding, and preserve actual exit/join/full-file integrity/deadline guards. Fail closed on ambiguous or malformed projections without retaining arbitrary header values.",
+      "scope_clarification": "Earlier parent instruction explicitly requested safe response status plus Content-Range only and no other retained headers. Frozen plan1 explicitly authorizes safe range/length/encoding projection and existing checks. Canonical numeric length and identity enum projection are not a separate blocker; the finding concerns persistent full raw response headers. Parent accepted removal before this report."
+    }
+  ],
+  "source_checks": [
+    "Dependent SPEC1 is PASS with no findings on exact plan/helper hashes; this CODE finding remains independent.",
+    "Helper and archive SHA256/equality match; every exact named plan input hash matches.",
+    "Source has exclusive new cache/staging, old-original read-only operations and post-worker rechecks; no helper import or runtime execution performed.",
+    "Only two partial rows invoke once each positive-offset curl; 16 complete rows are explicitly no-transfer; actual returncode/joins/forced state retained.",
+    "Exact206/downloadN-L/Content-Range and optional length/encoding predicates plus full pinned FileSize/FileHash and original deadline predicates remain required.",
+    "No further actionable source defect established during this bounded review. This does not validate future transfers/native copy/readiness."
+  ],
+  "verification": {
+    "read_only_source_and_json_hash_commands_exit": 0,
+    "tests_executed": 0,
+    "helper_import_or_execution": 0,
+    "curl_or_network": 0,
+    "nix_or_store_operations": 0,
+    "browser_or_protocol_execution": 0,
+    "old_cache_byte_reads": 0,
+    "excluded_file_reads": 0,
+    "repository_writes": 0,
+    "only_writes": [
+      "/tmp/gaoxy-nix-local-cache-resume-code1.json",
+      "/tmp/gaoxy-nix-local-cache-resume-code1.md"
+    ]
+  },
+  "counters_from_handoff": {
+    "counter_supplement": 42,
+    "root_failure_events": 199,
+    "orchestration": 117,
+    "tooling": 48,
+    "environment_file_preparation_failures": 1,
+    "failed_curl_commands": 2,
+    "fixture_sol_repair_rounds": 5,
+    "production_repair_rounds": 0,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "counter_ownership": "No reset or reviewer increment; parent records this source CODE FAIL and subsequent repair. No runtime failure added by this review.",
+  "commands_shutdown": "All reviewer commands completed; no owned live subprocess/session. No parent process interference.",
+  "remaining_risks": "Candidate helper1 must not execute. Root repairs and freezes helper2/plan2, followed by new independent SPEC then dependent CODE on identical hashes. Actual range semantics, file integrity, native signature/content verification and exact version readiness are NOT RUN.",
+  "unchanged_status": "Identity NOT_ACCEPTED; original final browser FAIL/UNKNOWN and group final NOT_RUN retained; successor plateau NOT_STARTED; no stage acceptance/publication/deployment changes.",
+  "decisions_needed": "No product decision; repair raw-header storage and obtain new SPEC then CODE."
+}

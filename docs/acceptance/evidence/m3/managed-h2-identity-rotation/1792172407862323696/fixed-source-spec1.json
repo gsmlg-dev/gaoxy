@@ -1,0 +1,79 @@
+{
+  "task_id": "h2_identity_fixed_spec",
+  "status": "FAIL",
+  "assignment": "direct independent bounded SPEC review",
+  "review_stage": "SPEC only before CODE",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "candidate_sha256": "7e81d01ca2e71ef3f79a8254eeb3d519de7705a518c86648e03cc3e4e68627c8",
+  "source_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs": "02892943701473ad079d9ab7bf3147b7727c10c5cf71f75c23e9e9afab1b568e",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "1ce3c5b4b95c133883127c24112ad04bd6402d9eefcc4242019fae21111698bf"
+  },
+  "documents_sha256": {
+    "docs/designs/m3-managed-h2-identity-rotation.md": "4b708279d5d49bdd9c5447f1341b60118fa4133767e39b82704247c5ca483787",
+    "docs/plans/m3-managed-h2-identity-rotation.md": "f45d71893ee24df888f8f2ebd21e508bdca6cad5ff1c335d3432854706a72b5d"
+  },
+  "protected_sha256": {
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/codex-prompt.md": "87112f8eb621966e0062c8611054bda49af0508693c46fa621de87a2b774038c",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/gaoxy-m1.1-fix-prompt.md": "7982874aacafe8bc4f4814740f25d1bd1e5bb35cbdc3938338ab132f2cdf9f1f"
+  },
+  "binding_verification": {
+    "sources": 402,
+    "documents": 2,
+    "protected": 2,
+    "proposals": 4,
+    "mismatches": [],
+    "actual_source_delta": [
+      "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py"
+    ]
+  },
+  "findings": [
+    {
+      "id": "SPEC1-F1",
+      "priority": "P2",
+      "file": "apps/gaoxy_proxy/test/managed_h2_fixed_generation_test.exs",
+      "line": 244,
+      "related_lines": [
+        252,
+        255,
+        282,
+        293
+      ],
+      "requirement": "docs/plans/m3-managed-h2-identity-rotation.md:43; docs/designs/m3-managed-h2-identity-rotation.md:25,29",
+      "reason": "Required OLD/NEW public PEM/DER/leaf hashes are not recorded as reviewable identity evidence. The fixture stores OLD PEM hash, calculates and discards NEW PEM hash, compares raw DER lists and leaf hashes, and produces no public per-row identity record. Inequality assertions prove separation but cannot provide the prescribed recorded hashes in a successful unfiltered run.",
+      "requested_change": "Record a bounded credential-free per-rotated-row public identity receipt containing OLD/NEW PEM, DER and leaf hashes, correlated to the same origin, numeric addresses and actual resources. Compute PEM hashes using the existing bounded same-path reads before invalidation and DER hashes from actual immutable retained policy cacerts. Preserve the existing sequencing and assertions. Freeze candidate2 and repeat bounded SPEC before dependent CODE/runtime."
+    }
+  ],
+  "runtime_tests_executed": 0,
+  "runtime_status": "NOT RUN",
+  "other_gates": "Syntax/compile/tests/browser/network/production acceptance NOT RUN; generic collector source gate remains shared browser SPEC responsibility and is not bound by fixed candidate1.",
+  "commands": {
+    "all_finished": true,
+    "runtime_or_write_capable_repo_commands": 0,
+    "report_writes_only": [
+      "/tmp/gaoxy-h2-identity-fixed-spec1.md",
+      "/tmp/gaoxy-h2-identity-fixed-spec1.json"
+    ]
+  },
+  "read_tool_failures": [
+    {
+      "event": "rg: lib: No such file or directory (os error 2)",
+      "context": "Initial bounded path inventory included nonexistent root lib directory; pipeline exit0. Recovered using rg --files apps and exact discovered paths. No source/runtime effect."
+    }
+  ],
+  "output_truncation": "Broad candidate/source output truncated; recovered with candidate metadata/hash script and focused numbered source reads.",
+  "sol_repair_rounds": 0,
+  "astra_recovery_inherited": "2/2 exhausted; no escalation",
+  "counter_cutoff_received": {
+    "root": 148,
+    "orchestration": 76,
+    "tooling": 16,
+    "group_failed_green": 54,
+    "runtime_failed_green": 0
+  },
+  "counter_effect": "One own recovered source lookup event reported; parent owns cumulative accounting.",
+  "decisions_needed": [],
+  "risks": "Source-only verdict; both literal completion branches and all protocol/lifecycle assertions require actual fresh root verification after SPEC then CODE pass."
+}

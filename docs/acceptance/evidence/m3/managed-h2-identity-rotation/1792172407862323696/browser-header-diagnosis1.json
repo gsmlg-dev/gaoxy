@@ -1,0 +1,111 @@
+{
+  "task_id": "h2-browser-header-diagnosis1",
+  "status": "DONE_READ_ONLY_DIAGNOSIS_EXPERIMENT_NOT_RUN",
+  "assignment": "direct follow-up",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "repo_writes": false,
+  "runtime_executed": false,
+  "repair_authored": false,
+  "observed_product_status": {
+    "fixed_browser": "FAIL",
+    "attempted_rows": 1,
+    "passed_rows": 0,
+    "first_browser_fault": "Page.navigate -> net::ERR_INVALID_ARGUMENT",
+    "outer_failure": "host.event(captured) -> queue.Empty"
+  },
+  "hypothesis": {
+    "leading": "Proxy-Authorization through Network.setExtraHTTPHeaders causes Chromium navigation rejection",
+    "confirmed": false,
+    "no_tcp_claim": false,
+    "alternatives": [
+      "Authorization alone",
+      "pair interaction",
+      "protocol-specific combination"
+    ]
+  },
+  "source_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py": "9bdd56afc7f8309804bdd7fd22006cb30686c13376ff9f294c8cde3441c031ef",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs": "c85e8a6012a4e2fe472406bada763c5ec4b2c4178249c5a5a10754a73e1bf8af",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/group-identity-rotation-browser-runner1.py": "2f62b47e5aa650f1c19336b3a1a86598a2f478937d3091a5d76c87870a536dbf",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green1/h2-http2/browser.log": "31d41f574f54d836d0841eff1ff76020b0c3b6386a07e2b74301e031d6ec0919",
+    "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green1-classification1.json": "9a1c1f6c8f6de81b858110b32d0a7affc19ea8e11f78cc85b5ed34c90d657808",
+    "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/group-generation-browser-runner4.py": "ce0f8c353fa1630b627afae44e6bdd6be67a9e835c2bc7b3b616707a7f199427",
+    "docs/acceptance/evidence/m3/managed-h2-group-generation/1792155884508467786/browser-green4/h2-http2/browser.log": "cbddba382abc9aa5fc670cddded999224c4c46880da5ec70b3e47b69094e2d89"
+  },
+  "experiment": {
+    "execution_owner": "root",
+    "product_processes": 0,
+    "server": "independent Node builtin TLS/H2 on 127.0.0.1:0",
+    "cells": [
+      {
+        "id": "none",
+        "headers": {}
+      },
+      {
+        "id": "origin",
+        "headers": {
+          "Authorization": "Bearer synthetic-origin-old"
+        }
+      },
+      {
+        "id": "proxy",
+        "headers": {
+          "Proxy-Authorization": "Basic synthetic-proxy-old"
+        }
+      },
+      {
+        "id": "both",
+        "headers": {
+          "Proxy-Authorization": "Basic synthetic-proxy-old",
+          "Authorization": "Bearer synthetic-origin-old"
+        }
+      }
+    ],
+    "isolation": "fresh Chromium process/profile per cell; same independent origin/port/target/response",
+    "minimum_observations": [
+      "exact CDP header-setting result",
+      "navigation error/result",
+      "matching safe request/response/loadingFailed/loadingFinished metadata",
+      "actual independent server H2 Document bytes and received synthetic headers",
+      "separate TCP/TLS/Document counts",
+      "actual per-cell Browser.close/exit/join/profile custody",
+      "server final join/rebind"
+    ],
+    "status": "NOT RUN",
+    "do_not_increment_product_acceptance_counts": true
+  },
+  "security_assertions_preserved": [
+    "native host authentic exact incoming proxy-authorization",
+    "native host authentic exact incoming authorization",
+    "real upstream proxy-authorization absent",
+    "real upstream authorization exact",
+    "original response/native lifecycle/accounting/retirement/physical-close assertions"
+  ],
+  "candidate_after_confirmation": {
+    "mechanism": "public Fetch request-stage pause/continueRequest",
+    "supported_and_effective": "UNVERIFIED; must prove exact real independent H2 request bytes first",
+    "repair_selected": false
+  },
+  "checks": {
+    "implementation_errors": 0,
+    "inspection_errors": 1,
+    "inspection_error": "one nonexistent historical snapshot filename passed to rg; actual runner4 and safe log read directly",
+    "Sol_repairs_added": 0,
+    "Astra_repairs_added": 0,
+    "all_commands_finished": true,
+    "owned_runtime_processes": 0
+  },
+  "counter_policy": "Preserve counter22 snapshot; do not infer newer parent counters; Astra2/2 unchanged",
+  "artifact": {
+    "path": "/tmp/gaoxy-h2-browser-header-diagnosis1.md",
+    "sha256": "40e38af1cfc032c8d0371ff8e5c3a54e14cf4434a899ba89cca7f6cc702a0c56",
+    "lines": 62
+  },
+  "newer_parent_steering": {
+    "Chromium_contract": "Parent independent reviewer reports Proxy prefix rejected in IsRequestHeaderSafe and unsafe continuation rejected",
+    "earlier_Fetch_candidate": "SUPERSEDED_WITHDRAWN",
+    "root_local_diagnostic": "four-header H1; execution pending at proposal cutoff",
+    "compatibility_proposal": "/tmp/gaoxy-h2-browser-header-compatibility-proposal1.json"
+  }
+}

@@ -1,0 +1,11 @@
+# Managed H2 full-stage SPEC2 — superseded
+
+Status: **SUPERSEDED_BY_PRELIMINARY_RUNTIME_FAILURE**. Full review incomplete; no full-stage SPEC verdict or downstream CODE authorization. Direct read-only assignment at `8f6b884524d81d8defa7c5081230b8ab635e8107` in `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`.
+
+The candidate SHA is `4cbfba93e87c73e158464dadea6b09fc7159e2d3a7feb0de3620195a91e645bb`; inventory SHA is `2c08349d23f82a0181d486a33d52b27ca98c9e2fbcc9aa98e5ba9d0e0d857928`. Verified all411 candidate source pins, both canonical document pins, all25 prior-proof pins, all411 inventory source pins and four scalar links, with zero mismatches. Those are hash checks, not completed semantic review.
+
+Root instructed this review to pause after actual `group-green3` failed:144 tests,2 failures, exit2. Both rotated TLS native H1/H2 cells report `BrokenPipeError(32, 'Broken pipe')` while `rotation_close_health/2` awaits physical termination at `managed_h2_group_generation_test.exs:1146`; the fixture flunks at `managed_h2_fixed_endpoint_test.exs:589`. The receipt has stable sources, process_joined true, forced false and no remaining group/descendant custody. This remains a failed gate.
+
+The peer's explicit flush now discards output after write_closed, but its reader continues `SSLSocket.recv` after raw `SHUT_WR`. That read can require internal TLS writes. BrokenPipeError enters the generic failure handler rather than the SSL/reset handler. This is a candidate diagnosis grounded in source, **not proof of the failing Python frame**. Root should preserve exact failure evidence and collect the precise traceback before choosing a bounded adjustment. Actual EOF/reset, completed health/original receipts, finite deadlines, caps and custody assertions must stay intact.
+
+Reviewer executed0 tests; runtime acceptance UNKNOWN. Browser NOT RUN; no browser evidence reviewed. No repository/dependency/lock edits, tests, compile, browser or child agents. Only the assigned two /tmp reports were written. All reviewer commands finished exit0; command errors none. No reviewer-owned process remains. Inherited counters are preserved in JSON; reviewer repair rounds0, Astra exhausted2/2. Resume with a fresh frozen source candidate after reviewed repair; complete full SPEC then CODE and all prescribed fresh gates. No user decision is needed.

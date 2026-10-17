@@ -1,0 +1,160 @@
+{
+  "task_id": "h2_browser_header_contract_spec1",
+  "status": "DONE",
+  "assignment": "direct independent read-only CDP header contract and bounded diagnostic review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "scope": "Read source/public documentation only; root owns repository/evidence/runtime writes. Only assigned /tmp reports written.",
+  "conclusion": "On reviewed Chromium main, Fetch.continueRequest cannot legally inject Proxy-Authorization: explicit unsafe-header validation rejects Proxy-* case-insensitively. Network.setExtraHTTPHeaders syntax acceptance is not proof of dispatch. Observed ERR_INVALID_ARGUMENT before capture is consistent with request-header rejection, not yet a verified local-runtime root cause.",
+  "verified_facts": [
+    {
+      "fact": "Both fixed/group actual browser runners set Proxy-Authorization and Authorization using Network.setExtraHTTPHeaders immediately before Page.navigate.",
+      "references": [
+        "fixed-identity-rotation-browser-runner1.py:109",
+        "group-identity-rotation-browser-runner1.py:109"
+      ]
+    },
+    {
+      "fact": "Browser hosts require actual inbound synthetic Proxy-Authorization and origin Authorization; runner requires absent proxy header and preserved origin Authorization at the independent upstream peer. Removing the browser proxy header or injecting it in the host after ingress would not satisfy the existing witness.",
+      "references": [
+        "fixed-identity-rotation-browser-host1.exs:1172",
+        "group-identity-rotation-browser-host1.exs:1532",
+        "fixed-identity-rotation-browser-runner1.py:556"
+      ]
+    },
+    {
+      "fact": "Public CDP continueRequest.headers overrides request headers, does not automatically extend to redirects. Its schema does not promise every syntactically valid name is accepted.",
+      "source": "ChromeDevTools/devtools-protocol browser_protocol.json",
+      "sha256": "a3f0c370dc5761daaa570afa34a6c536fa029f6294f1cf415a871d43b4eb30c2"
+    },
+    {
+      "fact": "Chromium NetworkHandler::SetExtraHTTPHeaders validates string type and header syntax, then records extra_request_headers; it does not call IsRequestHeaderSafe here.",
+      "source": "content/browser/devtools/protocol/network_handler.cc:2609-2630",
+      "sha256": "6a65f61f1b29c058fd1179a8b2ba69b50374e3183491c559c7c2f28f6f7a7d74"
+    },
+    {
+      "fact": "network::IsRequestHeaderSafe rejects case-insensitive Proxy- prefix at lines113-115. Authorization is deliberately excluded from unsafe list.",
+      "source": "services/network/public/cpp/header_util.cc:28-31,73-128",
+      "sha256": "06362e8690bc8dd14c2014fb48794b33533349dd534cddd9f24a2be1832f37ba"
+    },
+    {
+      "fact": "FetchHandler::ContinueRequest calls ValidateHeadersForRequest for each header; unsafe header returns InvalidParams(\"Unsafe header: \" + name) before applying modifications.",
+      "source": "content/browser/devtools/protocol/fetch_handler.cc:280-291,427-458",
+      "sha256": "93aca72fbba5bd11081ac0c281e15378af81b46f25bb3c732a2038c5062b791a"
+    },
+    {
+      "fact": "CorsURLLoaderFactory::IsValidRequest returns false for unsafe request.headers or cors_exempt_headers; CreateLoaderAndStart completes invalid request with net::ERR_INVALID_ARGUMENT.",
+      "source": "services/network/cors/cors_url_loader_factory.cc:412-415,961-964"
+    }
+  ],
+  "public_source_qualification": {
+    "read_date": "2026-10-17",
+    "chromium_main_commit_observed": "317846d579b277c68d110b40185c7d64de81a3f2",
+    "commit_time": "2026-10-16T19:29:33Z",
+    "fetched_urls": "https://raw.githubusercontent.com/chromium/chromium/main/<source> and https://raw.githubusercontent.com/ChromeDevTools/devtools-protocol/master/json/browser_protocol.json",
+    "qualification": "Facts describe fetched public source bytes, not the unverified installed Chrome revision. Root must retain actual Browser.getVersion product/revision and correlate with differential. No local browser executed by reviewer."
+  },
+  "parent_reported_observation": {
+    "browser": "first fixed native-H2/TLS-H2 row FAIL, 1 attempted/0 passed",
+    "safe_log": "Page.navigate net::ERR_INVALID_ARGUMENT immediately after setting both synthetic headers; no host capture; queue.Empty primary orchestration symptom; cleanup assertion secondary",
+    "independently_runtime_verified_by_reviewer": false
+  },
+  "hypotheses": [
+    {
+      "id": "H1",
+      "statement": "Synthetic Proxy-Authorization inserted through Network.setExtraHTTPHeaders is rejected by Chrome request safety validation before any Gaoxy request exists.",
+      "support": "Public Proxy-* guard, unsafe-header -> ERR_INVALID_ARGUMENT path and parent reported pre-capture failure.",
+      "status": "SUPPORTED_NOT_LOCALLY_VERIFIED"
+    },
+    {
+      "id": "H2",
+      "statement": "Authorization alone is accepted and reaches loopback origin; failure tracks proxy header presence rather than downstream H2/TLS.",
+      "support": "Authorization deliberately allowed in public header-safety policy.",
+      "status": "UNEXECUTED_DIFFERENTIAL"
+    },
+    {
+      "id": "H3",
+      "statement": "Fetch.continueRequest could inject the same Proxy-Authorization as an alternative.",
+      "status": "REJECTED_BY_REVIEWED_PUBLIC_SOURCE",
+      "reason": "Explicit safety validation rejects Proxy-*; not a supported workaround. Exact installed revision remains unverified."
+    }
+  ],
+  "minimal_diagnostic": {
+    "first_step": "Root-only independent disposable loopback H1 server and same local Chrome/CDP startup. Four unique paths with none, origin-only, proxy-only and both headers. No Gaoxy routes, credentials, NetLog or generation resources.",
+    "record": [
+      "Browser.getVersion product/revision",
+      "Each setExtraHTTPHeaders response and Page.navigate errorText",
+      "Network loadingFailed/response status/protocol when available",
+      "Actual server path and projected synthetic-only header arrivals",
+      "Chrome graceful close/exit, Actor/process-group/reader joins and adopted raw statuses, listener shutdown/thread join"
+    ],
+    "interpretation": "If none/origin receive200 and actual server arrival while proxy/both return ERR_INVALID_ARGUMENT and never arrive, local header-dependent pre-network rejection is established without an H2 suite. Diagnostic is not Gaoxy acceptance. If H1 does not reproduce, inspect actual revision and compare a single equivalent TLS/H2 local endpoint using established certificate trust; do not broaden until H1 result warrants it.",
+    "fetch": "A separate Fetch-request-stage rejection probe is optional only if exact local version behavior remains material. Expect InvalidParams Unsafe header; release/abort each paused request within existing finite deadline. Do not silently retry without the header or count a rejected request as stripping evidence.",
+    "assertions": "Current frozen browser assertion remains unchanged during diagnosis. If local restriction confirmed, an explicit canonical compatibility-contract revision may replace unsupported browser injection with actual origin-only/no-proxy ingress evidence and unchanged positive socket stripping proofs. New candidate/refreeze/independent review required; preserve original failure."
+  },
+  "probe_review": {
+    "path": "/tmp/gaoxy-h2-browser-header-probe1.py",
+    "sha256": "873c266241624f539d30f17aef55501517b960ed381cdf8686ffa6262a608f2d",
+    "readiness": "PASS_STATIC_ONLY",
+    "runtime_executed": false,
+    "positive_findings": [
+      "Actual derived JS startup/close contract with file argv slice2.",
+      "NetLog launch flags removed; loopback ephemeral H1 listener and synthetic-only projected input.",
+      "All four independent header combinations replace prior header map and use unique URLs.",
+      "Per-navigation error preserved as diagnostic data; does not wait for unavailable response after nav.errorText.",
+      "Explicit Browser.close and original Actor joins on successful path."
+    ],
+    "findings": [
+      {
+        "id": "HEADER-DIAG-01",
+        "severity": "medium",
+        "path": "/tmp/gaoxy-h2-browser-header-probe1.py",
+        "line": 29,
+        "problem": "Non-daemon server thread starts before try/finally at65. AST extraction/assertions/node-check/import/prctl failure can leave the listener and non-daemon thread alive and hang the probe.",
+        "required_repair": "Give server setup immediate cleanup ownership, or perform fallible pure setup first and start server only inside cleanup-protected execution. Preserve bounded shutdown/join.",
+        "resolution": "RESOLVED: independent static reread of exact repaired873c2662 probe; setup before live server and immediate cleanup ownership, initialized result fields, primary traceback/cleanup errors, explicit failed status and exit1."
+      },
+      {
+        "id": "HEADER-DIAG-02",
+        "severity": "medium",
+        "path": "/tmp/gaoxy-h2-browser-header-probe1.py",
+        "line": 77,
+        "problem": "ready/results are assigned only after browser events. Startup/event failure makes finally reference unassigned names, masking primary failure; result unconditionally says DIAGNOSTIC_COMPLETE even for failing collection.",
+        "required_repair": "Initialize partial result fields, capture and preserve original exception, emit explicit failed/incomplete diagnostic status, and safely record cleanup before re-raising/reporting actual failure.",
+        "resolution": "RESOLVED: independent static reread of exact repaired873c2662 probe; setup before live server and immediate cleanup ownership, initialized result fields, primary traceback/cleanup errors, explicit failed status and exit1."
+      }
+    ],
+    "initial_readiness": "NOT_READY",
+    "initial_sha256": "873c266241624f539d30f17aef55501517b960ed381cdf8686ffa6262a608f2d"
+  },
+  "commands": {
+    "tests": 0,
+    "builds": 0,
+    "browser_or_candidate_executions": 0,
+    "all_finished": true,
+    "public_lookup_note": "Optional fetch_handler_unittest.cc public source URL returned404; no such unit-test evidence claimed. Other source reads succeeded.",
+    "repository_files_changed": [],
+    "processes_started": "Only bounded read-only shell/Python source-reading commands; no persistent reviewer runtime process."
+  },
+  "repair_counters": {
+    "reviewer_sol_repair_rounds": 0,
+    "inherited_counters": "Preserved SPEC4 counters; no runtime/implementation repair performed. Root owns updated cumulative runtime counts.",
+    "astra_gate": null
+  },
+  "remaining": "Root runs bounded four-cell H1 differential at repaired probe SHA873c2662 and retains exact version/outcomes. Any browser compatibility-contract revision must explicitly separate browser credential isolation from unchanged socket stripping proofs and undergo fresh frozen source review. No runtime acceptance from this report.",
+  "decisions_needed": "No user decision needed for bounded diagnostic.",
+  "browser_compatibility_contract_assessment": {
+    "verdict": "LEGITIMATE_EXPLICIT_WITNESS_COMPOSITION",
+    "scope": "Browser origin-only Authorization marker with exact proxy absence is a compatibility/credential-isolation witness; it is not positive proxy-header stripping evidence.",
+    "requirements": [
+      "Genuine Gaoxy ingress receives exact per-navigation synthetic origin Authorization and no Proxy-Authorization.",
+      "Independent upstream peer receives unchanged exact origin Authorization and no Proxy-Authorization.",
+      "No host-side header fabrication or unsupported CDP bypass.",
+      "Existing socket cells continue genuinely sending Proxy-Authorization and asserting upstream stripping, unchanged.",
+      "Canonical design/plan state this browser/socket witness split; freeze new pins and independently review changed source/contracts before runtime acceptance.",
+      "Retain original browser FAIL and H1 diagnostic; never relabel prior attempted row PASS."
+    ],
+    "reason": "The product stripping property continues to have positive socket coverage, while browser compatibility uses the supported Chrome request contract. Deleting assertions while still claiming browser stripping would be invalid. Existing acceptance source is superseded, not retroactively passed."
+  }
+}

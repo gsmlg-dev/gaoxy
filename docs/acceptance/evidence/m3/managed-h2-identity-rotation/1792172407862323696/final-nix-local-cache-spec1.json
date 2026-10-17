@@ -1,0 +1,95 @@
+{
+  "task_id": "h2_full_stage_spec2_nix_local_cache_spec1",
+  "status": "SPEC_FAIL_REVIEW_COMPLETE",
+  "verdict": "FAIL",
+  "assignment": "delegated independent read-only SPEC review; inherited direct review assignment",
+  "at_utc": "2026-10-17T08:24:01.332741+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "baseline_current_git_verified": false,
+  "scope": "Frozen local-cache plan1, exact18 official metadata manifest, helper1 and unchanged native-copy/readiness boundaries. No candidate execution.",
+  "inputs_sha256": {
+    "final-nix-local-cache-plan1.json": "457dc9600637c302fd4f79b0540edc5fdd28e6fe29c85521918e437fe42b5e14",
+    "final-nix-local-cache-seams1.json": "70a51789624103155779eb101ccce4a8d3dc8705f150795941888d33ba9dcc9a",
+    "final-nix-local-cache-seams1.md": "eb1e2721b5221d38a9a4a7cab7b5fd87be06336ce55de6a6ca9adb9e201d021e",
+    "final-nix-missing-closure1.json": "131e8a726d86427d71ec84ccbac9534b5e942f50c0e790c22efe831585718e3f",
+    "final-nix-missing-closure1.md": "b9ac30c27e1bd5e5a511f16c4576e579608281ecb5be75b5ff69c32ef9b5f2c2",
+    "final-nix-signature-settings1.json": "ed6c7190e405b5c3dc37ba3740196035c3f7a400e79cea2867ba78251681c591",
+    "final-nix-local-cache-manifest1.json": "c0863863f89bdfd6d9a552e897d70839826dfaef480a895e94b9bef0032bb808",
+    "final-nix-closure-prepare-helper1.py.txt": "2aee4289646e9ce00c0c269b1e16f77b566ce40ff644beef2ca79be51d788742",
+    "cold-shell-materialization-plan2.json": "7932a08501625382fb9c6b978bc51390cab4c190afcad6be731830f154b38e60",
+    "command-collector1.py": "bda740921e60685288adb55500b8c9256435c188abd9a6c82bc849cf15e4690f",
+    "final-command-inventory5.json": "6d83237e1cd8c387c8b641ec6bb3e975e2ba437f8b096879a141017092466b16",
+    "flake.nix": "46a5d573e0915937beec01de4cdf45f7a8f9f5886276b7f6d11415e668a80be9",
+    "flake.lock": "ab9cba40e49dca0023bfd18bff4df80e5470abb70ee2acd64f8419ffb8a19459",
+    "/tmp/gaoxy-nix-closure-prepare1.py": "2aee4289646e9ce00c0c269b1e16f77b566ce40ff644beef2ca79be51d788742"
+  },
+  "findings": [
+    {
+      "id": "SPEC1-01",
+      "severity": "required_before_execution",
+      "location": "/tmp/gaoxy-nix-closure-prepare1.py:64-65,74-86,98-106,112-124; final-nix-local-cache-plan1.json preparation_conditions[2]",
+      "title": "Promised global1680s preparation deadline does not gate success",
+      "evidence": "The helper derives curl max-time from deadline at worker start, but communicate permits limit+10; full-file hash and publication do not check deadline; pool completion and overall passed calculation do not compare monotonic time to deadline. Deadline starts only after metadata writes. Collector1800s is a separate outer cancellation bound and does not enforce the promised1680s preparation limit.",
+      "consequence": "A worker that starts near the deadline, or a hash/publication that crosses it, may still mark PASS_PUBLIC_FILE_ONLY and produce preparation.json status PASS after1680s, before the1800s collector expires. This is source-path reasoning, not a claim that an execution already exceeded its guard.",
+      "required_change": "Preserve plan1/helper1 and this FAIL. In a fresh frozen candidate, enforce the stated preparation deadline across transfer, full hashing, publication and aggregate PASS/receipt; deadline exhaustion must remain FAIL and partial evidence/custody must be retained. Keep original3600s materialization, collector1800s and protocol/readiness guards unchanged. Resubmit SPEC then dependent CODE before execution."
+    }
+  ],
+  "static_checks": {
+    "all_frozen_plan_input_hashes_match": true,
+    "tmp_helper_equals_archived_helper": true,
+    "collector_and_flake_hashes_match": true,
+    "implementation_pins": 411,
+    "implementation_pin_mismatches": [],
+    "manifest_entries_unique": 18,
+    "raw_official_narinfo_bytes_and_hashes_preserved": 18,
+    "metadata_fields_and_official_signature_fields_preserved": 18,
+    "recorded_installed_nix_file_hash_conversions_match": 18,
+    "unique_nar_urls_and_narinfo_names": true,
+    "compressed_total": 986177930,
+    "nar_total": 3174429520,
+    "external_reference_paths": 147,
+    "inset_non_self_edges": 18,
+    "self_referencing_targets": 15,
+    "dependency_order_valid_and_matches_native_copy_verify_targets": true,
+    "individual_validity_records_match_18targets_plus_147external": true,
+    "recorded_snapshot_external_registered_valid": 147,
+    "recorded_snapshot_targets_unregistered": 18
+  },
+  "spec_assessment": [
+    "Conditional regular-file preparation performs no Nix operations; native copy/verify remain prohibited until actual parent-owned old materialization terminal receipt, joined custody and no relevant competitors. Current old-process status was not queried.",
+    "Native no-recursive copy exact18, mandatory refreshed registered-reference checks, official-key/require-sigs query, native CheckSigs and explicit contents plus one trusted signature verification remain specified. This review does not attest installed-daemon settings or signatures.",
+    "Complete compressed size/hash checks remain separate from signed NarHash/NarSize and native contents/trust verification. Manifest preserves original official metadata without rewritten references/signatures.",
+    "Snapshot validity is time-sensitive; preflight147external and18targets must be repeated only at the specified native gate. Already-valid paths cannot be counted as newly copied.",
+    "Full-cache success does not imply devShell derivation materialization, exact-version readiness or protocol acceptance; original600s readiness and separate missing-derivation diagnosis remain required."
+  ],
+  "verification": {
+    "review_operations": "Read-only JSON/source reads and independent SHA256/manifest/reference/topology calculations; no helper/candidate import or execution.",
+    "tests_executed": 0,
+    "downloads": 0,
+    "nix_commands": 0,
+    "store_operations": 0,
+    "fixtures": 0,
+    "browser": 0,
+    "git": 0,
+    "repository_or_evidence_writes": 0,
+    "review_artifact_writes": [
+      "/tmp/gaoxy-nix-local-cache-spec1.json",
+      "/tmp/gaoxy-nix-local-cache-spec1.md"
+    ],
+    "diagnostic_error": "One reviewer-only bounded JSON-display script exited1 from len(int); corrected focused static reads and final independent validation completed exit0. No candidate/runtime failure or repair counter increment.",
+    "runtime_checks": "NOT RUN; dependent CODE review NOT RUN pending SPEC PASS"
+  },
+  "counters": {
+    "sol_cumulative_from_handoff": 5,
+    "production_repairs_from_handoff": 0,
+    "astra_recovery_rounds_used_from_handoff": 2,
+    "astra_recovery_rounds_max": 2,
+    "review_additional_repair_rounds": 0,
+    "third_astra_authorized": false
+  },
+  "unchanged_status": "Final browser FAIL/UNKNOWN; group NOT RUN;411implementation pins unchanged; no stage acceptance/publication/deployment/production/Vault/certificate/public-management/E2E change.",
+  "commands_shutdown": "All reviewer commands completed. No reviewer-owned candidate/process session was started. Parent-owned materialization not inspected or touched.",
+  "remaining_risks": "Preparation, native copy/verify, settings refresh, registered validity refresh and readiness are unexecuted and conditional. No success inferred.",
+  "decisions_needed": "No user product decision. Parent to preserve failed candidate, make bounded deadline repair, freeze replacement and obtain SPEC then CODE PASS."
+}

@@ -1,0 +1,239 @@
+{
+  "task_id": "nix_local_cache_seams1",
+  "status": "DONE_READ_ONLY_INVESTIGATION",
+  "verdict": "SUPPORTED_SOURCE_SEAMS_WITH_UNEXECUTED_CONDITIONS_NOT_SPEC_OR_CODE_PASS",
+  "assignment": "direct bounded read-only environment investigation; no cache implementation or installation authorised to reviewer",
+  "at_utc": "2026-10-17T08:15:35.754363+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch_from_handoff": "codex/m3-h1-resource-foundation",
+  "baseline_from_handoff": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "installed_cli_version": "nix (Nix) 2.34.8",
+  "input_sha256": {
+    "final-nix-large-cache-metadata1.json": "23ee1740a69451806872986208db405d07ff23e2f356d252d00f673b23f15dc1",
+    "final-nix-large-range-probe1.json": "cd86465f3202c6b333e213b4488045b15021b25c09bb96a0f705acdc2a8dd326"
+  },
+  "recommendation": {
+    "summary": "A root-owned regular-file cache carrying byte-identical official narinfo and the corresponding complete compressed NAR is a supported source. Prefer exact nonrecursive nix copy on this installed2.34.8 after all non-self refs are already valid in destination. Freeze a separate plan and independent review before execution.",
+    "candidate_only_argv": [
+      "nix",
+      "copy",
+      "--no-recursive",
+      "--from",
+      "file:///tmp/ROOT_OWNED_CACHE",
+      "/nix/store/5zv6ms4i0bqpngarnp24h188936mv3sv-llvm-21.1.8-lib"
+    ],
+    "not_executed": true,
+    "reason": "Installed help and matching source prove --no-recursive exists; this avoids default source closure traversal and avoids even a temporary substituters override. Destination registration still requires all real refs. Do not use default recursive copy with a one-entry cache."
+  },
+  "findings": [
+    {
+      "topic": "file-cache layout",
+      "conclusion": "Use unchanged official nix-cache-info with StoreDir:/nix/store; exact 5zv6ms4i0bqpngarnp24h188936mv3sv.narinfo bytes at cache root; exact original relative URL nar/0wvg24krj0ryky8gyjpwzh746cx2digqcjlvg7lv8vxif6v5y7i0.nar.zst under that root. No rewriting narinfo/signature or recompression. Binary cache file:// is distinct from a plain chroot store path."
+    },
+    {
+      "topic": "signature coverage",
+      "conclusion": "Original signature remains applicable at a different cache location: signed fingerprint is version1;StorePath;NarHash;NarSize;References. URL/Compression/FileHash/FileSize/Deriver are outside fingerprint, hence full compressed FileSize/FileHash checks and exact official metadata binding are separate requirements. Nix still validates decompressed signed NarHash/NarSize. This reviewer observed Sig presence, not a completed cryptographic validation."
+    },
+    {
+      "topic": "trust",
+      "conclusion": "Nix2.34.8 defaults require-sigs=true, trusted=false for source, and built-in cache.nixos.org-1 public key. Effective local/daemon settings have not been read or confirmed here. Root must establish unchanged required effective signature policy and official public key through narrow safe evidence, without full configuration/auth dumps. Never use no-check-sigs, trusted=true, require-sigs=false, new keys or local signing."
+    },
+    {
+      "topic": "default-copy closure",
+      "conclusion": "Default nix copy computes entire source closure before destination missing-path filtering. A one-narinfo cache cannot support that traversal even if referenced paths exist in destination; at least source metadata for traversed refs is needed, though already-valid destination refs need not transfer NARs."
+    },
+    {
+      "topic": "supported single-path copy",
+      "conclusion": "--no-recursive is explicitly in installed help and implemented in matching source. It leaves only the target in the item set; topology ignores refs outside that set; destination copies only missing target and registerValidPaths requires every reference valid. Self-reference is normal and is satisfied by registration of target itself. It is not a missing dependency requiring a second copy."
+    },
+    {
+      "topic": "realise alternative",
+      "candidate_argv": [
+        "nix-store",
+        "--realise",
+        "/nix/store/5zv6ms4i0bqpngarnp24h188936mv3sv-llvm-21.1.8-lib",
+        "--option",
+        "substituters",
+        "file:///tmp/ROOT_OWNED_CACHE"
+      ],
+      "conclusion": "Also supported if every non-self ref is already valid: substitution goals immediately succeed for valid refs before querying source metadata. Missing refs require authentic entries from the only selected cache and otherwise fail. Exact non-.drv target has no derivation to build when substitution is unavailable; no ignore-unknown. A per-command substituters override does not persist config, but introduces a settings distinction avoided by preferred nonrecursive copy. No realise was run."
+    },
+    {
+      "topic": "missing references",
+      "conclusion": "Preflight exact signed refs against actual destination valid-path registration, not filesystem existence. If any non-self ref is missing, do not start single-object installation. Report exact missing set and prepare authentic official narinfo/complete NARs for necessary missing dependency closure under a new bounded plan, then register dependency-first. Do not synthesize metadata/refs/DB rows, silently fetch another source, remove refs or bypass closure validation."
+    },
+    {
+      "topic": "concurrent preparation",
+      "conclusion": "Parent may choose bounded downloading and hash-validation of public cache regular files while existing setup still runs; this changes no Nix-store registration/settings/flake or existing guard. Use an exclusive directory, partial-file publication discipline, finite deadline, byte/disk bounds and actual receipt/custody. No Nix store-opening/copy/realise/verify should occur until old setup actually terminates/joined and no related competing process remains. Concurrent public downloading can compete for network/disk; its success or speed does not diagnose original setup or extend its guard."
+    },
+    {
+      "topic": "post-copy verification",
+      "candidate_argv": [
+        "nix",
+        "store",
+        "verify",
+        "--sigs-needed",
+        "1",
+        "/nix/store/5zv6ms4i0bqpngarnp24h188936mv3sv-llvm-21.1.8-lib"
+      ],
+      "conclusion": "After actual successful native copy/realise and source hash/custody checks, run content+trust verification with no no-contents/no-trust. LLVM narinfo has no CA field, so explicit sigs-needed1 requires a trusted signature rather than ultimate-local-trust shortcut; verify contents reserializes NAR and checks signed NarHash. Preserve actual exit/status and target registration. Verify does not repair missing paths and does not itself prove shell readiness or protocol acceptance."
+    }
+  ],
+  "llvm_metadata": {
+    "narinfo_url": "https://cache.nixos.org/5zv6ms4i0bqpngarnp24h188936mv3sv.narinfo",
+    "narinfo_bytes": 802,
+    "narinfo_sha256": "d9394376465e36cf36ad83e760b41ff916a3fa47bd678929dad2093845a363f6",
+    "file_size": 143322354,
+    "file_hash": "sha256:016444r5mzg3388g1v83ay47icls2ml2wl2hns1d4rnv405ba8xy",
+    "nar_size": 566508088,
+    "nar_hash": "sha256:0wvg24krj0ryky8gyjpwzh746cx2digqcjlvg7lv8vxif6v5y7i0",
+    "url_relative": "nar/0wvg24krj0ryky8gyjpwzh746cx2digqcjlvg7lv8vxif6v5y7i0.nar.zst",
+    "signature_key_name": "cache.nixos.org-1",
+    "ca_field_present": false,
+    "non_self_references": [
+      "/nix/store/6s4wm3zl2y0v5g998n2g88k1zh3vf2pr-zlib-1.3.2",
+      "/nix/store/dqj57l1prad38vjrad4bs9d977i4q5zm-gcc-15.3.0-lib",
+      "/nix/store/fsd4vbp9zjd9iaicq2fb9lpc1h5j973y-glibc-2.42-100",
+      "/nix/store/hf8a95j1jr8bjmxb93np94xlqwqr492x-libffi-3.8.0",
+      "/nix/store/w8b6idhzlpd5573p6md4dpap27c993ar-libxml2-2.15.4"
+    ],
+    "current_reference_validity": "NOT QUERIED BY REVIEWER",
+    "compressed_filename_note": "Filename here reflects NarHash, not FileHash; never substitute it as compressed-file integrity value."
+  },
+  "nix_cache_info": {
+    "url": "https://cache.nixos.org/nix-cache-info",
+    "bytes": 51,
+    "sha256": "2c9de373ae75a5271637635034445a5cd3a6ae35ac6c306d40c0e06764785897",
+    "text": "StoreDir: /nix/store\nWantMassQuery: 1\nPriority: 40\n"
+  },
+  "public_source": {
+    "version_tag": "2.34.8",
+    "base_url": "https://raw.githubusercontent.com/NixOS/nix/2.34.8/",
+    "files": {
+      "src/nix/copy.cc": {
+        "sha256": "be3394d3186adacea42419d7cefc68e3d267cdb33fa5f4843048a742df8e722c",
+        "lines_and_use": "8-15,53-64: recursive default and CheckSigs copy"
+      },
+      "src/libcmd/command.cc": {
+        "sha256": "129ac29f5261d793816e5a92d906cb7e758a0fbb58747960c4b9e1fcc42f779d",
+        "lines_and_use": "192-200,219-248: supported no-recursive skips source closure"
+      },
+      "src/libstore/store-api.cc": {
+        "sha256": "e6a83e7cf0c59f9e06e3532b2adb74f51419b31734c81374430e0c81cab2eeae",
+        "lines_and_use": "923-978,1018-1099: destination valid filtering, copy missing target and checkSigs"
+      },
+      "src/libstore/misc.cc": {
+        "sha256": "bf1c5101acefd9bd32aadb1e3210902da2c4387a187ce12d373214272bec4ee7",
+        "lines_and_use": "317-325: topology obtains requested path refs"
+      },
+      "src/libutil/include/nix/util/topo-sort.hh": {
+        "sha256": "4eadd2f246a64e77ba3d5218408b745c737bf27c82b019772dc59831033ed860",
+        "lines_and_use": "39-44: only traverses refs within initial item set"
+      },
+      "src/libstore/local-binary-cache-store.cc": {
+        "sha256": "ead498ff6b82526ae4554c6855815ff3874fd1c4509b520f9386dd56744e5d47",
+        "lines_and_use": "87-94,120-127: local file backend reads URL-relative file; opening may create cache directories"
+      },
+      "src/libstore/binary-cache-store.cc": {
+        "sha256": "a7b49f4e5072520a65869617e9dd490fdeb0462e8687382cfe70014bbb9ed05d",
+        "lines_and_use": "46-59,405-430: nix-cache-info StoreDir; decompression from original relative URL"
+      },
+      "src/libstore/nar-info.cc": {
+        "sha256": "58cb22072a0242d43ad61ad89d4f3fe6d197d89fdef0899c6a4eafc2130bd908",
+        "lines_and_use": "49-81,110-127: metadata URL/FileHash/FileSize/NarHash/NarSize/refs/signatures"
+      },
+      "src/libstore/path-info.cc": {
+        "sha256": "0e915197dc50565b177cc3668d2dc40555d23a071dacdfd8311c6324c229162e",
+        "lines_and_use": "43-49,119-134: signature fingerprint covers StorePath/NarHash/NarSize/References"
+      },
+      "src/libstore/local-store.cc": {
+        "sha256": "ae5f2cb70f05b2301664c3fae2d56e211ee44211b6a405deb6a700bf92929088",
+        "lines_and_use": "891-925,975-988,1021-1044,1093: require signatures, restore and validate NAR hash/size, reject invalid refs at registration"
+      },
+      "src/libstore/build/substitution-goal.cc": {
+        "sha256": "0a99db688972119d53fc5e57a8eaf737334285f274ac1797252d74fac8a5944a",
+        "lines_and_use": "35-37,113-130,182-189,228: valid refs return early; missing refs must substitute; trusted-signature checks retained"
+      },
+      "src/nix/verify.cc": {
+        "sha256": "08cf9e8375d2607d6ed3fc797ed8812d15ab13765812b3a9a3131de044bb43dd",
+        "lines_and_use": "98-158: contents hash plus sigsNeeded1 disallows ultimate-trust shortcut; CA has separate trust path"
+      },
+      "src/libcmd/include/nix/cmd/command.hh": {
+        "sha256": "69c23d16eba00846847b9dcc4c05a0c59852ff45a8bed74c0f347fd9777adee6",
+        "lines_and_use": "365-375: CheckSigs default; no-check-sigs would bypass"
+      },
+      "src/libstore/include/nix/store/store-api.hh": {
+        "sha256": "7bd9435c494eba81ca73f6e7b8afa51b6945e212c9fc9d670004bbb0a2c1ba11",
+        "lines_and_use": "207-215: source trusted=false by default"
+      },
+      "src/libstore/include/nix/store/globals.hh": {
+        "sha256": "d2a9cc7e4248247bffdbeb4f3b9fa51111d6e3a545d4a7848477b65434650fe0",
+        "lines_and_use": "238-252,268-283: default official cache key and require-sigs=true"
+      }
+    },
+    "pin_limit": "Complete response bodies hashed. Public tag matches installed version string but exact installed build source revision has not been attested; source conclusions are corroborated by installed help. No modelled runtime success is claimed."
+  },
+  "required_future_gates": [
+    "Freeze exact plan/reviews/argv/limits and public metadata hashes before any execution.",
+    "While existing setup runs, only separately authorised public file preparation; no Nix store import/copy/realise/verify.",
+    "Actual old setup terminal exit/forced status/join/descendant custody and no related competition, unchanged flakes/settings/assertions.",
+    "Complete143322354-byte compressed object, exact FileHash, unchanged original802-byte narinfo and51-byte cache-info; reject partial/mismatched files.",
+    "All5 non-self LLVM refs actually registered valid in destination; official key and effective require-sigs policy retained.",
+    "Bounded native single-path copy with CheckSigs followed by actual content+one-trusted-signature verify, no bypass options, retain all actual failures/residues.",
+    "Original600s version-readiness and exact Elixir/OTP comparison before bounded diagnostic2. Environment registration is0protocol tests."
+  ],
+  "limits": [
+    "1MiB HTTP206 at1.69s/627598Bps cannot prove full-object download completion, Nix throughput, network root cause or safe duration estimate.",
+    "FileHash and actual signature validity, target references, import, verification and runtime are NOT RUN by reviewer.",
+    "No guarantee object download or installation will finish within a future guard. Root must choose finite setup-only guards; original protocol guards stay unchanged.",
+    "No repository/store/cache implementation, effective configuration read, credentials/auth/private keys/raw protected material, or installation performed.",
+    "No SPEC/CODE PASS or acceptance claim. Existing final fixed browser FAIL/UNKNOWN/group NOT RUN and Sol5/Astra2of2 exhausted remain unchanged."
+  ],
+  "verification": {
+    "read_only_cli": [
+      "nix --version",
+      "nix copy --help",
+      "nix store verify --help",
+      "nix-store --help",
+      "nix-store --help --realise"
+    ],
+    "public_network": "Small metadata and bounded public-source bodies only; no large NAR or new range download.",
+    "protocol_tests": 0,
+    "fixture_imports": 0,
+    "nix_copy": 0,
+    "nix_realise": 0,
+    "builds": 0,
+    "store_imports": 0,
+    "store_verifies": 0,
+    "browser": 0,
+    "Git": 0,
+    "repository_writes": 0,
+    "cache_directory_created": false,
+    "commands_finished": true,
+    "source_fetch_errors": [
+      {
+        "path": "src/nix-store/nix-store.cc",
+        "result": "HTTP404; no claim based on this nonexistent public path. Installed realise help and public substitution-goal implementation support alternative analysis."
+      }
+    ]
+  },
+  "changed_files": [
+    "/tmp/gaoxy-nix-local-cache-seams1.json",
+    "/tmp/gaoxy-nix-local-cache-seams1.md"
+  ],
+  "decisions_needed": [
+    "Root may choose whether to freeze a bounded one-object preparation/registration plan for separate SPEC\u2192CODE; this investigation authorises no execution."
+  ],
+  "prior_report_sha256_before_explicit_exit_conditions": {
+    "json": "d4cd412bc3b0910c2cdbaf87845fd6591730ab08f34639225b1ecb1b42c9e221",
+    "markdown": "1a8fb783bfead5affb27829fc704afd44509e743e9e92e6a286389172d506186"
+  },
+  "failure_exit_conditions": [
+    "If old materialization is still running, custody not terminal/joined, relevant competitors exist, flakes changed or required effective signature policy/key cannot be established unchanged: report NOT READY/BLOCKED_ENV and do not import, terminate others, change settings or extend guards.",
+    "Public download/metadata failure, timeout, partial HTTP response, unexpected redirect/source/path, byte limit overrun, complete FileSize/FileHash mismatch or changed official metadata: preserve actual nonzero/forced result and partial custody, do not publish cache entry or import, and do not silently retry or rewrite expected data.",
+    "Any non-self reference not registered valid: stop one-object route and report exact missing set. Do not fall back to fabricated metadata, another substituter, building, altered refs or weakened checks.",
+    "If target is already actually registered valid after old setup ends, do not pretend a copy was executed or overwrite/repair it; plan may select a read-only content/signature verification instead.",
+    "Native copy/realise nonzero/forced/incomplete custody or any post-copy content/signature verification failure: retain actual outcome and stop before readiness/fixture; no no-check-sigs/no-trust/no-contents/repair bypass.",
+    "A successful environment copy+verification still requires original bounded version-readiness and exact required Elixir/OTP identity; readiness failure stops diagnostic2 without changing protocol deadlines."
+  ]
+}

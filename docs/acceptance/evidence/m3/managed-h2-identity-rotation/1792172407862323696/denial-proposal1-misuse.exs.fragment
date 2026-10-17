@@ -1,0 +1,169 @@
+  # Additive endpoint: its published resources remain OLD. The explicit negative
+  # dispatch selects NEW config only after genuine OLD capture and a real CAS.
+  # Neither Exchange nor its authentic source pin is mutated.
+  defmodule RotationMisuseFixed do
+    @behaviour Gaoxy.HTTP.Endpoint
+    def init({old_options, new_options, parent}) do
+      with {:ok, old_config} <- Gaoxy.Proxy.HTTP.init(old_options),
+           {:ok, new_config} <- Gaoxy.Proxy.HTTP.init(new_options),
+           do: {:ok, {old_config, new_config, parent}}
+    end
+    def resources({old_config, _, _}), do: Gaoxy.Proxy.HTTP.resources(old_config)
+    def generation_validate({old_config, _, _}),
+      do: Gaoxy.Proxy.HTTP.generation_validate(old_config)
+    def call(exchange, {_old_config, explicit_new_config, parent}) do
+      ref = make_ref()
+      send(parent, {:fixed_generation_capture, self(), ref, :rotation_misuse, exchange})
+      receive do
+        {:rotation_misuse_dispatch, ^ref} -> :ok
+        # Existing capture/4's failure-only on_exit releases this barrier too.
+        {:dispatch, ^ref} -> :ok
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "identity misuse dispatch barrier expired"
+      end
+      # Both configs were already retained inside the compiled bounded router.
+      # This operation aliases NEW; it constructs no post-capture config/options.
+      result = Gaoxy.Proxy.HTTP.call(exchange, explicit_new_config)
+      send(parent, {:fixed_generation_return, self(), ref, :rotation_misuse, result})
+      receive do
+        {:return, ^ref} -> result
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "identity misuse return barrier expired"
+      end
+    end
+  end
+
+  @tag :managed_h2_identity_rotation
+  @tag :tmp_dir
+  test "equal authority NEW T cannot consume authentic OLD Generation source capture",
+       %{tmp_dir: tmp_dir} do
+    {old_peer, old_ready} =
+      F.peer(:http2, ["--manual", "--bind-address", "127.0.0.1", "--listen-port", "0"])
+    {new_peer, new_ready} =
+      F.peer(:http2, ["--manual", "--bind-address", "127.0.0.2", "--listen-port",
+                      Integer.to_string(old_ready["port"])])
+    assert old_ready["bind_address"] == "127.0.0.1"
+    assert new_ready["bind_address"] == "127.0.0.2"
+    assert old_ready["port"] == new_ready["port"]
+    refute old_ready["identity"]["certificate_sha256"] ==
+             new_ready["identity"]["certificate_sha256"]
+    origin = "https://localhost:#{old_ready["port"]}"
+    path = Path.join(tmp_dir, "caller-ca.pem")
+    old_source = %{protocol: :http2, origin: origin, connect_address: {127, 0, 0, 1},
+                   trust: rotation_denial_caller_trust(path, old_ready)}
+    f = environment(:http2, :http1)
+    # Negative-only schedule: prepare NEW before OLD capture so its explicit
+    # denial config is already in the OLD init/route and its complete M bound.
+    new_source = %{protocol: :http2, origin: origin, connect_address: {127, 0, 0, 2},
+                   trust: rotation_denial_caller_trust(path, new_ready)}
+    refute old_source.trust == new_source.trust
+    replacement = candidate(f, new_source, :rotation_misuse_new)
+    old = rotation_misuse_candidate(f, old_source, replacement)
+    assert {:ok, initial, _} = Generation.snapshot(f.store)
+    old = activate(f, old, initial)
+    add_listener(f)
+    observe_owner(f)
+    {socket, baseline} = connect(f)
+    :ok = F.send_request(f, socket, "GET", "/cross-generation%2Fnever?raw=%2F")
+    captured = capture(f, old, :rotation_misuse, baseline)
+    old_record = :sys.get_state(f.owner).records[old.transport.resource]
+    replacement = activate(f, replacement, old.generation)
+    assert old.source.origin == replacement.source.origin
+    refute old.transport === replacement.transport
+    await_closed(f, old, captured)
+    assert_no_child_or_token(f, old)
+    assert_no_child_or_token(f, replacement)
+    original_ledger = :sys.get_state(f.owner)
+    new_record = original_ledger.records[replacement.transport.resource]
+    assert old_record.policy === original_ledger.records[old.transport.resource].policy
+    assert old_record.policy.open_options[:ssl][:cacerts] == old_source.trust
+    assert new_record.policy.open_options[:ssl][:cacerts] == new_source.trust
+    assert old_record.policy.connect_address == {127, 0, 0, 1}
+    assert new_record.policy.connect_address == {127, 0, 0, 2}
+    File.write!(path, "invalid after both real preparations\n")
+    trace_session = rotation_misuse_observe_session_start(captured.native)
+    send(captured.native, {:rotation_misuse_dispatch, captured.ref})
+    failure_response_return(f, socket, captured, 503)
+    # Fence this process's native call trace before asserting no Session start.
+    delivered = :trace.delivered(trace_session, captured.native)
+    native = captured.native
+    assert_receive {:trace_delivered, ^native, ^delivered}, @timeout
+    refute_receive {:trace, ^native, :call, {DynamicSupervisor, :start_child, 2},
+                    :rotation_misuse_session_start}, 0
+    current = :sys.get_state(f.owner)
+    assert current.pins === original_ledger.pins
+    assert current.tokens === original_ledger.tokens and current.tokens == %{}
+    assert current.records === original_ledger.records
+    assert current.pins[captured.pin.ref].public === captured.pin
+    assert current.pins[captured.pin.ref].delegations == %{}
+    assert_no_child_or_token(f, old)
+    assert_no_child_or_token(f, replacement)
+    effects = collect_effects(f.owner, [])
+    refute Enum.any?(effects, fn {_, tag, _} ->
+      tag in [:delegate_request_pin, :checkout, :bind_completion, :finish]
+    end)
+    refute Enum.any?(effects, fn {pid, tag, _} -> pid == native and tag == :pin_many end)
+    for peer <- [old_peer, new_peer] do
+      F.no_event(peer, "accept")
+      F.no_event(peer, "tls")
+      F.no_event(peer, "request")
+    end
+    assert Process.alive?(old.creator)
+    failure_close_returned(f, socket, captured)
+    join_resource(f, old)
+    finish(f, [{replacement.creator, replacement.creator_monitor}], [
+      {old_peer, 0, 0}, {new_peer, 0, 0}
+    ])
+  end
+
+  defp rotation_misuse_observe_session_start(native) do
+    session = :trace.session_create(:fixed_generation_rotation_misuse, self(), [])
+    on_exit(fn -> :trace.session_destroy(session) end)
+    assert :trace.function(session, {DynamicSupervisor, :start_child, 2},
+      [{:_, [], [{:message, :rotation_misuse_session_start}]}], []) == 1
+    assert :trace.process(session, native, true, [:call, :arity]) == 1
+    session
+  end
+
+  defp rotation_misuse_candidate(f, source, explicit_new) do
+    parent = self()
+    {coordinator, monitor} = spawn_monitor(fn ->
+      {:ok, transport, preparation} =
+        Transports.prepare(f.owner, source, self(), Lifecycle.deadline(15_000))
+      try do
+        options = %{upstream: source.origin, upstream_protocol: :http2, transport: transport}
+        new_options = %{upstream: explicit_new.source.origin, upstream_protocol: :http2,
+                        transport: explicit_new.transport}
+        routes = [%{target: {RotationMisuseFixed, {options, new_options, parent}}}]
+        assert :erlang.external_size(routes) <= 1_048_576
+        {:ok, router} = Generation.prepare(f.store, routes)
+        assert :erlang.external_size(router) <= 1_048_576
+        creator = :sys.get_state(f.owner).records[transport.resource].custodian
+        send(parent, {:fixed_candidate, self(), transport, router, creator})
+        receive do
+          {:activate, expected} ->
+            result = Generation.activate(f.store, expected, router)
+            :ok = Resources.release(preparation)
+            send(parent, {:fixed_candidate_activation, self(), result})
+          :abort -> :ok
+        after
+          5_000 -> raise "identity misuse candidate publication barrier expired"
+        end
+      after
+        :ok = Resources.release(preparation)
+      end
+    end)
+    on_exit(fn ->
+      if Process.alive?(coordinator) do
+        ref = Process.monitor(coordinator)
+        send(coordinator, :abort)
+        assert_receive {:DOWN, ^ref, :process, ^coordinator, :normal}, @timeout
+      end
+    end)
+    assert_receive {:fixed_candidate, ^coordinator, transport, router, creator}, @timeout
+    %{coordinator: coordinator, monitor: monitor, transport: transport, router: router,
+      creator: creator, creator_monitor: Process.monitor(creator), source: source,
+      label: :rotation_misuse}
+  end

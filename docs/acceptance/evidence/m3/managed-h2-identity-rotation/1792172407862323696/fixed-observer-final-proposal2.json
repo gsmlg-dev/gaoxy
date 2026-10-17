@@ -1,0 +1,105 @@
+{
+  "at_utc": "2026-10-17T10:43:29.464893+00:00",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "basis": {
+    "counter-supplement57.json": "e4877c70c29e7d134b5ff6672cb68bb7418e3b513f3131078e8f845f4a8842b4",
+    "counter-supplement58.json": "cafab81817252a37e3d5ee4147aecd3ac4518e94fa9e8bb31a11d997a94e3bc5",
+    "fixed-invalidation-diagnostic-context-code1.json": "10565f7aa8a17225bb585850f4f09c25e135e5b9fd00ab99cb8f1caa91101d8b",
+    "fixed-invalidation-diagnostic-proposal3.json": "982a116230b35c946ecd746764c729ff44588713b38df70f5c619d7fb9954245",
+    "fixed-invalidation-diagnostic-readback1.json": "e40817b390102c55d932fdd79d3c2182e98ed6508833073f5a7cb00a210b2691",
+    "fixed-invalidation-diagnostic-result-spec1.json": "8f5401603c3ee40107d9d1af1a5a9813dd61da13f4a121f2008d7e342628e7d5",
+    "fixed-observer-final-spec1.json": "6a7292fbc1b752f8ab9989331d5168fca30cf621be95853242083f14b7f90c7b",
+    "full-stage-candidate7.json": "be8467f04c42a4beb34e62886dbabdec55ce7832dc0179b57163fabf4a7bb957"
+  },
+  "changes": [
+    {
+      "before_sha256": "be7581fce4237b961afcc9a1fe44627b8c1d13bce5a2f71830e47c581a0583f8",
+      "candidate_path": "/tmp/gaoxy-fixed-final-observer-runner1.py",
+      "diff": "--- docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py\n+++ docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py\n@@ -154,6 +154,9 @@\n \n MAX_BYTES = 8 * 1024 * 1024\n MAX_EVENTS = 8192\n+MAX_EVENT_NAMES = 256\n+EVENT_ENUM_PATH = Path(__file__).resolve().with_name('chromium-netlog-event-enums1.json')\n+EVENT_ENUM_NAMES = frozenset(json.loads(EVENT_ENUM_PATH.read_text())['event_names'])\n _EVENT_NAMES = {\n     'SOCKET_ALIVE', 'SOCKET_CLOSED', 'SOCKET_BYTES_SENT', 'SOCKET_BYTES_RECEIVED',\n     'TCP_CONNECT', 'TCP_CONNECT_ATTEMPT', 'SSL_CONNECT', 'SSL_HANDSHAKE_ERROR',\n@@ -162,6 +165,7 @@\n     'NETWORK_IP_ADDRESSES_CHANGED', 'NETWORK_CONNECTIVITY_CHANGED', 'NETWORK_CHANGED',\n     'CERTIFICATE_DATABASE_TRUST_STORE_CHANGED',\n     'CERTIFICATE_DATABASE_CLIENT_CERT_STORE_CHANGED',\n+    'PROXY_CONFIG_CHANGED', 'DNS_CONFIG_CHANGED',\n }\n _INT_KEYS = {\n     'stream_id', 'last_stream_id', 'error_code', 'net_error', 'byte_count',\n@@ -235,6 +239,10 @@\n             projected['source_dependency'] = dependency\n         if projected:\n             result['params'] = projected\n+    if name == 'PROXY_CONFIG_CHANGED':\n+        safe = result.setdefault('params', {})\n+        safe['old_config_present'] = isinstance(params, dict) and 'old_config' in params\n+        safe['new_config_present'] = isinstance(params, dict) and 'new_config' in params\n     if name == 'HTTP2_SESSION_CLOSE':\n         description = params.get('description') if isinstance(params, dict) else None\n         present = isinstance(description, str)\n@@ -278,6 +286,8 @@\n     event_names = {v: k for k, v in constants.get('logEventTypes', {}).items() if _integer(v)}\n     source_names = {v: k for k, v in constants.get('logSourceType', {}).items() if _integer(v)}\n     seen = 0\n+    event_counts, omitted_events, unknown_events = {}, 0, 0\n+    context_headers = []\n     while seen < MAX_EVENTS:\n         whitespace = re.match(r'\\s*', text[position:])\n         position += whitespace.end()\n@@ -296,11 +306,35 @@\n             break\n         position = end\n         seen += 1\n+        name = event_names.get(event.get('type')) if isinstance(event, dict) else None\n+        if not _enum(name) or name not in EVENT_ENUM_NAMES:\n+            unknown_events += 1\n+        elif name in event_counts or len(event_counts) < MAX_EVENT_NAMES:\n+            event_counts[name] = event_counts.get(name, 0) + 1\n+        else:\n+            omitted_events += 1\n+        if _enum(name) and name in EVENT_ENUM_NAMES:\n+            header = {'event': name}\n+            if _integer(event.get('phase')):\n+                header['phase'] = event['phase']\n+            stamp = event.get('time')\n+            if isinstance(stamp, str) and re.fullmatch(r'-?[0-9]{1,24}(?:\\.[0-9]{1,9})?', stamp):\n+                header['time'] = stamp\n+            elif _integer(stamp):\n+                header['time'] = stamp\n+            source = _source(event.get('source'), source_names)\n+            if source is not None:\n+                header['source'] = source\n+            context_headers.append(header)\n         projected = _projection(event, event_names, source_names)\n         if projected is not None:\n             result['events'].append(projected)\n     result.update(status='PROJECTED', scanned_events=seen, projected_events=len(result['events']),\n-                  event_limit_reached=seen == MAX_EVENTS)\n+                  event_limit_reached=seen == MAX_EVENTS,\n+                  event_name_counts=dict(sorted(event_counts.items())),\n+                  event_context_headers=context_headers,\n+                  event_name_limit=MAX_EVENT_NAMES, event_name_omitted_events=omitted_events,\n+                  event_name_unknown_events=unknown_events)\n     if seen == MAX_EVENTS:\n         result['read_complete'] = False\n     return result\n@@ -422,7 +456,7 @@\n     paths = [path for folder in ('apps', 'config') for path in (ROOT/folder).rglob('*')\n              if path.is_file() and path.suffix in ('.ex', '.exs') and not any(\n                  part in ('deps', '_build') for part in path.relative_to(ROOT).parts)]\n-    paths += [ROOT/'mix.exs', ROOT/'mix.lock', ROOT/'scripts/generate-fixtures.sh', HOST, COHORT, PEER, Path(__file__).resolve(), Path(__file__).resolve().with_name('browser-command-collector1.py')]\n+    paths += [ROOT/'mix.exs', ROOT/'mix.lock', ROOT/'scripts/generate-fixtures.sh', HOST, COHORT, PEER, EVENT_ENUM_PATH, Path(__file__).resolve(), Path(__file__).resolve().with_name('browser-command-collector1.py')]\n     return {str(path): digest(path) for path in sorted(paths)}\n \n \n",
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py",
+      "proposed_sha256": "efeed7290e3f6faa05d948dee55b5611d4aea2dd377327e943e68865d1b59772"
+    },
+    {
+      "before_sha256": "e52b0bab2321837ab93d0b957361d4d6f5e43d8bbf9e0fc17dc139a7b7edeabd",
+      "candidate_path": "/tmp/gaoxy-fixed-final-observer-host1.exs",
+      "diff": "--- docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs\n+++ docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs\n@@ -780,6 +780,13 @@\n   def emit(event, fields \\\\ %{}),\n     do: IO.puts(\"NATIVE_WORKER_BROWSER \" <> JSON.encode!(Map.put(fields, :event, event)))\n \n+  def diagnostic_reason(:normal), do: \"NORMAL\"\n+  def diagnostic_reason(:killed), do: \"KILLED\"\n+  def diagnostic_reason(:noproc), do: \"NOPROC\"\n+  def diagnostic_reason(:shutdown), do: \"SHUTDOWN\"\n+  def diagnostic_reason({:shutdown, :peer_closed}), do: \"SHUTDOWN_PEER_CLOSED\"\n+  def diagnostic_reason(_), do: \"OTHER\"\n+\n   def deadline, do: Lifecycle.deadline(10_000)\n   def wait_until(fun, d), do: Fixed.wait_until(fun, d)\n \n@@ -1532,6 +1539,18 @@\n \n       {:DOWN, ref, :process, pid, reason} ->\n         entry = Map.fetch!(s.monitors, ref)\n+\n+        emit(\"down_diagnostic\", %{\n+          monitor: inspect(ref),\n+          role: Atom.to_string(entry.role),\n+          expected_pid: inspect(entry.pid),\n+          actual_pid: inspect(pid),\n+          pid_equal: entry.pid === pid,\n+          reason_equal: entry.reason === reason,\n+          expected_reason: diagnostic_reason(entry.reason),\n+          actual_reason: diagnostic_reason(reason)\n+        })\n+\n         true = entry.pid === pid and entry.reason === reason\n         loop(mark_joined(s, ref))\n \n",
+      "path": "docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs",
+      "proposed_sha256": "60b33e7f3ccbe6ec6b6b2e627d6a6d5af06b5c403a01e46a42174535e56d756a"
+    }
+  ],
+  "command_inventory_sha256": "58478d8ab4b1409f4c2f50bbb233bcf08c569c905bf5e0d30c90ef01b02f6ba0",
+  "corrections": [
+    "fixed6 artifact_directory and qualification metadata now match frozen argv --name fixed-browser-green6; no failed output reused.",
+    "Candidate9 binds actual current pending55 document hashes and labels their counters/status as historical pending checkpoint; final documentation review still required.",
+    "Python assertions are113; prior reviewer124 text matches included11 JavaScript asserts; assertion/BROWSER equivalence unchanged."
+  ],
+  "counters": {
+    "astra_limit": 2,
+    "astra_used": 2,
+    "current_group_failed_green": 63,
+    "current_orchestration": 131,
+    "current_root_failure_events": 218,
+    "environment_plan_self_review_errors": 2,
+    "inherited": {
+      "astra_limit": 2,
+      "astra_used": 2,
+      "group_failed_green": 54,
+      "orchestration": 60,
+      "root_failure_events": 132,
+      "stage_failed_green": 9,
+      "stage_final_document_failed_spec": 2,
+      "stage_fixture_repair": 11,
+      "stage_invalid_red": 1,
+      "stage_orchestration_repair": 53,
+      "stage_postfeature_document_failed_spec": 1,
+      "stage_production_repair": 2,
+      "stage_valid_red": 1
+    },
+    "next_stage_preparatory_failed_spec": 1,
+    "successor_checkpoint_document_failed_code": 1,
+    "successor_diagnostic_failed_spec": 1,
+    "successor_diagnostic_readiness_repairs": 1,
+    "successor_diagnostic_startup_failures": 1,
+    "successor_environment_file_preparation_failures": 2,
+    "successor_environment_helper_repairs": 4,
+    "successor_environment_materialization_timeouts": 1,
+    "successor_environment_readiness_cancelled": 1,
+    "successor_environment_readiness_timeouts": 2,
+    "successor_environment_recovery_failed_code": 1,
+    "successor_environment_recovery_failed_spec": 2,
+    "successor_environment_transfer_failed_commands": 4,
+    "successor_evidence_tooling_failed_code": 1,
+    "successor_evidence_tooling_repair": 1,
+    "successor_final_inventory_failed_spec": 3,
+    "successor_fixture_repair": 5,
+    "successor_production_repair": 0,
+    "successor_runtime_failed_green": 9,
+    "successor_sol_repair_rounds": 5,
+    "successor_source_failed_spec": 3,
+    "successor_tooling_errors": 60
+  },
+  "execution_plan": [
+    "Independent exact-source+full-inventory SPEC then dependent CODE; root verifies old411 source hashes and candidate hashes, archives old active bytes, adopts exact two proposed files and records415 pins.",
+    "Reuse seven original actual nonbrowser PASS commands with unchanged relevant inputs, including three scoped940 invocations, core1/http2, strict compile, and separate Python startup11 audit. Original receipt source maps401 remain immutable. Host/Python executable input delta requires fresh full format2 then syntax3 using reviewed suffix-safe derived collector.",
+    "Run exactly frozen fixed6 once. Abort on any failure and diagnose actual evidence; no retry loop. PASS additionally needs root receipt/artifact/resource/source/BEAM/custody audit and four root-viewed OLD/NEW images.",
+    "Only then run unused group2 once with original two rows. Root audits original assertions/receipt/BEAM/custody and views four images. Adopted raw waits need actual joins/no residue, not invented all-exit-zero.",
+    "Preserve every historical FAIL/UNKNOWN/sticky denial/counter. Sync five canonical docs with actual result and SPEC then CODE. Review index/disk/blobs and make local conventional commit; advance plateau only on actual completed identity gate."
+  ],
+  "goal": "Qualify the existing identity-rotation product slice under final sources with bounded safe observations; preserve the historical fixed5 failure and UNKNOWN initiating cause without adding a causal-explanation product gate.",
+  "kind": "ACTIVE_FIXED_OBSERVER_SOURCE_REQUALIFICATION_DESIGN_PLAN2",
+  "limits": "Pure observer/source-qualification change, not a causal repair, stability guarantee, third Astra, or final acceptance. No Chrome flags, sleeps/retry, production repairs, publication/deployment or restricted operations.",
+  "preserved": [
+    "All original113 Python asserts, embedded BROWSER bytes/Chrome flags/CDP/navigation/headers/order/deadlines and cleanup assertions.",
+    "Original Elixir assertions and request_clean/native connection live/cohort/retirement/source/custodian checks. Only finite DOWN observation emitted before original expectation.",
+    "All production/test/peer/dependency/group/cohort/browser collector sources unchanged.",
+    "Raw NetLog/private keys never read or committed. Safe projections retain incomplete/unknown/overflow flags."
+  ],
+  "prior_proposal_sha256": "c17e889c36e208cadaefde69e02db10162bd18ca5cf2370a494a7fb34bd5df3f",
+  "source_pins": {
+    "active_updated": 2,
+    "base": 411,
+    "final_union": 415,
+    "reviewed_added_diagnostic_sources_and_enum": 4
+  },
+  "status": "FROZEN_PROPOSED_NOT_ADOPTED_NOT_RUN"
+}

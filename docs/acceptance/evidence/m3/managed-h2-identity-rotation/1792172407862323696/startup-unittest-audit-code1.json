@@ -1,0 +1,61 @@
+{
+  "task_id": "h2_identity_startup_audit_code1",
+  "status": "DONE",
+  "verdict": "CHANGES_REQUIRED",
+  "assignment": "direct bounded independent read-only evidence-audit CODE review",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "reviewed_script": "/tmp/gaoxy-h2-identity-startup-audit1.py",
+  "reviewed_script_sha256": "bcd33af83bf02bb6644250d02665dfdba40b8fb53e75fba150f8d00aefeb16c0",
+  "frozen_inventory_sha256": "6d83237e1cd8c387c8b641ec6bb3e975e2ba437f8b096879a141017092466b16",
+  "frozen_candidate_sha256": "d2c2d0db7445d9a8f6b3d2e65407ddf05873237eb860be553ffd86b3c823a296",
+  "findings": [
+    {
+      "id": "STARTUP-AUDIT-CODE-01",
+      "severity": "medium",
+      "path": "/tmp/gaoxy-h2-identity-startup-audit1.py",
+      "line": 18,
+      "problem": "The audit reads candidate5/inventory5 and immediately trusts their expected argv/source hashes without requiring the already accepted exact SHA256 values. It only records actual manifest hashes on PASS. The concrete tool therefore does not itself enforce the frozen source/command identity it claims to audit.",
+      "required_change": "Check candidate5 and inventory5 bytes against accepted exact SHA256 values before deriving expected command/source values; preserve actual hashes in the audit record on failure."
+    },
+    {
+      "id": "STARTUP-AUDIT-CODE-02",
+      "severity": "medium",
+      "path": "/tmp/gaoxy-h2-identity-startup-audit1.py",
+      "line": 17,
+      "problem": "The result records driver_sha256 but no reviewer or review-artifact identity. inventory5.startup_unittest_audit.audit_record_required explicitly requires audit procedure identity/hash and reviewer.",
+      "required_change": "Record reviewer identity and independently reviewed CODE report/artifact identity/hash, supplied or archived by root after this review. Bind archived script bytes to the reviewed driver hash before execution or in the audit custody."
+    },
+    {
+      "id": "STARTUP-AUDIT-CODE-03",
+      "severity": "medium",
+      "path": "/tmp/gaoxy-h2-identity-startup-audit1.py",
+      "line": 47,
+      "problem": "Input receipt/log/collector/candidate/inventory/source hashes, observed rows and parsed counts are added only in the final PASS update. Any prior assertion failure produces essentially driver hash plus traceback, omitting available actual evidence and counts required by the frozen audit-record contract.",
+      "required_change": "Populate available actual input identities and parsed observations incrementally before their assertions; keep explicit failed/unknown fields where validation stops. Preserve actual terminal/count/custody evidence in FAIL output without filling unverified counts with synthetic zero."
+    }
+  ],
+  "reviewed_correct_behavior": [
+    "No candidate runtime imports or test execution are present in the audit driver.",
+    "Checks original collector kind static and tests/reported_tests0, exit0, joined, nonforced/no remaining/no signals/no reap exhaustion, source stable and warnings/failure/skip/excluded0.",
+    "Binds actual receipt child argv/cwd to inventory entry and log/collector hash; binds unchanged suite and final peer to receipt before/after and manifest pins.",
+    "Requires exactly one Ran11 summary, exactly one terminal OK with no trailing nonwhitespace, exactly11 unique expected method rows and exact per-row ok outcomes.",
+    "Rejects normal unittest failure/traceback/skip/expected-failure/unexpected-success/warning forms and exits1 with explicit FAIL on caught errors.",
+    "Uses immutable exclusive-create audit JSON/Markdown output and preserves generic collector count0."
+  ],
+  "runtime_tests_executed_by_reviewer": 0,
+  "runtime_executions_by_reviewer": 0,
+  "candidate_imports_or_check_executions": 0,
+  "repository_files_changed_by_reviewer": [],
+  "reviewer_sol_repair_rounds": 0,
+  "inherited_counters": {
+    "successor_sol_repair_rounds": 5,
+    "astra_used": 2,
+    "astra_limit": 2
+  },
+  "astra_gate": null,
+  "command_shutdown": "All source-read/hash commands finished; no persistent reviewer process, imports, tests/builds/browsers or root process interaction. Only assigned /tmp review outputs written.",
+  "remaining": "Root repairs the bounded audit driver and freezes its exact new bytes for re-review before evidence-audit execution. No fullstage source change/re-review or protocol rerun is proposed by these tooling findings.",
+  "decisions_needed": "None; bounded tooling fixes.",
+  "markdown_sha256": "052086dd1f0c893692209f438c39e06417b0d8a9378566266de18cfcbee16be5"
+}

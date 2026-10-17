@@ -1,0 +1,98 @@
+import ast
+import ctypes
+import hashlib
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import importlib.util
+import json
+from pathlib import Path
+import subprocess
+import sys
+import threading
+import time
+import traceback
+
+ROOT=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+BASE=ROOT/'docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696'
+SOURCE=BASE/'fixed-identity-rotation-browser-runner1.py'
+OUT=BASE/'browser-header-diagnostic1'
+OUT.mkdir(exist_ok=False)
+observed=[]
+class Handler(BaseHTTPRequestHandler):
+    protocol_version='HTTP/1.1'
+    def do_GET(self):
+        if self.path.startswith('/header-'):
+            observed.append(dict(path=self.path,proxy_authorization=self.headers.get_all('Proxy-Authorization',[]),authorization=self.headers.get_all('Authorization',[])))
+        payload=b'Gaoxy browser header diagnostic'
+        self.send_response(200)
+        self.send_header('Content-Length',str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+    def log_message(self,*args): pass
+tree=ast.parse(SOURCE.read_text())
+js=next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='BROWSER' for t in n.targets))
+raw_line="  `--log-net-log=${netlogPath}`,'--net-log-capture-mode=Default',\n"
+assert js.count(raw_line)==1
+js=js.replace(raw_line,'').replace('process.argv.slice(1)','process.argv.slice(2)')
+start=js.index("  for(const label of ['old','new']) {")
+end=js.index("  assert.deepEqual(await command(),{op:'exit'});",start)+len("  assert.deepEqual(await command(),{op:'exit'});")
+probe=r'''
+  const variants=[['none',{}],['origin',{'Authorization':'Bearer synthetic-origin-old'}],['proxy',{'Proxy-Authorization':'Basic synthetic-proxy-old'}],['both',{'Proxy-Authorization':'Basic synthetic-proxy-old','Authorization':'Bearer synthetic-origin-old'}]];
+  for(const [label,headers] of variants) {
+   await request('Network.setExtraHTTPHeaders',{headers});
+   const url=origin+'/header-'+label;
+   const nav=await request('Page.navigate',{url});
+   let response;
+   if(!nav.errorText) await until(()=>{
+    response=events.find(e=>e.method==='Network.responseReceived'&&e.params.response.url===url)?.params;
+    return response&&events.some(e=>e.method==='Network.loadingFinished'&&e.params.requestId===response.requestId);
+   },'diagnostic page deadline');
+   emit({event:'header_diagnostic',label,navigation:nav,response:response?{status:response.response.status,protocol:response.response.protocol}:null});
+  }
+'''
+js=js[:start]+probe+js[end:]
+(OUT/'probe.js').write_text(js)
+subprocess.run(['node','--check',str(OUT/'probe.js')],check=True,timeout=20)
+spec=importlib.util.spec_from_file_location('gaoxy_header_diagnostic_fixture',SOURCE)
+module=importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+libc=ctypes.CDLL(None,use_errno=True)
+assert libc.prctl(36,1,0,0,0)==0
+actor=server=thread=None
+ready=None
+results=[]
+failure=None
+cleanup_errors=[]
+joins=[]
+try:
+ server=ThreadingHTTPServer(('127.0.0.1',0),Handler)
+ server.daemon_threads=True
+ thread=threading.Thread(target=server.serve_forever)
+ thread.start()
+ actor=module.Actor(['node',str(OUT/'probe.js'),'http://127.0.0.1:'+str(server.server_port),str(OUT),'http/1.1','','unused'],OUT/'browser.log')
+ ready=actor.event('browser_ready')
+ results=[actor.event('header_diagnostic') for _ in range(4)]
+ joined=actor.event('joined')
+ actor.join()
+ assert joined['passed'] and joined['close_requested'] and joined['chrome_exit']==0
+except BaseException:
+ failure=traceback.format_exc()
+finally:
+ if actor:
+  try: joins.append({k:v for k,v in actor.dispose().items() if k!='command'})
+  except BaseException: cleanup_errors.append(traceback.format_exc())
+ if server:
+  try:
+   if thread is not None and thread.is_alive(): server.shutdown()
+   server.server_close()
+   if thread is not None: thread.join(5)
+   assert thread is None or not thread.is_alive()
+  except BaseException: cleanup_errors.append(traceback.format_exc())
+ end=time.monotonic()+10
+ while module.reap_adopted() and time.monotonic()<end: time.sleep(.02)
+ remaining=sorted(module.reap_adopted())
+ complete=failure is None and not cleanup_errors and not remaining and all(j['exit']==0 and not j['forced'] for j in joins)
+ result=dict(kind='INDEPENDENT_LOCAL_H1_HEADER_DIAGNOSTIC_NOT_GAOXY_ACCEPTANCE',status='DIAGNOSTIC_COMPLETE' if complete else 'DIAGNOSTIC_FAILED',failure=failure,cleanup_errors=cleanup_errors,source_sha256=hashlib.sha256(SOURCE.read_bytes()).hexdigest(),probe_sha256=hashlib.sha256((OUT/'probe.js').read_bytes()).hexdigest(),browser=ready,results=results,observed=observed,joins=joins,adopted_joins=module.ADOPTED_JOINS,adopted_remaining=remaining,server_thread_joined=thread is None or not thread.is_alive(),gaoxy_runtime_tests=0)
+ with (OUT/'result.json').open('x') as out: json.dump(result,out,indent=2);out.write('\n')
+ print(json.dumps(result,indent=2))
+
+sys.exit(0 if complete else 1)

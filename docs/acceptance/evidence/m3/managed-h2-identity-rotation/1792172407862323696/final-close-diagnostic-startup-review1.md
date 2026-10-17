@@ -1,0 +1,13 @@
+Task h2_identity_close_startup_review1 — DONE_READ_ONLY_REVIEW. Observed diagnostic: FAIL / BLOCKED_ENV at host startup,0tests.
+
+Worktree /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation; handoff baseline8f6b884524d81d8defa7c5081230b8ab635e8107 agrees with qualification. No Git/runtime/import operation performed.
+
+Actual qualification has one attempted nativeH2/TLS-H2 case,0passing, elapsed122189ms. host.event(ready,120) raises queue.Empty. host.log is233bytes and records Nix copying /nix/store/fr8gfsdbnipx767l86imx1wmkc84175s-source from nix-cache.gsmlg.dev before cancellation. Browser is created after host-ready in unchanged control flow; browser.log is absent and saved projection NOT_STARTED/events[]. Both peers report only prepared/ready, no accept/request. This is not new H2 close-reason evidence; original UNKNOWN/FAIL remains.
+
+Outer collector exit1/forcedfalse/0tests/source-stable/groupjoined; fixture actor shutdown is separately forced: hostexit1 and two peerexit-15. Their readers/groups are joined, adopted_remaining[], raw removed per custody. These are cleanup facts, not normal acceptance joins.287source inventories match before/after and bind original runner478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74 and wrapper5181aa65765e25464d9ed4214b182bb1f9ef84d15256fcb2b6d5fcbd44467933.
+
+Separate bounded Nix readiness before creating peers is an appropriate next evidence step. Suggested unchanged-shell payload: nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test elixir --version; JSON contains exact structured argv. Bind actual argv/cwd/env/UTC/elapsed/exit/join/log hashes, Nix/Elixir/OTP identities and flake.nix/flake.lock hashes. Those2Nix files are outside existing287source inventory and need explicit before/after binding. Record0tests. Successful readiness is only environment readiness, not host/browser acceptance.
+
+After readiness actualexit0, root may execute one same-wrapper diagnostic into a new exclusive evidence directory/receipt and link the readiness hashes. Keep host120s, peer180s, all assertions/flags/headers/order/custody/runner/wrapper bytes unchanged; retain this failure untouched. If preflight fails, preserve BLOCKED_ENV without starting finite peers or silently retrying. No cache/settings/permission/dependency/deadline changes are proposed. Readiness cannot prove later mix-run startup or resolve original browser close.
+
+Only two assigned /tmp reports written. No reviewer runtime/import/tests/build/browser/Git/repo edits; all commands finished. Sol5/Astra2of2 unchanged. Full input SHA and safe observed details are recorded in JSON. No product decision required; root owns all actual execution.

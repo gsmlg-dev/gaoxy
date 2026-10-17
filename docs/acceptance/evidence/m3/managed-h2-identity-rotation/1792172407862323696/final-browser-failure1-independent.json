@@ -1,0 +1,196 @@
+{
+  "task_id": "h2_identity_full_code/final-browser-failure1",
+  "status": "DONE_DIAGNOSIS",
+  "assignment": "direct read-only independent diagnosis",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch_from_handoff": "codex/m3-h1-resource-foundation",
+  "baseline_from_handoff_and_qualifications": "8f6b884524d81d8defa7c5081230b8ab635e8107",
+  "acceptance_status": "FAIL_PRESERVED",
+  "root_cause": "UNKNOWN",
+  "proximate_failure": "The original downstream H2 connection actually closed before request_clean live-before-close validation; assert_target_live/3 matched false at host line 2048.",
+  "observations": [
+    "Final fixed-browser-green2 records one attempted case and zero passing cases; accepted earlier fixed-browser-green3 records two passing cases. The earlier PASS does not close the final failure.",
+    "OLD navigation returned exact expected 188-byte HTML, status 200 and h2; original Session completion, cleanup child/token removal and OLD source retirement were observed before the failure.",
+    "Target connection #PID<0.369.0>, writer #PID<0.370.0>, worker #PID<0.372.0>; Chrome target socket 55 and H2 session 60.",
+    "Target connection receives h2_stream_done outcome ok at -576460741708457463, then ssl_closed at -576460741692435472; delta 16021991 native units, not 16 microseconds. No native-time conversion is established here.",
+    "Gate and observer monitor terminal evidence agree connection shutdown peer_closed and writer normal; this is not merely a monitor artifact.",
+    "Projected target session receives 188-byte DATA at 11678127705 then empty fin DATA at 11678127706; HTTP2_SESSION_CLOSE net_error 0 at 11678127756, pool removal at 11678127757, session END and socket end at 11678127758. No projected GOAWAY, RST, or read error explains the close.",
+    "The runner requests request_clean after OLD browser probe/screenshot and projection, before NEW navigation and before explicit Browser.close. Browser close is not an observed requested operation at this cut.",
+    "Final and OLD sanitized projections are byte-identical, read_complete false, with 131 projected / 742 scanned events and no byte/event limit reached. Raw NetLog was removed after actor group joins under the recorded custody contract.",
+    "Both run source_before inventories contain identical 286 entries, and each run source_before equals source_after. All 102 loaded-module source hashes and loaded_md5 values match. Only Gaoxy.Service beam_sha256 differs; its source hash and loaded_md5 match.",
+    "Both runs use Chrome/152.0.7977.64 revision 506c834ecceaa943c5f41e6cfe7f68acb5c45346 and Node v24.19.0. Accepted run OLD and NEW reuse connectionId 55."
+  ],
+  "public_source_evidence": {
+    "revision": "506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+    "access": "Successful bounded curl reads to stdout only; complete downloaded bodies were not retained or hashed. No public source full-file SHA is claimed.",
+    "session_origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/spdy/spdy_session.cc",
+    "pool_origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/spdy/spdy_session_pool.cc",
+    "network_session_origin": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/http/http_network_session.cc",
+    "facts": [
+      "spdy_session.cc 228-232 emits net_error and description in NetLogSpdySessionCloseParams; 2743-2745 emits HTTP2_SESSION_CLOSE.",
+      "spdy_session.cc 1419-1423 MaybeFinishGoingAway calls DoDrainSession(OK, \"Finished going away\") when no active/created streams remain and state is GOING_AWAY.",
+      "spdy_session_pool.cc 428-439 MakeCurrentSessionsGoingAway calls MakeUnavailable, StartGoingAway and MaybeFinishGoingAway. Lines 452-482 permit network/SSL config/cert database/cert verifier changes to enter that path.",
+      "spdy_session_pool.cc 415-416 ordinary CloseCurrentIdleSessions uses ERR_ABORTED; spdy_session.cc 1582-1586 and 1859-1864 ordinary idle close uses ERR_CONNECTION_CLOSED. Those direct paths differ from recorded net_error 0.",
+      "HTTP2_SESSION_CLOSE description alone may identify a drain path without identifying the initiating event. Zero error is not a complete root cause."
+    ]
+  },
+  "hypotheses": [
+    {
+      "name": "Graceful going-away completion initiated by config/network/certificate notification",
+      "status": "PLAUSIBLE_NOT_PROVEN",
+      "evidence": "Matching Chromium source provides this zero-error path; the projection drops close description and initiating notifications."
+    },
+    {
+      "name": "Ordinary idle-session cleanup or memory pressure",
+      "status": "UNSUPPORTED",
+      "evidence": "No memory-pressure observation is retained, and inspected ordinary idle close paths use nonzero errors. Current host memory readings cannot establish historical pressure."
+    },
+    {
+      "name": "Runner requested Browser.close before live assertion",
+      "status": "CONTRADICTED_BY_CONTROL_FLOW",
+      "evidence": "Request_clean is inside OLD loop before NEW and exit/Browser.close."
+    }
+  ],
+  "minimal_next_evidence": [
+    "Parent may prepare a separate /tmp diagnostic runner copy that changes only sanitized projection: for HTTP2_SESSION_CLOSE, compare params.description against an explicit exact static string map and emit a fixed close_reason enum; never emit arbitrary description strings.",
+    "Minimum map from inspected revision: \"Finished going away\" => FINISHED_GOING_AWAY; \"Closing idle connection.\" => IDLE_CONNECTION; \"Connection closed\" => CONNECTION_CLOSED; \"Write error\" => WRITE_ERROR; \"Closing current sessions.\" => CURRENT_SESSIONS; \"Closing all sessions.\" => ALL_SESSIONS; every unrecognized string => OTHER and absent => ABSENT.",
+    "Preserve parameters, assertions, finite deadlines, live-before-close cuts, source identity collection, raw custody and raw deletion. Do not add retries, keepalive, delays, or change browser flags to suppress the symptom.",
+    "After static independent review, parent can run one bounded actual fixture with this diagnostic copy. A FINISHED_GOING_AWAY result still needs correlation with safely enum/integer-only initiating network/SSL configuration notifications, with exact event names independently verified before projection expansion.",
+    "Do not infer the missing old description or regenerate it from raw: old raw has been removed and is not authorized for reviewer access. Keep the final failed qualification intact."
+  ],
+  "inputs": [
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-runner1.py",
+      "sha256": "478a91928f42e5b0bdb154e7b383b1c83a5d7af6a80f90d52b890225e6089d74"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-host1.exs",
+      "sha256": "e52b0bab2321837ab93d0b957361d4d6f5e43d8bbf9e0fc17dc139a7b7edeabd"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-identity-rotation-browser-cohort1.exs",
+      "sha256": "7b758fd2d105e4a9c06dafbad4b2e3687b29d3d0f5abfd4f7f630f887dcb5078"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/qualification.json",
+      "sha256": "844198ee66ac3090b6213fa95e29987d722d1fd19db4fcd8c97fb6a713234f01"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/host.log",
+      "sha256": "6c766637e49c2bd1187eabfa083da2819af6e72bea085030e88d55f4c415f9da"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/causal-metadata.log",
+      "sha256": "464385c0a864160ab8bbf3698af507bfada46d142c8faa2ceb9497a62e8b97a2"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/browser.log",
+      "sha256": "5dbbf2974e32f9912151f9159ec7b78113109ad7347a52c8ea90964a881e9eaa"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/old-browser-events.json",
+      "sha256": "6a494206e995a6484983b6b014b48ad5d33340d5b2280a5b7c11c8a1c87fce36"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/old-chrome-net-metadata.json",
+      "sha256": "92757dfa15b219b1c86f26563f07ceb665af01fb3f33e5d088603a1cdf72e01a"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/chrome-net-metadata-final.json",
+      "sha256": "92757dfa15b219b1c86f26563f07ceb665af01fb3f33e5d088603a1cdf72e01a"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/host-loaded-before.json",
+      "sha256": "4d0fa6b95185e7ea88a7ed788e589b07924f7bbb0f583998156ee9e7cc5d6079"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/diagnostic-raw-custody.json",
+      "sha256": "ac63f4181bef0cf162b9e1a17a574223100e355341864e07ea924e757253ceef"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/old-peer.log",
+      "sha256": "20ebd3691d966c89bddfcd2014ae5997638bea7a4601c3f9b754834c76d9670f"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/new-peer.log",
+      "sha256": "b7aa09f8713ccf053ec3e98b4cc8a088d5dccbcd09e91319759942bd01ff3883"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/qualification.json",
+      "sha256": "f26998e55f18f27f41f54d707528b0dbdd9a4a672c4286ce3143f9bc120c5515"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/host.log",
+      "sha256": "18377cade71e30982b1fd81b64a2a824aa8c52ea7606523d36b4428a12e965c8"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/causal-metadata.log",
+      "sha256": "bb05a22940b9ced84edb08a21133b16ead9e55e2e19cc2278f05c234a4569ba8"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/browser.log",
+      "sha256": "517efaf8bf71f0a22bf774cceab2d8ed24891e8f78ced903fb6cb6f91c737182"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/old-browser-events.json",
+      "sha256": "d27bf811513d72e9caae1a21788ce1b10b29e3fb07199fe0c31316361d989f3c"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/old-chrome-net-metadata.json",
+      "sha256": "f76acc44344361c16d9326950a4b0cba66f8564dea086d7800289feb0072f40e"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/chrome-net-metadata-final.json",
+      "sha256": "4c2913079c395d2b7936df86bf11d206b65f2404c09f7b6b0a819d9b89d9310b"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/host-loaded-before.json",
+      "sha256": "94578ef021faf8f753071e9d384d482e70f6f9f333c4a6b1e828f50e01359f2b"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/diagnostic-raw-custody.json",
+      "sha256": "103557df37f1a667a2e99ccb00fbde66310f447364de8f88f166f5794c831a80"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/old-peer.log",
+      "sha256": "ce86925bff905658887dddde973a72db4bfef175b6196c84c741cb2bb3dcf88e"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/new-peer.log",
+      "sha256": "8e71686dc85921572a39904f8c46890e8fde672c7bcc329534e27db6c1618cc4"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green2/h2-http2/failure-cohort.log",
+      "sha256": "ee149b15117f39c6d837bea650a74f8258e15980133c21574624ade3d17c68ad"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696/fixed-browser-green3/h2-http2/old-request-clean-cohort.log",
+      "sha256": "ab26cb840c8f646de49ce259c64d31077a55f0c1a1006e3d57ca61f880cdb3b4"
+    }
+  ],
+  "changes": [
+    "/tmp/gaoxy-h2-identity-final-browser-failure1.json",
+    "/tmp/gaoxy-h2-identity-final-browser-failure1.md"
+  ],
+  "verification": {
+    "tests_executed": 0,
+    "runtime_executed": 0,
+    "builds_executed": 0,
+    "browser_sessions_started": 0,
+    "git_operations": 0,
+    "method": "Read-only safe evidence/source inspection and JSON/hash comparisons; no fixture imports or execution.",
+    "outcome": "Diagnosis complete; initiating cause remains UNKNOWN and browser gate remains FAIL."
+  },
+  "repair_counters": {
+    "sol": 5,
+    "astra": 2,
+    "astra_limit": 2,
+    "changed": false
+  },
+  "command_shutdown": "All reviewer commands completed; no reviewer-owned running process remains.",
+  "remaining_risks": [
+    "Sanitized NetLog is incomplete and omits close description/initiating events.",
+    "A successful earlier run cannot substitute for the failed final gate."
+  ],
+  "decisions_needed": "No product decision identified; parent owns diagnostic runtime and any source/evidence/Git writes."
+}

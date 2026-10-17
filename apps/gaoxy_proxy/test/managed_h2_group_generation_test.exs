@@ -407,6 +407,42 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
     end
   end
 
+  # The route publishes OLD resources; only its explicit negative call uses
+  # NEW config, retained before capture inside the real bounded route/Exchange.
+  defmodule RotationMisuseGroup do
+    @behaviour Gaoxy.HTTP.Endpoint
+    def init({old_options, new_options, parent, label}) do
+      with {:ok, old_config} <- Gaoxy.Proxy.GroupEndpoint.init(old_options),
+           {:ok, new_config} <- Gaoxy.Proxy.GroupEndpoint.init(new_options),
+           do: {:ok, {old_config, new_config, parent, label}}
+    end
+
+    def resources({old_config, _, _, _}), do: Gaoxy.Proxy.GroupEndpoint.resources(old_config)
+
+    def call(exchange, {_old_config, explicit_new_config, parent, label}) do
+      ref = make_ref()
+      send(parent, {:group_generation_capture, self(), ref, label, exchange})
+
+      receive do
+        {:dispatch, ^ref} -> :ok
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "group identity misuse dispatch barrier expired"
+      end
+
+      # Authentic Exchange and source pins remain unchanged for finally release.
+      result = Gaoxy.Proxy.GroupEndpoint.call(exchange, explicit_new_config)
+      send(parent, {:group_generation_return, self(), ref, label, result})
+
+      receive do
+        {:return, ^ref} -> result
+      after
+        min(5_000, Gaoxy.Lifecycle.remaining(exchange.deadline)) ->
+          raise "group identity misuse return barrier expired"
+      end
+    end
+  end
+
   test "owner pin refusal keeps the normalized finite grammar closed" do
     accounting = Gaoxy.Proxy.ManagedH2GroupAccounting
     selector = {:owner_reply, :transport, :pin}
@@ -586,6 +622,214 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
     end
   end
 
+  for downstream <- [:http1, :http2] do
+    @rotation_downstream downstream
+    @tag :managed_h2_identity_rotation
+    @tag :tmp_dir
+    test "#{downstream} to TLS H2 rotated groups select0→1→0 with cold same-authority identity",
+         %{tmp_dir: tmp_dir} do
+      peers = rotation_peers(tmp_dir)
+      f = environment(:http2, @rotation_downstream)
+      old = healthy(f, candidate(f, Enum.map(peers.old, & &1.source), :old), peers.old)
+      assert {:ok, initial, _} = Generation.snapshot(f.store)
+      old = activate(f, old, initial)
+      old_policies = rotation_policies(f, old)
+      add_listener(f)
+      observe_owner(f)
+      observe_startup(f)
+
+      old_calls =
+        rotation_capture_requests(f, old, :old, Enum.map(0..2, &"/old#{&1}%2Fpath?raw=%2F"))
+
+      assert_no_open(f, old)
+      old = rotation_close_health(f, old)
+      new_sources = rotation_replacement_sources(peers)
+      fresh = healthy(f, candidate(f, new_sources, :new), peers.new)
+      fresh = rotation_close_health(f, fresh)
+      fresh = activate(f, fresh, old.generation)
+      proof = rotation_identity_policies(f, peers, old, fresh, old_policies)
+      await_closed(f, old, Enum.map(old_calls, & &1.captured))
+      old_calls = rotation_dispatch_calls(f, old, old_calls, peers.old, [0, 1, 0])
+
+      new_calls =
+        rotation_capture_requests(f, fresh, :new, Enum.map(0..2, &"/new#{&1}%2Fpath?"))
+        |> then(&rotation_dispatch_calls(f, fresh, &1, peers.new, [0, 1, 0]))
+
+      assert_cleanup(f, 6)
+      assert length(:sys.get_state(f.groups).tokens |> Map.values()) == 6
+
+      for call <- new_calls do
+        complete_return(f, call, "new:" <> call.target)
+        return_endpoint(call.captured)
+      end
+
+      close_calls(f, new_calls)
+
+      for call <- old_calls do
+        assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(call.bound.completion, 0)
+        complete_return(f, call, "old:" <> call.target)
+      end
+
+      assert_cleanup(f, 0)
+      assert_no_open(f, old)
+      [first, second, last] = old_calls
+      return_endpoint(first.captured)
+      return_endpoint(second.captured)
+
+      F.eventually(fn ->
+        state = :sys.get_state(f.owner)
+
+        Enum.count(state.pins, fn {_, p} ->
+          p.public.kind == :request and
+            Enum.any?(old.transports, &(&1 in p.public.handles))
+        end) == 1
+      end)
+
+      assert_sources(f, old, last.captured)
+      assert :sys.get_state(f.groups).groups[group_key(old.group)].lifecycle == :retiring
+
+      for t <- old.transports do
+        record = :sys.get_state(f.owner).records[t.resource]
+        assert record.admission == :closed and Process.alive?(record.custodian)
+      end
+
+      # The completed B health socket was already joined. Its fresh connection
+      # and actual T/custodian still remain until the last original [A,B] source.
+      assert last.bound.index == 0 and last.captured.tpin.handles === old.transports
+
+      for peer <- peers.old do
+        F.no_event(peer.pid, "eof")
+        F.no_event(peer.pid, "connection_reset")
+      end
+
+      return_endpoint(last.captured)
+      join_resource(f, old)
+      close_calls(f, old_calls)
+      for call <- old_calls ++ new_calls, do: assert_effect_counts(f, call.captured, call.bound)
+
+      finish(
+        f,
+        fresh.creators,
+        Enum.map(Enum.zip(peers.old ++ peers.new, [3, 2, 3, 2]), fn {peer, requests} ->
+          {peer.pid, 2, requests}
+        end),
+        2
+      )
+
+      IO.puts(
+        JSON.encode!(%{
+          event: "group_identity_rotation",
+          downstream: f.downstream,
+          identities: proof,
+          old_capture_before_replacement: true,
+          source_invalidated: true,
+          old_policy_unchanged: true,
+          selection: [0, 1, 0],
+          health_connections_closed: [1, 1, 1, 1],
+          forward_connections: Enum.map(old_calls ++ new_calls, & &1.request["connection"]),
+          accepts: [2, 2, 2, 2],
+          requests: [3, 2, 3, 2],
+          proxy_authorization_stripped: true,
+          origin_authorization_isolated: true,
+          original_completions_and_resource_joins: true
+        })
+      )
+    end
+  end
+
+  @tag :managed_h2_identity_rotation
+  @tag :tmp_dir
+  test "equal authority NEW group cannot consume authentic OLD Generation G T captures",
+       %{tmp_dir: tmp_dir} do
+    peers = rotation_peers(tmp_dir)
+    f = environment(:http2, :http1)
+    # Negative-only order freezes explicit NEW config inside OLD's measured M
+    # before capture. Positive cells above perform replacement after OLD capture.
+    fresh = healthy(f, candidate(f, rotation_replacement_sources(peers), :new), peers.new)
+
+    old =
+      healthy(
+        f,
+        candidate(f, Enum.map(peers.old, & &1.source), :rotation_misuse,
+          explicit_new_group: fresh.group
+        ),
+        peers.old
+      )
+
+    assert {:ok, initial, _} = Generation.snapshot(f.store)
+    old = activate(f, old, initial)
+    old_policies = rotation_policies(f, old)
+    add_listener(f)
+    observe_owner(f)
+    call = capture_request(f, old, :rotation_misuse, "/cross-group%2Fnever?raw=%2F")
+    fresh = activate(f, fresh, old.generation)
+    proof = rotation_identity_policies(f, peers, old, fresh, old_policies)
+    await_closed(f, old, [call.captured])
+    assert_no_open(f, old)
+    assert_no_open(f, fresh)
+    before_t = :sys.get_state(f.owner)
+    before_g = :sys.get_state(f.groups)
+    _ = collect_effects([])
+    trace_session = rotation_misuse_observe(call.captured.native)
+    dispatch(call.captured)
+    failure_response(f, call, 503)
+    native = call.captured.native
+    delivered = :trace.delivered(trace_session, native)
+    assert_receive {:trace_delivered, ^native, ^delivered}, @timeout
+
+    refute_receive {:trace, ^native, :call, {DynamicSupervisor, :start_child, 2},
+                    :group_rotation_misuse_session_start},
+                   0
+
+    refute_receive {:trace, ^native, :call, {HTTP, :fetch, 2}, :group_rotation_misuse_fetch},
+                   0
+
+    # Synchronous reads fence the owner observers before checking effects.
+    # No source/selection/token/member/policy state is changed by the refusal.
+    assert :sys.get_state(f.owner) === before_t
+    assert :sys.get_state(f.groups) === before_g
+    assert_sources(f, old, call.captured)
+    assert_no_open(f, old)
+    assert_no_open(f, fresh)
+    effects = collect_effects([])
+
+    refute Enum.any?(effects, fn {_, _, tag, _} ->
+             tag in [:checkout, :delegate_request_pin, :bind, :bind_completion, :finish]
+           end)
+
+    refute Enum.any?(effects, fn {_, caller, tag, _} ->
+             caller == native and tag in [:pin, :pin_many]
+           end)
+
+    for peer <- peers.old ++ peers.new do
+      F.no_event(peer.pid, "accept")
+      F.no_event(peer.pid, "tls")
+      F.no_event(peer.pid, "request")
+    end
+
+    assert_cleanup(f, 0)
+    assert_group_ledgers(f)
+    for {pid, _} <- old.creators, do: assert(Process.alive?(pid))
+    failure_close_returned(f, call)
+    join_resource(f, old)
+    finish(f, fresh.creators, peer_totals(peers.old ++ peers.new, [1, 1, 1, 1]))
+
+    IO.puts(
+      JSON.encode!(%{
+        event: "group_identity_rotation_misuse",
+        downstream: :http1,
+        identities: proof,
+        same_authority: true,
+        negative_config_retained_before_capture: true,
+        authentic_old_exchange_unchanged: true,
+        refused_before_session_selection_delegation_checkout_fetch: true,
+        owner_states_unchanged: true,
+        requests: [1, 1, 1, 1],
+        request_scope: "health HEAD only; no selected forwarding"
+      })
+    )
+  end
+
   for protocol <- [:h2c, :http2] do
     @protocol protocol
     test "#{protocol} two distinct member IDs dedup one T while selecting both real members" do
@@ -694,6 +938,332 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
     end
   end
 
+  defp rotation_peers(tmp_dir) do
+    {old_a, old_a_ready} =
+      F.peer(:http2, ["--manual", "--bind-address", "127.0.0.1", "--listen-port", "0"])
+
+    port = old_a_ready["port"]
+    assert port in 1..65_535
+
+    more =
+      Enum.map(["127.0.0.3", "127.0.0.2", "127.0.0.4"], fn address ->
+        {pid, ready} =
+          F.peer(:http2, [
+            "--manual",
+            "--bind-address",
+            address,
+            "--listen-port",
+            Integer.to_string(port)
+          ])
+
+        assert ready["bind_address"] == address and ready["port"] == port
+        %{pid: pid, ready: ready}
+      end)
+
+    assert old_a_ready["bind_address"] == "127.0.0.1"
+    [ob, na, nb] = more
+    oa = %{pid: old_a, ready: old_a_ready}
+    all = [oa, ob, na, nb]
+
+    assert Enum.uniq(Enum.map(all, &{&1.ready["bind_address"], &1.ready["port"]})) ==
+             [{"127.0.0.1", port}, {"127.0.0.3", port}, {"127.0.0.2", port}, {"127.0.0.4", port}]
+
+    assert length(Enum.uniq(Enum.map(all, & &1.ready["identity"]["certificate_sha256"]))) == 4
+    paths = Enum.map(["a", "b"], &Path.join(tmp_dir, "member-#{&1}-ca.pem"))
+
+    old =
+      Enum.zip_with([oa, ob], paths, fn peer, path ->
+        File.cp!(peer.ready["ca"], path)
+        {:ok, address} = :inet.parse_address(String.to_charlist(peer.ready["bind_address"]))
+        Map.put(peer, :source, rotation_source(port, address, path))
+      end)
+
+    %{
+      old: old,
+      new: [na, nb],
+      paths: paths,
+      old_pem_sha256: Enum.map(paths, &rotation_hash(rotation_pem(&1))),
+      origin: "https://localhost:#{port}",
+      port: port
+    }
+  end
+
+  defp rotation_replacement_sources(peers) do
+    Enum.zip([peers.new, peers.paths, peers.old, peers.old_pem_sha256])
+    |> Enum.map(fn {peer, path, old, old_pem_sha256} ->
+      File.cp!(peer.ready["ca"], path)
+      refute rotation_hash(rotation_pem(path)) == old_pem_sha256
+      {:ok, address} = :inet.parse_address(String.to_charlist(peer.ready["bind_address"]))
+      source = rotation_source(peers.port, address, path)
+      assert source.origin === old.source.origin and source.origin === peers.origin
+      refute source.trust === old.source.trust
+      refute source.connect_address == old.source.connect_address
+      source
+    end)
+  end
+
+  defp rotation_source(port, address, path) do
+    assert [{:Certificate, der, :not_encrypted}] = :public_key.pem_decode(rotation_pem(path))
+    assert byte_size(der) in 1..65_536
+
+    %{
+      protocol: :http2,
+      origin: "https://localhost:#{port}",
+      connect_address: address,
+      trust: [:binary.copy(der)]
+    }
+  end
+
+  defp rotation_pem(path) do
+    File.open!(path, [:read, :binary], fn file ->
+      pem = IO.binread(file, 1_048_577)
+      assert is_binary(pem) and byte_size(pem) in 1..1_048_576
+      pem
+    end)
+  end
+
+  defp rotation_hash(bytes), do: :crypto.hash(:sha256, bytes) |> Base.encode16(case: :lower)
+
+  defp rotation_policies(f, candidate) do
+    records = :sys.get_state(f.owner).records
+    Enum.map(candidate.transports, &records[&1.resource].policy)
+  end
+
+  defp rotation_identity_policies(f, peers, old, fresh, old_policies) do
+    assert rotation_policies(f, old) === old_policies
+    fresh_policies = rotation_policies(f, fresh)
+    refute group_key(old.group) == group_key(fresh.group)
+    assert length(Enum.uniq(Enum.map(old.transports ++ fresh.transports, & &1.resource))) == 4
+
+    proof =
+      Enum.zip([
+        old.transports,
+        fresh.transports,
+        old.sources,
+        fresh.sources,
+        old_policies,
+        fresh_policies,
+        peers.old,
+        peers.new,
+        peers.paths,
+        peers.old_pem_sha256
+      ])
+      |> Enum.map(fn {ot, nt, os, ns, op, np, old_peer, new_peer, path, old_pem_sha256} ->
+        assert os.origin === ns.origin and os.origin === peers.origin
+        assert op.origin === np.origin and op.host == "localhost" and np.host == "localhost"
+        assert op.port == peers.port and np.port == peers.port
+        assert op.protocol == :http2 and np.protocol == :http2
+        assert op.connect_address === os.connect_address
+        assert np.connect_address === ns.connect_address
+        assert op.open_options[:ssl][:cacerts] === os.trust
+        assert np.open_options[:ssl][:cacerts] === ns.trust
+        refute op.connect_address == np.connect_address
+        refute op.open_options[:ssl][:cacerts] === np.open_options[:ssl][:cacerts]
+        assert op.open_options[:ssl][:server_name_indication] == ~c"localhost"
+        assert np.open_options[:ssl][:server_name_indication] == ~c"localhost"
+
+        assert op.open_options[:http_version] == :http2 and
+                 np.open_options[:http_version] == :http2
+
+        assert op.open_options[:ssl][:verify] == :verify_peer
+        assert np.open_options[:ssl][:verify] == :verify_peer
+
+        old_identity = rotation_identity(old.group, ot, old_peer.ready, old_pem_sha256, op)
+
+        new_identity =
+          rotation_identity(
+            fresh.group,
+            nt,
+            new_peer.ready,
+            rotation_hash(rotation_pem(path)),
+            np
+          )
+
+        refute old_identity.pem_sha256 == new_identity.pem_sha256
+        refute old_identity.der_sha256 == new_identity.der_sha256
+        refute old_identity.leaf_sha256 == new_identity.leaf_sha256
+        File.write!(path, "invalid public source after both member preparations\n")
+        %{path: path, old: old_identity, new: new_identity}
+      end)
+
+    assert rotation_policies(f, old) === old_policies
+    assert rotation_policies(f, fresh) === fresh_policies
+    assert length(Enum.uniq(Enum.flat_map(proof, &[&1.old.pem_sha256, &1.new.pem_sha256]))) == 4
+    assert length(Enum.uniq(Enum.flat_map(proof, &[&1.old.der_sha256, &1.new.der_sha256]))) == 4
+    proof
+  end
+
+  defp rotation_identity(group, transport, ready, pem_sha256, policy) do
+    leaf_sha256 = rotation_hash(rotation_pem(ready["cert"]))
+    assert leaf_sha256 == ready["identity"]["certificate_sha256"]
+
+    %{
+      group: inspect(group_key(group)),
+      resource: inspect(transport.resource),
+      origin: policy.origin,
+      host: policy.host,
+      port: policy.port,
+      connect_address: policy.connect_address |> :inet.ntoa() |> to_string(),
+      pem_sha256: pem_sha256,
+      der_sha256: Enum.map(policy.open_options[:ssl][:cacerts], &rotation_hash/1),
+      leaf_sha256: leaf_sha256
+    }
+  end
+
+  defp rotation_close_health(f, candidate) do
+    assert_no_open(f, candidate)
+    assert_group_ledgers(f)
+
+    health =
+      Enum.with_index(candidate.health, fn entry, index ->
+        # healthy/3 already witnessed the original HEAD completion, normal Probe
+        # DOWN and restored accounting. GOAWAY uses that exact completed stream.
+        assert :ok = HTTP.RequestCompletion.await(entry.completion, 0)
+        request = entry.request
+        assert request["connection"] == 1
+
+        assert [":authority", URI.parse(Enum.at(candidate.sources, index).origin).authority] in request[
+                 "headers"
+               ]
+
+        assert [":scheme", "https"] in request["headers"]
+        stream = request["stream"]
+
+        assert %{
+                 "op" => "goaway",
+                 "connection" => 1,
+                 "stream" => ^stream,
+                 "last_stream" => ^stream,
+                 "code" => 0
+               } =
+                 F.command(entry.peer, request, "goaway", %{"last_stream" => stream, "code" => 0})
+
+        # GOAWAY is an admission/drain signal, not a TCP close guarantee.
+        # End only the peer write side; the original reader must observe EOF/reset.
+        assert %{"op" => "write_half_close", "connection" => 1, "stream" => ^stream} =
+                 close_ack = F.command(entry.peer, request, "write_half_close")
+
+        assert %{"connection" => 1} = termination = F.physical_termination(entry.peer)
+        F.no_event(entry.peer, "accept")
+        F.no_event(entry.peer, "tls")
+        F.no_event(entry.peer, "request")
+
+        entry
+        |> Map.put(:write_half_close, close_ack)
+        |> Map.put(:physical_termination, termination)
+      end)
+
+    assert_no_open(f, candidate)
+    assert_group_ledgers(f)
+    Map.put(candidate, :health, health)
+  end
+
+  defp rotation_fields(marker) do
+    [
+      {"proxy-authorization", "Basic synthetic-group-proxy-" <> marker},
+      {"authorization", "Bearer synthetic-group-origin-" <> marker}
+    ]
+  end
+
+  defp rotation_capture_requests(%{downstream: :http1} = f, c, label, targets) do
+    Enum.with_index(targets, fn target, index ->
+      {socket, baseline} = connect(f)
+      marker = "#{label}-#{index}"
+      assert :ok = F.send_request(f, socket, "GET", target, rotation_fields(marker))
+      %{socket: socket, captured: capture(f, c, label, baseline), target: target, marker: marker}
+    end)
+  end
+
+  defp rotation_capture_requests(%{downstream: :http2} = f, c, label, targets) do
+    {socket, _} = connect(f)
+
+    Enum.with_index(targets, fn target, index ->
+      baseline = Gaoxy.status(f.instance, :http)
+      id = 2 * index + 1
+      marker = "#{label}-#{index}"
+      assert :ok = F.send_request(f, socket, "GET", target, rotation_fields(marker), true, id)
+
+      %{
+        socket: socket,
+        id: id,
+        captured: capture(f, c, label, baseline),
+        target: target,
+        marker: marker
+      }
+    end)
+  end
+
+  defp rotation_dispatch_calls(f, c, calls, peers, indices) do
+    {dispatched, _connections} =
+      Enum.zip(calls, indices)
+      |> Enum.map_reduce(%{}, fn {call, index}, connections ->
+        peer = Enum.at(peers, index)
+        dispatch(call.captured)
+        request = rotation_request_at(f, peer.pid, c, index, call.target, connections[index])
+
+        assert Enum.filter(request["headers"], fn [name, _] -> name == "proxy-authorization" end) ==
+                 []
+
+        assert Enum.filter(request["headers"], fn [name, _] -> name == "authorization" end) ==
+                 [["authorization", "Bearer synthetic-group-origin-" <> call.marker]]
+
+        held = bound(f, c, call.captured, index)
+        result = Map.merge(call, %{peer: peer.pid, request: request, bound: held})
+        {result, Map.put(connections, index, request["connection"])}
+      end)
+
+    dispatched
+  end
+
+  defp rotation_request_at(_f, peer, candidate, index, target, previous_connection) do
+    health = Enum.at(candidate.health, index)
+    assert health.peer == peer and health.physical_termination["connection"] == 1
+
+    if is_nil(previous_connection) do
+      assert %{"connection" => 2} = F.event(peer, "accept")
+      assert %{"connection" => 2, "alpn" => "h2", "sni" => "localhost"} = F.event(peer, "tls")
+    else
+      assert previous_connection == 2
+      F.no_event(peer, "accept")
+      F.no_event(peer, "tls")
+    end
+
+    request = F.event(peer, "request")
+    assert request["connection"] == 2
+    refute request["connection"] == health.request["connection"]
+    assert request["target"] == target and request["ended"]
+    assert [":method", "GET"] in request["headers"]
+    assert [":scheme", "https"] in request["headers"]
+
+    assert [":authority", URI.parse(Enum.at(candidate.sources, index).origin).authority] in request[
+             "headers"
+           ]
+
+    request
+  end
+
+  defp rotation_misuse_observe(native) do
+    session = :trace.session_create(:group_generation_rotation_misuse, self(), [])
+    on_exit(fn -> :trace.session_destroy(session) end)
+
+    assert :trace.function(
+             session,
+             {DynamicSupervisor, :start_child, 2},
+             [{:_, [], [{:message, :group_rotation_misuse_session_start}]}],
+             []
+           ) == 1
+
+    assert :trace.function(
+             session,
+             {HTTP, :fetch, 2},
+             [{:_, [], [{:message, :group_rotation_misuse_fetch}]}],
+             []
+           ) == 1
+
+    assert :trace.process(session, native, true, [:call, :arity]) == 1
+    session
+  end
+
   defp peers(protocol, count) do
     Enum.map(1..count, fn _ ->
       {pid, ready} = F.peer(protocol, ["--manual"])
@@ -759,8 +1329,20 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
                 else:
                   {CapturedGroup, {options, parent, label, Keyword.get(opts, :mutation, :none)}}
 
+            target =
+              case Keyword.get(opts, :explicit_new_group) do
+                nil -> target
+                new_group -> {RotationMisuseGroup, {options, %{group: new_group}, parent, label}}
+              end
+
             routes = [%{target: target}]
             {:ok, router} = Generation.prepare(f.store, routes)
+
+            if Keyword.has_key?(opts, :explicit_new_group) do
+              assert :erlang.external_size(routes) <= 1_048_576
+              assert :erlang.external_size(router) <= 1_048_576
+            end
+
             transports = Enum.map(unique, &elem(&1, 1))
 
             creators =
@@ -1679,7 +2261,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
     assert {:ok, _} = Gaoxy.add(f.instance, spec)
   end
 
-  defp finish(f, creators, peers) do
+  defp finish(f, creators, peers, expected_connection \\ 1) do
     F.eventually(fn ->
       match?(
         %{active: 0, retained_bytes: 0, cleanup_pending: 0, cleanup_failed: nil},
@@ -1721,7 +2303,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
 
     for {peer, accepts, requests} <- peers do
       if accepts > 0 do
-        assert %{"connection" => 1} = F.physical_termination(peer)
+        assert %{"connection" => ^expected_connection} = F.physical_termination(peer)
       end
 
       assert Process.get({F, :observed_requests, peer}) == requests

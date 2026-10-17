@@ -1,0 +1,17 @@
+Task h2_identity_full_code/final-browser-failure1 — DONE_DIAGNOSIS (direct, read-only).
+
+The initiating cause is UNKNOWN. Final fixed-browser-green2 remains FAIL (one attempted case, zero passing); accepted fixed-browser-green3 PASS does not supersede it.
+
+Worktree: /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation; branch from handoff codex/m3-h1-resource-foundation; baseline 8f6b884524d81d8defa7c5081230b8ab635e8107 agrees with both qualifications. No Git operation was run.
+
+The proximate failure is an actual downstream connection close before request_clean validates that the original connection and writer remain live. OLD browser response, original Session completion and OLD retirement succeed. Target conn #PID<0.369.0> then receives ssl_closed after h2_stream_done; monitor evidence reports shutdown peer_closed and writer normal. The native timestamp difference is 16,021,991 units, not established as 16 microseconds. Host line 2048 matches false.
+
+Sanitized Chrome evidence ties socket55/session60 to the response. After fin DATA at recorded time11678127706, session CLOSE net_error0 occurs at11678127756, followed by pool removal, session/socket end. No projected GOAWAY/RST/read error explains this. The runner has not requested Browser.close at this cut. The original raw NetLog was deleted according to custody; both final/OLD projections are identical incomplete prefixes.
+
+The two runs have identical286-entry source inventories; each run is source-stable. All102 loaded modules match source SHA and loaded MD5. Only Gaoxy.Service BEAM file SHA differs while its source/loaded MD5 match. Chrome152.0.7977.64 revision506c834ecceaa943c5f41e6cfe7f68acb5c45346 and Node24.19.0 match. Accepted run reuses browser connection55 across OLD/NEW.
+
+Matching public Chromium source was read by bounded curl to stdout (no full source file retained or full-file SHA claimed). spdy_session.cc lines228–232 logs net_error plus description; lines1419–1423 can drain with OK and description "Finished going away". Matching spdy_session_pool.cc lines428–439 and452–482 show network/SSL config/certificate notifications can drive this path. Ordinary idle cleanup uses ERR_ABORTED or ERR_CONNECTION_CLOSED, so memory pressure/idle cleanup is unsupported as an exact cause. A graceful close description would still identify a path, not necessarily its initiator. Public origins and precise excerpts are recorded in the JSON report.
+
+Minimal next evidence: a separately reviewed /tmp diagnostic runner copy may map exact known close-description strings to fixed enums (particularly FINISHED_GOING_AWAY), emitting OTHER for unrecognized strings and never emitting arbitrary description text. Preserve all original arguments, assertions, deadlines, raw custody/deletion and live-before-close cuts. Parent can then run one bounded actual fixture; if graceful going-away is observed, add only independently verified enum/integer notification fields needed to identify its initiator. Do not suppress the symptom with retries, delays, keepalive or browser flag changes.
+
+Only the two /tmp report files were written. Runtime/tests/build/browser/Git operations:0. All commands finished. Sol5 / Astra2 of2 remain unchanged. No fixture import, raw NetLog/private-key/protected diagnostic read, repository mutation, acceptance claim or http_fetch#97 work. Remaining uncertainty: initiating event was not preserved. No product decision is needed; parent owns all execution and source/evidence/Git writes.
