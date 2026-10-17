@@ -1,0 +1,41 @@
+# Group reload complete SOURCE SPEC2 review
+
+PASS_SOURCE_SPEC_ONLY. Review DONE, direct independent complete source review after parent local Sol repair1. No actionable findings; F1/F2 resolved in exact candidate2. No runtime claim.
+
+Worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`; HEAD `e4a7660baa61a792f4245f511b190a0fcfcbf920`. Candidate2 SHA `75e790fdb8fee8b17279a807cb8a826a2ad1596b0f1b7fc9250287347b85a19f`; current test SHA `144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535` (181646 bytes/4966 lines). All409union/402actual-command pins and3currentdoc pins freshly match. Complete appended3178–4966 read; exactpatch reverse reconstruction in memory reproduces rejected source923e1661. Prior candidate1 and FAIL artifacts unchanged.
+
+**R2S01 — PASS_SOURCE_SPEC_ONLY.** Exact candidate2/test pins match,181646bytes/4966lines. All409union source pins and402actual-command-with-enum pins freshly match exact frozen lists; all3current document hashes match. HEAD remains e4a7660baa61a792f4245f511b190a0fcfcbf920.
+
+**R2S02 — PASS_SOURCE_SPEC_ONLY.** Read complete appended3178..4966 in3contiguous bounded slices, current design/plan/acceptance in full, exact repair patch and relevant unchanged reused contracts from prior complete review. Only test source differs among409pins from candidate1. Repair patch2753a871 reversed in memory exactly reproduces rejected test923e1661; candidate1 manifest3135c166 and prior FAIL9fc19e2b remain immutable.
+
+**R2S03 — PASS_SOURCE_SPEC_ONLY.** F1 RESOLVED: idle proof occurs before NEW preparation. All cycles now prepare/healthy NEW with unchanged healthy/3 global request_tokens0/helpers0 before opening active OLD3. Active OLD[0,1,0] are genuinely dispatched/bound, then cycle3 prefix rollback runs, then CAS; all3 pending across CAS remains. Existing healthy readiness assertion and all original health/probe joins unchanged.
+
+**R2S04 — PASS_SOURCE_SPEC_ONLY.** F2 RESOLVED: final_zero binds actual reload_zero return after final Store/T/G retirement and peers joins. reload_zero preserves all zero assertions, obtains existing full T/G snapshot receipts with independent byte sums and actual service/gate observations; finished emits final_zero after original finish normal joins. No hardcoded replacement zero observations.
+
+**R2S05 — PASS_SOURCE_SPEC_ONLY.** Eight active/idle x nativeH1/H2 x upstreamh2c/TLS profiles keep same instance/Towner+epoch/Gowner+epoch/Store/listener/gate/service/embedding. Initial0+22CAS, warmup2 baseline and20full exact vectors3..22,23G/46distinctTs and actual final counts remain unchanged. Initial/final actor custody stays independent of plateau.
+
+**R2S06 — PASS_SOURCE_SPEC_ONLY.** Six fixed-peer epochs use .1/.2/.3 separately for A/B at distinct fixed PA/PB, actual bind/authority assertions, one immutable6copied-public-DER union for TLS, distinct real leaf identities, nilh2c trust. Original complete source/policy/manifest/trust classes preserved within lane and fixed aggregatepair; no padding/crosslane equal-width assumptions or private-key reads.
+
+**R2S07 — PASS_SOURCE_SPEC_ONLY.** SeedGET[0,1] restores cursor0. ActiveOLD[0,1,0] with original sources, derived child, G/T tokens, authentic completion/Session monitor and native arithmetic remain exact. Actual requests/upload_end0/healthconnection/authority/target/body+headers/publiccompletion/effect assertions retained. Complete first2 then lastA completion while original [A,B] source still retains unselectedB; release source only after witness.
+
+**R2S08 — PASS_SOURCE_SPEC_ONLY.** Cycle3 genuine public G prepare max_groups2 uses successful compiled NEW config, original dependency pin input/result/cancel/processed observer and exact joined no-retained-delta T/G records/pins/tokens/probes/byte sums/monitor sets/Store equality. It remains after bothready and activeOLDdispatch but beforeCAS. No fabricated pin/G/probe or no-effect mislabel.
+
+**R2S09 — PASS_SOURCE_SPEC_ONLY.** BOTH original generation2 custodian retirement hooks hold original2000ms inputs; cycle3 waits distinct IDs/refs/start times. Real old2+new2 records4/pins2/reserved8/tokens0/helpers0/closedchargedunconfirmed OLDs; public fifthT resource refusal exact fullno-delta and peer checks; both exact continues unconditionalafter plus separate transaction/throughcontinue clocks<2000. No filler/cap/deadline change.
+
+**R2S10 — PASS_SOURCE_SPEC_ONLY.** All46T retirement receipts/helper-slot+original monitor DOWNnormal, owner start/finish/capability-confirmation, charged-before-confirmation/nonprematureremoval and health/GET-matchedphysicalclose proofs remain. Original creator monitors solely consumed once by join_resource. Actual G key/pin/token/probe absence is separate. No synthetic receipts or percycle owner shutdown.
+
+**R2S11 — PASS_SOURCE_SPEC_ONLY.** NativeH2 original worker-death bounded wait plus unchanged close_calls stream-before-socket/connection/Writer original monitor joins retained. Capacitycontinues and OLDreceiptjoins precede finalactive nativewait. Epoch8/8/7 nonforcedpeerjoins exactcounts, physicalcloses, exit0/normalcollector and exactIP/portrebind; final originalStoremonitor and persistentactors preserved for finish/listenerrebind.
+
+**R2S12 — PASS_SOURCE_SPEC_ONLY.** Every planned scalar/byte stays in vector: fullTstatus/limits and independentpayload/pin/token sums;2publicidle snapshots; Ginstalledreserve/currentfullrecord/control/probe bytes/member fullbytes/config/health/inflight/cursor; fullrouter/baselinelist/record sizes/counts; sourceclasses/pairaggregate;service/gate byte/countzeros. Warmup2 and20measuredvectors compare exactly; no hashesreplace bytes, normalization, weakened assertions or afterfailure exclusions.
+
+**R2S13 — PASS_SOURCE_SPEC_ONLY.** Before resources, fixed inventory field families separate original identities/cumulativecounters/absolutechecked,due,schedulinglag/deadlines. Original observations remain in ledgers; fulloriginal serializedbyte fields retained. Existing safe opaque completion projection only for accounting; RequestCompletion/retirement interiors never traversed/serialized.
+
+**R2S14 — PASS_SOURCE_SPEC_ONLY.** Counts unchanged:46HEAD; active46seedGET+66heldGET=112GET/158requests; idle46GET/92requests; perlane accepts8/8/7, activeA/B32/24,32/24,26/20 and idle16/16,16/16,14/14. Final46distinctT receipts/closes,23Gremovals,6peerjoins,22replacementCAS derived from ledgers/exact peer receipts, no extraeffect budget absorbed.
+
+**R2S15 — PASS_SOURCE_SPEC_ONLY.** Three current docs accurately bind repaired activeorder, unchangedidlewitness and finalzeroledger, preserve historical SPEC1FAIL and distinguish sourcecheckpoint from runtime. First command identicalcandidate1: definingF+complete unfiltered groupGeneration, warnings-as-errors,maxcases1, no tagfilter/skip/timeoutoverride.60sExUnit/120sembedding/180speer/15srequests/5swaits/2sholds intact. Tooladoption unchanged; dependentSOURCECODE and actual first qualification still pending.
+
+Only assigned two /tmp reports written. No repository/evidence/source writes, Git mutation, tests/build/syntax/browser/runtime, broadstatus/inventories or prohibited E4/prompt/privatekey/rawNetLog access. All commands exited0 and finished, no output truncations/errors/deviations or running commands. Prior reviewer guard error stays in immutable SPEC1 and was not repeated. Parent format2 exit0 is static materialization only.
+
+Received root259/orchestration168/successorTool93/groupTool14; groupSOURCEfailedSPEC1/localSolrepair1/runtime0. Reviewer adds0repairrounds/0findings; Astra2/2 remains exhausted. Parent disclosed peer auditor2guessed-path tooling incidents pending supplement; no independent counter claim. Dependent CODE and actual qualification remain pending; outer60s/live-byte-equality/normalcustody remain runtime risks. No new decisions or permissions needed.
+
+Latest parent counter supplement13: root262/orchestration171/groupTool17, SOURCEfailedSPEC1/SolfixtureRepair1/runtime0; Astra2/2. Parent attributes delta since candidate2freeze counter11 to peer2guessedsourcepaths +root1guessednextstageplanrg, all bounded read/report tooling. Supplemental counts are parent-reported, not independently audited; candidate/source remain unchanged and review verdict stands.

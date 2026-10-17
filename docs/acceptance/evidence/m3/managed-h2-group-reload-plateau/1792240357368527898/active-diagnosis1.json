@@ -1,0 +1,172 @@
+{
+  "task_id": "group_reload_kickoff_spec/active-runtime-diagnosis1",
+  "status": "DONE",
+  "assignment": "direct independent read-only diagnosis, resumed from compacted handoff",
+  "verdict": "INCONCLUSIVE_INITIATING_CAUSE_UNKNOWN",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_from_assignment": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "scope": "Diagnose active-profile failure only; root owns idle diagnosis, source, Git and runtime. No source edits, test/build/browser execution, private client runtime access or process operation.",
+  "frozen_source": {
+    "path": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+    "sha256": "144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535",
+    "bytes": 181646,
+    "lines": 4966,
+    "rechecked": true
+  },
+  "evidence": {
+    "directory": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898",
+    "safe_log": "group-reload-first-scoped1.log",
+    "safe_log_observed_lines": 349,
+    "safe_log_result": "104 tests, 8 failures; Finished in 191.3 seconds",
+    "parent_reported_collector": "joined FAIL; child exit 2; 199.691 seconds including Nix",
+    "parent_audit": "first-runtime-failure-audit1.json (reported by parent; not independently read)",
+    "own_runtime_commands": "NOT RUN",
+    "active_completed_cycle_rows": 0,
+    "active_failures": [
+      {
+        "downstream": "http2",
+        "upstream": "h2c",
+        "assertion_log_lines": [
+          69,
+          76
+        ],
+        "setup_log_line": 66,
+        "setup_elapsed_ms": 1512,
+        "entered_monotonic_ms": -576460694840
+      },
+      {
+        "downstream": "http1",
+        "upstream": "TLS-H2 (log http2)",
+        "assertion_log_lines": [
+          107,
+          114
+        ],
+        "setup_log_line": 104,
+        "setup_elapsed_ms": 4327,
+        "entered_monotonic_ms": -576460678296
+      },
+      {
+        "downstream": "http2",
+        "upstream": "TLS-H2 (log http2)",
+        "assertion_log_lines": [
+          152,
+          159
+        ],
+        "setup_log_line": 149,
+        "setup_elapsed_ms": 6774,
+        "entered_monotonic_ms": -576460651049
+      },
+      {
+        "downstream": "http1",
+        "upstream": "h2c",
+        "assertion_log_lines": [
+          243,
+          250
+        ],
+        "setup_log_line": 240,
+        "setup_elapsed_ms": 1427,
+        "entered_monotonic_ms": -576460600520
+      }
+    ],
+    "common_failure": {
+      "source_line": 3645,
+      "expression": "HTTP.RequestCompletion.await(last.bound.completion, 0)",
+      "expected": "{:error, :cleanup_pending}",
+      "actual": ":ok",
+      "cycle": "first replacement, as established by no completed active cycle row and parent audit receipt"
+    }
+  },
+  "proved": [
+    "All four active downstream/upstream cells reach the same unexpected completed-cleanup result for the third original OLD request before its explicit complete_return.",
+    "The reload helper opens/dispatched OLD [0,1,0], activates NEW, closes OLD admission, seeds/completes/returns NEW, then completes and immediately returns the first two OLD endpoints before waiting for the last-only OLD source pins and asserting last completion pending.",
+    "The passing older rotation test completes all three OLD requests before returning the first two OLD endpoints. It does not establish last-pending-after-two-source-returns.",
+    "The public RequestCompletion await :ok certifies tracked-resource cleanup and lifecycle tracker termination, not successful response. await(handle,0) is a nonblocking check and does not abort.",
+    "Session cleanup_complete may stop normally after consumed success or confirmed cancellation. A normal Session DOWN alone would not identify the initiating terminal event.",
+    "T remove_pin removes the supplied exact source; close_unpinned scans every remaining resource pin and token before requesting physical retirement. G remove_pin removes the exact pin, cancels its timer and reconciles its keys. These source paths do not by themselves establish cancellation of the last request.",
+    "Original source-file SHA, byte count and line count match the assigned frozen candidate."
+  ],
+  "shared_peer_and_label_audit": {
+    "mapping": "OLD calls 0 and 2 both select A; each request_at validates its unique target. bound identifies the original Session through its native owner and authentic G/T tokens, verifies original completion identity and selected child/source.",
+    "complete_return": "Respond command carries the selected peer PID and exact upstream connection/stream; downstream response uses call.socket and call.id (HTTP2) or separate socket (HTTP1); completion and DOWN use the original completion/session/monitor; endpoint return receipt matches native/ref/label.",
+    "return_endpoint": "Sends only {:return, captured.ref} to captured.native. Shared :reload label is not the sole correlation.",
+    "ack_limitation": "F.command consumes a command event by peer/name without asserting connection/stream. This is an observation gap; no mismatched response or cross-call cancellation is evidenced.",
+    "conclusion": "No causal shared-label/session mix-up established from source."
+  },
+  "unknown": [
+    "Initiating reason for last-request cleanup: UNKNOWN.",
+    "Whether the request encountered opening/total/native timeout, authenticated cancellation, upstream error, owner/service DOWN, an unexpected successful response, or another path: UNKNOWN.",
+    "Original last-held request absolute deadlines and monotonic phase times at failure are not emitted in the log. Initial seed deadlines are different requests and cannot establish the failed held request elapsed time.",
+    "The first exact phase where the last completion becomes terminal and whether its G/T token or child was already removed: UNKNOWN.",
+    "Uncorrelated physical termination events appearing after assertion failures do not prove an initiating cause; teardown can also produce them."
+  ],
+  "minimal_root_owned_diagnostic_proposal": [
+    "Keep every existing assertion, timeout, absolute deadline, cap and peer expectation unchanged. Add observation only for the original three OLD calls during the first replacement.",
+    "Emit one correlated inventory per call before activation and after OLD admission closure/NEW seed; include monotonic ms, original exchange deadline, Session opening/total deadlines, original native/ref, Session/monitor identity, public completion identity and nonblocking result, selected member, upstream peer+connection+stream, downstream socket+stream ID, authentic G/T source refs, G/T token refs and selected child/source ref.",
+    "Emit phase clocks and bounded G/T pin/token/child presence immediately before and after each of the first two complete_return calls and immediately before and after each matching return_endpoint; emit the last call public completion state at these same boundaries and before/after last-only source wait. Use actual original IDs, not newly selected replacement IDs.",
+    "Observe the original Gaoxy Session initiating terminal event before cleanup: expire, opening_expired, total_expired, consumed, authenticated cleanup_cancel with original token/reason/deadline, matched owner/service DOWN, upstream error, or local accounting failure. Record normalized reason plus cancelled/consumed/outcome and monotonic clock at first transition and cleanup completion. Avoid inspecting http_fetch private tracker/client state.",
+    "Correlate original owner effects (G finish/token and T finish/token/child/source removal, exact refs) with those phase/event clocks. Correlate each real peer respond-command/ack, response and stream reset by the original peer/connection/stream, especially A calls 0 and 2; do not rely on a generic per-peer command acknowledgement.",
+    "On unexpected terminal completion preserve the original Session monitor event and authentic downstream/peer observations without injecting a response, extending a lifetime or replacing the failing assertion. Root alone owns any instrumentation and future execution."
+  ],
+  "source_references": [
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:553 (baseline ordering)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:346 (CapturedGroup barriers)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:1627 (capture requests)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:1800 (dispatch/target correlation)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:1823 (original token/session/completion binding)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:1895 (complete_return)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:2108 (return_endpoint)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:3493 (reload_open)",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:3593 (reload_cycle)",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:121 (peer command acknowledgement)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:286 (cancellation/owner DOWN)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:375 (timers)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1296 (terminal reason/outcome)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1398 (cleanup completion)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:1102 (pin removal/remaining holds)",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:931 (exact pin removal)",
+    "deps/http_fetch/lib/http/request_completion.ex:1 (public completion semantics)"
+  ],
+  "verification": {
+    "performed": "Read bounded source slices; parsed only selected fields from safe log JSON; checked frozen source SHA/counts.",
+    "actual_results": "All resumed read/parse/hash commands exited 0. Runtime result is failure evidence, not a passing gate. No new runtime executed.",
+    "tooling_incidents": [
+      {
+        "from_prior_handoff": true,
+        "error": "rg: apps/gaoxy_proxy/lib/gaoxy/proxy/session.ex: No such file or directory (os error 2)",
+        "outer_command_exit": 0,
+        "inner_rg_exit": "unobserved",
+        "handling": "Immediately reported to parent; correct http/session.ex source read. No product/repair-round inference."
+      },
+      {
+        "from_prior_handoff": true,
+        "issue": "Oversized log/source output truncated twice",
+        "handling": "Relevant log JSON reread as selected fields and source reread in bounded slices."
+      }
+    ]
+  },
+  "changes": {
+    "repository_files": [],
+    "task_artifacts": [
+      "/tmp/gaoxy-group-reload-active-diagnosis1.json"
+    ]
+  },
+  "counters": {
+    "latest_parent_reported": {
+      "root": 265,
+      "orchestration": 172,
+      "groupTool": 18,
+      "group_reload_runtime_failed_green": 1
+    },
+    "sol_repair_rounds_this_diagnosis": 0,
+    "cumulative_sol_repair_rounds": "parent-owned; not independently reconstructed",
+    "astra_recovery_rounds_received": "2/2 exhausted per handoff",
+    "astra_gate": "none; no escalation requested"
+  },
+  "shutdown": {
+    "own_commands": "All completed; no runtime or background process started. No other process operated.",
+    "parent_runtime": "Collector joined per parent receipt; not operated by this worker."
+  },
+  "remaining_risks": "Causal repair cannot be justified by present evidence. Preserve the failed gate; do not claim timeout, upstream bug, cross-call corruption or success.",
+  "decisions_needed": "Root to review and own the minimal observation-only instrumentation and future exact run; no product or permission decision requested."
+}

@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+import datetime,hashlib,json,subprocess
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E5=W/'docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527'
+E6=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def out(p,d):
+    with p.open('x') as f:json.dump(d,f,indent=2,sort_keys=True);f.write('\n')
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+head=subprocess.check_output(['git','rev-parse','HEAD'],cwd=W,text=True).strip()
+assert head=='e4a7660baa61a792f4245f511b190a0fcfcbf920'
+post=json.loads((E6/'fixed-postcommit-custody1.json').read_text())
+assert post['verdict']=='PASS_FIXED_SLICE_LOCAL_CLOSURE' and post['feature_commit']==head
+assert sha(E6/'fixed-postcommit-custody1.json')=='a3a9d61fa2043952e533ca91639b4ddd7d13137a42569305bb1c7164cc5bd5eb'
+spec=json.loads((E5/'document-spec2.json').read_text())
+assert all(sha(W/p)==h for p,h in spec['documents_sha256'].items())
+c=json.loads((E5/'counter16.json').read_text())
+c.update(kind='GROUP_RELOAD_COUNTER_EXTENSION1',at_utc=now(),prior_path=str((E5/'counter16.json').relative_to(W)),prior_sha256=sha(E5/'counter16.json'))
+for k in ['current_root_failure_events','current_orchestration','successor_tooling_errors']:c['counters'][k]+=3
+assert 'group_reload_tooling_errors' not in c['counters'];c['counters']['group_reload_tooling_errors']=3
+c['events']=[{'kind':'Read-only group test-seam investigator supplied nonexistent apps/gaoxy_core/lib/gaoxy/http/generation.ex; rg missing-path diagnostic was hidden by a pipeline head exit. Lookup corrected to apps/gaoxy_http/... without source/runtime mutation.','classification':'successor group-reload tooling incident1; existing fixed-stage/tool/repair counters unchanged','rg_exit_observed':None,'outer_pipeline_exit':0,'source_of_exit':'investigator report; no inferred hidden rg exit'}, {'kind':'The same investigator next queried nonexistent apps/gaoxy_http/lib/gaoxy/http/generation/store.ex; rg emitted missing-path diagnostic, with inner pipeline exit unobserved and later sed yielding outer exit0. Investigator switched to rg --files.','classification':'successor group-reload tooling incident2; no source/runtime mutation','rg_exit_observed':None,'outer_compound_exit':0,'source_of_exit':'investigator report'}, {'kind':'Root queried ../AGENTS.md relative to main repository without first checking existence; cat returned missing-file diagnostic and actual outer exit1 after successfully reading root AGENTS.md. Applicable worktree AGENTS.md was separately read successfully.','classification':'successor group-reload tooling incident3; read-only instruction lookup','outer_exit':1,'source_of_exit':'actual exec_command result'}]
+c['limits']='All fixed-stage and inherited counters preserved without reset. New group_reload_tooling_errors3; no failedGREEN/fixture/production repair. Astra2/2 exhausted. Categories distinct, not test totals.'
+out(E6/'counter1.json',c)
+names={
+ 'docs/designs/m3-managed-h2-fixed-reload-plateau.md':'before-fixed-closure-design.txt',
+ 'docs/plans/m3-managed-h2-fixed-reload-plateau.md':'before-fixed-closure-plan.txt',
+ 'docs/acceptance/m3-managed-h2-fixed-reload-plateau.md':'before-fixed-closure-acceptance.txt',
+ 'docs/plans/m3-managed-h2-identity-rotation.md':'before-fixed-closure-identity-plan.txt',
+ 'docs/plans/m3-upstream-transport.md':'before-fixed-closure-upstream-plan.txt',
+ 'implement-plan.md':'before-fixed-closure-implement-plan.txt',
+}
+archives={}
+for p,name in names.items():
+    with (E6/name).open('xb') as f:f.write((W/p).read_bytes())
+    assert sha(E6/name)==spec['documents_sha256'][p]
+    archives[p]={'archive':str((E6/name).relative_to(W)),'sha256':sha(E6/name),'committed_feature':head}
+out(E6/'fixed-feature-document-archives1.json',{'kind':'FIXED_FEATURE_REVIEWED_DOCUMENT_ARCHIVES1','at_utc':now(),'archives':archives,'accepted_document_spec2_sha256':sha(E5/'document-spec2.json'),'accepted_document_code1_sha256':sha(E5/'document-code1.json'),'limits':'Six exact fixed feature documents archived before factual successor closure update. Old reviews/candidate manifests remain immutable; their document pins rebind here.'})
+closure='Fixed reload plateau is DONE LOCALLY at `'+head+'`. Eight native H1/H2 × h2c/TLS-H2 × active/idle profiles each retained one instance/owner/epoch/Store, two warmups and twenty measured reloads. Fresh scoped batches passed242/0+400/0; core1/0, HTTP2/0, Python11-method startup and fixed browser2rows/4root-viewed PNGs passed separately. Full implementation and final document SPEC→CODE passed with zero findings. The actual postcommit audit `'+str((E6/'fixed-postcommit-custody1.json').relative_to(W))+'` (SHA256 `'+sha(E6/'fixed-postcommit-custody1.json')+'`) verified all184 task files and399 source pins against committed blobs and disk, with empty index/clean tracked tree at that snapshot. Fixed-stage counter16 preserves root243/orchestration154/successor-tooling82/plateau-tooling19 and Astra2/2 exhausted; the later group kickoff counters are separate successors without reset. Group active/idle reload design/plan is now being prepared; its implementation/runtime is NOT RUN. Whole Task5/M3, group/full matrix, multi-owner, selected-A R32/B-available, standalone, two≥600s load profiles and H3 accounting remain open. No publication/deployment or other excluded operation follows.'
+for p in names:
+    if '/acceptance/' in p:continue
+    s=(W/p).read_text();lines=s.splitlines(keepends=True)
+    matched=[i for i,line in enumerate(lines) if line.startswith('Current fixed-plateau checkpoint — 2026-10-17:')]
+    assert len(matched)==1
+    lines[matched[0]]=closure+'\n';s=''.join(lines)
+    if '/designs/' in p:s=s.replace('All prescribed consumer/startup/browser gates passed; final document review and local committed-byte custody remain.','All prescribed consumer/startup/browser/document gates and actual local committed-byte custody passed.')
+    if p=='docs/plans/m3-managed-h2-fixed-reload-plateau.md':
+        s=s.replace('- [ ] Mark fixed plateau only after','- [x] Mark fixed plateau only after',1)
+        s=s.replace('- [ ] Complete independent document SPEC then CODE, source/disk/index/blob checks,','- [x] Complete independent document SPEC then CODE, source/disk/index/blob checks,',1)
+        s=s.replace('Task8 factual acceptance is written; final document review, local committed-byte custody and successor preparation remain separately pending until performed.','Task8 factual acceptance, final document review and actual local committed-byte custody are complete; successor design/plan is being prepared separately.')
+    (W/p).write_text(s)
+p='docs/acceptance/m3-managed-h2-fixed-reload-plateau.md';s=(W/p).read_text();lines=s.splitlines(keepends=True)
+for i,line in enumerate(lines):
+    if line.startswith('Status — 2026-10-17:'):lines[i]='Status — 2026-10-17: **PASS; fixed reload plateau DONE LOCALLY** at `'+head+'`. All prescribed implementation/runtime/document gates and actual local committed-byte custody passed. Whole Task5/M3 remains IN PROGRESS. The factual postcommit closure below is a successor document update; the frozen reviewed feature checkpoint is preserved in E6 archives.\n'
+    elif line.startswith('| Final document SPEC→CODE |'):lines[i]='| Final document SPEC→CODE | PASS; zero findings | E5 `document-spec1.json`, bounded `document-spec2.json` SHA256 `'+sha(E5/'document-spec2.json')+'`, dependent `document-code1.json` SHA256 `'+sha(E5/'document-code1.json')+'`; `document-review-adoption1.json` |\n'
+    elif line.startswith('| Disk/index/blob checks, local conventional commit and committed bytes |'):lines[i]='| Disk/index/blob checks, local conventional commit and committed bytes | PASS184 task files/399 source pins | Feature `'+head+'`; E6 `fixed-postcommit-custody1.json` SHA256 `'+sha(E6/'fixed-postcommit-custody1.json')+'` |\n'
+s=''.join(lines)
+old='Latest counter15 SHA256 is `'+sha(E5/'counter15.json')+'`: root242/orchestration153/successor-tooling81/plateau-tooling18'
+new='Fixed-stage counter16 after final document review is SHA256 `'+sha(E5/'counter16.json')+'`: root243/orchestration154/successor-tooling82/plateau-tooling19'
+assert s.count(old)==1;s=s.replace(old,new,1)
+s=s.replace('Preserve predecessor snapshots without reset.','Counter16 preserves a root adoption checker error: the actual532 passing checks are518 original plus14 bounded checks, stored in two arrays; its corrected aggregation passed before staging. Canonical feature documents were frozen at counter15; the post-review event16 is separately retained, and this factual closure advances the document snapshot. Later group kickoff events belong to E6 successors and do not reset these counters. Preserve predecessor snapshots without reset.',1)
+s=s.replace('Missing required gates above must receive actual evidence and final independent document review/custody before fixed-slice closure and Task8 completion; proposed wording alone closes nothing. After actual closure, automatically prepare the separate group active/idle reload design and plan, then execute only after its own prescribed gates.','All required gates above now have accepted evidence, final independent document review and actual committed-byte custody. E6 `fixed-feature-document-archives1.json` preserves the exact six reviewed feature documents before this factual closure update; no old manifest or receipt was rewritten. The separate group active/idle reload design and plan is now being prepared, with implementation/runtime NOT RUN until its own prescribed gates.')
+(W/p).write_text(s)
+out(E6/'kickoff-entry1.json',{'kind':'GROUP_RELOAD_KICKOFF_ENTRY1','at_utc':now(),'base_commit':head,'fixed_postcommit_audit_sha256':sha(E6/'fixed-postcommit-custody1.json'),'fixed_feature_document_archives_sha256':sha(E6/'fixed-feature-document-archives1.json'),'entry_counter_path':str((E6/'counter1.json').relative_to(W)),'entry_counter_sha256':sha(E6/'counter1.json'),'closure_documents_sha256':{p:sha(W/p) for p in names},'group_status':'DESIGN_PREPARATION_ONLY; IMPLEMENTATION/RUNTIME NOT RUN','limits':'Root alone writes repository/evidence/Git and runs runtime. Continuing authorization selects recommended design without routine approval; preserve all assertions/deadlines/exclusions and all history. Source399 pins remain fixed until separately reviewed group source changes.'})
+with (E6/'kickoff-entry-writer1.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'fixed':'DONE_LOCALLY','group':'DESIGN_PREPARATION','entry_sha256':sha(E6/'kickoff-entry1.json'),'counter_sha256':sha(E6/'counter1.json'),'counters':{k:c['counters'][k] for k in ['current_root_failure_events','current_orchestration','successor_tooling_errors','fixed_plateau_tooling_errors','group_reload_tooling_errors']}}))

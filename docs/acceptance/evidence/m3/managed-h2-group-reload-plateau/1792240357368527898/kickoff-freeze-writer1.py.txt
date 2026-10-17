@@ -1,0 +1,33 @@
+import datetime, hashlib, json, shutil, subprocess
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898'
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def write(p,d):
+    with p.open('x') as f: json.dump(d,f,indent=2,sort_keys=True); f.write('\n')
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+counter=json.loads((E/'counter1.json').read_text())
+counter.update(kind='GROUP_RELOAD_COUNTER_EXTENSION2',at_utc=now(),prior_path=str((E/'counter1.json').relative_to(W)),prior_sha256=sha(E/'counter1.json'))
+for k in ['current_root_failure_events','current_orchestration','successor_tooling_errors','group_reload_tooling_errors']: counter['counters'][k]+=1
+counter['events']=[{'kind':'Root attempted to read guessed E5/final-verification-freeze1.json without first locating its name; sed returned actual exit2/missing-file diagnostic. Root switched to bounded directory filename enumeration; no source/runtime mutation.','classification':'group tooling incident4, not runtime/fixture/product repair','actual_outer_exit':2}]
+counter['limits']='Cumulative counters preserved, group tooling4, fixed tooling19, Astra2/2 exhausted. No implementation/runtime/fixture repair in this event.'
+write(E/'counter2.json',counter)
+reports={}
+for stem in ['gaoxy-group-reload-test-seams1','gaoxy-group-reload-peer-accounting-seams1']:
+    for suffix in ['md','json']:
+        original=Path('/tmp')/(stem+'.'+suffix)
+        dest=E/(stem+'.'+suffix)
+        with dest.open('xb') as f:f.write(original.read_bytes())
+        reports[str(dest.relative_to(W))]=sha(dest)
+post=json.loads((E/'fixed-postcommit-custody1.json').read_text())
+sources=post['source_sha256']
+for p,h in sources.items():
+    assert not any(t in p for t in ['codex-prompt','fix-prompt','close-diagnostic-','raw-terminal','netlog.json']),p
+    assert sha(W/p)==h,p
+docs=['docs/designs/m3-managed-h2-group-reload-plateau.md','docs/plans/m3-managed-h2-group-reload-plateau.md','docs/acceptance/m3-managed-h2-group-reload-plateau.md']
+prior=json.loads((E/'fixed-feature-document-archives1.json').read_text())['archives']
+checks=['eight cells','persistent G/T owners and epochs/Store/listener/service/gate','23G/46distinctT','six unchanged peers and exact budgets','constant complete source/DER class','2warmups+20measured','HEAD completions/probe normal joins','seed0,1;active0,1,0','G/T source/derived child/original completions','two OLD retirement holds2000ms','pre-CAS genuine dependency-prefix rollback','fifth-T refusal with complete no-delta','independent G/T/control/probe/service bytes','all byte/scalar fields fixed before runtime','original public T receipts/normal helper/creator joins/physical closes','normal final actors/listener+peer rebind','independent kickoff/source/implementation/document SPEC then CODE','fresh static/scoped/consumer/Python/browser gates','all4 actual images root-viewed','full Task5/M3 open;restrictions/counters unchanged']
+write(E/'kickoff-self-review1.json',{'kind':'GROUP_RELOAD_KICKOFF_SELF_REVIEW1','at_utc':now(),'checks':checks,'verdict':'PASS_SELF_REVIEW_ONLY','documents_sha256':{p:sha(W/p) for p in docs},'limits':'Root design self-review, not independent review or runtime acceptance.'})
+write(E/'kickoff1.json',{'kind':'GROUP_RELOAD_KICKOFF1','at_utc':now(),'base_commit':post['feature_commit'],'worktree':str(W),'branch':subprocess.check_output(['git','branch','--show-current'],cwd=W,text=True).strip(),'tree':subprocess.check_output(['git','rev-parse','HEAD^{tree}'],cwd=W,text=True).strip(),'source_sha256':sources,'source_count':len(sources),'documents_sha256':{p:sha(W/p) for p in docs},'fixed_closure_documents_sha256':{p:sha(W/p) for p in prior},'reports_sha256':reports,'counter_path':str((E/'counter2.json').relative_to(W)),'counter_sha256':sha(E/'counter2.json'),'self_review_sha256':sha(E/'kickoff-self-review1.json'),'schedule':{'profiles':8,'generations_per_profile':23,'warmup_replacements':2,'measured_replacements':20,'members':2,'distinct_transports_per_generation':2,'peers':6,'accepts_per_profile':46,'HEAD_per_profile':46,'active_GET_per_profile':112,'idle_GET_per_profile':46,'seed_indices':[0,1],'active_held_indices':[0,1,0],'epoch_generations':[8,8,7]},'limits':{'transport_resources':4,'transport_pinned_handles':256,'transport_tokens':64,'transport_bytes':8388608,'group_max_groups':2,'ExUnit_ms':60000,'embedding_ms':120000,'peer_ms':180000,'retirement_hold_ms':2000},'kickoff_spec':'NOT RUN','kickoff_code':'NOT RUN','source_implementation':'NOT RUN','runtime':'NOT RUN','restrictions':'Continuing local development only; no third Astra round, publication/deployment, production/Vault/certificates/public management/account changes or disabled release-artifact E2E activation. Protected prompts/E4 unrelated files/private keys/raw NetLog remain excluded.'})
+with (E/'kickoff-freeze-writer1.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'source_count':len(sources),'kickoff_sha256':sha(E/'kickoff1.json'),'self_review_sha256':sha(E/'kickoff-self-review1.json'),'group_tooling':counter['counters']['group_reload_tooling_errors'],'runtime':'NOT RUN'}))

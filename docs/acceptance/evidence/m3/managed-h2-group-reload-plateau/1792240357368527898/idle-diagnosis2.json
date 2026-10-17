@@ -1,0 +1,132 @@
+{
+  "task_id": "group_reload_kickoff_code/idle-diagnosis2",
+  "status": "DONE",
+  "assignment": "direct read-only independent diagnosis",
+  "classification": "DIAGNOSTIC_ONLY_NOT_ACCEPTANCE",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "supplied_baseline": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "scope": "Frozen observation candidate and evidence; only assigned /tmp reports written. Parent owns repository changes and runtime.",
+  "receipt": {
+    "verdict": "FAIL",
+    "actual_exit": 2,
+    "executed_tests": 1,
+    "reported_tests": 104,
+    "failures": 1,
+    "excluded": 103,
+    "source401_exact_candidate": true,
+    "source_stable": true,
+    "forced": false,
+    "process_joined": true
+  },
+  "input_sha256": {
+    "observation-idle-audit1.json": "bd0206b19d63839b77294da071105f64f5c74033dde8d87929465b1a41fa3ef1",
+    "group-reload-observation-idle1.json": "a49a514d8864ac520c9782db95b36e88d17a921b3bee658039556755985f4272",
+    "group-reload-observation-idle1.log": "114042efaf82e4c3a23028c29f818bffc7593f82599f87d02ec4fad00ff46b13",
+    "observation-candidate1.exs.txt": "a99fbb5a4133637913801cf61ae5688aa3797842f44b23788261a81280dabfb6"
+  },
+  "root_cause": "Premature G/Store settlement observation: Store retires the old T and G baseline pins on separate mailbox turns, while the fixture checks NEW-only G immediately after held T messages. Observed OLD G remains legitimately anchored by the old Store baseline at the G snapshot.",
+  "observations": {
+    "cell": "nativeH1->h2c idle cycle3",
+    "assertion": "unchanged NEW-only G assertion in frozen source line4428, reload_capacity/5",
+    "store_pid": "#PID<0.347.0>",
+    "group_owner_pid": "#PID<0.346.0>",
+    "old_group_generation": "#Reference<0.1409219664.2347761665.55001>",
+    "fresh_group_generation": "#Reference<0.1409219664.2347761665.57441>",
+    "group_snapshot": {
+      "actual_groups": 2,
+      "lifecycles": [
+        "active",
+        "active"
+      ],
+      "inflight": [
+        0,
+        0
+      ],
+      "tokens": 0,
+      "probes": 0,
+      "baseline_pins": 2,
+      "baseline_holder": "#PID<0.347.0>",
+      "pin_refs": [
+        "#Reference<0.1409219664.2347761665.55721>",
+        "#Reference<0.1409219664.2347761666.49743>"
+      ]
+    },
+    "later_store_snapshot": {
+      "retired": [],
+      "preparation": null,
+      "baseline_length": 2,
+      "baseline_group_generation": "#Reference<0.1409219664.2347761665.57441>",
+      "router_generation": "#Reference<0.1409219664.2347761666.48987>"
+    },
+    "timing": {
+      "row_monotonic_ms": -576460725395,
+      "original_hold_starts_ms": [
+        -576460725395,
+        -576460725395
+      ],
+      "hold_elapsed_at_row_ms": [
+        0,
+        0
+      ],
+      "original_absolute_deadline_ms": -576460723395
+    },
+    "sequential_snapshot_limit": "G and later Store snapshots are not atomic. Store.retired was empty only in the later snapshot; no claim about its value at G snapshot.",
+    "control_flow_passed_before_failure": "Original T checks: resources4/pins2/request_tokens0/helpers0/reserved8/failed0; exact OLD+NEW records; OLD closed/charged/unconfirmed with live custodians. Capacity refusal and full cycle were not reached."
+  },
+  "source_trace": [
+    {
+      "file": "apps/gaoxy_http/lib/gaoxy/http/generation.ex",
+      "lines": "517-526,572-580,607-612",
+      "finding": "Activation installs new baseline then queues old pins. Reconciliation releases one retired pin per turn and schedules next zero-delay timer."
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "lines": "1102-1160",
+      "finding": "T pin removal can close admission and send retirement to actual custodian independently of subsequent Store G release."
+    },
+    {
+      "file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex",
+      "lines": "931-940,1041-1083",
+      "finding": "Real baseline/preparation anchor preserves OLD active G; unanchored G disappears when pins/inflight/probes permit."
+    },
+    {
+      "file": "observation-candidate1.exs.txt",
+      "lines": "4407-4437,4473-4487",
+      "finding": "G snapshot precedes later Store read and unchanged assertion; original after always sends both exact continues and retains original <2000ms timing."
+    }
+  ],
+  "recommendation": {
+    "smallest_change": "Explicit actual G+Store settlement barrier after both original held messages, using the same earliest-original-start+2000ms absolute deadline for every read and poll.",
+    "g_predicate": "Exactly fresh G1, one G pin, tokens0, probes0.",
+    "store_predicate": "Fresh router, retired[], preparationnil.",
+    "preserve": [
+      "All original final G/Store/T assertions",
+      "Capacity refusal and no-delta checks",
+      "Original transaction and through_continue <2000ms clocks",
+      "Both unconditional original continues",
+      "Real T retirement holds until original continue"
+    ],
+    "forbidden": [
+      "Fresh/reset5s budgets",
+      "Arbitrary sleep",
+      "Enlarged limits",
+      "Production changes",
+      "Early T retirement release"
+    ]
+  },
+  "acceptance": "Diagnosis complete. Proposed repair efficacy and candidate3 acceptance NOT RUN by this reviewer.",
+  "verification": "Read-only SHA256 and compact JSON projections; prior bounded raw-log and frozen-source reads retained in handoff. No test/build/runtime commands.",
+  "tooling_incidents": {
+    "new_output_truncations": 1,
+    "detail": "One prior audit rows projection produced134 lines and was truncated; disclosed and replaced with bounded raw-log projections. No reliance on truncated output.",
+    "latest_parent_counter": "counter21 root279/orch186/groupTool32"
+  },
+  "counters": {
+    "sol_repair_rounds_added": 0,
+    "group_fixture_cumulative_sol_repair_rounds": 2,
+    "astra_recovery_rounds": "2/2 exhausted"
+  },
+  "command_shutdown": "All own read/report commands completed; no processes launched or touched.",
+  "remaining_risks": "One reproduced idle cell provides diagnosis only; no production leak proof and no repair acceptance.",
+  "decisions_needed": []
+}

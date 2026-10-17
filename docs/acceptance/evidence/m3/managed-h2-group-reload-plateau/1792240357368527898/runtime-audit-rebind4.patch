@@ -1,0 +1,56 @@
+--- runtime-audit-proposal3.py.txt
++++ runtime-audit-proposal4.py.txt
+@@ -15,8 +15,8 @@
+ import sys
+ 
+ SOURCE = 'apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs'
+-SOURCE_SHA = '144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535'
+-CANDIDATE_SHA = '75e790fdb8fee8b17279a807cb8a826a2ad1596b0f1b7fc9250287347b85a19f'
++SOURCE_SHA = '4e112506f2ee90883e5d42048d4f0886936dfa2f252c59c3add4631a783998db'
++CANDIDATE_SHA = '86439e6e26e54f5f123d660371e9abedfe3e5a3fd6dddb10f2e1911553c9ba0b'
+ CONTEXTS = set(itertools.product(('h2c', 'http2'), ('http1', 'http2'), ('active', 'idle')))
+ EVENTS = ('contract', 'setup', 'cycle', 'finished')
+ PLATEAU = {'transport', 'transport_bytes', 'transport_pin_batches', 'transport_snapshots',
+@@ -456,14 +456,15 @@
+     return totals
+ 
+ def receipt_audit(receipt, raw_log, candidate):
+-    need(candidate['kind'] == 'GROUP_RELOAD_SOURCE_CANDIDATE2' and
++    need(candidate['kind'] == 'GROUP_RELOAD_SOURCE_CANDIDATE3' and
+          candidate['base_commit'] == 'e4a7660baa61a792f4245f511b190a0fcfcbf920' and
+-         len(candidate['actual_command_source_sha256']) == candidate['actual_command_source_count_with_enum'] == 402,
++         len(candidate['actual_command_source_sha256']) == candidate['actual_command_source_count'] == 401,
+          'candidate.source_map_shape')
+     expected_sources = dict(candidate['actual_command_source_sha256'])
+-    excluded_enum_sha256 = expected_sources.pop(EXCLUDED_ENUM)
+-    need(excluded_enum_sha256 == '42ad21b2f1d4a317a00a33e90712bc7aa19790a812ce06984fce5e0355eff0ca' and
+-         len(expected_sources) == 401, 'candidate.exact_collector_map_without_enum')
++    need(candidate['explicit_enum_outside_command_map'] == dict(path=EXCLUDED_ENUM,
++         sha256='42ad21b2f1d4a317a00a33e90712bc7aa19790a812ce06984fce5e0355eff0ca') and
++         EXCLUDED_ENUM not in expected_sources and len(expected_sources) == 401,
++         'candidate.exact_collector_map_and_separate_enum')
+     need(receipt['name'] == candidate['first_command']['name'] and receipt['cwd'] == ROOT and
+          receipt['environment'] == {'MIX_ENV': 'test', 'ERL_FLAGS': '+S 2:2'} and
+          receipt['browser'] is None and receipt['log'] == Path(candidate['first_command']['log']).name,
+@@ -497,7 +498,7 @@
+     p.add_argument('--log', required=True)
+     p.add_argument('--candidate', required=True)
+     a = p.parse_args()
+-    result = dict(kind='PROPOSED_GROUP_RELOAD_RUNTIME_DATA_AUDIT3', status='FAIL',
++    result = dict(kind='PROPOSED_GROUP_RELOAD_RUNTIME_DATA_AUDIT4', status='FAIL',
+                   runtime_executed_by_audit=False, source_sha256=SOURCE_SHA, contexts=0,
+                   source_attestations=[], counts_separate='ExUnit only; Python/browser/static excluded')
+     try:
+@@ -505,10 +506,10 @@
+         need(hashlib.sha256(candidate_bytes).hexdigest() == CANDIDATE_SHA, 'candidate.original_frozen_hash')
+         candidate = parse_json(candidate_bytes)
+         result['excluded_collector_source'] = dict(path=EXCLUDED_ENUM,
+-             sha256=candidate['actual_command_source_sha256'][EXCLUDED_ENUM],
++             sha256=candidate['explicit_enum_outside_command_map']['sha256'],
+              reason='Explicit frozen enum JSON is outside the collector E6 .py/.exs whitelist.')
+         result['expected_collector_source_count'] = 401
+-        result['candidate_source_count_with_enum'] = 402
++        result['candidate_actual_command_source_count'] = 401
+         receipt_bytes = bounded(a.receipt, RECEIPT_MAX)
+         receipt = parse_json(receipt_bytes)
+         raw_log = bounded(a.log, LOG_MAX)

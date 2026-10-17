@@ -1,0 +1,51 @@
+--- candidate2
++++ runtime-repair2
+@@ -3632,7 +3632,7 @@
+ 
+           sources =
+             for {ref, p} <- t.pins,
+-                p.public.kind == :request and
++                not Map.get(p, :derived, false) and p.public.kind == :request and
+                   Enum.any?(old.transports, &(&1 in p.public.handles)),
+                 do: ref
+ 
+@@ -3642,6 +3642,10 @@
+           sources == [last.captured.tpin.ref] and gpins == [last.captured.gpin.ref]
+         end)
+ 
++        child = :sys.get_state(f.owner).pins[last.bound.child.ref]
++        assert child.public === last.bound.child
++        assert child.derived and child.source_ref === last.captured.tpin.ref
++        assert child.public.handles === [last.bound.selected]
+         assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(last.bound.completion, 0)
+         complete_return(f, last, <<255, "old", 0>>)
+         assert_no_open(f, old)
+@@ -4108,6 +4112,28 @@
+ 
+             {id, started}
+           end)
++
++        held_deadline = Enum.min(Enum.map(starts, &elem(&1, 1))) + 2_000
++
++        read_held = fn pid ->
++          remaining = Lifecycle.remaining(held_deadline)
++          assert remaining > 0
++          :sys.get_state(pid, remaining)
++        end
++
++        F.eventually(
++          fn ->
++            groups = read_held.(f.groups)
++            store = read_held.(f.store)
++
++            map_size(groups.groups) == 1 and
++              Map.has_key?(groups.groups, group_key(fresh.group)) and
++              not Map.has_key?(groups.groups, group_key(old.group)) and
++              map_size(groups.pins) == 1 and groups.tokens == %{} and groups.probes == %{} and
++              store.router === fresh.router and store.preparation == nil and store.retired == []
++          end,
++          held_deadline
++        )
+ 
+         before = reload_transport_snapshot(f)
+ 

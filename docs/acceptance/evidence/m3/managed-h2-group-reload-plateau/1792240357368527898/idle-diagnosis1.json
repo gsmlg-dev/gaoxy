@@ -1,0 +1,73 @@
+{
+  "task_id": "group_reload_idle_diagnosis1",
+  "status": "DONE",
+  "assignment": "direct independent read-only idle failure diagnosis; proposal only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_parent_supplied": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "verdict": "SOURCE_SUPPORTED_PHASE_RACE_HYPOTHESIS; ACTUAL_FAILURE_STATE_NOT_OBSERVED",
+  "root_cause_status": "The source proves that held transport retirement inputs are not a barrier for group/Store reconciliation. The first runtime does not emit the failing group/Store state, so this mechanism is not yet confirmed as the actual failure cause.",
+  "input_sha256": {
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535",
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "4eeaa5bb6bcc65d181cec52a7fbcd9344c7d327746ef9ec8a10cec0a3cb7630c",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex": "e98dea5d0769258838c0c53b397da4740d0b6f303c02d1c13cf712cb32a645c9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-first-scoped1.log": "d4ea55ba24a79fde41e1ae368e85ee3849d66e838d4d909404acf58e571e0a0c",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-first-scoped1.json": "0a680822099b74a8e4d5833892f747c107dbafe281be0585d5e68fe15f130753",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/first-runtime-failure-audit1.json": "1eccfcf053f170e2404d52081420e6d46ea0da2af85894aa784961fa59ccaf41"
+  },
+  "observed": [
+    "Actual first receipt: exit2,104 executed tests,8 failures, source_stable true/source_changes empty, nonforced/process_joined true. Four idle failures are the false compound NEW-onlyG predicate at test4141 in cycle3 reload_capacity; four separate active failures are outside this diagnosis.",
+    "All four idle contexts emitted cycle1 and cycle2. Each actual cycle2 inventory lists baseline batches in order[T,G], Ggroups1/pins1/tokens0/probes0, Store.retired0/preparationnull/baseline_batches2. These are preceding settled state observations, not cycle3 failure state.",
+    "Failure control flow reached4141 only after receiving both exact held input messages, obtaining the actual transport snapshot and passing resources4/pins2/request_tokens0/helpers0/reserved_connections8/failed_resources0 plus exact OLD+NEW records and charged/unconfirmed/closed original OLD custodian assertions.",
+    "The failure output says only that map_size(groups.groups)==1 AND presence of fresh.group is false. It does not print actual Gcount, keys, pins, tokens, probes or Store.retired. Gcount2 is not an observed fact."
+  ],
+  "causal_source_trace": [
+    {"source": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:1458-1474", "fact": "activate waits for candidate coordinator success and normal DOWN, reads the new router and verifies fresh transport/group baseline pins. It does not require Store.retired empty or OLD group absent."},
+    {"source": "apps/gaoxy_http/lib/gaoxy/http/generation.ex:528-540,607-612", "fact": "Store.activate installs fresh baseline/router, puts the actual old baseline into retired in its existing order and schedules reconcile_resources0. Current actual old cycle2 order is[T,G]."},
+    {"source": "apps/gaoxy_http/lib/gaoxy/http/generation.ex:572-580", "fact": "One Store turn releases only the head retired pin. Success removes that head and schedules another zero-delay timer for remaining pins. A transport release success is not the group release or completion of the Store retired list."},
+    {"source": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:380-400,1102-1160", "fact": "T release removes its pin, closes unanchored resources, marks retirement requested and sends retire to custodians before returning replyok. It waits for neither custodian retirement processing nor G pin release/Store retired empty."},
+    {"source": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:3729-3750,4091-4142", "fact": "The two observers signal and hold original retire inputs before processing, preserving OLD resource charges. They carry no acknowledgement from Store or G. Receiving both signals establishes a T phase only."},
+    {"source": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_groups.ex:575-591,931-940,1041-1083", "fact": "G release synchronously removes the authentic pin and reconciles its keys. OLD group deletion requires no remaining pins, inflight0 and no matching probes; a remaining baseline keeps the group unchanged."},
+    {"source": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:3601-3609,3674-3677,4140-4153", "fact": "Idle invokes capacity immediately after activate and before normal retirement joins. It snapshots and asserts NEW-only G/settled Store without an explicit G/Store settled barrier between the heldT inputs and this assertion."}
+  ],
+  "inferred": [
+    "A legal schedule exists where Store releases oldT baseline, both custodians signal held inputs, and the test snapshots G before the next Store reconcile turn releases oldG baseline. This explains why the original T assertions can pass while the NEW-onlyG compound predicate fails.",
+    "Zero-delay timers do not impose a cross-process ordering guarantee between the next Store turn, both custodian observers and the test's G snapshot. Several activation/snapshot messages can run without proving the whole retired list has drained.",
+    "No inspected source requires T custodian retirement to complete before OLD G deletion after its final baseline pin is removed. Waiting for actual G/Store settlement while T retirement remains held is compatible with the intended capacity witness."
+  ],
+  "unknowns_and_alternatives": [
+    "Actual failing cycle3 Gcount/keys, OLD and NEW Gpin identities/kinds/holders, inflight/probes, Store.retired list and baseline order are missing. The first run cannot distinguish pending OLD baseline from another G state.",
+    "If observation finds Store.retired empty with OLD G remaining, inspect its remaining pins/inflight/probes rather than classifying it as the hypothesized missing-next-turn race. A persistent unexpected anchor or probe is a distinct cause.",
+    "The fresh group key was verified during activation, but first failure output does not independently print fresh presence; the compound predicate alone cannot identify which operand failed.",
+    "No repaired run or bounded-barrier success is claimed. The four active completion failures require the separate parallel diagnosis."
+  ],
+  "proposal_only": {
+    "precondition": "First capture the next observation-only candidate's actual before-failure G/Store snapshots to confirm or reject this source-supported phase hypothesis. No fixture repair before cause validation.",
+    "smallest_repair_if_validated": "Inside reload_capacity's existing try, after receiving both original held inputs, add an explicit bounded observation barrier for original NEW-only G and settled Store predicates before retaining the unchanged final assertions and refusal transaction. Do not release or replace either transport retirement hold to make the barrier pass.",
+    "deadline": "One absolute deadline equals min(original held-start timestamps)+2000ms, using the earliest original hold. Poll/state-query waits must use only the remaining budget; never create a new5000ms or resettable deadline. Existing per-hold transaction and through-continue assertions must still require elapsed<2000ms.",
+    "G_settled_predicate": "Exactly fresh.group present, OLD group absent, exactly one Gpin, no Gtokens/probes; preserve the existing actual ledger integrity assertions and original final NEW-only assertions.",
+    "Store_settled_predicate": "Actual Store router equals fresh.router, preparation nil, retired empty; baseline length2 and exact handles fresh.group plus fresh.transports. Observe Store and G explicitly; neither component alone stands for both.",
+    "preserve": ["Original before.status resources4/pins2/reserved8/tokens0/helpers0/failed0", "Exact four actual OLD+NEW records", "Both original charged/unconfirmed closed OLD records and live custodians", "Original public fifthT refusal and exact before/after transport no-delta", "Original G1/NEW-only and Store assertions", "Original2000ms start/transaction/through-continue clocks", "Existing after always sends both exact original continues on success or any assertion/barrier failure"],
+    "must_not_do": ["No arbitrary sleep or assertion weakening", "No production/runtime module change on current evidence", "No alternative retirement inputs, synthetic accounting or freed OLD resources", "No barrier that waits for OLD T physical retirement while the original inputs are deliberately held"]
+  },
+  "verification": {
+    "commands": "Read-only explicit cat/sed/rg and bounded jq projections of the authorized log/receipt; sha256sum on explicitly named safe inputs; literal heredoc report writes only.",
+    "tests_executed_by_reviewer": 0,
+    "tests_build_runtime_browser": "NOT RUN BY REVIEWER",
+    "proposal_or_application_code_execution": "NONE",
+    "repository_evidence_source_Git_writes": "NONE",
+    "changed_files": ["/tmp/gaoxy-group-reload-idle-diagnosis1.json", "/tmp/gaoxy-group-reload-idle-diagnosis1.md"]
+  },
+  "tooling": {
+    "errors": ["One rg command exited2 after two guessed absent proxy/generation.ex and proxy/store.ex paths; actual module located via scoped module-name search and exact generation.ex subsequently read."],
+    "output_truncations": ["One read command accidentally emitted giant cycle JSON log lines; tool output truncated. No conclusions relied on omitted output; replaced with bounded jq projections."],
+    "reported_to_parent_promptly": true,
+    "all_commands_finished": true,
+    "commands_running": false
+  },
+  "counters": {"received_root":265,"received_orchestration":172,"received_groupTool":18,"received_groupRuntimeFailedGREEN":1,"Astra":"2/2 exhausted; unchanged","Sol_repair_rounds_added":0,"new_tooling_incidents":"1 errored rg command with2guessed paths;1 output truncation; parent owns cumulative accounting","astra_gate":"NONE"},
+  "decisions_needed": [],
+  "remaining_action": "Parent owns observation-only candidate, actual next-run state capture, cause validation, any bounded repair/review/verification. This report proposes no immediate source change.",
+  "command_shutdown_status": "All own commands completed; no background/runtime processes started or touched.",
+  "memory_use": "NONE"
+}

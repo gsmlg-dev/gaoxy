@@ -1,0 +1,528 @@
+#!/usr/bin/env python3
+"""PROPOSED read-only postrun DATA audit; not executed or syntax-qualified.
+No subprocesses, runtime access, source inventory, identity fabrication, or writes.
+Only explicitly supplied receipt/log/candidate files are read; result is stdout.
+Exit0 requires complete evidence; exit1 data FAIL; exit2 EVIDENCE_GAP.
+"""
+import argparse
+import hashlib
+import itertools
+import json
+import os
+from pathlib import Path
+import re
+import sys
+
+SOURCE = 'apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs'
+SOURCE_SHA = '923e1661767ed9bb22932438e564c805671c53161ce9dcb240f1d9d99ea09d3e'
+CANDIDATE_SHA = '3135c166ed5946c23be1f340b6d130ad7e00740f857f7d4e12cd19a0da0baca1'
+CONTEXTS = set(itertools.product(('h2c', 'http2'), ('http1', 'http2'), ('active', 'idle')))
+EVENTS = ('contract', 'setup', 'cycle', 'finished')
+PLATEAU = {'transport', 'transport_bytes', 'transport_pin_batches', 'transport_snapshots',
+           'group', 'store', 'source_classes', 'ordered_pair_class', 'service', 'gate'}
+RECEIPT_MAX = 8 * 1024 * 1024
+LOG_MAX = 64 * 1024 * 1024
+LINE_MAX = 2 * 1024 * 1024
+RESERVE = 16478862
+T_LIMITS = dict(max_resources=4, max_pins=256, max_request_tokens=64,
+                max_owned_payload_bytes=8388608)
+G_LIMITS = dict(max_groups=2, max_config_bytes=16777216, max_pins=1024,
+                max_tokens=1024, max_probes=4, probe_bytes=67108864)
+ROOT = '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation'
+
+class AuditError(Exception):
+    pass
+
+def need(ok, label):
+    if not ok:
+        raise AuditError(label)
+
+def exact(obj, keys, label):
+    need(type(obj) is dict and set(obj) == set(keys), label + '.exact_keys')
+
+def parse_json(raw):
+    def pairs(rows):
+        out = {}
+        for key, value in rows:
+            need(key not in out, 'json.duplicate_key')
+            out[key] = value
+        return out
+    def invalid_constant(value):
+        raise AuditError('json.nonfinite_constant')
+    return json.loads(raw, object_pairs_hook=pairs, parse_constant=invalid_constant)
+
+def integer(n, low=0, high=2**63-1):
+    return type(n) is int and low <= n <= high
+
+def positive(n):
+    return integer(n, 1)
+
+def inspect_id(value):
+    need(type(value) is dict and set(value) == {'inspect'} and
+         isinstance(value['inspect'], str) and 0 < len(value['inspect']) <= 262144,
+         'identity.inspect_shell')
+    return value['inspect']
+
+def opaque(value, kind):
+    exact(value, ('opaque', 'identity'), 'opaque')
+    need(value['opaque'] == kind and integer(value['identity'], 1, 512), 'opaque.kind_or_id')
+    return (kind, value['identity'])
+
+def atom(value, expected):
+    need(inspect_id(value) == ':' + expected, 'atom.' + expected)
+
+def elixir_field(value, field):
+    # Closed existing inspect ID shell; parse only the requested scalar field.
+    text = inspect_id(value)
+    match = re.search(r'\b' + re.escape(field) + r': (#[A-Za-z]+<[^>]+>|"[^"\\]*")', text)
+    need(match is not None, 'inspect.scalar_field.' + field)
+    return match.group(1)
+
+def canonical(value):
+    return json.dumps(value, sort_keys=True, separators=(',', ':'))
+
+def bounded(path, cap):
+    # The auditor must be invoked only on the explicit safe command files.
+    name = Path(path).name.lower()
+    need('netlog' not in name and 'raw-terminal' not in name and 'private' not in name and
+         not name.endswith('.pem'), 'input.safe_named_file')
+    with open(path, 'rb') as stream:
+        raw = stream.read(cap + 1)
+    need(len(raw) <= cap, 'input.bound')
+    return raw
+
+def zeros(service, gate):
+    exact(service, ('active', 'retained_bytes', 'cleanup_pending', 'cleanup_failed', 'cleanup_records'), 'service')
+    need(service['cleanup_failed'] is None and all(v == 0 for k, v in service.items() if k != 'cleanup_failed'), 'service.zero')
+    exact(gate, ('active', 'retained_bytes', 'cleanup_pending', 'queued_items', 'queued_bytes',
+                 'leases', 'cleanups', 'spawns', 'lease_bytes', 'cleanup_bytes'), 'gate')
+    need(all(type(v) is int and v == 0 for v in gate.values()), 'gate.zero')
+
+def vector(v, classes, pair):
+    exact(v, PLATEAU, 'vector')
+    t = v['transport']
+    exact(t, ('lifecycle', 'limits', 'resources', 'reserved_connections', 'pins', 'request_tokens',
+              'failed_resources', 'helpers', 'owned_serialized_payload_bytes'), 'vector.transport')
+    need(t['limits'] == T_LIMITS and t['lifecycle'] == 'running', 'transport.limits_lifecycle')
+    for key, n in dict(resources=2, pins=2, request_tokens=0, helpers=0,
+                       reserved_connections=4, failed_resources=0).items():
+        need(t[key] == n, 'transport.' + key)
+    tb = v['transport_bytes']
+    exact(tb, ('payloads', 'pin_records', 'token_payloads', 'total'), 'transport_bytes')
+    need(len(tb['payloads']) == 2 and all(positive(n) for n in tb['payloads']), 'transport.payloads')
+    need(len(tb['pin_records']) == 1 and all(positive(n) for n in tb['pin_records']), 'transport.pins')
+    need(tb['token_payloads'] == [] and tb['total'] == sum(tb['payloads']) + sum(tb['pin_records']), 'transport.independent_sum')
+    need(tb['total'] == t['owned_serialized_payload_bytes'] <= T_LIMITS['max_owned_payload_bytes'], 'transport.public_sum')
+    need(v['transport_pin_batches'] == 1, 'transport.pin_batches')
+    need(v['transport_snapshots'] == [dict(active_requests=0, preparing_requests=0, pending=0, connections=1)] * 2, 'transport.public_snapshots')
+    g = v['group']
+    exact(g, ('groups', 'member_count', 'lifecycle', 'inflight', 'cursor', 'pins', 'pin_handles',
+              'tokens', 'probes', 'config_bytes', 'control_bytes', 'probe_bytes', 'config_reserves',
+              'full_current_record_bytes', 'control_records', 'probe_reservations', 'control_limit',
+              'limits', 'members'), 'vector.group')
+    for key, n in dict(groups=1, member_count=2, inflight=0, cursor=0, pins=1,
+                       pin_handles=1, tokens=0, probes=0, probe_bytes=0, control_limit=16777216).items():
+        need(g[key] == n, 'group.' + key)
+    need(g['lifecycle'] == 'active' and g['limits'] == G_LIMITS, 'group.limits_lifecycle')
+    need(len(g['config_reserves']) == len(g['full_current_record_bytes']) == 1, 'group.config_arrays')
+    need(positive(g['config_reserves'][0]) and positive(g['full_current_record_bytes'][0]) and
+         g['full_current_record_bytes'][0] <= g['config_reserves'][0] <= 12582912 and
+         g['config_bytes'] == sum(g['config_reserves']), 'group.config_sum')
+    need(len(g['control_records']) == 1 and g['control_records'][0]['kind'] == 'pin', 'group.controls')
+    need(all(positive(r['bytes']) and r['bytes'] <= 196608 for r in g['control_records']) and
+         g['control_bytes'] == sum(r['bytes'] for r in g['control_records']) and
+         g['probe_reservations'] == [], 'group.control_probe_sum')
+    need(len(g['members']) == 2, 'group.members')
+    for m in g['members']:
+        exact(m, ('id', 'health', 'inflight', 'failures', 'successes', 'probe', 'stale',
+                  'config_bytes', 'full_member_bytes'), 'group.member')
+        need(m['health'] == 'healthy' and m['inflight'] == m['failures'] == 0 and
+             positive(m['successes']) and m['probe'] is False and m['stale'] is False and
+             positive(m['config_bytes']) and positive(m['full_member_bytes']), 'group.member_state')
+    st = v['store']
+    exact(st, ('resources', 'group_handles', 'transport_handles', 'baseline_batches', 'baseline_handles',
+               'retired', 'preparation', 'router_bytes', 'baseline_bytes', 'baseline_record_bytes'), 'vector.store')
+    for key, n in dict(resources=3, group_handles=1, transport_handles=2, baseline_batches=2,
+                       baseline_handles=3, retired=0).items():
+        need(st[key] == n, 'store.' + key)
+    need(st['preparation'] is None and positive(st['router_bytes']) and positive(st['baseline_bytes']) and
+         len(st['baseline_record_bytes']) == 2 and all(positive(n) for n in st['baseline_record_bytes']), 'store.serialized_fields')
+    need(v['source_classes'] == classes, 'source_classes.stable')
+    need(v['ordered_pair_class'] == {k: val for k, val in pair.items() if k != 'classes'}, 'pair_class.stable')
+    zeros(v['service'], v['gate'])
+
+def inventory(inv, sut, previous=None):
+    exact(inv, ('sut', 'generation', 'group', 'transports', 'creators', 'baseline',
+                'group_member_configs', 'group_members_absolute_times', 'transport_controls',
+                'group_pin_deadlines', 'cumulative'), 'inventory')
+    need(inv['sut'] == sut, 'identity.sut_stable')
+    need(len(inv['transports']) == len(inv['creators']) == len(inv['transport_controls']) == 2,
+         'inventory.two_transports')
+    controls = inv['transport_controls']
+    need(len({inspect_id(c['resource']) for c in controls}) == 2, 'inventory.distinct_resources')
+    for handle, c in zip(inv['transports'], controls):
+        need(elixir_field(handle, 'resource') == inspect_id(c['resource']), 'inventory.handle_resource')
+    if previous:
+        need(inv['generation'] != previous['generation'] and inv['group'] != previous['group'], 'identity.fresh_generation_group')
+        old = {inspect_id(c['resource']) for c in previous['transport_controls']}
+        need(not old.intersection(inspect_id(c['resource']) for c in controls), 'identity.fresh_resources')
+    return controls
+
+def peer_setup(setup, upstream):
+    peers = setup['peers']
+    need(len(peers) == 6, 'setup.six_peers')
+    by_key = {(p['epoch'], p['lane']): p for p in peers}
+    need(set(by_key) == set(itertools.product(range(3), ('a', 'b'))), 'setup.peer_epochs')
+    need(len({inspect_id(p['peer']) for p in peers}) == 6, 'setup.distinct_peers')
+    need(by_key[(0, 'a')]['port'] != by_key[(0, 'b')]['port'], 'setup.distinct_lane_ports')
+    for (epoch, lane), p in by_key.items():
+        need(inspect_id(p['address']) == '{127, 0, 0, ' + str(epoch + 1) + '}', 'setup.address')
+        need(p['port'] == by_key[(0, lane)]['port'] and integer(p['port'], 1, 65535), 'setup.fixed_port')
+        need(p['source_class'] == setup['classes'][0 if lane == 'a' else 1], 'setup.lane_class')
+        need(integer(p['observed_setup_to_ready_ms'], 0, 25000), 'setup.peer_ready_budget')
+        need(re.fullmatch('[0-9a-f]{64}', p['source_sha256']) is not None, 'setup.source_hash')
+        bundle = p['public_ca_bundle']
+        need(bundle == peers[0]['public_ca_bundle'], 'setup.common_frozen_bundle')
+        need((len(bundle) == 6) if upstream == 'http2' else (bundle == []), 'setup.trust_profile')
+        need(sum(c['bytes'] for c in bundle) <= 1048576 and all(integer(c['bytes'], 1, 65536) for c in bundle), 'setup.trust_bound')
+    return by_key
+
+def request(r, inv, peers, index, kind, slot, member, completions):
+    exact(r, ('epoch', 'lane', 'member', 'peer', 'generation', 'group', 'selected', 'request',
+              'source_batches', 'source_inputs', 'child', 'child_source_ref', 'group_token',
+              'transport_token', 'completion', 'session', 'session_monitor', 'native',
+              'native_monitor', 'native_actors', 'native_reservation', 'retained_bytes',
+              'original_complete', 'session_down', 'child_and_token_removed_before_source'), 'request_receipt')
+    lane = ('a', 'b')[member]
+    generation_index = index if kind == 'seed' else index - 1
+    peer = peers[(generation_index // 8, lane)]
+    need(r['member'] == member and r['lane'] == lane and r['epoch'] == generation_index // 8 and
+         r['peer'] == peer['peer'] and r['generation'] == inv['generation'] and r['group'] == inv['group'], 'request.original_lineage')
+    need(r['original_complete'] == 'ok' and r['session_down'] == 'normal' and
+         r['child_and_token_removed_before_source'] is True, 'request.completion_attestation')
+    complete = opaque(r['completion'], 'request_completion')
+    need(complete not in completions, 'request.distinct_completion')
+    completions.add(complete)
+    q = r['request']
+    expected_target = '/reload/' + kind + '/' + str(index).zfill(2) + '/' + str(slot) + '?raw=%2F'
+    need(q['event'] == 'request' and q['target'] == expected_target and
+         q['connection'] == generation_index % 8 + 1 and integer(q['stream'], 1) and
+         [':method', 'GET'] in q['headers'] and q['ended'] is True, 'request.actual_peer_get')
+    need(positive(r['retained_bytes']) and positive(r['native_reservation']), 'request.native_ledger')
+    need(q['stream'] == (3 if kind == 'seed' else (7 if slot == 2 else 5)), 'request.actual_stream_sequence')
+    need(r['source_inputs']['holder'] == r['native'] and integer(r['source_inputs']['deadline'], -(2**63)), 'request.source_inputs')
+    need(elixir_field(r['selected'], 'resource') == inspect_id(inv['transport_controls'][member]['resource']), 'request.selected_resource')
+
+def health(rows, inv, peers, idx, completions):
+    need(len(rows) == 2 and [r['member'] for r in rows] == [0, 1], 'health.member_order')
+    for member, h in enumerate(rows):
+        exact(h, ('member', 'resource', 'generation', 'peer', 'request', 'completion', 'probe',
+                  'probe_monitor', 'probe_ref', 'probe_bytes', 'public_await', 'probe_down'), 'health_receipt')
+        peer = peers[(idx // 8, ('a', 'b')[member])]
+        need(h['resource'] == inv['transport_controls'][member]['resource'] and
+             h['generation'] == inv['generation'] and h['peer'] == peer['peer'], 'health.resource_peer_lineage')
+        q = h['request']
+        need(q['event'] == 'request' and q['connection'] == idx % 8 + 1 and q['stream'] == 1 and
+             q['target'] == '/health' and [':method', 'HEAD'] in q['headers'] and q['ended'] is True, 'health.actual_peer_head')
+        need(h['probe_bytes'] == RESERVE and h['public_await'] == 'ok' and h['probe_down'] == 'normal', 'health.completion_attestation')
+        cap = opaque(h['completion'], 'request_completion')
+        need(cap not in completions, 'health.distinct_completion')
+        completions.add(cap)
+
+def retirement(ret, inv, peers, idx, seen_resources, seen_receipts):
+    exact(ret, ('group', 'group_removed', 'original_creators_down', 'transports'), 'retirement')
+    need(ret['group'] == inv['group'] and ret['group_removed'] is True and
+         ret['original_creators_down'] == 'normal' and len(ret['transports']) == 2, 'retirement.group_lineage')
+    for member, row in enumerate(ret['transports']):
+        exact(row, ('resource', 'creator', 'capability', 'helper', 'helper_monitor', 'receipt',
+                    'public_await', 'helper_down', 'owner_confirmed', 'charged_until_confirmation_bytes',
+                    'creator_down', 'removed', 'epoch', 'lane', 'peer', 'physical'), 'retirement.transport')
+        c = inv['transport_controls'][member]
+        need(row['resource'] == c['resource'] and row['creator'] == c['custodian'] and
+             row['capability'] == c['capability'], 'retirement.original_control_lineage')
+        key = inspect_id(row['resource'])
+        need(key not in seen_resources, 'retirement.unique_resource')
+        seen_resources.add(key)
+        receipt = opaque(row['receipt'], 'retirement_receipt')
+        need(receipt not in seen_receipts, 'retirement.unique_original_receipt')
+        seen_receipts.add(receipt)
+        lane = ('a', 'b')[member]
+        need(row['lane'] == lane and row['epoch'] == idx // 8 and row['peer'] == peers[(idx // 8, lane)]['peer'], 'retirement.peer_lineage')
+        need(row['physical']['event'] in ('eof', 'connection_reset') and
+             row['physical']['connection'] == idx % 8 + 1, 'retirement.physical_original_connection')
+        need(row['public_await'] == 'ok' and row['helper_down'] == row['creator_down'] == 'normal' and
+             row['owner_confirmed'] is True and row['removed'] is True and positive(row['charged_until_confirmation_bytes']),
+             'retirement.original_cleanup_attestation')
+    return ret['transports']
+
+def t_snapshot(s, resources, tokens=0):
+    exact(s, ('status', 'independent_bytes', 'records', 'pins', 'tokens', 'monitors'), 'T_snapshot')
+    need(len(s['records']) == resources and len(s['tokens']) == tokens, 'T_snapshot.table_counts')
+    need(s['status']['resources'] == resources and s['status']['request_tokens'] == tokens and
+         s['status']['helpers'] == 0 and s['status']['failed_resources'] == 0, 'T_snapshot.public')
+    need(all(r['original_payload_bytes'] == r['independent_payload_bytes'] > 0 for r in s['records']), 'T_snapshot.payload_size')
+    need(s['independent_bytes'] == sum(r['independent_payload_bytes'] for r in s['records']) +
+         sum(p['independent_bytes'] for p in s['pins']) +
+         sum(t['payload_bytes'] for t in s['tokens']) == s['status']['owned_serialized_payload_bytes'], 'T_snapshot.independent_sum')
+    need(all(positive(t['payload_bytes']) for t in s['tokens']), 'T_snapshot.token_charge')
+
+def g_snapshot(g, count, tokens=0):
+    exact(g, ('groups', 'pins', 'tokens', 'probes', 'config_bytes', 'control_bytes', 'probe_bytes', 'limits', 'monitors'), 'G_snapshot')
+    need(len(g['groups']) == count and g['limits'] == G_LIMITS and len(g['tokens']) == tokens and not g['probes'] and g['probe_bytes'] == 0, 'G_snapshot.tables')
+    need(g['config_bytes'] == sum(x['installed_reserve'] for x in g['groups']), 'G_snapshot.config_sum')
+    need(all(0 < x['full_record_bytes'] <= x['installed_reserve'] for x in g['groups']), 'G_snapshot.config_size')
+    need(g['control_bytes'] == sum(x['control_bytes'] for x in g['pins'] + g['tokens'] + g['probes']), 'G_snapshot.controls')
+
+def capacity(c, old, fresh, retire):
+    exact(c, ('result', 'no_delta', 'holds', 'retained', 'transport_before', 'transport_after',
+              'group', 'store', 'through_continue'), 'capacity')
+    need(inspect_id(c['result']) == '{:error, {:capacity, :resources}}' and c['no_delta'] is True, 'capacity.public_failure')
+    need(c['transport_before'] == c['transport_after'], 'capacity.exact_T_delta')
+    t_snapshot(c['transport_before'], 4)
+    s = c['transport_before']['status']
+    need(s['pins'] == 2 and s['reserved_connections'] == 8, 'capacity.pins_connections')
+    controls = old['transport_controls'] + fresh['transport_controls']
+    records = {inspect_id(r['resource']): r for r in c['transport_before']['records']}
+    need(set(records) == {inspect_id(r['resource']) for r in controls}, 'capacity.actual_four_resources')
+    for oldc, end in zip(old['transport_controls'], retire['transports']):
+        r = records[inspect_id(oldc['resource'])]
+        need(r['custodian'] == oldc['custodian'] and r['capability'] == oldc['capability'] and
+             r['admission'] == 'closed' and r['retirement_requested'] is True and
+             r['transport_confirmed'] is False and r['custodian_down'] is False and
+             end['charged_until_confirmation_bytes'] == r['original_payload_bytes'], 'capacity.old_charge_until_confirmation')
+    g_snapshot(c['group'], 1)
+    need(len(c['group']['pins']) == 1, 'capacity.remaining_G_pin')
+    fresh_ref = elixir_field(fresh['group'], 'generation')
+    old_ref = elixir_field(old['group'], 'generation')
+    need(fresh_ref in inspect_id(c['group']['groups'][0]['key']) and
+         all(old_ref not in inspect_id(g['key']) for g in c['group']['groups']), 'capacity.old_G_absent')
+    need(c['store']['generation'] == fresh['generation'] and inspect_id(c['store']['preparation']) == 'nil' and
+         inspect_id(c['store']['retired']) == '[]' and len(c['store']['baseline']) == 2, 'capacity.Store_new_only')
+    need(len(c['retained']) == len(c['holds']) == len(c['through_continue']) == 2, 'capacity.paired_holds')
+    need({inspect_id(r['resource']) for r in c['retained']} == {inspect_id(r['resource']) for r in old['transport_controls']}, 'capacity.retained_resources')
+    ids = {inspect_id(h['id']) for h in c['holds']}
+    need(len(ids) == 2 and ids == {inspect_id(h['id']) for h in c['through_continue']}, 'capacity.original_hold_ids')
+    for h, clock in zip(c['holds'], c['through_continue']):
+        need(h['id'] == clock['id'] and integer(h['started'], -(2**63)) and
+             integer(h['transaction_elapsed_ms'], 0, 1999) and
+             integer(clock['through_continue_elapsed_ms'], h['transaction_elapsed_ms'], 1999), 'capacity.original_clock_bounds')
+
+def rollback(r, held):
+    exact(r, ('result', 'prefix', 'caller', 'operation', 'original_pin_bytes', 'pin_acquired',
+              'cancel_observed', 'cancellation_processed', 'no_retained_delta', 'transport_before',
+              'transport_after', 'group_before', 'group_after', 'store'), 'rollback')
+    need(inspect_id(r['result']) == '{:error, :group_capacity}' and positive(r['original_pin_bytes']), 'rollback.public_failure')
+    need(all(r[k] is True for k in ('pin_acquired', 'cancel_observed', 'cancellation_processed', 'no_retained_delta')), 'rollback.cancellation_attestation')
+    need(r['transport_before'] == r['transport_after'] and r['group_before'] == r['group_after'], 'rollback.exact_ledgers')
+    calls = held['requests'] if held else []
+    t_snapshot(r['transport_before'], 4, len(calls))
+    g_snapshot(r['group_before'], 2, len(calls))
+    tt = {inspect_id(t['ref']): t for t in r['transport_before']['tokens']}
+    gt = {inspect_id(t['ref']): t for t in r['group_before']['tokens']}
+    need(set(tt) == {inspect_id(c['transport_token']) for c in calls} and
+         set(gt) == {inspect_id(c['group_token']) for c in calls}, 'rollback.original_held_tokens')
+    for call in calls:
+        t = tt[inspect_id(call['transport_token'])]
+        g = gt[inspect_id(call['group_token'])]
+        need(t['completion'] == g['completion'] == call['completion'] and
+             inspect_id(t['resource']) == elixir_field(call['selected'], 'resource'), 'rollback.held_token_lineage')
+    need(inspect_id(r['operation']) in inspect_id(r['prefix']) and ':preparation' in inspect_id(r['prefix']), 'rollback.original_prefix_operation')
+    ref = elixir_field(r['prefix'], 'ref')
+    need(all(inspect_id(p['ref']) != ref for p in r['transport_after']['pins']), 'rollback.acquired_prefix_absent')
+
+def join_peer(j, setup_peers, expected_resources, profile):
+    exact(j, ('epoch', 'lane', 'peer', 'address', 'port', 'resources', 'joined', 'exit', 'collector_down', 'rebound'), 'peer_join')
+    p = setup_peers[(j['epoch'], j['lane'])]
+    need(all(j[k] == p[k] for k in ('peer', 'address', 'port')), 'peer_join.setup_lineage')
+    count = 7 if j['epoch'] == 2 else 8
+    requests = (26 if j['epoch'] == 2 else 32) if profile == 'active' and j['lane'] == 'a' else (
+               (20 if j['epoch'] == 2 else 24) if profile == 'active' else (14 if j['epoch'] == 2 else 16))
+    need(j['joined'] == dict(event='joined', accepts=count, requests=requests, forced=0, live=0, failed=False), 'peer_join.actual_exact_counts')
+    need(j['exit'] == 0 and j['collector_down'] == 'normal' and j['rebound'] is True, 'peer_join.terminal_attestation')
+    need(j['resources'] == expected_resources, 'peer_join.complete_retirement_ledger')
+    need([r['physical']['connection'] for r in j['resources']] == list(range(1, count + 1)), 'peer_join.actual_connection_inventory')
+
+def audit_context(rows, key):
+    contracts = [r for r in rows if r['event'].endswith('_contract')]
+    setups = [r for r in rows if r['event'].endswith('_setup')]
+    finished = [r for r in rows if r['event'].endswith('_finished')]
+    cycles = [r for r in rows if r['event'].endswith('_cycle')]
+    need(len(contracts) == len(setups) == len(finished) == 1 and len(cycles) == 22, 'context.event_counts')
+    need([r['event'].rsplit('_', 1)[1] for r in rows] == ['contract', 'setup'] + ['cycle'] * 22 + ['finished'], 'context.event_order')
+    contract, setup, end = contracts[0], setups[0], finished[0]
+    ctx = {'event', 'upstream', 'downstream', 'profile'}
+    exact(contract, ctx | {'inventory', 'outer_exunit_timeout_ms', 'embedding_lifetime_ms', 'peer_lifetime_ms',
+                          'retirement_hold_ms', 'planned_generations', 'planned_transports', 'planned_replacement_cas', 'planned_heads', 'planned_gets'}, 'contract')
+    for f, n in dict(outer_exunit_timeout_ms=60000, embedding_lifetime_ms=120000, peer_lifetime_ms=180000,
+                     retirement_hold_ms=2000, planned_generations=23, planned_transports=46,
+                     planned_replacement_cas=22, planned_heads=46, planned_gets=112 if key[2] == 'active' else 46).items():
+        need(contract[f] == n, 'contract.' + f)
+    need(set(contract['inventory']['plateau']) == PLATEAU, 'contract.plateau_fields')
+    exact(setup, ctx | {'identity', 'entered_monotonic_ms', 'setup_elapsed_ms', 'embedding_creation_interval_monotonic_ms',
+                       'peers', 'classes', 'ordered_pair_class', 'initial'}, 'setup')
+    need(integer(setup['setup_elapsed_ms'], 0, 59999), 'setup.clock')
+    peers = peer_setup(setup, key[0])
+    need([r['cycle'] for r in cycles] == list(range(1, 23)), 'cycles.exact_sequence')
+    warmup2 = cycles[1]['vector']
+    controls = []
+    ledgers = [setup['initial']] + [c['ledger'] for c in cycles]
+    identities = set()
+    completions, resources, receipts = set(), set(), set()
+    joins = []
+    retired_by_peer = {inspect_id(p['peer']): [] for p in setup['peers']}
+    for idx, ledger in enumerate(ledgers):
+        inv = ledger['inventory']
+        inventory(inv, setup['identity'], ledgers[idx-1]['inventory'] if idx else None)
+        need(canonical(inv['generation']) not in identities, 'generation.distinct')
+        identities.add(canonical(inv['generation']))
+        health(ledger['health'], inv, peers, idx, completions)
+        need(len(ledger['seed']) == 2, 'seed.two')
+        for slot, r in enumerate(ledger['seed']):
+            request(r, inv, peers, idx, 'seed', slot, slot, completions)
+        if idx == 0:
+            exact(ledger, ('index', 'initial_publication', 'health', 'seed', 'inventory'), 'initial')
+            need(ledger['index'] == 0 and ledger['initial_publication']['activated'] == inv['generation'], 'initial.CAS')
+            continue
+        c = cycles[idx-1]
+        exact(c, ctx | {'cycle', 'measured', 'vector', 'ledger', 'elapsed_ms'}, 'cycle')
+        exact(ledger, ('index', 'cas', 'health', 'seed', 'held', 'retirement', 'rollback', 'capacity', 'epoch_joins', 'inventory'), 'cycle.ledger')
+        need(ledger['index'] == idx and c['measured'] is (idx >= 3) and integer(c['elapsed_ms'], 0, 59999), 'cycle.index_clock')
+        old = ledgers[idx-1]['inventory']
+        need(ledger['cas'] == dict(expected=old['generation'], activated=inv['generation']), 'CAS.exact_lineage')
+        vector(c['vector'], setup['classes'], setup['ordered_pair_class'])
+        if idx >= 3:
+            need(c['vector'] == warmup2, 'plateau.full_vector_equal_warmup2')
+        if key[2] == 'active':
+            held = ledger['held']
+            need(held['last_selected_member'] == 0 and held['retained_unselected_member'] == 1 and len(held['requests']) == 3, 'active.last_source')
+            for slot, (r, member) in enumerate(zip(held['requests'], (0, 1, 0))):
+                request(r, old, peers, idx, 'held', slot, member, completions)
+            need(held['original_sources'] == held['requests'][-1]['source_batches'], 'active.original_last_source')
+        else:
+            need(ledger['held'] is None, 'idle.no_held_requests')
+        rr = retirement(ledger['retirement'], old, peers, idx-1, resources, receipts)
+        for r in rr:
+            retired_by_peer[inspect_id(r['peer'])].append(r)
+        if idx == 3:
+            rollback(ledger['rollback'], ledger['held'])
+            capacity(ledger['capacity'], old, inv, ledger['retirement'])
+        else:
+            need(ledger['rollback'] is None and ledger['capacity'] is None, 'cycle.single_capacity_rollback')
+        need(len(ledger['epoch_joins']) == (2 if idx in (8, 16) else 0), 'epoch.join_schedule')
+        joins.extend(ledger['epoch_joins'])
+    exact(end, ctx | {'measured_samples', 'totals', 'final_retirement', 'final_epochs', 'teardown_elapsed_ms', 'profile_elapsed_ms'}, 'finished')
+    need(end['measured_samples'] == 20 and integer(end['profile_elapsed_ms'], 0, 59999) and
+         integer(end['teardown_elapsed_ms'], 0, end['profile_elapsed_ms']), 'finished.samples_clocks')
+    final = retirement(end['final_retirement'], ledgers[-1]['inventory'], peers, 22, resources, receipts)
+    for r in final:
+        retired_by_peer[inspect_id(r['peer'])].append(r)
+    need(len(end['final_epochs']) == 2, 'finished.final_epochs')
+    joins.extend(end['final_epochs'])
+    need(len(joins) == 6 and {(j['epoch'], j['lane']) for j in joins} == set(peers), 'peer_joins.six')
+    for j in joins:
+        join_peer(j, peers, retired_by_peer[inspect_id(j['peer'])], key[2])
+    totals = dict(generations=23, distinct_transports=46, initial_publication=1, replacement_cas=22,
+                  heads=46, seed_gets=46, active_gets=66 if key[2] == 'active' else 0,
+                  gets=112 if key[2] == 'active' else 46, requests=158 if key[2] == 'active' else 92,
+                  retirement_receipts=46, physical_closes=46, group_removals=23, peer_joins=6, accepts=46)
+    need(end['totals'] == totals and len(resources) == len(receipts) == 46, 'finished.derived_totals')
+    need(len(completions) == totals['requests'], 'finished.original_completions')
+    return totals
+
+def receipt_audit(receipt, raw_log, candidate):
+    need(candidate['kind'] == 'GROUP_RELOAD_SOURCE_CANDIDATE1' and
+         candidate['base_commit'] == 'e4a7660baa61a792f4245f511b190a0fcfcbf920' and
+         len(candidate['actual_command_source_sha256']) == candidate['actual_command_source_count_with_enum'] == 402,
+         'candidate.source_map_shape')
+    need(receipt['name'] == candidate['first_command']['name'] and receipt['cwd'] == ROOT and
+         receipt['environment'] == {'MIX_ENV': 'test', 'ERL_FLAGS': '+S 2:2'} and
+         receipt['browser'] is None and receipt['log'] == Path(candidate['first_command']['log']).name,
+         'command.exact_context')
+    collector = candidate['first_command']['outer_argv'][2]
+    need(receipt['collector_sha256'] == candidate['actual_command_source_sha256'][collector], 'command.collector_hash')
+    need(receipt['kind'] == 'green' and receipt['verdict'] == 'PASS' and receipt['actual_exit'] == 0 and
+         receipt['forced'] is False and receipt['wait_error'] is None and receipt['process_joined'] is True and
+         receipt['process_group_remaining'] == [], 'command.actual_joined_nonforced')
+    need(receipt['source_stable'] is True and receipt['source_changes'] == [] and
+         receipt['source_before'] == receipt['source_after'], 'command.source_stability')
+    need(receipt['source_before'] == candidate['actual_command_source_sha256'] and
+         receipt['source_before'][SOURCE] == SOURCE_SHA, 'command.exact_frozen_input_map')
+    need(receipt['command'] == candidate['first_command']['payload_argv'], 'command.exact_frozen_argv')
+    need(receipt['log_sha256'] == hashlib.sha256(raw_log).hexdigest(), 'command.log_hash')
+    need(positive(receipt['tests']) and receipt['reported_tests'] == receipt['tests'] and
+         all(receipt[k] == 0 for k in ('failures', 'skipped', 'excluded')) and receipt['warnings'] == [], 'command.nonzero_clean_tests')
+    dc = receipt['descendant_cleanup']
+    need(dc['forced'] is False and dc['remaining'] == [] and dc['signal_attempts'] == [] and
+         dc['reap_deadline_exhausted'] == [] and dc['initial_after_reap'] == [], 'command.actual_descendant_joins')
+    waits = []
+    for row in dc['reaped']:
+        need(integer(row['pid'], 1) and integer(row['wait_status'], 0, 65535), 'command.raw_wait')
+        # Preserve genuine signal termination, including SIGUSR1(-10), unchanged.
+        waits.append(dict(row, decoded_exit=os.waitstatus_to_exitcode(row['wait_status'])))
+    return waits
+
+def main():
+    p = argparse.ArgumentParser(description=__doc__)
+    p.add_argument('--receipt', required=True)
+    p.add_argument('--log', required=True)
+    p.add_argument('--candidate', required=True)
+    a = p.parse_args()
+    result = dict(kind='PROPOSED_GROUP_RELOAD_RUNTIME_DATA_AUDIT1', status='FAIL',
+                  runtime_executed_by_audit=False, source_sha256=SOURCE_SHA, contexts=0,
+                  evidence_gaps=[], counts_separate='ExUnit only; Python/browser/static excluded')
+    try:
+        candidate_bytes = bounded(a.candidate, RECEIPT_MAX)
+        need(hashlib.sha256(candidate_bytes).hexdigest() == CANDIDATE_SHA, 'candidate.original_frozen_hash')
+        candidate = parse_json(candidate_bytes)
+        receipt_bytes = bounded(a.receipt, RECEIPT_MAX)
+        receipt = parse_json(receipt_bytes)
+        raw_log = bounded(a.log, LOG_MAX)
+        result['actual_raw_waits'] = receipt_audit(receipt, raw_log, candidate)
+        plain = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', raw_log.decode('utf-8', errors='strict'))
+        summaries = re.findall(r'(\d+) tests?, (\d+) failures?([^\n]*)', plain)
+        need(summaries and sum(int(t) for t, _, _ in summaries) == receipt['tests'] and
+             sum(int(f) for _, f, _ in summaries) == 0 and
+             not re.search(r'\b[1-9]\d* (skipped|excluded)\b', plain) and
+             not any('warning:' in line and not line.startswith('warning: Git tree ') for line in plain.splitlines()), 'log.actual_test_summary')
+        grouped = {key: [] for key in CONTEXTS}
+        for line in plain.splitlines():
+            need(len(line.encode('utf-8')) <= LINE_MAX, 'log.line_bound')
+            if '"group_h2_reload_' not in line:
+                continue
+            start = line.find('{')
+            need(start >= 0, 'log.event_json_start')
+            row = parse_json(line[start:])
+            event = row.get('event')
+            need(event in {'group_h2_reload_' + e for e in EVENTS}, 'log.event_name')
+            key = (row.get('upstream'), row.get('downstream'), row.get('profile'))
+            need(key in CONTEXTS, 'log.exact_context')
+            grouped[key].append(row)
+            need(sum(map(len, grouped.values())) <= 200, 'log.event_count_bound')
+        need(sum(map(len, grouped.values())) == 200, 'log.exact_200_events')
+        totals = [audit_context(rows, key) for key, rows in sorted(grouped.items())]
+        aggregate = {k: sum(row[k] for row in totals) for k in totals[0]}
+        expected = dict(generations=184, distinct_transports=368, initial_publication=8,
+                        replacement_cas=176, heads=368, seed_gets=368, active_gets=264,
+                        gets=632, requests=1000, retirement_receipts=368,
+                        physical_closes=368, group_removals=184, peer_joins=48, accepts=368)
+        need(aggregate == expected, 'aggregate.original_ledger_counts')
+        result.update(contexts=8, aggregate=aggregate, emitted_data_checks='PASS',
+                      receipt_sha256=hashlib.sha256(receipt_bytes).hexdigest(), log_sha256=hashlib.sha256(raw_log).hexdigest())
+        # Frozen source calls reload_zero, but discards its data before finished.
+        # Never promote successful test assertions or summary flags to an emitted final ledger.
+        result['evidence_gaps'].append(dict(code='FINAL_ZERO_LEDGERS_NOT_EMITTED',
+             source='managed_h2_group_generation_test.exs:3285-3297,4454-4482',
+             detail='Final actual T/G/service/gate zero ledgers absent; plateau zeros are checked but not a substitute.'))
+        result['evidence_gaps'].append(dict(code='TYPED_EVENT_PROVENANCE_PARTIAL',
+             source='managed_h2_group_generation_test.exs:3850-3920,4000-4044,4746-4804',
+             detail='Emitted original IDs/bytes/peer frames correlate receipts; normal waits, cancellation processing and completion await remain test attestations, not raw event envelopes.'))
+        result['status'] = 'EVIDENCE_GAP'
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 2
+    except (AuditError, KeyError, TypeError, ValueError, OSError, OverflowError, RecursionError) as error:
+        result['failure'] = str(error)[:512]
+        print(json.dumps(result, indent=2, sort_keys=True))
+        return 1
+
+if __name__ == '__main__':
+    sys.exit(main())

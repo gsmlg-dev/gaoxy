@@ -1,0 +1,197 @@
+# Managed H2 Group Reload Plateau
+
+Status — 2026-10-17: REVISED DESIGN PREPARATION; implementation and runtime NOT RUN.
+KickoffSPEC1 rejected unsupported .5/.6 addresses; revision2 uses only the
+existing .1/.2/.3 choices on two fixed ports. Original rejected documents and
+FAIL receipt remain in E6. Shared peer source, caps and clocks stay unchanged.
+Base is `e4a7660baa61a792f4245f511b190a0fcfcbf920`, the locally closed fixed
+reload slice. E6 is
+`docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898`.
+Continuing authorization selects the recommendation and advances after actual
+gates. Whole Task5/M3 remains open.
+
+## Goal and bounded ownership
+
+Qualify two-member managed H2 groups through twenty measured active/idle reloads
+in each native H1/H2 × upstream h2c/TLS-H2 cell. Each of eight profiles retains
+the same instance, transport owner and epoch, group owner and epoch, Store,
+listener, service and gate. Initial publication plus two warmup replacements
+and twenty measured replacements creates23 G and46 distinct T per profile.
+Every generation has two different transport handles and genuine initial health
+HEADs. Fixed-slice receipts do not qualify groups.
+
+Only expected executable-source change is additive tests/private helpers in
+`apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs`. Adding compiled
+metadata to its existing candidate message/result is authorized if needed to
+exercise the exact public group preparation contract. Existing tests, endpoint
+semantics, assertions, resource counts, deadlines and dependency versions stay
+intact. Root alone adopts source proposals, writes repository/evidence/Git and
+runs build/tests/browser; independent Sol workers own explicit temporary
+proposals or reviews. Necessary compatibility repairs require their own bounded
+source review and unchanged assertions.
+
+## Recommended approach and alternatives
+
+Extend the existing Generation-local helpers. They already prove authentic
+two-provider capture, native95 arithmetic, source/derived-child/completion
+ownership and normal joins. A separate fixture would duplicate these private
+contracts; exposing them or extracting shared infrastructure adds unnecessary
+scope. Two members sharing a transport would omit the required two-resource
+retirement exercise. Restarting owners or changing peer caps would not qualify
+the persistent plateau. Use six immutable peers and the existing public APIs.
+
+## Peer topology, source class and clocks
+
+Create all six manual peers before constructing Gaoxy: A epochs0/1/2 on
+127.0.0.1/2/3 at fixed PA; B epochs0/1/2 on the same three supported addresses
+at distinct fixed PB. First A chooses PA and first B chooses PB; require PA !=
+PB and every later peer binds its lane's exact port. Each member retains its
+own raw `localhost:PA` or `localhost:PB` authority, protocol and original
+integer address widths across all epochs. Cross-member byte classes may differ;
+freeze each lane's complete class and the constant pair aggregate. No port
+padding or cross-member class equality is required. For TLS,
+copy only the six public CA DERs once and freeze one ordered immutable union
+for every source. Validate real distinct identities, trust bounds and complete
+source/prepared-policy/manifest serialized byte classes before resources start.
+Do not read private keys, alter certificate profiles, pad values, normalize
+identities or drop numeric fields. h2c keeps trust:nil.
+
+Generation index0..22 uses epoch `div(index,8)` per member, giving accepts8/8/7
+on each lane. All six peers retain8 lifetime accepts,256 requests,8192 events
+and180s lifetime. Preserve outer ExUnit60s (starts before six peer setups),
+embedding120s (starts later), TLS20s preparation/25s prepared wait/5s ready,
+ordinary5s waits, original15s request deadlines and2000ms retirement barrier.
+These clocks overlap; no per-operation allowance extends the outer60s timer.
+Record actual setup/profile/teardown times. Stop/join an epoch after its last
+assigned resource's real physical close; rebind its exact address/lane port.
+
+## Request schedule and immutable budgets
+
+For every candidate: prepare two T and G, consume both actual HEAD /health
+requests/upload ends, respond manually, await both original public completions
+and normal probe DOWNs. Require both healthy, probes0, probe_bytes0, no T token
+or helper. Activate through genuine Store CAS. Seed two completed GETs selecting
+members[0,1], leaving actual round-robin cursor0 and two idle upstream sockets.
+
+Before each active replacement, capture and dispatch three OLD GETs selecting
+[0,1,0]. Each uses original Generation G[G] and T[A,B] batches, selected token,
+derived child, Session and authentic completion. Keep them pending across CAS.
+After CAS, finish two, prove the final A source still retains unselected B,
+then finish/return the last. Idle replacement has no retained request source;
+prove two idle original transports before releasing the OLD baseline. NEW
+always receives its two complete seed GETs. Use constant capture labels and
+fixed-width targets. Never reset selection cursor with private state mutation.
+
+Per profile the predeclared budgets are:
+
+| Profile | HEAD | GET | Total requests | Accepts / physical closes |
+|---|---:|---:|---:|---:|
+| Active |46|112 (=46+66)|158|46|
+| Idle |46|46|92|46|
+
+| Per-member peer epoch |0 A/B|1 A/B|2 A/B|
+|---|---|---|---|
+| Accepts / HEAD either profile |8/8|8/8|7/7|
+| Active HEAD+GET |32/24|32/24|26/20|
+| Idle HEAD+GET |16/16|16/16|14/14|
+
+Initial publication is separate from22 replacement CAS. All counts are
+predictions until genuine events, exact per-generation connection/stream
+correlations and final nonforced peer joins establish them. No retry, extra
+accept, probe or GET is absorbed by adjusting the budget after a failure.
+
+## Two different capacity witnesses
+
+T owner keeps limits4 resources/256 pinned handles/64 request tokens/8MiB
+owned bytes. Tighten supported G `max_groups` to2 at environment construction;
+other G limits stay unchanged. At cycle3, after NEW health and before CAS, OLD
+and NEW G exist. Reuse the actual successful compiled NEW config in one direct
+public `UpstreamGroups.prepare(groups,compiled,self(),deadline)` attempt.
+Require `{:error,:group_capacity}`. Observe actual dependency T preparation pin
+acquisition and cancellation; join that cancellation before exact comparison
+of G/T records, pins, tokens, probes, byte sums, owner monitors and Store state.
+No third G, probe, accept or application request may appear. This is real
+partial-acquisition rollback with no retained delta, not a no-effect claim.
+
+Before OLD can retire at cycle3, install the existing read-only finite custodian
+input barrier on BOTH OLD T custodians. After genuine final source/baseline
+release, await both held inputs. OLD2+NEW2 must demonstrably occupy4 records;
+OLD stays admissionclosed/retirement_requested/unconfirmed/not down/charged.
+No fillers are used. Record NEW baseline2 T handles, G state after OLD removal,
+tokens/helpers0 and reserved_connections8. Direct public fifth-T preparation
+must return `{:error,{:capacity,:resources}}`, with exactly unchanged complete
+T status/records/pins/tokens/byte sum and Store state. No peer effect is allowed.
+Unconditionally send each original continue in `after` cleanup, within its
+original2000ms window. Do not query a custodian while its observer blocks it.
+Record elapsed transaction/through-continue clocks for BOTH barriers.
+
+## Genuine retirement and cleanup custody
+
+Map the accepted fixed read-only retirement observer separately onto every
+original T custodian. Observe actual `:retire_result` with original public
+receipt, actual helper monitor DOWN:normal and owner helper-start/finish and
+capability-confirmation messages. Require public
+`HTTP.ManagedTransport.await_retired(receipt,5000) == :ok`, original custodian
+DOWN:normal, record removal after confirmation and physical EOF/reset matching
+that member's observed health/GET connection. An error or unconfirmed/sticky
+cleanup remains FAIL; never force refund. No G-level retirement receipt exists;
+prove actual G key/pin/token/probe absence separately.
+
+Use existing close_calls semantics for multi-stream native H2. Wait boundedly
+for original stream workers to die before the unchanged normal DOWN assertions;
+close sockets only after all stream workers finish. Capacity continue and OLD
+T receipt joins precede the final active native close wait. Keep all original
+monitors and reasons, public completion and source/child-removal assertions.
+Do not consume an original monitor to manufacture a later replacement join.
+
+## Phase-matched complete scalar vector
+
+Sample only after both NEW seed completions/source returns/native joins,
+all OLD G/T retirement receipts/physical closes/normal joins, both initial
+health completions/probe joins, and Store preparation:nil/retired:[]. Require
+one G/two T/current complete Store baseline(G1,T2), two healthy idle members,
+no request sources/derived pins/tokens/probes/helpers/old records, two actual
+idle upstream connections and service/gate active/bytes/cleanup/queues0.
+
+Independently sum T original entry.payload external sizes (verify each stored
+payload_bytes), full pin-record external sizes and token.payload_bytes; compare
+with owned_serialized_payload_bytes. Never serialize private scope/completion
+interiors. G config_bytes equals sum original installed record.bytes and each
+current full record fits that reserve. G control_bytes equals full pin/token/
+probe records with only self control_bytes removed and the existing supported
+opaque completion projection; compare each charge independently. Probe bytes
+equals sum genuine probe reservations. Settled selections/probes are empty.
+Keep G config/control/probe byte totals, exact G/T handle and batch counts,
+group/member inflight0/health states, source/policy/manifest/trust byte classes,
+full router/baseline external sizes and service/gate lease/cleanup byte sums
+in the equality. No sampled byte or count is replaced by a hash or omitted.
+
+Establish firststeady only at warmup2. Require all20 measured complete vectors
+exactly equal it. Before runtime, segregate intentionally changing identities
+(PIDs/refs/generations/receipts), cumulative high-water/rejection/effect counts
+and absolute health checked/due/scheduling-lag timestamps into complete
+inventories. Preserve their original observations; they are not constant
+plateau scalars. No post-failure field exclusion or identity normalization.
+
+## Gates and closure
+
+Self-review, independent kickoff SPEC then dependent CODE, source freeze and
+independent source SPEC→CODE precede first runtime. Existing-behavior
+qualification needs no artificial RED. Run defining F plus group Generation
+and relevant group/accounting/selection/preparation/owner/Store/T/H1 compatibility
+tests in serial scoped batches with nonzero executed tests and unchanged
+assertions. Full implementation SPEC→CODE precedes fresh required compile,
+format, scoped tests, isolated core/HTTP consumers, Python peer startup and
+actual browser nativeH1/H2→TLS-H2 group rows. Freeze exact argv/source/receipt
+bindings before running; root opens all OLD/NEW screenshots. Browser checks
+current group/native boundaries, not the twenty-reload runtime count.
+
+Record exits, counts, source/BEAM identities, original logs, actors/readers/
+groups/adopted raw waits, nonforced custody and PASS/FAIL/BLOCKED/NOT RUN
+separately. Preserve all history and cumulative counters; Astra2/2 is exhausted.
+After accepted gates, factual acceptance, independent document SPEC→CODE and
+disk/index/blob audit, commit only task-owned files locally and prepare the
+next bounded stage automatically. Full matrix, multi-owner, selected-A R32/B
+available, standalone, two≥600s load profiles and H3 accounting remain open.
+No push/publication/deployment, Vault/production data/certificates, public
+management, account changes or disabled release-artifact E2E activation.

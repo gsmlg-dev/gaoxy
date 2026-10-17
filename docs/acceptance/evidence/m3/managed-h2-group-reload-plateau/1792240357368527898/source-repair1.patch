@@ -1,0 +1,58 @@
+--- source-candidate1
++++ source-candidate2
+@@ -3283,7 +3283,7 @@
+       assert :ok = GenServer.stop(f.store, :normal, @timeout)
+       final = reload_join_retired(f, current, reload_epoch(peers, 22), connections)
+       final_epochs = Enum.map(reload_epoch(peers, 22), &reload_join_peer(&1, @reload_profile))
+-      reload_zero(f, gate)
++      final_zero = reload_zero(f, gate)
+       summary = reload_totals(ledger, final, peers, @reload_profile)
+       assert Process.alive?(f.owner) and Process.alive?(f.groups)
+       finish(f, [], [])
+@@ -3293,6 +3293,7 @@
+         totals: summary,
+         final_retirement: final,
+         final_epochs: final_epochs,
++        final_zero: final_zero,
+         teardown_elapsed_ms: System.monotonic_time(:millisecond) - teardown_started,
+         profile_elapsed_ms: System.monotonic_time(:millisecond) - entered
+       })
+@@ -3593,16 +3594,21 @@
+     old_epochs = reload_epoch(peers, cycle - 1)
+     epochs = reload_epoch(peers, cycle)
+ 
++    if profile == :idle do
++      reload_idle(f, old)
++      reload_service_zero(f, hd(old_connections).gate)
++    end
++
++    # healthy/3 requires owner-wide zero tokens before OLD requests are opened.
++    fresh = reload_candidate(f, epochs, cycle)
++
+     calls =
+       if profile == :active do
+         reload_active(f, old, old_epochs, cycle)
+       else
+-        reload_idle(f, old)
+-        reload_service_zero(f, hd(old_connections).gate)
+         []
+       end
+ 
+-    fresh = reload_candidate(f, epochs, cycle)
+     rollback = if cycle == 3, do: reload_group_rollback(f, fresh, peers), else: nil
+     fresh = activate(f, fresh, old.generation)
+ 
+@@ -4478,7 +4484,12 @@
+         g.bytes == 0 and g.control_bytes == 0 and g.probe_bytes == 0
+     end)
+ 
+-    reload_service_zero(f, gate)
++    zero = reload_service_zero(f, gate)
++
++    Map.merge(zero, %{
++      transport: reload_snapshot_receipt(reload_transport_snapshot(f)),
++      group: reload_group_snapshot_receipt(reload_group_snapshot(f))
++    })
+   end
+ 
+   defp reload_join_peer(epoch, profile) do

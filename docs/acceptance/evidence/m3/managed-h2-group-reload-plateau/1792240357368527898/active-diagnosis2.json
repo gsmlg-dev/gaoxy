@@ -1,0 +1,196 @@
+{
+  "task_id": "group_reload_active_diagnosis2",
+  "status": "DONE",
+  "assignment": "direct independent causal source/data review only",
+  "verdict": "CONFIRMED_FIXTURE_SOURCE_PREDICATE_DEFECT",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_previously_verified": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-observation-active1.json": "a46f2c2f8d99a86643383e2912940a239aea26ca79d17d1a44cebe89f2d5e8fb",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-observation-active1.log": "88a6b0ad71f4e840b6a43250be0d99ae5a3fb3546d4ec97fa487eb280c282516",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/observation-active-audit1.json": "897c75da085a8ed22d637e7edec8cfdb2a1904fd2fabc47ea72d35ed28adac34",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "a99fbb5a4133637913801cf61ae5688aa3797842f44b23788261a81280dabfb6",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+    "apps/gaoxy_http/lib/gaoxy/http/resources.ex": "0a1afd048e559f98aa7d18031989d33eb1b8a6882803679f1e79612ecdebc8b2"
+  },
+  "receipt_fact": {
+    "verdict": "FAIL",
+    "actual_exit": 2,
+    "tests": 1,
+    "failures": 1,
+    "excluded": 103,
+    "skipped": 0,
+    "source_stable": true,
+    "forced": false,
+    "process_joined": true,
+    "process_group_remaining": [],
+    "descendant_cleanup": {
+      "forced": false,
+      "initial": [
+        1445735,
+        1445753
+      ],
+      "initial_after_reap": [],
+      "reaped_before_force": [
+        {
+          "pid": 1445753,
+          "wait_status": 10,
+          "phase": "before_force"
+        },
+        {
+          "pid": 1445735,
+          "wait_status": 0,
+          "phase": "before_force"
+        }
+      ],
+      "signal_attempts": [],
+      "reaped": [
+        {
+          "pid": 1445753,
+          "wait_status": 10,
+          "phase": "before_force"
+        },
+        {
+          "pid": 1445735,
+          "wait_status": 0,
+          "phase": "before_force"
+        }
+      ],
+      "reap_deadline_exhausted": [],
+      "remaining": []
+    }
+  },
+  "observed_phases": [
+    {
+      "phase": "before_last_source_wait",
+      "elapsed_ms": 131,
+      "completion_result": {
+        "inspect": "{:error, :cleanup_pending}"
+      },
+      "session_available": true,
+      "child_present": true,
+      "transport_source_present": true,
+      "group_source_present": true,
+      "transport_token_present": true,
+      "group_token_present": true
+    },
+    {
+      "phase": "after_last_source_wait",
+      "elapsed_ms": 4985,
+      "completion_result": {
+        "inspect": ":ok"
+      },
+      "session_available": false,
+      "child_present": false,
+      "transport_source_present": true,
+      "group_source_present": true,
+      "transport_token_present": false,
+      "group_token_present": false
+    },
+    {
+      "phase": "before_original_pending_assert",
+      "elapsed_ms": 4987,
+      "completion_result": {
+        "inspect": ":ok"
+      },
+      "session_available": false,
+      "child_present": false,
+      "transport_source_present": true,
+      "group_source_present": true,
+      "transport_token_present": false,
+      "group_token_present": false
+    }
+  ],
+  "observed_last_session_events": [
+    {
+      "elapsed_ms": 4982,
+      "input": {
+        "kind": "opening_expired"
+      },
+      "before": {
+        "headers": false,
+        "cancelled": false,
+        "consumed": false,
+        "outcome": "cancelled"
+      },
+      "after": {
+        "headers": false,
+        "cancelled": false,
+        "consumed": false,
+        "outcome": "cancelled"
+      }
+    },
+    {
+      "elapsed_ms": 4982,
+      "input": null,
+      "before": {
+        "headers": false,
+        "cancelled": false,
+        "consumed": false,
+        "outcome": "cancelled"
+      },
+      "after": {
+        "headers": false,
+        "cancelled": true,
+        "consumed": true,
+        "outcome": "upstream_failure"
+      }
+    },
+    {
+      "elapsed_ms": 4982,
+      "input": {
+        "kind": "cancel"
+      },
+      "before": {
+        "headers": false,
+        "cancelled": true,
+        "consumed": true,
+        "outcome": "upstream_failure"
+      },
+      "after": {
+        "headers": false,
+        "cancelled": true,
+        "consumed": true,
+        "outcome": "upstream_failure"
+      }
+    }
+  ],
+  "findings": [
+    {
+      "id": "AD2-F1",
+      "severity": "causal fixture defect",
+      "location": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs:3647",
+      "evidence": "Current sources comprehension selects every kind=request pin whose handles intersect OLD transports, including derived children. UpstreamTransports.reserve_derived_pin at1055-1098 constructs child.public.kind=:request, handles:[handle], derived:true, source_ref:source.public.ref, and inserts both source and child into same state.pins. Because selected handle belongs to OLD, last source and last child both match. The singleton equality cannot pass while authentic last child remains.",
+      "causal_chain": "At131ms firsttwo sources/children were gone and last original source+child/tokens/session were present, completion cleanup_pending. The wait could not pass due to extra derived child. At4982ms original last Session received opening_expired, transitioned cancelled+consumed/upstream_failure; at4985ms wait returned with last source retained but child/tokens/session gone and completionok. At4987ms original cleanup_pending assert failed. This positively observed timer chain explains this selected active reproduction; it does not establish every matrix outcome or an upstream defect."
+    }
+  ],
+  "smallest_proposed_repair": {
+    "scope": "Test source predicate and adjacent explicit child assertion only; root owns implementation and verification",
+    "source_predicate": "sources =\n  for {ref, p} <- t.pins,\n      p.public.kind == :request and not Map.get(p, :derived, false) and\n        Enum.any?(old.transports, &(&1 in p.public.handles)),\n      do: ref",
+    "child_assertion_immediately_before_original_pending_assert": "assert %{derived: true, source_ref: source_ref, public: child} =\n         :sys.get_state(f.owner).pins[last.bound.child.ref]\n\nassert source_ref === last.captured.tpin.ref and child === last.bound.child\n\nassert {:error, :cleanup_pending} =\n         HTTP.RequestCompletion.await(last.bound.completion, 0)",
+    "preserved": "Existing kind and OLD-handle filters, complete singleton source equality, group source equality, original pending assertion, operations, response bytes, all deadlines and clocks. No production or dependency change.",
+    "why_minimal": "Exclude only derived request children from a query intended to count original sources. Do not filter only to the desired ref, which could hide another surviving original OLD source. Explicit authentic child check preserves stronger last-child-live intent before completing last call."
+  },
+  "verification": "No runtime/build/test executed by reviewer. Source/data review and proposed snippet only; repair efficacy remains NOT RUN and requires fresh SPEC/CODE and exact runtime verification.",
+  "runtime_repair_rounds_added": 0,
+  "Astra": "2/2 exhausted; unchanged",
+  "tooling_incidents": [
+    "First phase/event projection exceeded output budget; replaced with explicit scalar projection.",
+    "Appended broad bookkeeping rg exceeded combined output budget; replaced with exact bounded source slices."
+  ],
+  "tooling_incident_count": 2,
+  "repository_evidence_source_Git_writes": "NONE",
+  "changed_files": [
+    "/tmp/gaoxy-group-reload-active-diagnosis2.json",
+    "/tmp/gaoxy-group-reload-active-diagnosis2.md"
+  ],
+  "all_own_commands_finished": true,
+  "commands_running": false,
+  "command_shutdown_status": "All own commands complete; no runtime/background process started or touched. Root idle diagnostic not touched.",
+  "remaining_risks": [
+    "Only selected active http1\u2192h2c reproduction analyzed; idle and other profiles are separate.",
+    "Snapshots are sequential and observers perturb scheduling; no complete pin-map snapshot was emitted. Source constructor plus authentic child presence gives the causal membership proof.",
+    "This report does not convert original FAIL to PASS or validate proposed repair."
+  ],
+  "decisions_needed": []
+}

@@ -1,0 +1,45 @@
+import ast,datetime,hashlib,json
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898'
+E5=W/'docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def write(p,d):
+    with p.open('x') as f:json.dump(d,f,indent=2,sort_keys=True);f.write('\n')
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+report=Path('/tmp/gaoxy-group-reload-browser-operands1.json')
+d=json.loads(report.read_text())
+payloads=[]
+for row in d['files']:
+    src,dest=W/row['source'],W/row['destination']
+    assert sha(src)==row['accepted_sha256']
+    before=src.read_bytes()
+    if row['path_substitutions']:
+        old=d['source_prefix'].encode();new=d['destination_prefix'].encode()
+        assert before.count(old)==row['path_substitutions'],row['source']
+        after=before.replace(old,new)
+    else:after=before
+    payloads.append((src,dest,before,after,row['path_substitutions']))
+for name in ['command-collector1.py','syntax-check1.py']:
+    src=E5/name;before=src.read_bytes()
+    payloads.append((src,E/name,before,before,0))
+for src,dest,before,after,count in payloads:
+    assert not dest.exists(),str(dest)
+    if src.name.endswith('runner1.py'):
+        def browser(blob):
+            tree=ast.parse(blob)
+            return [ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(t,ast.Name) and t.id=='BROWSER' for t in n.targets)]
+        assert browser(before)==browser(after)
+for src,dest,before,after,count in payloads:
+    with dest.open('xb') as f:f.write(after)
+for name in ['gaoxy-group-reload-browser-operands1.json','gaoxy-group-reload-browser-operands1.md']:
+    src=Path('/tmp')/name
+    with (E/name).open('xb') as f:f.write(src.read_bytes())
+write(E/'tool-source-materialization1.json',{'kind':'GROUP_RELOAD_TOOL_SOURCE_MATERIALIZATION1','at_utc':now(),'provenance_report_sha256':sha(report),'files':[{'source':str(src.relative_to(W)),'source_sha256':hashlib.sha256(before).hexdigest(),'destination':str(dest.relative_to(W)),'destination_sha256':sha(dest),'literal_prefix_substitutions':count,'byte_identical':before==after} for src,dest,before,after,count in payloads],'actual_literal_substitutions':sum(row[4] for row in payloads),'BROWSER_strings_unchanged':True,'limits':'Only three reviewed group paths relocate; no runtime semantics changes. E4 fixed sibling snapshot bytes stay identical and are not invoked by group browser. Static collectors copied exactly from accepted E5. New tool source still requires bounded review and actual static/runtime gates.'})
+c=json.loads((E/'counter4.json').read_text());c.update(kind='GROUP_RELOAD_COUNTER_EXTENSION5',at_utc=now(),prior_path=str((E/'counter4.json').relative_to(W)),prior_sha256=sha(E/'counter4.json'))
+for k in ['current_root_failure_events','current_orchestration','successor_tooling_errors','group_reload_tooling_errors']:c['counters'][k]+=1
+c['events']=[{'kind':'Source implementer guessed nonexistent apps/gaoxy_proxy/test/managed_h2_fixed_proxy_test.exs; sed/rg actual exit2. Switched to existing defining managed_h2_fixed_endpoint_test.exs. No repository/runtime/test/build mutation.','classification':'group tooling incident8, no product/runtime/fixture repair'}]
+c['limits']='Root252/orchestration162/successor-tooling90/group-tooling8,groupkickofffailedSPEC1,fixedtooling19,Astra2/2 exhausted. All predecessor counters intact.'
+write(E/'counter5.json',c)
+with (E/'tool-materialization-writer1.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'materialization_sha256':sha(E/'tool-source-materialization1.json'),'files':len(payloads),'substitutions':sum(row[4] for row in payloads),'runtime':'NOT RUN'}))

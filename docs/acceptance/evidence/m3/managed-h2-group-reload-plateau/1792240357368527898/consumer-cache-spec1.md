@@ -1,0 +1,29 @@
+# Consumer cache environment SPEC1
+
+**PASS_ENVIRONMENT_SPEC_ONLY_CONTINGENT —12 checks,0 actionable findings.** Technical candidate1 review only; no adoption/preflight/execution approval. Root updated scope after original core PASS: no core recovery; no replacement while original HTTP runs. If HTTP also passes, no recovery. If it fails, freeze affected-only candidate2 against actual outcome and obtain separate SPEC→CODE/preflight/adoption.
+
+- **CCS1-01** Candidatee88f1574/plan4f33afc4/proposal5bf6c346 hashes match supplied freeze; source-candidate3 and original inventory bindings retained. Proposal is technical environment transport only, not product/dependency repair.
+- **CCS1-02** Two canonical locked URLs map to exact existing local .git paths using supported inherited per-command GIT_CONFIG_COUNT=3, protocol.file.allow=always and two url.*.insteadOf entries. No broad GitHub-domain rewrite, global/workspace/cache Git config mutation or persistent source edit.
+- **CCS1-03** Each full payload equals original exact consumer payload after removing only7GIT_CONFIG operands. ERL_FLAGS/MIX_ENV/unbuffer/bash/original script unchanged; outer collector suffix exact and new immutable names/green kind/600s bounds preserved.
+- **CCS1-04** Both unchanged scripts create independent mktemp consumers, copy only required project/vendor/fixture sources and original lock, then run deps.get --check-locked, compile warnings-as-errors and test warnings-as-errors. No existing consumer build/deps path reused.
+- **CCS1-05** Core fixture retains optional-application absence/resolution/runtime checks and real TCP/UDP exchange. HTTP fixture retains QUIC/proxy absence and real nativeH1/H2 endpoint response checks. No test/assertion/filter/timeout/lock change proposed.
+- **CCS1-06** All8 public input pins freshly match candidate; lock canonicalURLs/OIDs exactly match provenance. Own public Git metadata reads with GIT_NO_LAZY_FETCH1 verified both canonical origins, locked commit+tree and fsck connectivity exit0. No private Fetch state or object-store mutation used.
+- **CCS1-07** Preflight explicitly requires inherited nonempty GIT_CONFIG_COUNT absent or independently frozen composition, exact source401 equality and immediate cache origin/OID/tree/connectivity validation. Own review environment count absent; this is not root preflight approval, and root must repeat under actual execution environment.
+- **CCS1-08** Optional ls-remote --get-url arrays specify pure URL expansion with exact expected file URLs; not executed by reviewer. Normal fresh clone/fetch reads local upload-pack without mirror/alternate/shared build or local dependency path substitution; strict lock keeps dependency identity.
+- **CCS1-09** EXIT traps remove each temporary consumer; original finite collector owns genuine process/reader/group joins and fails residue/force/nonzero/zero-test/skip/exclusion/warning results. No cleanup of unrelated process/cache is proposed; do not claim post-cleanup temporary clone metadata was observed.
+- **CCS1-10** Postflight repeats source401 and public cache provenance/connectivity checks; original failures and raw waits remain immutable. Remaining external fetch/service/timeouts stay BLOCKED_ENV for affected gate, with no deadline extension, assertion waiver, source/dependency/config/account change or false PASS.
+- **CCS1-11** Root updated scope after original core PASSED. Fresh original receipt57c728a8 confirms1/0,533.601565s,exit0/no skipped/excluded/warnings,source401stable/nonforced/joined. Candidate1 is contingent technical preparation only; no core replacement needed, no replacement while original HTTP pipeline runs. HTTP failure would require new candidate2 naming actual outcome and affected replacement, then separate review/preflight/adoption.
+- **CCS1-12** Review does not authorize execution/adoption or claim recovery PASS/publicGitHub/hostedCI health. Root sole runtime/operator/writer, separate CODE required for any applicable newly frozen candidate. No dependency bug assumed, upstream workaround introduced, product scope broadened or repair/Astra round consumed.
+
+## Frozen identities
+
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-candidate1.json`: `e88f15748218f9867e78c23472bf860d28f27d14d1f0657aa0291a64a5eec40a`
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-plan1.md`: `4f33afc41b6567cde1602117efc79bfd04a281985247f805ed355c0e3c9115f4`
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-proposal1.json`: `5bf6c34651500b25a46d9d21a01a118682e0f66c7a7f39ba78ef085f1e992d22`
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/source-candidate3.json`: `86439e6e26e54f5f123d660371e9abedfe3e5a3fd6dddb10f2e1911553c9ba0b`
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/command-inventory1.json`: `9543a1b1d8f67c22e81cbbab4466dece71c365a9bbfe25499b2f90e33fdc5e2e`
+- `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-core1.json`: `57c728a8a405ce176b963ed5608555e33a0296584d0f94b58cd35ced6ed39919`
+
+Exact two proposed argv and pre/post validations are retained in JSON. All8public pins match; two canonical origins/locked commits+trees/connectivity freshly verified through6read-only Git metadata commands with GIT_NO_LAZY_FETCH=1. This is review evidence, not root preflight or recovery execution. No pure URL expansion/consumer/test/build/runtime command executed by reviewer.
+
+Only assigned `/tmp` reports written. All own commands finished; no source/config/cache/Git mutations or process operations. Original HTTP runtime untouched.0newtooling incidents/repair rounds; received counter26 root287/orch194/groupTool40; fixture/Solrepair2 and Astra2/2 unchanged. No decisions needed.

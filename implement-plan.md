@@ -2,7 +2,7 @@
 
 ## Fixed reload plateau current checkpoint — 2026-10-17
 
-Current fixed-plateau checkpoint — 2026-10-17: eight native H1/H2 × h2c/TLS-H2 × active/idle profiles passed fresh final scoped verification on one persistent instance/owner/epoch/Store per profile, with two warmups and twenty measured reloads each. Full implementation SPEC1→CODE1 has zero findings; final scoped batches passed242/0 and400/0 across20 distinct paths (642 test invocations, not642 unique tests). Strict compile, changed-source format and active fixture syntax passed as static0-test gates. Core consumer passed1/0 and HTTP consumer passed2/0. Pinned Python startup passed11 unittest methods (the ExUnit-only collector remains static0). Fresh fixed browser passed two actual nativeH1/H2→TLS-H2 rows; root opened all four OLD/NEW PNGs. Implementation and runtime gates are PASS. Final independent document review, local commit and committed-byte custody remain pending and are recorded separately before fixed-slice closure. See `docs/acceptance/m3-managed-h2-fixed-reload-plateau.md` and E5 `docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527`. Group reload design/execution follows actual fixed closure; whole Task5/M3, full matrix, multi-owner, selected-A R32/B-available, standalone, two ≥600s load profiles and H3 accounting stay open. No publication/deployment or other excluded operation follows.
+Fixed reload plateau is DONE LOCALLY at `e4a7660baa61a792f4245f511b190a0fcfcbf920`. Eight native H1/H2 × h2c/TLS-H2 × active/idle profiles each retained one instance/owner/epoch/Store, two warmups and twenty measured reloads. Fresh scoped batches passed242/0+400/0; core1/0, HTTP2/0, Python11-method startup and fixed browser2rows/4root-viewed PNGs passed separately. Full implementation and final document SPEC→CODE passed with zero findings. The actual postcommit audit `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/fixed-postcommit-custody1.json` (SHA256 `a3a9d61fa2043952e533ca91639b4ddd7d13137a42569305bb1c7164cc5bd5eb`) verified all184 task files and399 source pins against committed blobs and disk, with empty index/clean tracked tree at that snapshot. Fixed-stage counter16 preserves root243/orchestration154/successor-tooling82/plateau-tooling19 and Astra2/2 exhausted; the later group kickoff counters are separate successors without reset. Group active/idle reload runtime qualification passed104/0 and strict DATA8contexts; fresh scoped1043 invocations/0fail, isolated Core1/0+HTTP2/0, Python11 startup methods and group browser2rows/4root-inspected PNGs passed separately. Final factual document review and actual local commit/custody remain pending at the frozen review snapshot in `docs/acceptance/m3-managed-h2-group-reload-plateau.md`. Whole Task5/M3, the broader streaming matrix, multi-owner, selected-A R32/B-available, standalone, two≥600s load profiles and H3 accounting remain open. No publication/deployment or other excluded operation follows.
 
 Historical identity-rotation qualification — 2026-10-17: **PASS for the managed H2 same-authority identity-rotation slice**. Final fixed6 and group2 each actually passed both native H1/H2→TLS-H2 rows, and root viewed all eight fresh OLD/NEW images. Fixed6 exited0 after32.097s with eight named Actors; group2 exited0 after36.352s with twelve. Every named Actor exited0/nonforced with joined readers and absent groups. Each endpoint recorded eleven genuine adopted waits: nine exit0 and two signal10/-10, with none remaining. Raw wait statuses are preserved.
 
@@ -47,7 +47,7 @@ Previous fixed prepared-T upstream-H2 Generation is DONE LOCALLY at feature
 `8131af39a846c292a022ccbfd32c53376cd57887`, with full reviews/fresh537/0,
 isolated consumers, four-row browser and actual committed-byte custody.
 Its browser-final2 stays FAIL/UNKNOWN; no production close repair is claimed.
-After the factual local documentation descendant, the next bounded existing requirement is
+At that historical documentation handoff, the next bounded requirement was
 same-authority managed-H2 trust/numeric-address rotation, fixed then group using
 existing compact DER/address preparation APIs, with written design/plan and
 independent review before runtime. Full streaming matrix, multi-owner,
@@ -930,7 +930,7 @@ conventional commit. No push, package/image/release publication, deployment,
 production data, operational certificates, Vault changes, public management or
 release-artifact E2E enablement follows.
 
-Next bounded slice: validate compiled Router route/resource-sidecar consistency
+Original next-slice sequence (superseded by the current checkpoint): validate compiled Router route/resource-sidecar consistency
 through the existing generic Resources contract, including static nested Router
 checks and rejection before baseline pins. It does not activate managed-H2
 Generation. Subsequent H2 Generation accounting/activation, full8-cell matrix,

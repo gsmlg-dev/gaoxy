@@ -1,0 +1,278 @@
+{
+  "task_id": "group_reload_kickoff_code/consumer-cache-proposal1",
+  "status": "DONE",
+  "assignment": "direct bounded read-only environment investigation/proposal",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_parent_supplied": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "verdict": "FEASIBLE_READ_ONLY_LOCAL_GIT_TRANSPORT_PROPOSAL_NOT_EXECUTED",
+  "trigger": "Only after root records original600s consumer command actual outcome; original run was still pending at assignment and was not touched. No timeout/failure inferred from silent log.",
+  "scope": "Proposal only; no dependency bug, upstream issue or product repair. Root owns runtime and any later command adoption.",
+  "public_input_sha256": {
+    "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6",
+    "apps/gaoxy/mix.exs": "8c2bf258c5f7a91429f1d86ef3c02d9bcd7368258701a15134a065c8ffbd49be",
+    "scripts/external-consumer.sh": "649f6250641b09dcd0773cdd9ca57f9b7fc46f1068130072f0fed08c74435b36",
+    "scripts/http-consumer.sh": "16633262966d02229f37aa364c3f75fd8085fb1880d60ab5dbc96774bf9f9c0b",
+    "integration/core_consumer/mix.exs": "92879d8bafe8f58a84830701d0bc94b6932a0950aa909f10213b8c5c0457ae56",
+    "integration/http_consumer/mix.exs": "4e54c9d3996ab1ada45d60da98c5271c9a0df3bee0d5ba786caf709c14a50147",
+    "integration/core_consumer/test/consumer_test.exs": "b92248f407496fbcb8648356db279cc11963e82064bdfc3c92f1292b18dd35fa",
+    "integration/http_consumer/test/consumer_test.exs": "125b6d94a3f9170f847bc3fcfe32c93d4885bc87b56d2ccc522b0a5a9ca34c61"
+  },
+  "public_input_pins_match_candidate401": true,
+  "observed_cache_provenance": [
+    {
+      "dependency": "thousand_island",
+      "canonical_url": "https://github.com/mtrudel/thousand_island.git",
+      "commit": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+      "tree": "39d3fbd253466e5f0000bfd9b64c24890abb48e5",
+      "git_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git"
+    },
+    {
+      "dependency": "abyss",
+      "canonical_url": "https://github.com/gsmlg-dev/abyss.git",
+      "commit": "9b710e6480900e16e304f40e63623aff8c922e19",
+      "tree": "d2ebfa74b8b59ec535cdfef8a71f8a1e2a71df98",
+      "git_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git"
+    }
+  ],
+  "observed_verification": {
+    "git_version": "2.54.0",
+    "both_HEADs_equal_locked_commits": true,
+    "both_origin_urls_equal_lock_and_dependency_declarations": true,
+    "both_repository_format_version": 0,
+    "partialclone_or_promisor_local_config": "Neither present in bounded config projections",
+    "both_fsck_connectivity_only_no_dangling_locked_commit": "PASS exit0, empty output with GIT_NO_LAZY_FETCH=1",
+    "git_config_count_in_review_environment": "ABSENT"
+  },
+  "recommended_design": "Use inherited per-command GIT_CONFIG_COUNT/KEY_n/VALUE_n for exact canonicalURL->file://local.git rewrites and protocol.file.allow=always. Git performs normal fresh clone/fetch through read-only local upload-pack; no mirror, shared build/deps path, lock rewrite or repository/global/account configuration mutation.",
+  "exact_environment_argv_operands": [
+    "ERL_FLAGS=+S 2:2",
+    "MIX_ENV=test",
+    "GIT_CONFIG_COUNT=3",
+    "GIT_CONFIG_KEY_0=protocol.file.allow",
+    "GIT_CONFIG_VALUE_0=always",
+    "GIT_CONFIG_KEY_1=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git.insteadOf",
+    "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+    "GIT_CONFIG_KEY_2=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git.insteadOf",
+    "GIT_CONFIG_VALUE_2=https://github.com/gsmlg-dev/abyss.git"
+  ],
+  "proposed_commands": [
+    {
+      "suggested_new_immutable_name": "group-reload-final-consumer-core-cache1",
+      "payload_argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "GIT_CONFIG_COUNT=3",
+        "GIT_CONFIG_KEY_0=protocol.file.allow",
+        "GIT_CONFIG_VALUE_0=always",
+        "GIT_CONFIG_KEY_1=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git.insteadOf",
+        "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+        "GIT_CONFIG_KEY_2=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git.insteadOf",
+        "GIT_CONFIG_VALUE_2=https://github.com/gsmlg-dev/abyss.git",
+        "unbuffer",
+        "bash",
+        "scripts/external-consumer.sh"
+      ],
+      "timeout_seconds": 600,
+      "status": "PROPOSED_NOT_RUN"
+    },
+    {
+      "suggested_new_immutable_name": "group-reload-final-consumer-http-cache1",
+      "payload_argv": [
+        "nix",
+        "develop",
+        "--command",
+        "env",
+        "ERL_FLAGS=+S 2:2",
+        "MIX_ENV=test",
+        "GIT_CONFIG_COUNT=3",
+        "GIT_CONFIG_KEY_0=protocol.file.allow",
+        "GIT_CONFIG_VALUE_0=always",
+        "GIT_CONFIG_KEY_1=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git.insteadOf",
+        "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+        "GIT_CONFIG_KEY_2=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git.insteadOf",
+        "GIT_CONFIG_VALUE_2=https://github.com/gsmlg-dev/abyss.git",
+        "unbuffer",
+        "bash",
+        "scripts/http-consumer.sh"
+      ],
+      "timeout_seconds": 600,
+      "status": "PROPOSED_NOT_RUN"
+    }
+  ],
+  "execution_condition": "Root preserves original command outcome, freezes new names/fullargv/source401/cache validation and obtains independent proposal review before either recovery execution. Use unchanged original script and600s outer deadline; do not launch concurrent clone while original remains running.",
+  "required_preflight": {
+    "read_only_commands_already_verified_equivalent": [
+      {
+        "purpose": "Canonical origin",
+        "argv": [
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git",
+          "remote",
+          "get-url",
+          "origin"
+        ],
+        "expected_stdout": "https://github.com/mtrudel/thousand_island.git"
+      },
+      {
+        "purpose": "Locked commit and tree",
+        "argv": [
+          "env",
+          "GIT_NO_LAZY_FETCH=1",
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git",
+          "show",
+          "-s",
+          "--format=%H %T",
+          "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+        ],
+        "expected_stdout": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820 39d3fbd253466e5f0000bfd9b64c24890abb48e5"
+      },
+      {
+        "purpose": "Read-only object connectivity without lazy network fetching",
+        "argv": [
+          "env",
+          "GIT_NO_LAZY_FETCH=1",
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git",
+          "fsck",
+          "--connectivity-only",
+          "--no-dangling",
+          "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+        ],
+        "expected_exit": 0
+      },
+      {
+        "purpose": "Canonical origin",
+        "argv": [
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git",
+          "remote",
+          "get-url",
+          "origin"
+        ],
+        "expected_stdout": "https://github.com/gsmlg-dev/abyss.git"
+      },
+      {
+        "purpose": "Locked commit and tree",
+        "argv": [
+          "env",
+          "GIT_NO_LAZY_FETCH=1",
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git",
+          "show",
+          "-s",
+          "--format=%H %T",
+          "9b710e6480900e16e304f40e63623aff8c922e19"
+        ],
+        "expected_stdout": "9b710e6480900e16e304f40e63623aff8c922e19 d2ebfa74b8b59ec535cdfef8a71f8a1e2a71df98"
+      },
+      {
+        "purpose": "Read-only object connectivity without lazy network fetching",
+        "argv": [
+          "env",
+          "GIT_NO_LAZY_FETCH=1",
+          "git",
+          "--git-dir=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git",
+          "fsck",
+          "--connectivity-only",
+          "--no-dangling",
+          "9b710e6480900e16e304f40e63623aff8c922e19"
+        ],
+        "expected_exit": 0
+      }
+    ],
+    "optional_no_network_url_expansion": [
+      {
+        "purpose": "Optional pure URL expansion; --get-url returns rewritten URL without contacting remote",
+        "argv": [
+          "env",
+          "GIT_CONFIG_COUNT=3",
+          "GIT_CONFIG_KEY_0=protocol.file.allow",
+          "GIT_CONFIG_VALUE_0=always",
+          "GIT_CONFIG_KEY_1=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git.insteadOf",
+          "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+          "GIT_CONFIG_KEY_2=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git.insteadOf",
+          "GIT_CONFIG_VALUE_2=https://github.com/gsmlg-dev/abyss.git",
+          "git",
+          "ls-remote",
+          "--get-url",
+          "https://github.com/mtrudel/thousand_island.git"
+        ],
+        "expected_stdout": "file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git",
+        "status": "PROPOSED_NOT_RUN"
+      },
+      {
+        "purpose": "Optional pure URL expansion; --get-url returns rewritten URL without contacting remote",
+        "argv": [
+          "env",
+          "GIT_CONFIG_COUNT=3",
+          "GIT_CONFIG_KEY_0=protocol.file.allow",
+          "GIT_CONFIG_VALUE_0=always",
+          "GIT_CONFIG_KEY_1=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git.insteadOf",
+          "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+          "GIT_CONFIG_KEY_2=url.file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git.insteadOf",
+          "GIT_CONFIG_VALUE_2=https://github.com/gsmlg-dev/abyss.git",
+          "git",
+          "ls-remote",
+          "--get-url",
+          "https://github.com/gsmlg-dev/abyss.git"
+        ],
+        "expected_stdout": "file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/abyss/.git",
+        "status": "PROPOSED_NOT_RUN"
+      }
+    ],
+    "source": "Fresh collector before-map must exactly equal candidate3 actual401 map. Recheck scripts, lock, input pins and cache canonical origins/locked commits/connectivity immediately before execution.",
+    "inherited_env": "Do not silently discard an existing nonempty GIT_CONFIG_COUNT configuration; root must confirm absence or explicitly freeze a composed equivalent. Current review environment is absent."
+  },
+  "preserved_consumer_contract": {
+    "freshness": "Each unchanged script makes its own mktemp root, copies only intended app/integration/lock (plus HTTP vendor adapter), and cleans it via original EXIT trap. No existing deps/_build copied, no MIX_DEPS_PATH/MIX_BUILD_PATH override or prebuilt BEAM reuse.",
+    "strict_commands": [
+      "mix deps.get --check-locked",
+      "mix compile --warnings-as-errors",
+      "mix test --warnings-as-errors"
+    ],
+    "source_identity": "Mix declarations and canonical HTTPS lock/OIDs remain unchanged. Git insteadOf changes only transport; local source exact OID and tree pinned. Git clone result itself NOT RUN/NOT claimed.",
+    "isolation": "Original core optional-app absence/TCP+UDP assertions and HTTP H1/H2/optional-app isolation assertions unchanged.",
+    "other_dependencies": "Hex default cache/registry path unchanged; no HEX_OFFLINE, new dependency version or network waiver."
+  },
+  "required_postflight": {
+    "source_and_cache": "Repeat source401 equality and read-only origin/lockedOID/tree/connectivity checks; no source/config/cache mutation allowed.",
+    "result": "Actual receipt must preserve complete argv/env, strict nonzero executed tests,0fail/skip/exclude/warnings, actual exit, finite600s, nonforced joined processes/readers/groups and empty residue. Keep original failed/blocked receipt immutable and separate.",
+    "limitations": "Unchanged scripts remove temporary consumer via EXIT trap; do not claim separately observed temporary clone metadata after cleanup. Successful strict lock/compile/test and immutable transport provenance qualify this local route only.",
+    "failure_policy": "Actual remaining external fetch/service/timeout failure is BLOCKED_ENV for this gate; do not extend deadline, weaken tests, alter source/dependencies/settings or call unrun qualification PASS."
+  },
+  "verification_not_run": [
+    "No clone/fetch/network command executed",
+    "Proposed URL expansion NOT RUN",
+    "No consumer/deps.get/compile/test/audit/runtime command executed",
+    "No production/dependency/cache/config mutation"
+  ],
+  "reviewer_changed_files": [
+    "/tmp/gaoxy-group-reload-consumer-cache-proposal1.json",
+    "/tmp/gaoxy-group-reload-consumer-cache-proposal1.md"
+  ],
+  "tooling": {
+    "new_incidents_this_assignment": 1,
+    "detail": "Combined consumer-test read exceeded1500token output budget by8tokens and was truncated; no conclusion relies on omitted text. Script/lock/source hashes and exact Git provenance underpin proposal."
+  },
+  "counters": {
+    "latest_received_before_assignment": "counter25 root286/orch193/groupTool39",
+    "new_read_tooling_incidents_to_merge": 1,
+    "sol_repair_rounds_added": 0,
+    "runtime_commands_added": 0,
+    "astra": "2/2 exhausted; unchanged"
+  },
+  "command_shutdown_status": "All own read/hash/Git metadata/connectivity commands finished. No long-lived process launched, running original command inspected or touched.",
+  "remaining_risks": [
+    "Actual local transport/consumer qualification still NOT RUN.",
+    "Original currently running outcome unknown to investigator.",
+    "Hex/service failures remain possible and are separate from Git transport.",
+    "Root must review/freeze any actual recovered argv/evidence before use."
+  ],
+  "decisions_needed": [],
+  "memory_use": "None; self-contained bounded assignment."
+}

@@ -1,0 +1,99 @@
+{
+  "task_id": "group_reload_audit_tool_spec1",
+  "status": "DONE",
+  "assignment": "direct independent complete AUDIT TOOL SPEC1 review; reports only",
+  "verdict": "FAIL_AUDIT_TOOL_SPEC",
+  "verdict_scope": "All 551 lines of frozen audit proposal2 compared with candidate2 actual emitted schema and collector contract; no execution acceptance",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/runtime-audit-proposal2.py.txt": "0272af8cd50906284adeec33e381408b3c6f61f5933309372d86ef3800faec4e",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/runtime-audit-proposal2.json": "c19356c86e27ff52db4e5103734f52e2eaf7678ff55f0a1b0bc7f6d6248dab03",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/runtime-audit-proposal2.md": "c19f19d8740bf0ba6d3f898310aa44d0d07d5b769216ff28a31ce9d785ce65a3",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/source-candidate2.json": "75e790fdb8fee8b17279a807cb8a826a2ad1596b0f1b7fc9250287347b85a19f",
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "e89adb9c7cefa1c64385e9a90962ece819d7dfb492807b42e7b77644f042c33a",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/command-collector1.py": "b648c6d47a8f80515db1c2150101577ad16e8c27ff2780f361f449d8e76f1af0"
+  },
+  "review_coverage": {
+    "proposal_bytes": 37481,
+    "proposal_lines": 551,
+    "complete_contiguous_read": true,
+    "candidate_test_bytes": 181646,
+    "candidate_test_lines": 4966,
+    "basis": "Fresh explicit safe-file reads and SHA256 checks; candidate2 source reviewed completely in preceding SOURCE SPEC2. No directory inventory, runtime, or proposal execution."
+  },
+  "findings": [
+    {
+      "id": "AT1",
+      "severity": "high",
+      "title": "Collector source-map equality includes an enum the collector does not emit",
+      "proposal_lines": [458, 460, 473, 474],
+      "failure_label": "command.exact_frozen_input_map",
+      "evidence": "Candidate2 explicitly names 402 actual-command sources including E6 chromium-netlog-event-enums1.json (candidate line291). Collector source_manifest lines23-32 inventories apps/config/scripts/integration, root files and E6 .py/.exs only; it does not include the sibling enum JSON. Proposal line473 requires receipt.source_before to equal the complete 402-entry candidate map. The frozen collector is therefore expected to emit401 entries and a genuine successful receipt will fail this equality.",
+      "origin": "Parent identified mismatch; reviewer independently confirmed both operands and actual collector inclusion rule.",
+      "required_repair": "Derive the exact expected collector map from the pinned candidate map by excluding only the explicitly named E6 enum key, and compare both receipt source maps exactly with that collector map. Preserve the enum's separate frozen pin/reporting and every other operand; do not mutate candidate2 or collector and do not replace exact equality with a subset check.",
+      "runtime_status": "NOT RUN; static schema contradiction"
+    },
+    {
+      "id": "AT2",
+      "severity": "medium",
+      "title": "Aggregate setup observation gets an unsupported 25000ms acceptance cap",
+      "proposal_lines": [183],
+      "failure_label": "setup.peer_ready_budget",
+      "evidence": "Group test reload_peers lines3312-3335 starts the monotonic clock before F.peer and records it after F.peer returns; reload_peer_public line4923 emits this complete interval as observed_setup_to_ready_ms. Defining F.peer lines43-47 waits prepared with25000ms then ready with the original5000ms default (F @timeout line6 and event default line134). Proposal line183 caps the combined observed interval at25000ms. A peer can obey both original waits and the original total test deadline while its combined setup exceeds25000ms, so this can reject source-valid emitted data.",
+      "origin": "Reviewer discovery, independently checked against actual defining fixture and emitted field.",
+      "required_repair": "Remove the unsupported aggregate upper cap while retaining an integer nonnegative observation check and the original source timing assertions. Do not change runtime clocks or invent a replacement combined deadline. If reporting timing provenance, state that this field covers both original waits.",
+      "runtime_status": "NOT RUN; unsupported contract tightening"
+    }
+  ],
+  "compatible_checks_reviewed": [
+    "Read-only explicit-input bounded CLI; standard-library parsing; duplicate/nonfinite rejection; pinned candidate2/test identity; source/runtime evidence kept separate.",
+    "Eight exact contexts and200 ordered events; contract/setup/22cycles/finished per context.",
+    "Complete ten-field plateau schema; all20 measured cycle3..22 vectors equal actual cycle2 without field dropping or identity normalization.",
+    "Persistent SUT owner and epoch identity;23 genuine generation inventories and46 distinct resources per context; seed[0,1] and held[0,1,0] lineage.",
+    "HEAD stream1, seedGET stream3, heldA/B stream5 and finalA stream7 match the actual fresh health-seeded upstream connection sequence.",
+    "Original typed opaque completion IDs, per-context uniqueness, child/group/transport/selected-resource links; retirement receipts remain a separate opaque kind.",
+    "Active rollback retains original3 T/G tokens; idle rollback0; candidate2 NEW health then held dispatch then rollback preCAS order is compatible.",
+    "Capacity original paired holds below2000ms, four resources/reserved8, NEW-only group/Store, exact no-delta transport ledger and original retirement accounting.",
+    "Actual EOF/reset, creator/resource/capability and receipt links;46 retirements/closes,23 group removals and22 replacement CAS per context.",
+    "Actual final_zero exact T/G/service/gate schema, empty records/pins/tokens/probes and independently recomputed zero sums. Original instance monitor is intentionally retained by both live owners and correlated with setup SUT identity.",
+    "Epoch/lane peer request budgets and8/8/7 joins;48 aggregate peer joins; nonforced normal peer and collector custody.",
+    "Clean nonzero ExUnit results, actual joined nonforced command and descendants, raw wait-status preservation/decoding including genuine signal statuses.",
+    "Aggregate184 generations/368 distinct transports/368 HEAD/368 seedGET/264 heldGET/632 GET/1000 requests/176 replacement CAS/368 retirements and physical closes/48 peer joins.",
+    "Completion awaits, normal monitor waits, processed cancellation, actual ETF measurement and no unexpected effects remain separately reported source attestations; no invented independent replay demand."
+  ],
+  "verification": {
+    "tests_executed": 0,
+    "tests": "NOT RUN",
+    "build": "NOT RUN",
+    "browser": "NOT RUN",
+    "runtime": "NOT RUN",
+    "proposal_execution": "NOT RUN",
+    "syntax": "Reviewer NOT RUN; parent runtime-audit-proposal2-syntax1.json records exit0 PASS_SYNTAX_ONLY, runtime NOT RUN",
+    "repository_writes": "NONE",
+    "source_changes": "NONE",
+    "Git_mutations": "NONE",
+    "commands": "Explicit bounded cat/sed/rg reads and sha256sum checks only, plus literal heredoc writes to the two authorized /tmp reports. No reviewed script execution."
+  },
+  "changed_files": ["/tmp/gaoxy-group-reload-audit-tool-spec1.json", "/tmp/gaoxy-group-reload-audit-tool-spec1.md"],
+  "tooling": {"command_errors": [], "output_truncations": [], "restriction_deviations": [], "all_commands_finished": true, "commands_running": false},
+  "counters": {
+    "received_counter13_root": 262,
+    "received_counter13_orchestration": 171,
+    "received_counter13_groupTool": 17,
+    "received_SOURCE_failed_SPEC": 1,
+    "received_local_Sol_fixture_repair_rounds": 1,
+    "received_runtime": 0,
+    "Sol_repair_rounds_added_by_reviewer": 0,
+    "Astra": "2/2 exhausted; unchanged",
+    "astra_gate": "NONE",
+    "tooling_errors_added_by_reviewer": 0,
+    "counter_note": "Two audit-tool SPEC findings; no runtime failure and no repair round performed by reviewer. Parent owns any new tool SPEC-failure or repair counter update."
+  },
+  "remaining_risks": ["Audit proposal cannot receive SPEC approval until AT1 and AT2 are repaired and independently reviewed.", "Actual source tests, postrun audit, independent-peer/browser and remaining stage gates remain NOT RUN; syntax-only evidence is not execution acceptance."],
+  "decisions_needed": [],
+  "next_action": "Preserve this FAIL report and frozen proposal2; parent owns bounded audit-tool repair, fresh independent review and subsequent qualification/execution.",
+  "command_shutdown_status": "All own commands completed; no runtime/background processes launched.",
+  "memory_use": "No memory lookup or memory-derived technical claim."
+}

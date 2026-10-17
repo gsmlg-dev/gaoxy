@@ -1,0 +1,50 @@
+import datetime,hashlib,json
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def write(p,d):
+    with p.open('x') as f:json.dump(d,f,indent=2,sort_keys=True);f.write('\n')
+now=lambda:datetime.datetime.now(datetime.timezone.utc).isoformat()
+review=Path('/tmp/gaoxy-group-reload-kickoff-spec1.json')
+r=json.loads(review.read_text());assert str(r.get('verdict','')).startswith('FAIL'),r.get('verdict')
+with (E/'kickoff-spec1.json').open('xb') as f:f.write(review.read_bytes())
+k=json.loads((E/'kickoff1.json').read_text())
+archives={}
+for p,h in k['documents_sha256'].items():
+    assert sha(W/p)==h,p
+    dest=E/('kickoff1-'+Path(p).parent.name+'.txt')
+    with dest.open('xb') as f:f.write((W/p).read_bytes())
+    archives[p]={'archive':str(dest.relative_to(W)),'sha256':sha(dest)}
+design=W/'docs/designs/m3-managed-h2-group-reload-plateau.md'
+s=design.read_text()
+old='Create all six manual peers before constructing Gaoxy: A epochs0/1/2 on\n127.0.0.1/2/3; B epochs0/1/2 on127.0.0.4/5/6. First peer chooses P; all others\nbind exactly P at their different address. Every source retains the same raw\n`localhost:P` authority, protocol and original integer address widths.'
+new='Create all six manual peers before constructing Gaoxy: A epochs0/1/2 on\n127.0.0.1/2/3 at fixed PA; B epochs0/1/2 on the same three supported addresses\nat distinct fixed PB. First A chooses PA and first B chooses PB; require PA !=\nPB and every later peer binds its lane\'s exact port. Each member retains its\nown raw `localhost:PA` or `localhost:PB` authority, protocol and original\ninteger address widths across all epochs. Cross-member byte classes may differ;\nfreeze each lane\'s complete class and the constant pair aggregate. No port\npadding or cross-member class equality is required.'
+assert s.count(old)==1;s=s.replace(old,new,1)
+s=s.replace('rebind its exact address/P.','rebind its exact address/lane port.',1)
+s=s.replace('exact address/P.','exact address/lane port.')
+s=s.replace('Status — 2026-10-17: DESIGN PREPARATION; implementation and runtime NOT RUN.','Status — 2026-10-17: REVISED DESIGN PREPARATION; implementation and runtime NOT RUN.\nKickoffSPEC1 rejected unsupported .5/.6 addresses; revision2 uses only the\nexisting .1/.2/.3 choices on two fixed ports. Original rejected documents and\nFAIL receipt remain in E6. Shared peer source, caps and clocks stay unchanged.',1)
+design.write_text(s)
+plan=W/'docs/plans/m3-managed-h2-group-reload-plateau.md';s=plan.read_text()
+s=s.replace('launch6 unchanged manual F peers on127.0.0.1..6 at common actual P; bind A indices0..2 and B3..5, each epoch0..2.','launch6 unchanged manual F peers: A/B each on127.0.0.1/.2/.3, A at fixed PA and B at fixed distinct PB; each lane has epochs0..2. Assert PA != PB and actual per-lane bind tuple.',1)
+s=s.replace('Assert complete actual source/prepared-policy/manifest byte classes and real identities.','Assert complete actual source/prepared-policy/manifest byte classes within each lane and the constant pair aggregate, retaining possibly different cross-member classes and real identities.',1)
+s=s.replace('exact address/P rebind.','exact address/lane-port rebind.',1)
+plan.write_text(s)
+accept=W/'docs/acceptance/m3-managed-h2-group-reload-plateau.md';s=accept.read_text()
+s=s.replace('| Kickoff self-review / independent SPEC→CODE | NOT RUN |','| Kickoff self-review / independent SPEC→CODE | Self-review1 PASS; independent SPEC1 FAIL (unsupported peer .5/.6); revised SPEC2→CODE NOT RUN |',1)
+s=s.replace('The separate design and plan freeze the recommended eight persistent','KickoffSPEC1 identified unsupported .5/.6 peer bind addresses. Revision2 uses\nonly existing .1/.2/.3 choices on two fixed member ports, with per-lane full\nbyte classes and constant pair aggregate. Original rejected documents and\nFAIL receipt are preserved; no peer-source/cap/clock repair was made.\nThe separate design and plan freeze the recommended eight persistent',1)
+accept.write_text(s)
+c=json.loads((E/'counter2.json').read_text())
+c.update(kind='GROUP_RELOAD_COUNTER_EXTENSION3',at_utc=now(),prior_path=str((E/'counter2.json').relative_to(W)),prior_sha256=sha(E/'counter2.json'))
+c['counters']['current_root_failure_events']+=3
+for key in ['current_orchestration','successor_tooling_errors','group_reload_tooling_errors']:c['counters'][key]+=2
+c['counters']['group_reload_kickoff_failed_spec']=1
+c['events']=[{'kind':'Independent kickoffSPEC1 rejects six-distinct-address topology: unchanged peer argparse accepts .1/.2/.3/.4 only. Root selects supported two-port/two-lane .1/.2/.3 topology.','classification':'group kickoff failedSPEC1, design-only repair; no runtime/fixture/product repair'},{'kind':'Root initial read-only git status --short enumerated excluded E4 unrelated filenames. No content opened/hashed/written/staged; broad Git inventory may have metadata-probed them and absence of stat cannot be asserted.','classification':'group tooling incident5, protected inventory deviation'},{'kind':'KickoffSPEC reviewer initial read-only broad git status --short enumerated excluded E4 filenames; reviewer discloses possible Git metadata lookup, no intentional content/hash/write.','classification':'group tooling incident6, protected inventory deviation'}]
+c['limits']='Root250/orchestration160/successor-tooling88/group-tooling6; fixedtooling19 unchanged; groupkickofffailedSPEC1. No runtime/fixture/product repair; Astra2/2 exhausted; all immutable history preserved.'
+write(E/'counter3.json',c)
+k.update(kind='GROUP_RELOAD_KICKOFF2',at_utc=now(),predecessor_kickoff_sha256=sha(E/'kickoff1.json'),rejected_spec_sha256=sha(E/'kickoff-spec1.json'),rejected_documents=archives,documents_sha256={p:sha(W/p) for p in k['documents_sha256']},counter_path=str((E/'counter3.json').relative_to(W)),counter_sha256=sha(E/'counter3.json'),kickoff_spec='NOT RUN FOR REVISION2',kickoff_code='NOT RUN')
+k['topology']={'member_A':{'addresses':['127.0.0.1','127.0.0.2','127.0.0.3'],'port':'same PA'},'member_B':{'addresses':['127.0.0.1','127.0.0.2','127.0.0.3'],'port':'same PB, PB != PA'},'source_class':'within-lane exact full sizes and constant pair aggregate; differing cross-member classes allowed','trust':'one immutable ordered six-public-DER union'}
+k['self_review_revision2']={'verdict':'PASS_SELF_REVIEW_ONLY','checked':'All original coverage checks retained; topology now matches peer CLI choices, exact per-lane authority and size-class preservation explicit, no source/cap/clock changes.'}
+write(E/'kickoff2.json',k)
+with (E/'kickoff-revision-writer2.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'kickoff2_sha256':sha(E/'kickoff2.json'),'counter3_sha256':sha(E/'counter3.json'),'source_count':k['source_count'],'runtime':'NOT RUN'}))

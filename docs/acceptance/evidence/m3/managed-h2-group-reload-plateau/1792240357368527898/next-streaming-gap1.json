@@ -1,0 +1,57 @@
+{
+  "task_id":"m3_next_streaming_gap1",
+  "status":"DONE",
+  "assignment":"direct parallel read-only next-stage preparation; no implementation or acceptance",
+  "worktree":"/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_head_parent_supplied":"e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "verdict":"PREPARATION_ONLY_CURRENT_GROUP_GATE_REMAINS_REQUIRED",
+  "scope_note":"Streaming is Task6 within the continuing Task5/M3 integration goal. This report does not advance Task5/6, certify old evidence anew, or prescribe rejected upstream proof.",
+  "inputs_read":[
+    "docs/plans/m3-upstream-transport.md:516-704",
+    "docs/acceptance/m3-managed-h2-fixed-endpoint.md:1-88",
+    "docs/acceptance/m3-managed-h2-group-accounting-activation.md:1-65",
+    "docs/plans/m3-managed-h2-group-accounting-activation.md:150-181",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:811-1010",
+    "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:1-224",
+    "apps/gaoxy_proxy/test/managed_h2_group_lifecycle_test.exs:86-286",
+    "integration/http_fetch_contract/managed_h2_fixed_qualification.py:1-50,1458-1648,1768-1838",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:290-335,397-425",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs:1-95",
+    "Scoped declarations only in managed_h2_client/fixed_lifecycle/fixed_write_lifecycle/group_failure tests"
+  ],
+  "coverage_basis":"Current source inspection plus explicitly identified historical acceptance-document claims. No historical evidence receipts were audited and no tests ran; source-present coverage is not fresh runtime acceptance.",
+  "required_cells":["nativeH1->h2c","nativeH1->TLS-H2","nativeH2->h2c","nativeH2->TLS-H2"],
+  "matrix_coverage":[
+    {"case":"Exact targets/duplicate request+response fields/raw gzip/manual redirect/content length/empty-body/HEAD/204/205/304","fixed":"SOURCE_PRESENT_ALL4; historical fixed matrix135/135 reported","group":"SOURCE_PRESENT_ALL4; historical group activation documented locally verified","evidence":"Fixed endpoint814-882; group endpoint21-79; fixed independent FUNCTIONAL tuple and actual per-cell loop1768+.","remaining":"No duplicate implementation needed for these basic semantics; refresh relevant gates when changed."},
+    {"case":"Request DATA reaches upstream before producer EOF, original completion binding and holds precede upload","fixed":"SOURCE_PRESENT_ALL4; independent pre-eof-upload corroborates phase","group":"SOURCE_PRESENT_ALL4","evidence":"Fixed endpoint884-929 observesabc/no upload_end then sendsdef; group endpoint82-151 authentic G/T bind and same phase. Independent controlled upload1588-1648 observes a16392-byte prefix before EOF.","remaining":"Do not describe ordinary preEOF upload as missing; window-exhaustion/unsent-trailer cases remain distinct."},
+    {"case":"Safe ordered duplicate request/response trailers and declaration/boundary policy","fixed":"SOURCE_PRESENT_ALL4 plus independent controlled request-trailers and boundary cases","group":"SOURCE_PRESENT_ALL4 functional request/response trailers","evidence":"Fixed977-1009; group82-188 and21-79; independent CONTROLLED/BOUNDARIES tuple.","remaining":"Trailers pending behind a truly flow-blocked upload at cancel/earlyfinal are not established by these ordinary successful trailers."},
+    {"case":"Early final during incomplete upload/no replay","fixed":"SOURCE_PRESENT_ALL4, both no-body and independent after-prefix variants","group":"SOURCE_PRESENT_ALL4 incomplete-upload earlyfinal","evidence":"Fixed931-944; group170-188; independent upload_cohort early-final keeps producerEOF false and proves no continued upload.","remaining":"No explicit upstream stream-window-exhaustion barrier or unsent trailers in these cases."},
+    {"case":"Multiplexing/peer stream reset with simultaneous healthy sibling","fixed":"SOURCE_PRESENT_ALL4; independent concurrent reset/GOAWAY/C2/R32 cases","group":"SOURCE_PRESENT_ALL4","evidence":"Fixed946-971; group191-222; concurrent_cohort1458-1587.","remaining":"These peer-originated upstream resets are not downstreamRST during a blocked upload with another same-connection H2 stream progressing."},
+    {"case":"Normal positive response prefix visible downstream before upstream producer EOF, then exact successful suffix/trailers","fixed":"FULL_BODY_STREAM_SOURCE_PRESENT_ALL4; explicit normal prefix-beforeEOF assertion NOT_FOUND in bounded inspected suites","group":"FULL_BODY_STREAM_SOURCE_PRESENT_ALL4; nativeH1 total-deadline negative observes prefix-beforeEOF, not normal success matrix","evidence":"/stream functional cases collect complete bodies; group lifecycle totaldeadline observesx with endedfalse then requires deadline close.","remaining":"Recommended smallest next bounded positive streaming slice across all4 cells and both existing fixed/group mounting paths."},
+    {"case":"Independent slow upstream upload credit and slow downstream consumption, sibling progress and deadline matrix","fixed":"PARTIAL_SOURCE: blocked H1 write and nativeH2 zero-credit timeout; no full fourcell slow-peer suite established","group":"PARTIAL_SOURCE: nativeH1 idle/total and nativeH2 zero-credit write timeout for h2c/TLS","evidence":"Fixed write lifecycle declarations118-176; group lifecycle180-285. Peer DataReceived290-309 immediately acknowledges all received DATA.","remaining":"Controlled upstream window exhaustion, positive finite credit-withhold/release, downstream-reset-during-held-upload and unsent trailers remain. Existing negative deadlines should be reused, not relabelled as complete matrix."}
+  ],
+  "historical_documented_results_not_reaudited":{"fixed":"Acceptance says local fixed endpoint853/0, public63/63, independent fourcell135/135 and browser3/3 at recorded old commits.","group":"Acceptance says original-candidate25 commands/1752 invocations and browser3/3 for bounded group activation. These totals include repeated fixtures, not unique new streaming cases.","current_group_reload":"Current group gate is failed/under diagnosis; do not infer its closure from earlier fixed/group activation."},
+  "smallest_recommended_next_slice":{
+    "when":"Only after current group reload gates and required reviews pass; this task implements nothing.",
+    "name":"Positive response progress before upstream EOF",
+    "cases":"8 explicit cases:4 downstream/upstream cells x existing fixed endpoint and single-member group fixture.",
+    "why":"Closes a concrete temporal streaming gap without duplicating already-present request preEOF/header/trailer semantics or broadening into load/lifecycle qualification.",
+    "proposed_scope":["New apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs as already planned Task6 target","Minimal extension of existing safe peer/client helpers to emit exact downstream prefix observation while upstream final DATA/trailers are held","Reuse accepted fixed/group fixture/public completion cleanup paths; no production dependency or architecture change"],
+    "acceptance_contract":["Independent upstream peer sends headers+nonempty bounded prefix with END_STREAM withheld.","Independent downstream observer confirms exact prefix before upstream tail/EOF release, and no premature complete/terminal result.","Original public completion remains pending and original relevant G/T/request holds remain charged during the held phase.","Release exact suffix and safe duplicate trailers at deterministic control barrier; require exact full bytes/trailer order and original completion plus existing cleanup/peer joins.","Record separate H1/H2 downstream and h2c/TLS-H2 results/actual connection+stream identities; no inference between cells.","Keep existing finite deadlines/assertions and scoped SPEC->CODE->fresh runtime acceptance; no sleep-based phase claim."],
+    "next_distinct_slice_afterwards":"True upstream-credit exhaustion/earlyfinal/cancel with unsent trailers and downstream reset+live H2 sibling. Existing peer immediately ACKs uploads, so this needs an explicit bounded per-stream credit hold/release control and observed barrier, not just a larger body. Design/review separately."
+  },
+  "deferred_distinct_gates":[
+    "Task6 full bidirectional H1-upstream matrix remains separately required; this investigation only mapped requested managed-H2 upstream cells and cannot qualify nativeH1/H2->managedH1.",
+    "Task7 multi-owner/second-instance isolation, exact original-deadline resource retirement and combined stop failure outcomes remain separate; selected-A R32 while B remains available is not covered by single-member groupfixture.",
+    "Standalone composition and full eightcell integration require their own reviewed qualification; current fourcell fixed/group semantics are a subset.",
+    "Task7b h1-reuse and h2-multiplexed each>=600s with fixed offered32streams/131072-byte bodies/recordconnectioncaps/reset+slow schedules>=20reloads and combined15s teardown remain open. Short prefix tests or group reload plateau do not satisfy either load profile.",
+    "Preserve existing numeric manifests/accounting/deadlines; add no equivalent replacement for dismissed http_fetch#97 requirements."
+  ],
+  "unknowns":["No exhaustive audit of every repository streaming test or historical matrix receipt; NOT_FOUND means only inspected bounded suites.","Task5 umbrella text has historical stale successor status; specific current group reload documents/evidence control its active gate.","No next-stage source design, implementation, runtime, current resource envelope or production acceptance was produced."],
+  "verification":{"tests_executed":0,"runtime_build_browser_tests":"NOT RUN","repository_evidence_source_Git_writes":"NONE","commands":"Read-only scoped rg --files/declarations, bounded source/doc slices only; no protected artifact content/hash/stat or prompts accessed.","own_commands_finished":true,"processes_started_or_touched":false},
+  "tooling":{"new_incidents":["One combined wide read/search output was oversized and truncated; docs filename discovery unintentionally included historical evidence filenames but no file contents. Replaced by exact plan slices/test declarations.","One subsequent overbroad plan-keyword child output was truncated; replaced by exact harness declarations/bounded source. No conclusion relies on omitted text."],"normal_no_matches":"Scoped server streaming filename query returned no match/exit1; not an implementation/tooling failure.","parent_notified":true,"repair_rounds_added":0,"Astra":"2/2 exhausted; unchanged"},
+  "changed_files":["/tmp/gaoxy-m3-next-streaming-gap1.json","/tmp/gaoxy-m3-next-streaming-gap1.md"],
+  "decisions_needed":[],
+  "command_shutdown_status":"All own commands completed; no runtime/background processes launched or touched.",
+  "memory_use":"NONE"
+}

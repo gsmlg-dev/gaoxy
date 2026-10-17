@@ -1,0 +1,36 @@
+import datetime,hashlib,json
+from pathlib import Path
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898'
+E4=W/'docs/acceptance/evidence/m3/managed-h2-identity-rotation/1792172407862323696'
+E5=W/'docs/acceptance/evidence/m3/managed-h2-fixed-reload-plateau/1792235229996913527'
+sha=lambda p:hashlib.sha256(p.read_bytes()).hexdigest()
+old=json.loads((E4/'final-command-inventory9.json').read_text())
+fixed=json.loads((E5/'command-inventory3.json').read_text())
+scopes=[]
+for i in [1,2,3]:
+    c=next(row for row in old['commands'] if row['name'].startswith('identity-final-scoped'+str(i)+'-'))
+    paths=[x for x in c['argv'] if x.endswith('.exs')]
+    scopes.append(paths)
+# The accepted fixed slice's H1/checked-capture compatibility remains relevant
+# to the same Store and transport providers, without broad umbrella testing.
+for p in fixed['scope2']+['apps/gaoxy_proxy/test/upstream_transports_test.exs']:
+    if p not in set().union(*map(set,scopes)):scopes[1].append(p)
+for paths in scopes:
+    assert len(paths)==len(set(paths))
+    for p in paths:assert (W/p).is_file(),p
+prefix=['nix','develop','--command','env','ERL_FLAGS=+S 2:2','MIX_ENV=test','unbuffer']
+test=prefix+['mix','test','--warnings-as-errors','--max-cases','1']
+collector=str((E/'command-collector1.py').relative_to(W))
+def entry(name,kind,payload,timeout=600):
+    return {'name':name,'kind':kind,'timeout_seconds':timeout,'payload_argv':payload,'outer_argv':['python3','-B',collector,'--name',name,'--timeout',str(timeout),'--kind',kind,'--']+payload,'receipt':str((E/(name+'.json')).relative_to(W)),'log':str((E/(name+'.log')).relative_to(W)),'status':'NOT RUN'}
+first=entry('group-reload-first-scoped1','green',test+['apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs','apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs'])
+fmt=['apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs',str((E/'group-identity-rotation-browser-host1.exs').relative_to(W)),str((E/'group-identity-rotation-browser-cohort1.exs').relative_to(W))]
+commands=[entry('group-reload-final-compile1','static',prefix+['mix','compile','--force','--warnings-as-errors']),entry('group-reload-final-format1','static',prefix+['mix','format','--check-formatted']+fmt),entry('group-reload-final-syntax1','static',['nix','develop','--command','python3','-B',str((E/'syntax-check1.py').relative_to(W))])]
+commands += [entry('group-reload-final-scoped'+str(i+1),'green',test+paths) for i,paths in enumerate(scopes)]
+commands += [entry('group-reload-final-consumer-core1','green',prefix+['bash','scripts/external-consumer.sh']),entry('group-reload-final-consumer-http1','green',prefix+['bash','scripts/http-consumer.sh']),entry('group-reload-final-peer-startup1','static',['nix','develop','--command','/tmp/gaoxy-m3-h2-soak-venv/bin/python','-B','apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py','-v'])]
+browser={'name':'group-browser-green1','kind':'browser','timeout_seconds':600,'outer_argv':['python3','-B',str((E/'browser-command-collector1.py').relative_to(W)),'--endpoint','group','--name','group-browser-green1','--receipt','group-browser-command1','--runner','group-identity-rotation-browser-runner1.py'],'receipt':str((E/'group-browser-command1.json').relative_to(W)),'log':str((E/'group-browser-command1.log').relative_to(W)),'qualification':str((E/'group-browser-green1/qualification.json').relative_to(W)),'status':'NOT RUN','requires':'Independent source and full implementation review; required fresh gates PASS; actual2rows and root4images. Browser does not prove20reloads.'}
+d={'kind':'GROUP_RELOAD_COMMAND_INVENTORY1','at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'first':first,'final_commands':commands,'browser':browser,'scopes':scopes,'distinct_paths':sorted(set().union(*map(set,scopes))),'format_paths':fmt,'inherited_identity_inventory_sha256':sha(E4/'final-command-inventory9.json'),'inherited_fixed_inventory_sha256':sha(E5/'command-inventory3.json'),'tool_materialization_sha256':sha(E/'tool-source-materialization1.json'),'source_freeze':'PENDING adopted test candidate; this inventory does not authorize execution before independent source review','limits':'All payloads exact finite scoped commands, no filter/skip/exclusion/warning waiver,600s outer collection. Consumer/Python/browser/staticcounts distinct; Python11method audit required, static collector counts0. Preserve raw waits and nonforced actors/groups/readers, all history/counters/restrictions.'}
+with (E/'command-inventory1.json').open('x') as f:json.dump(d,f,indent=2,sort_keys=True);f.write('\n')
+with (E/'command-inventory-writer1.py.txt').open('xb') as f:f.write(Path(__file__).read_bytes())
+print(json.dumps({'inventory_sha256':sha(E/'command-inventory1.json'),'scope_path_counts':list(map(len,scopes)),'distinct_paths':len(d['distinct_paths']),'all_commands':'NOT RUN'}))

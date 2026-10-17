@@ -1,0 +1,309 @@
+# Observation-only diagnostic source proposal1
+
+**DONE, proposal only.** `/tmp/gaoxy-group-reload-diagnostic1.exs.txt` contains the complete proposed test source. No repository/evidence/Git edits, syntax/format/test/build/browser/runtime/filter checks or process operations were performed. Root remains sole operator. Own commands completed; no errors. Unified diff exit1 means expected differences.
+
+Current source SHA256 was checked before and after: `144ff05c2de10f600c9776565711f1072e08e8487b914c5c42250118230ff535`, at supplied worktree `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, baseline `e4a7660baa61a792f4245f511b190a0fcfcbf920`. Proposal SHA256 is `4df55510694893468df44ea25ba454e516a8c4afd9c9c233da1461aa4a534ea3`. Diagnosis SHA256 matched `b30f91b0bab4e0a1d01ca371bd1e6e501d00ed4fc98b7ec4fbb8833a6f415460`.
+
+The104-test/8-failure first run remains immutable failure evidence. Active initiating cause is **UNKNOWN**. No causal repair, weakened assertion, injected return/response, changed deadline/cap or extra product control is proposed.
+
+Active instrumentation covers only cycle1 and the original3 Sessions. Fourteen phase events cover beforeCAS, afterOLDclosed, afterNEWseed, before/after each first-two complete_return and return_endpoint, before/after last-source wait and before original pending assertion. Every phase samples all three original completion outcomes with public await(handle,0), immediate completion observation clocks, diagnostic monotonic elapsed time, original exchange deadlines, original public IDs/refs, peer/connection/stream, actual G/T token/child/source presence and table counts, and original Gaoxy Session scalar fields.
+
+Session hooks install beforeCAS on the original PIDs. They retain at most64 observations perSession, filter routine poll/client inputs and unchanged scalar polls, and record only relevant timer/cancel/consumed/authenticated cleanup-cancel/tracked ownerDOWN inputs plus actual scalar transitions exposed by existing sys noreply/out callbacks. They emit no private client payload or raw reason interior. Original token/monitor identities are compared rather than fabricated. Metadata is sent to the original test process and drained without waiting at phase boundaries and in after; hooks are removed in after/on_exit. No new Process.monitor calls or product-event injections are added.
+
+The idle observation uses the existing actual group snapshot immediately before its unchanged failing group assertion, emitting that bounded G receipt plus Store receipt, monotonic clock, old/fresh group IDs and both original hold starts. It adds no wait or state repair. Original body/return/peer commands and every assertion remain intact. The private capacity helper receives profile only to gate idle diagnostics.
+
+`group_h2_reload_diagnostic` is a separate event name; the original main parser is unchanged. Root must not treat diagnostic output or filtered exclusions as acceptance. Optional broader owner hooks, peer command-ack reads and private client investigation are absent. Abrupt Session stop can leave no final scalar callback; unavailable reads are explicit and initiating cause can remain unknown. Sequential reads/hooks have timing overhead; the proposal does not claim atomic snapshots or runtime qualification.
+
+An exact one-active-cell argv proposal is included in JSON with the full generated name `test http1 to h2c group active twenty reloads retain exact plateau` and single argument `test:test http1 to h2c group active twenty reloads retain exact plateau` after `--only`. No filter contract check was executed or independently established from tool source. If it matches exactly, forecast is1 executed/103 excluded within the prior104-test scope, **diagnostic-only NOTacceptance**. Until matching is proven, the JSON recommends the unchanged full unfiltered two-file argv; the fixed-endpoint file is required to define the shared fixture. Neither proposed command was run.
+
+Counters received root265/orch172/groupTool18/groupRuntimeFailedGREEN1/sourceSolRepair1/auditProposalRepair1/Astra2/2 remain unchanged. This is an observation proposal and adds zero repair rounds. Root owns review/application/format/freeze and independent SPEC→CODE before execution.
+
+Complete exact source patch follows. Indentation inside the inserted try is deliberately left for root's authorized formatter; no formatter ran here.
+
+```diff
+--- candidate2/managed_h2_group_generation_test.exs
++++ proposal/managed_h2_group_generation_test.exs
+@@ -3609,23 +3609,34 @@
+         []
+       end
+ 
++    diagnostic = reload_diagnostic_install(f, calls, profile, cycle)
++
++    try do
+     rollback = if cycle == 3, do: reload_group_rollback(f, fresh, peers), else: nil
++    reload_diagnostic_phase(f, calls, profile, cycle, :before_cas, nil)
+     fresh = activate(f, fresh, old.generation)
+ 
+     {connections, seed, capacity, retired, held} =
+       if profile == :active do
+         await_closed(f, old, Enum.map(calls, & &1.captured))
++        reload_diagnostic_phase(f, calls, profile, cycle, :after_old_closed, nil)
+         {connections, seed} = reload_seed(f, fresh, epochs, cycle)
++        reload_diagnostic_phase(f, calls, profile, cycle, :after_new_seed, nil)
+         [first, second, last] = calls
+ 
+-        for call <- [first, second] do
++        for {call, slot} <- Enum.with_index([first, second]) do
++          reload_diagnostic_phase(f, calls, profile, cycle, :before_complete_return, slot)
+           assert {:error, :cleanup_pending} =
+                    HTTP.RequestCompletion.await(call.bound.completion, 0)
+ 
+           complete_return(f, call, <<255, "old", 0>>)
++          reload_diagnostic_phase(f, calls, profile, cycle, :after_complete_return, slot)
++          reload_diagnostic_phase(f, calls, profile, cycle, :before_return_endpoint, slot)
+           return_endpoint(call.captured)
++          reload_diagnostic_phase(f, calls, profile, cycle, :after_return_endpoint, slot)
+         end
+ 
++        reload_diagnostic_phase(f, calls, profile, cycle, :before_last_source_wait, nil)
+         F.eventually(fn ->
+           t = :sys.get_state(f.owner)
+           g = :sys.get_state(f.groups)
+@@ -3642,6 +3653,8 @@
+           sources == [last.captured.tpin.ref] and gpins == [last.captured.gpin.ref]
+         end)
+ 
++        reload_diagnostic_phase(f, calls, profile, cycle, :after_last_source_wait, nil)
++        reload_diagnostic_phase(f, calls, profile, cycle, :before_original_pending_assert, nil)
+         assert {:error, :cleanup_pending} = HTTP.RequestCompletion.await(last.bound.completion, 0)
+         complete_return(f, last, <<255, "old", 0>>)
+         assert_no_open(f, old)
+@@ -3665,14 +3678,14 @@
+         }
+ 
+         return_endpoint(last.captured)
+-        capacity = if cycle == 3, do: reload_capacity(f, old, fresh, peers), else: nil
++        capacity = if cycle == 3, do: reload_capacity(f, old, fresh, peers, profile), else: nil
+         retired = reload_join_retired(f, old, old_epochs, old_connections)
+         # Both retirement barriers and original public receipt joins precede this wait.
+         reload_close_calls(f, calls)
+         for call <- calls, do: assert_effect_counts(f, call.captured, call.bound)
+         {connections, seed, capacity, retired, held}
+       else
+-        capacity = if cycle == 3, do: reload_capacity(f, old, fresh, peers), else: nil
++        capacity = if cycle == 3, do: reload_capacity(f, old, fresh, peers, profile), else: nil
+         retired = reload_join_retired(f, old, old_epochs, old_connections)
+         {connections, seed} = reload_seed(f, fresh, epochs, cycle)
+         {connections, seed, capacity, retired, nil}
+@@ -3699,8 +3712,188 @@
+        epoch_joins: joined,
+        inventory: reload_inventory(f, fresh, gate)
+      }}
++    after
++      try do
++        for {pid, id} <- diagnostic, do: reload_remove_observer(pid, id)
++      after
++        reload_diagnostic_drain()
++        Process.delete({__MODULE__, :reload_diagnostic_started})
++      end
++    end
++  end
++
++  defp reload_diagnostic_install(f, calls, :active, 1) do
++    parent = self()
++    started = System.monotonic_time(:millisecond)
++    Process.put({__MODULE__, :reload_diagnostic_started}, started)
++
++    Enum.flat_map(Enum.with_index(calls), fn {call, slot} ->
++      pid = call.bound.session
++      id = make_ref()
++      identity = Map.merge(reload_diagnostic_context(f), reload_diagnostic_ids(call, slot))
++
++      try do
++        initial = :sys.get_state(pid, @timeout)
++        token = initial.token
++        monitors = initial.monitors
++
++        debug = fn observed, event, _ ->
++          input = reload_diagnostic_input(event, token, monitors)
++
++          actual =
++            case event do
++              {:noreply, state} when is_map(state) -> reload_diagnostic_scalars(state)
++              {:out, _, _, state} when is_map(state) -> reload_diagnostic_scalars(state)
++              _ -> observed.scalars
++            end
++
++          count =
++            if observed.count < 64 and (input != nil or actual != observed.scalars) do
++              now = System.monotonic_time(:millisecond)
++
++              send(parent, {:group_h2_reload_diagnostic, Map.merge(identity, %{
++                kind: :session_observation,
++                sequence: observed.count + 1,
++                monotonic_ms: now,
++                elapsed_ms: now - started,
++                input: input,
++                before: observed.scalars,
++                after: actual
++              })})
++
++              observed.count + 1
++            else
++              observed.count
++            end
++
++          %{count: count, scalars: actual}
++        end
++
++        case :sys.install(pid, {id, debug, %{count: 0, scalars: reload_diagnostic_scalars(initial)}}) do
++          :ok ->
++            on_exit(fn -> reload_remove_observer(pid, id) end)
++            [{pid, id}]
++
++          _ ->
++            reload_diagnostic_emit(Map.merge(identity, %{kind: :observer_unavailable}))
++            []
++        end
++      catch
++        :exit, _ ->
++          reload_diagnostic_emit(Map.merge(identity, %{kind: :observer_unavailable}))
++          []
++      end
++    end)
+   end
+ 
++  defp reload_diagnostic_install(_, _, _, _), do: []
++
++  defp reload_diagnostic_phase(f, calls, :active, 1, phase, slot) do
++    now = System.monotonic_time(:millisecond)
++    t = :sys.get_state(f.owner)
++    g = :sys.get_state(f.groups)
++
++    rows = Enum.map(Enum.with_index(calls), fn {call, index} ->
++      b = call.bound
++      c = call.captured
++      completion = HTTP.RequestCompletion.await(b.completion, 0)
++      completion_observed_ms = System.monotonic_time(:millisecond)
++
++      session =
++        try do
++          %{available: true, fields: reload_diagnostic_scalars(:sys.get_state(b.session, @timeout))}
++        catch
++          :exit, _ -> %{available: false}
++        end
++
++      Map.merge(reload_diagnostic_ids(call, index), %{
++        completion_observed_ms: completion_observed_ms,
++        completion_result: reload_id(completion),
++        session: session,
++        group_token_present: Map.has_key?(g.tokens, b.group_token),
++        transport_token_present: Map.has_key?(t.tokens, b.transport_token),
++        child_present: Map.has_key?(t.pins, b.child.ref),
++        group_source_present: Map.has_key?(g.pins, c.gpin.ref),
++        transport_source_present: Map.has_key?(t.pins, c.tpin.ref)
++      })
++    end)
++
++    reload_diagnostic_drain()
++    reload_diagnostic_emit(Map.merge(reload_diagnostic_context(f), %{
++      kind: :phase,
++      phase: phase,
++      slot: slot,
++      monotonic_ms: now,
++      elapsed_ms: now - Process.get({__MODULE__, :reload_diagnostic_started}),
++      counts: %{groups: map_size(g.groups), group_pins: map_size(g.pins),
++        group_tokens: map_size(g.tokens), probes: map_size(g.probes),
++        resources: map_size(t.records), transport_pins: map_size(t.pins),
++        transport_tokens: map_size(t.tokens)},
++      calls: rows
++    }))
++  end
++
++  defp reload_diagnostic_phase(_, _, _, _, _, _), do: :ok
++
++  defp reload_diagnostic_context(f),
++    do: %{upstream: f.protocol, downstream: f.downstream, profile: :active, cycle: 1}
++
++  defp reload_diagnostic_ids(call, slot) do
++    b = call.bound
++    c = call.captured
++
++    %{slot: slot, member: call.member, session_pid: reload_id(b.session),
++      session_monitor: reload_id(b.monitor), completion: reload_opaque_id(:request_completion, b.completion),
++      native: reload_id(c.native), native_monitor: reload_id(c.native_monitor), capture_ref: reload_id(c.ref),
++      exchange_deadline: c.exchange.deadline, group_source_ref: reload_id(c.gpin.ref),
++      transport_source_ref: reload_id(c.tpin.ref), group_token: reload_id(b.group_token),
++      transport_token: reload_id(b.transport_token), child_ref: reload_id(b.child.ref),
++      child_source_ref: reload_id(c.tpin.ref), selected_resource: reload_id(b.selected.resource),
++      peer: reload_id(call.peer), connection: call.request["connection"], stream: call.request["stream"],
++      downstream_stream: Map.get(call, :id)}
++  end
++
++  defp reload_diagnostic_scalars(state),
++    do: Map.take(state, [:deadline, :opening_deadline, :started_at, :activated_at, :headers,
++      :cancelled, :consumed, :outcome, :cleanup_started, :cleanup_deadline, :cleanup_requested_deadline])
++
++  defp reload_diagnostic_input({:in, {:"$gen_cast", input}}, _, _)
++       when input in [:cancel, :expire, :consumed], do: %{kind: input}
++
++  defp reload_diagnostic_input({:in, input}, _, _)
++       when input in [:opening_expired, :total_expired], do: %{kind: input}
++
++  defp reload_diagnostic_input({:in, {:gaoxy_cleanup_cancel, supplied, reason, deadline}}, token, _),
++    do: %{kind: :cleanup_cancel, token_matches: supplied === token,
++      reason: reload_diagnostic_reason(reason), deadline: if(is_integer(deadline), do: deadline, else: nil)}
++
++  defp reload_diagnostic_input({:in, {:DOWN, ref, :process, pid, reason}}, _, monitors)
++       when is_map_key(monitors, ref),
++    do: %{kind: :owner_down, monitor: reload_id(ref), original_pid: reload_id(monitors[ref]),
++      pid_matches: monitors[ref] === pid, reason: reload_diagnostic_reason(reason)}
++
++  defp reload_diagnostic_input(_, _, _), do: nil
++
++  defp reload_diagnostic_reason(reason)
++       when reason in [:normal, :shutdown, :cancelled, :success, :timeout, :request_timeout,
++         :upstream_failure, :invalid_request, :invalid_response, :cleanup_pending, :cleanup_unconfirmed],
++       do: reason
++
++  defp reload_diagnostic_reason(_), do: :other
++
++  defp reload_diagnostic_drain do
++    receive do
++      {:group_h2_reload_diagnostic, row} ->
++        reload_diagnostic_emit(row)
++        reload_diagnostic_drain()
++    after
++      0 -> :ok
++    end
++  end
++
++  defp reload_diagnostic_emit(row),
++    do: IO.puts(JSON.encode!(Map.put(row, :event, "group_h2_reload_diagnostic")))
++
+   defp reload_watch_retirement(f, candidate, hold?) do
+     state = :sys.get_state(f.owner)
+ 
+@@ -4087,7 +4280,7 @@
+     MapSet.new(monitors)
+   end
+ 
+-  defp reload_capacity(f, old, fresh, peers) do
++  defp reload_capacity(f, old, fresh, peers, profile) do
+     watches =
+       Enum.map(old.creators, fn {pid, _} ->
+         Map.put(Process.get({__MODULE__, :reload_watch, pid}), :custodian, pid)
+@@ -4138,6 +4331,22 @@
+ 
+         groups = reload_group_snapshot(f)
+ 
++        if profile == :idle do
++          reload_diagnostic_emit(%{
++            upstream: f.protocol,
++            downstream: f.downstream,
++            profile: profile,
++            cycle: 3,
++            kind: :idle_before_group_assert,
++            monotonic_ms: System.monotonic_time(:millisecond),
++            old_group: reload_id(old.group),
++            fresh_group: reload_id(fresh.group),
++            group: reload_group_snapshot_receipt(groups),
++            store: reload_store_receipt(:sys.get_state(f.store)),
++            hold_starts: Enum.map(starts, fn {id, started} -> %{id: reload_id(id), started: started} end)
++          })
++        end
++
+         assert map_size(groups.groups) == 1 and
+                  Map.has_key?(groups.groups, group_key(fresh.group))
+ 
+```

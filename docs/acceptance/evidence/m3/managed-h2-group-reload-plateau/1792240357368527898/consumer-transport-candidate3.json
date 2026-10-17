@@ -1,0 +1,476 @@
+{
+  "all_Git_command_environment_overlay": {
+    "GIT_NO_LAZY_FETCH": "1",
+    "GIT_OPTIONAL_LOCKS": "0"
+  },
+  "alternatives": [
+    {
+      "approach": "Existing detached source.git directly",
+      "disposition": "Rejected: actual cache2 failed fresh default-heads transfer."
+    },
+    {
+      "approach": "Add branch to existing deps/thousand_island/.git",
+      "disposition": "Rejected: modifies existing cache outside ownership."
+    },
+    {
+      "approach": "Full mirror of existing source",
+      "disposition": "Rejected: larger transport and preserves absence of local heads unless refs are additionally changed."
+    }
+  ],
+  "assignment": "direct bounded implementation proposal; not independent review",
+  "at_utc": "2026-10-17T14:59:22.420673+00:00",
+  "base_commit": "e4a7660baa61a792f4245f511b190a0fcfcbf920",
+  "bounds": {
+    "all_prepare_and_transfer_proof_seconds": 240,
+    "cleanup_seconds": 30,
+    "consumer_timeout_seconds": 600,
+    "per_command_timeouts": "as listed; enclosing240s bound takes precedence",
+    "policy": "No retries/deadline extensions inside this proposal. Nonzero/timeout/mismatch stops the affected gate. Join all owned prep/proof/consumer processes and retain actual exits/raw waits before postflight/removal; forced cleanup is not passing evidence."
+  },
+  "branch": "codex/m3-h1-resource-foundation",
+  "cleanup_receipt": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-transport-cleanup3.json",
+  "consumer_command_template": {
+    "kind": "green",
+    "log": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http-transport3.log",
+    "name": "group-reload-final-consumer-http-transport3",
+    "outer_argv": [
+      "python3",
+      "-B",
+      "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/command-collector1.py",
+      "--name",
+      "group-reload-final-consumer-http-transport3",
+      "--timeout",
+      "600",
+      "--kind",
+      "green",
+      "--",
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GIT_CONFIG_COUNT=2",
+      "GIT_CONFIG_KEY_0=protocol.file.allow",
+      "GIT_CONFIG_VALUE_0=always",
+      "GIT_CONFIG_KEY_1=url.file:///tmp/gaoxy-http-transport3-lyeujo_g/transport.git.insteadOf",
+      "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+      "unbuffer",
+      "bash",
+      "scripts/http-consumer.sh"
+    ],
+    "payload_argv": [
+      "nix",
+      "develop",
+      "--command",
+      "env",
+      "ERL_FLAGS=+S 2:2",
+      "MIX_ENV=test",
+      "GIT_CONFIG_COUNT=2",
+      "GIT_CONFIG_KEY_0=protocol.file.allow",
+      "GIT_CONFIG_VALUE_0=always",
+      "GIT_CONFIG_KEY_1=url.file:///tmp/gaoxy-http-transport3-lyeujo_g/transport.git.insteadOf",
+      "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+      "unbuffer",
+      "bash",
+      "scripts/http-consumer.sh"
+    ],
+    "receipt": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http-transport3.json",
+    "status": "NOT RUN",
+    "timeout_seconds": 600
+  },
+  "counters": {
+    "Astra": "2/2 exhausted; unchanged",
+    "Astra_increment": 0,
+    "Sol_repair_rounds_added": 0,
+    "fixture_Sol_repair_increment": 0,
+    "parent_nextdraft_missing_path_incident": "already counted by parent; no increment",
+    "received_counter31": {
+      "groupTool": 51,
+      "orchestration": 205,
+      "root": 299
+    },
+    "received_envfailedGREEN": 2
+  },
+  "decisions_needed": [],
+  "exact_supported_command_templates": [
+    {
+      "argv": [
+        "git",
+        "init",
+        "--bare",
+        "--initial-branch=gaoxy-locked",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/transport.git"
+      ],
+      "expected": "exit0; new empty bare repo, symbolic HEAD refs/heads/gaoxy-locked",
+      "mutation": "owned paths only",
+      "name": "owned-bare-init",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "remote",
+        "add",
+        "origin",
+        "https://github.com/mtrudel/thousand_island.git"
+      ],
+      "expected": "exit0; canonical origin metadata retained",
+      "mutation": "owned paths only",
+      "name": "owned-canonical-origin",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-c",
+        "protocol.file.allow=always",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "fetch",
+        "--no-tags",
+        "file:///home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/deps/thousand_island/.git",
+        "+6146e1bfdd1a85c5c16c3c92ad98ff5f11066820:refs/heads/gaoxy-locked"
+      ],
+      "expected": "exit0; only heads branch at exact lockedOID; no source repo writes",
+      "mutation": "owned paths only",
+      "name": "owned-populate-locked-branch",
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "remote",
+        "get-url",
+        "origin"
+      ],
+      "expected": "https://github.com/mtrudel/thousand_island.git",
+      "mutation": "read-only",
+      "name": "owned-origin",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "symbolic-ref",
+        "HEAD"
+      ],
+      "expected": "refs/heads/gaoxy-locked",
+      "mutation": "read-only",
+      "name": "owned-HEAD",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "expected": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+      "mutation": "read-only",
+      "name": "owned-ref",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "show",
+        "-s",
+        "--format=%H %T",
+        "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+      ],
+      "expected": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820 39d3fbd253466e5f0000bfd9b64c24890abb48e5",
+      "mutation": "read-only",
+      "name": "owned-tree",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "fsck",
+        "--connectivity-only",
+        "--no-dangling",
+        "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+      ],
+      "expected": "exit0",
+      "mutation": "read-only",
+      "name": "owned-connectivity",
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "git",
+        "--git-dir=/tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+        "for-each-ref",
+        "--format=%(refname) %(objectname)",
+        "refs/heads"
+      ],
+      "expected": "refs/heads/gaoxy-locked 6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+      "mutation": "read-only",
+      "name": "owned-advertised-heads",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "init",
+        "--initial-branch=transfer-proof",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof"
+      ],
+      "expected": "exit0; independent empty object store",
+      "mutation": "owned paths only",
+      "name": "fresh-transfer-init",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "remote",
+        "add",
+        "origin",
+        "https://github.com/mtrudel/thousand_island.git"
+      ],
+      "expected": "exit0; canonical remote URL, default fetch config",
+      "mutation": "owned paths only",
+      "name": "fresh-transfer-origin",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "env",
+        "GIT_CONFIG_COUNT=2",
+        "GIT_CONFIG_KEY_0=protocol.file.allow",
+        "GIT_CONFIG_VALUE_0=always",
+        "GIT_CONFIG_KEY_1=url.file:///tmp/gaoxy-http-transport3-lyeujo_g/transport.git.insteadOf",
+        "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "fetch",
+        "--force",
+        "--quiet",
+        "--progress",
+        "origin",
+        "+refs/heads/*:refs/remotes/origin/*"
+      ],
+      "expected": "exit0; actual upload-pack/object transfer through canonical URL rewrite with Mix heads-only refspec; no --reference/--shared/alternates",
+      "mutation": "owned paths only",
+      "name": "fresh-default-heads-fetch",
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "rev-parse",
+        "refs/remotes/origin/gaoxy-locked"
+      ],
+      "expected": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+      "mutation": "read-only",
+      "name": "fresh-transfer-tracking-ref",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "--git-dir=.git",
+        "checkout",
+        "--force",
+        "--quiet",
+        "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+      ],
+      "expected": "exit0; locked commit checkout succeeds from freshly fetched object store",
+      "mutation": "owned paths only",
+      "name": "fresh-locked-checkout",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "show",
+        "-s",
+        "--format=%H %T",
+        "HEAD"
+      ],
+      "expected": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820 39d3fbd253466e5f0000bfd9b64c24890abb48e5",
+      "mutation": "read-only",
+      "name": "fresh-checked-out-tree",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "status",
+        "--porcelain"
+      ],
+      "expected": "empty stdout; exit0",
+      "mutation": "read-only",
+      "name": "fresh-checkout-clean",
+      "timeout_seconds": 30
+    },
+    {
+      "argv": [
+        "git",
+        "-C",
+        "/tmp/gaoxy-http-transport3-lyeujo_g/proof",
+        "fsck",
+        "--connectivity-only",
+        "--no-dangling",
+        "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+      ],
+      "expected": "exit0",
+      "mutation": "read-only",
+      "name": "fresh-connectivity",
+      "timeout_seconds": 60
+    },
+    {
+      "argv": [
+        "env",
+        "GIT_CONFIG_COUNT=2",
+        "GIT_CONFIG_KEY_0=protocol.file.allow",
+        "GIT_CONFIG_VALUE_0=always",
+        "GIT_CONFIG_KEY_1=url.file:///tmp/gaoxy-http-transport3-lyeujo_g/transport.git.insteadOf",
+        "GIT_CONFIG_VALUE_1=https://github.com/mtrudel/thousand_island.git",
+        "git",
+        "ls-remote",
+        "--get-url",
+        "https://github.com/mtrudel/thousand_island.git"
+      ],
+      "expected": "file:///tmp/gaoxy-http-transport3-lyeujo_g/transport.git",
+      "mutation": "read-only, no remote contact",
+      "name": "canonical-route-expansion",
+      "timeout_seconds": 30
+    }
+  ],
+  "execution_status": {
+    "all_own_commands_finished": true,
+    "mutation_fetch_test_build_browser_commands_executed": 0,
+    "own_new_writes": [
+      "/tmp/gaoxy-group-reload-consumer-transport-proposal3.json",
+      "/tmp/gaoxy-group-reload-consumer-transport-plan3.md"
+    ],
+    "tooling_incidents": []
+  },
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/command-collector1.py": "b648c6d47a8f80515db1c2150101577ad16e8c27ff2780f361f449d8e76f1af0",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/command-inventory1.json": "9543a1b1d8f67c22e81cbbab4466dece71c365a9bbfe25499b2f90e33fdc5e2e",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-candidate2.json": "020bd48bd45830ac2e0744ec36bfbe27cd2ea5e3674d64cc8175beec0662f27d",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-plan2.md": "8131a0bc0fbf5c9a7f982ce111de6ad14b0addb50e5b181813355cd17f022988",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-cache-postflight2.json": "106a7a1eb0aa9f10ed82cfabd9a2f945726bd5b3d4f2d2ebc2a240988b7e0e55",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-core1.json": "57c728a8a405ce176b963ed5608555e33a0296584d0f94b58cd35ced6ed39919",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http-cache2.json": "1019b35e9480d392ae02b6ed00ea76962d35ac702fecee3f5ca2410872b859be",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http-cache2.log": "327e29507d45c84550aa58dd8ba5c58a734106e6dfe11955ae045a2a7fadd81b",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http1.json": "eeb5a91a4b8d0a77903a9ae6f914ab30b255df1995a2384b620bcc1ebbf817f4",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/group-reload-final-consumer-http1.log": "fa9c9851d7f190474ee3662659fb5a619f8fb96333863aaa2259fad0f090b732",
+    "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/source-candidate3.json": "86439e6e26e54f5f123d660371e9abedfe3e5a3fd6dddb10f2e1911553c9ba0b"
+  },
+  "kind": "ROOT_MATERIALIZED_HTTP_CONSUMER_TRANSPORT_CANDIDATE3",
+  "latest_counter_path": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/counter31.json",
+  "latest_counter_sha256": "574c37753f17533454723bdacb90cf30839dac28bb8a7e3f35fee60c0f64306a",
+  "observed_read_only_evidence": {
+    "Git_version": "2.54.0",
+    "cache2": {
+      "actual_exit": 1,
+      "elapsed_seconds": 3.2171155719988747,
+      "forced": false,
+      "process_joined": true,
+      "residue": [],
+      "source401_stable": true,
+      "tests": 0,
+      "verdict": "FAIL"
+    },
+    "source_HEAD": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820",
+    "source_HEAD_symbolic_ref_exit": 128,
+    "source_origin_fetch": "+refs/heads/*:refs/remotes/origin/*",
+    "source_refs_heads_count": 0
+  },
+  "owned_identity": {
+    "device": 65024,
+    "inode": 14450492,
+    "mode": 16832,
+    "uid": 1000
+  },
+  "owned_root": "/tmp/gaoxy-http-transport3-lyeujo_g",
+  "ownership": {
+    "operator": "root only",
+    "required_guards": [
+      "OWNED_ROOT is a freshly created absolute direct child of /tmp, outside W; record returned path, uid, device/inode, creation time and ownership in immutable root receipt. No externally supplied/pre-existing directory is accepted.",
+      "Render tokens in argument arrays using exact recorded absolute OWNED_ROOT; no shell interpolation/eval. Freeze actual path/argv/env manifest and hashes for independent SPEC then CODE before any git init/fetch/proof/consumer; changed commands require fresh reviews.",
+      "Only transport.git and proof and explicit ownership evidence under OWNED_ROOT may be written during preparation. W source/lock/tests/scripts and original deps/.git remain read-only.",
+      "Reject inherited nonempty GIT_CONFIG_COUNT or explicitly review/freeze a composed candidate. Reject inherited GIT_DIR/GIT_COMMON_DIR/GIT_WORK_TREE/GIT_OBJECT_DIRECTORY/GIT_ALTERNATE_OBJECT_DIRECTORIES, MIX_BUILD_PATH/MIX_DEPS_PATH overrides; no shared object/build/deps path.",
+      "Do not use --shared/--reference/--local cloning, object alternates, prebuilt BEAM or reused deps. Check both owned repositories have no objects/info/alternates and have their own objects directory before adoption."
+    ],
+    "root_reservation_before_materialized_review": "Root may reserve tempfile.mkdtemp(prefix=\"gaoxy-http-transport3-\", dir=\"/tmp\"), record ownership, bind exact fullpaths/argv and freeze candidate3 before independent SPEC then CODE. Reservation alone grants no Git mutation/fetch/proof/consumer execution.",
+    "root_template": "/tmp/gaoxy-http-transport3-lyeujo_g"
+  },
+  "ownership_reservation_only": true,
+  "plan_path": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-transport-plan3.md",
+  "plan_sha256": "ccce29c2190ab8531382ed45fa1f4a0b12166542a5b74f45b9e09dd4d748ccdb",
+  "postflight_and_cleanup": [
+    "After collector/process/readers/descendants joined, repeat source401/public pins, source canonical origin/HEAD/locked commit/tree/connectivity, owned bare origin/HEAD/branch/locked tree/connectivity and no alternates. Preserve originalFAIL1, actualFAIL2, actual consumer receipt/log and prep/proof evidence separately.",
+    "Remove only exact recorded OWNED_ROOT after validating unchanged uid/device/inode, direct /tmp parent, no path substitution/symlink, and no owned live process. Root uses shutil.rmtree(OWNED_ROOT); never derive deletion target from W or environment. Record exact deleted path, ownership validation, removal exit/error and observed absence in immutable external receipt.",
+    "On failure, first record actual failure and join/stop only owned processes; then perform same owned-only cleanup if safely validated. If safe join or ownership cannot be confirmed, preserve path, report BLOCKED_HANDOFF, and do not delete or touch other processes.",
+    "Normal EXIT trap in unchanged consumer removes its separately allocated fresh temporary consumer. Do not claim post-cleanup temporary-consumer metadata inspection. Owned transport proof/build acceptance establishes local route only, not GitHub/hostedCI/product stage."
+  ],
+  "postflight_receipt": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-transport-postflight3.json",
+  "pre_consumer_adoption": [
+    "Independent SPEC then independent CODE PASS for proposal/plan and frozen exact materialized fullpaths/argv/env. Root may reserve the empty unique directory to bind paths first; no Git prep/fetch/proof/consumer execution until those reviews and root adoption.",
+    "Repeat exact source401/public pins/cache/bare metadata/connectivity and route expansion immediately before consumer. Keep bare alive through actual joined consumer and postflight.",
+    "Unchanged strict consumer/collector gates: deps.get --check-locked; warnings-as-errors compile/test; actual nonzero tests, zero failures/skips/exclusions/warnings, exit0, source401stable, nonforced/joined/empty process and descendant residue."
+  ],
+  "preparation_receipt": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-transport-preparation3.json",
+  "preservation_and_limits": [
+    "Original HTTP FAIL exit1/0tests/308.664s and cache2 FAIL exit1/0tests/3.217s remain immutable; prior Core PASS1/0/533.602s unchanged. Candidate1 two-consumer proposal unused.",
+    "No source/dependency/script/test/lock edits, assertion weakening, larger600s cap, account/global/repository settings change, upstream product workaround, upstream issue routing assumption, thirdAstra, publication/deployment/Vault/production/certificate/E2E expansion. Only disposable owned transport refs/config change."
+  ],
+  "proof_acceptance": "All listed commands exit0 within enclosing240s; bare HEAD/branch=lockedOID and exacttree; fresh tracking ref and checked-out HEAD=lockedOID/exacttree; checkout clean and fsck0. This is actual local transfer/checkout proof, not only source metadata. Save exact argv/env/exits/stdout/stderr and hashes. Failed proof prevents consumer.",
+  "proposal_path": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/consumer-transport-proposal3.json",
+  "proposal_sha256": "a9ef67f085e2f161977878d2f6fc612afc3168d25ef2ce693e7a6c0e0f5fe87c",
+  "public_input_sha256": {
+    "apps/gaoxy/mix.exs": "8c2bf258c5f7a91429f1d86ef3c02d9bcd7368258701a15134a065c8ffbd49be",
+    "integration/core_consumer/mix.exs": "92879d8bafe8f58a84830701d0bc94b6932a0950aa909f10213b8c5c0457ae56",
+    "integration/core_consumer/test/consumer_test.exs": "b92248f407496fbcb8648356db279cc11963e82064bdfc3c92f1292b18dd35fa",
+    "integration/http_consumer/mix.exs": "4e54c9d3996ab1ada45d60da98c5271c9a0df3bee0d5ba786caf709c14a50147",
+    "integration/http_consumer/test/consumer_test.exs": "125b6d94a3f9170f847bc3fcfe32c93d4885bc87b56d2ccc522b0a5a9ca34c61",
+    "mix.lock": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6",
+    "scripts/external-consumer.sh": "649f6250641b09dcd0773cdd9ca57f9b7fc46f1068130072f0fed08c74435b36",
+    "scripts/http-consumer.sh": "16633262966d02229f37aa364c3f75fd8085fb1880d60ab5dbc96774bf9f9c0b"
+  },
+  "recommendation": "Create one owned disposable bare Git transport with exactly one advertised heads ref at lockedOID. Keep canonical lock/origin identity; prove actual heads-only fetch plus locked checkout into independent fresh repo; only then rerun unchanged HTTP consumer with same600s cap and single canonical URL redirect.",
+  "root_cause": "Cache2 source HEAD contains lockedOID but source has no refs/heads; fresh Mix heads-only fetch therefore does not transfer locked commit. Cache2 checkout fails unable to read tree. Metadata/fsck of source alone is insufficient transfer proof.",
+  "root_execution_semantics": {
+    "consumer": "Exact frozen one HTTP collector argv only, original600s. Fresh401/public/sourceGit/bare/URL/ownership checks immediately before. OriginalFAILs/CorePASS retained.",
+    "postflight_cleanup": "After actual collector/descendants/groups joined, repeat source401/public/sourceGit/bare/noalternates checks. Validate reserved uid/device/inode/directtmp/nonsymlink and owned process joins before deleting only ownedroot. Record deletion absence externally, even if safe cleanup after failure. No claim of temporary consumer metadata after its original trap.",
+    "preparation": "No Git execution until independent SPEC then CODE accepted. Execute exact18templateargv serially with overlay, one shared240s deadline, each min(per_command,remaining). Record stdout/stderr/actualexit/joins/ownedgroupgone. Timeout joins only own command group; no consumer after failure. Verify exact readout strings and absence of alternates, independent object dirs, actual fresh fetch+checkout lockedtree proof."
+  },
+  "source_binding": {
+    "count": 401,
+    "map_key": "actual_command_source_sha256",
+    "path": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/source-candidate3.json",
+    "sha256": "86439e6e26e54f5f123d660371e9abedfe3e5a3fd6dddb10f2e1911553c9ba0b"
+  },
+  "source_candidate_path": "docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/source-candidate3.json",
+  "source_candidate_sha256": "86439e6e26e54f5f123d660371e9abedfe3e5a3fd6dddb10f2e1911553c9ba0b",
+  "source_preflight": [
+    "Recheck all401 source hashes/path set and8 public pins; scripts/lock/consumer contracts unchanged. Both failed receipts/logs immutable; Core PASS1/0 not rerun.",
+    "Read-only source canonical origin, HEAD==lockedOID, exact commit/tree and fsck connectivity; no lazy network fetch. Source lack of heads is recorded, not modified.",
+    "No prior process residue and no existing transport3 receipt/log. Source copied trees contain no deps/_build/BEAM artifacts."
+  ],
+  "status": "FROZEN_NOT_RUN",
+  "task_id": "http_consumer_recovery_code/proposal3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation"
+}

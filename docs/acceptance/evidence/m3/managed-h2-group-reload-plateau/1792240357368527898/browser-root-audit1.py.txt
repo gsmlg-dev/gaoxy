@@ -1,0 +1,97 @@
+import json,hashlib,pathlib,datetime,os
+W=pathlib.Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898';B=E/'group-browser-green1'
+def j(p): return json.loads(p.read_text())
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def local(p):
+ p=pathlib.Path(p)
+ return p if p.is_absolute() else W/p
+S=j(E/'source-candidate3.json')['actual_command_source_sha256']
+assert len(S)==401
+assert all(sha(local(p))==v for p,v in S.items())
+r=j(E/'group-browser-command1.json');q=j(B/'qualification.json')
+assert r['status']=='PASS' and r['actual_exit_code']==0 and r['executed']==2
+assert r['joined'] and r['owned_group_gone'] and not r['timed_out'] and r['wait_error'] is None
+assert r['source_stable'] and r['source_before']==r['source_after']
+assert len(r['source_before'])==399 and all(S[p]==v for p,v in r['source_before'].items())
+assert sha(local(r['log']))==r['log_sha256'] and sha(B/'qualification.json')==r['qualification_sha256']
+assert q['status']=='PASS' and q['executed']==2 and q['source_stable'] and q['source_before']==q['source_after'] and q['failure'] is None
+assert len(q['source_before'])==286
+assert all(S[str(pathlib.Path(p).relative_to(W))]==v for p,v in q['source_before'].items())
+assert len(q['artifact_sha256'])==54
+for p,v in q['artifact_sha256'].items():
+ assert not any(x in p.lower() for x in ['private','netlog.json','key.pem'])
+ assert sha(B/p)==v,p
+assert len(q['joins'])==12 and all(a['exit']==0 and not a['forced'] and a['reader_joined'] and a['owned_group_gone'] for a in q['joins'])
+assert len(q['adopted_joins'])==11 and not q['adopted_remaining']
+for a in q['adopted_joins']: assert os.waitstatus_to_exitcode(a['wait_status'])==a['exit']
+assert sorted(a['wait_status'] for a in q['adopted_joins'])==[0]*9+[10]*2
+rows=[];images=[]
+for c in q['cases']:
+ mode=c['mode'];d=B/(mode+'-http2')
+ assert c['status']=='PASS' and c['endpoint']=='group' and c['upstream_protocol']=='http2'
+ before=j(d/'host-loaded-before.json');after=j(d/'host-loaded-after.json')
+ assert before==after and len(before)==102
+ for a in before:
+  assert sha(local(a['source']))==a['source_sha256']
+  if 'beam' in a: assert sha(local(a['beam']))==a['beam_sha256']
+  else: assert a['source'].endswith('.exs') and 'beam_sha256' not in a
+  assert len(a['loaded_md5'])==32
+ assert len(c['health'])==4 and len(c['health_complete'])==2
+ for h in c['health'].values():
+  assert h['request']['ended'] and h['request']['target']=='/health'
+  assert h['tls']['alpn']=='h2' and h['tls']['sni']=='localhost'
+  assert h['original_completion_before_goaway'] and h['physical_close']['event'] in ['eof','connection_reset']
+ for h in c['health_complete']: assert h['original_completions']==2 and h['normal_probe_downs']==2 and h['probes']==h['probe_bytes']==0
+ rotation=c['identity_rotation']
+ assert all(rotation[k] for k in ['same_path_replaced','source_invalidated','retained_policies_checked','old_capture_before_replacement'])
+ assert len(rotation['rows'])==2 and all(v['old_policy_unchanged'] and v['old']['der_sha256']!=v['new']['der_sha256'] and v['old']['resource']!=v['new']['resource'] for v in rotation['rows'])
+ assert [o['label'] for o in c['observations']]==['old','new']
+ for o in c['observations']:
+  cap=o['captured'];label=o['label'];cust=o['custody']
+  assert cap['mode']==mode and cap['label']==label and cap['original_owner_effects']==2
+  pins={p['provider']:p for p in cap['pins']}
+  assert len(pins)==2
+  assert pins['Elixir.Gaoxy.Proxy.UpstreamGroups']['fields']==7 and pins['Elixir.Gaoxy.Proxy.UpstreamGroups']['handles']==1
+  assert pins['Elixir.Gaoxy.Proxy.UpstreamTransports']['fields']==8 and pins['Elixir.Gaoxy.Proxy.UpstreamTransports']['handles']==2
+  target=cap['retained']+cap['reservation'];assert cap['reservation']>0
+  for cut in [cap['cohort']]+cap['original_cohorts']:
+   roles=cut['roles'];assert cut['active']==len(roles) and len({v['pid'] for v in roles})==len(roles) and len({v['lease'] for v in roles})==len(roles)
+   assert cut['retained_bytes']==sum(v['bytes'] for v in roles) and cut['target_bytes']==target
+   assert len([v for v in roles if v['pid']==cap['holder'] and v['bytes']==target])==1
+  assert cap['gate_bytes']==cap['cohort']['retained_bytes'] and cap['original_gate_bytes']==[v['retained_bytes'] for v in cap['original_cohorts']]
+  if mode=='h2':
+   a=cap['worker_accounting'];assert len(a['rows'])==95 and a['bytes']==cap['retained'] and a['worker_bytes']==target
+   assert all(v['subtotal']==v['cap']*v['multiplicity'] for v in a['rows'])
+   assert a['secure'] and a['downstream_alpn']=='h2' and cap['native_ids']['worker']!=cap['native_ids']['connection']
+  else: assert cap['worker_accounting'] is None
+  assert cust['derived'] and cust['public_t8_fields']==8 and cust['cleanup_bytes']>0
+  assert all(o['bound'][k] for k in ['pending','original_completion_equal','source_genuine','child_genuine','token_genuine'])
+  assert o['bound']['session']==cust['session']
+  assert all(o['held'][k] for k in ['session_joined','source_genuine','original_completion_ok','child_gone','token_gone','custodian_alive']) and not o['held']['retirement_requested']
+  clean=o['request_clean'];assert all(clean[k] for k in ['session_joined','original_source_gone','baseline_genuine','complete_cohort_validated','connection_alive'])
+  assert clean['baseline_t_records']==clean['baseline_g_records']==1 and clean['baseline_t_holds']==2
+  assert cust==dict(event='session_custody',**clean['custody'])
+  if mode=='h2': assert clean['native_worker_joined']
+  br=o['browser'];assert br['status']=='PASS' and br['visible'] and br['network']['response']['status']==200
+  assert br['network']['response']['protocol']==('h2' if mode=='h2' else 'http/1.1')
+  assert label in br['document']['title'] and label in br['document']['text']
+  assert o['tls']['alpn']=='h2' and o['tls']['sni']=='localhost'
+  im=d/(label+'-browser.png');images.append({'path':str(im.relative_to(W)),'sha256':sha(im),'root_opened_and_visually_inspected':True,'observation':'Correct OLD/NEW group headings; root inspected all four images during the completed browser turn.'})
+ events=[]
+ for line in (d/'host.log').read_text().splitlines():
+  if line.startswith('NATIVE_WORKER_BROWSER '): events.append(json.loads(line.split(' ',1)[1]))
+ retired=[v for v in events if v.get('event')=='old_retired'];assert len(retired)==1 and all(retired[0][k] for k in ['source_gone','record_gone','custodian_normal_down'])
+ clean=c['closed_browser_cleanup'];assert clean['connection_joined'] and clean['observer_joined'] and clean['connection_reason']=='{:shutdown, :peer_closed}'
+ assert clean['service']==dict(active=0,retained_bytes=0,cleanup_pending=0,cleanup_failed=None)
+ assert clean['cohort_joins'] and all(v['genuine_terminal'] for v in clean['cohort_joins'])
+ s=c['stopped'];assert s['captures']==s['sessions_joined']==2 and s['custodians_normal_down']==4
+ assert all(s[k] for k in ['cleanup_confirmed','source_stable','native_actors_joined','group_owner_normal_down','instance_normal_down','listener_rebound','owner_normal_down'])
+ bj=c['browser_join'];assert bj['passed'] and bj['profile_removed'] and bj['close_requested'] and bj['chrome_exit']==0 and bj['chrome_signal'] is None
+ assert len(c['peer_joins'])==4 and all(not v['failed'] and v['forced']==v['live']==0 for v in c['peer_joins'].values())
+ raw=j(d/'diagnostic-raw-custody.json');assert raw['status']=='REMOVED_AFTER_ACTOR_GROUP_JOINS' and raw['actor_groups_joined'] and raw['raw_removed'] and not raw['directory_exists']
+ assert not pathlib.Path(raw['directory']).exists()
+ rows.append({'case':c['case'],'verdict':'PASS','loaded_source_beam_bindings':102,'observations':2,'old_retired':retired[0],'stopped':s,'raw_custody_sha256':sha(d/'diagnostic-raw-custody.json')})
+assert {r['case'] for r in rows}=={'group-h1-http2','group-h2-http2'}
+report={'kind':'GROUP_BROWSER_ROOT_AUDIT1','at_utc':datetime.datetime.now(datetime.timezone.utc).isoformat(),'verdict':'PASS','command_receipt_sha256':sha(E/'group-browser-command1.json'),'qualification_sha256':sha(B/'qualification.json'),'actual_source_pins':401,'collector_source_pins':399,'qualification_source_pins':286,'artifact_hashes_checked':54,'actor_joins':12,'adopted_raw_waits':[{'wait_status':a['wait_status'],'exit':a['exit']} for a in q['adopted_joins']],'loaded_bindings':204,'file_beam_bindings':194,'inline_module_source_md5_bindings':10,'cases':rows,'root_image_inspections':images,'audit_tool_sha256':sha(pathlib.Path(__file__)),'limits':'Two current group/native browser rows; no reload-count, full-streaming, hosted CI, deployment or production qualification. Public trust certificates only; private keys and raw NetLogs never read by this audit. loaded_md5 retained as module MD5, not equated with full BEAM file MD5.'}
+out=E/'browser-root-audit1.json';assert not out.exists();out.write_text(json.dumps(report,indent=2,sort_keys=True)+'\n');print(json.dumps({'verdict':report['verdict'],'rows':len(rows),'hashes':54,'source':401,'loaded_bindings':204,'file_beam_bindings':194,'inline_module_source_md5_bindings':10,'output_sha256':sha(out)}))
