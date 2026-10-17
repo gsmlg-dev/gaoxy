@@ -1,0 +1,256 @@
+from pathlib import Path
+import datetime
+import hashlib
+import json
+import re
+import subprocess
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-upstream-credit-e8.path').read_text().strip())
+R = str(E.relative_to(W))
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+load = lambda n: json.loads((E / n).read_bytes())
+before = load('final-document-before-inventory1.json')['documents']
+audit = load('final-nonbrowser-audit1.json')
+browser = load('browser-root-audit1.json')
+assert audit['verdict'] == browser['verdict'] == 'PASS'
+assert audit['scoped_counts'] == [54, 142, 176]
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == '29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40'
+assert all(sha(W / name) == row['sha256'] for name, row in before.items())
+original = {name: (W / name).read_text() for name in before}
+changed = dict(original)
+
+summary = f'''Status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
+
+All eight fixed/group × native H1/H2 × upstream h2c/TLS-H2 credit-resume cases
+completed in the initial unfiltered trace: 54 tests/0 failures. Complete frozen
+source SPEC24/24→CODE20/20 and implementation SPEC18/18→CODE16/16 passed with
+zero findings. Fresh defining/lifecycle/Generation scopes passed 54/0+142/0+176/0
+(372 invocations, not unique tests). Strict compile, six-file format and active
+Python/extracted-JavaScript syntax passed as static0. Python11 actual startup
+methods, isolated Core1/0 and HTTP2/0, and browser2 current group rows/four
+root-viewed OLD/NEW PNGs passed separately.
+
+Evidence is `{R}`.
+`final-nonbrowser-audit1.json` (SHA256 `{sha(E / 'final-nonbrowser-audit1.json')}`)
+verifies all nine final command/log/exit/process receipts and stable402 source pins.
+`browser-root-audit1.json` (SHA256 `{sha(E / 'browser-root-audit1.json')}`)
+verifies outer400/inner287 matching source subsets,54 artifacts,204 loaded records
+(194 disk source/BEAM bindings and10 inline source/module-MD5 records),12 named
+nonforced Actor joins, raw deletion, retirement/zeroing and listener rebind.
+All top-level final commands exited0/nonforced with no remaining owned processes.
+The32 genuine adopted nonbrowser waits are15 raw0 and17 raw10 (decoded−10/SIGUSR1);
+the12 browser adopted waits are10 raw0 and2 raw10. Named Actors and peer fixtures
+retain their own actual exit checks; adopted helpers are not described as all exit0.
+Four final public trust paths are46-byte invalidation markers, not certificates.
+
+Only the peer and streaming test sources changed; production, deps, F/G fixture
+helpers and the original11 Python methods remain unchanged. Original eight prefix
+cases and the complete assert_held body are preserved. HTTP Fetch remains0.21.10.
+No runtime/fixture/Sol repair or artificial RED occurred. Current counter6 retains
+root376/orchestration282/creditTool24, including one audit-tool draft correction
+before execution; preparatory failedSPEC2/draftrepairs2 and exhausted Astra2/2
+remain recorded. These tooling/draft counts are separate from runtime failures.
+
+Historical entry documents are exact archives in `final-document-before-inventory1.json`.
+`final-document-context-rebind1.json` resolves the reviewed proposal3 active16 inputs
+as11 unchanged live inputs,2 original-source archives and3 document archives.
+The source candidate's three entry-document hashes remain historical checkpoint
+hashes; the current eight final documents are separately pinned in the final
+document candidate. No runtime receipt is rewritten or inferred from document edits.
+'''
+
+def add_after_title(text, addition):
+    title, body = text.split('\n', 1)
+    return title + '\n\n' + addition.rstrip() + '\n' + body
+
+design = 'docs/designs/m3-managed-h2-upstream-credit.md'
+plan = 'docs/plans/m3-managed-h2-upstream-credit.md'
+acceptance = 'docs/acceptance/m3-managed-h2-upstream-credit.md'
+for name in [design, plan]:
+    text = changed[name].replace('Actual entry — 2026-10-18:', 'Historical entry snapshot — 2026-10-18:', 1)
+    changed[name] = add_after_title(text, summary)
+
+changed[design] = changed[design].replace(
+    'It currently acknowledges every DATA frame immediately, so neither `--manual` nor `F.no_event` establishes exhaustion. Existing `settings` changes only MAX_CONCURRENT_STREAMS; there is no credit-control command today.',
+    'Before this slice it acknowledged every DATA frame immediately, so neither `--manual` nor `F.no_event` established exhaustion. Its former `settings` changed only MAX_CONCURRENT_STREAMS and exposed no credit-control command.')
+changed[design] = changed[design].replace(
+    'The proposed `--hold-upload-credit` peer flag and `release_upload_credit` command DO NOT EXIST yet. The companion plan supplies their exact changes.',
+    'The implemented default-off `--hold-upload-credit` peer flag and `release_upload_credit` command follow the exact reviewed changes in the companion plan.')
+changed[design] = changed[design].replace(
+    'No dependency defect is established by this draft.',
+    'This slice required no dependency defect or dependency update.')
+
+text = changed[plan]
+text = text.replace('Runtime/implementation checkboxes remain pending; accepted preparation and actual entry are recorded below.',
+                    'Implementation/runtime gates below are complete; final document review, local commit/custody and the separate follow-up remain pending at this checkpoint.')
+text = text.replace('All blocks below are proposed code, absent from the current source.',
+                    'The code blocks below preserve the reviewed implementation specification, now realized in the current source.')
+text = text.replace('- [ ]', '- [x]')
+for opening in [
+    'Complete final document SPEC then CODE, changed-file checks and source/count inventory.',
+    'Prepare the next separate combined early-final-at-exhaustion design from this actual successful barrier only after closure,',
+]:
+    assert text.count('- [x] ' + opening) == 1
+    text = text.replace('- [x] ' + opening, '- [ ] ' + opening)
+changed[plan] = text
+
+text = original[acceptance]
+required = text.split('## Required evidence\n', 1)[1].split('## Planned result rows', 1)[0]
+required = required.replace('- [ ]', '- [x]')
+required = required.replace('Hold-mode proposed settings', 'Hold-mode implemented settings')
+required = required.replace('- [x] Factual final design/plan/acceptance', '- [ ] Factual final design/plan/acceptance')
+table = '''## Actual credit-resume cases
+
+Each row has one completed first-run trace identity in `first-qualification-audit1.json`;
+all eight are included in the fresh unfiltered scoped commands. Trace identities
+map directly to the source assertions; no per-frame runtime log is invented.
+
+| Mount | Native downstream | Upstream | Status |
+|---|---|---|---|
+| fixed | H1 | h2c | PASS |
+| fixed | H1 | TLS H2 | PASS |
+| fixed | H2 | h2c | PASS |
+| fixed | H2 | TLS H2 | PASS |
+| single-member group | H1 | h2c | PASS |
+| single-member group | H1 | TLS H2 | PASS |
+| single-member group | H2 | h2c | PASS |
+| single-member group | H2 | TLS H2 | PASS |
+
+## Actual gates
+
+| Gate | Actual result |
+|---|---|
+| Preparatory / complete source / implementation independent SPEC→CODE |19→20 /24→20 /18→16 checks; zero findings in accepted reviews|
+| First unfiltered traced qualification |54/0; all8 new cases completed;83.261s outer|
+'''
+by_name = {r['name']: r for r in audit['commands']}
+for part, label in [('defining', 'Final defining scope'), ('lifecycle', 'Final lifecycle scope'),
+                    ('generation', 'Final Generation scope'), ('consumer-core', 'Isolated Core consumer'),
+                    ('consumer-http', 'Isolated HTTP consumer')]:
+    row = by_name['upstream-credit-final-' + part + '1']
+    table += f"| {label} |{row['executed_exunit_tests']}/0;{row['elapsed_seconds']:.3f}s outer|\n"
+table += '''| Strict compile / six-file format / active Python and extracted-JS syntax |PASS;static0 tests|
+| Unchanged real peer-startup suite |11 actual unittest methods/0failure/error/skip; collector static0|
+| Current group browser |2 rows PASS;4 root-viewed PNGs;54 artifact hashes/204 loaded records|
+| Final document SPEC→CODE and actual local commit/custody |PENDING at this frozen precommit checkpoint|
+
+Three scoped batches total372 invocations with zero failure/skip/exclusion/product
+warnings. They overlap and are not372 unique tests. Core1/HTTP2, Python11,
+browser2 and static0 are separate. Exact argv, environment, timestamps, elapsed
+times, logs, source snapshots and genuine raw waits remain in the immutable receipts.
+The collector records no forced cleanup or remaining owned groups. The peer-startup
+method audit matches the actual11 source methods to11 explicit `... ok` lines and
+the final `Ran 11 tests`/`OK`; it does not reinterpret the static collector count.
+
+The complete SETTINGS-ACK→two-byte native submission→actual stream-window0 with
+positive connection credit→original pending ownership→explicit WINDOW_UPDATE1→
+exact second byte/ordered request trailers/EOF→exact terminal response/cleanup
+sequence passed. Rejecting duplicate/premature release or trailers/EOF before
+release is a preserved source contract; these positive cases do not claim that
+every invalid command was separately executed. The browser verifies the current
+native/group boundary and is not the eight temporal-credit tests.
+
+The audit tool's first draft expected the generic first-run verdict `PASS`;
+independent preflight corrected it to the immutable actual
+`PASS_FIRST_GENUINE_QUALIFICATION` before execution. Both tool drafts are retained;
+final-nonbrowser-audit1 ran once and passed. No test assertion, limit or clock changed.
+
+## Continuing open boundaries
+
+Task6/full upstreamH1/H2 matrix remains open, including combined exhaustion→early-final,
+unsent-trailer cancellation, downstreamRST/live sibling, larger buffering/queue/load
+and independent expiry profiles. Multi-owner, selected-A, standalone product
+acceptance, two≥600s managed loads, H3 and wholeTask5/M3 remain separate. After actual
+local closure, automatically prepare the next bounded early-final-at-exhaustion
+design/plan; it has not entered runtime here. No publication/deployment, production
+data/certificates, Vault/public management, account changes or disabled release-artifact
+E2E activation is authorized by this slice. Dismissed http_fetch#97 is not revived.
+
+The final document review and local conventional commit will occur only after
+these actual runtime gates. Actual committed-byte custody belongs in successor
+evidence using the real commit SHA; this document does not guess its own commit.
+'''
+changed[acceptance] = '# Managed H2 upstream upload-credit control acceptance\n\n' + summary + '\n## Required evidence\n' + required + table
+
+prefix_closure = f'''Current status — 2026-10-18: **DONE LOCALLY** at
+`29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40`.
+Final document SPEC18/18→CODE21/21 passed with zero findings. Actual successor
+`{R}/prefix-postcommit-custody1.json`
+(SHA256 `de8b038938194f8fa1826b8df042bd2d20a735796890c1eca32f31057ce5ddcc`)
+verified195 task blobs and402 source pins against the real commit/disk, actual
+parent and an empty index/clean tracked tree at that boundary. The original
+precommit checkpoint below remains historical. The separately entered upload-credit
+slice has since passed its runtime gates; its final document review/local commit
+remain pending. Its two explicit source changes do not rewrite predecessor receipts.
+'''
+for name in ['docs/designs/m3-managed-h2-response-prefix.md',
+             'docs/plans/m3-managed-h2-response-prefix.md',
+             'docs/acceptance/m3-managed-h2-response-prefix.md']:
+    text = original[name]
+    text = text.replace('Status — 2026-10-18:', 'Historical precommit status — 2026-10-18:', 1)
+    text = text.replace('Qualification — 2026-10-18:', 'Historical precommit qualification — 2026-10-18:', 1)
+    if '/plans/' in name:
+        text = text.replace('- [ ] Complete independent final document SPEC then CODE,',
+                            '- [x] Complete independent final document SPEC then CODE,')
+        text = text.replace('- [ ] Automatically prepare the next separate deterministic upstream-credit control slice',
+                            '- [x] Automatically prepare the next separate deterministic upstream-credit control slice')
+    changed[name] = add_after_title(text, prefix_closure)
+
+old_status = 'Independent final document review/local commit remain pending in the response-prefix checkpoint; next credit-control drafting has not entered runtime.'
+new_status = ('Response-prefix is DONE LOCALLY at29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40; '
+              'final document SPEC18→CODE21 and actual successor195task-blob/402source custody passed. '
+              'The separate upload-credit slice passed all8 traced cases in54/0, fresh54/0+142/0+176/0 '
+              '(372 invocations), Core1/0+HTTP2/0, Python11 and current group browser2rows/4root-viewed PNGs; '
+              'its final document review/local commit remain pending at the frozen precommit checkpoint.')
+parent_checkpoint = f'''## Managed H2 upload-credit current checkpoint — 2026-10-18
+
+The bounded successful credit-resume slice is LOCAL QUALIFICATION PASS: actual
+same-connection SETTINGS ACK window1, full two-byte native body/trailer submission,
+real zero-stream/positive-connection credit, original pending request/guardian/T/G
+holds, explicit WINDOW_UPDATE1, exact bytes/ordered trailers/EOF and terminal
+response/cleanup passed across all8 fixed/group × nativeH1/H2 × h2c/TLS-H2 cases.
+Fresh scopes54/0+142/0+176/0 total372 overlapping invocations; separate Core1/0,
+HTTP2/0, Python11 and browser2rows/four root-opened PNGs passed. Source SPEC24→CODE20
+and implementation SPEC18→CODE16 passed; final document review/local commit/custody
+are pending at this frozen precommit checkpoint. Exact9final command custody,
+402 source pins and browser audit are in `{R}`.
+
+Response-prefix predecessor is DONE LOCALLY at29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40
+with final document SPEC18→CODE21 and actual195task-blob/402source successor custody.
+Credit counter6 retains root376/orchestration282/creditTool24, preparatory failedSPEC2/
+draftrepairs2, runtime/fixture/Sol0 and exhausted Astra2/2. After actual credit closure,
+automatically design the separate early-final-at-exhaustion slice. FullTask6/H1matrix,
+unsent-trailer cancellation/downstreamRST+live sibling, multiowner/selectedA,
+standalone, two≥600s managed loads/H3 and wholeTask5/M3 remain open. No publication,
+deployment or other excluded operation follows.
+'''
+for name in ['docs/plans/m3-upstream-transport.md', 'implement-plan.md']:
+    text = original[name]
+    assert text.count(old_status) == 1
+    changed[name] = add_after_title(text.replace(old_status, new_status), parent_checkpoint)
+
+def fences(text):
+    return re.findall(r'^```[^\n]*\n.*?^```', text, re.M | re.S)
+
+for name, text in changed.items():
+    assert fences(original[name]) == fences(text), name
+    assert text != original[name], name
+    (W / name).write_text(text)
+out = dict(kind='UPSTREAM_CREDIT_FINAL_DOCUMENT_CANDIDATE1',
+           at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           base_commit='29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40',
+           documents_sha256={name: sha(W / name) for name in changed},
+           code_fence_counts={name: len(fences(text)) for name, text in changed.items()},
+           before_inventory_sha256=sha(E / 'final-document-before-inventory1.json'),
+           document_context_rebind_sha256=sha(E / 'final-document-context-rebind1.json'),
+           final_nonbrowser_audit_sha256=sha(E / 'final-nonbrowser-audit1.json'),
+           browser_root_audit_sha256=sha(E / 'browser-root-audit1.json'),
+           counter_sha256=sha(E / 'counter6.json'),
+           actual_command_source_sha256=load('source-candidate1.json')['actual_command_source_sha256'],
+           limits='Frozen precommit candidate. Runtime PASS is factual; final document reviews, local commit and actual successor custody are not predicted. All document code fences remain byte-identical. Broader product gates remain open.')
+p = E / 'final-document-candidate1.json'
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+print('DOCUMENTS', len(changed), 'CODE_FENCES', sum(out['code_fence_counts'].values()),
+      'CANDIDATE_SHA256', sha(p))

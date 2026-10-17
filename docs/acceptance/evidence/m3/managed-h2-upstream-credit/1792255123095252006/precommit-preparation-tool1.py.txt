@@ -1,0 +1,63 @@
+from pathlib import Path
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+import subprocess
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-upstream-credit-e8.path').read_text().strip())
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+load = lambda n: json.loads((E / n).read_bytes())
+candidate = load('final-document-candidate1.json')
+adoption = load('final-document-adoption1.json')
+assert adoption['verdict'] == 'PASS_FINAL_DOCUMENT_REVIEWS'
+assert adoption['candidate_sha256'] == sha(E / 'final-document-candidate1.json')
+assert all(sha(W / n) == h for n, h in candidate['documents_sha256'].items())
+assert all(sha(W / n) == h for n, h in candidate['actual_command_source_sha256'].items())
+spec = importlib.util.spec_from_file_location('credit_commit_manifest', E / 'command-collector1.py')
+collector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(collector)
+assert collector.source_manifest() == candidate['actual_command_source_sha256']
+assert subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip() == candidate['base_commit']
+assert subprocess.check_output(['git', 'branch', '--show-current'], text=True).strip() == 'codex/m3-h1-resource-foundation'
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True) == ''
+owned = set(candidate['documents_sha256']) | {
+    'apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py',
+    'apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs',
+}
+excluded_caches = []
+for root, directories, filenames in os.walk(E):
+    if '__pycache__' in directories:
+        directories.remove('__pycache__')
+        excluded_caches.append(str((Path(root) / '__pycache__').relative_to(W)))
+    for filename in filenames:
+        p = Path(root) / filename
+        assert not p.is_symlink()
+        name = str(p.relative_to(W))
+        assert not name.endswith(('.key', '.pyc')) and 'netlog.json' not in name.lower()
+        assert '\n' not in name and '\0' not in name
+        owned.add(name)
+tracked_changes = set(subprocess.check_output(['git', 'diff', '--name-only'], text=True).splitlines())
+assert tracked_changes <= owned
+result = subprocess.run(['git', 'diff', '--check', '--', *sorted(owned)], capture_output=True)
+assert result.returncode == 0 and result.stdout == result.stderr == b''
+files = {name: dict(sha256=sha(W / name), bytes=(W / name).stat().st_size) for name in sorted(owned)}
+out = dict(kind='UPSTREAM_CREDIT_PRECOMMIT_EXPECTED1',
+           at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+           base_commit=candidate['base_commit'], branch='codex/m3-h1-resource-foundation',
+           candidate_sha256=sha(E / 'final-document-candidate1.json'),
+           final_document_adoption_sha256=sha(E / 'final-document-adoption1.json'),
+           task_files=files, task_file_count=len(files),
+           executable_source_sha256=candidate['actual_command_source_sha256'],
+           ignored_cache_directories_excluded=excluded_caches, tracked_changes=sorted(tracked_changes),
+           limits='Exact task-owned files only. Final fresh source/document/diff checks precede staging; no runtime rerun for unchanged executable inputs. This expected map is outside its own commit; actual custody must use the real successor HEAD.')
+p = Path('/tmp/gaoxy-credit-precommit-expected1.json')
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+p = Path('/tmp/gaoxy-credit-precommit-paths1.nul')
+assert not p.exists()
+p.write_bytes(b'\0'.join(name.encode() for name in files) + b'\0')
+print('FRESH_PRECOMMIT_PASS', 'task_files', len(files), 'source_pins', len(candidate['actual_command_source_sha256']),
+      'expected_sha256', sha(Path('/tmp/gaoxy-credit-precommit-expected1.json')))

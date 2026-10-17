@@ -1,0 +1,138 @@
+from pathlib import Path
+import ast
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+import re
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-upstream-credit-e8.path').read_text().strip())
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def load(name):
+    return json.loads((E / name).read_bytes())
+
+candidate = load('source-candidate1.json')
+inventory = load('command-inventory1.json')
+expected = candidate['actual_command_source_sha256']
+assert expected == inventory['actual_command_source_sha256']
+assert len(expected) == 402
+spec = importlib.util.spec_from_file_location('credit_collector_audit', E / 'command-collector1.py')
+collector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(collector)
+assert collector.source_manifest() == expected
+assert all(sha(W / name) == value for name, value in expected.items())
+assert all(sha(W / name) == value for name, value in candidate['documents_sha256'].items())
+
+rows = []
+all_waits = []
+assert len(inventory['final_commands']) == 9
+for planned in inventory['final_commands']:
+    name = planned['name']
+    receipt_path = E / (name + '.json')
+    receipt = load(receipt_path.name)
+    assert receipt['name'] == name
+    assert receipt['command'] == planned['argv']
+    assert planned['timeout_seconds'] == 600
+    assert receipt['cwd'] == str(W)
+    assert receipt['verdict'] == 'PASS'
+    assert receipt['actual_exit'] == 0 and not receipt['forced']
+    assert receipt['wait_error'] is None and receipt['process_joined']
+    assert receipt['source_stable'] and receipt['source_changes'] == []
+    assert receipt['source_before'] == receipt['source_after'] == expected
+    assert not receipt['process_group_remaining'] and not receipt['warnings']
+    assert receipt['collector_sha256'] == sha(E / 'command-collector1.py')
+    cleanup = receipt['descendant_cleanup']
+    assert not cleanup['forced'] and not cleanup['remaining']
+    assert not cleanup['initial_after_reap'] and not cleanup['signal_attempts']
+    assert not cleanup['reap_deadline_exhausted']
+    assert cleanup['reaped'] == cleanup['reaped_before_force']
+    waits = []
+    for raw in cleanup['reaped']:
+        assert raw['phase'] == 'before_force'
+        waits.append(dict(raw, decoded_exit=os.waitstatus_to_exitcode(raw['wait_status'])))
+    all_waits.extend(dict(row, command=name) for row in waits)
+    log_path = E / receipt['log']
+    assert log_path.name == name + '.log'
+    assert sha(log_path) == receipt['log_sha256']
+    plain = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', log_path.read_text())
+    warnings = [line for line in plain.splitlines() if 'warning:' in line
+                and not line.startswith('warning: Git tree ')]
+    assert warnings == []
+    summaries = re.findall(r'(\d+) tests?, (\d+) failures?([^\n]*)', plain)
+    reported = sum(int(row[0]) for row in summaries)
+    failures = sum(int(row[1]) for row in summaries)
+    skipped = sum(int(n) for n in re.findall(r'(\d+) skipped', plain))
+    excluded = sum(int(n) for n in re.findall(r'(\d+) excluded', plain))
+    assert reported == receipt['reported_tests']
+    assert failures == receipt['failures'] == 0
+    assert skipped == receipt['skipped'] == 0
+    assert excluded == receipt['excluded'] == 0
+    assert reported - skipped - excluded == receipt['tests']
+    if planned['kind'] == 'green':
+        assert reported > 0
+    else:
+        assert planned['kind'] == 'static' and reported == 0
+    row = dict(name=name, kind=planned['kind'], verdict='PASS', actual_exit=0,
+               executed_exunit_tests=receipt['tests'], reported_tests=reported,
+               failures=0, skipped=0, excluded=0, product_warnings=[],
+               elapsed_seconds=receipt['elapsed_seconds'],
+               receipt_sha256=sha(receipt_path), log_sha256=sha(log_path),
+               command=receipt['command'], source_pins_verified=len(expected),
+               forced=False, process_joined=True, process_group_remaining=[],
+               genuine_adopted_waits=waits)
+    if name.endswith('-peer-startup1'):
+        source = W / 'apps/gaoxy_proxy/test/support/managed_h2_fixed_peer_startup_test.py'
+        tree = ast.parse(source.read_text())
+        methods = sorted(node.name for cls in tree.body if isinstance(cls, ast.ClassDef)
+                         and cls.name == 'PeerStartupTest' for node in cls.body
+                         if isinstance(node, ast.FunctionDef) and node.name.startswith('test_'))
+        observed = re.findall(r'(?m)^(test_\w+) \(__main__\.PeerStartupTest\.\w+\) \.\.\. ok$', plain)
+        assert len(methods) == len(observed) == len(set(observed)) == 11
+        assert sorted(observed) == methods
+        assert re.search(r'(?m)^Ran 11 tests in [0-9.]+s$', plain)
+        assert plain.rstrip().endswith('\nOK')
+        assert not re.search(r'(?m)^(ERROR|FAIL|FAILED)\b', plain)
+        row['python_unittest_methods'] = methods
+        row['python_unittest_executed'] = 11
+        row['python_unittest_failures'] = row['python_unittest_errors'] = row['python_unittest_skipped'] = 0
+        row['python_unittest_source_sha256'] = sha(source)
+    rows.append(row)
+
+first = load('first-qualification-audit1.json')
+assert first['verdict'] == 'PASS' and first['executed_tests'] == 54
+first_log = E / 'upstream-credit-first-scoped1.log'
+assert sha(first_log) == first['log_sha256']
+assert len(first['eight_new_cases']) == 8
+plain = re.sub(r'\x1b\[[0-9;]*[A-Za-z]', '', first_log.read_text())
+for row in first['eight_new_cases']:
+    assert row['completed_trace_line'] in plain
+    assert row['name'] in row['completed_trace_line']
+scoped = [row for row in rows if any(row['name'].endswith('-' + part + '1')
+                                    for part in ['defining', 'lifecycle', 'generation'])]
+assert len(scoped) == 3
+out = dict(kind='UPSTREAM_CREDIT_FINAL_NONBROWSER_AUDIT1',
+           at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), verdict='PASS',
+           audit_tool_sha256=sha(Path(__file__)),
+           source_candidate_sha256=sha(E / 'source-candidate1.json'),
+           command_inventory_sha256=sha(E / 'command-inventory1.json'),
+           actual_source_pins=len(expected), source_stable=True,
+           commands=rows, scoped_exunit_invocations=sum(row['executed_exunit_tests'] for row in scoped),
+           scoped_counts=[row['executed_exunit_tests'] for row in scoped],
+           isolated_consumers={row['name']: row['executed_exunit_tests'] for row in rows
+                               if '-consumer-' in row['name']},
+           python_unittest_executed=11, static_test_count=0,
+           first_qualification_audit_sha256=sha(E / 'first-qualification-audit1.json'),
+           eight_new_cases=first['eight_new_cases'], genuine_adopted_waits=all_waits,
+           limits='Scoped invocation counts are not unique tests. Python11, isolated Core1/HTTP2, static0 and browser2 rows are separate. Top-level commands exit0/nonforced; genuine raw adopted waits and decoded signals are retained rather than described as all exit0. No runtime rerun or source repair.')
+p = E / 'final-nonbrowser-audit1.json'
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+print(json.dumps({k: out[k] for k in ['verdict', 'actual_source_pins', 'scoped_counts',
+                                    'scoped_exunit_invocations', 'isolated_consumers',
+                                    'python_unittest_executed', 'static_test_count']}))
+print('audit_sha256', sha(p))

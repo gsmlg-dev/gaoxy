@@ -1,6 +1,17 @@
 # Managed H2 Positive Response Prefix Acceptance
 
-Status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review/local commit pending.**
+Current status — 2026-10-18: **DONE LOCALLY** at
+`29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40`.
+Final document SPEC18/18→CODE21/21 passed with zero findings. Actual successor
+`docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006/prefix-postcommit-custody1.json`
+(SHA256 `de8b038938194f8fa1826b8df042bd2d20a735796890c1eca32f31057ce5ddcc`)
+verified195 task blobs and402 source pins against the real commit/disk, actual
+parent and an empty index/clean tracked tree at that boundary. The original
+precommit checkpoint below remains historical. The separately entered upload-credit
+slice has since passed its runtime gates; its final document review/local commit
+remain pending. Its two explicit source changes do not rewrite predecessor receipts.
+
+Historical precommit status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review/local commit pending.**
 
 Eight real-network fixed/group × nativeH1/H2 × upstream h2c/TLS-H2 cases observed
 exact positive response bytes before suffix/trailers/END_STREAM were released.

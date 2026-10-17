@@ -57,8 +57,9 @@ class Commands:
 
 class Peer:
     def __init__(self, protocol, manual, alpn, max_streams=None,
-                 bind_address="127.0.0.1", listen_port=0):
+                 bind_address="127.0.0.1", listen_port=0, hold_upload_credit=False):
         self.protocol, self.manual, self.alpn = protocol, manual, alpn
+        self.hold_upload_credit = hold_upload_credit
         self.max_streams = max_streams
         self.bind_address, self.listen_port = bind_address, listen_port
         self.lock = threading.RLock()
@@ -212,7 +213,8 @@ class Peer:
                         raw.close()
                         raise RuntimeError("fixture connection bound exceeded")
                     client = dict(socket=raw, h2=None, uploads={}, targets={}, pending={}, eof=False,
-                                  responses=set(), write_closed=False, tls_close_request=None)
+                                  responses=set(), write_closed=False, tls_close_request=None,
+                                  credit_holds=set(), credit_released=set())
                     self.clients[number] = client
                     worker = threading.Thread(target=self.serve, args=(number, client))
                     self.workers.append(worker)
@@ -245,9 +247,13 @@ class Peer:
             with self.lock:
                 conn = h2.connection.H2Connection(config=h2.config.H2Configuration(
                     client_side=False, header_encoding="utf-8"))
+                initial_values = dict(conn.local_settings.items()) if self.hold_upload_credit else {}
                 if self.max_streams is not None:
-                    conn.local_settings = h2.settings.Settings(client=False, initial_values={
-                        h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: self.max_streams})
+                    initial_values[h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS] = self.max_streams
+                if self.hold_upload_credit:
+                    initial_values[h2.settings.SettingCodes.INITIAL_WINDOW_SIZE] = 1
+                if initial_values:
+                    conn.local_settings = h2.settings.Settings(client=False, initial_values=initial_values)
                 conn.initiate_connection()
                 client["h2"] = conn
                 sock.sendall(conn.data_to_send())
@@ -306,13 +312,38 @@ class Peer:
                             self.emit("upload", connection=number, stream=event.stream_id,
                                       chunk_bytes=len(event.data), total_bytes=len(upload),
                                       sha256=hashlib.sha256(upload).hexdigest())
-                            conn.acknowledge_received_data(event.flow_controlled_length, event.stream_id)
+                            held_target = (self.hold_upload_credit and
+                                           client["targets"][event.stream_id] == "/hold/upload-credit")
+                            if held_target and event.stream_id not in client["credit_released"]:
+                                if (event.stream_id in client["credit_holds"] or len(upload) != 1 or
+                                        event.flow_controlled_length != 1 or event.stream_ended is not None or
+                                        conn.remote_flow_control_window(event.stream_id) != 0 or
+                                        conn.inbound_flow_control_window <= 0):
+                                    raise RuntimeError("fixture upload did not reach exact stream-credit hold")
+                                client["credit_holds"].add(event.stream_id)
+                                self.emit("upload_credit_held", connection=number, stream=event.stream_id,
+                                          total_bytes=len(upload), held_bytes=event.flow_controlled_length,
+                                          stream_window=conn.remote_flow_control_window(event.stream_id),
+                                          connection_window=conn.inbound_flow_control_window,
+                                          sha256=hashlib.sha256(upload).hexdigest())
+                            else:
+                                conn.acknowledge_received_data(event.flow_controlled_length, event.stream_id)
                         elif isinstance(event, h2.events.TrailersReceived):
+                            if (self.hold_upload_credit and
+                                    client["targets"][event.stream_id] == "/hold/upload-credit" and
+                                    event.stream_id not in client["credit_released"]):
+                                raise RuntimeError("fixture upload trailers preceded credit release")
                             self.emit("upload_trailers", connection=number, stream=event.stream_id,
                                       fields=event.headers)
                         elif isinstance(event, h2.events.StreamEnded):
-                            self.emit("upload_end", connection=number, stream=event.stream_id,
-                                      total_bytes=len(client["uploads"].get(event.stream_id, b"")))
+                            upload_values = dict(total_bytes=len(client["uploads"].get(event.stream_id, b"")))
+                            if (self.hold_upload_credit and
+                                    client["targets"][event.stream_id] == "/hold/upload-credit"):
+                                if event.stream_id not in client["credit_released"]:
+                                    raise RuntimeError("fixture upload end preceded credit release")
+                                upload_values["body64"] = base64.b64encode(
+                                    client["uploads"].get(event.stream_id, b"")).decode("ascii")
+                            self.emit("upload_end", connection=number, stream=event.stream_id, **upload_values)
                             if (not self.manual and event.stream_id not in client["responses"]
                                     and client["targets"][event.stream_id].split("?", 1)[0] != "/hold"):
                                 body = bytes(client["uploads"].get(event.stream_id, b""))
@@ -324,8 +355,10 @@ class Peer:
                             self.emit("goaway_received", connection=number, code=int(event.error_code),
                                       last_stream=event.last_stream_id)
                         elif isinstance(event, h2.events.SettingsAcknowledged):
-                            self.emit("settings_ack", connection=number,
-                                      max_streams=conn.local_settings.max_concurrent_streams)
+                            settings_values = dict(max_streams=conn.local_settings.max_concurrent_streams)
+                            if self.hold_upload_credit:
+                                settings_values["initial_window"] = conn.local_settings.initial_window_size
+                            self.emit("settings_ack", connection=number, **settings_values)
                             self.emit("control", connection=number, kind=type(event).__name__)
                         elif isinstance(event, (h2.events.RemoteSettingsChanged,
                                                 h2.events.WindowUpdated, h2.events.PriorityUpdated)):
@@ -453,6 +486,17 @@ class Peer:
                 if (client["targets"] != {stream: "/health"} or client["pending"]
                         or stream not in client["responses"]):
                     raise RuntimeError("fixture write half-close requires completed sole health response")
+            elif op == "release_upload_credit":
+                if (not self.hold_upload_credit or value.get("credit_bytes") != 1 or
+                        client["targets"].get(stream) != "/hold/upload-credit" or
+                        stream not in client["credit_holds"] or
+                        stream in client["credit_released"] or
+                        conn.remote_flow_control_window(stream) != 0 or
+                        conn.inbound_flow_control_window <= 0):
+                    raise RuntimeError("fixture upload-credit release outside exact hold")
+                conn.increment_flow_control_window(1, stream)
+                conn.increment_flow_control_window(1)
+                client["credit_released"].add(stream)
             elif op == "settings":
                 conn.update_settings({h2.settings.SettingCodes.MAX_CONCURRENT_STREAMS: value["max_streams"]})
             else:
@@ -466,9 +510,11 @@ class Peer:
                     return True
                 socket.socket.shutdown(client["socket"], socket.SHUT_WR)
                 client["write_closed"] = True
+            credit_values = {"credit_bytes": 1} if op == "release_upload_credit" else {}
             self.emit("command", op=op, connection=value["connection"], stream=stream,
                       command_id=value.get("command_id"), code=value.get("code"),
-                      last_stream=value.get("last_stream"), max_streams=value.get("max_streams"))
+                      last_stream=value.get("last_stream"), max_streams=value.get("max_streams"),
+                      **credit_values)
         return True
 
     def stop(self):
@@ -856,6 +902,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--protocol", choices=("tls", "h2c"))
     parser.add_argument("--manual", action="store_true")
+    parser.add_argument("--hold-upload-credit", action="store_true")
     parser.add_argument("--staged-start", action="store_true")
     parser.add_argument("--bind-address", default="127.0.0.1",
                         choices=("127.0.0.1", "127.0.0.2", "127.0.0.3", "127.0.0.4"))
@@ -890,7 +937,7 @@ def main():
     if args.protocol is None:
         parser.error("peer requires --protocol")
     peer = Peer(args.protocol, args.manual, args.alpn, args.max_streams,
-                args.bind_address, args.listen_port)
+                args.bind_address, args.listen_port, args.hold_upload_credit)
     commands = Commands()
     try:
         if peer.prepare(commands):

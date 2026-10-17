@@ -1,5 +1,27 @@
 # M3 upstream transport implementation plan
 
+## Managed H2 upload-credit current checkpoint — 2026-10-18
+
+The bounded successful credit-resume slice is LOCAL QUALIFICATION PASS: actual
+same-connection SETTINGS ACK window1, full two-byte native body/trailer submission,
+real zero-stream/positive-connection credit, original pending request/guardian/T/G
+holds, explicit WINDOW_UPDATE1, exact bytes/ordered trailers/EOF and terminal
+response/cleanup passed across all8 fixed/group × nativeH1/H2 × h2c/TLS-H2 cases.
+Fresh scopes54/0+142/0+176/0 total372 overlapping invocations; separate Core1/0,
+HTTP2/0, Python11 and browser2rows/four root-opened PNGs passed. Source SPEC24→CODE20
+and implementation SPEC18→CODE16 passed; final document review/local commit/custody
+are pending at this frozen precommit checkpoint. Exact9final command custody,
+402 source pins and browser audit are in `docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006`.
+
+Response-prefix predecessor is DONE LOCALLY at29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40
+with final document SPEC18→CODE21 and actual195task-blob/402source successor custody.
+Credit counter6 retains root376/orchestration282/creditTool24, preparatory failedSPEC2/
+draftrepairs2, runtime/fixture/Sol0 and exhausted Astra2/2. After actual credit closure,
+automatically design the separate early-final-at-exhaustion slice. FullTask6/H1matrix,
+unsent-trailer cancellation/downstreamRST+live sibling, multiowner/selectedA,
+standalone, two≥600s managed loads/H3 and wholeTask5/M3 remain open. No publication,
+deployment or other excluded operation follows.
+
 > For agentic workers: use subagent-driven-development or executing-plans for
 > bounded task execution. Sol implements and independently reviews. Continuing
 > authorization in `AGENTS.md` replaces routine approval pauses. The Astra
@@ -7,7 +29,7 @@
 
 ## Fixed reload plateau current checkpoint — 2026-10-17
 
-Fixed reload plateau is DONE LOCALLY at `e4a7660baa61a792f4245f511b190a0fcfcbf920`. Eight native H1/H2 × h2c/TLS-H2 × active/idle profiles each retained one instance/owner/epoch/Store, two warmups and twenty measured reloads. Fresh scoped batches passed242/0+400/0; core1/0, HTTP2/0, Python11-method startup and fixed browser2rows/4root-viewed PNGs passed separately. Full implementation and final document SPEC→CODE passed with zero findings. The actual postcommit audit `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/fixed-postcommit-custody1.json` (SHA256 `a3a9d61fa2043952e533ca91639b4ddd7d13137a42569305bb1c7164cc5bd5eb`) verified all184 task files and399 source pins against committed blobs and disk, with empty index/clean tracked tree at that snapshot. Fixed-stage counter16 preserves root243/orchestration154/successor-tooling82/plateau-tooling19 and Astra2/2 exhausted; the later group kickoff counters are separate successors without reset. Group active/idle reload runtime qualification passed104/0 and strict DATA8contexts; fresh scoped1043 invocations/0fail, isolated Core1/0+HTTP2/0, Python11 startup methods and group browser2rows/4root-inspected PNGs passed separately. Final document SPEC2 (15 checks)→CODE1 (15 checks) passed; actual local group commit `94381bfcc55474d3b617764a2601b5b3b31015f1` and successor group-postcommit-custody1.json verified351 task files/401 source pins. Response-prefix local qualification passed: initial46/0 including all8 cases, final46/0+134/0+168/0, Core1/0+HTTP2/0, Python11 methods and current group browser2rows/4root-viewed PNGs. Independent final document review/local commit remain pending in the response-prefix checkpoint; next credit-control drafting has not entered runtime. Whole Task5/M3, the broader streaming matrix, multi-owner, selected-A R32/B-available, standalone, two≥600s load profiles and H3 accounting remain open. No publication/deployment or other excluded operation follows.
+Fixed reload plateau is DONE LOCALLY at `e4a7660baa61a792f4245f511b190a0fcfcbf920`. Eight native H1/H2 × h2c/TLS-H2 × active/idle profiles each retained one instance/owner/epoch/Store, two warmups and twenty measured reloads. Fresh scoped batches passed242/0+400/0; core1/0, HTTP2/0, Python11-method startup and fixed browser2rows/4root-viewed PNGs passed separately. Full implementation and final document SPEC→CODE passed with zero findings. The actual postcommit audit `docs/acceptance/evidence/m3/managed-h2-group-reload-plateau/1792240357368527898/fixed-postcommit-custody1.json` (SHA256 `a3a9d61fa2043952e533ca91639b4ddd7d13137a42569305bb1c7164cc5bd5eb`) verified all184 task files and399 source pins against committed blobs and disk, with empty index/clean tracked tree at that snapshot. Fixed-stage counter16 preserves root243/orchestration154/successor-tooling82/plateau-tooling19 and Astra2/2 exhausted; the later group kickoff counters are separate successors without reset. Group active/idle reload runtime qualification passed104/0 and strict DATA8contexts; fresh scoped1043 invocations/0fail, isolated Core1/0+HTTP2/0, Python11 startup methods and group browser2rows/4root-inspected PNGs passed separately. Final document SPEC2 (15 checks)→CODE1 (15 checks) passed; actual local group commit `94381bfcc55474d3b617764a2601b5b3b31015f1` and successor group-postcommit-custody1.json verified351 task files/401 source pins. Response-prefix local qualification passed: initial46/0 including all8 cases, final46/0+134/0+168/0, Core1/0+HTTP2/0, Python11 methods and current group browser2rows/4root-viewed PNGs. Response-prefix is DONE LOCALLY at29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40; final document SPEC18→CODE21 and actual successor195task-blob/402source custody passed. The separate upload-credit slice passed all8 traced cases in54/0, fresh54/0+142/0+176/0 (372 invocations), Core1/0+HTTP2/0, Python11 and current group browser2rows/4root-viewed PNGs; its final document review/local commit remain pending at the frozen precommit checkpoint. Whole Task5/M3, the broader streaming matrix, multi-owner, selected-A R32/B-available, standalone, two≥600s load profiles and H3 accounting remain open. No publication/deployment or other excluded operation follows.
 
 Historical identity-rotation qualification — 2026-10-17: **PASS for the managed H2 same-authority identity-rotation slice**. Final fixed6 and group2 each actually passed both native H1/H2→TLS-H2 rows, and root viewed all eight fresh OLD/NEW images. Fixed6 exited0 after32.097s with eight named Actors; group2 exited0 after36.352s with twelve. Every named Actor exited0/nonforced with joined readers and absent groups. Each endpoint recorded eleven genuine adopted waits: nine exit0 and two signal10/-10, with none remaining. Raw wait statuses are preserved.
 

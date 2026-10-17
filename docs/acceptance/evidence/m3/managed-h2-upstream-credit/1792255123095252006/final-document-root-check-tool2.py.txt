@@ -1,0 +1,65 @@
+from pathlib import Path
+from collections import Counter
+import datetime
+import difflib
+import hashlib
+import importlib.util
+import json
+import re
+import subprocess
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-upstream-credit-e8.path').read_text().strip())
+sha = lambda p: hashlib.sha256(p.read_bytes()).hexdigest()
+candidate = json.loads((E / 'final-document-candidate1.json').read_bytes())
+before = json.loads((E / 'final-document-before-inventory1.json').read_bytes())['documents']
+fences = lambda s: re.findall(r'^```[^\n]*\n.*?^```', s, re.M | re.S)
+assert all(sha(W / n) == h for n, h in candidate['documents_sha256'].items())
+assert all(sha(W / n) == h for n, h in candidate['actual_command_source_sha256'].items())
+baseline_whitespace = []
+for name, row in before.items():
+    assert sha(W / row['archive']) == row['sha256']
+    old = (W / row['archive']).read_text()
+    new = (W / name).read_text()
+    assert fences(old) == fences(new)
+    old_lines, new_lines = old.splitlines(), new.splitlines()
+    old_bad = Counter(line for line in old_lines if line.endswith((' ', '\t')))
+    new_bad = Counter(line for line in new_lines if line.endswith((' ', '\t')))
+    assert old_bad == new_bad, 'preexisting whitespace changed: ' + name
+    for line in difflib.ndiff(old_lines, new_lines):
+        if line.startswith('+ '):
+            assert not line[2:].endswith((' ', '\t')), 'new trailing whitespace: ' + name
+    for number, line in enumerate(new_lines, 1):
+        if line.endswith((' ', '\t')):
+            baseline_whitespace.append(dict(path=name, current_line=number,
+                                            bytes=len(line.encode()), line_sha256=hashlib.sha256(line.encode()).hexdigest(),
+                                            exact_original_line_retained=True))
+assert len(baseline_whitespace) == 2
+owned_sources = ['apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py',
+                 'apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs']
+changed = subprocess.check_output(['git', 'diff', '--name-only'], text=True).splitlines()
+assert set(changed) <= set(candidate['documents_sha256']) | set(owned_sources)
+result = subprocess.run(['git', 'diff', '--check', '--', *candidate['documents_sha256'], *owned_sources],
+                        text=True, capture_output=True)
+assert result.returncode == 0 and result.stdout == result.stderr == ''
+assert subprocess.check_output(['git', 'diff', '--cached', '--name-only'], text=True) == ''
+spec = importlib.util.spec_from_file_location('final_doc_source_check', E / 'command-collector1.py')
+collector = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(collector)
+assert collector.source_manifest() == candidate['actual_command_source_sha256']
+out = dict(kind='UPSTREAM_CREDIT_FRESH_FINAL_DOCUMENT_CHECK2',
+           at_utc=datetime.datetime.now(datetime.timezone.utc).isoformat(), verdict='PASS',
+           tool_sha256=sha(Path(__file__)), candidate_sha256=sha(E / 'final-document-candidate1.json'),
+           documents_checked=len(candidate['documents_sha256']),
+           unchanged_code_fences=sum(candidate['code_fence_counts'].values()),
+           unchanged_executable_source_pins=len(candidate['actual_command_source_sha256']),
+           tracked_changed_paths=changed, diff_check_exit=result.returncode, index_empty=True,
+           preexisting_trailing_whitespace=baseline_whitespace, new_trailing_whitespace=0,
+           static_test_count=0,
+           limits='Fresh static source/document/diff checks; unchanged original trailing-whitespace baseline is visible. The failed all-file checker1 remains FAIL_TOOLING_SCOPE, not PASS. No product assertion, runtime gate or source was changed.')
+p = E / 'final-document-root-check2.json'
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+print({k: out[k] for k in ['verdict', 'documents_checked', 'unchanged_code_fences',
+                           'unchanged_executable_source_pins', 'diff_check_exit', 'new_trailing_whitespace']})
+print('sha256', sha(p))

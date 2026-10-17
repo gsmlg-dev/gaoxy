@@ -1,5 +1,16 @@
 # Managed H2 Positive Response Prefix Implementation Plan
 
+Current status — 2026-10-18: **DONE LOCALLY** at
+`29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40`.
+Final document SPEC18/18→CODE21/21 passed with zero findings. Actual successor
+`docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006/prefix-postcommit-custody1.json`
+(SHA256 `de8b038938194f8fa1826b8df042bd2d20a735796890c1eca32f31057ce5ddcc`)
+verified195 task blobs and402 source pins against the real commit/disk, actual
+parent and an empty index/clean tracked tree at that boundary. The original
+precommit checkpoint below remains historical. The separately entered upload-credit
+slice has since passed its runtime gates; its final document review/local commit
+remain pending. Its two explicit source changes do not rewrite predecessor receipts.
+
 > **For agentic workers:** Use executing-plans or parent-managed subagent-driven-development task by task. Root alone writes repository/evidence/Git and runs tests/build/browser. Independent workers own explicit read-only review outputs. Root serializes dependent changes; nobody reverts others. All boxes remain unchecked until actual evidence.
 
 **Goal:** Eight real-network fixed/group × nativeH1/H2 × h2c/TLS cases observe exact positive response bytes before upstream suffix/trailer/END_STREAM release, then complete with original ownership and cleanup.
@@ -8,7 +19,7 @@
 
 **Tech Stack:** Current pinned Nix Elixir/OTP, existing Gaoxy HTTP/HTTP2 fixture, HPAX, existing h2 Python peer/venv, real native downstream sockets. No dependencies added.
 
-Qualification — 2026-10-18: initial46/0 including all8 named cases; complete source
+Historical precommit qualification — 2026-10-18: initial46/0 including all8 named cases; complete source
 SPEC21→CODE24 and implementation SPEC16→CODE17 passed with zero findings. Fresh final
 scopes46/0+134/0+168/0, static compile/6file format/syntax, Core1/0+HTTP2/0,
 Python11 startup methods and browser2rows/4root-viewed PNGs passed. Evidence E7 is
@@ -184,6 +195,6 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer mix format --
 ## Task5: Factual closure and next separate gap
 
 - [x] Write factual acceptance/design/plan and narrow parent-status updates from actual immutable receipts.
-- [ ] Complete independent final document SPEC then CODE, fresh changed-file checks and disk/index/blob audit. Commit locally only after these gates; stage only task-owned paths and prove actual committed-byte custody in successor evidence. No publication/deployment follows.
+- [x] Complete independent final document SPEC then CODE, fresh changed-file checks and disk/index/blob audit. Commit locally only after these gates; stage only task-owned paths and prove actual committed-byte custody in successor evidence. No publication/deployment follows.
 - [x] Keep Task6/full8cell upstreamH1/H2 matrix, credit exhaustion, unsent-trailer cancellation/earlyfinal, downstreamRST+live sibling, multiowner/selectedA, standalone, both>=600sloads/H3 and wholeTask5/M3 visibly open.
-- [ ] Automatically prepare the next separate deterministic upstream-credit control slice after this bounded stage actually closes. Preserve cumulative repair counters and Astra2/2 exhaustion. Preparation alone did not establish runtime acceptance; actual current-stage gates are recorded above.
+- [x] Automatically prepare the next separate deterministic upstream-credit control slice after this bounded stage actually closes. Preserve cumulative repair counters and Astra2/2 exhaustion. Preparation alone did not establish runtime acceptance; actual current-stage gates are recorded above.

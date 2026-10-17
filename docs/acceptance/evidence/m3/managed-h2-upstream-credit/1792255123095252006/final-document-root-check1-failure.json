@@ -1,0 +1,25 @@
+{
+  "actual_exit": 1,
+  "baseline": [
+    {
+      "bytes": 22,
+      "current_line": 281,
+      "exact_original_line_retained": true,
+      "sha256": "7e8d2e9b717be3d993984c91567eac951fe2e7b40c002f3489487f3318b9fc8e"
+    },
+    {
+      "bytes": 89,
+      "current_line": 282,
+      "exact_original_line_retained": true,
+      "sha256": "94efda475916dc9a81c8d7386bd3c960b3193c719e2ad5b5513d814ec9c49826"
+    }
+  ],
+  "cause": "New checker incorrectly required zero whitespace in entire preexisting documentation. Both offending lines predate this stage and are byte-identical in before archive. No product or source failure.",
+  "failing_check": "assert all(not l.rstrip(chr(13)+chr(10)).endswith((space,tab)) for l in whole_current_document_lines)",
+  "kind": "UPSTREAM_CREDIT_FINAL_DOCUMENT_ROOT_CHECK1_FAILURE",
+  "path": "implement-plan.md",
+  "prior_diff_check_exit": 0,
+  "repair": "Preserve checker1 FAIL; check2 requires exact same original bad-line multiset, no trailing whitespace in added lines, same scoped git diff --check, full8doc/402source/fence checks. No document whitespace cleanup or runtime assertion change.",
+  "stderr": "Traceback (most recent call last):\n  File \"<stdin>\", line 11, in <module>\nAssertionError: implement-plan.md\n",
+  "verdict": "FAIL_TOOLING_SCOPE"
+}

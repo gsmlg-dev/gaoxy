@@ -91,8 +91,143 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
     end
   end
 
-  defp fixture(:fixed, upstream, downstream), do: F.fixture(upstream, downstream, ["--manual"])
-  defp fixture(:group, upstream, downstream), do: G.fixture(upstream, downstream, ["--manual"])
+  for mount <- [:fixed, :group] do
+    describe "#{mount} managed H2 upload credit" do
+      if mount == :group do
+        setup do
+          assert :ok === boundary(:activation)
+          :ok
+        end
+      end
+
+      for downstream <- [:http1, :http2], upstream <- [:h2c, :http2] do
+        @credit_mount mount
+        @credit_downstream downstream
+        @credit_upstream upstream
+        test "#{downstream} -> #{upstream} holds exhausted upload credit then resumes exact body and ordered trailers" do
+          body = <<0, 255>>
+          prefix = <<0>>
+          trailers = [{"x-check", "first"}, {"x-check", "second"}]
+
+          f =
+            fixture(@credit_mount, @credit_upstream, @credit_downstream, [
+              "--manual",
+              "--hold-upload-credit"
+            ])
+
+          {socket, seen, guardian, completion} =
+            hold_upload(@credit_mount, f, "/hold/upload-credit")
+
+          connection = seen["connection"]
+          stream = seen["stream"]
+          held = capture_holds(@credit_mount, f, guardian, completion, "/hold/upload-credit")
+
+          assert %{"connection" => ^connection, "initial_window" => 1} =
+                   F.event(f.peer, "settings_ack")
+
+          if @credit_upstream == :http2,
+            do:
+              assert(
+                %{"connection" => ^connection, "alpn" => "h2", "sni" => "localhost"} =
+                  F.event(f.peer, "tls")
+              )
+
+          if @credit_downstream == :http1 do
+            :ok =
+              :gen_tcp.send(
+                socket,
+                ["2\r\n", body, "\r\n0\r\nX-Check: first\r\nX-Check: second\r\n\r\n"]
+              )
+          else
+            :ok = F.send_body(f, socket, body, false)
+            {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+            :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
+          end
+
+          assert %{"connection" => ^connection, "stream" => ^stream, "total_bytes" => 1} =
+                   F.upload_through(f.peer, seen, prefix)
+
+          prefix_hash = Base.encode16(:crypto.hash(:sha256, prefix), case: :lower)
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => ^stream,
+                   "total_bytes" => 1,
+                   "held_bytes" => 1,
+                   "stream_window" => 0,
+                   "connection_window" => connection_window,
+                   "sha256" => ^prefix_hash
+                 } =
+                   F.event(f.peer, "upload_credit_held")
+
+          assert connection_window > 0
+          assert_held(@credit_mount, f, held, guardian, completion)
+
+          assert %{
+                   "op" => "release_upload_credit",
+                   "connection" => ^connection,
+                   "stream" => ^stream,
+                   "credit_bytes" => 1
+                 } =
+                   F.command(f.peer, seen, "release_upload_credit", %{"credit_bytes" => 1})
+
+          assert %{"connection" => ^connection, "stream" => ^stream, "total_bytes" => 2} =
+                   F.upload_through(f.peer, seen, body, 1)
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => ^stream,
+                   "fields" => [["x-check", "first"], ["x-check", "second"]]
+                 } =
+                   F.event(f.peer, "upload_trailers")
+
+          body64 = Base.encode64(body)
+
+          assert %{
+                   "connection" => ^connection,
+                   "stream" => ^stream,
+                   "total_bytes" => 2,
+                   "body64" => ^body64
+                 } = F.event(f.peer, "upload_end")
+
+          assert %{"op" => "respond", "connection" => ^connection, "stream" => ^stream} =
+                   F.command(f.peer, seen, "respond", %{
+                     "status" => 200,
+                     "body64" => body64,
+                     "fields" => [
+                       ["content-type", "application/octet-stream"],
+                       ["trailer", "x-check"]
+                     ],
+                     "trailers" => [["x-check", "first"], ["x-check", "second"]],
+                     "ended" => true
+                   })
+
+          result = F.response(f, socket, "POST")
+          assert result.status === 200
+          assert result.body === body
+          assert result.trailers === trailers
+          assert {"content-type", "application/octet-stream"} in result.headers
+
+          if @credit_downstream == :http1,
+            do: assert({"transfer-encoding", "chunked"} in result.headers)
+
+          :ok = :gen_tcp.close(socket)
+          clean(@credit_mount, f)
+          assert :ok = HTTP.RequestCompletion.await(completion, 0)
+          close(@credit_mount, f)
+        end
+      end
+    end
+  end
+
+  defp fixture(mount, upstream, downstream, peer_options \\ ["--manual"])
+
+  defp fixture(:fixed, upstream, downstream, peer_options),
+    do: F.fixture(upstream, downstream, peer_options)
+
+  defp fixture(:group, upstream, downstream, peer_options),
+    do: G.fixture(upstream, downstream, peer_options)
+
   defp hold(:fixed, f, target), do: F.hold(f, target)
   defp hold(:group, f, target), do: G.hold(f, target)
   defp clean(:fixed, f), do: F.clean(f)
@@ -100,7 +235,32 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
   defp close(:fixed, f), do: F.close(f)
   defp close(:group, f), do: G.close(f)
 
-  defp capture_holds(mount, f, guardian, completion) do
+  defp hold_upload(mount, f, target) do
+    socket = F.connect(f)
+
+    fields =
+      [{"trailer", "x-check"}] ++
+        if(f.downstream == :http1, do: [{"transfer-encoding", "chunked"}], else: [])
+
+    :ok = F.send_request(f, socket, "POST", target, fields, false)
+    seen = F.event(f.peer, "request")
+    assert seen["target"] === target
+    assert [":method", "POST"] in seen["headers"]
+    assert seen["ended"] === false
+
+    F.eventually(fn ->
+      Enum.any?(:sys.get_state(f.owner).tokens, fn {_, held} ->
+        match?(%HTTP.RequestCompletion{}, held.completion) and
+          :sys.get_state(held.guardian).submitted_url === f.origin <> target
+      end)
+    end)
+
+    if mount == :group, do: F.eventually(fn -> G.held_selection(f, target) != nil end)
+    [{_, held}] = Map.to_list(:sys.get_state(f.owner).tokens)
+    {socket, seen, held.guardian, held.completion}
+  end
+
+  defp capture_holds(mount, f, guardian, completion, target \\ "/hold/response-prefix") do
     [{transport_token, transport_hold}] = Map.to_list(:sys.get_state(f.owner).tokens)
     assert transport_hold.guardian === guardian
     assert transport_hold.completion === completion
@@ -114,7 +274,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
     assert state.request_options === nil
     assert state.selector === nil
     assert state.awaiting_transport === nil
-    assert state.submitted_url === f.origin <> "/hold/response-prefix"
+    assert state.submitted_url === f.origin <> target
     assert :binary.referenced_byte_size(state.submitted_url) === byte_size(state.submitted_url)
     assert Enum.sort(Map.keys(state.request)) === [:completion, :promise, :resolved, :stream]
     assert [_ | _] = state.transport_pins

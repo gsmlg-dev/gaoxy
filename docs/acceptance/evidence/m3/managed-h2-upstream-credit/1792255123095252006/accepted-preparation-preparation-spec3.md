@@ -1,0 +1,13 @@
+# Upstream-credit preparation SPEC3
+
+Task `upstream-credit-preparation-spec3`: **DONE — PASS_PREPARATION_SPEC_ONLY**, 19/19 checks, zero findings. Direct dependent review in `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`, branch `codex/m3-h1-resource-foundation`; preparation HEAD `94381bfcc55474d3b617764a2601b5b3b31015f1` remains historical. No live Git or successor-entry verification occurred.
+
+SPEC2 F2 is resolved: draft3 consistently records two failed preparation SPEC reviews and two preparatory draft repairs, preserving historical draft1 repair0 separately from current-prefix runtime/fixture/Sol0 and exhausted Astra2/2. Failed SPEC1/SPEC2 and all ten draft1/2 files remain immutable. SPEC1 F1 settings correction remains intact.
+
+Complete draft2-to3 diffs change only title/status/context/history prose. All twenty plan code blocks are byte-identical; design/acceptance have zero blocks. Current16 pins validate as13unchanged live inputs plus3current canonical docs. Original16context exactly matches completed SPEC2 as13live plus3exact archived originals. Overlay, final-document candidate, before-inventory, prior-review and three supplemental public HTTP.fetch bootstrap-source hashes match; final recheck has zero mismatches. Reused SPEC2 technical/public-h2/bootstrap/ownership/cleanup/gate coverage is explicitly identified per check in JSON. No new warm-up requirement is introduced: HEADERS may establish the request stream before the actual SETTINGS ACK, which must precede positive DATA.
+
+Verification used bounded read-only diffs and Python SHA256/byte/code-fence checks only. The three diff commands exited1 for expected prose differences; integrity checks exited0. No test/build/formatter/consumer/browser/network/runtime command ran. Only the two assigned temporary review reports were written; repository/evidence/Git and other writers' files were untouched.
+
+One new SPEC3 reviewer tooling incident: an initial aggregate metadata/diff output truncated; complete bounded rereads and exact comparisons recovered it. Prior reviewer/author incidents remain history and are not recounted. Added preparation failures0, draft repairs0, Sol runtime repairs0, Astra rounds0; cumulative merge stays with root. All own commands finished, no active process/session.
+
+Independent preparation CODE review remains required. Root must close predecessor prefix final-document/localcommit/committed-byte custody, then bind the actual successor HEAD/source/docs/commands/counters. Credit implementation and runtime acceptance remain NOT ENTERED / NOT RUN. No external/product decision is needed.

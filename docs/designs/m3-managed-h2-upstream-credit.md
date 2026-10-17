@@ -1,0 +1,88 @@
+# Managed H2 upstream upload-credit control
+
+Status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
+
+All eight fixed/group × native H1/H2 × upstream h2c/TLS-H2 credit-resume cases
+completed in the initial unfiltered trace: 54 tests/0 failures. Complete frozen
+source SPEC24/24→CODE20/20 and implementation SPEC18/18→CODE16/16 passed with
+zero findings. Fresh defining/lifecycle/Generation scopes passed 54/0+142/0+176/0
+(372 invocations, not unique tests). Strict compile, six-file format and active
+Python/extracted-JavaScript syntax passed as static0. Python11 actual startup
+methods, isolated Core1/0 and HTTP2/0, and browser2 current group rows/four
+root-viewed OLD/NEW PNGs passed separately.
+
+Evidence is `docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006`.
+`final-nonbrowser-audit1.json` (SHA256 `2bb03cf8983c624571c33765bdb3d6242f8f76d0686fa3697ede4f8479d0fc0d`)
+verifies all nine final command/log/exit/process receipts and stable402 source pins.
+`browser-root-audit1.json` (SHA256 `082cf86923b0c5ba04ee58f6e97ad58185f514d2be8be2040e18865ae7b7cfed`)
+verifies outer400/inner287 matching source subsets,54 artifacts,204 loaded records
+(194 disk source/BEAM bindings and10 inline source/module-MD5 records),12 named
+nonforced Actor joins, raw deletion, retirement/zeroing and listener rebind.
+All top-level final commands exited0/nonforced with no remaining owned processes.
+The32 genuine adopted nonbrowser waits are15 raw0 and17 raw10 (decoded−10/SIGUSR1);
+the12 browser adopted waits are10 raw0 and2 raw10. Named Actors and peer fixtures
+retain their own actual exit checks; adopted helpers are not described as all exit0.
+Four final public trust paths are46-byte invalidation markers, not certificates.
+
+Only the peer and streaming test sources changed; production, deps, F/G fixture
+helpers and the original11 Python methods remain unchanged. Original eight prefix
+cases and the complete assert_held body are preserved. HTTP Fetch remains0.21.10.
+No runtime/fixture/Sol repair or artificial RED occurred. Current counter6 retains
+root376/orchestration282/creditTool24, including one audit-tool draft correction
+before execution; preparatory failedSPEC2/draftrepairs2 and exhausted Astra2/2
+remain recorded. These tooling/draft counts are separate from runtime failures.
+
+Historical entry documents are exact archives in `final-document-before-inventory1.json`.
+`final-document-context-rebind1.json` resolves the reviewed proposal3 active16 inputs
+as11 unchanged live inputs,2 original-source archives and3 document archives.
+The source candidate's three entry-document hashes remain historical checkpoint
+hashes; the current eight final documents are separately pinned in the final
+document candidate. No runtime receipt is rewritten or inferred from document edits.
+
+Historical entry snapshot — 2026-10-18: predecessor prefix closed at local commit `29d4fe7ba640b90dcc0502e8cfaec5fbe4b6af40`. Final document SPEC18/18→CODE21/21, exact195task blobs and402command-source pins passed. Custody is `docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006/prefix-postcommit-custody1.json`. Credit preparatory SPEC19/19→CODE20/20 passed with zero findings. Credit implementation/runtime are NOT RUN. Current entry counters are `docs/acceptance/evidence/m3/managed-h2-upstream-credit/1792255123095252006/counter1.json`: root359/orchestration265/creditTool8; preparatory failedSPEC2/draftrepairs2, credit runtime/fixture/Sol0 and exhausted Astra2/2 are retained. The preparation baseline below remains historical; the actual entry/source rebind is recorded by stage-entry1.json.
+
+Document-context binding: root `docs/acceptance/evidence/m3/managed-h2-response-prefix/1792251316888813330/credit-preparation-document-rebind1.json` (SHA256 `e656e2724d3e6fdf6d52390afb247511796a47e9ef6e42ddd1e3fdcaf548d659`) preserves original16 inputs as13 unchanged live inputs plus3 exact archived original docs, and separately pins the current3 canonical docs at the prefix final candidate. Proposal3 records both inventories; it does not claim16 original live inputs unchanged. Actual successor HEAD/source context is captured in stage-entry1.json after the verified prefix local commit/custody; the16 accepted preparatory input bytes remain unchanged at entry.
+
+## Goal and boundary
+
+Prove one successful upload can reach genuine upstream HTTP/2 stream-credit exhaustion, retain its original Gaoxy ownership while held, and resume only after an explicit real WINDOW_UPDATE, preserving exact body and ordered duplicate safe request/response trailers. Eight separately named cases cover fixed/single-member-group × nativeH1/nativeH2 × h2c/TLS-H2. This is a small positive credit-resume proof. It neither completes Task6 nor qualifies its combined exhaustion→early-final/cancel sequence.
+
+Excluded follow-ups stay open: early final at exhaustion, cancellation during unsent trailers, downstreamRST with a live sibling, H1 upstream/full H1/H2 matrix, multi-owner, selected-A saturation, queue growth/load/independent expiry profiles, standalone product acceptance and H3 accounting. No dismissed http_fetch#97 replacement proof, production/dependency repair, public management, operational certificate, Vault, production-data, account, E2E activation, push/release or deployment is included.
+
+## Existing evidence and alternatives
+
+Task6 in `docs/plans/m3-upstream-transport.md:601` requires an independently established stream-window phase. Existing peer `serve` reads actual H2 request/DATA/trailer/end events under its existing RLock, emits bounded JSON events, then flushes. Before this slice it acknowledged every DATA frame immediately, so neither `--manual` nor `F.no_event` established exhaustion. Its former `settings` changed only MAX_CONCURRENT_STREAMS and exposed no credit-control command. The existing command handler ACKs after `flush` actually calls socket.sendall. F provides real send_request/send_body/frame/response, deadline-preserving upload_through and bounded event observations. G completes its own real zero-body health HEAD and preserves group accounting/joins. Current streaming tests already expose authentic original T/G token/guardian/completion/pin checks and exact cleanup.
+
+1. Recommended: add one opt-in peer mode advertising stream receive-window1, withhold that stream's DATA acknowledgement at a specific test target, and release exactly one byte through explicit WINDOW_UPDATE. A two-byte upload gives a public hyper-h2 zero-credit witness while connection credit remains positive. No large payload, downstream window parser, extra process or timer is needed.
+2. Keep default65535 and upload beyond it while manually refunding connection credit. This adds large downstream payload/framing/window management and more peer bookkeeping for the same stream-credit proof.
+3. Stop reading the TCP socket or infer a blocked write from elapsed time/queue size. This cannot distinguish TCP buffering, producer starvation and stream-credit exhaustion. Reject it; no no-event interval or synthetic accounting is accepted as phase proof.
+
+Choose approach1 under continuing authorization. The reduced peer protocol window is the variable under test, not a Gaoxy limit/timeout override. All existing Gaoxy/fixture budgets remain unchanged. The peer mode defaults off; all existing invocations keep current wire settings, DATA acknowledgement and event shapes.
+
+## Minimal source scope and real APIs
+
+At actual entry modify only `apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py` and `apps/gaoxy_proxy/test/upstream_transport_streaming_test.exs`, plus successor design/plan/acceptance/evidence and a narrow factual parent-plan status update at closure. F and G fixture sources, production/deps and existing Python startup methods stay unchanged. The streaming test's private helpers may gain backwards-compatible arguments; original prefix cases/assertions are preserved.
+
+The implemented default-off `--hold-upload-credit` peer flag and `release_upload_credit` command follow the exact reviewed changes in the companion plan. Draft2 corrects preparatory SPEC1 F1: hold mode starts from `dict(conn.local_settings.items())`, preserving every current advertised setting before overriding INITIAL_WINDOW_SIZE and any explicitly requested max-streams value. Installed connection defaults MAX_CONCURRENT_STREAMS100 and MAX_HEADER_LIST_SIZE65536 therefore remain in hold mode unless the former is explicitly overridden. Mode-off no-max/max-streams behavior remains exactly the old peer behavior; this draft does not repair or redesign that pre-existing option. Mode settings are installed through the same existing public `h2.settings.Settings` seam used for max-streams, before initiate_connection. Public `conn.remote_flow_control_window(stream)` returns min(connection credit, stream credit). Require it equal0 AND public `conn.inbound_flow_control_window > 0`; together these establish stream credit0 rather than connection exhaustion. Public `conn.increment_flow_control_window(1, stream)` emits the stream WINDOW_UPDATE; its connection form refunds the consumed connection byte. No hyper-h2 private attributes, native Fetch state or completion internals are inspected.
+
+The initial SETTINGS ACK is observed AFTER opening the bodyless POST headers and BEFORE sending its body. This handles lazy connection establishment without a deadlock and ensures the client applied window1 before any application DATA. Group health is a separate zero-body HEAD and cannot consume upload credit.
+
+## Exact transaction
+
+1. Start F/G with `["--manual", "--hold-upload-credit"]`; group setup first invokes public ManagedH2GroupBoundary.activation in the existing style. Send POST headers to `/hold/upload-credit`, declared `trailer: x-check`, and H1 `transfer-encoding: chunked` when needed; do not send body yet. Observe the actual request, method/target and unended flag, then authentic original T/G token refs, guardian/completion, selected public handle, original request and nonempty real transport pins exactly as current prefix helpers do.
+2. Consume actual same-connection SETTINGS ACK with initial_window1. TLS rows also require actual same-connection ALPN h2 and SNI localhost; copied public trust remains the fixture's normal trust path.
+3. Send full binary body `<<0,255>>` and ordered request trailers x-check:first, x-check:second into the native downstream socket BEFORE waiting for the credit barrier. H1 uses one legal two-byte chunk followed by zero-chunk/trailers; H2 uses a two-byte nonterminal DATA and final trailer HEADERS. This excludes a producer that has only submitted one byte. It claims socket submission, not a synthetic promise that the proxy has consumed every byte.
+4. The independent peer receives actual first DATA byte0. Its opt-in branch withholds acknowledge_received_data, confirms unended stream, exactly one unpadded flow-controlled byte, remote credit0 and positive connection credit, records the genuine held stream and emits `upload_credit_held` with connection/stream, total1, held_bytes1, windows and SHA256. Consume the existing first upload event and that exact witness. No arbitrary sleep or no-event timing check is used.
+5. Require original public completion await(...,0)==cleanup_pending, original T token/guardian/completion/selection/request/pins still held. For group require the original G token/selection, actual inflight1, G.assert_cleanup(f,1)==16478862 and G.assert_exact_controls. Never compare full evolving token maps or manufacture resource charges. Record source-attested reads separately from peer-emitted numeric observations.
+6. Only after these assertions send `release_upload_credit` for that exact connection/stream with credit_bytes1. The peer rejects wrong mode/target/ref, missing/duplicate hold, nonzero stream credit, nonpositive connection credit or premature request trailers/EOF. Under its existing lock it emits real stream and connection WINDOW_UPDATE1, marks the stream released, flushes bytes and emits the matching command ACK. It creates no process/timer or alternative reader.
+7. Consume actual second upload byte with existing cumulative hash helper, exact ordered request trailers and matching upload_end total2/body64 equal the submitted binary. The opt-in upload_end includes actual body64 only for this target; current default output is unchanged. A source contract guard rejects request trailers/EOF before release rather than mistaking them for a held incomplete upload. Normal DATA acknowledgement resumes after release.
+8. Only after the complete successful upload send the existing manual respond status200 with body `<<0,255>>`, octet-stream content-type, trailer declaration and ordered duplicate response trailers. Require matching command ACK; decode with existing F.response(f,socket,"POST"). Require exact status/body/content-type/trailers, H1 chunked framing and exact ownership cleanup. There is no early-final response or reset-as-success path.
+9. Close downstream socket → existing F.clean/G.clean → original public completion await(...,0)==ok → existing F.close/G.close. Preserve service/owner/group/pin/byte invariants, fixture-specific monitor reasons, physical termination and independent peer joined requests/forced0/live0/exit0. An original failure retains normal on_exit cleanup; failed cleanup is FAIL.
+
+## Clocks, proof and acceptance
+
+Use existing F.event/frame/response/recv5000, upload_through's original finite deadline, F.eventually's existing original deadline behavior, ExUnit default timeout, fixed/group request/write limits, TLS preparation budget and peer lifetime180s. Each new observation uses an existing helper; never reset a helper's original deadline on recursion, enlarge caps/timeouts, skip tests, sleep, or replace a failed network phase with source enumeration. The two-byte payload is below every existing cap and requires no downstream flow-credit extension.
+
+This qualifies existing production behavior, so no artificial RED is required. Source-based draft SPEC→CODE, implementation self-review and complete frozen-source SPEC→CODE precede first runtime. First genuine eight-case qualification is followed by implementation SPEC→CODE, then fresh scoped compatibility/static/consumer/peer/browser gates and factual document SPEC→CODE. Keep actual case counts separate from Python/static/consumer/browser counts. The plan gives exact normal commands; active browser/consumer custody tools must be copied/rebound from the accepted prefix cohort at actual entry without guessing a path or changing its deadlines.
+
+A listed-org dependency defect is routed upstream with the required internal-request issue and callsite comment; a blocker stops that task without a workaround, retaining original evidence/assertions. This slice required no dependency defect or dependency update. Cumulative counter5 root338/orch244/prefixTool13, prefix source/runtime/fixture/Sol0 and all earlier categories remain historical; Astra2/2 is exhausted. Preparation failed SPEC reviews2 (SPEC1 F1 and SPEC2 F2) and preparatory draft repairs2, including this draft3 repair, are current history. Original draft1 preparation repair0 is historical. Current-prefix runtime/fixture/Sol remains0; these preparatory document repairs add no prefix repair or Astra round. Root owns accounting, repository, evidence, runtime and any local commit. No stage completion or permission expansion follows from these files.
