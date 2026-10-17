@@ -1,0 +1,64 @@
+# Managed-H1 Streaming Matrix Design
+
+**Execution active; first matrix16 tests/12 failures, Sol repair3 materialized and awaiting review/verification.** Entry `1426657e65d726629d618dcf03880df718375dd1`; current evidence `docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915`. The preceding downstream-cancellation slice passed its prescribed gates and actual local commit custody. Independent preparatory SPEC review approved the bounded design with no findings. Planned counts are not executed results.
+
+## Execution clarifications
+
+The shared Elixir fixture owns listeners, raw upstream sockets, runtime accounting and a finite JSON command/event bridge. The finite Python runner owns the case choreography and assertions; ExUnit runs that same driver in attached mode, while standalone starts one already-compiled Mix adapter. This shares actual oracles without importing a test suite or wrapping `mix test`.
+
+Separate browser qualification is implemented in `integration/upstream_transport/browser.py` (with an optional small JavaScript CDP companion). Earlier accepted browser receipts cover TLS-H2 upstream only. New actual group→TLS-H1 rows must run; none is inferred from those receipts. The native H2 browser listener uses optional test-only downstream TLS because Chromium cannot use cleartext h2c. The eight matrix rows retain cleartext H1/prior-knowledge H2 downstream. Browser pages exercise two representations and same upstream connection without introducing a new generation/identity project.
+
+## Scope and choice
+
+Complete fixed/group × native cleartext H1/prior-knowledge H2 downstream × TCP/TLS-H1 upstream: upload/response prefix before EOF, duplicate fields, safe declared duplicate trailers, empty/fixed-length bodies, HEAD/204/205/304, exact raw gzip and sequential reuse of one actual upstream connection. Upstream TLS does not imply downstream TLS coverage. Add the missing finite `integration/upstream_transport` entry.
+
+Use one small test-owned managed-H1 fixture for ExUnit and standalone Mix. Reuse the existing independent Python H1/H2 client, adding an opt-in received-prefix observation. Retain accepted collector/driver conventions, raw H1 peer patterns, existing H1/H2 tests and historical facts. Do not load another ExUnit test module as a standalone fixture, call its private helpers, or build another general client/parser framework.
+
+Extending the old fixed/group suites separately duplicates matrix/integration setup; replacing the existing clients creates unnecessary protocol/lifecycle work. The shared fixture and existing client are the recommended bounded approach. Runtime diagnosis established one necessary local adapter repair: preserve explicit zero-length request framing by using the existing public upload-stream path, reserving nil for an absent body. No dependency defect or change is established.
+
+H1 fixtures retain a16MiB service cap. H2 fixtures use64MiB with explicit supported small concurrency/buffer limits; their calculated40,946,727-byte reservation fits that cap. The native validator remains unchanged: its fixed reservation alone exceeds16MiB. Operation deadlines and protocol/content/accounting assertions remain unchanged. Cleanup must preserve causal errors and still report/fail cleanup errors.
+
+## Matrix and cases
+
+| Mount | Downstream | Upstream variants |
+| --- | --- | --- |
+| fixed | native H1 | TCP H1; TLS-H1 |
+| fixed | native H2 prior knowledge | TCP H1; TLS-H1 |
+| group | native H1 | TCP H1; TLS-H1 |
+| group | native H2 prior knowledge | TCP H1; TLS-H1 |
+
+Eight configuration rows, with two case families per row: **16 planned top-level cases**, not executed counts. Keep subchecks within these cohesive cases, without a new evidence architecture for each representation.
+
+**Temporal streaming and safe trailers.** First exchange: send a six-byte binary Content-Length6 POST in two three-byte pieces with ordered duplicate request fields. The independent raw upstream must report the exact prefix while upload remains open before the coordinator releases the suffix/EOF. After complete upload, the upstream sends fixed-length response headers and a binary prefix, withholding the suffix. Require actual downstream prefix receipt while response remains incomplete before releasing the suffix. Compare final exact bytes/length/digest. At these holds, assert original completion remains pending and genuinely stable original request/completion/binding tokens stay correct. Do not compare entire mutable Session state: only managed H2 clears `submitted_url` at headers (`session.ex:1252-1255`); do not impose that transition on managed H1.
+
+Second exchange: real chunk-framed H1 / DATA plus terminal-HEADERS H2 upload and response, with declared safe duplicate trailers. Assert exact ordered fields/trailers and bytes independently at both ends, using current declaration/hop-field policy. Keep fixed-length and chunked subchecks distinct. Do not add parsed-queue proof or new forbidden-trailer semantics.
+
+**Representation and reuse.** In one prepared row, sequence: explicit Content-Length0 request; nonempty fixed binary; deterministic raw gzip plus duplicate Set-Cookie; HEAD with legal representation length and empty body; 204; 205; 304; healthy GET. Compare compressed bytes and digest with the upstream's exact binary, not just decompression. Assert existing permitted framing/header behavior. Every application request must reach the same independently identified accepted upstream connection, with no replacement accept. Classify group readiness/health requests by target/role so health HEAD is never counted as proxied HEAD.
+
+For native-H1 rows additionally use the existing small raw framing-driver pattern for HEAD→204→healthy GET on one persistent downstream socket, preserving leftover bytes. The existing Python client's Connection: close and HEAD shortcut alone cannot detect leaked framing. Native-H2 rows require zero DATA payload bytes and terminal bodyless responses followed by healthy traffic. Fresh downstream sockets otherwise remain valid for upstream reuse proof.
+
+## Minimal implementation surface
+
+- Create `apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs`: explicit start/stop, fixed/group lifecycle, native H1/H2 services, independent raw TCP/TLS-H1 peer, connection/request IDs, bounded command/event barriers, minimal persistent H1 framing probe, original completion and joined accounting. Reuse existing raw peer/collector patterns, without old-suite refactoring. No mandatory ExUnit callbacks internally; callers own cleanup.
+- Create `apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs`: the eight rows/two families, using the shared fixture and existing independent client.
+- Narrowly modify the independent-client section of `apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py`: optional `--observe-prefix-bytes N` in event mode, emitting one exact first-N received-byte receipt with truthful completion. H1 Content-Length must read incrementally to the threshold; its current whole-body read cannot establish prefix timing. Observe actual H1 bytes/H2 DATA and account for terminal events in the same batch. Preserve default behavior, existing bounds, final receipts, upload join and all upstream peer modes. This adds observation, not deliberate slow consumption.
+- Create `integration/upstream_transport/{fixture.exs,run.py,README.md}`: standalone adapter to the shared fixture; finite Python coordinator running real independent client/upstream barriers; documented invocation/limits. Do not wrap `mix test`, import timestamped evidence tools, recursively compile from Mix, or implement a second protocol stack.
+- Parent owns canonical stage documents, source freeze, review/evidence placement and local commit. Necessary runtime repairs require explicit ownership and preserved cumulative counters; no silent production/dependency scope expansion.
+
+## Finite integration entry
+
+`python integration/upstream_transport/run.py` runs the explicit 16-case managed-H1 registry from the qualified environment. Compile before starting its single `mix run --no-compile --no-start integration/upstream_transport/fixture.exs` process. Require fixture readiness plus a real listener handshake. Reuse accepted client/collector output for exact bytes, ordered fields/trailers, connection/request sequence and cleanup; add only row/family/subcheck and barrier correlation needed here.
+
+Use existing finite bounds where applicable: absolute monotonic 5-second barriers, 20-second cases, 10-second startup/shutdown, and a finite overall budget covering the registry. Fail on zero/missing/duplicate cases, wrong row/identity, peer failure/exit, timeout or incomplete cleanup. Print per-case PASS/FAIL and actual executed/failed counts, separately from application-request counts. In `finally`, stop/join only owned resources; forced cleanup remains visible and cannot satisfy a normal PASS.
+
+Retain candidate/dirty-source hashes, actual interpreter/package/client identity, accepted connection IDs, exact byte/body digests, ordered fields/trailers, command/observation order, completion/accounting and joined state using existing receipt conventions. Do not dump protected E4 diagnostics, keys/certificates, raw/private traces or credentials. The first registry covers managed H1; existing independent H2-upstream suites remain reused coverage and must never be labelled executed by this runner.
+
+## Gates and remaining boundaries
+
+After the current cancellation gates pass: materialize/freeze candidate → **one independent source SPEC→CODE review before runtime** → first focused matrix PASS → **one independent implementation/evidence review**, repair actionable findings → **one fresh relevant verification group**, finite integration and necessary existing independent-peer/browser checks → local scoped conventional commit. Preserve failures and exact counts/exits; never relabel blocked/unrun gates PASS.
+
+Browser remains separate: reuse the accepted group native-H1/H2→TLS-H1 two-row/four fresh root-image-open pattern with test-only local TLS, actual readiness, browser receipts and finite cleanup. No browser session or acceptance is created by this proposal.
+
+Task6/Task5/M3 stay OPEN. Exclude combined independently slow peers/queue/reservation peaks/sibling profile; sole H1 disconnect during synchronously blocked upload; current new4 review; new identity/generation projects; #97/equivalent requirements; publication/deployment, production data/certificates, Vault, public management, release-artifact E2E or account changes. Existing H2 matrix, generation/identity and deadline facts are retained; coverage investigation audited source, not runtime receipts.
+
+Source basis: `/tmp/gaoxy-task6-remaining-coverage1.{md,json}`; `docs/plans/m3-upstream-transport.md:667-699`; managed H1 fixed/group peer/test references listed in that investigation; `managed_h2_fixed_endpoint_test.exs:121-163,326-371`; independent client `managed_h2_fixed_peer.py:600-654,697-796,850-947`; `session.ex:1238-1263`. Current file hashes/read scopes accompany this proposal. Parent may be editing other source; freeze again before execution.

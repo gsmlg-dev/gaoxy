@@ -1,0 +1,88 @@
+{
+  "task_id": "managed_h1_matrix_budget_repair3",
+  "status": "DONE",
+  "assignment": "direct targeted runtime repair; implementation/static handoff only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "entry_head_parent_verified": "1426657e65d726629d618dcf03880df718375dd1",
+  "baseline": {
+    "file": "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+    "sha256": "f1549e2d0493ac6f7481b57e64361d9b5635ecc4fd5b5e0e261e9fc40744ff1c",
+    "verified_against": "E11/runtime-before-repair3-apps--gaoxy_proxy--test--support--managed_h1_matrix_fixture.exs.txt; exact byte equality before edit"
+  },
+  "changed_file": "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+  "pre_format_sha256": "94adbb8390513cdbc2a2a4e9d751b9db3a404ff82053ad104089782296aa628e",
+  "root_cause": [
+    "Initial H2 setup used native defaults with16MiB service max_bytes. The supported validator necessarily reserves more than16MiB even before variable decode/stream/writer accounting, so reducing supported limits alone cannot fit that cap.",
+    "run_case after raised a cleanup exception while an attached_loop/dispatch exception was already propagating, replacing the causal failure."
+  ],
+  "authorization_adjustment": "Reported the16MiB mathematical conflict before budget editing. Parent explicitly superseded its initial H2 cap constraint and authorized64MiB for H2 fixture rows only; H1 remains16MiB. This is test-fixture configuration, not a prescribed product acceptance budget.",
+  "configuration": {
+    "h1_service_max_bytes": 16777216,
+    "h2_service_max_bytes": 67108864,
+    "http_limits": {
+      "max_body_bytes": 1048576,
+      "max_header_bytes": 8192,
+      "max_read_chunk": 16384,
+      "max_buffer_bytes": 32768
+    },
+    "h2_limits": {
+      "max_streams": 1,
+      "max_frame": 16384,
+      "max_header_block": 4096,
+      "table_size": 1024,
+      "receive_window": 16384
+    },
+    "rationale": "Sequential cases require one stream, small binary bodies and ordinary bounded headers. Limits use supported native options rather than weakening the validator. The H2-only options merge preserves request_timeout10000/write_timeout2000; startup/case/barrier/shutdown deadlines and all content/accounting assertions remain unchanged."
+  },
+  "reservation_arithmetic": {
+    "source": "Gaoxy.HTTP.HTTP2.Limits.reservation/2 and validate_budget/3",
+    "max_delivery_formula": "100*16384+18437",
+    "max_delivery": 1656837,
+    "decode_formula": "2*4096*(max(1024,128)+2)+512*4096+2*1024",
+    "decode": 10504192,
+    "connection_formula": "10504192+16777216+65535+4*32768+8*1656837",
+    "connection": 40732711,
+    "stream_formula": "2*8192+4*16384+65536",
+    "stream": 147456,
+    "writer_formula": "4*16384+1024",
+    "writer": 66560,
+    "total": 40946727,
+    "service_cap": 67108864,
+    "headroom": 26162137,
+    "ingress_frame_with_header": 16393,
+    "ingress_buffer": 32768,
+    "assertions": "40946727 <67108864;16384+9 <=32768;16384 <=32768. Computed by independent literal arithmetic without importing/executing candidate code."
+  },
+  "failure_preservation": "Capture the original exception kind, reason and __STACKTRACE__ as an outcome; then always run the existing exception-isolated owned-group/fixture/Port cleanup sweep. On a causal failure, IO.warn reports the full cleanup-error list and :erlang.raise restores the original kind/reason/stacktrace. On success plus cleanup errors, the existing cleanup exception still fails the case. Forced/unjoined cleanup remains a failure in either branch.",
+  "verification": {
+    "baseline": "PASS exact byte equality against archived pre-repair source; exit0.",
+    "scoped_diff": "Inspected full before/after fixture diff; only H2 configuration branch and run_case outcome/cleanup reporting changed.",
+    "whitespace": "PASS trailing-whitespace and final-newline check; exit0.",
+    "budget_arithmetic": "PASS literal reservation and ingress-buffer assertions; exit0.",
+    "elixir_syntax_format_compile": "NOT RUN; canonical Mix formatting/compile remain parent-owned.",
+    "tests_runtime_browser_git": "NOT RUN; explicitly parent-only."
+  },
+  "prior_runtime_evidence_read": {
+    "first_matrix": "16 actual tests,12 failures, exit2, source matches candidate3; retained FAIL.",
+    "diagnostic_h2": "Selected standalone H2 case failed with EOFError; parent traced earliest service_spec to {:error,:http2_byte_budget}.",
+    "diagnostic_h1": "Selected H1 representation failed explicit request Content-Length assertion; separate worker owns that diagnosis/repair."
+  },
+  "incidents": [
+    "No tooling or protected-file incident. The initial impossible cap was surfaced and resolved through the explicit parent instruction before changing the H2 budget."
+  ],
+  "scope_preservation": [
+    "Only the assigned fixture edited.",
+    "No run.py/client/browser/newtest/docs/production/dependency changes.",
+    "No Git, runtime, Mix, test, browser or candidate import/execution.",
+    "No repository evidence/counter writes.",
+    "Source ownership returned before parent formatting; reported hash is pre-format."
+  ],
+  "command_shutdown": "All worker commands completed; no candidate runtime or background process was started.",
+  "remaining_risks": [
+    "Static arithmetic and whitespace do not establish runtime PASS or Elixir compile success.",
+    "Parent must run canonical formatting, focused H2 setup/protocol cases and cleanup-failure verification.",
+    "Independent H1 Content-Length failure remains with the assigned production-adapter worker."
+  ],
+  "repair_accounting": "Parent owns cumulative Sol/Astra accounting; this worker wrote no counters. Inherited Astra2/2 exhausted remains unchanged.",
+  "decisions_needed": []
+}

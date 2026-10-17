@@ -1,0 +1,42 @@
+{
+  "task_id": "managed_h1_matrix_framing_repair3",
+  "status": "DONE",
+  "acceptance_scope": "one-line implementation plus static checks only; runtime NOT RUN",
+  "assignment": "direct follow-up local compatibility repair; root-targeted Sol round3 under continuing authorization",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "1426657e65d726629d618dcf03880df718375dd1 plus candidate3; pre-edit owned file matched root archive byte-for-byte",
+  "changed_files": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex"
+  ],
+  "before_sha256": "a4f6e5f6a2e7212ab641c8a33bb10d177d9ffba008362945620b6aa6e402cf22",
+  "after_sha256": "b0fc774be009a2fea62ceee3a7fd7e8a35be7096ebaa249713678c9a1bdfe6c9",
+  "diff": "--- before/apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex\n+++ after/apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex\n@@ -38,7 +38,7 @@\n   @impl true\n   def open(options) do\n     upload =\n-      if options.body in [:none, {:length, 0}] do\n+      if options.body == :none do\n         nil\n       else\n         {:ok, stream} = Stream.start_link(0)\n",
+  "root_cause": "Gaoxy adapter collapsed :none and {:length,0} into nil. Dependency no-body framing removed explicit Content-Length0. Parser and proxy headers preserved the distinction up to this local adapter.",
+  "implementation": "nil only for :none; {:length,0} uses unchanged public Stream.start_link(0), duplex:half and existing zero-byte finish_upload path.",
+  "provenance": "Exact installed http_fetch/http_core0.21.10; deps/http_fetch/mix.exs:4-5 and deps/http_core/mix.exs:4-5 identify https://github.com/gsmlg-dev/http_fetch. HTTP.Request body_payload/put_body_headers nil versus public PID-stream framing explains behavior. No upstream defect established; no workaround/private API/dependency mutation.",
+  "verification": {
+    "before_archive_match": "PASS",
+    "exact_single_replacement": "PASS",
+    "trailing_whitespace_and_final_newline": "PASS",
+    "frozen_driver_client_test_hashes": "PASS",
+    "elixir_parse": "NOT RUN",
+    "runtime": "NOT RUN by assignment",
+    "tests": "NOT RUN by worker; unchanged existing16 real-wire tests provide prior red regression"
+  },
+  "unchanged_assertion_files": {
+    "integration/upstream_transport/run.py": "ca5ba4136a67eee50d25aeb5fee4cdaf8494e682989e778e91e059997feda7ca",
+    "apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs": "5b8a4c17cdd1b3f6ad5fc1c4e2a1b4907989f647fd20279174308397b3806b62",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "d0444029bb6eae58699f83c07a60e7ee8aedc17fd55848666a4191fe3bda6083"
+  },
+  "prior_runtime_evidence": "Root first suite16 executed/12 failures/exit2; exact H1 standalone first POST /empty reason explicit request Content-Length. Preserved in diagnosis1 and E11.",
+  "repair_counters": {
+    "root_targeted_sol_round": 3,
+    "this_worker_edit_rounds": 1,
+    "prior_cumulative_sol": "root-owned counter12; unchanged by worker",
+    "astra_recovery": "2/2 exhausted, unchanged"
+  },
+  "astra_gate": "none; no escalation",
+  "shutdown": "All worker commands completed; no test/Mix/Git/browser/candidate processes launched.",
+  "remaining_risks": "Runtime EOF/upload completion/reuse and later representation behavior await root review plus fresh frozen-cohort verification. Shared fixture H2 budget/masking repair is separately owned.",
+  "decisions_needed": "none; root owns remaining verification and stage advancement"
+}

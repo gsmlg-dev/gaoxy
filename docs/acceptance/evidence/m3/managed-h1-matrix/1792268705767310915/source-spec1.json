@@ -1,0 +1,108 @@
+{
+  "task_id": "managed_h1_matrix_source_spec1",
+  "status": "DONE",
+  "verdict": "FINDINGS_SOURCE_SPEC1",
+  "assignment": "direct independent read-only source specification review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "entry_head_root_verified": "1426657e65d726629d618dcf03880df718375dd1",
+  "source_candidate_sha256": "082debf429d875953143e646d31c54838a7573f538bb3aa94191c1b9c3462275",
+  "command_inventory_sha256": "e29089e89fa265d82715a71ce619247442fd9b64fa7787e114dbd55aaf1b4b81",
+  "reviewed_inputs_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "243cc3df9d8b20219e429cf8d23733685800aa23b5a35d2b113fcec5e5d84b66",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "d0444029bb6eae58699f83c07a60e7ee8aedc17fd55848666a4191fe3bda6083",
+    "apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs": "73268e36f4eabf74892f3b5e16ba3c0ffb0ebf9dc7e60f540c097569f96ee8ab",
+    "integration/upstream_transport/README.md": "3f55f469d03a26435a634bf34df27d2b7aa4bad31fc946201779b02f3db5956a",
+    "integration/upstream_transport/browser.mjs": "7dc684e31ca890b1b8d7aa79712b15f102cdf6eaf670817400b78e04bb9b93b7",
+    "integration/upstream_transport/browser.py": "3f752d60f5e75fd43920e019d6c8beee09107a7d279262435a9f954156ba71d5",
+    "integration/upstream_transport/fixture.exs": "7f1ee353535d95b3c55830b216b6aff1089914fdf85810bdf41895f8174cacf0",
+    "integration/upstream_transport/run.py": "18db60c520d16593bffbe5039caf1451af282309712ac6d5948830d24a764d65",
+    "docs/designs/m3-managed-h1-matrix.md": "0adecb5c45e8f629c0f41fd4c7ff2debb6298e1dcd6af7006e82284bd98fcb5e",
+    "docs/plans/m3-managed-h1-matrix.md": "eab30f8eb25be455c6c9f492169e19bca2b829ae6ac37f539f762954a131ea02",
+    "docs/acceptance/m3-managed-h1-matrix.md": "60f1b45f544192e016467fa20ecc04e59dd81a2d3d0ed09fb45485fc553e2b08",
+    "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/source-candidate1.json": "082debf429d875953143e646d31c54838a7573f538bb3aa94191c1b9c3462275",
+    "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/command-inventory1.json": "e29089e89fa265d82715a71ce619247442fd9b64fa7787e114dbd55aaf1b4b81",
+    "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/before-client-source1.py.txt": "ea4312215fbd5ca5ae29dfe7d65e8a1cd52429ad99c3f027fc9a7d05890442b6"
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P2",
+      "file": "integration/upstream_transport/run.py",
+      "lines": [
+        435,
+        450
+      ],
+      "title": "Check the case deadline after the final acceptance operation",
+      "evidence": "Case.run checks self.deadline at line440, then performs the accepted event/identity checks at441-444 and finally returns PASS at448-450. Host.event/Host.call do not receive the case deadline (98-103,114-115). The final accepted-event round trip is outside the last20s guard. Shutdown has its separate allowed10s and is not itself the finding.",
+      "rationale": "The promised20s case deadline is not an absolute execution bound, and can expire during the final fixture round trip without preventing PASS. Earlier case operations also receive new5s Host.call budgets instead of the remaining case budget, although the eventual line440 check normally detects those overruns.",
+      "required_change": "Give case-owned fixture calls the minimum of their barrier budget and the remaining case deadline, and recheck the case deadline after the last acceptance/identity operation before starting the separately bounded shutdown. Preserve a separate10s shutdown budget."
+    },
+    {
+      "id": "F2",
+      "priority": "P1",
+      "file": "integration/upstream_transport/run.py",
+      "lines": [
+        452,
+        463,
+        497,
+        505,
+        520,
+        523
+      ],
+      "related": [
+        {
+          "file": "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+          "lines": [
+            479,
+            485
+          ]
+        }
+      ],
+      "title": "Make owned-client cleanup unconditional and exception-safe",
+      "evidence": "Case.cleanup invokes client.abort() without isolating errors (454-457). That method can raise from process wait/kill/wait or pipe closes (196-205). If cleanup raises, the main finally only host.abort() (520-523), with no independent-client sweep. A SIGALRM arriving while cleanup is running has the same escape. Client Popen has no dedicated process group (153), and Host.abort targets only the Mix process (133-141), so stopping that host does not join the separately spawned Python clients. Attached timeout similarly stops the fixture and closes the driver port without an explicit independent-client join acknowledgement.",
+      "rationale": "The design requires finally to stop/join all owned resources on failure. A normal case failure followed by a cleanup failure/overall timeout can leave owned independent clients unjoined and lose the structured failing case receipt. This is a source lifecycle gap, not an assertion that a runtime leak has been observed.",
+      "required_change": "Keep an outer owned-client registry and perform a bounded best-effort sweep in finally, isolating each cleanup error so every owned client is attempted. Make the attached-driver abort path explicitly bound/join its own descendant clients or arrange an owned process group with a checked shutdown acknowledgement. Retain all forced/unjoined outcomes as failures."
+    }
+  ],
+  "positive_assessment": [
+    "Explicit16-case registry and generated16 top-level ExUnit cases match eight rows/two families.",
+    "Shared fixture owns native service/raw upstream/accounting; standalone starts one no-compile/no-start adapter; ExUnit uses attached mode.",
+    "Temporal suffix release follows independently observed upload prefix and actual downstream prefix; pending binding is captured from original completion and compared only through stable identity fields.",
+    "Binary bytes/digests, duplicate fields/trailers, raw gzip/Set-Cookie, bodyless responses, persistent H1 carry, accepted connection/request IDs and separate health role are asserted.",
+    "Opt-in prefix implementation preserves existing peer/server modes and default client operation; H1 incremental threshold and H2 receive-batch terminal processing are present.",
+    "Separate browser implementation covers group nativeH1/H2 to TLS-H1, two real pages per row, actual CDP protocol/body identity, screenshots, pending/completed binding and normal join receipts.",
+    "Command inventory honestly marks all nine proposed gates NOT RUN."
+  ],
+  "verification": {
+    "static_hashes": "All eight actual owned source hashes and three canonical matrix document hashes match the frozen source-candidate1 manifest. All eight source hashes were checked again after inspection.",
+    "python_ast": "ast.parse passed for managed_h2_fixed_peer.py, run.py and browser.py; no imports/execution of candidate code.",
+    "client_diff": "Reviewed exact textual diff against before-client-source1.py.txt.",
+    "runtime": "NOT RUN",
+    "git": "NOT RUN",
+    "build_mix_tests_browser": "NOT RUN",
+    "repository_mutations": "NONE",
+    "artifact_mutations": [
+      "/tmp/gaoxy-managed-h1-matrix-source-spec1.json",
+      "/tmp/gaoxy-managed-h1-matrix-source-spec1.md"
+    ]
+  },
+  "incidents": [
+    {
+      "kind": "review_tooling_scope_and_output_incident",
+      "description": "The first supplied-manifest read printed both manifests in full instead of a bounded projection, exposing a broad already-recorded source-name/hash inventory and producing truncated tool output. No filesystem enumeration or Git command was used; no source/private/key/trace file was opened through that inventory. Subsequent reads used explicit owned paths and bounded projections. Protected files were not intentionally accessed or reverified; the clipped display was not reread to investigate protected names.",
+      "effect": "No runtime or repository mutation; retained separately from source findings."
+    }
+  ],
+  "counters": {
+    "new_sol_repair_rounds": 0,
+    "inherited_astra_recovery_rounds": "2/2 exhausted per handoff",
+    "root_counter": "479 per handoff",
+    "orchestration_counter": "384 per handoff"
+  },
+  "command_shutdown": "All review shell commands completed with exit0; no process or runtime was left running.",
+  "remaining_risks": [
+    "Static review cannot establish runtime PASS or whole Task6/Task5/M3 completion.",
+    "F1/F2 need targeted owner repairs and source refreeze before candidate runtime."
+  ],
+  "decisions_needed": []
+}

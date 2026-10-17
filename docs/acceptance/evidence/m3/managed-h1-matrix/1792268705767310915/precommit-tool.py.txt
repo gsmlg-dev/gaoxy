@@ -1,0 +1,36 @@
+from pathlib import Path
+from datetime import datetime, timezone
+import hashlib,json,subprocess
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915'
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def read(n):return json.loads((E/n).read_text())
+def git(*a,check=True):return subprocess.run(['git',*a],cwd=W,capture_output=True,check=check)
+def write(n,d):
+ p=E/n;assert not p.exists(),n;p.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n')
+assert git('rev-parse','HEAD').stdout.decode().strip()=='1426657e65d726629d618dcf03880df718375dd1'
+assert not git('diff','--cached','--name-only').stdout
+c=read('source-candidate5.json');f=read('final-document-candidate1.json')
+assert read('final-spec1.json')['status']=='PASS_FINAL_SPEC1'
+r=read('final-code1.json');assert 'PASS' in r.get('verdict',r.get('status',''))
+assert not r.get('findings',[])
+assert (E/'final-document-adoption1.json').is_file()
+for k,v in {**c['actual_command_source_sha256'],**f['documents_sha256'],**c['installed_dependency_sha256']}.items():assert sha(W/k)==v,k
+base=set(c['owned_source_sha256'])|set(f['documents_sha256'])
+evidence=sorted(p for p in E.rglob('*') if p.is_file())
+assert all(not p.is_symlink() for p in evidence)
+paths=sorted(base|{str(p.relative_to(W)) for p in evidence})
+assert len(base)==14
+snapshot={p:sha(W/p) for p in paths}
+git('add','--',*paths)
+staged=git('diff','--cached','--name-only','-z').stdout.decode().split('\0');staged={p for p in staged if p}
+assert staged==set(paths),(staged-set(paths),set(paths)-staged)
+for p in paths:
+ assert hashlib.sha256(git('show',':'+p).stdout).hexdigest()==snapshot[p],p
+owned=git('diff','--cached','--check','--',*sorted(base),check=False)
+archive=git('diff','--cached','--check','--',*sorted(staged),check=False)
+write('precommit-custody1.json',{'kind':'MANAGED_H1_MATRIX_PRECOMMIT_CUSTODY1','at_utc':datetime.now(timezone.utc).isoformat(),'entry_head':'1426657e65d726629d618dcf03880df718375dd1','task_files_before_this_receipt':len(paths),'task_sha256_before_this_receipt':snapshot,'owned_source_document_paths':sorted(base),'owned_staged_whitespace':{'actual_exit':owned.returncode,'stdout':owned.stdout.decode(),'stderr':owned.stderr.decode()},'whole_archive_staged_whitespace':{'actual_exit':archive.returncode,'stdout':archive.stdout.decode(),'stderr':archive.stderr.decode()},'staged_disk_byte_match':True,'source401_and_document5_and_installed_dependency11_match':True,'limits':'Whole-archive whitespace errors in immutable copied historical source/logs remain actual failures, not a clean-archive claim. Owned source/canonical-doc staged check must exit0. This receipt is staged separately and verified; actual commit/custody remain pending.'})
+assert owned.returncode==0,(owned.returncode,owned.stdout.decode(),owned.stderr.decode())
+git('add','--',str((E/'precommit-custody1.json').relative_to(W)))
+assert git('show',':'+str((E/'precommit-custody1.json').relative_to(W))).stdout==(E/'precommit-custody1.json').read_bytes()
+print(json.dumps({'staged_files':len(paths)+1,'owned_source_docs':len(base),'owned_whitespace_exit':owned.returncode,'archive_whitespace_exit':archive.returncode,'staged_disk_bytes':'MATCH','precommit_custody_sha256':sha(E/'precommit-custody1.json')}))

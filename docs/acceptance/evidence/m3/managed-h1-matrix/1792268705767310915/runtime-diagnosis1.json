@@ -1,0 +1,118 @@
+{
+  "task_id": "managed_h1_matrix_runtime_diagnosis",
+  "status": "DONE",
+  "scope": "read-only diagnosis; runtime matrix remains FAIL",
+  "assignment": "direct ordinary Sol diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "1426657e65d726629d618dcf03880df718375dd1 plus frozen candidate3 source401; hashes verified stable by root collectors, no worker Git invocation",
+  "suite": {
+    "executed_tests": 16,
+    "failures": 12,
+    "exit": 2,
+    "passed": "four native-H1 temporal/trailer cases",
+    "failed": "four native-H1 representation cases and all eight native-H2 cases",
+    "evidence": "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/first-assessment1.json"
+  },
+  "causes": [
+    {
+      "id": "H1_REPRESENTATION_FIRST_ORACLE",
+      "status": "CONFIRMED",
+      "evidence": "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/h1-matrix-diagnostic-h1-representation1.log:8",
+      "reason": "AssertionError('explicit request Content-Length')",
+      "boundary": "First POST /empty, upstream connection1/request1 lacks Content-Length; run.py:425 fails before upload_end/send. Local adapter collapses {:length,0} and :none to upload=nil. Parser and proxy header policy retain the original distinction. Dependency nil-body processing deletes Content-Length as no-body representation."
+    },
+    {
+      "id": "H2_FIXTURE_START",
+      "status": "CONFIRMED",
+      "evidence": "docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/h1-matrix-diagnostic-h2-temporal1.log:2-3",
+      "reason": "{:error, :http2_byte_budget}",
+      "boundary": "Gaoxy.HTTP.service_spec(options) rejects fixture configuration at managed_h1_matrix_fixture.exs:165 before native downstream listener readiness/application exchange. Shared H2 fixture uses max_bytes:16777216 with default H2 bounds; precise composition not inspected in assigned source scope."
+    },
+    {
+      "id": "MASKED_PRIMARY_FAILURE",
+      "status": "CONFIRMED",
+      "evidence": "managed_h1_matrix_fixture.exs:465-483",
+      "reason": "after-clause cleanup raises replace original exception",
+      "boundary": "driver group still live on prior dispatch/oracle failure; group kill adds forced cleanup error; fixture stop may wait for response send command, time out, and peer subsequently exits before joined. These errors are secondary and must remain visible."
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "h1-matrix-diagnostic-h1-representation1",
+      "actual_exit": 1,
+      "forced": false,
+      "process_joined": true,
+      "process_group_remaining": [],
+      "source_stable": true,
+      "source_changes": []
+    },
+    {
+      "name": "h1-matrix-diagnostic-h2-temporal1",
+      "actual_exit": 1,
+      "forced": false,
+      "process_joined": true,
+      "process_group_remaining": [],
+      "source_stable": true,
+      "source_changes": []
+    }
+  ],
+  "root_next_steps": [
+    "Repair local absence-versus-explicit-empty body mapping in HTTPFetchClient.open/1 with existing public PID-stream path, retaining exact CL0 assertion and completion ownership. No dependency issue is justified by these facts.",
+    "Inspect native H2 byte-budget validation and compose valid bounded fixture limits from actual default resource accounting; do not raise protocol deadlines or weaken acceptance assertions.",
+    "Preserve original attached-loop failure together with strict cleanup evidence; do not replace it with cleanup-only exception. Validate same exact cases then all16 only under root ownership."
+  ],
+  "changes": [
+    "/tmp/gaoxy-managed-h1-matrix-runtime-diagnosis1.md",
+    "/tmp/gaoxy-managed-h1-matrix-runtime-diagnosis1.json"
+  ],
+  "repository_changes": "none by this worker",
+  "verification": "Read-only rg/sed/nl and selected JSON metadata; root ran suite and two unchanged-source standalone diagnostics. Worker ran no tests, Mix, Git, browser or candidate processes.",
+  "sol_repair_rounds_this_assignment": 0,
+  "sol_repair_rounds_cumulative": "root-owned counter12 not changed; precise accumulated prior total not provided",
+  "astra_recovery_rounds_received": "2/2 exhausted per handoff; unchanged",
+  "astra_gate": "none; no escalation",
+  "shutdown": "All worker commands completed. Root suite and diagnostic collector receipts report joined outer process, no forced outer cleanup and no remaining process group. Individual test cleanup failures remain FAIL.",
+  "remaining_risks": "Later representation exchanges remain unexecuted. Proposed empty stream path must pass actual raw-wire/EOF/completion/reuse gates; no runtime validation performed by worker. No upstream defect established.",
+  "decisions_needed": "none for diagnosis; root can assign bounded repairs under continuing authorization",
+  "cl0_trace": [
+    {
+      "source": "apps/gaoxy_http/lib/gaoxy/http/http1/parser.ex:241-248",
+      "fact": "Absent CL/TE => :none; explicit valid CL0 => {:length,0}."
+    },
+    {
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/headers.ex:12-35",
+      "fact": "Normalizes and retains Content-Length when no trailer policy requires reframing; strips hop headers."
+    },
+    {
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:531-550",
+      "fact": "Request options retain exchange.request.body for this H1 request."
+    },
+    {
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex:39-47,67-89",
+      "fact": "Collapses :none and {:length,0} to nil; passes nil as managed HTTP.fetch body."
+    },
+    {
+      "source": "deps/http_fetch/mix.exs:4-5; deps/http_core/mix.exs:4-5; apps/gaoxy_proxy/mix.exs:16; mix.lock:10",
+      "fact": "Installed0.21.10 exact pin; package source https://github.com/gsmlg-dev/http_fetch."
+    },
+    {
+      "source": "deps/http_core/lib/http/request.ex:152,184-187,189-195,210-219",
+      "fact": "nil body becomes absent payload and deletes Content-Length. PID body follows public stream framing, retaining validated explicit CL."
+    },
+    {
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h1_preparation.ex:114-119",
+      "fact": "Gaoxy managed preparation deliberately accepts only nil/PID body scalar representations."
+    },
+    {
+      "source": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:861-912",
+      "fact": "Zero-byte read skips chunk write but kind :ok reaches finish_upload; nonnil upload finishes through client.finish_body."
+    }
+  ],
+  "recommended_repair": {
+    "change": "In HTTPFetchClient.open/1 choose nil only for :none; let {:length,0} use the existing Stream.start_link(0) path. No dependency edits or new public interface.",
+    "why_smallest": "Keeps no-body versus explicit empty-body semantics using supported PID stream+duplex path and current nil/PID preparation contract; binary empty body would require broader preparation changes.",
+    "regression": "Untouched existing representation matrix supplies deterministic network red. A focused adapter regression should compare :none and {:length,0} against a raw peer, require exact absence/presence of CL, no TE/payload for CL0, and joined original completion/upload; then validate reuse through existing matrix.",
+    "validation_status": "NOT RUN by read-only worker; root owns repair and runtime validation",
+    "upstream_issue_required": "No demonstrated upstream defect. This is local mapping to nil, not a dependency workaround."
+  }
+}

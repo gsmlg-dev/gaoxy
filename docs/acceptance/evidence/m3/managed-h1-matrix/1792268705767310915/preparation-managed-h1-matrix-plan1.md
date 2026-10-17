@@ -1,0 +1,86 @@
+# Managed-H1 Matrix Implementation Plan
+
+> **For agentic workers:** Use the project's approved executing-plans or subagent-driven workflow only after the parent-owned cancellation gates pass. This assignment prepares proposals only; no implementation or runtime gate has run.
+
+**Goal:** Complete eight managed-H1 configuration rows and a genuinely finite integration entry using existing independent drivers.
+
+**Architecture:** A small shared managed-H1 fixture serves ExUnit and standalone Mix. Reuse the existing Python H1/H2 client with optional prefix observation; retain old suites and production code.
+
+**Tech Stack:** Elixir/OTP, ExUnit, native Gaoxy H1/H2, raw TCP/SSL H1 peer, existing Python h2/hpack/hyperframe and test-only TLS in the canonical Nix/Mix environment.
+
+---
+
+Worktree: `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation`; parent-provided base `e40284971ac1df030ef8bcb46e07b0b3838a3c53`, not Git-verified by this preparation. The parent freezes the actual candidate after current gates pass. The companion design defines case details and exclusions. Planned counts never substitute for executed evidence.
+
+## 1. Freeze candidate and minimal contracts
+
+- [ ] Finish current cancellation qualification/review; preserve its receipts/counters. Materialize the proposed design/plan into canonical documents. Freeze actual task-owned source/diff, environment, interpreter/package identity and allowed evidence paths without touching protected unrelated material.
+- [ ] Assign exclusive ownership: fixture writer → new `apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs`; client writer → independent-client section of `apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py`; matrix writer → new `apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs`; integration writer → new `integration/upstream_transport/{run.py,fixture.exs,README.md}`; parent → canonical docs/reviews/verification/browser/local commit. Writers preserve others' edits. Fixture/client tasks can run in parallel; matrix/integration depend on their contracts.
+- [ ] Use an explicit common registry, two families across eight rows:
+
+```python
+ROWS = [(m, d, u) for m in ("fixed", "group")
+        for d in ("h1", "h2") for u in ("tcp", "tls")]
+CASES = [(row, family) for row in ROWS for family in
+         ("temporal_and_declared_trailers", "representation_and_reuse")]
+assert len(CASES) == len(set(CASES)) == 16
+```
+
+This is the proposed registry, not an existing API or execution receipt.
+
+## 2. Implement shared fixture and optional client observation
+
+- [ ] Create the shared fixture with explicit `start(opts)`, `command(fixture, command)`, `event(fixture, selector, timeout)` and `stop(fixture)` test-owned functions returning structured results. Reuse accepted H1 raw TCP/TLS peer, health/readiness, collector and finite join patterns. No mandatory ExUnit callbacks; do not import an ExUnit test module or its private helpers.
+- [ ] Configure native prior-knowledge H2 explicitly for H2 rows, and the existing managed fixed/group TCP/TLS-H1 transport path. Distinguish health/application targets. Keep ordered field lists, exact bytes, accepted connection/request IDs, original completion/binding observations and baseline/final joined accounting.
+- [ ] Support only the case barriers needed here: observed upload prefix → release upload suffix/EOF; send response prefix → observed downstream prefix → release response suffix/trailers. Correlate command/observation IDs and fail immediately on peer failure/exit, with finite absolute deadlines. Reuse the small persistent H1 framing-driver pattern for HEAD→204→GET; do not build another general client framework.
+- [ ] Add optional `--observe-prefix-bytes N` to the existing Python client's event mode, positive and within the current response bound. Emit one exact first-N received-byte/digest event with truthful completion. Incremental H1 Content-Length reads stop at the threshold before reading the remainder; H2 observes actual DATA and terminal events. Default behavior, peer/server modes, final receipts, current bounds, upload-thread join and immediate H2 ACK behavior stay intact.
+
+New event example (the actual event also carries SHA256):
+
+```json
+{"event":"client_prefix","body64":"AP9h","body_bytes":3,"complete":false}
+```
+
+The matrix/integration cases themselves exercise split prefix, withheld suffix and terminal completion. Reuse existing affected client/peer startup checks; no separate large harness-check subsystem is needed.
+
+## 3. Implement cohesive ExUnit cases and runnable integration
+
+- [ ] Register two named ExUnit tests per row (16 planned) with explicit caller-owned cleanup. Require the new support fixture directly.
+- [ ] Temporal family, exchange1: binary Content-Length6 POST split3+3; raw upstream observes exact prefix before suffix/EOF; response fixed-length prefix is actually received downstream before upstream releases suffix. Assert ordered duplicate fields, final exact bytes/digest and pending original completion during genuine holds. Compare only stable protocol/phase fields, never whole Session state or the H2-only submitted-URL clearing transition on managed H1.
+- [ ] Temporal exchange2: real chunked H1 / terminal-HEADERS H2 upload/response with safe declared duplicate trailers. Assert exact ordered trailers/bytes using existing declaration/filtering semantics. No new forbidden-trailer, parsed-queue or #97 acceptance requirement.
+- [ ] Representation family: explicit Content-Length0; nonempty fixed binary; exact deterministic gzip with duplicate Set-Cookie; HEAD; 204; 205; 304; healthy GET. Compare raw compressed bytes to the upstream binary, not merely decoded payload. Assert the same actual accepted upstream connection for all sequential application requests and no replacement accept; classify group health separately. Add persistent downstream H1 HEAD→204→GET framing subcheck for H1 rows; H2 rows require terminal zero-body DATA behavior.
+- [ ] Implement standalone `fixture.exs` as a thin finite command adapter over the shared fixture, with ready/results/finished output and explicit startup/stop in `after`. It loads support code, never a test suite.
+- [ ] Implement `run.py` as the real coordinator: start the already-compiled standalone fixture with `mix run --no-compile --no-start integration/upstream_transport/fixture.exs`; verify readiness plus real listener handshake; run the explicit16 cases using the existing independent client, raw upstream barriers and representation/reuse probes. No `mix test` wrapper or nested compilation.
+- [ ] Reuse existing collector receipts; add row/family/subcheck and barrier correlation only. Print actual per-case PASS/FAIL and nonzero executed/failed counts. Reject missing/duplicate cases, identity mismatch, peer failure, timeout and unjoined cleanup. Use 5-second barriers, 20-second cases, 10-second startup/shutdown and a finite overall budget. `finally` stops/joins only owned processes; forced termination remains visible.
+- [ ] Document `python integration/upstream_transport/run.py`, exact qualified environment, all row names/limits and receipt semantics in README. The initial entry covers managed H1; existing H2-upstream suites are retained, not claimed executed by this runner. Do not invent future source/evidence paths.
+
+## 4. Review and qualify once per gate
+
+- [ ] Complete **one independent source SPEC→CODE review before candidate runtime**. Resolve actionable source findings, preserving ownership/assertions. Then run the first focused new suite and retain actual red/green results:
+
+```bash
+nix develop --command bash -c 'export ERL_FLAGS="+S 2:2"; export MIX_ENV=test; unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs'
+```
+
+Acceptance: nonzero actual tests; every row/family/subcheck; zero failures; finite clean shutdown. Unexpected failures enter authorized diagnosis with cumulative counters, not a routine approval pause.
+
+- [ ] After first PASS, complete **one independent implementation/evidence review**. Resolve actionable findings with unchanged assertions and retained failure evidence. Parent maintains cumulative Sol/Astra counters; Astra2/2 is exhausted, and this preparation adds zero repair rounds.
+- [ ] Run **one fresh related verification group** on the resulting reviewed candidate: strict compile, scoped formatting/Python syntax, new matrix plus old managed-H1 fixed/group regression suites, affected existing client/peer checks, then finite integration. Commands:
+
+```bash
+nix develop --command bash -c 'export ERL_FLAGS="+S 2:2"; export MIX_ENV=test; mix compile --warnings-as-errors'
+nix develop --command bash -c 'export ERL_FLAGS="+S 2:2"; export MIX_ENV=test; mix format --check-formatted apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs integration/upstream_transport/fixture.exs'
+nix develop --command bash -c 'export ERL_FLAGS="+S 2:2"; export MIX_ENV=test; unbuffer mix test --warnings-as-errors --max-cases 1 apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs'
+nix develop --command bash -c 'python -c "import ast,pathlib; [ast.parse(pathlib.Path(p).read_text(), filename=p) for p in (\"apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py\", \"integration/upstream_transport/run.py\")]"'
+nix develop --command bash -c 'export ERL_FLAGS="+S 2:2"; export MIX_ENV=test; python integration/upstream_transport/run.py'
+```
+
+Use the already-qualified Python executable/environment if this shell does not expose `python` with h2/hpack/hyperframe; record the actual command without installing/changing dependencies. Existing affected client/peer startup-check invocation is selected from the parent's qualified checks at freeze. Compile finishes before fixture startup. Required evidence is nonzero execution, actual counts/exits and clean shutdown; no result is presumed here.
+
+- [ ] Complete necessary separate independent-peer/browser acceptance using the accepted group native-H1/H2→TLS-H1 two-row/four fresh root-image-open pattern with test-only local TLS, actual readiness/browser receipts and finite cleanup. Source tests or synthetic pages do not substitute. Freeze real addresses/paths at execution; no operational certificates or protected E4/private/key reads.
+- [ ] Retain exact candidate/dirty-source hashes, Python/packages, connection/request IDs, byte/digest and ordered field/trailer receipts, barrier order, completion/accounting and joined states. Keep PASS/FAIL/BLOCKED/NOT RUN explicit. Never overwrite historical receipts or describe unrun browser/integration as PASS.
+- [ ] Review final evidence; run scoped diff/whitespace checks; stage explicit owned files and make a local conventional commit without generated/co-author trailers. No push/publication/deployment. Update canonical slice status from actual evidence; Task6/Task5/M3 remain OPEN.
+
+Traceability: design temporal/trailer requirements → Tasks2–3 temporal family; empty/fixed/gzip/bodyless/upstream reuse → Task3 representation family; runnable finite entry → Task3 adapter/coordinator; prescribed source/implementation review, fresh scoped tests/browser/local commit → Task4.
+
+Exclude the combined slow-peer/queue/reservation-peak/sibling profile, sole blocked-H1-upload disconnect, current new4 review, identity/generation redesign, #97 replacement, production/dependency changes, operational certificates, Vault, production data, public management, release-artifact E2E, account changes or publication/deployment. This preparation performs no repository edits, Git, tests, build, runtime, browser or delegation.

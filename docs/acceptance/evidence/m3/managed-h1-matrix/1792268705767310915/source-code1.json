@@ -1,0 +1,142 @@
+{
+  "task_id": "managed-h1-matrix-source-code1",
+  "status": "DONE",
+  "verdict": "FINDINGS_SOURCE_CODE1",
+  "assignment": "direct independent source CODE review; non-author; read-only repository",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "entry_head_root_verified": "1426657e65d726629d618dcf03880df718375dd1",
+  "branch_manifest": "codex/m3-h1-resource-foundation",
+  "source_candidate_sha256": "71aa146f0572f1ca54f33d7428e35313c21223183b4a5be4f1ea50179a3a409d",
+  "command_inventory_sha256": "db447d788e4440aa29593b8085df5a002093f12b05277485d80eceaab91f5a25",
+  "source_spec2_sha256": "b26cdda59579e42ce746d5ce361505d8c61c21bb8b927de3721b5265f7c7525c",
+  "reviewed_owned_source_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "f1549e2d0493ac6f7481b57e64361d9b5635ecc4fd5b5e0e261e9fc40744ff1c",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "d0444029bb6eae58699f83c07a60e7ee8aedc17fd55848666a4191fe3bda6083",
+    "apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs": "73268e36f4eabf74892f3b5e16ba3c0ffb0ebf9dc7e60f540c097569f96ee8ab",
+    "integration/upstream_transport/README.md": "96a9d02609ae3e847720b36093a2372f449badf46241c0f664e15db7801526c8",
+    "integration/upstream_transport/browser.mjs": "7dc684e31ca890b1b8d7aa79712b15f102cdf6eaf670817400b78e04bb9b93b7",
+    "integration/upstream_transport/browser.py": "3f752d60f5e75fd43920e019d6c8beee09107a7d279262435a9f954156ba71d5",
+    "integration/upstream_transport/fixture.exs": "7f1ee353535d95b3c55830b216b6aff1089914fdf85810bdf41895f8174cacf0",
+    "integration/upstream_transport/run.py": "ca5ba4136a67eee50d25aeb5fee4cdaf8494e682989e778e91e059997feda7ca"
+  },
+  "reviewed_documents_sha256": {
+    "docs/acceptance/m3-managed-h1-matrix.md": "5575134a984b5ac95479fc5c6c7578d627d6c62865c8ce6aef235a63ea8e9e5e",
+    "docs/acceptance/m3-managed-h2-downstream-cancel.md": "5ca7cc8f7583d6de06c8c4d7dcec64c179fa8718aa5b14f51590be64577992db",
+    "docs/designs/m3-managed-h1-matrix.md": "0adecb5c45e8f629c0f41fd4c7ff2debb6298e1dcd6af7006e82284bd98fcb5e",
+    "docs/designs/m3-managed-h2-downstream-cancel.md": "ac25c02f217ca16a815e62ff2f1c08ac85079fc38eaf48010c8529980ddcb8aa",
+    "docs/plans/m3-managed-h1-matrix.md": "a9e6180ad19b5f0ceb2007f9984a72b4cdbc58b4a1d206c7b221cd2019e65d68",
+    "docs/plans/m3-managed-h2-downstream-cancel.md": "10959751f5a45ba1f1be3de8647f146d106251a451c266d02ce58dcfe38eea63",
+    "docs/plans/m3-upstream-transport.md": "7daf59850a33139e7b7fae21453a7b5e5b782debd3e6352abd5d8c616874c6fd",
+    "implement-plan.md": "27c63f235a75ec6ebd1082a7d300b429dac76ef4206d90411748dd43fccdf6be"
+  },
+  "identity_validation": {
+    "owned_source": {
+      "count": 8,
+      "mismatches": 0
+    },
+    "documents": {
+      "count": 8,
+      "mismatches": 0
+    },
+    "installed_dependency": {
+      "count": 11,
+      "mismatches": 0
+    },
+    "supplied_safe_command_source": {
+      "count": 401,
+      "mismatches": 0
+    },
+    "all_read_via_supplied_maps": true,
+    "full_maps_printed": false
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "priority": "P1",
+      "title": "Leave cleanup headroom outside the attached-driver watchdog",
+      "paths_lines": [
+        {
+          "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs",
+          "lines": "8"
+        },
+        {
+          "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+          "lines": "454-483,560-572"
+        }
+      ],
+      "evidence": "ExUnit kills the test at 40,000ms. run_case allows attached_loop 35,000ms, then its after clause establishes a further 10,000ms cleanup deadline. In a stalled-driver failure the owned-group cleanup can spend five seconds on TERM before issuing KILL and waiting for confirmed absence. The outer ExUnit timeout can terminate the fixture owner at that escalation point, before the remaining group/fixture/Port cleanup completes. Dispatch work can also consume time beyond the receive-loop deadline.",
+      "impact": "The timeout path can interrupt mandatory owned cleanup and leave the driver/client or fixture resources unjoined; the 40s test watchdog does not cover the already-authored 35s operation plus 10s cleanup envelope.",
+      "required_change": "Keep prescribed 5s barriers,20s cases,10s startup/shutdown unchanged. Give the ExUnit outer watchdog sufficient headroom for the attached operation and full failure-cleanup envelope, including bounded dispatch, or align the inner watchdog so mandatory cleanup always precedes the outer timeout. Do not weaken protocol assertions."
+    },
+    {
+      "id": "F2",
+      "priority": "P1",
+      "title": "Make browser process ownership and failure cleanup unconditional",
+      "paths_lines": [
+        {
+          "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/integration/upstream_transport/browser.py",
+          "lines": "63-76,220-223,294-306,327-343"
+        }
+      ],
+      "evidence": "Actor.__init__ launches Popen before opening its exclusive log and starting reader threads. The caller appends the actor to actors only after the constructor returns. A log-open/thread-start exception (or the active SIGALRM during the post-spawn handoff) leaves the newly created process group outside the finally registry; host remains None for a failed host constructor. Separately the outer alarm is disabled only after the normal fixture cleanup and actor sweep. If it expires during the first dispose while waiting after SIGTERM, that exception is caught by the caller and the sweep moves on without completing that actor's KILL/join path. The corrected matrix driver already shields its ownership handoff and disarms its alarm before cleanup, but the separate browser runner does neither.",
+      "impact": "A browser/fixture startup or timeout failure can strand an owned process group and lose complete cleanup evidence, violating the same bounded owned-cleanup contract as the matrix. This is a source failure-path finding, not an observed runtime leak.",
+      "required_change": "Retain ownership before fallible post-spawn initialization (or clean and join a partially constructed Actor inside the constructor); protect the spawn-to-registry handoff from the outer alarm. Disable the outer alarm before the finally sweep and complete bounded, exception-isolated cleanup of every owned actor, preserving forced/error/unjoined outcomes as failures. Use the existing actors/groups; no new identity/generation architecture is requested."
+    }
+  ],
+  "gates": {
+    "source_spec2": "PASS as retained separate review",
+    "source_code1": "FINDINGS; F1/F2 require targeted repair and review before runtime",
+    "matrix_registry_and_protocol_oracles": "Source inspected: exact16 fixed/group x native H1/H2 x TCP/TLS H1 x two families; temporal barriers,bytes,digests,ordered headers/trailers,bodyless,raw gzip,reuse and completion/accounting assertions retained",
+    "attached_standalone_parity": "Source inspected: both use run.py choreography and shared fixture; no test-module import or nested compile",
+    "separate_browser_rows": "Source inspected: two actual group native-H1/H2 to TLS-H1 rows,two pages each,source/CDP/body/protocol/connection receipts and separate root image inspection; cleanup finding F2 remains",
+    "python_ast": "PASS: three files",
+    "javascript_syntax": "PASS: node --check browser.mjs",
+    "first_matrix_runtime": "NOT RUN",
+    "fresh_verification_group": "NOT RUN",
+    "integration": "NOT RUN",
+    "browser_runtime": "NOT RUN",
+    "root_image_inspection": "NOT RUN",
+    "git_mix_build_test": "NOT RUN"
+  },
+  "review_scope_notes": [
+    "Reviewed client diff only against retained before-client-source1.py.txt; default/server modes unchanged by that diff.",
+    "Matrix H2 terminal zero-body check follows exact empty DATA payload plus required complete/termination receipt; H1 persistent HEAD->204->GET retains leftover bytes.",
+    "No new #97-equivalent proof, protected evidence path,identity/generation design,production change or scope expansion requested."
+  ],
+  "verification_commands": [
+    {
+      "command": "Python stdlib supplied-map SHA256 comparison; bounded counts only",
+      "exit": 0,
+      "counts": "8 owned,8 docs,11 installed,401 safe source;zero mismatches"
+    },
+    {
+      "command": "Python ast.parse(managed_h2_fixed_peer.py,run.py,browser.py);no imports",
+      "exit": 0,
+      "count": 3
+    },
+    {
+      "command": "node --check integration/upstream_transport/browser.mjs",
+      "exit": 0
+    }
+  ],
+  "incidents": [
+    "One combined owned-source display exceeded tool output budget and was truncated; relevant source was subsequently reread in bounded line ranges. No full inventory map was printed and no prohibited/private source or trace was read."
+  ],
+  "counters": {
+    "new_review_repairs": 0,
+    "parent_reported_targeted_sol_repair": "1;unchanged",
+    "inherited_astra": "2/2 exhausted;unchanged",
+    "earlier_cumulative_sol_total": "not supplied by this assignment;not reset"
+  },
+  "repository_changes": "NONE",
+  "artifacts": [
+    "/tmp/gaoxy-managed-h1-matrix-source-code1.json",
+    "/tmp/gaoxy-managed-h1-matrix-source-code1.md"
+  ],
+  "command_shutdown": "All review commands completed exit0;no candidate runtime/background process launched.",
+  "remaining_risks": [
+    "Static code review cannot establish protocol,cleanup or browser runtime acceptance.",
+    "Whole Task6/Task5/M3 remain OPEN."
+  ],
+  "decisions_needed": "No product decision;ordinary targeted local Sol repair authorized;parent owns source freeze and next gate."
+}

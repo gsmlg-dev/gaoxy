@@ -1,0 +1,184 @@
+{
+  "task_id": "task6_h1_disconnect_investigation1",
+  "status": "DONE",
+  "assignment": "direct bounded read-only follow-up",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_parent_verified": "1426657e65d726629d618dcf03880df718375dd1",
+  "baseline_independently_git_verified": false,
+  "root_h1_source_repair": "active; integration run.py neither read nor pinned nor adopted frozen by this follow-up",
+  "verdict": "Missing executed sole-disconnect blocked-upload regression; source-evidenced synchronous closure-visibility gap; no proven dependency bug",
+  "runtime": "NOT RUN",
+  "tests_executed": 0,
+  "repository_mutations": false,
+  "upstream_issue_opened": false,
+  "dependency_bug_established": false,
+  "dependency_source_or_installed_runtime_audited": false,
+  "recommended_new_cases_planned_not_executed": 1,
+  "initial_profile": "native cleartextH1 downstream -> fixed managed TCP-H1 upstream",
+  "blocked_path": [
+    "native H1 Connection.call_endpoint synchronously calls Proxy.HTTP",
+    "pump read_upload synchronously calls HTTPFetchClient.write_body",
+    "HTTPFetchClient.write_body delegates public HTTP.Stream.chunk/3",
+    "native downstream Socket.recv/poll cannot run on that same caller until return"
+  ],
+  "cancellation_paths_already_present": [
+    "Session owner/Service/instance/gate process DOWN",
+    "authenticated Service cleanup cancellation",
+    "explicit Session cancel/expire",
+    "finite opening/total/write/idle deadline paths",
+    "original RequestCompletion abort-and-await after cancellation"
+  ],
+  "insufficient_substitutes": [
+    "idle committed response with explicit Session.consumed before close",
+    "upstream read pause without real pending write witness",
+    "client upload send success or prefix receipt alone",
+    "timeout-induced cleanup",
+    "owner kill or explicit Session/RequestCompletion abort as stimulus",
+    "upstream read resume before causal verdict"
+  ],
+  "supported_api_facts": [
+    "public HTTP.Stream.chunk/3 and finish/2",
+    "public RequestCompletion.await/2 and abort_and_await/2",
+    "Gaoxy-owned synchronous UpstreamClient contract",
+    "existing test-owned socket setopts/raw TCP/TLS peer patterns"
+  ],
+  "new_architecture_or_production_fix_proposed": false,
+  "unknowns": [
+    "real host buffering/close notification behavior",
+    "actual installed dependency/runtime/public API cohort",
+    "own-process pending-call witness under compiler optimization",
+    "actual pressure reachable within unchanged finite byte/deadline limits"
+  ],
+  "open": [
+    "soleH1disconnect regression",
+    "group/TLS expansion after initial real phase passes",
+    "Task6",
+    "Task5",
+    "M3"
+  ],
+  "input_count": 14,
+  "inputs": [
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "sha256": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+      "bytes": 40925,
+      "read_scope": "750-925,1070-1207; targeted Session/cancel/timeout search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+      "relative_path": "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+      "sha256": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0",
+      "bytes": 14710,
+      "read_scope": "80-332"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "relative_path": "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+      "sha256": "1b7e3caf6f99352f622f3243dbf3c1742a039182779af06c0ae5fe94eaa708a4",
+      "bytes": 11477,
+      "read_scope": "110-152,205-270"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "sha256": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+      "bytes": 68221,
+      "read_scope": "1-80,286-341,1145-1235,1310-1435; scoped cancellation/API keyword search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex",
+      "sha256": "a4f6e5f6a2e7212ab641c8a33bb10d177d9ffba008362945620b6aa6e402cf22",
+      "bytes": 7242,
+      "read_scope": "1-128,200-223; scoped public API keyword search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_client.ex",
+      "sha256": "56e116759509d4ea648b98a9a9b3cf643a1dc5c8cef76bf464c4f9d45d79b8c3",
+      "bytes": 1135,
+      "read_scope": "1-145"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex",
+      "sha256": "877bb6e4c891ee3f8c93a425a67b10f390137fcead2eeb52ccd9b78d9b2b1f51",
+      "bytes": 54507,
+      "read_scope": "94-112,1248-1307,1418-1431; targeted fetch_options/abort search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex",
+      "relative_path": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/options.ex",
+      "sha256": "c3a7b5b56f7fc0f6bf843de2600920316bd525577f69cdd69214f80626dd9a5e",
+      "bytes": 2381,
+      "read_scope": "115-180(no output beyond EOF); targeted options search, no absence inference"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+      "relative_path": "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs",
+      "sha256": "f3dcfd5adb4081b196f8af9ca3fd674d2b40b9845ff242a7e9f7cebf474c5ac8",
+      "bytes": 55390,
+      "read_scope": "210-265,621-693,1260-1313,1372-1388; scoped upload/pressure/API search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs",
+      "relative_path": "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs",
+      "sha256": "919741fdab882d0f50ef48e0b91d74e6a81228ddbdd4cd950876bcfc1fe57b67",
+      "bytes": 57917,
+      "read_scope": "423-486,1450-1500; scoped upload/pressure search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+      "relative_path": "apps/gaoxy_proxy/test/http_proxy_wire_test.exs",
+      "sha256": "3e7caea54e57a51a04672be8774dd255e4fccb3475bdd3eb6c79b4d79fe36e08",
+      "bytes": 13982,
+      "read_scope": "201-227"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+      "relative_path": "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+      "sha256": "f9024c3d92edf7ee02dd71b1aa4f9430305c578e1d1c5772cc93e89398b3b32d",
+      "bytes": 20100,
+      "read_scope": "1-30; scoped socket-options search"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/mix.exs",
+      "relative_path": "apps/gaoxy_proxy/mix.exs",
+      "sha256": "087344f85f9ea0a6c6b31f1ca0ab995b57b7c5e7467a058f7aa99a375afdfcdc",
+      "bytes": 583,
+      "read_scope": "12-22"
+    },
+    {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/mix.exs",
+      "relative_path": "mix.exs",
+      "sha256": "28ff09d55e29e3e8303f915f8deb3cf0cc6cb81d5231744ee82b74810defeae3",
+      "bytes": 298,
+      "read_scope": "targeted http_fetch/github provenance search only(no match)"
+    }
+  ],
+  "output_markdown": {
+    "path": "/tmp/gaoxy-task6-h1-disconnect-investigation1.md",
+    "sha256": "f0c62accd6d10b411b6ef2543fbee6c3cccc16fa2627462837f583c531a85d72",
+    "bytes": 12926
+  },
+  "only_written_paths": [
+    "/tmp/gaoxy-task6-h1-disconnect-investigation1.md",
+    "/tmp/gaoxy-task6-h1-disconnect-investigation1.json"
+  ],
+  "new_tool_incidents": [],
+  "prior_preparation_incidents": "Preserved in prior report; no reset/relabel",
+  "repair_deltas": {
+    "sol": 0,
+    "astra": 0
+  },
+  "inherited_counters": {
+    "root": 479,
+    "orchestration": 384,
+    "astra_recovery_used": 2,
+    "astra_recovery_max": 2
+  },
+  "astra_gate": null,
+  "command_shutdown": "All commands finished; no long-running processes started.",
+  "forbidden_access": "No Git/runtime/browser/tests/delegation, protected E4/user prompt/rawNetLog/privatekey/private trace access, issue creation, publication/deploy/account changes."
+}

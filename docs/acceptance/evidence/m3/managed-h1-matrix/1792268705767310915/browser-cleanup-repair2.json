@@ -1,0 +1,49 @@
+{
+  "task_id": "managed_h1_matrix_browser_cleanup_repair",
+  "status": "DONE",
+  "assignment": "direct second targeted Sol repair round, F2 only",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline_root_verified_head": "1426657e65d726629d618dcf03880df718375dd1",
+  "changed_files": [
+    "integration/upstream_transport/browser.py"
+  ],
+  "pre_edit_sha256": "3f752d60f5e75fd43920e019d6c8beee09107a7d279262435a9f954156ba71d5",
+  "post_edit_sha256": "f2920e140f7171a5ac31ee4b2034d9f4078928c0947fcdc71630a2a8bfd2b21c",
+  "frozen_bytes_match_pre_edit": true,
+  "pre_edit_bytes": 19097,
+  "post_edit_bytes": 21480,
+  "checks": {
+    "AST_PARSE": true,
+    "START10_BARRIER5_CASE20_OUTER600_UNCHANGED": true,
+    "ALL_REQUIRE_ASSERTIONS_UNCHANGED": true,
+    "NORMAL_JOIN_UNCHANGED": true,
+    "BROWSER_TWO_ROW_PAGE_RECEIPTS_UNCHANGED": true,
+    "REGISTRY_PRECEDES_LOG_AND_SPAWN": true,
+    "SPAWN_AND_THREAD_HANDOFF_MASK_RESTORED_IN_FINALLY": true,
+    "OUTER_ALARM_DISABLED_BEFORE_CLEANUP": true,
+    "GROUP_DISPOSAL_NOT_SKIPPED_FOR_CLOSED_OR_EXITED_LEADER": true,
+    "FORCED_ERRORS_UNJOINED_REMAIN_FAILURE_FILTER": true
+  },
+  "static_check_exit": 0,
+  "root_cause": "Actor process ownership was registered after fallible post-spawn setup; outer SIGALRM remained armed during cleanup; leader exit bypassed descendant group disposal.",
+  "repair": "Register partial actor before log/spawn, mask SIGALRM across Popen and reader-thread ownership handoff, cancel alarm before cleanup, and perform bounded TERM/KILL/reap/thread cleanup for the owned group regardless of leader exit, retaining errors/forced/unjoined FAIL receipts.",
+  "runtime_gates": {
+    "independent_source_SPEC_CODE_rereview": "NOT RUN",
+    "first_16_case_matrix": "NOT RUN",
+    "fresh_scoped_tests": "NOT RUN",
+    "finite_integration": "NOT RUN",
+    "actual_browser_two_rows_four_images": "NOT RUN",
+    "root_image_inspection": "NOT RUN"
+  },
+  "runtime_or_candidate_imports_executed": false,
+  "counters": {
+    "targeted_sol_repair_round": 2,
+    "earlier_cumulative_sol_total": "unknown; not reset",
+    "astra_recovery_rounds": "2/2 exhausted, unchanged"
+  },
+  "incidents": [],
+  "commands_shutdown": "All inspection/edit/static/report commands completed; no background processes or candidate-owned actors launched.",
+  "remaining_risks": "Static source checks do not establish runtime cleanup or protocol acceptance. Parent owns independent source SPEC->CODE re-review and all runtime gates.",
+  "ownership": "browser.py returned to parent; no further edits planned",
+  "decisions_needed": []
+}

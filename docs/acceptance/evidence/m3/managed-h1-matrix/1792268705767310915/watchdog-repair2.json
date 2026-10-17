@@ -1,0 +1,40 @@
+{
+  "task_id": "managed_h1_matrix_watchdog_repair2",
+  "status": "DONE",
+  "assignment": "direct second targeted source repair; F1 only; static validation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "entry_head_parent_verified": "1426657e65d726629d618dcf03880df718375dd1",
+  "baseline": "Assigned test and fixture matched source-candidate2 hashes before editing.",
+  "changed_files": {
+    "apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs": {
+      "before_sha256": "73268e36f4eabf74892f3b5e16ba3c0ffb0ebf9dc7e60f540c097569f96ee8ab",
+      "after_sha256": "5b8a4c17cdd1b3f6ad5fc1c4e2a1b4907989f647fd20279174308397b3806b62"
+    }
+  },
+  "repair": "Raise only the outer ExUnit framework watchdog from40s to90s and document its arithmetic. All protocol assertions,16 tests,5s barriers,20s case execution and10s startup/shutdown remain unchanged. Fixture source is untouched.",
+  "bound_derivation": {
+    "attached_receive_watchdog_seconds": 35,
+    "longest_composed_accounting_dispatch_seconds_upper_estimate": 39.2,
+    "rounded_dispatch_allowance_seconds": 40,
+    "cleanup_seconds": 10,
+    "framework_scheduling_margin_seconds": 5,
+    "outer_watchdog_seconds": 90,
+    "detail": "request_clean: completion await5 + polling window5 + final predicate transport1/group0.1 + public transport1/service5 =17.1s. clean then adds polling window5 + final predicate service5/transport1/group0.1 + sys.get_state5 + final transport1/service5 =22.1s; total39.2s, rounded40. This includes a final predicate that begins just before its polling window expires. Pending/status/event/stop dispatches are shorter. Startup is the initial dispatch, rather than one begun near the35s receive deadline."
+  },
+  "verification": {
+    "static_exact_diff": "PASS: removing only the two new comment lines and restoring40_000 reproduces the exact candidate2 test SHA256; exit0. This proves protocol assertions/test registry unchanged.",
+    "whitespace": "PASS: trailing whitespace and final-newline checks; exit0.",
+    "fixture_unchanged": "PASS: still matches candidate2 f1549e2d0493ac6f7481b57e64361d9b5635ecc4fd5b5e0e261e9fc40744ff1c.",
+    "runtime_mix_tests_browser_git": "NOT RUN; parent-only by assignment.",
+    "formatting": "Canonical Mix formatting remains parent-owned."
+  },
+  "limits": [
+    "No edits to fixture, run.py, browser.py or README.",
+    "No repository evidence or counter files written.",
+    "No protected/private files read.",
+    "A targeted rg for deps/http/lib/http/request_completion.ex found that guessed path absent; no dependency enumeration or alternate lookup was attempted.",
+    "This is static watchdog arithmetic, not runtime cleanup qualification."
+  ],
+  "command_shutdown": "All worker commands finished; no runtime or background process launched.",
+  "decisions_needed": []
+}

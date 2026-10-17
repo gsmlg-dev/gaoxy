@@ -1,0 +1,105 @@
+from pathlib import Path
+from datetime import datetime, timezone
+import base64, hashlib, json, os, runpy
+W=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation')
+E=W/'docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915'
+def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+def read(n): return json.loads((E/n).read_text())
+def write(n,d):
+ p=E/n
+ assert not p.exists(), n
+ p.write_text(json.dumps(d,indent=2,sort_keys=True)+'\n')
+c4=read('source-candidate4.json'); c5=read('source-candidate5.json'); inv=read('command-inventory6.json')
+r=read('h1-matrix-final-browser2.json'); b=read('browser-final2/browser-qualification.json'); syn=read('h1-matrix-final-syntax2.json')
+assert r['verdict']=='PASS' and r['actual_exit']==0 and not r['forced'] and r['process_joined']
+assert not r['process_group_remaining'] and r['wait_error'] is None and not r['source_changes']
+assert r['source_before']==r['source_after']==c5['actual_command_source_sha256']==inv['actual_command_source_sha256']
+assert len(r['source_before'])==401
+assert r['command']==inv['browser']['argv'] and sha(E/r['log'])==r['log_sha256']
+assert syn['verdict']=='PASS' and syn['actual_exit']==0 and syn['source_before']==syn['source_after']==r['source_before']
+assert syn['command']==inv['final_commands'][0]['argv'] and sha(E/syn['log'])==syn['log_sha256']
+current=runpy.run_path(str((E/'command-collector1.py').resolve()))['source_manifest']()
+assert current==r['source_after']
+assert {k for k in c4['actual_command_source_sha256'] if c4['actual_command_source_sha256'][k]!=c5['actual_command_source_sha256'][k]}=={'integration/upstream_transport/browser.py'}
+assert set(c4['actual_command_source_sha256'])==set(c5['actual_command_source_sha256'])
+for k,v in c5['owned_source_sha256'].items(): assert sha(W/k)==v, k
+for k,v in c5['installed_dependency_sha256'].items(): assert sha(W/k)==v, k
+assert b['status']=='PASS' and b['executed']==b['passed']==2 and b['failed']==0 and not b['not_run'] and b['failure'] is None
+assert b['source_before']==b['source_after'] and len(b['source_before'])==8
+for k,v in b['source_before'].items():
+ assert c5['actual_command_source_sha256'][k]==v['sha256'] and (W/k).stat().st_size==v['bytes']
+assert b['environment']['child_subreaper']=={'pid':r['pid'],'enabled':True}
+assert b['root_visual_inspection']=='NOT RUN'
+assert b['timeouts_seconds']=={'startup':10,'shutdown':10,'case':20,'barrier':5,'outer':600}
+assert [c['case'] for c in b['cases']]==['group-h1-tls','group-h2-tls']
+visual=[]; rows=[]; adopted=[]; body_descriptors=0
+for case in b['cases']:
+ name=case['case']; proto='h2' if name=='group-h2-tls' else 'http/1.1'
+ assert case['status']=='PASS' and case['upstream_accepted']['wire']=='tls-h1'
+ conn=case['upstream_accepted']['connection']; assert conn==1
+ assert case['initial_health']['connection']==conn and case['initial_health']['role']=='health' and case['initial_health']['target']=='/health'
+ assert case['readiness']['finished_ns']>=case['readiness']['started_ns']
+ if proto=='h2':
+  assert case['readiness']['alpn']=='h2' and case['readiness']['kind']=='verified-tls'
+  assert case['browser_ready']['trust']=='test-certificate-spki-only' and case['browser_ready']['spki']!='-'
+  assert '--ignore-certificate-errors-spki-list='+case['browser_ready']['spki'] in case['browser_ready']['chrome_argv']
+ else: assert case['readiness']['kind']=='tcp-connected' and case['browser_ready']['trust']=='cleartext-loopback'
+ assert '--ignore-certificate-errors' not in case['browser_ready']['chrome_argv']
+ assert case['browser_ready']['protocol']==proto
+ assert [p['page'] for p in case['pages']]==['pageA','pageB']
+ cdpids=[]
+ for seq,p in enumerate(case['pages'],2):
+  page=p['page']; x=p['browser']; expected_text=f'Managed TLS-H1 upstream: {name} {page}'
+  expected_html=f'<!doctype html><html><head><meta charset="utf-8"><title>Gaoxy {name} {page}</title><link rel="icon" href="data:,"></head><body><main id="receipt">{expected_text}</main></body></html>'.encode()
+  assert p['request']['connection']==conn and p['request']['request']==seq and p['request']['role']=='application' and p['request']['target']=='/'+page
+  assert p['pending']['pending'] and p['completed']['completion_joined'] and p['completed']['identity']==p['pending']['identity']
+  assert p['pending']['transport']['request_tokens']==1 and p['completed']['transport']['request_tokens']==0
+  for descriptor in [p['upload'],p['upstream_response'],x['body']]:
+   data=base64.b64decode(descriptor['body64'],validate=True)
+   assert len(data)==descriptor['body_bytes'] and hashlib.sha256(data).hexdigest()==descriptor['body_sha256']
+   body_descriptors+=1
+  wire=base64.b64decode(p['upstream_response']['body64']); head,html=wire.split(b'\r\n\r\n',1)
+  assert wire.startswith(b'HTTP/1.1 200 OK\r\n') and html==expected_html and b'Content-Length: '+str(len(html)).encode() in head
+  assert base64.b64decode(x['body']['body64'])==html and p['upload']['body_bytes']==0
+  assert x['status']=='PASS' and x['row']==name and x['page']==page
+  assert x['observed']['text']==x['observed']['body']==expected_text and x['observed']['title']==f'Gaoxy {name} {page}'
+  net=x['network']; assert net['status']==200 and net['protocol']==proto and not net['fromDiskCache'] and not net['fromServiceWorker']
+  assert net['url']==x['observed']['url']==case['ready']['downstream_url']+'/'+page
+  cdpids.append(net['connectionId'])
+  if page=='pageB': assert net['connectionReused']
+  s=x['screenshot']; f=E/'browser-final2'/s['path']
+  assert f.stat().st_size==s['bytes'] and sha(f)==s['sha256']
+  visual.append({'path':str(f.relative_to(W)), 'sha256':sha(f),'method':'root tools.view_image actual open','verdict':'PASS','observed':expected_text,'appearance':'Readable expected row/page text at upper left on a white page; no browser error/interstitial or truncation.'})
+ assert len(set(cdpids))==1
+ bj=case['browser_join']; assert bj['event']=='joined' and bj['passed'] and not bj['forced'] and bj['process']=={'code':0,'signal':None} and bj['isolated_profile_removed']
+ bp=case['browser_process']; assert bp['exit']==0 and not bp['forced'] and bp['threads_joined'] and bp['pid']==bp['owned_pgid']
+ for a in bp['reaped']:
+  assert a['owned_pgid']==bp['owned_pgid'] and a['phase']=='normal' and a['wait_status']==0 and a['exit']==0
+  adopted.append(a)
+ assert case['clean']['completion_joined'] and case['clean']['identity'] is None
+ assert case['clean']['service']=={'active':0,'cleanup_failed':None,'cleanup_pending':0,'retained_bytes':0}
+ assert case['clean']['transport']['request_tokens']==case['clean']['transport']['helpers']==0
+ assert case['stopped']=={'accepted':1,'event':'joined','forced':0,'live':0}
+ rows.append({'case':name,'downstream_protocol':proto,'upstream_wire':'tls-h1','application_requests':2,'health_requests':1,'accepted_upstream_connection':conn,'browser_downstream_connection':cdpids[0],'pages':2,'verdict':'PASS'})
+assert len(adopted)==8 and len({a['pid'] for a in adopted})==8
+assert len(b['cleanup'])==3
+for a in b['cleanup']:
+ assert a['exit']==0 and a['joined'] and not a['forced']
+ if a['name']!='fixture-host':
+  c=next(c for c in b['cases'] if c['case']+'-browser'==a['name'])
+  assert a['reaped']==c['browser_process']['reaped']
+assert not r['descendant_cleanup']['forced'] and not r['descendant_cleanup']['remaining'] and not r['descendant_cleanup']['signal_attempts'] and not r['descendant_cleanup']['reap_deadline_exhausted']
+outer=[{**a,'decoded_exit':os.waitstatus_to_exitcode(a['wait_status'])} for a in r['descendant_cleanup']['reaped']]
+assert len(outer)==6 and len({a['pid'] for a in outer})==6
+assert sorted(a['wait_status'] for a in outer)==[0,0,0,0,0,10]
+assert not ({a['pid'] for a in outer}&{a['pid'] for a in adopted})
+known_pids={a['pid'] for a in adopted+outer}|{r['pid']}|{a['owned_pgid'] for a in b['cleanup']}|{c['browser_ready']['chrome_pid'] for c in b['cases']}
+assert not [pid for pid in known_pids if Path(f'/proc/{pid}').exists()]
+artifacts={str(f.relative_to(E)):sha(f) for f in (E/'browser-final2').iterdir() if f.is_file()}
+now=datetime.now(timezone.utc).isoformat()
+write('root-image-review2.json',{'kind':'MANAGED_H1_MATRIX_ROOT_IMAGE_REVIEW2','at_utc':now,'verdict':'PASS','images':visual,'limits':'Actual root opens of browser2 only. Browser1 images remain visually NOT RUN; no image-only protocol inference.'})
+write('browser-final-audit2.json',{'kind':'MANAGED_H1_MATRIX_BROWSER_FINAL_AUDIT2','at_utc':now,'verdict':'PASS_BROWSER2_AND_ROOT_IMAGES','candidate5_sha256':sha(E/'source-candidate5.json'),'inventory6_sha256':sha(E/'command-inventory6.json'),'source401_stable':True,'inner_source8_stable':True,'installed_dependency_pins':11,'browser_receipt_sha256':sha(E/'browser-final2/browser-qualification.json'),'outer_receipt_sha256':sha(E/'h1-matrix-final-browser2.json'),'syntax2_receipt_sha256':sha(E/'h1-matrix-final-syntax2.json'),'root_image_review2_sha256':sha(E/'root-image-review2.json'),'rows':rows,'verified_body_descriptors':body_descriptors,'artifacts_sha256':artifacts,'inner_actual_adopted_waits':adopted,'inner_adopted_raw_status_counts':{'0':8},'outer_actual_adopted_waits':outer,'outer_adopted_raw_status_counts':{'0':5,'10':1},'named_actor_groups':3,'named_chrome_joins':2,'all_named_exit0_nonforced':True,'outer_nonforced_joined_without_survivors':True,'known_actor_pids_absent':sorted(known_pids),'elapsed_seconds':r['elapsed_seconds'],'limits':'Candidate4 seven nonbrowser commands remain separately bound by final-nonbrowser-audit1. Browser1 overall FAIL/exit1 retained. Actual raw10 decodes signal10/-10 and is not claimed exit0. Owned-PGID child waits do not prove descendants never create their own groups; outer adopted waits/residue are retained. WholeTask6/Task5/M3 OPEN; final independent documentation review/local commit/custody pending.'})
+counter=read('counter19.json'); counters=counter['counters']
+for key in ['current_root_failure_events','current_orchestration','managed_h1_matrix_tooling_errors']:counters[key]+=4
+write('counter20.json',{'kind':'MANAGED_H1_MATRIX_COUNTER20','at_utc':now,'prior_path':str((E/'counter19.json').relative_to(W)),'prior_sha256':sha(E/'counter19.json'),'counters':counters,'events':[{'kind':'Root oversized display recovery','count':3,'effect':'Three oversized read-only displays were truncated; recovered by bounded machine projections. No runtime or implementation change.'},{'kind':'Browser audit draft field-shape correction','count':1,'evidence':'browser-audit-draft1-failure.json','effect':'Audit compared source descriptors with bare hashes; corrected to validate both bytes and sha256 against source401. No runtime or implementation change.'}],'clarification':'Syntax2 and browser2 PASS with four actual root image opens. Browser1 FAIL retained. Sol4/Astra2/2 unchanged; nested inherited counters preserved exactly. Categories are distinct, not additive.','limits':'No additional Sol or Astra round; full Task6/Task5/M3 remain OPEN.'})
+print(json.dumps({'browser2':'PASS','rows':2,'root_images':4,'body_descriptors':body_descriptors,'inner_adopted':8,'outer_adopted':6,'artifacts':len(artifacts),'audit_sha256':sha(E/'browser-final-audit2.json'),'counter20_sha256':sha(E/'counter20.json')}))

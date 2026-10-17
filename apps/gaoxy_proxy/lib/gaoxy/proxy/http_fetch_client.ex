@@ -38,7 +38,7 @@ defmodule Gaoxy.Proxy.HTTPFetchClient do
   @impl true
   def open(options) do
     upload =
-      if options.body in [:none, {:length, 0}] do
+      if options.body == :none do
         nil
       else
         {:ok, stream} = Stream.start_link(0)

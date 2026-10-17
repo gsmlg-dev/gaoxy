@@ -597,6 +597,30 @@ class ClientBuffer:
             fields.append([name.decode("ascii").lower(), value.lstrip(b" \t").decode("latin1")])
 
 
+def client_prefix(args, data, complete):
+    count = args.observe_prefix_bytes
+    if count is None or args.prefix_observed or len(data) < count:
+        return
+    prefix = bytes(data[:count])
+    args.prefix_observed = True
+    print(json.dumps(dict(event="client_prefix", body64=base64.b64encode(prefix).decode(),
+                          body_bytes=count, body_sha256=hashlib.sha256(prefix).hexdigest(),
+                          complete=complete)), flush=True)
+
+
+def client_h1_body(reader, args, data, count, complete=False):
+    if not 0 <= count <= 1048576:
+        raise RuntimeError("client read bound exceeded")
+    threshold = args.observe_prefix_bytes
+    if (threshold is not None and not args.prefix_observed and
+            len(data) < threshold <= len(data) + count):
+        prefix_count = threshold - len(data)
+        data.extend(reader.read(prefix_count))
+        client_prefix(args, data, complete and prefix_count == count)
+        count -= prefix_count
+    data.extend(reader.read(count))
+
+
 def client_h1(sock, args, fields, body):
     if body and not any(name.lower() == "content-length" for name, _ in fields):
         fields = [*fields, ["content-length", str(len(body))]]
@@ -636,11 +660,11 @@ def client_h1(sock, args, fields, body):
                 break
             if len(data) + count > 1048576:
                 raise RuntimeError("client response body bound exceeded")
-            data.extend(reader.read(count))
+            client_h1_body(reader, args, data, count)
             if reader.read(2) != b"\r\n":
                 raise RuntimeError("invalid downstream chunk delimiter")
     elif "content-length" in lookup:
-        data.extend(reader.read(int(lookup["content-length"])))
+        client_h1_body(reader, args, data, int(lookup["content-length"]), complete=True)
     else:
         while True:
             piece = sock.recv(65536)
@@ -649,6 +673,7 @@ def client_h1(sock, args, fields, body):
             data.extend(piece)
             if len(data) > 1048576 or time.monotonic() >= reader.deadline:
                 raise RuntimeError("client response body/deadline bound exceeded")
+            client_prefix(args, data, False)
     return status, headers, trailers, informational, bytes(data)
 
 
@@ -781,6 +806,7 @@ def client_h2(sock, args, fields, body):
             elif isinstance(event, (h2.events.StreamReset, h2.events.ConnectionTerminated)):
                 if args.allow_incomplete and status is not None:
                     args.termination = "reset" if isinstance(event, h2.events.StreamReset) else "goaway"
+                    client_prefix(args, data, ended)
                     return status, headers, trailers, informational, bytes(data)
                 raise RuntimeError("downstream reset/GOAWAY before response: " + repr(event))
             elif not isinstance(event, (h2.events.RemoteSettingsChanged, h2.events.SettingsAcknowledged,
@@ -789,6 +815,7 @@ def client_h2(sock, args, fields, body):
         pending = conn.data_to_send()
         if pending:
             sock.sendall(pending)
+        client_prefix(args, data, ended)
     if status is None:
         raise RuntimeError("missing H2 response status")
     return status, headers, trailers, informational, bytes(data)
@@ -862,6 +889,7 @@ def independent_client(args):
         raise ValueError("client input bound exceeded")
     sock = socket.create_connection(("127.0.0.1", args.port), timeout=5)
     args.head, args.received_body, args.termination = None, bytearray(), "complete"
+    args.prefix_observed = False
     args.upload_stop, args.upload_thread, args.upload_error = threading.Event(), None, None
     args.upload_sent, args.upload_finished, args.upload_eof_sent = 0, False, False
     protocol = "http/1.1" if args.downstream == "h1" else "h2c"
@@ -925,6 +953,7 @@ def main():
     parser.add_argument("--client", action="store_true")
     parser.add_argument("--managed-fixed-client", action="store_true")
     parser.add_argument("--events", action="store_true")
+    parser.add_argument("--observe-prefix-bytes", type=int)
     parser.add_argument("--controlled", action="store_true")
     parser.add_argument("--allow-incomplete", action="store_true")
     parser.add_argument("--downstream", choices=("h1", "h2"))
@@ -941,6 +970,11 @@ def main():
         parser.error("--listen-port must be between 0 and 65535")
     if args.controlled:
         args.events = True
+    if args.observe_prefix_bytes is not None:
+        if not args.client or not args.events:
+            parser.error("--observe-prefix-bytes requires --client and --events or --controlled")
+        if not 1 <= args.observe_prefix_bytes <= 1048576:
+            parser.error("--observe-prefix-bytes must be between 1 and 1048576")
     if args.client:
         try:
             return independent_client(args)
