@@ -1,0 +1,167 @@
+{
+  "task_id": "early-final-at-exhaustion-contract-investigation1",
+  "status": "DONE",
+  "assignment": "direct read-only source investigation from /root; no implementation/runtime qualification",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "ceb3c0c953d930768023da85875a95672876ce39",
+  "baseline_verified": "git rev-parse HEAD exit0 exact match",
+  "created_at_utc": "2026-10-17T17:37:20.240501+00:00",
+  "dependency": "http_fetch/http_core/http_runtime 0.21.10; http_fetch source https://github.com/gsmlg-dev/http_fetch; reusable runtime path, not legacy single-request HTTP.HTTP2",
+  "findings": [
+    {
+      "id": "native_pump",
+      "status": "SOURCE_SUPPORTED",
+      "references": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:789-895",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:998-1055"
+      ],
+      "finding": "The native pump submits bounded body chunks with a finite write timeout. A non-timeout upload error marks upload_stopped and exchange.close, then waits for the final head rather than manufacturing 502. A final head also stops further upload; response chunks/end are delivered and Session.consumed is called. Response and upstream reset can be observed before the test initiates downstream close. No promise is made that an incomplete-request native connection remains reusable/open."
+    },
+    {
+      "id": "supported_adapter",
+      "status": "SOURCE_SUPPORTED",
+      "references": [
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:55-86",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:142-175",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:294-312",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex:396-455"
+      ],
+      "finding": "The adapter uses supported HTTP.Stream chunk/finish and HTTP.fetch/Promise APIs, captures the original RequestCompletion immediately, and maps public Promise/stream messages into Session events. No private runtime inspection or opaque completion internals are required."
+    },
+    {
+      "id": "early_stop",
+      "status": "SOURCE_SUPPORTED",
+      "references": [
+        "deps/http_runtime/lib/http/http2/connection_owner.ex:1242-1270",
+        "deps/http_runtime/lib/http/http2/connection_owner.ex:1636-1650",
+        "deps/http_fetch/lib/http/socket_client.ex:1093-1157",
+        "deps/http_fetch/lib/http/http2/body_bridge.ex:23-25",
+        "deps/http_fetch/lib/http/http2/body_bridge.ex:250-285",
+        "deps/http_fetch/lib/http/stream.ex:113-169"
+      ],
+      "finding": "Noninformational ordinary final response headers stop upload in the runtime owner, discard pending_body and remove the stream from upload scheduling. SocketClient also invokes BodyBridge.early_response before returning the response. The bridge sends HTTP.Stream.error(:early_response), acknowledges any held source ref and clears buffered body/trailers. Stream.chunk has public error/down returns; Stream.finish submission is asynchronous and is not upstream receipt."
+    },
+    {
+      "id": "terminal_oracle",
+      "status": "SOURCE_SUPPORTED",
+      "references": [
+        "deps/http_fetch/lib/http/socket_client.ex:1304-1325",
+        "deps/http_runtime/lib/http/http2/connection_owner.ex:488-526",
+        "deps/http_runtime/lib/http/http2/connection_owner.ex:1653-1665",
+        "deps/http_core/lib/http/http2/connection.ex:289-292",
+        "deps/http_core/lib/http/http2/stream_state.ex:337-348",
+        "deps/http_runtime/lib/http/http2/connection_owner.ex:676-677"
+      ],
+      "finding": "For a pooled managed H2 request whose request HEADERS are committed and whose upload END_STREAM was not sent, completing the final response calls public release_stream. close_unfinished_upload emits cancel_headers unless the stream is already closed. Here an upstream response END_STREAM leaves an unfinished local upload half_closed_remote, so cancel_headers emits rst_stream :cancel, explicitly serialized as numeric code8. The correct witness is an actual peer StreamReset on the original connection/stream before the test closes downstream. Code8 is derived from these pinned sources, not assumed from HTTP convention. Zero DATA credit does not gate this control frame. EOF/connection_reset during final fixture close cannot replace this witness."
+    },
+    {
+      "id": "completion_cleanup",
+      "status": "SOURCE_SUPPORTED",
+      "references": [
+        "deps/http_fetch/lib/http/request_completion.ex:1-23",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:1341-1435",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:574-638",
+        "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs:299-317",
+        "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs:364-399"
+      ],
+      "finding": "The original public RequestCompletion must confirm release of tracked request resources/stream/reservation. It is not proof of peer receipt or physical connection shutdown. Session polls the original completion within its existing absolute cleanup deadline and releases transport/group/service only after consumed/cancelled. Fixture clean requires zero active/cleanup retained resources and expected resident connection pin; fixture close then stops embedding, joins actors, observes physical eof OR connection_reset and requires peer joined forced0/live0/failedfalse, expected requests and exit0."
+    },
+    {
+      "id": "qualification_boundary",
+      "status": "NOT_RUN",
+      "references": [
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:942-956",
+        "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:312-355",
+        "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py:489-502"
+      ],
+      "finding": "The existing early-final test is headers-only with a declared incomplete content length; it proves a response before test downstream close but not full producer submission plus genuine zero stream credit. The held-credit peer currently proves one unpadded DATA byte, stream window0 and positive connection credit, rejects trailers/END before explicit release, and exposes actual StreamReset code. A bounded positive combined case can qualify full body/trailers submitted at the native socket boundary -> held barrier -> early final -> exact response and actual reset -> cleanup without release. Native submission is not proof all body/trailers were parsed by Gaoxy or delivered upstream. This does not close separate explicit cancellation/unsent-trailer, live-sibling or full Task6/matrix/load gates."
+    }
+  ],
+  "source_sha256": {
+    "deps/http_fetch/mix.exs": "3e9821a577d5aabe77a13194eb81f3e9859c64a45f0ab766c186ee844e03866e",
+    "deps/http_fetch/lib/http/socket_client.ex": "245784a82edfdc741d18a967f611568cf81682409c3f8acb212e0dcd5b12c6ef",
+    "deps/http_fetch/lib/http/stream.ex": "d67a6ba36851dc255376ba93131e84dd003c9da2497fc0bb6e7d6c721c4be77b",
+    "deps/http_fetch/lib/http/promise.ex": "d49110cfae54440fd16568391a3a2c1a90ef0c7831ee458185e0e361e9c74064",
+    "deps/http_fetch/lib/http/request_completion.ex": "157a371b838a2f72117a7e92f97d2f602a0363cc228411c77c1e22ba7865237c",
+    "deps/http_fetch/lib/http/http2/body_bridge.ex": "e27351a43ca89e80e169a66b8a186c9ae9079d522ba87d769a62cd5746c9ecb3",
+    "deps/http_runtime/lib/http/http2/connection_owner.ex": "6ed1fbcef6b03794dfb8fc89183faf3eb8a28d6f0f0f7e2eb521abfb3d740615",
+    "deps/http_core/lib/http/http2/connection.ex": "b9079e36ef4a98502852943af5d371d781094905ca0f36d45662931c7eb10716",
+    "deps/http_core/lib/http/http2/stream_state.ex": "ea6dc2679733fe88c7f686df3cf417e220ebbe38923e704254aae849a1b6e280",
+    "deps/http_core/lib/http/http2/frame.ex": "b3140bfcfca3691d7868c2542e839adc7332c0ae196640c57d8f5674521adf01",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_client.ex": "e8c60d1d5a67f3b9737478149ac6e28b8e9ddf778289a2fac6035054379e7313",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex": "8a041a6bc217ef5ec626dc9e4efc2ec495db3a668912214420ad01bd4d449eac",
+    "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs": "2b53e3848a286147ff1b00ac10b5364238b070396d30cb729fcd12300f17dbc8",
+    "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs": "4d5f70dcee198409fb481947ddfb24e9d65dc65b3b41c0a58e8f6627778b1c53",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "86d704663d3f58a97656e403d2c320f314bc3703ff559013326e8036a820319e"
+  },
+  "predecessor_receipts_verified_sha256": {
+    "docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/credit-postcommit-custody1.json": "b0cbfd38d55812f805b828330868d38456d50697bdee580fee6b29d91ad16fee",
+    "docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/credit-closure-document-overlay1.json": "a613dd193985cacb72d50399dfd13e5c89d1470a5b4f087a6b726b92708c6f68"
+  },
+  "predecessor_custody": {
+    "task_files": 174,
+    "source_pins": 402,
+    "union_blobs": 565,
+    "note": "Receipt hashes and explicit receipt values verified; this assignment did not independently repeat the whole predecessor custody audit."
+  },
+  "changes": [
+    "/tmp/gaoxy-early-final-contract-investigation1.json",
+    "/tmp/gaoxy-early-final-contract-investigation1.md"
+  ],
+  "repository_changes": "NONE by this assignment; no git status/untracked scan or directory enumeration",
+  "verification": {
+    "scoped_source_trace": "PASS through exact source chain and serializer",
+    "baseline_and_receipt_hashes": "PASS",
+    "pinned_source_files": 16,
+    "tests": "NOT RUN by explicit assignment",
+    "build": "NOT RUN",
+    "browser": "NOT RUN",
+    "network": "NOT RUN",
+    "runtime_qualification": "NOT RUN",
+    "private_client_runtime_observation": "NONE",
+    "opaque_completion_internals": "NOT READ"
+  },
+  "counters": {
+    "inherited_E8_counter9": {
+      "root": 389,
+      "orchestration": 295,
+      "credit_tool": 37,
+      "runtime": 0,
+      "fixture": 0,
+      "sol": 0,
+      "astra_used": 2,
+      "astra_limit": 2
+    },
+    "parent_update_before_new_incident": {
+      "root": 392,
+      "orchestration": 298,
+      "early_tool": 3
+    },
+    "own_investigation_tooling_incidents": 2,
+    "own_runtime_failures": 0,
+    "own_fixture_repairs": 0,
+    "own_sol_repairs": 0,
+    "own_astra_repairs": 0,
+    "note": "Parent clarified E9counter1 root392/orchestration298/earlyTool3 includes writer incidents only; neither of this investigation's two new incidents has been added there. Add2 investigation incidents relative E8counter9, after previous FINAL DOC SPEC2 incidents already included in E8. No duplication with writer or prior credit counters and no counter reset.",
+    "new_since_E8_counter9": 2
+  },
+  "tooling_incidents": [
+    {
+      "incident": 1,
+      "evidence": "Inherited current-assignment rg guessed nonexistent deps/http_fetch/lib/http/http2.ex and deps/http_fetch/test; missing-path errors; corrected via split-package source discovery. No source/runtime effect."
+    },
+    {
+      "incident": 2,
+      "evidence": "Bounded sed guessed nonexistent apps/gaoxy_proxy/test/support/managed_h2_fixed_endpoint_fixture.ex; actual fixture is inside test/managed_h2_fixed_endpoint_test.exs. Corrected with bounded content rg. Combined shell command ended0 because later reads succeeded; the stderr path error remains recorded."
+    }
+  ],
+  "shutdown": "All own tool commands completed; no process/session/test/browser/server started or left running. No protected E4 artifacts, prompts, raw NetLogs or private keys accessed.",
+  "remaining_risks": [
+    "The combined zero-credit/full-native-submission early-final case is source-supported but unexecuted.",
+    "Peer StreamReset receipt must be observed independently; public completion alone does not prove it.",
+    "Natural downstream close after response is allowed; the test must not initiate close to trigger cancellation.",
+    "Terminal code8 is version/source-specific and must be repinned after dependency changes."
+  ],
+  "decisions_needed": []
+}

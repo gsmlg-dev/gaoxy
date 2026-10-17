@@ -2422,17 +2422,58 @@ defmodule Gaoxy.Proxy.ManagedH2GroupGenerationTest do
       _ = collect_effects([])
       {fresh, _} = connect(f)
       gate = service_gate(f)
+      parent = self()
+      old_native = call.captured.native
+      barrier = make_ref()
 
-      [native] =
-        for {_, lease} <- :sys.get_state(gate).leases,
-            lease.pid != call.captured.native,
-            do: lease.pid
+      debug = fn held, event, _ ->
+        case event do
+          {:in, {:"$gen_call", {native, _} = from, {:begin_request, lease, _, _}}}
+          when not held and native != old_native ->
+            send(parent, {:group_store_death_begin_request, barrier, native, from, lease})
 
-      monitor = Process.monitor(native)
-      assert :ok = F.send_request(f, fresh, "GET", "/after-store-death")
-      assert %{status: 500, body: ""} = F.response(f, fresh)
-      assert_receive {:DOWN, ^monitor, :process, ^native, {:shutdown, :local_closed}}, @timeout
-      assert :ok = :gen_tcp.close(fresh)
+            receive do
+              {:group_store_death_continue, ^barrier} -> :ok
+            after
+              @timeout -> raise "Store death begin_request barrier expired"
+            end
+
+            true
+
+          _ ->
+            held
+        end
+      end
+
+      release = fn ->
+        send(gate, {:group_store_death_continue, barrier})
+
+        try do
+          :sys.remove(gate, barrier, @timeout)
+        catch
+          :exit, {:noproc, _} -> :ok
+          :exit, {:normal, _} -> :ok
+        end
+      end
+
+      on_exit(release)
+      :ok = :sys.install(gate, {barrier, debug, false})
+
+      try do
+        assert :ok = F.send_request(f, fresh, "GET", "/after-store-death")
+
+        assert_receive {:group_store_death_begin_request, ^barrier, native, _from, _lease},
+                       @timeout
+
+        monitor = Process.monitor(native)
+        release.()
+        assert %{status: 500, body: ""} = F.response(f, fresh)
+        assert_receive {:DOWN, ^monitor, :process, ^native, {:shutdown, :local_closed}}, @timeout
+        assert :ok = :gen_tcp.close(fresh)
+      after
+        release.()
+      end
+
       after_t = :sys.get_state(f.owner)
       after_g = :sys.get_state(f.groups)
       assert after_t.pins === before_t.pins and after_t.tokens === before_t.tokens

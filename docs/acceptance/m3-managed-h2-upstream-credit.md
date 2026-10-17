@@ -1,6 +1,22 @@
 # Managed H2 upstream upload-credit control acceptance
 
-Status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
+Current status — 2026-10-18: **UPLOAD-CREDIT SLICE DONE LOCALLY** at
+`ceb3c0c953d930768023da85875a95672876ce39`.
+Final document SPEC22/22→CODE22/22 passed with zero findings. Actual successor
+`docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/credit-postcommit-custody1.json`
+(SHA256 `b0cbfd38d55812f805b828330868d38456d50697bdee580fee6b29d91ad16fee`)
+verified174 task files,402 source pins and565 union blobs against committed/disk
+bytes, the real parent29d4fe7, empty index and clean tracked tree at closure.
+The frozen precommit pending-review/commit/counter6 snapshots below remain
+historical; final E8counter9 is root389/orchestration295/creditTool37, with
+runtime/fixture/Sol0 and Astra2/2 exhausted. Early-final-at-exhaustion preparation
+has now entered under continuing authorization; its runtime is NOT RUN. Its
+counter1 preserves the separate3 preparatory scope/read-tool incidents without
+resetting any inherited category. FullTask6/Task5/M3 remain open. No publication,
+deployment or excluded operation follows.
+
+
+Historical precommit status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
 
 All eight fixed/group × native H1/H2 × upstream h2c/TLS-H2 credit-resume cases
 completed in the initial unfiltered trace: 54 tests/0 failures. Complete frozen
@@ -55,7 +71,7 @@ document candidate. No runtime receipt is rewritten or inferred from document ed
 - [x] Unchanged existing Python peer-startup actual11-method suite passes, separately counted. New mode is independently exercised by the eight native socket cases.
 - [x] Unchanged isolated Core and HTTP consumers pass using accepted finite collector/environment. Conditional approved local dependency object transport, if required, is labeled separately from online dependency fetch evidence.
 - [x] Fresh accepted browser cohort passes its two nativeH1/H2→TLS-H2 group rows; root opens four OLD/NEW PNGs. Source/argv pins, original caps/deadlines, all actors/readers, nonforced custody and safe raw-data deletion pass. Browser is not the eight temporal-credit test claim.
-- [ ] Factual final design/plan/acceptance and narrow parent status pass independent document SPEC→CODE. Actual local conventional commit and disk/index/blob/source/evidence custody prove exact committed bytes; unrelated files preserved and no publication/deployment performed.
+- [x] Factual final design/plan/acceptance and narrow parent status pass independent document SPEC→CODE. Actual local conventional commit and disk/index/blob/source/evidence custody prove exact committed bytes; unrelated files preserved and no publication/deployment performed.
 
 ## Actual credit-resume cases
 
@@ -74,7 +90,7 @@ map directly to the source assertions; no per-frame runtime log is invented.
 | single-member group | H2 | h2c | PASS |
 | single-member group | H2 | TLS H2 | PASS |
 
-## Actual gates
+## Historical precommit gates
 
 | Gate | Actual result |
 |---|---|

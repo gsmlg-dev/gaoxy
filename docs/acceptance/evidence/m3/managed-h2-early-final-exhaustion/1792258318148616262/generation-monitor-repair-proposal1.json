@@ -1,0 +1,101 @@
+{
+  "task_id": "early_final_prep_code / generation-monitor-repair1-proposal",
+  "status": "DONE",
+  "completion_scope": "Read-only diagnosis and candidate proposal only; runtime repair and acceptance NOT RUN",
+  "assignment": "direct, resumed from handoff",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Exact named source SHA256s match immutable failed generation1 receipt source_before; Git identity not queried under assignment restrictions",
+  "initiating_cause": "UNKNOWN: available log cannot discriminate stale lease selection from the correct native exiting before monitor establishment",
+  "proven_test_defect": "gate.leases snapshot does not causally bind the monitored PID to the fresh socket/current begin_request and does not keep that actor alive until monitor installation",
+  "observed_failure": {
+    "test": "http2 Store death leaves genuine old G T rights valid and fresh admission fails before effects",
+    "line": 2434,
+    "native": "#PID<0.29802.0>",
+    "monitor": "#Reference<0.2877375277.508821506.156368>",
+    "expected_reason": "{:shutdown, :local_closed}",
+    "actual_reason": ":noproc",
+    "tests": 184,
+    "failures": 1,
+    "actual_exit": 2,
+    "forced": false,
+    "process_joined": true,
+    "remaining": [],
+    "source_stable": true,
+    "elapsed_seconds": 337.39819436000107,
+    "inner_exunit_seconds": 332.5
+  },
+  "evidence_directory": "docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262",
+  "evidence_files": {
+    "early-final-final-generation1.json": {
+      "sha256": "72dc60ec60865eca3f711cb6fff00df15b76aa5d8bb795f7eb88839ed049325e",
+      "bytes": 101175
+    },
+    "early-final-final-generation1.log": {
+      "sha256": "5fa3ebfa3c3edc66c44e30379f7300d2b6fb5cbfa32d30898c701717656e6b7b",
+      "bytes": 7275870
+    }
+  },
+  "source_hashes": {
+    "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs": "4e112506f2ee90883e5d42048d4f0886936dfa2f252c59c3add4631a783998db",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "81c96e55e56d514f4bd93cecb7af906a55279927d3f100f7b2045181f1eaf107",
+    "apps/gaoxy/lib/gaoxy/service.ex": "740d69a364e52cda9d05a997136ce864e9ec464149adcc81045bc9c109ed4472",
+    "apps/gaoxy_http/lib/gaoxy/http.ex": "e08385455d89ab422e4d3b8e4d68c0d555343986e32c59faff5dbcef5cef489c",
+    "apps/gaoxy_http/lib/gaoxy/http/connection.ex": "1b7e3caf6f99352f622f3243dbf3c1742a039182779af06c0ae5fe94eaa708a4",
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "4eeaa5bb6bcc65d181cec52a7fbcd9344c7d327746ef9ec8a10cec0a3cb7630c"
+  },
+  "candidate": {
+    "diff": "/tmp/gaoxy-early-final-generation-monitor-repair1.diff",
+    "diff_sha256": "55f63b2b964d22f10c0380c842f761dec182e30f39e5256e1f483cabcc0f119d",
+    "repository_target": "apps/gaoxy_proxy/test/managed_h2_group_generation_test.exs",
+    "scope": "Only generated Store-death group test; both existing upstream h2c/http2 instances. No fixed-generation test or production/API/dependency edits.",
+    "sequence": [
+      "Preserve original connect(f) active-count check before installing hook.",
+      "Install one-shot service-gate incoming begin_request hook with unique reference; exclude held old native.",
+      "Send sole new fresh GET; hook reports actual native/from/lease and holds the synchronous call before reply.",
+      "Install monitor from real operation while caller is held; release and remove hook before reading response.",
+      "Preserve exact empty 500 response, exact local_closed DOWN, socket close, all subsequent old-right/effect/dispatch/resource assertions.",
+      "Both try-after and on_exit send continuation before removing hook; ignore only dead-gate noproc/normal, retain timeout failure."
+    ],
+    "timeouts": "Existing @timeout 5000 retained; no sleep or timeout increase. Hook barrier and sys removal use same finite timeout.",
+    "assumptions": [
+      "No concurrent fresh request is issued in this test; the captured old request remains blocked in endpoint.",
+      "A live synchronous begin_request caller can still time out at its existing call deadline; candidate retains failure visibility rather than increasing deadline."
+    ],
+    "runtime_status": "NOT RUN; hypothesis requires independent review and actual regression."
+  },
+  "causal_trace": [
+    "Native H1 listener is used for both upstream-protocol variants.",
+    "Admission.begin_request is a synchronous gate call; Admission validates lease holder against actual caller.",
+    "Connection.process calls begin_request before parsing/endpoint work.",
+    "Generation snapshot failure returns endpoint error; unset response produces empty 500 and close.",
+    "Admission cleanup records do not create another lease; status calls do not acquire native leases; dead lease removal awaits gate DOWN handling. None identifies the failed selected PID uniquely."
+  ],
+  "validation_plan": [
+    "Parent independent review of exact candidate and unchanged remainder.",
+    "Parent apply candidate only after adoption, then execute scoped two generated Store-death tests with required fixed-endpoint fixture loaded; record nonzero executed count, actual exits and cleanup.",
+    "Parent run fresh full cohort2 including first62, all nine final gates and browser; preserve generation1 FAIL evidence unchanged.",
+    "Keep original reason/ownership/zero-effect assertions; do not broaden shutdown reasons, change timeout, touch dependency or production code."
+  ],
+  "verification_performed": [
+    "Bounded named-file source reads; parsed immutable generation1 receipt and bounded short failure-log lines.",
+    "Python exact-original-block uniqueness check; assembled surgical candidate diff in memory.",
+    "SHA256 verification of six named source files against failed receipt source_before; all matched.",
+    "Proposal files written under /tmp only; no repository mutation, Git/runtime/build/static product command or browser action."
+  ],
+  "counters": {
+    "sol_repair_rounds_this_assignment": 0,
+    "parent_planned_round": "Sol repair1 after proposal adoption; not executed by this worker",
+    "astra_recovery": "2/2 exhausted, inherited",
+    "new_tooling_scope_incidents": 1,
+    "incident": "Earlier overbroad rg on generation1.log emitted oversized truncated output; corrected with bounded Python. No mutation or runtime/fixture repair. Parent says retained in counter6.",
+    "other_new_incidents": 0
+  },
+  "command_shutdown": "All worker commands finished; no owned running commands/processes; no hook installed at runtime.",
+  "remaining_risks": [
+    "Initiating PID identity remains unknown.",
+    "Candidate is unexecuted and not syntax/runtime-qualified; parent must validate.",
+    "Full gate acceptance remains FAIL/NOT RUN until actual fresh evidence."
+  ],
+  "decisions_needed": "Parent adopt/review candidate and own execution; no user product decision requested.",
+  "generated_at_utc": "2026-10-17T18:23:38.444058+00:00"
+}

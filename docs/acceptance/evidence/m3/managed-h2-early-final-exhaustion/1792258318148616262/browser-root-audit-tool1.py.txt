@@ -1,0 +1,184 @@
+from pathlib import Path
+import datetime
+import hashlib
+import importlib.util
+import json
+import os
+import re
+import sys
+
+W = Path.cwd()
+E = Path(Path('/tmp/gaoxy-early-final-e9.path').read_text().strip())
+B = E / 'early-final-group-browser-green1'
+
+
+def sha(path):
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+c = json.loads((E / 'source-candidate1.json').read_bytes())
+inventory = json.loads((E / 'command-inventory1.json').read_bytes())
+expected = c['actual_command_source_sha256']
+assert c['actual_command_source_count'] == len(expected) > 0
+assert expected == inventory['actual_command_source_sha256']
+command = E / 'early-final-group-browser-command1.json'
+r = json.loads(command.read_bytes())
+qp = B / 'qualification.json'
+q = json.loads(qp.read_bytes())
+s = importlib.util.spec_from_file_location('early_final_collector', E / 'command-collector1.py')
+m = importlib.util.module_from_spec(s)
+s.loader.exec_module(m)
+actual = m.source_manifest()
+assert actual == expected and len(actual) == c['actual_command_source_count']
+assert all(sha(W / name) == value for name, value in expected.items())
+assert all(sha(W / name) == value for name, value in c['documents_sha256'].items())
+outer_argv = ['python3', '-B', str((E / 'browser-command-collector1.py').relative_to(W)),
+              '--endpoint', 'group', '--name', 'early-final-group-browser-green1',
+              '--receipt', 'early-final-group-browser-command1',
+              '--runner', 'group-identity-rotation-browser-runner1.py']
+assert inventory['browser']['outer_argv'] == outer_argv
+assert inventory['browser']['timeout_seconds'] == 600
+assert len(r['command']) == 5
+assert Path(r['command'][0]).resolve() == Path(sys.executable).resolve()
+assert r['command'][1:] == ['-B', str(E / 'group-identity-rotation-browser-runner1.py'),
+                            '--evidence-dir', str(B)]
+assert r['status'] == 'PASS' and r['actual_exit_code'] == 0
+assert r['joined'] and r['owned_group_gone'] and not r['timed_out'] and r['wait_error'] is None
+assert r['source_before'] == r['source_after']
+assert q['source_before'] == q['source_after'] and q['source_stable']
+assert q['status'] == 'PASS' and q['failure'] is None and q['executed'] == 2
+assert sha(qp) == r['qualification_sha256']
+assert sha(Path(r['log'])) == r['log_sha256']
+cleanup = r['descendant_cleanup']
+assert not cleanup['forced'] and not cleanup['remaining']
+assert not cleanup['initial_after_reap'] and not cleanup['signal_attempts']
+assert not cleanup['reap_deadline_exhausted']
+assert cleanup['reaped'] == cleanup['reaped_before_force']
+collector_waits = []
+for raw in cleanup['reaped']:
+    assert raw['phase'] == 'before_force'
+    collector_waits.append(dict(raw, decoded_exit=os.waitstatus_to_exitcode(raw['wait_status'])))
+for snap in [r['source_before'], q['source_before']]:
+    for name, h in snap.items():
+        path = Path(name)
+        name = str(path.relative_to(W)) if path.is_absolute() else name
+        assert expected[name] == h and sha(W / name) == h
+assert len(q['artifact_sha256']) == 54
+for name, h in q['artifact_sha256'].items():
+    p = B / name
+    assert p.resolve().is_relative_to(B.resolve())
+    assert not name.endswith('.key') and 'netlog.json' not in name
+    assert sha(p) == h
+assert len(q['joins']) == 12
+assert all(x['exit'] == 0 and not x['forced'] and x['reader_joined'] and x['owned_group_gone']
+           for x in q['joins'])
+assert not q['adopted_remaining']
+assert all(os.waitstatus_to_exitcode(x['wait_status']) == x['exit'] for x in q['adopted_joins'])
+views_path = E / 'browser-root-image-views1.json'
+views_receipt = json.loads(views_path.read_bytes())
+views = views_receipt['images']
+assert len(views) == 4
+assert len({row['path'] for row in views}) == 4
+expected_image_paths = {
+    str((B / mode / (label + '-browser.png')).relative_to(W))
+    for mode in ['h1-http2', 'h2-http2'] for label in ['old', 'new']
+}
+assert {row['path'] for row in views} == expected_image_paths
+views_by_path = {row['path']: row for row in views}
+for row in views:
+    assert row['root_opened_and_visually_inspected'] is True
+    assert row['sha256'] == sha(W / row['path'])
+cases = []
+images = []
+bindings = files = inline = 0
+markers = []
+assert {(x['mode'], x['upstream_protocol']) for x in q['cases']} == {('h1', 'http2'), ('h2', 'http2')}
+assert len(q['cases']) == 2
+for case in q['cases']:
+    D = B / (case['mode'] + '-http2')
+    assert case['status'] == 'PASS' and case['endpoint'] == 'group'
+    a = json.loads((D / 'host-loaded-before.json').read_bytes())
+    b = json.loads((D / 'host-loaded-after.json').read_bytes())
+    assert a == b and len(a) == 102
+    for x in a:
+        assert sha(Path(x['source'])) == x['source_sha256']
+        assert re.fullmatch('[0-9a-f]{1,32}', x['loaded_md5'])
+        bindings += 1
+        if x.get('beam'):
+            assert sha(Path(x['beam'])) == x['beam_sha256']
+            files += 1
+        else:
+            inline += 1
+    raw = json.loads((D / 'diagnostic-raw-custody.json').read_bytes())
+    assert raw['status'] == 'REMOVED_AFTER_ACTOR_GROUP_JOINS'
+    assert raw['actor_groups_joined'] and raw['raw_removed'] and raw['directory_exists'] is False
+    assert not Path(raw['directory']).exists() and not Path(raw['raw_file']).exists()
+    assert set(raw['actor_pids']) == {x['pid'] for x in q['joins'] if x['case'] == D.name}
+    host = []
+    for line in (D / 'host.log').read_text().splitlines():
+        if line.startswith('NATIVE_WORKER_BROWSER '):
+            host.append(json.loads(line.removeprefix('NATIVE_WORKER_BROWSER ')))
+    retired = [x for x in host if x.get('event') == 'old_retired']
+    assert len(retired) == 1
+    assert all(retired[0][k] is True for k in ['source_gone', 'record_gone', 'custodian_normal_down'])
+    stopped = case['stopped']
+    assert stopped['captures'] == 2 and stopped['sessions_joined'] == 2
+    assert stopped['custodians_normal_down'] == 4
+    assert all(stopped[k] is True for k in ['cleanup_confirmed', 'source_stable', 'native_actors_joined',
+               'group_owner_normal_down', 'owner_normal_down', 'instance_normal_down', 'listener_rebound'])
+    rotation = case['identity_rotation']
+    assert all(rotation[k] is True for k in ['same_path_replaced', 'source_invalidated',
+               'retained_policies_checked', 'old_capture_before_replacement'])
+    assert len(rotation['rows']) == 2 and all(x['old_policy_unchanged'] for x in rotation['rows'])
+    assert len(case['observations']) == 2
+    assert {x['label'] for x in case['observations']} == {'old', 'new'}
+    for o in case['observations']:
+        assert all(o['bound'][k] is True for k in ['pending', 'original_completion_equal',
+                   'source_genuine', 'child_genuine', 'token_genuine'])
+        assert all(o['held'][k] is True for k in ['session_joined', 'source_genuine',
+                   'original_completion_ok', 'child_gone', 'token_gone', 'custodian_alive'])
+        assert not o['held']['retirement_requested']
+        assert all(o['request_clean'][k] is True for k in ['session_joined', 'original_source_gone',
+                   'baseline_genuine', 'complete_cohort_validated', 'connection_alive'])
+        assert o['request_clean']['native_worker_joined'] is (case['mode'] == 'h2')
+    for label in ['old', 'new']:
+        p = D / (label + '-browser.png')
+        image_path = str(p.relative_to(W))
+        view = views_by_path[image_path]
+        assert sha(p) == view['sha256'] == q['artifact_sha256'][str(p.relative_to(B))]
+        images.append(dict(view))
+    for label in ['a', 'b']:
+        p = D / ('trust-' + label + '.pem')
+        assert p.stat().st_size == 46
+        assert sha(p) == 'de4f1768cdc0c2418420547e213ef06d79041f2376db96c5343fce331823805d'
+        markers.append({'path': str(p.relative_to(W)), 'sha256': sha(p), 'bytes': p.stat().st_size,
+                        'type': 'public trust path invalidation marker, not remaining PEM certificate'})
+    cases.append({'case': case['case'], 'verdict': 'PASS', 'old_retired': retired[0],
+                  'stopped': stopped, 'observations': len(case['observations']),
+                  'loaded_source_beam_bindings': len(a),
+                  'raw_custody_sha256': sha(D / 'diagnostic-raw-custody.json')})
+assert len(images) == 4 and len(cases) == 2
+out = {
+    'kind': 'EARLY_FINAL_EXHAUSTION_BROWSER_ROOT_AUDIT1',
+    'at_utc': datetime.datetime.now(datetime.timezone.utc).isoformat(), 'verdict': 'PASS',
+    'command_receipt_sha256': sha(command), 'qualification_sha256': sha(qp),
+    'audit_tool_sha256': sha(Path(__file__)),
+    'source_candidate_sha256': sha(E / 'source-candidate1.json'),
+    'command_inventory_sha256': sha(E / 'command-inventory1.json'),
+    'actual_source_pins': len(expected), 'collector_source_pins': len(r['source_before']),
+    'qualification_source_pins': len(q['source_before']), 'artifact_hashes_checked': 54,
+    'loaded_bindings': bindings, 'file_beam_bindings': files,
+    'inline_module_source_md5_records': inline, 'actor_joins': 12,
+    'adopted_raw_waits': q['adopted_joins'], 'collector_genuine_adopted_waits': collector_waits,
+    'cases': cases, 'root_image_inspections': images,
+    'root_image_views_receipt_sha256': sha(views_path), 'artifact_types_checked': markers,
+    'limits': 'Two current native/group browser rows; not temporal early-final/exhaustion, full streaming, M3, hosted or production qualification. Root visual observations come only from the separately hashed root image-view receipt. Raw NetLogs and private keys never read. loaded_md5 is module MD5, not full BEAM-file MD5. Trust paths are final public invalidation markers.',
+}
+p = E / 'browser-root-audit1.json'
+assert not p.exists()
+p.write_text(json.dumps(out, sort_keys=True, indent=2) + '\n')
+print(json.dumps({k: out[k] for k in ['verdict', 'artifact_hashes_checked', 'loaded_bindings',
+                                    'file_beam_bindings', 'inline_module_source_md5_records',
+                                    'actor_joins', 'actual_source_pins', 'collector_source_pins',
+                                    'qualification_source_pins']}))
+print('audit_sha256', sha(p))

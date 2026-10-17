@@ -1,6 +1,39 @@
 # Gaoxy Implementation Plan
 
-## Managed H2 upload-credit current checkpoint — 2026-10-18
+## Current early-final successor — local runtime qualification PASS
+
+The upload-credit predecessor remains DONE LOCALLY at `ceb3c0c953d930768023da85875a95672876ce39` with its real successor custody. The bounded early-final successor now passes repaired cohort2 local runtime qualification: first62/0; fresh62/0+150/0+184/0 (396 overlapping invocations, not unique tests); static compile/format7/syntax0; actual Python11 startup methods; isolated Core1/0 and HTTP2/0. Source SPEC2→CODE2 PASS30 passed with no unresolved findings; implementation SPEC22→CODE22 passed with zero findings. The resolved source SPEC2-1 finding corrected the nonbrowser audit draft tool2's dynamic suffix1 selection in accepted tool3. This correction was already recorded in counter6; it is retained history, not a new finding or failure. Independent source CODE30 has zero findings. Current source402/eight entry-document pins were preserved through runtime. Exact inventory2/recovery-plan1 execution uses suffix2 and unfiltered Generation--trace.
+
+E9 `docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/final-nonbrowser-audit2.json` SHA256 `58fe100d056f0c52bac9573902c8c914b55deecf4a85ac821f932036fbc51c65` binds all nine final2 commands. `generation-monitor-regression2.json` SHA256 `b01b6fbed0ceea5442381b9e00a87b482954455a9199a82c23178d3ee9c9819e` proves both repaired Store-death names completed once and all184 Generation2 trace rows. Historical Generation1 FAIL184/1 exit2 remains immutable; its initiating noproc cause remains UNKNOWN. One necessary test-only actual-caller monitor barrier repair preserved exact shutdown/local_closed, empty500, old rights/effects/cleanup assertions and finite budgets; it introduced no production/dependency change.
+
+Current browser2 passed two group nativeH1/H2→TLS-H2 rows and four fresh root image opens. Browser audit SHA256 `0458f8f1949029d9519ac6199c54c13bf3a9ebc6205f771766c0ba547b66f74c` binds54 artifacts/204 loaded bindings/12 named actors exit0 nonforced. Current eleven adopted waits are nine raw0→0 and two raw10→−10; historical browser1 had twelve. The nine final nonbrowser commands have30 adopted waits (13 raw0→0/17 raw10→−10), separate from top-level exit0. Browser2 is the current group boundary, not eight temporal-exhaustion proofs. All eight temporal cases passed complete native body/trailer socket submission, genuine exhaustion/original ownership, exact413/early-final and reset8 before test socket close, then bounded cleanup. Socket submission does not prove parser/pump/HTTP.Stream.finish completion.
+
+Counter11 SHA256 `6581092baeba9dd79e5d7d63e22b4578bb3e22c9704af5acf8fde46d20bda578` records root417/orchestration322/earlyTool20 and final-document draft repair1, with runtime failed-green1/fixture1/Sol1 now qualified and Astra2/2 exhausted. The wording repair adds no failed independent review/runtime gate or Sol/Astra round; inherited counters and counter10 provenance are preserved. Independent final document SPEC→CODE, promotion/rebinding, local commit and actual successor byte custody remain PENDING. No successor SHA/task/union count is forecast and this checkpoint does not close the local slice.
+
+WholeTask6/Task5/M3 remain OPEN. UpstreamH1/full matrix and remaining cancellation, unsent-trailer/downstreamRST with live sibling, multi-owner/selectedA, standalone, two≥600s managed loads and H3 remain open. After actual local closure, advance the next separately bounded authorized slice. No push/publication/deployment/production data or operational certificates/Vault/public management/account changes/disabled E2E activation or dismissed#97 revival follows.
+
+## Historical predecessor checkpoints — unchanged
+
+The unchanged original checkpoints below retain their recorded statuses at their own frozen entries. The current successor checkpoint above controls early-final acceptance and pending local closure.
+
+
+Current status — 2026-10-18: **UPLOAD-CREDIT SLICE DONE LOCALLY** at
+`ceb3c0c953d930768023da85875a95672876ce39`.
+Final document SPEC22/22→CODE22/22 passed with zero findings. Actual successor
+`docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/credit-postcommit-custody1.json`
+(SHA256 `b0cbfd38d55812f805b828330868d38456d50697bdee580fee6b29d91ad16fee`)
+verified174 task files,402 source pins and565 union blobs against committed/disk
+bytes, the real parent29d4fe7, empty index and clean tracked tree at closure.
+The frozen precommit pending-review/commit/counter6 snapshots below remain
+historical; final E8counter9 is root389/orchestration295/creditTool37, with
+runtime/fixture/Sol0 and Astra2/2 exhausted. Early-final-at-exhaustion preparation
+has now entered under continuing authorization; its runtime is NOT RUN. Its
+counter1 preserves the separate3 preparatory scope/read-tool incidents without
+resetting any inherited category. FullTask6/Task5/M3 remain open. No publication,
+deployment or excluded operation follows.
+
+
+## Historical upload-credit precommit checkpoint — 2026-10-18
 
 The bounded successful credit-resume slice is LOCAL QUALIFICATION PASS: actual
 same-connection SETTINGS ACK window1, full two-byte native body/trailer submission,

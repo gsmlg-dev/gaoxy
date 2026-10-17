@@ -350,7 +350,20 @@ class Peer:
                                 self.respond(client, event.stream_id, 200, [], body, [])
                         elif isinstance(event, h2.events.StreamReset):
                             client["pending"].pop(event.stream_id, None)
-                            self.emit("reset", connection=number, stream=event.stream_id, code=int(event.error_code))
+                            reset_values = {}
+                            if (self.hold_upload_credit and
+                                    client["targets"].get(event.stream_id) == "/hold/upload-credit" and
+                                    event.stream_id in client["credit_holds"]):
+                                upload = bytes(client["uploads"][event.stream_id])
+                                reset_values["upload_credit"] = {
+                                    "total_bytes": len(upload),
+                                    "body64": base64.b64encode(upload).decode("ascii"),
+                                    "sha256": hashlib.sha256(upload).hexdigest(),
+                                    "credit_released": event.stream_id in client["credit_released"],
+                                    "response_started": event.stream_id in client["responses"],
+                                }
+                            self.emit("reset", connection=number, stream=event.stream_id,
+                                      code=int(event.error_code), **reset_values)
                         elif isinstance(event, h2.events.ConnectionTerminated):
                             self.emit("goaway_received", connection=number, code=int(event.error_code),
                                       last_stream=event.last_stream_id)

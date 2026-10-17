@@ -1,6 +1,22 @@
 # Managed H2 Upstream Upload-Credit Control Implementation Plan
 
-Status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
+Current status — 2026-10-18: **UPLOAD-CREDIT SLICE DONE LOCALLY** at
+`ceb3c0c953d930768023da85875a95672876ce39`.
+Final document SPEC22/22→CODE22/22 passed with zero findings. Actual successor
+`docs/acceptance/evidence/m3/managed-h2-early-final-exhaustion/1792258318148616262/credit-postcommit-custody1.json`
+(SHA256 `b0cbfd38d55812f805b828330868d38456d50697bdee580fee6b29d91ad16fee`)
+verified174 task files,402 source pins and565 union blobs against committed/disk
+bytes, the real parent29d4fe7, empty index and clean tracked tree at closure.
+The frozen precommit pending-review/commit/counter6 snapshots below remain
+historical; final E8counter9 is root389/orchestration295/creditTool37, with
+runtime/fixture/Sol0 and Astra2/2 exhausted. Early-final-at-exhaustion preparation
+has now entered under continuing authorization; its runtime is NOT RUN. Its
+counter1 preserves the separate3 preparatory scope/read-tool incidents without
+resetting any inherited category. FullTask6/Task5/M3 remain open. No publication,
+deployment or excluded operation follows.
+
+
+Historical precommit status — 2026-10-18: **LOCAL QUALIFICATION PASS; final document review and local commit pending at this frozen precommit checkpoint.**
 
 All eight fixed/group × native H1/H2 × upstream h2c/TLS-H2 credit-resume cases
 completed in the initial unfiltered trace: 54 tests/0 failures. Complete frozen
@@ -388,5 +404,5 @@ nix develop --command env 'ERL_FLAGS=+S 2:2' MIX_ENV=test unbuffer bash scripts/
 ## Task5: Factual local closure and separate follow-up
 
 - [x] Fill acceptance from actual immutable receipts; update design/plan and narrow parent-plan status factually. Keep full Task6 and combined exhaustion→early-final/cancellation, downstreamRST+sibling/fullH1matrix/multi-owner/selectedA/load/H3 explicitly open. No stage completion can be inferred from this positive success test alone.
-- [ ] Complete final document SPEC then CODE, changed-file checks and source/count inventory. Root stages only task-owned files for a local conventional commit after every required gate passes. Audit disk/index/blob bytes and exact committed-source/evidence custody against actual successor HEAD. Preserve unrelated files; no push/release/deployment follows.
+- [x] Complete final document SPEC then CODE, changed-file checks and source/count inventory. Root stages only task-owned files for a local conventional commit after every required gate passes. Audit disk/index/blob bytes and exact committed-source/evidence custody against actual successor HEAD. Preserve unrelated files; no push/release/deployment follows.
 - [ ] Prepare the next separate combined early-final-at-exhaustion design from this actual successful barrier only after closure, retaining independent reviews/counters and all product boundaries. No current plan silently expands into cancellation/unsent-trailer or live-sibling execution.
