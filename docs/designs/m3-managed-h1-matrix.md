@@ -1,3 +1,9 @@
+## Current successor native-H1 response-pressure qualification — 2026-10-18
+
+The separate native-H1 response-write-pressure slice now has PASS runtime qualification and independent implementation SPEC→CODE review with zero findings. Its frozen source candidate14 covers405 source files and12 installed dependency pins. Actual pressure4, separate fresh five-file52, unchanged completed-response regression1, default standalone16 and ordinary browser2 with four actual root image opens passed. Compile and scoped format passed. Documentation review, local commit and postcommit custody remain pending for that successor. This predecessor's completed local closure is unchanged; WholeTask6/Task5/M3 remain OPEN. See the current [response-pressure acceptance](../acceptance/m3-native-h1-response-pressure.md) for the exact evidence and remaining gates.
+
+## Historical predecessor checkpoints — preserved below
+
 # Managed-H1 Streaming Matrix Design
 
 ## Actual managed-H1 matrix local closure — 2026-10-18
@@ -6,7 +12,7 @@ The bounded eight-row/two-family managed-H1 matrix is **DONE LOCALLY** at `deef3
 
 First2 matrix16/0, fresh related96/0, Python11 methods, finite standalone16/0 and separate browser2rows/four actual root image opens passed with explicit candidate4/candidate5 cohorts. Historical first1 FAIL16/12, both diagnostic FAIL1/1 and browser1 overall FAIL remain immutable. Task source/canonical-doc staged whitespace passed0; immutable whole-archive whitespace retains actualexit2. Counter22 froze root519/orchestration418/H1tool29/Sol4/Astra2/2; successor counter1 preserves the later successful-commit display incident and adoption-tool key correction without runtime or repair deltas.
 
-WholeTask6/Task5/M3 remain **OPEN**. Automatically execute the separately bounded native-H2 downstream × fixed/group × h2c/TLS-H2 combined slow-peer/queue/peak/live-sibling profile under continuing authorization. Its adoption used this actual HEAD; the successor now has focused4/0, fresh related94/0, Python11 and ordinary browser2rows/four fresh root image opens qualified. See the [current H2 acceptance](../acceptance/m3-managed-h2-slow-peer.md); final successor document review/local commit/custody remain pending, and the H1 closure itself is unchanged. Other H1 pressure/disconnect, standalone/load/composition and remaining product gates stay separate. No publication, deployment or excluded operation follows.
+WholeTask6/Task5/M3 remain **OPEN**. The native-H2 downstream × fixed/group × h2c/TLS-H2 combined slow-peer/queue/peak/live-sibling profile completed under continuing authorization. Its adoption used this actual HEAD; the successor now has focused4/0, fresh related94/0, Python11 and ordinary browser2rows/four fresh root image opens qualified. See the [current H2 acceptance](../acceptance/m3-managed-h2-slow-peer.md); final successor SPEC2→CODE2 passed and actual local commit/custody closed at `fb7d0fda2b7c16c42c65579736dc1f643e17d812`, while the H1 closure itself is unchanged. The next native-H1 actual response-write-pressure slice is adopted for independent design review; all of its runtime remains NOT RUN. Other H1 pressure/disconnect, standalone/load/composition and remaining product gates stay separate. No publication, deployment or excluded operation follows.
 
 ## Frozen precommit checkpoints — unchanged
 

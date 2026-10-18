@@ -1,0 +1,43 @@
+{
+  "task_id": "MATRIX DIAGNOSTIC AUTHOR1",
+  "status": "DONE",
+  "assignment": "direct one-file failure-only diagnostic implementation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Frozen candidate8 fixture, no Git executed",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+  "before_sha256": "c1073325d4b816175462a4524d106a52ddae93a25429532608dc63e51460ffb0",
+  "after_sha256": "73f0ef92ba14b0874b07ada5e8afa34178d2c8a4bda1af34572dbc3bdaacc728",
+  "exact_diff": "--- before-matrix-diagnostics\n+++ matrix-diagnostic-author1\n@@ -237,7 +237,7 @@\n \n     receive do\n       {:matrix_peer, peer, %{\"event\" => \"failure\"} = value} when peer == f.peer ->\n-        raise inspect(value)\n+        raise \"#{inspect(value)} queued_fixture_events=#{inspect(failure_events(f), limit: :infinity)}\"\n \n       {:matrix_peer, peer, value} when peer == f.peer ->\n         if selected?(value, selector) do\n@@ -253,6 +253,37 @@\n     after\n       remaining -> raise \"managed-H1 event deadline: #{inspect(selector)}\"\n     end\n+  end\n+\n+  defp failure_events(f) do\n+    queued = Process.get({__MODULE__, f.key, :events}, [])\n+\n+    summaries =\n+      queued\n+      |> Stream.filter(&(&1[\"event\"] in [\"accepted\", \"request\", \"upload_prefix\", \"upload_end\", \"command\"]))\n+      |> Enum.take(16)\n+      |> Enum.map(fn value ->\n+        Map.put(diagnostic_fields(value), \"event\", value[\"event\"])\n+      end)\n+\n+    %{\"events\" => summaries, \"total\" => length(queued), \"truncated\" => length(queued) > length(summaries)}\n+  end\n+\n+  defp diagnostic_fields(value) do\n+    Enum.reduce(\n+      [\n+        {\"method\", \"method_label\", %{\"POST\" => \"POST\", \"DELETE\" => \"DELETE\"}},\n+        {\"target\", \"route_label\", %{\"/temporal\" => \"temporal\", \"/trailers\" => \"trailers\"}},\n+        {\"action\", \"action_label\", %{\"send\" => \"send\", \"continue_upload\" => \"continue_upload\"}}\n+      ],\n+      Map.take(value, [\"connection\", \"request\", \"ended\"]),\n+      fn {key, label, allowed}, fields ->\n+        case Map.fetch(value, key) do\n+          {:ok, raw} -> Map.put(fields, label, Map.get(allowed, raw, \"other\"))\n+          :error -> fields\n+        end\n+      end\n+    )\n   end\n \n   defp selected?(value, selector),\n@@ -866,7 +897,8 @@\n \n         if not ended, do: respond(wire, socket, parent, peer, base)\n     after\n-      @timeout -> raise \"response release deadline\"\n+      @timeout ->\n+        raise \"response release deadline #{inspect(diagnostic_fields(base), limit: :infinity)}\"\n     end\n   end\n \n",
+  "root_cause": "Matrix connection2 response-release timeout cause remains UNKNOWN. This change adds attribution only; no functional repair or dependency claim.",
+  "self_review": [
+    "Timeout retains RuntimeError, original response release deadline prefix and unchanged @timeout5000. Existing base only; no extra wire or process queries.",
+    "Timeout fields connection/request, method POST/DELETE/other, route temporal/trailers/other; no raw target/headers/payload.",
+    "Existing fixture-owned queued events inspected only when next_event receives failure. At most16 whitelisted summaries; total includes all queued events and truncated indicates any omission. Whitelist accepted/request/upload_prefix/upload_end/command.",
+    "Summary fields limited to event/connection/request/ended plus method_label/route_label/action_label. Missing fields stay absent; action send/continue_upload/other. Unknown events counted only.",
+    "Original peer failure remains RuntimeError on same raise path; cleanup failures and assertions unchanged. Success clauses/queries/messages/mailbox drains/processes untouched.",
+    "Only assigned fixture edited. Other pressure writer scope untouched. Exact inverse delta restores complete baseline; file custody rechecked before mutation."
+  ],
+  "verification": [
+    "Entry SHA exact match",
+    "Assigned-file postwrite exact match",
+    "Exact inverse of two failure branch changes and added helpers restores full baseline",
+    "Report JSON parse validation; final hashes printed"
+  ],
+  "not_run": [
+    "formatter",
+    "compiler",
+    "runtime/tests",
+    "browser",
+    "Git",
+    "independent review"
+  ],
+  "counters": "Counter33 authority Sol5/runtimefail5/Astra2of2 retained; this writer adds0 rounds/runtime runs.",
+  "incidents": [],
+  "remaining_risks": [
+    "Source is unformatted and uncompiled; root owns formatting/frozen source/independent review and runtime.",
+    "No diagnosis of connection2 origin until attributed actual failure."
+  ],
+  "decisions_needed": "None",
+  "command_shutdown": "All commands completed synchronously; no background processes started.",
+  "custody": "Assigned source and reports immutable at DONE; root retains runtime/evidence/Git. Later clarification requires new report path/version."
+}

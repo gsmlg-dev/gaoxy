@@ -1,0 +1,9 @@
+# Native H1 pressure controller store author1
+
+DONE. Sole changed test: `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs`. Before SHA256 `aa9646ac1e15a912f634f950ec4b5a35bcc4577e7d083c17248e0b676ff894aa`; after `bcbfb81aa748e5a077677c1853bdaf3b5bd40ac5ad8ef8419860a9de3424e01e`. Delta +47/-27.
+
+One controller-owned public ETS set replaces per-event packets. The exact scope filter and event-generation time/event/bytes/operation/outcome remain. Atomic reservation saturates at129; only unique slots1..128 retain rows, so storage is128 events plus one control row. Event readers return committed rows only, tolerate reservations awaiting insertion, and reject overflow; sampler also checks overflow each turn. No process or telemetry notification is added.
+
+After all normal emitter joins and detach, mandatory checks require count<=128, exact committed count, valid unique contiguous slots and exactly one control row. A reservation without a row or event129 cannot silently pass. Table deletion follows detach and owned cleanup. Failure chronology reads bounded committed rows/count/overflow; orphaned packet plumbing is removed. Existing pressure/head/O+B/backlog/stack/reader/EOF/body/hash/resource/normal-join/time/64-mailbox assertions and bounded failure metadata/cleanup remain exact.
+
+Pinned diagnosis/design read/hash matched. Static exact preserved-block/constants/direct-Process.info-count/four-row/no-orphan checks passed; formatter/compiler/tests/runtime/browser/Git and independent review NOT RUN. Incidents0. Counter33 Sol5/runtimefail5/Astra2of2 retained;0 new writer runtime/repair rounds. Fixture file untouched. Source unformatted/uncompiled; root owns fresh gates and runtime. All synchronous commands finished; source immutable at DONE; custody returned to root. JSON includes exact diff/self-review.

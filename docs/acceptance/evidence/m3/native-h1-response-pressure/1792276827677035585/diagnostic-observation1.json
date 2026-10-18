@@ -1,0 +1,241 @@
+{
+  "at_utc": "2026-10-17T23:29:49.972040+00:00",
+  "command_receipt_sha256": "bb01fc601b4967d972cd503c3436772f1403ecef20a12cda2774c73b00e420b7",
+  "kind": "NATIVE_H1_PRESSURE_ACTUAL_FAILURE_CHRONOLOGY1",
+  "log_sha256": "602d482f7ad236118489d8b8324abfb8932400eaf3816dd13dadc79aee2a89a5",
+  "observation": "Positive8177 socket backlog; native prim_inet.send/4 and Exchange.send_chunks/3; actual pending4016 bytes not exact16384. Same operation times out after original2s, owner locally closes before sibling admission. Packetization contract investigation, no pass inferred.",
+  "raw_chronology": {
+    "actors_clipped": false,
+    "at_us": -576460744750379,
+    "events": [
+      {
+        "at_us": -576460746781144,
+        "bytes": 87,
+        "event": "send_started",
+        "operation": "45768804f8864477fccd82c652272336fe6f4774fa71399b1e4f759d96f14bda",
+        "outcome": null
+      },
+      {
+        "at_us": -576460746781052,
+        "bytes": 87,
+        "event": "send",
+        "operation": "45768804f8864477fccd82c652272336fe6f4774fa71399b1e4f759d96f14bda",
+        "outcome": "ok"
+      },
+      {
+        "at_us": -576460746753523,
+        "bytes": 8193,
+        "event": "send_started",
+        "operation": "cbefef560c3f4390cfe0e7ee36a3184a5c2ee15cb023f0edfe4e6d053670a4e7",
+        "outcome": null
+      },
+      {
+        "at_us": -576460746753405,
+        "bytes": 8193,
+        "event": "send",
+        "operation": "cbefef560c3f4390cfe0e7ee36a3184a5c2ee15cb023f0edfe4e6d053670a4e7",
+        "outcome": "ok"
+      },
+      {
+        "at_us": -576460746753145,
+        "bytes": 4016,
+        "event": "send_started",
+        "operation": "752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288",
+        "outcome": null
+      },
+      {
+        "at_us": -576460744752424,
+        "bytes": 4016,
+        "event": "send",
+        "operation": "752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288",
+        "outcome": {
+          "clipped": false,
+          "tuple": [
+            "unknown",
+            "timeout"
+          ]
+        }
+      },
+      {
+        "actor": "bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409",
+        "event": "down",
+        "observed_at_us": -576460744750411,
+        "reason": {
+          "clipped": false,
+          "tuple": [
+            "shutdown",
+            "local_closed"
+          ]
+        }
+      }
+    ],
+    "events_clipped": false,
+    "kind": "error",
+    "last_pressure_snapshot": {
+      "at_us": -576460744756714,
+      "bytes": 4016,
+      "native_lease": "5fd3ea87e16c26f3b38b5ddab94022a77f5ee483d77ef936e0a21d7e206d3b4a",
+      "native_socket": "ebef01e99fd30a343bb5fef087312900e52f9ab6466212a104dede0c6e496a45",
+      "operation": "752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288",
+      "owner": "bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409",
+      "retained_bytes": 4118,
+      "send_pend": 8177,
+      "stack": [
+        [
+          "prim_inet",
+          "send",
+          4
+        ],
+        [
+          "Elixir.ThousandIsland.Socket",
+          "send",
+          2
+        ],
+        [
+          "Elixir.Gaoxy.HTTP.Exchange",
+          "send_chunks",
+          3
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.HTTP",
+          "dispatch",
+          2
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.HTTP",
+          "call_fixed",
+          3
+        ],
+        [
+          "Elixir.Gaoxy.HTTP.Connection",
+          "call_endpoint",
+          3
+        ],
+        [
+          "Elixir.Gaoxy.HTTP.Connection",
+          "respond",
+          3
+        ],
+        [
+          "Elixir.ThousandIsland.Handler",
+          "invoke_callback",
+          2
+        ],
+        [
+          "Elixir.Gaoxy.HTTP.Connection",
+          "handle_info",
+          2
+        ],
+        [
+          "gen_server",
+          "try_handle_info",
+          3
+        ],
+        [
+          "gen_server",
+          "handle_msg",
+          3
+        ],
+        [
+          "proc_lib",
+          "init_p_do_apply",
+          3
+        ]
+      ]
+    },
+    "owned_actor_ids": [
+      "bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409",
+      "f13cc834d0a9623b694b8180192ac668a12b39e54b2158a3137a03a6700c3d47"
+    ],
+    "phases": [
+      {
+        "at_us": -576460746815921,
+        "phase": "sampler_started"
+      },
+      {
+        "at_us": -576460746780563,
+        "phase": "head_received"
+      },
+      {
+        "at_us": -576460746778185,
+        "phase": "prefix_dispatched"
+      }
+    ],
+    "phases_clipped": false,
+    "queued_packet_limit_reached": false,
+    "reason": {
+      "clipped": false,
+      "tuple": [
+        "badkey",
+        "redacted"
+      ]
+    },
+    "stack": {
+      "clipped": false,
+      "frames": [
+        [
+          "erlang",
+          "map_get",
+          "arguments_redacted"
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "pressure_snapshot",
+          2
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "-await_pressure/3-fun-0-",
+          3
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "await",
+          1
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "await_pressure",
+          3
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "run_probe",
+          1
+        ],
+        [
+          "Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest",
+          "test fixed/tcp native-H1 response pressure preserves a separate healthy connection",
+          1
+        ],
+        [
+          "Elixir.ExUnit.Runner",
+          "exec_test",
+          2
+        ],
+        [
+          "Elixir.ExUnit.CaptureLog",
+          "with_log",
+          2
+        ],
+        [
+          "Elixir.ExUnit.Runner",
+          "-maybe_capture_log/3-fun-0-",
+          3
+        ],
+        [
+          "timer",
+          "tc",
+          2
+        ],
+        [
+          "Elixir.ExUnit.Runner",
+          "-spawn_test_monitor/4-fun-1-",
+          6
+        ]
+      ]
+    }
+  },
+  "source_candidate3_sha256": "ed87a219beacce243151b4fe797d23623b345997504d265cac3e947a647227c2",
+  "verdict": "FAIL_NO_ACCEPTANCE"
+}

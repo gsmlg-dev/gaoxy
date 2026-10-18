@@ -1,0 +1,153 @@
+{
+  "task_id": "NATIVE_H1_PRESSURE_SOURCE_SPEC9",
+  "status": "DONE",
+  "assignment": "direct independent read-only source specification review",
+  "verdict": "FAIL: two actionable adopted-contract gaps; no implementation/runtime verdict",
+  "at_utc": "2026-10-18T00:51:46.663056+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head_from_frozen_candidate": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "git_query": "NOT RUN; root owns Git",
+    "source_candidate9_sha256": "b3f9ffb32f272b973c3c4aa299ea089a18e542412cd7cb1d3be3631774b93f8e",
+    "source_candidate8_sha256": "90e1374f8686e7dd50682de959d2c774927c1ebc76b40dccb08b4623fa11371d"
+  },
+  "pinned_owned_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "fe6dc7ca61e98e42e0c734053e4232cd3a20b4b5b88f74d3494729ca7a155f79",
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs": "f10077760305acf52bbe3a6f5b532783ae7be5097f71f6c7740d1352a7299948"
+  },
+  "map_verification": {
+    "verdict": "PASS",
+    "counts": {
+      "source_sha256": 404,
+      "documents_sha256": 11,
+      "installed_dependency_sha256": 12,
+      "evidence_sha256": 252
+    },
+    "mismatches": [],
+    "dependency_handling": "Pinned dependency files hashed for custody only; no private client process analysis or runtime inspection"
+  },
+  "candidate8_delta": {
+    "source_count_before": 404,
+    "source_count_after": 404,
+    "changed": [
+      "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+      "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs"
+    ],
+    "added": [],
+    "removed": [],
+    "documents": "11 unchanged",
+    "dependencies": "12 unchanged",
+    "evidence": "219 predecessor entries retained unchanged;33 additions;252 total",
+    "rows": [
+      {
+        "downstream": "native_h1",
+        "mount": "fixed",
+        "upstream": "tcp"
+      },
+      {
+        "downstream": "native_h1",
+        "mount": "fixed",
+        "upstream": "tls"
+      },
+      {
+        "downstream": "native_h1",
+        "mount": "group",
+        "upstream": "tcp"
+      },
+      {
+        "downstream": "native_h1",
+        "mount": "group",
+        "upstream": "tls"
+      }
+    ],
+    "case_count": 4,
+    "excluded": 0,
+    "author_delta_validation": "Exact reverse-application of each author unified diff to its source-before-format9 snapshot matched candidate8 source hashes. Subsequent format9 source changes independently inspected: whitespace/wrapping only. No other source change."
+  },
+  "findings": [
+    {
+      "id": "SPEC9-1",
+      "priority": "P2",
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "line": 476,
+      "title": "Recheck overflow after the committed-row snapshot",
+      "evidence": "events/0 checks count<=128 only at line477, then reads/sorts/maps committed rows at479-482 and returns directly. A callback can set sticky129 after the precheck and before the snapshot is returned. diagnosis5.json:37 explicitly requires counter validation before and after the snapshot.",
+      "impact": "A progress event accessor can return a truncated history while overflow is already recorded. The mandatory final check prevents an overall success receipt, but does not satisfy the adopted per-reader overflow contract.",
+      "requested_change": "Bind the committed-row result, recheck count<=128 after the snapshot, then return it. Keep progress free of reservation/row equality assertions and retain final completeness."
+    },
+    {
+      "id": "SPEC9-2",
+      "priority": "P2",
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "line": 114,
+      "title": "Retain the ETS store when failure cleanup cannot establish emitter quiescence",
+      "evidence": "The outer after always deletes the telemetry ETS table at114 after detach113. failure_cleanup/1 can return recorded fixture_cleanup errors at1715-1716, or forced-owned-actor cleanup without a confirmed DOWN at1662-1668. Detach alone does not wait for callbacks already running. diagnosis5.json:39 explicitly requires emitter quiescence before explicit deletion and controller-owned reclamation when cleanup cannot establish it.",
+      "impact": "On failed cleanup, a synchronous callback may still be using the table when it is explicitly destroyed, causing a telemetry handler error and losing the intended diagnostic/lifetime guarantee. This is a failure-path contract defect; normal success ordering is correct.",
+      "requested_change": "Track proven emitting-owner/Gate quiescence and explicitly delete only when established. Otherwise keep the original failure and cleanup failures, detach, and let controller exit reclaim the table; do not enlarge deadlines or weaken cleanup assertions."
+    }
+  ],
+  "passed_checks": [
+    "Controller owns public ETS set initialized before attach; same exact scope predicate/event/monotonic generation time/bytes/operation/outcome.",
+    "Single atomic update_counter {2,1,129,129}; sticky129; only slots1..128 retained; max128 immutable event rows plus one control row; no per-event controller packet or new observer process.",
+    "Progress reads committed integer-key rows only in descending reservation order; no reservation==rows assertion mid-flight. Sampler checks sticky overflow each sampling turn.",
+    "Normal success path joins original guardians, clients/native owners, fixture owners and group owner; detaches before exact final count0..128/row-count/slot-prefix/ETS-size checks and before receipt.",
+    "Four fixed/group x TCP/TLS native-H1 cases unchanged; mailbox64 including controller; event128; body262145/prefix262144; original body SHA; EOF causal hold/release/read ordering; actual O+B1..16384; 2-to-1-to-0 accounting checkpoints; original 2s/10s/barrier/module deadlines, buffer/backlog/stack/resource and normal-cleanup assertions preserved by exact narrow delta.",
+    "Fixture changes occur only on existing failure raises and new failure helpers; same RuntimeError/original response release deadline prefix/@timeout5000; success path unchanged.",
+    "Queue additions use only existing fixture-owned events; at most16 whitelisted event summaries plus total/truncated. Added summaries contain only existing ordinal/phase fields and allowlisted method/route/action labels; no added raw body/header/target output.",
+    "Design, diagnosis5, matrix diagnosis, both author JSON/Markdown reports read; their pinned hashes matched. Historical diagnostic-fresh3 FAIL52/3 and diagnostic-fresh2 scoped PASS52/0 retained; matrix cause UNKNOWN and diagnostic-only source change is no fix proof."
+  ],
+  "verification": {
+    "read_only_commands": "cat/rg/nl/sed and Python JSON/text/hash/diff inspection; full frozen-map rehash repeated at sealing with all matches",
+    "tests_executed": 0,
+    "runtime_compiler_formatter_AST_browser_Git": "NOT RUN; expressly outside assignment",
+    "source_edits": "NONE",
+    "report_outputs_only": [
+      "/tmp/gaoxy-native-h1-pressure-source-spec9.json",
+      "/tmp/gaoxy-native-h1-pressure-source-spec9.md"
+    ]
+  },
+  "counters": {
+    "frozen_authority": "counter33.json",
+    "counter33_sha256": "1e2e94100938e06ae52060ac6c8139c139f43ff6dde9fc26f9a9c245f5f333df",
+    "cumulative_sol": 5,
+    "runtime_failed_green": 5,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "review_repair_round_increment": 0,
+    "review_runtime_increment": 0,
+    "review_tooling_incidents": 4,
+    "successor_notice": "Root reports later counter34 root643/orchestration530/native-tooling55; this review does not mutate or reset counters. Four new reviewer tooling incidents require root accounting."
+  },
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "output volume",
+      "detail": "Initial whole candidate8/candidate9 plus evidence print expanded manifests and was truncated; narrowed later reads."
+    },
+    {
+      "count": 1,
+      "kind": "output volume",
+      "detail": "Combined selected design/diagnosis/author output exceeded aggregate tool response cap; later key/line projections recovered relevant text."
+    },
+    {
+      "count": 1,
+      "kind": "output volume",
+      "detail": "Full format-prepare9 JSON print expanded source maps and was truncated; later projected command/exit/owned pins/delta only."
+    },
+    {
+      "count": 1,
+      "kind": "wrong guessed source path",
+      "detail": "Read-only rg included absent apps/gaoxy_http/lib/gaoxy/http/admission.ex and exited2. No edit/runtime; diagnosis contract was used without further private source exploration."
+    }
+  ],
+  "limits": "Source review only. No runtime/compile/format/AST invoked, no Git inventory, no forbidden evidence file read/enumerated/stat/hash, no protected prompt/key/raw trace access, no dependency97 pursuit, no new gate/approval/third Astra.",
+  "command_shutdown": "All reviewer commands finished synchronously; no background process started and no other actor process touched.",
+  "remaining_risks": [
+    "Two actionable source-contract gaps remain for root to resolve.",
+    "Fresh prescribed runtime/compatibility/browser gates remain root-owned and unexecuted by this reviewer.",
+    "Matrix timeout cause remains UNKNOWN; historical mailbox67 complete composition remains UNKNOWN."
+  ],
+  "decisions_needed": "No user/external decision identified; root owns targeted repairs and subsequent independent review/verification.",
+  "custody": "Only the two named /tmp reports written. Candidate9 and all verified pinned maps unchanged at seal. Reports immutable at DONE; custody returned to root; later clarification requires a new report version.",
+  "memory_used": "MEMORY.md:230-234 reinforced retained failure/counter/scope boundaries; live source/evidence is authoritative."
+}

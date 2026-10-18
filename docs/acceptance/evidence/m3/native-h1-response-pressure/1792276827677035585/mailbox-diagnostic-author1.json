@@ -1,0 +1,39 @@
+{
+  "task_id": "native_h1_pressure_diagnostic_author2",
+  "status": "DONE",
+  "assignment": "direct minimal failure-only mailbox assertion metadata",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+  "before_sha256": "288bc0aaaff93fd12b8ad80b5869069ce3f4ce57bb04b3544596dc8377651c3c",
+  "after_sha256": "61d51afaa27a74b9b5d32b7a9013d13e7d45a956232cd37da70e1399ebf4b51a",
+  "exact_diff": "--- source-before-diagnostic2\n+++ diagnostic-author2\n@@ -1006,5 +1006,23 @@\n           case observe(fn -> Process.info(actor, :message_queue_len) end) do\n             {:message_queue_len, count} ->\n-              assert count <= 64\n+              assert count <= 64,\n+                if count > 64 do\n+                  role = cond do\n+                    actor === caller -> \"controller\"\n+                    actor === self() -> \"sampler\"\n+                    actor === exchange.owner -> \"slow_native_owner\"\n+                    actor === exchange.gate -> \"admission_gate\"\n+                    actor === f.instance -> \"instance\"\n+                    actor === f.owner -> \"transport_owner\"\n+                    actor === f.peer -> \"peer\"\n+                    actor === f.groups -> \"group_owner\"\n+                    actor in guardians -> \"guardian\"\n+                    actor in peer_workers -> \"peer_worker\"\n+                    actor in clients -> \"client\"\n+                    true -> \"other_owned_actor\"\n+                  end\n+\n+                  \"native_h1_pressure_mailbox actor_sha256=#{identity(actor)} role=#{role} count=#{count} turn=#{totals.turns}\"\n+                end\n               count\n \n",
+  "diff_summary": "+19/-1 lines at existing count<=64 assertion site only",
+  "reason": "Actor/cause remain unproven; expose observed actor hash/known role/count/turn directly in existing failing assertion so32-packet diagnostic cap cannot hide attribution.",
+  "bounds": "One SHA256 actor identifier, one fixed role string, two existing integer values; metadata computed only when existing count>64.",
+  "preserved": [
+    "Exact count<=64 condition and failing assertion",
+    "All four source-generated cases",
+    "No new observations/queries/queue enumeration/packets/event draining",
+    "No timeout/bound/helper/diagnostic/cleanup behavior changes"
+  ],
+  "verification": [
+    "Exact entry and diagnosis3 hashes verified",
+    "Exact replacement reversal equals original entire source",
+    "Process.info occurrence count unchanged"
+  ],
+  "not_run": [
+    "formatter",
+    "compiler",
+    "runtime/tests/probe",
+    "Git",
+    "independent review"
+  ],
+  "incidents": [],
+  "counter_authority": "Counter24 SHA4210a995f8d2e584b3661652762dfc7d45ae66f584075243ad612e2410c1d88f; bounded Solrepair3 / diagnostic-source-repair2; runtimefails3/Astra2of2 retained,0 runtime runs here.",
+  "remaining_risks": [
+    "Source unformatted/uncompiled; parent owns SPEC-CODE/static then full52 diagnostic runtime",
+    "A diagnostic PASS does not establish overflowing actor/cause"
+  ],
+  "command_shutdown": "All synchronous commands completed; no runtime processes started; immutable source custody returned to root.",
+  "decisions_needed": []
+}

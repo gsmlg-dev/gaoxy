@@ -1,4 +1,18 @@
+## Current successor native-H1 response-pressure qualification — 2026-10-18
+
+The separate native-H1 response-write-pressure slice now has PASS runtime qualification and independent implementation SPEC→CODE review with zero findings. Its frozen source candidate14 covers405 source files and12 installed dependency pins. Actual pressure4, separate fresh five-file52, unchanged completed-response regression1, default standalone16 and ordinary browser2 with four actual root image opens passed. Compile and scoped format passed. Documentation review, local commit and postcommit custody remain pending for that successor. This predecessor's completed local closure is unchanged; WholeTask6/Task5/M3 remain OPEN. See the current [response-pressure acceptance](../acceptance/m3-native-h1-response-pressure.md) for the exact evidence and remaining gates.
+
+## Historical predecessor checkpoints — preserved below
+
 # Task 6 bounded managed-H2 slow-peer profile design
+
+## Actual managed-H2 slow-peer local closure — 2026-10-18
+
+This bounded slice is **DONE LOCALLY** at `fb7d0fda2b7c16c42c65579736dc1f643e17d812` after final document SPEC2→CODE2 and all required executions passed. Actual commit/disk custody verified155 task files,403 source pins,12 installed dependency pins and552 union files; index was empty and scoped13 source/document cached whitespace passed0. [Actual custody](../acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/postcommit-custody1.json) follows the commit as a separate immutable receipt. Focused4/0 overlaps fresh94/0; Python11 and ordinary browser2rows/four actual root image opens passed. Raw Nix dirty-tree warning and earlier failures remain preserved. WholeTask6/Task5/M3 stay OPEN.
+
+Automatically proceed to the written native-H1 actual response-write-pressure design/plan and its initial fixed/TCP witness under continuing authorization. Its independent design review and all new runtime remain pending. No push, publication, deployment or other excluded operation follows.
+
+## Frozen precommit checkpoints — unchanged below
 
 ## Current managed-H2 slow-peer qualification — 2026-10-18
 

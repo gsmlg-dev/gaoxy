@@ -1,0 +1,113 @@
+{
+  "task_id": "native-h1-pressure-source-author1",
+  "status": "DONE_SOURCE_ONLY_PENDING_INDEPENDENT_REVIEW_AND_ROOT_VALIDATION",
+  "assignment": "direct initial fixed/TCP test source implementation",
+  "at_utc": "2026-10-17T22:55:39.668413+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "parent-supplied actual HEAD fb7d0fda2b7c16c42c65579736dc1f643e17d812; writer Git NOT RUN",
+  "design_candidate2_sha256": "6c89ff5237e0de84f6ce1b4c6719f5f834846109d8e803d815c33990521a6117",
+  "design_adoption1_sha256": "edab2841d6312a14da607ec8968cf858ce9b7da90ebf0879008b41878da36fa8",
+  "root_cause_and_behavior": "The existing H1 matrix fixture lacked opt-in endpoint capture and nonblocking command dispatch. Added only those seams and a single fixed/TCP actual response-write-pressure witness using the native socket, exact Admission send operation and public owner stack; actual feasibility remains NOT RUN.",
+  "changed_files": {
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs": {
+      "sha256": "ffa1cdeedc46b186e6120df4e9e947bfd3ae032c93befa0c31b6d34c2914ff7f",
+      "lines": 842
+    },
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": {
+      "sha256": "741e9bb5240f03354ce373dbf4200707d599937124a15556f8e4be56e05eb84f",
+      "lines": 963
+    }
+  },
+  "fixture_prior_sha256": "94adbb8390513cdbc2a2a4e9d751b9db3a404ff82053ad104089782296aa628e",
+  "default_delta": {
+    "start": "Default-preserving start(row, overrides \\ %{}); optional endpoint_module plus endpoint map merging at the existing endpoint tuple. Empty overrides reconstruct the same existing module/config.",
+    "command": "Existing command/2 is byte-unchanged. New dispatch_command/2 sends the same peer message and returns :ok without waiting for its eventual command receipt.",
+    "inverse_check": "PASS: removing exactly the start header change, endpoint tuple override block and new dispatch_command/2 recovers the exact original fixture SHA256. No changes to existing default driver registry, assertions, capacities, request10s/write2s deadlines, peer send/EOF semantics or stop/join contract."
+  },
+  "implementation": {
+    "generated_cases": 1,
+    "row": "fixed/TCP upstream; native cleartext H1 downstream; two independent raw downstream sockets",
+    "selectors_exclusions": "None; source has exactly one test and no test selector tags. Other three rows NOT IMPLEMENTED.",
+    "actual_pressure": "Require positive bounded Socket.getstat send_pend; exact captured lease owner with identical16,384-byte send operation O; bounded Process.info MFA-only native TCP send wait. Repeat before/at overlap/after healthy/immediately before read release. Never sys.get_state native owner.",
+    "causality": "Unique client release/read-entry timestamps precede actual existing send telemetry outcome :ok for O. Healthy finishes first. Final upstream byte/zero terminator remain withheld until actual O completion, exact262144-prefix consumption and pending slow original checkpoint.",
+    "identity_accounting": "Capture two distinct native owners/upstream connections/original public completions/guardians/session and transport tokens; exact request pin unions and actual per-original cleanup charges. Checkpoint1 then2\u21921\u21920; H1 native owners remain physical connection owners until explicit close.",
+    "numeric_bounds": "Service16MiB/max_active64; HTTPFetch actual fields/url reservation worksheet; each original<=8011816; each native<=149504; combined<=16322640; transport capacities unchanged; mailbox64, wire1MiB, pending16KiB, telemetry128, sampler5ms/4096 turns. Raw parser has finite head/line/chunk/body bounds.",
+    "observers": "Every sys/status/socket and public Process.info observation uses an unlinked monitored helper, exact normal result+DOWN before phase deadline. Shared owned ETS registry avoids unbounded helper notifications; failure cleanup remains separate finite5s and FAIL. Active-send observers clip to send_started+2s; original native10s remains unchanged.",
+    "cleanup": "Assert original completion/guardian joins, explicit client/native-owner joins, zero service/request/helper/pin state, explicit resource retirement, existing fixture peer stop with exact accepts2/forced0/live0, fixture owner/instance normal joins and listener rebind. All these are source assertions, not executed results."
+  },
+  "static_verification": [
+    {
+      "command": "Read-only Python design candidate/adoption hash and assigned source baseline check",
+      "result": "PASS exact supplied design/adoption hashes; original fixture hash matched; new test absent before writing."
+    },
+    {
+      "command": "Read-only Python fixture inverse transformation and SHA256 comparison",
+      "result": "PASS original fixture94adbb... reconstructed exactly; default source outside three necessary seam hunks unchanged."
+    },
+    {
+      "command": "Read-only Python old-source and installed-dependency hash comparison",
+      "result": "PASS402 unchanged old source files; only assigned fixture differs in original403 map. All12 installed dependency pins unchanged; new test increases future source cohort to404."
+    },
+    {
+      "command": "Read-only Python test selector/body/forbidden native-state call/receipt prefix checks",
+      "result": "PASS exactly1 source test/no selectors; deterministic body262145/SHA256 c35991ad254f48ff8b02becb9f0cc56581e86a0b477b13e5ebb0030a3b91c848; no explicit sys.get_state on captured native owner; expected receipt prefix present."
+    }
+  ],
+  "not_run": [
+    "Source independent SPEC\u2192CODE",
+    "Elixir parser/compiler/formatter",
+    "All tests and actual pressure witness",
+    "Browser/standalone/runtime",
+    "Git/index/commit/publication"
+  ],
+  "receipt_contract": {
+    "prefix": "GAOXY_NATIVE_H1_PRESSURE_RECEIPT ",
+    "format": "One JSON object after a successful entire test, never emitted as success after forced/failed cleanup.",
+    "keys": {
+      "mount/upstream/downstream": "fixed/tcp/native_h1",
+      "actual_requests/downstream_connections": "2/2 asserted; upstream_connections exact two distinct peer IDs",
+      "actual_sndbuf/actual_recbuf/actual_client_buffer": "OS readback; each<=16384",
+      "send_operation": "SHA256 identity for O",
+      "send_started_us/release_us/read_entered_us/actual_send_ok_us/prefix_consumed_us/healthy_complete_us/producer_EOF_release_us": "event-generation monotonic microseconds for phase/cause auditing",
+      "snapshots": "four named phases before_sibling/two_originals/after_healthy/immediately_before_release; each exact O/native owner/lease/socket identity, bytes/send_pend/MFA-only stack/retained_bytes/time",
+      "checkpoints": "two_originals,healthy_joined,O_completed_upstream_EOF_still_held,all_originals_joined; requests,cleanup bytes,pins,retained bytes and remaining original budget",
+      "originals": "2 hashed owner/guardian/completion/token/lease/socket identities plus actual reserve and formula inputs",
+      "samples": "actual nonzero timer turns and sampled maxima; persistent_retained_high_water is separate",
+      "body_bytes/body_sha256/wire_bytes/telemetry_events/healthy_bytes": "exact body262145/hash, bounded raw wire and telemetry, healthy1",
+      "joined": "asserted two original guardians/two native owners/two clients/two fixture owners/observer_helpers_live0/peer_forced0/peer_live0"
+    }
+  },
+  "new_tool_incidents": [
+    {
+      "id": 1,
+      "description": "One investigative rg pattern used an unescaped literal opening brace and produced regex parse error. The required request-options source was subsequently read through bounded exact ranges/fixed-string search. No implementation/runtime failure."
+    },
+    {
+      "id": 2,
+      "description": "One investigative source command included a nonmatching native*.ex shell glob; zsh reported no matches found. No runtime/compiler or repository mutation occurred; no repeated glob attempt."
+    }
+  ],
+  "new_tool_incident_count": 2,
+  "prior_tool_incidents": "Read-only preflight3 already recorded in E13/counter2; excluded here. Earlier final-document review incidents remain separate.",
+  "repair_counters": {
+    "source_author_sol_repair_rounds": 0,
+    "source_review_findings_or_runtime_failures_this_assignment": 0,
+    "inherited_h2_source_sol": 1,
+    "inherited_h1_sol": 4,
+    "astra": "2/2 exhausted"
+  },
+  "astra_gate": null,
+  "command_shutdown": "All own static read/write commands finished; no background processes/sessions started or remaining.",
+  "remaining_risks": [
+    "Uncompiled/unformatted source requires independent review and root-owned strict compile/format checks.",
+    "Actual OS sndbuf/recbuf clamping, positive send_pend, installed OTP native-send MFA, exact16KiB pending operation and all healthy/observation work within existing2s write deadline must pass the actual single-row probe. No success inferred.",
+    "Failure cleanup and exact normal join assertions require root actual execution; no permitted assertion/deadline/capacity weakening."
+  ],
+  "decisions_needed": "No new external permission/product decision or source-level blocker established.",
+  "ownership": "Returned to root for freezing and independent source SPEC\u2192CODE; writer stops until explicit handoff.",
+  "repository_mutations": [
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs"
+  ],
+  "other_repository_mutations": false
+}

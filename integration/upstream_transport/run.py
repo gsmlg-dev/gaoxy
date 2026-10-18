@@ -327,6 +327,12 @@ class Case:
         request = self.event("request", role="application", method=method, target=target)
         if self.connection is None:
             self.connection = request["connection"]
+        if request["connection"] != self.connection:
+            try:
+                diagnostic = self.call(dict(op="failure_diagnostic"))
+                self.receipts.append(dict(source="failure_diagnostic", receipt=diagnostic))
+            except Exception as error:
+                self.receipts.append(dict(source="failure_diagnostic_error", error=type(error).__name__))
         check(request["connection"] == self.connection, "application changed accepted upstream connection")
         check(request["request"] not in [r["request"] for r in self.requests], "duplicate upstream request ID")
         if self.requests:

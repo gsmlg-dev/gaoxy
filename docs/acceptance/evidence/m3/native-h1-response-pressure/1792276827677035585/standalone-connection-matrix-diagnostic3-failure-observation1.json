@@ -1,0 +1,190 @@
+{
+  "actual_exit": 1,
+  "at_utc": "2026-10-18T01:19:33.298588+00:00",
+  "candidate11_sha256": "85bc89aad90581df8810c40183c2f8bb41d6109d5e17e9faad1c58026a735397",
+  "case": "group/h1/tcp/temporal_and_declared_trailers",
+  "case_cleanup_errors": [
+    "forced client cleanup",
+    "fixture cleanup: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+  ],
+  "collector": {
+    "descendant_cleanup": {
+      "forced": false,
+      "initial": [
+        3565191,
+        3565231
+      ],
+      "initial_after_reap": [],
+      "reap_deadline_exhausted": [],
+      "reaped": [
+        {
+          "phase": "before_force",
+          "pid": 3565231,
+          "wait_status": 10
+        },
+        {
+          "phase": "before_force",
+          "pid": 3565191,
+          "wait_status": 0
+        }
+      ],
+      "reaped_before_force": [
+        {
+          "phase": "before_force",
+          "pid": 3565231,
+          "wait_status": 10
+        },
+        {
+          "phase": "before_force",
+          "pid": 3565191,
+          "wait_status": 0
+        }
+      ],
+      "remaining": [],
+      "signal_attempts": []
+    },
+    "forced": false,
+    "process_group_remaining": [],
+    "process_joined": true,
+    "source_stable": true
+  },
+  "command_log_sha256": "8129f2d2ce9ae8b911587fbcf51a353d60d3f09fa65222923c8679de359f1337",
+  "command_receipt_sha256": "e31dc49c36044c40084ab85bab5910ec9d58cded9afdafc3c9f48ac181b1cd91",
+  "diagnostic_export": {
+    "additional_cap_reached": false,
+    "observed_total": 4,
+    "truncated": false
+  },
+  "driver_cleanup_errors": [
+    "forced client cleanup",
+    "fixture cleanup: JSONDecodeError('Expecting value: line 1 column 1 (char 0)')"
+  ],
+  "driver_finished": false,
+  "executed": 9,
+  "expected": 16,
+  "failed": 1,
+  "kind": "NATIVE_H1_STANDALONE_FAILURE_OBSERVATION3",
+  "limits": "Peer closed 731us after POST final response command; no 5s receive timeout in this failure. Immediate terminal observation does not establish which client owner cancelled/closed or a dependency defect. Case cleanup FAIL remains distinct from normal collector joins. Prior failures retained; stage OPEN.",
+  "not_run": [
+    "group/h1/tcp/representation_and_reuse",
+    "group/h1/tls/temporal_and_declared_trailers",
+    "group/h1/tls/representation_and_reuse",
+    "group/h2/tcp/temporal_and_declared_trailers",
+    "group/h2/tcp/representation_and_reuse",
+    "group/h2/tls/temporal_and_declared_trailers",
+    "group/h2/tls/representation_and_reuse"
+  ],
+  "passed": 8,
+  "reason": "AssertionError('application changed accepted upstream connection')",
+  "run": "standalone-connection-matrix-diagnostic3",
+  "source_pins_match_candidate": true,
+  "timeline": [
+    {
+      "connection": 1,
+      "event": "accepted",
+      "peer_at_us": -576460736241898,
+      "source": "failure_diagnostic"
+    },
+    {
+      "connection": 1,
+      "event": "request",
+      "method": "HEAD",
+      "peer_at_us": -576460736240460,
+      "request": 1,
+      "source": "health",
+      "target": "/health"
+    },
+    {
+      "connection": 1,
+      "event": "request",
+      "method": "POST",
+      "peer_at_us": -576460735991222,
+      "request": 2,
+      "source": "upstream",
+      "target": "/temporal"
+    },
+    {
+      "connection": 1,
+      "event": "upload_prefix",
+      "method": "POST",
+      "peer_at_us": -576460735991106,
+      "request": 2,
+      "source": "upstream",
+      "target": "/temporal"
+    },
+    {
+      "action": "continue_upload",
+      "connection": 1,
+      "event": "command",
+      "method": "POST",
+      "peer_at_us": -576460735968929,
+      "request": 2,
+      "source": "command",
+      "target": "/temporal"
+    },
+    {
+      "connection": 1,
+      "event": "upload_end",
+      "method": "POST",
+      "peer_at_us": -576460735961494,
+      "request": 2,
+      "source": "upstream",
+      "target": "/temporal"
+    },
+    {
+      "action": "send",
+      "connection": 1,
+      "ended": false,
+      "event": "command",
+      "method": "POST",
+      "peer_at_us": -576460735947862,
+      "request": 2,
+      "source": "command",
+      "target": "/temporal"
+    },
+    {
+      "action": "send",
+      "connection": 1,
+      "ended": true,
+      "event": "command",
+      "method": "POST",
+      "peer_at_us": -576460735926736,
+      "request": 2,
+      "source": "command",
+      "target": "/temporal"
+    },
+    {
+      "connection": 1,
+      "event": "peer_terminal",
+      "peer_at_us": -576460735926005,
+      "phase": "await_request",
+      "request": 3,
+      "source": "failure_diagnostic",
+      "terminal_label": "peer_closed"
+    },
+    {
+      "connection": 1,
+      "event": "local_socket_close",
+      "peer_at_us": -576460735925965,
+      "phase": "worker_after",
+      "source": "failure_diagnostic",
+      "terminal_label": "close_ok"
+    },
+    {
+      "connection": 2,
+      "event": "accepted",
+      "peer_at_us": -576460735684693,
+      "source": "failure_diagnostic"
+    },
+    {
+      "connection": 2,
+      "event": "request",
+      "method": "DELETE",
+      "peer_at_us": -576460735679555,
+      "request": 1,
+      "source": "upstream",
+      "target": "/trailers"
+    }
+  ],
+  "verdict": "FAIL"
+}

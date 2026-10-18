@@ -1,0 +1,453 @@
+--- onecase
++++ fourcases
+@@ -3,7 +3,7 @@
+ defmodule Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest do
+   use ExUnit.Case, async: false
+   alias Gaoxy.Proxy.ManagedH1MatrixFixture, as: Fixture
+-  alias Gaoxy.Proxy.{HTTPFetchClient, UpstreamTransports}
++  alias Gaoxy.Proxy.{HTTPFetchClient, UpstreamGroups, UpstreamTransports}
+   alias Gaoxy.HTTP.Resources
+   alias ThousandIsland.Socket
+ 
+@@ -63,54 +63,105 @@
+     end
+   end
+ 
+-  # Generate exactly one case. The other three rows require a reviewed actual
+-  # fixed/TCP witness before a separate source expansion and fresh review.
+-  test "fixed/tcp native-H1 response pressure preserves a separate healthy connection" do
+-    Process.put(:pressure_controller, self())
+-    Process.put(:pressure_deadline, now() + @barrier)
+-    Process.put(:pressure_events, [])
+-    Process.put(:pressure_phases, [])
+-    Process.put(:pressure_last_snapshot, nil)
+-    Process.put(:pressure_clients, [])
+-    Process.put(:pressure_originals, [])
+-    Process.put(:pressure_requests, [])
+-    Process.put(:pressure_actors, [])
+-    Process.put(:pressure_sampler, nil)
+-    Process.put(:pressure_handler, nil)
+-    Process.put(:pressure_stopped, false)
+-    Process.put(:pressure_observers, :ets.new(:pressure_observers, [:set, :public]))
+-
+-    f =
+-      Fixture.start(%{"mount" => "fixed", "downstream" => "h1", "upstream" => "tcp"}, %{
+-        endpoint_module: ObservedEndpoint,
+-        endpoint: %{pressure_observer: self(), pressure_delegate: Gaoxy.Proxy.HTTP}
+-      })
+-
+-    try do
+-      run_probe(f)
+-    catch
+-      kind, reason ->
+-        stack = __STACKTRACE__
+-        failure_chronology(kind, reason, stack)
+-        failures = failure_cleanup(f)
+-
+-        :erlang.raise(
+-          kind,
+-          {:native_h1_pressure_failed, reason, cleanup_failures: failures},
+-          stack
+-        )
+-    after
+-      if handler = Process.get(:pressure_handler), do: :telemetry.detach(handler)
+-      :ets.delete(Process.get(:pressure_observers))
++  for mount <- ["fixed", "group"], upstream <- ["tcp", "tls"] do
++    @mount mount
++    @upstream upstream
++
++    test "#{mount}/#{upstream} native-H1 response pressure preserves a separate healthy connection" do
++      Process.put(:pressure_controller, self())
++      Process.put(:pressure_deadline, now() + @barrier)
++      Process.put(:pressure_events, [])
++      Process.put(:pressure_phases, [])
++      Process.put(:pressure_last_snapshot, nil)
++      Process.put(:pressure_clients, [])
++      Process.put(:pressure_originals, [])
++      Process.put(:pressure_requests, [])
++      Process.put(:pressure_health_requests, [])
++      Process.put(:pressure_actors, [])
++      Process.put(:pressure_sampler, nil)
++      Process.put(:pressure_handler, nil)
++      Process.put(:pressure_stopped, false)
++      Process.put(:pressure_group_joined, false)
++      Process.put(:pressure_observers, :ets.new(:pressure_observers, [:set, :public]))
++
++      f =
++        Fixture.start(%{"mount" => @mount, "downstream" => "h1", "upstream" => @upstream}, %{
++          endpoint_module: ObservedEndpoint,
++          endpoint: %{
++            pressure_observer: self(),
++            pressure_delegate:
++              if(@mount == "group", do: Gaoxy.Proxy.GroupEndpoint, else: Gaoxy.Proxy.HTTP)
++          }
++        })
++
++      try do
++        run_probe(f)
++      catch
++        kind, reason ->
++          stack = __STACKTRACE__
++          failure_chronology(kind, reason, stack)
++          failures = failure_cleanup(f)
++
++          :erlang.raise(
++            kind,
++            {:native_h1_pressure_failed, reason, cleanup_failures: failures},
++            stack
++          )
++      after
++        if handler = Process.get(:pressure_handler), do: :telemetry.detach(handler)
++        :ets.delete(Process.get(:pressure_observers))
++      end
+     end
+   end
+ 
+   defp run_probe(f) do
+     transport = system(f.owner)
+     assert transport.tokens === %{}
+-    baseline = Map.new(transport.pins, fn {ref, pin} -> {ref, pin.public} end)
+-    assert [_] = Map.values(baseline)
+-    assert Enum.all?(baseline, fn {_, pin} -> pin.kind === :baseline end)
++    transport_baseline = Map.new(transport.pins, fn {ref, pin} -> {ref, pin.public} end)
++
++    if f.group,
++      do: assert(map_size(transport_baseline) === 2),
++      else: assert([_] = Map.values(transport_baseline))
++
++    assert Enum.all?(transport_baseline, fn {_, pin} ->
++             pin.kind === :baseline and pin.holder === self() and
++               pin.owner === f.owner and pin.handles === [f.handle]
++           end)
++
++    group_baseline =
++      if f.group do
++        groups = system(f.groups)
++        assert groups.tokens === %{}
++        [{ref, pin}] = Map.to_list(groups.pins)
++        assert pin.kind === :baseline and pin.holder === self()
++        assert pin.keys === [{f.group.group, f.group.generation}]
++        assert groups.epoch === f.group.owner_epoch and f.group.owner === f.groups
++        assert Map.fetch!(groups.groups, {f.group.group, f.group.generation}).handle === f.group
++        assert is_reference(ref) and is_reference(pin.operation)
++        # H1 group records retain the identity needed for the provider's public pin.
++        public_pin =
++          Map.merge(Map.take(f.group, [:provider, :owner, :owner_epoch]), %{
++            ref: ref,
++            operation: pin.operation,
++            handles: [f.group],
++            kind: pin.kind
++          })
++
++        assert %{inflight: 0, probes: 0, probe_bytes: 0} = group_status(f)
++        health = Fixture.event(f, %{"event" => "request", "role" => "health"}, budget())
++        assert health["method"] === "HEAD" and health["target"] === "/health"
++        Process.put(:pressure_health_requests, [health])
++        %{pins: groups.pins, public_pins: [public_pin]}
++      else
++        %{pins: %{}, public_pins: []}
++      end
++
++    baseline = %{
++      transport_pins: transport_baseline,
++      group_pins: group_baseline.pins,
++      group_release_pins: group_baseline.public_pins
++    }
++
+     assert %{active: 0, cleanup_pending: 0, retained_bytes: 0, cleanup_failed: nil} = service(f)
+     assert_transport_limits(transport.limits)
+ 
+@@ -262,9 +313,29 @@
+ 
+     final_service = service(f)
+     assert final_service.retained_high_water <= @combined_upper
+-    assert_exact_peer_counts(f, [first, second])
+-    :ok = Resources.release(Map.values(baseline))
++    peer_connections = assert_exact_peer_counts(f, [first, second])
+     retirement_deadline = Process.get(:pressure_deadline)
++
++    if f.group do
++      :ok = Resources.release(baseline.group_release_pins)
++
++      await(fn ->
++        groups = system(f.groups)
++
++        groups.tokens === %{} and groups.pins === %{} and groups.groups === %{} and
++          groups.probes === %{}
++      end)
++
++      group_monitor = Process.monitor(f.groups)
++      :ok = observe(fn -> GenServer.stop(f.groups, :normal, timeout_at(retirement_deadline)) end)
++      join(f.groups, group_monitor, :normal)
++      Process.put(:pressure_group_joined, true)
++    end
++
++    assert Map.new(system(f.owner).pins, fn {ref, held} -> {ref, held.public} end) ===
++             baseline.transport_pins
++
++    :ok = Resources.release(Map.values(baseline.transport_pins))
+     {:ok, retirement} = observe(fn -> UpstreamTransports.retire(f.owner, retirement_deadline) end)
+     :ok = observe(fn -> UpstreamTransports.await_retirement(retirement, retirement_deadline) end)
+ 
+@@ -274,7 +345,12 @@
+     fixture_joins = Enum.map([f.owner, f.instance], &{&1, Process.monitor(&1)})
+     joined = Fixture.stop(f, budget())
+     Process.put(:pressure_stopped, true)
+-    assert joined["accepted"] === 2 and joined["forced"] === 0 and joined["live"] === 0
++    expected_accepts = length(peer_connections)
++    if is_nil(f.group), do: assert(expected_accepts === 2)
++
++    assert joined["accepted"] === expected_accepts and joined["forced"] === 0 and
++             joined["live"] === 0
++
+     for {actor, monitor} <- fixture_joins, do: join(actor, monitor, :normal)
+ 
+     {:ok, rebound} =
+@@ -286,10 +362,18 @@
+     assert :ets.info(Process.get(:pressure_observers), :size) === 0
+ 
+     receipt = %{
+-      mount: "fixed",
+-      upstream: "tcp",
++      mount: f.mount,
++      upstream: f.upstream,
+       downstream: "native_h1",
+       actual_requests: 2,
++      health_requests: length(Process.get(:pressure_health_requests)),
++      health_connections: Enum.map(Process.get(:pressure_health_requests), & &1["connection"]),
++      accepted_upstream_connections: peer_connections,
++      upstream_request_ordinals:
++        Enum.map(
++          Process.get(:pressure_health_requests) ++ [first, second],
++          &Map.take(&1, ["connection", "request", "role"])
++        ),
+       downstream_connections: 2,
+       upstream_connections: Enum.map([first, second], & &1["connection"]),
+       request_timeout_ms: 10_000,
+@@ -339,6 +423,8 @@
+         native_owners: 2,
+         clients: 2,
+         fixture_owners: 2,
++        group_owners: if(f.group, do: 1, else: 0),
++        group_normal_joins: if(f.group, do: 1, else: 0),
+         observer_helpers_live: :ets.info(Process.get(:pressure_observers), :size),
+         peer_forced: 0,
+         peer_live: 0
+@@ -542,13 +628,43 @@
+       url_bytes: url_bytes
+     }
+ 
++    original =
++      if f.group do
++        groups = system(f.groups)
++
++        [{group_token, group_hold}] =
++          Enum.filter(groups.tokens, fn {_, held} -> held.guardian === hold.guardian end)
++
++        assert group_hold.completion === hold.completion
++        assert state.selection === {f.group, group_token}
++
++        group_pins =
++          Map.new(
++            for {ref, pin} <- groups.pins,
++                pin.kind === :request and pin.holder in [exchange.owner, hold.guardian],
++                do: {ref, pin}
++          )
++
++        assert map_size(group_pins) > 0
++        assert Enum.all?(group_pins, fn {_, pin} -> pin.keys === [group_hold.key] end)
++        Map.merge(original, %{group_token: group_token, group_pins: group_pins})
++      else
++        assert state.selection === nil
++        original
++      end
++
+     Process.put(:pressure_originals, [original | Process.get(:pressure_originals)])
+     original
+   end
+ 
+   defp checkpoint(f, baseline, originals, name) do
+     tokens = MapSet.new(originals, & &1.transport_token)
+-    pins = Enum.reduce(originals, baseline, &Map.merge(&2, &1.pins))
++    pins = Enum.reduce(originals, baseline.transport_pins, &Map.merge(&2, &1.pins))
++    group_tokens = MapSet.new(originals, &Map.get(&1, :group_token))
++
++    group_pins =
++      Enum.reduce(originals, baseline.group_pins, &Map.merge(&2, Map.get(&1, :group_pins, %{})))
++
+     count = length(originals)
+ 
+     await(fn ->
+@@ -556,7 +672,10 @@
+ 
+       MapSet.new(Map.keys(transport.tokens)) === tokens and
+         Map.new(transport.pins, fn {ref, held} -> {ref, held.public} end) === pins and
+-        service(f).cleanup_pending === count
++        service(f).cleanup_pending === count and
++        (is_nil(f.group) or
++           (MapSet.new(Map.keys(system(f.groups).tokens)) === group_tokens and
++              system(f.groups).pins === group_pins))
+     end)
+ 
+     assert {:ok,
+@@ -564,6 +683,7 @@
+               transport} = transport_status(f)
+ 
+     assert transport.pins <= 32 and transport.owned_serialized_payload_bytes <= 4_194_304
++    if f.group, do: assert(%{inflight: ^count, probes: 0, probe_bytes: 0} = group_status(f))
+     gate_pid = Process.get(:pressure_gate) || hd(originals).exchange.gate
+     Process.put(:pressure_gate, gate_pid)
+     gate = system(gate_pid)
+@@ -579,6 +699,10 @@
+       assert state.transport_selection === {f.handle, original.transport_token}
+       assert state.transport_pins === original.transport_pins
+       assert state.token === original.session_token and state.owner === original.exchange.owner
++
++      if f.group,
++        do: assert(state.selection === {f.group, original.group_token}),
++        else: assert(state.selection === nil)
+     end
+ 
+     status = service(f)
+@@ -592,6 +716,8 @@
+       retained_bytes: status.retained_bytes,
+       cleanup_bytes: Enum.sum(Map.values(expected)),
+       transport_pins: transport.pins,
++      group_pins: map_size(group_pins),
++      group_inflight: if(f.group, do: count, else: 0),
+       original_remaining_ms: max(0, Process.get(:pressure_deadline) - now())
+     }
+   end
+@@ -706,7 +832,9 @@
+       reserve: value.reserve,
+       fields_ETF_bytes: value.fields_bytes,
+       url_bytes: value.url_bytes,
+-      request_pins: map_size(value.pins)
++      request_pins: map_size(value.pins),
++      group_token: if(Map.has_key?(value, :group_token), do: identity(value.group_token)),
++      group_request_pins: map_size(Map.get(value, :group_pins, %{}))
+     }
+   end
+ 
+@@ -721,17 +849,40 @@
+ 
+   defp assert_exact_peer_counts(f, requests) do
+     assert Enum.reverse(Process.get(:pressure_requests)) === requests
++    health = Process.get(:pressure_health_requests)
++    assert length(health) === if(f.group, do: 1, else: 0)
++    application_connections = Enum.map(requests, & &1["connection"])
++    assert length(Enum.uniq(application_connections)) === 2
++    connections = Enum.uniq(application_connections ++ Enum.map(health, & &1["connection"]))
++
++    accepted =
++      Enum.map(connections, fn connection ->
++        event = Fixture.event(f, %{"event" => "accepted", "connection" => connection}, budget())
++        assert event["wire"] === if(f.upstream == "tls", do: "tls-h1", else: "tcp-h1")
++        event["connection"]
++      end)
++
++    assert MapSet.new(accepted) === MapSet.new(connections)
+     queued = Process.get({Fixture, f.key, :events}, [])
+-    refute Enum.any?(queued, &(&1["event"] === "request"))
++    refute Enum.any?(queued, &(&1["event"] in ["request", "accepted"]))
+ 
+     receive do
+-      {:matrix_peer, peer, %{"event" => "request"}} when peer === f.peer ->
+-        flunk("unexpected extra upstream request")
++      {:matrix_peer, peer, %{"event" => event}}
++      when peer === f.peer and event in ["request", "accepted"] ->
++        flunk("unexpected extra upstream request or accept")
+     after
+       0 -> :ok
+     end
+ 
+-    assert Enum.all?(requests, &(&1["request"] === 1))
++    if is_nil(f.group) do
++      assert Enum.all?(requests, &(&1["request"] === 1))
++    else
++      for {_, chronology} <- Enum.group_by(health ++ requests, & &1["connection"]) do
++        assert Enum.map(chronology, & &1["request"]) === Enum.to_list(1..length(chronology))
++      end
++    end
++
++    connections
+   end
+ 
+   defp start_sampler(f, exchange) do
+@@ -829,6 +980,12 @@
+       {:ok, socket_stats} = socket_result
+       send_pend = Keyword.fetch!(socket_stats, :send_pend)
+       assert send_pend >= 0 and send_pend <= @wire_limit
++
++      if f.group do
++        group = group_status(f)
++        assert group.inflight <= 2 and group.probes === 0 and group.probe_bytes === 0
++      end
++
+       transport_state = system(f.owner)
+       guardians = Enum.map(transport_state.tokens, fn {_, hold} -> hold.guardian end)
+       {:links, links} = observe(fn -> Process.info(f.peer, :links) end)
+@@ -838,7 +995,10 @@
+       actors =
+         Enum.uniq(
+           [self(), caller, f.instance, exchange.gate, f.owner, f.peer | guardians] ++
+-            peer_workers ++ clients ++ Enum.map(gate.leases, fn {_, lease} -> lease.pid end)
++            peer_workers ++
++            clients ++
++            Enum.map(gate.leases, fn {_, lease} -> lease.pid end) ++
++            if(f.group, do: [f.groups], else: [])
+         )
+ 
+       boxes =
+@@ -1152,6 +1312,7 @@
+     observe_at(fn -> :sys.get_state(actor, timeout_at(expires)) end, expires)
+   end
+ 
++  defp group_status(f), do: observe(fn -> UpstreamGroups.status(f.group) end)
+   defp service(f), do: observe(fn -> Gaoxy.status(f.instance, :http) end)
+   defp transport_status(f), do: observe(fn -> UpstreamTransports.status(f.owner) end)
+   defp observe(function), do: observe_at(function, phase_deadline())
+@@ -1462,6 +1623,43 @@
+           end
+       end
+ 
++    failures =
++      if not is_nil(f.group) and not Process.get(:pressure_group_joined) do
++        group = f.groups
++        monitor = Process.monitor(group)
++
++        try do
++          :ok =
++            observe_at(
++              fn ->
++                GenServer.stop(group, :normal, max(1, expires - now()))
++              end,
++              expires
++            )
++
++          receive do
++            {:DOWN, ^monitor, :process, ^group, :normal} ->
++              :ok
++
++            {:DOWN, ^monitor, :process, ^group, reason} ->
++              throw({:abnormal_group_cleanup, reason})
++          after
++            max(0, expires - now()) -> raise "group owner cleanup did not join"
++          end
++
++          assert now() < expires, "group owner cleanup joined after failure cleanup deadline"
++          Process.put(:pressure_group_joined, true)
++          failures
++        catch
++          kind, reason ->
++            [{:group_cleanup, kind, inspect(reason, limit: 8, printable_limit: 160)} | failures]
++        after
++          Process.demonitor(monitor, [:flush])
++        end
++      else
++        failures
++      end
++
+     if Process.get(:pressure_stopped) do
+       failures
+     else

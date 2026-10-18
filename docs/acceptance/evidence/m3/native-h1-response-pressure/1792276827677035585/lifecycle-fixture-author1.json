@@ -1,0 +1,61 @@
+{
+  "task_id": "NATIVE_H1_MATRIX_LIFECYCLE_FIXTURE_AUTHOR1",
+  "status": "DONE",
+  "assignment": "direct bounded one-file lifecycle diagnostic implementation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Parent-owned frozen fixture, revision supplied by prior candidate fb7d0fda2b7c16c42c65579736dc1f643e17d812; no Git executed",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+  "before_sha256": "fe6dc7ca61e98e42e0c734053e4232cd3a20b4b5b88f74d3494729ca7a155f79",
+  "after_sha256": "f3e2c905ab750c48f2ea2e8ed9191a83ef2a44c11667f61ddb4662e30de53e45",
+  "design_sha256": "bd2699c8ea4b078e864753de225ef08708f682d37919ce3fddf4894286e96b6f",
+  "exact_diff": "--- before-lifecycle-diagnostics\n+++ lifecycle-fixture-author1\n@@ -216,7 +216,10 @@\n   def event(f, selector, timeout \\\\ @timeout) do\n     queued = Process.get({__MODULE__, f.key, :events}, [])\n \n-    case Enum.split_while(queued, &(not selected?(&1, selector))) do\n+    case Enum.split_while(queued, &(&1[\"event\"] != \"failure\" and not selected?(&1, selector))) do\n+      {_before, [%{\"event\" => \"failure\"} = value | _rest]} ->\n+        raise \"#{inspect(value)} queued_fixture_events=#{inspect(failure_events(f), limit: :infinity)}\"\n+\n       {before, [value | rest]} ->\n         Process.put({__MODULE__, f.key, :events}, before ++ rest)\n         value\n@@ -273,6 +276,48 @@\n       \"total\" => length(queued),\n       \"truncated\" => length(queued) > length(summaries)\n     }\n+  end\n+\n+  defp failure_diagnostic(f) do\n+    key = {__MODULE__, f.key, :events}\n+    queued = Process.get(key, [])\n+    {additional, cap_reached} = diagnostic_messages(f.peer, [], 0)\n+    observed = queued ++ additional\n+    Process.put(key, observed)\n+\n+    summaries =\n+      observed\n+      |> Stream.filter(\n+        &(&1[\"event\"] in [\n+            \"accepted\", \"request\", \"upload_prefix\", \"upload_end\", \"command\", \"failure\", \"joined\",\n+            \"peer_terminal\", \"worker_terminal\", \"local_socket_close\"\n+          ])\n+      )\n+      |> Enum.take(32)\n+      |> Enum.map(fn value ->\n+        Map.merge(\n+          diagnostic_fields(value),\n+          Map.take(value, [\"event\", \"peer_at_us\", \"phase\", \"terminal_label\"])\n+        )\n+      end)\n+\n+    %{\n+      \"event\" => \"failure_diagnostic\",\n+      \"events\" => summaries,\n+      \"observed_total\" => length(observed),\n+      \"truncated\" => length(observed) > length(summaries),\n+      \"additional_cap_reached\" => cap_reached\n+    }\n+  end\n+\n+  defp diagnostic_messages(_peer, reversed, 32), do: {Enum.reverse(reversed), true}\n+\n+  defp diagnostic_messages(peer, reversed, count) do\n+    receive do\n+      {:matrix_peer, ^peer, value} -> diagnostic_messages(peer, [value | reversed], count + 1)\n+    after\n+      0 -> {Enum.reverse(reversed), false}\n+    end\n   end\n \n   defp diagnostic_fields(value) do\n@@ -500,6 +545,7 @@\n   def dispatch(f, %{\"op\" => \"request_clean\"}), do: {f, request_clean(f)}\n   def dispatch(f, %{\"op\" => \"clean\"}), do: {f, clean(f)}\n   def dispatch(f, %{\"op\" => \"stop\"}), do: {nil, stop(f)}\n+  def dispatch(f, %{\"op\" => \"failure_diagnostic\"}), do: {f, failure_diagnostic(f)}\n \n   def run_case(case_id) do\n     port =\n@@ -731,6 +777,13 @@\n                         rescue\n                           error ->\n                             emit(parent, peer, %{\n+                              \"event\" => \"worker_terminal\",\n+                              \"connection\" => connection,\n+                              \"phase\" => \"worker_rescue\",\n+                              \"terminal_label\" => \"worker_exception\"\n+                            })\n+\n+                            emit(parent, peer, %{\n                               \"event\" => \"failure\",\n                               \"connection\" => connection,\n                               \"reason\" => Exception.message(error)\n@@ -738,7 +791,21 @@\n \n                             {:error, Exception.message(error)}\n                         after\n-                          wire.close(socket)\n+                          close_result = wire.close(socket)\n+\n+                          emit(parent, peer, %{\n+                            \"event\" => \"local_socket_close\",\n+                            \"connection\" => connection,\n+                            \"phase\" => \"worker_after\",\n+                            \"terminal_label\" =>\n+                              case close_result do\n+                                :ok -> \"close_ok\"\n+                                {:error, _} -> \"close_error\"\n+                                _ -> \"close_other\"\n+                              end\n+                          })\n+\n+                          close_result\n                         end\n \n                       send(peer, {:worker_finished, connection, result})\n@@ -792,6 +859,14 @@\n   defp serve(wire, socket, parent, peer, connection, request) do\n     case wire.recv(socket, 1, @timeout) do\n       {:error, reason} when reason in [:closed, :enotconn] ->\n+        emit(parent, peer, %{\n+          \"event\" => \"peer_terminal\",\n+          \"connection\" => connection,\n+          \"request\" => request,\n+          \"phase\" => \"await_request\",\n+          \"terminal_label\" => if(reason == :closed, do: \"peer_closed\", else: \"peer_enotconn\")\n+        })\n+\n         :ok\n \n       {:ok, first} ->\n@@ -835,6 +910,14 @@\n         serve(wire, socket, parent, peer, connection, request + 1)\n \n       other ->\n+        emit(parent, peer, %{\n+          \"event\" => \"peer_terminal\",\n+          \"connection\" => connection,\n+          \"request\" => request,\n+          \"phase\" => \"await_request\",\n+          \"terminal_label\" => if(other == {:error, :timeout}, do: \"recv_timeout\", else: \"recv_other\")\n+        })\n+\n         raise \"upstream read failed: #{inspect(other)}\"\n     end\n   end\n@@ -978,7 +1061,8 @@\n   defp identity(value),\n     do: Base.encode16(:crypto.hash(:sha256, :erlang.term_to_binary(value)), case: :lower)\n \n-  defp emit(parent, peer, value), do: send(parent, {:matrix_peer, peer, value})\n+  defp emit(parent, peer, value),\n+    do: send(parent, {:matrix_peer, peer, Map.put(value, \"peer_at_us\", System.monotonic_time(:microsecond))})\n \n   defp certificates(path),\n     do:\n",
+  "response_shape": {
+    "event": "failure_diagnostic",
+    "events": "At most32 sanitized summaries",
+    "observed_total": "Count of pre-existing queue plus up to32 additionally received own-peer values",
+    "truncated": "Observed count exceeds exported count (includes omitted event types)",
+    "additional_cap_reached": "32 additional own-peer values consumed; does not prove pending messages exist or completeness"
+  },
+  "self_review": [
+    "Existing emit packets gain peer_at_us monotonic microseconds; original fields/event names remain intact. No extra process/query/roundtrip.",
+    "Peer terminal emitted only at original serve closed/enotconn/other branch, with connection/next request/await_request and safe peer_closed/peer_enotconn/recv_timeout/recv_other labels. Original :ok or raise preserved.",
+    "worker_terminal worker_exception emitted only inside existing rescue before original failure; original exception message/error result unchanged. local_socket_close emitted after the exact original close call returns; only close_ok/close_error/close_other labels; original close return retained. Close return does not prove successful physical close.",
+    "failure_diagnostic dispatch is failure-only runner contract. Reads existing fixture queue, selectively receives at most32 tuples matching exact own peer with zero wait; never consumes unrelated messages. Originals appended in receive order after pre-existing queue; no raw value lost or reordered.",
+    "Export max32 summaries across existing+additional; event whitelist accepted/request/upload_prefix/upload_end/command/failure/joined/peer_terminal/worker_terminal/local_socket_close. Keys event/connection/request/peer_at_us/phase/terminal_label plus existing safe method_label/route_label/action_label/ended only. No raw target/headers/body/error/PID/socket/TLS.",
+    "Parent explicitly confirmed queued-failure companion: existing event/3 split stops at first selector or failure in FIFO order; queued failure raises identical original RuntimeError/diagnostic context and remains present. No new wait/query/message; prevents newly retained raw failures from disappearing from cleanup handling.",
+    "5000ms, all RuntimeError/error prefixes, response release diagnostics, success oracles, actual failure/cleanup semantics and all resource/protocol bounds retained. No functional repair or dependency defect claimed.",
+    "Only own fixture edited; runner/pressure source and all evidence/docs/production/dependencies untouched. Whole baseline restored by exact inverse changes; source custody verified before edits."
+  ],
+  "verification": [
+    "AGENTS and hash-verified plan read; sealed diagnosis2 inspected",
+    "Initial fixture SHA exact match",
+    "Exact inverse of all edits including approved companion restores complete baseline SHA",
+    "Assigned-file postwrite identity exact match",
+    "Report JSON validated and final source/report hashes printed"
+  ],
+  "not_run": [
+    "formatter",
+    "compiler",
+    "runtime/tests",
+    "parser/AST",
+    "browser",
+    "Git",
+    "subagents"
+  ],
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "excess read output",
+      "detail": "Combined AGENTS/plan/diagnosis and scoped source read exceeded output budget and was truncated. Parent notified; required plan/source visible. No protected raw trace/key/prompt/private process access."
+    }
+  ],
+  "counters": "Counter40 root666/orch551/tool76/Sol6/runtimefailed6/Astra2of2 retained; this writer adds0 runtime/repair rounds. Incident1 for parent accounting.",
+  "remaining_risks": [
+    "Unformatted/uncompiled source pending root format, source SPEC then CODE/static/actual diagnostic.",
+    "Cause of intermittent second physical connection remains UNKNOWN. Absence of terminal/extra messages does not prove reuse or observation completeness.",
+    "Stage remains OPEN: default standalone first-of16 FAIL/15 NOT RUN/cleanup FAIL preserved; single-case PASS remains intermittency only."
+  ],
+  "decisions_needed": "None; parent confirmed necessary queued-failure companion in message.",
+  "command_shutdown": "All own commands completed synchronously; no background process started.",
+  "custody": "Source/report custody returned immutable at DONE. Root owns formatting/freeze/review/runtime/Git; later report clarification needs new path/version."
+}

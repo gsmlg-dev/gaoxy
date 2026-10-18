@@ -1,3 +1,23 @@
+## Current native-H1 response-pressure qualification — 2026-10-18
+
+The bounded native-H1 response-write-pressure slice is **RUNTIME QUALIFIED; final fact/document review and actual local commit/postcommit custody are pending**. Final implementation SPEC1 and CODE1 passed with no remaining findings. The repaired cohort is source candidate14, based on `fb7d0fda2b7c16c42c65579736dc1f643e17d812`, with405 source pins,11 entry-document pins and12 installed dependency pins. This checkpoint claims no actual local commit, custody PASS or slice closure. WholeTask6/Task5/M3 remain **OPEN**.
+
+Actual repaired candidate14 gates passed: strict compile10/scoped format10 (zero tests), completed-response GREEN1/0 after genuine original RED1, pressure4/0, related52/0 with seed166590/max-cases1, full standalone default16/0 and ordinary browser2rows/four actual root PNG opens. The52 includes pressure4 and excludes separate regression1. The only production repair is three native-fixed0 progress lines, preserving genuine upstream terminal validation; H2/H3 fixed0 remains excluded. Assertions and deadlines are unchanged.
+
+Historical standalone-final1FAIL1of16+15NOTRUN, candidate11 diagnostic3FAIL9/8/1/7 and candidate12 diagnostic-only16PASS remain immutable. Earlier diagnostic PASS was not a functional repair. Final implementation SPEC1 and CODE1 passed with no remaining findings; final document review, actual local commit and the named E/postcommit-custody1.json are pending. Ordinary browser compatibility establishes no controlled slow-consumption acceptance. WholeTask6/Task5/M3 stay OPEN. Only after actual local closure may the prepared sole-H1 blocked-upload disconnect slice be re-pinned/adopted/reviewed. No publication, deployment or excluded action follows.
+
+Follow the [design](docs/designs/m3-native-h1-response-pressure.md), [plan](docs/plans/m3-native-h1-response-pressure.md), [acceptance](docs/acceptance/m3-native-h1-response-pressure.md) and [exact repaired runtime cohort](docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/completed-response-runtime-cohort1.json).
+
+## Historical predecessor overlays — byte-preserved below
+
+## Actual managed-H2 slow-peer local closure — 2026-10-18
+
+This bounded slice is **DONE LOCALLY** at `fb7d0fda2b7c16c42c65579736dc1f643e17d812` after final document SPEC2→CODE2 and all required executions passed. Actual commit/disk custody verified155 task files,403 source pins,12 installed dependency pins and552 union files; index was empty and scoped13 source/document cached whitespace passed0. [Actual custody](docs/acceptance/evidence/m3/managed-h2-slow-peer/1792273437081430232/postcommit-custody1.json) follows the commit as a separate immutable receipt. Focused4/0 overlaps fresh94/0; Python11 and ordinary browser2rows/four actual root image opens passed. Raw Nix dirty-tree warning and earlier failures remain preserved. WholeTask6/Task5/M3 stay OPEN.
+
+Automatically proceed to the written native-H1 actual response-write-pressure design/plan and its initial fixed/TCP witness under continuing authorization. Its independent design review and all new runtime remain pending. No push, publication, deployment or other excluded operation follows.
+
+## Frozen precommit checkpoints — unchanged below
+
 ## Current managed-H2 slow-peer qualification — 2026-10-18
 
 The bounded native-H2 downstream × fixed/group × h2c/TLS-H2 upstream profile is **RUNTIME QUALIFIED; final independent document review and local commit/custody pending**. Corrected source candidate2 has403 source pins,5 owned test/fixture files and12 installed dependency pins. Source SPEC2→CODE1 and focused implementation/evidence SPEC1→CODE1 passed with no remaining findings. No production source was changed.

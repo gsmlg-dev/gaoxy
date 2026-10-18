@@ -1,0 +1,29 @@
+{
+  "task_id": "native_h1_pressure_diagnostic_writer1/correction2",
+  "status": "DONE",
+  "assignment": "direct narrow correction",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+  "before_sha256": "75188f14ab8fa49c36ea5a896d28bc1711cb38f099ef3e7465a1040c6f0dca7f",
+  "after_sha256": "33365a6758fa560045fe92294e666178ba3be9602435c54a7469b8b57a275dcd",
+  "exact_delta": "--- source-candidate2\n+++ diagnostic-correction2\n@@ -1250,14 +1250,5 @@\n         events_clipped: length(events) > 64,\n         queued_packet_limit_reached: packet_limit_reached,\n-        actors:\n-          Enum.map(Enum.take(Enum.uniq(native ++ clients), 4), fn pid ->\n-            info = Process.info(pid, [:status, :current_stacktrace])\n-\n-            %{\n-              actor: identity(pid),\n-              status: if(info, do: Atom.to_string(info[:status]), else: \"gone\"),\n-              stack: diagnostic_stack(if(info, do: info[:current_stacktrace], else: []))\n-            }\n-          end),\n+        owned_actor_ids: Enum.map(Enum.take(Enum.uniq(native ++ clients), 4), &identity/1),\n         actors_clipped: length(Enum.uniq(native ++ clients)) > 4\n       }\n",
+  "reason": "Remove fresh synchronous failure-time actor Process.info observations; retain only at most4 previously known actor identity hashes and unchanged actors_clipped.",
+  "repository_changes": "Only exact actors field replacement in assigned test; no new observations/helpers/budgets or other source edits.",
+  "not_run": [
+    "runtime/tests/probe",
+    "Git",
+    "formatter",
+    "compiler",
+    "SPEC/CODE review"
+  ],
+  "tooling_incidents": [
+    {
+      "count": 1,
+      "kind": "ValueError: substring not found",
+      "detail": "Initial exact extraction expected pre-format inline actors layout; no edits; parent authorized bounded formatted-block lookup and autonomous tooling recovery."
+    }
+  ],
+  "counters": "Counter10 authoritative: Sol diagnostic correction repairround1; sourcefailedSPEC1; runtimefail1; Astra2/2 exhausted. Tooling incident does not add source repair round.",
+  "command_shutdown": "All synchronous commands completed; no runtime processes started; custody returned to root.",
+  "decisions_needed": []
+}

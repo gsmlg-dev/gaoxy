@@ -1,0 +1,48 @@
+import argparse,hashlib,json,re
+from pathlib import Path
+p=argparse.ArgumentParser();p.add_argument('run');p.add_argument('--tests',type=int,required=True);p.add_argument('--candidate',required=True);a=p.parse_args();assert re.fullmatch(r'source-candidate[0-9]+\.json',a.candidate)
+r=Path.cwd().resolve();e=r/'docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585';h=lambda x:hashlib.sha256(x.read_bytes()).hexdigest()
+receipt=json.loads((e/(a.run+'.json')).read_text());candidate=json.loads((e/a.candidate).read_text());issues=[]
+def check(value,message):
+ if not value:issues.append(message)
+plain=re.sub(r'\x1b\[[0-9;]*[A-Za-z]','',(e/(a.run+'.log')).read_text())
+marker='GAOXY_NATIVE_H1_PRESSURE_RECEIPT '
+rows=[]
+for line in plain.splitlines():
+ if marker in line:
+  value,_=json.JSONDecoder().raw_decode(line.split(marker,1)[1]);rows.append(value)
+check(receipt['verdict']=='PASS' and receipt['actual_exit']==0,'collector pass/exit')
+check((receipt['tests'],receipt['failures'],receipt['excluded'],receipt['skipped'])==(a.tests,0,0,0),'actual executed test counts')
+check(receipt['source_before']==candidate['source_sha256']==receipt['source_after'],'exact candidate source stable')
+check(receipt['process_joined'] and not receipt['forced'] and not receipt['process_group_remaining'],'command join')
+check(not receipt['descendant_cleanup']['forced'] and not receipt['descendant_cleanup']['remaining'],'descendant join')
+check(len(rows)==4 and {(v['mount'],v['upstream']) for v in rows}=={(m,u) for m in ['fixed','group'] for u in ['tcp','tls']},'actual four unique rows')
+for v in rows:
+ key=v['mount']+'/'+v['upstream'];sn=v['snapshots'];cp=v['checkpoints'];mx=v['samples']['maxima'];j=v['joined'];o=v['originals'];op=v['send_operation'];b=v['send_framed_bytes']
+ check(v['body_bytes']==262145 and v['body_sha256']=='c35991ad254f48ff8b02becb9f0cc56581e86a0b477b13e5ebb0030a3b91c848',key+' exact body')
+ check(1<=b<=16384 and v['wire_bytes']<=1048576,key+' framed/write/wire bound')
+ check(v['request_timeout_ms']==10000 and v['native_write_timeout_ms']==2000,key+' original deadlines')
+ check(v['actual_requests']==2 and v['downstream_connections']==2 and len(set(v['upstream_connections']))==2,key+' simultaneous separate requests/connections')
+ check(all(0<v[k]<=16384 for k in ['actual_sndbuf','actual_recbuf','actual_client_buffer']),key+' actual socket bounds')
+ check(len(sn)==4 and all(x['operation']==op and x['bytes']==b and 0<x['send_pend']<=1048576 for x in sn),key+' consistent O/B/pending witness')
+ check(all(any(frame[:2]==['prim_inet','send'] for frame in x['stack']) for x in sn),key+' actual native send stack')
+ check(op not in [x['operation'] for x in v['head_send_operations']] and v['head_completed_us']<v['send_started_us'],key+' response write after completed head')
+ check(v['send_started_us']<v['healthy_complete_us']<v['release_us']<=v['read_entered_us']<=v['actual_send_ok_us']<v['producer_EOF_release_us'],key+' causal sibling/read/send/EOF order')
+ check(v['prefix_consumed_us']<v['producer_EOF_release_us'],key+' prefix consumed before EOF release')
+ check([x['requests'] for x in cp]==[2,1,1,0] and cp[-1]['retained_bytes']==0 and cp[-1]['cleanup_bytes']==0,key+' original conservation')
+ check(all(x['reserve']<=8011816 for x in o) and sum(x['reserve'] for x in o)+2*149504<=16322640,key+' reservation worksheet')
+ check(v['samples']['turns'] in range(1,4097) and mx['mailbox_messages']<=64 and mx['native_pending_bytes']<=16384 and mx['send_pend']<=1048576 and mx['retained_bytes']<=16322640,key+' sampled resource bounds')
+ check(0<v['telemetry_events']<=128 and v['persistent_retained_high_water']<=16777216,key+' telemetry/service highwater')
+ check(j['original_guardians']==j['native_owners']==j['clients']==j['fixture_owners']==2 and j['observer_helpers_live']==j['peer_forced']==j['peer_live']==0,key+' normal owned joins')
+counts={};current=None
+for line in plain.splitlines():
+ found=re.fullmatch(r'\s*Gaoxy\.[^\s]+ \[(test/[^\]]+\.exs)\]\s*',line)
+ if found:current='apps/gaoxy_proxy/'+found.group(1);counts.setdefault(current,0)
+ if current and re.search(r'\* test .+ \([0-9.]+ms\) \[L#\d+\]',line):counts[current]+=1
+if a.tests==52:
+ wanted={'apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs':4,'apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs':16,'apps/gaoxy_proxy/test/http_proxy_wire_test.exs':12,'apps/gaoxy_proxy/test/http_proxy_tls_test.exs':4,'apps/gaoxy_proxy/test/http_proxy_runtime_test.exs':16}
+ check(counts==wanted,'exact per-file completed trace counts')
+q=e/(a.run+'-observations.json');audit=e/(a.run+'-observation-audit.json');assert not q.exists() and not audit.exists();q.write_text(json.dumps(rows,indent=2,sort_keys=True)+'\n')
+record={'kind':'NATIVE_H1_PRESSURE_ACTUAL_OBSERVATION_AUDIT','verdict':'FAIL' if issues else 'PASS','run':a.run,'run_receipt_sha256':h(e/(a.run+'.json')),'candidate_sha256':h(e/a.candidate),'rows_sha256':h(q),'audit_script_sha256':h(Path(__file__)),'actual_rows':len(rows),'per_file_completed_trace_counts':counts,'findings':issues,'limits':'Evidence audit only; preserves earlier failed runs and all original test assertions. Does not resolve unknown matrix-timeout cause.'};audit.write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+print(json.dumps({'verdict':record['verdict'],'rows':len(rows),'findings':issues,'per_file_counts':counts,'observations_sha256':h(q),'audit_sha256':h(audit),'scalars':[{'row':v['mount']+'/'+v['upstream'],'B':v['send_framed_bytes'],'mailbox':v['samples']['maxima']['mailbox_messages'],'events':v['telemetry_events'],'turns':v['samples']['turns']} for v in rows]}))
+raise SystemExit(1 if issues else 0)

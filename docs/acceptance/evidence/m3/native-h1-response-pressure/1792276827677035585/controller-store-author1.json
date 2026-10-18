@@ -1,0 +1,65 @@
+{
+  "task_id": "native_h1_pressure_controller_store_author1",
+  "status": "DONE",
+  "assignment": "direct sole-test bounded synchronous ETS telemetry repair",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+  "before_sha256": "aa9646ac1e15a912f634f950ec4b5a35bcc4577e7d083c17248e0b676ff894aa",
+  "after_sha256": "bcbfb81aa748e5a077677c1853bdaf3b5bd40ac5ad8ef8419860a9de3424e01e",
+  "exact_diff": "--- source-before-format8\n+++ controller-store-author1\n@@ -71,5 +71,7 @@\n       Process.put(:pressure_controller, self())\n       Process.put(:pressure_deadline, now() + @barrier)\n-      Process.put(:pressure_events, [])\n+      event_table = :ets.new(:pressure_events, [:set, :public])\n+      true = :ets.insert(event_table, {:count, 0})\n+      Process.put(:pressure_events, event_table)\n       Process.put(:pressure_phases, [])\n       Process.put(:pressure_last_snapshot, nil)\n@@ -110,4 +112,5 @@\n       after\n         if handler = Process.get(:pressure_handler), do: :telemetry.detach(handler)\n+        :ets.delete(Process.get(:pressure_events))\n         :ets.delete(Process.get(:pressure_observers))\n       end\n@@ -360,4 +363,5 @@\n     :ok = :telemetry.detach(Process.get(:pressure_handler))\n     Process.put(:pressure_handler, nil)\n+    assert_events_complete()\n     assert :ets.info(Process.get(:pressure_observers), :size) === 0\n \n@@ -435,17 +439,16 @@\n   end\n \n-  def handle_send([:gaoxy, event], measurements, metadata, %{controller: controller, scope: scope}) do\n+  def handle_send([:gaoxy, event], measurements, metadata, %{table: table, scope: scope}) do\n     if Enum.all?(scope, fn {key, value} -> metadata[key] === value end) do\n-      send(\n-        controller,\n-        {:pressure_send_event,\n-         %{\n-           event: event,\n-           at_us: System.monotonic_time(:microsecond),\n-           bytes: measurements.bytes,\n-           operation: metadata.operation,\n-           outcome: Map.get(metadata, :outcome)\n-         }}\n-      )\n+      value = %{\n+        event: event,\n+        at_us: System.monotonic_time(:microsecond),\n+        bytes: measurements.bytes,\n+        operation: metadata.operation,\n+        outcome: Map.get(metadata, :outcome)\n+      }\n+\n+      slot = :ets.update_counter(table, :count, {2, 1, 129, 129})\n+      if slot <= 128, do: :ets.insert(table, {slot, value})\n     end\n   end\n@@ -459,5 +462,5 @@\n         [[:gaoxy, :send_started], [:gaoxy, :send]],\n         &__MODULE__.handle_send/4,\n-        %{controller: self(), scope: scope}\n+        %{table: Process.get(:pressure_events), scope: scope}\n       )\n \n@@ -465,14 +468,26 @@\n   end\n \n+  defp event_rows(table) do\n+    for {slot, event} <- :ets.tab2list(table), is_integer(slot), do: {slot, event}\n+  end\n+\n+  defp event_count, do: :ets.lookup_element(Process.get(:pressure_events), :count, 2)\n+\n   defp events do\n-    receive do\n-      {:pressure_send_event, event} ->\n-        values = [event | Process.get(:pressure_events)]\n-        assert length(values) <= 128\n-        Process.put(:pressure_events, values)\n-        events()\n-    after\n-      0 -> Process.get(:pressure_events)\n-    end\n+    assert event_count() <= 128\n+    Process.get(:pressure_events)\n+    |> event_rows()\n+    |> Enum.sort_by(&elem(&1, 0), :desc)\n+    |> Enum.map(&elem(&1, 1))\n+  end\n+\n+  defp assert_events_complete do\n+    table = Process.get(:pressure_events)\n+    count = event_count()\n+    assert count in 0..128\n+    rows = event_rows(table)\n+    assert length(rows) === count\n+    assert Enum.sort(Enum.map(rows, &elem(&1, 0))) === Enum.take(1..128, count)\n+    assert :ets.info(table, :size) === count + 1\n   end\n \n@@ -890,4 +905,5 @@\n     deadline = Process.get(:pressure_deadline)\n     observers = Process.get(:pressure_observers)\n+    event_table = Process.get(:pressure_events)\n     clients = Enum.map(Process.get(:pressure_clients), & &1.pid)\n \n@@ -897,4 +913,5 @@\n         Process.put(:pressure_deadline, deadline)\n         Process.put(:pressure_observers, observers)\n+        Process.put(:pressure_events, event_table)\n         Process.put(:pressure_sample_clients, clients)\n         sample_loop(caller, Process.monitor(caller), f, exchange, %{turns: 0, maxima: %{}})\n@@ -933,4 +950,5 @@\n     try do\n       assert totals.turns < 4096\n+      assert event_count() <= 128\n       gate = system(exchange.gate)\n       status = service(f)\n@@ -1465,5 +1483,8 @@\n       owned = Map.new(Enum.uniq(native ++ clients ++ sampler), &{&1, true})\n       {packets, packet_limit_reached} = failure_packets(owned, 32, [])\n-      stored = Enum.map(Process.get(:pressure_events), &diagnostic_send/1)\n+      stored = Enum.map(event_rows(Process.get(:pressure_events)), fn {_, event} ->\n+        diagnostic_send(event)\n+      end)\n+      telemetry_count = event_count()\n \n       events =\n@@ -1484,4 +1505,6 @@\n         events_clipped: length(events) > 64,\n         queued_packet_limit_reached: packet_limit_reached,\n+        telemetry_count: telemetry_count,\n+        telemetry_overflow: telemetry_count > 128,\n         owned_actor_ids: Enum.map(Enum.take(Enum.uniq(native ++ clients), 4), &identity/1),\n         actors_clipped: length(Enum.uniq(native ++ clients)) > 4\n@@ -1507,7 +1530,4 @@\n   defp failure_packets(owned, remaining, acc) do\n     receive do\n-      {:pressure_send_event, event} ->\n-        failure_packets(owned, remaining - 1, [diagnostic_send(event) | acc])\n-\n       {:pressure_socket_failure, value} ->\n         failure_packets(owned, remaining - 1, [Map.put(value, :event, \"socket_failure\") | acc])\n",
+  "diff_summary": {
+    "added_lines": 47,
+    "removed_lines": 27,
+    "repository_files_changed": 1
+  },
+  "inputs": {
+    "diagnosis5_sha256": "4b4cd6158a4cae41f1ef60a1411b21c431453ce6ad936d7076d1ce81c2e2db33",
+    "design_plan_sha256": "8c06bcaf6283a08dd75d5edbf555e1e4bd8147b19ebbff86b5f76be804d84ec9",
+    "verified": "Read/hash matched both supplied inputs"
+  },
+  "changes": [
+    "Controller owns public ETS set initialized with fixed count control row before telemetry attachment",
+    "Callback exact-scope filter and generation time/event/bytes/operation/outcome unchanged; synchronous atomic update_counter {2,1,129,129}, unique rows1..128 only, sticky overflow129; no per-event controller message or new process",
+    "Events reads only committed integer-key rows, checks overflow and preserves descending reservation-slot order; progress never assumes reservation/commit equality",
+    "Sampler receives table identity and checks sticky overflow each turn",
+    "After normal emitter joins and telemetry detach, mandatory completeness checks count0..128, exact committed row count, exact unique slot prefix, and total ETS size count+1",
+    "Outer after detaches before deleting table; failure cleanup still runs first",
+    "Bounded failure chronology projects committed rows and reports reserved count/overflow; only orphaned pressure_send_event packet branch/list-drain bookkeeping removed"
+  ],
+  "self_review": {
+    "scope_time_fields": "Same exact Enum.all scope predicate and same generated monotonic timestamp/map fields",
+    "race": "Reservation may precede insertion; live readers accept only committed rows and do not compare count to rows. Missing commit/overflow fails final quiescent mandatory checks after synchronous emitters join and detach.",
+    "boundedness": "ETS holds at most128 event rows plus one counter row; update_counter saturates129 permanently on any event129+. No process/mailbox/event notification introduced.",
+    "completeness": "Quiescent sorted slots must equal first count slots of1..128; row count must equal count and ETS size count+1. Counter129 fails before any receipt.",
+    "lifetime": "Table created before attach; shared read identity to sampler; retained through sampler/native/fixture joins and detach; deleted in outer after after failure cleanup if needed.",
+    "failure": "Original exception/cleanup and existing bounded actor metadata preserved; committed row projection retains diagnostic data even when count129 triggers failure."
+  },
+  "static_verification": {
+    "head_pressure_body_EOF_protocol": true,
+    "O_B_backlog_stack_helpers": true,
+    "mailbox64_and_metadata": true,
+    "failure_cleanup": true,
+    "constants_unchanged": true,
+    "Process_info_call_count_unchanged": true,
+    "four_row_generator_unchanged": true,
+    "orphan_pressure_send_packet_occurrences": 0,
+    "detach_precedes_final_completeness_and_deletion": true
+  },
+  "not_run": [
+    "formatter",
+    "compiler",
+    "tests/runtime/probe",
+    "browser",
+    "Git",
+    "fresh independent SPEC/CODE review"
+  ],
+  "incidents": [],
+  "counter_authority": "Counter33 SHA1e2e94100938e06ae52060ac6c8139c139f43ff6dde9fc26f9a9c245f5f333df; Sol5/runtimefail5/Astra2of2 retained.0 new runtime/repair rounds by writer.",
+  "remaining_risks": [
+    "Unformatted/uncompiled/unexecuted source requires root fresh independent source SPEC/CODE and prescribed runtime",
+    "No runtime PASS or exact composition claim about historical67queued messages",
+    "Fixture writer changes are separate; this writer never touched fixture"
+  ],
+  "command_shutdown": "All synchronous commands finished; no runtime processes started; source immutable at DONE and custody returned to root.",
+  "decisions_needed": []
+}

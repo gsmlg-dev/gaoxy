@@ -1,0 +1,261 @@
+--- before-diagnostic1
++++ /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs
+@@ -69,6 +69,8 @@
+     Process.put(:pressure_controller, self())
+     Process.put(:pressure_deadline, now() + @barrier)
+     Process.put(:pressure_events, [])
++    Process.put(:pressure_phases, [])
++    Process.put(:pressure_last_snapshot, nil)
+     Process.put(:pressure_clients, [])
+     Process.put(:pressure_originals, [])
+     Process.put(:pressure_requests, [])
+@@ -89,6 +91,7 @@
+     catch
+       kind, reason ->
+         stack = __STACKTRACE__
++        failure_chronology(kind, reason, stack)
+         failures = failure_cleanup(f)
+ 
+         :erlang.raise(
+@@ -127,6 +130,7 @@
+     slow = bind_original(f, slow_exchange)
+     checkpoint(f, baseline, [slow], "slow_original")
+     start_sampler(f, slow_exchange)
++    phase(:sampler_started)
+ 
+     head =
+       "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: application/octet-stream\r\n\r\n"
+@@ -136,12 +140,15 @@
+     send(slow_client.pid, {:read_head, Process.get(:pressure_deadline)})
+     slow_head = client_message(slow_client, :head)
+     assert slow_head.status === 200 and slow_head.framing === :chunked
++    phase(:head_received)
+ 
+     prefix = binary_part(body(), 0, @prefix_bytes)
+     raw_prefix = Integer.to_string(byte_size(prefix), 16) <> "\r\n" <> prefix <> "\r\n"
+     assert byte_size(head) + byte_size(raw_prefix) + 11 <= @wire_limit
+     send_raw(f, first, raw_prefix, false)
++    phase(:prefix_dispatched)
+     pressure1 = await_pressure(f, slow, nil)
++    phase(:first_pressure_found)
+     operation = pressure1.operation
+     started = send_event(:send_started, operation)
+     Process.put(:pressure_send_deadline, div(started.at_us, 1000) + 2_000)
+@@ -155,6 +162,7 @@
+     healthy = bind_original(f, healthy_exchange)
+     overlap = checkpoint(f, baseline, [slow, healthy], "two_originals")
+     pressure_overlap = pressure(f, slow, operation)
++    phase(:healthy_overlap)
+     healthy_raw = "HTTP/1.1 200 OK\r\nContent-Length: 1\r\n\r\nh"
+     send_raw(f, second, healthy_raw, true)
+     await_command(f, second, true, healthy_raw)
+@@ -163,6 +171,7 @@
+     assert %{body: "h", bytes: 1} = healthy_reply = client_message(healthy_client, :complete)
+     join_original(healthy)
+     after_healthy = checkpoint(f, baseline, [slow], "healthy_joined")
++    phase(:after_healthy)
+     pressure2 = pressure(f, slow, operation)
+     sample_barrier()
+     before_release = pressure(f, slow, operation)
+@@ -170,6 +179,7 @@
+ 
+     release = make_ref()
+     send(slow_client.pid, {:release, release})
++    phase(:release_dispatched)
+     entered = client_message(slow_client, {:entered, release})
+     assert entered.read_entered_us >= entered.release_us
+     assert healthy_reply.at_us <= entered.release_us
+@@ -179,6 +189,7 @@
+     Process.delete(:pressure_send_deadline)
+     send_sampler_deadline()
+     consumed_prefix = client_message(slow_client, :prefix)
++    phase(:prefix_consumed)
+     assert consumed_prefix.bytes === @prefix_bytes and consumed_prefix.sha256 === digest(prefix)
+     assert consumed_prefix.at_us >= entered.read_entered_us
+     await_command(f, first, false, raw_prefix)
+@@ -190,6 +201,7 @@
+     final_raw = "1\r\n" <> <<0>> <> "\r\n0\r\n\r\n"
+     eof_release_us = System.monotonic_time(:microsecond)
+     send_raw(f, first, final_raw, true)
++    phase(:eof_released)
+     await_command(f, first, true, final_raw)
+     result = client_message(slow_client, :complete)
+     assert result.body === body() and result.bytes === 262_145
+@@ -200,6 +212,7 @@
+     final = checkpoint(f, baseline, [], "all_originals_joined")
+     sample_barrier()
+     samples = stop_sampler()
++    phase(:sampler_stopped)
+     close_client(slow_client)
+     close_client(healthy_client)
+     join_native(slow_exchange)
+@@ -599,7 +612,7 @@
+           _ -> false
+         end)
+ 
+-    %{
++    snapshot = %{
+       operation: if(pending, do: pending.operation),
+       bytes: if(pending, do: pending.bytes, else: 0),
+       send_pend: send_pend,
+@@ -611,6 +624,9 @@
+       retained_bytes: retained,
+       at_us: System.monotonic_time(:microsecond)
+     }
++
++    Process.put(:pressure_last_snapshot, snapshot)
++    snapshot
+   end
+ 
+   defp pressure_receipt(value) do
+@@ -736,7 +752,22 @@
+              end)
+ 
+       assert Enum.all?(gate.cleanups, fn {_, hold} -> hold.bytes <= @original_upper end)
+-      {:ok, socket_stats} = observe(fn -> Socket.getstat(exchange.socket) end)
++      socket_result = observe(fn -> Socket.getstat(exchange.socket) end)
++
++      if not match?({:ok, _}, socket_result) do
++        lease = Map.get(gate.leases, exchange.lease)
++
++        send(caller, {:pressure_socket_failure, %{
++          at_us: System.monotonic_time(:microsecond), turn: totals.turns,
++          result: diagnostic_reason(socket_result), owner: identity(exchange.owner),
++          lease: identity(exchange.lease), socket: identity(exchange.socket),
++          operation: if(lease && lease.send, do: identity(lease.send.operation)),
++          bytes: if(lease && lease.send, do: lease.send.bytes, else: 0),
++          retained_bytes: status.retained_bytes, cleanup_pending: status.cleanup_pending
++        }})
++      end
++
++      {:ok, socket_stats} = socket_result
+       send_pend = Keyword.fetch!(socket_stats, :send_pend)
+       assert send_pend >= 0 and send_pend <= @wire_limit
+       transport_state = system(f.owner)
+@@ -785,7 +816,9 @@
+       if tag, do: send(caller, {:pressure_sampled, self(), tag})
+       sample_loop(caller, caller_monitor, f, exchange, next)
+     catch
+-      kind, reason -> send(caller, {:pressure_sampler_failed, kind, reason, __STACKTRACE__})
++      kind, reason ->
++        send(caller, {:pressure_failure_at, self(), System.monotonic_time(:microsecond)})
++        send(caller, {:pressure_sampler_failed, kind, reason, __STACKTRACE__})
+     end
+   end
+ 
+@@ -966,6 +999,7 @@
+       send(caller, {:pressure_client, self(), :closed, %{normal: true}})
+     catch
+       kind, reason ->
++        send(caller, {:pressure_failure_at, self(), System.monotonic_time(:microsecond)})
+         send(caller, {:pressure_client_failed, self(), kind, reason, __STACKTRACE__})
+     after
+       if socket = Process.get(:pressure_client_socket), do: :gen_tcp.close(socket)
+@@ -1167,6 +1201,107 @@
+     min(@barrier, remaining)
+   end
+ 
++  defp phase(name) do
++    Process.put(:pressure_phases, [
++      %{phase: Atom.to_string(name), at_us: System.monotonic_time(:microsecond)}
++      | Process.get(:pressure_phases)
++    ])
++  end
++
++  # Failure-only diagnostics must never replace the original exception or cleanup.
++  defp failure_chronology(kind, reason, stack) do
++    try do
++      native = Enum.map(Process.get(:pressure_originals), & &1.exchange.owner)
++      clients = Enum.map(Process.get(:pressure_actors), &elem(&1, 0))
++      sampler = case Process.get(:pressure_sampler) do
++        nil -> []
++        {pid, _} -> [pid]
++      end
++      owned = Map.new(Enum.uniq(native ++ clients ++ sampler), &{&1, true})
++      {packets, packet_limit_reached} = failure_packets(owned, 32, [])
++      stored = Enum.map(Process.get(:pressure_events), &diagnostic_send/1)
++      events = Enum.sort_by(stored ++ Enum.reverse(packets), &Map.get(&1, :at_us, &1[:observed_at_us]))
++      phases = Process.get(:pressure_phases)
++      snapshot = Process.get(:pressure_last_snapshot)
++
++      record = %{
++        at_us: System.monotonic_time(:microsecond), kind: Atom.to_string(kind),
++        reason: diagnostic_reason(reason), stack: diagnostic_stack(stack),
++        phases: Enum.reverse(Enum.take(phases, 16)), phases_clipped: length(phases) > 16,
++        last_pressure_snapshot: if(snapshot, do: pressure_receipt(snapshot)),
++        events: events |> Enum.reverse() |> Enum.take(64) |> Enum.reverse(), events_clipped: length(events) > 64,
++        queued_packet_limit_reached: packet_limit_reached,
++        actors: Enum.map(Enum.take(Enum.uniq(native ++ clients), 4), fn pid ->
++          info = Process.info(pid, [:status, :current_stacktrace])
++          %{actor: identity(pid), status: if(info, do: Atom.to_string(info[:status]), else: "gone"),
++            stack: diagnostic_stack(if(info, do: info[:current_stacktrace], else: []))}
++        end),
++        actors_clipped: length(Enum.uniq(native ++ clients)) > 4
++      }
++
++      IO.puts("GAOXY_NATIVE_H1_PRESSURE_FAILURE_DIAGNOSTIC " <> JSON.encode!(record))
++    catch
++      diagnostic_kind, _diagnostic_reason ->
++        # Even a diagnostic/IO failure cannot swallow the probe's caught failure.
++        try do
++          IO.puts("GAOXY_NATIVE_H1_PRESSURE_FAILURE_DIAGNOSTIC " <>
++            JSON.encode!(%{diagnostic_failed: Atom.to_string(diagnostic_kind)}))
++        catch
++          _, _ -> :ok
++        end
++    end
++  end
++
++  defp failure_packets(_owned, 0, acc), do: {acc, true}
++  defp failure_packets(owned, remaining, acc) do
++    receive do
++      {:pressure_send_event, event} ->
++        failure_packets(owned, remaining - 1, [diagnostic_send(event) | acc])
++      {:pressure_socket_failure, value} ->
++        failure_packets(owned, remaining - 1, [Map.put(value, :event, "socket_failure") | acc])
++      {:pressure_failure_at, pid, at_us} when is_map_key(owned, pid) ->
++        failure_packets(owned, remaining - 1,
++          [%{event: "failure_generated", actor: identity(pid), at_us: at_us} | acc])
++      {:pressure_client_failed, pid, kind, reason, stack} when is_map_key(owned, pid) ->
++        failure_packets(owned, remaining - 1,
++          [%{event: "client_failure", actor: identity(pid), kind: Atom.to_string(kind),
++            observed_at_us: System.monotonic_time(:microsecond),
++            reason: diagnostic_reason(reason), stack: diagnostic_stack(stack)} | acc])
++      {:DOWN, _ref, :process, pid, reason} when is_map_key(owned, pid) ->
++        failure_packets(owned, remaining - 1,
++          [%{event: "down", actor: identity(pid), reason: diagnostic_reason(reason),
++            observed_at_us: System.monotonic_time(:microsecond)} | acc])
++    after
++      0 -> {acc, false}
++    end
++  end
++
++  defp diagnostic_send(event) do
++    %{event: Atom.to_string(event.event), at_us: event.at_us, operation: identity(event.operation),
++      bytes: event.bytes, outcome: diagnostic_reason(event.outcome)}
++  end
++
++  defp diagnostic_stack(stack) do
++    frames = Enum.take(stack, 17)
++    %{clipped: length(frames) > 16, frames: Enum.map(Enum.take(frames, 16), fn
++      {module, function, arity, _} ->
++        [Atom.to_string(module), Atom.to_string(function),
++          if(is_integer(arity), do: arity, else: "arguments_redacted")]
++    end)}
++  end
++
++  defp diagnostic_reason(value, depth \\ 0)
++  defp diagnostic_reason(nil, _), do: nil
++  defp diagnostic_reason(value, _) when is_atom(value), do: Atom.to_string(value)
++  defp diagnostic_reason(value, _) when is_number(value), do: value
++  defp diagnostic_reason(value, _) when is_binary(value), do: %{binary_bytes: byte_size(value)}
++  defp diagnostic_reason(value, depth) when is_tuple(value) and depth < 3 do
++    %{tuple: value |> Tuple.to_list() |> Enum.take(8) |> Enum.map(&diagnostic_reason(&1, depth + 1)),
++      clipped: tuple_size(value) > 8}
++  end
++  defp diagnostic_reason(%{__struct__: module}, _), do: %{exception_module: Atom.to_string(module)}
++  defp diagnostic_reason(_, _), do: "redacted"
++
+   defp failure_cleanup(f) do
+     # This separate finite budget bounds failure cleanup; it cannot qualify an
+     # expired request, send, observer, client or sampler as successful.

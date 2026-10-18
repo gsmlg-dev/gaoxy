@@ -1,0 +1,63 @@
+{
+  "task_id": "NATIVE_H1_STANDALONE_REUSE_TIMING_DIAGNOSIS3",
+  "status": "DONE",
+  "assignment": "direct read-only diagnosis",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "branch": "codex/m3-h1-resource-foundation",
+  "baseline": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+  "identity_authority": "parent and candidate11 entry_head; no Git or source-hash verification",
+  "root_cause": "UNKNOWN",
+  "functional_changes": [],
+  "outputs": ["/tmp/gaoxy-standalone-reuse-timing-diagnosis3.md", "/tmp/gaoxy-standalone-reuse-timing-diagnosis3.json"],
+  "fresh_runtime_authority": "parent message; no new evidence file read",
+  "fresh_actual_counts": {"registered":16,"executed":9,"passed":8,"failed":1,"not_run":7},
+  "fresh_failing_case": "group/h1/tcp/temporal_and_declared_trailers",
+  "fresh_failure_observations_us": {
+    "post_connection1_request2_final_send": -576460735926736,
+    "connection1_next_request3_peer_closed": -576460735926005,
+    "connection1_local_close_ok": -576460735925965,
+    "connection2_accepted": -576460735684693,
+    "connection2_request1_delete": -576460735679555,
+    "final_send_to_peer_closed": 731
+  },
+  "conclusions": [
+    "Fresh failure is not fixture 5000ms idle expiry",
+    "Peer EOF precedes fixture local close; initiating client component unknown",
+    "Normal proxy owner waits guardian DOWN after consumed; ordinary owner return is not a consumed-versus-DOWN race",
+    "Owned Session can mark cancelled on explicit cancel, monitored DOWN, or cleanup_cancel; actual path unobserved",
+    "Completion/accounting receipt does not identify Session success outcome or physical connection reuse",
+    "No dependency defect established; no upstream issue or workaround justified"
+  ],
+  "minimal_observation": "First use passive fixture endpoint decorator: delegate original HTTP or GroupEndpoint init/resources/call, emit sanitized original return class, closed label, fixed_stream and remaining_zero, return original untouched. This attributes post-byte failure, not uniquely poll_connection. Then bounded owned Session terminal/cleanup observations if needed; unchanged deadlines/assertions.",
+  "deterministic_reproducer": "Not established. Exchange chunk delay alone cannot guarantee terminal absence; no arbitrary client injection seam exists. A focused real-network TCP test requires an explicit owned terminal-forwarding scheduling barrier and bounded cleanup. Do not assume dependency end waits for acknowledgement.",
+  "source_pointers": [
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs:7,216-251,281-329,398-440,785-817,867-930,979-999,1073-1078",
+    "integration/upstream_transport/run.py:191-204,325-340,398-420,516,528-541,549-563",
+    "integration/upstream_transport/fixture.exs:18-35",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:607-617,1049-1053,1123-1135",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex:49-52,115-117,286-311,744-747,1346-1366,1370-1392,1398-1420,1711-1738",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex:96-104,400-421,445-456,1102-1137,1243-1255",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex:779-850,1034-1059,1189-1196",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex:106-107,134-135,163-182",
+    "apps/gaoxy_http/lib/gaoxy/http/response.ex:17-18",
+    "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex:77-85,160-165",
+    "apps/gaoxy/lib/gaoxy/service.ex:468,518,583,627-630"
+  ],
+  "unknowns": ["EOF initiator", "actual Session terminal ordering and cleanup cancelled flag", "dependency physical connection decision", "relation to historical TLS release failure", "latest parent counter allocation"],
+  "read_errors": [],
+  "incidents": [
+    "Initial memory search output truncated",
+    "First oversized source/evidence batch aggregate output truncated",
+    "Second source batch aggregate output truncated",
+    "Nested rg output in second source batch truncated; narrowed reads followed"
+  ],
+  "commands": "Read-only cat/nl/sed/head/rg shell commands and assigned /tmp heredoc writes; all exit0, synchronous, complete",
+  "own_tests_executed": 0,
+  "own_runtime_runs": 0,
+  "sol_repair_rounds_added": 0,
+  "inherited_counters_from_diagnosis2": {"sol":6,"runtimefailed":6,"astra_used":2,"astra_limit":2},
+  "astra_gate": null,
+  "shutdown": "All own commands finished; no own background processes",
+  "acceptance": "OPEN; fresh default16 remains FAIL with seven unexecuted cases",
+  "decisions_needed": []
+}

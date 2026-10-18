@@ -1,0 +1,36 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 768237, max_cases: 1
+
+
+Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest [test/upstream_transport_native_h1_pressure_test.exs]
+  * test fixed/tcp native-H1 response pressure preserves a separate healthy connection [L#68]GAOXY_NATIVE_H1_PRESSURE_FAILURE_DIAGNOSTIC {"reason":{"tuple":["badkey","redacted"],"clipped":false},"events":[{"bytes":87,"event":"send_started","operation":"45768804f8864477fccd82c652272336fe6f4774fa71399b1e4f759d96f14bda","at_us":-576460746781144,"outcome":null},{"bytes":87,"event":"send","operation":"45768804f8864477fccd82c652272336fe6f4774fa71399b1e4f759d96f14bda","at_us":-576460746781052,"outcome":"ok"},{"bytes":8193,"event":"send_started","operation":"cbefef560c3f4390cfe0e7ee36a3184a5c2ee15cb023f0edfe4e6d053670a4e7","at_us":-576460746753523,"outcome":null},{"bytes":8193,"event":"send","operation":"cbefef560c3f4390cfe0e7ee36a3184a5c2ee15cb023f0edfe4e6d053670a4e7","at_us":-576460746753405,"outcome":"ok"},{"bytes":4016,"event":"send_started","operation":"752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288","at_us":-576460746753145,"outcome":null},{"bytes":4016,"event":"send","operation":"752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288","at_us":-576460744752424,"outcome":{"tuple":["unknown","timeout"],"clipped":false}},{"reason":{"tuple":["shutdown","local_closed"],"clipped":false},"event":"down","actor":"bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409","observed_at_us":-576460744750411}],"stack":{"frames":[["erlang","map_get","arguments_redacted"],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","pressure_snapshot",2],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","-await_pressure/3-fun-0-",3],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","await",1],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","await_pressure",3],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","run_probe",1],["Elixir.Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest","test fixed/tcp native-H1 response pressure preserves a separate healthy connection",1],["Elixir.ExUnit.Runner","exec_test",2],["Elixir.ExUnit.CaptureLog","with_log",2],["Elixir.ExUnit.Runner","-maybe_capture_log/3-fun-0-",3],["timer","tc",2],["Elixir.ExUnit.Runner","-spawn_test_monitor/4-fun-1-",6]],"clipped":false},"kind":"error","at_us":-576460744750379,"phases":[{"phase":"sampler_started","at_us":-576460746815921},{"phase":"head_received","at_us":-576460746780563},{"phase":"prefix_dispatched","at_us":-576460746778185}],"phases_clipped":false,"last_pressure_snapshot":{"owner":"bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409","send_pend":8177,"bytes":4016,"stack":[["prim_inet","send",4],["Elixir.ThousandIsland.Socket","send",2],["Elixir.Gaoxy.HTTP.Exchange","send_chunks",3],["Elixir.Gaoxy.Proxy.HTTP","dispatch",2],["Elixir.Gaoxy.Proxy.HTTP","call_fixed",3],["Elixir.Gaoxy.HTTP.Connection","call_endpoint",3],["Elixir.Gaoxy.HTTP.Connection","respond",3],["Elixir.ThousandIsland.Handler","invoke_callback",2],["Elixir.Gaoxy.HTTP.Connection","handle_info",2],["gen_server","try_handle_info",3],["gen_server","handle_msg",3],["proc_lib","init_p_do_apply",3]],"retained_bytes":4118,"operation":"752b8d235d417353a61a8c706e8c6ceb8150700ee62cfac3ed204d45bbd86288","at_us":-576460744756714,"native_lease":"5fd3ea87e16c26f3b38b5ddab94022a77f5ee483d77ef936e0a21d7e206d3b4a","native_socket":"ebef01e99fd30a343bb5fef087312900e52f9ab6466212a104dede0c6e496a45"},"events_clipped":false,"queued_packet_limit_reached":false,"owned_actor_ids":["bd3e32fca9f956e628989a942ba162fa5b358030418a9d4bb3f00a4e333ee409","f13cc834d0a9623b694b8180192ac668a12b39e54b2158a3137a03a6700c3d47"],"actors_clipped":false}
+[31m  * test fixed/tcp native-H1 response pressure preserves a separate healthy connection (5311.6ms) [L#68][0m
+
+  1) test fixed/tcp native-H1 response pressure preserves a separate healthy connection (Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:68[0m
+     [31m** (ErlangError) Erlang error: {:native_h1_pressure_failed, {:badkey, #Reference<0.1735846395.3778805762.126102>}, [cleanup_failures: [{:fixture_cleanup, :error, "%RuntimeError{message: \"%{\\\"connection\\\" => 1, \\\"event\\\" => \\\"failure\\\", \\\"reason\\\" => \\\"response release deadline\\\"}\"}"}, :forced_owned_actor_cleanup]]}:
+
+       * 1st argument: not present in map
+     [0m
+     [36mcode: [0mrun_probe(f)
+     [36mstacktrace:[0m
+       :erlang.map_get(#Reference<0.1735846395.3778805762.126102>, %{})
+       test/upstream_transport_native_h1_pressure_test.exs:585: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.pressure_snapshot/2
+       test/upstream_transport_native_h1_pressure_test.exs:573: anonymous fn/3 in Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.await_pressure/3
+       test/upstream_transport_native_h1_pressure_test.exs:1180: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.await/1
+       test/upstream_transport_native_h1_pressure_test.exs:572: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.await_pressure/3
+       test/upstream_transport_native_h1_pressure_test.exs:150: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.run_probe/1
+       test/upstream_transport_native_h1_pressure_test.exs:90: (test)
+
+     The following output was logged:
+     [31m
+     07:28:42.486 [error] Process #PID<0.326.0> raised an exception
+     ** (RuntimeError) {:error, "response release deadline"}
+         test/support/managed_h1_matrix_fixture.exs:733: anonymous fn/2 in Gaoxy.Proxy.ManagedH1MatrixFixture.accept_loop/5
+         (stdlib 7.3.0.3) maps.erl:894: :maps.fold_1/4
+         test/support/managed_h1_matrix_fixture.exs:730: Gaoxy.Proxy.ManagedH1MatrixFixture.accept_loop/5
+     [0m
+
+Finished in 8.7 seconds (0.00s async, 8.7s sync)
+[31m1 test, 1 failure[0m

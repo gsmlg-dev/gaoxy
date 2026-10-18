@@ -1,0 +1,26 @@
+warning: Git tree '/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation' is dirty
+==> gaoxy_proxy
+Running ExUnit with seed: 863467, max_cases: 1
+
+
+Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest [test/upstream_transport_native_h1_pressure_test.exs]
+  * test fixed/tcp native-H1 response pressure preserves a separate healthy connection [L#68][31m  * test fixed/tcp native-H1 response pressure preserves a separate healthy connection (5255.1ms) [L#68][0m
+
+  1) test fixed/tcp native-H1 response pressure preserves a separate healthy connection (Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest)
+     [1m[30mapps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:68[0m
+     [31m** (ErlangError) Erlang error: {:native_h1_pressure_failed, {:badmatch, {:error, :einval}}, [cleanup_failures: [{:fixture_cleanup, :error, "%RuntimeError{message: \"%{\\\"connection\\\" => 1, \\\"event\\\" => \\\"failure\\\", \\\"reason\\\" => \\\"response release deadline\\\"}\"}"}, :forced_owned_actor_cleanup]]}[0m
+     [36mstacktrace:[0m
+       test/upstream_transport_native_h1_pressure_test.exs:739: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.sample_turn/6
+       test/upstream_transport_native_h1_pressure_test.exs:786: Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest.sample_turn/6
+
+     The following output was logged:
+     [31m
+     07:10:26.220 [error] Process #PID<0.326.0> raised an exception
+     ** (RuntimeError) {:error, "response release deadline"}
+         test/support/managed_h1_matrix_fixture.exs:733: anonymous fn/2 in Gaoxy.Proxy.ManagedH1MatrixFixture.accept_loop/5
+         (stdlib 7.3.0.3) maps.erl:894: :maps.fold_1/4
+         test/support/managed_h1_matrix_fixture.exs:730: Gaoxy.Proxy.ManagedH1MatrixFixture.accept_loop/5
+     [0m
+
+Finished in 8.3 seconds (0.00s async, 8.3s sync)
+[31m1 test, 1 failure[0m

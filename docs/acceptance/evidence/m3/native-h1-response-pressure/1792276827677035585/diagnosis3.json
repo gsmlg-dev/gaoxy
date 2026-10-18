@@ -1,0 +1,127 @@
+{
+  "task_id": "gaoxy-native-h1-pressure-diagnosis3",
+  "status": "DONE",
+  "verdict": "DIAGNOSIS_COMPLETE_ROOT_CAUSE_UNPROVEN",
+  "assignment": "direct bounded independent read-only Sol diagnosis before repair",
+  "at_utc": "2026-10-18T00:15:19.574139+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "source_candidate5_sha256": "139cb063dd6908a8273a00747af8391c6009b71d03d9e08e91db39e7447cbae7",
+    "test_sha256": "288bc0aaaff93fd12b8ad80b5869069ce3f4ce57bb04b3544596dc8377651c3c",
+    "authority": "Counter23; no Git revalidation"
+  },
+  "evidence_sha256": {
+    "fresh1-failure-observation.json": "0d1c1cf10c712abbfd61a266790cba7bb17736229c32fa5a6d906e3621532075",
+    "counter23.json": "dc2e84bb2153d62b0abe55587a16e620d941f49c468129f6c06ab1c3e0c9e2f4",
+    "fresh1.json": "df120480802116f2f1f9eb78895da342bb526cbf2a9b2f0da6339e84b8256f47",
+    "fresh1.log": "6153fb1fc77187947d5b10cd1532f5e7ae98b4253ebd7edba0126b70a9042ccd",
+    "command-collector1.py": "b648c6d47a8f80515db1c2150101577ad16e8c27ff2780f361f449d8e76f1af0",
+    "matrix1.json": "94a333b30e6716675876a9cd177fbdf32a70c83f6941cedfdcf162aac8fb48dd"
+  },
+  "findings": [
+    {
+      "id": "D3-1",
+      "classification": "proven runtime failure",
+      "source": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:1005-1009",
+      "evidence": "Fresh required52 executed52/1failure/0excluded/0skipped exit2; fixed/tcp failed at count66<=64 assertion.51 other tests passed, including the three other pressure rows. This remains FAIL and is not explained away by prior matrix1 PASS4.",
+      "cause_status": "The sampled actor identity and queue contents are unknown; no precise repair is justified yet."
+    },
+    {
+      "id": "D3-2",
+      "classification": "proven diagnostic attribution gap",
+      "source": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:995-1040",
+      "evidence": "Sampler already has actor,count,roles and turn, but the thrown assertion captures only count<=64. Anonymous map stack frames do not identify actor/index. Catch forwards kind/reason/stack; redacted chronology reason retains only assertion module. Actor hashes in owned_actor_ids identify a different bounded native/client list and cannot identify the failing sample.",
+      "recommendation": "Add only failure-branch assertion metadata from already-produced locals: hashed sampled actor identity, finite role labels, count and turn. Keep existing assert count<=64 and original error propagation."
+    },
+    {
+      "id": "D3-3",
+      "classification": "proven incomplete queue evidence",
+      "source": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:1443-1464,1483-1523",
+      "evidence": "Chronology holds44 visible send events(22started/22ok), but failure_packets hit its32packet budget. events_clipped=false means the later64-entry combined-output cap did not clip; it does not mean full mailbox/event history was drained. The limit flag does not prove more packets remained after the cap, nor prove all queued packets were telemetry.",
+      "recommendation": "Preserve existing caps and failures. Do not infer total produced event count or sampled actor from this partial chronology."
+    }
+  ],
+  "proven": {
+    "execution": "Fresh52 FAIL52tests/1failure/0excluded/0skipped exit2; stable source; no collector forced/signals/remaining. Runtime error cleanup_failures[] does not certify successful final normal actor joins or pressure acceptance.",
+    "phase": "Controller chronology reached prefix_consumed and eof_released. Last pressure snapshot O/B8113 has native stack/backlog and matching visible :ok. No fixed/tcp success receipt or sampler_stopped/final normal closure reached. Failure diagnostic generated14537us after recorded EOF phase; this is controller-report timing, not the original mailbox sample time.",
+    "source_flow": "Telemetry handle_send sends every matched event to controller. Only events() and failure_packets explicitly receive pressure_send_event. After await_send_success returns, client_message(:prefix/:complete), await_command via Fixture.event, observers and join use selective receives that leave those telemetry messages queued. Sampler includes controller alongside other owned actors and asserts every observed mailbox count<=64.",
+    "diagnostic_visible_counts": {
+      "send_started": 22,
+      "send": 22
+    },
+    "visible_O_send_duration_us": 247964
+  },
+  "hypothesis": {
+    "rank": 1,
+    "statement": "Controller telemetry backlog during lossless post-release body-drain/finalization is the leading source-supported hypothesis.",
+    "support": [
+      "Each native send generates started+outcome events to controller; legitimate full-body packetization can yield many events while reader progresses.",
+      "After matching O success, controller waits selectively for prefix/peer ACK/observations/final client completion without events() calls, allowing telemetry accumulation.",
+      "Failure chronology contains32 newly drained telemetry packets in addition to12 previously stored events, and successful runs sampled mailbox maxima up to63."
+    ],
+    "not_proven": [
+      "Which actor produced count66.",
+      "Mailbox contents at sample time and exact telemetry/control contributions.",
+      "Whether this was harness telemetry accumulation, a different owned actor queue or another message source.",
+      "A production/dependency bug, environmental blocker or permitted bound change."
+    ]
+  },
+  "recommended_next_step": {
+    "kind": "minimal diagnostic-only source addition; no repair yet",
+    "location": "Existing message_queue_len branch immediately around assert count<=64 in sample_turn",
+    "data": [
+      "identity(actor) using existing hash helper",
+      "count from existing Process.info result",
+      "totals.turns",
+      "finite role tags derived only from existing actor/self/caller/f.instance/exchange.gate/f.owner/f.peer/f.groups and guardians/peer_workers/clients/gate.leases values"
+    ],
+    "method": "Attach bounded failure-only metadata to the existing assertion error message, computing hash/roles only when count>64. Preserve expression count<=64 and original failure re-raise. Root can recover actor/roles directly from the ExUnit failure log. Do not add a separate telemetry mailbox message, new Process.info, queue-content inspection, sys/status observation, retry, sleep or expanded failure drain.",
+    "repair_decision": "If the controller is confirmed, investigate lossless event servicing at the identified wait boundary; if another actor is identified, trace that actor. Current evidence does not justify selecting a source fix. This is diagnosis continuation under existing authorization, not a new approval gate.",
+    "preserved": [
+      "mailbox64",
+      "eventstore128",
+      "all events retained/no drops",
+      "2s native write/10s request/original finite deadlines",
+      "body/prefix/hash/buffers/capacity",
+      "head provenance and frozen O+B",
+      "healthy progress/reader/EOF separation",
+      "all normal join and cleanup assertions"
+    ]
+  },
+  "verification": [
+    {
+      "command": "python3 read-only supplied SHA256 checks/fresh source-before-after-current404 comparison/log diagnostic equality and count/collector checks",
+      "actual_result": "PASS verification of the failure evidence; fresh52 itself remains FAIL; all reviewer commands exited0"
+    },
+    {
+      "command": "Scoped numbered sample actor/observe/receive/events/failure-packet and Gaoxy Admission source inspection",
+      "actual_result": "PASS diagnosis assessment; actor attribution unavailable, leading hypothesis identified without claiming root cause"
+    }
+  ],
+  "new_tool_incident_count": 0,
+  "new_tool_incidents": [],
+  "repair_counters": {
+    "authority": "Counter23",
+    "actualfails": 3,
+    "Solrepair": 2,
+    "Astra": "2of2 exhausted",
+    "diagnostic_rounds_recorded_in_counter23": 2,
+    "this_review_added_runtime_or_repair_rounds": 0,
+    "counter_mutations": []
+  },
+  "not_run": [
+    "runtime",
+    "compiler",
+    "formatter",
+    "tests",
+    "browser",
+    "Git"
+  ],
+  "remaining_gates": "Fresh52 remains FAIL; default16/browser and successful fresh verification remain pending. Prior matrix1 PASS4 remains scoped; no reset of failed run history.",
+  "repository_writes": [],
+  "decisions_needed": [],
+  "limits": "No repository edits, runtime, broad inventory/Git, dependency internals, protected prompts/rawNetLogs/keys or forbidden managed-H2 diagnostic files accessed. No weakened assertion, invented requirement, dependency97 proof or third Astra request.",
+  "command_shutdown": "All reviewer commands completed exit0; no background/runtime process started. Only assigned /tmp reports written.",
+  "custody": "Root retains source/evidence/runtime/Git ownership; diagnosis reports immutable after DONE/hash handoff."
+}

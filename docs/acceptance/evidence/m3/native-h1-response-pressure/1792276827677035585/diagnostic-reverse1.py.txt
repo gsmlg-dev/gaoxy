@@ -1,0 +1,34 @@
+from pathlib import Path
+import hashlib,json
+p=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs')
+s=p.read_text()
+start=s.index('  defp phase(name) do\n')
+end=s.index('  defp failure_cleanup(f) do\n',start)
+s=s[:start]+s[end:]
+changes=[
+('    Process.put(:pressure_events, [])\n    Process.put(:pressure_phases, [])\n    Process.put(:pressure_last_snapshot, nil)\n','    Process.put(:pressure_events, [])\n'),
+('        stack = __STACKTRACE__\n        failure_chronology(kind, reason, stack)\n        failures = failure_cleanup(f)','        stack = __STACKTRACE__\n        failures = failure_cleanup(f)'),
+('    start_sampler(f, slow_exchange)\n    phase(:sampler_started)\n','    start_sampler(f, slow_exchange)\n'),
+('    assert slow_head.status === 200 and slow_head.framing === :chunked\n    phase(:head_received)\n','    assert slow_head.status === 200 and slow_head.framing === :chunked\n'),
+('    send_raw(f, first, raw_prefix, false)\n    phase(:prefix_dispatched)\n','    send_raw(f, first, raw_prefix, false)\n'),
+('    pressure1 = await_pressure(f, slow, nil)\n    phase(:first_pressure_found)\n','    pressure1 = await_pressure(f, slow, nil)\n'),
+('    pressure_overlap = pressure(f, slow, operation)\n    phase(:healthy_overlap)\n','    pressure_overlap = pressure(f, slow, operation)\n'),
+('    after_healthy = checkpoint(f, baseline, [slow], "healthy_joined")\n    phase(:after_healthy)\n','    after_healthy = checkpoint(f, baseline, [slow], "healthy_joined")\n'),
+('    send(slow_client.pid, {:release, release})\n    phase(:release_dispatched)\n','    send(slow_client.pid, {:release, release})\n'),
+('    consumed_prefix = client_message(slow_client, :prefix)\n    phase(:prefix_consumed)\n','    consumed_prefix = client_message(slow_client, :prefix)\n'),
+('    send_raw(f, first, final_raw, true)\n    phase(:eof_released)\n','    send_raw(f, first, final_raw, true)\n'),
+('    samples = stop_sampler()\n    phase(:sampler_stopped)\n','    samples = stop_sampler()\n'),
+('    snapshot = %{\n      operation: if(pending, do: pending.operation),','    %{\n      operation: if(pending, do: pending.operation),'),
+('      at_us: System.monotonic_time(:microsecond)\n    }\n\n    Process.put(:pressure_last_snapshot, snapshot)\n    snapshot\n  end\n\n  defp pressure_receipt','      at_us: System.monotonic_time(:microsecond)\n    }\n  end\n\n  defp pressure_receipt'),
+('      socket_result = observe(fn -> Socket.getstat(exchange.socket) end)\n\n      if not match?({:ok, _}, socket_result) do\n        lease = Map.get(gate.leases, exchange.lease)\n\n        send(caller, {:pressure_socket_failure, %{\n          at_us: System.monotonic_time(:microsecond), turn: totals.turns,\n          result: diagnostic_reason(socket_result), owner: identity(exchange.owner),\n          lease: identity(exchange.lease), socket: identity(exchange.socket),\n          operation: if(lease && lease.send, do: identity(lease.send.operation)),\n          bytes: if(lease && lease.send, do: lease.send.bytes, else: 0),\n          retained_bytes: status.retained_bytes, cleanup_pending: status.cleanup_pending\n        }})\n      end\n\n      {:ok, socket_stats} = socket_result\n','      {:ok, socket_stats} = observe(fn -> Socket.getstat(exchange.socket) end)\n'),
+('      kind, reason ->\n        send(caller, {:pressure_failure_at, self(), System.monotonic_time(:microsecond)})\n        send(caller, {:pressure_sampler_failed, kind, reason, __STACKTRACE__})','      kind, reason -> send(caller, {:pressure_sampler_failed, kind, reason, __STACKTRACE__})'),
+('        send(caller, {:pressure_failure_at, self(), System.monotonic_time(:microsecond)})\n        send(caller, {:pressure_client_failed, self(), kind, reason, __STACKTRACE__})','        send(caller, {:pressure_client_failed, self(), kind, reason, __STACKTRACE__})')]
+for old,new in changes:
+    if s.count(old)!=1: raise RuntimeError('Reverse replacement mismatch')
+    s=s.replace(old,new)
+expected='68476956a03e3b2b219bb2ecc5ab60fadc4e27f96898f020b0ef9b95c7704ec1'
+actual=hashlib.sha256(s.encode()).hexdigest()
+if actual!=expected: raise RuntimeError('Reverse baseline SHA mismatch: '+actual)
+out=Path('/tmp/gaoxy-native-h1-pressure-before-diagnostic1.exs.txt')
+out.write_text(s)
+print(json.dumps({'baseline_sha256':actual,'baseline_lines':len(s.splitlines()),'current_sha256':hashlib.sha256(p.read_bytes()).hexdigest(),'current_lines':len(p.read_text().splitlines()),'output':str(out)}))

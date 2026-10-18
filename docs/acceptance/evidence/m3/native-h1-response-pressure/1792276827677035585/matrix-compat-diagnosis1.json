@@ -1,0 +1,83 @@
+{
+  "task_id": "MATRIX COMPAT DIAGNOSIS1",
+  "status": "DONE",
+  "assignment": "direct independent read-only diagnosis of two matrix failures only",
+  "verdict": "CAUSE_UNPROVEN; observed failures retained",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Frozen candidate8 entry head fb7d0fda2b7c16c42c65579736dc1f643e17d812 (from candidate, no Git executed)",
+  "candidate_sha256": "90e1374f8686e7dd50682de959d2c774927c1ebc76b40dccb08b4623fa11371d",
+  "strict_relevant_pins": {
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "c1073325d4b816175462a4524d106a52ddae93a25429532608dc63e51460ffb0",
+    "apps/gaoxy_proxy/test/upstream_transport_h1_matrix_test.exs": "5b8a4c17cdd1b3f6ad5fc1c4e2a1b4907989f647fd20279174308397b3806b62",
+    "integration/upstream_transport/run.py": "ca5ba4136a67eee50d25aeb5fee4cdaf8494e682989e778e91e059997feda7ca",
+    "integration/upstream_transport/fixture.exs": "7f1ee353535d95b3c55830b216b6aff1089914fdf85810bdf41895f8174cacf0",
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": "d4429aa3fe49b9faca2c05bef631ef97cf6ca4f6fe69d350dea71bd147a367f0"
+  },
+  "pin_verification": "PASS: only these five relevant current source hashes revalidated. All five also match diagnostic-fresh2 and diagnostic-fresh3 source_before/source_after. No whole-source revalidation/re-review.",
+  "evidence": {
+    "diagnostic_fresh3_json_sha256": "3d483a824505d68570efbacb4037d0460eb8ea06d083254686b5f67a672c5651",
+    "diagnostic_fresh3_log_sha256": "998f7aee37999a3a6032324f1b38ed4eb06638d21c8ac458e32997a2a3d648d0",
+    "diagnostic_fresh3": "Actual exit2 / FAIL52/3 / excluded0 / skipped0 / source stable / collector nonforced and joined / process_group_remaining empty",
+    "matrix_failure_1": "fixed/h1/tls/temporal_and_declared_trailers; connection2 response release deadline",
+    "matrix_failure_2": "group/h1/tls/temporal_and_declared_trailers; connection2 response release deadline",
+    "diagnostic_fresh2_json_sha256": "061d7fbd106f7c235459f8221c5f84bdd475579da0d8bef41b9fb70449608fb1",
+    "prior_run": "Same seed166590, PASS52/0, source stable, nonforced/joined. Relevant hashes unchanged. Does not establish cause of later failure."
+  },
+  "proven": [
+    "Both matrix stack traces fail in next_event/4 line240, called by event/3 then stop/2 line392 then dispatch/2 line465 and attached_loop/7 line563. This is stop dispatch, not a temporal response assertion stack.",
+    "Fixture respond/5 line869 raises response release deadline only after waiting 5000ms for a matching request send command. serve/6 reaches respond only for application requests after upload_end; health requests bypass respond. Worker rescue emits connection2 failure and sends worker_finished error.",
+    "Fixture event/3 and next_event/4 retain unmatched nonfailure events; failure events raise immediately regardless of selector. Connection2 request/phase identity is absent from emitted worker failure.",
+    "Python Case.run reaches host.stop only after temporal() returns, accepted connection/wire/TLS identity checks pass, and deadline checks pass. temporal() checks both intended responses, client joins and cleanup. The accepted==1 assertion follows host.stop and is not reached when stop raises.",
+    "stop closes the embedding then listener and waits for joined. Listener-close worker join raises on recorded worker error. run_case catch preserves original stack and attempts all cleanups; forced-driver cleanup and peer noproc warnings accompany that cleanup. Receipt collector itself was not forced."
+  ],
+  "unknown": [
+    "Identity (request ordinal/method/route) and origin of connection2 application request; whether it is extra/replayed work or another control/lifecycle path.",
+    "Why no matching send command reached that worker before its unchanged release deadline; current log lacks bounded per-worker phase/command chronology.",
+    "Whether a production bug, upstream dependency bug, driver/control routing issue or runtime scheduling contributed. No such cause is established.",
+    "Pressure-controller67 failure3 belongs to separate diagnosis; not analyzed here."
+  ],
+  "recommendation": {
+    "type": "small diagnostic-only source change, not functional fix",
+    "minimum": "Include bounded base connection/request/method and allowlisted fixed-route label in response-release failure context; retain original reason. At stop failure capture sanitized queued request/upload_end/command summaries (bounded identities/phase/counts only) so connection2 can be attributed. Do not dump payloads, raw messages or full state. Fresh scoped reproduction under root ownership can then distinguish extra/replayed request from control/stop sequencing.",
+    "preserve": "All assertion/accepted==1 checks, 5000ms release deadline, finite outer deadlines, cleanup failure verdicts and original immutable evidence. No dependency workaround or timeout/bound increase.",
+    "functional_repair": "Not justified by current evidence. Do not assume dependency provenance until actor/request attribution identifies a concrete dependency defect.",
+    "concrete_diagnostic_fields_and_bounds": {
+      "timeout_site": "ManagedH1MatrixFixture.respond/5 receive-after, currently line869; keep RuntimeError and original response release deadline prefix, same 5000ms receive/path",
+      "timeout_fields": "connection and request ordinals from existing base; method label POST/DELETE/other; route label temporal/trailers/other from existing base target. No raw target, headers or body.",
+      "queue_site": "Failure handling only in next_event/4 (or stop/2 rescue), using fixture-owned queued events; preserve raise path and no extra success-path observations",
+      "queue_bounds": "At most16 event summaries plus total count and truncated boolean; event whitelist accepted/request/upload_prefix/upload_end/command, others counted only. Summary keys event, connection, request, method-label, route-label, action-label, ended only when present. Action whitelist send/continue_upload/other; no headers/body64/bytes payload/raw messages.",
+      "noninterference": "No new queries, messages, mailbox drain or reads on success; no observer helper. This is a concrete minimal diagnostic recommendation for parent/writer review, not executed code or a proven fix."
+    }
+  },
+  "counter_authority": {
+    "name": "counter32.json",
+    "sha256": "94eb4508761803db0917f5aff54ad812860d919c5de69ae4f98198f9d97d4fe4",
+    "runtimefailed": 5,
+    "sol": 4,
+    "astra": "2of2 exhausted",
+    "added_tests_or_repair_rounds": 0
+  },
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "overbroad log context output",
+      "detail": "Initial failure-context extractor crossed into adjacent pressure diagnostic lines and produced truncated output. No pressure source analysis performed; subsequent analysis stayed matrix-scoped."
+    },
+    {
+      "count": 1,
+      "kind": "overbroad search output",
+      "detail": "Search terms over four relevant files produced truncated excessive output; narrowed subsequent reads."
+    },
+    {
+      "count": 1,
+      "kind": "wrong source path",
+      "detail": "Read-only rg used apps/gaoxy/lib/gaoxy/http/connection.ex, which does not exist, exit2. Correct path resolved from frozen map; no production file read or edits followed."
+    }
+  ],
+  "verification": "Read-only source/evidence inspection, strict five-source hashes and recorded source-before/after/seed comparisons. One rg exited2 for absent path; all other inspection commands exited0. No new runtime/compiler/formatter/browser/Git/agents/tests.",
+  "changes": "Only the two requested /tmp diagnosis reports. No repository edits or production-source changes.",
+  "command_shutdown": "All reviewer commands completed synchronously; no background processes started.",
+  "remaining_risks": "Two matrix failures remain unresolved. Diagnosis is observational/static and provides no runtime acceptance. Collector cleanup status and fixture cleanup warnings remain distinct.",
+  "decisions_needed": "Parent owns any diagnostic source assignment and fresh verification; no external permission identified.",
+  "custody": "Returned at DONE; report files immutable. Later clarification requires a new path/version."
+}

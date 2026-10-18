@@ -1,0 +1,45 @@
+{
+  "task_id": "native_h1_pressure_controller_store_author2",
+  "status": "DONE",
+  "assignment": "direct bounded sourceSPEC9 correction within observer round",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+  "before_sha256": "f10077760305acf52bbe3a6f5b532783ae7be5097f71f6c7740d1352a7299948",
+  "after_sha256": "f3f1ebc4bd8b1307d4a2e08ee4695cc9287b01d2893b0a14c3373cb09b34025f",
+  "exact_diff": "--- candidate9-source-spec9\n+++ controller-store-author2\n@@ -85,4 +85,5 @@\n       Process.put(:pressure_stopped, false)\n       Process.put(:pressure_group_joined, false)\n+      Process.put(:pressure_events_quiesced, false)\n       Process.put(:pressure_observers, :ets.new(:pressure_observers, [:set, :public]))\n \n@@ -99,4 +100,5 @@\n       try do\n         run_probe(f)\n+        Process.put(:pressure_events_quiesced, true)\n       catch\n         kind, reason ->\n@@ -104,4 +106,5 @@\n           failure_chronology(kind, reason, stack)\n           failures = failure_cleanup(f)\n+          if failures === [], do: Process.put(:pressure_events_quiesced, true)\n \n           :erlang.raise(\n@@ -112,5 +115,5 @@\n       after\n         if handler = Process.get(:pressure_handler), do: :telemetry.detach(handler)\n-        :ets.delete(Process.get(:pressure_events))\n+        if Process.get(:pressure_events_quiesced), do: :ets.delete(Process.get(:pressure_events))\n         :ets.delete(Process.get(:pressure_observers))\n       end\n@@ -477,8 +480,12 @@\n     assert event_count() <= 128\n \n-    Process.get(:pressure_events)\n-    |> event_rows()\n-    |> Enum.sort_by(&elem(&1, 0), :desc)\n-    |> Enum.map(&elem(&1, 1))\n+    values =\n+      Process.get(:pressure_events)\n+      |> event_rows()\n+      |> Enum.sort_by(&elem(&1, 0), :desc)\n+      |> Enum.map(&elem(&1, 1))\n+\n+    assert event_count() <= 128\n+    values\n   end\n \n",
+  "changes": [
+    "events() preserves first overflow guard, binds committed sorted snapshot locally, repeats exact event_count<=128 guard after snapshot, then returns snapshot; no mid-flight count/row equality",
+    "Initialize pressure_events_quiesced=false; mark true only after successful run_probe return or failure_cleanup returns []; after detach explicitly delete events table only when flag true",
+    "Failed/unconfirmed cleanup retains event table until controller termination; observer table lifecycle unchanged; original exception and cleanup failures unchanged"
+  ],
+  "static_verification": {
+    "entry_sha_matched": true,
+    "exact_inverse_restores_entire_source": true,
+    "pressure_protocol": true,
+    "quiescent_completeness": true,
+    "sampler_and_failure_cleanup": true
+  },
+  "preserved": [
+    "All existing assertions, bounds, deadlines and four cases",
+    "Telemetry callback/count saturation/committed-row semantics",
+    "Mandatory final quiescent completeness checks",
+    "Failure chronology, original raise, and cleanup failures",
+    "Fixture and all other files untouched"
+  ],
+  "not_run": [
+    "formatter",
+    "parser",
+    "compiler",
+    "runtime/tests",
+    "browser",
+    "Git",
+    "independent review"
+  ],
+  "incidents": [],
+  "counter_authority": "Counter34 latest root643/orch530/tooling55; Sol5/Astra2of2 unchanged; no new runtime or repair round by writer.",
+  "remaining_risks": [
+    "Unformatted/uncompiled/unexecuted; root owns fresh gates",
+    "On failed cleanup table lifetime is intentionally controller-owned rather than explicit deletion; failure remains visible"
+  ],
+  "command_shutdown": "All synchronous commands completed; no runtime processes started; report sealed and immutable source custody returned to root."
+}

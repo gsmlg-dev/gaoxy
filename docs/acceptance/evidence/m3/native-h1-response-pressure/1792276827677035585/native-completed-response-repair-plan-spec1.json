@@ -1,0 +1,112 @@
+{
+  "task_id": "NATIVE_COMPLETED_RESPONSE_REPAIR_PLAN_SPEC1",
+  "status": "DONE",
+  "assignment": "direct independent read-only design specification review only",
+  "verdict": "PASS: no actionable specification finding in the proposed bounded regression and initial repair plan",
+  "at_utc": "2026-10-18T01:35:23.590615+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Parent-supplied fb7d0fda2b7c16c42c65579736dc1f643e17d812; no Git query",
+  "design_pins_sha256": {
+    "native-completed-response-repair-design-plan1.md": "1972d3fdb3262dfa77d36a99f7041991a633ef770c72d80b15478b44d711c483",
+    "native-h1-success-close-regression-design1.md": "6d8fc06238de18e7d37d52adcbe92e1e34d2e439e78f9d3185466151616bd8d1",
+    "native-h1-success-close-regression-design1.json": "fc4d3a74b1a809a9e6d6d3a89081b682ec3ac06e0ce4a60112a8876bf039f1a9"
+  },
+  "findings": [],
+  "review_evidence": [
+    {
+      "reference": "native-h1-success-close-regression-design1.md:9-13,19-20",
+      "result": "PASS",
+      "assessment": "Explicit fixture endpoint override uses real upstream/socket/native HTTP1.Response.chunk. Barrier only after actual fixed-stream0 return, so native write/admission send completion already occurred; retaining transport:nil native_next exercises production native state. Delegated callbacks preserve real socket/errors/returns; no fake upstream/terminal/poll."
+    },
+    {
+      "reference": "native-h1-success-close-regression-design1.md:21-22",
+      "result": "PASS",
+      "assessment": "Correlate and monitor own Session/native before response. Suspend Session then public sys.replace_state callback returns unchanged opaque state and sends fence from that same Session to native. Exact same-sender fence plus suspension excludes both previously forwarded in-flight end and later end. Preserve at most1 original end tuple, reject duplicates/owned errors,leave unrelated packets untouched. Zero held end valid."
+    },
+    {
+      "reference": "native-h1-success-close-regression-design1.md:23-26",
+      "result": "PASS",
+      "assessment": "Real client exact CL4/head validation then normal close. Held callback requires supported real socket recv closed within original deadline, not synthetic poll. Only then return native transport:nil. Green requires positive Process.info waiting in own pump_wait while Session held and immediate failure on result/DOWN. Existing design caveat covers evidenced zero-time-receive ambiguity with narrowly owned positive-wait trace; no trace gate added by reviewer. Restore exactly captured originals before Session resume; never fabricate end/call consumed early."
+    },
+    {
+      "reference": "native-h1-success-close-regression-design1.md:26-35",
+      "result": "PASS",
+      "assessment": "Genuine Session end drives Response.finish/trailer validation/consumed/cleanup. Require endpoint ok/sent, public completion ok,normal Session DOWN,next request same physical upstream ID+next ordinal,zero owned accounting/baseline pins and accepted1/nonforced fixture joins. Shared finite deadline bounded by original request; next request within original5s upstream receive interval. Teardown releases callback/restores originals at most once/resumes suspended Session before stop,attempts every cleanup,keeps forced/unjoined/timeout failures visible."
+    },
+    {
+      "reference": "native-completed-response-repair-design-plan1.md:7,15-29",
+      "result": "PASS",
+      "assessment": "No production edit before actual intended old-source RED closed/fixed0 with setup+cleanup independently qualified. Same test bytes/assertions for GREEN. Insert only transportnil/fixed_stream0 branch after upload handling and before passive polling,using existing pump wait/remaining/idle/total limits. Actual end validation/ACK/Session.consumed/accounting unchanged. Framed H2/H3 excluded and must retain END_STREAM; incomplete/chunked/bodyless retain original initial paths. Fresh scoped regression1 separate from pressure4/fivefile52/default16/browser gates."
+    }
+  ],
+  "narrow_source_checks": [
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "lines": "779-859,1034-1059",
+      "observed": "pump_wait0 falls through to progress/poll; returned chunk Exchange is acknowledged before pump. Real end dispatch validates trailers+Response.finish before consumed/await_cleanup. Proposed branch preserves timeout/upload precedence and dispatch semantics."
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex",
+      "lines": "1252-1288,1915-1927",
+      "observed": "Actual end notification tuple originates from correlated Session PID and is sent to native owner; same-sender ordering premise supported by own source. No private dependency actors inspected."
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http1/response.ex",
+      "lines": "77-88,160-169",
+      "observed": "Real native fixed chunk returns remaining-size only after Exchange.send_bytes success; fixed0 finish marks sent, incomplete fixed finish errors. Native fixed0 is distinct from framed-stream END_STREAM obligations."
+    }
+  ],
+  "pitfalls_covered": [
+    "Suspend reply alone is not a cross-recipient delivery fence; same-sender Session marker is mandatory in proposed protocol.",
+    "Session suspension alone does not remove already-forwarded end; callback retains actual prior tuples through fence.",
+    "Do not restore end/resume before positive post-chunk waiting proof; ordinary negative waiting alone is insufficient.",
+    "Socket barrier must follow real native chunk/admission completion and return transport:nil; synthetic EOF/backend wrapper retained would test another path.",
+    "Keep result assertion and cleanup separate; setup timeout/missing EOF/duplicate end/unjoined actor cannot qualify intended RED.",
+    "Restore only original tuple(s) at most once and resume Session before fixture stop on every outcome; no forced cleanup can be called normal.",
+    "Fixed0 applies only to native completion in this repair; H2/H3 owe protocol termination and no early consumed is allowed."
+  ],
+  "verification": {
+    "method": "Read-only design JSON/Markdown and narrow owned-source inspection; no implementation/test draft review",
+    "runtime_compiler_formatter_AST_Git_browser_subagents": "NOT RUN/prohibited",
+    "tests_executed_by_reviewer": 0,
+    "repository_mutation": "NONE",
+    "output_files": [
+      "/tmp/gaoxy-native-completed-response-repair-plan-spec1.json",
+      "/tmp/gaoxy-native-completed-response-repair-plan-spec1.md"
+    ]
+  },
+  "counters": {
+    "cumulative_Sol": 6,
+    "runtime_failed_green": 7,
+    "Astra_used": 2,
+    "Astra_limit": 2,
+    "new_design_repair_runtime_increment": 0,
+    "new_reviewer_tooling_incidents": 3,
+    "accounting": "Root notified; no counter reset or mutation."
+  },
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "output cap",
+      "detail": "Initial45-line regression design Markdown read exceeded1900-token cap. Recovered exact protocol/cleanup with targeted17-31 lines and bounded JSON fields."
+    },
+    {
+      "count": 1,
+      "kind": "rg regex error",
+      "detail": "Initial narrow search included unescaped {:end;rg parse error exit2. Corrected to literal rg -F patterns."
+    },
+    {
+      "count": 1,
+      "kind": "guessed absent owned-source path",
+      "detail": "Optional narrow HTTP3 stream check used absent apps/gaoxy_http/lib/gaoxy/http/http3/stream.ex;rg exit2. No runtime/source changes;no broader exploration. Framed exclusion is a plan requirement,not a newly verified runtime result."
+    }
+  ],
+  "remaining_risks": [
+    "Design PASS only; actual old-source intended RED/setup/cleanup and repaired GREEN must still be independently qualified.",
+    "Positive waiting observation and normal physical upstream reuse are implementation/runtime acceptance obligations,not proven by this static review.",
+    "Actual race attribution remains pending diagnostic4/regression; stage remains OPEN."
+  ],
+  "decisions_needed": "None; no external approval,new acceptance condition,dependency97 proof or Astra request.",
+  "command_shutdown": "All synchronous reviewer commands finished; no background process started and no other actor process touched.",
+  "custody": "Only two named new /tmp reports written. Repository/source/evidence and prior reports untouched. Reports immutable at DONE; custody returned to root; later clarification requires new version."
+}

@@ -1,0 +1,40 @@
+{
+  "task_id": "native_h1_pressure_mailbox_syntax_author1",
+  "status": "DONE",
+  "assignment": "direct syntax-only correction within diagnostic repair3",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "changed_path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+  "before_sha256": "0ca3fd32b2204cc02825311f3e1ec53e1bb90ca2a6051bdffe8ec725f1a62555",
+  "after_sha256": "547616fd845193b8688d97cf9a9740a93105c4539f7242bdabfbfaa21590e892",
+  "exact_diff": "--- source-spec6\n+++ mailbox-syntax-author1\n@@ -1007,5 +1007,5 @@\n             {:message_queue_len, count} ->\n               assert count <= 64,\n-                     if(count > 64) do\n+                     (if(count > 64) do\n                 role =\n                   cond do\n@@ -1025,5 +1025,5 @@\n \n                 \"native_h1_pressure_mailbox actor_sha256=#{identity(actor)} role=#{role} count=#{count} turn=#{totals.turns}\"\n-              end\n+              end)\n \n               count\n",
+  "change": "Add one opening parenthesis before the complete if expression and one closing parenthesis after its end, explicitly making it assert second argument.",
+  "preserved": [
+    "Exact count<=64 condition",
+    "Failure-only actor hash/known-role/count/turn message and contents",
+    "No helper/bounds/success-path/query/drain changes"
+  ],
+  "verification": [
+    "Entry SHA matched",
+    "Exact inverse two-parenthesis block replacement restores whole source"
+  ],
+  "not_run": [
+    "formatter",
+    "compiler",
+    "runtime/tests",
+    "browser",
+    "Git",
+    "independent review"
+  ],
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "AssertionError in read-only block-layout guard before edit",
+      "detail": "Initial guard expected three trailing newlines; actual formatted block has two. Source remained original SHA. Corrected exact guard and applied only requested parentheses."
+    }
+  ],
+  "counters": "Same diagnostic repair3;0 new runtime or Sol repair rounds.",
+  "remaining_risks": [
+    "Unformatted/uncompiled; parent owns fresh static gates"
+  ],
+  "command_shutdown": "All synchronous commands finished; no runtime started; immutable custody returned to root."
+}

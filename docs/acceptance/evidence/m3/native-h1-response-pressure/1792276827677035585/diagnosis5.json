@@ -1,0 +1,96 @@
+{
+  "task_id": "NATIVE_H1_PRESSURE_DIAGNOSIS5",
+  "status": "DONE",
+  "assignment": "direct read-only independent diagnosis; no implementation",
+  "at_utc": "2026-10-18T00:42:03.169789+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "source_candidate": "source-candidate8.json",
+    "source_candidate_sha256": "90e1374f8686e7dd50682de959d2c774927c1ebc76b40dccb08b4623fa11371d",
+    "test_path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+    "test_sha256": "aa9646ac1e15a912f634f950ec4b5a35bcc4577e7d083c17248e0b676ff894aa",
+    "git_baseline": "Not queried; Git was prohibited. Root owns Git/source custody."
+  },
+  "verdict": "Recommend test-only direct bounded ETS telemetry storage. Attributed controller telemetry backlog is an evidenced harness mechanism; the precise composition of all 67 queued messages remains unknown. This is not a runtime fix or passing acceptance result.",
+  "root_cause_evidence": [
+    "Fresh3 attributes message_queue_len=67 at sampler turn18 to the controller, actor SHA256 55bb2c0c8d92404ed48c2fbe3248536f917f9b85ad2482e3264f74a09591ba2a.",
+    "Current handle_send synchronously sends one pressure_send_event packet per scoped telemetry event to the controller. events() is the selective drain; intervening client, peer, observer and join waits do not drain these packets.",
+    "Failure chronology reached eof_released and contains 43 visible send records (22 started,21 outcome), with queued_packet_limit_reached=true at the existing 32-packet cap. This proves telemetry was queued, but incomplete failure history cannot prove all 67 messages were telemetry.",
+    "The original historical count66 actor remains UNKNOWN; the newer controller attribution does not retroactively identify it.",
+    "Admission send_started and send_outcome emit synchronously through Gaoxy.Telemetry into telemetry.execute; the relevant scope is the Gaoxy-owned Admission Gate, not private dependency actors."
+  ],
+  "options": [
+    {
+      "option": "Drain telemetry during every selective wait",
+      "assessment": "Possible only by threading the drain through all controller wait paths, including Fixture.event/next_event, client, observer, joins and barriers. Every recursive drain must preserve original absolute deadlines, bound128 and all failure/monitor messages. Pre-draining does not bound bursts while blocked; drain scheduling still races the raw sampler. This spreads changes across helpers and fixture APIs and is less robust for the smallest repair."
+    },
+    {
+      "option": "Direct bounded ETS telemetry store",
+      "assessment": "Recommended. Synchronous callback stores metadata directly without a controller message or extra actor. It removes this telemetry mailbox mechanism while preserving actual mailbox sampling and bounded event history. Requires the explicit publication, overflow and emitter-lifetime contract below."
+    }
+  ],
+  "recommended_contract": [
+    "Use a separate unnamed ETS set owned by the test controller, public only for synchronous telemetry callback writes and sampler reads; preserve the observer table and its size-zero join assertion. Create the event store before handler attachment. Pass its table ID plus the unchanged exact scope filter in handler config. Add no process.",
+    "For each matching callback capture exactly the existing event, at_us generation timestamp, bytes, operation and outcome fields. Atomically reserve a monotonically increasing slot with a single counter saturating at 129. Slots 1..128 receive one immutable event row each; never overwrite, evict, destructively read or reuse accepted slots. There are at most 128 event rows plus one scalar control row.",
+    "Counter 129 is sticky overflow and means at least 129 matching events occurred; it is not an exact total. An over-cap callback records this explicit failure state and returns without allocating another event row. Overflow must fail the test and be visible in bounded failure diagnostics, even if no later event accessor runs. It cannot be classified as a permitted drop, accepted truncation or a passing sample.",
+    "Enforce overflow in every existing sampler turn, each event accessor and the mandatory final validation before a success receipt. Keep the actual Process.info(actor, :message_queue_len) <=64 assertion for every actor including the controller unchanged. Do not signal telemetry events or overflow to the controller with mailbox messages. Do not rely on raising inside telemetry callbacks: handler exceptions may detach the handler instead of failing the test.",
+    "Reservation precedes event-row insertion; readers must treat missing reserved rows as in flight, not fabricate events or assume count equals committed rows. Read immutable committed rows in existing reverse event order and validate the sticky counter before and after the snapshot. A desired event not yet committed stays pending under the existing finite deadline. Exact scope events in this workload originate synchronously from the one Admission Gate, which completes callback storage before subsequent Gate progress; preserve the existing start/outcome barriers and unique event+operation assertions.",
+    "A partial concurrent snapshot cannot authorize final success. After the existing normal emitting-owner/Gate/fixture joins establish quiescence, detach the handler, recheck counter <=128, and require exactly one row for every reserved slot 1..count. Then form the existing receipt using the complete history and delete the event table only after the last diagnostic/read need. Handler detach alone does not prove an already-running callback has returned.",
+    "On failure preserve the original exception and existing bounded cleanup. Diagnostics use a nonraising bounded store snapshot and expose overflow/incomplete state while retaining original bounded stack/packet chronology. Detach before destruction and retain the table through bounded emitting-owner cleanup. Explicit deletion requires emitter quiescence. If cleanup cannot establish it, retain the original failed status and cleanup failure; do not report success or broaden deadlines to obtain a join. Controller exit eventually owns ETS reclamation.",
+    "Keep the 32-packet failure-only drain for existing nontelemetry packets, bounded 64-entry combined diagnostic output, generation timestamps and clipping indicators. Combine the stored events with these packets without duplicating events. Do not change the 128-event cap, raw mailbox64 cap, 2s/10s deadlines, body/hash/buffer assertions, head/O+B contract, stack/backlog limits, EOF barriers, resources or normal joins."
+  ],
+  "checks": {
+    "pinned_hashes": "PASS: all six evidence artifacts and current test matched pinned SHA256 values",
+    "source_identity": "PASS: both fresh2 and fresh3 source_before/source_after equal candidate8 source_sha256",
+    "observation_consistency": "PASS: recorded receipt/log hashes match, and parsed failure markers equal observation pressure_records",
+    "runtime": "NOT RUN: prohibited for this assignment",
+    "compiler_formatter_parser_AST_browser_Git": "NOT RUN: prohibited"
+  },
+  "retained_actual_results": {
+    "diagnostic_fresh2": "PASS:52 executed,0 failures,exit0,no skipped/excluded; does not close original cause",
+    "diagnostic_fresh3": "FAIL:52 executed,3 failures,exit2,no skipped/excluded; one pressure controller67 failure and two separately owned TLS failures; pressure cleanup_failures=[]",
+    "TLS_matrix": "Not investigated; independently owned; unresolved failures retained"
+  },
+  "evidence_sha256": {
+    "source-candidate8.json": "90e1374f8686e7dd50682de959d2c774927c1ebc76b40dccb08b4623fa11371d",
+    "counter32.json": "94eb4508761803db0917f5aff54ad812860d919c5de69ae4f98198f9d97d4fe4",
+    "diagnostic-fresh2.json": "061d7fbd106f7c235459f8221c5f84bdd475579da0d8bef41b9fb70449608fb1",
+    "diagnostic-fresh3.json": "3d483a824505d68570efbacb4037d0460eb8ea06d083254686b5f67a672c5651",
+    "diagnostic-fresh3.log": "998f7aee37999a3a6032324f1b38ed4eb06638d21c8ac458e32997a2a3d648d0",
+    "diagnostic-fresh3-failure-observation.json": "4a81104ca96d362026e3f36ea5bd533ba92cc61dc5c44d8d05436ede2f7cf026"
+  },
+  "counters": {
+    "source": "counter32.json",
+    "source_sha256": "94eb4508761803db0917f5aff54ad812860d919c5de69ae4f98198f9d97d4fe4",
+    "native_h1_pressure_runtime_failed_green": 5,
+    "native_h1_pressure_sol_repair_rounds": 4,
+    "native_h1_pressure_diagnostic_rounds": 4,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "this_assignment_repair_increment": 0,
+    "counter_mutation": "none; root owns accounting",
+    "tool_incidents": {
+      "failed_read_only_commands": 2,
+      "output_volume_incidents": 1,
+      "details": [
+        "FileNotFoundError after guessed plural observation filename; corrected to singular file.",
+        "KeyError phases after initially treating the observation wrapper as a pressure record; corrected to pressure_records.",
+        "Read-only print of the source_sha256 manifest expanded unexpectedly and was tool-truncated; final verification compares manifests without printing them."
+      ]
+    }
+  },
+  "changed_files": [
+    "/tmp/gaoxy-native-h1-pressure-diagnosis5.json",
+    "/tmp/gaoxy-native-h1-pressure-diagnosis5.md"
+  ],
+  "source_or_repository_edits": "NONE",
+  "command_shutdown": "All commands finished; no background process or runtime started. No other actor processes touched.",
+  "remaining_risks": [
+    "ETS repair is only a recommendation; implementation, independent source review and fresh runtime verification remain with root.",
+    "Complete mailbox67 contents are unknown because failure drain was capped.",
+    "Overflow callback must record sticky failure rather than rely on callback exceptions.",
+    "Detach alone is not emitter quiescence; final completeness and lifetime ordering are mandatory."
+  ],
+  "decisions_needed": "None for diagnosis. Root assigns source writer only after receiving sealed report hashes.",
+  "custody": "Exclusive /tmp reports become immutable after hash handoff; root owns all source, runtime, evidence and Git changes."
+}

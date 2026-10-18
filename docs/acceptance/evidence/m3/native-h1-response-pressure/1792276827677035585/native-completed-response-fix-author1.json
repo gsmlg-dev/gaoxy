@@ -1,0 +1,60 @@
+{
+  "task_id": "NATIVE_COMPLETED_RESPONSE_FIX_AUTHOR1",
+  "status": "DONE",
+  "assignment": "direct exact bounded one-file production repair implementation; root-owned validation pending",
+  "at_utc": "2026-10-18T01:46:57.854050+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head_from_root": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "Git": "NOT RUN; root-owned",
+    "source_before_matched_original_snapshot": true,
+    "preexisting_changes": "Other task/worker files preserved; no inventory,reset or unrelated edit"
+  },
+  "changed_files": [
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex"
+  ],
+  "before_sha256": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+  "after_sha256": "796f5058c7cb2fa23d46f93559caf8eae00836fc8812e6126c306e91455c8776",
+  "exact_diff": "--- apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex.original\n+++ apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex\n@@ -831,8 +831,11 @@\n \n       state.ready and not state.upload_stopped ->\n         read_upload(state, min(@poll_ms, remaining))\n \n+      state.exchange.transport == nil and state.exchange.response == {:fixed_stream, 0} ->\n+        pump(state, min(@poll_ms, remaining))\n+\n       true ->\n         # Passive TLS needs a waiting receive to settle an abrupt transport close.\n         # Give it a finite turn only after idle, keeping data deliveries on poll0.\n         poll_wait =\n",
+  "root_cause_and_authorization": "Root supplied independent positive originalRED audit: actual1/fail1/exit2,real EOF before release,immediate returned errorenotconn/fixed0,no teardown warning; semantic closed/enotconn passive-poll path invokes Session.cancel before genuine end. Approved nativefixed0 branch retains ordinary terminal validation instead of passivepoll. Author did not run or independently re-audit RED.",
+  "implementation": "After existing upload branches and before passive true branch,when transport==nil and response=={:fixed_stream,0},call pump(state,min(@poll_ms,remaining)). Exactly3 added lines; no other source change.",
+  "static_verification": {
+    "entry_hash_match": true,
+    "entry_diff_against_original_snapshot": "empty;exit0",
+    "exact_inverse_restores_entire_original_source": true,
+    "only_approved_addition": true,
+    "source_shape": "Existing remaining<=0 timeout and upload branches precede new branch; all following passivepoll/ACK/end/trailer/error/consumed code byte-identical"
+  },
+  "preserved": "No comments/helpers/APIs added. Incompletefixed,chunked,bodyless,framedH2/H3 and existing idle/total/request deadlines unchanged. Genuine end validation/consumed remains mandatory. Regression test/assertions and all other task files untouched.",
+  "verification_commands": [
+    "sha256sum assignedsource+originalsnapshot:exit0/exactmatch",
+    "diff -u originalsnapshot assignedsource beforeedit:exit0/nooutput",
+    "bounded nl progress read:exit0",
+    "apply_patch exactonefile:success",
+    "Python exact inverse/fulltextdiff/hash/report creation:exit0"
+  ],
+  "not_run": [
+    "compiler",
+    "formatter",
+    "runtime/tests/green",
+    "Git",
+    "independent repair source review"
+  ],
+  "counters": {
+    "native_pressure_production_repair": 1,
+    "cumulative_sol_round": 7,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "authority": "root supplied;root owns recording",
+    "this_author_new_runtime_runs": 0,
+    "this_author_tooling_incidents": 0
+  },
+  "incidents": [],
+  "remaining_risks": [
+    "Root independent repair SPEC/CODE,strictcompile/format and actual unchanged-testGREEN remain required.",
+    "Source-only authorDONE does not establish runtime repair or stageclosure;remaining prescribed compatibility gates stay root-owned."
+  ],
+  "decisions_needed": "None",
+  "command_shutdown": "All synchronous author commands finished;no background/application runtime started;no other actor process touched.",
+  "custody": "Only assigned productionfile and two named new /tmp authorreports written. Source and reports frozen atDONE;custody returned to root for format/freeze/review/runtime. Later clarification requires new reportversion."
+}

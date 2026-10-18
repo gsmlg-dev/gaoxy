@@ -1,0 +1,296 @@
+{
+  "accepted_baseline_sha256": "68476956a03e3b2b219bb2ecc5ab60fadc4e27f96898f020b0ef9b95c7704ec1",
+  "assessments": [
+    {
+      "evidence": "Accepted1240-line baseline pin matches. Only test source differs from candidate1; fixture pin unchanged. Changes are10 fixed phase calls/2 process-storage initializers, last existing snapshot storage, failure-only sampler context and generation timestamp packets, pre-cleanup chronology, bounded serializers.",
+      "id": "C1",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "Exact diagnostic scope"
+    },
+    {
+      "evidence": "Exact static comparisons confirm failure_cleanup, phase_deadline/timeout, pressure predicates and receipt serializers unchanged. The original {:ok,socket_stats} match executes on the same result after optional diagnostic packet; errors still fail. Existing stack allowlist and all assertions/capacities/deadlines/success receipt remain unchanged.",
+      "id": "C2",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "Existing behavior preserved"
+    },
+    {
+      "evidence": "Chronology reads process-local stored phases/last existing snapshot, existing captured actor IDs, retained telemetry and at most32 already-queued messages using receive after0. No new Process.info/sys/socket observation, subprocess, waiting join or runtime observer is introduced after failure. SourceSPEC2 failed fresh observation was removed before this candidate.",
+      "id": "C3",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "No fresh failure-path observations"
+    },
+    {
+      "evidence": "At most10 hardwired phase records retained and at most16 emitted; one replacing pressure snapshot; queued drain32; stored existing telemetry\u2264128, temporary event union\u2264160, output events64; actor IDs4; diagnostic stack frames16 with explicit clipping; tuple depth<3 and8 members/node. Only owned client/native/sampler failure/DOWN packets pass PID membership guards; send/socket packets originate in existing scoped test producers.",
+      "id": "C4",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "Packet and retention bounds"
+    },
+    {
+      "evidence": "Hashes replace owner/socket/lease/operation/PID terms; atoms become strings, binary reasons become byte counts, exceptions become module names, unsupported values redact. Stack locations/arguments are omitted. Existing pressure_receipt emits scalar/list/map fields. No raw PID/ref/port/struct reaches JSON for these controlled packets.",
+      "id": "C5",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "JSON serialization and redaction"
+    },
+    {
+      "evidence": "failure_chronology runs before unchanged failure_cleanup and original erlang.raise. Diagnostic/IO error is caught with a separately guarded failure-only fallback and cannot replace original probe exception. Success receipt prefix is unchanged; diagnostic uses a separate failure prefix.",
+      "id": "C6",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "Original failure and cleanup preserved"
+    },
+    {
+      "evidence": "Root initial-probe1 remains FAIL1/1 exit2; rootcause UNKNOWN. Diagnostic rerun/JSON runtime emission/compile/strict format/browser remain NOT RUN by reviewer. No stack classifier or production repair is authorized by static diagnostic review.",
+      "id": "C7",
+      "status": "PASS_SOURCE_ONLY",
+      "subject": "Evidence limits"
+    }
+  ],
+  "assignment": "direct independent read-only delta CODE review after sourceSPEC3 PASS",
+  "at_utc": "2026-10-17T23:27:46.351061+00:00",
+  "baseline_authority": "Root supplied verified HEAD; reviewer Git NOT RUN",
+  "changed_source_from_candidate1": [
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs"
+  ],
+  "command_shutdown": "All own synchronous commands finished; no runtime/background process/session started.",
+  "decisions_needed": [],
+  "delta_hunks": [
+    {
+      "kind": "insert",
+      "new_end": 73,
+      "new_start": 72,
+      "old_end": 71,
+      "old_start": 72
+    },
+    {
+      "kind": "insert",
+      "new_end": 94,
+      "new_start": 94,
+      "old_end": 91,
+      "old_start": 92
+    },
+    {
+      "kind": "insert",
+      "new_end": 133,
+      "new_start": 133,
+      "old_end": 129,
+      "old_start": 130
+    },
+    {
+      "kind": "insert",
+      "new_end": 143,
+      "new_start": 143,
+      "old_end": 138,
+      "old_start": 139
+    },
+    {
+      "kind": "insert",
+      "new_end": 149,
+      "new_start": 149,
+      "old_end": 143,
+      "old_start": 144
+    },
+    {
+      "kind": "insert",
+      "new_end": 151,
+      "new_start": 151,
+      "old_end": 144,
+      "old_start": 145
+    },
+    {
+      "kind": "insert",
+      "new_end": 165,
+      "new_start": 165,
+      "old_end": 157,
+      "old_start": 158
+    },
+    {
+      "kind": "insert",
+      "new_end": 174,
+      "new_start": 174,
+      "old_end": 165,
+      "old_start": 166
+    },
+    {
+      "kind": "insert",
+      "new_end": 182,
+      "new_start": 182,
+      "old_end": 172,
+      "old_start": 173
+    },
+    {
+      "kind": "insert",
+      "new_end": 192,
+      "new_start": 192,
+      "old_end": 181,
+      "old_start": 182
+    },
+    {
+      "kind": "insert",
+      "new_end": 204,
+      "new_start": 204,
+      "old_end": 192,
+      "old_start": 193
+    },
+    {
+      "kind": "insert",
+      "new_end": 215,
+      "new_start": 215,
+      "old_end": 202,
+      "old_start": 203
+    },
+    {
+      "kind": "replace",
+      "new_end": 615,
+      "new_start": 615,
+      "old_end": 602,
+      "old_start": 602
+    },
+    {
+      "kind": "insert",
+      "new_end": 629,
+      "new_start": 627,
+      "old_end": 613,
+      "old_start": 614
+    },
+    {
+      "kind": "replace",
+      "new_end": 778,
+      "new_start": 755,
+      "old_end": 739,
+      "old_start": 739
+    },
+    {
+      "kind": "replace",
+      "new_end": 829,
+      "new_start": 827,
+      "old_end": 788,
+      "old_start": 788
+    },
+    {
+      "kind": "insert",
+      "new_end": 1010,
+      "new_start": 1010,
+      "old_end": 968,
+      "old_start": 969
+    },
+    {
+      "kind": "insert",
+      "new_end": 1359,
+      "new_start": 1212,
+      "old_end": 1169,
+      "old_start": 1170
+    }
+  ],
+  "entry_head": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+  "findings": [],
+  "new_tool_incident_count": 2,
+  "new_tool_incidents": [
+    {
+      "actual_command_exit": 0,
+      "description": "Initial unified diff exceeded bounded output cap. Recovered by compact opcode summary and absolute-path targeted reads of every omitted new block; no runtime/repair delta.",
+      "exact_messages": [
+        "Warning: truncated output (original token count: 2338)"
+      ],
+      "id": 1,
+      "kind": "display_truncation"
+    },
+    {
+      "actual_command_exit": 0,
+      "description": "One relative sed range lacked explicit workdir; accompanying absolute-path Python completed exit0. Recovered once with absolute-path Python range; no source mutation/runtime/repair delta.",
+      "exact_messages": [
+        "sed: can't read apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs: No such file or directory"
+      ],
+      "id": 2,
+      "kind": "relative_path_without_workdir"
+    }
+  ],
+  "not_run": [
+    "All runtime/tests/compiler/formatter/browser/Git",
+    "Actual diagnostic emission/JSON runtime serialization",
+    "Diagnostic rerun and pressure acceptance"
+  ],
+  "owned_sha256": {
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "c1073325d4b816175462a4524d106a52ddae93a25429532608dc63e51460ffb0",
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs": "33365a6758fa560045fe92294e666178ba3be9602435c54a7469b8b57a275dcd"
+  },
+  "ownership": "Return source/repository/evidence/runtime/compiler/browser/Git custody to /root; only requested /tmp reports written.",
+  "pin_checks": {
+    "documents_sha256": {
+      "count": 11,
+      "mismatches": 0
+    },
+    "evidence_sha256": {
+      "count": 78,
+      "mismatches": 0
+    },
+    "installed_dependency_sha256": {
+      "count": 12,
+      "mismatches": 0
+    },
+    "owned_sha256": {
+      "count": 2,
+      "mismatches": 0
+    },
+    "source_sha256": {
+      "count": 404,
+      "mismatches": 0
+    }
+  },
+  "remaining_risks": [
+    "Actual failure chronology may identify a cause only after root-owned execution; static serialization assessment is not runtime evidence.",
+    "Bounded diagnostic generation/IO can itself fail; existing guard preserves original error and cleanup."
+  ],
+  "repair_counters": {
+    "astra_limit": 2,
+    "astra_used": 2,
+    "authority": "counter11",
+    "authority_sha256": "f647e1d0480ec220ef7c3ba01afb43cdabfa09362270579217ec83d275d18a4a",
+    "diagnostic_round": 1,
+    "native_h1_pressure_sol": 1,
+    "no_reset": true,
+    "runtime_fail": 1,
+    "source_failed_spec": 1,
+    "this_review_failed_code": 0,
+    "this_review_repairs": 0,
+    "this_review_runtime": 0,
+    "this_review_tooling": 2
+  },
+  "report_writes": [
+    "/tmp/gaoxy-native-h1-pressure-source-code2.json",
+    "/tmp/gaoxy-native-h1-pressure-source-code2.md"
+  ],
+  "repository_writes": [],
+  "root_runtime_status": "Initial-probe1 FAIL1/1 exit2 preserved; cause UNKNOWN; diagnostic rerun NOT RUN",
+  "source_candidate3_sha256": "ed87a219beacce243151b4fe797d23623b345997504d265cac3e947a647227c2",
+  "source_spec3_sha256": "6536d2d4906e8c9647a6fd228c5193718aeb6783be4da987a797aaf2d3cbe205",
+  "status": "DONE",
+  "task_id": "native-h1-pressure-source-code2",
+  "test_sha256": "33365a6758fa560045fe92294e666178ba3be9602435c54a7469b8b57a275dcd",
+  "unchanged_contract_checks": {
+    "failure_cleanup_byte_identical": true,
+    "no_selectors": true,
+    "phase_deadline_and_timeout_byte_identical": true,
+    "pressure_predicates_byte_identical": true,
+    "receipt_serializers_byte_identical": true,
+    "test_count_one": true
+  },
+  "unique_manifest_files": 504,
+  "verdict": "PASS",
+  "verification_commands": [
+    {
+      "actual_exit": 0,
+      "command": "Read-only Python hashlib comparisons of candidate3/SPEC3/baseline/test and all404/2/11/12/78 manifest categories; fresh repeat during report construction",
+      "result": "All pins match; only test differs from candidate1; fixture unchanged."
+    },
+    {
+      "actual_exit": 0,
+      "command": "Read-only Python difflib/targeted source projections and byte equality checks of original contract functions",
+      "result": "Every diagnostic delta reviewed; all unchanged-contract checks true; exact1 test/no selectors."
+    },
+    {
+      "actual_exit": 0,
+      "command": "One relative sed range in a Python projection command",
+      "result": "sed path error recorded as incident2; corrected absolute-path read passed."
+    }
+  ],
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation"
+}

@@ -1,0 +1,55 @@
+{
+  "task_id": "SOURCE SPEC6",
+  "assignment": "read-only independent source review",
+  "status": "DONE",
+  "verdict": "FAIL",
+  "repository_worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "source-before-diagnostic2.exs.txt (candidate6 evidence-pinned); candidate5 test SHA256 288bc0aaaff93fd12b8ad80b5869069ce3f4ce57bb04b3544596dc8377651c3c",
+  "candidate": {
+    "path": "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/source-candidate6.json",
+    "sha256": "4bbb4d8365004a540cf364f8a3d7540ad5b4c609efdcc1e9a0abcc8da17d6a6d",
+    "pins": {
+      "source": 404,
+      "owned": 2,
+      "docs": 11,
+      "dependencies": 12,
+      "evidence": 187
+    },
+    "pin_verification": "PASS: all frozen hashes verified"
+  },
+  "reviewed_test": {
+    "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+    "sha256": "0ca3fd32b2204cc02825311f3e1ec53e1bb90ca2a6051bdffe8ec725f1a62555"
+  },
+  "findings": [
+    {
+      "id": "SOURCE-SPEC6-01",
+      "severity": "blocking",
+      "location": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:1008",
+      "finding": "In assert predicate, if(condition) do ... end, the do/end block binds to the outer unparenthesized assert call. Structurally this supplies assert/3 while the nested if lacks its required do block. The intended assertion message is malformed.",
+      "evidence_type": "static language-binding analysis; no compiler, parser, AST execution, or runtime executed",
+      "repair": "Parenthesize the entire if expression as the second assert argument, or use an equivalent explicit message expression; preserve bound64, existing observations and assertions."
+    }
+  ],
+  "other_assessment": "Only the failure-message delta was reviewed. Existing monitored Process.info(actor, :message_queue_len) observation is unchanged. Exact role identities precede collection membership. Fixed labels and hash/count/turn fields are bounded and expose no raw messages or arguments. Source acceptance remains blocked by SOURCE-SPEC6-01.",
+  "runtime_evidence": {
+    "actual_matrix": "PASS4/0/excluded0/skipped0 (previous evidence; not rerun)",
+    "fresh52": "FAIL52/1: mailbox count66 exceeds unchanged bound64",
+    "cause": "UNKNOWN / unproven",
+    "this_review_runtime": "NOT RUN"
+  },
+  "counters": {
+    "authority": "counter25.json",
+    "authority_sha256": "7cda68956c34cc565f48748ebb2b7d3d55d725fabbbb702eedde7699a810edab",
+    "sol_cumulative": 3,
+    "astra_recovery": "2of2 exhausted",
+    "review_added_runtime_or_implementation_repair_rounds": 0,
+    "new_tooling_incidents": 0
+  },
+  "verification": "Inherited assignment verification: one read-only command, exit0, all frozen hashes PASS. Report JSON validated by Python JSON round-trip; report hashes printed after writing.",
+  "changes": "Only the two requested /tmp review reports; no repository edits or source repair.",
+  "shutdown": "Reviewer commands completed; no compiler, runtime, tests, browser, formatter or agents started.",
+  "remaining_risks": "Malformed assertion message requires minimal source repair and fresh authorized review/verification. Original fresh52 runtime failure and unknown cause remain preserved.",
+  "decisions_needed": "None for this review; parent accepted finding and owns repair routing.",
+  "custody": "Immutable after handoff; later clarification must use a new report path/version."
+}

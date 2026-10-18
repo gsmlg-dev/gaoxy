@@ -1,0 +1,104 @@
+{
+  "task_id": "gaoxy-native-h1-pressure-source-spec2",
+  "status": "DONE",
+  "verdict": "FAIL",
+  "assignment": "direct independent read-only delta source-specification review",
+  "at_utc": "2026-10-17T23:23:09.388538+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "sourceSPEC1 PASS; predecessor fb7d0fda2b7c16c42c65579736dc1f643e17d812 parent-supplied, Git not revalidated by assignment",
+  "source_candidate2_sha256": "309987ae5a7f5cc4f1cd62779a77de18b9ada23f16207a57f3fd98a0a430359f",
+  "before_test_sha256": "68476956a03e3b2b219bb2ecc5ab60fadc4e27f96898f020b0ef9b95c7704ec1",
+  "candidate2_test_sha256": "75188f14ab8fa49c36ea5a896d28bc1711cb38f099ef3e7465a1040c6f0dca7f",
+  "pin_checks": {
+    "source_sha256": {
+      "count": 404,
+      "result": "PASS"
+    },
+    "owned_sha256": {
+      "count": 2,
+      "result": "PASS"
+    },
+    "documents_sha256": {
+      "count": 11,
+      "result": "PASS"
+    },
+    "installed_dependency_sha256": {
+      "count": 12,
+      "result": "PASS"
+    },
+    "evidence_sha256": {
+      "count": 69,
+      "result": "PASS"
+    }
+  },
+  "baseline_preservation_checks": {
+    "assertion_lines": true,
+    "success_receipt": true,
+    "failure_cleanup": true,
+    "deadline_functions": true,
+    "send_stack_allowlist": true,
+    "module_numeric_bounds": true,
+    "exactly_one_test_no_selectors": true,
+    "socket_error_match": true
+  },
+  "findings": [
+    {
+      "id": "SOURCE-SPEC2-01",
+      "severity": "blocking source-specification finding",
+      "source": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs:1254",
+      "problem": "Failure chronology performs fresh synchronous Process.info(pid, [:status, :current_stacktrace]) on up to4 owned native/client actors before failure_cleanup, outside existing monitored observer machinery and without finite observation deadline/normal join. Count/output bounds do not establish finite observation lifetime. No actual diagnostic hang is claimed.",
+      "contract": "diagnosis1 controller-catch step permits only already-generated bounded records and says Do not block waiting for new observations. SourceSPEC1 finite-observer discipline remains applicable.",
+      "resolution": "Root accepted removal of fresh Process.info calls: retain already-captured records and owned identity hashes only; add no observer or failure budget. Original EINVAL/stack, failure_cleanup and every acceptance assertion remain unchanged."
+    }
+  ],
+  "preserved_contract": "Original assertion lines, success receipt, failure_cleanup, deadline functions, allowlist, numeric bounds and exactly1 test/no selectors remain unchanged. Socket.getstat non-ok still fails the original match, never becomes0/retry/success. Added phases10 sites/output16, last snapshot1, queued packets32, output events64, owned actors4, diagnostic MFA16, tuple depth3/members8; binary reasons expose byte count only.",
+  "evidence_disposition": "Initial actual1 EINVAL remains FAIL, root cause UNKNOWN. Candidate2 is diagnostic precursor to actual1 rerun, not fix, pressure acceptance, full4 or dependency defect. All69 evidence pins pass.",
+  "verification": [
+    {
+      "command": "Read-only SHA256 verification of frozen candidate and all five manifest maps",
+      "actual": "PASS404source/2owned/11documents/12dependencies/69evidence; original snapshot/current test hashes exact; fresh recheck at report writing"
+    },
+    {
+      "command": "Read-only baseline/delta checks",
+      "actual": "PASS all eight baseline preservation checks; sole SOURCE-SPEC2-01 remains FAIL"
+    },
+    {
+      "command": "Initial report-generation deadline-segment comparison",
+      "actual": "FAIL reviewer check harness: overbroad segment included new diagnostic functions; no artifacts written. Corrected to exact three existing function bodies, then PASS. No source failure or implementation repair inferred."
+    }
+  ],
+  "new_tool_incident_count": 2,
+  "new_tool_incidents": [
+    {
+      "id": 1,
+      "details": "One projection printed90 selected lines plus remaining tail, exceeding assigned100-source-line cap. Reported to root; no clipping/protected/raw reads."
+    },
+    {
+      "id": 2,
+      "details": "Initial report-generation check compared an overbroad deadline segment including newly added diagnostic helpers and failed before writing reports. Corrected exact function comparisons pass; incident reported to root."
+    }
+  ],
+  "prior_incidents": "Prior author/preflight/future-preparation incidents not recounted; counter9 remains authoritative.",
+  "repair_counters": {
+    "initial_runtimefail": 1,
+    "diagnosticround": 1,
+    "implementationrepair": 0,
+    "astra": "2/2 exhausted",
+    "added_runtime_or_repair_rounds": 0
+  },
+  "astra_gate": null,
+  "not_run": [
+    "runtime",
+    "compile",
+    "formatter",
+    "tests",
+    "browser",
+    "Git",
+    "upstream issues"
+  ],
+  "repository_writes": [],
+  "limits": "Delta only; no future sole-disconnect prototype, private dependency client process, raw VM arguments/messages, protected identity diagnostic paths, keys or user prompts read. No root-cause or runtime success claim.",
+  "readiness": "Candidate2 sourceSPEC FAIL. Root accepted sole finding, will archive candidate2, remove synchronous actor observations, freeze candidate3 and request fresh delta review. No runtime or CODE review of failed candidate2.",
+  "command_shutdown": "All reviewer commands finished; no runtime processes started. Only requested /tmp reports written.",
+  "ownership": "Repository/docs/evidence/runtime/Git custody returned to /root; preserve other agents work."
+}

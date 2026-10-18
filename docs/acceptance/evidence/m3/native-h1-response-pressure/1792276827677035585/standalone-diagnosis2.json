@@ -1,0 +1,90 @@
+{
+  "task_id": "NATIVE_H1_MATRIX_STANDALONE_DIAGNOSIS2",
+  "status": "DONE",
+  "assignment": "direct independent read-only diagnosis; no functional repair or runtime acceptance",
+  "verdict": "CAUSE_UNPROVEN; intermittent loss of required physical upstream connection reuse confirmed",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "Parent-frozen candidate10; supplied revision fb7d0fda2b7c16c42c65579736dc1f643e17d812. No Git or independent source hashing executed.",
+  "custody": {
+    "evidence_directory": "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585",
+    "supplied_matrix_fixture_sha256": "fe6dc7ca61e98e42e0c734053e4232cd3a20b4b5b88f74d3494729ca7a155f79",
+    "supplied_pressure_test_sha256": "f3f1ebc4bd8b1307d4a2e08ee4695cc9287b01d2893b0a14c3373cb09b34025f",
+    "source_changes": "None; parent owns all source/evidence/runtime/Git. Only the two assigned /tmp reports written and sealed.",
+    "preserved_failures": "standalone-final1 and diagnostic-fresh3 remain FAIL. No assertion, timeout, accepted-count or cleanup condition changed. No prohibited artifact accessed."
+  },
+  "observations": {
+    "standalone_final1": {
+      "actual": "FAIL; default registry16, executed1, failed1, NOT_RUN15; actual exit1; command collector nonforced/joined/source-stable",
+      "case": "fixed/h1/tcp/temporal_and_declared_trailers",
+      "primary_failure": "AssertionError('application changed accepted upstream connection')",
+      "safe_sequence": [
+        "POST temporal: connection1/request1; upload-prefix, continue-upload, upload-end, response-prefix hold, final-send, client-response complete, original completion joined",
+        "Accounting after first exchange: request_tokens0/helpers0/pins1/resources1/reserved_connections2",
+        "DELETE trailers: connection2/request1, role application; Case.request raises before upload_end observation or response command for this request"
+      ],
+      "case_cleanup": ["forced client cleanup", "fixture cleanup: EOFError('JSON peer exited before receipt')"],
+      "driver_finished": false,
+      "authority": "standalone-final1-failure-observation2.json SHA15f6ec52f0152bd3c287e2f63ae580fc4df8673dbdf529b68e87236cd37a83e8"
+    },
+    "standalone_connection_diagnostic1": {
+      "actual": "Parent-run unchanged-source single-case PASS; executed1/expected1/failed0/finishedtrue/cleanup[]; exit0; collector nonforced/joined/source-stable; elapsed4.964 seconds from parent",
+      "safe_sequence": "Same POST temporal connection1/request1 and completion join, then DELETE trailers connection1/request2; two complete clients; joined accepted1/forced0/live0",
+      "interpretation": "Intermittency observed. This does not repair or supersede default16 failure and is not stage acceptance."
+    },
+    "prior_tls_failures": "diagnostic-fresh3 fixed and group native-H1 to TLS-H1 temporal cases failed with connection2 response-release deadlines during stop dispatch; previous diagnosis lacked request/route attribution. Relationship to new TCP association failure UNKNOWN."
+  },
+  "confirmed_source_trace": [
+    {"file": "integration/upstream_transport/run.py", "lines": "291-330,368-414", "finding": "Case creates one fixture and fixes its accepted connection from first application request (or group health). Both intended exchanges are sequential. First client response and clean complete before DELETE client is created. The failing second request was the intended trailers exchange, not evidence of an extra/replayed POST."},
+    {"file": "integration/upstream_transport/run.py", "lines": "191-205,352-358,479-489", "finding": "Client response checks complete termination and joins its process; clean requires joined original completion and zero request/helper credits. Case later requires exactly one accepted connection. Keep both early association and final accepted-count assertions."},
+    {"file": "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs", "lines": "49-55,673-729,792-835", "finding": "Connection ordinal increments only on a real accepted upstream socket; request ordinal starts1 per socket and increments after response. Thus connection2/request1 is a second physical accept, not an ordinal reset on connection1."},
+    {"file": "apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports.ex", "lines": "96-104,400-421,445-456,1102-1137,1243-1255", "finding": "Managed checkout supplies the stored entry.scope and http1_reuse:true. Successful finish removes request token. Releasing request pins retains an active entry when its baseline/configuration pin remains. No explicit successful per-request scope retirement is found in this path."},
+    {"file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http_fetch_client.ex", "lines": "68-91,219-221", "finding": "Managed branch forwards that opaque scope with prepared fetch options to HTTP.fetch. Successful cleanup calls RequestCompletion.await, cancellation calls abort_and_await. Dedicated fallback is separately configured reuse:false at95-126; observed fixture managed-binding/accounting and configured handle support the managed path."},
+    {"file": "apps/gaoxy_proxy/lib/gaoxy/proxy/http/session.ex", "lines": "1346-1366,1398-1405,1711-1737", "finding": "Cleanup awaits the original managed request and then finishes transport token/releases request pins. Existing receipt confirms first request completed this accounting path; it does not expose pool availability or prove connection1 remained open."},
+    {"file": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h1_preparation.ex", "lines": "450-462", "finding": "Fixed profile admits two connections and uses30000ms idle timeout. Fixture separately waits5000ms per socket receive at fixture792-838; whether that fixture deadline caused connection1 closure is unproven without timestamps/terminal event."}
+  ],
+  "standalone_vs_attached": {
+    "same": "Same Python Case, Client, sequence, assertions, Fixture.start and Fixture.dispatch. Actual standalone command explicitly sets MIX_ENV=test and ERL_FLAGS=+S 2:2.",
+    "different": "Host standalone spawns mix run --no-compile --no-start integration/upstream_transport/fixture.exs (run.py77-118). Adapter ensures gaoxy_proxy starts and uses IO.gets/JSON dispatch (fixture.exs6-35). Attached Fixture.run_case launches Python --attached --case; ExUnit owner receives Port lines and calls same dispatch (matrix fixture504-605). OS process ownership/control plumbing and scheduling differ.",
+    "confidence": "No source branch chooses different temporal or reuse policy based on attached mode. New unchanged-source standalone single-case PASS rules out a deterministic always-failing standalone control path. Scheduling as cause remains a hypothesis, not proof."
+  },
+  "public_dependency_observability": {
+    "authorization": "Parent explicitly authorized static API/telemetry reads of deps/http_fetch and deps/http_runtime. No private actor lookup/state/messages, private pool inspection, runtime or dependency edits performed.",
+    "provenance": "apps/gaoxy_proxy/mix.exs16 and mix.lock10 pin http_fetch0.21.10; deps/http_fetch/mix.exs5 and deps/http_runtime/mix.exs5 identify https://github.com/gsmlg-dev/http_fetch. A dependency defect is not established, so no upstream issue or workaround is justified yet.",
+    "events": [
+      "[:http_fetch,:request,:start]: start_time; method/scheme metadata (http_fetch/lib/http/telemetry.ex34-37,184-189)",
+      "[:http_fetch,:request,:stop]: duration/status/response_size; scheme/status/http_version metadata (39-45,202-216)",
+      "[:http_fetch,:request,:exception]: duration; scheme/error metadata (47-50,226-231)",
+      "[:http_fetch,:streaming,:start|:chunk|:stop] and response body_read_start/body_read_stop: numeric measurements, empty metadata (54-79)",
+      "[:http_fetch,:http2,:connection|:pool|:runtime] are HTTP2 aggregate events; metadata deliberately excludes scope/owner/connector identities (83-102). HTTP.Runtime.Telemetry.stream emits [:http_runtime,:stream,event] with client/http_version/outcome only (runtime/telemetry.ex35-41). No H1 checkout/checkin/available/reused connection event found in API/telemetry emit search."
+    ],
+    "limits": "Existing managed fetch telemetry:false suppresses request events. Enabling request telemetry would add activity without supported H1 scope/physical-connection correlation; do not change it for this diagnosis. Public HTTP.ManagedTransport.snapshot/2 exists (managed_transport.ex79-93,141-143) but promises aggregate counts/limits/policy digest/lifecycle, not physical connection identity or H1 availability. These public APIs do not distinguish not-yet-reusable from available-but-bypassed.",
+    "unknown": "Whether connection1 physically closed, remained checked out/not yet reusable after completion, or was available but bypassed when connection2 opened. No supported existing telemetry makes the last distinction."
+  },
+  "minimal_diagnostic_plan": {
+    "functional_repair": "None recommended until attribution. Keep original assertions, all deadlines, two-connection managed profile, and every failed artifact.",
+    "fixture_only": [
+      "At existing emit/3 (matrix fixture981), piggyback a monotonic timestamp on existing accepted/request/upload/command events. Preserve event names and existing fields; sanitize only the diagnostic export. No extra success-path query/roundtrip.",
+      "At serve/6 closed/enotconn branch794-795, emit one safe peer_terminal event with connection ordinal, next request ordinal, phase await_request, terminal_label peer_closed or peer_enotconn, monotonic timestamp; do not alter return. At other branch837-838 emit terminal_label recv_timeout or recv_other before the unchanged raise; no raw reason.",
+      "At worker rescue731-739 and after740-742 emit safe worker_terminal and local_socket_close labels with connection ordinal and monotonic timestamp. Original exception and socket close remain unchanged. Do not emit exception content, sockets, PIDs, TLS objects or payload.",
+      "Add failure-only diagnostic export at Fixture.dispatch beside497-502. Read existing queued events and take at most32 additional messages matching only this fixture's {:matrix_peer,f.peer,value}, with zero wait; include total/truncated and no claims about messages not yet observed. Retain these messages in the fixture event queue in original order so cleanup sees the same failure events. Do not consume unrelated messages. Return at most32 safe summaries total; keys event/connection/request/monotonic_time/phase/terminal_label, existing allowlisted method/route/action labels and ended only. Existing failure_events258-293 provides the allowlist pattern. This runs only after failure and before owned-client cleanup; no success-path observation helper, polling or dependency query.",
+      "In run.py Case.request330 failure branch (or except528 before cleanup), request that diagnostic once under the existing remaining case deadline, retain its sanitized result separately, and preserve primary AssertionError plus any diagnostic failure separately. Keep all missing cases NOT_RUN. Root may prefer a failure-only file artifact over compact raw result output; never dump raw receipts."
+    ],
+    "interpretation": "A peer_closed/enotconn before second request confirms client-side closure; fixture recv_timeout then local close confirms fixture-induced closure. Connection2 accepted before any observed connection1 terminal narrows cause to an overlap/unavailable/bypass possibility, but absence of a terminal receipt is not proof connection1 was reusable. If that ambiguity remains, identify a narrowly scoped public upstream diagnostic need; do not inspect private pools or invent availability from completion.",
+    "next_runtime_owned_by_root": "After independent review of instrumentation, exactly one existing case via nix develop --command env ERL_FLAGS=+S 2:2 MIX_ENV=test GAOXY_SOURCE_REVISION=<root frozen revision> /tmp/gaoxy-m3-h2-soak-venv/bin/python -B integration/upstream_transport/run.py --case fixed/h1/tcp/temporal_and_declared_trailers. Record source pins and diagnostics with normal nonforced command/fixture/client joins separately. This is a diagnostic probe, not repair acceptance. Default16 gate remains required after a proven repair."
+  },
+  "counter_authority": {
+    "received": "counter38.json SHA6a62994ced5d15d0e8da8e87a5648e70aee266d60bdee63900ae419aa9cee721; root658/orchestration543/tooling68; runtimefailed6/Sol6/Astra2of2 exhausted (runtimefailed6 carried from counter37)",
+    "added_by_this_assignment": "0 runtime runs, 0 repair rounds, 0 tests. Root's later one-case PASS is separate parent custody; no counter mutation here.",
+    "astra_gate": "Not applicable; bounded diagnosis report only; no third recovery requested."
+  },
+  "incidents": [
+    "One broad whole-line compact-log rg output included raw receipt/header/payload fields. Parent informed immediately; no further whole-line compact-log reads. Parent already recorded as incident1 in counter38.",
+    "Read-only absent-path rg incidents: guessed apps/gaoxy_proxy/lib/gaoxy/proxy/upstream_transports/h1.ex; guessed apps/gaoxy_proxy/test/upstream_transport_h1_test.exs; config/dev.exs,config/test.exs,config/runtime.exs in one command; guessed deps/http_runtime/lib/http/telemetry.ex; guessed deps/http_runtime/guides/managed_transport.md. Five commands returned exit2; no edits or repair attempts resulted. Pending parent accounting.",
+    "One batched source read response was globally truncated; subsequent reads were narrowed. No prohibited source or evidence read."
+  ],
+  "verification": "Static rg/nl/sed/cat inspection only, plus writing/sealing these reports. Exact-case FAIL/PASS receipt comparison used rg -o allowlisted keys/values. No own runtime/compiler/formatter/parser/AST/network/browser/Git/subagents. No acceptance claim or functional fix.",
+  "command_shutdown": "All inspection/report commands completed synchronously. No background processes started by this agent.",
+  "remaining_risks": "Default16 standalone gate remains failed, earlier TLS timeouts unresolved, and physical reuse cause remains unknown. Safe lifecycle instrumentation cannot alone prove pool availability.",
+  "decisions_needed": "Parent owns diagnostic source assignment/review, instrumentation choice, runtime evidence and any proven upstream routing. No user permission or architecture decision identified.",
+  "seal": "Return these report files immutable after SHA256 sealing; future clarification requires a new version/path."
+}

@@ -1,0 +1,112 @@
+{
+  "task_id": "gaoxy-native-h1-pressure-design-spec3",
+  "status": "DONE",
+  "verdict": "FAIL",
+  "assignment": "direct independent read-only packetization-contract delta design review",
+  "at_utc": "2026-10-17T23:35:56.034732+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "sourceSPEC1/sourceSPEC3 authority retained; prior frozen source candidate3 unchanged; Git prohibited and not revalidated",
+  "design_candidate3_sha256": "08d8469661437fd1f193740505ea1b1841c2c6e385f2205f6573e4041fffe609",
+  "observation_sha256": "59513c7c530611bcc37ba867429297324d730803f9f8a09f9d63a5543a290ec0",
+  "diagnosis2_sha256": "ac37ef9d59c7e277e69abcf0339db561d378b9169d83ebc44d3d27bef7b95ba5",
+  "pin_checks": {
+    "source_sha256": {
+      "count": 404,
+      "result": "PASS"
+    },
+    "documents_sha256": {
+      "count": 11,
+      "result": "PASS"
+    },
+    "installed_dependency_sha256": {
+      "count": 12,
+      "result": "PASS"
+    },
+    "evidence_sha256": {
+      "count": 99,
+      "result": "PASS"
+    }
+  },
+  "old_canonical_copy_checks": {
+    "design": "PASS",
+    "plan": "PASS",
+    "acceptance": "PASS"
+  },
+  "changed_documents": [
+    "docs/acceptance/m3-native-h1-response-pressure.md",
+    "docs/designs/m3-native-h1-response-pressure.md",
+    "docs/plans/m3-native-h1-response-pressure.md"
+  ],
+  "source_and_dependencies_unchanged": true,
+  "findings": [
+    {
+      "id": "DESIGN-SPEC3-01",
+      "severity": "blocking design-specification gap",
+      "source": {
+        "design": {
+          "path": "docs/designs/m3-native-h1-response-pressure.md",
+          "line": 30
+        },
+        "plan": {
+          "path": "docs/plans/m3-native-h1-response-pressure.md",
+          "line": 21
+        },
+        "acceptance": {
+          "path": "docs/acceptance/m3-native-h1-response-pressure.md",
+          "line": 9
+        }
+      },
+      "problem": "The three canonical documents require matching head :ok telemetry and frozen head IDs, but omit explicit nonempty head-operation set, per-ID send_started/outcome byte-count equality, and a bounded Gate observation confirming no pending slow head before prefix dispatch. The accepted requested barrier includes all three. Current wording does not fully prevent incomplete/vacuous head provenance when actual framed write size B may be any positive value.",
+      "repair": "Explicitly require nonempty frozen slow-head operation IDs; for each, actual matching started/outcome identity with equal bytes and outcome :ok; bounded captured-Gate observation showing no pending slow-head send before prefix dispatch. Then select O outside that complete head set, started after completed-head barrier, and freeze exact O+B throughout all pressure snapshots/start/outcome. Apply consistently to design/plan/acceptance; preserve source/runtime failures and every other gate. Allowed stronger completeness check: sum frozen head send_started byte counts equals actual consumed head_bytes (already bounded<=8192), with no fixed head packet size/count assumption; use the existing bounded Gate observer/original deadline. This clarifies the same provenance requirement and adds no product gate.",
+      "scope": "Narrow documentation correction; the variable framed-size correction itself is supported and is not rejected."
+    }
+  ],
+  "assessment": {
+    "packetization_correction": "JUSTIFIED: actual blocked O was4016 framed native prefix-response bytes with positive send_pend8177 and recognized prim_inet.send/4 plus Exchange.send_chunks/3. A16384 maximum does not guarantee exact writes; requiring exact16384 rejected a real smaller send until original2s timeout/local close. These observations explain the incorrect test predicate, not successful pressure acceptance or a dependency bug.",
+    "required_frozen_identity": "Choose B in1..16384 as actual framed native prefix-response write size, including chunk framing; bind exact O+B across all pressure snapshots and matching send_started/final actual outcome. B is not an exact upstream body-byte quantity.",
+    "why_not_improper_weakening": "Removes an unsupported packetization equality while retaining positive bounded send_pend, exact native owner/socket/lease, recognized send stack, persistent same O+B through healthy completion and pre-release, actual :ok after reader entry, body/hash and exact original ownership/accounting. It is a necessary test-contract correction, provided completed-head provenance is fully specified.",
+    "retained_bounds": "No body/buffer/capacity/deadline change. Native149504/combined16322640 remain upper bounds derived from pending write<=16384, not an assumed exact B. Original2s/10s, body262145/hash, requested/actual buffer ceiling, EOF separation, original2-to1-to0 conservation and finite normal joins remain required.",
+    "factual_consistency": "Documents correctly preserve initial-probe1 and diagnostic-probe1 as actual FAIL1/1 each, actual4016/8177/recognized stack, timeout before sibling, unchanged current source exact16384, design/source correction pending and all success gates NOT RUN. No separate factual inconsistency found beyond incomplete head-barrier requirements."
+  },
+  "verification": [
+    {
+      "command": "Read-only SHA256 validation of candidate/all manifest maps and exact observation/diagnosis receipts",
+      "actual_result": "PASS404source/11documents/12dependencies/99evidence; source/dependency maps equal prior candidate3"
+    },
+    {
+      "command": "Read-only canonical three-document delta and prior-copy checks",
+      "actual_result": "PASS only three specified documents changed; all old copied documents match prior candidate3 pins; FAIL sole DESIGN-SPEC3-01 incomplete completed-head barrier"
+    }
+  ],
+  "new_tool_incident_count": 1,
+  "new_tool_incidents": [
+    {
+      "kind": "bounded output overrun",
+      "details": "Combined added-document projection produced2882 original tokens beyond1550-token cap and was clipped. Reported to root; switched to short clause/scalar checks without rereading irrelevant clipped paragraphs. No protected/raw data read or repository change."
+    }
+  ],
+  "prior_incidents": "Not recounted; counter14 authoritative.",
+  "repair_counters": {
+    "actualfails": 2,
+    "Sol": 1,
+    "Sol_disposition": "diagnosticfix",
+    "design_correction": "pending sourcework",
+    "Astra": "2/2 exhausted",
+    "added_runtime_or_implementation_repair_rounds": 0
+  },
+  "astra_gate": null,
+  "not_run": [
+    "runtime",
+    "compile",
+    "formatter",
+    "tests",
+    "browser",
+    "Git"
+  ],
+  "runtime_disposition": "Actual success NOT RUN; full4/52/default/browser/allTask6 remain OPEN. Both prior actual failures preserved. No production/dependency/buffering adapter change or upstream issue.",
+  "repository_writes": [],
+  "limits": "Canonical three-document delta review only; no broad unchanged-requirement rereview, protected paths, raw diagnostics/private keys/private dependency client processes/user prompts read.",
+  "command_shutdown": "All reviewer commands completed; no runtime process started. Only requested /tmp reports written.",
+  "readiness": "Design direction supported but DESIGN SPEC3 FAIL pending explicit complete-head provenance in all three canonical docs, fresh freeze and review before source correction. Allowed stronger completeness check: sum frozen head send_started byte counts equals actual consumed head_bytes (already bounded<=8192), with no fixed head packet size/count assumption; use the existing bounded Gate observer/original deadline. This clarifies the same provenance requirement and adds no product gate.",
+  "ownership": "Repository/docs/evidence/runtime/Git custody returned to /root; other agents work preserved."
+}

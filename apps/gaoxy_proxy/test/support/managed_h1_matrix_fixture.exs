@@ -8,9 +8,48 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
   @python "/tmp/gaoxy-m3-h2-soak-venv/bin/python"
   @root Path.expand("../../../..", __DIR__)
 
+  defmodule NativeResultEndpoint do
+    @moduledoc false
+    @behaviour Gaoxy.HTTP.Endpoint
+
+    @impl true
+    def init({module, options, parent, peer}) do
+      with {:ok, config} <- module.init(options), do: {:ok, {module, config, parent, peer}}
+    end
+
+    @impl true
+    def resources({module, config, _parent, _peer}), do: module.resources(config)
+
+    @impl true
+    def call(exchange, {module, config, parent, peer}) do
+      result = module.call(exchange, config)
+
+      case result do
+        {:error, reason, %{response: response}} ->
+          Gaoxy.Proxy.ManagedH1MatrixFixture.native_result(
+            parent,
+            peer,
+            exchange,
+            reason,
+            response
+          )
+
+        _ ->
+          :ok
+      end
+
+      result
+    end
+  end
+
   # Explicit ownership: the caller keeps the fixture, its event queue and the
   # original completion. Neither adapter requires ExUnit callbacks.
-  def start(%{"mount" => mount, "downstream" => downstream, "upstream" => upstream} = row) do
+  def start(row, overrides \\ %{})
+
+  def start(
+        %{"mount" => mount, "downstream" => downstream, "upstream" => upstream} = row,
+        overrides
+      ) do
     directory =
       Path.join(System.tmp_dir!(), "gaoxy-h1-matrix-#{System.unique_integer([:positive])}")
 
@@ -132,6 +171,21 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
           {f, {Gaoxy.Proxy.HTTP, %{upstream: origin, transport: handle}}}
         end
 
+      {endpoint_module, endpoint_config} = endpoint
+
+      endpoint = {
+        Map.get(overrides, :endpoint_module, endpoint_module),
+        Map.merge(endpoint_config, Map.get(overrides, :endpoint, %{}))
+      }
+
+      endpoint =
+        if downstream == "h1" and not Map.has_key?(overrides, :endpoint_module) do
+          {module, config} = endpoint
+          {NativeResultEndpoint, {module, config, parent, peer}}
+        else
+          endpoint
+        end
+
       options = [
         id: :http,
         endpoint: endpoint,
@@ -196,10 +250,18 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
     event(f, %{"event" => "command", "connection" => connection, "request" => request})
   end
 
+  def dispatch_command(f, %{"connection" => connection, "request" => request} = command) do
+    send(f.peer, {:command, connection, request, command})
+    :ok
+  end
+
   def event(f, selector, timeout \\ @timeout) do
     queued = Process.get({__MODULE__, f.key, :events}, [])
 
-    case Enum.split_while(queued, &(not selected?(&1, selector))) do
+    case Enum.split_while(queued, &(&1["event"] != "failure" and not selected?(&1, selector))) do
+      {_before, [%{"event" => "failure"} = value | _rest]} ->
+        raise "#{inspect(value)} queued_fixture_events=#{inspect(failure_events(f), limit: :infinity)}"
+
       {before, [value | rest]} ->
         Process.put({__MODULE__, f.key, :events}, before ++ rest)
         value
@@ -220,7 +282,7 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
 
     receive do
       {:matrix_peer, peer, %{"event" => "failure"} = value} when peer == f.peer ->
-        raise inspect(value)
+        raise "#{inspect(value)} queued_fixture_events=#{inspect(failure_events(f), limit: :infinity)}"
 
       {:matrix_peer, peer, value} when peer == f.peer ->
         if selected?(value, selector) do
@@ -236,6 +298,137 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
     after
       remaining -> raise "managed-H1 event deadline: #{inspect(selector)}"
     end
+  end
+
+  defp failure_events(f) do
+    queued = Process.get({__MODULE__, f.key, :events}, [])
+
+    summaries =
+      queued
+      |> Stream.filter(
+        &(&1["event"] in ["accepted", "request", "upload_prefix", "upload_end", "command"])
+      )
+      |> Enum.take(16)
+      |> Enum.map(fn value ->
+        Map.put(diagnostic_fields(value), "event", value["event"])
+      end)
+
+    %{
+      "events" => summaries,
+      "total" => length(queued),
+      "truncated" => length(queued) > length(summaries)
+    }
+  end
+
+  defp failure_diagnostic(f) do
+    key = {__MODULE__, f.key, :events}
+    queued = Process.get(key, [])
+    {additional, cap_reached} = diagnostic_messages(f.peer, [], 0)
+    observed = queued ++ additional
+    Process.put(key, observed)
+
+    summaries =
+      observed
+      |> Stream.filter(
+        &(&1["event"] in [
+            "accepted",
+            "request",
+            "upload_prefix",
+            "upload_end",
+            "command",
+            "failure",
+            "joined",
+            "peer_terminal",
+            "worker_terminal",
+            "local_socket_close",
+            "native_result"
+          ])
+      )
+      |> Enum.take(32)
+      |> Enum.map(fn value ->
+        Map.merge(
+          diagnostic_fields(value),
+          Map.take(value, [
+            "event",
+            "peer_at_us",
+            "phase",
+            "terminal_label",
+            "method_label",
+            "route_label",
+            "outcome",
+            "response_class"
+          ])
+        )
+      end)
+
+    %{
+      "event" => "failure_diagnostic",
+      "events" => summaries,
+      "observed_total" => length(observed),
+      "truncated" => length(observed) > length(summaries),
+      "additional_cap_reached" => cap_reached
+    }
+  end
+
+  defp diagnostic_messages(_peer, reversed, 32), do: {Enum.reverse(reversed), true}
+
+  defp diagnostic_messages(peer, reversed, count) do
+    receive do
+      {:matrix_peer, ^peer, value} -> diagnostic_messages(peer, [value | reversed], count + 1)
+    after
+      0 -> {Enum.reverse(reversed), false}
+    end
+  end
+
+  defp diagnostic_fields(value) do
+    Enum.reduce(
+      [
+        {"method", "method_label", %{"POST" => "POST", "DELETE" => "DELETE"}},
+        {"target", "route_label", %{"/temporal" => "temporal", "/trailers" => "trailers"}},
+        {"action", "action_label", %{"send" => "send", "continue_upload" => "continue_upload"}}
+      ],
+      Map.take(value, ["connection", "request", "ended"]),
+      fn {key, label, allowed}, fields ->
+        case Map.fetch(value, key) do
+          {:ok, raw} -> Map.put(fields, label, Map.get(allowed, raw, "other"))
+          :error -> fields
+        end
+      end
+    )
+  end
+
+  def native_result(parent, peer, exchange, reason, response) do
+    fields =
+      diagnostic_fields(%{
+        "method" => exchange.request.method,
+        "target" => exchange.request.path
+      })
+
+    outcome =
+      case reason do
+        :closed -> "closed"
+        :timeout -> "timeout"
+        _ -> "other"
+      end
+
+    response_class =
+      case response do
+        {:fixed_stream, 0} -> "fixed_zero"
+        {:fixed_stream, _} -> "fixed_remaining"
+        :bodyless_stream -> "bodyless"
+        :chunked -> "chunked"
+        _ -> "other"
+      end
+
+    emit(
+      parent,
+      peer,
+      Map.merge(fields, %{
+        "event" => "native_result",
+        "outcome" => outcome,
+        "response_class" => response_class
+      })
+    )
   end
 
   defp selected?(value, selector),
@@ -446,6 +639,7 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
   def dispatch(f, %{"op" => "request_clean"}), do: {f, request_clean(f)}
   def dispatch(f, %{"op" => "clean"}), do: {f, clean(f)}
   def dispatch(f, %{"op" => "stop"}), do: {nil, stop(f)}
+  def dispatch(f, %{"op" => "failure_diagnostic"}), do: {f, failure_diagnostic(f)}
 
   def run_case(case_id) do
     port =
@@ -677,6 +871,13 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
                         rescue
                           error ->
                             emit(parent, peer, %{
+                              "event" => "worker_terminal",
+                              "connection" => connection,
+                              "phase" => "worker_rescue",
+                              "terminal_label" => "worker_exception"
+                            })
+
+                            emit(parent, peer, %{
                               "event" => "failure",
                               "connection" => connection,
                               "reason" => Exception.message(error)
@@ -684,7 +885,21 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
 
                             {:error, Exception.message(error)}
                         after
-                          wire.close(socket)
+                          close_result = wire.close(socket)
+
+                          emit(parent, peer, %{
+                            "event" => "local_socket_close",
+                            "connection" => connection,
+                            "phase" => "worker_after",
+                            "terminal_label" =>
+                              case close_result do
+                                :ok -> "close_ok"
+                                {:error, _} -> "close_error"
+                                _ -> "close_other"
+                              end
+                          })
+
+                          close_result
                         end
 
                       send(peer, {:worker_finished, connection, result})
@@ -738,6 +953,14 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
   defp serve(wire, socket, parent, peer, connection, request) do
     case wire.recv(socket, 1, @timeout) do
       {:error, reason} when reason in [:closed, :enotconn] ->
+        emit(parent, peer, %{
+          "event" => "peer_terminal",
+          "connection" => connection,
+          "request" => request,
+          "phase" => "await_request",
+          "terminal_label" => if(reason == :closed, do: "peer_closed", else: "peer_enotconn")
+        })
+
         :ok
 
       {:ok, first} ->
@@ -781,6 +1004,15 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
         serve(wire, socket, parent, peer, connection, request + 1)
 
       other ->
+        emit(parent, peer, %{
+          "event" => "peer_terminal",
+          "connection" => connection,
+          "request" => request,
+          "phase" => "await_request",
+          "terminal_label" =>
+            if(other == {:error, :timeout}, do: "recv_timeout", else: "recv_other")
+        })
+
         raise "upstream read failed: #{inspect(other)}"
     end
   end
@@ -849,7 +1081,8 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
 
         if not ended, do: respond(wire, socket, parent, peer, base)
     after
-      @timeout -> raise "response release deadline"
+      @timeout ->
+        raise "response release deadline #{inspect(diagnostic_fields(base), limit: :infinity)}"
     end
   end
 
@@ -923,7 +1156,12 @@ defmodule Gaoxy.Proxy.ManagedH1MatrixFixture do
   defp identity(value),
     do: Base.encode16(:crypto.hash(:sha256, :erlang.term_to_binary(value)), case: :lower)
 
-  defp emit(parent, peer, value), do: send(parent, {:matrix_peer, peer, value})
+  defp emit(parent, peer, value),
+    do:
+      send(
+        parent,
+        {:matrix_peer, peer, Map.put(value, "peer_at_us", System.monotonic_time(:microsecond))}
+      )
 
   defp certificates(path),
     do:

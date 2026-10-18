@@ -832,6 +832,9 @@ defmodule Gaoxy.Proxy.HTTP do
       state.ready and not state.upload_stopped ->
         read_upload(state, min(@poll_ms, remaining))
 
+      state.exchange.transport == nil and state.exchange.response == {:fixed_stream, 0} ->
+        pump(state, min(@poll_ms, remaining))
+
       true ->
         # Passive TLS needs a waiting receive to settle an abrupt transport close.
         # Give it a finite turn only after idle, keeping data deliveries on poll0.

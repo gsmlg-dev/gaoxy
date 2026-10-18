@@ -1,0 +1,104 @@
+{
+  "task_id": "native_h1_matrix_diagnostic_runner_writer/AUTHOR1",
+  "status": "DONE",
+  "assignment": "direct bounded diagnostic source authoring; syntax/runtime/evidence acceptance owned by root",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "git": "NOT READ: Git forbidden by assignment",
+    "source_path": "integration/upstream_transport/run.py",
+    "source_sha256": "ca5ba4136a67eee50d25aeb5fee4cdaf8494e682989e778e91e059997feda7ca",
+    "design_path": "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/standalone-connection-diagnostic-design-plan1.md",
+    "design_sha256": "bd2699c8ea4b078e864753de225ef08708f682d37919ce3fddf4894286e96b6f"
+  },
+  "after": {
+    "source_sha256": "f7561c5a5f88c401f3665d0d06521f6debddcfeea9c2b8237cfc0ac911a12d66",
+    "added_lines": 6,
+    "removed_lines": 0
+  },
+  "root_cause": "No production or dependency root cause established. Assigned change exports bounded owned-fixture observations only when accepted connection association already fails.",
+  "change": "One mismatch-only failure_diagnostic call through existing Case.call/remaining; separate diagnostic receipt or exception-class-only error receipt; original assertion follows unchanged.",
+  "diff": "--- integration/upstream_transport/run.py.before\n+++ integration/upstream_transport/run.py.after\n@@ -327,6 +327,12 @@\n         request = self.event(\"request\", role=\"application\", method=method, target=target)\n         if self.connection is None:\n             self.connection = request[\"connection\"]\n+        if request[\"connection\"] != self.connection:\n+            try:\n+                diagnostic = self.call(dict(op=\"failure_diagnostic\"))\n+                self.receipts.append(dict(source=\"failure_diagnostic\", receipt=diagnostic))\n+            except Exception as error:\n+                self.receipts.append(dict(source=\"failure_diagnostic_error\", error=type(error).__name__))\n         check(request[\"connection\"] == self.connection, \"application changed accepted upstream connection\")\n         check(request[\"request\"] not in [r[\"request\"] for r in self.requests], \"duplicate upstream request ID\")\n         if self.requests:\n",
+  "inverse_preservation": {
+    "command": "sed '330,335d' integration/upstream_transport/run.py | sha256sum",
+    "exit_code": 0,
+    "sha256": "ca5ba4136a67eee50d25aeb5fee4cdaf8494e682989e778e91e059997feda7ca",
+    "matches_supplied_baseline": true,
+    "meaning": "All bytes outside the six inserted lines are identical to the supplied baseline; no independent source snapshot written."
+  },
+  "verification": [
+    {
+      "check": "Assigned source and design SHA256",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "check": "Inverse insertion preservation",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "check": "Targeted unified diff",
+      "status": "PASS",
+      "command": "diff -u --label integration/upstream_transport/run.py.before --label integration/upstream_transport/run.py.after <(sed '330,335d' integration/upstream_transport/run.py) integration/upstream_transport/run.py",
+      "exit_code": 1,
+      "meaning": "Expected diff-present exit; exactly six added lines"
+    },
+    {
+      "check": "Python syntax/parser/compiler/formatter",
+      "status": "NOT RUN",
+      "reason": "Explicitly root-owned and prohibited for author"
+    },
+    {
+      "check": "Runtime, test, network, independent review",
+      "status": "NOT RUN",
+      "executed_tests": 0,
+      "reason": "Explicitly root-owned and prohibited for author"
+    }
+  ],
+  "preserved": [
+    "Original accepted-connection assertion text and condition",
+    "Request-ID uniqueness and continuity checks",
+    "Success path and body/target/header logic",
+    "Original Case.remaining 20-second absolute/5-second operation limits",
+    "340-second overall bound, 16-case registry, missing/FAIL/cleanup verdicts",
+    "No retries or success-path diagnostic commands"
+  ],
+  "incidents": [
+    {
+      "kind": "nonmutating verification command correction",
+      "detail": "First inverse hash mistakenly removed lines 333..338 and produced c23157bfeaf2fe7d985737ff4431d492f9d1f1a2447acf53a41cdee18535720e. Corrected to exact inserted lines 330..335; source untouched by both sed commands; corrected hash matches baseline."
+    },
+    {
+      "kind": "root-directed authoring adjustment",
+      "detail": "Initial insertion caught BaseException. Root explicitly requested Exception to preserve external interrupt/SystemExit behavior; final source uses Exception. No runtime or validation failure occurred."
+    }
+  ],
+  "custody": {
+    "writer_owned_source_only": true,
+    "other_source_files_written": [],
+    "reports": [
+      "/tmp/gaoxy-native-h1-matrix-lifecycle-runner-author1.json",
+      "/tmp/gaoxy-native-h1-matrix-lifecycle-runner-author1.md"
+    ],
+    "other_writer": "managed_h1_matrix_fixture.exs remains separately owned; not read or written",
+    "forbidden_paths": "Not read, statted, hashed or enumerated",
+    "commands_finished": true,
+    "background_processes_started": 0,
+    "git_operations": 0,
+    "runtime_operations": 0,
+    "network_operations": 0
+  },
+  "counters": {
+    "received": "counter40 root666/orch551/tool76/Sol6/runtimefailed6/Astra2of2",
+    "sol_repair_rounds_added": 0,
+    "astra_repair_rounds_added": 0,
+    "reset": false
+  },
+  "remaining_risks": [
+    "Root must independently inspect, syntax-check, and exercise the diagnostic fixture protocol under original deadlines.",
+    "This diagnostic-only change does not resolve or reclassify historical standalone or cleanup failures.",
+    "External BaseException interrupts retain existing behavior per root direction."
+  ],
+  "decisions_needed": [],
+  "stage_status": "OPEN; no gate advancement, publication or commit claimed"
+}

@@ -1,0 +1,12 @@
+# Native H1 pressure expansion author1
+
+DONE for direct planned source expansion1, not a repair. Sole changed file: `/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation/apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs`.
+Before SHA256 `7daa0dbbe430505f9ac5bd8fd025d8649087caa4640146704ee76ac13fef33c1`; after `3274102b8e0a47791ea883c6f8d3bed79f16687573953911d806ec27bcb07b89`. Delta +170/-22.
+
+The generator covers fixed/group x TCP/TLS upstream with native clearH1 on two distinct downstream connections and correct delegate/receipt row identity. Exact fixed1/group2 controller-owned transport baselines remain; group original token/guardian/completion/request-pin ownership and full union conservation are checked at each checkpoint with inflight/probes0. Health0fixed/1group is separate. App connections are distinct; peer accepts equal the exact app+health ID union, allowing health reuse and checked full per-connection ordinals. Fixed app request1 remains explicit.
+
+The entire head barrier, O+B pressure/body/EOF read sequence, pressure helpers, failure diagnostics and deadline/buffer/capacity constants are byte-identical to baseline. No selector, pending-single-original helper or new direct Process.info call was introduced.
+
+Group teardown releases the captured public group baseline (shape source-matched to add_h1_pin and validated ref/operation/owner/epoch/holder/key/handle), requires empty group token/pin/group/probe graph, then performs finite monitored normal stop and actual normal DOWN. It rechecks the exact controller-owned transport map before existing exact release/retirement0 assertions. Existing fixture owner/instance normal joins, forced/live0, exact accept union and port rebind remain. Receipt exposes group normal joins. Authorized group-only failure cleanup uses the existing cleanup expiry and monitored public stop/actual DOWN, preserving failures and skipping an already recorded normal join; fixed failure branch remains unchanged.
+
+Static byte/hash/count/source checks passed. Formatter/compiler/tests/runtime/browser/Git and fresh independent SPEC/CODE NOT RUN. Prior probe-review1 PASS/hash was read; no four-row pass claimed. One read-output truncation incident (2030tokens against1950budget) reported to parent; no command failure. Counter20 remains authoritative, Sol2/fails2/Astra2of2 retained;0 new runtime/repair rounds. All synchronous commands finished; no runtime started. Source immutable after DONE; custody returned to root.

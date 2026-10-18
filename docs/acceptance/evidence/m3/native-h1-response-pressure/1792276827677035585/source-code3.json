@@ -1,0 +1,128 @@
+{
+  "task_id": "gaoxy-native-h1-pressure-source-code3",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent read-only CODE3 review",
+  "at_utc": "2026-10-17T23:47:08.386938+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "authority": "Counter18 frozen assignment; no Git revalidation",
+    "before_test_sha256": "33365a6758fa560045fe92294e666178ba3be9602435c54a7469b8b57a275dcd"
+  },
+  "root_cause": "The prior test treated maximum native framed write size16384 as guaranteed packetization. The correction binds actual positive B1..16384 to an exact non-head native send operation O. It does not resolve or reclassify prior runtime failures.",
+  "source_candidate4_sha256": "93e9e09db1ccff090befbb27ddd320d3a630ed16c0642d9a3150ae93f75b4463",
+  "source_spec4_sha256": "b64f2071c8a026b649c67a4d77133a33821827a775a8902f7f8032d369f07654",
+  "test_sha256": "7daa0dbbe430505f9ac5bd8fd025d8649087caa4640146704ee76ac13fef33c1",
+  "pin_checks": {
+    "source_sha256": {
+      "count": 404,
+      "result": "PASS",
+      "mismatches": []
+    },
+    "owned_sha256": {
+      "count": 2,
+      "result": "PASS",
+      "mismatches": []
+    },
+    "documents_sha256": {
+      "count": 11,
+      "result": "PASS",
+      "mismatches": []
+    },
+    "installed_dependency_sha256": {
+      "count": 12,
+      "result": "PASS",
+      "mismatches": []
+    },
+    "evidence_sha256": {
+      "count": 119,
+      "result": "PASS",
+      "mismatches": []
+    }
+  },
+  "findings": [],
+  "review": [
+    {
+      "area": "head provenance and telemetry ordering",
+      "result": "PASS",
+      "source_lines": "145-177,351-402",
+      "evidence": "Before any prefix dispatch, actual consumed head bytes are bounded1..8192. Nonempty unique started IDs sum exactly to head bytes; send_event enforces a unique start and unique matching same-byte :ok outcome for each ID. At this phase there is only the slow application response. Gate emits telemetry synchronously from its owner; the bounded monitored Gate read confirms the exact slow lease owner and send=nil. No body overread is added."
+    },
+    {
+      "area": "first witness and operation retention",
+      "result": "PASS",
+      "source_lines": "184-226,611-680",
+      "evidence": "await_pressure accepts nonnil O and actual framed B1..16384 with positive backlog/native TCP stack. It retrieves its own last successful snapshot rather than taking a fresh unbound choice; pressure immediately revalidates the same O+B. The three later snapshots bind the identical tuple. O is excluded from head IDs; its unique start has B and time>=head completion. Matching unique successful outcome retains B and must follow read entry. A completed or changed operation fails rather than silently replacing O."
+    },
+    {
+      "area": "JSON serialization",
+      "result": "PASS by static inspection",
+      "source_lines": "288-348,683-694,1477-1480",
+      "evidence": "New receipt fields are integers or lists of maps containing integer values and identity() SHA256 hex strings. Raw operation references are converted before JSON.encode!. Enum.zip_with pairs the head starts with the outcomes derived in the same order. No new raw VM/socket/reference field enters JSON."
+    },
+    {
+      "area": "deadlines, observers, and cleanup",
+      "result": "PASS for scoped correction",
+      "source_lines": "174-177,192-193,1150-1260,1411-1475",
+      "evidence": "New Gate read uses the existing owned unlinked monitored observer with finite original/phase bounds and required normal DOWN. Head telemetry await uses the existing finite await/budget. Original request10s/native write2s, conservative active-send deadline, failure cleanup, normal joins and telemetry detach are unchanged. No failure-only observation or additional runtime actor is introduced."
+    },
+    {
+      "area": "preserved behavior and implementation scope",
+      "result": "PASS",
+      "source_lines": "11-18,66-105,179-348",
+      "evidence": "Only run_probe/pressure/await_pressure segments differ;61 other top-level function segments and module attributes are byte-identical. Fixture pin is unchanged. Exactly one fixed/TCP test and no selector exclusions. Body262145/prefix262144/hash, positive backlog/native stack, healthy progress, native149504/combined16322640 bounds, EOF separation,2-to1-to0 and existing finite normal joins are preserved. The correction replaces two guaranteed16384 comparisons with exact frozen B plus the reviewed range."
+    }
+  ],
+  "delta": {
+    "repository_writes": [],
+    "only_changed_source": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+    "changed_top_level_function_segments": [
+      "run_probe",
+      "pressure",
+      "await_pressure"
+    ],
+    "unchanged_top_level_function_segments": 61,
+    "fixture_unchanged": true,
+    "test_case_count": 1,
+    "selectors": []
+  },
+  "verification": [
+    {
+      "command": "python3 read-only SHA256 verification of frozen candidate4/spec4/baseline/current test and all five manifest maps",
+      "actual_result": "PASS; final fresh verification404source/2owned/11documents/12dependencies/119evidence; all match frozen hashes"
+    },
+    {
+      "command": "python3 difflib exact baseline/current diff and top-level function segment/attribute/test-selector comparison; scoped numbered source/doc/API reads",
+      "actual_result": "PASS;64 segments in both files; only run_probe,pressure,await_pressure differ;61 identical; all attributes identical;1test/no exclusions"
+    }
+  ],
+  "new_tool_incident_count": 0,
+  "new_tool_incidents": [],
+  "prior_incidents": "Two pending tooling incidents(root1/spec1) remain for root reconciliation; not reset or recounted.",
+  "repair_counters": {
+    "authority": "Counter18",
+    "Solrepair": 2,
+    "runtimefails": 2,
+    "sourcefailedSPEC": 1,
+    "designfailedSPEC": 2,
+    "Astra": "2of2 exhausted",
+    "added_runtime_or_source_repair_rounds": 0
+  },
+  "not_run": [
+    "compiler",
+    "formatter",
+    "tests",
+    "runtime",
+    "browser",
+    "Git"
+  ],
+  "runtime_disposition": "Successful runtime NOT RUN. Prior actual attempts remain FAIL2. This PASS covers bounded source code review only, not static compiler/formatter gates or protocol/runtime/expanded matrix acceptance.",
+  "command_shutdown": "All reviewer commands completed; no background/runtime process started. Only assigned /tmp reports written.",
+  "remaining_risks": [
+    "Actual fixed/TCP pressure choreography has not succeeded; runtime acceptance requires the prescribed fresh root-owned gates."
+  ],
+  "decisions_needed": [],
+  "limits": "No repository edits, dependency changes/private client process inspection, broad Git status/untracked inventory, protected prompts/rawNetLogs/keys or forbidden managed-H2 close-diagnostic files accessed. No new acceptance requirement or http_fetch#97 proof introduced.",
+  "custody": "Root retains repository/evidence/runtime/Git ownership. These reports are immutable after DONE/hash handoff."
+}

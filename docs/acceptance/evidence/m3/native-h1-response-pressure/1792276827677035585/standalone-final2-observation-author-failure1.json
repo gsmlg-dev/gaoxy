@@ -1,0 +1,25 @@
+{
+  "actual_client_request_pairs": {
+    "representation_h1": [
+      8,
+      11
+    ],
+    "representation_h2": [
+      8,
+      8
+    ],
+    "temporal_all": [
+      2,
+      2
+    ]
+  },
+  "actual_exit": 1,
+  "additional_tooling_incident": "One scoped rg used guessed nonexistent integration/upstream_transport/cases.py (exit2); recovered via exact run.py representations source. No source/runtime edits.",
+  "at_utc": "2026-10-18T01:57:55.484753+00:00",
+  "diagnosis": "run.py Client.__init__ registers client processes; run.py Case.run asserts all client.joined and exports len(self.clients). representations creates8 Client processes then H1-only FramingProbe adds3 application requests. Existing protocol/cleanup assertions remain unchanged.",
+  "failed_assumption": "Root required clients_joined==application_requests; incorrect for H1 FramingProbe sending three requests without creating three Client worker processes. No observation artifact was written by failed attempt.",
+  "kind": "NATIVE_H1_PRESSURE_STANDALONE_OBSERVATION_AUTHOR_FAILURE1",
+  "repair": "Root observation now checks exact per-family/per-downstream counts from existing driver source, plus all original actual case/cleanup/source gates. Neither run nor test/assertion changed.",
+  "runtime_receipt_sha256": "7a2eaf522541ee97dece331b8a84dbb9d191ee3dc5bdb22d1e2e8919a06d0dd0",
+  "verdict": "FAIL_TOOLING"
+}

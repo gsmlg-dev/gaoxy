@@ -1,0 +1,11 @@
+# Native-H1 completed-response document author1
+
+Task NATIVE_H1_PRESSURE_COMPLETED_RESPONSE_DOCUMENT_AUTHOR1: DONE for the five authorized document writes. Direct assignment; worktree /home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation; baseline fb7d0fda2b7c16c42c65579736dc1f643e17d812 from source candidate14, not independently Git-verified. Changed only canonical pressure design/plan/acceptance, implement-plan.md and docs/plans/m3-upstream-transport.md. Both main plans preserve every previous byte as the exact unchanged suffix. No source, other document, immutable evidence or Git changes.
+
+The docs record actual repaired candidate14 gates and final implementation SPEC1/CODE1 PASS with zero findings, counter54, genuine same-test original RED1→GREEN1, source-only three-line native-fixed0 repair and fresh pressure4/related52/default16/ordinarybrowser2+four root image opens. Measurement tables use only matrix-final2-observations.json, preserve TLS-upstream B=1, separate sampled/persistent maxima and causal read/send/EOF order. Historical failures and diagnostic-only16PASS remain distinct. Final fact/document review and actual local commit plus named postcommit-custody1.json remain pending; WholeTask6/Task5/M3 OPEN. No controlled slow-browser or slice-closure claim.
+
+Verification PASS: exact named evidence pins and actual gate counts, four current measurement rows/body/timestamps/O+B/bounds/normal joins, five baseline hashes before installation, exact installed/draft byte equality and both main suffixes. No product runtime/compiler/formatter/browser/Git/subagent action ran.
+
+Five actual preparation tooling incidents retained in JSON: read-only AttributeError, pre-execution Python SyntaxError, and three capped calls. Generator repair1 then passed all scoped checks. These were reconciled by root counter54; source/runtime/Sol/Astra repairs added0. No new incident occurred during final refresh/installation. Root734/orches617/tooling139; Sol7/runtimefailedgreen7/productionrepair1/validRED1/Astra2of2 retained.
+
+All owned commands finished synchronously; no owned background process. Exact input/baseline/draft/installed hashes in JSON. Ownership released to root; no further document writes without a new followup.

@@ -1,0 +1,101 @@
+{
+  "task_id": "NATIVE_H1_PRESSURE_SOURCE_CODE7",
+  "status": "DONE",
+  "assignment": "direct independent read-only source code review after SPEC10PASS",
+  "verdict": "PASS: no actionable findings within candidate8-to10 two-test-file delta",
+  "at_utc": "2026-10-18T00:58:14.890639+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "Git": "NOT RUN; root-owned"
+  },
+  "pins_sha256": {
+    "source-candidate10.json": "c71945c02672b62fde5e629b4e8539343dd524f817c565c9cf889008b1e396cf",
+    "source-spec10.json": "bd67ec7b90cc77ced2e1182a48f1a20203b526c31ae87b8a3f93a3179679b5ad",
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs": "f3f1ebc4bd8b1307d4a2e08ee4695cc9287b01d2893b0a14c3373cb09b34025f",
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": "fe6dc7ca61e98e42e0c734053e4232cd3a20b4b5b88f74d3494729ca7a155f79"
+  },
+  "pin_checks_at_seal": {
+    "source-candidate10.json": true,
+    "source-spec10.json": true,
+    "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs": true,
+    "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs": true
+  },
+  "map_verification": {
+    "result": "PASS",
+    "counts": {
+      "source_sha256": 404,
+      "documents_sha256": 11,
+      "installed_dependency_sha256": 12,
+      "evidence_sha256": 261
+    },
+    "mismatches": [],
+    "scope": "Exact candidate10 manifest paths only; no directory inventory; dependency custody hashing only"
+  },
+  "findings": [],
+  "review_evidence": [
+    {
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "lines": "73-88,444-499",
+      "result": "Public unnamed controller-owned ETS created before attach. Supported atomic update_counter {2,1,129,129} reserves unique slots1..128, then remains at129; at most128 event rows plus control. Same exact scope and event/time/bytes/operation/outcome. No telemetry packet or new process."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "lines": "479-499,957-960",
+      "result": "Committed immutable row snapshots reject overflow before and after; no mid-flight reservation/row equality. Sampler checks overflow. Quiescent final check requires count0..128, matching row count, exact contiguous unique slot prefix and total count+1."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "lines": "100-118,306-368,1625-1725",
+      "result": "Normal emitter/native/fixture joins precede detach and final completeness. Explicit table deletion requires successful run_probe or failure_cleanup==[]. Cleanup errors remain visible and uncertain cleanup retains table until controller exit. Detach alone is not treated as quiescence."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+      "lines": "1491-1524",
+      "result": "Failure diagnostics project bounded committed rows, preserve count/overflow and original exception/cleanup; remaining nontelemetry packet drain remains bounded32 and combined output64."
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h1_matrix_fixture.exs",
+      "lines": "235-293,803-832,887-908",
+      "result": "Additions run only on existing failure paths. Existing safe numeric connection/request and boolean ended fields, allowlisted method/route/action labels, at most16 event summaries plus total/truncated; no new raw payload/header/target. Original RuntimeError, response release deadline prefix,5000ms timeout and success flow retained."
+    }
+  ],
+  "preserved_contract": "Mailbox64,event128,body262145,prefix262144,hash,causal EOF hold,actual framed B1..16384,2-to1-to0 checkpoints,original deadlines/resources/backlog/stack/normal joins and four fixed/group xTCP/TLS rows unchanged. No new acceptance requirement.",
+  "verification": {
+    "method": "Named design/diagnosis/author/SPEC reads, scoped numbered source inspection, exact four supplied SHA checks, full authorized frozen-map hash validation",
+    "tests_executed": 0,
+    "runtime_compiler_formatter_source_parser_AST_browser_Git": "NOT RUN; root-owned/prohibited",
+    "repository_edits": "NONE",
+    "report_files_only": [
+      "/tmp/gaoxy-native-h1-pressure-source-code7.json",
+      "/tmp/gaoxy-native-h1-pressure-source-code7.md"
+    ]
+  },
+  "counters": {
+    "authority": "counter35 as assigned",
+    "root": 649,
+    "orchestration": 535,
+    "tooling": 60,
+    "source_failed_spec": 3,
+    "cumulative_sol": 5,
+    "astra_used": 2,
+    "astra_limit": 2,
+    "this_review_tooling_incidents": 1,
+    "this_review_runtime_or_repair_increment": 0,
+    "counter_mutation": "NONE; root owns successor accounting"
+  },
+  "incidents": [
+    {
+      "count": 1,
+      "kind": "capped output",
+      "detail": "Initial batched cat exceeded output budget, truncating named candidate/author/diagnosis text. Narrowed subsequent reads; no forbidden paths touched."
+    }
+  ],
+  "remaining_risks": [
+    "Source-only PASS; strict compile,format,fresh real4+52 and remaining stage gates stay with root.",
+    "Matrix timeout cause remains UNKNOWN; diagnostic metadata is not a functional fix or runtime acceptance."
+  ],
+  "decisions_needed": "None",
+  "command_shutdown": "All synchronous review commands finished; no background or application runtime started; no other actor process touched.",
+  "custody": "Only the two named /tmp reports written. Source and evidence unchanged. Reports immutable at DONE; custody returned to root; later clarification requires a new version."
+}

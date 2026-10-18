@@ -1,0 +1,124 @@
+{
+  "task_id": "NATIVE_COMPLETED_RESPONSE_RED_AUDIT2",
+  "status": "DONE",
+  "assignment": "direct independent read-only intended-RED audit",
+  "at_utc": "2026-10-18T01:47:14.150962+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": {
+    "entry_head_from_candidate": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+    "git_independently_verified": false,
+    "custody": "root"
+  },
+  "verdict": "PASS_INTENDED_SEMANTIC_RED",
+  "findings": [],
+  "primary_result": {
+    "exit": 2,
+    "tests": 1,
+    "failures": 1,
+    "skipped": 0,
+    "excluded": 0,
+    "assertion": "proxy returned before original upstream end was released: {:error, :enotconn, {:fixed_stream, 0}}",
+    "assertion_location": "apps/gaoxy_proxy/test/http_proxy_completed_response_test.exs:334",
+    "original_terminal_release_reached": false
+  },
+  "reason": "The preconfirmed real downstream EOF is consumed inside the final native chunk barrier. Returning that actual native fixed0 Exchange permits the unchanged proxy progress path to poll the same disconnected socket. Exchange preserves non-timeout Socket.recv errors, including actual :enotconn. The endpoint returns before withheld genuine upstream end; this is the intended semantic completed-fixed/disconnect cancellation race, not a setup, timeout or cleanup assertion.",
+  "setup_evidence": [
+    "Test:75-76 invokes actual Response.chunk; only returned fixed_stream0 enters barrier; native/1 clears transport and transport_state.",
+    "Test:236-254 exact body read precedes correlated Session suspension, same-sender unchanged-state fence and at-most-one held original end; guardian remains suspended.",
+    "Test:255-259 closes actual client, requires close_eof, then releases callback and invokes await_native_wait before restore/resume at261-262.",
+    "Test:146-159 close_eof is emitted only after actual Socket.recv returns {:error,:closed}; missing EOF or deadlines raise earlier errors, absent from actual primary assertion."
+  ],
+  "owned_path": [
+    "HTTP:1035-1044 chunk dispatch acknowledges then pumps with returned native fixed0 Exchange.",
+    "HTTP:790-819 pump_wait has no original end selectable because fence/suspension withholds it; progress follows receive timeout.",
+    "HTTP:822-850 remaining check and upload branches precede passive Exchange.poll_connection; native TCP poll_wait is0.",
+    "Exchange:137-160 validates timeout/deadline/buffer/admission then recv_connection;163-185 calls Socket.recv and preserves every non-timeout error unchanged.",
+    "HTTP:1147 ->1174 ->1189-1196 local_fail/fail cancels Session and returns error with response fixed0/close true.",
+    "HTTP:1048-1055 real end dispatch validates trailers and Response.finish before Session.consumed and await_cleanup."
+  ],
+  "errno_disposition": {
+    "design_shorthand": ":closed",
+    "actual": ":enotconn",
+    "semantically_intended": true,
+    "basis": "The initial supported Socket.recv established :closed. Subsequent native passive receive reported disconnected-socket :enotconn through owned Exchange unchanged. Test requires no particular errno at334 and rejects every premature result. No fake result, assertion edit or errno normalization is needed. No dependency-private behavior claim."
+  },
+  "minimal_repair_justified": {
+    "value": true,
+    "scope": "After existing upload branches and before passive poll, native transport=nil and response={:fixed_stream,0} pumps for min(@poll_ms, remaining).",
+    "preservation": "Retain original remaining/idle/total deadline checks, genuine end/error dispatch, trailer/finish validation and consumed/cleanup. Framed transports, incomplete fixed and chunked remain excluded.",
+    "implementation_performed": false
+  },
+  "cleanup": {
+    "source": "Test:194-213 catches primary result, always calls cleanup, then rethrows original; any cleanup_errors emits IO.warn on RED. Test:473-516 attempts every cleanup operation despite earlier failures, uses fresh finite5000ms teardown deadline, restores/aborts callback before guardian resume, closes clients, requires Fixture.stop accepted1/forced0/live0, and joins tracked actors.",
+    "actual_log": "No regression teardown warning; only primary assertion appears. Collector warnings[] is separate from literal Nix dirty-tree warning present in log.",
+    "collector": {
+      "forced": false,
+      "wait_error": null,
+      "process_joined": true,
+      "process_group_remaining": [],
+      "descendant_forced": false,
+      "descendant_remaining": [],
+      "descendant_reap_deadline_exhausted": []
+    },
+    "limits": "RED cleanup joins permit any DOWN reason; normal public completion, normal guardian exit, next-request physical reuse and clean zero accounting are later GREEN assertions and were NOT RUN."
+  },
+  "source_stability": {
+    "collector_source_stable": true,
+    "collector_changes": [],
+    "three_owned_file_candidate_before_after_hash_checks": {
+      "apps/gaoxy_proxy/test/http_proxy_completed_response_test.exs": true,
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": true,
+      "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": true
+    },
+    "full_maps": "Not independently rehashed; prior SPEC13/CODE10 report PASS; root retains custody.",
+    "source_hash_provenance": "Frozen candidate13 and RED1 before/after maps all agree. Initial reviewer 3-file live hash check also matched all3, with original HTTP dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31. Initial owned-path source trace was original. Final rehash raced authorized code7; no subsequent source read.",
+    "later_http_hash_observed_by_final_rehash": "796f5058c7cb2fa23d46f93559caf8eae00836fc8812e6126c306e91455c8776",
+    "later_http_hash_scope": "Concurrent authorized next-stage source; not source executed by RED1 and not reviewed here."
+  },
+  "verification": {
+    "commands": "Read-only scoped Python/sed/rg and pwd; no runtime, compiler, test, Git or private dependency investigation performed. Actual test result is audited from supplied root collector/log.",
+    "all_commands_exit": 0,
+    "source_and_assertions_modified": false,
+    "repository_changes": []
+  },
+  "counters": {
+    "received_cumulative_Sol": 6,
+    "received_runtime_failed_green": 7,
+    "received_Astra_used": 2,
+    "received_Astra_limit": 2,
+    "review_runtime_or_repair_increment": 0,
+    "counter_mutation": "NONE;root owns current accounting"
+  },
+  "astra_gate": null,
+  "incidents": [
+    "Four bounded-output truncations while reading permitted design/review inputs; narrowed follow-up reads recovered relevant protocol, metadata and scalar evidence. No forbidden files searched/read, no repository writes, no runtime or Git action.",
+    "Sealing-time hash race with authorized code7 writer: final audit1 input SHA captured later HTTP bytes and made its all3-match prose false. Superseded by audit2 using frozen RED maps and successful earlier live original-source checks; no runtime/test/source/assertion edit by reviewer."
+  ],
+  "command_shutdown": "All audit commands completed synchronously. No audit-owned background processes/runtime launched. Root collector records joined process, no remaining process group/descendants and forced=false.",
+  "remaining_risks": [
+    "Repair GREEN and later native/compatibility/browser gates remain unexecuted by this audit.",
+    "Later GREEN must retain exact test bytes and assertions, prove real terminal validation, normal completion and same physical upstream reuse."
+  ],
+  "decisions_needed": [],
+  "input_sha256": {
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/native-completed-response-repair-design-plan1.md": "1972d3fdb3262dfa77d36a99f7041991a633ef770c72d80b15478b44d711c483",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/native-h1-success-close-regression-design1.md": "6d8fc06238de18e7d37d52adcbe92e1e34d2e439e78f9d3185466151616bd8d1",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/native-h1-success-close-regression-design1.json": "fc4d3a74b1a809a9e6d6d3a89081b682ec3ac06e0ce4a60112a8876bf039f1a9",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/source-candidate13.json": "fa2d40f1c6b4ce2efe1405c2ff0d81028fbdec5d421fd21bc761473089a3a839",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/source-spec13.json": "a306a2f9e33a02cfdde5e1769bc57cf84d1d4c60c52a5325162bcd7a9e93b1ae",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/source-code10.json": "ac72566261d90bbb09ad79a5856235b9a26c73c7e6528d5cee203c8f100b124b",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/completed-response-red1.json": "4ced67201f1a67737f8d41926353471a6ba25d372e96396fb4a8f506bcb3c18a",
+    "docs/acceptance/evidence/m3/native-h1-response-pressure/1792276827677035585/completed-response-red1.log": "8fb1aae21c4b8da7533a403ecbdbdfd205f4473342eea4e0ebecfa87c8ca76f1",
+    "apps/gaoxy_proxy/test/http_proxy_completed_response_test.exs": "92430d48c25d3b644a588b61b58fe912eb7a26bfbab1f58163f7a1cef6201fe0",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "dd04efd4b255f7b03a4f68d23ac6cabcca3b9be0fb1a9a431cd24df960b11c31",
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": "75b752c358d861be75446b99fef948f023082e6de177840bef35f99ce20776d0"
+  },
+  "custody": "Only named /tmp audit1 and correcting audit2 reports written. Both pairs immutable; audit2 supersedes audit1. Root retains runtime/evidence/Git custody.",
+  "supersedes": {
+    "artifacts": [
+      "/tmp/gaoxy-native-completed-response-red-audit1.json",
+      "/tmp/gaoxy-native-completed-response-red-audit1.md"
+    ],
+    "reason": "Final input rehash raced the separately authorized code7 writer after successful initial original-source checks; audit1 prose incorrectly said all3 matched while its JSON reported HTTP false. Preserved immutable audit1; corrected source identity uses RED1 frozen original maps."
+  }
+}

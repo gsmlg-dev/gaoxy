@@ -1,0 +1,109 @@
+{
+  "task_id": "NATIVE_H1_PRESSURE_SOURCE_SPEC14",
+  "status": "DONE",
+  "verdict": "PASS",
+  "assignment": "direct independent read-only source specification review",
+  "at_utc": "2026-10-18T01:49:40.312031+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m3-h1-resource-foundation",
+  "baseline": "fb7d0fda2b7c16c42c65579736dc1f643e17d812",
+  "pins": {
+    "source-candidate14.json": "4e6ad820a380bb4bcf903ad2b7d72ccbb9994e2d5089e98ab94761809f1da1d4",
+    "source-candidate13.json": "fa2d40f1c6b4ce2efe1405c2ff0d81028fbdec5d421fd21bc761473089a3a839",
+    "native-completed-response-red-audit2.json": "c02738eddfc259c05231e68edf4ff46f2e864a174154ebb681003f84207897b5",
+    "native-completed-response-repair-design-plan1.md": "1972d3fdb3262dfa77d36a99f7041991a633ef770c72d80b15478b44d711c483",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex": "796f5058c7cb2fa23d46f93559caf8eae00836fc8812e6126c306e91455c8776",
+    "apps/gaoxy_proxy/test/http_proxy_completed_response_test.exs": "92430d48c25d3b644a588b61b58fe912eb7a26bfbab1f58163f7a1cef6201fe0"
+  },
+  "map_results": {
+    "source_sha256": {
+      "count": 405,
+      "verified": 405,
+      "skipped": 0,
+      "mismatches": 0
+    },
+    "documents_sha256": {
+      "count": 11,
+      "verified": 11,
+      "skipped": 0,
+      "mismatches": 0
+    },
+    "installed_dependency_sha256": {
+      "count": 12,
+      "verified": 12,
+      "skipped": 0,
+      "mismatches": 0
+    },
+    "evidence_sha256": {
+      "count": 391,
+      "verified": 391,
+      "skipped": 0,
+      "mismatches": 0
+    },
+    "owned_sha256": {
+      "count": 5,
+      "verified": 5,
+      "skipped": 0,
+      "mismatches": 0
+    },
+    "changed_source": [
+      "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex"
+    ],
+    "exact3line_reconstruction_matches13": true,
+    "branch_occurrences": 1,
+    "regression_sha256": "92430d48c25d3b644a588b61b58fe912eb7a26bfbab1f58163f7a1cef6201fe0",
+    "regression_unchanged": true
+  },
+  "findings": [],
+  "assessment": [
+    "The exact three-line repair follows the selected design: only transport=nil with fixed_stream zero bypasses downstream polling, after existing upload branches. Framed H2/H3 and incomplete/chunked/bodyless states retain existing paths.",
+    "The branch calls the existing bounded pump; it does not finish or mark the Session consumed. Actual end dispatch still validates trailers and Response.finish before Session.consumed and await_cleanup; error dispatch and cancellation remain intact.",
+    "Each progress turn retains remaining=min(total deadline,idle budget), tests remaining<=0 first, and waits min(poll interval,remaining). No new activity timestamp update, deadline, retry, public API, abstraction or process is introduced.",
+    "Candidate13 intended semantic RED is accepted from pinned audit2. The actual :enotconn error passed through after actual EOF and before withheld genuine end is consistent with the plan rationale; unchanged assertions and unchanged regression bytes remain pinned."
+  ],
+  "verification": [
+    {
+      "command": "Explicit-map SHA256 Python verifier; no repository inventory",
+      "result": "PASS: 405 source, 11 documents, 12 installed dependency files, 391 evidence and 5 owned entries; zero mismatches/skips"
+    },
+    {
+      "command": "Compare candidate13/14 source maps and reverse exact inserted branch in memory",
+      "result": "PASS: http.ex only source delta; exact three-line removal reproduces candidate13 SHA256"
+    },
+    {
+      "command": "Targeted named plan, RED audit and http.ex source reads",
+      "result": "PASS source specification assessment; repaired GREEN and runtime acceptance NOT RUN by reviewer"
+    }
+  ],
+  "incidents": [
+    {
+      "kind": "read_cap",
+      "original_token_counts": [
+        2364,
+        1058,
+        1031,
+        1032
+      ],
+      "count": 4,
+      "detail": "Four read calls requested caps <=1000 tokens but generated larger original outputs and were truncated. Root notified. Subsequent reads used narrow scalar projections or bounded source slices. No forbidden path or repository enumeration occurred."
+    }
+  ],
+  "counters": {
+    "received_counter": 50,
+    "cumulative_sol_repairs": 7,
+    "runtime_failed": 7,
+    "astra_repairs": 2,
+    "astra_max": 2,
+    "review_repairs": 0,
+    "reset": false,
+    "root_counter_reconciliation": "Root owns counter51 reconciliation including this review incidents."
+  },
+  "changed_files": [
+    "/tmp/gaoxy-native-h1-pressure-source-spec14.json",
+    "/tmp/gaoxy-native-h1-pressure-source-spec14.md"
+  ],
+  "command_shutdown": "All reviewer commands completed synchronously. No runtime, background process or collector launched; no repository/source/Git mutation. Root retains runtime/evidence/Git custody.",
+  "remaining_risks": [
+    "Source-only PASS does not establish repaired GREEN or pressure/matrix/browser acceptance. Root must execute prescribed unchanged gates."
+  ],
+  "decisions_needed": []
+}

@@ -1,3 +1,13 @@
+## Actual downstream-cancellation local closure — 2026-10-18
+
+The bounded four-case native-H2 downstream cancellation/live-sibling slice is **DONE LOCALLY** at `1426657e65d726629d618dcf03880df718375dd1` (parent `e40284971ac1df030ef8bcb46e07b0b3838a3c53`). Independent final-document SPEC26→CODE26 passed with no findings. Actual postcommit custody `docs/acceptance/evidence/m3/managed-h1-matrix/1792268705767310915/downstream-cancel-postcommit-custody1.json` (SHA256 `d66052746b2aa614147856442a0a61e9e382596e797d4a4a515d88b502f6f5f1`) verifies225 task files,402 source pins,11 installed dependency disk pins and620 union committed blobs, with exact disk/index/commit bytes, empty index and clean tracked tree at closure.
+
+All four temporal cases passed. Fresh defining66/0,lifecycle154/0,Generation188/0 are408 overlapping invocations; first66/0,Python11,Core1/HTTP2 and browser2rows/four actual image opens remain separate. Historical first1FAIL66/4 and first2FAIL66/2 are retained; precise phase and fixed0/group1+application2 count repairs passed without weakening assertions. Counter16 preserves root476/orchestration381/downstreamTool33/runtimefailed2/fixture2/Sol2 and every inherited category; Astra2/2 remains exhausted. Whole-archive staged whitespace retains actualexit2 for immutable logs/copies, while scoped source/canonical-document check passed0. One precommit reporting AttributeError occurred after successful staging/byte checks and is retained with independently verified recovery in precommit-custody2; no source/runtime repair followed.
+
+WholeTask6/Task5/M3 remain **OPEN**. Managed-H1 eight-row/two-family matrix implementation now proceeds under continuing authorization using [design](../designs/m3-managed-h1-matrix.md) and [plan](../plans/m3-managed-h1-matrix.md). No push, publication, deployment or excluded operation follows.
+
+## Frozen precommit checkpoints — unchanged
+
 ## Current downstream-cancellation qualification — 2026-10-18
 
 The bounded four-case native-H2 cancellation slice has **PASS local runtime qualification** on entry commit `e40284971ac1df030ef8bcb46e07b0b3838a3c53`. Final documentation review, index/commit custody and the local commit are still pending; this checkpoint does not claim local closure. Evidence: `docs/acceptance/evidence/m3/managed-h2-downstream-cancel/1792264566506557815`. The source candidate4 hash is `202ec7ed68b3c814e5e36171834cef153eaffe8244454f94f1228adb7a582405`; inventory3 is `9ba4963e98b0f5367d02d718062dbd1a86f029aae68690f0193a5e4c0a610dc0`. Actual runtime bindings are402 source files,11 entry documents and11 installed dependency files. Installed HTTP packages remain0.21.10; no dependency or production edit was needed here.
