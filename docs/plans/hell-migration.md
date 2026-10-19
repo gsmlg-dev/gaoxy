@@ -26,7 +26,7 @@ original source identities. Update current dependency documentation explicitly.
 - [x] Verify isolated core/HTTP consumers and Phoenix adapter compatibility.
 - [x] Complete independent specification/code review, resolve findings, then
   perform fresh affected verification.
-- [ ] Commit locally and integrate into local main, preserving unrelated files.
+- [x] Commit locally and integrate into local main, preserving unrelated files.
 
 Run only finite ordinary scenarios. Dedicated abnormal/disconnect, slow-peer,
 pressure, sustained-load and soak tests remain excluded and unexecuted. Preserve
@@ -46,4 +46,9 @@ browser case checks. No executed case skipped. Independent specification and
 final code reviews pass. Setup/startup failures retain their actual zero-test
 FAIL status alongside successful reruns. See the
 [migration acceptance](../acceptance/hell-migration.md) and its archived receipts.
-Local commit and local-main integration are pending final evidence review.
+Implementation `b93ee724c51ac928408896bcdc7294e8e96bd1db` is committed and
+fast-forwarded into local main. Main's additional 10 ordinary network executions
+pass with zero failures; strict dev/test/prod compilation passes and each app
+specification uses Hell. The unrelated untracked prompt is preserved byte-for-byte.
+See [integration evidence](../acceptance/evidence/hell-migration/main-integration.json).
+Publication and deployment remain outside this task.

@@ -1,7 +1,6 @@
 # Hell migration acceptance — 2026-10-19
 
-**Status: PASS for migration and ordinary runtime verification; local integration
-pending.** Independent public-API, specification and final code reviews pass.
+**Status: PASS; implementation committed and integrated into local main.** Independent public-API, specification and final code reviews pass.
 Results below were executed against Hell; earlier Thousand Island evidence is
 retained separately.
 
@@ -27,7 +26,8 @@ from historical source identities.
 [Evidence summary](evidence/hell-migration/verification-summary.json) and
 [archive manifest](evidence/hell-migration/manifest-verification.json) bind the
 commands, exits, source/diff/lock identities, output hashes and actual counts.
-Logs and browser netlogs are archived as lossless gzip; original failed attempts
+[Integration archive](evidence/hell-migration/manifest-integrated.json) adds
+the exact main-checkout receipts. Logs and browser netlogs are lossless gzip; original failed attempts
 are preserved alongside their successful fresh executions.
 
 | Gate | Actual status | Evidence |
@@ -45,7 +45,7 @@ are preserved alongside their successful fresh executions.
 | Phoenix example locked resolution and strict compilation | PASS with `MIX_ENV=dev PHOENIX_NATIVE_H3=1` | [resolution](evidence/hell-migration/phoenix-deps.json), [compile](evidence/hell-migration/phoenix-compile.json) |
 | Phoenix H2 and H1 browser profiles | PASS: 12/12 each; native wire correlation, Channel/LiveView, admission release and fixture shutdown | [H2](evidence/hell-migration/browser-h2/run-1792417685101699371/report.json), [H1](evidence/hell-migration/browser-http1/run-1792417709802278565/report.json) |
 | Fresh affected verification following final code review | PASS: ordinary suites, isolated consumers and peers/browser against unchanged reviewed functional source | [source snapshot](evidence/hell-migration/verified-source.json), [summary](evidence/hell-migration/verification-summary.json) |
-| Local commit and local-main integration | NOT RUN; pending final evidence review and commit | Pending integration receipt |
+| Local commit and local-main integration | PASS: implementation `b93ee72` fast-forwarded into main; 10 fresh ordinary executions, 0 failures, 54 excluded; strict dev/test/prod compilation and Hell metadata verified | [integration](evidence/hell-migration/main-integration.json), [main tests](evidence/hell-migration/main-ordinary.json) |
 
 The four ordinary regression batches total **210 executions / 0 failures**;
 isolated consumers add 3 executions. Independent peers and browsers record 30
@@ -104,8 +104,13 @@ an acceptance requirement or blocker.
 
 ## Local source and published release boundary
 
-This migration targets local source, a local conventional commit with
-`[skip ci]`, and integration into local `main` after required fresh verification.
+Implementation commit `b93ee724c51ac928408896bcdc7294e8e96bd1db` carries
+`[skip ci]` and was fast-forwarded into local `main` after independent review.
+[Integration evidence](evidence/hell-migration/main-integration.json) binds its
+exact source identity, another 10 ordinary network executions, strict compilation
+in dev/test/prod, refreshed Hell application metadata and preservation of the
+unrelated untracked `gaoxy-m1.1-fix-prompt.md`. All 429 verified functional files
+match in main. Documentation closeout preserves that functional snapshot.
 No push, new release, package/image publication or deployment is included.
 
 Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) remains
