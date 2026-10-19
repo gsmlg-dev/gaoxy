@@ -12,7 +12,9 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
   }
 
   def register(table, key, token, deadline, limits \\ @metadata_defaults) do
-    limits = Map.take(limits, Map.keys(@metadata_defaults))
+    limits =
+      Map.take(limits, Map.keys(@metadata_defaults))
+      |> Map.merge(%{websocket: :http, demand: nil, last_demand: nil})
 
     cond do
       :ets.info(table, :owner) != self() -> {:error, :closed}
@@ -50,13 +52,112 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
   end
 
   def status(table, key, token) do
-    with {:ok, {_, _, worker, lease, deadline, state, _}} <- row(table, key, token),
-         do: {:ok, %{worker: worker, lease: lease, deadline: deadline, status: state}}
+    with {:ok, {_, _, worker, lease, deadline, state, metadata}} <- row(table, key, token),
+         do:
+           {:ok,
+            %{
+              worker: worker,
+              lease: lease,
+              deadline: deadline,
+              status: state,
+              websocket: metadata.websocket,
+              demand: metadata.demand
+            }}
+  end
+
+  def upgrade(table, key, token, reference, lifetime) do
+    change(table, key, token, :owner, fn
+      {_, _, _, lease, original, {:claimed, ^reference, {:websocket_open, _, ^lifetime}, _},
+       metadata} = row
+      when is_reference(lease) and is_integer(lifetime) ->
+        if metadata.websocket == :http and Lifecycle.remaining(original) > 0 and
+             Lifecycle.remaining(lifetime) > 0 do
+          {:ok, row |> put_elem(4, lifetime) |> put_elem(6, %{metadata | websocket: :opening}),
+           :ok}
+        else
+          {:error, :closed}
+        end
+
+      _ ->
+        {:error, :closed}
+    end)
+  end
+
+  # Independent of the single output/HTTP operation slot: an idle receive
+  # demand cannot prevent the same worker from submitting an application push.
+  def demand(table, key, token, credit, ref)
+      when is_integer(credit) and credit in 0..16_384 and is_reference(ref) do
+    change(table, key, token, :worker, fn {_, _, _, _, deadline, status, metadata} = row ->
+      cond do
+        metadata.websocket != :open or terminal?(status) ->
+          {:error, :closed}
+
+        Lifecycle.remaining(deadline) == 0 ->
+          {:error, :timeout}
+
+        match?({:pending, _, _}, metadata.demand) ->
+          {:error, :pending_read}
+
+        credit == 0 and not match?({:delivered, ^ref, _}, metadata.demand) ->
+          {:error, :stale_demand}
+
+        credit > 0 and metadata.last_demand == ref ->
+          {:error, :stale_demand}
+
+        true ->
+          next = %{
+            metadata
+            | demand: if(credit == 0, do: nil, else: {:pending, ref, credit}),
+              last_demand: ref
+          }
+
+          {:ok, put_elem(row, 6, next), :ok}
+      end
+    end)
+  end
+
+  def demand(_, _, _, _, _), do: {:error, :operation_limit}
+
+  def deliver(table, key, token, ref, bytes, ended) when is_binary(bytes) and is_boolean(ended) do
+    result =
+      change(table, key, token, :owner, fn
+        {_, _, worker, _, deadline, status, %{demand: {:pending, ^ref, credit}} = metadata} = row ->
+          if metadata.websocket == :open and not terminal?(status) and
+               Lifecycle.remaining(deadline) > 0 and byte_size(bytes) <= credit do
+            {:ok, put_elem(row, 6, %{metadata | demand: {:delivered, ref, byte_size(bytes)}}),
+             {:notify, worker}}
+          else
+            {:error, :closed}
+          end
+
+        _ ->
+          {:error, :closed}
+      end)
+
+    case result do
+      {:notify, worker} ->
+        send(worker, {:gaoxy_websocket_data, token, ref, bytes, ended})
+        :ok
+
+      error ->
+        error
+    end
+  end
+
+  def close_demand(table, key, token) do
+    change(table, key, token, :worker, fn {_, _, _, _, _, status, metadata} = row ->
+      if metadata.websocket == :open and not terminal?(status),
+        do: {:ok, put_elem(row, 6, %{metadata | websocket: :closing, demand: nil}), :ok},
+        else: {:error, :closed}
+    end)
   end
 
   def submit(table, key, token, {operation, deadline}) do
     change(table, key, token, :worker, fn {_, _, _, _, original, state, limits} = row ->
       cond do
+        match?({:websocket_open, _, _}, operation) and limits.websocket != :http ->
+          {:error, :closed}
+
         not is_integer(deadline) or deadline > original or Lifecycle.remaining(deadline) == 0 ->
           {:error, :timeout}
 
@@ -101,12 +202,10 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
 
   def reply(table, key, token, reference, result) do
     case change(table, key, token, :owner, fn
-           {_, _, worker, _, _, {:claimed, ^reference, _, deadline}, _} = row ->
+           {_, _, worker, _, _, {:claimed, ^reference, operation, deadline}, metadata} = row ->
              if Lifecycle.remaining(deadline) == 0,
                do: {:ok, put_elem(row, 5, {:cancelled, reference, :timeout}), {:error, :timeout}},
-               else:
-                 {:ok, put_elem(row, 5, {:completed, reference, result, deadline}),
-                  {:notify, worker}}
+               else: begin_reply(row, metadata, operation, reference, result, deadline, worker)
 
            _ ->
              {:error, :closed}
@@ -118,6 +217,16 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
       error ->
         error
     end
+  end
+
+  defp begin_reply(row, metadata, operation, reference, result, deadline, worker) do
+    metadata =
+      if match?({:websocket_open, _, _}, operation) and result == :ok,
+        do: %{metadata | websocket: :open},
+        else: metadata
+
+    {:ok, row |> put_elem(5, {:completed, reference, result, deadline}) |> put_elem(6, metadata),
+     {:notify, worker}}
   end
 
   def ack(table, key, token, reference) do
@@ -202,7 +311,7 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
     ArgumentError -> {:error, :closed}
   end
 
-  defp change(table, key, token, side, fun) do
+  defp change(table, key, token, side, fun, attempts \\ 8) do
     with {:ok, row} <- row(table, key, token),
          true <-
            if(side == :owner,
@@ -230,9 +339,11 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
             end)
             |> List.to_tuple()
 
-          if :ets.select_replace(table, [{variables, guards, [{body}]}]) == 1,
-            do: result,
-            else: {:error, :closed}
+          cond do
+            :ets.select_replace(table, [{variables, guards, [{body}]}]) == 1 -> result
+            attempts > 0 -> change(table, key, token, side, fun, attempts - 1)
+            true -> {:error, :busy}
+          end
 
         result ->
           result
@@ -260,6 +371,13 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
     do:
       status in 100..599 and fields?(fields, limits.max_headers, limits.max_header_bytes) and
         is_boolean(ended)
+
+  defp valid_operation?({:websocket_open, fields, lifetime}, _, limits),
+    do:
+      is_integer(lifetime) and Lifecycle.remaining(lifetime) > 0 and
+        fields?(fields, limits.max_headers, limits.max_header_bytes)
+
+  defp valid_operation?({:websocket_finish}, _, limits), do: limits.websocket == :closing
 
   defp valid_operation?({:trailers, fields}, _, limits),
     do: fields?(fields, limits.max_trailers, limits.max_trailer_bytes)

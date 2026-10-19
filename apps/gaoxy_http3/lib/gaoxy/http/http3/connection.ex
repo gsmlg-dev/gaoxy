@@ -242,6 +242,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
              {:ok, state} <- receive_stream(state, key),
              {:ok, state} <- flush(state, key),
              {:ok, state} <- complete_output(state, key),
+             {:ok, state} <- websocket_delivery(state, key),
              do: {:ok, observe(retire(state, key))}
     end
   end
@@ -466,7 +467,39 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     entry = state.streams[key]
     parser = state.protocol.streams[key]
     buffered = if parser == nil, do: 0, else: byte_size(parser.buffer)
-    state.options.http_limits.max_buffer_bytes - byte_size(entry.input) - buffered
+
+    state.options.http_limits.max_buffer_bytes - byte_size(entry.input) - buffered -
+      delivered_bytes(state, key, entry)
+  end
+
+  defp delivered_bytes(state, key, entry) do
+    case Operations.status(state.operations, key, entry.token) do
+      {:ok, %{demand: {:delivered, _, bytes}}} -> bytes
+      _ -> 0
+    end
+  end
+
+  defp websocket_delivery(state, key) do
+    case state.streams[key] do
+      %{mode: :websocket, token: token} = entry ->
+        case Operations.status(state.operations, key, token) do
+          {:ok, %{demand: {:pending, ref, credit}}} when entry.input != <<>> or entry.recv_fin ->
+            size = min(credit, byte_size(entry.input))
+            <<bytes::binary-size(size), rest::binary>> = entry.input
+            ended = entry.recv_fin and rest == <<>>
+
+            case Operations.deliver(state.operations, key, token, ref, bytes, ended) do
+              :ok -> {:ok, update_entry(state, key, &%{&1 | input: rest})}
+              _ -> {:ok, cancel(state, key, 0x10C)}
+            end
+
+          _ ->
+            {:ok, state}
+        end
+
+      _ ->
+        {:ok, state}
+    end
   end
 
   defp start_endpoint(state, key, request) do
@@ -562,7 +595,11 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       gate: state.connection.gate,
       lease: lease,
       deadline: entry.deadline,
-      limits: Map.put(state.options.http_limits, :max_write_chunk, 16_384),
+      limits:
+        state.options.http_limits
+        |> Map.put(:max_write_chunk, 16_384)
+        |> Map.put(:extended_connect, state.options.extended_connect)
+        |> Map.put(:websocket_limits, Map.take(state.connection.limits, [:max_state, :max_bytes])),
       body: %{
         phase: if(ended, do: :done, else: :data),
         total: 0,
@@ -638,6 +675,38 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     end
   end
 
+  defp prepare_operation(state, key, {:websocket_open, fields, lifetime}, deadline) do
+    entry = state.streams[key]
+    {ref, _, _} = entry.operation
+
+    valid =
+      state.options.extended_connect and entry.mode == nil and
+        entry.response_phase in [:unset, :informational] and not entry.recv_fin and
+        entry.trailers == [] and now() < entry.deadline and now() < lifetime
+
+    with true <- valid,
+         {:ok, ^fields} <- Gaoxy.HTTP.WebSocket.ExtendedHandshake.headers(entry.request, fields),
+         {:ok, protocol} <- Protocol.websocket_open(state.protocol, key),
+         :ok <- Operations.upgrade(state.operations, key, entry.token, ref, lifetime) do
+      state =
+        %{state | protocol: protocol}
+        |> update_entry(key, &%{&1 | mode: :websocket_opening, deadline: lifetime})
+
+      prepare_operation(state, key, {:head, 200, fields, false}, deadline)
+    else
+      _ -> {:ok, cancel(state, key, 0x10C)}
+    end
+  end
+
+  defp prepare_operation(state, key, {:websocket_finish}, deadline) do
+    if state.streams[key].mode == :websocket and not state.streams[key].send_done do
+      state = update_entry(state, key, &%{&1 | mode: :websocket_closing})
+      output_operation(state, key, <<>>, true, deadline)
+    else
+      {:ok, cancel(state, key, 0x10C)}
+    end
+  end
+
   defp prepare_operation(state, key, {:data, bytes, ended}, deadline) do
     if state.streams[key].response_phase == :final and not state.streams[key].send_done,
       do:
@@ -707,14 +776,34 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         with {:ok, next} <- reply_operation(state, key, :ok),
              do: {:ok, update_entry(next, key, &%{&1 | abort_pending: true})}
 
+      %{operation: {_, {:websocket_finish}, deadline}} = entry ->
+        cond do
+          now() >= deadline ->
+            {:ok, cancel(state, key, 0x10C)}
+
+          entry.send_done and entry.recv_fin and entry.input == <<>> and
+              not Map.has_key?(state.pending, {key, :write}) ->
+            reply_operation(state, key, :ok)
+
+          true ->
+            {:ok, state}
+        end
+
       %{operation: {_, operation, deadline}, out: <<>>}
-      when elem(operation, 0) in [:head, :data, :trailers] ->
+      when elem(operation, 0) in [:head, :data, :trailers, :websocket_open] ->
         if Map.has_key?(state.pending, {key, :write}) do
           {:ok, state}
         else
-          if now() >= deadline,
-            do: {:ok, cancel(state, key, 0x10C)},
-            else: reply_operation(state, key, :ok)
+          if now() >= deadline do
+            {:ok, cancel(state, key, 0x10C)}
+          else
+            state =
+              if elem(operation, 0) == :websocket_open,
+                do: update_entry(state, key, &%{&1 | mode: :websocket}),
+                else: state
+
+            reply_operation(state, key, :ok)
+          end
         end
 
       _ ->

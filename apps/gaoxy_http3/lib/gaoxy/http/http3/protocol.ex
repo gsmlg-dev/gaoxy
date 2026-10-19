@@ -9,11 +9,36 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
   import Bitwise, only: [band: 2]
   alias Gaoxy.HTTP.HTTP3.Headers
   alias QuicHttp3.{Control, Frame, Qpack, Varint}
-  defstruct [:http_limits, :h3_limits, :control, streams: %{}, critical: %{}, max_push_id: nil]
 
-  def new(%{http_limits: http, h3_limits: h3}) do
-    with {:ok, control} <- Control.new(:server, [{1, 0}, {6, http.max_header_bytes}, {7, 0}]) do
-      {:ok, %__MODULE__{http_limits: http, h3_limits: h3, control: control}}
+  defstruct [
+    :http_limits,
+    :h3_limits,
+    :control,
+    extended_connect: false,
+    streams: %{},
+    critical: %{},
+    max_push_id: nil
+  ]
+
+  def new(%{http_limits: http, h3_limits: h3} = options) do
+    enabled = Map.get(options, :extended_connect, false)
+    settings = [{1, 0}, {6, http.max_header_bytes}, {7, 0}]
+    settings = if enabled, do: settings ++ [{8, 1}], else: settings
+
+    with {:ok, control} <- Control.new(:server, settings) do
+      {:ok,
+       %__MODULE__{http_limits: http, h3_limits: h3, control: control, extended_connect: enabled}}
+    end
+  end
+
+  @doc "Marks an owner-accepted WebSocket without changing HTTP DATA framing or ingress limits."
+  def websocket_open(state, key) do
+    case state.streams[key] do
+      %{kind: :request, message: :body, request: %{protocol: "websocket", body: :tunnel}} = stream ->
+        {:ok, put_stream(state, key, %{stream | message: :websocket, body_bytes: 0})}
+
+      _ ->
+        error(state, key, :stream, 0x10E, :invalid_websocket_transition)
     end
   end
 
@@ -238,8 +263,11 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
       type in [3, 4, 5, 7, 13] ->
         {:error, :connection, 0x105, :control_frame_on_request}
 
-      type == 0 and message != :body ->
+      type == 0 and message not in [:body, :websocket] ->
         {:error, :connection, 0x105, :data_order}
+
+      type == 1 and message == :websocket ->
+        {:error, :stream, 0x10E, :websocket_trailers}
 
       type == 1 and message == :trailers ->
         {:error, :connection, 0x105, :repeated_trailers}
@@ -256,6 +284,12 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
       true ->
         {:ok, :skip}
     end
+  end
+
+  defp payload_step(state, key, %{phase: :data, message: :websocket} = stream, chunk, amount) do
+    stream = if stream.remaining == 0, do: next_frame(stream), else: stream
+    emitted = if amount == 0, do: [], else: [{:data, key, chunk}]
+    {:step, put_stream(state, key, stream), emitted, amount}
   end
 
   defp payload_step(state, key, %{phase: :data} = stream, chunk, amount) do
@@ -298,7 +332,7 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
         else: state.http_limits.max_trailers
 
     with {:ok, fields} <- Headers.decode(payload, max_fields),
-         {:ok, stream, action} <- header_action(stream, fields, key, state.http_limits) do
+         {:ok, stream, action} <- header_action(stream, fields, key, state) do
       {:step, put_stream(state, key, next_frame(stream)), [action], consumed}
     else
       {:error, scope, code, reason} -> error(state, key, scope, code, reason)
@@ -315,13 +349,13 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
     end
   end
 
-  defp header_action(%{message: :initial_headers} = stream, fields, key, limits) do
-    with {:ok, request} <- Headers.request(fields, limits),
+  defp header_action(%{message: :initial_headers} = stream, fields, key, state) do
+    with {:ok, request} <- Headers.request(fields, state.http_limits, state.extended_connect),
          do: {:ok, %{stream | request: request, message: :body}, {:headers, key, request}}
   end
 
-  defp header_action(stream, fields, key, limits) do
-    with :ok <- Headers.trailers(fields, limits),
+  defp header_action(stream, fields, key, state) do
+    with :ok <- Headers.trailers(fields, state.http_limits),
          do: {:ok, %{stream | message: :trailers}, {:trailers, key, fields}}
   end
 

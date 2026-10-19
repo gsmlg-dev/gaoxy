@@ -1,0 +1,32 @@
+==> gaoxy_http3
+Running ExUnit with seed: 52153, max_cases: 4
+
+
+
+  1) test ordinary H3 tunnels push, echo and Close with HTTP siblings on the same verified connection (Gaoxy.HTTP.HTTP3.WebSocketNetworkTest)
+     apps/gaoxy_http3/test/websocket_network_test.exs:29
+     Traceback (most recent call last):
+       File "<string>", line 37, in <module>
+         asyncio.run(run())
+         ~~~~~~~~~~~^^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/runners.py", line 196, in run
+         return runner.run(main)
+                ~~~~~~~~~~^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/runners.py", line 119, in run
+         return self._loop.run_until_complete(task)
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+         return future.result()
+                ~~~~~~~~~~~~~^^
+       File "<string>", line 18, in run
+         assert client.headers[sid][0].count((b':status',b'200'))==1, client.headers
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     AssertionError: {0: [[(b':status', b'500'), (b'content-length', b'0')]]}
+
+     code: assert exit == 0, output
+     stacktrace:
+       test/websocket_network_test.exs:99: (test)
+
+
+Finished in 1.9 seconds (1.9s async, 0.00s sync)
+1 test, 1 failure

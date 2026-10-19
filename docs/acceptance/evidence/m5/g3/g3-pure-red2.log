@@ -1,0 +1,157 @@
+==> gaoxy_http3
+Running ExUnit with seed: 551792, max_cases: 4
+
+...........
+
+  1) test local setting8 is advertised only when enabled and retains zero-capacity QPACK (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:90
+     Assertion with == failed
+     code:  assert {8, 1} in settings == enabled
+     left:  false
+     right: true
+     stacktrace:
+       test/websocket_test.exs:98: anonymous fn/2 in Gaoxy.HTTP.HTTP3.WebSocketTest."test local setting8 is advertised only when enabled and retains zero-capacity QPACK"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/websocket_test.exs:91: (test)
+
+
+
+  2) test listener option is strict, defaults disabled, and reaches the H3 handler (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:73
+     Assertion with == failed
+     code:  assert Map.get(disabled.handler_options, :extended_connect, :missing) == false
+     left:  :missing
+     right: false
+     stacktrace:
+       test/websocket_test.exs:75: (test)
+
+.
+
+  3) test disabled and malformed pseudoheaders remain stream message errors (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:129
+     missing enabled H3 extended CONNECT parser
+     code: assert {:error, :stream, 0x10E, _} = request(@fields, false)
+     stacktrace:
+       test/websocket_test.exs:47: Gaoxy.HTTP.HTTP3.WebSocketTest.request/2
+       test/websocket_test.exs:130: (test)
+
+
+
+  4) test accepted tunnel DATA does not accumulate ordinary body totals and leaves its sibling intact (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:157
+     match (=) failed
+     code:  assert {:ok, state, [{:headers, :websocket, %{body: :tunnel}}]} =
+              Protocol.feed(state, :websocket, head())
+     left:  {:ok, state, [{:headers, :websocket, %{body: :tunnel}}]}
+     right: {:error, :stream, 270, :request_headers,
+             %Gaoxy.HTTP.HTTP3.Protocol{
+               http_limits: %{
+                 max_headers: 100,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_body_bytes: 1,
+                 max_trailers: 32,
+                 max_trailer_bytes: 8192,
+                 max_buffer_bytes: 65536
+               },
+               h3_limits: %{
+                 max_streams: 8,
+                 max_header_block: 32768,
+                 max_pending_output: 65536,
+                 control_turn: 32,
+                 control_quantum: 16384,
+                 dynamic_table_capacity: 0,
+                 blocked_streams: 0
+               },
+               control: %QuicHttp3.Control{
+                 role: :server,
+                 local_settings: [{1, 0}, {6, 32768}, {7, 0}],
+                 peer_settings: nil,
+                 buffer: "",
+                 control_stream_id: nil,
+                 peer_control_stream_id: nil,
+                 peer_type_buffer: "",
+                 local_open?: false,
+                 peer_open?: false,
+                 received_settings?: false,
+                 goaway_id: nil
+               },
+               streams: %{
+                 http: %{
+                   message: :initial_headers,
+                   request: nil,
+                   buffer: "",
+                   kind: :request,
+                   phase: :type,
+                   payload: "",
+                   body_bytes: 0,
+                   frame_type: nil,
+                   remaining: 0
+                 }
+               },
+               critical: %{},
+               max_push_id: nil
+             }}
+     stacktrace:
+       test/websocket_test.exs:160: (test)
+
+
+
+  5) test only an accepted websocket skips HTTP body limits and forbids HTTP trailers (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:186
+     match (=) failed
+     code:  assert {:ok, candidate, _} = Protocol.feed(open(fresh(), :r), :r, head())
+     left:  {:ok, candidate, _}
+     right: {:error, :stream, 270, :request_headers,
+             %Gaoxy.HTTP.HTTP3.Protocol{
+               http_limits: %{
+                 max_headers: 100,
+                 max_header_bytes: 32768,
+                 max_request_line: 8192,
+                 max_body_bytes: 1,
+                 max_trailers: 32,
+                 max_trailer_bytes: 8192,
+                 max_buffer_bytes: 65536
+               },
+               h3_limits: %{
+                 max_streams: 8,
+                 max_header_block: 32768,
+                 max_pending_output: 65536,
+                 control_turn: 32,
+                 control_quantum: 16384,
+                 dynamic_table_capacity: 0,
+                 blocked_streams: 0
+               },
+               control: %QuicHttp3.Control{
+                 role: :server,
+                 local_settings: [{1, 0}, {6, 32768}, {7, 0}],
+                 peer_settings: nil,
+                 buffer: "",
+                 control_stream_id: nil,
+                 peer_control_stream_id: nil,
+                 peer_type_buffer: "",
+                 local_open?: false,
+                 peer_open?: false,
+                 received_settings?: false,
+                 goaway_id: nil
+               },
+               streams: %{},
+               critical: %{},
+               max_push_id: nil
+             }}
+     stacktrace:
+       test/websocket_test.exs:187: (test)
+
+.
+
+  6) test enabled extended CONNECT retains wire method, escaped local route and opaque protocol (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:103
+     missing enabled H3 extended CONNECT parser
+     code: assert {:ok, req} = request(@fields)
+     stacktrace:
+       test/websocket_test.exs:47: Gaoxy.HTTP.HTTP3.WebSocketTest.request/2
+       test/websocket_test.exs:104: (test)
+
+.............................................
+Finished in 1.1 seconds (1.1s async, 0.00s sync)
+64 tests, 6 failures

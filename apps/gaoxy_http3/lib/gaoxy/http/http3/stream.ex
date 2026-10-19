@@ -51,7 +51,7 @@ defmodule Gaoxy.HTTP.HTTP3.Stream do
   defp execute(exchange, {module, options}) do
     result =
       try do
-        if exchange.request.method == "CONNECT",
+        if exchange.request.method == "CONNECT" and exchange.request.protocol != "websocket",
           do: Response.send_resp(exchange, 501, [], ""),
           else: module.call(exchange, options)
       catch
@@ -67,6 +67,9 @@ defmodule Gaoxy.HTTP.HTTP3.Stream do
 
     completed =
       case {result, final.response} do
+        {{:ok, _}, {:websocket, _, _, _, _}} ->
+          Gaoxy.HTTP.WebSocket.Stream.run(final, final.limits.websocket_limits)
+
         {{:error, _, _}, :chunked} ->
           {:error, :endpoint_failed}
 

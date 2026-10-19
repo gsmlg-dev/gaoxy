@@ -113,14 +113,14 @@ class Fixture:
             self.log.close()
 
 
-def validate_server_receipts(events):
+def validate_server_receipts(events, protocol="h2"):
     opens = [event for event in events if event["event"] == "websocket-open"]
     assert len(opens) == 2, opens
     assert len({event["connection"] for event in opens}) == 1, opens
     assert len({event["stream"] for event in opens}) == 2, opens
     for event in opens:
         assert event["method"] == "CONNECT" and event["protocol"] == "websocket", event
-        assert event["version"] == "HTTP/2", event
+        assert event["version"] == ("HTTP/3" if protocol == "h3" else "HTTP/2"), event
         assert event["requested_websocket_deadline"] == event["accepted_websocket_deadline"], event
         assert event["accepted_websocket_deadline"] > event["original_deadline"], event
     siblings = [event for event in events if event["event"] == "http-request"]
@@ -140,7 +140,7 @@ def validate_server_receipts(events):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--protocol", choices=["h2", "h2c"], required=True)
+    parser.add_argument("--protocol", choices=["h2", "h2c", "h3"], required=True)
     parser.add_argument("--evidence", type=Path, required=True)
     args = parser.parse_args()
     evidence = args.evidence.resolve() / f"run-{time.time_ns()}"
@@ -171,9 +171,12 @@ def main():
         ready = fixture.event("ready", timeout=30)
         assert ready["protocol"] == args.protocol, ready
         report["fixture_ready"] = ready
-        run(args.protocol, ready["port"], certificate, results=report["cases"])
+        peer_run = run
+        if args.protocol == "h3":
+            from h3_peer import run as peer_run
+        peer_run(args.protocol, ready["port"], certificate, results=report["cases"])
         report["admission_released"] = fixture.released()
-        report["server_receipts"] = validate_server_receipts(fixture.all_events)
+        report["server_receipts"] = validate_server_receipts(fixture.all_events, args.protocol)
         validate_results(report["cases"])
         report["status"] = "PASS"
     except Exception as error:

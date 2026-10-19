@@ -1,0 +1,54 @@
+{
+  "task": "M5 Task3 independent H3 peer preparation",
+  "assignment": "direct",
+  "status": "READY_FOR_RUNTIME; offline preparation PASS; runtime NOT RUN",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "branch": "codex/m5-websocket-over-h2-h3",
+  "baseline": "4c6f08959e64303ab6ce6cf3280a1035a82c916f",
+  "time_utc": "2026-10-19T07:20:56.078565+00:00",
+  "owned_files_sha256": {
+    "integration/websocket_multiplexed/h3_peer.py": "91b34cecdf4e0c93e720aa64c8d7ad43de61469c4f0092a0b437ebae9fc20ab4",
+    "integration/websocket_multiplexed/README.md": "a146095e594d6c49523d0b12e50c7ce14d11954ccb05374f47d612abe870452f"
+  },
+  "checks": [
+    {
+      "command": ".audit/m5/venv/bin/python .audit/m5/h3-peer-preparation/test_h3_peer.py",
+      "executed": 5,
+      "exit": 0,
+      "evidence": "offline-final.log"
+    },
+    {
+      "command": "python py_compile integration/websocket_multiplexed/h3_peer.py",
+      "exit": 0
+    }
+  ],
+  "red_evidence": "offline-red.log: expected missing implementation assertions",
+  "entrypoint": "h3_peer.run(protocol,port,certificate=None,results=None), protocol=h3; asyncio.run adapter over run_async",
+  "required_cases": 15,
+  "runtime_status": "NOT RUN; parent owns shared H3 fixture/runner wiring and source/build gate",
+  "concrete_h3_receipt_identity": {
+    "native_state": "{owner,table,key,token}",
+    "connection": "inspect(owner)",
+    "wire_stream": "key.handle.id",
+    "key_type": "Gaoxy.QUIC.Stream containing Quic.Runtime.StreamHandle",
+    "deadline": "record original at endpoint; delegate native websocket_open and record passed deadline/returned next.deadline; keep state unchanged"
+  },
+  "counters": {
+    "h3_preparation_expected_red": 1,
+    "h3_preparation_failed_green": 0,
+    "h3_preparation_sol_repairs": 0,
+    "prior_g0_audit_tooling_sol_repairs": 2,
+    "production_sol_repairs_added": 0,
+    "inherited_root": 734,
+    "inherited_orchestration": 617,
+    "inherited_astra_recovery_used": 2,
+    "astra_recovery_added": 0
+  },
+  "commands_shutdown": "All owned commands completed; no browser/network/fixture runtime started.",
+  "remaining": [
+    "Parent shared fixture/runner H3 integration",
+    "Independent review",
+    "Runtime verification after parent readiness"
+  ],
+  "decisions_needed": []
+}

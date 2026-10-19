@@ -16,17 +16,29 @@ defmodule Gaoxy.HTTP.HTTP3.Headers do
     end
   end
 
-  def request(fields, limits) do
+  def request(fields, limits, extended_connect \\ false) do
     with :ok <- validate(fields, limits.max_headers, limits.max_header_bytes),
          {:ok, pseudo, regular} <- split(fields),
          method when is_binary(method) <- pseudo[":method"],
          true <- Regex.match?(@token, method),
-         true <- Map.keys(pseudo) -- [":method", ":scheme", ":authority", ":path"] == [],
+         true <-
+           Map.keys(pseudo) -- [":method", ":scheme", ":authority", ":path", ":protocol"] == [],
+         true <- protocol?(pseudo, method, extended_connect),
          {:ok, request} <- target(method, pseudo, regular, limits) do
       {:ok, %{request | head_bytes: bytes(fields)}}
     else
       {:error, _, _, _} = error -> error
       _ -> message(:request_headers)
+    end
+  end
+
+  defp protocol?(pseudo, method, enabled) do
+    case Map.fetch(pseudo, ":protocol") do
+      :error ->
+        true
+
+      {:ok, protocol} ->
+        enabled == true and method == "CONNECT" and Regex.match?(@token, protocol)
     end
   end
 
@@ -80,6 +92,17 @@ defmodule Gaoxy.HTTP.HTTP3.Headers do
     end
   end
 
+  defp target("CONNECT", %{":protocol" => protocol} = pseudo, regular, limits) do
+    with true <- is_binary(pseudo[":authority"]),
+         true <- not Enum.any?(regular, fn {name, _} -> name == "content-length" end),
+         {:ok, request} <- origin_target("CONNECT", pseudo, regular, limits) do
+      {:ok, %{request | protocol: protocol, body: :tunnel, expect_continue: false}}
+    else
+      {:error, _, _, _} = error -> error
+      _ -> message(:connect_headers)
+    end
+  end
+
   defp target("CONNECT", pseudo, regular, _limits) do
     hosts = for {"host", value} <- regular, do: value
 
@@ -109,6 +132,10 @@ defmodule Gaoxy.HTTP.HTTP3.Headers do
   end
 
   defp target(method, pseudo, regular, limits) do
+    origin_target(method, pseudo, regular, limits)
+  end
+
+  defp origin_target(method, pseudo, regular, limits) do
     hosts = for {"host", value} <- regular, do: value
     authority = pseudo[":authority"] || List.first(hosts)
     path = pseudo[":path"]

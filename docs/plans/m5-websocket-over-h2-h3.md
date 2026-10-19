@@ -333,24 +333,24 @@ Commit only the completed owned slice locally.
 - Create `integration/websocket_multiplexed/h3_peer.py`; extend its existing
   `fixture.exs` and `run.py` with H3 selection.
 
-- [ ] Thread the same strict `extended_connect` activation through H3 options.
+- [x] Thread the same strict `extended_connect` activation through H3 options.
   Include H3 setting 0x08=1 in the public server Control settings only when
   enabled. Keep the existing zero-capacity QPACK and optional package boundary.
-- [ ] Accept `:protocol=websocket` with required extended CONNECT fields and
+- [x] Accept `:protocol=websocket` with required extended CONNECT fields and
   preserve HTTP/3 request metadata. Separate WS DATA accounting from ordinary
   request-body totals/content-length and HTTP response-finalization rules.
-- [ ] Commit 200 HEADERS without FIN, then continue the same admitted worker
+- [x] Commit 200 HEADERS without FIN, then continue the same admitted worker
   using the shared runtime. Reserve/confirm all QUIC operations through the
   existing public host and Operations contract, with no private Session actor.
-- [ ] Update Operations and owner stream state to the admitted WS deadline in
+- [x] Update Operations and owner stream state to the admitted WS deadline in
   the same authorized transition. Old HTTP expiry/finish paths must not end a
   live WebSocket or leave stale operation state.
-- [ ] Carry RFC 6455 bytes inside H3 DATA, preserving per-stream fair progress
+- [x] Carry RFC 6455 bytes inside H3 DATA, preserving per-stream fair progress
   and the existing finite operation chunks. No retry/replay of uncertain writes.
-- [ ] For orderly shutdown, send/receive WS Close before stream FIN and release
+- [x] For orderly shutdown, send/receive WS Close before stream FIN and release
   the stream normally. Define reset/stop mapping to H3_REQUEST_CANCELLED in
   deterministic unit contracts; network fault injection remains deferred.
-- [ ] Run the H3 equivalents of G2's ordinary peer cases, with a verified local
+- [x] Run the H3 equivalents of G2's ordinary peer cases, with a verified local
   certificate: two live WebSocket streams and an HTTP sibling on the same QUIC
   connection, including the bounded post-request-deadline lifetime case.
   Do not import a client H3 session as a server implementation.
@@ -513,7 +513,7 @@ fragmentation with ping/pong. Record actual selected/excluded counts distinctly.
 | G0 | Source/cohort/public API and fixture compatibility | PASS |
 | G1 | Shared handshake/runtime unit contracts and H1 compatibility | PASS |
 | G2 | HTTPS H2 defaults, H1 compatibility, budgets and native H2/h2c WebSocket exchanges | PASS |
-| G3 | Native H3 independent normal WebSocket exchanges | NOT RUN |
+| G3 | Native H3 independent normal WebSocket exchanges | PASS |
 | G4 | Phoenix Channels/LiveView and actual H2/H3 WS browser transport | NOT RUN |
 | G5 | Fresh scoped compatibility, consumer isolation, SPEC/CODE acceptance | NOT RUN |
 

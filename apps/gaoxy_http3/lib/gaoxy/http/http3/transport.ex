@@ -14,10 +14,38 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
   defdelegate inform(exchange, status, headers), to: Gaoxy.HTTP.HTTP3.Response
   defdelegate finish(exchange, trailers), to: Gaoxy.HTTP.HTTP3.Response
 
+  def websocket_open(exchange, headers, lifetime) do
+    {_, table, key, token} = exchange.transport_state
+
+    with {:ok, %{deadline: original}} <- Operations.status(table, key, token),
+         deadline =
+           min(original, min(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))),
+         :ok <- operation_until(exchange, {:websocket_open, headers, lifetime}, deadline) do
+      {:ok, %{exchange | deadline: lifetime, response: :upgraded}}
+    end
+  end
+
+  def websocket_demand(exchange, credit, ref) do
+    {_, table, key, token} = exchange.transport_state
+    Operations.demand(table, key, token, credit, ref)
+  end
+
+  def websocket_send(exchange, bytes), do: operation(exchange, {:data, bytes, false})
+
+  def websocket_finish(exchange) do
+    {_, table, key, token} = exchange.transport_state
+
+    with :ok <- Operations.close_demand(table, key, token),
+         do: operation(exchange, {:websocket_finish})
+  end
+
   def operation(exchange, operation) do
+    operation_until(exchange, operation, operation_deadline(exchange, operation))
+  end
+
+  defp operation_until(exchange, operation, deadline) do
     {owner, table, key, token} = exchange.transport_state
     monitor = Process.monitor(owner)
-    deadline = operation_deadline(exchange, operation)
 
     try do
       with {:ok, ref} <- Operations.submit(table, key, token, {operation, deadline}) do

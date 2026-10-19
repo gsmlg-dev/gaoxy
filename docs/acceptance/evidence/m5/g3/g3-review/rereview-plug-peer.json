@@ -1,0 +1,68 @@
+{
+  "task": "M5 G3 repaired Plug handoff and H3 independent peer review",
+  "assignment": "direct read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "timestamp_utc": "2026-10-19T07:34:20.923538+00:00",
+  "findings": [],
+  "spec_review": "PASS",
+  "code_review": "PASS",
+  "review_sol_repair_rounds": 0,
+  "implementation_repair_counters": "Parent owns cumulative counters; this review does not reset them.",
+  "astra_gate": null,
+  "commands_shutdown": "All reviewer commands completed; no build, test, browser, or network processes started.",
+  "reviewer_mutations": "Only .audit/m5 review evidence; no source edits.",
+  "files_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "a951daebc38ac3a061ccadf1f344da0d0e58cc977b18243560e32efdb5093e39",
+    "apps/gaoxy_http3/test/websocket_network_test.exs": "ceb1072848291a340af486eb3e815ac1f6608f22f8355f295133b2b3dda3a706",
+    "integration/websocket_multiplexed/fixture.exs": "52af936d8e8520bc74771733e9218f029b9584723e07757e983d87c7688c8926",
+    "integration/websocket_multiplexed/run.py": "aeed077f338e62a3ec492a9b2f6f979ddad001f688a256c978d7bae96ff76914",
+    "integration/websocket_multiplexed/h3_peer.py": "91b34cecdf4e0c93e720aa64c8d7ad43de61469c4f0092a0b437ebae9fc20ab4"
+  },
+  "observed_receipts": [
+    {
+      "name": "g3-plug-handoff-red",
+      "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+      "exit_code": 2,
+      "test_summaries": [
+        "1 test, 1 failure"
+      ]
+    },
+    {
+      "name": "g3-plug-handoff-green",
+      "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+      "exit_code": 0,
+      "test_summaries": [
+        "1 test, 0 failures"
+      ]
+    }
+  ],
+  "observed_h3": {
+    "status": "PASS",
+    "protocol": "h3",
+    "executed": 15,
+    "exit": 0,
+    "admission_released": {
+      "active": 0,
+      "retained_bytes": 0,
+      "event": "sample",
+      "cleanup_pending": 0,
+      "cleanup_failed": null
+    },
+    "shutdown": {
+      "exit": 0,
+      "event": "stopped",
+      "runtime_down": true
+    }
+  },
+  "resolved_finding": "Connection.exchange now propagates normalized extended_connect; network test calls real Gaoxy.PlugAdapter.upgrade. Preserve the original P1 review and RED receipt.",
+  "assessment": [
+    "Transport selection uses immutable tuple arity even after shared engine clears request.",
+    "H3 peer requires the same 15 complete ordinary cases and real verified h3 negotiation.",
+    "Two CONNECT streams plus before/after HTTP siblings share one owner; deadlines, normal Close/FIN, admission release and owned runtime DOWN are asserted."
+  ],
+  "remaining": [
+    "Parent runs fresh postreview scoped checks and strict compile.",
+    "G4 browser acceptance is a separate gate."
+  ]
+}

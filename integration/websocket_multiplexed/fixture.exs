@@ -2,7 +2,11 @@ defmodule Gaoxy.M5Fixture.Receipt do
   def emit(value), do: IO.puts("GAOXY_M5_FIXTURE " <> JSON.encode!(value))
 
   def identity(exchange) do
-    {owner, stream, _token} = exchange.transport_state
+    {owner, stream} =
+      case exchange.transport_state do
+        {owner, stream, _token} -> {owner, stream}
+        {owner, _operations, key, _token} -> {owner, key.handle.id}
+      end
 
     %{
       connection: inspect(owner),
@@ -17,11 +21,10 @@ defmodule Gaoxy.M5Fixture.Receipt do
 end
 
 defmodule Gaoxy.M5Fixture.Transport do
-  alias Gaoxy.HTTP.HTTP2.Transport, as: Native
   alias Gaoxy.M5Fixture.Receipt
 
   def websocket_open(exchange, headers, deadline) do
-    case Native.websocket_open(exchange, headers, deadline) do
+    case native(exchange).websocket_open(exchange, headers, deadline) do
       {:ok, next} = result ->
         Receipt.emit(
           Map.merge(Receipt.identity(exchange), %{
@@ -40,10 +43,15 @@ defmodule Gaoxy.M5Fixture.Transport do
     end
   end
 
-  defdelegate websocket_demand(exchange, credit, ref), to: Native
-  defdelegate websocket_send(exchange, bytes), to: Native
-  defdelegate websocket_finish(exchange), to: Native
-  defdelegate abort(exchange, reason), to: Native
+  def websocket_demand(exchange, credit, ref),
+    do: native(exchange).websocket_demand(exchange, credit, ref)
+
+  def websocket_send(exchange, bytes), do: native(exchange).websocket_send(exchange, bytes)
+  def websocket_finish(exchange), do: native(exchange).websocket_finish(exchange)
+  def abort(exchange, reason), do: native(exchange).abort(exchange, reason)
+
+  defp native(%{transport_state: {_, _, _, _}}), do: Gaoxy.HTTP.HTTP3.Transport
+  defp native(_), do: Gaoxy.HTTP.HTTP2.Transport
 end
 
 defmodule Gaoxy.M5Fixture.Echo do
@@ -101,7 +109,7 @@ defmodule Gaoxy.M5Fixture.Endpoint do
                Echo,
                %{
                  label: label,
-                 stream: elem(exchange.transport_state, 1),
+                 stream: Receipt.identity(exchange).stream,
                  original_deadline: exchange.deadline
                },
                [timeout: 10_000, max_lifetime: 10_000, close_timeout: 500]
@@ -145,10 +153,20 @@ defmodule Gaoxy.M5Fixture do
 
         "h2c" ->
           options ++ [protocols: [:http2], h2c: :prior_knowledge]
+
+        "h3" ->
+          options ++
+            [
+              tls: %{
+                certfile: System.fetch_env!("GAOXY_M5_CERT"),
+                keyfile: System.fetch_env!("GAOXY_M5_KEY")
+              }
+            ]
       end
 
-    {:ok, runtime} = Gaoxy.HTTP.start_link(options)
-    {:ok, {{127, 0, 0, 1}, port}} = Gaoxy.info(runtime, :http).local
+    {starter, id} = if protocol == "h3", do: {Gaoxy.HTTP.HTTP3, :http3}, else: {Gaoxy.HTTP, :http}
+    {:ok, runtime} = starter.start_link(options)
+    {:ok, {{127, 0, 0, 1}, port}} = Gaoxy.info(runtime, id).local
 
     Receipt.emit(%{
       event: "ready",
@@ -160,15 +178,15 @@ defmodule Gaoxy.M5Fixture do
       websocket_lifetime_ms: 10_000
     })
 
-    loop(runtime)
+    loop(runtime, id)
   end
 
-  defp loop(runtime) do
+  defp loop(runtime, id) do
     case IO.gets("") do
       "sample\n" ->
         Receipt.emit(
           Map.put(
-            Map.take(Gaoxy.status(runtime, :http), [
+            Map.take(Gaoxy.status(runtime, id), [
               :active,
               :retained_bytes,
               :cleanup_pending,
@@ -179,7 +197,7 @@ defmodule Gaoxy.M5Fixture do
           )
         )
 
-        loop(runtime)
+        loop(runtime, id)
 
       value when value in ["stop\n", :eof] ->
         monitor = Process.monitor(runtime)

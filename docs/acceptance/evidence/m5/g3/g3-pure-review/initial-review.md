@@ -1,0 +1,5 @@
+# H3 pure subset independent review
+
+SPEC PASS, then CODE NEEDS FIX for test module-loading guards only. websocket_test.exs:47/67 checks function_exported? without Code.ensure_loaded? first. Available but unloaded BEAM modules returnfalse; loading from parallel existing tests can hide this in the64/0 cohort. Ensure modules are loaded or call the public APIs directly, preserving assertions. Parent owns fresh isolated/scoped verification.
+
+No production findings within Headers/Options/Protocol subset: strictfalse option, localsetting8 not peer authorization, immutable CONNECT/version/path/opaqueprotocol, required authority/scheme/path and body-framing validation, accepted-only tunnel transition removes cumulative body totals, boundedHTTP3 frame parsing/ingress remains, zeroQPACK and HTTPtrailer refusal retained. Inspected g3-pure-green64/0 exit0; no independent runtime commands run. Runtime owners, Operationsledger, transports, peer/browser acceptance remain future checks. Initial source hashes captured in JSON. All review commands completed; no implementation changes; review repair rounds0 and inherited counters unchanged.

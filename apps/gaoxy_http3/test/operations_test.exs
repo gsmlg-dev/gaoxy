@@ -47,6 +47,74 @@ defmodule Gaoxy.HTTP.HTTP3.OperationsTest do
     {table, key, token, pid, deadline}
   end
 
+  defp websocket_slot do
+    assert Code.ensure_loaded?(Operations) and function_exported?(Operations, :upgrade, 5),
+           "missing owner-validated H3 websocket lifetime transition"
+
+    {table, key, token, pid, original} = slot()
+    lifetime = Lifecycle.deadline(10_000)
+    operation = {:websocket_open, [], lifetime}
+    assert {:ok, ref} = invoke(pid, :submit, [table, key, token, {operation, original}])
+    assert {:ok, ^pid, ^ref, ^operation, ^original} = op(:claim, [table, key, token])
+    {table, key, token, pid, original, lifetime, ref}
+  end
+
+  test "only the owner adopts the requested lifetime once while the opening operation stays finite" do
+    {table, key, token, pid, original, lifetime, ref} = websocket_slot()
+    assert {:error, :closed} = invoke(pid, :upgrade, [table, key, token, ref, lifetime])
+    assert :ok = op(:upgrade, [table, key, token, ref, lifetime])
+    assert {:error, :closed} = op(:upgrade, [table, key, token, ref, lifetime])
+
+    assert {:ok,
+            %{
+              deadline: ^lifetime,
+              websocket: :opening,
+              status: {:claimed, ^ref, {:websocket_open, [], ^lifetime}, ^original}
+            }} =
+             op(:status, [table, key, token])
+
+    assert :ok = op(:reply, [table, key, token, ref, :ok])
+    assert :ok = invoke(pid, :ack, [table, key, token, ref])
+
+    assert {:ok, %{deadline: ^lifetime, websocket: :open, status: :idle}} =
+             op(:status, [table, key, token])
+
+    # An operation beyond the original request boundary now uses the adopted lifetime.
+    assert {:ok, _} =
+             invoke(pid, :submit, [table, key, token, {{:data, "push", false}, lifetime}])
+  end
+
+  test "one separate demand permits application output and requires fresh delivery acknowledgments" do
+    {table, key, token, pid, _, lifetime, opening} = websocket_slot()
+    assert :ok = op(:upgrade, [table, key, token, opening, lifetime])
+    assert :ok = op(:reply, [table, key, token, opening, :ok])
+    assert :ok = invoke(pid, :ack, [table, key, token, opening])
+    ref = make_ref()
+    assert :ok = invoke(pid, :demand, [table, key, token, 32, ref])
+    assert {:error, :pending_read} = invoke(pid, :demand, [table, key, token, 32, make_ref()])
+
+    assert {:ok, output} =
+             invoke(pid, :submit, [table, key, token, {{:data, "idle push", false}, lifetime}])
+
+    assert {:ok, ^pid, ^output, _, ^lifetime} = op(:claim, [table, key, token])
+    assert :ok = op(:reply, [table, key, token, output, :ok])
+    assert :ok = invoke(pid, :ack, [table, key, token, output])
+    assert :ok = op(:deliver, [table, key, token, ref, "hello", false])
+    assert_receive {:observed, ^pid, {:gaoxy_websocket_data, ^token, ^ref, "hello", false}}
+    assert {:ok, %{demand: {:delivered, ^ref, 5}}} = op(:status, [table, key, token])
+    assert {:error, :stale_demand} = invoke(pid, :demand, [table, key, token, 0, make_ref()])
+    assert {:error, :stale_demand} = invoke(pid, :demand, [table, key, token, 32, ref])
+    next = make_ref()
+    assert :ok = invoke(pid, :demand, [table, key, token, 32, next])
+    assert {:error, :closed} = op(:deliver, [table, key, token, ref, "stale", false])
+    assert :ok = op(:deliver, [table, key, token, next, "", true])
+    assert :ok = invoke(pid, :demand, [table, key, token, 0, next])
+    assert {:error, :stale_demand} = invoke(pid, :demand, [table, key, token, 0, next])
+    assert {:ok, %{status: :idle, demand: nil}} = op(:status, [table, key, token])
+    assert :ok = invoke(pid, :close_demand, [table, key, token])
+    assert {:ok, %{websocket: :closing}} = op(:status, [table, key, token])
+  end
+
   test "opaque map and QUIC stream keys preserve exactly one claim and reply" do
     for key <- [
           %{opaque: make_ref()},

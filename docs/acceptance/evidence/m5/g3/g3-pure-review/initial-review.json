@@ -1,0 +1,30 @@
+{
+  "task": "M5 Task3 pure subset independent SPEC then CODE review",
+  "baseline": "2dfde400cc93f99c79ac504d261d49a0cf2a882a",
+  "spec": "PASS",
+  "code": "NEEDS FIX",
+  "source_sha256": {
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/headers.ex": "29aa3fb959c7477233242c2f7dd2767078dbdb9196aa597a4fa52f15963da98b",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex": "a1a52274d7a05033f97f0d80de23439bc56ab80b1825dc216e7b4c9de82a4cdc",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/protocol.ex": "40554f0a685e1d5d0410f3d1b96f2a26c885ef7156725d1bcbd6a43c7619abb4",
+    "apps/gaoxy_http3/test/websocket_test.exs": "b9513b87a895e5e5371e2e92152d218246ea4ee7d20862e7743cffba396697a7"
+  },
+  "findings": [
+    {
+      "file": "apps/gaoxy_http3/test/websocket_test.exs",
+      "lines": [
+        47,
+        67
+      ],
+      "severity": "P2",
+      "issue": "function_exported? does not autoload available BEAM modules; capability guards can fail in fresh isolated invocation before Headers/Protocol is loaded",
+      "remedy": "Ensure Code.ensure_loaded?(module) before exported checks or invoke public APIs directly; retain contract assertions"
+    }
+  ],
+  "production_review": "No actionable finding within pure subset; strictdisabled flag, localsetting8, immutable opaque CONNECT metadata, accepted-only tunnelDATA accounting, zeroQPACK, boundedingress and trailerrefusal match design",
+  "observed_evidence": ".audit/m5/g3-pure-green.json64tests0failuresexit0",
+  "remaining_gates": "Fresh isolated/newfile and scoped checks after repair; H3owner/operations/transport/peer/browser NOT REVIEWED and NOT RUN here",
+  "independent_runtime": "NOT RUN;parent build ownership",
+  "review_repair_rounds": 0,
+  "commands_shutdown": "All review commands completed"
+}

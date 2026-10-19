@@ -1,0 +1,52 @@
+==> gaoxy_http3
+Running ExUnit with seed: 119721, max_cases: 4
+
+....
+
+  1) test one separate demand permits application output and requires fresh delivery acknowledgments (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:76
+     missing owner-validated H3 websocket lifetime transition
+     code: {table, key, token, pid, _, lifetime, opening} = websocket_slot()
+     stacktrace:
+       test/operations_test.exs:51: Gaoxy.HTTP.HTTP3.OperationsTest.websocket_slot/0
+       test/operations_test.exs:77: (test)
+
+
+
+  2) test only the owner adopts the requested lifetime once while the opening operation stays finite (Gaoxy.HTTP.HTTP3.OperationsTest)
+     apps/gaoxy_http3/test/operations_test.exs:61
+     missing owner-validated H3 websocket lifetime transition
+     code: {table, key, token, pid, original, lifetime, ref} = websocket_slot()
+     stacktrace:
+       test/operations_test.exs:51: Gaoxy.HTTP.HTTP3.OperationsTest.websocket_slot/0
+       test/operations_test.exs:62: (test)
+
+...........
+
+  3) test ordinary H3 tunnels push, echo and Close with HTTP siblings on the same verified connection (Gaoxy.HTTP.HTTP3.WebSocketNetworkTest)
+     apps/gaoxy_http3/test/websocket_network_test.exs:26
+     Traceback (most recent call last):
+       File "<string>", line 37, in <module>
+         asyncio.run(run())
+         ~~~~~~~~~~~^^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/runners.py", line 196, in run
+         return runner.run(main)
+                ~~~~~~~~~~^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/runners.py", line 119, in run
+         return self._loop.run_until_complete(task)
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^
+       File "/run/current-system/sw/lib/python3.13/asyncio/base_events.py", line 726, in run_until_complete
+         return future.result()
+                ~~~~~~~~~~~~~^^
+       File "<string>", line 18, in run
+         assert client.headers[sid][0].count((b':status',b'200'))==1, client.headers
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     AssertionError: {0: [[(b':status', b'501'), (b'content-length', b'0')]]}
+
+     code: assert exit == 0, output
+     stacktrace:
+       test/websocket_network_test.exs:75: (test)
+
+
+Finished in 2.5 seconds (2.5s async, 0.00s sync)
+18 tests, 3 failures

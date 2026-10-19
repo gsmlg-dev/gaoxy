@@ -9,8 +9,8 @@ The [reviewed plan](../plans/m5-websocket-over-h2-h3.md) defines acceptance.
 | G0 dependency/fixture and peer audit | PASS | Baseline 35 tests/0 failures; root and fixture strict compile exit 0; peer API 3/3 and Elixir API 8/8; Chromium launch PASS, actual WS negotiation NOT RUN |
 | G1 shared handshake/runtime | PASS | Independent SPEC/CODE PASS after H3 identity repair; parent fresh 22 shared tests and 2 ordinary H1 cases, all passing |
 | G2 H2 defaults and WebSocket/h2c | PASS | Independent SPEC/CODE PASS; parent fresh 26 tests plus 2 named contract cases; H2 and h2c each 15/15 ordinary peer cases |
-| G3 H3 WebSocket | IN PROGRESS | Pure preparation 64 tests/0 failures; runtime and independent review pending |
-| G4 Phoenix/vendor/browser integration | NOT RUN | No feature acceptance claimed |
+| G3 H3 WebSocket | PASS | Independent SPEC/CODE re-review PASS; fresh H3 cohort 82/0 within G5 scoped run, independent verified H3 peer 15/15 |
+| G4 Phoenix/vendor/browser integration | IN PROGRESS | Source SPEC/CODE PASS; wrapper 11/0, vendor 3/0, real Phoenix ownership 4/0; browser acceptance pending |
 | G5 compatibility and independent review | NOT RUN | No feature acceptance claimed |
 
 Only ordinary protocol, finite valid network and browser scenarios are in scope.
@@ -73,3 +73,21 @@ client WebSocket bytes, actual post-request-deadline communication and normal
 Close/END_STREAM. Runtime shutdown and zero admission/retained/cleanup counts
 passed. This adds one peer-fixture repair and two failed profile receipts, with
 no H2 production repair. G2 browser/Phoenix acceptance remains G4.
+
+G3 implements native H3 setting 8 opt-in, immutable CONNECT metadata, owner-only
+QUIC I/O, deadline adoption in both owner and Operations, independent bounded
+input demand, and the shared WebSock engine in the existing worker. Independent
+review found one missing activation flag in the actual H3 Exchange. The network
+case now uses the real PlugAdapter upgrade; it failed 1/1 before the production
+repair and passed 1/0 after it. Re-review passed. The pure-test module-loading
+guard repair and its failures also remain preserved.
+
+The first independent H3 peer run failed after 4/15 cases because the fixture
+selected its transport using a request cleared by the shared runtime. It now
+uses the unchanged transport identity shape. Repaired and fresh post-review
+H3 runs passed 15/15, including two WebSocket streams and HTTP siblings on one
+verified connection, idle application push, bounded post-request-deadline
+communication, normal Close/FIN and zero resource/shutdown checks. Fresh G5
+scoped execution contains 82 H3 tests/0 failures. [G3 evidence](evidence/m5/g3/)
+retains all initial failures, repairs and independent review. This adds one
+production review repair and one peer-fixture repair; no Astra recovery.

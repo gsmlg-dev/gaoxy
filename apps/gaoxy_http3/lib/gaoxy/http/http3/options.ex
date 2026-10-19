@@ -10,6 +10,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
     :limits,
     :http_limits,
     :h3_limits,
+    :extended_connect,
     :endpoint,
     :plug
   ]
@@ -39,6 +40,8 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
            (Keyword.keyword?(options) and
               length(options) == map_size(Map.new(options)) and
               Keyword.keys(options) -- @keys == []) || {:error, :invalid_http3_options},
+         extended_connect = Keyword.get(options, :extended_connect, false),
+         true <- is_boolean(extended_connect) || {:error, :invalid_http3_options},
          :ok <- validate_binding(options),
          {:ok, tls} <- credentials(Keyword.get(options, :tls)),
          true <-
@@ -55,7 +58,8 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
            }),
          handler =
            Map.take(normalized, [:endpoint, :http_limits, :initialized])
-           |> Map.put(:h3_limits, h3),
+           |> Map.put(:h3_limits, h3)
+           |> Map.put(:extended_connect, extended_connect),
          :ok <- budget(handler, service_limits),
          {:ok, initialized} <-
            Gaoxy.HTTP.Options.normalize(Map.put(normalized, :initialized, false)) do
