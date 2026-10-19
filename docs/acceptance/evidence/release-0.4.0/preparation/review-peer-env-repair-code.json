@@ -1,0 +1,63 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-peer-env-repair2-code",
+  "status": "PASS",
+  "review_kind": "CODE_REPAIR2",
+  "assignment": "direct independent read-only CODE after SPEC PASS",
+  "source_sha": "4fbd15fe58cfbb67450a060fddf9e1e87bd813e1",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "findings": [],
+  "recipe": {
+    "path": "docs/acceptance/evidence/release-0.4.0/portable/recipe/build.py",
+    "sha256": "4bd496b38ff8ff7c34798f89fc97297d584d8b35b8c60a0eb86ebb4e3f28ec95",
+    "bytes": 11963
+  },
+  "fixture_required_versions": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0"
+  },
+  "unchanged_inputs": [
+    {
+      "path": "integration/websocket_multiplexed/requirements.txt",
+      "sha256": "a935a8b40a4271fb3b19102fd407a96cee8389e0f05d8116707393d5c3a7f25a"
+    },
+    {
+      "path": "apps/gaoxy_http/test/support/h2-requirements.txt",
+      "sha256": "9353ecc28a66d7ac2c74716f54b6195f7021227f4d792b70d39bf16423d58959"
+    },
+    {
+      "path": "integration/http3/requirements.txt",
+      "sha256": "baa71ded2594f376d2ee2772a724b5b3d8be79e37a3b76392a94130e2069a3fb"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py",
+      "sha256": "d4429aa3fe49b9faca2c05bef631ef97cf6ca4f6fe69d350dea71bd147a367f0"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_fixed_fixture.exs",
+      "sha256": "b1c1d7ce20fcd69fbf37f1f805b6f25fe24d7986a897be72f6f4ec73b959e9f5"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/support/managed_h2_group_fixture.exs",
+      "sha256": "9009d7ba27b184d9c8ce0743e40cb610dd20e22b4828abe34fbd299d16f74a42"
+    },
+    {
+      "path": "integration/websocket_multiplexed/run.py",
+      "sha256": "7e15d78cea946105b916d2c83804dd9c432e9f26767f5593cf164f2910ada149"
+    }
+  ],
+  "checks": [
+    "Exact reverse mapping/comment relocation reconstructs baseline build.py byte-for-byte: no other code change.",
+    "Only fixed fixture symlink target changes h2peer to m5peer, now after successful websocket-peer-dependencies command; run() rejects failed installation before symlink creation.",
+    "M5 existing h2/hpack/hyperframe pins equal unchanged fixture guard. Legacy h2peer hpack4.2 environment and all requirement files stay untouched.",
+    "Every run() invocation AST is unchanged. Ordinary commands/selectors/count/assertions, source identity/formatter partition/custody, packaged profiles/smokes, pins and runtime behavior are unchanged.",
+    "Other seven recipe files, fixture/guard inputs and packaged runner are byte-identical to baseline; tracked changes stay within exactly recipe+three release documents. Added failure/review evidence is separate.",
+    "SPEC independently confirmed raw16 guard failures and three lossless archives; failed build remains FAIL, fresh build remains NOT RUN."
+  ],
+  "validation": "Static syntax/AST, exact reverse-diff reconstruction, unchanged Git byte/hash and pin/guard comparisons only; no builds/tests/runtime/browser/network.",
+  "release_sol_repair_round": 2,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; parent/worker processes untouched.",
+  "remaining": "Parent commits fresh source/helper bindings and runs full unchanged ordinary qualification, followed by actual artifact/runtime/notes review. No third recovery implied."
+}

@@ -80,10 +80,10 @@ if phase == "prepare":
     run("test-dependencies", ["mix", "deps.get", "--check-locked"], {"MIX_ENV": "test"})
     run("peer-venv", ["python3", "-m", "venv", "/work/.audit/h2peer"])
     run("peer-dependencies", ["/work/.audit/h2peer/bin/python", "-m", "pip", "install", "-r", "apps/gaoxy_http/test/support/h2-requirements.txt", "-r", "integration/http3/requirements.txt"])
-    # The accepted M3 fixtures use this fixed executable inside the disposable builder.
-    Path("/tmp/gaoxy-m3-h2-soak-venv").symlink_to("/work/.audit/h2peer", target_is_directory=True)
     run("websocket-peer-venv", ["python3", "-m", "venv", "/work/.audit/m5peer"])
     run("websocket-peer-dependencies", ["/work/.audit/m5peer/bin/python", "-m", "pip", "install", "-r", "integration/websocket_multiplexed/requirements.txt"])
+    # M3 fixtures and M5 share hpack 4.1; legacy smokes keep h2peer's hpack 4.2.
+    Path("/tmp/gaoxy-m3-h2-soak-venv").symlink_to("/work/.audit/m5peer", target_is_directory=True)
 
 elif phase == "compile":
     run("canonical-format", ["mix", "format", "--check-formatted"])

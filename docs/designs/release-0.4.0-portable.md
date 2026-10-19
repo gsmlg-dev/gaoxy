@@ -36,7 +36,17 @@ assertions remain intact. Abnormal/disconnect, slow-peer, pressure and sustained
 load scenarios remain in their dedicated environment.
 
 Keep the old H2/H3 smoke peer environment and the separately pinned M5 peer
-environment separate. The packaged WebSocket runner uses public release
+environment separate. The second candidate passed format, strict compilation,
+136 M5 cases and 38 M3 unit cases, then failed 16 of 24 selected network cases
+at the independent peer's unchanged version guard. Its fixed fixture executable
+incorrectly targeted the legacy smoke environment with hpack 4.2.0. Point that
+fixture path at the already pinned M5 environment with h2 4.3.0, hpack 4.1.0 and
+hyperframe 6.1.0, after its successful installation. Preserve both environments,
+all dependency pins, test selectors, assertions and the raw failed receipt.
+This environment repair requires fresh independent SPEC then CODE review and a
+new full ordinary portable build; failed exchanges are not product acceptance.
+
+The packaged WebSocket runner uses public release
 `bin/gaoxy eval` to start the existing embedded fixture with packaged application
 beams. It retains all 15 independent-peer cases, normal Close, resource release
 and runtime DOWN assertions for H2, h2c and H3. It uses no Mix or Phoenix fixture

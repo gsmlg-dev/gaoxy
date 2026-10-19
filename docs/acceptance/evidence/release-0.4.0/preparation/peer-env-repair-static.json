@@ -1,0 +1,71 @@
+{
+  "task_id": "m5_docs_closeout/releaseenvmapping-repair2",
+  "status": "PASS",
+  "completed_at_utc": "2026-10-19T10:41:38.064165+00:00",
+  "assignment": "direct, static-only bounded repair",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline_head": "4fbd15fe58cfbb67450a060fddf9e1e87bd813e1",
+  "recipe_path": "docs/acceptance/evidence/release-0.4.0/portable/recipe/build.py",
+  "baseline_recipe_sha256": "e1c72b3946f9ff687a09b2d15948fea5d008021c00e9c195fd26c5bc3522183f",
+  "repaired_recipe_sha256": "4bd496b38ff8ff7c34798f89fc97297d584d8b35b8c60a0eb86ebb4e3f28ec95",
+  "repaired_recipe_bytes": 11963,
+  "root_cause": "Fixed M3 fixture executable pointed at h2peer with hpack 4.2.0, while the unchanged fixture guard requires 4.1.0.",
+  "repair": "Create fixture symlink to m5peer immediately after successful websocket-peer-dependencies installation; retain separate legacy h2peer.",
+  "fixture_required_versions": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0"
+  },
+  "m5_peer_pins": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0",
+    "aioquic": "1.2.0",
+    "wsproto": "1.2.0",
+    "playwright": "1.56.0"
+  },
+  "legacy_peer_pins": {
+    "h2": "4.3.0",
+    "hpack": "4.2.0",
+    "hyperframe": "6.1.0"
+  },
+  "checks": {
+    "ast_parse": "PASS",
+    "compile_without_execution": "PASS",
+    "minimal_reverse_diff_matches_HEAD": "PASS",
+    "all_run_calls_unchanged": "PASS",
+    "fixture_symlink_follows_successful_m5_install": "PASS",
+    "fixture_guard_equals_m5_requirements": "PASS",
+    "requirements_and_fixture_guard_files_unchanged": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "unchanged_input_files": {
+    "integration/websocket_multiplexed/requirements.txt": {
+      "sha256": "a935a8b40a4271fb3b19102fd407a96cee8389e0f05d8116707393d5c3a7f25a",
+      "unchanged_from_HEAD": true
+    },
+    "apps/gaoxy_http/test/support/h2-requirements.txt": {
+      "sha256": "9353ecc28a66d7ac2c74716f54b6195f7021227f4d792b70d39bf16423d58959",
+      "unchanged_from_HEAD": true
+    },
+    "integration/http3/requirements.txt": {
+      "sha256": "baa71ded2594f376d2ee2772a724b5b3d8be79e37a3b76392a94130e2069a3fb",
+      "unchanged_from_HEAD": true
+    },
+    "apps/gaoxy_proxy/test/support/managed_h2_fixed_peer.py": {
+      "sha256": "d4429aa3fe49b9faca2c05bef631ef97cf6ca4f6fe69d350dea71bd147a367f0",
+      "unchanged_from_HEAD": true
+    }
+  },
+  "execution": {
+    "tests": "NOT RUN",
+    "build": "NOT RUN",
+    "runtime": "NOT RUN",
+    "network": "NOT RUN"
+  },
+  "sol_repair_rounds": 2,
+  "astra_recovery_counter_received": "2/2 exhausted; no Astra used",
+  "commands_finished": true,
+  "background_processes_started": false,
+  "remaining_gate": "Parent independent SPEC then CODE review and fresh execution."
+}

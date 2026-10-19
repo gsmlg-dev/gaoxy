@@ -1,0 +1,75 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-peer-env-repair2-spec",
+  "status": "PASS",
+  "review_kind": "SPEC_REPAIR2",
+  "assignment": "direct independent read-only repair review",
+  "source_sha": "4fbd15fe58cfbb67450a060fddf9e1e87bd813e1",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "findings": [],
+  "root_cause": "Fixed independent M3 fixture executable maps to legacy h2peer hpack4.2.0, while unchanged peer preparation guard requires h2=4.3.0/hpack=4.1.0/hyperframe=6.1.0. Existing m5peer pins match exactly.",
+  "scope": "After successful existing m5peer installation, map only /tmp/gaoxy-m3-h2-soak-venv to m5peer. Retain h2peer for legacy smokes, both requirement files/cohorts, fixture guard, test commands/count/assertions, toolchain and runtime behavior.",
+  "second_attempt_actual": {
+    "status": "FAIL",
+    "m5": {
+      "executed": 136,
+      "failures": 0
+    },
+    "m3_unit": {
+      "executed": 38,
+      "failures": 0
+    },
+    "m3_network": {
+      "defined": 114,
+      "excluded": 90,
+      "executed": 24,
+      "failures": 16,
+      "guard_failure_events": 16
+    },
+    "not_run": [
+      "release/package",
+      "packaged smokes/WS",
+      "final builder unchanged-file check",
+      "offline runtime"
+    ]
+  },
+  "reviewed_docs": [
+    {
+      "path": "docs/designs/release-0.4.0-portable.md",
+      "sha256": "77f01f95e2cfd0b2b8c1e84ca4c70704e4ea593b76d255acaf189cfe9bad4e86"
+    },
+    {
+      "path": "docs/plans/release-0.4.0.md",
+      "sha256": "bbcd175d87ff4f3bfdeb7887544109b35eefe6658e5195bfd9e01008863b4f3b"
+    },
+    {
+      "path": "docs/acceptance/release-0.4.0.md",
+      "sha256": "23893204c785e4fd1224766372eb5402e146f3157abce722fa2d5475647f162d"
+    }
+  ],
+  "preserved_failure_evidence": [
+    {
+      "path": "docs/acceptance/evidence/release-0.4.0/failed-peer-env-1792405393768168873/docker-portable-build.log.gz",
+      "raw_sha256": "9acaec653b09a620c92b2ba638b7aae550c6abab5bb38fb6255c63cc58fc5e77",
+      "stored_sha256": "8391860b6aa5b3800b8198d8aa3e5f9eed97e59ea32d1170408ab28f959c017f",
+      "round_trip": "PASS"
+    },
+    {
+      "path": "docs/acceptance/evidence/release-0.4.0/failed-peer-env-1792405393768168873/host-qualification.json.gz",
+      "raw_sha256": "bd2d587a88c2a9a8d77fcfda17f7a56f690de11126a7d838fc2ee095780e48a3",
+      "stored_sha256": "61df2c3ff4539f741737da1588c93a9e34ea65264a8bf72e75e6aa2229677fb7",
+      "round_trip": "PASS"
+    },
+    {
+      "path": "docs/acceptance/evidence/release-0.4.0/failed-peer-env-1792405393768168873/peer-env-failure-diagnosis.json.gz",
+      "raw_sha256": "fe79216f8d68900f11f14f1350566295968c428c52318908724b0c3872aa6444",
+      "stored_sha256": "9559ff2e7f251f7385735daf7b09b154349b350a840fa3ee7f3ccbc160684fd7",
+      "round_trip": "PASS"
+    }
+  ],
+  "validation": "Static docs/guard/requirements/raw-log review, exact guard-event count, lossless archive/hash checks only. No tests/build/runtime/browser/network.",
+  "code_review": "SPEC PASS recorded before CODE verdict; exact recipe implementation review follows separately.",
+  "release_sol_repair_round": 2,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited 2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; parent/worker processes untouched."
+}

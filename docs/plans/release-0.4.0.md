@@ -62,6 +62,11 @@ and its README for optional paired `--release` / `--source-identity` arguments.
   file, preserve immutable historical snapshots, record both sets/counts and
   keep the unchanged-byte custody check over all archived regular files. Obtain
   fresh independent SPEC then CODE review before the repaired build.
+- [ ] Retain the second failed build: 136 M5 and 38 M3 unit cases passed, while
+  the selected network command executed 24 cases with 16 peer-environment
+  failures and 90 exclusions. Point its fixed fixture executable at the already
+  pinned M5 peer environment after installation, preserving legacy smoke peers,
+  pins and assertions. Review SPEC then CODE and rerun the full ordinary build.
 - [ ] Verify archive bytes against committed source and recipe hashes, then run:
 
 ```sh
