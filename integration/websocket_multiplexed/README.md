@@ -127,6 +127,24 @@ versions, per-case outcomes, negotiated protocol, server events and shutdown
 results are recorded. Fixture preparation/offline checks alone are not runtime
 acceptance.
 
+## Packaged native WebSocket runner
+
+For each `h2`, `h2c` or `h3` profile, supply the exported release executable and
+its checked source identity together:
+
+```sh
+.audit/m5peer/bin/python integration/websocket_multiplexed/run.py --protocol h3 \
+  --release /path/to/extracted/bin/gaoxy --source-identity /path/to/source-identity.json \
+  --evidence .audit/release-0.4.0/packaged-h3
+```
+
+This starts the existing native fixture through `bin/gaoxy eval`, using packaged
+applications and the same 15 ordinary cases, Close and cleanup assertions. It
+needs no Mix, development beams, Phoenix, Git checkout or browser. The receipt
+checks the release version and records immutable source/archive/lock identities
+and the executable hash. This is a trusted embedded native Endpoint fixture;
+it does not activate WebSockets through standalone JSON configuration.
+
 ## H3 peer preparation
 
 `h3_peer.py` exposes the same synchronous

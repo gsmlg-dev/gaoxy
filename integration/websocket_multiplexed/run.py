@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Run only the ordinary native multiplexed WebSocket profiles selected here."""
 import argparse
+import base64
 import datetime
 import hashlib
 import importlib.metadata
@@ -8,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import queue
+import re
 import signal
 import ssl
 import subprocess
@@ -28,7 +30,21 @@ def capture(command):
     return result.stdout
 
 
-def source_receipt():
+def source_receipt(release=None, source_identity=None):
+    if release is not None:
+        identity_bytes = source_identity.read_bytes()
+        identity = json.loads(identity_bytes)
+        assert re.fullmatch(r"[0-9a-f]{40}", identity["source_sha"])
+        for field in ("source_archive_sha256", "root_lock_sha256"):
+            assert re.fullmatch(r"[0-9a-f]{64}", identity[field]), field
+        version = capture([str(release), "version"]).strip()
+        assert version == f"gaoxy {identity['version']}", version
+        return {
+            "mode": "packaged_release", "identity": identity,
+            "source_identity_sha256": hashlib.sha256(identity_bytes).hexdigest(),
+            "release": {"path": str(release), "version": version,
+                        "sha256": hashlib.sha256(release.read_bytes()).hexdigest()},
+        }
     paths = sorted(ROOT.glob("apps/*/lib/**/*.ex"))
     paths += sorted((ROOT / "integration/websocket_multiplexed").glob("*"))
     paths += [ROOT / "mix.lock", ROOT / "flake.lock", ROOT / "examples/phoenix_native/mix.lock"]
@@ -43,10 +59,15 @@ def source_receipt():
 
 
 class Fixture:
-    def __init__(self, protocol, evidence, certificate, key):
+    def __init__(self, protocol, evidence, certificate, key, release=None):
         self.events, self.all_events = queue.Queue(), []
         self.log = (evidence / "fixture.log").open("w")
         self.command = ["unbuffer", "-p", "mix", "run", "--no-compile", "integration/websocket_multiplexed/fixture.exs"]
+        if release is not None:
+            fixture = base64.b64encode(str(ROOT / "integration/websocket_multiplexed/fixture.exs").encode()).decode()
+            expression = ('{:ok, _} = Application.ensure_all_started(:gaoxy_http3); '
+                          f'Code.require_file(Base.decode64!("{fixture}"))')
+            self.command = [str(release), "eval", expression]
         environment = dict(os.environ, MIX_ENV="test", ERL_FLAGS="+S 2:2",
                            GAOXY_M5_PROTOCOL=protocol, GAOXY_M5_CERT=str(certificate), GAOXY_M5_KEY=str(key))
         self.process = subprocess.Popen(self.command, cwd=ROOT, env=environment, stdin=subprocess.PIPE,
@@ -142,13 +163,24 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--protocol", choices=["h2", "h2c", "h3"], required=True)
     parser.add_argument("--evidence", type=Path, required=True)
+    parser.add_argument("--release", type=Path)
+    parser.add_argument("--source-identity", type=Path)
     args = parser.parse_args()
+    if (args.release is None) != (args.source_identity is None):
+        parser.error("--release and --source-identity must be supplied together")
+    if args.release is not None:
+        args.release = args.release.resolve()
+        args.source_identity = args.source_identity.resolve()
+        if not args.release.is_file() or not os.access(args.release, os.X_OK):
+            parser.error("--release must name an executable release bin/gaoxy")
+        if not args.source_identity.is_file():
+            parser.error("--source-identity must name the qualified source identity JSON")
     evidence = args.evidence.resolve() / f"run-{time.time_ns()}"
     evidence.mkdir(parents=True)
     report = {
         "status": "FAIL", "protocol": args.protocol, "required_cases": list(REQUIRED_CASES),
         "cases": [], "started_utc": datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        "runner_command": [sys.executable, *sys.argv], "source": source_receipt(),
+        "runner_command": [sys.executable, *sys.argv], "source": source_receipt(args.release, args.source_identity),
         "environment": {"python": sys.version, "executable": sys.executable, "openssl": ssl.OPENSSL_VERSION,
                         "MIX_ENV": "test", "ERL_FLAGS": "+S 2:2"},
         "peer_versions": {name: importlib.metadata.version(name) for name in
@@ -166,7 +198,7 @@ def main():
         (evidence / "certificate-generation.log").write_text(generated.stdout + generated.stderr)
         report["certificate_command"] = command
         assert generated.returncode == 0, generated.stderr
-        fixture = Fixture(args.protocol, evidence, certificate, key)
+        fixture = Fixture(args.protocol, evidence, certificate, key, args.release)
         report["fixture_command"] = fixture.command
         ready = fixture.event("ready", timeout=30)
         assert ready["protocol"] == args.protocol, ready
@@ -190,6 +222,9 @@ def main():
                 report["status"] = "FAIL"
                 report["shutdown_error"] = repr(error)
             (evidence / "fixture-events.json").write_text(json.dumps(fixture.all_events, indent=2) + "\n")
+        if args.release is not None:
+            key.unlink(missing_ok=True)
+            report["ephemeral_key_removed"] = True
         executed = {row["name"] for row in report["cases"]}
         report["executed"] = len(executed)
         report["not_run"] = sorted(set(REQUIRED_CASES) - executed)
