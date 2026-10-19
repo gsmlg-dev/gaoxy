@@ -1,5 +1,34 @@
 # Gaoxy agent instructions
 
+## Current M3 acceptance and local merge scope — 2026-10-19
+
+The user accepts M3 as **COMPLETE within the implemented product functionality
+and ordinary verification scope** and authorizes merging the existing local
+implementation into local `main`. This current decision supersedes older
+`WholeTask6/Task5/M3 OPEN` dispositions and automatic progression instructions
+for exceptional, slow-peer, pressure, sustained-load and combined qualification
+slices. Stop executing or extending those slices in this work; transfer their
+remaining validation to a dedicated specialist test environment. Their failed,
+blocked and unexecuted results retain their actual status and are no longer
+blockers for this local merge. Preserve all historical evidence and assertions;
+this acceptance does not implement any absent capability or certify those tests.
+
+The sole-native-H1 blocked-upload disconnect slice has not established a product
+defect: its executed case failed during fixture setup before request creation,
+and the subsequent test-only `Code.require_file` fix has not been rerun. Do not
+continue that slice or include it as part of this implementation. Keep its
+source and evidence preserved separately from the accepted implementation.
+
+Complete ordinary fresh merge verification and local integration under this
+scope. This authorization adds no push, release, package/image publication or
+deployment permission. Historical v0.3.0 publication is separate from the new
+local M3 implementation. Existing production-data/certificate, Vault,
+public-management and disabled release-artifact E2E restrictions remain intact.
+See [M3 completion](docs/acceptance/m3-completion.md) for accepted functionality,
+historical evidence and the fresh ordinary merge verification.
+
+## Historical instructions — retained below
+
 ## Reviewed M3 disposition and release authorization — 2026-10-11
 
 The user reviewed `gsmlg-dev/http_fetch#97` and excluded its requested proof as

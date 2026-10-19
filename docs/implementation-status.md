@@ -1,3 +1,32 @@
+## Current M3 acceptance and local merge — 2026-10-19
+
+**M3: ACCEPTED COMPLETE** within the user's existing product-functionality and
+ordinary-verification scope. Local implementation through
+`88799ae316e7195ae42656b228edfea2aaa115ed` includes the H1 resource foundation,
+managed H1/H2 fixed/group upstreams and probes, resource-accounted checked
+Generations/reloads and the implemented streaming compatibility. The
+[M3 completion ledger](acceptance/m3-completion.md) links the actual stage counts,
+source identities and remaining limitations. Earlier prepared-only Task4 and
+whole-M3 OPEN statements below are historical snapshots superseded by this
+current acceptance; unsupported or unimplemented capabilities remain so.
+
+Further exceptional/disconnect, slow-peer, pressure, sustained-load and combined
+qualification belongs in a dedicated specialist test environment and is outside
+this local integration. Its FAIL/BLOCKED/NOT RUN outcomes stay visible and no
+longer block the merge. Stop automatic execution of those slices. The sole-H1
+blocked-upload disconnect probe established only a fixture setup failure before
+request creation; the test-only require fix has not been rerun. No product defect
+or repair acceptance is claimed, and that slice is excluded from this integration.
+
+**Fresh ordinary candidate verification: PASS (62 executed tests, 0 failures). Local main merge: PENDING.** The
+current authorization permits local integration only, with no new push, release
+or deployment permission. The already published v0.3.0 source/artifacts below
+remain distinct from the new local implementation. Existing production-data,
+certificate, Vault, public-management and disabled release-artifact E2E
+restrictions remain intact.
+
+## Historical status records — preserved below
+
 # Implementation status
 
 ## M4 final implementation verification — 2026-10-13

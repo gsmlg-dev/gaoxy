@@ -1,3 +1,40 @@
+## Current M3 acceptance and upstream plan disposition — 2026-10-19
+
+The user accepts **M3 COMPLETE within the implemented product functionality and
+ordinary verification scope** and requests local integration into `main`.
+Managed H1/H2 fixed/group upstreams, probes, their resource-accounting/checked
+Generation integration and implemented streaming behavior have their actual
+local stage acceptance records; see [M3 completion](../acceptance/m3-completion.md).
+The accepted implementation extends through
+`88799ae316e7195ae42656b228edfea2aaa115ed`. This disposition does not implement
+additional capabilities or expand any historical test result.
+
+Stop automatic progression/execution of exceptional/disconnect, slow-peer,
+pressure, sustained-load and combined qualification slices. Remaining work in
+those categories moves to a dedicated specialist test environment and is not a
+blocker for this merge. Earlier `WholeTask6/Task5/M3 OPEN` and next-slice execution
+instructions below are preserved historical scope. All FAIL/BLOCKED/NOT RUN
+outcomes, raw evidence, assertions and repair counters remain unchanged.
+
+The sole-H1 blocked-upload disconnect slice is excluded from this implementation
+and will not continue here. Its first probe ran zero tests during environment
+preparation timeout; its next probe executed one case with one fixture setup
+failure before request creation. A test-only require fix is present but unrerun;
+no genuine protocol RED, established product defect or production repair follows.
+
+Fresh ordinary candidate verification is **PASS** (strict compile, 62 executed tests/0 failures). Local main merge and post-merge verification remain **PENDING** in the completion ledger. Local integration is authorized; no new push/release/deployment
+permission follows. Historical v0.3.0 publication and all existing production,
+certificate, Vault, public-management and disabled release-artifact E2E
+restrictions remain separate.
+
+## Historical upstream checkpoints — preserved below
+
+## Actual native-H1 response-pressure closure and next upload-close slice — 2026-10-18
+
+The response-pressure slice is **DONE LOCALLY** at `88799ae316e7195ae42656b228edfea2aaa115ed`; actual postcommit custody SHA256 `a178adfcfbd61e07aaf56329024908a2b3d43a527d63f277e3177e2d74079845` verifies486 task files,405 source pins,14 documents,12 installed dependencies and885 committed/disk union files. Required runtime/static gates and final implementation/document SPEC/CODE passed. The sole native-H1 blocked-upload disconnect preparation and earlier WholeTask6/Task5/M3 OPEN disposition are historical; the [2026-10-19 completion decision](../acceptance/m3-completion.md) accepts M3 and transfers remaining specialist validation outside this local merge. Unmerged drafts and diagnostics remain preserved in the original worktree.
+
+## Historical checkpoints — byte-preserved below
+
 ## Current native-H1 response-pressure qualification — 2026-10-18
 
 The bounded native-H1 response-write-pressure slice is **RUNTIME QUALIFIED; final fact/document review and actual local commit/postcommit custody are pending**. Final implementation SPEC1 and CODE1 passed with no remaining findings. The repaired cohort is source candidate14, based on `fb7d0fda2b7c16c42c65579736dc1f643e17d812`, with405 source pins,11 entry-document pins and12 installed dependency pins. This checkpoint claims no actual local commit, custody PASS or slice closure. WholeTask6/Task5/M3 remain **OPEN**.

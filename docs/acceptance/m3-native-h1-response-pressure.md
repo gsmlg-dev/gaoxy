@@ -1,3 +1,9 @@
+## Completed native-H1 response-pressure slice and M3 acceptance — 2026-10-19
+
+The response-pressure slice is **DONE LOCALLY** at `88799ae316e7195ae42656b228edfea2aaa115ed`; actual postcommit custody SHA256 `a178adfcfbd61e07aaf56329024908a2b3d43a527d63f277e3177e2d74079845` verifies486 task files,405 source pins,14 documents,12 installed dependencies and885 committed/disk union files. Required runtime/static gates and final implementation/document SPEC/CODE passed. The [current M3 acceptance](m3-completion.md) records the user-approved completion and local integration scope. The sole-H1 blocked-upload disconnect draft and remaining exceptional/pressure validation are deferred to a dedicated specialist environment; they are not merge blockers or automatic follow-up work.
+
+## Historical checkpoints — byte-preserved below
+
 # Native-H1 response-write-pressure acceptance
 
 The bounded native-H1 response-write-pressure slice is **RUNTIME QUALIFIED; final fact/document review and actual local commit/postcommit custody are pending**. Final implementation SPEC1 and CODE1 passed with no remaining findings. The repaired cohort is source candidate14, based on `fb7d0fda2b7c16c42c65579736dc1f643e17d812`, with405 source pins,11 entry-document pins and12 installed dependency pins. This checkpoint claims no actual local commit, custody PASS or slice closure. WholeTask6/Task5/M3 remain **OPEN**.
