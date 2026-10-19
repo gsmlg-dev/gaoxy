@@ -589,17 +589,24 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     request = %{entry.request | peer: state.metadata[:remote], local: state.metadata[:local]}
     ended = entry.recv_fin and entry.input == <<>>
     trailers = if ended, do: entry.trailers, else: []
+    limits = Map.put(state.options.http_limits, :max_write_chunk, 16_384)
+
+    limits =
+      if request.protocol == "websocket" do
+        Map.merge(limits, %{
+          extended_connect: state.options.extended_connect,
+          websocket_limits: Map.take(state.connection.limits, [:max_state, :max_bytes])
+        })
+      else
+        limits
+      end
 
     %Exchange{
       request: request,
       gate: state.connection.gate,
       lease: lease,
       deadline: entry.deadline,
-      limits:
-        state.options.http_limits
-        |> Map.put(:max_write_chunk, 16_384)
-        |> Map.put(:extended_connect, state.options.extended_connect)
-        |> Map.put(:websocket_limits, Map.take(state.connection.limits, [:max_state, :max_bytes])),
+      limits: limits,
       body: %{
         phase: if(ended, do: :done, else: :data),
         total: 0,

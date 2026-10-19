@@ -1,0 +1,103 @@
+#0 building with "default" instance using docker driver
+
+#1 [internal] load build definition from Dockerfile
+#1 transferring dockerfile: 1.54kB done
+#1 DONE 0.0s
+
+#2 [internal] load metadata for docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#3 DONE 0.0s
+
+#4 [context repair] load .dockerignore
+#4 transferring repair: 2B done
+#4 DONE 0.0s
+
+#5 [context diagnostic] load .dockerignore
+#5 transferring diagnostic: 2B 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load .dockerignore
+#6 transferring context: 2B done
+#6 DONE 0.0s
+
+#7 [context repair] load from client
+#7 DONE 0.0s
+
+#8 [context diagnostic] load from client
+#8 DONE 0.0s
+
+#9 [builder  1/15] FROM docker.io/hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb
+#9 DONE 0.0s
+
+#10 [rust 1/1] FROM docker.io/library/rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97
+#10 DONE 0.0s
+
+#11 [internal] load build context
+#11 transferring context: 143B done
+#11 DONE 0.0s
+
+#8 [context diagnostic] load from client
+#8 transferring diagnostic: 62B done
+#8 DONE 0.0s
+
+#12 [builder 13/15] RUN python3 /tools/build.py compile
+#12 CACHED
+
+#13 [builder  5/15] RUN git init /opt/elixir && cd /opt/elixir && git remote add origin https://github.com/elixir-lang/elixir.git && git fetch --depth 1 origin dfe6612e546cec6557900e67651f7d21805472ef && git checkout --detach FETCH_HEAD && test "$(git rev-parse HEAD)" = dfe6612e546cec6557900e67651f7d21805472ef && make compile
+#13 CACHED
+
+#14 [builder 11/15] COPY ordinary-scope.json /tools/ordinary-scope.json
+#14 CACHED
+
+#15 [builder 14/15] COPY --from=diagnostic instrument.exs run.py /diagnostic/
+#15 CACHED
+
+#16 [builder  6/15] WORKDIR /work
+#16 CACHED
+
+#17 [builder  8/15] COPY source-identity.json /tools/source-identity.json
+#17 CACHED
+
+#18 [builder 10/15] COPY build.py /tools/build.py
+#18 CACHED
+
+#19 [builder  4/15] RUN apt-get update && apt-get install -y --no-install-recommends build-essential ca-certificates git curl openssl pkg-config python3 python3-venv file binutils && rm -rf /var/lib/apt/lists/*
+#19 CACHED
+
+#20 [builder  2/15] COPY --from=rust /usr/local/cargo /usr/local/cargo
+#20 CACHED
+
+#21 [builder 12/15] RUN python3 /tools/build.py prepare
+#21 CACHED
+
+#22 [builder  9/15] RUN tar -xf /tools/source.tar -C /work
+#22 CACHED
+
+#23 [builder  3/15] COPY --from=rust /usr/local/rustup /usr/local/rustup
+#23 CACHED
+
+#24 [builder  7/15] COPY source.tar /tools/source.tar
+#24 CACHED
+
+#25 [builder 15/15] RUN python3 /diagnostic/run.py
+#25 CACHED
+
+#7 [context repair] load from client
+#7 transferring repair: 114.20kB 0.0s done
+#7 DONE 0.0s
+
+#26 [repaired 1/2] COPY --from=repair / /repair/
+#26 DONE 0.1s
+
+#27 [repaired 2/2] RUN python3 /repair/run.py
+#27 64.02 {"status": "PASS", "kind": "BOUNDED_REPAIR_SNAPSHOT_NOT_RELEASE_ARTIFACT", "baseline_source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94", "started_utc": "2026-10-19T11:14:13.911520+00:00", "regression_red": {"status": "EXPECTED_FAILURE_REPRODUCED", "counts": [{"defined": 2, "excluded": 1, "executed": 1, "failures": 1}, {"defined": 9, "excluded": 8, "executed": 1, "failures": 1}], "product_result": "FAIL before production overlay"}, "executed": 200, "excluded": 90, "completed_utc": "2026-10-19T11:15:17.593308+00:00"}
+#27 DONE 64.1s
+
+#28 [repair-evidence 1/1] COPY --from=repaired /repair-evidence/ /
+#28 DONE 0.0s
+
+#29 exporting to client directory
+#29 copying files 16.15kB done
+#29 DONE 0.0s

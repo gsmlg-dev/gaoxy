@@ -1,6 +1,6 @@
 # Gaoxy v0.4.0 release acceptance
 
-Date: 2026-10-19. **PREPARING; two build attempts failed; publication NOT RUN.** The user
+Date: 2026-10-19. **PREPARING; three build attempts failed; publication NOT RUN.** The user
 explicitly authorizes commit/main integration/push/GitHub release following M5.
 [Release plan](../plans/release-0.4.0.md) and
 [portable design](../designs/release-0.4.0-portable.md) define ordinary-only gates.
@@ -13,8 +13,9 @@ explicitly authorizes commit/main integration/push/GitHub release following M5.
 | Independent source/recipe review | PASS: SPEC then CODE, no actionable findings; static review only |
 | Formatter repair review | PASS: fresh SPEC then CODE; full identity and all-file custody retained |
 | Peer-environment repair review | PASS: fresh SPEC then CODE; matching environment with pins/assertions unchanged |
-| Frozen committed source and main integration | PASS for candidates 4dd24f2 and 4fbd15f; next repair pending |
-| Portable builder / package metadata / checksums | FAIL: initial formatter scope; second attempt peer-environment guard; repaired build NOT RUN |
+| Ordinary H2 group compatibility repair | SPEC/CODE/result review PASS; cached test-only RED reproduced both regressions, then repaired ordinary 200/0 with 90 deselections |
+| Frozen committed source and main integration | PASS through candidate 9253b78; reviewed compatibility repair awaits commit and fresh artifact qualification |
+| Portable builder / package metadata / checksums | FAIL: formatter scope, peer-environment guard, then two ordinary H2 group cases; next repaired build NOT RUN |
 | Packaged WS / existing smokes / offline runtime / ELF | NOT RUN |
 | Independent actual artifact/runtime/notes review | NOT RUN |
 | Push / annotated tag / GitHub release | NOT RUN |
@@ -52,6 +53,40 @@ builder source custody and offline runtime were NOT RUN in that attempt.
 The failed build remains FAIL with peer-environment classification; its raw log,
 host receipt and diagnosis are archived losslessly under
 `evidence/release-0.4.0/failed-peer-env-1792405393768168873/`.
+
+Third candidate `9253b787b57b768682bb4d894f25ca82919c0a94` passed archive/Git
+custody for 21,762 regular files, both format checks, strict production compile,
+M5 136/0 and M3 unit 38/0. The network command executed 24 cases with 2 failures
+and 90 exclusions; all independent-peer version guards passed. Only ordinary
+H2 downstream requests through the H2/h2c managed group returned 503 instead of
+200. Static tracing identifies newly attached WebSocket-only configuration in
+ordinary Exchange limits, rejected by the unchanged strict group-accounting
+grammar. A same-builder diagnostic reproduced only the four existing positive
+group cases: 28 defined, 24 excluded, 4 executed and the same 2 failures. The
+unaltered validator accepted H1's 14 integer limits and rejected H2's 16-field
+map containing the two WebSocket fields; tracing reported zero unmatched calls
+and the temporary test helper was restored byte-for-byte. Independent diagnostic
+review confirms the cause, while product tests retain FAIL. The bounded H2/H3
+Exchange repair keeps ordinary limits and strict accounting unchanged, retaining
+WebSocket metadata only on actual WebSocket requests. Two regressions in already
+selected files increase the next M5 scope to 138 (55 HTTP + 83 H3), and the full
+next ordinary scope to 200 with the original 90 network deselections.
+Packaging, packaged smokes/WebSocket, final builder custody and offline runtime
+were NOT RUN. Raw failure, host receipt and initial diagnosis remain losslessly
+preserved under `evidence/release-0.4.0/failed-group-1792406728693375161/`.
+
+The bounded repair snapshot passed independent SPEC then CODE review before
+execution. In the cached pinned builder, only the two new tests were first
+overlaid on the original production files: each executed once and failed at
+its ordinary-limit equality assertion (exit 2), confirming both regressions.
+After overlaying the two reviewed production files, formatting, strict
+production compilation and the unchanged ordinary selectors passed: M5 138/0,
+M3 units 38/0 and M3 network 24/0 with 90 deselections, 200 executed in total.
+Independent executed-result review passed. Raw streams, frozen input snapshot,
+commands, hashes and all three reviews are archived losslessly under
+`evidence/release-0.4.0/group-compat-repair3/`.
+This snapshot check is separate from the next frozen-source portable build;
+it grants no artifact, offline-runtime or publication acceptance.
 
 Embedded managed H1/H2 and native WebSocket capability does not imply JSON schema
 activation. Packaged WebSocket checks use public embedded release evaluation,

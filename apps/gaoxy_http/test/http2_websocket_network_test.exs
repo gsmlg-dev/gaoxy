@@ -89,6 +89,56 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
     assert :ok = Gaoxy.stop(server)
   end
 
+  defmodule LimitsEndpoint do
+    def init(options), do: {:ok, options}
+
+    def call(exchange, {owner, enabled}) do
+      send(owner, {:ordinary_limits, enabled, exchange.limits})
+      Gaoxy.HTTP.Response.send_resp(exchange, 200, [], "ordinary")
+    end
+  end
+
+  test "ordinary h2c exchanges keep native limits with extended CONNECT enabled or disabled" do
+    for enabled <- [false, true] do
+      options = [
+        endpoint: {LimitsEndpoint, {self(), enabled}},
+        protocols: [:http2],
+        h2c: :prior_knowledge,
+        extended_connect: enabled
+      ]
+
+      assert {:ok, spec} = Gaoxy.HTTP.service_spec(options)
+      assert {:ok, server} = Gaoxy.HTTP.start_link(options)
+      on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+      assert {:ok, {_, port}} = Gaoxy.info(server, :http).local
+
+      assert {:ok, socket} =
+               :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], 2_000)
+
+      on_exit(fn -> :gen_tcp.close(socket) end)
+      :ok = :gen_tcp.send(socket, ["PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", frame(4, 0, 0, "")])
+      {4, 0, 0, _settings} = next(socket, 4, 0)
+      :ok = :gen_tcp.send(socket, frame(4, 1, 0, ""))
+
+      :ok =
+        send_headers(socket, 1, 5, [
+          {":method", "GET"},
+          {":scheme", "http"},
+          {":authority", "localhost"},
+          {":path", "/ordinary"}
+        ])
+
+      {1, _, 1, block} = next(socket, 1, 1)
+      assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(0))
+      assert {":status", "200"} in fields
+      assert {0, 1, 1, "ordinary"} = next(socket, 0, 1)
+      assert_receive {:ordinary_limits, ^enabled, limits}
+      assert limits == Map.put(spec.handler_options.http_limits, :max_write_chunk, 16_384)
+      :ok = :gen_tcp.close(socket)
+      assert :ok = Gaoxy.stop(server)
+    end
+  end
+
   defp send_headers(socket, stream, flags, fields) do
     {block, _} = HPAX.encode(:never_store, fields, HPAX.new(0))
     :gen_tcp.send(socket, frame(1, flags, stream, block))

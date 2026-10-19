@@ -1287,12 +1287,17 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     id = stream.id
     token = stream.token
 
+    limits =
+      if stream.request.protocol == "websocket",
+        do: state.limits,
+        else: Map.drop(state.limits, [:extended_connect, :websocket_limits])
+
     exchange = %Exchange{
       request: stream.request,
       gate: state.gate,
       lease: lease,
       deadline: stream.deadline,
-      limits: Map.put(state.limits, :max_write_chunk, 16_384),
+      limits: Map.put(limits, :max_write_chunk, 16_384),
       body: %{
         phase: if(stream.initial_eof, do: :done, else: :data),
         total: 0,

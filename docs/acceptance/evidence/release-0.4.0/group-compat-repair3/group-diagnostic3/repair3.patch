@@ -1,0 +1,177 @@
+diff --git a/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex b/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
+--- a/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
++++ b/apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex
+@@ -1287,12 +1287,17 @@
+     id = stream.id
+     token = stream.token
+ 
++    limits =
++      if stream.request.protocol == "websocket",
++        do: state.limits,
++        else: Map.drop(state.limits, [:extended_connect, :websocket_limits])
++
+     exchange = %Exchange{
+       request: stream.request,
+       gate: state.gate,
+       lease: lease,
+       deadline: stream.deadline,
+-      limits: Map.put(state.limits, :max_write_chunk, 16_384),
++      limits: Map.put(limits, :max_write_chunk, 16_384),
+       body: %{
+         phase: if(stream.initial_eof, do: :done, else: :data),
+         total: 0,
+diff --git a/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex b/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
+--- a/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
++++ b/apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex
+@@ -589,17 +589,24 @@
+     request = %{entry.request | peer: state.metadata[:remote], local: state.metadata[:local]}
+     ended = entry.recv_fin and entry.input == <<>>
+     trailers = if ended, do: entry.trailers, else: []
++    limits = Map.put(state.options.http_limits, :max_write_chunk, 16_384)
++
++    limits =
++      if request.protocol == "websocket" do
++        Map.merge(limits, %{
++          extended_connect: state.options.extended_connect,
++          websocket_limits: Map.take(state.connection.limits, [:max_state, :max_bytes])
++        })
++      else
++        limits
++      end
+ 
+     %Exchange{
+       request: request,
+       gate: state.connection.gate,
+       lease: lease,
+       deadline: entry.deadline,
+-      limits:
+-        state.options.http_limits
+-        |> Map.put(:max_write_chunk, 16_384)
+-        |> Map.put(:extended_connect, state.options.extended_connect)
+-        |> Map.put(:websocket_limits, Map.take(state.connection.limits, [:max_state, :max_bytes])),
++      limits: limits,
+       body: %{
+         phase: if(ended, do: :done, else: :data),
+         total: 0,
+diff --git a/apps/gaoxy_http/test/http2_websocket_network_test.exs b/apps/gaoxy_http/test/http2_websocket_network_test.exs
+--- a/apps/gaoxy_http/test/http2_websocket_network_test.exs
++++ b/apps/gaoxy_http/test/http2_websocket_network_test.exs
+@@ -89,6 +89,53 @@
+     assert :ok = Gaoxy.stop(server)
+   end
+ 
++  defmodule LimitsEndpoint do
++    def init(options), do: {:ok, options}
++
++    def call(exchange, {owner, enabled}) do
++      send(owner, {:ordinary_limits, enabled, exchange.limits})
++      Gaoxy.HTTP.Response.send_resp(exchange, 200, [], "ordinary")
++    end
++  end
++
++  test "ordinary h2c exchanges keep native limits with extended CONNECT enabled or disabled" do
++    for enabled <- [false, true] do
++      options = [
++        endpoint: {LimitsEndpoint, {self(), enabled}},
++        protocols: [:http2],
++        h2c: :prior_knowledge,
++        extended_connect: enabled
++      ]
++
++      assert {:ok, spec} = Gaoxy.HTTP.service_spec(options)
++      assert {:ok, server} = Gaoxy.HTTP.start_link(options)
++      on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
++      assert {:ok, {_, port}} = Gaoxy.info(server, :http).local
++      assert {:ok, socket} = :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], 2_000)
++      on_exit(fn -> :gen_tcp.close(socket) end)
++      :ok = :gen_tcp.send(socket, ["PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", frame(4, 0, 0, "")])
++      {4, 0, 0, _settings} = next(socket, 4, 0)
++      :ok = :gen_tcp.send(socket, frame(4, 1, 0, ""))
++
++      :ok =
++        send_headers(socket, 1, 5, [
++          {":method", "GET"},
++          {":scheme", "http"},
++          {":authority", "localhost"},
++          {":path", "/ordinary"}
++        ])
++
++      {1, _, 1, block} = next(socket, 1, 1)
++      assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(0))
++      assert {":status", "200"} in fields
++      assert {0, 1, 1, "ordinary"} = next(socket, 0, 1)
++      assert_receive {:ordinary_limits, ^enabled, limits}
++      assert limits == Map.put(spec.handler_options.http_limits, :max_write_chunk, 16_384)
++      :ok = :gen_tcp.close(socket)
++      assert :ok = Gaoxy.stop(server)
++    end
++  end
++
+   defp send_headers(socket, stream, flags, fields) do
+     {block, _} = HPAX.encode(:never_store, fields, HPAX.new(0))
+     :gen_tcp.send(socket, frame(1, flags, stream, block))
+diff --git a/apps/gaoxy_http3/test/websocket_test.exs b/apps/gaoxy_http3/test/websocket_test.exs
+--- a/apps/gaoxy_http3/test/websocket_test.exs
++++ b/apps/gaoxy_http3/test/websocket_test.exs
+@@ -1,6 +1,6 @@
+ defmodule Gaoxy.HTTP.HTTP3.WebSocketTest do
+   use ExUnit.Case, async: true
+-  alias Gaoxy.HTTP.HTTP3.{Headers, Options, Protocol}
++  alias Gaoxy.HTTP.HTTP3.{Connection, Headers, Options, Protocol}
+   alias QuicHttp3.{Control, Frame, Qpack, Settings, Varint}
+ 
+   @http %{
+@@ -72,6 +72,53 @@
+     apply(Protocol, :websocket_open, [state, key])
+   end
+ 
++  test "exchange limits keep WebSocket settings only for actual WebSocket requests" do
++    ordinary = [
++      {":method", "GET"},
++      {":scheme", "https"},
++      {":authority", "example.test"},
++      {":path", "/ordinary"}
++    ]
++
++    for enabled <- [false, true] do
++      assert {:ok, spec} = Options.normalize(service_options() ++ [extended_connect: enabled])
++      assert_receive :initialized
++      requests = if enabled, do: [ordinary, @fields], else: [ordinary]
++
++      for fields <- requests do
++        assert {:ok, state} =
++                 Connection.init(
++                   %{gate: self(), limits: spec.limits},
++                   %{remote: {{127, 0, 0, 1}, 1234}, local: {{127, 0, 0, 1}, 4321}},
++                   spec.handler_options
++                 )
++
++        key = make_ref()
++        assert {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
++
++        assert {:ok, protocol, [{:headers, ^key, request}]} =
++                 Protocol.feed(state.protocol, key, head(fields))
++
++        entry = %{state.streams[key] | request: request}
++        state = %{state | protocol: protocol, streams: Map.put(state.streams, key, entry)}
++        exchange = Connection.exchange(state, key, make_ref())
++        native = Map.put(spec.handler_options.http_limits, :max_write_chunk, 16_384)
++
++        if request.protocol == "websocket" do
++          assert exchange.limits ==
++                   Map.merge(native, %{
++                     extended_connect: true,
++                     websocket_limits: Map.take(spec.limits, [:max_state, :max_bytes])
++                   })
++        else
++          assert exchange.limits == native
++        end
++
++        assert :ok = Connection.terminate(:test_complete, state)
++      end
++    end
++  end
++
+   test "listener option is strict, defaults disabled, and reaches the H3 handler" do
+     assert {:ok, disabled} = Options.normalize(service_options())
+     assert Map.get(disabled.handler_options, :extended_connect, :missing) == false

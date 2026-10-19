@@ -1,6 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.WebSocketTest do
   use ExUnit.Case, async: true
-  alias Gaoxy.HTTP.HTTP3.{Headers, Options, Protocol}
+  alias Gaoxy.HTTP.HTTP3.{Connection, Headers, Options, Protocol}
   alias QuicHttp3.{Control, Frame, Qpack, Settings, Varint}
 
   @http %{
@@ -70,6 +70,53 @@ defmodule Gaoxy.HTTP.HTTP3.WebSocketTest do
            "missing accepted H3 tunnel transition"
 
     apply(Protocol, :websocket_open, [state, key])
+  end
+
+  test "exchange limits keep WebSocket settings only for actual WebSocket requests" do
+    ordinary = [
+      {":method", "GET"},
+      {":scheme", "https"},
+      {":authority", "example.test"},
+      {":path", "/ordinary"}
+    ]
+
+    for enabled <- [false, true] do
+      assert {:ok, spec} = Options.normalize(service_options() ++ [extended_connect: enabled])
+      assert_receive :initialized
+      requests = if enabled, do: [ordinary, @fields], else: [ordinary]
+
+      for fields <- requests do
+        assert {:ok, state} =
+                 Connection.init(
+                   %{gate: self(), limits: spec.limits},
+                   %{remote: {{127, 0, 0, 1}, 1234}, local: {{127, 0, 0, 1}, 4321}},
+                   spec.handler_options
+                 )
+
+        key = make_ref()
+        assert {:ok, state} = Connection.handle_event({:stream_open, key, :bidi}, state)
+
+        assert {:ok, protocol, [{:headers, ^key, request}]} =
+                 Protocol.feed(state.protocol, key, head(fields))
+
+        entry = %{state.streams[key] | request: request}
+        state = %{state | protocol: protocol, streams: Map.put(state.streams, key, entry)}
+        exchange = Connection.exchange(state, key, make_ref())
+        native = Map.put(spec.handler_options.http_limits, :max_write_chunk, 16_384)
+
+        if request.protocol == "websocket" do
+          assert exchange.limits ==
+                   Map.merge(native, %{
+                     extended_connect: true,
+                     websocket_limits: Map.take(spec.limits, [:max_state, :max_bytes])
+                   })
+        else
+          assert exchange.limits == native
+        end
+
+        assert :ok = Connection.terminate(:test_complete, state)
+      end
+    end
   end
 
   test "listener option is strict, defaults disabled, and reaches the H3 handler" do

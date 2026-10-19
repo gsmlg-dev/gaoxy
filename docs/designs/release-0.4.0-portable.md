@@ -46,6 +46,26 @@ all dependency pins, test selectors, assertions and the raw failed receipt.
 This environment repair requires fresh independent SPEC then CODE review and a
 new full ordinary portable build; failed exchanges are not product acceptance.
 
+The next candidate exposed a separate ordinary compatibility regression: H2
+requests through managed H2/h2c groups returned 503. M5 attached boolean/map
+WebSocket-only configuration to every ordinary Exchange limits map, conflicting
+with the existing closed native integer-limit grammar. Confirm this rejection
+with only the four existing positive group cases in the same pinned builder,
+preserving their assertions and raw failures. Normalize the H2 and H3 Exchange
+construction boundary: only actual `request.protocol == "websocket"` exchanges
+retain those WebSocket fields. Ordinary HTTP retains its original limits on
+listeners with opt-in both false and true. Keep connection WebSocket settings,
+the strict accounting grammar, byte caps and all existing tests unchanged.
+
+Add one ordinary H2 network regression and one H3 Exchange-construction
+regression in the already selected test files. They must cover disabled/enabled
+opt-in and preserve actual WebSocket metadata, alongside the existing real WS
+peers. This increases the portable M5 scope from 136 to 138 executed cases
+(55 HTTP, 83 H3), with the original 62 M3 cases retained: 200 total, zero
+failures and 90 explicit network deselections. Update only the expected counts
+and their bound scope/verifier hashes, with independent SPEC then CODE review
+before executing the repair and fresh full artifact qualification afterward.
+
 The packaged WebSocket runner uses public release
 `bin/gaoxy eval` to start the existing embedded fixture with packaged application
 beams. It retains all 15 independent-peer cases, normal Close, resource release

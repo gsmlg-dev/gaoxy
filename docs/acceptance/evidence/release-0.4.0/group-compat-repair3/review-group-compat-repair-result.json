@@ -1,0 +1,207 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-group-compat-repair-result",
+  "status": "PASS",
+  "assignment": "direct independent read-only executed-result review",
+  "verdict_scope": "Exact bounded repair snapshot RED then GREEN, format and strict production compile only; no package/release inference.",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline_source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "findings": [],
+  "source_binding": {
+    "code_review_sha256": "4e52647eeaafc24a9d252474c07915758f6f05808a4d5bb5079f16b538b0f983",
+    "input_manifest_sha256": "e8f0e01897bd15033f45194e299546f1880307bd618e2f711fb87acb20e58313",
+    "dockerfile_sha256": "ecf7a961f5d56e96b8ec2bc794bfadb1d914451ddf33c90a8829aa25c673f824",
+    "runner_sha256": "a7358221ab70a8adbfe1b924cb8e99244214aa0408fb44c02c6a2b7645fdc43d",
+    "input_files_sha256": {
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "4e5ff7cfabb9f04f3283d42cb40d56df0ddb96838e15e60ff904ea2e8320a2b3",
+      "apps/gaoxy_http/test/http2_websocket_network_test.exs": "57f073f32c143453e06eeed235a696799c436eebdff73c4caea4a31f6745d39c",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "512edd9f3e0c7ec37859a25d8fd7dcb5e21dca92c32adf8dfa6b7ca10e4b545a",
+      "apps/gaoxy_http3/test/websocket_test.exs": "97acc6ab0780e64ae3d05e92059368a73a95b428c69c2e1f162cf0b085cd9c05",
+      "ordinary-scope.json": "062108238c522f11abbb05f5f3cb7413d0739d04c4207aeb4d47bd6b20fb10d8",
+      "run.py": "a7358221ab70a8adbfe1b924cb8e99244214aa0408fb44c02c6a2b7645fdc43d"
+    },
+    "checks": "Host input/review hashes, snapshot manifest and result input hashes all match frozen CODE receipt; cached baseline plus reviewed overlay, not a new committed release SHA."
+  },
+  "red": {
+    "status": "EXPECTED_FAILURE_REPRODUCED",
+    "exit_code": 2,
+    "executed": 2,
+    "failures": 2,
+    "excluded": 9,
+    "skipped": 0,
+    "assertions": [
+      "assert limits == Map.put(spec.handler_options.http_limits, :max_write_chunk, 16384)",
+      "assert exchange.limits == native"
+    ],
+    "actual_mismatch": "Both ordinary disabled-opt-in exchanges incorrectly contain extended_connect=false and websocket_limits map before production overlay. Failures occur at the intended exact limit-equality assertions.",
+    "source_order": "Reviewed runner asserts both production hashes equal original baseline before test-only RED, rechecks them after RED, then copies production snapshots; raw RED output confirms old WS-extra behavior."
+  },
+  "green": {
+    "status": "PASS",
+    "executed_invocations": 200,
+    "failures": 0,
+    "excluded": 90,
+    "skipped": 0,
+    "suites": [
+      {
+        "name": "m5-ordinary",
+        "applications": {
+          "gaoxy_http": {
+            "executed": 55,
+            "failures": 0,
+            "excluded": 0,
+            "skipped": 0
+          },
+          "gaoxy_http3": {
+            "executed": 83,
+            "failures": 0,
+            "excluded": 0,
+            "skipped": 0
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "name": "m3-ordinary-unit",
+        "applications": {
+          "gaoxy_proxy": {
+            "executed": 30,
+            "failures": 0,
+            "excluded": 0,
+            "skipped": 0
+          },
+          "gaoxy_server": {
+            "executed": 8,
+            "failures": 0,
+            "excluded": 0,
+            "skipped": 0
+          }
+        },
+        "status": "PASS"
+      },
+      {
+        "name": "m3-ordinary-network",
+        "applications": {
+          "gaoxy_proxy": {
+            "executed": 24,
+            "failures": 0,
+            "excluded": 90,
+            "skipped": 0
+          }
+        },
+        "status": "PASS"
+      }
+    ],
+    "format": "Exact four changed source/test files, exit0.",
+    "strict_production_compile": "MIX_ENV=prod mix compile --warnings-as-errors, exit0.",
+    "existing_group_regression": "Unchanged line21 group preservation selector included in the original eight network selectors; entire24-executed network batch has0 failures.",
+    "counting": "RED2executions recorded separately; GREEN200 are executed invocations, not a unique-test total."
+  },
+  "host_execution": {
+    "status": "PASS",
+    "exit_code": 0,
+    "elapsed_seconds": 67.75901023801998,
+    "timeout_seconds": 600,
+    "command": [
+      "docker",
+      "buildx",
+      "build",
+      "--platform",
+      "linux/amd64",
+      "--progress",
+      "plain",
+      "--target",
+      "repair-evidence",
+      "--output",
+      "type=local,dest=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/group-compat-repair3/result",
+      "--build-context",
+      "diagnostic=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/group-diagnostic3",
+      "--build-context",
+      "repair=/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/group-compat-repair3/input",
+      "--file",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/group-compat-repair3/Dockerfile",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/portable-1792406728693375161/context"
+    ],
+    "docker_cache": "Original pinned baseline compile and diagnostic reused cached layers; reviewed repaired snapshot executed in64.1seconds and exported evidence.",
+    "stderr": "All six command stderr streams empty; recorded hashes match every raw stream.",
+    "timeouts": "None; each command completed within its300second bound."
+  },
+  "evidence": [
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/host-result.json",
+      "sha256": "ead3e300efaf1a61e04a76406c319edbdc7ddf6349effcb5dc158daf05829675"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/docker.log",
+      "sha256": "51e64fb8df7b1abc4c64c1ca9ae9d9f4ceafe67bf9c9c3d4c99b31ffc8b95efb"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m3-ordinary-network.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m3-ordinary-network.stdout",
+      "sha256": "25c33751eeba2c7c8452d1649249fe7e6267e45431433698dad7a3a8a4b6433b"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m3-ordinary-unit.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m3-ordinary-unit.stdout",
+      "sha256": "1b35e0829aedca4d4cf88b9adc2e10ae03da118207644fe620654d6818072bc7"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m5-ordinary.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/m5-ordinary.stdout",
+      "sha256": "d36ad30f4eb2a1adb325029edb8a36e6463600efc4928e5130db90b3ad596b37"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/regression-red.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/regression-red.stdout",
+      "sha256": "5db99bf1375a4facce9fc8007e12ea0a900418501ec4501125808a7310423630"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/repair-format.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/repair-format.stdout",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/repair-strict-prod-compile.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/repair-strict-prod-compile.stdout",
+      "sha256": "6aba1a462d32697bb9e9b3102bb082925043b86f914ce6df0625f5bed832c0b8"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-compat-repair3/result/result.json",
+      "sha256": "8b38d25696c4936b8e3702ff7b38f623c8d4e8b342e416a0b2bfe3706d85f76a"
+    }
+  ],
+  "preserved_statuses": "Original failed formatter, peer-environment and group-compatibility qualifications retain FAIL. This passing snapshot does not retroactively alter those records.",
+  "not_established": [
+    "fresh committed release source/archive qualification",
+    "release package or packaged H2/h2c/H3 profiles",
+    "fresh offline runtime",
+    "final artifact and release-notes acceptance",
+    "hosted CI",
+    "publication or deployment"
+  ],
+  "validation": "Read and independently cross-checked raw logs, summaries, commands/environment, source/review/input hashes and all raw-stream hashes. No Git, builds, tests, runtime, browser or network commands rerun; only ignored review receipts written.",
+  "release_sol_completed_repair_rounds": 3,
+  "release_sol_round3": "SUCCESS within bounded snapshot qualification",
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished. Parent host receipt reports build exit0/export complete; no parent process was touched.",
+  "remaining": "Parent may archive evidence/document the passing repair and prepare a freshly frozen committed-source artifact qualification.",
+  "timestamp_utc": "2026-10-19T11:16:18.982300+00:00"
+}

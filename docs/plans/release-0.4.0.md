@@ -40,7 +40,8 @@ and its README for optional paired `--release` / `--source-identity` arguments.
 
 - [x] Retain immutable toolchain pins, source/archive/lock checks, safe inventory,
   package metadata and checksums. Use 0.4.0 names; preserve every old recipe.
-- [ ] Run the exact M5 136-case scope and accepted M3 ordinary 62-case selectors;
+- [ ] Run the exact M5 scope plus two ordinary compatibility regressions
+  (138 cases) and accepted M3 ordinary 62-case selectors;
   retain nonzero/zero-failure assertions and record exclusions separately.
 - [ ] Keep peer environments separate. Run existing core/gateway/H3 smokes and
   H2/h2c/H3 packaged WS profiles with unchanged 15-case assertions, both in the
@@ -62,11 +63,26 @@ and its README for optional paired `--release` / `--source-identity` arguments.
   file, preserve immutable historical snapshots, record both sets/counts and
   keep the unchanged-byte custody check over all archived regular files. Obtain
   fresh independent SPEC then CODE review before the repaired build.
-- [ ] Retain the second failed build: 136 M5 and 38 M3 unit cases passed, while
+- [x] Retain the second failed build: 136 M5 and 38 M3 unit cases passed, while
   the selected network command executed 24 cases with 16 peer-environment
   failures and 90 exclusions. Point its fixed fixture executable at the already
   pinned M5 peer environment after installation, preserving legacy smoke peers,
   pins and assertions. Review SPEC then CODE and rerun the full ordinary build.
+- [ ] Retain the third failed build: 136 M5 and 38 M3 unit cases passed; 24
+  network cases executed with 2 ordinary H2-to-managed-group failures and 90
+  exclusions. Reproduce only the four positive group preservation cases in the
+  same pinned builder, with bounded diagnostic output and unchanged assertions.
+  Confirm the startup rejection, repair the ordinary Exchange boundary while
+  retaining actual WebSocket metadata and strict accounting grammar, then
+  independently review and rerun fresh ordinary qualification.
+  Add one H2 network and one H3 Exchange regression to the already selected
+  files; adjust expected M5 counts to 55 HTTP + 83 H3 (200 total with M3),
+  preserving all selectors and the 90 network deselections.
+  SPEC/CODE review passed before cached execution. Test-only overlay on old
+  production reproduced both new regression failures, then the repaired
+  snapshot passed formatting, strict compile and 200 ordinary cases/0 failures
+  with 90 deselections. Independent result review passed; a fresh
+  committed-source artifact qualification remains required.
 - [ ] Verify archive bytes against committed source and recipe hashes, then run:
 
 ```sh

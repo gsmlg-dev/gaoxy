@@ -1,0 +1,121 @@
+==> gaoxy_http3
+Compiling 2 files (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_server
+Compiling 1 file (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Running ExUnit with seed: 0, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/http2_websocket_network_test.exs", 101}]
+
+
+
+  1) test ordinary h2c exchanges keep native limits with extended CONNECT enabled or disabled (Gaoxy.HTTP.HTTP2WebSocketNetworkTest)
+     apps/gaoxy_http/test/http2_websocket_network_test.exs:101
+     Assertion with == failed
+     code:  assert limits == Map.put(spec.handler_options.http_limits, :max_write_chunk, 16384)
+     left:  %{
+              extended_connect: false,
+              max_headers: 100,
+              max_header_bytes: 32768,
+              request_timeout: 30000,
+              header_timeout: 5000,
+              max_trailers: 32,
+              max_trailer_bytes: 8192,
+              write_timeout: 5000,
+              max_request_line: 8192,
+              max_body_bytes: 8388608,
+              max_read_chunk: 16384,
+              read_timeout: 5000,
+              max_buffer_bytes: 65536,
+              max_write_chunk: 16384,
+              websocket_limits: %{
+                max_bytes: 268435456,
+                max_state: 65536
+              },
+              max_chunk_line: 1024
+            }
+     right: %{
+              max_headers: 100,
+              max_header_bytes: 32768,
+              request_timeout: 30000,
+              header_timeout: 5000,
+              max_trailers: 32,
+              max_trailer_bytes: 8192,
+              write_timeout: 5000,
+              max_request_line: 8192,
+              max_body_bytes: 8388608,
+              max_read_chunk: 16384,
+              read_timeout: 5000,
+              max_buffer_bytes: 65536,
+              max_write_chunk: 16384,
+              max_chunk_line: 1024
+            }
+     stacktrace:
+       test/http2_websocket_network_test.exs:136: anonymous fn/2 in Gaoxy.HTTP.HTTP2WebSocketNetworkTest."test ordinary h2c exchanges keep native limits with extended CONNECT enabled or disabled"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http2_websocket_network_test.exs:102: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+2 tests, 1 failure, 1 excluded
+==> gaoxy_http3
+Running ExUnit with seed: 0, max_cases: 1
+Excluding tags: [:test]
+Including tags: [location: {"test/websocket_test.exs", 75}]
+
+
+
+  1) test exchange limits keep WebSocket settings only for actual WebSocket requests (Gaoxy.HTTP.HTTP3.WebSocketTest)
+     apps/gaoxy_http3/test/websocket_test.exs:75
+     Assertion with == failed
+     code:  assert exchange.limits == native
+     left:  %{
+              extended_connect: false,
+              max_headers: 100,
+              max_header_bytes: 32768,
+              request_timeout: 30000,
+              header_timeout: 5000,
+              max_trailers: 32,
+              max_trailer_bytes: 8192,
+              write_timeout: 5000,
+              max_request_line: 8192,
+              max_body_bytes: 8388608,
+              max_read_chunk: 16384,
+              read_timeout: 5000,
+              max_buffer_bytes: 65536,
+              max_write_chunk: 16384,
+              websocket_limits: %{
+                max_bytes: 16777216,
+                max_state: 3145728
+              },
+              max_chunk_line: 1024
+            }
+     right: %{
+              max_headers: 100,
+              max_header_bytes: 32768,
+              request_timeout: 30000,
+              header_timeout: 5000,
+              max_trailers: 32,
+              max_trailer_bytes: 8192,
+              write_timeout: 5000,
+              max_request_line: 8192,
+              max_body_bytes: 8388608,
+              max_read_chunk: 16384,
+              read_timeout: 5000,
+              max_buffer_bytes: 65536,
+              max_write_chunk: 16384,
+              max_chunk_line: 1024
+            }
+     stacktrace:
+       test/websocket_test.exs:114: anonymous fn/2 in Gaoxy.HTTP.HTTP3.WebSocketTest."test exchange limits keep WebSocket settings only for actual WebSocket requests"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/websocket_test.exs:83: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+9 tests, 1 failure, 8 excluded

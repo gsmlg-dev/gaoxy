@@ -1,0 +1,95 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-group-compat-repair-spec",
+  "status": "PASS",
+  "review_kind": "SPEC_CONDITIONAL_REPAIR_PROPOSAL",
+  "assignment": "direct independent read-only specification review",
+  "source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "verdict_scope": "Design/plan and exact ignored four-file repair proposal only. Application/execution remains conditional on parent diagnostic confirmation and implementation CODE review. No runtime outcome claimed.",
+  "findings": [],
+  "reviewed_docs": [
+    {
+      "path": "docs/designs/release-0.4.0-portable.md",
+      "sha256": "ccb72abf70503a4d0350847718e4e6d63af2243e7c40539fe6fc47b17da93b4e"
+    },
+    {
+      "path": "docs/plans/release-0.4.0.md",
+      "sha256": "5b624ba56a3ffd5ffe4f33dba8f9b0de57f459193f2cb92eacd271e806acd14e"
+    }
+  ],
+  "proposal": {
+    "path": ".audit/release-0.4.0/repair3-proposal.md",
+    "sha256": "64af4bab04d97e2afbbf3b35ff9566b34bda7be2427de44da2cee12216776eb4",
+    "patch": ".audit/release-0.4.0/group-diagnostic3/repair3.patch",
+    "patch_sha256": "86dffbfee45a7756541563016fe37349fbfe3e264e0e55263000e650d60113fb",
+    "in_memory_hunks_and_hashes": "PASS; every old hunk matched current bytes; resulting hashes match proposal without applying edits.",
+    "files": [
+      {
+        "path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "baseline_sha256": "39afca3bb60626ff63c9c8b93696048de701d8c1466f5a1eca217d06644df1e9",
+        "proposed_sha256": "4e5ff7cfabb9f04f3283d42cb40d56df0ddb96838e15e60ff904ea2e8320a2b3"
+      },
+      {
+        "path": "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+        "baseline_sha256": "a951daebc38ac3a061ccadf1f344da0d0e58cc977b18243560e32efdb5093e39",
+        "proposed_sha256": "512edd9f3e0c7ec37859a25d8fd7dcb5e21dca92c32adf8dfa6b7ca10e4b545a"
+      },
+      {
+        "path": "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "baseline_sha256": "a02024a271736283e143c5fa6977a2b7d31b23449d011c7c4a06e4eb3dfae793",
+        "proposed_sha256": "aee91544a3108dce0cd231f93333bacee2f996004fe4daed460a6836d817a73d"
+      },
+      {
+        "path": "apps/gaoxy_http3/test/websocket_test.exs",
+        "baseline_sha256": "267f1396b5af515ee9816cb8edede6e23608784a81fcfbf20807622d9d4ba4ba",
+        "proposed_sha256": "97acc6ab0780e64ae3d05e92059368a73a95b428c69c2e1f162cf0b085cd9c05"
+      }
+    ]
+  },
+  "behavior_contract": {
+    "ordinary": "H2 and H3 ordinary requests expose only normalized native integer HTTP limits plus max_write_chunk for both listener opt-in values.",
+    "websocket": "Actual request.protocol=websocket retains pre-existing extended_connect/websocket_limits values; connection-level enablement and settings unchanged.",
+    "accounting": "No managed-group schema/key/type grammar/cap changes, no local proxy-only validation bypass.",
+    "interfaces_dependencies": "No interface/dependency/default/publication changes."
+  },
+  "regressions": {
+    "h2": "Exactly one new real h2c ordinary GET case loops false/true opt-in and observes endpoint Exchange.limits equality to normalized native limits plus max_write_chunk; original WS push/echo/normal Close/sibling case untouched.",
+    "h3": "Exactly one new Exchange case normalizes actual options, opens a stream, parses headers through Protocol.feed, covers ordinary false/true plus actual websocket true, and terminates each constructed state; original assertions untouched.",
+    "integration": "Existing managed group file:21 four positive cases remain unchanged end-to-end regression.",
+    "meaningfulness": "New cases observe the public endpoint/constructed Exchange contract and must fail on the unmodified unconditional WS-extra source; existing actual WS peers remain required to protect runtime capability."
+  },
+  "conditional_execution_gate": "Before applying/running repair, parent diagnostic must show original4 executed/2 failed and H1 numeric-only pump accepted versus H2 WS-extra pump invalid; no timeout/missing count inference. Preserve original FAIL evidence.",
+  "verification_required": [
+    "Parent executes test-only RED and preserves actual failures; preparation alone is not RED.",
+    "Independent CODE review before repair execution; scoped four-file formatting and strict compile.",
+    "Scoped H2network/H3WS files and unchanged four group selectors green.",
+    "Synchronize ordinary-scope expected counts and bound verifier/scope hashes without changing command selectors or assertions.",
+    "Fresh full ordinary portable qualification, packaged H2/h2c/H3 profiles and fresh offline runtime, then actual artifact/source/notes review."
+  ],
+  "expected_counts_not_executed": {
+    "m5_http": 55,
+    "m5_h3": 83,
+    "m5_total": 138,
+    "m3_unit": 38,
+    "m3_network_executed": 24,
+    "m3_network_excluded": 90,
+    "total_executed_invocations": 200,
+    "unique_tests_claimed": false,
+    "skips_allowed": 0
+  },
+  "metadata_state": "At review time existing scope still has54/82; parent owns prospective55/83 and verifier synchronization. This receipt does not accept unsynchronized metadata.",
+  "scope_exclusions": [
+    "specialist disconnect/slow-peer/pressure/soak",
+    "broad mixed suites",
+    "upstream/private dependency changes",
+    "deployment/production operations",
+    "new publication scope"
+  ],
+  "validation": "Static source/spec/proposal review; in-memory unified patch matching and SHA256 verification only. No tracked edits, Git, builds, tests, runtime, browser or network commands.",
+  "release_sol_completed_repair_rounds": 2,
+  "proposed_release_sol_repair_round": 3,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged; no new recovery authorized by reviewer",
+  "command_shutdown": "All reviewer commands completed; no background process started or other processes touched.",
+  "timestamp_utc": "2026-10-19T11:06:57.238278+00:00"
+}

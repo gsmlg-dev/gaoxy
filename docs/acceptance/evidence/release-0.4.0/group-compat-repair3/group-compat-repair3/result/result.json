@@ -1,0 +1,244 @@
+{
+  "status": "PASS",
+  "kind": "BOUNDED_REPAIR_SNAPSHOT_NOT_RELEASE_ARTIFACT",
+  "baseline_source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "input_files_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "4e5ff7cfabb9f04f3283d42cb40d56df0ddb96838e15e60ff904ea2e8320a2b3",
+    "apps/gaoxy_http/test/http2_websocket_network_test.exs": "57f073f32c143453e06eeed235a696799c436eebdff73c4caea4a31f6745d39c",
+    "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "512edd9f3e0c7ec37859a25d8fd7dcb5e21dca92c32adf8dfa6b7ca10e4b545a",
+    "apps/gaoxy_http3/test/websocket_test.exs": "97acc6ab0780e64ae3d05e92059368a73a95b428c69c2e1f162cf0b085cd9c05",
+    "ordinary-scope.json": "062108238c522f11abbb05f5f3cb7413d0739d04c4207aeb4d47bd6b20fb10d8",
+    "run.py": "a7358221ab70a8adbfe1b924cb8e99244214aa0408fb44c02c6a2b7645fdc43d"
+  },
+  "started_utc": "2026-10-19T11:14:13.911520+00:00",
+  "commands": [
+    {
+      "name": "regression-red",
+      "command": [
+        "mix",
+        "test",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs:101",
+        "apps/gaoxy_http3/test/websocket_test.exs:75",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "environment": {
+        "MIX_ENV": "test"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 2,
+      "exit_code": 2,
+      "elapsed_seconds": 7.678979415009962,
+      "stdout_sha256": "5db99bf1375a4facce9fc8007e12ea0a900418501ec4501125808a7310423630",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "repair-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "apps/gaoxy_http3/test/websocket_test.exs"
+      ],
+      "environment": {
+        "MIX_ENV": "test"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 0.897564537008293,
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "repair-strict-prod-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "environment": {
+        "MIX_ENV": "prod"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 8.253613708977355,
+      "stdout_sha256": "6aba1a462d32697bb9e9b3102bb082925043b86f914ce6df0625f5bed832c0b8",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "m5-ordinary",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/websocket_extended_handshake_test.exs",
+        "apps/gaoxy_http/test/websocket_stream_test.exs",
+        "apps/gaoxy_http/test/websocket_frame_test.exs",
+        "apps/gaoxy_http/test/websocket_handshake_test.exs",
+        "apps/gaoxy_http/test/http_protocol_defaults_test.exs",
+        "apps/gaoxy_http/test/phoenix_adapter_test.exs",
+        "apps/gaoxy_http/test/phoenix_websocket_test.exs",
+        "apps/gaoxy_http/test/http3_upgrade_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "apps/gaoxy_http/test/http2_protocol_test.exs",
+        "apps/gaoxy_http3/test/websocket_test.exs",
+        "apps/gaoxy_http3/test/websocket_network_test.exs",
+        "apps/gaoxy_http3/test/headers_test.exs",
+        "apps/gaoxy_http3/test/protocol_test.exs",
+        "apps/gaoxy_http3/test/operations_test.exs",
+        "apps/gaoxy_http3/test/options_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "environment": {
+        "MIX_ENV": "test",
+        "HTTP_FETCH_PEER_PYTHON": "/work/.audit/h2peer/bin/python",
+        "GAOXY_QUIC_PYTHON": "/work/.audit/h2peer/bin/python",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 12.104019787017023,
+      "stdout_sha256": "d36ad30f4eb2a1adb325029edb8a36e6463600efc4928e5130db90b3ad596b37",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "m3-ordinary-unit",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_server/test/route_config_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "environment": {
+        "MIX_ENV": "test",
+        "HTTP_FETCH_PEER_PYTHON": "/work/.audit/h2peer/bin/python",
+        "GAOXY_QUIC_PYTHON": "/work/.audit/h2peer/bin/python",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 2.1815124379936606,
+      "stdout_sha256": "1b35e0829aedca4d4cf88b9adc2e10ae03da118207644fe620654d6818072bc7",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "m3-ordinary-network",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:156",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:268",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:47",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:107",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:167",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:206",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:330",
+        "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:21",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "environment": {
+        "MIX_ENV": "test",
+        "HTTP_FETCH_PEER_PYTHON": "/work/.audit/h2peer/bin/python",
+        "GAOXY_QUIC_PYTHON": "/work/.audit/h2peer/bin/python",
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "timeout_seconds": 300,
+      "expected_exit_code": 0,
+      "exit_code": 0,
+      "elapsed_seconds": 32.55397519300459,
+      "stdout_sha256": "25c33751eeba2c7c8452d1649249fe7e6267e45431433698dad7a3a8a4b6433b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "regression_red": {
+    "status": "EXPECTED_FAILURE_REPRODUCED",
+    "counts": [
+      {
+        "defined": 2,
+        "excluded": 1,
+        "executed": 1,
+        "failures": 1
+      },
+      {
+        "defined": 9,
+        "excluded": 8,
+        "executed": 1,
+        "failures": 1
+      }
+    ],
+    "product_result": "FAIL before production overlay"
+  },
+  "suites": [
+    {
+      "name": "m5-ordinary",
+      "applications": {
+        "gaoxy_http": {
+          "executed": 55,
+          "failures": 0,
+          "excluded": 0,
+          "skipped": 0
+        },
+        "gaoxy_http3": {
+          "executed": 83,
+          "failures": 0,
+          "excluded": 0,
+          "skipped": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "m3-ordinary-unit",
+      "applications": {
+        "gaoxy_proxy": {
+          "executed": 30,
+          "failures": 0,
+          "excluded": 0,
+          "skipped": 0
+        },
+        "gaoxy_server": {
+          "executed": 8,
+          "failures": 0,
+          "excluded": 0,
+          "skipped": 0
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "name": "m3-ordinary-network",
+      "applications": {
+        "gaoxy_proxy": {
+          "executed": 24,
+          "failures": 0,
+          "excluded": 90,
+          "skipped": 0
+        }
+      },
+      "status": "PASS"
+    }
+  ],
+  "executed": 200,
+  "excluded": 90,
+  "completed_utc": "2026-10-19T11:15:17.593308+00:00"
+}
