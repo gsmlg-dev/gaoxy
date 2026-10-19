@@ -57,6 +57,11 @@ and its README for optional paired `--release` / `--source-identity` arguments.
   the reviewed recipe there. Archive committed main with `git archive --format=tar
   HEAD`; write `source-identity.json` containing source_sha, archive/lock SHA256,
   and exact changed Elixir paths from `git diff --name-only v0.3.0 HEAD`.
+- [x] Retain the first failed formatter receipt. Partition the full changed path
+  list only at `docs/acceptance/evidence/`: format every current changed Elixir
+  file, preserve immutable historical snapshots, record both sets/counts and
+  keep the unchanged-byte custody check over all archived regular files. Obtain
+  fresh independent SPEC then CODE review before the repaired build.
 - [ ] Verify archive bytes against committed source and recipe hashes, then run:
 
 ```sh

@@ -54,6 +54,23 @@ with tarfile.open("/tools/source.tar") as archive:
     original = {member.name: hashlib.sha256(archive.extractfile(member).read()).hexdigest()
                 for member in archive.getmembers() if member.isfile()}
 
+changed_elixir = IDENTITY["changed_elixir_paths"]
+assert changed_elixir and len(set(changed_elixir)) == len(changed_elixir)
+assert all(name in original and name.endswith((".ex", ".exs")) for name in changed_elixir)
+historical_prefix = "docs/acceptance/evidence/"
+current_elixir = [name for name in changed_elixir if not name.startswith(historical_prefix)]
+historical_elixir = [name for name in changed_elixir if name.startswith(historical_prefix)]
+assert current_elixir, "no current changed Elixir paths to format"
+formatter_scope = {"historical_prefix": historical_prefix,
+                   "path_hash_encoding": "UTF-8 compact JSON array in source identity order",
+                   "changed_count": len(changed_elixir),
+                   "current_count": len(current_elixir),
+                   "excluded_historical_count": len(historical_elixir)}
+for label, paths in (("changed", changed_elixir), ("current", current_elixir),
+                     ("excluded_historical", historical_elixir)):
+    formatter_scope[f"{label}_paths_sha256"] = hashlib.sha256(
+        json.dumps(paths, separators=(",", ":")).encode()).hexdigest()
+
 if phase == "prepare":
     versions = run("toolchain", ["bash", "-ec", "elixir --version; erl -noshell -eval 'io:format(\"OTP_RELEASE=~s OTP_VERSION=~s~n\", [erlang:system_info(otp_release), element(2, file:read_file(filename:join([code:root_dir(), \"releases\", erlang:system_info(otp_release), \"OTP_VERSION\"])))]), halt().'; rustc --version; cargo --version; python3 --version; openssl version; ldd --version; dpkg-query -W"])
     assert "Elixir 1.18.5" in versions
@@ -70,10 +87,7 @@ if phase == "prepare":
 
 elif phase == "compile":
     run("canonical-format", ["mix", "format", "--check-formatted"])
-    changed_elixir = IDENTITY["changed_elixir_paths"]
-    assert changed_elixir and len(set(changed_elixir)) == len(changed_elixir)
-    assert all(name in original and name.endswith((".ex", ".exs")) for name in changed_elixir)
-    run("changed-source-format", ["mix", "format", "--check-formatted", *changed_elixir])
+    run("changed-source-format", ["mix", "format", "--check-formatted", *current_elixir])
     run("strict-compile", ["mix", "compile", "--warnings-as-errors"], {"MIX_ENV": "prod"})
 
 else:
@@ -144,6 +158,7 @@ else:
     info = {"version": "0.4.0", "source_sha": SOURCE,
             "source_archive_sha256": hashlib.sha256(Path("/tools/source.tar").read_bytes()).hexdigest(),
             "root_lock_sha256": IDENTITY["root_lock_sha256"],
+            "formatter_scope": formatter_scope,
             "source_files_checked_unchanged": len(original), "applications": applications, "archive_entries": len(inventory), "platform": "linux/amd64",
             "support": "Debian bookworm glibc x86_64; broader platforms unqualified",
             "builder": "hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb",

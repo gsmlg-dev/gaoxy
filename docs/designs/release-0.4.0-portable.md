@@ -18,6 +18,16 @@ application-version checks, checksums, ELF linkage inspection and finite owned
 container cleanup. Record actual versions and counts, rather than reusing old
 binary or test receipts.
 
+The first candidate's changed-file formatter included immutable historical
+evidence snapshots: all 91 unformatted paths were under
+`docs/acceptance/evidence/`, with no current source failure. Preserve that failed
+receipt and every snapshot byte. Keep the full changed-Elixir list in source
+identity; apply formatting to every current changed Elixir file, partitioning
+only that exact historical-evidence prefix. Record both path sets and counts.
+Every archived regular file, including historical evidence, still receives the
+unchanged-byte custody check. Canonical formatting, strict compilation and all
+ordinary test assertions remain required.
+
 Replace the old whole-directory test execution with the exact 17-file M5
 ordinary scope and accepted M3 ordinary merge selectors (38 pure/configuration
 and 24 positive network cases). Record selected and excluded counts separately;
