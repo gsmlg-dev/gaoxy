@@ -1,3 +1,7 @@
+Current source uses Hell for TCP/OTP TLS after the v0.4.0 release. The published
+v0.4.0 source and binaries retain Thousand Island; the release evidence below
+keeps that identity. See the [current dependency audit](dependency-audit.md).
+
 ## v0.4.0 release status — 2026-10-19
 
 Embedded HTTP/Phoenix HTTPS defaults to H2-first ALPN with H1 negotiation/no-ALPN fallback. Plain TCP defaults to H1; cleartext H2 requires explicit `protocols: [:http2], h2c: :prior_knowledge`, without HTTP/1 Upgrade or mixed detection. Native H2/H3 WebSocket requires listener `extended_connect` opt-in, plus exact `websocket_paths` for Phoenix. External Phoenix H3 uses a separate optional service with `server: false`. Standalone JSON defaults HTTP services to H1 and accepts explicit H2/h2c or a separate H3 HTTP service, but cannot activate WebSocket endpoints. Clients select the actual WebSocket transport; an H2 page alone does not establish H2 WebSocket negotiation.
@@ -10,7 +14,7 @@ Earlier snapshots retain their capture-time scope and actual failed, blocked and
 
 `gaoxy_http` owns the HTTP/1 parser, native HTTP/2 engine, Plug adapter and
 WebSock connection lifecycle.
-Thousand Island and Gaoxy retain socket/listener supervision, admission and
+Hell and Gaoxy retain socket/listener supervision, admission and
 shutdown. M5 is **COMPLETE LOCALLY within its ordinary verification scope**;
 the authoritative [M5 acceptance record](acceptance/m5-websocket-over-h2-h3.md)
 records G0–G5 runtime results and the final independent closeout review.
@@ -59,7 +63,7 @@ host and budget before advertising SETTINGS or starting codec/stream work.
 The qualified native H2 host uses OTP 28 with the `:inet` TCP backend. TLS
 additionally requires integer `:ssl, :internal_active_n` in `1..100`, TLS 1.3
 or the accepted TLS 1.2 forward-secret AEAD suites. Unsupported profiles are
-rejected. TI uses active-once delivery with fixed 16 KiB socket buffers; a larger
+rejected. Hell uses active-once delivery with fixed 16 KiB socket buffers; a larger
 endpoint body-read credit does not enlarge them.
 
 `h2_limits` defaults are `max_streams: 32`, `max_frame: 16_384`,

@@ -3,7 +3,7 @@ defmodule Gaoxy.NativeStreamTest do
   alias Gaoxy.{Admission, Config, Lifecycle}
 
   defmodule Native do
-    use ThousandIsland.Handler
+    use Hell.Handler
 
     def validate_options(%{owner: owner} = options) when is_pid(owner), do: {:ok, options}
 
@@ -24,7 +24,7 @@ defmodule Gaoxy.NativeStreamTest do
       :ok =
         Admission.begin_request(state.gate, state.lease, byte_size(data), Lifecycle.deadline(500))
 
-      :ok = ThousandIsland.Socket.send(socket, data)
+      :ok = Hell.Socket.send(socket, data)
       :ok = Admission.retain(state.gate, state.lease, 0)
       {:continue, state}
     end
@@ -36,11 +36,11 @@ defmodule Gaoxy.NativeStreamTest do
   end
 
   defmodule MissingValidator do
-    use ThousandIsland.Handler
+    use Hell.Handler
   end
 
   defmodule InvalidValidator do
-    use ThousandIsland.Handler
+    use Hell.Handler
     def validate_options(_), do: :ok
   end
 

@@ -1,6 +1,6 @@
 defmodule Gaoxy.HTTP.Connection do
   @moduledoc false
-  use ThousandIsland.Handler
+  use Hell.Handler
   @behaviour Gaoxy.NativeStreamHandler
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, Options, WebSocket}
@@ -13,16 +13,16 @@ defmodule Gaoxy.HTTP.Connection do
   def handle_connection(socket, %{spec: spec} = context) do
     case protocol(socket, spec.handler_options) do
       :http2 ->
-        with {:ok, peer} <- ThousandIsland.Socket.peername(socket),
-             {:ok, local} <- ThousandIsland.Socket.sockname(socket) do
+        with {:ok, peer} <- Hell.Socket.peername(socket),
+             {:ok, local} <- Hell.Socket.sockname(socket) do
           ssl =
-            case ThousandIsland.Socket.connection_information(socket) do
+            case Hell.Socket.connection_information(socket) do
               {:ok, value} -> value
               _ -> nil
             end
 
           cert =
-            case ThousandIsland.Socket.peercert(socket) do
+            case Hell.Socket.peercert(socket) do
               {:ok, value} -> value
               _ -> nil
             end
@@ -33,7 +33,7 @@ defmodule Gaoxy.HTTP.Connection do
               owner: self(),
               peer: peer,
               local: local,
-              secure: ThousandIsland.Socket.secure?(socket),
+              secure: Hell.Socket.secure?(socket),
               ssl: ssl,
               peer_cert: cert
             })
@@ -52,8 +52,8 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   defp protocol(socket, options) do
-    if ThousandIsland.Socket.secure?(socket) do
-      case ThousandIsland.Socket.negotiated_protocol(socket) do
+    if Hell.Socket.secure?(socket) do
+      case Hell.Socket.negotiated_protocol(socket) do
         {:ok, "h2"} ->
           if :http2 in options.protocols, do: :http2, else: {:error, :unsupported_protocol}
 
@@ -77,7 +77,7 @@ defmodule Gaoxy.HTTP.Connection do
     limits = spec.handler_options.http_limits
 
     with :ok <-
-           ThousandIsland.Socket.setopts(socket,
+           Hell.Socket.setopts(socket,
              recbuf: limits.max_buffer_bytes,
              buffer: limits.max_buffer_bytes,
              send_timeout: limits.write_timeout,
@@ -166,7 +166,7 @@ defmodule Gaoxy.HTTP.Connection do
 
       {:ok, request, rest} ->
         Process.cancel_timer(state.header_timer)
-        scheme = if ThousandIsland.Socket.secure?(socket), do: :https, else: :http
+        scheme = if Hell.Socket.secure?(socket), do: :https, else: :http
 
         {endpoint, _options} = state.spec.handler_options.endpoint
 

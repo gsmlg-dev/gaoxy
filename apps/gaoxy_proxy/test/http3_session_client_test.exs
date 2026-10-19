@@ -1840,7 +1840,7 @@ defmodule Gaoxy.Proxy.HTTP3SessionClientTest do
   # Public-operation doubles are scheduling regressions, not TLS/protocol proof.
   # The real Service/Admission fixture below exercises authenticated receipts.
   defmodule NativeCleanupOwner do
-    use ThousandIsland.Handler
+    use Hell.Handler
 
     def validate_options(%{owner: owner} = options) when is_pid(owner), do: {:ok, options}
 

@@ -485,7 +485,7 @@ defmodule Gaoxy.AdmittedSpawnTest do
   test "retiring original alias is local only; later authenticated cancel still joins worker" do
     assert_api!()
     {gate, _} = gate()
-    # The real native connection traps exits through ThousandIsland.Handler;
+    # The real native connection traps exits through Hell.Handler;
     # it must survive the cancelled worker's linked :killed signal to read reply.
     {owner, _, deadline} = owner(gate, trap_exit: true)
     assert {:trap_exit, true} = Process.info(owner, :trap_exit)

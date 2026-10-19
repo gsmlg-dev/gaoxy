@@ -1683,7 +1683,7 @@ defmodule Gaoxy.HTTP2StartupMetadataTest do
     assert :ok = :gen_tcp.close(native)
     assert {:error, :einval} = :inet.peername(native)
     {context, hook} = context([])
-    socket = socket(native, ThousandIsland.Transports.TCP)
+    socket = socket(native, Hell.Transports.TCP)
     assert {:close, ^context} = Connection.handle_connection(socket, context)
     assert_no_admission(context.gate, hook)
   end
@@ -1828,13 +1828,13 @@ defmodule Gaoxy.HTTP2StartupMetadataTest do
   end
 
   defp socket(native, transport) do
-    struct!(ThousandIsland.Socket,
+    struct!(Hell.Socket,
       socket: native,
       transport_module: transport,
       read_timeout: @wait,
       handshake_timeout: @wait,
       silent_terminate_on_error: false,
-      span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: Connection})
+      span: Hell.Telemetry.start_span(:connection, %{}, %{handler: Connection})
     )
   end
 

@@ -166,7 +166,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportSlowPeerTest do
       assert summary.maxima.request_tokens === 3 and summary.maxima.cleanup_pending === 3
       if mount == :group, do: assert(summary.maxima.group_inflight === 3)
       native = system(one.native_owner)
-      assert {%ThousandIsland.Socket{}, %{phase: :http2, writer: writer}} = native
+      assert {%Hell.Socket{}, %{phase: :http2, writer: writer}} = native
       joins = for actor <- [one.native_owner, writer], do: {actor, Process.monitor(actor)}
       finish_id = command_client(client, "finish")
 
@@ -576,7 +576,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportSlowPeerTest do
   end
 
   defp native_snapshot(owner, expected) do
-    assert {%ThousandIsland.Socket{}, %{phase: :http2, owner: ^owner} = state} = system(owner)
+    assert {%Hell.Socket{}, %{phase: :http2, owner: ^owner} = state} = system(owner)
 
     for {id, token} <- expected do
       assert %{token: ^token} = Map.fetch!(state.streams, id)
@@ -780,7 +780,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportSlowPeerTest do
 
   defp assert_pending_three(three) do
     await(fn ->
-      assert {%ThousandIsland.Socket{}, %{phase: :http2} = state} = system(three.native_owner)
+      assert {%Hell.Socket{}, %{phase: :http2} = state} = system(three.native_owner)
 
       case Map.get(state.streams, 3) do
         %{token: token, send_window: 0, write: %{kind: :data, bytes: bytes}} ->

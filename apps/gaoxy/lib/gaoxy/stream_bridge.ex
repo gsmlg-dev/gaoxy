@@ -1,14 +1,14 @@
 defmodule Gaoxy.StreamBridge do
   @moduledoc false
-  use ThousandIsland.Handler
+  use Hell.Handler
   alias Gaoxy.Admission
 
   @impl true
   def handle_connection(socket, %{spec: spec, gate: gate} = state) do
     with {:ok, lease} <- Admission.acquire(gate, 0),
          :ok <- Admission.begin(gate, lease, 0),
-         {:ok, local} <- ThousandIsland.Socket.sockname(socket),
-         {:ok, peer} <- ThousandIsland.Socket.peername(socket),
+         {:ok, local} <- Hell.Socket.sockname(socket),
+         {:ok, peer} <- Hell.Socket.peername(socket),
          {:ok, app} <-
            spec.handler.init(
              %{
@@ -17,7 +17,7 @@ defmodule Gaoxy.StreamBridge do
                transport: spec.transport,
                service: state.service,
                instance: state.instance,
-               alpn: ThousandIsland.Socket.negotiated_protocol(socket)
+               alpn: Hell.Socket.negotiated_protocol(socket)
              },
              spec.handler_options
            ),
@@ -81,7 +81,7 @@ defmodule Gaoxy.StreamBridge do
   end
 
   defp send_output(socket, output, state, operation) do
-    result = ThousandIsland.Socket.send(socket, output)
+    result = Hell.Socket.send(socket, output)
     :ok = Admission.finish_send(state.gate, state.lease, operation, result)
     result
   end

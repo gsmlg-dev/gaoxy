@@ -3,7 +3,7 @@ defmodule Gaoxy.Proxy.StreamRelay.Writer do
   use GenServer, restart: :temporary
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.Proxy.StreamRelay.Upstream
-  alias ThousandIsland.Socket
+  alias Hell.Socket
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
 

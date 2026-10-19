@@ -4,7 +4,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedWriteLifecycleTest do
   alias Gaoxy.Proxy.HTTP.Session
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
   alias Gaoxy.HTTP.HTTP2.Frame
-  alias ThousandIsland.Socket
+  alias Hell.Socket
   @moduletag :capture_log
   @timeout 5_000
 
@@ -21,7 +21,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedWriteLifecycleTest do
     def resources({_, _, config}), do: Gaoxy.Proxy.HTTP.resources(config)
 
     def call(exchange, {observer, socket_options, config}) do
-      :ok = ThousandIsland.Socket.setopts(exchange.socket, socket_options)
+      :ok = Hell.Socket.setopts(exchange.socket, socket_options)
       send(observer, {:write_lifecycle_exchange, self(), exchange.socket, exchange.gate})
       Gaoxy.Proxy.HTTP.call(exchange, config)
     end

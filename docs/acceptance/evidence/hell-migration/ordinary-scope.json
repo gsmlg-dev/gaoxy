@@ -1,0 +1,132 @@
+{
+  "version": "0.4.0",
+  "scope": "ordinary protocol, configuration and finite valid network scenarios only; specialist abnormal/disconnect/slow-peer/pressure/sustained-load qualification excluded",
+  "counting": "Report actual executed, excluded and skipped counts per command; repeated or overlapping invocations are not unique-test totals.",
+  "batches": [
+    {
+      "name": "hell-native-ordinary",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/native_stream_test.exs:99",
+        "apps/gaoxy/test/runtime_test.exs:109",
+        "apps/gaoxy/test/runtime_test.exs:246",
+        "apps/gaoxy/test/tls_test.exs:12",
+        "apps/gaoxy_http/test/http_network_test.exs:147",
+        "apps/gaoxy_http/test/http_network_test.exs:168",
+        "apps/gaoxy_http/test/http_network_test.exs:202",
+        "apps/gaoxy_http/test/http_network_test.exs:533",
+        "apps/gaoxy_proxy/test/stream_relay_test.exs:170",
+        "apps/gaoxy_proxy/test/stream_relay_test.exs:192",
+        "--include",
+        "loopback",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "expected_executed": 10
+    },
+    {
+      "name": "m5-ordinary",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/websocket_extended_handshake_test.exs",
+        "apps/gaoxy_http/test/websocket_stream_test.exs",
+        "apps/gaoxy_http/test/websocket_frame_test.exs",
+        "apps/gaoxy_http/test/websocket_handshake_test.exs",
+        "apps/gaoxy_http/test/http_protocol_defaults_test.exs",
+        "apps/gaoxy_http/test/phoenix_adapter_test.exs",
+        "apps/gaoxy_http/test/phoenix_websocket_test.exs",
+        "apps/gaoxy_http/test/http3_upgrade_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "apps/gaoxy_http/test/http2_protocol_test.exs",
+        "apps/gaoxy_http3/test/websocket_test.exs",
+        "apps/gaoxy_http3/test/websocket_network_test.exs",
+        "apps/gaoxy_http3/test/headers_test.exs",
+        "apps/gaoxy_http3/test/protocol_test.exs",
+        "apps/gaoxy_http3/test/operations_test.exs",
+        "apps/gaoxy_http3/test/options_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "applications": {
+        "gaoxy_http": {
+          "executed": 55,
+          "excluded": 0,
+          "skipped": 0,
+          "failures": 0
+        },
+        "gaoxy_http3": {
+          "executed": 83,
+          "excluded": 0,
+          "skipped": 0,
+          "failures": 0
+        }
+      },
+      "source_evidence": "docs/acceptance/evidence/m5/g5/g5-scoped-postreview.json"
+    },
+    {
+      "name": "m3-ordinary-unit",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_server/test/route_config_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "applications": {
+        "gaoxy_proxy": {
+          "executed": 30,
+          "excluded": 0,
+          "skipped": 0,
+          "failures": 0
+        },
+        "gaoxy_server": {
+          "executed": 8,
+          "excluded": 0,
+          "skipped": 0,
+          "failures": 0
+        }
+      },
+      "source_evidence": "docs/acceptance/evidence/m3/local-merge-2026-10-19/premerge.json"
+    },
+    {
+      "name": "m3-ordinary-network",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:156",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:268",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:47",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:107",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:167",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:206",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:330",
+        "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:21",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "applications": {
+        "gaoxy_proxy": {
+          "executed": 24,
+          "excluded": 90,
+          "skipped": 0,
+          "failures": 0
+        }
+      },
+      "source_evidence": "docs/acceptance/evidence/m3/local-merge-2026-10-19/premerge.json"
+    }
+  ],
+  "migration": "thousand_island -> hell59eed42b019ca41413d1b8cd7a7dc3e344bb93ee"
+}

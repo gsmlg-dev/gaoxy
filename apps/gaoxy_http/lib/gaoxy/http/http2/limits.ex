@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP2.Limits do
   @moduledoc false
   @receive_buffer 16_384
-  # TI delivers active-once. The qualified OTP 28 SSL internal transport profile
+  # Hell delivers active-once. The qualified OTP 28 SSL internal transport profile
   # can aggregate 100 buffers plus one maximum TLS 1.2 record. Reserve deliveries
   # and copies separately from configurable parser carry and HPACK expansion.
   @max_delivery 100 * @receive_buffer + 18_437

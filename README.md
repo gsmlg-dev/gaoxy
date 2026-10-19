@@ -1,5 +1,13 @@
 # Gaoxy
 
+## Current source backend — 2026-10-19
+
+Current source uses [Hell](https://github.com/gsmlg-dev/hell), the Thousand Island
+fork, for TCP/OTP TLS. This migration follows v0.4.0; its published source and
+binaries retain Thousand Island. See the [dependency audit](docs/dependency-audit.md)
+for the exact Hell pin and [migration acceptance](docs/acceptance/hell-migration.md)
+for current verification results.
+
 ## v0.4.0 release status — 2026-10-19
 
 Accepted source includes embedded managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource accounting, plus native downstream H2/h2c/H3 WebSocket and Phoenix integration. Embedded HTTPS prefers H2 with H1 negotiation/no-ALPN fallback; plain TCP defaults to H1, prior-knowledge h2c is explicit, and WebSocket requires listener `extended_connect` opt-in. Standalone JSON defaults HTTP services to H1, permits explicit H2/h2c and separate H3 HTTP services and fixed H1/H3 origins, and exposes no managed handles/groups/probes or WebSocket activation. Browser H3 evidence uses controlled QUIC-first selection; automatic H3 selection with TCP available remains unqualified.
@@ -11,9 +19,10 @@ Earlier snapshots retain their capture-time scope and actual failed, blocked and
 ## Historical overview
 
 An Elixir/OTP transport runtime, usable inside an application's supervision tree
-or as a standalone release. Gaoxy composes Thousand Island for TCP/OTP TLS and
-Abyss for UDP and optional generic QUIC. M0/M1 implements transport hosting,
-service lifecycle, finite admission, telemetry and custom protocol handlers.
+or as a standalone release. The M0/M1 implementation composed Thousand Island
+for TCP/OTP TLS and Abyss for UDP and optional generic QUIC. M0/M1 implements
+transport hosting, service lifecycle, finite admission, telemetry and custom
+protocol handlers.
 The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
 real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
 message-level [WebSocket reverse proxying](docs/websocket-proxy.md).

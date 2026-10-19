@@ -294,7 +294,7 @@ defmodule Gaoxy.Proxy.HTTPHeadersTest do
         headers: headers,
         body: framing
       },
-      socket: struct(ThousandIsland.Socket, transport_module: ThousandIsland.Transports.TCP),
+      socket: struct(Hell.Socket, transport_module: Hell.Transports.TCP),
       peer: {{127, 0, 0, 1}, 12345},
       limits: %{max_header_bytes: 8192, max_trailers: 8, max_trailer_bytes: 128}
     }

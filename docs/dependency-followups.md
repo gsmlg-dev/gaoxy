@@ -1,5 +1,9 @@
 # Dependency follow-ups
 
+Current source uses Hell, the Thousand Island fork, for TCP/OTP TLS after v0.4.0.
+The optional transport follow-up below targets Hell; published v0.4.0 and
+historical evidence retain Thousand Island. See the [dependency audit](dependency-audit.md).
+
 ## M4 request-trailer resolution — 2026-10-13
 
 HTTP Fetch#101 is closed; the containing compatible0.21.4cohort is installed.
@@ -20,7 +24,7 @@ Severity: needed for optional custom TLS; ordinary OTP TLS remains independent.
 
 The public `SSL` facade exposes clients but lacks TCP listen, accept, server
 handshake and directional shutdown. Add a bounded server ownership contract,
-then a formal Thousand Island transport adapter. Acceptance must cover
+then a formal Hell transport adapter. Acceptance must cover
 credentials, independently verified handshakes and failures, active/passive
 delivery, controlling-process transfer, send/recv, half shutdown, close,
 peer/local metadata, ALPN, getopts/setopts/statistics and every required transport

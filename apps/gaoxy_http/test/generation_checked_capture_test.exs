@@ -1602,13 +1602,13 @@ defmodule Gaoxy.HTTP.GenerationCheckedRuntimeTest do
     end)
 
     socket =
-      struct!(ThousandIsland.Socket,
+      struct!(Hell.Socket,
         socket: raw,
-        transport_module: ThousandIsland.Transports.TCP,
+        transport_module: Hell.Transports.TCP,
         read_timeout: 1_000,
         handshake_timeout: 1_000,
         silent_terminate_on_error: false,
-        span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
+        span: Hell.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
       )
 
     exchange = Exchange.new(request, socket, nil, nil, deadline(3_000), fixture.http_limits, "")

@@ -57,7 +57,7 @@ defmodule Gaoxy.Proxy.HTTPCompletedResponseTest do
   defmodule Transport do
     alias Gaoxy.HTTP.Exchange
     alias Gaoxy.HTTP.HTTP1.Response
-    alias ThousandIsland.Socket
+    alias Hell.Socket
 
     def send_resp(exchange, status, fields, body),
       do: wrap(Response.send_resp(native(exchange), status, fields, body), exchange)

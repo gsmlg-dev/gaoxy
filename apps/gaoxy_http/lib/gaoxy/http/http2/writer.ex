@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP2.Writer do
   @moduledoc false
   alias Gaoxy.Admission
-  alias ThousandIsland.Socket
+  alias Hell.Socket
 
   def run(owner, socket, gate, bytes, timeout) do
     # The socket owner can exit when send_timeout_close closes its socket.

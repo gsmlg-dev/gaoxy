@@ -48,7 +48,7 @@ defmodule Gaoxy.Proxy.HTTP3GuardianTest do
   end
 
   defmodule LeaseOwner do
-    use ThousandIsland.Handler
+    use Hell.Handler
 
     def validate_options(%{observer: observer} = options) when is_pid(observer),
       do: {:ok, options}

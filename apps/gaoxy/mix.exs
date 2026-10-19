@@ -11,9 +11,9 @@ defmodule Gaoxy.MixProject do
       lockfile: "../../mix.lock",
       elixir: "~> 1.18",
       deps: [
-        {:thousand_island,
-         git: "https://github.com/mtrudel/thousand_island.git",
-         ref: "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"},
+        {:hell,
+         git: "https://github.com/gsmlg-dev/hell.git",
+         ref: "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee"},
         {:abyss,
          git: "https://github.com/gsmlg-dev/abyss.git",
          ref: "9b710e6480900e16e304f40e63623aff8c922e19"},

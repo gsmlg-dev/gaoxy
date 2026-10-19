@@ -4,7 +4,7 @@ defmodule Gaoxy.Proxy.StreamRelayTest do
   @timeout 3_000
 
   defmodule BridgeHandler do
-    use ThousandIsland.Handler
+    use Hell.Handler
     alias Gaoxy.{Admission, Lifecycle}
     alias Gaoxy.Proxy.StreamRelay
     @timeout 3_000
@@ -19,7 +19,7 @@ defmodule Gaoxy.Proxy.StreamRelayTest do
       deadline = Lifecycle.deadline(config.max_lifetime)
       {:ok, lease} = Admission.acquire(gate, 65_536, drain_notify: true)
       :ok = Admission.begin_request(gate, lease, 65_536, deadline)
-      {:ok, buffered} = ThousandIsland.Socket.recv(socket, 9, @timeout)
+      {:ok, buffered} = Hell.Socket.recv(socket, 9, @timeout)
       {:ok, upstream} = StreamRelay.connect(config, deadline)
       send(spec.handler_options.owner, {:bridge_dialled, self(), lease, deadline})
       result = StreamRelay.bridge(socket, upstream, context, config, lease, deadline, buffered)

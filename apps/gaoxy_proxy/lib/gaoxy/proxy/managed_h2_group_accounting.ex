@@ -957,8 +957,8 @@ defmodule Gaoxy.Proxy.ManagedH2GroupAccounting do
   defp names?(_, _, _, _, _, _), do: false
   defp native_socket?(nil), do: true
 
-  defp native_socket?(%ThousandIsland.Socket{} = v),
-    do: exact?(v, Map.keys(ThousandIsland.Socket.__struct__()))
+  defp native_socket?(%Hell.Socket{} = v),
+    do: exact?(v, Map.keys(Hell.Socket.__struct__()))
 
   defp native_socket?(_), do: false
   defp tls_metadata?(nil), do: true

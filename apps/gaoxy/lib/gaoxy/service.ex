@@ -781,7 +781,7 @@ defmodule Gaoxy.Service do
   end
 
   defp backend_control(operation, transport, backend) do
-    host = if transport == :udp, do: Abyss, else: ThousandIsland
+    host = if transport == :udp, do: Abyss, else: Hell
     apply(host, if(operation == :pause, do: :suspend, else: :resume), [backend])
   end
 
@@ -800,7 +800,7 @@ defmodule Gaoxy.Service do
     end
   end
 
-  defp local(state), do: ThousandIsland.listener_info(state.backend)
+  defp local(state), do: Hell.listener_info(state.backend)
   defp backend_status(%{mode: :stopped}), do: :stopped
   defp backend_status(%{spec: %{transport: :quic}}), do: :quic_connection_host
 
@@ -938,15 +938,15 @@ defmodule Gaoxy.Service do
         []
       end
 
-    ThousandIsland.start_link(
+    Hell.start_link(
       handler_module:
         if(spec.handler_mode == :native, do: spec.handler, else: Gaoxy.StreamBridge),
       handler_options: context,
       port: spec.port,
       transport_module:
         if(spec.transport == :tls,
-          do: ThousandIsland.Transports.SSL,
-          else: ThousandIsland.Transports.TCP
+          do: Hell.Transports.SSL,
+          else: Hell.Transports.TCP
         ),
       transport_options: [
         if(tuple_size(spec.ip) == 8, do: :inet6, else: :inet),

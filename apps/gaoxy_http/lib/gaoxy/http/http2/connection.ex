@@ -4,7 +4,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   alias Gaoxy.HTTP.{Exchange, HTTP2.Frame, HTTP2.Headers, HTTP2.Limits, HTTP2.Settings}
   alias Gaoxy.HTTP.RendererBounds
   alias Gaoxy.HTTP.HTTP2.{Stream, Writer, Transport, WorkerAccounting}
-  alias ThousandIsland.Socket
+  alias Hell.Socket
   @preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
   @max_window 2_147_483_647
 

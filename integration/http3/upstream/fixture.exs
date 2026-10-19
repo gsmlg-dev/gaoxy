@@ -25,7 +25,7 @@ defmodule Gaoxy.UpstreamMatrixEndpoint do
     end
 
     if id == "h1-tiny_window_1mib" do
-      {:ok, capacity} = ThousandIsland.Socket.getopts(exchange.socket, [:recbuf, :buffer])
+      {:ok, capacity} = Hell.Socket.getopts(exchange.socket, [:recbuf, :buffer])
 
       send(
         options.observer,
@@ -205,7 +205,7 @@ defmodule Gaoxy.UpstreamMatrixFixture do
           if id == "h1-tiny_window_1mib" do
             selected = [{:_, [{:==, {:self}, {:const, owner}}], [{:return_trace}]}]
             :erlang.trace_pattern({Gaoxy.HTTP.Exchange, :read_body_step, 3}, selected, [])
-            :erlang.trace_pattern({ThousandIsland.Socket, :recv, 3}, selected, [])
+            :erlang.trace_pattern({Hell.Socket, :recv, 3}, selected, [])
             [:receive, :call, :monotonic_timestamp]
           else
             [:receive]
@@ -384,7 +384,7 @@ defmodule Gaoxy.UpstreamMatrixFixture do
     if owners[owner] == "h1-tiny_window_1mib" and
          {module, operation} in [
            {Gaoxy.HTTP.Exchange, :read_body_step},
-           {ThousandIsland.Socket, :recv}
+           {Hell.Socket, :recv}
          ] do
       at = trace_us(timestamp)
       key = {:matrix_ingress_call, owner, operation}
@@ -512,7 +512,7 @@ defmodule Gaoxy.UpstreamMatrixFixture do
 
   defp clear_ingress_trace do
     :erlang.trace_pattern({Gaoxy.HTTP.Exchange, :read_body_step, 3}, false, [])
-    :erlang.trace_pattern({ThousandIsland.Socket, :recv, 3}, false, [])
+    :erlang.trace_pattern({Hell.Socket, :recv, 3}, false, [])
   end
 
   defp trace_us(timestamp), do: System.convert_time_unit(timestamp, :native, :microsecond)

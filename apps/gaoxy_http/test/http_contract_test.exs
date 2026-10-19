@@ -76,13 +76,13 @@ defmodule Gaoxy.HTTP.ContractTest do
     {:ok, lease} = Gaoxy.Admission.acquire(gate, 0)
 
     socket =
-      struct!(ThousandIsland.Socket,
+      struct!(Hell.Socket,
         socket: self(),
         transport_module: CaptureTransport,
         read_timeout: 1000,
         handshake_timeout: 1000,
         silent_terminate_on_error: false,
-        span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
+        span: Hell.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
       )
 
     exchange = %Exchange{

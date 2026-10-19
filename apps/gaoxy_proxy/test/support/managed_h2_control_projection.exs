@@ -487,7 +487,7 @@ defmodule Gaoxy.Proxy.ManagedH2ControlProjection do
     bounded(projection, 8_192)
   end
 
-  defp native_socket(%ThousandIsland.Socket{}), do: {:opaque, :native_socket_lease}
+  defp native_socket(%Hell.Socket{}), do: {:opaque, :native_socket_lease}
   defp native_socket(nil), do: nil
   defp native_socket(_), do: flunk("unknown native socket capability")
   defp native_tls(nil), do: nil

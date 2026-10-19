@@ -19,7 +19,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     assert next.deadline == exchange.deadline
     assert next.poll_buffer_bytes == 4
     assert Exchange.retained_bytes(next) == Exchange.retained_bytes(exchange) - 1 + 4
-    assert {:ok, "ET"} = ThousandIsland.Socket.recv(next.socket, 2, 100)
+    assert {:ok, "ET"} = Hell.Socket.recv(next.socket, 2, 100)
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
   end
 
@@ -78,7 +78,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
 
     assert {:error, :buffer_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
     assert exchange.poll_buffer_bytes == 0
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
 
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes ==
              Exchange.retained_bytes(exchange)
@@ -90,7 +90,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
 
     assert {:error, :byte_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
     assert exchange.poll_buffer_bytes == 0
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
 
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes ==
              Exchange.retained_bytes(exchange)
@@ -102,7 +102,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
 
     assert {:error, :byte_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
     assert exchange.poll_buffer_bytes == 0
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
 
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes ==
              Exchange.retained_bytes(exchange)
@@ -136,7 +136,7 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     end
 
     assert exchange.poll_buffer_bytes == 0
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
   end
 
   defp poll_ready(exchange, deadline) do
@@ -185,13 +185,13 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     end)
 
     socket =
-      struct!(ThousandIsland.Socket,
+      struct!(Hell.Socket,
         socket: raw,
-        transport_module: ThousandIsland.Transports.TCP,
+        transport_module: Hell.Transports.TCP,
         read_timeout: 1000,
         handshake_timeout: 1000,
         silent_terminate_on_error: false,
-        span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
+        span: Hell.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
       )
 
     exchange =

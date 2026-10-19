@@ -5,7 +5,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest do
   alias Gaoxy.Proxy.ManagedH1MatrixFixture, as: Fixture
   alias Gaoxy.Proxy.{HTTPFetchClient, UpstreamGroups, UpstreamTransports}
   alias Gaoxy.HTTP.Resources
-  alias ThousandIsland.Socket
+  alias Hell.Socket
 
   @moduletag :capture_log
   @moduletag timeout: 40_000
@@ -35,7 +35,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportNativeH1PressureTest do
 
     def call(exchange, {module, config, observer}) do
       if exchange.request.path == "/pressure/slow" do
-        :ok = ThousandIsland.Socket.setopts(exchange.socket, sndbuf: 1024)
+        :ok = Hell.Socket.setopts(exchange.socket, sndbuf: 1024)
       end
 
       send(

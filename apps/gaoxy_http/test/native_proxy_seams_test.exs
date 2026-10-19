@@ -281,7 +281,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
 
     assert {:error, :byte_limit, ^next} = Exchange.poll_connection(next, 100)
     refute_received {:poll_recv_charge, _}
-    assert {:ok, "y"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
     assert Gaoxy.Admission.status(next.gate).retained_bytes == expected
   end
 
@@ -295,7 +295,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
 
     assert {:error, :byte_limit, ^observed} = Exchange.poll_connection(observed, 100)
     refute_received {:poll_recv_charge, _}
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes == retained
   end
 
@@ -309,7 +309,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert next.buffer == "pz"
     assert Exchange.retained_bytes(next) == base + 2 * next.limits.max_buffer_bytes
     assert {:error, :buffer_limit, ^next} = Exchange.poll_connection(next, 100)
-    assert {:ok, "y"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
   end
 
@@ -348,7 +348,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
 
     assert {:error, :stale_generation, ^observed} = Exchange.poll_connection(observed, 100)
     refute_received {:poll_recv_charge, _}
-    assert {:ok, "z"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
 
     {:ok, spec} =
       Gaoxy.HTTP.service_spec(endpoint: {Endpoint, fn exchange -> {:ok, exchange} end})
@@ -360,7 +360,7 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     next = %{next | gate: dead_gate}
     assert {:noproc, _} = catch_exit(Exchange.poll_connection(observe_recv(next), 100))
     refute_received {:poll_recv_charge, _}
-    assert {:ok, "y"} = ThousandIsland.Socket.recv(exchange.socket, 1, 100)
+    assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
   end
 
   test "body consumption and response writes preserve the admitted poll floor" do
@@ -484,13 +484,13 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     end)
 
     socket =
-      struct!(ThousandIsland.Socket,
+      struct!(Hell.Socket,
         socket: raw,
-        transport_module: ThousandIsland.Transports.TCP,
+        transport_module: Hell.Transports.TCP,
         read_timeout: 1000,
         handshake_timeout: 1000,
         silent_terminate_on_error: false,
-        span: ThousandIsland.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
+        span: Hell.Telemetry.start_span(:connection, %{}, %{handler: __MODULE__})
       )
 
     request = %{request | body: framing, expect_continue: options[:expect] || false}

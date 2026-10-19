@@ -1,5 +1,21 @@
 # Dependency audit
 
+## Current TCP/TLS dependency — 2026-10-19
+
+Gaoxy replaces Thousand Island with its fork
+[Hell](https://github.com/gsmlg-dev/hell), pinned to Git revision
+`59eed42b019ca41413d1b8cd7a7dc3e344bb93ee` (declared version **0.1.2**, MIT).
+The dependency and OTP application are `:hell`; public modules use `Hell`,
+`Hell.Handler`, `Hell.Socket`, `Hell.Transport` and `Hell.Transports.*`.
+Gaoxy's listener, handlers and transport adapters use those public APIs directly.
+This changes the TCP/TLS backend dependency; the HTTP and QUIC dependency
+cohort is unchanged.
+
+The audit sections below retain their original dependency identities, source
+hashes and verification outcomes as historical snapshots. References to
+Thousand Island describe the earlier backend, including the published v0.4.0
+source; they are not evidence of verification against Hell.
+
 ## Current M4 cohort and upstream selection — 2026-10-13
 
 The seven coordinated HTTP/QUIC packages are installed at **0.21.4**.

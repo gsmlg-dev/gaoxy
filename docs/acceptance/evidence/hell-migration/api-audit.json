@@ -1,0 +1,195 @@
+{
+  "task_id": "hell_api_audit",
+  "status": "DONE",
+  "assignment": "direct read-only API audit",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/hell-migration",
+  "baseline": "a93baedae3a3b86fba267dc5fd22b7fe041b24d0",
+  "hell": {
+    "repository": "gsmlg-dev/hell",
+    "ref": "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee",
+    "version": "0.1.2",
+    "app": "hell",
+    "namespace": "Hell"
+  },
+  "thousand_island": {
+    "repository": "mtrudel/thousand_island",
+    "ref": "6146e1bfdd1a85c5c16c3c92ad98ff5f11066820"
+  },
+  "findings": [],
+  "conclusion": "No public API blocker found for Gaoxy used interfaces after full namespace/app migration. Static compatibility only; runtime acceptance belongs to parent.",
+  "required_changes": [
+    "Dependency tuple and lock key become hell pinned to candidate commit.",
+    "Replace all live ThousandIsland modules with Hell across gaoxy, gaoxy_http, gaoxy_proxy source/tests and integration/http3/upstream/fixture.exs tracing.",
+    "Strict managed_h2_group_accounting native socket predicate must use %Hell.Socket{} and Hell.Socket.__struct__(). Fields unchanged; do not weaken exact accounting.",
+    "Update current active architecture/documentation descriptions; preserve immutable historical evidence.",
+    "Build from clean/new migration worktree to avoid stale old module artifacts; inspect release includes hell and no production thousand_island."
+  ],
+  "public_api_evidence": [
+    "lib/hell.ex:195-204 child_spec changes generated ID namespace only; :start_link at211, listener_info at222, suspend/resume delegates258/264, stop376 are source-compatible.",
+    "lib/hell/server_config.ex and handler_config.ex are byte-identical to baseline after namespace normalization. All configured Gaoxy listener option names/defaults preserved.",
+    "lib/hell/handler.ex:236-313 callback signatures unchanged. use Hell.Handler replaces use ThousandIsland.Handler. No compatibility aliases.",
+    "lib/hell/socket.ex:7-15 enforced keys and optional timer fields unchanged; all Gaoxy-used socket operations retained with same signatures.",
+    "lib/hell/telemetry.ex:342-350 telemetry struct enforced keys unchanged; :start_span at392. Event prefix now :hell at388; suffix/metadata/measurements remain compatible.",
+    "lib/hell/process_label.ex normalized byte-identical; label prefix becomes :hell.",
+    "MIGRATION.md explicitly documents no aliases/live upgrade, ready message :hell_ready, logger handler identities and fork release changes."
+  ],
+  "behavior_deltas": [
+    "Hell0.1.1 orderly shutdown waits for acceptor cleanup bounded by shutdown listener5000ms child shutdown; do not assume zero stop latency.",
+    "Hell0.1.2 adds optional Transport.upgrade/3 and built-in SSL upgrade honors handshake_timeout. Existing upgrade/2 remains supported; Gaoxy normal TLS listener handshake API unchanged.",
+    "Transport option normalization enforces binary mode even against bare :list and handles raw option identities; Gaoxy already uses binary protocol data.",
+    "Internal handoff guard preserves cleanup/availability after incomplete startup; no consumer private API required.",
+    "Transport-switch continuation reuses normal read timer logic."
+  ],
+  "recommended_validation": [
+    "Scoped fresh strict compile and formatter for changed source, no broad suite.",
+    "Ordinary TCP native echo/setup/context and normal service-removal lifecycle case native_stream_test.exs:99.",
+    "Ordinary H1/H2 TLS ALPN and h2c prior-knowledge real peers plus ordinary WebSocket H1/H2/H3 cases from existing accepted ordinary manifest.",
+    "Ordinary fixed/group H2 upstream and strict accounting projection tests; ordinary reverse proxy/CONNECT/relay happy paths selected by test line/tag only.",
+    "Inspect tests before selecting: native_stream and stream_relay files contain watchdog/stall/backpressure cases, so do not run whole files indiscriminately.",
+    "Verify current tree refs absent outside retained historical docs/evidence, production dependency graph/application metadata uses hell, core-only isolation preserved."
+  ],
+  "verification": {
+    "raw_fetch": "PASS: 18 pinned Hell library files and18 pinned upstream baseline files fetched using bounded curl; hashes recorded below. MIGRATION.md fetched. Namespace-normalized textual diffs inspected.",
+    "compile": "NOT RUN per read-only assignment",
+    "tests": "NOT RUN per read-only assignment",
+    "runtime": "NOT RUN per read-only assignment"
+  },
+  "network_notes": "Slow Git clone canceled; tarball fetch timeout124. Bounded raw GitHub source fetches all exit0. No upstream defect established and no issue created.",
+  "changed_files": "Only permitted .audit/hell-migration/api-audit scratch and this JSON receipt. No production/test/deps changes.",
+  "sol_repair_rounds": 0,
+  "astra_counter": "2/2 exhausted inherited; no Astra requested",
+  "commands_shutdown": "All own clone/download processes safely stopped or finished; no Mix/build/test run.",
+  "risks": [
+    "Static API audit does not establish runtime protocol/lifecycle behavior.",
+    "Consumer handlers referencing ThousandIsland must migrate imports/use and structs; external code compiled against old modules has no aliases."
+  ],
+  "decisions_needed": [],
+  "source_files": [
+    {
+      "hell_path": "lib/hell/acceptor.ex",
+      "hell_sha256": "dbc5c2f0619456f82bd2d49d20182a380819dac7ddd5f93b2a6190a32da192f8",
+      "baseline_path": "lib/thousand_island/acceptor.ex",
+      "baseline_sha256": "f778919a231f53fdd25a6e7dd35a2577272c690a6fa99d20aa6cb198d3f1c04a",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/acceptor_pool_supervisor.ex",
+      "hell_sha256": "b332de3092a65c042ddcba8486553c4c6154fb65827f9eeb92202f388ad34cda",
+      "baseline_path": "lib/thousand_island/acceptor_pool_supervisor.ex",
+      "baseline_sha256": "9f05935b19bbc3fd79c93767c3e217f628ea4d1c2e82ed89148b9c94b30a37e1",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/acceptor_supervisor.ex",
+      "hell_sha256": "57f4787aa257b1e9d2a2fa06a192321050d2256cf91af0d079e9f689a641f7aa",
+      "baseline_path": "lib/thousand_island/acceptor_supervisor.ex",
+      "baseline_sha256": "4169ef08b8d14d12a533e6550760edb41d24b3065a540d22c33feb2198745c24",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/connection.ex",
+      "hell_sha256": "f3673b6c8da15951543fd037a2a0600bf85e58580b94ddc82960ffa4e4d32693",
+      "baseline_path": "lib/thousand_island/connection.ex",
+      "baseline_sha256": "3b1b1f6f3a9eb82adab2d6c342b1bc461520c2692e99cbe596c068dae522f19c",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/handler.ex",
+      "hell_sha256": "87f21835b4a9f2af6c5cdd7f4235ac7feafe1b61bf18e927b4005a07874465dd",
+      "baseline_path": "lib/thousand_island/handler.ex",
+      "baseline_sha256": "baa63be02492beb348e11412fd4a8524a288ecdb1010f6f2c08df2e02f202319",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/handler_config.ex",
+      "hell_sha256": "366744ebcc0d96d8b5597380569f5bebd4754a3b712a739c896b8dd3ca1175f1",
+      "baseline_path": "lib/thousand_island/handler_config.ex",
+      "baseline_sha256": "33bb1ba317d715631c5cf15cfdda7dd924de41e44f8ce8abd8d51ab3903306ed",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/listener.ex",
+      "hell_sha256": "fac4486168b4d4766819fbe2d24b31f9b565228f34bd111ce7cf3fe406edc74e",
+      "baseline_path": "lib/thousand_island/listener.ex",
+      "baseline_sha256": "7d7a0d66551a252b89790f5e4607d18e41a8697b9b8755cea9a61c5fb7cf30ca",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/logger.ex",
+      "hell_sha256": "e338085cef0f5ef15208413111de9c2c893ad8d00919f4f50fe59df84f5bf9c3",
+      "baseline_path": "lib/thousand_island/logger.ex",
+      "baseline_sha256": "791cf54c80c4ef3b6a901bd5b0bd933d97d14dc605b00ea9e2da79820d8b0dbb",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/process_label.ex",
+      "hell_sha256": "722e3b629074d8f44f3c9487c974f1a84284f85b9df58086672e16578e0d73a0",
+      "baseline_path": "lib/thousand_island/process_label.ex",
+      "baseline_sha256": "7d24987947ddd9322a653102bac33229888f1ea42f0edf5caabf3d4990041a2f",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/server.ex",
+      "hell_sha256": "43bd9dd61e451928ab8f9e0716943899c266ba6c78d749f645a52284147dd6f0",
+      "baseline_path": "lib/thousand_island/server.ex",
+      "baseline_sha256": "dafe054817204423d3e23aa7ecc52a0531fb94673b07454cc271d5ecf9e42246",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/server_config.ex",
+      "hell_sha256": "35c1eb1a38ffcc9f4427bbbb5ebf45834a3c71857be564ae83d2e051c3471a0a",
+      "baseline_path": "lib/thousand_island/server_config.ex",
+      "baseline_sha256": "c7bb46e23fcfc3d1ed3d0cefbbde5ca2df8fda2d8c2cfc283a8de9bbcd2e5136",
+      "namespace_normalized_identical": true
+    },
+    {
+      "hell_path": "lib/hell/shutdown_listener.ex",
+      "hell_sha256": "154f3c4611c1d66215f92828b8b1e98f2ad89c25be5aebc49d78efe51660d955",
+      "baseline_path": "lib/thousand_island/shutdown_listener.ex",
+      "baseline_sha256": "70947617f0a6c5cc7179df85ec2063c08c86a5eaa19bafce2f6730eba0fac205",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/socket.ex",
+      "hell_sha256": "65d13c435fd7d3d9c872e47d1a61c94df0dd24053aa7c3c42b252d2bb46b765e",
+      "baseline_path": "lib/thousand_island/socket.ex",
+      "baseline_sha256": "0dba5adf77da5d40e88f8b99286270af4c8009d3d97c1c03eccb0f1d0ab9c21a",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/telemetry.ex",
+      "hell_sha256": "a63a6b74e13a61e21c60e7d52dcf0549e5d0a3ea2c51ac7ff066c61ca6d7ba11",
+      "baseline_path": "lib/thousand_island/telemetry.ex",
+      "baseline_sha256": "8e7736459dc13c902e95e9e7eb666245ef379c084a7eed6e2a28cd743ff5b483",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/transport.ex",
+      "hell_sha256": "24b26ce4b9d3d9104296e9727874c9dbd3b4a56f75d5228ba5601fb531a2d7dd",
+      "baseline_path": "lib/thousand_island/transport.ex",
+      "baseline_sha256": "e6e243c023c5725b813570e3edad6b55c6f23ccb371a1340d0f42cbbb596af43",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/transports/ssl.ex",
+      "hell_sha256": "2357e06a492bdf25afa657839bb8f133f0a5925ea9858f4b067f879fc867422f",
+      "baseline_path": "lib/thousand_island/transports/ssl.ex",
+      "baseline_sha256": "d45a8a599b8af15ecae061f8e0f081173a062bd7428cda2a5c5b1159075fc974",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell/transports/tcp.ex",
+      "hell_sha256": "b7bda9268a2fc9b779a768fe5bf68bb5cc248cbebedb3a44c1cf11e3944e56b3",
+      "baseline_path": "lib/thousand_island/transports/tcp.ex",
+      "baseline_sha256": "a7631b65fce9127034b6e429ff9cb523788a908638a00ef8157399826a3ce4e5",
+      "namespace_normalized_identical": false
+    },
+    {
+      "hell_path": "lib/hell.ex",
+      "hell_sha256": "b81eb885210385f37e7226c1d45008679077d40e71e2a01b0090dc384dc9cc78",
+      "baseline_path": "lib/thousand_island.ex",
+      "baseline_sha256": "a8ad44777b99c609d27ff7bf3e0882a31b23dcbbb39b31f285f1a950057b2300",
+      "namespace_normalized_identical": false
+    }
+  ]
+}

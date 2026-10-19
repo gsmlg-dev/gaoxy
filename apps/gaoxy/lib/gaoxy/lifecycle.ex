@@ -133,7 +133,7 @@ defmodule Gaoxy.Lifecycle do
         Abyss.QUIC.stop(backend, remaining(deadline))
 
       _ ->
-        with :ok <- ThousandIsland.suspend(backend),
+        with :ok <- Hell.suspend(backend),
              :ok <- await_leases(gate, deadline) do
           Supervisor.stop(backend, :normal, remaining(deadline))
         end

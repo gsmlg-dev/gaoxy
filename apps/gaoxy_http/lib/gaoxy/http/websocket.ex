@@ -2,7 +2,7 @@ defmodule Gaoxy.HTTP.WebSocket do
   @moduledoc false
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.WebSocket.{ExtendedHandshake, Frame, Handshake, Message}
-  alias ThousandIsland.Socket
+  alias Hell.Socket
 
   defstruct [
     :exchange,

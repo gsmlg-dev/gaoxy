@@ -13,11 +13,11 @@ defmodule Gaoxy.Proxy.StreamRelay do
   Receive buffers, carry and writer copies are reserved before polling or
   handoff; each direction has at most one bounded writer message outstanding.
   """
-  use ThousandIsland.Handler
+  use Hell.Handler
   @behaviour Gaoxy.NativeStreamHandler
   alias Gaoxy.{Admission, Lifecycle, Telemetry}
   alias Gaoxy.Proxy.StreamRelay.{Upstream, Writer}
-  alias ThousandIsland.Socket
+  alias Hell.Socket
 
   @raw_limit 65_536
   # Audited OTP28 passive SSL delivery: at most100 transport buffers plus one

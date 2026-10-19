@@ -1,13 +1,18 @@
 # ADR 006: Native HTTP connection ownership
 
+TCP/TLS backend update — 2026-10-19: Hell, the Thousand Island fork, replaces
+Thousand Island without changing the ownership model described here. The
+dependency audit records the [exact Hell revision](../dependency-audit.md).
+Historical release and acceptance evidence retains its original backend identity.
+
 Gaoxy owns native HTTP/1 request/response execution. A trusted `handler_mode:
-:native` TCP/TLS service selects a public Thousand Island handler while retaining
+:native` TCP/TLS service selects a public Hell handler while retaining
 Gaoxy's listener, admission, registry, service and instance ownership. Default
 stream handlers keep their existing callback contract. Core has no dependency
 on HTTP, Plug, Phoenix or an upstream client.
 
 `Gaoxy.HTTP.Connection` owns the connection and executes local Plug requests.
-Public synchronous `ThousandIsland.Socket.recv/send` operations support bounded
+Public synchronous `Hell.Socket.recv/send` operations support bounded
 Plug body reads and acknowledged chunk writes without a body broker process.
 Pure `Gaoxy.HTTP.HTTP1` parsers retain only bounded framing state. The shared
 request/exchange contract separates endpoint dispatch from wire ownership;

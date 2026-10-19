@@ -7,10 +7,21 @@ defmodule HTTPConsumerTest do
   end
 
   test "H1/H2 consumer resolves and starts without optional QUIC or proxy applications" do
-    forbidden = [:gaoxy_http3, :elixir_quic, :elixir_quic_http3, :ex_ssl, :http_fetch, :bandit]
+    forbidden = [
+      :thousand_island,
+      :gaoxy_http3,
+      :elixir_quic,
+      :elixir_quic_http3,
+      :ex_ssl,
+      :http_fetch,
+      :bandit
+    ]
+
     resolved = for dependency <- Mix.Dep.load_and_cache(), do: dependency.app
     running = for {app, _, _} <- Application.started_applications(), do: app
 
+    assert :hell in resolved
+    assert :hell in running
     assert :gaoxy_http in resolved
     assert :gaoxy_http in running
 

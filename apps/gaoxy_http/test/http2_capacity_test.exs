@@ -162,7 +162,7 @@ defmodule Gaoxy.HTTP2CapacityTest do
 
       assert_receive {:capacity_native, {owner, 1, _}}, @timeout
       {native_socket, _state} = :sys.get_state(owner, @timeout)
-      {:ok, native} = ThousandIsland.Socket.getopts(native_socket, [:buffer, :recbuf])
+      {:ok, native} = Hell.Socket.getopts(native_socket, [:buffer, :recbuf])
       {response(socket), native}
     after
       :ok = :gen_tcp.close(socket)

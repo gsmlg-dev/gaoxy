@@ -1,8 +1,10 @@
 # Transport-runtime architecture
 
-Gaoxy composes Thousand Island for TCP/OTP TLS and Abyss for datagrams. Its
-immutable validated plan precedes binding. Each instance owns a service supervisor
-and specification table; Registry keys include an opaque instance identity and
+Gaoxy composes Hell for TCP/OTP TLS and Abyss for datagrams. Hell replaces
+Thousand Island in current source after v0.4.0; the published release retains
+its original backend. The [dependency audit](dependency-audit.md) records the pin.
+Gaoxy's immutable validated plan precedes binding. Each instance owns a service
+supervisor and specification table; Registry keys include an opaque instance identity and
 service ID. Each service owns one backend, its admission/watchdog process and a
 fresh generation. No instance process participates in packet or connection data
 handling.

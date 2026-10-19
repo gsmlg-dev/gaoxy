@@ -3,7 +3,7 @@ defmodule Gaoxy.CleanupAttachmentTest do
   alias Gaoxy.{Admission, Config, Lifecycle, Service}
 
   defmodule Native do
-    use ThousandIsland.Handler
+    use Hell.Handler
 
     def validate_options(%{owner: owner} = options) when is_pid(owner), do: {:ok, options}
 

@@ -1,6 +1,6 @@
 defmodule Gaoxy.NativeStreamHandler do
   @moduledoc """
-  Trusted native TCP/TLS handlers implement `ThousandIsland.Handler` directly.
+  Trusted native TCP/TLS handlers implement `Hell.Handler` directly.
 
   The initial handler state contains `spec`, `gate`, `scope`, and the owning
   `service` and `instance` PIDs. The scope retains stable telemetry identifiers.

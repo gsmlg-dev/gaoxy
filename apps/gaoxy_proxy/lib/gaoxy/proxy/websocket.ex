@@ -169,7 +169,7 @@ defmodule Gaoxy.Proxy.WebSocket do
 
     {address, _port} = exchange.peer
     host = Enum.find_value(request.headers, request.host, fn {k, v} -> if k == "host", do: v end)
-    scheme = if ThousandIsland.Socket.secure?(exchange.socket), do: "https", else: "http"
+    scheme = if Hell.Socket.secure?(exchange.socket), do: "https", else: "http"
 
     headers ++
       [

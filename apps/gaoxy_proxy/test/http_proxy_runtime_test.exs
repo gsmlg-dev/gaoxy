@@ -9,7 +9,7 @@ defmodule Gaoxy.Proxy.HTTPRuntimeTest do
     end
 
     def call(exchange, {config, owner}) do
-      :ok = ThousandIsland.Socket.setopts(exchange.socket, sndbuf: 8192)
+      :ok = Hell.Socket.setopts(exchange.socket, sndbuf: 8192)
       send(owner, {:native_owner, self()})
       Gaoxy.Proxy.HTTP.call(exchange, config)
     end

@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.Exchange do
   @moduledoc "One request's socket, admission lease, framing and response state."
   alias Gaoxy.HTTP.HTTP1.Body
-  alias ThousandIsland.Socket
+  alias Hell.Socket
   alias Gaoxy.Admission
 
   defstruct [
