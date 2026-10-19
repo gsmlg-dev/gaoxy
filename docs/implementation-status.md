@@ -18,7 +18,7 @@ blocked-upload disconnect probe established only a fixture setup failure before
 request creation; the test-only require fix has not been rerun. No product defect
 or repair acceptance is claimed, and that slice is excluded from this integration.
 
-**Fresh ordinary candidate verification: PASS (62 executed tests, 0 failures). Local main merge: PENDING.** The
+**Fresh ordinary candidate and main verification: PASS (62 executed tests each, 0 failures). Local main merge: PASS** by fast-forward to `743297a`; the final documentation-only closeout follows. The
 current authorization permits local integration only, with no new push, release
 or deployment permission. The already published v0.3.0 source/artifacts below
 remain distinct from the new local implementation. Existing production-data,

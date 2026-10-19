@@ -20,7 +20,7 @@ creation; its test-only fixture-load fix has not been rerun and no product defec
 or production repair is established. That slice is excluded from this integration
 and is not to continue under this task.
 
-The user authorizes **local merge into main**. Fresh ordinary candidate verification **PASS**: strict compile plus 38 unit/configuration and 24 positive network tests, zero failures. Local integration and post-merge verification remain pending in the completion ledger. This adds no push/release/deployment authority; the published v0.3.0
+The user authorizes **local merge into main**. Fresh ordinary candidate verification **PASS**: strict compile plus 38 unit/configuration and 24 positive network tests, zero failures. Local `main` integration and fresh post-merge verification also **PASS** (the same 62 ordinary cases, zero failures), recorded in the completion ledger. This adds no push/release/deployment authority; the published v0.3.0
 source/artifacts remain a separate historical release. Production data,
 operational certificates, Vault, public management and disabled release-artifact
 E2E restrictions remain intact.

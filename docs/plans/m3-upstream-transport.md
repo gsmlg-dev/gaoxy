@@ -22,7 +22,7 @@ preparation timeout; its next probe executed one case with one fixture setup
 failure before request creation. A test-only require fix is present but unrerun;
 no genuine protocol RED, established product defect or production repair follows.
 
-Fresh ordinary candidate verification is **PASS** (strict compile, 62 executed tests/0 failures). Local main merge and post-merge verification remain **PENDING** in the completion ledger. Local integration is authorized; no new push/release/deployment
+Fresh ordinary candidate verification is **PASS** (strict compile, 62 executed tests/0 failures). Local main merge and fresh post-merge verification also **PASS** (62 ordinary cases, zero failures); the completion ledger records the exact integration and commands. Local integration is authorized; no new push/release/deployment
 permission follows. Historical v0.3.0 publication and all existing production,
 certificate, Vault, public-management and disabled release-artifact E2E
 restrictions remain separate.

@@ -1,7 +1,7 @@
 # M3 completion and local integration — 2026-10-19
 
 **Product status: ACCEPTED COMPLETE in the current user-approved scope.**
-**Fresh ordinary candidate verification: PASS (62 executed tests, 0 failures). Local main merge: PENDING.**
+**Fresh ordinary candidate and main verification: PASS (62 executed tests each, 0 failures). Local main merge: PASS.**
 
 The user accepts the existing M3 product implementation and ordinary verification
 as complete and authorizes a local merge into `main`. Exceptional/disconnect,
@@ -63,9 +63,10 @@ Their older NOT RUN checkpoint must be read with this later factual disposition.
 | --- | --- | --- |
 | Fresh ordinary scoped verification of the merge candidate | PASS; strict compile, 38 ordinary unit/configuration tests + 24 positive network tests, 0 failures | [Exact commands and exits](evidence/m3/local-merge-2026-10-19/premerge.json); source `88799ae`, Nix Elixir 1.18/OTP 28, seed 0/max-cases 1 |
 | Independent review of accepted integration and current scope documentation | PASS; no unresolved findings | [Independent scope/source/document review](evidence/m3/local-merge-2026-10-19/independent-review.json) |
-| Local main integration and final repository identity | PENDING | Integrating parent records actual commit and merge result |
+| Local main integration | PASS; fast-forward from `449a4c4` to `743297a` | [Actual integration receipt](evidence/m3/local-merge-2026-10-19/integration.json); implementation source remains `88799ae`; this documentation-only closeout follows |
+| Fresh verification on merged main | PASS; strict compile, 38 ordinary unit/configuration + 24 positive network cases, 0 failures | [Main commands, environment, counts and exits](evidence/m3/local-merge-2026-10-19/postmerge.json); same scoped selection as the candidate |
 
-The positive network command selected existing test locations for fixed/group H1 and H2 upstreams, TCP/TLS or h2c/TLS-H2, exact targets, connection reuse, duplicate fields and trailers. It executed 24 of 114 defined cases; 90 other cases were deliberately deselected. They are not 114 executed tests. No exceptional/disconnect, slow-peer, pressure or load case was executed. Pure headers/options and route configuration executed 30 + 8 cases without exclusions.
+The positive network command selected existing test locations for fixed/group H1 and H2 upstreams, TCP/TLS or h2c/TLS-H2, exact targets, connection reuse, duplicate fields and trailers. It executed 24 of 114 defined cases; 90 other cases were deliberately deselected. They are not 114 executed tests. No exceptional/disconnect, slow-peer, pressure or load case was executed. Pure headers/options and route configuration executed 30 + 8 cases without exclusions. Candidate and merged-main runs each executed 62 cases; the repeated runs are not 124 unique tests. Main verification used the explicit dependency/build paths in its receipt. Original untracked files and the unfinished specialist slice remain preserved in the original worktree.
 
 ## Authorization and publication boundary
 
