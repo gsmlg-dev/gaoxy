@@ -3,11 +3,13 @@
 > **For agentic workers:** Use `subagent-driven-development` (recommended) or
 > `executing-plans` task by task, with independent specification and code review.
 
-**Status, 2026-10-19: IN PROGRESS; execution authorized after plan review.**
+**Status, 2026-10-19: COMPLETE LOCALLY within ordinary verification scope.**
 The user requested implementation of this reviewed plan. Work is isolated on
 `codex/m5-websocket-over-h2-h3`, starting at `4c6f089`. Gate results are recorded in
-[M5 acceptance](../acceptance/m5-websocket-over-h2-h3.md); unexecuted gates remain
-NOT RUN. This authorization adds no publication/deployment permission.
+[M5 acceptance](../acceptance/m5-websocket-over-h2-h3.md); all G0–G5 gates passed.
+Historical failed/blocked attempts remain unchanged. This authorization adds no
+publication/deployment permission. Reviewed local source commits extend through
+`99aa4d3`; the acceptance ledger records their byte-identical source custody.
 
 **Goal:** Support native Phoenix/WebSock connections over HTTP/2 (RFC 8441) and
 HTTP/3 (RFC 9220), while preserving HTTP/1.1 WebSocket behavior.
@@ -46,7 +48,7 @@ a dedicated specialist environment. They are not M5 completion gates here.
 Preserve old assertions and FAIL/BLOCKED/NOT RUN evidence; do not resume the
 excluded H1 disconnect slice or recreate HTTP Fetch issue 97 requirements.
 
-Use a new worktree at execution time:
+The execution worktree was created with:
 
 ```sh
 git worktree add -b codex/m5-websocket-over-h2-h3 .trees/m5-websocket-over-h2-h3 main
@@ -54,22 +56,23 @@ git worktree add -b codex/m5-websocket-over-h2-h3 .trees/m5-websocket-over-h2-h3
 
 Record the actual execution HEAD, dirty diff digest and lock hashes before each
 gate. Do not reuse a build or dependency directory from a different cohort
-without verifying it. Root `mix.lock` selects 0.21.10, whereas the current Phoenix
-fixture lock still selects 0.21.4. Resolve that known fixture mismatch in Task 0;
-do not treat historical fixture success as a new-cohort run.
+without verifying it. At planning time root `mix.lock` selected 0.21.10 while the Phoenix fixture
+selected 0.21.4. Task 0 aligned that known mismatch; historical fixture success
+was not reused as a new-cohort run.
 
 All commands below run at the execution worktree root unless stated otherwise.
 Use `nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2'` before the shown
 Python/Mix commands. `scripts/check-tests.py` requires nonzero executed tests.
-New file paths and APIs below are proposed implementation work, not existing
-capabilities. Run only the named stage suites and justified compatibility checks.
+The tasks below retain the reviewed implementation sequence; checked items are
+implemented and verified as linked in the ledger. Run only the named stage
+suites and justified compatibility checks.
 Do not fix unrelated failures. Keep cumulative Sol/Astra repair counters in the
 execution record; architecture work is not an Astra recovery round and does not
 reset the exhausted historical recovery allowance.
 
 ## Protocol defaults included in M5
 
-Current runtime defaults are H1. M5 changes the embedded HTTP/Phoenix HTTPS
+The planning baseline defaulted to H1. M5 changes the embedded HTTP/Phoenix HTTPS
 default to `protocols: [:http2, :http1]`, ordered ALPN `h2`, `http/1.1`, with H1
 negotiation/no-ALPN fallback and explicit H1-only configuration retained. Plain
 HTTP stays H1 by default; explicit `protocols: [:http2], h2c: :prior_knowledge`
@@ -386,53 +389,53 @@ review. H3 WebSocket browser/Phoenix acceptance remains a separate gate.
 - Create `integration/websocket_multiplexed/browser.py`; extend its fixture and
   README. Add `apps/gaoxy_http/test/phoenix_websocket_test.exs`.
 
-- [ ] Add Endpoint-level `websocket_paths: []`, a validated list of exact
+- [x] Add Endpoint-level `websocket_paths: []`, a validated list of exact
   WebSocket request paths. `Gaoxy.PhoenixWebSocket` wraps the configured Endpoint
   (including its existing code-reload wrapper) on the Phoenix adapter path.
   External H3 mounts explicitly select the same wrapper with Endpoint
   `server: false`. Example paths are `/live/websocket` and `/socket/websocket`.
-- [ ] Extend external `PlugEndpoint.init({Gaoxy.PhoenixWebSocket, {endpoint,
+- [x] Extend external `PlugEndpoint.init({Gaoxy.PhoenixWebSocket, {endpoint,
   paths}})` initialization to apply the existing duplicate-listener check to the
   original Endpoint. The Phoenix adapter retains its current outer
   `{module, options, :endpoint_managed}` startup form; no new wrapper mode is
   needed. Test external `server: true` rejection, external `false` acceptance
   and internal managed `true` acceptance, with code reload preserved.
-- [ ] For a validated enabled H2/H3 `CONNECT` with `protocol: "websocket"` at
+- [x] For a validated enabled H2/H3 `CONNECT` with `protocol: "websocket"` at
   an allowlisted path only, present `conn.method = "GET"` while invoking the
   existing Phoenix Endpoint. Preserve `Exchange.request.method = "CONNECT"`,
   version, protocol and target throughout; restore `conn.method` on return.
   All other requests keep their actual methods. Preserve Phoenix's complete
   socket/session/Origin/CSRF/subprotocol/authentication pipeline.
-- [ ] On `Gaoxy.PlugAdapter` only, make the vendored early validator read the
+- [x] On `Gaoxy.PlugAdapter` only, make the vendored early validator read the
   preserved native request metadata for H2/H3 CONNECT validation even while
   Phoenix sees its compatible GET view. Other adapters retain their original
   validation. Avoid a compile-time dependency from the vendor back to Gaoxy,
   which would create a package cycle. The native Plug upgrade still validates
   the enabled stream/token; never disable early validation or pretend HTTP/1.
-- [ ] Add focused tests for enabled allowlisted paths, unlisted paths retaining
+- [x] Add focused tests for enabled allowlisted paths, unlisted paths retaining
   CONNECT, ordinary GET unchanged, returned method restored, accepted upgrade
   metadata and rejected application authentication/Origin preserving the same
   response. A configured path does not bypass Phoenix policy.
-- [ ] Add H3 validation to the maintained vendor fork explicitly and regression
+- [x] Add H3 validation to the maintained vendor fork explicitly and regression
   test both H2 and H3 public upgrade calls. Update source hashes, exact patch,
   provenance narrative and removal instructions together. Do not describe the
   new fork as byte-identical to the old dispatch-only snapshot.
-- [ ] Exercise default HTTPS H2 preference and explicitly enable extended
+- [x] Exercise default HTTPS H2 preference and explicitly enable extended
   CONNECT in the fixture. Select h2c explicitly where used. H3 remains a
   separately mounted service with Endpoint `server: false`; no duplicate
   Endpoint listener.
-- [ ] Prove actual Phoenix Channels join/ping, a server PubSub push, LiveView
+- [x] Prove actual Phoenix Channels join/ping, a server PubSub push, LiveView
   mount/click/update and upload over each requested WS transport. Preserve an
   ordinary HTTP/1.1 browser WebSocket compatibility row.
-- [ ] Correlate each browser WebSocket URL's unique marker with successful WS
+- [x] Correlate each browser WebSocket URL's unique marker with successful WS
   activity and server-side native HTTP version, wire CONNECT/:protocol metadata
   and stream identity. A page's CDP `h2`/`h3` response or JavaScript WebSocket
   event alone does not prove its WebSocket transport.
-- [ ] Record browser feature settings and actual negotiated transport. H1
+- [x] Record browser feature settings and actual negotiated transport. H1
   fallback cannot pass an H2/H3 row. If the browser cannot perform that protocol,
   mark that row BLOCKED_ENV and continue independent-peer/unblocked rows.
   Do not claim full browser acceptance until a capable browser executes it.
-- [ ] Use normal Close and bounded fixture shutdown; retain logs and ordinary
+- [x] Use normal Close and bounded fixture shutdown; retain logs and ordinary
   screenshots. No packet-loss, abrupt-disconnect, slow-consumption or load gate.
 
 ```sh
@@ -463,33 +466,33 @@ implementation. Resolve actionable findings before the final fresh execution.
 `docs/implementation-status.md`, `implement-plan.md`, this plan and
 `docs/acceptance/m5-websocket-over-h2-h3.md`; keep historical records intact.
 
-- [ ] Run all new M5 pure/normal-network suites plus the listed H1 handshake,
+- [x] Run all new M5 pure/normal-network suites plus the listed H1 handshake,
   frame, Phoenix configuration and altered H2/H3 contract tests. Enumerate the
   exact paths in the execution receipt; no unbounded umbrella test invocation.
-- [ ] Execute the existing ordinary H1 WebSocket proxy `:proxy_policy` cases,
+- [x] Execute the existing ordinary H1 WebSocket proxy `:proxy_policy` cases,
   the successful verified-WSS case and ordinary native H1 WebSock lifecycle
   cases using the selectors below. Do not run their mixed fault/pressure files
   wholesale. Reconfirm line selectors against the named tests at execution time;
   keep their assertions intact if preceding source lines have moved.
-- [ ] Run strict compilation, exact changed-file formatting and `git diff --check`.
-- [ ] Run `scripts/external-consumer.sh`, `scripts/http-consumer.sh` and
+- [x] Run strict compilation, exact changed-file formatting and `git diff --check`.
+- [x] Run `scripts/external-consumer.sh`, `scripts/http-consumer.sh` and
   `scripts/h3-consumer.sh` in the locked environment. Core and H1/H2 consumers
   must retain QUIC isolation; H3 must explicitly opt into the selected cohort.
   Inventory their cases first; keep any specialist network scenarios out of the
   ordinary gate rather than executing a mixed stress suite accidentally.
-- [ ] Independent specification review checks RFC 8441/9220 semantics and scope;
+- [x] Independent specification review checks RFC 8441/9220 semantics and scope;
   independent code review checks shared-engine reuse, per-stream ownership,
   validation, policy handoff, deadline/credit transitions and actual evidence.
-- [ ] After review fixes, freshly execute only affected gates and final ordinary
+- [x] After review fixes, freshly execute only affected gates and final ordinary
   peer/browser rows. Record command, environment, source/lock identity, nonzero
   executed counts, exits and observed protocols. Do not add overlapping test
   invocations together as unique cases.
-- [ ] Publish a local acceptance matrix with PASS/FAIL/BLOCKED/NOT RUN separated.
+- [x] Publish a local acceptance matrix with PASS/FAIL/BLOCKED/NOT RUN separated.
   Update capability descriptions only for executed, reviewed paths; identify
   specialist qualification as deferred and upstream H2/H3 WS proxy as absent.
   Update the HTTP/Phoenix default and h2c documentation only after G2 passes;
   distinguish H2-first HTTPS from explicit prior-knowledge h2c and WS opt-in.
-- [ ] Make small local conventional commits of task-owned files. Keep unrelated
+- [x] Make small local conventional commits of task-owned files. Keep unrelated
   files and historical evidence. No push, release/tag/image, deployment,
   operational certificates, Vault, public management or disabled release-artifact
   E2E activation follows from M5 planning or implementation.
@@ -514,8 +517,8 @@ fragmentation with ping/pong. Record actual selected/excluded counts distinctly.
 | G1 | Shared handshake/runtime unit contracts and H1 compatibility | PASS |
 | G2 | HTTPS H2 defaults, H1 compatibility, budgets and native H2/h2c WebSocket exchanges | PASS |
 | G3 | Native H3 independent normal WebSocket exchanges | PASS |
-| G4 | Phoenix Channels/LiveView and actual H2/H3 WS browser transport | NOT RUN |
-| G5 | Fresh scoped compatibility, consumer isolation, SPEC/CODE acceptance | NOT RUN |
+| G4 | Phoenix Channels/LiveView and actual H2/H3 WS browser transport | PASS: each H2/H3/H1 browser profile 12/12 |
+| G5 | Fresh scoped compatibility, consumer isolation, SPEC/CODE acceptance | PASS: 136/0 plus named compatibility/consumers; final SPEC then CODE acceptance PASS |
 
 M5 completes when G0–G5 pass within this stated scope. A blocked browser row is
 not silently waived or passed; record completed protocol subsets separately.

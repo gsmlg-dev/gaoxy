@@ -1,5 +1,38 @@
 # Configured support and acceptance evidence
 
+## Current M5 source capability — 2026-10-19
+
+**M5 COMPLETE LOCALLY within its ordinary verification scope.** Native downstream
+H2/H3 WebSock and Phoenix integration passed the G0–G5 runtime checks. The
+[M5 acceptance ledger](acceptance/m5-websocket-over-h2-h3.md) is authoritative for
+source identities, commands, gate outcomes and the final independent closeout
+review. This current-source acceptance does not qualify the historical published
+v0.3.0 artifact.
+
+| Capability | Current source behavior | Acceptance boundary |
+| --- | --- | --- |
+| Embedded HTTPS defaults | H2 then H1 ALPN; H1 negotiation/no-ALPN fallback; explicit H1-only retained | G2 ordinary defaults/H2/h2c gate PASS; plain TCP stays H1 unless explicit prior-knowledge h2c |
+| H2/H3 WebSocket | Native RFC 8441/9220 extended CONNECT, shared frame/WebSock engine on each stream worker; connection owner retains I/O | Per-listener `extended_connect: false` default; independent H2, h2c and H3 peers each passed 15/15 ordinary cases |
+| Phoenix sockets | Exact Endpoint `websocket_paths` list; temporary GET view with immutable CONNECT Exchange, Origin/session/CSRF/auth and early validation preserved | H2, H3 and H1 browser profiles each passed 12/12; Channels/PubSub, LiveView click/upload, normal Close and cleanup verified |
+| External H3 Phoenix | Separate optional H3 service, explicit wrapper/path list and `extended_connect: true`; Endpoint supervisor with `server: false` | Duplicate-listener guard retained; no automatic H3 switch |
+| WebSocket proxy transports | Existing H1 upstream path retained | H2/H3 upstream WebSocket proxying and downstream bridge acceptance absent; compression and generic CONNECT tunnels outside M5 |
+| Specialist qualification | Existing historical outcomes preserved | Abnormal disconnect, slow-peer, pressure and sustained-load validation deferred to dedicated environment |
+
+Successful H2/H3 browser sockets have marker-correlated native CONNECT/version/
+stream receipts. Browser profiles prime startup trust through ordinary HTTPS
+navigation before the application flow; clients choose actual WebSocket
+transports. An H2 page does not guarantee H2 WebSockets, including after future
+certificate updates. H3 uses controlled QUIC-first selection; automatic H3 selection
+with TCP available is not qualified. The H3 profile's rejected-Origin check
+returned 403 over H1 TLS and establishes no H3-specific Origin rejection result.
+
+Standalone JSON keeps explicit H1 defaults and does not activate WebSocket
+endpoints. No publication, deployment, production or broad platform acceptance
+follows from M5 source support. Earlier milestone snapshots below retain their
+original source-bound scope and limitations.
+
+## Historical milestone snapshots
+
 > Historical M1 snapshot. M1.1 revalidation and the current hardening verdict are
 > recorded in [M1.1 acceptance](m1-1-hardening-acceptance.md); this historical PASS is not evidence for the changed candidate.
 

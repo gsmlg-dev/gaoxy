@@ -1,0 +1,34 @@
+{
+  "task": "M5 G4 H3 browser policy fallback sequencing independent review",
+  "status": "DONE",
+  "assignment": "direct independent read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "2c666dd4745a4c7ba5f2c304c4cb5a7ce942ff32",
+  "timestamp_utc": "2026-10-19T07:48:28.039013+00:00",
+  "files_sha256": {
+    "integration/websocket_multiplexed/browser_fixture.exs": "cd074e8ff7d3bd7a80d14fc0e7d938372723b2d3ffd7d39b96ccf1bf05dc49a2",
+    "integration/websocket_multiplexed/browser.py": "16dabad9b5243be3be898ad02b4440f04a2761f2c30b31bedeeb1f0aaed29a48",
+    "integration/websocket_multiplexed/README.md": "1f7b6abae8dc74f5037d71cbe313e9eb7690d7cf5158bcd2c99e70f5aae32a60"
+  },
+  "spec_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "assessment": [
+    "H3 starts UDP only; native H1TLS fallback spec is constructed but not added until explicit policy-check command.",
+    "After actual LiveView mount/click/upload and Channels join/ping/PubSub, browser strictly correlates every opened positive socket with nativeH3 CONNECT metadata before enabling fallback. Existing final strict correlation remains.",
+    "Single-use enable-policy-fallback command calls public Gaoxy.add on same runtime, emits identity receipt, appends fallbackid to subsequent zero-resource samples, and clears deferred state.",
+    "Managed H1/H2 paths keep nil deferred fallback and do not invoke the new control.",
+    "Opaque-Origin rejection still requires real browser no-open/error plus exactly1 correlated native403 Origin:null receipt. Its actual H1 protocol is separate from successfulH3 qualification.",
+    "Normal clean1000 Close, complete12cases, resources0 and sharedstop/DOWN remain required. README accurately limits result to controlled explicitH3 support rather than automatic selection with TCP available."
+  ],
+  "historical_attempt": {
+    "path": ".audit/m5/browser-h3/run-1792396017072688169/report.json",
+    "status": "BLOCKED_ENV",
+    "executed": 8,
+    "reason": "Strict correlation correctly caught an accepted LiveViewH1 socket with simultaneousTCP availability. Preserve unchanged."
+  },
+  "runtime_validation": "NOT RUN by reviewer; parent fresh format and H3 browser runtime required.",
+  "review_sol_repair_rounds": 0,
+  "implementation_counters": "Parent-owned; author repair history and Astra2/2 remain unchanged.",
+  "shutdown": "All reviewer commands completed. Only assigned audit JSON written; no source edits, builds, tests or runtime/network processes started."
+}

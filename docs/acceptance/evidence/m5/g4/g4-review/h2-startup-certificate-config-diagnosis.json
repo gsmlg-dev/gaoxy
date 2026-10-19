@@ -1,0 +1,43 @@
+{
+  "task": "M5 G4 focused H2 browser startup certificate-config diagnosis",
+  "status": "DONE",
+  "assignment": "direct read-only investigation",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "2c666dd4745a4c7ba5f2c304c4cb5a7ce942ff32",
+  "timestamp_utc": "2026-10-19T07:55:04.920982+00:00",
+  "chromium_revision": "506c834ecceaa943c5f41e6cfe7f68acb5c45346",
+  "files_sha256": {
+    ".audit/m5/chromium-routing/net_spdy_spdy_session_pool.cc": "8798fe4d882c55465977b1d727d104540e1140b7d44f75e97373a5c0c0c7bcbf",
+    ".audit/m5/chromium-routing/services_cert_verifier_cert_verifier_service_factory.cc": "cea6871a7fbcd6a7211127b77e377a79c39d138b3b515e39f824358151dcafd5",
+    ".audit/m5/chromium-routing/services_cert_verifier_cert_verifier_service_factory.h": "7723fa395fdb9aeb20dd8758da9ddcfc0f728909bc5b3a9e00acbc5f8a6901a8",
+    ".audit/m5/chromium-routing/chrome_browser_component_updater_pki_metadata_component_installer.cc": "caee7783f4c42853db33905329163219854211f1d3dea299715abadf481c68fb",
+    ".audit/m5/chromium-routing/chrome_browser_component_updater_pki_metadata_component_installer.h": "199fe6e4782992357b7543a72557ae25c75cac522fc5f11029cc55a7c339fe0c"
+  },
+  "source_urls": {
+    "net_spdy_spdy_session_pool.cc": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/net/spdy/spdy_session_pool.cc",
+    "services_cert_verifier_cert_verifier_service_factory.cc": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/services/cert_verifier/cert_verifier_service_factory.cc",
+    "services_cert_verifier_cert_verifier_service_factory.h": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/services/cert_verifier/cert_verifier_service_factory.h",
+    "chrome_browser_component_updater_pki_metadata_component_installer.cc": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/chrome/browser/component_updater/pki_metadata_component_installer.cc",
+    "chrome_browser_component_updater_pki_metadata_component_installer.h": "https://raw.githubusercontent.com/chromium/chromium/506c834ecceaa943c5f41e6cfe7f68acb5c45346/chrome/browser/component_updater/pki_metadata_component_installer.h"
+  },
+  "observed_netlog": ".audit/m5/browser-h2/run-1792396300450671052/netlog.json",
+  "confirmed": [
+    "Session57 advertisedsetting8=1 and maxstreams32, served ordinaryHTTPassets, then client finishedgoingaway/neterror0 after concurrentcertproc rebuild/globalQUICpoolflush before LiveViewWShandshake. No serverRECV_GOAWAY evident.",
+    "Pinned spdy_session_pool.cc470\u2013483 maps SSLconfig/certDB/certVerifier notifications to MakeCurrentSessionsGoingAway;429\u2013438 marks every session unavailable and finishes it.",
+    "Pinned certverifier factory UpdateCtLogList/UpdateChromeRootStore/UpdateCRLSet invokes UpdateVerifierServices632\u2013635.",
+    "Pinned PKIMetadata installer595\u2013601 starts asynchronous installedmetadata/rootstore configuration on componentready;848\u2013852 registers unconditionally. Globalcertconfig mutation is credible startupsource even with alreadyrecorded --disable-component-update."
+  ],
+  "uncertain": [
+    "NetLog does not identify exact changedcertificate metadata callback; distinguish candidatefromconfirmedcause.",
+    "No verified harmless processflag or publicCDPcompletionevent found that suppresses/awaits every initialPKImetadata update."
+  ],
+  "recommendation": [
+    "Preserve mixeddefaultlistener and strictWSprotocolassertions. Do not forceH2only or disablecertificatevalidation.",
+    "A bounded ordinaryHTTPbootstrap beforeWS plus freshHTTPH2prime after confirmedstartupconfigcompletion is the narrow clientdirection. Require concretecompletionevent/sourcequalification; quietdelayalone doesnot proveallupdatesdone.",
+    "Retain completeNetLogsessioncreation/removal/WSreuse evidence for any chosenclientpreparation."
+  ],
+  "verification": "Read-only NetLoganalysis and exactpinnedpublicsource downloads; no tests/browser/runtime execution. All downloads completed.",
+  "review_sol_repair_rounds": 0,
+  "cumulative_counters": "Parentowned; existingrepairhistory/Astra2of2unchanged.",
+  "shutdown": "All ownedcommandscompleted; no build/browser/runtimeprocessesstarted."
+}

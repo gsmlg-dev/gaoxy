@@ -1,0 +1,97 @@
+{
+  "task": "M5 G4 Phoenix bridge, vendor and browser harness independent SPEC then CODE review",
+  "assignment": "direct read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "timestamp_utc": "2026-10-19T07:34:20.923538+00:00",
+  "findings": [],
+  "spec_review": "PASS",
+  "code_review": "PASS",
+  "review_sol_repair_rounds": 0,
+  "implementation_repair_counters": "Parent owns cumulative counters; this review does not reset them.",
+  "astra_gate": null,
+  "commands_shutdown": "All reviewer commands completed; no build, test, browser, or network processes started.",
+  "reviewer_mutations": "Only .audit/m5 review evidence; no source edits.",
+  "files_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/phoenix_websocket.ex": "ba7986c26baabcbeca87bc1a39708a4d0c8c371209e0c61b538b9dc7c1a0d22c",
+    "apps/gaoxy_http/lib/gaoxy/phoenix_adapter.ex": "4822e9f2fe326c35832d541ca78b387e160d41c7a3604848fb742ecfa81b2c65",
+    "apps/gaoxy_http/lib/gaoxy/http/plug_endpoint.ex": "e1d24697db59f42fadb9f01517d390bc021a98fa8e0a4a2b5aef0d41d9cce2fe",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "776243b4b3ef945cc72fad606c2c4ee10a293754f958810670e44d66f1ceff90",
+    "apps/gaoxy_http/test/phoenix_websocket_test.exs": "f5a4cb522fe8641689454878f1145f6a800620bbfc41e7f3d358f2ac2e966219",
+    "examples/phoenix_native/config/config.exs": "501cd3df34d6717f363a9c89108cd466c32af472e169971658cd379cb37ef724",
+    "examples/phoenix_native/h3_gateway.exs": "2366ab4bfb13c4715b393fb66c8ba71e604aaa1db8f344057fdc0745e229e85d",
+    "examples/phoenix_native/test/ownership_test.exs": "6c288a46f869a0e53c4184aeeb515db4c27e0e7eb093268a52b3e587b7478059",
+    "examples/phoenix_native/README.md": "d9933cfed33835b151451d64d2b274a9652cb36e0c7dc69a6ae85056c424301e",
+    "vendor/websock_adapter/lib/websock_adapter/upgrade_validation.ex": "919aafb23b31d5490da15704df8d768db5e04a908cae46a3aa9a10f44a85af21",
+    "vendor/websock_adapter/test/gaoxy_dispatch_test.exs": "7e8ba4167688abdcca9fd35ce3c7feef2b710c74677c83e3f1d57c1fcd446249",
+    "vendor/websock_adapter/GAOXY.md": "c9998c2a33d4f9c7a9b11d7b477a935b328e7b159a7919d35d2338b7393dab81",
+    "vendor/websock_adapter/SOURCE.json": "386751661703e9255aee735f49c7c486e241ad1adb55932e656e4bcc59b92ab0",
+    "vendor/websock_adapter/gaoxy.patch": "8249f142caddf55381905c3e2b24f573ac675a9ae30d87abb0644a7b0ad2acfe",
+    "integration/websocket_multiplexed/browser.py": "d794e305ac8a76960f87086a90fee6d3c7c1e3cb3654393456aa2eba2f828646",
+    "integration/websocket_multiplexed/browser_fixture.exs": "053b692f2eba34ad21289b1f0911bab26bc695f0d997270a10ec00b41352af7f",
+    "integration/websocket_multiplexed/README.md": "93c20ca9f06e97877d3564d04d7f90c67e7768be6fda93346967d7f0a0a9a722"
+  },
+  "vendor_snapshot_hashes": {
+    "CHANGELOG.md": true,
+    "LICENSE": true,
+    "README.md": true,
+    "lib/websock_adapter/cowboy_adapter.ex": true,
+    "lib/websock_adapter/upgrade_error.ex": true,
+    "lib/websock_adapter/upgrade_validation.ex": true,
+    "lib/websock_adapter.ex": true,
+    "mix.exs": true,
+    "test/gaoxy_dispatch_test.exs": true,
+    "gaoxy.patch": true
+  },
+  "offline_upstream_reconstruction_hashes": {
+    "CHANGELOG.md": true,
+    "LICENSE": true,
+    "README.md": true,
+    "lib/websock_adapter/cowboy_adapter.ex": true,
+    "lib/websock_adapter/upgrade_error.ex": true,
+    "lib/websock_adapter/upgrade_validation.ex": true,
+    "lib/websock_adapter.ex": true,
+    "mix.exs": true
+  },
+  "observed_provenance_checks": {
+    "git_apply_check": "PASS",
+    "git_apply": "PASS",
+    "all_snapshot_files_match": "PASS",
+    "runtime_test_files_unchanged_during_task": "PASS"
+  },
+  "observed_receipts": [
+    {
+      "name": "g4-wrapper-green1",
+      "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+      "exit_code": 0,
+      "test_summaries": [
+        "11 tests, 0 failures"
+      ]
+    },
+    {
+      "name": "g4-vendor-green1",
+      "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+      "exit_code": 0,
+      "test_summaries": [
+        "3 tests, 0 failures"
+      ]
+    },
+    {
+      "name": "g4-browser-offline-fresh",
+      "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+      "exit_code": 0,
+      "test_summaries": []
+    }
+  ],
+  "assessment": [
+    "Exact opt-in paths plus validated enabled native metadata gate the transient GET view; immutable request and reported HTTP version remain intact.",
+    "Returned Conn method is restored, application response policy retained, and SyncCodeReloadPlug composition and real Endpoint listener guard preserved.",
+    "Gaoxy-only vendor validator reads immutable native CONNECT/protocol/version13; other adapters and H1 retain original validation. No reverse struct dependency or global early-validation disable.",
+    "Browser runner uses marker-correlated native successful-upgrade receipts for every opened Channels/LiveView socket, disallows H1 fallback, and separately validates Origin:null refusal403.",
+    "Normal close, zero admission resources and bounded owned-process shutdown are required; no specialist fault/load slices introduced."
+  ],
+  "remaining": [
+    "G4 runtime browser rows and real ownership/code-reload checks remain parent-owned; source review PASS does not establish browser gate PASS.",
+    "Parent runs fresh verification after this review."
+  ]
+}

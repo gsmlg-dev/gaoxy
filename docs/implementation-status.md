@@ -1,24 +1,40 @@
-## Next stage: M5 WebSocket over HTTP/2 and HTTP/3 — 2026-10-19
+## Current stage: M5 WebSocket over HTTP/2 and HTTP/3 — 2026-10-19
 
-**M5: PLANNED; implementation and runtime verification NOT STARTED.**
-The newly requested next stage adds native RFC 8441/9220 server-side WebSocket
-and Phoenix Channels/LiveView support. Current H2/H3 WebSocket refusal remains
-the actual capability until implementation and verification pass. See the
+**M5: COMPLETE LOCALLY within its ordinary verification scope.** Native
+server-side RFC 8441/9220 WebSock and Phoenix integration passed G0–G5 runtime
+checks. The [authoritative acceptance ledger](acceptance/m5-websocket-over-h2-h3.md)
+records source-bound results and the final independent closeout review. See the
 [design](designs/m5-websocket-over-h2-h3.md) and
-[implementation plan](plans/m5-websocket-over-h2-h3.md) for ordered work packages,
-file ownership and ordinary protocol/browser acceptance.
+[implementation plan](plans/m5-websocket-over-h2-h3.md).
 
-M5 includes H2-first HTTPS defaults for embedded HTTP/Phoenix with H1 fallback,
-sufficient omitted H2 budgets and explicit prior-knowledge h2c. Plain HTTP stays
-H1 by default; Upgrade and mixed-cleartext detection remain unsupported. These
-are planned changes: current HTTP/Phoenix runtime defaults still select H1.
+Embedded HTTP/Phoenix HTTPS now defaults to H2 then H1, retaining H1 fallback
+and sufficient omitted H2 budgets. Plain TCP remains H1 unless explicit
+prior-knowledge h2c is selected; Upgrade and mixed-cleartext detection remain
+unsupported. `extended_connect` defaults to false independently of protocol
+selection. Phoenix uses an explicit exact `websocket_paths` list and temporary
+GET view while preserving immutable CONNECT Exchange metadata and native
+Origin/session/CSRF/authentication/early-validation policy. External H3 mounts
+use a separate optional service, explicit wrapper and Endpoint `server: false`.
 
-H1 WebSocket behavior remains the compatibility baseline. Outbound H2/H3
-WebSocket proxy transports and compression are outside this stage. Specialist
-abnormal/disconnect, slow-peer, pressure and load qualification stays in a
-dedicated environment; no such gate is introduced here. Planning adds no push,
-publication or deployment authorization. Accepted M3/M4 and their source-bound
-historical evidence remain as recorded below.
+Independent H2, h2c and H3 peers each passed 15/15 ordinary cases. H2, H3 and
+H1 Phoenix browser profiles each passed 12/12, with actual protocol/CONNECT
+receipts for successful multiplexed sockets, normal Close and cleanup. Browser
+profiles use ordinary HTTPS navigation before the application flow to complete
+startup trust preparation. Clients choose actual WebSocket transports; an H2
+page does not guarantee H2 WebSockets, including after future certificate
+updates. H3 used
+controlled QUIC-first selection; automatic H3 selection with TCP available is
+not qualified. The rejected-Origin check in that profile returned H1 TLS 403,
+with no H3-specific negative claim. Scoped compatibility passed 136 tests/0
+failures; separately named H1/proxy/WSS/contract and isolated consumer checks
+passed with their own counts in the ledger.
+
+Outbound H2/H3 WebSocket proxy transports
+and compression are outside M5. Specialist abnormal/disconnect, slow-peer,
+pressure and sustained-load qualification stays deferred to a dedicated
+environment. M5 is local development only: no merge, push, release, publication
+or deployment follows. Accepted M3/M4 and their historical evidence remain as
+recorded below.
 
 ## Current M3 acceptance and local merge — 2026-10-19
 

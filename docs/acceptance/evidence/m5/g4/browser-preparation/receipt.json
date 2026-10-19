@@ -1,0 +1,69 @@
+{
+  "task": "M5 Task4 browser harness preparation",
+  "status": "PASS",
+  "scope": "offline preparation only",
+  "runtime_acceptance": "NOT RUN",
+  "build": "NOT RUN; parent owns build freeze",
+  "timestamp_utc": "2026-10-19T07:29:23.338923+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "branch": "codex/m5-websocket-over-h2-h3",
+  "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "owned_files_sha256": {
+    "integration/websocket_multiplexed/browser.py": "d794e305ac8a76960f87086a90fee6d3c7c1e3cb3654393456aa2eba2f828646",
+    "integration/websocket_multiplexed/browser_fixture.exs": "053b692f2eba34ad21289b1f0911bab26bc695f0d997270a10ec00b41352af7f",
+    "integration/websocket_multiplexed/README.md": "93c20ca9f06e97877d3564d04d7f90c67e7768be6fda93346967d7f0a0a9a722"
+  },
+  "checks": [
+    {
+      "command": ".audit/m5/venv/bin/python .audit/m5/browser-preparation/test_browser.py",
+      "status": "PASS",
+      "executed": 7,
+      "exit": 0,
+      "log": ".audit/m5/browser-preparation/origin-offline-green.log"
+    },
+    {
+      "command": "py_compile browser.py to evidence directory",
+      "status": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "node --check .audit/m5/browser-preparation/marker.js",
+      "status": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "browser.py --help",
+      "status": "PASS",
+      "exit": 0
+    },
+    {
+      "command": "Elixir Code.string_to_quoted! and exact Code.format_file! equality for browser_fixture.exs",
+      "status": "PASS",
+      "exit": 0,
+      "compiled": false
+    },
+    {
+      "command": "git diff --check -- owned files",
+      "status": "PASS",
+      "exit": 0,
+      "note": "owned files currently untracked; source parse and exact formatting were checked directly"
+    }
+  ],
+  "expected_tdd_red": {
+    "exit": 1,
+    "errors": 2,
+    "reason": "missing Origin validation and expected-refusal helpers before implementation",
+    "log": ".audit/m5/browser-preparation/origin-offline-red.log"
+  },
+  "required_browser_cases": 12,
+  "sol_repair_rounds": 0,
+  "astra_recovery_rounds_received": 2,
+  "historical_counters": "Root734/orchestration617/Astra recovery2/2 retained; G0 tooling repairs2 passed separately",
+  "shutdown": "No browser, fixture, build, or long-running process started by this preparation; all commands completed",
+  "remaining": [
+    "Parent strict fixture compilation",
+    "Native selected-profile gate",
+    "Coordinated real browser H2/H3 and H1 compatibility execution",
+    "Independent review"
+  ]
+}

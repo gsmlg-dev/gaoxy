@@ -1,0 +1,43 @@
+    warning: WebSockAdapter.upgrade/3 is undefined or private. Did you mean:
+
+          * upgrade/4
+
+    │
+ 28 │       result = WebSockAdapter.upgrade(conn, MyWebSock, :state)
+    │                               ~
+    │
+    └─ vendor/websock_adapter/test/gaoxy_dispatch_test.exs:28:31: WebSockAdapter.GaoxyDispatchTest."test Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET"/1
+    └─ vendor/websock_adapter/test/gaoxy_dispatch_test.exs:42:70: WebSockAdapter.GaoxyDispatchTest."test apparent GET cannot replace missing or invalid native extended metadata"/1
+
+Running ExUnit with seed: 223998, max_cases: 4
+
+
+
+  1) test apparent GET cannot replace missing or invalid native extended metadata (WebSockAdapter.GaoxyDispatchTest)
+     vendor/websock_adapter/test/gaoxy_dispatch_test.exs:34
+     Expected exception WebSockAdapter.UpgradeError but got UndefinedFunctionError (function WebSockAdapter.upgrade/3 is undefined or private)
+     code: for request <- [
+     stacktrace:
+       WebSockAdapter.upgrade(%Plug.Conn{adapter: {Gaoxy.PlugAdapter, :...}, assigns: %{}, body_params: %Plug.Conn.Unfetched{aspect: :body_params}, cookies: %Plug.Conn.Unfetched{aspect: :cookies}, halted: false, host: "www.example.com", method: "GET", owner: nil, params: %Plug.Conn.Unfetched{aspect: :params}, path_info: [], path_params: %{}, port: 0, private: %{}, query_params: %Plug.Conn.Unfetched{aspect: :query_params}, query_string: "", remote_ip: nil, req_cookies: %Plug.Conn.Unfetched{aspect: :cookies}, req_headers: [{"sec-websocket-version", "13"}], request_path: "", resp_body: nil, resp_cookies: %{}, resp_headers: [{"cache-control", "max-age=0, private, must-revalidate"}], scheme: :http, script_name: [], secret_key_base: nil, state: :unset, status: nil}, MyWebSock, :state)
+       vendor/websock_adapter/test/gaoxy_dispatch_test.exs:42: anonymous fn/2 in WebSockAdapter.GaoxyDispatchTest."test apparent GET cannot replace missing or invalid native extended metadata"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       vendor/websock_adapter/test/gaoxy_dispatch_test.exs:35: (test)
+
+.
+
+  2) test Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET (WebSockAdapter.GaoxyDispatchTest)
+     vendor/websock_adapter/test/gaoxy_dispatch_test.exs:22
+     ** (UndefinedFunctionError) function WebSockAdapter.upgrade/3 is undefined or private. Did you mean:
+
+           * upgrade/4
+
+     code: for version <- [:"HTTP/2", :"HTTP/3"] do
+     stacktrace:
+       WebSockAdapter.upgrade(%Plug.Conn{adapter: {Gaoxy.PlugAdapter, :...}, assigns: %{}, body_params: %Plug.Conn.Unfetched{aspect: :body_params}, cookies: %Plug.Conn.Unfetched{aspect: :cookies}, halted: false, host: "www.example.com", method: "GET", owner: nil, params: %Plug.Conn.Unfetched{aspect: :params}, path_info: [], path_params: %{}, port: 0, private: %{}, query_params: %Plug.Conn.Unfetched{aspect: :query_params}, query_string: "", remote_ip: nil, req_cookies: %Plug.Conn.Unfetched{aspect: :cookies}, req_headers: [{"sec-websocket-version", "13"}], request_path: "", resp_body: nil, resp_cookies: %{}, resp_headers: [{"cache-control", "max-age=0, private, must-revalidate"}], scheme: :http, script_name: [], secret_key_base: nil, state: :unset, status: nil}, MyWebSock, :state)
+       vendor/websock_adapter/test/gaoxy_dispatch_test.exs:28: anonymous fn/2 in WebSockAdapter.GaoxyDispatchTest."test Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       vendor/websock_adapter/test/gaoxy_dispatch_test.exs:23: (test)
+
+
+Finished in 0.1 seconds (0.1s on load, 0.00s async, 0.00s sync)
+3 tests, 2 failures

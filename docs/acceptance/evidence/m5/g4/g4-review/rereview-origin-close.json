@@ -1,0 +1,42 @@
+{
+  "task": "M5 G4 opaque-Origin fixture and normal Close harness repair review",
+  "status": "DONE",
+  "assignment": "direct independent read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "timestamp_utc": "2026-10-19T07:38:21.927378+00:00",
+  "files_sha256": {
+    "integration/websocket_multiplexed/browser.py": "1f79c3da03dc2f4cc4d5928ecc74fcf7854d66bcdb280c824b137466252c366e",
+    "integration/websocket_multiplexed/browser_fixture.exs": "053b692f2eba34ad21289b1f0911bab26bc695f0d997270a10ec00b41352af7f",
+    "integration/websocket_multiplexed/README.md": "e22f543f2f1ef8f673bec59d5e7ada42f5f5b1fdbbf8b8f46c4b704e5e25389d"
+  },
+  "spec_review": "PASS",
+  "code_review": "CHANGES REQUIRED",
+  "findings": [
+    {
+      "priority": "P2",
+      "file": "integration/websocket_multiplexed/browser.py",
+      "line": 227,
+      "title": "Complete LiveSocket cleanup after explicit underlying code1000 disconnect",
+      "evidence": "Public getSocket().disconnect bypasses LiveSocket.disconnect cleanup. Installed live_socket.ts1123-1131 handles code1000 by reloadWithJitter(main), which733-753 schedules a5\u201310s reload. Native Socket teardown523-544 invokes close callbacks while waiting for close completion. A latent reload can overlap screenshot/admission checks.",
+      "requested_change": "After explicit Socket.disconnect(code1000) callback, complete public LiveSocket.disconnect to clear the scheduled jitter and normal LiveView close listener without sending another frame after the underlying connection is gone. Preserve clean1000 assertions."
+    }
+  ],
+  "assessment": [
+    "Sandbox srcdoc iframe allows scripts only, preserving opaque Origin without changing native Phoenix Origin policy.",
+    "Ordinary no-cors GET warmup changes only harness session preparation; the subsequent real WebSocket still must fail before opening and correlate exactly once to native403 Origin:null receipt.",
+    "Context init script applies unique markers to frame WebSockets; refused protocol is recorded separately and cannot qualify successful H2/H3 sockets.",
+    "All socket transport matching, normal clean1000 Close, complete case counts, zero resource and shutdown assertions remain intact.",
+    "Combined fixture PHOENIX_NATIVE_H3=1 environment repair remains consistent in launched and recorded environments.",
+    "Public APIs support the intended code1000 request, but the LiveView-specific cleanup must complete as described in finding."
+  ],
+  "api_evidence": [
+    "examples/phoenix_native/deps/phoenix_live_view/assets/js/phoenix_live_view/live_socket.ts:546",
+    "examples/phoenix_native/deps/phoenix_live_view/assets/js/phoenix_live_view/live_socket.ts:586",
+    "examples/phoenix_native/deps/phoenix/assets/js/phoenix/socket.js:285"
+  ],
+  "runtime_validation": "NOT RUN by reviewer; parent/peer owns fresh actual browser profiles. Runtime success remains unproven by source review.",
+  "review_sol_repair_rounds": 0,
+  "implementation_counters": "Parent owns cumulative counters; not reset.",
+  "shutdown": "All reviewer commands completed. No source changes, builds, runtime or network processes started."
+}

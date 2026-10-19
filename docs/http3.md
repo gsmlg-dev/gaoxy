@@ -3,7 +3,10 @@
 Select the optional `gaoxy_http3` application explicitly. It serves the existing
 Endpoint/Exchange/Response and Plug APIs over native QUIC; H1/H2 consumers keep
 their existing dependency closure. [M4 acceptance](acceptance/m4.md) records
-passing implementation gates and completed independent acceptance.
+passing M4 implementation gates and completed independent acceptance. M5
+WebSocket support is **COMPLETE LOCALLY within its ordinary verification scope**;
+[M5 acceptance](acceptance/m5-websocket-over-h2-h3.md) records current runtime and
+independent closeout review evidence separately from the M4 HTTP evidence.
 
 ## Embedded service
 
@@ -47,6 +50,54 @@ in both the first execution and required fresh repeat, with independent reviews.
 The [final ledger](acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
 records the exact source identity and workload limits.
 
+## Native WebSocket and external Phoenix mount
+
+Native downstream RFC 9220 WebSock streams are implemented in the current
+M5 source. Listener `extended_connect` defaults to `false`; opt in explicitly.
+Each admitted request worker runs the shared WebSock frame/callback engine while
+the existing QUIC connection owner retains I/O and flow-control authority.
+Successful CONNECT returns 200, with WebSocket frames in H3 DATA and normal
+Close followed by stream FIN. The admitted finite WebSocket lifetime replaces
+the original HTTP request deadline. Native Exchange metadata retains CONNECT,
+HTTP/3 and `protocol: "websocket"` throughout.
+
+For Phoenix, run its Endpoint supervisor with `server: false` and explicitly
+mount the compatibility wrapper on a separate H3 service:
+
+```elixir
+{:ok, spec} = Gaoxy.HTTP.HTTP3.service_spec(
+  id: :h3,
+  ip: {127, 0, 0, 1},
+  port: 0,
+  plug: {Gaoxy.PhoenixWebSocket,
+         {MyApp.Endpoint, ["/live/websocket", "/socket/websocket"]}},
+  extended_connect: true,
+  tls: %{certfile: "/path/to/cert.pem", keyfile: "/path/to/key.pem"}
+)
+```
+
+The exact path list must match declared Phoenix sockets. The wrapper presents
+GET only while invoking the Endpoint for a validated native WebSocket request;
+Origin/session/CSRF/authentication and early upgrade validation remain enabled.
+The external duplicate-listener guard still rejects an Endpoint serving its own
+listener. H3 remains optional and separate from HTTPS H2/H1 negotiation; no
+automatic H3 fallback is introduced. See [native Phoenix usage](native-http.md)
+and the [authoritative M5 gate ledger](acceptance/m5-websocket-over-h2-h3.md).
+The ordinary Phoenix H3 browser profile passed 12/12 checks. Successful sockets
+were correlated with native H3 CONNECT streams, normal Close 1000 and zero
+resources after cleanup. The fixture initially exposed QUIC only, then enabled
+same-port native H1 TLS for the opaque-origin rejection check after both H3
+sockets were established. That negative check is an H1 403 result, not an
+H3-specific Origin rejection claim. Browser profiles use ordinary HTTPS
+navigation before the application flow to complete startup trust preparation;
+the client still chooses each WebSocket transport. An H2 page does not guarantee
+H2 WebSockets, including after future certificate updates. This qualifies
+controlled H3 browser use; automatic H3 selection with TCP available is not
+established.
+Outbound H2/H3 WebSocket proxy transports, other extended-CONNECT protocols,
+compression and standalone JSON WebSocket activation are outside this stage.
+Specialist fault, slow-peer, pressure and sustained-load qualification is deferred.
+
 ## Standalone data configuration
 
 `GAOXY_CONFIG` accepts this explicit version-1 service; credential paths must
@@ -82,14 +133,23 @@ snapshots are included in the service byte budget. Unknown keys/protocols and
 invalid upstream-H3 options are rejected; data configuration evaluates no
 code and creates no atoms or public management endpoint.
 
-## Verification and limits
+## Historical M4 verification and current limits
+
+The evidence below retains its M4 checkpoint scope. The later
+[v0.3.0 release acceptance](acceptance/release-0.3.0.md) separately records
+portable qualification and publication; its source differs from current M5.
+Current M5 ordinary H3 peer and Phoenix browser checks passed; the
+[M5 ledger](acceptance/m5-websocket-over-h2-h3.md) records exact counts, browser
+selection limits and the final independent closeout review.
 
 The local matrix uses independent aioquic 1.2.0 peers and Chromium
 152.0.7977.64/Playwright 1.56.0. The Phoenix example's `h3_gateway.exs` disables
 duplicate Endpoint listeners before application startup. Browser trust is a
 process-local fixture SPKI pin, with explicit QUIC and IPv4 localhost mappings;
 CDP `h3` and unique server request markers qualify the existing page and static
-resource. This is ordinary HTTP page acceptance; H3 WebSocket is unsupported.
+resource. This historical M4 evidence qualifies ordinary HTTP pages only.
+Current M5 WebSocket browser acceptance requires marker-correlated native
+CONNECT/HTTP-version/stream receipts; a page CDP protocol cannot qualify it.
 
 ```sh
 nix develop --command env MIX_ENV=test ERL_FLAGS='+S 2:2' python \
@@ -116,6 +176,7 @@ prescribed final source/native/browser/standalone/Session/consumer checks PASS.
 Final independent M4 acceptance PASS; portable build, offline packaged runtime
 and publication are NOT RUN. UP2 explicitly selects1ms host polling for its
 tiny-window workload; passing within5s establishes no default10ms throughput
-margin. Dynamic QPACK, push, extended CONNECT, WebTransport,
+margin. Dynamic QPACK, push, extended CONNECT protocols other than the
+explicit M5 WebSocket opt-in, WebTransport,
 DATAGRAM, 0-RTT, migration, mTLS, IPv6/wildcard bindings and graceful H3 GOAWAY
 drain remain unsupported. Stop qualifies bounded local host cleanup.

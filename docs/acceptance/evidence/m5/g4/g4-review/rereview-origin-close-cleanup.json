@@ -1,0 +1,32 @@
+{
+  "task": "M5 G4 normal Close public cleanup rereview",
+  "status": "DONE",
+  "assignment": "direct read-only rereview",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "timestamp_utc": "2026-10-19T07:39:46.686109+00:00",
+  "files_sha256": {
+    "integration/websocket_multiplexed/browser.py": "2767849f051d9f3d146491659cbd8370299aed1be875456fec28d594c1028e54",
+    "integration/websocket_multiplexed/README.md": "49b7d2ff5f927d771459dc0fe1d87ae120ae42b9971a755b6c7df77805c01832"
+  },
+  "spec_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "resolved_finding": "P2 latent LiveView jitter reload on explicit underlying normal1000 Close. Original finding preserved at rereview-origin-close.json.",
+  "assessment": [
+    "Explicit public Socket.disconnect retains normal1000 and clean Close assertions.",
+    "Its completion callback invokes public LiveSocket.disconnect, clearing any jitter timer and close listener after the underlying connection has closed.",
+    "Installed Socket closure polling completes within1.5s; installed LiveView jitter delay is5\u201310s, so nested cleanup clears it before reload. With underlying connection gone, final cleanup emits no second wire Close.",
+    "Prior sandbox opaque-Origin refusal and marker/protocol assertions remain unchanged."
+  ],
+  "api_evidence": [
+    "examples/phoenix_native/deps/phoenix/assets/js/phoenix/socket.js:523",
+    "examples/phoenix_native/deps/phoenix_live_view/assets/js/phoenix_live_view/live_socket.ts:586",
+    "examples/phoenix_native/deps/phoenix_live_view/assets/js/phoenix_live_view/live_socket.ts:733",
+    "examples/phoenix_native/deps/phoenix_live_view/assets/js/phoenix_live_view/constants.ts:3"
+  ],
+  "runtime_validation": "NOT RUN by reviewer; fresh browser profiles remain required.",
+  "review_sol_repair_rounds": 0,
+  "implementation_counters": "Parent owns cumulative counters, unchanged by review.",
+  "shutdown": "All reviewer commands completed. No source edits, builds, tests or runtime/network processes started."
+}

@@ -1,0 +1,83 @@
+==> gaoxy_http
+Running ExUnit with seed: 453964, max_cases: 4
+
+    warning: WebSockAdapter.upgrade/3 is undefined or private. Did you mean:
+
+          * upgrade/4
+
+    │
+ 22 │           WebSockAdapter.upgrade(conn, Handler, nil)
+    │                          ~
+    │
+    └─ test/phoenix_websocket_test.exs:22:26: Gaoxy.PhoenixWebSocketTest.Endpoint.call/2
+
+
+
+  1) test ordinary GET remains GET without becoming an extended upgrade (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:83
+     ** (UndefinedFunctionError) function Gaoxy.PhoenixWebSocket.init/1 is undefined (module Gaoxy.PhoenixWebSocket is not available)
+     code: result = call(conn(:"HTTP/2", %{method: "GET", protocol: nil, body: :none}), init())
+     stacktrace:
+       Gaoxy.PhoenixWebSocket.init({Gaoxy.PhoenixWebSocketTest.Endpoint, ["/socket/websocket"]})
+       test/phoenix_websocket_test.exs:84: (test)
+
+
+
+  2) test unlisted, disabled and invalid requests retain their actual method (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:65
+     ** (UndefinedFunctionError) function Gaoxy.PhoenixWebSocket.init/1 is undefined (module Gaoxy.PhoenixWebSocket is not available)
+     code: {enabled, init([])},
+     stacktrace:
+       Gaoxy.PhoenixWebSocket.init({Gaoxy.PhoenixWebSocketTest.Endpoint, []})
+       test/phoenix_websocket_test.exs:70: (test)
+
+
+
+  3) test allowlisted native H2/H3 CONNECT presents GET and restores immutable wire metadata (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:50
+     ** (UndefinedFunctionError) function Gaoxy.PhoenixWebSocket.init/1 is undefined (module Gaoxy.PhoenixWebSocket is not available)
+     code: for version <- [:"HTTP/2", :"HTTP/3"] do
+     stacktrace:
+       Gaoxy.PhoenixWebSocket.init({Gaoxy.PhoenixWebSocketTest.Endpoint, ["/socket/websocket"]})
+       test/phoenix_websocket_test.exs:54: anonymous fn/2 in Gaoxy.PhoenixWebSocketTest."test allowlisted native H2/H3 CONNECT presents GET and restores immutable wire metadata"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/phoenix_websocket_test.exs:51: (test)
+
+
+
+  4) test application rejection preserves its status and restores CONNECT (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:91
+     ** (UndefinedFunctionError) function Gaoxy.PhoenixWebSocket.init/1 is undefined (module Gaoxy.PhoenixWebSocket is not available)
+     code: {"origin", "https://blocked.test"}]}), init())
+     stacktrace:
+       Gaoxy.PhoenixWebSocket.init({Gaoxy.PhoenixWebSocketTest.Endpoint, ["/socket/websocket"]})
+       test/phoenix_websocket_test.exs:93: (test)
+
+
+
+  5) test WebSocket paths are exact and validated (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:99
+     Expected exception ArgumentError but got UndefinedFunctionError (function Gaoxy.PhoenixWebSocket.init/1 is undefined (module Gaoxy.PhoenixWebSocket is not available))
+     code: for invalid <- [nil, "bad", ["socket/websocket"], ["/socket/*"], ["/socket?x"],
+     stacktrace:
+       Gaoxy.PhoenixWebSocket.init({Gaoxy.PhoenixWebSocketTest.Endpoint, nil})
+       test/phoenix_websocket_test.exs:102: anonymous fn/2 in Gaoxy.PhoenixWebSocketTest."test WebSocket paths are exact and validated"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/phoenix_websocket_test.exs:100: (test)
+
+
+
+  6) test Phoenix adapter installs the explicit wrapper and preserves managed startup (Gaoxy.PhoenixWebSocketTest)
+     apps/gaoxy_http/test/phoenix_websocket_test.exs:106
+     match (=) failed
+     code:  assert {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.PhoenixWebSocket, {Endpoint, [], ["/socket/websocket"]}}} =
+              spec.handler_options.endpoint
+     left:  {Gaoxy.HTTP.PlugEndpoint,
+             {Gaoxy.PhoenixWebSocket, {Gaoxy.PhoenixWebSocketTest.Endpoint, [], ["/socket/websocket"]}}}
+     right: {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.PhoenixWebSocketTest.Endpoint, []}}
+     stacktrace:
+       test/phoenix_websocket_test.exs:110: (test)
+
+
+Finished in 0.4 seconds (0.4s async, 0.00s sync)
+6 tests, 6 failures

@@ -1,9 +1,12 @@
 # Native HTTP and Phoenix
 
-`gaoxy_http` owns the HTTP/1 parser, opt-in native HTTP/2 engine, Plug adapter and
+`gaoxy_http` owns the HTTP/1 parser, native HTTP/2 engine, Plug adapter and
 WebSock connection lifecycle.
 Thousand Island and Gaoxy retain socket/listener supervision, admission and
-shutdown. No Bandit application is installed or started. Core consumers do not
+shutdown. M5 is **COMPLETE LOCALLY within its ordinary verification scope**;
+the authoritative [M5 acceptance record](acceptance/m5-websocket-over-h2-h3.md)
+records G0–G5 runtime results and the final independent closeout review.
+No Bandit application is installed or started. Core consumers do not
 depend on Plug, WebSock, Phoenix or an upstream HTTP client.
 
 ```elixir
@@ -15,15 +18,21 @@ Gaoxy.stop(server)
 Use `Gaoxy.HTTP.child_spec/1` under a supervisor, or obtain `{:ok, spec}` from
 `Gaoxy.HTTP.service_spec/1` and include it among an instance's services. Options
 are `:id`, `:ip`, `:port`, `:transport` (`:tcp` or `:tls`), `:tls`, `:limits`,
-`:http_limits`, `:protocols`, `:h2c`, `:h2_limits`, and exactly one of `:plug` or
-`:endpoint`. HTTP/1 remains the default. TLS uses the existing Gaoxy certificate
-policy and advertises the explicitly configured protocols.
+`:http_limits`, `:protocols`, `:h2c`, `:h2_limits`, `:extended_connect`, and exactly
+one of `:plug` or `:endpoint`. Embedded HTTPS defaults to
+`protocols: [:http2, :http1]` with ordered ALPN `h2`, `http/1.1`, retaining H1
+negotiation and no-ALPN fallback. Plain TCP defaults to H1. Explicit
+`protocols: [:http1]` retains H1-only HTTPS. TLS certificate/security checks
+remain in force. Standalone JSON keeps its explicit H1 selection.
 
 ## Native HTTP/2
 
-TLS enables H2 with `protocols: [:http2, :http1]` (ALPN `h2`, `http/1.1`) or
-`[:http2]`. Cleartext requires `protocols: [:http2], h2c: :prior_knowledge`;
-HTTP/1 upgrade to h2c is unsupported. Supply an explicit resource budget:
+TLS prefers H2 by default; select `protocols: [:http2]` for H2-only TLS.
+Cleartext requires `protocols: [:http2], h2c: :prior_knowledge`; HTTP/1 upgrade
+and mixed-cleartext detection are unsupported. The HTTP facade supplies
+`limits.max_bytes: 268_435_456` (256 MiB) when H2 is selected and that field is
+omitted. Explicit budgets remain unchanged and must cover the reservation
+profile. An explicit configuration can use:
 
 ```elixir
 {:ok, server} = Gaoxy.HTTP.start_link(
@@ -66,15 +75,19 @@ credits follow body consumption and acknowledged writes. Shared Exchange and
 Response operations preserve ordinary responses, informational headers, files,
 trailers, HEAD/bodyless semantics and ordered duplicate fields across H1/H2.
 Selected independent TCP/TLS, malformed-frame and browser evidence is in
-[M3 acceptance](acceptance/m3.md). Server push, H2 WebSocket extended CONNECT,
-H2 CONNECT tunnels and H3 are unsupported in this milestone slice.
+[M3 acceptance](acceptance/m3.md). Native downstream H2 WebSocket extended
+CONNECT is implemented with independent ordinary H2/h2c peer gates in
+[M5 acceptance](acceptance/m5-websocket-over-h2-h3.md). Server push and generic
+H2 CONNECT tunnels remain unsupported; optional H3 uses its
+[separate service](http3.md).
 
 For Phoenix, configure `adapter: Gaoxy.PhoenixAdapter` with `http: [...]` and/or
 `https: [...]`. The Endpoint supervisor owns one Gaoxy instance with one service
 per enabled scheme. `MyEndpoint.server_info(:http)` returns its actual address
 and port. The HTTPS options accept `:certfile`, `:keyfile`, `:versions` and `:alpn`
-alongside `:ip`, `:port`, `:limits`, `:http_limits`, `:protocols`, `:h2c` and
-`:h2_limits`. Integer and decimal-string
+alongside `:ip`, `:port`, `:limits`, `:http_limits`, `:protocols`, `:h2c`,
+`:h2_limits` and `:extended_connect`. Omitted HTTPS protocols use the HTTP
+facade defaults. Integer and decimal-string
 ports are accepted. Development uses Phoenix's `SyncCodeReloadPlug`; the project
 must configure `listeners: [Phoenix.CodeReloader]` as required by Phoenix 1.8.
 
@@ -84,6 +97,49 @@ A conflicting Endpoint listener, including Phoenix's global `serve_endpoints`
 setting, is rejected. The adapter's internal `:endpoint_managed` option is
 reserved for Endpoint-owned startup. See the runnable
 [fixture](../examples/phoenix_native/README.md).
+
+## Native H2/H3 WebSocket and Phoenix opt-in
+
+`extended_connect: false` is the listener default, independent of H2 protocol
+selection. Set `extended_connect: true` explicitly for each H2 or H3 listener
+serving WebSock streams. This enables RFC 8441/9220 downstream WebSocket only;
+it does not enable generic tunnels, outbound H2/H3 WebSocket proxying, or
+standalone JSON activation of WebSocket endpoints.
+
+For managed Phoenix, configure Endpoint-level exact paths and listener opt-in:
+
+```elixir
+config :my_app, MyApp.Endpoint,
+  adapter: Gaoxy.PhoenixAdapter,
+  websocket_paths: ["/live/websocket", "/socket/websocket"],
+  https: [port: 443, certfile: "/path/to/cert.pem", keyfile: "/path/to/key.pem",
+          extended_connect: true]
+```
+
+`websocket_paths` defaults to `[]`; entries must match real Endpoint socket
+routes, with no wildcard, query or fragment. `Gaoxy.PhoenixWebSocket` presents
+GET only during the Endpoint call for a validated, enabled native H2/H3
+WebSocket CONNECT on a listed path, then restores the Conn method. The immutable
+native Exchange keeps CONNECT, actual version and `protocol: "websocket"`.
+Unlisted paths and ordinary requests retain their methods. Phoenix Origin,
+session, CSRF, authentication and subprotocol policies, early WebSockAdapter
+validation, and development code-reload composition remain in force.
+
+External mounts use `plug: {Gaoxy.PhoenixWebSocket, {MyApp.Endpoint, paths}}`
+with the Endpoint's ordinary supervisor running and `server: false`.
+Duplicate-listener validation still applies through the wrapper. H3 requires
+its separate optional service and its own `extended_connect: true` opt-in;
+see [H3 usage](http3.md). Ordinary H2, H3 and H1 Phoenix browser profiles each
+passed 12/12 checks, including Channels/PubSub, LiveView click/upload and normal
+Close. Successful H2/H3 sockets have marker-correlated native CONNECT/version/
+stream receipts. Browser profiles use ordinary HTTPS navigation to complete
+startup trust preparation before the application flow. The client chooses each
+WebSocket transport: an H2 page does not guarantee H2 WebSockets, including after
+future certificate updates. H3 used a controlled QUIC-first fixture; this does not qualify
+automatic H3 selection when TCP is available. Its rejected-Origin check used H1
+TLS and is not an H3-specific rejection claim. Exact evidence and the final
+independent closeout review are recorded in
+[M5 acceptance](acceptance/m5-websocket-over-h2-h3.md).
 
 ## HTTP profile and limits
 
@@ -129,13 +185,14 @@ budgets may reject work below a protocol-specific maximum, especially TLS record
 
 ## WebSock
 
-Use `WebSockAdapter.upgrade(conn, MyWebSock, initial_state, options)`. The same
-connection process implements callbacks, automatic pong, bounded fragmented
-messages, UTF-8 validation, and close handshakes. Handshake response headers,
+Use `WebSockAdapter.upgrade(conn, MyWebSock, initial_state, options)`. The H1
+connection process or H2/H3 stream worker implements callbacks, automatic pong,
+bounded fragmented messages, UTF-8 validation, and close handshakes. Handshake response headers,
 including a selected offered subprotocol, survive the Plug pipeline. Compression
 extensions are not negotiated; `compress: true` and disabling UTF-8 validation
-are rejected. The dependency's minimal reviewed dispatch fork has
-[commit provenance and a removal plan](../vendor/websock_adapter/GAOXY.md).
+are rejected. The vendored dependency includes native Gaoxy dispatch and
+immutable H2/H3 metadata early validation, with
+[provenance and a removal plan](../vendor/websock_adapter/GAOXY.md).
 
 Options default to `timeout: 60_000`, `callback_timeout: 5_000`,
 `close_timeout: 1_000`, `max_lifetime: 86_400_000`,
@@ -143,7 +200,12 @@ Options default to `timeout: 60_000`, `callback_timeout: 5_000`,
 `max_mailbox: 128`, and `max_push_frames: 32`. Frame/message ceilings are also
 clamped to one quarter of the service byte budget. The service `max_state`
 limits callback state. Upgrade establishes one admitted protocol lifetime;
-callbacks cannot renew it. Drain uses its existing absolute deadline and sends
+callbacks cannot renew it. For H2/H3 this lifetime replaces the original HTTP
+request deadline in the stream worker and native owner; writes and callbacks
+retain finite deadlines. Normal Close ends only that WebSocket stream, leaving
+ordinary HTTP siblings and other WebSockets independent. Specialist abnormal
+disconnect, slow-peer, pressure and load qualification remains deferred.
+H1 drain uses its existing absolute deadline and sends
 1001; a WebSock restart stop sends 1012. Forced watchdog termination cannot run
 application cleanup callbacks.
 
@@ -176,8 +238,9 @@ depend on `gaoxy_proxy`. HTTP Fetch 0.19.1 confirms request cleanup through its
 public completion handle and preserves present empty queries. The historical
 raw-target blocker [#64](https://github.com/gsmlg-dev/http_fetch/issues/64) is resolved.
 Per-request `stream_response: true` avoids a global streaming threshold.
-The native H2 engine belongs to `gaoxy_http`; upstream H2 and connection reuse
-remain blocked by the public client contracts described in [M3 acceptance](acceptance/m3.md).
+The native H2 engine belongs to `gaoxy_http`. Managed upstream H1/H2 and
+connection reuse passed the ordinary scope in [M3 completion](acceptance/m3-completion.md);
+the dedicated-H1 adapter retains its separate capability boundary.
 
 Native endpoints can call `Exchange.read_body_step(exchange, credit, wait_ms)`
 with positive credit and finite nonnegative wait. It returns `{:more, bytes, next}`,

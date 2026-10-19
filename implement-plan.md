@@ -1,24 +1,37 @@
-## Next planned milestone: M5 WebSocket over H2/H3 — 2026-10-19
+## Current milestone: M5 WebSocket over H2/H3 — 2026-10-19
 
-The next requested stage is native server-side WebSocket over HTTP/2 (RFC 8441)
-and HTTP/3 (RFC 9220), including ordinary Phoenix Channels/LiveView integration.
-M5 is newly defined by this planning request; earlier versions of this roadmap
-ended at M4. See the [design](docs/designs/m5-websocket-over-h2-h3.md) and
+**Status: COMPLETE LOCALLY within ordinary verification scope.** Native
+server-side WebSocket over HTTP/2 (RFC 8441) and HTTP/3 (RFC 9220), including the
+Phoenix compatibility wrapper, passed the G0–G5 runtime checks. The
+[M5 acceptance ledger](docs/acceptance/m5-websocket-over-h2-h3.md) is authoritative
+for source-bound results and the final independent closeout review. See the
+[design](docs/designs/m5-websocket-over-h2-h3.md) and
 [implementation plan](docs/plans/m5-websocket-over-h2-h3.md).
 
-**Status: PLANNED; implementation and runtime verification NOT STARTED.**
-Recommended sequence: shared WebSocket stream contract, native H2, native H3,
-then protocol-verified Phoenix/browser acceptance and fresh compatibility review.
-M5 also changes embedded HTTP/Phoenix HTTPS defaults to prefer H2 with H1 ALPN
-fallback and sufficient omitted H2 budgets. Plain HTTP stays H1 by default;
-explicit prior-knowledge h2c remains supported, without Upgrade or mixed detection.
-Current runtime defaults remain H1 until that implementation passes verification.
-Keep H1 WebSocket compatibility. Upstream WebSocket proxy transports over H2/H3,
+Embedded HTTP/Phoenix HTTPS defaults now prefer H2 with H1 ALPN/no-ALPN fallback
+and sufficient omitted H2 budgets. Plain TCP stays H1 by default; explicit
+prior-knowledge h2c remains supported, without Upgrade or mixed detection.
+`extended_connect: false` remains the independent per-listener default. Phoenix
+requires exact Endpoint `websocket_paths`, preserves immutable CONNECT metadata
+and socket policy, and externally mounts H3 with `server: false` on a separate
+optional service. Standalone JSON keeps explicit H1 selection.
+
+Independent H2, h2c and H3 peers each passed 15/15 ordinary cases. Phoenix
+H2/H3/H1 browser profiles each passed 12/12 with protocol-specific successful
+socket receipts, normal Close and cleanup. Browser profiles prime startup trust
+through ordinary HTTPS navigation before the application flow. Clients choose
+actual WebSocket transports; an H2 page does not guarantee H2 WebSockets,
+including after future certificate updates. H3 browser selection was controlled
+QUIC-first; automatic selection with TCP available remains unqualified, and its
+rejected-Origin 403 was H1 TLS. Scoped compatibility passed 136/0; named H1,
+proxy, WSS, contract and isolated consumer checks retain separate ledger counts.
+
+Upstream WebSocket proxy transports over H2/H3,
 compression and WebTransport/DATAGRAM are outside this stage. Specialist abnormal,
 disconnect, slow-peer, pressure and sustained-load qualification remains assigned
-to its dedicated environment and is not added as an M5 completion gate here.
-This planning request grants no publication or deployment permission and does
-not reopen accepted M3/M4 or redefine their historical evidence.
+to its dedicated environment and is not an M5 completion gate here. M5 is local
+development only, with no merge, push, release, publication or deployment.
+Accepted M3/M4 historical evidence remains unchanged below.
 
 ## Current M3 completion and local integration scope — 2026-10-19
 
@@ -851,7 +864,7 @@ Use explicit certificate provisioning first; add atomic certificate rotation and
 | **M2: Native application server** | H1, WebSocket/WebSock, Plug/Phoenix adapters, native Phoenix fixture, local/remote routing, minimal streaming reverse proxy | Browser-tested native Phoenix plus local/proxy route selection and streaming; no Bandit runtime dependency |
 | **M3: HTTP/2 and gateway beta** | H2, upstream pools, complete proxy controls, CONNECT, TCP/TLS/UDP relays, configuration generations, operational hardening | Interoperability, security, cancellation/slow-peer, relay semantics, reload and sustained-load gates |
 | **M4: HTTP/3** | Verified QUIC host contract, server-side H3 engine/QPACK profile, Plug mapping, H3 upstream/downstream proxy matrix | Independent H3 peers, malformed control streams, flow control, stream reset, shutdown and browser acceptance |
-| **M5: WebSocket over H2/H3 (planned 2026-10-19)** | HTTPS H2 preference, explicit h2c, native RFC 8441/9220 extended CONNECT, shared WebSock stream runtime, Phoenix Channels/LiveView integration, preserved H1 compatibility | Default negotiation and normal independent H2/H3 WebSocket exchanges, WS-specific browser protocol evidence, scoped compatibility and independent review; implementation NOT STARTED |
+| **M5: WebSocket over H2/H3 (complete locally 2026-10-19)** | HTTPS H2 preference, explicit h2c, native RFC 8441/9220 extended CONNECT, shared WebSock stream runtime, Phoenix Channels/LiveView integration, preserved H1 compatibility | G0–G5 ordinary runtime checks passed: independent H2/h2c/H3 peers, WS-specific H2/H3 and H1 browser evidence, scoped compatibility; exact scope and final independent closeout review in the M5 ledger |
 
 These are evidence gates, not calendar estimates. QUIC host integration can progress alongside native HTTP; H3 depends on both relevant boundaries. A custom TLS gap must not block ordinary TCP/UDP work, and a general runtime gap must not be hidden by advancing to more protocols.
 

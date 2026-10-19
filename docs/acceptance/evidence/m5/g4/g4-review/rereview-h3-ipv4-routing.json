@@ -1,0 +1,36 @@
+{
+  "task": "M5 G4 browser H3 IPv4 resolver routing rereview",
+  "status": "DONE",
+  "assignment": "direct independent read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "timestamp_utc": "2026-10-19T07:42:50.508986+00:00",
+  "files_sha256": {
+    "integration/websocket_multiplexed/browser.py": "c6b4aae313522c3577792465fce246e2b7741d9a942b7318e2a55dc18e557581",
+    "integration/websocket_multiplexed/README.md": "faa1517cfaad71c07cbf1ba3ff79ada050d9c55a47b75b243fd34816ff43eb2b"
+  },
+  "spec_review": "PASS",
+  "code_review": "PASS",
+  "findings": [],
+  "assessment": [
+    "H3 only adds explicit localhost\u2192127.0.0.1 host resolver mapping, matching native fixture IPv4-only UDP bind and existing qualified H3 browser harness.",
+    "URL hostname stays localhost, preserving certificate subject validation context and localhost origin/force-QUIC selection.",
+    "SPKI pin, force-QUIC origin, WebSockets-over-H3 feature, native WS-specific correlation, Origin policy, Close and shutdown assertions remain unchanged.",
+    "No production source or H1/H2 browser arguments change."
+  ],
+  "historical_failure": {
+    "path": ".audit/m5/browser-h3/run-1792395706883495071/report.json",
+    "status": "FAIL",
+    "executed": 0,
+    "error": "Error('Page.goto: net::ERR_QUIC_HANDSHAKE_FAILED at https://localhost:45001/live-counter\\nCall log:\\n  - navigating to \"https://localhost:45001/live-counter\", waiting until \"networkidle\"\\n')",
+    "shutdown": {
+      "exit": 0,
+      "event": "stopped",
+      "runtime_down": true
+    }
+  },
+  "runtime_validation": "NOT RUN by reviewer; fresh H3 execution required.",
+  "review_sol_repair_rounds": 0,
+  "implementation_counters": "Parent-owned; review does not reset author/parent repair history.",
+  "shutdown": "All reviewer commands completed. No source edits, builds, tests or runtime/network processes started."
+}

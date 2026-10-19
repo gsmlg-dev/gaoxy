@@ -1,0 +1,25 @@
+{
+  "task": "M5 G4 browser NetLog observability review and focused H2 assessment",
+  "status": "DONE",
+  "assignment": "direct independent read-only review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "2c666dd4745a4c7ba5f2c304c4cb5a7ce942ff32",
+  "timestamp_utc": "2026-10-19T07:51:51.096638+00:00",
+  "files_sha256": {
+    "integration/websocket_multiplexed/browser.py": "202e2213aa2edd7146f8ac9b71ed6712b4704691e2607abc906ff820aefe5c77"
+  },
+  "code_review": "PASS",
+  "findings": [],
+  "assessment": [
+    "One new --log-net-log argument writes to unique per-attempt evidence directory; exact command records it. Default capture mode retained.",
+    "No protocol flags, browser flow, assertions, fixture selection or production source change.",
+    "EarlierH2PASS12/12 and laterH2BLOCKED_ENV8/12 use same Chromium152revision and profileargs; later LiveView usesH2 while Channels usesH1.",
+    "Configured max concurrentH2streams32 exceeds ordinary active request/WS count; no admission/server upgrade error evident in blocked receipt.",
+    "Pinned Chromium source states websocketH2 only reuses existingH2session; freshWebSocket TLS intentionallyoffersH1. H2-only listener override would not by itself ensure correct reuse and would cease exercising mixed default profile."
+  ],
+  "recommendation": "Run one parent-owned NetLog diagnostic, inspect session poolkey/availability and reuse selection for the two markerURLs. Choose minimal deterministic client preparation only after concrete event evidence; retain defaults and strict correlation.",
+  "runtime_validation": "NOT RUN by reviewer; no blindrerun recommended.",
+  "review_sol_repair_rounds": 0,
+  "implementation_counters": "Parent-owned; review does not reset repairhistory or exhausted Astra2/2.",
+  "shutdown": "All reviewer commands completed. An accidental broad read-only rg search was stopped by its exact ownedPID2076419 and its execsession7106 completed; no runtime/build/network processes started."
+}

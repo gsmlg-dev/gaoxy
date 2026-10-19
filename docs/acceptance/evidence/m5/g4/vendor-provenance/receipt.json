@@ -1,0 +1,133 @@
+{
+  "task": "M5 G4 vendor provenance synchronization",
+  "status": "PASS",
+  "timestamp_utc": "2026-10-19T07:31:17.186997+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "head": "aeeb132688a764f8b9f5a6a5362743417f225353",
+  "upstream_commit": "80901f46c8864cb8bd5231c32b7171b9d0e330ce",
+  "historical_dispatch_fork_commit": "53ee1c7c9edb39fda9c531a5c79aec17ee081a6c",
+  "offline_reconstruction": {
+    "repository_baseline": "4c6f08959e64303ab6ce6cf3280a1035a82c916f",
+    "method": "Read vendor files from repository baseline; remove the single Gaoxy dispatch clause from websock_adapter.ex; omit the downstream regression test. upgrade_validation.ex is unchanged upstream at that baseline.",
+    "upstream_sha256": {
+      "CHANGELOG.md": "56363fa078f46b7602d1ad540e156b8600ebeda0554526962e742bf7ec70a0e5",
+      "LICENSE": "26f042d624e62b760e707842347e9e08cb981491d3cecfdd63bc48fc32e870e3",
+      "README.md": "075dc846dcf83d556314a3d9d305f979a0d87d82e3de8fb04fa2b1eeafbcbcda",
+      "lib/websock_adapter/cowboy_adapter.ex": "d68d617fbbcbbd150f14525b828de63c9db4a4348c647f3b791252ee6438825c",
+      "lib/websock_adapter/upgrade_error.ex": "db602d938c4cd6278ddc9129742dbf332a0ee624fa050aa4e58a39248ca3046c",
+      "lib/websock_adapter/upgrade_validation.ex": "4edd6043330ace02ef63a274d166e9f2b793cc9cc0decf30ae100e784740bb2c",
+      "lib/websock_adapter.ex": "5f144ed27aeeb8a16f7816c721e2d733fa676bfec431c6d23408af7385a442d5",
+      "mix.exs": "3fdda4df6bbcacb434a4be197c54f8c257a95ef704a8bcd1b3cf6f2e75d36ce8"
+    }
+  },
+  "commands": [
+    {
+      "cwd": ".audit/m5/vendor-provenance/canonical-x5y4t1z1",
+      "command": [
+        "git",
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/canonical-x5y4t1z1",
+      "command": [
+        "git",
+        "add",
+        "."
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/canonical-x5y4t1z1",
+      "command": [
+        "git",
+        "add",
+        "--intent-to-add",
+        "test/gaoxy_dispatch_test.exs"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/canonical-x5y4t1z1",
+      "command": [
+        "git",
+        "-c",
+        "core.quotePath=false",
+        "diff",
+        "--binary",
+        "--full-index",
+        "--no-ext-diff",
+        "--no-renames",
+        "--src-prefix=a/",
+        "--dst-prefix=b/"
+      ],
+      "exit": 0,
+      "stdout": "diff --git a/lib/websock_adapter.ex b/lib/websock_adapter.ex\nindex de367e6d0b242f5333ab69a802ef7987c5cd293e..71123c83e6a2527200a4de3d0b6f5672dfafd187 100644\n--- a/lib/websock_adapter.ex\n+++ b/lib/websock_adapter.ex\n@@ -72,6 +72,7 @@ defmodule WebSockAdapter do\n     Plug.Conn.upgrade_adapter(conn, :websocket, tuple)\n   end\n \n+  defp tuple_for(Gaoxy.PlugAdapter, websock, state, opts), do: {websock, state, opts}\n   defp tuple_for(Bandit.Adapter, websock, state, opts), do: {websock, state, opts}\n   # Support for adapters as specified prior to Bandit 1.4\n   defp tuple_for(Bandit.HTTP1.Adapter, websock, state, opts), do: {websock, state, opts}\ndiff --git a/lib/websock_adapter/upgrade_validation.ex b/lib/websock_adapter/upgrade_validation.ex\nindex 313310dff13ae0e321286027697753190db56cff..732c83e3d7f704dbb73e7301178dc836bd40b4df 100644\n--- a/lib/websock_adapter/upgrade_validation.ex\n+++ b/lib/websock_adapter/upgrade_validation.ex\n@@ -24,6 +24,13 @@ defmodule WebSockAdapter.UpgradeValidation do\n   `{:error, reason}` if not\n   \"\"\"\n   @spec validate_upgrade(Plug.Conn.t()) :: :ok | {:error, String.t()}\n+  def validate_upgrade(%Plug.Conn{\n+        adapter: {Gaoxy.PlugAdapter, %{request: %{version: version} = request}}\n+      })\n+      when version in [:\"HTTP/2\", :\"HTTP/3\"] do\n+    validate_gaoxy_extended(request)\n+  end\n+\n   def validate_upgrade(conn) do\n     case Plug.Conn.get_http_protocol(conn) do\n       :\"HTTP/1.1\" -> validate_upgrade_http1(conn)\n@@ -32,6 +39,17 @@ defmodule WebSockAdapter.UpgradeValidation do\n     end\n   end\n \n+  # Phoenix may see a temporary GET view. Gaoxy's immutable native metadata\n+  # supplies the RFC 8441/9220 method/protocol without a reverse dependency.\n+  defp validate_gaoxy_extended(%{method: \"CONNECT\", protocol: \"websocket\", headers: headers})\n+       when is_list(headers) do\n+    if for({\"sec-websocket-version\", value} <- headers, do: value) == [\"13\"],\n+      do: :ok,\n+      else: {:error, \"'sec-websocket-version' header must equal '13'\"}\n+  end\n+\n+  defp validate_gaoxy_extended(_), do: {:error, \"invalid native extended WebSocket request\"}\n+\n   @doc \"\"\"\n   Raising variant of `validate_upgrade/1`.\n \ndiff --git a/test/gaoxy_dispatch_test.exs b/test/gaoxy_dispatch_test.exs\nnew file mode 100644\nindex 0000000000000000000000000000000000000000..6957c6b6ed6796b827dcf3cb85a0469d1def8c1b\n--- /dev/null\n+++ b/test/gaoxy_dispatch_test.exs\n@@ -0,0 +1,78 @@\n+# This isolated dependency test supplies the consumer's public adapter contract.\n+defmodule Gaoxy.PlugAdapter do\n+  def upgrade(:payload, :websocket, {handler, state, options}),\n+    do: {:ok, {:native, handler, state, options}}\n+\n+  def upgrade(%{request: _} = payload, :websocket, {handler, state, options}),\n+    do: {:ok, {:native, payload, handler, state, options}}\n+\n+  def get_http_protocol(%{request: %{version: version}}), do: version\n+end\n+\n+defmodule WebSockAdapter.GaoxyDispatchTest do\n+  use ExUnit.Case, async: true\n+\n+  test \"dispatches the native Gaoxy adapter tuple\" do\n+    conn = %Plug.Conn{adapter: {Gaoxy.PlugAdapter, :payload}}\n+    upgraded = WebSockAdapter.upgrade(conn, MyWebSock, :state, early_validate_upgrade: false)\n+    assert upgraded.state == :upgraded\n+    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter\n+    assert options[:max_frame_size] == 10_000_000\n+  end\n+\n+  test \"Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET\" do\n+    for version <- [:\"HTTP/2\", :\"HTTP/3\"] do\n+      request = %{\n+        method: \"CONNECT\",\n+        protocol: \"websocket\",\n+        version: version,\n+        headers: [{\"sec-websocket-version\", \"13\"}]\n+      }\n+\n+      conn = %Plug.Conn{\n+        method: \"GET\",\n+        req_headers: request.headers,\n+        adapter: {Gaoxy.PlugAdapter, %{request: request}}\n+      }\n+\n+      result = WebSockAdapter.upgrade(conn, MyWebSock, :state, [])\n+      assert result.state == :upgraded\n+\n+      assert {Gaoxy.PlugAdapter, {:native, %{request: ^request}, MyWebSock, :state, _}} =\n+               result.adapter\n+    end\n+  end\n+\n+  test \"apparent GET cannot replace missing or invalid native extended metadata\" do\n+    for request <- [\n+          %{\n+            method: \"GET\",\n+            protocol: \"websocket\",\n+            version: :\"HTTP/2\",\n+            headers: [{\"sec-websocket-version\", \"13\"}]\n+          },\n+          %{\n+            method: \"CONNECT\",\n+            protocol: \"other\",\n+            version: :\"HTTP/3\",\n+            headers: [{\"sec-websocket-version\", \"13\"}]\n+          },\n+          %{\n+            method: \"CONNECT\",\n+            protocol: \"websocket\",\n+            version: :\"HTTP/3\",\n+            headers: [{\"sec-websocket-version\", \"12\"}]\n+          }\n+        ] do\n+      conn = %Plug.Conn{\n+        method: \"GET\",\n+        req_headers: [{\"sec-websocket-version\", \"13\"}],\n+        adapter: {Gaoxy.PlugAdapter, %{request: request}}\n+      }\n+\n+      assert_raise WebSockAdapter.UpgradeError, fn ->\n+        WebSockAdapter.upgrade(conn, MyWebSock, :state, [])\n+      end\n+    end\n+  end\n+end\n",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/apply-8vtyv5na",
+      "command": [
+        "git",
+        "init",
+        "--quiet"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/apply-8vtyv5na",
+      "command": [
+        "git",
+        "apply",
+        "--check",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/vendor/websock_adapter/gaoxy.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "cwd": ".audit/m5/vendor-provenance/apply-8vtyv5na",
+      "command": [
+        "git",
+        "apply",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/vendor/websock_adapter/gaoxy.patch"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "applied_files_sha256": {
+    "CHANGELOG.md": "56363fa078f46b7602d1ad540e156b8600ebeda0554526962e742bf7ec70a0e5",
+    "LICENSE": "26f042d624e62b760e707842347e9e08cb981491d3cecfdd63bc48fc32e870e3",
+    "README.md": "075dc846dcf83d556314a3d9d305f979a0d87d82e3de8fb04fa2b1eeafbcbcda",
+    "lib/websock_adapter/cowboy_adapter.ex": "d68d617fbbcbbd150f14525b828de63c9db4a4348c647f3b791252ee6438825c",
+    "lib/websock_adapter/upgrade_error.ex": "db602d938c4cd6278ddc9129742dbf332a0ee624fa050aa4e58a39248ca3046c",
+    "lib/websock_adapter/upgrade_validation.ex": "919aafb23b31d5490da15704df8d768db5e04a908cae46a3aa9a10f44a85af21",
+    "lib/websock_adapter.ex": "27579f22205c1b04016f6da48b26e05e6b06d34418ebcb548ff6c4b3cb5a4ecf",
+    "mix.exs": "3fdda4df6bbcacb434a4be197c54f8c257a95ef704a8bcd1b3cf6f2e75d36ce8",
+    "test/gaoxy_dispatch_test.exs": "7e8ba4167688abdcca9fd35ce3c7feef2b710c74677c83e3f1d57c1fcd446249"
+  },
+  "patch_sha256": "8249f142caddf55381905c3e2b24f573ac675a9ae30d87abb0644a7b0ad2acfe",
+  "checks": {
+    "git_apply_check": "PASS",
+    "git_apply": "PASS",
+    "all_snapshot_files_match": "PASS",
+    "runtime_test_files_unchanged_during_task": "PASS"
+  },
+  "runtime_tests": "NOT RUN; parent owns build/runtime verification",
+  "sol_repair_rounds": 1,
+  "astra_recovery_rounds_received": 2,
+  "shutdown": "All owned commands completed; no build or runtime processes started"
+}

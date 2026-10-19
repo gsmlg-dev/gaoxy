@@ -1,6 +1,8 @@
 # M5 native WebSocket over HTTP/2 and HTTP/3
 
-Date: 2026-10-19. Status: **RECOMMENDED; planning only; implementation NOT STARTED**.
+Date: 2026-10-19. Status: **REVIEWED DESIGN; M5 COMPLETE LOCALLY within ordinary verification scope**.
+[M5 acceptance](../acceptance/m5-websocket-over-h2-h3.md) records G0–G5 runtime
+results, source identities and the final independent closeout review.
 Architecture gate: `PROJECT_ARCHITECTURE`, architecture mode. Baseline:
 `main@43363c2be851de4b2c999232f9116993bf20647a`. M5 is a newly proposed stage,
 not a recovered historical M5–M8 roadmap. See the [implementation plan](../plans/m5-websocket-over-h2-h3.md).
@@ -27,9 +29,10 @@ unit checks and normal finite network/browser scenarios remain required. No
 publication, deployment, production credentials/data, Vault, public-management,
 or disabled release-artifact E2E permission is added by this document.
 
-## Source findings and alternatives
+## Preimplementation source findings and alternatives
 
-All module paths below are relative to the repository root.
+The following findings describe the recorded preimplementation baseline, not
+the current M5 source capability. All module paths are relative to the repository root.
 
 | Existing seam | Observed constraint |
 | --- | --- |
@@ -60,10 +63,10 @@ M5. `gaoxy_http3 -> gaoxy_http -> gaoxy` remains the dependency direction.
 
 ## Server protocol defaults and h2c
 
-The user's default-policy clarification is part of M5. Current HTTP and Phoenix
-facades still default to H1; the following defaults are planned, not implemented:
+The user's default-policy clarification is implemented in the current M5 HTTP
+and Phoenix facades. G2 verifies these defaults:
 
-| Listener | Planned default or explicit selection |
+| Listener | Current default or explicit selection |
 | --- | --- |
 | HTTPS, including Phoenix HTTPS | Default `protocols: [:http2, :http1]`, advertising ordered ALPN `h2`, `http/1.1`. Prefer H2; retain H1 negotiation and no-ALPN fallback. |
 | Plain HTTP | Keep H1 by default. Explicit `protocols: [:http2], h2c: :prior_knowledge` selects the existing cleartext H2 mode. |
@@ -132,9 +135,10 @@ The official RFC text was inspected for this design.
 
 ## Metadata and shared engine APIs
 
-The following APIs and fields are **proposed additions**, not existing support.
+The following APIs and fields are implemented in the current M5 source. Their
+source-bound verification and limitations are recorded in the acceptance ledger.
 
-| Module/file | Proposed responsibility |
+| Module/file | Responsibility |
 | --- | --- |
 | `Gaoxy.HTTP.Request` (`http/request.ex`) | Add `protocol: nil` or a validated binary from `:protocol`. Keep wire method `CONNECT`, version and target path intact. Mark valid extended-CONNECT payload as `body: :tunnel`. |
 | New `Gaoxy.HTTP.WebSocket.ExtendedHandshake` (`http/websocket/extended_handshake.ex`) | Pure `headers(request, response_headers)` returning `{:ok, fields}` or a typed handshake error. Validate CONNECT, websocket protocol, version, and shared response/subprotocol rules; emit only legal regular response fields. |
@@ -348,7 +352,19 @@ boundaries. Required results:
    optional QUIC. Independent specification/code review precedes final fresh
    verification and capability-document updates.
 
-No runtime checks have been run for this design. Implementation and all new
-acceptance gates are **NOT RUN**. Source inspection and RFC review establish
-the design, not working protocol support. Historical Sol/Astra recovery counts
-remain unchanged; this architecture assignment consumes no recovery round.
+Current M5 G0–G5 ordinary runtime checks passed. Independent H2, h2c and H3
+peers each passed 15/15; Phoenix H2, H3 and H1 browser profiles each passed 12/12.
+Successful H2/H3 sockets have marker-correlated native CONNECT/version/stream
+receipts. Browser profiles complete startup trust preparation with an ordinary
+HTTPS navigation before the application flow. Clients choose actual WebSocket
+transports; an H2 page does not guarantee H2 WebSockets, including after future
+certificate updates. The H3 browser fixture initially exposed QUIC only, then enabled
+same-port H1 TLS after both successful H3 sockets were established for the
+opaque-origin 403 check. That rejection is H1 evidence, not an H3-specific
+negative claim; automatic H3 selection with TCP available is unqualified.
+Scoped compatibility passed 136 tests/0 failures, with separately recorded H1,
+proxy, WSS, contract and isolated consumer checks. The acceptance ledger retains
+all failed, blocked and unexecuted historical attempts and the final independent
+closeout review. No specialist fault/load, publication, merge or deployment
+acceptance follows. Historical Sol/Astra counters remain inherited; architecture
+design consumes no recovery round and Astra recovery remains exhausted at 2/2.
