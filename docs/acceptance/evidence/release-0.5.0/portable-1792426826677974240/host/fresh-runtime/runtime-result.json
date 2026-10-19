@@ -1,0 +1,145 @@
+{
+  "status": "PASS",
+  "source_sha": "b0e1531b9d2ac682e4af19d4616ad4461e3ca6f2",
+  "archive_sha256": "3e750adae17bb8ecf8ecb3da3889bc743a43006432179a23c33bf76190a7d128",
+  "hell_provenance": {
+    "application": "hell",
+    "version": "0.1.2",
+    "source_url": "https://github.com/gsmlg-dev/hell.git",
+    "git_sha": "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee",
+    "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777"
+  },
+  "platform": "linux/amd64",
+  "network": "none",
+  "core_transports": 3,
+  "gateway_exchanges": 2,
+  "h3_checks": 3,
+  "elf_objects_checked": 21,
+  "missing_libraries": 0,
+  "nix_elf_dependencies": 0,
+  "packaged_websocket_profiles": [
+    {
+      "protocol": "h2",
+      "executed": 15,
+      "failures": 0,
+      "status": "PASS",
+      "report": "websocket-h2/run-1792427988083567321/report.json",
+      "report_sha256": "68e029d3320e98c6742c0fe49dc640247e5fb32cd5a8c289f18a96b58f4d8795"
+    },
+    {
+      "protocol": "h2c",
+      "executed": 15,
+      "failures": 0,
+      "status": "PASS",
+      "report": "websocket-h2c/run-1792427991417270190/report.json",
+      "report_sha256": "b42db479ce1de953406f1f339d27907353ded0726a7e54d35414f261fa7e9212"
+    },
+    {
+      "protocol": "h3",
+      "executed": 15,
+      "failures": 0,
+      "status": "PASS",
+      "report": "websocket-h3/run-1792427995211490628/report.json",
+      "report_sha256": "cc7b4fd58cd4a36d3582ff761d169ae025630de2e7352ebde5400fa43a02b059"
+    }
+  ],
+  "completed_utc": "2026-10-19T16:39:58.702518+00:00",
+  "checks": [
+    {
+      "name": "runtime-system",
+      "command": [
+        "bash",
+        "-ec",
+        "cat /etc/os-release; uname -m; ldd --version; python3 --version; openssl version; dpkg-query -W"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-hell-startup",
+      "command": [
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "eval",
+        "\n{:ok, _} = Application.ensure_all_started(:gaoxy)\ntrue = Enum.any?(Application.started_applications(), fn {app, _, version} ->\n  app == :hell and to_string(version) == \"0.1.2\"\nend)\ntrue = :hell in Application.spec(:gaoxy, :applications)\nfalse = :thousand_island in Application.spec(:gaoxy, :applications)\nnil = Application.spec(:thousand_island)\n:non_existing = :code.where_is_file(~c\"thousand_island.app\")\nIO.puts(\"PASS packaged Hell 0.1.2 startup; Thousand Island absent\")\n"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-core-smoke",
+      "command": [
+        "python3",
+        "scripts/release-smoke.py"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-gateway-smoke",
+      "command": [
+        "/work/.audit/h2peer/bin/python",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-h3-smoke",
+      "command": [
+        "/work/.audit/h2peer/bin/python",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--evidence",
+        "/evidence/h3"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-websocket-h2",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h2",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h2"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-websocket-h2c",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h2c",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h2c"
+      ],
+      "exit_code": 0
+    },
+    {
+      "name": "packaged-websocket-h3",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h3",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h3"
+      ],
+      "exit_code": 0
+    }
+  ]
+}

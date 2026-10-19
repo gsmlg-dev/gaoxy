@@ -1,11 +1,16 @@
-## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
-v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
-replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
-published v0.4.0 source and binaries retain Thousand Island. Fresh portable
-qualification and publication are **NOT RUN**. See the
-[release notes](docs/releases/0.5.0.md) for planned checks and retained limits,
-and [release acceptance](docs/acceptance/release-0.5.0.md) for actual status.
+Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from
+`b0e1531b9d2ac682e4af19d4616ad4461e3ca6f2` with Hell 0.1.2 (`Hell` namespace,
+`:hell` application) replacing Thousand Island. Accepted protocol and Phoenix
+functionality is unchanged; published v0.4.0 source and binaries retain
+Thousand Island. Fresh ordinary portable verification passed **210 executions /
+0 failures / 144 excluded / 0 skipped**. Packaged H2/h2c/H3 WebSocket passed
+**15/15 each** in builder and offline runtime; all **21 ELF objects** passed
+dependency checks. Three freshly downloaded release assets match the qualified
+bytes and hashes. New hosted CI remains **NOT RUN**. See the
+[release notes](docs/releases/0.5.0.md) for platform support and retained limits,
+and [release acceptance](docs/acceptance/release-0.5.0.md) for exact evidence.
 Historical results below retain their recorded source identities and outcomes.
 
 ## v0.4.0 release status — 2026-10-19

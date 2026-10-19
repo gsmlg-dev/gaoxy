@@ -1,0 +1,471 @@
+{
+  "status": "PASS",
+  "protocol": "h2c",
+  "required_cases": [
+    "negotiation",
+    "setting-8",
+    "200-open-handshake",
+    "two-websocket-streams",
+    "http-sibling",
+    "text",
+    "binary",
+    "split-data",
+    "coalesced-data",
+    "ping-pong",
+    "selected-subprotocol",
+    "server-push-while-idle",
+    "post-original-request-deadline",
+    "normal-close",
+    "http-after-close"
+  ],
+  "cases": [
+    {
+      "name": "negotiation",
+      "status": "PASS",
+      "elapsed_ms": 4,
+      "negotiated": "h2c-prior-knowledge",
+      "certificate_verified": false
+    },
+    {
+      "name": "setting-8",
+      "status": "PASS",
+      "elapsed_ms": 30,
+      "value": 1
+    },
+    {
+      "name": "200-open-handshake",
+      "status": "PASS",
+      "elapsed_ms": 119,
+      "streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "two-websocket-streams",
+      "status": "PASS",
+      "elapsed_ms": 119,
+      "streams": [
+        1,
+        3
+      ],
+      "connection_count": 1
+    },
+    {
+      "name": "server-push-while-idle",
+      "status": "PASS",
+      "elapsed_ms": 121,
+      "streams": [
+        1,
+        3
+      ],
+      "client_websocket_frames_sent": 0
+    },
+    {
+      "name": "http-sibling",
+      "status": "PASS",
+      "elapsed_ms": 127,
+      "stream": 5,
+      "websocket_streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "text",
+      "status": "PASS",
+      "elapsed_ms": 129,
+      "streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "binary",
+      "status": "PASS",
+      "elapsed_ms": 130,
+      "stream": 1
+    },
+    {
+      "name": "split-data",
+      "status": "PASS",
+      "elapsed_ms": 131,
+      "data_frames": 3
+    },
+    {
+      "name": "coalesced-data",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "websocket_frames": 2,
+      "data_frames": 1
+    },
+    {
+      "name": "ping-pong",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "stream": 1
+    },
+    {
+      "name": "selected-subprotocol",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "selected": "m5.echo"
+    },
+    {
+      "name": "post-original-request-deadline",
+      "status": "PASS",
+      "elapsed_ms": 1234,
+      "request_timeout_ms": 1000,
+      "websocket_lifetime_ms": 10000,
+      "elapsed_after_open_ms": 1203,
+      "total_deadline_ms": 5000
+    },
+    {
+      "name": "normal-close",
+      "status": "PASS",
+      "elapsed_ms": 1280,
+      "code": 1000,
+      "ended_streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "http-after-close",
+      "status": "PASS",
+      "elapsed_ms": 1322,
+      "stream": 7
+    }
+  ],
+  "started_utc": "2026-10-19T16:39:51.417553+00:00",
+  "runner_command": [
+    "/work/.audit/m5peer/bin/python",
+    "integration/websocket_multiplexed/run.py",
+    "--protocol",
+    "h2c",
+    "--release",
+    "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+    "--source-identity",
+    "/tools/source-identity.json",
+    "--evidence",
+    "/evidence/websocket-h2c"
+  ],
+  "source": {
+    "mode": "packaged_release",
+    "identity": {
+      "version": "0.5.0",
+      "source_sha": "b0e1531b9d2ac682e4af19d4616ad4461e3ca6f2",
+      "source_archive_sha256": "6d377d6f9cb0729ac25f7ddd95f9d3f5db7713c370f08170d078c3261c2147fb",
+      "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+      "changed_elixir_paths": [
+        "apps/gaoxy/lib/gaoxy/lifecycle.ex",
+        "apps/gaoxy/lib/gaoxy/native_stream_handler.ex",
+        "apps/gaoxy/lib/gaoxy/service.ex",
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+        "apps/gaoxy/mix.exs",
+        "apps/gaoxy/test/admitted_spawn_test.exs",
+        "apps/gaoxy/test/cleanup_attachment_test.exs",
+        "apps/gaoxy/test/native_stream_test.exs",
+        "apps/gaoxy_http/lib/gaoxy/http/connection.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/exchange.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/writer.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/websocket.ex",
+        "apps/gaoxy_http/mix.exs",
+        "apps/gaoxy_http/test/connection_poll_test.exs",
+        "apps/gaoxy_http/test/generation_checked_capture_test.exs",
+        "apps/gaoxy_http/test/http2_capacity_test.exs",
+        "apps/gaoxy_http/test/http2_worker_startup_test.exs",
+        "apps/gaoxy_http/test/http_contract_test.exs",
+        "apps/gaoxy_http/test/native_proxy_seams_test.exs",
+        "apps/gaoxy_http/test/native_websocket_proxy_test.exs",
+        "apps/gaoxy_http3/mix.exs",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/stream_relay.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/stream_relay/writer.ex",
+        "apps/gaoxy_proxy/lib/gaoxy/proxy/websocket.ex",
+        "apps/gaoxy_proxy/mix.exs",
+        "apps/gaoxy_proxy/test/http3_guardian_test.exs",
+        "apps/gaoxy_proxy/test/http3_session_client_test.exs",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_completed_response_test.exs",
+        "apps/gaoxy_proxy/test/http_proxy_runtime_test.exs",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_write_lifecycle_test.exs",
+        "apps/gaoxy_proxy/test/stream_relay_test.exs",
+        "apps/gaoxy_proxy/test/support/managed_h2_control_projection.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_native_h1_pressure_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transport_slow_peer_test.exs",
+        "apps/gaoxy_server/mix.exs",
+        "docs/acceptance/evidence/release-0.5.0/portable/recipe/hostname-probe.exs",
+        "integration/core_consumer/test/consumer_test.exs",
+        "integration/http3/upstream/fixture.exs",
+        "integration/http_consumer/test/consumer_test.exs",
+        "mix.exs"
+      ]
+    },
+    "source_identity_sha256": "8f2a44bc4237951a9c2534453197856ef02199f8d3ca2bcb063f2602859033bd",
+    "release": {
+      "path": "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+      "version": "gaoxy 0.5.0",
+      "sha256": "e5e7b5282757db4e71966e4c59b4a19bcc50d467e17631e344beeea7bc59dbc3"
+    }
+  },
+  "environment": {
+    "python": "3.11.2 (main, Oct  7 2026, 12:35:07) [GCC 12.2.0]",
+    "executable": "/work/.audit/m5peer/bin/python",
+    "openssl": "OpenSSL 3.0.22 25 Aug 2026",
+    "MIX_ENV": "test",
+    "ERL_FLAGS": "+S 2:2"
+  },
+  "peer_versions": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0",
+    "aioquic": "1.2.0",
+    "wsproto": "1.2.0",
+    "playwright": "1.56.0"
+  },
+  "scope": "ordinary protocol/multiplexing/Close only; no specialist fault or load cases",
+  "certificate_command": [
+    "openssl",
+    "req",
+    "-x509",
+    "-newkey",
+    "rsa:2048",
+    "-nodes",
+    "-days",
+    "2",
+    "-keyout",
+    "/evidence/websocket-h2c/run-1792427991417270190/key.pem",
+    "-out",
+    "/evidence/websocket-h2c/run-1792427991417270190/cert.pem",
+    "-subj",
+    "/CN=localhost",
+    "-addext",
+    "subjectAltName=DNS:localhost,IP:127.0.0.1",
+    "-addext",
+    "basicConstraints=critical,CA:TRUE"
+  ],
+  "fixture_command": [
+    "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+    "eval",
+    "{:ok, _} = Application.ensure_all_started(:gaoxy_http3); Code.require_file(Base.decode64!(\"L3dvcmsvaW50ZWdyYXRpb24vd2Vic29ja2V0X211bHRpcGxleGVkL2ZpeHR1cmUuZXhz\"))"
+  ],
+  "fixture_ready": {
+    "port": 41149,
+    "protocol": "h2c",
+    "otp": "28",
+    "elixir": "1.18.5",
+    "event": "ready",
+    "request_timeout_ms": 1000,
+    "websocket_lifetime_ms": 10000
+  },
+  "admission_released": {
+    "active": 0,
+    "retained_bytes": 0,
+    "event": "sample",
+    "cleanup_pending": 0,
+    "cleanup_failed": null
+  },
+  "server_receipts": {
+    "websocket_opens": [
+      {
+        "stream": 1,
+        "version": "HTTP/2",
+        "path": "/websocket",
+        "protocol": "websocket",
+        "connection": "#PID<0.185.0>",
+        "event": "websocket-open",
+        "method": "CONNECT",
+        "query": "label=one",
+        "original_deadline": -576460749811,
+        "requested_websocket_deadline": -576460740791,
+        "accepted_websocket_deadline": -576460740791,
+        "observed_at": -576460750782
+      },
+      {
+        "stream": 3,
+        "version": "HTTP/2",
+        "path": "/websocket",
+        "protocol": "websocket",
+        "connection": "#PID<0.185.0>",
+        "event": "websocket-open",
+        "method": "CONNECT",
+        "query": "label=two",
+        "original_deadline": -576460749808,
+        "requested_websocket_deadline": -576460740791,
+        "accepted_websocket_deadline": -576460740791,
+        "observed_at": -576460750782
+      }
+    ],
+    "http_siblings": [
+      {
+        "stream": 5,
+        "version": "HTTP/2",
+        "path": "/sibling",
+        "protocol": null,
+        "connection": "#PID<0.185.0>",
+        "event": "http-request",
+        "method": "GET",
+        "query": ""
+      },
+      {
+        "stream": 7,
+        "version": "HTTP/2",
+        "path": "/after-close",
+        "protocol": null,
+        "connection": "#PID<0.185.0>",
+        "event": "http-request",
+        "method": "GET",
+        "query": ""
+      }
+    ],
+    "terminated": [
+      {
+        "label": "one",
+        "reason": ":remote",
+        "event": "websocket-terminated"
+      },
+      {
+        "label": "two",
+        "reason": ":remote",
+        "event": "websocket-terminated"
+      }
+    ],
+    "post_deadline_message": {
+      "stream": 1,
+      "event": "post-deadline-message",
+      "original_deadline": -576460749811,
+      "observed_at": -576460749668
+    }
+  },
+  "shutdown": {
+    "exit": 0,
+    "event": "stopped",
+    "runtime_down": true
+  },
+  "ephemeral_key_removed": true,
+  "executed": 15,
+  "not_run": [],
+  "case_results": [
+    {
+      "name": "negotiation",
+      "status": "PASS",
+      "elapsed_ms": 4,
+      "negotiated": "h2c-prior-knowledge",
+      "certificate_verified": false
+    },
+    {
+      "name": "setting-8",
+      "status": "PASS",
+      "elapsed_ms": 30,
+      "value": 1
+    },
+    {
+      "name": "200-open-handshake",
+      "status": "PASS",
+      "elapsed_ms": 119,
+      "streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "two-websocket-streams",
+      "status": "PASS",
+      "elapsed_ms": 119,
+      "streams": [
+        1,
+        3
+      ],
+      "connection_count": 1
+    },
+    {
+      "name": "http-sibling",
+      "status": "PASS",
+      "elapsed_ms": 127,
+      "stream": 5,
+      "websocket_streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "text",
+      "status": "PASS",
+      "elapsed_ms": 129,
+      "streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "binary",
+      "status": "PASS",
+      "elapsed_ms": 130,
+      "stream": 1
+    },
+    {
+      "name": "split-data",
+      "status": "PASS",
+      "elapsed_ms": 131,
+      "data_frames": 3
+    },
+    {
+      "name": "coalesced-data",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "websocket_frames": 2,
+      "data_frames": 1
+    },
+    {
+      "name": "ping-pong",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "stream": 1
+    },
+    {
+      "name": "selected-subprotocol",
+      "status": "PASS",
+      "elapsed_ms": 132,
+      "selected": "m5.echo"
+    },
+    {
+      "name": "server-push-while-idle",
+      "status": "PASS",
+      "elapsed_ms": 121,
+      "streams": [
+        1,
+        3
+      ],
+      "client_websocket_frames_sent": 0
+    },
+    {
+      "name": "post-original-request-deadline",
+      "status": "PASS",
+      "elapsed_ms": 1234,
+      "request_timeout_ms": 1000,
+      "websocket_lifetime_ms": 10000,
+      "elapsed_after_open_ms": 1203,
+      "total_deadline_ms": 5000
+    },
+    {
+      "name": "normal-close",
+      "status": "PASS",
+      "elapsed_ms": 1280,
+      "code": 1000,
+      "ended_streams": [
+        1,
+        3
+      ]
+    },
+    {
+      "name": "http-after-close",
+      "status": "PASS",
+      "elapsed_ms": 1322,
+      "stream": 7
+    }
+  ],
+  "exit": 0
+}

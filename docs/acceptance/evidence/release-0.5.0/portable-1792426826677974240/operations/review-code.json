@@ -1,0 +1,129 @@
+{
+  "task_id": "release_050_code",
+  "status": "FAIL",
+  "assignment": "direct independent CODE review; read-only except this receipt",
+  "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/release-0.5.0",
+  "baseline_sha": "aae64c0b22ae6281c71d4332ed53bd847a4235fd",
+  "reviewed_utc": "2026-10-19T16:19:00.267586+00:00",
+  "spec_review_sha256": "69ae8c1cef13917759c7ca041efaa0624942def99440a543a1018e508e35e006",
+  "scope": "27 candidate files and six parent-owned ignored release helpers; static correctness/publication-boundary review only.",
+  "findings": [
+    {
+      "id": "R050-CODE-1",
+      "priority": "P2",
+      "file": ".audit/release-0.5.0/publish_host.py",
+      "line_start": 49,
+      "line_end": 56,
+      "title": "Bind artifact approval to the exact qualified run and asset bytes before publication",
+      "trigger": "Supply a passing artifact/notes review from build run A while invoking publication for run B built from the same source SHA and same notes; A and B have different tar.gz/build-info digests.",
+      "evidence": "The review checks only status, source_sha and reviewed_notes_sha256. The subsequent artifact comparison binds current files to current host-qualification.json but never binds those bytes or that qualification receipt to the independent review. A stale same-source review therefore passes all current review predicates.",
+      "impact": "An earlier independent review can authorize publication of a different, unreviewed artifact/runtime run. This violates the exact reviewed artifact prerequisite even though source/tag identity is correct.",
+      "requested_change": "Before push-main, require review.run_directory to equal the resolved RUN, review.host_qualification_sha256 to match the exact current qualification receipt, and review.artifact_sha256 to equal the exact three current asset digests; retain current source/notes checks. Require the artifact reviewer to write those fields.",
+      "validation": "Pure in-memory evaluation of the current three review predicates accepted differing host and reviewed artifact digest maps. No helper execution or external action."
+    }
+  ],
+  "reviewed_files_sha256": {
+    "README.md": "9a46b76b14eeea93a78911234056c5669562d826df7615ed2729f82c9fe8da01",
+    "apps/gaoxy/mix.exs": "8dc11645352e24ee18a074ff53e791eaf7044ccc09ff127c61eabfc8be59fcd2",
+    "apps/gaoxy_http/mix.exs": "354fd1ef8d995f94640af811c57c09585ac7d021b7d3837579122cb886f1820d",
+    "apps/gaoxy_http3/mix.exs": "18374ee291160287fbb25998276570a95de6dafc6ab0eab36bdac6e78050fb82",
+    "apps/gaoxy_proxy/mix.exs": "0199af428f120136c8bdfd8a5fa587ef6b50556cb86c90614fa874d8f38f69bb",
+    "apps/gaoxy_server/mix.exs": "67915e4d03515abb397f2de1e5080d2d5bab9d6c69bc93691af7da49e2ae1fae",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/Dockerfile": "85827c974ec8a93bc163570503c1b2ab4bcd787027024acd002378fcca7512d4",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/build.py": "a97409ec3dda725280450ba30300e43a851d718fbd852b4975adedf948a528a6",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/finalize.py": "fb3bc21f44e6b8db26b5f4c4e004d954a22382da00440442ac0880b1d175865a",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/hostname-probe.exs": "a2878fac35c7083d504f9d01b165cb0544048d7f527bd03290e751bfb548247f",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/ordinary-scope.json": "140a9d32d2d7cb4694bac6cd93fdaace95029363978b0995ae8bbd3676fadad8",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/qualify_runtime.py": "938578d67c73912d20face4464d69565ee50301ed3d6e4d3b173d3b2ed457e7c",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/run_runtime.py": "36bc8c774dc58da17b3b238b999859ed0501a44da191c4783278f9231b6beddc",
+    "docs/acceptance/evidence/release-0.5.0/portable/recipe/runtime.py": "26aa89b972babbc126cdfab4fe0b90311ad870fb843b426b0fa9b2f59806c611",
+    "docs/acceptance/release-0.5.0.md": "d93ce1448a2d07a7330886321bbf842d072380cadef74760ca4dd6e487ced450",
+    "docs/capabilities.md": "1e3ce3a4afc4716cf894587bc47b89cc7b5280f0dbc14781d2eacfce12226b6c",
+    "docs/dependency-audit.md": "22f2e1c8a98db9e5e3a8b05e2de23bd1d6ee5b8f6acc5ae0f0525cf51bfee2d2",
+    "docs/designs/release-0.5.0-portable.md": "436c902d17fd672058299e041d0a2d4211d05a44b7684418b72afc4d74a82533",
+    "docs/gateway.md": "961142d19f95c9af62c1e2e8b9010b62e08fe15d40e4e1135750508d5d94110a",
+    "docs/http-proxy.md": "7aae3d6ed5494e9968b80d724e60884e284877dfa9df2af0c8281c0c7819c934",
+    "docs/http3.md": "7193872f118dc832890f274b7a8065eb4615433f2ea30bcf423a6d9496595149",
+    "docs/implementation-status.md": "03f893bc1a95c393e6cf478ca40fec9d4ba402e158f88d41d942f62c0410902e",
+    "docs/native-http.md": "f22a7f87c31beaae65b81d4908ea650f3340509c402b08aef637f9b88035a98b",
+    "docs/plans/release-0.5.0.md": "f95c8c45fa3e5b92901d9b16b82520be89b7eaec34d0d172e502b46fd9e45cd5",
+    "docs/releases/0.5.0.md": "82804968537659022d23bb6f2426e0899e1665ed0def224f486aabeb4d39568a",
+    "implement-plan.md": "48cedd4850f282b54a5a9dda2d7eb90f751e4b7161e01502d19a8ca2c95bfef4",
+    "mix.exs": "d6d0cbf7873d07b5ad49220f6474a6a787f6df9403bfbc7dfcc1c7cc0fa48623",
+    ".audit/release-0.5.0/archive_evidence.py": "5fdf82000ad0c06f7823073ab1cb350d623be08c7497487ea88864f5079781ee",
+    ".audit/release-0.5.0/prepare_host.py": "5be07af86b540e97c2129143eae65a9d34cd234abd5025450152a2751ca843b0",
+    ".audit/release-0.5.0/publish_host.py": "a09e94e96e8c0c70c99b278cff3af3aaae3f5451bc99f703b60b118ed57c1038",
+    ".audit/release-0.5.0/qualify_host.py": "23af3d9cebf83958bb2e4f4e13e695bf19e03bea0e99363262d3afc57804ffd8",
+    ".audit/release-0.5.0/run_command.py": "d6485ed94fbda6d314283efd762670fbc8d3931a8799ef02df994c3a875b0471",
+    ".audit/release-0.5.0/verify_downloads.py": "2187eb1bd749c7e94028f54021afb45529c5ff389e9cdb2b59fc7b40b6b62d32"
+  },
+  "reference_files_sha256": {
+    "AGENTS.md": "393a742cb548723a8ffeac0f7e2aabe1a30469f6b694414fa441050bf422a971",
+    "mix.lock": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+    ".audit/release-0.5.0/preparation.json": "4ff3885c1a5f098a09e347b0266842716039a9dab82617b47adcb18d67c36a53",
+    ".audit/release-0.5.0/recipe-validation.json": "fee81d9ede9fdb34af4ce140393b090d7305dafd6968ec1c6307fa0d714f25e9"
+  },
+  "checks": [
+    {
+      "name": "candidate-scope-and-spec-receipt",
+      "status": "PASS",
+      "evidence": "All 27 candidate hashes exactly match the supplied SPEC PASS receipt; six own version substitutions, nine current notices, four release documents and eight recipes. No implementation/dependency/workflow changes."
+    },
+    {
+      "name": "python-syntax",
+      "status": "PASS",
+      "evidence": "compile(source, path, exec) passed for all eleven Python recipe/helper files without executing them or writing bytecode."
+    },
+    {
+      "name": "ordinary-counts-and-pins",
+      "status": "PASS",
+      "evidence": "Existing three batch objects unchanged; four batches sum to 210 executed/144 excluded/0 skipped/0 failures. Image pins exactly match v0.4.0, including restored Rust digest; root lock bytes equal baseline and required hash."
+    },
+    {
+      "name": "package-and-runtime-path",
+      "status": "PASS_STATIC",
+      "evidence": "Reviewed exact Hell Git checkout/provenance assertions, one Hell 0.1.2 package, Gaoxy application dependency, old application absence, matching public release startup evals, five own versions, source custody, checksums and safe extraction. Builder/offline retain core3/gateway2/H3checks3 and three 15-case WebSocket profiles."
+    },
+    {
+      "name": "peer-runtime-cleanup",
+      "status": "PASS_STATIC",
+      "evidence": "Separate legacy and M5 peer environments retained; M3 fixture symlink targets M5. Runtime uses readonly artifact input and network none. Child 300s/parent 600s bounds, normal exit, owned removal and observed absence remain intact."
+    },
+    {
+      "name": "publication-and-downloads",
+      "status": "FAIL",
+      "evidence": "P2 R050-CODE-1. Other reviewed paths retain separate nonforce push/tag/create, exact three assets, no overwrite, remote peeled tag/main verification, fresh download bytes/hash/metadata/ELF/inventory verification tied to frozen active-run context."
+    },
+    {
+      "name": "evidence-archive",
+      "status": "PASS_STATIC",
+      "evidence": "New destination, exclusive output files, round-trip gzip/hash manifest, rejects private-key PEMs, omits downloads/raw source archive and avoids symlink files. No historical evidence modified."
+    }
+  ],
+  "verification": [
+    {
+      "command": "git status --short; git rev-parse HEAD; git diff --stat; git diff; diff -ru old/new portable recipes",
+      "result": "Complete assigned candidate diff reviewed; expected diff exit 1; baseline aae64c0b22ae6281c71d4332ed53bd847a4235fd."
+    },
+    {
+      "command": "python3 - (in-memory syntax, exact file hashes, ordinary totals, pins/lock comparisons and stale-review predicate reproduction)",
+      "exit_code": 0,
+      "result": "All static checks passed; stale artifact-review mismatch reproduced without running any helper."
+    }
+  ],
+  "remaining_gates": [
+    "Fix P2 and independent bounded CODE re-review PASS before source freeze/build",
+    "Commit with skip ci and capture reviewed exact source archive",
+    "Fresh portable build/210 ordinary executions/package and builder protocol profiles",
+    "Fresh offline runtime/linkage/custody/normal-cleanup qualification",
+    "Artifact and release-notes review bound to exact run/qualification/asset hashes",
+    "Verified main push/annotated tag/GitHub release and fresh download verification",
+    "Independent publication and documentation closeout review"
+  ],
+  "runtime_build_tests_publication": "NOT RUN by this reviewer; no builds, live tests, network or publication.",
+  "sol_product_repair_rounds": 0,
+  "astra_recovery_rounds": "2/2 inherited; no escalation",
+  "command_shutdown": "All own read/static commands completed. No containers, builds or publication started. Only this receipt was written.",
+  "remaining_risks": "Static review cannot establish actual build/runtime/publication success. Publication must remain gated on the P2 fix and exact artifact review.",
+  "decisions_needed": []
+}
