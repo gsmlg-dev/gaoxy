@@ -3,9 +3,11 @@ defmodule Gaoxy.HTTP.PlugEndpoint do
   alias Gaoxy.HTTP.Exchange
 
   def init({module, options}) when is_atom(module) do
-    if Code.ensure_loaded?(module) and function_exported?(module, :__sockets__, 0) and
-         function_exported?(module, :config, 1) and
-         apply(Phoenix.Endpoint, :server?, [module.config(:otp_app), module]) do
+    endpoint = original_endpoint(module, options)
+
+    if Code.ensure_loaded?(endpoint) and function_exported?(endpoint, :__sockets__, 0) and
+         function_exported?(endpoint, :config, 1) and
+         apply(Phoenix.Endpoint, :server?, [endpoint.config(:otp_app), endpoint]) do
       {:error, :duplicate_endpoint_listener}
     else
       init({module, options, :endpoint_managed})
@@ -22,6 +24,15 @@ defmodule Gaoxy.HTTP.PlugEndpoint do
   end
 
   def init(_), do: {:error, :invalid_plug}
+
+  defp original_endpoint(Gaoxy.PhoenixWebSocket, {endpoint, _}) when is_atom(endpoint),
+    do: endpoint
+
+  defp original_endpoint(Gaoxy.PhoenixWebSocket, {{module, options}, _}),
+    do: original_endpoint(module, options)
+
+  defp original_endpoint(Phoenix.Endpoint.SyncCodeReloadPlug, {endpoint, _}), do: endpoint
+  defp original_endpoint(module, _), do: module
 
   def call(exchange, {module, options}) do
     conn = Exchange.plug_conn(exchange)

@@ -24,6 +24,13 @@ defmodule WebSockAdapter.UpgradeValidation do
   `{:error, reason}` if not
   """
   @spec validate_upgrade(Plug.Conn.t()) :: :ok | {:error, String.t()}
+  def validate_upgrade(%Plug.Conn{
+        adapter: {Gaoxy.PlugAdapter, %{request: %{version: version} = request}}
+      })
+      when version in [:"HTTP/2", :"HTTP/3"] do
+    validate_gaoxy_extended(request)
+  end
+
   def validate_upgrade(conn) do
     case Plug.Conn.get_http_protocol(conn) do
       :"HTTP/1.1" -> validate_upgrade_http1(conn)
@@ -31,6 +38,17 @@ defmodule WebSockAdapter.UpgradeValidation do
       other -> {:error, "HTTP version #{other} unsupported"}
     end
   end
+
+  # Phoenix may see a temporary GET view. Gaoxy's immutable native metadata
+  # supplies the RFC 8441/9220 method/protocol without a reverse dependency.
+  defp validate_gaoxy_extended(%{method: "CONNECT", protocol: "websocket", headers: headers})
+       when is_list(headers) do
+    if for({"sec-websocket-version", value} <- headers, do: value) == ["13"],
+      do: :ok,
+      else: {:error, "'sec-websocket-version' header must equal '13'"}
+  end
+
+  defp validate_gaoxy_extended(_), do: {:error, "invalid native extended WebSocket request"}
 
   @doc """
   Raising variant of `validate_upgrade/1`.

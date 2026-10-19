@@ -1,16 +1,5 @@
-From 53ee1c7c9edb39fda9c531a5c79aec17ee081a6c Mon Sep 17 00:00:00 2001
-From: Jonathan Gao <gsmlg.com@gmail.com>
-Date: Fri, 9 Oct 2026 16:44:44 +0800
-Subject: [PATCH] feat: support native Gaoxy WebSock upgrades
-
----
- lib/websock_adapter.ex       |  1 +
- test/gaoxy_dispatch_test.exs | 17 +++++++++++++++++
- 2 files changed, 18 insertions(+)
- create mode 100644 test/gaoxy_dispatch_test.exs
-
 diff --git a/lib/websock_adapter.ex b/lib/websock_adapter.ex
-index de367e6..71123c8 100644
+index de367e6d0b242f5333ab69a802ef7987c5cd293e..71123c83e6a2527200a4de3d0b6f5672dfafd187 100644
 --- a/lib/websock_adapter.ex
 +++ b/lib/websock_adapter.ex
 @@ -72,6 +72,7 @@ defmodule WebSockAdapter do
@@ -21,16 +10,57 @@ index de367e6..71123c8 100644
    defp tuple_for(Bandit.Adapter, websock, state, opts), do: {websock, state, opts}
    # Support for adapters as specified prior to Bandit 1.4
    defp tuple_for(Bandit.HTTP1.Adapter, websock, state, opts), do: {websock, state, opts}
+diff --git a/lib/websock_adapter/upgrade_validation.ex b/lib/websock_adapter/upgrade_validation.ex
+index 313310dff13ae0e321286027697753190db56cff..732c83e3d7f704dbb73e7301178dc836bd40b4df 100644
+--- a/lib/websock_adapter/upgrade_validation.ex
++++ b/lib/websock_adapter/upgrade_validation.ex
+@@ -24,6 +24,13 @@ defmodule WebSockAdapter.UpgradeValidation do
+   `{:error, reason}` if not
+   """
+   @spec validate_upgrade(Plug.Conn.t()) :: :ok | {:error, String.t()}
++  def validate_upgrade(%Plug.Conn{
++        adapter: {Gaoxy.PlugAdapter, %{request: %{version: version} = request}}
++      })
++      when version in [:"HTTP/2", :"HTTP/3"] do
++    validate_gaoxy_extended(request)
++  end
++
+   def validate_upgrade(conn) do
+     case Plug.Conn.get_http_protocol(conn) do
+       :"HTTP/1.1" -> validate_upgrade_http1(conn)
+@@ -32,6 +39,17 @@ defmodule WebSockAdapter.UpgradeValidation do
+     end
+   end
+ 
++  # Phoenix may see a temporary GET view. Gaoxy's immutable native metadata
++  # supplies the RFC 8441/9220 method/protocol without a reverse dependency.
++  defp validate_gaoxy_extended(%{method: "CONNECT", protocol: "websocket", headers: headers})
++       when is_list(headers) do
++    if for({"sec-websocket-version", value} <- headers, do: value) == ["13"],
++      do: :ok,
++      else: {:error, "'sec-websocket-version' header must equal '13'"}
++  end
++
++  defp validate_gaoxy_extended(_), do: {:error, "invalid native extended WebSocket request"}
++
+   @doc """
+   Raising variant of `validate_upgrade/1`.
+ 
 diff --git a/test/gaoxy_dispatch_test.exs b/test/gaoxy_dispatch_test.exs
 new file mode 100644
-index 0000000..383578b
+index 0000000000000000000000000000000000000000..6957c6b6ed6796b827dcf3cb85a0469d1def8c1b
 --- /dev/null
 +++ b/test/gaoxy_dispatch_test.exs
-@@ -0,0 +1,17 @@
+@@ -0,0 +1,78 @@
 +# This isolated dependency test supplies the consumer's public adapter contract.
 +defmodule Gaoxy.PlugAdapter do
 +  def upgrade(:payload, :websocket, {handler, state, options}),
 +    do: {:ok, {:native, handler, state, options}}
++
++  def upgrade(%{request: _} = payload, :websocket, {handler, state, options}),
++    do: {:ok, {:native, payload, handler, state, options}}
++
++  def get_http_protocol(%{request: %{version: version}}), do: version
 +end
 +
 +defmodule WebSockAdapter.GaoxyDispatchTest do
@@ -43,7 +73,60 @@ index 0000000..383578b
 +    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
 +    assert options[:max_frame_size] == 10_000_000
 +  end
++
++  test "Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET" do
++    for version <- [:"HTTP/2", :"HTTP/3"] do
++      request = %{
++        method: "CONNECT",
++        protocol: "websocket",
++        version: version,
++        headers: [{"sec-websocket-version", "13"}]
++      }
++
++      conn = %Plug.Conn{
++        method: "GET",
++        req_headers: request.headers,
++        adapter: {Gaoxy.PlugAdapter, %{request: request}}
++      }
++
++      result = WebSockAdapter.upgrade(conn, MyWebSock, :state, [])
++      assert result.state == :upgraded
++
++      assert {Gaoxy.PlugAdapter, {:native, %{request: ^request}, MyWebSock, :state, _}} =
++               result.adapter
++    end
++  end
++
++  test "apparent GET cannot replace missing or invalid native extended metadata" do
++    for request <- [
++          %{
++            method: "GET",
++            protocol: "websocket",
++            version: :"HTTP/2",
++            headers: [{"sec-websocket-version", "13"}]
++          },
++          %{
++            method: "CONNECT",
++            protocol: "other",
++            version: :"HTTP/3",
++            headers: [{"sec-websocket-version", "13"}]
++          },
++          %{
++            method: "CONNECT",
++            protocol: "websocket",
++            version: :"HTTP/3",
++            headers: [{"sec-websocket-version", "12"}]
++          }
++        ] do
++      conn = %Plug.Conn{
++        method: "GET",
++        req_headers: [{"sec-websocket-version", "13"}],
++        adapter: {Gaoxy.PlugAdapter, %{request: request}}
++      }
++
++      assert_raise WebSockAdapter.UpgradeError, fn ->
++        WebSockAdapter.upgrade(conn, MyWebSock, :state, [])
++      end
++    end
++  end
 +end
--- 
-2.54.0
-

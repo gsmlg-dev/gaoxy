@@ -9,6 +9,7 @@ https =
       [
         ip: {127, 0, 0, 1},
         port: String.to_integer(port),
+        extended_connect: true,
         certfile: System.fetch_env!("PHOENIX_NATIVE_CERTFILE"),
         keyfile: System.fetch_env!("PHOENIX_NATIVE_KEYFILE")
       ]
@@ -30,6 +31,7 @@ config :phoenix_native, PhoenixNative.Endpoint,
   https: https,
   server: true,
   code_reloader: System.get_env("PHOENIX_NATIVE_RELOAD") == "1",
+  websocket_paths: ["/socket/websocket", "/live/websocket"],
   check_origin: :conn,
   secret_key_base: String.duplicate("a", 64),
   pubsub_server: PhoenixNative.PubSub,

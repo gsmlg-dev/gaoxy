@@ -53,11 +53,7 @@ defmodule Gaoxy.PlugAdapter do
 
   def upgrade(%{request: %{version: version}} = exchange, :websocket, arguments)
       when version in [:"HTTP/2", :"HTTP/3"] do
-    request = exchange.request
-
-    if exchange.transport != nil and exchange.transport_state != nil and
-         exchange.limits[:extended_connect] == true and request.method == "CONNECT" and
-         request.protocol == "websocket" and request.body == :tunnel do
+    if websocket_request?(exchange) do
       prepare_websocket(exchange, arguments)
     else
       {:error, :not_supported}
@@ -69,6 +65,19 @@ defmodule Gaoxy.PlugAdapter do
   end
 
   def upgrade(_, _, _), do: {:error, :not_supported}
+
+  @doc false
+  def websocket_request?(%{
+        request:
+          %{method: "CONNECT", protocol: "websocket", body: :tunnel, version: version} = request,
+        limits: %{extended_connect: true},
+        transport: transport,
+        transport_state: state
+      })
+      when version in [:"HTTP/2", :"HTTP/3"] and not is_nil(transport) and not is_nil(state),
+      do: Gaoxy.HTTP.WebSocket.ExtendedHandshake.headers(request, []) == {:ok, []}
+
+  def websocket_request?(_), do: false
 
   defp prepare_websocket(exchange, arguments) do
     case Gaoxy.HTTP.WebSocket.prepare(exchange, arguments) do

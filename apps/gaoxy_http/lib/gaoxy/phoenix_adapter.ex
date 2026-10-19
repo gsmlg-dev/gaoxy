@@ -71,12 +71,16 @@ defmodule Gaoxy.PhoenixAdapter do
         do: {Phoenix.Endpoint.SyncCodeReloadPlug, {endpoint, []}},
         else: {endpoint, []}
 
+    target = if plug_module == endpoint, do: endpoint, else: {plug_module, plug_options}
+    paths = Keyword.get(config, :websocket_paths, [])
+
     args = [
       id: service_id(endpoint, scheme),
       ip: Keyword.get(options, :ip, {127, 0, 0, 1}),
       port: port,
       transport: if(scheme == :http, do: :tcp, else: :tls),
-      endpoint: {Gaoxy.HTTP.PlugEndpoint, {plug_module, plug_options, :endpoint_managed}},
+      endpoint:
+        {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.PhoenixWebSocket, {target, paths}, :endpoint_managed}},
       limits: Keyword.get(options, :limits, %{}),
       http_limits: Keyword.get(options, :http_limits, %{}),
       h2c: Keyword.get(options, :h2c, :disabled),

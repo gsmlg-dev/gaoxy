@@ -7,10 +7,18 @@ false = Phoenix.Endpoint.server?(:phoenix_native, endpoint)
 defmodule PhoenixNative.H3BrowserPlug do
   @behaviour Plug
 
-  def init(observer), do: {observer, PhoenixNative.Endpoint.init([])}
+  def init(observer) do
+    {:ok, {module, initialized}} =
+      Gaoxy.HTTP.PlugEndpoint.init(
+        {Gaoxy.PhoenixWebSocket,
+         {PhoenixNative.Endpoint, ["/socket/websocket", "/live/websocket"]}}
+      )
 
-  def call(conn, {observer, options}) do
-    conn = PhoenixNative.Endpoint.call(conn, options)
+    {observer, module, initialized}
+  end
+
+  def call(conn, {observer, module, options}) do
+    conn = module.call(conn, options)
 
     send(observer, {
       :h3_browser_request,
@@ -34,6 +42,7 @@ directory = System.fetch_env!("GAOXY_HTTP3_CERT_DIR")
     ip: {127, 0, 0, 1},
     port: 0,
     plug: {PhoenixNative.H3BrowserPlug, self()},
+    extended_connect: true,
     tls: %{
       certfile: Path.join(directory, "cert.pem"),
       keyfile: Path.join(directory, "key.pem")
