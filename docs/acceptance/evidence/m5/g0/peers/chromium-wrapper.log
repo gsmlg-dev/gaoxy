@@ -1,0 +1,27 @@
+/run/current-system/sw/bin/chromium
+#! /nix/store/rzl7zd3zx56vl7m55x1l49sr4xx2bb7y-bash-5.3p9/bin/bash -e
+
+if [ -x "/run/wrappers/bin/__chromium-suid-sandbox" ]
+then
+  export CHROME_DEVEL_SANDBOX="/run/wrappers/bin/__chromium-suid-sandbox"
+else
+  export CHROME_DEVEL_SANDBOX="/nix/store/8cx2wcwl0wpsrqzzmakhqi8d0lswvvc1-chromium-152.0.7977.64-sandbox/bin/__chromium-suid-sandbox"
+fi
+
+# Make generated desktop shortcuts have a valid executable name.
+export CHROME_WRAPPER='chromium'
+
+# To avoid loading .so files from cwd, LD_LIBRARY_PATH here must not
+# contain an empty section before or after a colon.
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH${LD_LIBRARY_PATH:+:}/nix/store/xa0vq1ipwx6a2z14f8y6pmvnjql0g5pi-libva-2.23.0/lib:/nix/store/qwcq8cjnhm686yjdrjfcrrw95jv6dhpn-pipewire-1.6.6/lib:/nix/store/4qangvdf3rkv93bpi2sjjg695zcs2mqx-wayland-1.25.0/lib:/nix/store/nz1phhjgpbg6gb1dlcvarf0bm61aj97c-gtk+3-3.24.52/lib:/nix/store/8g01hy2crkmnjb5v1b6nmgbfrs6y4h39-gtk4-4.22.4/lib:/nix/store/v6ibq54l47kz8m62gm5p4dqr8sjgy4c9-krb5-1.22.2-lib/lib"
+
+# libredirect causes chromium to deadlock on startup
+export LD_PRELOAD="$(echo -n "$LD_PRELOAD" | /nix/store/gph17gb73p6qbrqqjnypfjj5npf0ldyx-coreutils-9.11/bin/tr ':' '\n' | /nix/store/sacz532zgiacvg7mva9v6gbfmyw427i3-gnugrep-3.12/bin/grep -v /lib/libredirect\\.so$ | /nix/store/gph17gb73p6qbrqqjnypfjj5npf0ldyx-coreutils-9.11/bin/tr '\n' ':')"
+
+export XDG_DATA_DIRS=/nix/store/8n18hsc1c5cg15jsylajaadpvyac426l-cups-2.4.19/share:/nix/store/nz1phhjgpbg6gb1dlcvarf0bm61aj97c-gtk+3-3.24.52/share:/nix/store/8g01hy2crkmnjb5v1b6nmgbfrs6y4h39-gtk4-4.22.4/share:/nix/store/2lvbdxiqclwvvwz5h9zg0lisnh027wcd-adwaita-icon-theme-50.0/share:/nix/store/86lm4hs4jsqli3y9amp86bhfm0g888qn-hicolor-icon-theme-0.18/share:/nix/store/gs7nywn99nsl6rj7pzfln5ka24kl8x86-gsettings-desktop-schemas-50.1/share/gsettings-schemas/gsettings-desktop-schemas-50.1:/nix/store/nz1phhjgpbg6gb1dlcvarf0bm61aj97c-gtk+3-3.24.52/share/gsettings-schemas/gtk+3-3.24.52:/nix/store/8g01hy2crkmnjb5v1b6nmgbfrs6y4h39-gtk4-4.22.4/share/gsettings-schemas/gtk4-4.22.4${XDG_DATA_DIRS:+:}$XDG_DATA_DIRS
+
+# Mainly for xdg-open but also other xdg-* tools (this is only a fallback; $PATH is suffixed so that other implementations can be used):
+export PATH="$PATH${PATH:+:}/nix/store/j2bbgir16awykgqzb9fdhpapidfh7wmj-xdg-utils-1.2.1/bin"
+
+exec "/nix/store/21l0kggj40zbalz2p8xxs8brypp52658-chromium-unwrapped-152.0.7977.64/libexec/chromium/chromium"  ${NIXOS_OZONE_WL:+${WAYLAND_DISPLAY:+--ozone-platform-hint=auto --enable-features=WaylandWindowDecorations --enable-wayland-ime=true}}  "$@" 
+bash: line 1: file: command not found

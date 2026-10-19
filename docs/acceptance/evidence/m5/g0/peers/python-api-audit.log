@@ -1,0 +1,48 @@
+{
+  "scope": "offline public API compatibility only; no Gaoxy network/browser acceptance",
+  "versions": {
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0",
+    "aioquic": "1.2.0",
+    "wsproto": "1.2.0",
+    "playwright": "1.56.0"
+  },
+  "cases": [
+    {
+      "case": "h2-public-extended-connect",
+      "status": "PASS",
+      "detail": "setting 8=1, CONNECT/:protocol, 200, DATA and END_STREAM through public APIs"
+    },
+    {
+      "case": "aioquic-public-extended-connect",
+      "status": "PASS",
+      "detail": "public H3Connection setting 8=1, send_headers(:protocol), send_data(end_stream); local queue only"
+    },
+    {
+      "case": "wsproto-public-rfc6455-frames",
+      "status": "PASS",
+      "detail": "wsproto.connection.Connection starts framed session directly; masked text/binary, split frame, ping/pong, normal Close"
+    }
+  ],
+  "executed": 3,
+  "exit": 0,
+  "sources": {
+    "h2.connection": {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/m5/venv/lib/python3.13/site-packages/h2/connection.py",
+      "sha256": "001ac10ddb176742575dbc6b1c77471113d885f0ce0860b65e56269adc0f9419"
+    },
+    "aioquic.h3.connection": {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/m5/venv/lib/python3.13/site-packages/aioquic/h3/connection.py",
+      "sha256": "e7e89dc74f7b353771132a7fdfad10ff81208a7102cb58ff33b8e0e09088d7dd"
+    },
+    "aioquic.quic.connection": {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/m5/venv/lib/python3.13/site-packages/aioquic/quic/connection.py",
+      "sha256": "7c14594073bbdfbd0485154246fc52843d166b6eb0c12779ddfac167da594d74"
+    },
+    "wsproto.connection": {
+      "path": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/m5/venv/lib/python3.13/site-packages/wsproto/connection.py",
+      "sha256": "2e1b1ba24c5952602d32c385159e39a6e6433f22173449aaed26a713bb300201"
+    }
+  }
+}

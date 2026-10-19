@@ -1,0 +1,131 @@
+{
+  "task": "M5 Task 0 peers/public APIs",
+  "status": "PASS (readiness/API audit only)",
+  "assignment": "direct; no production implementation or Mix/build mutations",
+  "time_utc": "2026-10-19T07:04:10.696575+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "branch": "codex/m5-websocket-over-h2-h3",
+  "baseline": "4c6f08959e64303ab6ce6cf3280a1035a82c916f",
+  "venv_executable": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/m5/venv/bin/python",
+  "source": "authoritative worktree deps, 0.21.10 metadata checksums match root mix.lock",
+  "commands": [
+    {
+      "command": "python3 -m venv .audit/m5/venv",
+      "exit": 0,
+      "evidence": "environment-setup.json"
+    },
+    {
+      "command": ".audit/m5/venv/bin/python -m pip install -r integration/websocket_multiplexed/requirements.txt",
+      "exit": 0,
+      "evidence": "03-pip-install.log"
+    },
+    {
+      "command": ".audit/m5/venv/bin/python .audit/m5/g0-peers/audit_python_apis.py",
+      "exit": 0,
+      "executed_cases": 3,
+      "evidence": "python-api-audit.json"
+    },
+    {
+      "command": "nix develop --command .audit/m5/venv/bin/python .audit/m5/g0-peers/audit_browser.py",
+      "exit": 0,
+      "executed_cases": 1,
+      "evidence": "browser-audit.json"
+    },
+    {
+      "command": "nix develop --command env M5_PEER_DEP_ROOT=$PWD ERL_FLAGS='+S 2:2' elixir -pa '_build/test/lib/*/ebin' .audit/m5/g0-peers/audit_elixir_apis.exs",
+      "exit": 0,
+      "executed_cases": 8,
+      "evidence": "elixir-api-current-final.log"
+    },
+    {
+      "command": [
+        ".audit/m5/venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "exit": 0,
+      "output": "No broken requirements found.\n"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "integration/websocket_multiplexed/requirements.txt",
+        "integration/websocket_multiplexed/README.md"
+      ],
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "browser": {
+    "executable": "/run/current-system/sw/bin/chromium",
+    "version": "152.0.7977.64",
+    "args": [
+      "--enable-quic",
+      "--enable-features=EnableWebsocketsOverHttp3"
+    ],
+    "feature_source": "https://github.com/chromium/chromium/blob/152.0.7977.64/net/base/features.cc#L291",
+    "feature_default": "disabled",
+    "h2_websocket": "NOT RUN",
+    "h3_websocket": "NOT RUN"
+  },
+  "failed_or_superseded_attempts": [
+    {
+      "result": "/usr/bin/python3 absent; Nix python3 is available",
+      "classification": "discovery",
+      "evidence": "environment-setup.json"
+    },
+    {
+      "result": "early worktree deps absent; parent fetched dependencies; six relevant files match prior cohort byte-for-byte",
+      "classification": "resolved setup dependency",
+      "evidence": "elixir-source-comparison.json"
+    },
+    {
+      "result": "playwright.sync_api import outside Nix: libstdc++.so.6 missing",
+      "classification": "BLOCKED_ENV outside documented runtime; resolved with existing project Nix shell",
+      "evidence": "peer-imports.json; playwright-nix-import.log"
+    },
+    {
+      "result": "chromium.googlesource.com source request timed out; matching official GitHub mirror succeeded",
+      "classification": "resolved read-only source retrieval",
+      "evidence": "chromium-source-audit.json; chromium-source-github-audit.json"
+    },
+    {
+      "result": "initial browser candidate used unverified feature spellings; superseded after matching-source audit",
+      "classification": "superseded configuration, no transport claim",
+      "evidence": "browser-audit-initial-candidate.json; browser-audit.json"
+    },
+    {
+      "result": "audit-only script used string lock keys and undecoded Hex wrapper",
+      "classification": "FAIL; audit repair round 1",
+      "evidence": "elixir-api-current-host-runtime.log; elixir-api-prior-cohort.log; elixir-api-current-metadata.log"
+    },
+    {
+      "result": "after metadata repair, Abyss public module not compiled yet; require authoritative source in memory for export check",
+      "classification": "FAIL; audit repair round 2",
+      "evidence": "elixir-api-current-fixed.log; elixir-api-current-final.log"
+    }
+  ],
+  "counters": {
+    "audit_script_sol_repair_rounds": 2,
+    "audit_script_final_result": "PASS",
+    "production_sol_repairs": 0,
+    "inherited_root": 734,
+    "inherited_orchestration": 617,
+    "astra_recovery_used": 2,
+    "astra_recovery_limit": 2,
+    "astra_recovery_added": 0
+  },
+  "changed_tracked_scope": [
+    "integration/websocket_multiplexed/requirements.txt",
+    "integration/websocket_multiplexed/README.md"
+  ],
+  "remaining": [
+    "All actual Gaoxy H2/H2c/H3 WebSocket and browser transport acceptance NOT RUN; later tasks own those runtime gates."
+  ],
+  "command_shutdown": "All owned sessions completed; browser.close executed; no running owned process left.",
+  "decisions_needed": []
+}
