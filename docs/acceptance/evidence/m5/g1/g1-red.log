@@ -1,0 +1,114 @@
+==> gaoxy_http
+Running ExUnit with seed: 401618, max_cases: 4
+
+
+
+  1) test generic body readers reject tunnel bytes before invoking the transport (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:83
+     tunnel bytes reached the ordinary body transport
+     code: assert {:error, :unsupported_tunnel_body} = Exchange.read_body(exchange, 16, 100)
+     stacktrace:
+       (gaoxy_http 0.3.0) lib/gaoxy/http/exchange.ex:82: Gaoxy.HTTP.Exchange.read_body/3
+       test/websocket_extended_handshake_test.exs:85: (test)
+
+
+
+  2) test shared preparation accepts extended metadata without rewriting the wire method (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:73
+     match (=) failed
+     code:  assert {:ok, prepared} = WebSocket.prepare(exchange, {Handler, :state, []})
+     left:  {:ok, prepared}
+     right: {:error, :invalid_websocket_upgrade}
+     stacktrace:
+       test/websocket_extended_handshake_test.exs:76: (test)
+
+
+
+  3) test request metadata has an optional protocol and preserves CONNECT (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:30
+     Assertion with == failed
+     code:  assert Map.get(%Request{}, :protocol, :missing) == nil
+     left:  :missing
+     right: nil
+     stacktrace:
+       test/websocket_extended_handshake_test.exs:31: (test)
+
+
+
+  4) test requires validated CONNECT tunnel metadata, authority, path, scheme and version 13 (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:43
+     missing extended CONNECT handshake
+     code: for invalid <- [
+     stacktrace:
+       test/websocket_extended_handshake_test.exs:26: Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest.headers/2
+       test/websocket_extended_handshake_test.exs:54: anonymous fn/1 in Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest."test requires validated CONNECT tunnel metadata, authority, path, scheme and version 13"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/websocket_extended_handshake_test.exs:45: (test)
+
+
+
+  5) test H2 and H3 extended handshakes preserve legal fields without H1 headers (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:35
+     missing extended CONNECT handshake
+     code: for version <- [:"HTTP/2", :"HTTP/3"] do
+     stacktrace:
+       test/websocket_extended_handshake_test.exs:26: Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest.headers/2
+       test/websocket_extended_handshake_test.exs:38: anonymous fn/1 in Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest."test H2 and H3 extended handshakes preserve legal fields without H1 headers"/1
+       (elixir 1.18.5) lib/enum.ex:1714: Enum."-map/2-lists^map/1-1-"/2
+       test/websocket_extended_handshake_test.exs:37: (test)
+
+
+
+  6) test rejects H1, framing, extension, injected and unsolicited response fields (Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest)
+     apps/gaoxy_http/test/websocket_extended_handshake_test.exs:58
+     missing extended CONNECT handshake
+     code: for fields <- [
+     stacktrace:
+       test/websocket_extended_handshake_test.exs:26: Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest.headers/2
+       test/websocket_extended_handshake_test.exs:69: anonymous fn/2 in Gaoxy.HTTP.WebSocket.ExtendedHandshakeTest."test rejects H1, framing, extension, injected and unsolicited response fields"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/websocket_extended_handshake_test.exs:59: (test)
+
+..........
+
+  7) test owner rejection cleans up without initializing or finishing a tunnel (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:84
+     missing shared WebSocket stream driver
+     code: {worker, _, _} = start_session([], RejectTransport)
+     stacktrace:
+       test/websocket_stream_test.exs:56: Gaoxy.HTTP.WebSocket.StreamTest.start_session/2
+       test/websocket_stream_test.exs:85: (test)
+
+
+
+  8) test split DATA and repeated messages retain framing while exceeding ordinary body totals (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:119
+     missing shared WebSocket stream driver
+     code: {worker, token, _} = start_session()
+     stacktrace:
+       test/websocket_stream_test.exs:56: Gaoxy.HTTP.WebSocket.StreamTest.start_session/2
+       test/websocket_stream_test.exs:120: (test)
+
+
+
+  9) test opens once in the admitted worker and pushes while one bounded demand is pending (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:93
+     missing shared WebSocket stream driver
+     code: {worker, token, gate} = start_session()
+     stacktrace:
+       test/websocket_stream_test.exs:56: Gaoxy.HTTP.WebSocket.StreamTest.start_session/2
+       test/websocket_stream_test.exs:94: (test)
+
+
+
+ 10) test adopted lifetime remains authoritative across the former request deadline boundary (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:139
+     missing shared WebSocket stream driver
+     code: {worker, token, gate} = start_session(max_lifetime: 10_000)
+     stacktrace:
+       test/websocket_stream_test.exs:56: Gaoxy.HTTP.WebSocket.StreamTest.start_session/2
+       test/websocket_stream_test.exs:140: (test)
+
+
+Finished in 0.6 seconds (0.6s async, 0.00s sync)
+20 tests, 10 failures

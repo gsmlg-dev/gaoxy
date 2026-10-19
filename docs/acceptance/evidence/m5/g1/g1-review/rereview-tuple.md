@@ -1,0 +1,5 @@
+# G1 independent tuple repair re-review
+
+SPEC PASS, then CODE PASS. Stream.identity/1:65-66 accepts both existing H2 three-element and H3 four-element transport state and extracts owner/token without modifying transport metadata. Test websocket_stream_test.exs:125-143 exercises a normal H3-shaped session with idle application push, incoming DATA echo, normal Close, and exact original four-tuple preservation. No new actionable findings. Initial NEEDS FIX reports remain preserved.
+
+Observed evidence: shared22tests/0failures/exit0; H1 location invocation33listed31excluded2executed0failures/exit0. Parent will execute fresh unit and location checks separately. Reviewer only read source/evidence, ran scoped diffcheck(exit0), and saved this evidence; no Mix or network commands run. Other G1 file hashes still match initial snapshot as recorded in JSON. No actual H2/H3 owner/transport acceptance claim. All review commands completed; no production/test edits, no publication. Review repair rounds0; inherited counters unchanged.

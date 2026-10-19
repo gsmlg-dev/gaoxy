@@ -3,9 +3,11 @@
 > **For agentic workers:** Use `subagent-driven-development` (recommended) or
 > `executing-plans` task by task, with independent specification and code review.
 
-**Status, 2026-10-19: PLANNED; implementation and runtime verification NOT STARTED.**
-The current request is to prepare the next stage. Completing these documents
-does not start the implementation or grant publication/deployment permission.
+**Status, 2026-10-19: IN PROGRESS; execution authorized after plan review.**
+The user requested implementation of this reviewed plan. Work is isolated on
+`codex/m5-websocket-over-h2-h3`, starting at `4c6f089`. Gate results are recorded in
+[M5 acceptance](../acceptance/m5-websocket-over-h2-h3.md); unexecuted gates remain
+NOT RUN. This authorization adds no publication/deployment permission.
 
 **Goal:** Support native Phoenix/WebSock connections over HTTP/2 (RFC 8441) and
 HTTP/3 (RFC 9220), while preserving HTTP/1.1 WebSocket behavior.
@@ -82,6 +84,10 @@ delegating omitted protocols. For HTTP services selecting H2, use 256 MiB
 173,302,823 bytes. Preserve explicit budgets, core/H1 defaults, all reservation
 and host/security checks, and rejection when the selected budget is insufficient.
 Task 2 owns this bounded compatibility change and its ordinary verification.
+Its configuration-only subtask 2a depends on G0 and can proceed alongside Task 1:
+it touches no shared WebSocket runtime files. The extended-CONNECT subtask 2b
+still waits for G1. Serialize root build commands and hold G2 acceptance until
+both subtasks and their required peer/review gates pass.
 
 ## Tasks and dependency order
 
@@ -89,7 +95,8 @@ Task 2 owns this bounded compatibility change and its ordinary verification.
 | --- | --- | --- | --- |
 | 0 | Dependency/fixture and peer compatibility audit | Accepted design | Peer scaffolding can accompany the audit |
 | 1 | Shared handshake and WebSocket stream contract | 0 | Pure peer vectors can be prepared separately |
-| 2 | HTTPS H2 defaults, explicit h2c and native H2 WebSocket | 1 | Independent H2 peer writer owns only integration files |
+| 2a | HTTPS H2 defaults and explicit h2c compatibility | 0 | Separate HTTP/Phoenix configuration files alongside Task 1 |
+| 2b | Native H2 WebSocket | 1 and 2a | Independent H2 peer writer owns only integration files |
 | 3 | Native H3 WebSocket | 1; review the shared contract after 2 | Pure H3 fields/settings may be prepared during 2 |
 | 4 | Phoenix/WebSock integration and browser proof | 2 for H2, 3 for H3 | H2 browser work can precede H3 completion |
 | 5 | Final compatibility, review and capability documentation | 2–4 | Independent specification and code reviewers |
@@ -111,34 +118,34 @@ Complete H2 end to end before reusing its accepted stream contract for H3.
 - Create `integration/websocket_multiplexed/{requirements.txt,README.md}` and
   `docs/acceptance/m5-websocket-over-h2-h3.md`.
 
-- [ ] Record actual source/lock identity, runtime versions and clean worktree
+- [x] Record actual source/lock identity, runtime versions and clean worktree
   status, preserving unrelated user files.
-- [ ] Verify the public H3 Settings/Control APIs encode and accept setting 8
+- [x] Verify the public H3 Settings/Control APIs encode and accept setting 8
   with values 0/1; verify the public host supplies stream DATA and FIN operations.
   Existing support is not inferred from the package version alone.
-- [ ] Align only the necessary Phoenix fixture QUIC/HTTP lock entries with
+- [x] Align only the necessary Phoenix fixture QUIC/HTTP lock entries with
   0.21.10, selecting `PHOENIX_NATIVE_H3=1` during dependency resolution. Record
   every changed lock entry; then run locked dependency resolution and strict
   compilation for root and fixture. No broad dependency refresh.
-- [ ] Pin the independent peers initially to `h2==4.3.0`, `hpack==4.1.0`,
+- [x] Pin the independent peers initially to `h2==4.3.0`, `hpack==4.1.0`,
   `hyperframe==6.1.0`, `aioquic==1.2.0`, `wsproto==1.2.0` and
   `playwright==1.56.0`. Verify these versions expose the public extended CONNECT
   and frame APIs needed by the fixtures before adopting them.
-- [ ] Prepare a task-local Python environment; the inspected reusable venv has
+- [x] Prepare a task-local Python environment; the inspected reusable venv has
   h2 but lacks aioquic, Playwright, websockets and wsproto. Record the resolved
   environment instead of assuming historical tools are still installed.
-- [ ] Record the selected Chromium executable/version and supported configuration
+- [x] Record the selected Chromium executable/version and supported configuration
   for H2/H3 WebSocket negotiation. This is an environment/API audit; actual
   negotiation against the new Gaoxy implementation belongs to G4. Missing
   browser support is BLOCKED_ENV for that row, not a Gaoxy failure or success.
-- [ ] Audit the vendored WebSockAdapter: H2 validation exists, H3 version
+- [x] Audit the vendored WebSockAdapter: H2 validation exists, H3 version
   validation does not. Its upstream is `phoenixframework/websock_adapter`.
   Plan the explicit reviewed vendor change in Task 4; never set
   `early_validate_upgrade: false` as the integration solution.
-- [ ] Record that `HTTP.WebSocket` browser-mode H2 support is separate from its
+- [x] Record that `HTTP.WebSocket` browser-mode H2 support is separate from its
   H1-only acknowledged proxy contract; neither that client nor an invented H3
   client is required to implement native downstream server streams.
-- [ ] For an actual required dependency defect, follow AGENTS.md provenance,
+- [x] For an actual required dependency defect, follow AGENTS.md provenance,
   issue/type/label/callsite routing. Stop only the affected blocked task; do not
   invent a dependency blocker from a feature Gaoxy itself owns.
 
@@ -164,35 +171,35 @@ failures. All commands/results remain NOT RUN in this planning document.
   keep H1 handshake behavior intact.
 - Create `apps/gaoxy_http/test/{websocket_extended_handshake,websocket_stream}_test.exs`.
 
-- [ ] Add `Request.protocol` as `nil | binary`; retain the actual wire method
+- [x] Add `Request.protocol` as `nil | binary`; retain the actual wire method
   `CONNECT`. Mark a validated extended CONNECT payload as `body: :tunnel`.
   Arbitrary `:protocol` values do not become atoms or generic outbound tunnels.
-- [ ] Write the new pure handshake tests first. Require `websocket`, the
+- [x] Write the new pure handshake tests first. Require `websocket`, the
   appropriate scheme/authority/path, version 13, valid offered subprotocol and
   ordinary response headers. A successful response is 200 without H1 upgrade
   headers or Sec-WebSocket-Accept; ordinary H1 tests retain their 101 semantics.
-- [ ] Keep masking, UTF-8, fragmentation and ping/pong rules in the existing
+- [x] Keep masking, UTF-8, fragmentation and ping/pong rules in the existing
   Frame/Message engine. Reuse WebSock callback and option validation, including
   its explicit no-compression contract.
-- [ ] Introduce `WebSocket.Stream.run/2` in the existing request worker PID.
+- [x] Introduce `WebSocket.Stream.run/2` in the existing request worker PID.
   That worker receives stream DATA and application/PubSub messages; it does not
   become the connection socket owner or create a duplicate global scheduler.
-- [ ] Add transport-neutral `WebSocket.data/2` while retaining the H1 `data/3`
+- [x] Add transport-neutral `WebSocket.data/2` while retaining the H1 `data/3`
   entry point. Define the shared transport operations from the design:
   `websocket_open/3`, `websocket_demand/3`, `websocket_send/2` and
   `websocket_finish/1` on the H2/H3 transports.
-- [ ] Make one inbound demand outstanding per worker/token/ref. Reserve finite
+- [x] Make one inbound demand outstanding per worker/token/ref. Reserve finite
   input/output/callback-state capacity before delivery; release or transfer each
   reservation once. Test these state transitions with deterministic local
   messages, without socket-pressure or disconnect injection.
-- [ ] Specify the lifetime transition: the admitted WS absolute deadline
+- [x] Specify the lifetime transition: the admitted WS absolute deadline
   replaces the HTTP request deadline exactly once in worker, connection owner,
   admission lease and H3 operation state. Per-write/callback/close deadlines
   remain finite. Owner authorization happens before emitting 200.
-- [ ] Unit-test the transition across the original request deadline with a
+- [x] Unit-test the transition across the original request deadline with a
   deterministic clock/state boundary; active WS operations use the admitted WS
   deadline. Do not add a slow-peer or long-running network workload to prove it.
-- [ ] Ensure a long-lived stream is not constrained by cumulative ordinary
+- [x] Ensure a long-lived stream is not constrained by cumulative ordinary
   HTTP request-body bytes. Ingress bounds still limit buffered WS data; frame,
   message and lifetime limits continue to apply. Preserve ordinary body readers.
 
@@ -513,6 +520,6 @@ fragmentation with ping/pong. Record actual selected/excluded counts distinctly.
 M5 completes when G0–G5 pass within this stated scope. A blocked browser row is
 not silently waived or passed; record completed protocol subsets separately.
 Further specialist qualification is a separate environment/workstream and does
-not reopen accepted M3/M4 or add a new stage gate. Stop this planning task after
-the design/plan and roadmap links have been independently reviewed; runtime
-implementation has not started.
+not reopen accepted M3/M4 or add a new stage gate. The planning review passed
+before execution authorization. Complete the implementation and scoped gates,
+preserving any genuine external blocker and continuing other unblocked tasks.

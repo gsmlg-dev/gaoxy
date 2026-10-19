@@ -5,6 +5,7 @@ defmodule Gaoxy.HTTP.Request do
     :target,
     :target_form,
     :version,
+    :protocol,
     :path,
     :query_string,
     :host,

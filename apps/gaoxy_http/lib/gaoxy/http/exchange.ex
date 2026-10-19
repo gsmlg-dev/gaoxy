@@ -103,6 +103,12 @@ defmodule Gaoxy.HTTP.Exchange do
   end
 
   @doc "Reads at most one credited body piece, retaining state when the finite wait expires."
+  def read_body_step(%{request: %{body: :tunnel}} = exchange, _, _),
+    do: {:error, :unsupported_tunnel_body, exchange}
+
+  def read_body_step(%{body: :tunnel} = exchange, _, _),
+    do: {:error, :unsupported_tunnel_body, exchange}
+
   def read_body_step(%{transport: module} = exchange, credit, wait_ms) when not is_nil(module),
     do: module.read_body_step(exchange, credit, wait_ms)
 
@@ -366,13 +372,21 @@ defmodule Gaoxy.HTTP.Exchange do
   @doc false
   def retained_bytes(exchange) do
     headers = if exchange.request, do: 2 * exchange.request.head_bytes, else: 0
-    trailers = if exchange.body, do: 2 * exchange.body.trailer_bytes, else: 0
+
+    trailers =
+      case exchange.body do
+        %{trailer_bytes: bytes} -> 2 * bytes
+        _ -> 0
+      end
+
     response_trailers = 2 * Enum.reduce(exchange.response_trailers, 0, &(byte_size(&1) + &2))
 
     max(byte_size(exchange.buffer), exchange.poll_buffer_bytes) + headers + trailers +
       response_trailers + exchange.route_bytes + exchange.protocol_bytes
   end
 
+  def body_complete?(%{request: %{body: :tunnel}}), do: false
+  def body_complete?(%{body: :tunnel}), do: false
   def body_complete?(%{transport: nil, body: %{phase: :done}}), do: true
   def body_complete?(%{transport: nil}), do: false
   def body_complete?(%{transport: module} = exchange), do: module.body_complete?(exchange)

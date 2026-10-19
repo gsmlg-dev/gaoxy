@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.WebSocket do
   @moduledoc false
   alias Gaoxy.{Admission, Lifecycle}
-  alias Gaoxy.HTTP.WebSocket.{Frame, Handshake, Message}
+  alias Gaoxy.HTTP.WebSocket.{ExtendedHandshake, Frame, Handshake, Message}
   alias ThousandIsland.Socket
 
   defstruct [
@@ -16,6 +16,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     :close_token,
     :reason,
     buffer: "",
+    input_credit: 0,
     closing: false,
     initialized: false
   ]
@@ -51,7 +52,7 @@ defmodule Gaoxy.HTTP.WebSocket do
              function_exported?(module, :handle_in, 2) and
              function_exported?(module, :handle_info, 2),
          {:ok, limits} <- options(options),
-         {:ok, _headers} <- Handshake.headers(exchange.request, []) do
+         {:ok, _headers} <- handshake(exchange.request, []) do
       {:ok, %{exchange | response: {:websocket, module, initial, limits, []}}}
     else
       _ -> {:error, :invalid_websocket_upgrade}
@@ -59,6 +60,11 @@ defmodule Gaoxy.HTTP.WebSocket do
   end
 
   def prepare(_, _), do: {:error, :invalid_websocket_upgrade}
+
+  defp handshake(%{protocol: "websocket", body: :tunnel} = request, headers),
+    do: ExtendedHandshake.headers(request, headers)
+
+  defp handshake(request, headers), do: Handshake.headers(request, headers)
 
   def response_headers(%{response: {:websocket, module, initial, limits, _}} = exchange, headers),
     do: %{exchange | response: {:websocket, module, initial, limits, headers}}
@@ -91,8 +97,15 @@ defmodule Gaoxy.HTTP.WebSocket do
 
     deadline = Lifecycle.deadline(limits.max_lifetime)
 
+    next_exchange =
+      if exchange.transport do
+        %{exchange | buffer: "", response: :upgraded, deadline: deadline}
+      else
+        %{exchange | buffer: "", response: :upgraded, request: nil, body: nil}
+      end
+
     ws = %__MODULE__{
-      exchange: %{exchange | buffer: "", response: :upgraded, request: nil, body: nil},
+      exchange: next_exchange,
       handler: module,
       app_state: initial,
       limits: limits,
@@ -105,7 +118,7 @@ defmodule Gaoxy.HTTP.WebSocket do
         )
     }
 
-    with {:ok, headers} <- Handshake.headers(exchange.request, response_headers),
+    with {:ok, headers} <- handshake(exchange.request, response_headers),
          # Upgrade is a single transition from the completed H1 request to a new
          # admitted protocol lifetime. Later callbacks cannot renew this deadline.
          :ok <- Admission.upgrade(exchange.gate, exchange.lease, retained(ws), deadline),
@@ -114,14 +127,14 @@ defmodule Gaoxy.HTTP.WebSocket do
              exchange.gate,
              exchange.lease,
              retained(ws),
-             exchange.deadline
+             if(exchange.transport, do: deadline, else: exchange.deadline)
            ),
-         :ok <- send_handshake(ws, headers) do
+         {:ok, ws} <- send_handshake(ws, headers) do
       timer =
         Process.send_after(
           self(),
           {:gaoxy_websocket_lifetime, exchange.lease},
-          limits.max_lifetime
+          if(exchange.transport, do: Lifecycle.remaining(deadline), else: limits.max_lifetime)
         )
 
       ws = %{ws | lifetime_timer: timer, initialized: true}
@@ -135,6 +148,14 @@ defmodule Gaoxy.HTTP.WebSocket do
     end
   end
 
+  defp send_handshake(%{exchange: %{transport: module} = exchange} = ws, headers)
+       when not is_nil(module) do
+    case module.websocket_open(exchange, headers, ws.deadline) do
+      {:ok, exchange} -> {:ok, %{ws | exchange: %{exchange | request: nil, body: nil}}}
+      error -> error
+    end
+  end
+
   defp send_handshake(ws, headers) do
     head = [
       "HTTP/1.1 101 Switching Protocols\r\n",
@@ -145,20 +166,36 @@ defmodule Gaoxy.HTTP.WebSocket do
     size = IO.iodata_length(head)
 
     with true <- size <= ws.exchange.limits.max_header_bytes || {:error, :response_header_limit},
-         :ok <- account(ws, retained(ws) + size) do
-      send_wire(ws, IO.iodata_to_binary(head))
+         :ok <- account(ws, retained(ws) + size),
+         :ok <- send_wire(ws, IO.iodata_to_binary(head)) do
+      {:ok, ws}
     end
   end
 
   def data(bytes, socket, ws) do
     ws = %{ws | exchange: %{ws.exchange | socket: socket}}
+    data(bytes, ws)
+  end
+
+  def data(bytes, ws) do
+    ws = %{ws | input_credit: 0}
     size = byte_size(ws.buffer) + byte_size(bytes)
 
     with true <- size <= ws.limits.max_frame_size + 14 + ws.exchange.limits.max_read_chunk,
-         :ok <- account(ws, 2 * size + 2 * ws.message.bytes) do
+         :ok <- account(ws, retained(%{ws | buffer: ""}) + 2 * size) do
       parse(%{ws | buffer: ws.buffer <> bytes})
     else
       _ -> close(ws, 1009, {:error, :buffer_limit})
+    end
+  end
+
+  @doc false
+  def reserve_input(ws, credit) do
+    ws = %{ws | input_credit: credit}
+
+    case account(ws, retained(ws)) do
+      :ok -> {:ok, ws}
+      error -> error
     end
   end
 
@@ -270,6 +307,12 @@ defmodule Gaoxy.HTTP.WebSocket do
 
   def drain(ws, deadline) do
     ws = %{ws | deadline: min(ws.deadline, deadline)}
+
+    ws =
+      if ws.exchange.transport,
+        do: %{ws | exchange: %{ws.exchange | deadline: ws.deadline}},
+        else: ws
+
     close(ws, 1001, :shutdown)
   end
 
@@ -391,7 +434,11 @@ defmodule Gaoxy.HTTP.WebSocket do
     <<chunk::binary-size(size), rest::binary>> = wire
 
     with {:ok, operation} <- Admission.start_send(ws.exchange.gate, ws.exchange.lease, size) do
-      result = Socket.send(ws.exchange.socket, chunk)
+      result =
+        if ws.exchange.transport,
+          do: ws.exchange.transport.websocket_send(ws.exchange, chunk),
+          else: Socket.send(ws.exchange.socket, chunk)
+
       :ok = Admission.finish_send(ws.exchange.gate, ws.exchange.lease, operation, result)
 
       case result do
@@ -466,8 +513,13 @@ defmodule Gaoxy.HTTP.WebSocket do
     terminate(ws, :timeout)
   end
 
-  defp retained(ws),
-    do: 2 * byte_size(ws.buffer) + 2 * ws.message.bytes + :erlang.external_size(ws.app_state)
+  defp retained(ws) do
+    exchange_bytes =
+      if ws.exchange.transport, do: Gaoxy.HTTP.Exchange.retained_bytes(ws.exchange), else: 0
+
+    exchange_bytes + 2 * byte_size(ws.buffer) + 2 * ws.message.bytes +
+      2 * ws.input_credit + :erlang.external_size(ws.app_state)
+  end
 
   defp account(ws, bytes), do: Admission.update(ws.exchange.gate, ws.exchange.lease, bytes)
 end

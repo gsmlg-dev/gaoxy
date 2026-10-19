@@ -1,0 +1,35 @@
+{
+  "task": "M5 G1 tuple repair independent re-review",
+  "baseline": "4c6f08959e64303ab6ce6cf3280a1035a82c916f",
+  "spec": "PASS",
+  "code": "PASS",
+  "findings": [],
+  "resolved": "Original Stream.loop:28 H3 four-tuple MatchError; private identity/1 now supports both existing native states unchanged",
+  "source_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http/websocket/stream.ex": "d8ce124fff92618caaf519ce3db175f012e6435c7a82e44bcbc652a045afb71e",
+    "apps/gaoxy_http/test/websocket_stream_test.exs": "f921d8197fb3683a29ecd2e1b352bef234e840b7098caef2e3dbddd9e287e38c"
+  },
+  "other_g1_files_match_initial_review": {
+    "apps/gaoxy_http/lib/gaoxy/http/request.ex": true,
+    "apps/gaoxy_http/lib/gaoxy/http/exchange.ex": true,
+    "apps/gaoxy_http/lib/gaoxy/http/websocket.ex": true,
+    "apps/gaoxy_http/lib/gaoxy/http/websocket/extended_handshake.ex": true,
+    "apps/gaoxy_http/test/websocket_extended_handshake_test.exs": true
+  },
+  "test_contract": "H3-shaped opening, idle application push, DATA echo, normal Close and preserved final transport_state",
+  "observed_evidence": [
+    ".audit/m5/g1-review-shared-green.json:22tests/0failures/exit0",
+    ".audit/m5/g1-review-green.json:33listed31excluded2executed0failures/exit0"
+  ],
+  "reviewer_commands": [
+    "source and receipt reads",
+    "scoped git diff --check:exit0",
+    "sha256sum:exit0"
+  ],
+  "independent_runtime": "NOT RUN; parent owns fresh verification",
+  "production_edits": false,
+  "review_repair_rounds": 0,
+  "inherited_counters": "unchanged; implementer counters owned by parent",
+  "commands_shutdown": "All completed",
+  "remaining_scope": "No actual H2/H3 transport/runtime acceptance claim;G2/G3 remain separate"
+}

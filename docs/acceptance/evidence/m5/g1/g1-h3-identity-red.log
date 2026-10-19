@@ -1,0 +1,27 @@
+==> gaoxy_http
+Running ExUnit with seed: 65455, max_cases: 4
+
+
+15:14:28.815 [error] Process #PID<0.326.0> raised an exception
+** (MatchError) no match of right hand side value: {#PID<0.323.0>, #Reference<0.3106442656.316669953.185255>, {:stream, 1}, #Reference<0.3106442656.316669953.185235>}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/websocket/stream.ex:28: Gaoxy.HTTP.WebSocket.Stream.loop/3
+    test/websocket_stream_test.exs:115: anonymous fn/6 in Gaoxy.HTTP.WebSocket.StreamTest.start_session/3
+
+15:14:28.815 [error] GenServer #PID<0.324.0> terminating
+** (MatchError) no match of right hand side value: {#PID<0.323.0>, #Reference<0.3106442656.316669953.185255>, {:stream, 1}, #Reference<0.3106442656.316669953.185235>}
+    (gaoxy_http 0.3.0) lib/gaoxy/http/websocket/stream.ex:28: Gaoxy.HTTP.WebSocket.Stream.loop/3
+    test/websocket_stream_test.exs:115: anonymous fn/6 in Gaoxy.HTTP.WebSocket.StreamTest.start_session/3
+Last message: {:EXIT, #PID<0.323.0>, {{:badmatch, {#PID<0.323.0>, #Reference<0.3106442656.316669953.185255>, {:stream, 1}, #Reference<0.3106442656.316669953.185235>}}, [{Gaoxy.HTTP.WebSocket.Stream, :loop, 3, [file: ~c"lib/gaoxy/http/websocket/stream.ex", line: 28]}, {Gaoxy.HTTP.WebSocket.StreamTest, :"-start_session/3-fun-0-", 6, [file: ~c"test/websocket_stream_test.exs", line: 115]}]}}
+State: {:state, {#PID<0.324.0>, ExUnit.OnExitHandler.Supervisor}, :one_for_one, {[Gaoxy.Admission], %{Gaoxy.Admission => {:child, #PID<0.325.0>, Gaoxy.Admission, {Gaoxy.Admission, :start_link, [{%{max_bytes: 65536, max_active: 4, max_state: 4096, callback_timeout: 1000}, %{instance: #PID<0.323.0>, service: :test, generation: #Reference<0.3106442656.316669954.175910>, service_pid: #PID<0.323.0>}}]}, :permanent, false, 5000, :worker, [Gaoxy.Admission]}}}, :undefined, 1000000, 1, [], 0, 0, :never, 1000, #Reference<0.3106442656.316669953.185212>, ExUnit.OnExitHandler.Supervisor, {[], [#PID<0.323.0>]}}
+
+
+  1) test H3-shaped transport identity remains intact through data and application pushes (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:122
+     ** (EXIT from #PID<0.323.0>) an exception was raised:
+         ** (MatchError) no match of right hand side value: {#PID<0.323.0>, #Reference<0.3106442656.316669953.185255>, {:stream, 1}, #Reference<0.3106442656.316669953.185235>}
+             (gaoxy_http 0.3.0) lib/gaoxy/http/websocket/stream.ex:28: Gaoxy.HTTP.WebSocket.Stream.loop/3
+             test/websocket_stream_test.exs:115: anonymous fn/6 in Gaoxy.HTTP.WebSocket.StreamTest.start_session/3
+
+.....
+Finished in 0.8 seconds (0.8s async, 0.00s sync)
+6 tests, 1 failure

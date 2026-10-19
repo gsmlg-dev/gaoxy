@@ -1,0 +1,40 @@
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_http3
+Compiling 2 files (.ex)
+Generated gaoxy_http3 app
+==> gaoxy_proxy
+Compiling 1 file (.ex)
+Generated gaoxy_proxy app
+==> gaoxy_server
+Compiling 1 file (.ex)
+Generated gaoxy_server app
+==> gaoxy_http
+Running ExUnit with seed: 86042, max_cases: 4
+
+...
+
+  1) test ordinary drain shortens stream writes and terminates once after the peer close (Gaoxy.HTTP.WebSocket.StreamTest)
+     apps/gaoxy_http/test/websocket_stream_test.exs:157
+     Assertion failed, no matching message after 100ms
+     The following variables were pinned:
+       worker = #PID<0.419.0>
+       drain_deadline = -576460740215
+     Showing 2 of 2 messages in the mailbox
+     code: assert_receive {:written, ^worker, <<136, 2, 1001::16>>, ^drain_deadline}
+     mailbox:
+       pattern: {:written, ^worker, <<136, 2, 1001::16>>, ^drain_deadline}
+       value:   {:original_request, #PID<0.419.0>,
+                 #Reference<0.1722876536.2999713794.255365>,
+                 #Reference<0.1722876536.2999713794.255368>,
+                 -576460737215}
+
+       pattern: {:written, ^worker, <<136, 2, 1001::16>>, ^drain_deadline}
+       value:   {:written, #PID<0.419.0>, <<136, 2, 3, 233>>, -576374342215}
+     stacktrace:
+       test/websocket_stream_test.exs:164: (test)
+
+.
+Finished in 1.0 seconds (1.0s async, 0.00s sync)
+5 tests, 1 failure
