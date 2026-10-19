@@ -1,3 +1,13 @@
+## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+
+v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
+replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
+published v0.4.0 source and binaries retain Thousand Island. Fresh portable
+qualification and publication are **NOT RUN**. See the
+[release notes](releases/0.5.0.md) for planned checks and retained limits,
+and [release acceptance](acceptance/release-0.5.0.md) for actual status.
+Historical results below retain their recorded source identities and outcomes.
+
 ## v0.4.0 release status — 2026-10-19
 
 Accepted embedded source implements managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource ownership through public HTTPFetch 0.21.10 APIs. Managed H2/h2c requires explicit transport handles. Standalone JSON origins remain `http1` (default) or `http3`; JSON exposes no managed handles/groups/probes or WebSocket activation. JSON downstream HTTP services default to H1 and permit explicit H2/h2c or a separate H3 service. Native downstream WebSocket support does not add upstream H2/H3 WebSocket proxy transports.

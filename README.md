@@ -1,12 +1,22 @@
 # Gaoxy
 
-## Current source backend — 2026-10-19
+## Current source backend — 2026-10-20 (Asia/Shanghai)
 
-Current source uses [Hell](https://github.com/gsmlg-dev/hell), the Thousand Island
-fork, for TCP/OTP TLS. This migration follows v0.4.0; its published source and
-binaries retain Thousand Island. See the [dependency audit](docs/dependency-audit.md)
-for the exact Hell pin and [migration acceptance](docs/acceptance/hell-migration.md)
-for current verification results.
+v0.5.0 is being prepared with [Hell](https://github.com/gsmlg-dev/hell) 0.1.2,
+the Thousand Island fork, for TCP/OTP TLS, using the public `Hell` namespace and
+`:hell` application. Published v0.4.0 source and binaries retain Thousand Island.
+See the [dependency audit](docs/dependency-audit.md) for the exact Hell pin and
+[migration acceptance](docs/acceptance/hell-migration.md) for source verification.
+
+## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+
+v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
+replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
+published v0.4.0 source and binaries retain Thousand Island. Fresh portable
+qualification and publication are **NOT RUN**. See the
+[release notes](docs/releases/0.5.0.md) for planned checks and retained limits,
+and [release acceptance](docs/acceptance/release-0.5.0.md) for actual status.
+Historical results below retain their recorded source identities and outcomes.
 
 ## v0.4.0 release status — 2026-10-19
 

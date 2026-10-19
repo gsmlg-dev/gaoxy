@@ -1,3 +1,13 @@
+## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+
+v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
+replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
+published v0.4.0 source and binaries retain Thousand Island. Fresh portable
+qualification and publication are **NOT RUN**. See the
+[release notes](docs/releases/0.5.0.md) for planned checks and retained limits,
+and [release acceptance](docs/acceptance/release-0.5.0.md) for actual status.
+Historical results below retain their recorded source identities and outcomes.
+
 ## v0.4.0 release status — 2026-10-19
 
 M3 and M5 source acceptance remains complete within implemented functionality and ordinary verification scope. The release tracks frozen source, cached repair evidence, fresh portable packaged bytes, offline runtime and publication/download verification separately. The existing milestone plans and historical results below retain their capture-time identities, counts and limits. Specialist qualification remains assigned to its dedicated environment.

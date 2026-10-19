@@ -1,5 +1,15 @@
 # Dependency audit
 
+## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+
+v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
+replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
+published v0.4.0 source and binaries retain Thousand Island. Fresh portable
+qualification and publication are **NOT RUN**. See the
+[release notes](releases/0.5.0.md) for planned checks and retained limits,
+and [release acceptance](acceptance/release-0.5.0.md) for actual status.
+Historical results below retain their recorded source identities and outcomes.
+
 ## Current TCP/TLS dependency — 2026-10-19
 
 Gaoxy replaces Thousand Island with its fork

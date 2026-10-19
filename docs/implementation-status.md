@@ -1,3 +1,13 @@
+## v0.5.0 release preparation — 2026-10-20 (Asia/Shanghai)
+
+v0.5.0 is being prepared with Hell 0.1.2 (`Hell` namespace, `:hell` application)
+replacing Thousand Island. Accepted protocol and Phoenix functionality is unchanged;
+published v0.4.0 source and binaries retain Thousand Island. Fresh portable
+qualification and publication are **NOT RUN**. See the
+[release notes](releases/0.5.0.md) for planned checks and retained limits,
+and [release acceptance](acceptance/release-0.5.0.md) for actual status.
+Historical results below retain their recorded source identities and outcomes.
+
 ## v0.4.0 release status — 2026-10-19
 
 M3/M5 implementation and ordinary source acceptance are complete. The reviewed repair restores the native numeric limit map for ordinary H2/H3 Exchanges while retaining existing WebSocket metadata only on actual WebSocket requests; strict managed-group accounting remains unchanged. Fresh ordinary portable and offline qualification passed for the published source. Earlier snapshots below retain their original status.
