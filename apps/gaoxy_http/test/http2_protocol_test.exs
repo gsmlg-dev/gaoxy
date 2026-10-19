@@ -63,7 +63,7 @@ defmodule Gaoxy.HTTP2ProtocolTest do
     end
   end
 
-  test "an independent peer's default SETTINGS ignore unsupported extension identifiers" do
+  test "peer SETTINGS validate extended CONNECT and ignore unknown extension identifiers" do
     defaults = Gaoxy.HTTP.HTTP2.Settings.defaults()
 
     payload =
@@ -73,7 +73,7 @@ defmodule Gaoxy.HTTP2ProtocolTest do
     assert {:ok, %{max_header_list: 65536}, 0} =
              Gaoxy.HTTP.HTTP2.Settings.apply(defaults, payload)
 
-    assert {:ok, ^defaults, 0} =
+    assert {:ok, %{enable_connect_protocol: 1}, 0} =
              Gaoxy.HTTP.HTTP2.Settings.apply(defaults, <<8::16, 1::32, 65535::16, 42::32>>)
   end
 

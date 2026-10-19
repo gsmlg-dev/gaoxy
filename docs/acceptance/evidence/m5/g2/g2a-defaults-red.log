@@ -1,0 +1,125 @@
+==> gaoxy_http
+Running ExUnit with seed: 409813, max_cases: 4
+
+
+
+  1) test H2 defaults preserve supplied limit fields and insufficient-budget rejection (Gaoxy.HTTP.ProtocolDefaultsTest)
+     apps/gaoxy_http/test/http_protocol_defaults_test.exs:52
+     match (=) failed
+     code:  assert {:error, :http2_byte_budget} =
+              Gaoxy.HTTP.service_spec(
+                endpoint: {Endpoint, []},
+                transport: :tls,
+                tls: @tls,
+                limits: %{max_bytes: 1_048_576}
+              )
+     left:  {:error, :http2_byte_budget}
+     right: {:ok,
+             %{
+               id: :http,
+               port: 0,
+               udp: %{},
+               mode: :unicast,
+               ip: {127, 0, 0, 1},
+               handler: Gaoxy.HTTP.Connection,
+               tls: %{
+                 certfile: "cert.pem",
+                 keyfile: "key.pem",
+                 alpn: ["http/1.1"]
+               },
+               transport: :tls,
+               dispatcher: %{},
+               handler_options: %{
+                 protocols: [:http1],
+                 initialized: true,
+                 h2c: :disabled,
+                 endpoint: {Gaoxy.HTTP.ProtocolDefaultsTest.Endpoint,
+                  []},
+                 http_limits: %{
+                   max_read_chunk: 16384,
+                   max_buffer_bytes: 65536,
+                   header_timeout: 5000,
+                   max_body_bytes: 8388608,
+                   max_chunk_line: 1024,
+                   max_header_bytes: 32768,
+                   max_headers: 100,
+                   max_request_line: 8192,
+                   max_trailer_bytes: 8192,
+                   max_trailers: 32,
+                   read_timeout: 5000,
+                   request_timeout: 30000,
+                   write_timeout: 5000
+                 },
+                 h2_limits: %{
+                   max_streams: 32,
+                   max_frame: 16384,
+                   receive_window: 65535,
+                   max_header_block: 16384,
+                   table_size: 4096,
+                   control_rate: 256,
+                   control_turn: 32,
+                   frame_timeout: 5000
+                 }
+               },
+               limits: %{
+                 max_bytes: 1048576,
+                 idle_timeout: 30000,
+                 max_active: 64,
+                 max_packet: 65507,
+                 max_memberships: 64,
+                 callback_timeout: 5000,
+                 drain_timeout: 5000,
+                 max_output: 65507,
+                 max_state: 65536
+               },
+               handler_mode: :native,
+               quic: %{},
+               capabilities: []
+             }}
+     stacktrace:
+       test/http_protocol_defaults_test.exs:62: (test)
+
+
+
+  2) test HTTPS prefers H2 and supplies its omitted byte budget (Gaoxy.HTTP.ProtocolDefaultsTest)
+     apps/gaoxy_http/test/http_protocol_defaults_test.exs:16
+     Assertion with == failed
+     code:  assert spec.handler_options.protocols == [:http2, :http1]
+     left:  [:http1]
+     right: [:http2, :http1]
+     stacktrace:
+       test/http_protocol_defaults_test.exs:18: (test)
+
+
+
+  3) test explicit prior knowledge h2c gets an omitted H2 budget (Gaoxy.HTTP.ProtocolDefaultsTest)
+     apps/gaoxy_http/test/http_protocol_defaults_test.exs:41
+     match (=) failed
+     code:  assert {:ok, spec} =
+              Gaoxy.HTTP.service_spec(endpoint: {Endpoint, []}, protocols: [:http2], h2c: :prior_knowledge)
+     left:  {:ok, spec}
+     right: {:error, :http2_byte_budget}
+     stacktrace:
+       test/http_protocol_defaults_test.exs:42: (test)
+
+
+
+  4) test Phoenix delegates omitted HTTPS protocols while plain HTTP keeps H1 (Gaoxy.HTTP.ProtocolDefaultsTest)
+     apps/gaoxy_http/test/http_protocol_defaults_test.exs:73
+     Assertion with == failed
+     code:  assert https.handler_options.protocols == [:http2, :http1]
+     left:  [:http1]
+     right: [:http2, :http1]
+     stacktrace:
+       test/http_protocol_defaults_test.exs:80: (test)
+
+..    warning: Gaoxy.HTTP.ProtocolDefaultsTest.Plug.Conn.send_resp/3 is undefined (module Gaoxy.HTTP.ProtocolDefaultsTest.Plug.Conn is not available or is yet to be defined)
+    │
+ 11 │     def call(conn, _options), do: Plug.Conn.send_resp(conn, 200, "default")
+    │                                             ~
+    │
+    └─ test/http_protocol_defaults_test.exs:11:45: Gaoxy.HTTP.ProtocolDefaultsTest.Plug.call/2
+
+
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+6 tests, 4 failures

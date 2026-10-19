@@ -1,0 +1,89 @@
+==> gaoxy_http
+Running ExUnit with seed: 209785, max_cases: 4
+
+
+
+  1) test disabled listeners and non-CONNECT pseudoheader use remain rejected (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:34
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Headers.request/4 is undefined or private. Did you mean:
+
+           * request/3
+
+     code: assert {:error, :protocol_error, _} = apply(Headers, :request, [invalid, false, limits(), true])
+     stacktrace:
+       (gaoxy_http 0.3.0) Gaoxy.HTTP.HTTP2.Headers.request([{":method", "GET"}, {":protocol", "websocket"}, {":scheme", "http"}, {":authority", "example.test"}, {":path", "/socket?topic=test"}, {"sec-websocket-version", "13"}, {"origin", "https://example.test"}], false, %{max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, true)
+       test/http2_websocket_test.exs:37: (test)
+
+
+
+  2) test other well-formed extended protocols stay identifiable for a 501 response (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:51
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Headers.request/4 is undefined or private. Did you mean:
+
+           * request/3
+
+     code: apply(Headers, :request, [other, false, limits(), true])
+     stacktrace:
+       (gaoxy_http 0.3.0) Gaoxy.HTTP.HTTP2.Headers.request([{":method", "CONNECT"}, {":protocol", "example"}, {":scheme", "http"}, {":authority", "example.test"}, {":path", "/socket?topic=test"}, {"sec-websocket-version", "13"}, {"origin", "https://example.test"}], false, %{max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, true)
+       test/http2_websocket_test.exs:54: (test)
+
+
+
+  3) test extended CONNECT is a strict boolean listener option with disabled default (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:65
+     Assertion with == failed
+     code:  assert Map.get(spec.handler_options, :extended_connect) == false
+     left:  nil
+     right: false
+     stacktrace:
+       test/http2_websocket_test.exs:67: (test)
+
+
+
+  4) test enabled extended CONNECT retains wire metadata and marks tunnel bytes (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:21
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Headers.request/4 is undefined or private. Did you mean:
+
+           * request/3
+
+     code: assert {:ok, request} = apply(Headers, :request, [fields(), false, limits(), true])
+     stacktrace:
+       (gaoxy_http 0.3.0) Gaoxy.HTTP.HTTP2.Headers.request([{":method", "CONNECT"}, {":protocol", "websocket"}, {":scheme", "http"}, {":authority", "example.test"}, {":path", "/socket?topic=test"}, {"sec-websocket-version", "13"}, {"origin", "https://example.test"}], false, %{max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, true)
+       test/http2_websocket_test.exs:22: (test)
+
+
+
+  5) test setting eight validates values and retains enablement (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:57
+     match (=) failed
+     code:  assert {:ok, %{enable_connect_protocol: 1} = enabled, 0} = Settings.apply(defaults, <<8::16, 1::32>>)
+     left:  {:ok, %{enable_connect_protocol: 1} = enabled, 0}
+     right: {:ok,
+             %{
+               max_frame: 16384,
+               enable_push: 1,
+               table_size: 4096,
+               initial_window: 65535,
+               max_header_list: 4294967295
+             }, 0}
+     stacktrace:
+       test/http2_websocket_test.exs:59: (test)
+
+
+
+  6) test extended CONNECT validates target and rejects HTTP body framing (Gaoxy.HTTP.HTTP2WebSocketTest)
+     apps/gaoxy_http/test/http2_websocket_test.exs:40
+     ** (UndefinedFunctionError) function Gaoxy.HTTP.HTTP2.Headers.request/4 is undefined or private. Did you mean:
+
+           * request/3
+
+     code: for invalid <- [
+     stacktrace:
+       (gaoxy_http 0.3.0) Gaoxy.HTTP.HTTP2.Headers.request([{":method", "CONNECT"}, {":protocol", "websocket"}, {":scheme", "http"}, {":authority", "example.test"}, {":path", "/socket?topic=test"}, {"sec-websocket-version", "13"}, {"origin", "https://example.test"}, {":protocol", "websocket"}], false, %{max_read_chunk: 16384, max_buffer_bytes: 65536, header_timeout: 5000, max_body_bytes: 8388608, max_chunk_line: 1024, max_header_bytes: 32768, max_headers: 100, max_request_line: 8192, max_trailer_bytes: 8192, max_trailers: 32, read_timeout: 5000, request_timeout: 30000, write_timeout: 5000}, true)
+       test/http2_websocket_test.exs:47: anonymous fn/2 in Gaoxy.HTTP.HTTP2WebSocketTest."test extended CONNECT validates target and rejects HTTP body framing"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/http2_websocket_test.exs:41: (test)
+
+
+Finished in 0.2 seconds (0.2s async, 0.00s sync)
+6 tests, 6 failures

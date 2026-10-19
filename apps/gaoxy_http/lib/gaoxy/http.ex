@@ -1,5 +1,5 @@
 defmodule Gaoxy.HTTP do
-  @moduledoc "Native HTTP/1 and opt-in HTTP/2 service backed by a Gaoxy TCP or TLS listener."
+  @moduledoc "Native HTTP service with H2-first HTTPS and explicit prior-knowledge h2c."
 
   @keys [
     :id,
@@ -12,6 +12,7 @@ defmodule Gaoxy.HTTP do
     :plug,
     :endpoint,
     :protocols,
+    :extended_connect,
     :h2c,
     :h2_limits
   ]
@@ -65,16 +66,33 @@ defmodule Gaoxy.HTTP do
       handler_options: %{
         endpoint: endpoint,
         http_limits: Keyword.get(options, :http_limits, %{}),
-        protocols: Keyword.get(options, :protocols, [:http1]),
+        protocols:
+          Keyword.get(
+            options,
+            :protocols,
+            if(transport == :tls, do: [:http2, :http1], else: [:http1])
+          ),
         h2c: Keyword.get(options, :h2c, :disabled),
+        extended_connect: Keyword.get(options, :extended_connect, false),
         h2_limits: Keyword.get(options, :h2_limits, %{})
       }
     }
 
     with {:ok, normalized} <- Gaoxy.HTTP.Options.normalize(service.handler_options),
+         limits =
+           if(:http2 in normalized.protocols and is_map(service.limits),
+             do: Map.put_new(service.limits, :max_bytes, 268_435_456),
+             else: service.limits
+           ),
          tls = alpn(transport, tls, normalized.protocols),
          :ok <- protocol_transport(transport, tls, normalized),
-         {:ok, spec} <- Gaoxy.Config.service(%{service | handler_options: normalized, tls: tls}),
+         {:ok, spec} <-
+           Gaoxy.Config.service(%{
+             service
+             | handler_options: normalized,
+               tls: tls,
+               limits: limits
+           }),
          :ok <- budget(spec) do
       {:ok, spec}
     end

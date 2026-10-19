@@ -327,12 +327,13 @@ defmodule Gaoxy.HTTP2NetworkTest do
     defp deadline_outcome(result, _exchange), do: result
   end
 
-  test "prior knowledge is explicit and rejects the insufficient core byte budget" do
+  test "prior knowledge is explicit and rejects an explicitly insufficient byte budget" do
     assert {:error, :http2_byte_budget} =
              Gaoxy.HTTP.service_spec(
                endpoint: {Endpoint, []},
                protocols: [:http2],
-               h2c: :prior_knowledge
+               h2c: :prior_knowledge,
+               limits: %{max_bytes: 1_048_576}
              )
 
     assert {:error, :invalid_http_protocols} =

@@ -22,9 +22,10 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
           if Process.alive?(owner) and Process.alive?(gate) and Lifecycle.remaining(deadline) > 0 do
             result =
               try do
-                if exchange.request.method == "CONNECT",
-                  do: Response.send_resp(exchange, 501, [], ""),
-                  else: module.call(exchange, options)
+                if exchange.request.method == "CONNECT" and
+                     exchange.request.protocol != "websocket",
+                   do: Response.send_resp(exchange, 501, [], ""),
+                   else: module.call(exchange, options)
               catch
                 kind, reason -> {:error, {kind, reason}, exchange}
               end
@@ -38,6 +39,9 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
 
             completed =
               case {result, final.response} do
+                {{:ok, _}, {:websocket, _, _, _, _}} ->
+                  Gaoxy.HTTP.WebSocket.Stream.run(final, final.limits.websocket_limits)
+
                 {{:error, _, _}, :chunked} ->
                   {:error, :endpoint_failed}
 

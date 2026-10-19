@@ -6,17 +6,37 @@ defmodule Gaoxy.HTTP.HTTP2.Headers do
   @hop ~w(connection proxy-connection keep-alive transfer-encoding upgrade)
   @forbidden_trailers ~w(content-length transfer-encoding host connection trailer te upgrade keep-alive proxy-connection authorization proxy-authorization proxy-authenticate www-authenticate content-encoding content-type content-range expect cache-control cookie set-cookie)
 
-  def request(fields, secure, limits) do
+  def request(fields, secure, limits, extended_connect \\ false) do
     with :ok <- validate(fields, limits.max_headers, limits.max_header_bytes),
          {:ok, pseudo, regular} <- split(fields),
          method when is_binary(method) <- pseudo[":method"],
          true <- Regex.match?(@token, method),
-         true <- Map.keys(pseudo) -- [":method", ":scheme", ":authority", ":path"] == [],
+         true <-
+           Map.keys(pseudo) -- [":method", ":scheme", ":authority", ":path", ":protocol"] == [],
+         :ok <- protocol(method, pseudo, extended_connect),
          {:ok, request} <- target(method, pseudo, regular, secure, limits) do
       {:ok, request}
     else
       {:error, _, _} = error -> error
       _ -> {:error, :protocol_error, :request_headers}
+    end
+  end
+
+  defp protocol("CONNECT", %{":protocol" => value, ":authority" => authority}, true)
+       when is_binary(value) and is_binary(authority) do
+    if Regex.match?(@token, value), do: :ok, else: :error
+  end
+
+  defp protocol(_, pseudo, _) do
+    if Map.has_key?(pseudo, ":protocol"), do: :error, else: :ok
+  end
+
+  defp target("CONNECT", %{":protocol" => protocol} = pseudo, regular, secure, limits) do
+    with false <- Enum.any?(regular, fn {name, _} -> name == "content-length" end),
+         {:ok, request} <- origin("CONNECT", pseudo, regular, secure, limits) do
+      {:ok, %{request | protocol: protocol, body: :tunnel, expect_continue: false}}
+    else
+      _ -> {:error, :protocol_error, :connect_headers}
     end
   end
 
@@ -44,7 +64,10 @@ defmodule Gaoxy.HTTP.HTTP2.Headers do
     end
   end
 
-  defp target(method, pseudo, regular, secure, limits) do
+  defp target(method, pseudo, regular, secure, limits),
+    do: origin(method, pseudo, regular, secure, limits)
+
+  defp origin(method, pseudo, regular, secure, limits) do
     scheme = if secure, do: "https", else: "http"
     host_fields = for {"host", value} <- regular, do: value
     authority = pseudo[":authority"] || List.first(host_fields)

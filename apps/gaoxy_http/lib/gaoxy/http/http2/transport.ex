@@ -13,6 +13,36 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
   defdelegate inform(exchange, status, headers), to: Gaoxy.HTTP.HTTP2.Response
   defdelegate finish(exchange, trailers), to: Gaoxy.HTTP.HTTP2.Response
 
+  def websocket_open(exchange, headers, lifetime) do
+    deadline = min(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))
+
+    case operation(exchange, {:websocket_open, headers, lifetime, deadline}) do
+      :ok -> {:ok, %{exchange | deadline: lifetime, response: :upgraded}}
+      error -> error
+    end
+  end
+
+  def websocket_demand(exchange, credit, ref),
+    do: operation(exchange, {:websocket_demand, credit, ref})
+
+  def websocket_send(exchange, bytes), do: operation(exchange, {:data, bytes, false})
+
+  def websocket_finish(exchange) do
+    with :ok <- operation(exchange, :websocket_closing),
+         :ok <- operation(exchange, {:data, "", true}) do
+      # Keep the worker admitted until the peer's ordinary END_STREAM arrives.
+      # Reuse the bounded read slot after cancelling the WS demand, so the
+      # owner can finish this stream without resetting a valid half-close.
+      wait = min(exchange.limits.read_timeout, Lifecycle.remaining(exchange.deadline))
+
+      case operation(exchange, {:read, 1, wait}) do
+        {:ok, "", true, _} -> :ok
+        {:error, _} = error -> error
+        _ -> {:error, :websocket_close_incomplete}
+      end
+    end
+  end
+
   def operation(exchange, operation) do
     {owner, id, token} = exchange.transport_state
 
@@ -21,6 +51,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
         {:head, _, _, _} -> write_operation(exchange, operation)
         {:data, _, _} -> write_operation(exchange, operation)
         {:trailers, _} -> write_operation(exchange, operation)
+        {:websocket_open, _, _, deadline} -> {operation, deadline}
         _ -> {operation, exchange.deadline}
       end
 

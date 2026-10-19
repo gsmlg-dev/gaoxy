@@ -39,7 +39,11 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
        Map.merge(context, %{
          phase: :http2,
          lease: lease,
-         limits: options.http_limits,
+         limits:
+           Map.merge(options.http_limits, %{
+             extended_connect: options.extended_connect,
+             websocket_limits: Map.take(context.spec.limits, [:max_bytes, :max_state])
+           }),
          h2: h2,
          reserves: reserves,
          buffer: "",
@@ -134,6 +138,11 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           <<1::16, state.h2.table_size::32, 3::16, state.h2.max_streams::32, 4::16,
             state.h2.receive_window::32, 5::16, state.h2.max_frame::32, 6::16,
             state.limits.max_header_bytes::32>>
+
+        initial =
+          if state.limits.extended_connect,
+            do: initial <> <<8::16, 1::32>>,
+            else: initial
 
         state =
           enqueue(%{state | preface: true, buffer: rest}, Frame.encode(4, 0, 0, initial), nil)
@@ -381,7 +390,11 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
         case unpad(frame) do
           {:ok, bytes} ->
             stream = state.streams[id]
-            received = stream.received + byte_size(bytes)
+            # A tunnel has no cumulative HTTP body length. Its receive windows
+            # still bound all buffered and delivered bytes until acknowledged.
+            received =
+              if stream.request.body == :tunnel, do: 0, else: stream.received + byte_size(bytes)
+
             ended = Frame.flag?(frame.flags, 1)
             state = %{state | recv_window: state.recv_window - size}
 
@@ -469,7 +482,8 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       not match?({:length, _}, stream.request.body) or
         stream.received == elem(stream.request.body, 1)
 
-    if ended and not stream.eof and valid_length and Headers.trailers(fields, state.limits) == :ok do
+    if stream.request.body != :tunnel and ended and not stream.eof and valid_length and
+         Headers.trailers(fields, state.limits) == :ok do
       deliver(put_in(state.streams[id], %{stream | eof: true, trailers: fields}), id)
     else
       reset(state, id, :protocol_error)
@@ -488,7 +502,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
         reset(state, id, :refused_stream)
 
       true ->
-        case Headers.request(fields, state.secure, state.limits) do
+        case Headers.request(fields, state.secure, state.limits, state.limits.extended_connect) do
           {:ok, request} ->
             request =
               if ended and request.body == :chunked,
@@ -521,6 +535,10 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
                 poll: nil,
                 write: nil,
                 write_failed: false,
+                websocket: false,
+                demand: nil,
+                delivery_ref: nil,
+                last_demand: nil,
                 renderer_blocks: 0,
                 renderer_projection_bytes: 0,
                 committed: false,
@@ -620,6 +638,60 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp operation(state, stream, {:abort, _}, from) do
     GenServer.reply(from, :ok)
     reset(state, stream.id, :cancel)
+  end
+
+  defp operation(state, stream, {:websocket_open, headers, lifetime, write_deadline}, from)
+       when is_integer(lifetime) and is_integer(write_deadline) do
+    valid =
+      state.limits.extended_connect and not stream.websocket and
+        not stream.committed and not stream.eof and stream.read == nil and stream.poll == nil and
+        Lifecycle.remaining(stream.deadline) > 0 and Lifecycle.remaining(lifetime) > 0 and
+        Gaoxy.HTTP.WebSocket.ExtendedHandshake.headers(stream.request, headers) == {:ok, headers}
+
+    if valid do
+      stream = %{stream | websocket: true, deadline: lifetime}
+      state = put_in(state.streams[stream.id], stream)
+      operation(state, stream, {:write, write_deadline, {:head, 200, headers, false}}, from)
+    else
+      reply_error(state, from, :invalid_websocket_upgrade)
+    end
+  end
+
+  defp operation(state, %{websocket: true} = stream, {:websocket_demand, credit, ref}, from)
+       when is_integer(credit) and credit in 0..16_384 and is_reference(ref) do
+    cond do
+      Lifecycle.remaining(stream.deadline) == 0 ->
+        reply_error(state, from, :timeout)
+
+      stream.demand != nil or stream.read != nil ->
+        reply_error(state, from, :pending_read)
+
+      credit == 0 and stream.delivery_ref != ref ->
+        reply_error(state, from, :stale_demand)
+
+      credit > 0 and stream.last_demand == ref ->
+        reply_error(state, from, :stale_demand)
+
+      true ->
+        state = return_credit(state, stream.id)
+
+        stream = %{
+          state.streams[stream.id]
+          | delivery_ref: nil,
+            demand: if(credit > 0, do: %{credit: credit, ref: ref}, else: nil),
+            last_demand: ref
+        }
+
+        GenServer.reply(from, :ok)
+        deliver(put_in(state.streams[stream.id], stream), stream.id)
+    end
+  end
+
+  defp operation(state, %{websocket: true} = stream, :websocket_closing, from) do
+    state = return_credit(state, stream.id)
+    stream = %{state.streams[stream.id] | demand: nil, delivery_ref: nil}
+    GenServer.reply(from, :ok)
+    put_in(state.streams[stream.id], stream)
   end
 
   defp operation(state, stream, {:read, credit, wait}, from)
@@ -736,25 +808,48 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp deliver(state, id) do
     stream = state.streams[id]
 
-    if stream.read != nil and (stream.input != "" or stream.eof) do
-      read = stream.read
-      Process.cancel_timer(read.timer)
-      count = min(read.credit, byte_size(stream.input))
-      <<bytes::binary-size(count), rest::binary>> = stream.input
-      ended = rest == "" and stream.eof
-      # Payload credit follows the next consumer call; padding travels with the final piece.
-      wire = if rest == "", do: stream.queued_wire, else: count
-      GenServer.reply(read.from, {if(ended, do: :ok, else: :more), bytes, ended, stream.trailers})
+    cond do
+      stream.demand != nil and (stream.input != "" or stream.eof) ->
+        demand = stream.demand
+        count = min(demand.credit, byte_size(stream.input))
+        <<bytes::binary-size(count), rest::binary>> = stream.input
+        ended = rest == "" and stream.eof
+        wire = if rest == "", do: stream.queued_wire, else: count
+        send(stream.worker, {:gaoxy_websocket_data, stream.token, demand.ref, bytes, ended})
 
-      put_in(state.streams[id], %{
-        stream
-        | input: rest,
-          read: nil,
-          queued_wire: stream.queued_wire - wire,
-          delivered_wire: wire
-      })
-    else
-      state
+        put_in(state.streams[id], %{
+          stream
+          | input: rest,
+            demand: nil,
+            queued_wire: stream.queued_wire - wire,
+            delivered_wire: wire,
+            delivery_ref: demand.ref
+        })
+
+      stream.read != nil and (stream.input != "" or stream.eof) ->
+        read = stream.read
+        Process.cancel_timer(read.timer)
+        count = min(read.credit, byte_size(stream.input))
+        <<bytes::binary-size(count), rest::binary>> = stream.input
+        ended = rest == "" and stream.eof
+        # Payload credit follows the next consumer call; padding travels with the final piece.
+        wire = if rest == "", do: stream.queued_wire, else: count
+
+        GenServer.reply(
+          read.from,
+          {if(ended, do: :ok, else: :more), bytes, ended, stream.trailers}
+        )
+
+        put_in(state.streams[id], %{
+          stream
+          | input: rest,
+            read: nil,
+            queued_wire: stream.queued_wire - wire,
+            delivered_wire: wire
+        })
+
+      true ->
+        state
     end
   end
 

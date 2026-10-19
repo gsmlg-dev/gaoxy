@@ -246,58 +246,58 @@ H2/H3 acceptance is still NOT RUN. Do not advertise setting 8 in this task.
   explicitly changed contracts, retaining refusal for disabled/invalid upgrades.
 - Create `integration/websocket_multiplexed/{fixture.exs,h2_peer.py,run.py}`.
 
-- [ ] Choose omitted HTTPS protocols as `[:http2, :http1]` in `Gaoxy.HTTP` using
+- [x] Choose omitted HTTPS protocols as `[:http2, :http1]` in `Gaoxy.HTTP` using
   transport context; keep plain HTTP's H1 default. Have Phoenix forward explicit
   protocol choices and delegate omission to the facade. Retain strict ALPN
   consistency, explicit H1/H2 selections and prior-knowledge h2c validation.
-- [ ] Default omitted `limits.max_bytes` to 268,435,456 only for services selecting
+- [x] Default omitted `limits.max_bytes` to 268,435,456 only for services selecting
   H2 through the HTTP facade. Preserve all supplied limit fields, explicit low
   budgets and validation of custom reservations. Do not change core defaults,
   reservation formulas, TLS version/security or H2 host requirements.
-- [ ] Record new default behavior in focused tests: bare HTTPS/Phoenix HTTPS
+- [x] Record new default behavior in focused tests: bare HTTPS/Phoenix HTTPS
   configuration starts, ordered ALPN prefers H2, H1-only and no-ALPN clients
   receive H1, explicit H1 override works, and explicit h2c serves ordinary H2.
   Verify omitted H2 budgets and preservation of explicit budgets with pure
   configuration cases. No pressure or fault-injected network cases are added.
-- [ ] Preserve existing rejection assertions by making their preconditions
+- [x] Preserve existing rejection assertions by making their preconditions
   explicit: add `protocols: [:http1]` to the H1-only ALPN contract and an explicit
   1 MiB limit to the insufficient-H2-budget contract. Execute those named cases
   individually; do not run the mixed `http2_network_test.exs` file wholesale.
-- [ ] Add strict boolean `extended_connect: false` to service normalization and
+- [x] Add strict boolean `extended_connect: false` to service normalization and
   Phoenix HTTP/HTTPS option forwarding. H1 behavior remains available; setting
   8 is emitted as 1 only on an H2 connection explicitly enabled for this feature.
-- [ ] Validate setting 8 values and retain RFC 8441's server/client direction
+- [x] Validate setting 8 values and retain RFC 8441's server/client direction
   semantics. Accept valid extended CONNECT fields only under local activation.
   Preserve ordinary CONNECT handling and ordinary HTTP request parsing.
-- [ ] Route a valid WebSocket CONNECT to its local endpoint, never dial its
+- [x] Route a valid WebSocket CONNECT to its local endpoint, never dial its
   authority. Well-formed unsupported extended protocols get 501. Wire methods,
   origin/session headers and request targets remain available for policy.
-- [ ] Map the upgrade marker to a 200 HEADERS without END_STREAM. Continue the
+- [x] Map the upgrade marker to a 200 HEADERS without END_STREAM. Continue the
   same stream worker in `WebSocket.Stream.run/2`; do not run ordinary
   `Response.finish/1` or send `h2_stream_done` while the WebSocket is live.
-- [ ] Carry RFC 6455 bytes inside H2 DATA independently of DATA boundaries.
+- [x] Carry RFC 6455 bytes inside H2 DATA independently of DATA boundaries.
   Keep H2 window accounting/connection ownership in the existing owner and
   writer. Apply the shared demand and finite write contract.
-- [ ] Complete normal WebSocket Close exchange, then END_STREAM, and ordinary
+- [x] Complete normal WebSocket Close exchange, then END_STREAM, and ordinary
   stream/lease release while an unrelated HTTP request on the same connection
   succeeds. Define reset cleanup in code/unit contracts without adding a
   fault-injected network reset gate.
-- [ ] Add a direct ordinary Plug/WebSock path before enabling Phoenix browser
+- [x] Add a direct ordinary Plug/WebSock path before enabling Phoenix browser
   acceptance; remove the unconditional Plug H2 refusal only for this validated
   enabled path. Invalid and disabled upgrades keep explicit rejection.
-- [ ] Peer cases: TLS/H2 and prior-knowledge h2c negotiation, 200 handshake,
+- [x] Peer cases: TLS/H2 and prior-knowledge h2c negotiation, 200 handshake,
   text/binary messages, split DATA boundaries, ping/pong, selected subprotocol,
   server-initiated message while idle, orderly Close, and HTTP sibling service.
-- [ ] Require two simultaneous WebSocket streams plus an ordinary HTTP sibling
+- [x] Require two simultaneous WebSocket streams plus an ordinary HTTP sibling
   on one connection, with stream-labelled messages, independent application
   pushes and orderly closure. This is normal multiplexing, without cancellation
   injection, deliberate exhausted credit or a concurrency/load ramp.
-- [ ] Include one bounded normal lifetime case per H2/h2c profile: fixture HTTP
+- [x] Include one bounded normal lifetime case per H2/h2c profile: fixture HTTP
   request timeout 1 second, WS lifetime 10 seconds, total case deadline 5 seconds.
   After the original request deadline passes, exchange a normal message/pong,
   then Close normally. The fixture records the original and upgraded deadlines;
   no slow-consumption, artificial write block or sustained traffic is involved.
-- [ ] The new runner enumerates required case names for each selected protocol,
+- [x] The new runner enumerates required case names for each selected protocol,
   fails on zero executed or missing cases, and writes command/source/cohort,
   negotiated protocol, each case result and exit to its evidence directory.
 
@@ -510,9 +510,9 @@ fragmentation with ping/pong. Record actual selected/excluded counts distinctly.
 
 | Gate | Required evidence | Current status |
 | --- | --- | --- |
-| G0 | Source/cohort/public API and fixture compatibility | NOT RUN |
-| G1 | Shared handshake/runtime unit contracts and H1 compatibility | NOT RUN |
-| G2 | HTTPS H2 defaults, H1 compatibility, budgets and native H2/h2c WebSocket exchanges | NOT RUN |
+| G0 | Source/cohort/public API and fixture compatibility | PASS |
+| G1 | Shared handshake/runtime unit contracts and H1 compatibility | PASS |
+| G2 | HTTPS H2 defaults, H1 compatibility, budgets and native H2/h2c WebSocket exchanges | PASS |
 | G3 | Native H3 independent normal WebSocket exchanges | NOT RUN |
 | G4 | Phoenix Channels/LiveView and actual H2/H3 WS browser transport | NOT RUN |
 | G5 | Fresh scoped compatibility, consumer isolation, SPEC/CODE acceptance | NOT RUN |

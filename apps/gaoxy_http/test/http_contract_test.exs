@@ -211,11 +211,12 @@ defmodule Gaoxy.HTTP.ContractTest do
     assert all(socket) =~ "HTTP/1.0 200 OK"
   end
 
-  test "HTTP-only TLS rejects advertisement of an unimplemented protocol" do
+  test "explicit H1-only TLS rejects advertisement of H2" do
     assert {:error, :unsupported_http_alpn} =
              Gaoxy.HTTP.service_spec(
                plug: {Plug, []},
                transport: :tls,
+               protocols: [:http1],
                tls: %{certfile: "cert.pem", keyfile: "key.pem", alpn: ["h2"]}
              )
   end

@@ -51,17 +51,32 @@ defmodule Gaoxy.PlugAdapter do
 
   def inform(exchange, status, headers), do: Response.inform(exchange, status, headers)
 
-  def upgrade(%{request: %{version: version}}, _, _) when version in [:"HTTP/2", :"HTTP/3"],
-    do: {:error, :not_supported}
+  def upgrade(%{request: %{version: version}} = exchange, :websocket, arguments)
+      when version in [:"HTTP/2", :"HTTP/3"] do
+    request = exchange.request
+
+    if exchange.transport != nil and exchange.transport_state != nil and
+         exchange.limits[:extended_connect] == true and request.method == "CONNECT" and
+         request.protocol == "websocket" and request.body == :tunnel do
+      prepare_websocket(exchange, arguments)
+    else
+      {:error, :not_supported}
+    end
+  end
 
   def upgrade(exchange, :websocket, arguments) do
+    prepare_websocket(exchange, arguments)
+  end
+
+  def upgrade(_, _, _), do: {:error, :not_supported}
+
+  defp prepare_websocket(exchange, arguments) do
     case Gaoxy.HTTP.WebSocket.prepare(exchange, arguments) do
       {:ok, exchange} -> {:ok, exchange}
       {:error, reason} -> raise ArgumentError, "invalid WebSocket upgrade: #{inspect(reason)}"
     end
   end
 
-  def upgrade(_, _, _), do: {:error, :not_supported}
   def push(_, _, _), do: {:error, :not_supported}
 
   def get_peer_data(exchange), do: Exchange.peer_data(exchange)

@@ -1,0 +1,50 @@
+{
+  "task": "M5 G2 empty-DATA peer re-review",
+  "baseline": "2dfde400cc93f99c79ac504d261d49a0cf2a882a",
+  "spec": "PASS",
+  "code": "PASS",
+  "findings": [],
+  "resolved": "Empty HTTP2 DATA is ignored only by wsproto bridge; flowcontrol ack, StreamEnded and Close assertions retained",
+  "source_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/http.ex": "5bd0ee7e9e9dbf600cc177f5272c6403bd65bdd0422111246129043b73dd2ea5",
+    "apps/gaoxy_http/lib/gaoxy/http/options.ex": "29a87da589c59fee3ee63bbe8bbf7748b396d9a46738ac00725bb69d589cdcbf",
+    "apps/gaoxy_http/lib/gaoxy/phoenix_adapter.ex": "65864c9452c45c5cade9b6de8b44d35d59dde644c74f551184166f0ea49d2b1b",
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "b51fc0324d340442a0604b785303c1a630e0329505bb343bbd68e2bd5b52d7d8",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/headers.ex": "031617fb03164c085dbf7229c0e14467879dd0c2a272e9bd737d5cfbf6a22039",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/settings.ex": "12753df657e51c0580b9af27c300846c15bb5cf604e9784678c2725f02e1fa94",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "39afca3bb60626ff63c9c8b93696048de701d8c1466f5a1eca217d06644df1e9",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex": "d539e5681e649c8a2279c851bf1f2985c416b81e2b2bebac5542ce02f8a4a9e9",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex": "57288f9342d5aa763718faff73dcf2152a9abdd6524e6879e4ab419851303947",
+    "apps/gaoxy_http/test/http_protocol_defaults_test.exs": "e4ecd6d29ce10afe73085ac5651ccbaa6bd331af8a640f25d4790889b3f6ae58",
+    "apps/gaoxy_http/test/http2_websocket_test.exs": "75f1d3f7fcaf96cd4124947ddda83e6edb5cf55b96633f4305893e7c48953b4d",
+    "apps/gaoxy_http/test/http2_websocket_network_test.exs": "a02024a271736283e143c5fa6977a2b7d31b23449d011c7c4a06e4eb3dfae793",
+    "apps/gaoxy_http/test/http2_protocol_test.exs": "bca58575cd3de16676deec3116e44d9517944720320540615b070cff9fc864f1",
+    "apps/gaoxy_http/test/http_contract_test.exs": "48be5b533c1245fc1031df48d862372affc1c67da017319ff093ea2231eaaf9b",
+    "apps/gaoxy_http/test/http2_network_test.exs": "8049c907f974bc9873056bca38664e5e5bfe984b2544cf7563a53ad5ffbc1fa6",
+    "integration/websocket_multiplexed/requirements.txt": "a935a8b40a4271fb3b19102fd407a96cee8389e0f05d8116707393d5c3a7f25a",
+    "integration/websocket_multiplexed/README.md": "a146095e594d6c49523d0b12e50c7ce14d11954ccb05374f47d612abe870452f",
+    "integration/websocket_multiplexed/fixture.exs": "c61dc9ddc34cb6d5f2a953b3a34dc4a89d3f84aca04925e6889dfc602d50481d",
+    "integration/websocket_multiplexed/h2_peer.py": "13a44b75ccae3039cd2d2afc36d34ca46ab8dddd1aecb4891d3e87db7d7e6039",
+    "integration/websocket_multiplexed/run.py": "02faf035a00bc717ac7e53586578bdea21fb99c78ba2fbbeeec7884d54ff3503"
+  },
+  "initial_snapshot_timing": "The initial snapshot was captured after concurrent peer repair; preserve that snapshot and use immutable failed-run source hash below for the exact defective peer",
+  "defective_peer_sha256": "937b5a978ae480aec8a43d117e73e22d247d7e019b1791ddd24e6013d156bf8f",
+  "repaired_peer_sha256": "13a44b75ccae3039cd2d2afc36d34ca46ab8dddd1aecb4891d3e87db7d7e6039",
+  "observed_evidence": {
+    ".audit/m5/h2/run-1792394409129828107/report.json": "PASS15/15exit0",
+    ".audit/m5/h2c/run-1792394417577825567/report.json": "PASS15/15exit0"
+  },
+  "receipts_verified": [
+    "verifiedTLSH2 or explicitprior-knowledgeh2c",
+    "twoWS and HTTPsiblings on one native connection",
+    "immutable wireCONNECT/protocol/streammetadata",
+    "post-originaldeadline message observed betweenoriginal andWSlifetime",
+    "normalClose andEND_STREAM",
+    "admissionactive retainedbytes cleanuppending0 cleanupfailednull",
+    "fixtureshutdownexit0 runtimedowntrue"
+  ],
+  "independent_runtime": "NOT RUN, parent must run fresh post-review gates",
+  "review_repair_rounds": 0,
+  "commands_shutdown": "All reviewer commands completed",
+  "scope": "G2nativeH2/h2c only; H3/Phoenix/browser later"
+}

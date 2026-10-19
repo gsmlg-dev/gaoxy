@@ -35,6 +35,8 @@ defmodule Gaoxy.HTTP.Options do
       with {:ok, h2} <- Gaoxy.HTTP.HTTP2.Limits.normalize(Map.get(original, :h2_limits, %{})),
            protocols = Map.get(original, :protocols, [:http1]),
            h2c = Map.get(original, :h2c, :disabled),
+           extended_connect = Map.get(original, :extended_connect, false),
+           true <- is_boolean(extended_connect) || {:error, :invalid_extended_connect},
            true <-
              protocols in [[:http1], [:http2], [:http2, :http1]] ||
                {:error, :invalid_http_protocols},
@@ -52,6 +54,7 @@ defmodule Gaoxy.HTTP.Options do
            initialized: true,
            protocols: protocols,
            h2c: h2c,
+           extended_connect: extended_connect,
            h2_limits: h2
          }}
       end

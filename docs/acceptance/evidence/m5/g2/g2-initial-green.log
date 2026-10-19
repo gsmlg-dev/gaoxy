@@ -1,0 +1,32 @@
+==> gaoxy_http
+Running ExUnit with seed: 759246, max_cases: 4
+
+...........
+
+  1) test ordinary h2c Plug WebSocket sends an idle push, echoes, closes and serves a sibling (Gaoxy.HTTP.HTTP2WebSocketNetworkTest)
+     apps/gaoxy_http/test/http2_websocket_network_test.exs:25
+     match (=) failed
+     code:  assert {:ok, [{":status", "200"}], _} = HPAX.decode(block, HPAX.new(0))
+     left:  {:ok, [{":status", "200"}], _}
+     right: {:ok,
+             [
+               {":status", "200"},
+               {"cache-control",
+                "max-age=0, private, must-revalidate"}
+             ],
+             %HPAX.Table{
+               protocol_max_table_size: 0,
+               max_table_size: 0,
+               huffman_encoding: :never,
+               entries: [],
+               size: 0,
+               length: 0,
+               pending_minimum_resize: nil,
+               required_minimum_resize: nil
+             }}
+     stacktrace:
+       test/http2_websocket_network_test.exs:55: (test)
+
+..............
+Finished in 1.4 seconds (1.4s async, 0.00s sync)
+26 tests, 1 failure

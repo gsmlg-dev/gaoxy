@@ -7,7 +7,8 @@ defmodule Gaoxy.HTTP.HTTP2.Settings do
       initial_window: 65_535,
       max_frame: 16_384,
       max_header_list: 4_294_967_295,
-      enable_push: 1
+      enable_push: 1,
+      enable_connect_protocol: 0
     }
 
   def apply(settings, payload) when rem(byte_size(payload), 6) == 0 do
@@ -43,5 +44,15 @@ defmodule Gaoxy.HTTP.HTTP2.Settings do
 
   defp setting(_, 5, _), do: {:error, :protocol_error}
   defp setting(settings, 6, value), do: {:ok, %{settings | max_header_list: value}}
+
+  # A peer's setting never enables the server's listener. Clients have no use
+  # for the server's receipt, but invalid values and disabling stay errors.
+  defp setting(settings, 8, value) when value in [0, 1] do
+    if value < settings.enable_connect_protocol,
+      do: {:error, :protocol_error},
+      else: {:ok, %{settings | enable_connect_protocol: value}}
+  end
+
+  defp setting(_, 8, _), do: {:error, :protocol_error}
   defp setting(settings, _, _), do: {:ok, settings}
 end

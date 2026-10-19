@@ -8,7 +8,7 @@ The [reviewed plan](../plans/m5-websocket-over-h2-h3.md) defines acceptance.
 | --- | --- | --- |
 | G0 dependency/fixture and peer audit | PASS | Baseline 35 tests/0 failures; root and fixture strict compile exit 0; peer API 3/3 and Elixir API 8/8; Chromium launch PASS, actual WS negotiation NOT RUN |
 | G1 shared handshake/runtime | PASS | Independent SPEC/CODE PASS after H3 identity repair; parent fresh 22 shared tests and 2 ordinary H1 cases, all passing |
-| G2 H2 defaults and WebSocket/h2c | IN PROGRESS | Default HTTPS/H1 negotiation checked; native H2/h2c peer acceptance pending |
+| G2 H2 defaults and WebSocket/h2c | PASS | Independent SPEC/CODE PASS; parent fresh 26 tests plus 2 named contract cases; H2 and h2c each 15/15 ordinary peer cases |
 | G3 H3 WebSocket | IN PROGRESS | Pure preparation 64 tests/0 failures; runtime and independent review pending |
 | G4 Phoenix/vendor/browser integration | NOT RUN | No feature acceptance claimed |
 | G5 compatibility and independent review | NOT RUN | No feature acceptance claimed |
@@ -61,3 +61,15 @@ as the design requires. The failed receipt is retained; no production change was
 needed for that correction. Expected feature RED receipts are separate from
 unexpected failures. Inherited counters and the exhausted recovery allowance
 remain unchanged.
+
+G2's first H2/h2c peer runs each completed 13/15 cases and failed in the Python
+peer when an empty DATA/END_STREAM was passed to wsproto after the WebSocket
+Close exchange. Empty transport frames now skip only the WebSocket decoder;
+H2 flow-control acknowledgments, StreamEnded processing and Close assertions
+are unchanged. Independent re-review passed, followed by fresh parent tests and
+15/15 cases for each profile. Both profiles recorded wire CONNECT metadata,
+two WebSocket streams and HTTP siblings on one connection, server pushes before
+client WebSocket bytes, actual post-request-deadline communication and normal
+Close/END_STREAM. Runtime shutdown and zero admission/retained/cleanup counts
+passed. This adds one peer-fixture repair and two failed profile receipts, with
+no H2 production repair. G2 browser/Phoenix acceptance remains G4.
