@@ -1,3 +1,20 @@
+## Next stage: M5 WebSocket over HTTP/2 and HTTP/3 — 2026-10-19
+
+**M5: PLANNED; implementation and runtime verification NOT STARTED.**
+The newly requested next stage adds native RFC 8441/9220 server-side WebSocket
+and Phoenix Channels/LiveView support. Current H2/H3 WebSocket refusal remains
+the actual capability until implementation and verification pass. See the
+[design](designs/m5-websocket-over-h2-h3.md) and
+[implementation plan](plans/m5-websocket-over-h2-h3.md) for ordered work packages,
+file ownership and ordinary protocol/browser acceptance.
+
+H1 WebSocket behavior remains the compatibility baseline. Outbound H2/H3
+WebSocket proxy transports and compression are outside this stage. Specialist
+abnormal/disconnect, slow-peer, pressure and load qualification stays in a
+dedicated environment; no such gate is introduced here. Planning adds no push,
+publication or deployment authorization. Accepted M3/M4 and their source-bound
+historical evidence remain as recorded below.
+
 ## Current M3 acceptance and local merge — 2026-10-19
 
 **M3: ACCEPTED COMPLETE** within the user's existing product-functionality and

@@ -1,3 +1,21 @@
+## Next planned milestone: M5 WebSocket over H2/H3 — 2026-10-19
+
+The next requested stage is native server-side WebSocket over HTTP/2 (RFC 8441)
+and HTTP/3 (RFC 9220), including ordinary Phoenix Channels/LiveView integration.
+M5 is newly defined by this planning request; earlier versions of this roadmap
+ended at M4. See the [design](docs/designs/m5-websocket-over-h2-h3.md) and
+[implementation plan](docs/plans/m5-websocket-over-h2-h3.md).
+
+**Status: PLANNED; implementation and runtime verification NOT STARTED.**
+Recommended sequence: shared WebSocket stream contract, native H2, native H3,
+then protocol-verified Phoenix/browser acceptance and fresh compatibility review.
+Keep H1 WebSocket compatibility. Upstream WebSocket proxy transports over H2/H3,
+compression and WebTransport/DATAGRAM are outside this stage. Specialist abnormal,
+disconnect, slow-peer, pressure and sustained-load qualification remains assigned
+to its dedicated environment and is not added as an M5 completion gate here.
+This planning request grants no publication or deployment permission and does
+not reopen accepted M3/M4 or redefine their historical evidence.
+
 ## Current M3 completion and local integration scope — 2026-10-19
 
 **M3 is accepted COMPLETE within existing implemented product functionality and
@@ -829,6 +847,7 @@ Use explicit certificate provisioning first; add atomic certificate rotation and
 | **M2: Native application server** | H1, WebSocket/WebSock, Plug/Phoenix adapters, native Phoenix fixture, local/remote routing, minimal streaming reverse proxy | Browser-tested native Phoenix plus local/proxy route selection and streaming; no Bandit runtime dependency |
 | **M3: HTTP/2 and gateway beta** | H2, upstream pools, complete proxy controls, CONNECT, TCP/TLS/UDP relays, configuration generations, operational hardening | Interoperability, security, cancellation/slow-peer, relay semantics, reload and sustained-load gates |
 | **M4: HTTP/3** | Verified QUIC host contract, server-side H3 engine/QPACK profile, Plug mapping, H3 upstream/downstream proxy matrix | Independent H3 peers, malformed control streams, flow control, stream reset, shutdown and browser acceptance |
+| **M5: WebSocket over H2/H3 (planned 2026-10-19)** | Native RFC 8441/9220 extended CONNECT, shared WebSock stream runtime, Phoenix Channels/LiveView integration, preserved H1 compatibility | Normal independent H2/H3 WebSocket exchanges, WS-specific browser protocol evidence, scoped compatibility and independent review; implementation NOT STARTED |
 
 These are evidence gates, not calendar estimates. QUIC host integration can progress alongside native HTTP; H3 depends on both relevant boundaries. A custom TLS gap must not block ordinary TCP/UDP work, and a general runtime gap must not be hidden by advancing to more protocols.
 
