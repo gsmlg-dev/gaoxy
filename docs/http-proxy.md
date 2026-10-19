@@ -1,8 +1,10 @@
-## v0.4.0 publication preparation — 2026-10-19
+## v0.4.0 release status — 2026-10-19
 
-Embedded managed H1 reuse and H2/h2c fixed/group upstreams, probes and Generation/resource ownership are implemented with public HTTPFetch 0.21.10 APIs. H2/h2c selects explicit managed transport handles. Standalone JSON origins remain http1/default or http3 and expose no managed handles/groups/probes.
+Accepted embedded source implements managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource ownership through public HTTPFetch 0.21.10 APIs. Managed H2/h2c requires explicit transport handles. Standalone JSON origins remain `http1` (default) or `http3`; JSON exposes no managed handles/groups/probes or WebSocket activation. JSON downstream HTTP services default to H1 and permit explicit H2/h2c or a separate H3 service. Native downstream WebSocket support does not add upstream H2/H3 WebSocket proxy transports.
 
-[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+
+Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
 
 # Native HTTP reverse proxy
 

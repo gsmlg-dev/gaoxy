@@ -23,8 +23,8 @@ Files: root `mix.exs`, five `apps/*/mix.exs`, this plan, release design,
 headers in README/native-http/http3/http-proxy/gateway/capabilities/status,
 `implement-plan.md` and the M3/M5 acceptance followups. Preserve historical tails.
 
-- [x] Fetch origin and inspect refs. Live latest release is v0.3.0; v0.4.0 is
-  absent. Remote main is an ancestor of M5 (0 remote-only, 60 local commits).
+- [x] Fetch origin and inspect refs. At preparation, latest release was v0.3.0;
+  v0.4.0 was absent. Remote main is an ancestor of M5 (0 remote-only, 60 local commits).
   Preserve the unrelated untracked prompt and existing worktrees.
 - [x] Change exactly six own version declarations from 0.3.0 to 0.4.0. Keep
   root lock SHA256 `c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6`.
@@ -40,10 +40,10 @@ and its README for optional paired `--release` / `--source-identity` arguments.
 
 - [x] Retain immutable toolchain pins, source/archive/lock checks, safe inventory,
   package metadata and checksums. Use 0.4.0 names; preserve every old recipe.
-- [ ] Run the exact M5 scope plus two ordinary compatibility regressions
+- [x] Run the exact M5 scope plus two ordinary compatibility regressions
   (138 cases) and accepted M3 ordinary 62-case selectors;
   retain nonzero/zero-failure assertions and record exclusions separately.
-- [ ] Keep peer environments separate. Run existing core/gateway/H3 smokes and
+- [x] Keep peer environments separate. Run existing core/gateway/H3 smokes and
   H2/h2c/H3 packaged WS profiles with unchanged 15-case assertions, both in the
   builder and fresh offline runtime. No Mix/development beams in package runs.
 - [x] Complete independent SPEC then CODE review of source, recipes, scope and
@@ -51,10 +51,10 @@ and its README for optional paired `--release` / `--source-identity` arguments.
 
 ## Task 3 — commit, integrate and qualify exact source bytes
 
-- [ ] Commit task-owned source/docs with conventional messages; final release
+- [x] Commit task-owned source/docs with conventional messages; final release
   source commit includes `[skip ci]` to keep excluded automatic specialist jobs
   unexecuted. Fast-forward main, preserving the unrelated prompt byte-for-byte.
-- [ ] Create a unique `.audit/release-0.4.0/portable-<id>/context` directory. Copy
+- [x] Create a unique `.audit/release-0.4.0/portable-<id>/context` directory. Copy
   the reviewed recipe there. Archive committed main with `git archive --format=tar
   HEAD`; write `source-identity.json` containing source_sha, archive/lock SHA256,
   and exact changed Elixir paths from `git diff --name-only v0.3.0 HEAD`.
@@ -68,7 +68,7 @@ and its README for optional paired `--release` / `--source-identity` arguments.
   failures and 90 exclusions. Point its fixed fixture executable at the already
   pinned M5 peer environment after installation, preserving legacy smoke peers,
   pins and assertions. Review SPEC then CODE and rerun the full ordinary build.
-- [ ] Retain the third failed build: 136 M5 and 38 M3 unit cases passed; 24
+- [x] Retain the third failed build: 136 M5 and 38 M3 unit cases passed; 24
   network cases executed with 2 ordinary H2-to-managed-group failures and 90
   exclusions. Reproduce only the four positive group preservation cases in the
   same pinned builder, with bounded diagnostic output and unchanged assertions.
@@ -82,8 +82,8 @@ and its README for optional paired `--release` / `--source-identity` arguments.
   production reproduced both new regression failures, then the repaired
   snapshot passed formatting, strict compile and 200 ordinary cases/0 failures
   with 90 deselections. Independent result review passed; a fresh
-  committed-source artifact qualification remains required.
-- [ ] Verify archive bytes against committed source and recipe hashes, then run:
+  committed-source artifact qualification below now completes this requirement.
+- [x] Verify archive bytes against committed source and recipe hashes, then run:
 
 ```sh
 docker buildx build --platform linux/amd64 --progress plain --target artifact \
@@ -94,29 +94,53 @@ python CONTEXT/qualify_runtime.py RUN_DIRECTORY
 
   `CONTEXT`, `ARTIFACTS` and `RUN_DIRECTORY` are the unique recorded absolute
   execution paths; retain exact expanded commands and exits in receipts.
-- [ ] Require scoped ordinary test/format/strict compile PASS, unchanged archived
+- [x] Require scoped ordinary test/format/strict compile PASS, unchanged archived
   sources, all five packaged versions 0.4.0, two checksums, valid inventory and
   nonzero ELF inspection without missing/Nix dependencies. Require normal child
   exit/removal/observed absence, all three packaged WS profiles and existing
   smoke exchanges in the fresh network-disabled runtime.
-- [ ] Review actual artifact/runtime/source identity and final release notes
+- [x] Review actual artifact/runtime/source identity and final release notes
   independently. Freeze release source throughout qualification; repair sources
   require fresh affected qualification. Never reuse old binary acceptance.
 
 ## Task 4 — publish and verify downloads
 
-- [ ] Push reviewed main; verify `git ls-remote origin refs/heads/main` matches
+- [x] Push reviewed main; verify `git ls-remote origin refs/heads/main` matches
   the frozen candidate. Do not dispatch release.yml or alter account/settings.
-- [ ] Create annotated `v0.4.0` at that SHA, push its tag, and verify the peeled
+- [x] Create annotated `v0.4.0` at that SHA, push its tag, and verify the peeled
   remote tag. Create the release with `gh release create v0.4.0 --verify-tag
   --title 'Gaoxy v0.4.0' --notes-file REVIEWED_NOTES` and exactly the archive,
   build-info.json and SHA256SUMS. No replacement/force of an existing tag.
-- [ ] Download all three assets to a fresh directory with `gh release download`;
+- [x] Download all three assets to a fresh directory with `gh release download`;
   compare exact bytes/hashes to qualified artifacts, parse sums/versions/source
   and inventory, and verify GitHub release flags and remote refs.
-- [ ] Independently review publication/download evidence. Commit and push final
-  notes/acceptance/current headers and evidence with `[skip ci]`, verify remote
-  main and clean task worktree, preserving the unrelated prompt.
+- [x] Independently review publication/download evidence; retain actual metadata,
+  remote refs, three byte-identical downloads and their verification receipt.
+- [x] Complete independent review of the final notes, acceptance, ten current
+  headers and lossless evidence archive, resolving actionable findings.
+
+After final documentation review, the parent commits this closeout with
+`[skip ci]`, fast-forwards main, pushes it and verifies the remote main SHA,
+unchanged peeled release tag, clean task checkout and preserved unrelated prompt.
+This final Git operation is serialized after the reviewed document snapshot;
+its actual completion receipt is retained locally before the user-facing result.
+
+## Recorded execution
+
+Fresh qualification completed at `2026-10-19T11:32:09.700707+00:00` from frozen
+source `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`: 200 ordinary executions/0 failures,
+90 excluded/0 skipped (M5 138, M3 62), 21,812 source files under byte custody,
+1,439 safe package entries, five packaged versions 0.4.0 and 21 ELF objects with
+no missing/Nix dependencies. Core/gateway/H3 smokes passed 3/2/3 per environment;
+H2/h2c/H3 packaged WebSocket profiles passed 15/15 each in both builder and fresh
+network-disabled runtime, including normal exit and cleanup.
+
+Independent artifact/runtime/notes review passed. Annotated v0.4.0 and the latest
+GitHub release were published; all three fresh downloads matched the qualified
+bytes, and independent publication/download review passed. Source tag remains
+fixed while the documentation closeout follows on main. The 188-file lossless
+archive and exact hashes are linked from [release acceptance](../acceptance/release-0.4.0.md).
+New hosted CI remains NOT RUN, separately from historical BLOCKED_ENV.
 
 Stop when these gates complete. No deployment, production data/certificates,
 Vault/public management, specialist test execution, Hex/OCI publishing or enabling

@@ -1,8 +1,10 @@
-## v0.4.0 publication preparation — 2026-10-19
+## v0.4.0 release status — 2026-10-19
 
-The later user request explicitly authorizes committing, main integration, push and GitHub v0.4.0 publication. Accepted M3 implementation/ordinary verification and the specialist-test handoff remain unchanged.
+M3 remains accepted complete within implemented functionality and ordinary verification scope. Its original local-merge verification and historical implementation receipts below retain their own source identities and counts. The release repair preserves strict group-accounting limits and restores ordinary H2/H3 Exchange compatibility. Later release work does not certify absent capabilities or specialist qualification; fresh portable runtime and publication/download evidence is recorded separately below.
 
-[Release acceptance](release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+
+Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
 
 # M3 completion and local integration — 2026-10-19
 

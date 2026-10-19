@@ -1,0 +1,87 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-group-failure-diagnosis-spec",
+  "status": "PASS",
+  "review_kind": "SPEC_DIAGNOSTIC_SCOPE",
+  "assignment": "direct independent read-only review",
+  "source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "verdict_scope": "Static failure diagnosis and proposed bounded diagnostic scope only; no repair, runtime confirmation or release acceptance.",
+  "findings": [],
+  "actual_failure": {
+    "ordinary_network_defined": 114,
+    "excluded": 90,
+    "executed": 24,
+    "failures": 2,
+    "failed_cases": [
+      "http2 -> group http2 preserves exact targets ordered fields raw responses trailers and bodyless methods",
+      "http2 -> group h2c preserves exact targets ordered fields raw responses trailers and bodyless methods"
+    ],
+    "first_target": "/a%2Fb?q=%2F",
+    "actual_status": 503,
+    "expected_status": 200
+  },
+  "static_hypothesis": {
+    "producer": "HTTP2.Connection state.limits unconditionally adds boolean extended_connect and map websocket_limits; dispatch copies both into ordinary Exchange.limits.",
+    "rejector": "ManagedH2GroupAccounting.native_limits? permits only13/14 whitelisted positive integer HTTP limit fields; validate_group_startup validates pump; dispatch_request fallback returns503.",
+    "confidence": "Definite shape incompatibility; exact observed rejection branch needs diagnostic runtime evidence."
+  },
+  "approved_diagnostic_scope": {
+    "selector": "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:21",
+    "executed_required": 4,
+    "composition": "2 H1 controls plus2 H2 failures; parent expressly approved existing generated four-case selector.",
+    "preserve": [
+      "all assertions",
+      "fixture options and limits",
+      "peer cohort pins and guard",
+      "finite deadlines",
+      "resource cleanup",
+      "original return values"
+    ],
+    "exclude": [
+      "later upload/early-final cases",
+      "exceptional disconnect/slow-peer/pressure/soak",
+      "whole file/suite",
+      "package or release qualification"
+    ],
+    "instrumentation": "Ignored disposable builder layer only; bounded startup/accounting reason and limit-key/type diagnostics; never serialize arbitrary state/private client processes."
+  },
+  "repair_direction": "Prefer ordinary HTTP Exchange-construction boundary normalization while retaining WebSocket-only limits for protocol=websocket. HTTP2.Stream currently requires final.limits.websocket_limits after successful WebSocket response. Do not widen strict managed-group accounting to arbitrary extras or remove WS data unconditionally. Final repair decision waits diagnostic evidence.",
+  "reviewed_sources": [
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "sha256": "39afca3bb60626ff63c9c8b93696048de701d8c1466f5a1eca217d06644df1e9"
+    },
+    {
+      "path": "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+      "sha256": "d539e5681e649c8a2279c851bf1f2985c416b81e2b2bebac5542ce02f8a4a9e9"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/managed_h2_group_accounting.ex",
+      "sha256": "933b07a056d3a80baa6ce9ff9df1c84d7b4fc24c49dde1770d16f8855a6ee92f"
+    },
+    {
+      "path": "apps/gaoxy_proxy/lib/gaoxy/proxy/http.ex",
+      "sha256": "796f5058c7cb2fa23d46f93559caf8eae00836fc8812e6126c306e91455c8776"
+    },
+    {
+      "path": "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs",
+      "sha256": "68ab3678fb6945d7a7cc18eb13b111572d8fb6356014d75a98c5731c79179ced"
+    },
+    {
+      "path": "docs/designs/m5-websocket-over-h2-h3.md",
+      "sha256": "2d09f547ec299773faf1ded6d22434416460f80c30221113fecd0dd8c1b701c5"
+    },
+    {
+      "path": "docs/plans/m5-websocket-over-h2-h3.md",
+      "sha256": "2940f44ee36a6ee97e676f524915f6e9a9b61ec3ac86b1688244c200a8767c91"
+    }
+  ],
+  "reviewed_failure_log_sha256": "2550b4917100606e0c471b923510c22afe48c89cee96303179a06e3cc67a67fe",
+  "validation": "Static source/spec/fixture/log inspection only. No Git commands, builds, tests, runtime, browser or network executed.",
+  "remaining": "Instrument/harness implementation CODE review follows independently in sequence; actual diagnostic run owned by parent.",
+  "release_sol_repair_rounds": 2,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; no background commands started or other processes touched.",
+  "timestamp_utc": "2026-10-19T11:01:44.188771+00:00"
+}

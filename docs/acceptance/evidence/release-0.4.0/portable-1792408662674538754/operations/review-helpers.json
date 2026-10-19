@@ -1,0 +1,51 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-helper-review",
+  "status": "PASS",
+  "assignment": "direct independent read-only static helper review",
+  "source_sha": "4dd24f2ca28c6376c95daeb10dc3464b7d5dbcb2",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "helpers": [
+    {
+      "path": ".audit/release-0.4.0/qualify_host.py",
+      "sha256": "866961bc70d3f328d33b95c8959cdb43535b0295b0654a8a5c99a0feb52a86bb",
+      "bytes": 6559,
+      "static_ast": "PASS"
+    },
+    {
+      "path": ".audit/release-0.4.0/verify_downloads.py",
+      "sha256": "ead5cc15acb4c3fe6998c38d0524d83e528059759bf505b497e874e872e88c1e",
+      "bytes": 15386,
+      "static_ast": "PASS"
+    },
+    {
+      "path": ".audit/release-0.4.0/publish_host.py",
+      "sha256": "ced8ba0711cf25e8a41298c7ce4f1816645659b510edd8f95083f88251bbf5c7",
+      "bytes": 6361,
+      "static_ast": "PASS"
+    }
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "PUBLISH_FINAL_REFS",
+      "priority": "P2",
+      "original_path": ".audit/release-0.4.0/publish_host.py:94",
+      "original_helper_sha256": "7cd2894ef48a7cf22fed5694da062d390597465aff9c7273362e1b7de4112082",
+      "issue": "Final remote refs were recorded without equality assertion, so the helper could mark PASS despite a final ref mismatch.",
+      "resolution": "Parent now parses final_refs and requires exact main SOURCE, annotated tag object and peeled SOURCE map. Static inspection confirms fail-closed comparison before PASS.",
+      "resolved_helper_sha256": "ced8ba0711cf25e8a41298c7ce4f1816645659b510edd8f95083f88251bbf5c7"
+    }
+  ],
+  "review_notes": [
+    "Qualification host requires clean committed exact source, Git blob/archive/lock identity, exactly eight archived recipes, finite qualification, frozen clean source afterward and exact asset set. No publication commands.",
+    "Download verifier requires exact fresh three-file set, byte/hash equality, strict two-entry checksums, frozen source/version/ordinary scope metadata, safe nonduplicate inventory, five app versions/start_erl.data and nonempty x86_64 ELF inspection without extraction/execution.",
+    "Publication host gates host/review PASS, exact source/notes/assets, clean branch/main and unchanged prompt before no-force pushes; requires exact annotated/peeled tag, three assets/body/flags/latest/digests, verified fresh downloads and final exact refs.",
+    "Current frozen source commit subject includes [skip ci], main workspace branch is main and origin is gsmlg-opt/gaoxy, verified locally.",
+    "Review does not execute helpers, qualify artifact/runtime or verify remote/download state. Actual artifact and final publication independent reviews remain required."
+  ],
+  "validation": "Static scoped reads, AST parsing, constant/scope/hash comparisons and local Git reads only; no builds/tests/browser/network commands.",
+  "sol_repair_rounds": 0,
+  "parent_helper_review_repairs": 1,
+  "astra_recovery_counter": "inherited 2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; no parent/worker processes touched."
+}

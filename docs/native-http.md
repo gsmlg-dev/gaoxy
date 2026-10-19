@@ -1,8 +1,10 @@
-## v0.4.0 publication preparation — 2026-10-19
+## v0.4.0 release status — 2026-10-19
 
-Embedded HTTP/Phoenix HTTPS prefers H2 with H1 fallback; h2c is explicit prior knowledge. Native H2/H3 WebSocket requires extended_connect and Phoenix exact websocket_paths. Standalone JSON retains explicit H1 defaults and cannot activate WebSocket endpoints.
+Embedded HTTP/Phoenix HTTPS defaults to H2-first ALPN with H1 negotiation/no-ALPN fallback. Plain TCP defaults to H1; cleartext H2 requires explicit `protocols: [:http2], h2c: :prior_knowledge`, without HTTP/1 Upgrade or mixed detection. Native H2/H3 WebSocket requires listener `extended_connect` opt-in, plus exact `websocket_paths` for Phoenix. External Phoenix H3 uses a separate optional service with `server: false`. Standalone JSON defaults HTTP services to H1 and accepts explicit H2/h2c or a separate H3 HTTP service, but cannot activate WebSocket endpoints. Clients select the actual WebSocket transport; an H2 page alone does not establish H2 WebSocket negotiation.
 
-[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+
+Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
 
 # Native HTTP and Phoenix
 

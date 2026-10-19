@@ -1,0 +1,34 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-final-overlay-helper",
+  "status": "PASS",
+  "assignment": "direct independent read-only narrow static helper review",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "source_freeze": "ebd2b12a997750109ffd3fc7db4f3eda223ab79b; no tracked changes by reviewer",
+  "reviewed_helper": {
+    "path": ".audit/release-0.4.0/apply-final-overlays.py",
+    "sha256": "6a584ecd5a48a0f0e1e8380ddb0272d98f1fee4fc1d9a6e9dc47708b78331955",
+    "previous_sha256": "ff821e379fd9dd08d6a8fce8f75470d455b8938b8ecc9de57a4459b8f2358a3d",
+    "inventory_path": ".audit/release-0.4.0/closeout-overlay-inventory.json",
+    "inventory_sha256": "34379ee5ade6c5ba6d2f797c500d0184a169a04b7bfb0f1b91531729ac94ff53"
+  },
+  "initial_finding": {
+    "status": "RESOLVED",
+    "detail": "The original helper parsed one replacements read but reread the path when reporting replacements_sha256, which could label applied content with a different snapshot hash."
+  },
+  "repair": "Read replacement_bytes exactly once, parse that captured snapshot and hash the same bytes in the output report. Reversing exactly those substitutions reconstructs the original reviewed helper hash.",
+  "checks": {
+    "python_ast": "PASS",
+    "current_inventory": "All ten unique current regular files match full-file, overlay, immutable-prefix and immutable-tail hashes.",
+    "exact_scope": "Pinned inventory and exact replacement keyset restrict target writes to ten known spans; all hashes preflight before first write.",
+    "history_preservation": "Result constructed as original prefix + replacement bytes + original tail; each write verifies complete result and preserved prefix/tail.",
+    "unrelated_writes": "No other target file writes in helper; review did not execute it."
+  },
+  "findings": [],
+  "execution_boundary": "Parent will supply reviewed final replacements and execute only after actual artifact/publication PASS. No final replacement content or actual execution outcome reviewed here.",
+  "validation": "Static source/AST review, exact reverse-hash reconstruction and ten current inventory byte/hash checks only. No helper execution, Git, builds, tests, runtime, browser or network; only these ignored review receipts written.",
+  "release_sol_completed_repair_rounds": 3,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; no background command started or parent process touched.",
+  "timestamp_utc": "2026-10-19T11:21:01.719363+00:00"
+}

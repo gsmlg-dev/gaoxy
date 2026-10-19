@@ -1,6 +1,7 @@
 # Gaoxy v0.4.0 release acceptance
 
-Date: 2026-10-19. **PREPARING; three build attempts failed; publication NOT RUN.** The user
+Date: 2026-10-19. **PUBLISHED; portable qualification and independent artifact/runtime/notes
+and publication/download reviews PASS. Three historical attempts retain FAIL.** The user
 explicitly authorizes commit/main integration/push/GitHub release following M5.
 [Release plan](../plans/release-0.4.0.md) and
 [portable design](../designs/release-0.4.0-portable.md) define ordinary-only gates.
@@ -8,27 +9,116 @@ explicitly authorizes commit/main integration/push/GitHub release following M5.
 | Gate | Current status |
 | --- | --- |
 | Implementation acceptance | PASS: accepted M3 ordinary 62/0; M5 136/0, peers15/15 each, browsers12/12 each; independent SPEC/CODE PASS |
-| Remote baseline/version | PASS: latest published v0.3.0, v0.4.0 absent; origin/main449a4c4 ancestor of M5a2822c3 |
+| Preparation baseline | PASS: preparation observed v0.3.0 and absent v0.4.0; origin/main449a4c4 was an ancestor of M5a2822c3 |
 | Six source versions / new recipes | PASS: six declarations at 0.4.0; eight versioned recipe files; old recipes unchanged |
 | Independent source/recipe review | PASS: SPEC then CODE, no actionable findings; static review only |
 | Formatter repair review | PASS: fresh SPEC then CODE; full identity and all-file custody retained |
 | Peer-environment repair review | PASS: fresh SPEC then CODE; matching environment with pins/assertions unchanged |
 | Ordinary H2 group compatibility repair | SPEC/CODE/result review PASS; cached test-only RED reproduced both regressions, then repaired ordinary 200/0 with 90 deselections |
-| Frozen committed source and main integration | PASS through candidate 9253b78; reviewed compatibility repair awaits commit and fresh artifact qualification |
-| Portable builder / package metadata / checksums | FAIL: formatter scope, peer-environment guard, then two ordinary H2 group cases; next repaired build NOT RUN |
-| Packaged WS / existing smokes / offline runtime / ELF | NOT RUN |
-| Independent actual artifact/runtime/notes review | NOT RUN |
-| Push / annotated tag / GitHub release | NOT RUN |
-| Fresh asset downloads / independent completion review | NOT RUN |
+| Frozen committed source and main integration | PASS: frozen source `ebd2b12a997750109ffd3fc7db4f3eda223ab79b` qualified; host source/archive and final clean-source custody recorded |
+| Portable builder / package metadata / checksums | PASS: fresh 200/0, 90 excluded, 0 skipped; 21,812 unchanged source files; 1,439 entries; five packaged applications 0.4.0; both checksums verified. Historical three attempts retain FAIL |
+| Packaged WS / existing smokes / offline runtime / ELF | PASS: H2/h2c/H3 15/15 each in builder and offline runtime; core3/gateway2/H3 3 smokes per environment; network none; 21 ELF/0 missing/0 Nix; normal exit/removal/absence |
+| Independent actual artifact/runtime/notes review | PASS: independent actual artifact/runtime/notes review, no actionable findings |
+| Push / annotated tag / GitHub release | PASS: reviewed main pushed; annotated tag and latest GitHub v0.4.0 with exactly three assets |
+| Fresh asset downloads / independent completion review | PASS: all three fresh downloads match qualified bytes/hashes; independent publication/download review passed |
 | New hosted CI | NOT RUN; push markers retain ordinary-only scope; old BLOCKED_ENV unchanged |
 | Deployment / production / specialist qualification / release-artifact E2E | NOT RUN; excluded |
 
 The source baseline is M5 `a2822c35dd4dd7ea99a84fb528b9db129990e6f1` on the
 retained isolated branch. Root lock remains SHA256
 `c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6`.
-Actual source/archive/artifact hashes, toolchain versions, executed/excluded
-counts, commands/exits, review and remote/download proofs are added after they
-exist. No candidate document assigns invented successful execution.
+Fresh source/archive/artifact identities, toolchain, executed/excluded counts and
+reviewed remote/download proofs are recorded below. Final documentation is
+prepared for its separate review and Git closeout.
+
+## Fresh frozen-source portable qualification — PASS
+
+Frozen source `ebd2b12a997750109ffd3fc7db4f3eda223ab79b` completed the fresh ordinary portable run
+`portable-1792408662674538754` at `2026-10-19T11:32:09.700707+00:00`.
+The host receipt records the committed-source/archive identity and clean source
+at completion. Archive/Git custody verified **21,812 regular files**, and the
+builder's final unchanged-source check verified the same count. Canonical format,
+all **171 current changed Elixir paths**, and strict production compilation passed.
+The remaining **4,993 historical changed Elixir paths** retain byte custody; the
+formatter partition does not exclude them from source identity or custody.
+
+Fresh ordinary verification executed **200 invocations / 0 failures / 90 excluded /
+0 skipped**: M5 **138** (55 HTTP + 83 H3), M3 unit **38** (30 proxy + 8 server),
+and M3 network **24**. These are executed invocations across the recorded commands,
+not a claim of 200 unique tests. All original selectors/assertions remain in force.
+The historical M5 136/0 acceptance and cached RED/GREEN counts below retain their
+capture-time identities; this fresh source run is a separate later result.
+
+The Linux amd64 artifact contains **1,439 safe archive entries** and all five own
+packaged applications at **0.4.0**. Both SHA256SUMS entries verify. The qualification
+supports **Debian bookworm/glibc x86_64** only; other platforms remain unqualified.
+The recorded toolchain is Elixir 1.18.5, OTP 28.5.0.5 / ERTS 16.4.0.5, Rust 1.97.1,
+Python 3.11.2, OpenSSL 3.0.22 and glibc 2.36. Full package/toolchain and command
+records remain in build-info and raw receipts.
+
+| Qualified bytes | SHA256 |
+| --- | --- |
+| Source tar archive | `c98f3a6a8b80af973d55995929ef5baaaf26fb34eb035ad66aadaeece5360e2c` |
+| Root lock | `c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6` |
+| `gaoxy-0.4.0-linux-x86_64.tar.gz` | `b55c53e6751d854b4892434e44b407dd341f98c54d1b042c87623a9c1b595408` |
+| `build-info.json` | `6704c2884e77503691a6e904b49507bd666eb197bad318ab0ecc1917616cf418` |
+| `SHA256SUMS` | `f389141c704b5a6b3643c6af8b8382df6f43336e4387016ee12eaf77237244b2` |
+
+Existing packaged smokes passed in both builder and fresh offline runtime:
+**3 core transports, 2 gateway exchanges and 3 H3 checks** per environment.
+Packaged WebSocket H2, h2c and H3 each passed **15/15** in the builder and **15/15**
+again in the fresh offline runtime, using public embedded release evaluation
+without Mix/Phoenix development beams. All six profiles record normal exit 0,
+runtime down, zero active/retained/cleanup-pending admission and removal of their
+ephemeral private keys. These peer profiles are separate from historical browser
+evidence and do not establish automatic browser H3 selection.
+
+The fresh runtime used **`--network none`**, inspected **21 ELF objects**, and
+reported **0 missing libraries / 0 Nix ELF dependencies**. Its owned container
+exited **0**, was removed normally and was observed absent. Runtime qualification
+reported PASS within its finite deadline; no forced cleanup is counted as success.
+The original evidence remains in local `.audit/release-0.4.0/portable-1792408662674538754/`:
+`evidence/host-qualification.json`, `artifacts/build-info.json`,
+`evidence/runtime-qualification-stages.json`, and
+`evidence/fresh-runtime/{runtime-result,launch}.json`, with raw command streams
+and separate per-profile reports.
+
+## Publication and fresh downloads — PASS
+
+[GitHub v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) was published on
+2026-10-19 as latest, neither draft nor prerelease (release ID `417224069`).
+At publication, remote `main` and the peeled `v0.4.0` tag both matched frozen
+source `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. The annotated tag object is
+`b750a759baf35853b0adb2b1cff5551107c8c2f4`. Final documentation advances `main` separately;
+the released source tag and assets remain fixed.
+
+GitHub's three asset names, sizes and SHA256 digests match the qualified originals.
+A fresh `gh release download` reproduced all three files byte-for-byte; both
+checksum entries, source/archive/lock identities, scope counts, five versions,
+1,439-entry safe inventory and x86_64 ELF headers passed the reviewed verifier.
+Independent artifact/runtime/notes and postpublication/download reviews passed
+with no actionable findings. New hosted runs were an empty list: **NOT RUN**;
+historical BLOCKED_ENV remains separate.
+
+[Lossless evidence manifest](evidence/release-0.4.0/portable-1792408662674538754/manifest.json) records **188 files**
+with original/stored hashes and successful byte round trips. It includes builder,
+offline runtime, publication/download records and operations/review receipts.
+The large original source tar remains local, bound by Git/archive custody and
+its recorded hash; GitHub retains the three release assets.
+
+- [Build metadata](evidence/release-0.4.0/portable-1792408662674538754/metadata/build-info.json)
+- [Artifact/runtime/notes review](evidence/release-0.4.0/portable-1792408662674538754/operations/review-artifact-runtime-notes.json)
+- [Publication/download review](evidence/release-0.4.0/portable-1792408662674538754/operations/review-publication-download.json)
+- [Publication receipt](evidence/release-0.4.0/portable-1792408662674538754/publication/publication.json)
+- [Fresh download verification](evidence/release-0.4.0/portable-1792408662674538754/publication/download-verification.json.gz)
+
+Final current headers, notes and evidence are prepared for independent review.
+Their followup commit uses `[skip ci]`; the parent verifies the pushed remote
+main and unchanged peeled release tag before reporting task completion.
+Deployment, production, specialist qualification and release-artifact E2E remain
+NOT RUN.
+
+## Historical failed attempts and bounded repair — retained verbatim
 
 Initial candidate `4dd24f2ca28c6376c95daeb10dc3464b7d5dbcb2` passed archive/Git
 custody for 21,743 regular files, toolchain/dependency preparation and canonical

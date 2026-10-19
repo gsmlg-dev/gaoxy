@@ -1,0 +1,72 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-group-compat-repair-code",
+  "status": "PASS",
+  "review_kind": "CODE_PREEXECUTION_REPAIR_SNAPSHOT",
+  "assignment": "direct independent read-only CODE review after conditional SPEC and confirmed diagnostic",
+  "baseline_source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "findings": [],
+  "reviewed_input_manifest": {
+    "path": ".audit/release-0.4.0/group-compat-repair3/input/input-manifest.json",
+    "sha256": "e8f0e01897bd15033f45194e299546f1880307bd618e2f711fb87acb20e58313",
+    "baseline_source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+    "source_paths": [
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex",
+      "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+      "apps/gaoxy_http3/test/websocket_test.exs"
+    ],
+    "files_sha256": {
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "4e5ff7cfabb9f04f3283d42cb40d56df0ddb96838e15e60ff904ea2e8320a2b3",
+      "apps/gaoxy_http/test/http2_websocket_network_test.exs": "57f073f32c143453e06eeed235a696799c436eebdff73c4caea4a31f6745d39c",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "512edd9f3e0c7ec37859a25d8fd7dcb5e21dca92c32adf8dfa6b7ca10e4b545a",
+      "apps/gaoxy_http3/test/websocket_test.exs": "97acc6ab0780e64ae3d05e92059368a73a95b428c69c2e1f162cf0b085cd9c05",
+      "ordinary-scope.json": "062108238c522f11abbb05f5f3cb7413d0739d04c4207aeb4d47bd6b20fb10d8",
+      "run.py": "a7358221ab70a8adbfe1b924cb8e99244214aa0408fb44c02c6a2b7645fdc43d"
+    },
+    "baseline_production_sha256": {
+      "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "39afca3bb60626ff63c9c8b93696048de701d8c1466f5a1eca217d06644df1e9",
+      "apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex": "a951daebc38ac3a061ccadf1f344da0d0e58cc977b18243560e32efdb5093e39"
+    }
+  },
+  "reviewed_harness": {
+    "dockerfile_sha256": "ecf7a961f5d56e96b8ec2bc794bfadb1d914451ddf33c90a8829aa25c673f824",
+    "run_sha256": "a7358221ab70a8adbfe1b924cb8e99244214aa0408fb44c02c6a2b7645fdc43d",
+    "cached_builder_prefix": "Exact equality to reviewed diagnostic through execution layer; immutable baseline source identity and original2production hashes asserted before snapshot copies.",
+    "red_order": "Copy2test snapshots only; uniquely derive named selectors, require exit2 and two summaries each1executed/1failure/no skip, assert actual limits/Exchange.limits mismatches include WS fields; recheck old production hashes before overlay.",
+    "green_order": "Apply two production snapshots, check formatting for exactly four files, compile production with warnings as errors, then run the unchanged three ordinary batches serially with original peer mappings/environment. Require exact per-application counts and 200 executed / 90 excluded.",
+    "evidence": "Each command records arguments, environment, timeout, expected/actual exit, raw streams, hashes and elapsed time. Timeouts retain partial streams. Default status is FAIL. No release/package/source acceptance claim.",
+    "syntax": "Python AST PASS; no runner executed by reviewer."
+  },
+  "source_review": {
+    "boundary": "Ordinary H2 Exchange construction drops exactly the two WS-only keys; actual WebSocket requests retain previous state limits. H3 adds WS-only values only for actual WebSocket requests. max_write_chunk and connection settings are unchanged.",
+    "tests": "Exactly one new H2 real-network case covers ordinary endpoint limits for false/true opt-in. One H3 Exchange case uses parsed requests for ordinary false/true and actual WebSocket metadata. Original WS push/echo/normal Close/sibling assertions remain intact; finite setup and cleanup follow existing conventions.",
+    "format_only_delta": "Actual H2test differs from SPEC proposed bytes only by formatter wrapping its TCPconnect assert; remaining3source hashes match proposed.",
+    "preserved": "Strict accounting grammar/caps, the group network test and fixture bytes match the frozen archive. No interface or dependency changes.",
+    "snapshot": "All four working files equal reviewed snapshot bytes and manifest hashes."
+  },
+  "scope_verifier": {
+    "scope_path": "docs/acceptance/evidence/release-0.4.0/portable/recipe/ordinary-scope.json",
+    "scope_sha256": "062108238c522f11abbb05f5f3cb7413d0739d04c4207aeb4d47bd6b20fb10d8",
+    "only_count_changes": "54\u219255 HTTP and82\u219283 H3; structural reverse equals frozen oldscope including allcommandselectors/assertedexclusions.",
+    "verifier_sha256": "49667e3f005f224f2d681ed262da4a0e14c051cb38db454befb74529b43b95c5",
+    "verifier_delta": "Reverse only2counts andscopehash reconstructs exact previouslyreviewed20d7afaae78c1e26615d9f779c4d8bdaae7182f07a61a15e1a1cca262b1ed4a0.",
+    "source_pin": "Verifier SOURCE_SHA intentionally9253 preparatorybaseline; must separately update/review final committed source before releaseverification."
+  },
+  "required_execution_not_claimed": {
+    "red": "NOT RUN; reviewed route precedes green in isolatedcachedstage.",
+    "green": "NOT RUN; expected55+83 M5,38M3units,24M3network,200totalinvocations,90excluded,0failures/skips.",
+    "portable_artifact_runtime_publication": "NOT RUN; fresh committedsource qualification andartifact review stillrequired."
+  },
+  "resolved_review_findings": [
+    "Runner binds the manifest baseline to actual /tools source identity and exact 9253 before mutation.",
+    "Runner provides actual test-only RED execution before production GREEN; static inspection is not counted as RED."
+  ],
+  "validation": "Static actual source/proposal/harness review, Python AST, SHA256 checks, source archive byte comparisons, Docker prefix comparison, scope structural reverse and verifier exact reverse reconstruction only. No Git, builds, tests, runtime, browser or network.",
+  "release_sol_completed_repair_rounds": 2,
+  "proposed_release_sol_repair_round": 3,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands finished; no background commands started or parent processes touched.",
+  "timestamp_utc": "2026-10-19T11:12:56.915832+00:00"
+}

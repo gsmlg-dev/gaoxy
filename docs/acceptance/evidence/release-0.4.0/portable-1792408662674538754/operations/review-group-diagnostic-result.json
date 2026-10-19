@@ -1,0 +1,92 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-group-diagnostic-result",
+  "status": "FAIL",
+  "review_status": "PASS",
+  "conclusion": "PRODUCT_FAILURE_REPRODUCED_ROOT_CAUSE_CONFIRMED",
+  "assignment": "direct independent read-only raw diagnosis review",
+  "source_sha": "9253b787b57b768682bb4d894f25ca82919c0a94",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "findings": [],
+  "evidence": [
+    {
+      "path": ".audit/release-0.4.0/group-diagnostic3/result/result.json",
+      "sha256": "bd5cc7cc2bfda48b998e46057019402e95b2a11a059738f4cb6b47b171942b0f"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-diagnostic3/result/stdout.log",
+      "sha256": "19a6d6f508ed84519e55b1ebf92625557a1e8037176ff0d7179d6f36292270dd"
+    },
+    {
+      "path": ".audit/release-0.4.0/group-diagnostic3/result/stderr.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "command": [
+    "mix",
+    "test",
+    "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:21",
+    "--seed",
+    "0",
+    "--max-cases",
+    "1"
+  ],
+  "exit_code": 2,
+  "counts": {
+    "defined": 28,
+    "excluded": 24,
+    "executed": 4,
+    "failures": 2,
+    "passed": 2,
+    "skipped": 0
+  },
+  "failures": {
+    "cases": [
+      "http2 -> group http2 preserves exact targets ordered fields raw responses trailers and bodyless methods",
+      "http2 -> group h2c preserves exact targets ordered fields raw responses trailers and bodyless methods"
+    ],
+    "first_target": "/a%2Fb?q=%2F",
+    "actual_status": 503,
+    "expected_status": 200
+  },
+  "observations_not_test_counts": {
+    "h1": {
+      "downstream": "HTTP/1.1",
+      "limits_count": 14,
+      "key_types": "14 native integer fields only",
+      "validation": ":ok",
+      "observations": 290
+    },
+    "h2": {
+      "downstream": "HTTP/2",
+      "limits_count": 16,
+      "extra_key_types": {
+        "extended_connect": "boolean",
+        "websocket_limits": "map"
+      },
+      "other_key_types": "14 native integer fields",
+      "validation": "{:error, :invalid_group_accounting}",
+      "observations": 2
+    },
+    "unmatched_calls": 0
+  },
+  "source_and_cleanup": {
+    "source_identity_matches_frozen": true,
+    "helper_original_sha256": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "helper_hash_matches_original_ExUnit_start_bytes": true,
+    "helper_restored_reported": true,
+    "stderr_empty": true,
+    "command_timeout_seconds": 300,
+    "elapsed_seconds": 109.79954497900326
+  },
+  "root_cause": "M5 unconditionally attached WS-only boolean/map fields to ordinary H2 Exchange.limits; the managed-group closed native numeric-limit validator rejects that16-field pump at startup and the HTTP startup fallback produces503. Accepted14-field H1 control shapes and both original H2 failures are observed in the same bounded diagnostic.",
+  "scope_decision": "The runtime prerequisite for the separately reviewed H2/H3 ordinary Exchange boundary repair is satisfied. This does not accept any unreviewed/applied repair or establish a passing product gate.",
+  "qualifications": "This is an instrumented diagnostic with tracing overhead, not uninstrumented resource/performance, completed portable artifact, runtime, hosted CI or publication evidence. The third portable qualification and these two product cases remain FAIL until fresh repaired verification.",
+  "validation": "Raw result/stdout/stderr review, exact command/source/count/hash consistency and bounded observation checks only. Reviewer executed no Git/build/test/runtime/browser/network commands and changed only ignored receipts.",
+  "release_sol_completed_repair_rounds": 2,
+  "proposed_release_sol_repair_round": 3,
+  "reviewer_sol_repair_rounds": 0,
+  "astra_recovery": "inherited2/2 exhausted; unchanged",
+  "command_shutdown": "All reviewer commands completed; parent diagnostic/build processes not touched.",
+  "next": "Stand by for actualsource+scope/verifier CODE review after parent freezes readiness.",
+  "timestamp_utc": "2026-10-19T11:09:15.665616+00:00"
+}

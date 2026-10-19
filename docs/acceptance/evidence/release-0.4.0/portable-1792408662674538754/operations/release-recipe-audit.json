@@ -1,0 +1,292 @@
+{
+  "task_id": "release-0.4.0-recipe-audit",
+  "status": "DONE_READ_ONLY_INVESTIGATION",
+  "created_at_utc": "2026-10-19T09:51:25.637794+00:00",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "a2822c35dd4dd7ea99a84fb528b9db129990e6f1",
+  "assignment": "direct",
+  "source_or_doc_edits": false,
+  "tests_builds_browsers_network_executed": false,
+  "historical_recipe_directory": "docs/acceptance/evidence/release-0.3.0/portable/recipe",
+  "successful_context_directory": "docs/acceptance/evidence/release-0.3.0/portable-final-1791863003049561405/context",
+  "recipe_comparison": {
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/Dockerfile": {
+      "sha256": "3a02a15315d552e0da8a830a387ef799d6d9a57efb08aa5b76d82d269b8297f6",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/build.py": {
+      "sha256": "54b64617dfc46aa9b7ae37c6986eaeb9202f2da02cfc2d76fe5d720ec715a5ea",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/finalize.py": {
+      "sha256": "7b9bfda805751cba9c9029a413f6c9cb985f328dfe1338c7d652ba71c483f554",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/hostname-probe.exs": {
+      "sha256": "a2878fac35c7083d504f9d01b165cb0544048d7f527bd03290e751bfb548247f",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/qualify_runtime.py": {
+      "sha256": "7af54dfecf1610a663b5cb8c1408feb47146a0642da85962e2d470225ce30fab",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/run_runtime.py": {
+      "sha256": "58f1cc54a48570fd560d00e2091957dd6d50c10a309a085630fee6f3f56ac629",
+      "same_as_final_success_context": true
+    },
+    "docs/acceptance/evidence/release-0.3.0/portable/recipe/runtime.py": {
+      "sha256": "b5b239631d2a4a20b4934dd362b4e92c19616d2a055dd7fbe744124ed770d9c6",
+      "same_as_final_success_context": true
+    }
+  },
+  "historical_coordinator": "docs/acceptance/evidence/release-0.3.0/portable-coordinator-1791857811563943929.py",
+  "do_not_execute_unmodified": [
+    "Historical coordinator pins M4 worktree, 78de9d0 baseline, /tmp/gaoxy-030-portable-directory pointer, release-030 audit prefix, old recipe directory and version0.3.0.",
+    "build.py qualify runs all five app test directories and requires all five nonzero with no exclusions/skips. This would execute excluded specialist cases.",
+    ".github/workflows/portable.yml runs broad protocol/lifecycle suites and native H2 --duration600 sustained load; do not dispatch as ordinary release verification."
+  ],
+  "cohort": {
+    "root_lock_sha256": "c93b608b77c457e4324430544c1acc2b384ee21e1a2b8ab528bad248ac666cb6",
+    "packages_0_21_10": [
+      "http_fetch",
+      "http_core",
+      "http_runtime",
+      "elixir_quic",
+      "elixir_quic_http3",
+      "ex_ssl"
+    ],
+    "dependency_upgrade_needed": false,
+    "own_version_paths": [
+      "mix.exs",
+      "apps/gaoxy/mix.exs",
+      "apps/gaoxy_http/mix.exs",
+      "apps/gaoxy_http3/mix.exs",
+      "apps/gaoxy_proxy/mix.exs",
+      "apps/gaoxy_server/mix.exs"
+    ],
+    "desired_version": "0.4.0"
+  },
+  "image_observations": {
+    "historical_runtime_tag": "gaoxy-release-030-portable-runtime:local",
+    "historical_runtime_id": "sha256:2a4756c1c8ba7961248be2dcf38bdbfb2cb25e605c60f6a0f2770f6609489f78",
+    "runtime_tag_still_present": true,
+    "builder_manifest": "hexpm/elixir@sha256:abbfaf9699b7a3650810c92268023806217486c26b4da3dc0492a778b22a09bb",
+    "builder_local_image_id": "sha256:1b4af9b743237ebe684f327c1b6e588b9269af24be9b768969ce8e76ad83528a",
+    "rust_manifest": "rust@sha256:0e2bcaef56d041a486784e54104a81aebe0da44bd03019bd70bc0401e42e4a97",
+    "rust_local_image_id": "sha256:897e260d0a1a5a5146433bdb73f62bd84f5f47e846d3485e5f70f63912b5917d",
+    "runtime_base_manifest": "debian@sha256:a4672c0cb26fbdde88e38fa2dfb6c681942306680e41e4378b28770b6e79ee91",
+    "runtime_base_image_inspect": "NOT PRESENT in Docker image store; BuildKit layer availability unverified",
+    "buildx": "default Docker driver running BuildKit v0.32.2, linux/amd64 available",
+    "cache_query": "BLOCKED_ENV: docker system df --format json timed out at10 seconds; subprocess.run killed/reaped its own query. No cache purge/retry/network/bootstrap performed.",
+    "rule": "Reuse cached layers where available, but build new source-identity-bound0.4runtime image and qualify newly exported archive; never reuse old binary evidence."
+  },
+  "ordinary_test_batches": [
+    {
+      "name": "m5-ordinary",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_http/test/websocket_extended_handshake_test.exs",
+        "apps/gaoxy_http/test/websocket_stream_test.exs",
+        "apps/gaoxy_http/test/websocket_frame_test.exs",
+        "apps/gaoxy_http/test/websocket_handshake_test.exs",
+        "apps/gaoxy_http/test/http_protocol_defaults_test.exs",
+        "apps/gaoxy_http/test/phoenix_adapter_test.exs",
+        "apps/gaoxy_http/test/phoenix_websocket_test.exs",
+        "apps/gaoxy_http/test/http3_upgrade_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_test.exs",
+        "apps/gaoxy_http/test/http2_websocket_network_test.exs",
+        "apps/gaoxy_http/test/http2_protocol_test.exs",
+        "apps/gaoxy_http3/test/websocket_test.exs",
+        "apps/gaoxy_http3/test/websocket_network_test.exs",
+        "apps/gaoxy_http3/test/headers_test.exs",
+        "apps/gaoxy_http3/test/protocol_test.exs",
+        "apps/gaoxy_http3/test/operations_test.exs",
+        "apps/gaoxy_http3/test/options_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "expected_summaries": [
+        {
+          "application": "gaoxy_http",
+          "executed": 54,
+          "failures": 0
+        },
+        {
+          "application": "gaoxy_http3",
+          "executed": 82,
+          "failures": 0
+        }
+      ],
+      "source_receipt": ".audit/m5/g5-scoped-postreview.json"
+    },
+    {
+      "name": "m3-ordinary-unit",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/http_headers_test.exs",
+        "apps/gaoxy_proxy/test/upstream_transports_options_test.exs",
+        "apps/gaoxy_server/test/route_config_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "expected_executed": 38,
+      "expected_failures": 0,
+      "expected_deselected": 0,
+      "source_receipt": "docs/acceptance/evidence/m3/local-merge-2026-10-19/postmerge.json"
+    },
+    {
+      "name": "m3-ordinary-network",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:156",
+        "apps/gaoxy_proxy/test/upstream_transport_proxy_test.exs:268",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:47",
+        "apps/gaoxy_proxy/test/upstream_group_transport_proxy_test.exs:107",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:167",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:206",
+        "apps/gaoxy_proxy/test/managed_h2_fixed_endpoint_test.exs:330",
+        "apps/gaoxy_proxy/test/managed_h2_group_endpoint_test.exs:21",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "expected_executed": 24,
+      "expected_failures": 0,
+      "expected_deselected": 90,
+      "source_receipt": "docs/acceptance/evidence/m3/local-merge-2026-10-19/postmerge.json"
+    }
+  ],
+  "test_environment": {
+    "MIX_ENV": "test",
+    "ERL_FLAGS": "+S 2:2",
+    "HTTP_FETCH_PEER_PYTHON": "/work/.audit/h2peer/bin/python",
+    "GAOXY_QUIC_PYTHON": "/work/.audit/h2peer/bin/python",
+    "PYTHONDONTWRITEBYTECODE": "1"
+  },
+  "builder_preparation": [
+    "Keep existing h2peer requirements install from apps/gaoxy_http/test/support/h2-requirements.txt plus integration/http3/requirements.txt.",
+    "Before ordinary M3 network batch create /tmp/gaoxy-m3-h2-soak-venv symlink to /work/.audit/h2peer inside disposable builder. managed_h2_fixed_fixture.exs:24 hardcodes that executable; group fixture reuses it. Do not modify fixture/source.",
+    "Create separate /work/.audit/m5peer from integration/websocket_multiplexed/requirements.txt. h2peer pins hpack4.2.0 whereas M5 peers pin4.1.0; do not combine conflicting files. M5 runner records playwright metadata, so exact existing requirements includes Python playwright package but needs no browser installation or browser execution."
+  ],
+  "recipe_adaptation": [
+    "Copy seven historical recipe files into docs/acceptance/evidence/release-0.4.0/portable/recipe; preserve historical bytes.",
+    "Read VERSION from new source-identity.json in build.py/finalize.py/runtime.py for archive name, five .app versions, build-info version, start_erl.data. Change030 to040 for owned-name regex/prefix and runtime image tag in qualify_runtime.py/run_runtime.py.",
+    "Replace full-directory compatibility invocation and all-five/no-exclusions parser with three explicit ordinary batches above. Require each named batch nonempty, actual expected counts and0failures; record deliberate90deselections of network batch and no hidden skips. Keep counts per batch, no unique-test aggregate or all-five tested claim. Core is covered by packaged smoke, not ordinary ExUnit selection.",
+    "Retain canonical/scoped format, strict compile, unchanged archived source verification, safe inventory, exact identities/checksums, all-ELF linkage, offline network-none, bounded normal cleanup and exact owned-name absence assertions.",
+    "Prepare source.tar by git archive from final committed version0.4source, SHA256 it and current mix.lock, and derive changed Elixir paths from accepted pre-M5 main4c6f089 through finalcandidate (includes version paths). No historical sourceSHA/old lock/test count reuse.",
+    "Install/copy both peer environments; runtime Docker COPY existing integration/websocket_multiplexed/{run.py,h2_peer.py,h3_peer.py,fixture.exs,requirements.txt} to same /work-relative paths. Avoid copying browser fixture, Phoenix, test beams, .git, developer environments or credentials.",
+    "After existing core3/gateway2/H3three smoke commands, invoke packaged native WebSocket profiles above against exported release executable in builder and fresh offline runtime. Record15 each separately."
+  ],
+  "packaged_websocket_runner_changes": [
+    "Add paired --release PATH and --source-identity PATH options; reject single-option use, require real executable and checked identity fields. Preserve source Mix/unbuffer behavior and source receipt path.",
+    "In release mode launch argv [absolute_bin, eval, expression] with expression checking Application.ensure_all_started(:gaoxy_http3) then Code.require_file(absolute fixture.exs). Avoid shell evaluation, Mix, unbuffer and Phoenix/test dependencies. Ensure expression literal quoting uses Elixir-safe string encoding.",
+    "Release source receipt must not invoke Git or require source tree. Record source/archive/lock identity, release executable path/hash and actual release version (bin/gaoxy version), verifying version against identity; runtime wrapper already verifies exported archive and five app versions.",
+    "Reuse unchanged fixture, real peers, REQUIRED_CASES15, finite deadlines, native metadata, lifetime, Close, resource and runtime-DOWN assertions. Sourcemode peer versions and all assertions remain intact.",
+    "Packaged native fixture uses trusted embedded Endpoint API; this does not enable WebSocket in standalone JSON or certify packaged Phoenix browser behavior."
+  ],
+  "packaged_websocket_commands": [
+    {
+      "protocol": "h2",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h2",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h2"
+      ],
+      "expected_executed": 15,
+      "required": "unchanged case identities, native CONNECT/version/stream receipts, normal Close, zero resources, runtime DOWN"
+    },
+    {
+      "protocol": "h2c",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h2c",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h2c"
+      ],
+      "expected_executed": 15,
+      "required": "unchanged case identities, native CONNECT/version/stream receipts, normal Close, zero resources, runtime DOWN"
+    },
+    {
+      "protocol": "h3",
+      "command": [
+        "/work/.audit/m5peer/bin/python",
+        "integration/websocket_multiplexed/run.py",
+        "--protocol",
+        "h3",
+        "--release",
+        "/work/_build/prod/rel/gaoxy/bin/gaoxy",
+        "--source-identity",
+        "/tools/source-identity.json",
+        "--evidence",
+        "/evidence/websocket-h3"
+      ],
+      "expected_executed": 15,
+      "required": "unchanged case identities, native CONNECT/version/stream receipts, normal Close, zero resources, runtime DOWN"
+    }
+  ],
+  "proposed_build_commands": [
+    [
+      "git",
+      "archive",
+      "--format=tar",
+      "--output",
+      ".audit/release-0.4.0/portable-candidate/context/source.tar",
+      "FINAL_COMMITTED_0_4_SOURCE_SHA"
+    ],
+    [
+      "docker",
+      "buildx",
+      "build",
+      "--platform",
+      "linux/amd64",
+      "--progress",
+      "plain",
+      "--target",
+      "artifact",
+      "--output",
+      "type=local,dest=.audit/release-0.4.0/portable-candidate/artifacts",
+      ".audit/release-0.4.0/portable-candidate/context"
+    ],
+    [
+      "python3",
+      ".audit/release-0.4.0/portable-candidate/context/finalize.py",
+      ".audit/release-0.4.0/portable-candidate/artifacts"
+    ],
+    [
+      "python3",
+      ".audit/release-0.4.0/portable-candidate/context/qualify_runtime.py",
+      ".audit/release-0.4.0/portable-candidate"
+    ]
+  ],
+  "scope_risks": [
+    "Do not run full app dirs, old all-zero-exclusions recipe, portable workflow, soak/load or specialist fault/disconnect/slowpeer/pressure suites. Bounded malformed pure units inside accepted136 remain ordinary protocol checks.",
+    "Current hpack pin split requires two environments unless separately reviewed runner metadata/requirements change is explicitly selected.",
+    "Existing smokes use normal SIGTERM/Close/port-rebind shutdown, not excluded fault/disconnect injection.",
+    "Current0.21.10 cohort changes native NIF bytes; fresh Linux/glibc/ELF and offline packaged runtime qualification is necessary.",
+    "No current packaged0.4qualification has been executed by this audit."
+  ],
+  "sol_repair_rounds": 0,
+  "astra_recovery_rounds": "2/2 exhausted",
+  "command_shutdown": "All own inspection commands completed; timed-out cache subprocess killed/reaped by subprocess.run."
+}

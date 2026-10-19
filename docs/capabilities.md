@@ -1,8 +1,10 @@
-## v0.4.0 publication preparation — 2026-10-19
+## v0.4.0 release status — 2026-10-19
 
-The candidate includes accepted embedded managed H1/H2 upstream resources and native H2/h2c/H3 WebSocket support. Embedded HTTPS prefers H2; explicit prior-knowledge h2c and WebSocket opt-in remain separate.
+Accepted embedded capabilities include managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource accounting, and native downstream H2/h2c/H3 WebSocket. Embedded HTTPS is H2-first with H1 negotiation/no-ALPN fallback; plain TCP defaults to H1, prior-knowledge h2c and listener `extended_connect` opt-in are explicit. Standalone JSON defaults HTTP services to H1, allows explicit H2/h2c and separate H3 HTTP services and fixed H1/H3 origins, but exposes no managed handles/groups/probes or WebSocket activation. Upstream H2/H3 WebSocket proxying remains outside M5. Browser H3 acceptance uses controlled QUIC-first selection; automatic selection with TCP available remains unqualified.
 
-[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+
+Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
 
 # Configured support and acceptance evidence
 

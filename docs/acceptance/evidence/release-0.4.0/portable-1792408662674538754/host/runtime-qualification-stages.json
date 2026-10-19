@@ -1,0 +1,73 @@
+{
+  "bound_seconds": 600,
+  "cleanup_reserve_seconds": 40,
+  "owned_name": "gaoxy-release-040-portable-a86e5f542f074c5c91dd716bbaa39872",
+  "started_utc": "2026-10-19T11:30:20.449299+00:00",
+  "status": "PASS",
+  "stages": [
+    {
+      "name": "runtime-image",
+      "command": [
+        "docker",
+        "buildx",
+        "build",
+        "--platform",
+        "linux/amd64",
+        "--progress",
+        "plain",
+        "--target",
+        "runtime",
+        "--load",
+        "-t",
+        "gaoxy-release-040-portable-runtime:local",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/portable-1792408662674538754/context"
+      ],
+      "timeout_seconds": 557.9842061179806,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 65.57983280098415
+    },
+    {
+      "name": "runtime-image-inspect",
+      "command": [
+        "docker",
+        "image",
+        "inspect",
+        "gaoxy-release-040-portable-runtime:local"
+      ],
+      "timeout_seconds": 8,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 0.032914987998083234
+    },
+    {
+      "name": "fresh-runtime",
+      "command": [
+        "/run/current-system/sw/bin/python3",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/portable-1792408662674538754/context/run_runtime.py",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3/.audit/release-0.4.0/portable-1792408662674538754",
+        "gaoxy-release-040-portable-a86e5f542f074c5c91dd716bbaa39872",
+        "193509.706522758"
+      ],
+      "timeout_seconds": 299.99991405699984,
+      "reap_reserve_seconds": 2,
+      "exit_code": 0,
+      "elapsed_seconds": 43.18133893900085
+    },
+    {
+      "name": "owned-container-absence",
+      "command": [
+        "docker",
+        "inspect",
+        "gaoxy-release-040-portable-a86e5f542f074c5c91dd716bbaa39872"
+      ],
+      "timeout_seconds": 3,
+      "reap_reserve_seconds": 2,
+      "exit_code": 1,
+      "elapsed_seconds": 0.0650144750252366
+    }
+  ],
+  "elapsed_seconds": 108.95119135899586,
+  "owned_container_absent": true,
+  "completed_utc": "2026-10-19T11:32:09.400335+00:00"
+}

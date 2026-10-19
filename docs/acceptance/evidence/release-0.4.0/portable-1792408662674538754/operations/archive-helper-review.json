@@ -1,0 +1,55 @@
+{
+  "task_id": "m5_docs_closeout/archive-helper-review",
+  "assignment": "read-only independent review",
+  "status": "FINDINGS",
+  "review_scope": ".audit/release-0.4.0/archive_evidence.py",
+  "helper_sha256": "dae8d15600266c58932aa867acd37214526fe5e60cfb5f023372c224783093d6",
+  "helper_bytes": 2661,
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline_head_observed": "4fbd15fe58cfbb67450a060fddf9e1e87bd813e1",
+  "preexisting_tracked_change_preserved": "docs/acceptance/evidence/release-0.4.0/portable/recipe/build.py",
+  "completed_at_utc": "2026-10-19T10:43:38.157802+00:00",
+  "checks": {
+    "syntax_ast_parse_and_compile_without_execution": "PASS",
+    "individual_copy_roundtrip_and_original_stored_hash_recording": "PASS by static inspection, lines 19-29",
+    "all_raw_receipts_survive_combined_archive": "FAIL: ARCHIVE-2",
+    "source_archive_stdout_intentionally_omitted": "PASS by static inspection, lines 38-39",
+    "publication_download_asset_binaries_intentionally_omitted": "PASS by static inspection, lines 40-41",
+    "all_actual_private_pem_headers_refused": "FAIL: ARCHIVE-1",
+    "source_artifacts_publication_write_boundaries": "PASS by static inspection: inputs are read, all writes target the newly created DEST tree",
+    "publication_or_process_launch_capabilities": "PASS by static inspection: no subprocess, network, Git or publication calls"
+  },
+  "findings": [
+    {
+      "id": "ARCHIVE-1",
+      "severity": "high",
+      "line": 20,
+      "title": "Private-key guard misses encrypted PKCS#8 and DSA PEM headers",
+      "evidence": "The optional header prefix is limited to RSA, EC, or OPENSSH. Valid -----BEGIN ENCRYPTED PRIVATE KEY----- and -----BEGIN DSA PRIVATE KEY----- lines do not match, so archive() copies and manifests those private keys.",
+      "required_action": "Reject every actual supported private-key PEM header, including encrypted PKCS#8 and DSA, before writing the file; preserve anchored matching to avoid treating quoted source text as a key."
+    },
+    {
+      "id": "ARCHIVE-2",
+      "severity": "medium",
+      "line": 23,
+      "title": "Compression suffix can overwrite a previously archived receipt",
+      "evidence": "A source foo.log larger than 65536 bytes maps to foo.log.gz; a sibling foo.log.gz of at most 65536 bytes maps to the same destination. write_bytes() overwrites the first archive, and both manifest rows remain marked round_trip PASS even though only the later bytes survive.",
+      "required_action": "Make stored paths injective or reject an already-used/existing destination before writing; retain all original/stored hash records."
+    }
+  ],
+  "verification_limits": "Helper not executed/imported. No sample-input tests, builds, runtime, network or Git mutations. PASS observations are static code evidence only.",
+  "sol_repair_rounds_this_review": 0,
+  "inherited_release_harness_repair_counter": 2,
+  "astra_recovery_counter_received": "2/2 exhausted; no Astra used",
+  "commands_finished": true,
+  "background_processes_started": false,
+  "reviewed_helper_source_utf8": "\"\"\"Archive bounded release receipts losslessly; assets/source archives stay external.\"\"\"\nimport datetime\nimport gzip\nimport hashlib\nimport json\nfrom pathlib import Path\nimport re\nimport sys\n\nROOT = Path(__file__).resolve().parents[2]\nAUDIT = Path(__file__).resolve().parent\nRUN, PUBLICATION = [Path(value).resolve() for value in sys.argv[1:]]\nDEST = ROOT / \"docs/acceptance/evidence/release-0.4.0\" / RUN.name\nDEST.mkdir(exist_ok=False)\nmanifest = []\n\n\ndef archive(source, relative):\n    data = source.read_bytes()\n    assert not re.search(rb\"(?m)^-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----\\r?$\", data), str(source)\n    compress = len(data) > 65536\n    encoded = gzip.compress(data, mtime=0) if compress else data\n    target = DEST / (str(relative) + (\".gz\" if compress else \"\"))\n    target.parent.mkdir(parents=True, exist_ok=True)\n    target.write_bytes(encoded)\n    assert (gzip.decompress(target.read_bytes()) if compress else target.read_bytes()) == data\n    manifest.append({\"original\": str(source), \"archived\": str(target.relative_to(DEST)),\n                     \"bytes\": len(data), \"sha256\": hashlib.sha256(data).hexdigest(),\n                     \"stored_sha256\": hashlib.sha256(encoded).hexdigest(), \"round_trip\": \"PASS\"})\n\n\nfor source_dir, label in ((RUN / \"evidence\", \"host\"), (RUN / \"artifacts/evidence\", \"builder\"),\n                          (PUBLICATION, \"publication\")):\n    for source in sorted(source_dir.rglob(\"*\")):\n        relative = source.relative_to(source_dir)\n        if not source.is_file() or source.is_symlink():\n            continue\n        if label == \"host\" and relative.as_posix() == \"source-archive.stdout\":\n            continue\n        if label == \"publication\" and relative.parts[0] == \"downloads\":\n            continue\n        archive(source, Path(label) / relative)\nfor source in (RUN / \"context/source-identity.json\", RUN / \"artifacts/build-info.json\", RUN / \"artifacts/SHA256SUMS\"):\n    archive(source, Path(\"metadata\") / source.name)\nfor source in sorted(AUDIT.glob(\"*\")):\n    if source.is_file() and source.suffix in {\".py\", \".json\", \".md\"}:\n        archive(source, Path(\"operations\") / source.name)\n(DEST / \"manifest.json\").write_text(json.dumps({\"status\": \"PASS_LOSSLESS_ARCHIVE\", \"files\": manifest,\n    \"timestamp_utc\": datetime.datetime.now(datetime.timezone.utc).isoformat(),\n    \"omissions\": \"Large raw source archive is retained locally and bound by host Git/archive hashes; release assets remain on GitHub and in local qualified/download directories. No private keys are copied.\"}, indent=2) + \"\\n\")\nprint(str(DEST))\nprint(f\"PASS {len(manifest)} files archived with byte-for-byte round-trip verification\")\n",
+  "attribution_correction": {
+    "corrected_at_utc": "2026-10-19T10:45:06.035781+00:00",
+    "incorrectly_recorded_postrepair_sha256": "c5eb3e68b32038c40ba682ec1129fcc6b736f4f3a8a3e56ea7336028ff2f196e",
+    "method": "Exact in-memory reverse of the two parent repair edits; reconstructed bytes match the initial captured source. Original syntax reparsed and compiled without execution.",
+    "reason": "Source changed between initial line inspection and receipt hashing. Findings apply to original bytes, not the repaired helper.",
+    "historical_findings_preserved": true,
+    "superseding_review": "archive-helper-review-repair1.json"
+  }
+}
