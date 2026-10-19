@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+The candidate includes native RFC 9220 WebSocket support as an explicit embedded listener feature. JSON can select H3 HTTP services/origins but cannot activate WebSocket endpoints. Browser H3 acceptance remains a controlled QUIC-first profile.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # Native HTTP/3
 
 Select the optional `gaoxy_http3` application explicitly. It serves the existing

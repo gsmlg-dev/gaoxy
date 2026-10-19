@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+Accepted embedded gateway capabilities include managed H1 reuse and managed H2/h2c fixed/group upstreams, probes and bounded Generation/resource accounting. The standalone JSON schema supports fixed H1/H3 origins; it does not expose those managed resources or WebSocket endpoints.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # Gateway policies, relays and generations
 
 These APIs belong to `gaoxy_http`, `gaoxy_proxy` and `gaoxy_server`; ordinary

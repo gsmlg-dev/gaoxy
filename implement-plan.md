@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+The user now authorizes integration, push and GitHub v0.4.0 publication of the accepted M3/M5 implementation. Release qualification uses ordinary scoped tests and fresh portable packaged bytes.
+
+[Release acceptance](docs/acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 ## Current milestone: M5 WebSocket over H2/H3 — 2026-10-19
 
 **Status: COMPLETE LOCALLY within ordinary verification scope.** Native

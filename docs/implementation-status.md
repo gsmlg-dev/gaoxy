@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+M3/M5 implementation acceptance is complete within ordinary scope. Main integration, source-bound portable qualification, push and publication are now explicitly authorized; their execution is recorded separately.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 ## Current stage: M5 WebSocket over HTTP/2 and HTTP/3 — 2026-10-19
 
 **M5: COMPLETE LOCALLY within its ordinary verification scope.** Native

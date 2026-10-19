@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+Embedded managed H1 reuse and H2/h2c fixed/group upstreams, probes and Generation/resource ownership are implemented with public HTTPFetch 0.21.10 APIs. H2/h2c selects explicit managed transport handles. Standalone JSON origins remain http1/default or http3 and expose no managed handles/groups/probes.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # Native HTTP reverse proxy
 
 `Gaoxy.Proxy.HTTP` streams native HTTP/1 or HTTP/2 requests to one configured HTTP or verified

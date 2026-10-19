@@ -1,5 +1,13 @@
 # Gaoxy
 
+## v0.4.0 publication preparation — 2026-10-19
+
+Embedded managed H1 reuse and H2/h2c fixed/group upstreams, probes and Generation/resource accounting are implemented. Native H2/h2c/H3 WebSocket and Phoenix Channels/LiveView passed M5; embedded HTTPS prefers H2 with H1 fallback.
+
+[Release acceptance](docs/acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
+## Historical overview
+
 An Elixir/OTP transport runtime, usable inside an application's supervision tree
 or as a standalone release. Gaoxy composes Thousand Island for TCP/OTP TLS and
 Abyss for UDP and optional generic QUIC. M0/M1 implements transport hosting,

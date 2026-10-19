@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+The later user request explicitly authorizes committing, main integration, push and GitHub v0.4.0 publication. Accepted M3 implementation/ordinary verification and the specialist-test handoff remain unchanged.
+
+[Release acceptance](release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # M3 completion and local integration — 2026-10-19
 
 **Product status: ACCEPTED COMPLETE in the current user-approved scope.**

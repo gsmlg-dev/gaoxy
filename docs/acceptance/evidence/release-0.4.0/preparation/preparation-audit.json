@@ -1,0 +1,84 @@
+{
+  "task_id": "m5_g1_review/release-0.4.0-preparation",
+  "status": "DONE_READ_ONLY_PREPARATION_AUDIT",
+  "assignment": "direct read-only release preparation; artifact review remains separate",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/m5-websocket-over-h2-h3",
+  "baseline": "a2822c35dd4dd7ea99a84fb528b9db129990e6f1",
+  "source_changes": [],
+  "new_ordinary_product_defects": [],
+  "version_fields": [
+    "mix.exs:7",
+    "apps/gaoxy/mix.exs:7",
+    "apps/gaoxy_http/mix.exs:7",
+    "apps/gaoxy_http3/mix.exs:7",
+    "apps/gaoxy_proxy/mix.exs:7",
+    "apps/gaoxy_server/mix.exs:7"
+  ],
+  "observed_versions": "six source fields all 0.3.0 at audit cutoff",
+  "release_delta": [
+    "Accepted M3 managed reusable H1 and managed H2/h2c fixed/group/probe paths, checked Generation/reload/resource and worker startup accounting; HTTPFetch cohort 0.21.10.",
+    "M5 embedded HTTPS H2-first/H1 fallback; plain TCP H1; explicit prior-knowledge h2c; omitted H2 byte limit default 256 MiB.",
+    "Native downstream RFC8441/9220 WebSock with independent per-listener extended_connect false default; Phoenix exact-path wrapper preserving native CONNECT metadata and policy.",
+    "Vendored Gaoxy-only WebSockAdapter metadata validation/provenance; H3 consumer cohort alignment."
+  ],
+  "activation_boundaries": {
+    "core_consumer": "No Plug/WebSock/Phoenix or upstream HTTP client closure.",
+    "embedded_http": "H1/H2/explicit h2c; explicit managed handles activate upstream H1 reuse and are required for H2/h2c; managed groups/probes and Generation exposed through embedded APIs.",
+    "embedded_http3": "Optional separate H3 service; fixed HTTPS/H3 Session origin remains dedicated per request; native server WebSock explicit opt-in.",
+    "standalone_json": "HTTP listener defaults [http1], h2c disabled; native H2/h2c/H3 require explicit selection. Targets static or fixed reverse_proxy with upstream_protocol http1/default or http3 only. No managed handle/group/probe or WebSocket endpoint activation."
+  },
+  "current_docs_for_publication_overlay": [
+    "README.md",
+    "docs/capabilities.md",
+    "docs/implementation-status.md",
+    "docs/native-http.md",
+    "docs/http3.md",
+    "docs/http-proxy.md",
+    "docs/gateway.md",
+    "implement-plan.md",
+    "docs/acceptance/m3-completion.md",
+    "docs/acceptance/m5-websocket-over-h2-h3.md"
+  ],
+  "historical_docs_policy": "Preserve dated/local-only and v0.3.0 historical tails, actual failures and source identities; new publication header supersedes current status only after actual publication.",
+  "limitations": [
+    "No h2c Upgrade or mixed cleartext autodetection; TLS/H2 host/budget validation remains.",
+    "No outbound H2/H3 WebSocket proxy transports, compression, generic CONNECT tunnels, WebTransport or DATAGRAM in M5.",
+    "Browser chooses protocol. H3 successful sockets proved controlled QUIC-first; automatic selection with TCP available unqualified. Rejected-Origin check in multiplexed browser profiles used H1 TLS403, no H2/H3-specific negative claim.",
+    "Specialist abnormal/disconnect/slow-peer/pressure/sustained-load qualification excluded from this release task; retain all old outcomes.",
+    "No deployment/production/certificates/Vault/public management or disabled release-artifact E2E authorization implied.",
+    "Portable platform qualification must be repeated for actual 0.4.0 bytes; v0.3.0 artifact evidence cannot certify new bytes."
+  ],
+  "publication_ci_choice": {
+    "recommendation": "Bounded [skip ci] release and final-doc commits are consistent with explicit no-specialist-execution scope. Do not change workflows/settings or dispatch broad suites.",
+    "evidence": ".github/workflows/portable.yml push trigger, broad native tests and integration/h2_gateway/run.py --duration 600",
+    "new_head_status": "NOT RUN until exact parent GitHub audit; never infer PASS from skip",
+    "historical_status": "Keep historical BLOCKED_ENV receipts and source identities distinct; reviewer ran no network commands."
+  },
+  "recommended_release_checks": [
+    "Parent reviews bounded ordinary-only portable recipe before execution; no broad inherited test command containing excluded specialist cases.",
+    "Fresh format/strict compile/ordinary selectors and clean core/HTTP/H3 consumers; retain real executed counts and source hashes.",
+    "Commit/review release candidate; bind source SHA/archive/lock/vendor provenance and all six version fields.",
+    "Build fresh portable archive and inspect five packaged application versions, safe inventory/checksums and all ELF linkage.",
+    "Offline actual-package core/H1/H2/H3 ordinary exchanges and bounded normal shutdown/rebind, with exact source and local platform recorded.",
+    "If claiming packaged M5 runtime verification, execute actual packaged embedded native WS ordinary peer/profile; source-only M5 receipts are separate from new binary qualification.",
+    "Independent artifact/runtime/notes review before tag/release; exact remote tag/main and fresh asset-download byte equality after publication."
+  ],
+  "inherited_counters": {
+    "counter54_categories": {
+      "root": 734,
+      "orchestration": 617,
+      "native_tooling": 139,
+      "native_sol": 7,
+      "failed_green": 7,
+      "production_repair": 1,
+      "valid_red": 1
+    },
+    "categories_must_not_be_summed": true,
+    "astra_recovery": "2/2 exhausted; no third recovery or reset",
+    "this_audit_sol_repair_rounds": 0,
+    "m5_repairs": "Separate expected RED/tooling/production-review history retained in M5 ledger."
+  },
+  "validation": "Static scoped repository reads and selective v0.3.0 Git object reads only; no builds/tests/network commands run.",
+  "commands_shutdown": "All reviewer commands complete. Parent processes untouched.",
+  "remaining": "Parent version/docs/recipe/source commit, actual portable artifact gates, independent artifact review, publication and exact fresh download audit."
+}

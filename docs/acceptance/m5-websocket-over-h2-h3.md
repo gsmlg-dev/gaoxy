@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+The later user request explicitly authorizes committing, main integration, push and GitHub v0.4.0 publication after this completed M5 acceptance. Source acceptance remains distinct from fresh portable packaged-byte qualification.
+
+[Release acceptance](release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # M5 WebSocket over HTTP/2 and HTTP/3 acceptance
 
 Started 2026-10-19 at `4c6f08959e64303ab6ce6cf3280a1035a82c916f`, on local branch

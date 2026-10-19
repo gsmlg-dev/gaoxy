@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+The candidate includes accepted embedded managed H1/H2 upstream resources and native H2/h2c/H3 WebSocket support. Embedded HTTPS prefers H2; explicit prior-knowledge h2c and WebSocket opt-in remain separate.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # Configured support and acceptance evidence
 
 ## Current M5 source capability — 2026-10-19

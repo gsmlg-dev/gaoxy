@@ -1,3 +1,9 @@
+## v0.4.0 publication preparation — 2026-10-19
+
+Embedded HTTP/Phoenix HTTPS prefers H2 with H1 fallback; h2c is explicit prior knowledge. Native H2/H3 WebSocket requires extended_connect and Phoenix exact websocket_paths. Standalone JSON retains explicit H1 defaults and cannot activate WebSocket endpoints.
+
+[Release acceptance](acceptance/release-0.4.0.md) records artifact and publication gates, currently pending. Earlier local-only and capability snapshots below retain their capture-time status. No deployment or specialist testing is part of this release.
+
 # Native HTTP and Phoenix
 
 `gaoxy_http` owns the HTTP/1 parser, native HTTP/2 engine, Plug adapter and
