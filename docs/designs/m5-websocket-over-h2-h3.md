@@ -58,6 +58,38 @@ H1 keeps its existing connection-driven callback lifecycle. Refactor only the
 handshake/output seams needed for reuse; do not relocate H1 ownership as part of
 M5. `gaoxy_http3 -> gaoxy_http -> gaoxy` remains the dependency direction.
 
+## Server protocol defaults and h2c
+
+The user's default-policy clarification is part of M5. Current HTTP and Phoenix
+facades still default to H1; the following defaults are planned, not implemented:
+
+| Listener | Planned default or explicit selection |
+| --- | --- |
+| HTTPS, including Phoenix HTTPS | Default `protocols: [:http2, :http1]`, advertising ordered ALPN `h2`, `http/1.1`. Prefer H2; retain H1 negotiation and no-ALPN fallback. |
+| Plain HTTP | Keep H1 by default. Explicit `protocols: [:http2], h2c: :prior_knowledge` selects the existing cleartext H2 mode. |
+| Explicit H1-only | Preserve `protocols: [:http1]`, including HTTPS. |
+| HTTP/3 | Remains a separate optional service; no automatic protocol switch. |
+
+h2c support covers prior knowledge, including the new H2 WebSocket stream path.
+H1-to-h2c Upgrade and automatic mixed H1/h2c detection remain unsupported. These
+server defaults do not change upstream transport selection. H2 selection and
+`extended_connect` enablement are separate: the latter retains its explicit
+per-listener opt-in.
+
+Choose transport-dependent defaults in `Gaoxy.HTTP`, before normalizing options;
+the lower-level normalizer has no transport context. Phoenix must delegate an
+omitted protocol choice rather than override HTTPS with H1. Retain existing TLS
+version/security and H2 host validation, and standalone JSON's explicit H1
+protocol selection.
+
+H2 defaults must also start with a sufficient service budget. The current H2
+defaults require at least 173,302,823 bytes, exceeding the core default 1 MiB.
+For an HTTP-facade service selecting H2, default `limits.max_bytes` to 256 MiB
+(268,435,456 bytes) only when that field is omitted. Keep core/H1 defaults,
+caller-supplied values and reservation formulas intact. Explicitly insufficient
+budgets, or larger custom reservations exceeding the chosen budget, still fail
+validation. This is an accounting limit, not an eager memory allocation.
+
 ## Wire contract
 
 References: [RFC 8441 §§3–5](https://www.rfc-editor.org/rfc/rfc8441.html),
@@ -283,7 +315,11 @@ only after its coherent settings, stream and lifetime implementation exists.
 The implementation plan supplies concrete files, scoped commands and review
 boundaries. Required results:
 
-1. Pure scoped checks establish SETTINGS, pseudoheaders, 200 response fields,
+1. Ordinary TLS peers establish H2 preference under omitted HTTPS protocols,
+   H1 negotiation/no-ALPN fallback and explicit H1 override. Verify Phoenix
+   defaults, explicit h2c selection and sufficient omitted-budget behavior;
+   pure checks retain explicit low-budget and unsupported-host rejection.
+   Pure scoped checks also establish SETTINGS, pseudoheaders, 200 response fields,
    subprotocol selection, frame fragmentation/masking and ordinary close state
    transitions. Existing ordinary CONNECT rejection and disabled mode remain
    explicit; malformed cases are bounded unit inputs, not a fault campaign.

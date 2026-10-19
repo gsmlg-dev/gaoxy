@@ -65,13 +65,31 @@ Do not fix unrelated failures. Keep cumulative Sol/Astra repair counters in the
 execution record; architecture work is not an Astra recovery round and does not
 reset the exhausted historical recovery allowance.
 
+## Protocol defaults included in M5
+
+Current runtime defaults are H1. M5 changes the embedded HTTP/Phoenix HTTPS
+default to `protocols: [:http2, :http1]`, ordered ALPN `h2`, `http/1.1`, with H1
+negotiation/no-ALPN fallback and explicit H1-only configuration retained. Plain
+HTTP stays H1 by default; explicit `protocols: [:http2], h2c: :prior_knowledge`
+selects the existing h2c mode. No H1 Upgrade or mixed-cleartext detection is added.
+H3 remains an optional separate service. Upstream protocol selections and
+standalone JSON's explicit H1 selection are unchanged. Protocol preference does
+not enable `extended_connect`, which retains its separate listener opt-in.
+
+Make the default decision in the transport-aware HTTP facade, with Phoenix
+delegating omitted protocols. For HTTP services selecting H2, use 256 MiB
+`limits.max_bytes` only when omitted; current default H2 reservations need
+173,302,823 bytes. Preserve explicit budgets, core/H1 defaults, all reservation
+and host/security checks, and rejection when the selected budget is insufficient.
+Task 2 owns this bounded compatibility change and its ordinary verification.
+
 ## Tasks and dependency order
 
 | Task | Deliverable | Depends on | Parallel work |
 | --- | --- | --- | --- |
 | 0 | Dependency/fixture and peer compatibility audit | Accepted design | Peer scaffolding can accompany the audit |
 | 1 | Shared handshake and WebSocket stream contract | 0 | Pure peer vectors can be prepared separately |
-| 2 | Native H2 WebSocket | 1 | Independent H2 peer writer owns only integration files |
+| 2 | HTTPS H2 defaults, explicit h2c and native H2 WebSocket | 1 | Independent H2 peer writer owns only integration files |
 | 3 | Native H3 WebSocket | 1; review the shared contract after 2 | Pure H3 fields/settings may be prepared during 2 |
 | 4 | Phoenix/WebSock integration and browser proof | 2 for H2, 3 for H3 | H2 browser work can precede H3 completion |
 | 5 | Final compatibility, review and capability documentation | 2–4 | Independent specification and code reviewers |
@@ -201,7 +219,7 @@ python scripts/check-tests.py apps/gaoxy_http/test/websocket_extended_handshake_
 **G1 exit:** shared behavior passes scoped tests and independent review. Actual
 H2/H3 acceptance is still NOT RUN. Do not advertise setting 8 in this task.
 
-## Task 2 — HTTP/2 extended CONNECT and normal peer acceptance
+## Task 2 — H2 defaults, extended CONNECT and normal peer acceptance
 
 **Owner:** Sol H2 writer; separate peer writer owns only the new H2 fixture files.
 
@@ -213,10 +231,31 @@ H2/H3 acceptance is still NOT RUN. Do not advertise setting 8 in this task.
 - Modify `apps/gaoxy_http/lib/gaoxy/plug_adapter.ex` and
   `apps/gaoxy_http/lib/gaoxy/http/http2/{headers,settings,connection,stream,transport,writer}.ex`.
 - Create `apps/gaoxy_http/test/{http2_websocket,http2_websocket_network}_test.exs`.
+- Create `apps/gaoxy_http/test/http_protocol_defaults_test.exs` for configuration
+  and ordinary real-network default negotiation; modify only the existing ALPN
+  contract in `http_contract_test.exs` and budget contract in
+  `http2_network_test.exs` as described below.
 - Update `apps/gaoxy_http/test/{http2_protocol,http3_upgrade}_test.exs` only for
   explicitly changed contracts, retaining refusal for disabled/invalid upgrades.
 - Create `integration/websocket_multiplexed/{fixture.exs,h2_peer.py,run.py}`.
 
+- [ ] Choose omitted HTTPS protocols as `[:http2, :http1]` in `Gaoxy.HTTP` using
+  transport context; keep plain HTTP's H1 default. Have Phoenix forward explicit
+  protocol choices and delegate omission to the facade. Retain strict ALPN
+  consistency, explicit H1/H2 selections and prior-knowledge h2c validation.
+- [ ] Default omitted `limits.max_bytes` to 268,435,456 only for services selecting
+  H2 through the HTTP facade. Preserve all supplied limit fields, explicit low
+  budgets and validation of custom reservations. Do not change core defaults,
+  reservation formulas, TLS version/security or H2 host requirements.
+- [ ] Record new default behavior in focused tests: bare HTTPS/Phoenix HTTPS
+  configuration starts, ordered ALPN prefers H2, H1-only and no-ALPN clients
+  receive H1, explicit H1 override works, and explicit h2c serves ordinary H2.
+  Verify omitted H2 budgets and preservation of explicit budgets with pure
+  configuration cases. No pressure or fault-injected network cases are added.
+- [ ] Preserve existing rejection assertions by making their preconditions
+  explicit: add `protocols: [:http1]` to the H1-only ALPN contract and an explicit
+  1 MiB limit to the insufficient-H2-budget contract. Execute those named cases
+  individually; do not run the mixed `http2_network_test.exs` file wholesale.
 - [ ] Add strict boolean `extended_connect: false` to service normalization and
   Phoenix HTTP/HTTPS option forwarding. H1 behavior remains available; setting
   8 is emitted as 1 only on an H2 connection explicitly enabled for this feature.
@@ -256,14 +295,23 @@ H2/H3 acceptance is still NOT RUN. Do not advertise setting 8 in this task.
   negotiated protocol, each case result and exit to its evidence directory.
 
 ```sh
+python scripts/check-tests.py apps/gaoxy_http/test/http_protocol_defaults_test.exs apps/gaoxy_http/test/phoenix_adapter_test.exs
+python scripts/check-tests.py apps/gaoxy_http/test/http_contract_test.exs:215 apps/gaoxy_http/test/http2_network_test.exs:330
 python scripts/check-tests.py apps/gaoxy_http/test/http2_websocket_test.exs apps/gaoxy_http/test/http2_websocket_network_test.exs apps/gaoxy_http/test/http2_protocol_test.exs apps/gaoxy_http/test/http3_upgrade_test.exs
 python integration/websocket_multiplexed/run.py --protocol h2 --evidence .audit/m5/h2
 python integration/websocket_multiplexed/run.py --protocol h2c --evidence .audit/m5/h2c
 ```
 
-**G2 exit:** H2/h2c independent peer rows and scoped tests pass, actual enabled
-and disabled behavior is documented, and independent specification/code review
-passes. Commit only the completed owned slice locally.
+Reconfirm line selectors against the named tests before execution if edits move
+their lines. The existing cases are "HTTP-only TLS rejects advertisement of an
+unimplemented protocol" and "prior knowledge is explicit and rejects the
+insufficient core byte budget"; update their descriptions to match the explicit
+preconditions while retaining the rejection assertions.
+
+**G2 exit:** default HTTPS H2 negotiation, H1 compatibility, budget contracts,
+H2/h2c independent peer rows and scoped tests pass. Actual enabled and disabled
+behavior is documented, and independent specification/code review passes.
+Commit only the completed owned slice locally.
 
 ## Task 3 — HTTP/3 extended CONNECT and normal peer acceptance
 
@@ -362,8 +410,10 @@ review. H3 WebSocket browser/Phoenix acceptance remains a separate gate.
   test both H2 and H3 public upgrade calls. Update source hashes, exact patch,
   provenance narrative and removal instructions together. Do not describe the
   new fork as byte-identical to the old dispatch-only snapshot.
-- [ ] Enable H2/H3 explicitly in the fixture. H3 remains a separately mounted
-  service with Endpoint `server: false`; no duplicate Endpoint listener.
+- [ ] Exercise default HTTPS H2 preference and explicitly enable extended
+  CONNECT in the fixture. Select h2c explicitly where used. H3 remains a
+  separately mounted service with Endpoint `server: false`; no duplicate
+  Endpoint listener.
 - [ ] Prove actual Phoenix Channels join/ping, a server PubSub push, LiveView
   mount/click/update and upload over each requested WS transport. Preserve an
   ordinary HTTP/1.1 browser WebSocket compatibility row.
@@ -430,6 +480,8 @@ implementation. Resolve actionable findings before the final fresh execution.
 - [ ] Publish a local acceptance matrix with PASS/FAIL/BLOCKED/NOT RUN separated.
   Update capability descriptions only for executed, reviewed paths; identify
   specialist qualification as deferred and upstream H2/H3 WS proxy as absent.
+  Update the HTTP/Phoenix default and h2c documentation only after G2 passes;
+  distinguish H2-first HTTPS from explicit prior-knowledge h2c and WS opt-in.
 - [ ] Make small local conventional commits of task-owned files. Keep unrelated
   files and historical evidence. No push, release/tag/image, deployment,
   operational certificates, Vault, public management or disabled release-artifact
@@ -453,7 +505,7 @@ fragmentation with ping/pong. Record actual selected/excluded counts distinctly.
 | --- | --- | --- |
 | G0 | Source/cohort/public API and fixture compatibility | NOT RUN |
 | G1 | Shared handshake/runtime unit contracts and H1 compatibility | NOT RUN |
-| G2 | Native H2 and h2c independent normal WebSocket exchanges | NOT RUN |
+| G2 | HTTPS H2 defaults, H1 compatibility, budgets and native H2/h2c WebSocket exchanges | NOT RUN |
 | G3 | Native H3 independent normal WebSocket exchanges | NOT RUN |
 | G4 | Phoenix Channels/LiveView and actual H2/H3 WS browser transport | NOT RUN |
 | G5 | Fresh scoped compatibility, consumer isolation, SPEC/CODE acceptance | NOT RUN |

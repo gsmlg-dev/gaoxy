@@ -8,6 +8,11 @@ the actual capability until implementation and verification pass. See the
 [implementation plan](plans/m5-websocket-over-h2-h3.md) for ordered work packages,
 file ownership and ordinary protocol/browser acceptance.
 
+M5 includes H2-first HTTPS defaults for embedded HTTP/Phoenix with H1 fallback,
+sufficient omitted H2 budgets and explicit prior-knowledge h2c. Plain HTTP stays
+H1 by default; Upgrade and mixed-cleartext detection remain unsupported. These
+are planned changes: current HTTP/Phoenix runtime defaults still select H1.
+
 H1 WebSocket behavior remains the compatibility baseline. Outbound H2/H3
 WebSocket proxy transports and compression are outside this stage. Specialist
 abnormal/disconnect, slow-peer, pressure and load qualification stays in a
