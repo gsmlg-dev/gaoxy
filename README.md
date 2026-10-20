@@ -153,13 +153,13 @@ MIT license; the adapter fork retains upstream licensing and provenance.
 Its version follows the Gaoxy release, with upstream WebSockAdapter 0.6.0 as
 the current source base. Core packages use Hell 0.1.2 and Abyss 0.7.0.
 
-Publication status and clean-consumer results for 0.5.1 are recorded in
-[the release acceptance](docs/acceptance/release-0.5.1.md).
+Publication status and clean-consumer results for 0.5.2 are recorded in
+[the release acceptance](docs/acceptance/release-0.5.2.md).
 After publication, a Phoenix application's dependencies include:
 
 ```elixir
-{:gaoxy_http, "~> 0.5.1"},
-{:websock_adapter, "~> 0.5.1", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.5.2"},
+{:websock_adapter, "~> 0.5.2", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 Set the Phoenix endpoint's `adapter` to `Gaoxy.PhoenixAdapter`. The explicit
