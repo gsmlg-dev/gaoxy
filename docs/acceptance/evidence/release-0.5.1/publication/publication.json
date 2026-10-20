@@ -1,0 +1,104 @@
+{
+  "source_commit": "94ebb46758ab26641eea65ae0175b47d52fcefa2",
+  "commands": [
+    {
+      "name": "verify-main",
+      "command": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/heads/main"
+      ],
+      "started_utc": "2026-10-20T05:54:44.614381+00:00",
+      "exit": 0,
+      "log": "verify-main.log",
+      "log_sha256": "b5440bb0da1c13efda0c4629f4cac80de9cb8cedf6490be0cba52e10d5ab3f30"
+    },
+    {
+      "name": "create-tag",
+      "command": [
+        "git",
+        "tag",
+        "-a",
+        "v0.5.1",
+        "94ebb46758ab26641eea65ae0175b47d52fcefa2",
+        "-m",
+        "Gaoxy v0.5.1: Hex package preparation"
+      ],
+      "started_utc": "2026-10-20T05:54:45.998289+00:00",
+      "exit": 0,
+      "log": "create-tag.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "push-tag",
+      "command": [
+        "git",
+        "push",
+        "origin",
+        "refs/tags/v0.5.1"
+      ],
+      "started_utc": "2026-10-20T05:54:46.004699+00:00",
+      "exit": 0,
+      "log": "push-tag.log",
+      "log_sha256": "25ef4cc8da8820c8acc68a6690bac74e52c83febae7e93d7ce698113490d6ac8"
+    },
+    {
+      "name": "verify-tag",
+      "command": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/tags/v0.5.1",
+        "refs/tags/v0.5.1^{}"
+      ],
+      "started_utc": "2026-10-20T05:54:48.040063+00:00",
+      "exit": 0,
+      "log": "verify-tag.log",
+      "log_sha256": "698a041b62f0843349dbe8d2c5af3f03a3f71475c0db2f8ea32a1bbbe7584810"
+    },
+    {
+      "name": "create-release",
+      "command": [
+        "gh",
+        "release",
+        "create",
+        "v0.5.1",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/SHA256SUMS",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/build-info.json",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/gaoxy-0.5.1.tar",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/gaoxy_http-0.5.1.tar",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/gaoxy_http3-0.5.1.tar",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/gaoxy_proxy-0.5.1.tar",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/artifacts/gaoxy_websock_adapter-0.5.1.tar",
+        "--verify-tag",
+        "--title",
+        "Gaoxy v0.5.1",
+        "--notes-file",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-final-1792475186943961119/operations/github-release-notes.md",
+        "--latest"
+      ],
+      "started_utc": "2026-10-20T05:54:49.239545+00:00",
+      "exit": 0,
+      "log": "create-release.log",
+      "log_sha256": "596cb1ad6a336cf69bba9b60192f56eeda75cad2843801093ffc2b3438cc51fe"
+    },
+    {
+      "name": "release-metadata",
+      "command": [
+        "gh",
+        "release",
+        "view",
+        "v0.5.1",
+        "--json",
+        "id,tagName,name,targetCommitish,isDraft,isPrerelease,url,publishedAt,assets,body"
+      ],
+      "started_utc": "2026-10-20T05:54:59.371594+00:00",
+      "exit": 0,
+      "log": "release-metadata.log",
+      "log_sha256": "ef20cf9a7a688b88d4d72f97dbf1a34de532c88fd517c93c2e3068f0f459fa6c"
+    }
+  ],
+  "status": "PASS",
+  "release_url": "https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.1"
+}

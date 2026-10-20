@@ -1,7 +1,9 @@
 # Gaoxy v0.5.1 Hex packaging acceptance
 
 Date: 2026-10-20, Asia/Shanghai. Release preparation is on `main`, as requested.
-GitHub release and Hex publication are pending the actual workflow outcome.
+**GitHub source-package release PUBLISHED; Hex BLOCKED_ENV / unpublished.**
+The actual workflow could not start. Local package and consumer verification,
+independent review and fresh GitHub download checks passed.
 The [plan](../plans/release-0.5.1-hex.md) defines this packaging-only scope.
 
 | Gate | Actual result |
@@ -14,9 +16,9 @@ The [plan](../plans/release-0.5.1-hex.md) defines this packaging-only scope.
 | Workflow lint | PASS: actionlint 1.7.12 |
 | Package-only publish dry run | PASS after fetching production dependencies; regression also proves the original unfetched-dependency failure, no compilation and no upload requests |
 | Independent review | PASS: specification, staging, publish regression, workflow, consumer evidence and final artifact equivalence; no remaining actionable findings |
-| Hosted release execution | NOT RUN for the final source; preceding CI runs at `f9e155cb` were BLOCKED_ENV with zero executed steps |
-| Hex publication | NOT PUBLISHED: all five public 0.5.1 release endpoints returned 404 during preparation |
-| GitHub publication/download verification | PENDING |
+| Hosted release execution | BLOCKED_ENV: run `39377152673` at `94ebb467` completed with zero steps; GitHub annotated failed account payments or spending restriction |
+| Hex publication | BLOCKED_ENV / NOT PUBLISHED: no upload executed; all five public 0.5.1 release endpoints returned 404 again after GitHub publication |
+| GitHub publication/download verification | PASS: annotated tag, latest stable public release, exactly seven assets; every fresh download byte-identical, all six checksum entries verified; independent publication review PASS |
 | New standalone binary, specialist suites and deployment | NOT RUN here; outside the local package fallback |
 
 The five distributions are `gaoxy_websock_adapter`, `gaoxy`, `gaoxy_http`,
@@ -26,6 +28,11 @@ patch and provenance, with OTP application name `websock_adapter`.
 Hell 0.1.2 and Abyss 0.7.0 published runtime sources match their accepted Git
 pins. Runtime libraries, the vendored adapter and the root lock remain unchanged
 from v0.5.0. No new protocol capabilities are claimed.
+
+Qualified source: `94ebb46758ab26641eea65ae0175b47d52fcefa2`, committed
+and pushed directly on `main`; the remote SHA was independently read back.
+The final package inputs also match that commit's Git blobs. Documentation
+closeout can advance main separately while retaining this qualified source.
 
 Consumer run `run-1792474727892739476` uses a disposable signed local Hex
 registry, isolated cache/dependency/build directories and the original existing
@@ -55,7 +62,27 @@ release is not cancelled by another dispatch. `HEX_API_KEY` remains the
 configured organization Actions secret; no secret extraction or account-setting
 changes are part of this work.
 
-If the new hosted run also cannot start, the GitHub fallback contains only five
+[GitHub v0.5.1](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.1) is public,
+stable, non-draft and latest. Annotated tag object
+`018edefe74f9d392f91bad26ef193820fdc73743` peels to the qualified source above.
+The release contains five source tarballs, `build-info.json` and `SHA256SUMS`.
+All seven fresh downloads match the reviewed originals exactly; the checksum
+file covers the five packages and build metadata. Public Hex queries still
+return 404 for every package at 0.5.1. The configured secret was not used because
+the hosted job never started.
+
+The [publication manifest](evidence/release-0.5.1/publication/manifest.json)
+binds hosted annotations, publication commands/logs, exact release notes,
+public build metadata/checksums and independent reviews. The
+[fresh-download result](evidence/release-0.5.1/publication/download-verification.json)
+records all seven asset sizes and SHA256 digests. Independent
+[publication review](evidence/release-0.5.1/publication/review-publication-downloads.json)
+also rechecked live main/tag/release metadata and all five absent Hex versions.
+
+The [hosted run](https://github.com/gsmlg-opt/gaoxy/actions/runs/39377152673)
+was dispatched once after verifying remote main and failed before any step ran.
+This is an environment block, not an executed compilation or test failure.
+The GitHub fallback contains only five
 locally qualified source tarballs, `SHA256SUMS` and `build-info.json`, with notes
 explicitly identifying Hex as unpublished/BLOCKED_ENV and the absence of a new
 standalone archive. Existing v0.5.0 Debian/bookworm binary qualification remains

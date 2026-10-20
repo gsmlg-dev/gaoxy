@@ -67,15 +67,19 @@ and checksums are retained with the GitHub release to bind uploaded content.
   exact runtime assertions and finite bounds.
 - [x] Complete independent code/evidence review, resolve findings, rerun
   affected checks, and commit only task-owned files with a conventional subject.
-- [ ] Integrate locally, push and verify remote main. Dispatch the release
+- [x] Integrate locally, push and verify remote main. Dispatch the release
   workflow for 0.5.1 on the verified release branch; inspect its actual outcome.
   A hosted no-start remains BLOCKED_ENV and does not authorize account changes.
-- [ ] Verify published Hex versions/dependencies and downloaded package tarballs
-  against the preflight bytes/checksums, plus clean registry consumers and
-  GitHub tag/release source and downloaded asset bytes/checksums. Publication
-  rebuilds tarballs, so freeze staging content and preserve/report any mismatch.
-  Publish only after prerequisite checks pass; preserve
-  partial or blocked outcomes without claiming release completion.
+- [x] Verify public Hex status, local signed-registry consumers, final payload
+  equivalence, GitHub tag/release source and all seven fresh asset downloads.
+  Every download matches the qualified original; all six checksum entries pass.
+  Record the source-package GitHub release independently from Hex publication.
+- [ ] Publish and verify all five packages on public Hex: **BLOCKED_ENV**.
+  Hosted run `39377152673` at `94ebb467` was rejected before any step ran due
+  to account billing restrictions. All five public 0.5.1 endpoints remain 404.
+  No actual package upload was attempted. The full workflow requires an unused
+  version, so a future full workflow dispatch must use a new release version
+  after the existing v0.5.1 GitHub tag.
 
 If hosted execution is unavailable, continue qualifying locally reproducible
 package artifacts. After independent local package/consumer qualification,
