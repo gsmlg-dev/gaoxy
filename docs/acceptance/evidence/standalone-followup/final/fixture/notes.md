@@ -1,0 +1,13 @@
+# Native proxy seams macOS fixture compatibility
+
+Baseline: ba89895887ac8509a091c1444b1699f6b7cd5631. Parent exact macOS Elixir1.20.1/OTP29.0.2 job118793892338 failed the unchanged finish/trailers case: recv(client,0,100) returned the complete header and 2-byte chunk but no final trailer write. Other20 cases passed. Raw hosted evidence remains under ../hosted/mac-unit-failure/.
+
+Root cause: the fixture treated a TCP available-byte read as a complete response. HTTP1.Response sends headers, the body chunk, and final trailers in separate Exchange.send_bytes calls. Socket send completion does not require a subsequent recv(length:0) to return every write together. No product defect was established.
+
+Controlled socket-proof.exs writes the exact hosted prefix and withholds the trailer block until recv0 returns. The old suffix predicate is false deterministically; the trailer remains available after release. A second loopback pair sends the same two pieces around a reader-ready handshake, and recv(expected_length,100) reconstructs the exact response; recv0/5 then times out. socket-proof118.json/log retain commands, script/log hashes and actual result. The proof adds no ExUnit cases.
+
+Only native_proxy_seams_test.exs changes (+6/-2). The case now defines the complete expected wire and requires an exact-length100ms read and exact wire equality. The ordered duplicate trailer sequence, repeated finish returning the sent state, admission accounting assertions and final recv0/5 timeout are preserved. This strengthens suffix-only comparison to complete response equality without extending either timeout.
+
+Final verification: existing selected file executes21 tests/0failures on local Elixir1.18.5 and1.20.1, both OTP28.5.0.5. Both strict compile commands exit0 and canonical1.18 selected-file format exits0. Immutable attempt2/verification.json records all five commands, versions, exact source hashes, exits and raw log digests. An initial canonical formatter failure requesting a blank line remains in verification.json/118-format.log; the one-line formatting repair is confined to this file, and fresh final checks pass.
+
+Historical B Sol repair rounds remain2, Astra0. This separate fixture compatibility slice has1 Sol repair/validation round after its initial implementation (canonical blank-line correction); aggregate recorded Sol rounds across distinct slices3, Astra0. No counter is reset and no model escalation is requested. Exact macOS rerun and independent re-review remain parent-owned acceptance gates. No commit made. All worker commands finished; integration Mix build ownership is released to the parent.

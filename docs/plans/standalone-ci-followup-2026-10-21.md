@@ -20,17 +20,17 @@ isolated under `.trees/` on `codex/` branches; unrelated user files are preserve
 - [x] C: provision a clean Python environment with the existing pinned QUIC peer
   requirements at the consumer's actual path. Verify actual independent peer
   launch and all optional consumer tests with certificate checks and deadlines.
-- [ ] Integrate A/B/C, add the recovery regression to the ordinary repair and
+- [x] Integrate A/B/C, add the recovery regression to the ordinary repair and
   prepublication gate, and update exact counts from executed tests. Run
   `python3 scripts/check-repairs.py all`, relevant standalone activation/rollback/
   lifecycle tests, strict compile and unit gates on Linux 1.18.5/OTP 28.5 and
   macOS 1.20.1/OTP 29.0.2, plus the repaired optional QUIC job.
-- [ ] Obtain independent specification and code review, resolve findings, select
+- [x] Obtain independent specification and code review, resolve findings, select
   the next unused patch, commit versions, and qualify the final source freshly.
-- [ ] Integrate and push using the established workflow, await required checks,
+- [x] Integrate and push using the established workflow, await required checks,
   then dispatch publication with the full `expected_sha`. Verify tag, actual
   release job, GitHub artifacts, all public packages and clean public consumers.
-- [ ] Append a concise acceptance record with source identities, versions,
+- [x] Append a concise acceptance record with source identities, versions,
   commands, executed counts, exits, log paths and explicit PASS/FAIL/BLOCKED/
   NOT RUN states; retain pre-fix failures as failures.
 

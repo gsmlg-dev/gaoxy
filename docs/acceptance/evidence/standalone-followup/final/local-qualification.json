@@ -1,0 +1,651 @@
+{
+  "source_sha": "d5e0a6c50fdaa5a3cfbff548069005029c41960e",
+  "version": "0.5.4",
+  "status": "PASS",
+  "time_utc": "2026-10-20T18:15:48.855662+00:00",
+  "source_archive_sha256": "0090a2ec744c11f7caa7e48960f927b5ba46cd68f653632ca2101c30a4e4e9c1",
+  "lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+  "phases": [
+    {
+      "phase": "checks",
+      "receipt_path": ".audit/standalone-followup/final-candidate2/checks/receipt.json",
+      "receipt_sha256": "c82691bc12837d3997913e4ff7e881f51c8f24b8856bbe5bb6cc80495b4bb964",
+      "receipt": {
+        "source_sha": "d5e0a6c50fdaa5a3cfbff548069005029c41960e",
+        "version": "0.5.4",
+        "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "runtime",
+            "argv": [
+              "elixir",
+              "--version"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.566,
+            "log": ".audit/standalone-followup/final-candidate2/checks/runtime.log",
+            "log_sha256": "4a35527b8fa6611dc956569bb3de08ec1820e9d13658cad775dacd1ce7151c02",
+            "summaries": []
+          },
+          {
+            "name": "tools",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "-c",
+              "import subprocess; commands=[['uname','-a'],['rustc','--version'],['cargo','--version'],['openssl','version'],['uv','--version'],['.audit/h2peer/bin/python','--version'],['.audit/browserpeer/bin/python','--version']]; [subprocess.run(command,check=True) for command in commands]"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.166,
+            "log": ".audit/standalone-followup/final-candidate2/checks/tools.log",
+            "log_sha256": "1e51e7acceebe73aea11bd47e81d4ea48ea746e1154bedb72cd1b0b12d42ef79",
+            "summaries": []
+          },
+          {
+            "name": "format",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "format",
+              "--check-formatted"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 2.372,
+            "log": ".audit/standalone-followup/final-candidate2/checks/format.log",
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "summaries": []
+          },
+          {
+            "name": "compile",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "compile",
+              "--force",
+              "--warnings-as-errors"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 13.655,
+            "log": ".audit/standalone-followup/final-candidate2/checks/compile.log",
+            "log_sha256": "c44e52680598a896497a082e7f1920b81c2bf6f996a3f87028840ba9b19b7ce2",
+            "summaries": []
+          },
+          {
+            "name": "test-check-tests",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/test-check-tests.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 1.168,
+            "log": ".audit/standalone-followup/final-candidate2/checks/test-check-tests.log",
+            "log_sha256": "b088bcdd714b4e7129760b550347f4ec93aea35e64945b6ae58467f3981bcaf4",
+            "summaries": [
+              "Ran 8 tests in 1.019s"
+            ]
+          },
+          {
+            "name": "test-check-repairs",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/test-check-repairs.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.166,
+            "log": ".audit/standalone-followup/final-candidate2/checks/test-check-repairs.log",
+            "log_sha256": "62cfbeb2911bb226088bfb0918eb4b05008ea70b20bce854ee2ca8a564bd37a5",
+            "summaries": [
+              "Ran 6 tests in 0.002s"
+            ]
+          },
+          {
+            "name": "test-release-smoke",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/test-release-smoke.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.266,
+            "log": ".audit/standalone-followup/final-candidate2/checks/test-release-smoke.log",
+            "log_sha256": "f96363f8d8dff4c4abed7197c63606ead0bd955ea4259bdcb5fb6f47dbe53992",
+            "summaries": [
+              "Ran 5 tests in 0.014s"
+            ]
+          },
+          {
+            "name": "test-stage-hex-packages",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/test-stage-hex-packages.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 25.479,
+            "log": ".audit/standalone-followup/final-candidate2/checks/test-stage-hex-packages.log",
+            "log_sha256": "b5fc39b44d6dbf710c7a5a9b1fa9979f8d9cffb2ae2e9d973ea5ba1a9a4c88af",
+            "summaries": [
+              "Ran 8 tests in 25.265s"
+            ]
+          },
+          {
+            "name": "actionlint",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-tools/actionlint",
+              ".github/workflows/ci.yml",
+              ".github/workflows/test.yml",
+              ".github/workflows/portable.yml",
+              ".github/workflows/release.yml"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.017,
+            "log": ".audit/standalone-followup/final-candidate2/checks/actionlint.log",
+            "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "summaries": []
+          },
+          {
+            "name": "repairs",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/check-repairs.py",
+              "all"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 57.024,
+            "log": ".audit/standalone-followup/final-candidate2/checks/repairs.log",
+            "log_sha256": "856f46021a24364f055d03376dc683b93bda7ea6a07577de06aa8a16d150bd74",
+            "summaries": [
+              "28 tests, 0 failures",
+              "8 tests, 0 failures",
+              "5 tests, 0 failures",
+              "4 tests, 0 failures",
+              "9 tests, 0 failures",
+              "6 tests, 0 failures",
+              "19 tests, 0 failures",
+              "10 tests, 0 failures",
+              "7 tests, 0 failures",
+              "2 tests, 0 failures",
+              "9 tests, 0 failures",
+              "21 tests, 0 failures",
+              "13 tests, 0 failures",
+              "2 tests, 0 failures",
+              "4 tests, 0 failures",
+              "1 test, 0 failures",
+              "1 test, 0 failures",
+              "3 tests, 0 failures",
+              "1 test, 0 failures",
+              "1 test, 0 failures",
+              "3 tests, 0 failures",
+              "2 tests, 0 failures",
+              "1 test, 0 failures",
+              "REPAIR_PASS 160 executed, 0 failures, 0 excluded, 0 skipped"
+            ]
+          },
+          {
+            "name": "portable",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/check-tests.py",
+              "apps/gaoxy/test/certificate_fixture_test.exs",
+              "apps/gaoxy/test/tls_test.exs",
+              "apps/gaoxy/test/datagram_egress_test.exs",
+              "apps/gaoxy/test/backend_telemetry_test.exs",
+              "--seed",
+              "0",
+              "--max-cases",
+              "1"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 4.176,
+            "log": ".audit/standalone-followup/final-candidate2/checks/portable.log",
+            "log_sha256": "ef49181537d0c7da2679f43795acc5237a98b277f7a43d2eee934a93d41726e6",
+            "summaries": [
+              "8 tests, 0 failures"
+            ]
+          },
+          {
+            "name": "fragmented-tcp",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/check-tests.py",
+              "apps/gaoxy/test/runtime_test.exs:109",
+              "--seed",
+              "0",
+              "--max-cases",
+              "1"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 2.07,
+            "log": ".audit/standalone-followup/final-candidate2/checks/fragmented-tcp.log",
+            "log_sha256": "2b1547d3af7d1300a0af35fc21d1d7ae9c0ca5ab6563c9dd726a440f4ef6b1f3",
+            "summaries": [
+              "8 tests, 0 failures, 7 excluded"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "phase": "standalone",
+      "receipt_path": ".audit/standalone-followup/final-candidate2/standalone/receipt.json",
+      "receipt_sha256": "c006cd57248d119e7dfebdb356ebf7b7f2c47dfb8d1b2e91b40d06990512d0db",
+      "receipt": {
+        "source_sha": "d5e0a6c50fdaa5a3cfbff548069005029c41960e",
+        "version": "0.5.4",
+        "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "standalone-generation-lifecycle",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/check-tests.py",
+              "apps/gaoxy_server/test/standalone_recovery_test.exs",
+              "apps/gaoxy_server/test/route_resources_test.exs",
+              "apps/gaoxy_server/test/standalone_generation_test.exs",
+              "apps/gaoxy_server/test/standalone_proxy_config_test.exs",
+              "apps/gaoxy_server/test/standalone_drain_budget_test.exs",
+              "apps/gaoxy_server/test/standalone_upstream_runtime_test.exs",
+              "apps/gaoxy_server/test/config_test.exs",
+              "apps/gaoxy_server/test/route_config_test.exs",
+              "apps/gaoxy_http/test/generation_test.exs",
+              "apps/gaoxy_http/test/generation_resources_test.exs",
+              "apps/gaoxy_http/test/generation_resource_consistency_test.exs",
+              "apps/gaoxy_http/test/generation_endpoint_validation_test.exs",
+              "apps/gaoxy_http/test/generation_release_deadline_test.exs",
+              "--seed",
+              "0",
+              "--max-cases",
+              "1"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 12.147,
+            "log": ".audit/standalone-followup/final-candidate2/standalone/standalone-generation-lifecycle.log",
+            "log_sha256": "878a41c7d72b93f42e212ec819a1fb585f1c68a0b51033f24de9dab5e4843a75",
+            "summaries": [
+              "87 tests, 0 failures",
+              "33 tests, 0 failures"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "phase": "quic",
+      "receipt_path": ".audit/standalone-followup/final-candidate2/quic/receipt.json",
+      "receipt_sha256": "4ff90e106c5ae174c8ec9dd3cdfd1fa9f96302a61b3ea4887cdb26c0e0f0226e",
+      "receipt": {
+        "source_sha": "d5e0a6c50fdaa5a3cfbff548069005029c41960e",
+        "version": "0.5.4",
+        "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "optional-runtime",
+            "argv": [
+              "elixir",
+              "--version"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.466,
+            "log": ".audit/standalone-followup/final-candidate2/quic/optional-runtime.log",
+            "log_sha256": "4a35527b8fa6611dc956569bb3de08ec1820e9d13658cad775dacd1ce7151c02",
+            "summaries": []
+          },
+          {
+            "name": "optional-python",
+            "argv": [
+              ".venv/bin/python",
+              "--version"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/integration/quic_consumer",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.009,
+            "log": ".audit/standalone-followup/final-candidate2/quic/optional-python.log",
+            "log_sha256": "55ae85cf4bdb38743edbcd53ea68ff36511997ec6c21b1e83d8bebc939bf056b",
+            "summaries": []
+          },
+          {
+            "name": "optional-compile",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "compile",
+              "--force",
+              "--warnings-as-errors"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/integration/quic_consumer",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 1.619,
+            "log": ".audit/standalone-followup/final-candidate2/quic/optional-compile.log",
+            "log_sha256": "95c079a5e867d8bb43402f78752daa1f0ac9e7c941157e2f55ee5313dde82317",
+            "summaries": []
+          },
+          {
+            "name": "optional-consumer",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "../../scripts/check-tests.py",
+              "--seed",
+              "0",
+              "--max-cases",
+              "1"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/integration/quic_consumer",
+            "environment_overrides": {
+              "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/integration/quic_consumer/.venv/bin/python"
+            },
+            "exit": 0,
+            "seconds": 37.717,
+            "log": ".audit/standalone-followup/final-candidate2/quic/optional-consumer.log",
+            "log_sha256": "9751ad1fed365d8fd60d223b8da4bada15fe0734e2bc439277586a83c8e766b4",
+            "summaries": [
+              "4 tests, 0 failures"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "phase": "build",
+      "receipt_path": ".audit/standalone-followup/final-candidate2/build/receipt.json",
+      "receipt_sha256": "637e6b68fe6e0e8d6270c9396ebb0439b82eac5c4e1d62346e9fae14a3308023",
+      "receipt": {
+        "source_sha": "d5e0a6c50fdaa5a3cfbff548069005029c41960e",
+        "version": "0.5.4",
+        "root_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "production-compile",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "compile",
+              "--force",
+              "--warnings-as-errors"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 13.103,
+            "log": ".audit/standalone-followup/final-candidate2/build/production-compile.log",
+            "log_sha256": "c44e52680598a896497a082e7f1920b81c2bf6f996a3f87028840ba9b19b7ce2",
+            "summaries": []
+          },
+          {
+            "name": "release",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "release",
+              "gaoxy",
+              "--overwrite"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 1.921,
+            "log": ".audit/standalone-followup/final-candidate2/build/release.log",
+            "log_sha256": "22c64390b10daf37d92c4664522f56d61957473a72f9c874be1a475a1bcf61a4",
+            "summaries": []
+          },
+          {
+            "name": "stage",
+            "argv": [
+              "elixir",
+              "scripts/stage-hex-packages.exs",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 0.917,
+            "log": ".audit/standalone-followup/final-candidate2/build/stage.log",
+            "log_sha256": "73045fb31e18202bdaa8943b4c64be0c46eb9e84a1cbb6fddb19baf19007bbee",
+            "summaries": []
+          },
+          {
+            "name": "build-gaoxy_websock_adapter",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "hex.build",
+              "--output",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/gaoxy_websock_adapter-0.5.4.tar"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex/gaoxy_websock_adapter",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 0.968,
+            "log": ".audit/standalone-followup/final-candidate2/build/build-gaoxy_websock_adapter.log",
+            "log_sha256": "3b2b53a642d4923dad168a50132ec00e900021d60162fafa95d5c3ea9d8284fa",
+            "summaries": []
+          },
+          {
+            "name": "build-gaoxy",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "hex.build",
+              "--output",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/gaoxy-0.5.4.tar"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex/gaoxy",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 1.017,
+            "log": ".audit/standalone-followup/final-candidate2/build/build-gaoxy.log",
+            "log_sha256": "1c447995bb0e42670ad30d65eef17214edb1ec52cafae7b3b12933e18c034840",
+            "summaries": []
+          },
+          {
+            "name": "build-gaoxy_http",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "hex.build",
+              "--output",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/gaoxy_http-0.5.4.tar"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex/gaoxy_http",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 1.067,
+            "log": ".audit/standalone-followup/final-candidate2/build/build-gaoxy_http.log",
+            "log_sha256": "745e512bf5568fb64b9e21df6d0a7968affaf2d8cbed5faea7bb87533d9b5988",
+            "summaries": []
+          },
+          {
+            "name": "build-gaoxy_http3",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "hex.build",
+              "--output",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/gaoxy_http3-0.5.4.tar"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex/gaoxy_http3",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 1.118,
+            "log": ".audit/standalone-followup/final-candidate2/build/build-gaoxy_http3.log",
+            "log_sha256": "5e63e3382a884efb62d1a9afab0e37aa97ce42e0797e24dd7c79248e81ac06df",
+            "summaries": []
+          },
+          {
+            "name": "build-gaoxy_proxy",
+            "argv": [
+              "unbuffer",
+              "mix",
+              "hex.build",
+              "--output",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/gaoxy_proxy-0.5.4.tar"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/hex/gaoxy_proxy",
+            "environment_overrides": {
+              "MIX_ENV": "prod"
+            },
+            "exit": 0,
+            "seconds": 1.319,
+            "log": ".audit/standalone-followup/final-candidate2/build/build-gaoxy_proxy.log",
+            "log_sha256": "9c060615e883036ba8860516544ac9da1bd75f989699d0894acd25256511bbc5",
+            "summaries": []
+          },
+          {
+            "name": "core-smoke",
+            "argv": [
+              "/run/current-system/sw/bin/python3",
+              "scripts/release-smoke.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 3.624,
+            "log": ".audit/standalone-followup/final-candidate2/build/core-smoke.log",
+            "log_sha256": "61d65d769e2acae76d258fc5865f1397aeead40bcd23e6c6b8f0a021ba03b9e0",
+            "summaries": []
+          },
+          {
+            "name": "gateway-smoke",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/h2peer/bin/python",
+              "scripts/gateway-release-smoke.py"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 3.374,
+            "log": ".audit/standalone-followup/final-candidate2/build/gateway-smoke.log",
+            "log_sha256": "b826ff6b473e7b752be0414ae52c5ad14a8b0236b022f11ea7c3dc0dce555bae",
+            "summaries": []
+          },
+          {
+            "name": "h3-smoke",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/h2peer/bin/python",
+              "scripts/h3-release-smoke.py",
+              "--evidence",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/h3"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 4.377,
+            "log": ".audit/standalone-followup/final-candidate2/build/h3-smoke.log",
+            "log_sha256": "34d67fc2d978945aca6344e0afc87e634670a7b9f117128c33dcaf9fb2b6326c",
+            "summaries": []
+          },
+          {
+            "name": "websocket-h2",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/browserpeer/bin/python",
+              "integration/websocket_multiplexed/run.py",
+              "--protocol",
+              "h2",
+              "--evidence",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/websocket-h2",
+              "--release",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/_build/prod/rel/gaoxy/bin/gaoxy",
+              "--source-identity",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/source-identity.json"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 3.023,
+            "log": ".audit/standalone-followup/final-candidate2/build/websocket-h2.log",
+            "log_sha256": "f6184fc42693860a6d5c62a20edc9619ea43e696d642ba75281fd562872f8ae5",
+            "summaries": []
+          },
+          {
+            "name": "websocket-h2c",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/browserpeer/bin/python",
+              "integration/websocket_multiplexed/run.py",
+              "--protocol",
+              "h2c",
+              "--evidence",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/websocket-h2c",
+              "--release",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/_build/prod/rel/gaoxy/bin/gaoxy",
+              "--source-identity",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/source-identity.json"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 2.972,
+            "log": ".audit/standalone-followup/final-candidate2/build/websocket-h2c.log",
+            "log_sha256": "1757a79e651ce2c729d78422d7948552d8cd3fd54d0d27736c813d62ade56d4d",
+            "summaries": []
+          },
+          {
+            "name": "websocket-h3",
+            "argv": [
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/browserpeer/bin/python",
+              "integration/websocket_multiplexed/run.py",
+              "--protocol",
+              "h3",
+              "--evidence",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/websocket-h3",
+              "--release",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/_build/prod/rel/gaoxy/bin/gaoxy",
+              "--source-identity",
+              "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup/.audit/standalone-followup/final-candidate2/build/source-identity.json"
+            ],
+            "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-ci-followup",
+            "environment_overrides": {},
+            "exit": 0,
+            "seconds": 3.524,
+            "log": ".audit/standalone-followup/final-candidate2/build/websocket-h3.log",
+            "log_sha256": "344a3cda518da0cc21810e2bc78db4bdd7d3f75426dc4f5c694a6f38e18e5398",
+            "summaries": []
+          }
+        ]
+      }
+    }
+  ],
+  "command_count": 31
+}
