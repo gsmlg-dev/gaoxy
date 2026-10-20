@@ -2,7 +2,7 @@
 
 ## Current source backend — 2026-10-20 (Asia/Shanghai)
 
-Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) uses
+Published [v0.5.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.0) uses
 [Hell](https://github.com/gsmlg-dev/hell) 0.1.2,
 the Thousand Island fork, for TCP/OTP TLS, using the public `Hell` namespace and
 `:hell` application. Published v0.4.0 source and binaries retain Thousand Island.
@@ -11,7 +11,7 @@ See the [dependency audit](docs/dependency-audit.md) for the exact Hell pin and
 
 ## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
-Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from
+Published [v0.5.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.0) from
 `b0e1531b9d2ac682e4af19d4616ad4461e3ca6f2` with Hell 0.1.2 (`Hell` namespace,
 `:hell` application) replacing Thousand Island. Accepted protocol and Phoenix
 functionality is unchanged; published v0.4.0 source and binaries retain
@@ -28,7 +28,7 @@ Historical results below retain their recorded source identities and outcomes.
 
 Accepted source includes embedded managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource accounting, plus native downstream H2/h2c/H3 WebSocket and Phoenix integration. Embedded HTTPS prefers H2 with H1 negotiation/no-ALPN fallback; plain TCP defaults to H1, prior-knowledge h2c is explicit, and WebSocket requires listener `extended_connect` opt-in. Standalone JSON defaults HTTP services to H1, permits explicit H2/h2c and separate H3 HTTP services and fixed H1/H3 origins, and exposes no managed handles/groups/probes or WebSocket activation. Browser H3 evidence uses controlled QUIC-first selection; automatic H3 selection with TCP available remains unqualified.
 
-Published [v0.4.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](docs/acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+Published [v0.4.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](docs/acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
 
 Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
 
@@ -68,7 +68,7 @@ public Session50 checks, native/server/shared/browser47/59/19, standalone16,
 and clean core/H1-H2/H3 consumers1/2/2. The complete H1/H2/H3-to-H3 matrix
 passes66network+2policy checks in both its first execution and required fresh
 repeat, with independent evidence reviews. Final independent M4 acceptance
-passes. [v0.3.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.3.0) is published from source4931982:
+passes. [v0.3.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.3.0) is published from source4931982:
 the portable builder passes757 tests/0 failures, fresh offline core/H1/H2/H3
 runtime and21-ELF inspection pass, and all three published downloads equal
 the qualified bytes. Hosted CI remains BLOCKED_ENV with zero executed steps;

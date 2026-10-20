@@ -4,7 +4,7 @@ Mix.start()
 Mix.env(:prod)
 
 defmodule StageHexPackages do
-  @repository "https://github.com/gsmlg-opt/gaoxy"
+  @repository "https://github.com/gsmlg-dev/gaoxy"
   @packages [
     {"gaoxy_websock_adapter", :websock_adapter, "vendor/websock_adapter"},
     {"gaoxy", :gaoxy, "apps/gaoxy"},
