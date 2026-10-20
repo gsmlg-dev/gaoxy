@@ -140,8 +140,12 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert next.response == :sent
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
     assert {:ok, ^next} = Response.finish(next)
-    assert {:ok, wire} = :gen_tcp.recv(client, 0, 100)
-    assert String.ends_with?(wire, "2\r\nhi\r\n0\r\nx-two: a\r\nx-one: b\r\nx-two: c\r\n\r\n")
+
+    expected =
+      "HTTP/1.1 200 OK\r\ntransfer-encoding: chunked\r\ntrailer: x-one, x-two\r\n\r\n" <>
+        "2\r\nhi\r\n0\r\nx-two: a\r\nx-one: b\r\nx-two: c\r\n\r\n"
+
+    assert {:ok, ^expected} = :gen_tcp.recv(client, byte_size(expected), 100)
     assert {:error, :timeout} = :gen_tcp.recv(client, 0, 5)
   end
 
