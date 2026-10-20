@@ -1,6 +1,13 @@
 # Native WebSocket reverse proxy
 
 `Gaoxy.Proxy.WebSocket` is an HTTP endpoint for one configured upstream authority.
+Incoming proxy upgrades use HTTP/1.1 and the configured upstream uses H1 `ws`
+or verified `wss`. Unsupported H2/H3 requests, including valid opt-in extended
+CONNECT, receive an empty protocol-valid 400 before an upstream session or
+connection is created. This endpoint does not implement an H2/H3-to-H1 bridge.
+Native local WebSock/Phoenix endpoints separately support H2/H3 extended CONNECT
+with explicit listener opt-in; see [native HTTP](native-http.md).
+
 It can share a native listener with local Plug/Phoenix routes:
 
 ```elixir

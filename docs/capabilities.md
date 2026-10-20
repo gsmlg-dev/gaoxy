@@ -1,3 +1,27 @@
+# Current source contracts — 2026-10-20
+
+The correctness patch aggregates Plug logical body reads, isolates invalid H2
+authority within its stream, joins split multiplexed request Cookies, and
+retains protocol-valid WebSocket proxy rejection before upstream side effects.
+See [repair acceptance](acceptance/review-repairs-2026-10-20.md).
+
+| Surface | Current support | Boundary |
+| --- | --- | --- |
+| Embedded Plug/Phoenix | Native H1/H2 and optional H3; local H1/H2/H3 WebSock | Explicit extended CONNECT opt-in; no H2/H3 WebSocket proxy bridge |
+| HTTP proxy | Fixed H1/H3, managed H1/H2/h2c and homogeneous groups/probes | Declared response trailers plus Content-Length rejected for every downstream protocol |
+| WebSocket proxy | Incoming H1 upgrades to configured H1 ws/wss | H2/H3 receive empty 400 before upstream allocation |
+| Standalone JSON | Static/fixed H1/H3 targets, managed H1/H2/h2c resources and groups/probes, H1 WebSocket proxy routes, fixed TCP/TLS/UDP relays | No arbitrary Plug/Phoenix modules, managed H3 groups or forward-proxy authentication/CONNECT policy definitions |
+
+The standalone expansion was already implemented in `27bffd83` before this
+repair began; this patch verifies and documents it without adding another
+activation surface. Future standalone expansion beyond these existing targets
+requires separate product work. The [standalone guide](../apps/gaoxy_server/README.md)
+is canonical for JSON configuration.
+
+Historical acceptance snapshots below retain their captured source identities
+and actual failed, blocked and unexecuted outcomes. Specialist qualification,
+deployment and production acceptance remain separate from this ordinary patch.
+
 ## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
 Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from

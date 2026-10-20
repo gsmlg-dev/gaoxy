@@ -83,6 +83,10 @@ field are removed. Incoming Forwarded, X-Real-IP and X-Forwarded-* are discarded
 X-Forwarded-For, -Host and -Proto are regenerated from the downstream connection
 and parsed request. There is no trusted forwarding-chain configuration. Expect
 is handled locally. Transfer framing is regenerated for the downstream hop.
+For H2/H3 requests, split Cookie values are combined in encounter order with
+`; ` before the upstream serializer. H1 request duplicates keep their existing
+behavior; unrelated repeated fields and response Set-Cookie remain separate.
+Input preflight and final transformed header count/byte limits both apply.
 Content-Encoding and compressed payload bytes are preserved without decoding.
 A 304 response preserves a supplied representation Content-Length without sending
 a body or adding a length when the upstream omitted it.
@@ -95,7 +99,10 @@ hop-by-hop request trailers and declarations are removed. The pinned upstream
 parser rejects actual Connection-nominated response trailers before delivery.
 Trailer promises incompatible with HTTP/1.0 or HEAD/bodyless responses fail
 before commitment. H1 trailers require chunked framing; H2 trailers use a
-terminal header block and may accompany a valid Content-Length.
+terminal header block. Proxy responses that declare trailers together with
+Content-Length are currently rejected before commitment for H1, H2 and H3
+downstreams, even when that combination could be represented by the downstream
+protocol. This patch preserves that restriction.
 An error after commitment closes the connection without a successful terminal
 chunk or a second response.
 

@@ -20,5 +20,6 @@ defmodule PhoenixNative.Router do
 
   scope "/", PhoenixNative do
     get("/events", PageController, :events)
+    post("/body", PageController, :body)
   end
 end

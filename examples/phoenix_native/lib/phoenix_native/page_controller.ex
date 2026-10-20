@@ -20,4 +20,6 @@ defmodule PhoenixNative.PageController do
       {:error, reason} -> raise "SSE write failed: #{inspect(reason)}"
     end
   end
+
+  def body(conn, %{"value" => value}), do: send_resp(conn, 200, value)
 end

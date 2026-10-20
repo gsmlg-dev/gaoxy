@@ -125,13 +125,51 @@ setting, is rejected. The adapter's internal `:endpoint_managed` option is
 reserved for Endpoint-owned startup. See the runnable
 [fixture](../examples/phoenix_native/README.md).
 
+## Plug request-body reads
+
+`Plug.Conn.read_body/2` aggregates native pieces into one logical result.
+`:length` defaults to 8,000,000 bytes per Plug call; `:read_length` defaults to
+1,000,000 bytes of demand per native read, capped by `max_read_chunk` and the
+remaining logical allowance. Native Exchange callers still receive bounded
+pieces. `max_body_bytes` independently limits the cumulative whole request;
+calling Plug repeatedly cannot reset it. Plug parser length limits still apply.
+
+`:ok` means native completion is known. Reaching the logical allowance while
+completion is unknown returns `:more` with the current Exchange. For example,
+an exact chunked-data boundary can require another call to consume terminal
+framing and trailers. The reader does not consume an extra body byte to prove
+completion or consume a following H1 request. Pending waits and errors retain
+existing status mapping; a zero-progress result fails without a busy loop.
+
+Plug's `:read_timeout` defaults to 15,000 ms per underlying socket read. The
+server's explicit `http_limits.read_timeout` (5,000 ms by default) caps each
+wait, and the original absolute request deadline caps the whole operation.
+Progress never resets that deadline. Read-triggered `100 Continue` output
+also respects that deadline and the configured write chunk cap, and a failed
+Continue is never replayed. This is separate from the native API's finite
+per-step wait.
+
+Admission reserves accumulated detached chunks and the temporary final binary
+copy before allocation. On completion, ownership transfers to Plug/application
+code and the adapter reservation is released; native buffer/header/trailer
+retention remains charged. Failures drop accumulator ownership and restore the
+native reservation. If the gate cannot acknowledge before the deadline, ordered
+cleanup restores that reservation when the gate resumes or lease cleanup ends
+ownership.
+The service byte budget must cover the aggregate and its copy; a native piece
+cap alone does not bound a Plug result. Application-owned request bodies remain
+outside the native retained-payload ledger after transfer.
+
 ## Native H2/H3 WebSocket and Phoenix opt-in
 
 `extended_connect: false` is the listener default, independent of H2 protocol
 selection. Set `extended_connect: true` explicitly for each H2 or H3 listener
 serving WebSock streams. This enables RFC 8441/9220 downstream WebSocket only;
-it does not enable generic tunnels, outbound H2/H3 WebSocket proxying, or
-standalone JSON activation of WebSocket endpoints.
+it does not enable generic tunnels or H2/H3 WebSocket proxy bridges. Native local
+WebSock endpoints support H1/H2/H3. `Gaoxy.Proxy.WebSocket` accepts H1 upgrades
+and returns a protocol-valid empty 400 for H2/H3 before creating an upstream
+session. Standalone JSON can activate this existing H1 proxy endpoint; see the
+[standalone guide](../apps/gaoxy_server/README.md).
 
 For managed Phoenix, configure Endpoint-level exact paths and listener opt-in:
 

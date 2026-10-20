@@ -6,6 +6,43 @@ defmodule HTTPConsumerTest do
     def call(exchange, _), do: Gaoxy.HTTP.Response.send_resp(exchange, 200, [], "consumer")
   end
 
+  defmodule BodyPlug do
+    use Plug.Builder
+    plug(Plug.Parsers, parsers: [:json, :urlencoded], pass: ["*/*"], json_decoder: JSON)
+    plug(:echo)
+    def echo(conn, _), do: Plug.Conn.send_resp(conn, 200, conn.body_params["value"])
+  end
+
+  test "the clean HTTP consumer parses JSON and forms above the native chunk size" do
+    {:ok, server} = Gaoxy.HTTP.start_link(plug: {BodyPlug, []})
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {ip, port}} = Gaoxy.info(server, :http).local
+    value = String.duplicate("x", 20_000)
+
+    for {type, body} <- [
+          {"application/json", JSON.encode!(%{"value" => value})},
+          {"application/x-www-form-urlencoded", "value=" <> value}
+        ] do
+      {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
+
+      :ok =
+        :gen_tcp.send(socket, [
+          "POST / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n",
+          "Content-Type: ",
+          type,
+          "\r\nContent-Length: ",
+          Integer.to_string(byte_size(body)),
+          "\r\n\r\n",
+          body
+        ])
+
+      response = receive_h1(socket, "")
+      assert [head, ^value] = String.split(response, "\r\n\r\n", parts: 2)
+      assert head =~ "HTTP/1.1 200"
+      :gen_tcp.close(socket)
+    end
+  end
+
   test "H1/H2 consumer resolves and starts without optional QUIC or proxy applications" do
     forbidden = [
       :thousand_island,
