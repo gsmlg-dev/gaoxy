@@ -1,4 +1,4 @@
-name: Release standalone application
+name: Release application and Hex packages
 
 on:
   workflow_dispatch:
@@ -103,6 +103,19 @@ jobs:
           name: gaoxy-${{ inputs.version }}-linux-x86_64
           path: dist/*
           if-no-files-found: error
+      - name: Build and publish Hex packages
+        env:
+          HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
+        run: |
+          : "${HEX_API_KEY:?Set the HEX_API_KEY repository secret to publish packages}"
+          packages=(gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
+          # Validate every library before publishing any of them.
+          for app in "${packages[@]}"; do
+            (cd "apps/$app" && mix hex.build --output "${RUNNER_TEMP}/${app}-${RELEASE_VERSION}.tar")
+          done
+          for app in "${packages[@]}"; do
+            (cd "apps/$app" && mix hex.publish package --yes)
+          done
       - name: Commit version bump and push release tag
         run: |
           git config user.name 'github-actions[bot]'

@@ -135,6 +135,26 @@ For the measured local macOS timing environment, an explicit process-scoped
 release startup stalled during code preload, and default TLS timing has been
 intermittent; those failures remain recorded.
 
+## Hex publishing
+
+The manual release workflow publishes the `gaoxy`, `gaoxy_http`, `gaoxy_http3`
+and `gaoxy_proxy` libraries to Hex.pm in dependency order, after the standalone
+release smoke checks. Set the repository's `HEX_API_KEY` Actions secret to a Hex
+API key with permission to publish these packages. The workflow builds every
+package before publishing any of them and stops on errors before pushing the
+release tag. `gaoxy_server` remains the standalone application artifact.
+Publishing uses `mix hex.publish package --yes`; HexDocs are not generated.
+Phoenix needs `gaoxy_http` and its `gaoxy` dependency.
+
+Package preparation is still required before this workflow can publish:
+each library needs Hex metadata, including an explicitly chosen project license,
+and publishable version requirements for its dependencies. Core currently uses
+Git dependencies for Hell and Abyss, and the HTTP library uses a patched local
+WebSockAdapter. That snapshot adds Gaoxy dispatch and native H2/H3 validation;
+replacing it with the canonical Hex package would lose those changes. Its
+distribution must be resolved before publishing the Phoenix adapter. The Hex
+build preflight rejects these current declarations without uploading packages.
+
 ## Embedded services
 
 For native HTTP/Plug/Phoenix, see [the server guide](docs/native-http.md) and
