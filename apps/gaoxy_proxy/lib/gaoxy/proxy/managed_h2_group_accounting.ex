@@ -395,7 +395,6 @@ defmodule Gaoxy.Proxy.ManagedH2GroupAccounting do
   defp scalar?(value) when is_pid(value) or is_reference(value),
     do: :erlang.external_size(value) <= 2_048
 
-  defp scalar?(_), do: false
   defp pid?(value), do: is_pid(value) and scalar?(value)
   defp ref?(value), do: is_reference(value) and scalar?(value)
   defp call_tag?([:alias | ref]), do: ref?(ref)

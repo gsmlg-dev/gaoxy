@@ -352,16 +352,13 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   end
 
   defp transition(state, key, {:ok, protocol, actions}) do
-    Enum.reduce_while(actions, {:ok, %{state | protocol: protocol}}, fn action, {:ok, acc} ->
-      case action(acc, action) do
-        {:ok, next} -> {:cont, {:ok, next}}
-        failure -> {:halt, failure}
-      end
-    end)
-    |> case do
-      {:ok, next} -> {:ok, work_deadline(next, key)}
-      failure -> failure
-    end
+    next =
+      Enum.reduce(actions, %{state | protocol: protocol}, fn action, acc ->
+        {:ok, next} = action(acc, action)
+        next
+      end)
+
+    {:ok, work_deadline(next, key)}
   end
 
   defp transition(state, key, {:error, :stream, code, _reason, protocol}),
@@ -485,7 +482,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         case Operations.status(state.operations, key, token) do
           {:ok, %{demand: {:pending, ref, credit}}} when entry.input != <<>> or entry.recv_fin ->
             size = min(credit, byte_size(entry.input))
-            <<bytes::binary-size(size), rest::binary>> = entry.input
+            <<bytes::binary-size(^size), rest::binary>> = entry.input
             ended = entry.recv_fin and rest == <<>>
 
             case Operations.deliver(state.operations, key, token, ref, bytes, ended) do
@@ -822,7 +819,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   def reply_read(state, key, credit) do
     entry = state.streams[key]
     count = min(credit, byte_size(entry.input))
-    <<bytes::binary-size(count), rest::binary>> = entry.input
+    <<bytes::binary-size(^count), rest::binary>> = entry.input
     ended = entry.recv_fin and rest == <<>>
     result = {if(ended, do: :ok, else: :more), bytes, ended, entry.trailers}
     {ref, _, _} = entry.operation
@@ -857,8 +854,6 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         :ok
     end
   end
-
-  defp settle_cancel(%{operations: nil} = state, _), do: {:ok, state}
 
   defp settle_cancel(state, key) do
     Enum.reduce_while([:read, :write], {:ok, state}, fn kind, {:ok, acc} ->
@@ -937,7 +932,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
             entry.write_quantum
           )
 
-        <<chunk::binary-size(size), rest::binary>> = entry.out
+        <<chunk::binary-size(^size), rest::binary>> = entry.out
         fin = entry.send_fin and rest == <<>>
 
         case operation(state, {key, :write}, entry.output_deadline, fn opts ->

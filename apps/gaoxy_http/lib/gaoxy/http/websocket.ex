@@ -431,7 +431,7 @@ defmodule Gaoxy.HTTP.WebSocket do
 
   defp send_wire(ws, wire) do
     size = min(byte_size(wire), ws.exchange.limits.max_write_chunk)
-    <<chunk::binary-size(size), rest::binary>> = wire
+    <<chunk::binary-size(^size), rest::binary>> = wire
 
     with {:ok, operation} <- Admission.start_send(ws.exchange.gate, ws.exchange.lease, size) do
       result =

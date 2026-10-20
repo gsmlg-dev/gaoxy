@@ -60,7 +60,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProtocolTest do
     bytes = head(@fields ++ [{"content-length", "3"}]) <> Frame.encode!(:data, "abc")
 
     for split <- 0..byte_size(bytes) do
-      <<first::binary-size(split), second::binary>> = bytes
+      <<first::binary-size(^split), second::binary>> = bytes
       assert {:ok, state, a} = Protocol.feed(open(fresh(), :r), :r, first)
       assert {:ok, state, b} = Protocol.feed(state, :r, second)
       assert [{:headers, :r, _} | pieces] = a ++ b
@@ -73,7 +73,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProtocolTest do
     bytes = Varint.encode!(0x21, 8) <> Varint.encode!(70, 4) <> :binary.copy("x", 70) <> head()
 
     for split <- 0..byte_size(bytes) do
-      <<a::binary-size(split), b::binary>> = bytes
+      <<a::binary-size(^split), b::binary>> = bytes
       assert {:ok, state, left} = Protocol.feed(open(fresh(), :r), :r, a)
       assert {:ok, state, right} = Protocol.feed(state, :r, b)
       assert [{:headers, :r, _}] = left ++ right
@@ -194,7 +194,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProtocolTest do
       Varint.encode!(0, 8) <> Frame.encode!(:settings, Settings.encode!([{1, 4096}, {7, 2}]))
 
     for split <- 0..byte_size(bytes) do
-      <<a::binary-size(split), b::binary>> = bytes
+      <<a::binary-size(^split), b::binary>> = bytes
       assert {:ok, state, left} = Protocol.feed(open(fresh(), :c, :uni), :c, a)
       assert {:ok, _, right} = Protocol.feed(state, :c, b)
       assert [{:settings, [{1, 4096}, {7, 2}]}] = left ++ right
@@ -318,7 +318,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProtocolTest do
     bytes = Varint.encode!(3, 8) <> instruction
 
     for split <- 0..byte_size(bytes) do
-      <<a::binary-size(split), b::binary>> = bytes
+      <<a::binary-size(^split), b::binary>> = bytes
       assert {:ok, state, []} = Protocol.feed(open(fresh(), :q, :uni), :q, a)
       assert {:ok, state, []} = Protocol.feed(state, :q, b)
       assert state.streams.q.buffer == ""
@@ -418,7 +418,7 @@ defmodule Gaoxy.HTTP.HTTP3.ProtocolTest do
 
   test "one-byte HEADERS fragmentation stays within the parser state reservation" do
     bytes = head(@fields ++ [{"x", :binary.copy("a", 32_000)}])
-    <<prefix::binary-size(byte_size(bytes) - 1), last>> = bytes
+    <<prefix::binary-size(byte_size(^bytes) - 1), last>> = bytes
 
     state =
       Enum.reduce(:binary.bin_to_list(prefix), open(fresh(), :r), fn byte, state ->

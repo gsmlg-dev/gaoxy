@@ -133,7 +133,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
     if binary_part(state.buffer, 0, size) == binary_part(@preface, 0, size) do
       if size == byte_size(@preface) do
-        <<_::binary-size(size), rest::binary>> = state.buffer
+        <<_::binary-size(^size), rest::binary>> = state.buffer
 
         initial =
           <<1::16, state.h2.table_size::32, 3::16, state.h2.max_streams::32, 4::16,
@@ -835,7 +835,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       stream.demand != nil and (stream.input != "" or stream.eof) ->
         demand = stream.demand
         count = min(demand.credit, byte_size(stream.input))
-        <<bytes::binary-size(count), rest::binary>> = stream.input
+        <<bytes::binary-size(^count), rest::binary>> = stream.input
         ended = rest == "" and stream.eof
         wire = if rest == "", do: stream.queued_wire, else: count
         send(stream.worker, {:gaoxy_websocket_data, stream.token, demand.ref, bytes, ended})
@@ -853,7 +853,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
         read = stream.read
         Process.cancel_timer(read.timer)
         count = min(read.credit, byte_size(stream.input))
-        <<bytes::binary-size(count), rest::binary>> = stream.input
+        <<bytes::binary-size(^count), rest::binary>> = stream.input
         ended = rest == "" and stream.eof
         # Payload credit follows the next consumer call; padding travels with the final piece.
         wire = if rest == "", do: stream.queued_wire, else: count
@@ -1023,7 +1023,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           min(byte_size(write.bytes), min(16_384, min(state.send_window, stream.send_window)))
           |> max(0)
 
-        <<bytes::binary-size(size), rest::binary>> = write.bytes
+        <<bytes::binary-size(^size), rest::binary>> = write.bytes
         ended = write.ended and rest == ""
 
         stream = %{

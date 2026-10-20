@@ -418,7 +418,6 @@ defmodule Gaoxy.Proxy.HTTP.Session do
           {:ok, state, config} -> open_selected(state, config)
           {:await, state} -> {:noreply, state}
           {:error, reason, state} -> fail(state, reason)
-          {:error, reason} -> fail(state, reason)
         end
     end
   end
@@ -689,8 +688,6 @@ defmodule Gaoxy.Proxy.HTTP.Session do
 
   defp group_result(state, _options, _result, _now),
     do: {:error, :invalid_response, drop_group_opening(state)}
-
-  defp group_open_reason(:cleanup_unconfirmed), do: {:cleanup_unconfirmed, :cleanup_unconfirmed}
 
   defp group_open_reason({:cleanup_unconfirmed, cause}) do
     cause = if cause in @group_flat_reasons, do: cause, else: :cleanup_unconfirmed

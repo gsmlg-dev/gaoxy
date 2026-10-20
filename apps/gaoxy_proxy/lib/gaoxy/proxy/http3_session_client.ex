@@ -1090,7 +1090,7 @@ defmodule Gaoxy.Proxy.HTTP3SessionClient do
     do: retained_data(rest, credit - byte_size(bytes), [bytes | chunks])
 
   defp retained_data([{:data, bytes} | rest], credit, chunks) do
-    <<chunk::binary-size(credit), tail::binary>> = bytes
+    <<chunk::binary-size(^credit), tail::binary>> = bytes
     {IO.iodata_to_binary(Enum.reverse([chunk | chunks])), [{:data, tail} | rest]}
   end
 

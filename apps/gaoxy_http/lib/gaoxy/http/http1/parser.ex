@@ -15,7 +15,7 @@ defmodule Gaoxy.HTTP.HTTP1.Parser do
 
     case :binary.match(bytes, "\r\n\r\n") do
       {size, 4} ->
-        <<head::binary-size(size), _::binary-size(4), rest::binary>> = bytes
+        <<head::binary-size(^size), _::binary-size(4), rest::binary>> = bytes
 
         if size + 4 > limits.max_header_bytes do
           {:error, 431, :header_bytes_limit}

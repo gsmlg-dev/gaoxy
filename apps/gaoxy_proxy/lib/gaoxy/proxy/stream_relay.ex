@@ -374,7 +374,7 @@ defmodule Gaoxy.Proxy.StreamRelay do
 
   defp dispatch(state, name, bytes) do
     size = min(byte_size(bytes), state.config.max_chunk_bytes)
-    <<chunk::binary-size(size), carry::binary>> = bytes
+    <<chunk::binary-size(^size), carry::binary>> = bytes
     token = make_ref()
     direction = state.directions[name]
     deadline = min(state.deadline, Lifecycle.deadline(state.config.write_timeout))

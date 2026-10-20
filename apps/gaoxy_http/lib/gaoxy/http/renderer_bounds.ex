@@ -107,7 +107,7 @@ defmodule Gaoxy.HTTP.RendererBounds do
 
   defp frames(bytes, id, ended, from, deadline, first, accumulated) do
     count = min(byte_size(bytes), 16_384)
-    <<piece::binary-size(count), rest::binary>> = bytes
+    <<piece::binary-size(^count), rest::binary>> = bytes
     flags = if(rest == "", do: 4, else: 0) + if(first and ended, do: 1, else: 0)
     callback = if rest == "", do: {:headers, id, from}, else: {:header_fragment, id}
     frame = IO.iodata_to_binary(Frame.encode(if(first, do: 1, else: 9), flags, id, piece))

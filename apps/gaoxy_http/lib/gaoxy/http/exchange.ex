@@ -224,7 +224,7 @@ defmodule Gaoxy.HTTP.Exchange do
 
   defp send_continue(exchange, pending) do
     size = min(byte_size(pending), Map.get(exchange.limits, :max_write_chunk, 16_384))
-    <<bytes::binary-size(size), rest::binary>> = pending
+    <<bytes::binary-size(^size), rest::binary>> = pending
     operation = make_ref()
 
     result =
@@ -292,7 +292,7 @@ defmodule Gaoxy.HTTP.Exchange do
     # Install each framing transition before the next one can fail. Body.read/3
     # intentionally returns no decoder on malformed input.
     count = decode_size(exchange.body.phase, exchange.buffer, credit)
-    <<input::binary-size(count), tail::binary>> = exchange.buffer
+    <<input::binary-size(^count), tail::binary>> = exchange.buffer
 
     case Body.read(exchange.body, input, credit) do
       {kind, bytes, body, rest} ->
@@ -557,7 +557,7 @@ defmodule Gaoxy.HTTP.Exchange do
 
   defp take_chunk([bytes | rest], limit, acc, size) when is_binary(bytes) do
     count = min(byte_size(bytes), limit - size)
-    <<chunk::binary-size(count), tail::binary>> = bytes
+    <<chunk::binary-size(^count), tail::binary>> = bytes
     next = if tail == "", do: rest, else: [tail | rest]
     take_chunk(next, limit, [chunk | acc], size + count)
   end

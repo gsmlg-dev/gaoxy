@@ -13,7 +13,7 @@ defmodule Gaoxy.HTTP.WebSocket.Frame do
       if byte_size(rest) < length + 4 do
         :more
       else
-        <<key::32, payload::binary-size(length), tail::binary>> = rest
+        <<key::32, payload::binary-size(^length), tail::binary>> = rest
         payload = unmask(payload, key)
 
         with :ok <- validate_payload(@opcodes[opcode], payload) do
@@ -64,7 +64,7 @@ defmodule Gaoxy.HTTP.WebSocket.Frame do
 
   defp unmask(payload, key) do
     size = div(byte_size(payload), 4) * 4
-    <<blocks::binary-size(size), tail::binary>> = payload
+    <<blocks::binary-size(^size), tail::binary>> = payload
     unmasked = for <<word::32 <- blocks>>, into: <<>>, do: <<bxor(word, key)::32>>
     mask = <<key::32>>
 

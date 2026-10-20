@@ -589,7 +589,7 @@ defmodule Gaoxy.Proxy.ManagedH2Preparation do
 
     case authority do
       ^prefix -> true
-      <<^prefix::binary-size(prefix_bytes), ?:, port::binary>> -> port != "" and digits?(port)
+      <<^prefix::binary-size(^prefix_bytes), ?:, port::binary>> -> port != "" and digits?(port)
       _ -> false
     end
   end

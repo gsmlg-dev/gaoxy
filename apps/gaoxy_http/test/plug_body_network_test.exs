@@ -110,7 +110,7 @@ defmodule Gaoxy.PlugBodyNetworkTest do
           end)
 
         if byte_size(body) >= length do
-          <<value::binary-size(length), rest::binary>> = body
+          <<value::binary-size(^length), rest::binary>> = body
           {String.to_integer(status), value, rest}
         else
           {:ok, bytes} = :gen_tcp.recv(socket, 0, 2_000)

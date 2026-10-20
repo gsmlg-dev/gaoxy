@@ -145,7 +145,6 @@ defmodule Gaoxy.Proxy.ManagedH2Client do
       case Stream.chunk(pid, :binary.copy(bytes), timeout) do
         :ok -> :ok
         {:error, reason} -> {:error, normalize(reason, :upstream_failure)}
-        _ -> {:error, :upstream_failure}
       end
     else
       {:error, :invalid_request}
@@ -228,14 +227,9 @@ defmodule Gaoxy.Proxy.ManagedH2Client do
   defp create_upload(mode) when mode in [:none, {:length, 0}], do: {:ok, nil}
 
   defp create_upload(_mode) do
-    case Stream.start_link(0) do
-      {:ok, pid} ->
-        Process.unlink(pid)
-        {:ok, pid}
-
-      _ ->
-        {:error, :unavailable}
-    end
+    {:ok, pid} = Stream.start_link(0)
+    Process.unlink(pid)
+    {:ok, pid}
   rescue
     _ -> {:error, :unavailable}
   catch
@@ -374,7 +368,7 @@ defmodule Gaoxy.Proxy.ManagedH2Client do
 
     case authority do
       ^prefix -> true
-      <<^prefix::binary-size(size), ?:, port::binary>> -> port != "" and digits?(port)
+      <<^prefix::binary-size(^size), ?:, port::binary>> -> port != "" and digits?(port)
       _ -> false
     end
   end

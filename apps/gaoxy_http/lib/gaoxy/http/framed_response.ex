@@ -233,7 +233,7 @@ defmodule Gaoxy.HTTP.FramedResponse do
 
   defp take([bytes | rest], size, acc) when is_binary(bytes) do
     count = min(size, byte_size(bytes))
-    <<piece::binary-size(count), tail::binary>> = bytes
+    <<piece::binary-size(^count), tail::binary>> = bytes
     take(if(tail == "", do: rest, else: [tail | rest]), size - count, [piece | acc])
   end
 end

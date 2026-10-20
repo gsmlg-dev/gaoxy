@@ -12,7 +12,7 @@ defmodule Gaoxy.HTTP.HTTP2.Frame do
         :more
 
       true ->
-        <<payload::binary-size(length), rest::binary>> = tail
+        <<payload::binary-size(^length), rest::binary>> = tail
         {:ok, %{type: type, flags: flags, id: id, payload: payload}, rest}
     end
   end

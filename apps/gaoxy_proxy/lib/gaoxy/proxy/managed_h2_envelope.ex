@@ -534,7 +534,7 @@ defmodule Gaoxy.Proxy.ManagedH2Envelope do
 
     case authority do
       ^prefix -> true
-      <<^prefix::binary-size(size), ?:, port::binary>> -> port != "" and digits?(port)
+      <<^prefix::binary-size(^size), ?:, port::binary>> -> port != "" and digits?(port)
       _ -> false
     end
   end

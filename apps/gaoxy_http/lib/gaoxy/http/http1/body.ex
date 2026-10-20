@@ -126,7 +126,7 @@ defmodule Gaoxy.HTTP.HTTP1.Body do
   defp line(bytes, limit, status, reason) do
     case :binary.match(bytes, "\r\n") do
       {length, 2} when length + 2 <= limit ->
-        <<line::binary-size(length), _::binary-size(2), rest::binary>> = bytes
+        <<line::binary-size(^length), _::binary-size(2), rest::binary>> = bytes
 
         if Regex.match?(~r/[\r\n]/, line),
           do: {:error, 400, :line_ending},

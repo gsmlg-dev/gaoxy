@@ -195,7 +195,7 @@ defmodule Gaoxy.HTTP.HTTP3.Protocol do
     if amount == 0 and stream.remaining > 0 do
       {:wait, state}
     else
-      <<chunk::binary-size(amount), rest::binary>> = stream.buffer
+      <<chunk::binary-size(^amount), rest::binary>> = stream.buffer
       stream = %{stream | buffer: rest, remaining: stream.remaining - amount}
       payload_step(state, key, stream, chunk, amount)
     end
