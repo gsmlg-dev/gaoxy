@@ -79,6 +79,7 @@ defmodule Gaoxy.HTTP.HTTP2.Headers do
          true <- Enum.all?(:binary.bin_to_list(path), &(&1 in 33..126 and &1 not in [?#, ?\\])),
          true <- not Regex.match?(~r/%(?![0-9a-fA-F]{2})/, path),
          true <- length(host_fields) <= 1,
+         true <- is_binary(authority),
          {:ok, host, port} <- Parser.parse_authority(authority),
          true <- authority_matches?(host_fields, host, port, scheme),
          {:ok, body} <- body(regular, limits.max_body_bytes) do

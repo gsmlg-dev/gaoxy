@@ -199,7 +199,7 @@ defmodule Gaoxy.HTTP.HTTP1.Parser do
   def parse_authority("[" <> rest) do
     case :binary.split(rest, "]") do
       [host, suffix] ->
-        with {:ok, _} <- :inet.parse_ipv6strict_address(String.to_charlist(host)),
+        with {:ok, _} <- :inet.parse_ipv6strict_address(:binary.bin_to_list(host)),
              {:ok, port} <- port_suffix(suffix) do
           {:ok, String.downcase(host), port}
         else
