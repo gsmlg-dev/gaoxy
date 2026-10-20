@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   ELIXIR_ERL_OPTIONS: '+S 2:2'
@@ -81,6 +81,8 @@ jobs:
           PY
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
+      - name: Hex packaging regressions
+        run: python3 scripts/test-stage-hex-packages.py
       - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
       - run: mix release gaoxy
@@ -98,23 +100,34 @@ jobs:
           tar -C _build/prod/rel/gaoxy -czf "dist/gaoxy-${RELEASE_VERSION}-linux-x86_64.tar.gz" .
           cd dist
           sha256sum "gaoxy-${RELEASE_VERSION}-linux-x86_64.tar.gz" > SHA256SUMS
+      - name: Build all Hex packages before publication
+        run: |
+          elixir scripts/stage-hex-packages.exs "$GITHUB_WORKSPACE" "$RUNNER_TEMP/gaoxy-hex"
+          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
+          for app in "${packages[@]}"; do
+            (cd "$RUNNER_TEMP/gaoxy-hex/$app" && mix hex.build --output "$GITHUB_WORKSPACE/dist/${app}-${RELEASE_VERSION}.tar")
+            (cd dist && sha256sum "${app}-${RELEASE_VERSION}.tar" >> SHA256SUMS)
+          done
       - uses: actions/upload-artifact@v7.0.2
         with:
           name: gaoxy-${{ inputs.version }}-linux-x86_64
           path: dist/*
           if-no-files-found: error
-      - name: Build and publish Hex packages
+      - name: Publish and verify Hex packages
         env:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: |
-          : "${HEX_API_KEY:?Set the HEX_API_KEY repository secret to publish packages}"
-          packages=(gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
-          # Validate every library before publishing any of them.
+          : "${HEX_API_KEY:?Set the HEX_API_KEY Actions secret to publish packages}"
+          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
           for app in "${packages[@]}"; do
-            (cd "apps/$app" && mix hex.build --output "${RUNNER_TEMP}/${app}-${RELEASE_VERSION}.tar")
+            (cd "$RUNNER_TEMP/gaoxy-hex/$app" && mix deps.get --only prod && mix hex.publish package --yes)
           done
           for app in "${packages[@]}"; do
-            (cd "apps/$app" && mix hex.publish package --yes)
+            package="${app}-${RELEASE_VERSION}.tar"
+            curl --fail --silent --show-error --location --retry 5 --retry-delay 5 \
+              --retry-all-errors --max-time 30 \
+              "https://repo.hex.pm/tarballs/$package" --output "$RUNNER_TEMP/$package"
+            cmp "dist/$package" "$RUNNER_TEMP/$package"
           done
       - name: Commit version bump and push release tag
         run: |

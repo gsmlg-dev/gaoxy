@@ -1,0 +1,128 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "packaging-regressions",
+      "command": [
+        "python3",
+        "scripts/test-stage-hex-packages.py"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.275097+00:00",
+      "seconds": 22.604,
+      "exit": 0,
+      "log": "packaging-regressions.log",
+      "log_sha256": "a0fc4066e7e2dd2c3f3184bd1e1135ae3c3d00b43b8add29c18a854026b0606f"
+    },
+    {
+      "name": "canonical-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.275646+00:00",
+      "seconds": 2.947,
+      "exit": 0,
+      "log": "canonical-format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "staging-format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "scripts/stage-hex-packages.exs"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.276494+00:00",
+      "seconds": 1.026,
+      "exit": 0,
+      "log": "staging-format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "strict-production-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.277746+00:00",
+      "seconds": 1.555,
+      "exit": 0,
+      "log": "strict-production-compile.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "workflow-lint",
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.1-tools/actionlint",
+        ".github/workflows/release.yml"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.278462+00:00",
+      "seconds": 0.008,
+      "exit": 0,
+      "log": "workflow-lint.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.286638+00:00",
+      "seconds": 0.02,
+      "exit": 0,
+      "log": "diff-check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "runtime-custody",
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "v0.5.0",
+        "--",
+        "apps/gaoxy/lib",
+        "apps/gaoxy_http/lib",
+        "apps/gaoxy_http3/lib",
+        "apps/gaoxy_proxy/lib",
+        "apps/gaoxy_server/lib",
+        "vendor/websock_adapter",
+        "mix.lock"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+      "started_utc": "2026-10-20T05:49:23.306926+00:00",
+      "seconds": 0.017,
+      "exit": 0,
+      "log": "runtime-custody.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "prod"
+  },
+  "source_sha256": {
+    ".github/workflows/release.yml": "c1d82e018443eb7417df4a5b299a0c8a39001f7cc58d3fe13779381f831d2bd5",
+    "README.md": "1cfcabdde9ce93432507d1b1d533485570b2a46b50c667d57c492d268a23a9d6",
+    "mix.exs": "bdfd8e49c0db9875ab242466a65fb0606a304a90039effabd18e016c22bd1870",
+    "LICENSE": "b56e4850a976f48ee53aa3741009ba82dbaeaed409adf8172e30b231fa45fa4b",
+    "scripts/stage-hex-packages.exs": "7b6cfdc34a6548c1fb72f9beb64bd1f7c43c541fa0033dca635ac02abd065114",
+    "scripts/test-stage-hex-packages.py": "cc09ab854a4506402cdbcf1e8ad19dae8e384711d742b78700c9d76723c7d738",
+    "apps/gaoxy/mix.exs": "b69fae70559dfab4461e74551a7e29cb722af7feeae51613310a12d7f7d6c8da",
+    "apps/gaoxy_http/mix.exs": "0a08e2436af223ea3813679afcc379bb5e0947acb98af1889fe93007ab8e1cb8",
+    "apps/gaoxy_http3/mix.exs": "25ebf54b65dea59bbb14faf9be3e6b99477bc2b0ce5dbccd23f6ff4a6c1c97f4",
+    "apps/gaoxy_proxy/mix.exs": "4e3fe0a370f6320d7d9fd18038c4969a7c69f0be5a56bd18cb21535a5ffe82a9",
+    "apps/gaoxy_server/mix.exs": "dbf7ff5fb5f9d3aee2b29a03e65394943c1ef48928fde624bc7e24b0b5abb41d"
+  }
+}

@@ -137,23 +137,42 @@ intermittent; those failures remain recorded.
 
 ## Hex publishing
 
-The manual release workflow publishes the `gaoxy`, `gaoxy_http`, `gaoxy_http3`
-and `gaoxy_proxy` libraries to Hex.pm in dependency order, after the standalone
-release smoke checks. Set the repository's `HEX_API_KEY` Actions secret to a Hex
-API key with permission to publish these packages. The workflow builds every
-package before publishing any of them and stops on errors before pushing the
-release tag. `gaoxy_server` remains the standalone application artifact.
+The manual release workflow prepares standalone Hex packages from the umbrella
+source and publishes `gaoxy_websock_adapter`, `gaoxy`, `gaoxy_http`,
+`gaoxy_http3` and `gaoxy_proxy` in dependency order after the standalone smoke
+checks. It uses the configured `HEX_API_KEY` Actions secret, builds all packages
+before the first publication, and verifies downloaded package bytes before
+pushing the release tag. GitHub assets include the package tarballs and
+checksums. `gaoxy_server` remains the standalone application artifact.
 Publishing uses `mix hex.publish package --yes`; HexDocs are not generated.
-Phoenix needs `gaoxy_http` and its `gaoxy` dependency.
+Each staged project fetches its production dependencies before publication.
 
-Package preparation is still required before this workflow can publish:
-each library needs Hex metadata, including an explicitly chosen project license,
-and publishable version requirements for its dependencies. Core currently uses
-Git dependencies for Hell and Abyss, and the HTTP library uses a patched local
-WebSockAdapter. That snapshot adds Gaoxy dispatch and native H2/H3 validation;
-replacing it with the canonical Hex package would lose those changes. Its
-distribution must be resolved before publishing the Phoenix adapter. The Hex
-build preflight rejects these current declarations without uploading packages.
+The staging script preserves runtime source bytes while replacing workspace
+dependency declarations with exact Hex requirements. Packages use the selected
+MIT license; the adapter fork retains upstream licensing and provenance.
+Its version follows the Gaoxy release, with upstream WebSockAdapter 0.6.0 as
+the current source base. Core packages use Hell 0.1.2 and Abyss 0.7.0.
+
+Publication status and clean-consumer results for 0.5.1 are recorded in
+[the release acceptance](docs/acceptance/release-0.5.1.md).
+After publication, a Phoenix application's dependencies include:
+
+```elixir
+{:gaoxy_http, "~> 0.5.1"},
+{:websock_adapter, "~> 0.5.1", hex: :gaoxy_websock_adapter, override: true}
+```
+
+Set the Phoenix endpoint's `adapter` to `Gaoxy.PhoenixAdapter`. The explicit
+WebSockAdapter override selects Gaoxy dispatch and native H2/H3 validation
+for Phoenix's existing adapter dependency. Keep this fork while those changes
+remain outside the canonical upstream package; see the
+[native HTTP guide](docs/native-http.md) for endpoint and WebSocket settings.
+
+To reproduce package preparation without publishing:
+
+```sh
+elixir scripts/stage-hex-packages.exs "$PWD" .audit/hex-packages
+```
 
 ## Embedded services
 

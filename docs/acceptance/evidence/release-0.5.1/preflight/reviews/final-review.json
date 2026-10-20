@@ -1,0 +1,58 @@
+{
+  "task": "release_readiness",
+  "assignment": "direct independent specification/code/docs/artifact review",
+  "status": "PASS",
+  "time_utc": "2026-10-20T05:49:34.908666+00:00",
+  "root": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "baseline": "f9e155cb94dc6b0b4b7d9164e2087126a26ca935",
+  "source_files": {
+    ".github/workflows/release.yml": "c1d82e018443eb7417df4a5b299a0c8a39001f7cc58d3fe13779381f831d2bd5",
+    "README.md": "1cfcabdde9ce93432507d1b1d533485570b2a46b50c667d57c492d268a23a9d6",
+    "LICENSE": "b56e4850a976f48ee53aa3741009ba82dbaeaed409adf8172e30b231fa45fa4b",
+    "docs/releases/0.5.1.md": "bda1c73b27d88a2ae5d5c937a6a7946859c1f4704302c55040139080e7fedf5a",
+    "docs/acceptance/release-0.5.1.md": "6b5278d24ed888f334d31ecf72ed7bb54a143c81f3e54baa7b302777587f76ab",
+    "docs/plans/release-0.5.1-hex.md": "d4c47aa44e8a7a0a861e6b44286b7b0e003be94f3cfceb0f9f8facf5b3da18db",
+    "scripts/stage-hex-packages.exs": "7b6cfdc34a6548c1fb72f9beb64bd1f7c43c541fa0033dca635ac02abd065114",
+    "scripts/test-stage-hex-packages.py": "cc09ab854a4506402cdbcf1e8ad19dae8e384711d742b78700c9d76723c7d738"
+  },
+  "evidence": {
+    ".audit/hex-consumers/run-1792474727892739476/result.json": "3c5b8d9aa7413bdb73f6b0ae9c45172e2f60e5131760dce58de74b223def7ef9",
+    ".audit/hex-consumers/run-1792474727892739476/actual-package-payloads.json": "eb906a52b531a61a023af4a56fb83ba8f361e7c5675a4124a6f21ac6586ea603",
+    ".audit/hex-consumers/final-artifact-equivalence.json": "3c7d5d1b43396b84ed096c68e2118f76a5e8638ff1747f4cdb63dd8670b0df07",
+    ".audit/hex-publish-startup-1792475275980128577/result.json": "5abd5e7cd320acf2a6f0aaf601d667954fdc89940055739902aa7ad79ef4068b",
+    ".audit/hex-publish-startup-1792475275980128577/tests.log": "8a68858112b07f95520a02c1e34ef45cc7fcbd8c8171cc2e6ac26cef57a903d6",
+    ".audit/release-0.5.1-final-1792475186943961119/package-verification.json": "25a42daf7ae7f8429ae4f982bf9d52545435239301b7468d78b5de39ddddd749"
+  },
+  "closed_findings": [
+    {
+      "id": "PUBLISH-DEPS",
+      "resolution": "Workflow fetches each standalone project production dependencies immediately before actual Hex package publication. Actual Hex dry-run regression reproduces unfetched failure, then fetch-then-publish succeeds without compilation or upload requests; full7test suite exit0."
+    },
+    {
+      "id": "RELEASE-CANCELLATION",
+      "resolution": "cancel-in-progress:false prevents redispatch cancellation of active publication."
+    }
+  ],
+  "findings": [],
+  "verification": [
+    "actionlint .github/workflows/release.yml exit0",
+    "git diff --check exit0",
+    "Independently checked all five final/consumer tarball digests, payloads and final stage/build log hashes",
+    "Consumer core1 HTTP2 Phoenix4,7 total/0 failures, actual signed Hex resolution; server joined",
+    "Packaging full7test receipt exit0 bound to exact reviewed script hash"
+  ],
+  "scope": [
+    "Direct main and selected MIT; no tracked edits by reviewer",
+    "Existing runtime assertions preserved; no specialist/production/E2E expansion",
+    "Fork attribution/package alias and exact internal requirements correct",
+    "Hosted no-start fallback notes Hex BLOCKED_ENV and no new standalone binary; GitHub-only source-package assets allowed",
+    "Actual public Hex/GitHub publication remains pending and separately verified by parent"
+  ],
+  "command_shutdown": "All reviewer commands finished; owned registry server shut down and joined",
+  "sol_repair_rounds": 1,
+  "repair_scope": "Disposable consumer harness import-shadowing fix; zero product repairs",
+  "remaining_risks": [
+    "Local consumer/dry-run evidence is not public Hex availability or hosted workflow execution",
+    "Final acceptance row may be updated from pending review to this PASS receipt without changing package inputs"
+  ]
+}

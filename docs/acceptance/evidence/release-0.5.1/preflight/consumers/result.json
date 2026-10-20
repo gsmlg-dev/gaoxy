@@ -1,0 +1,437 @@
+{
+  "run": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476",
+  "source_head": "f9e155cb94dc6b0b4b7d9164e2087126a26ca935",
+  "source_diff_sha256": "221f68aeca974a16a5291ea2c96efe36f4005896cbf85bc05b48d0660330b84a",
+  "version": "0.5.1",
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "signing-key",
+      "command": [
+        "openssl",
+        "genrsa",
+        "-out",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry-private.pem",
+        "2048"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476",
+      "started_utc": "2026-10-20T05:38:48.613423+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/signing-key.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "registry-build",
+      "command": [
+        "mix",
+        "hex.registry",
+        "build",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry",
+        "--name=hexpm",
+        "--private-key=/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry-private.pem"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476",
+      "started_utc": "2026-10-20T05:38:48.722782+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry-build.log",
+      "log_sha256": "d74d80727d37c11d7209b6c5d9507ae222ce5200ce63cb615aba9b5da7bb337d"
+    },
+    {
+      "name": "registry-config",
+      "command": [
+        "mix",
+        "hex.repo",
+        "set",
+        "hexpm",
+        "--url",
+        "http://127.0.0.1:33911",
+        "--public-key",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry/public_key"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476",
+      "started_utc": "2026-10-20T05:38:50.977099+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/registry-config.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "core-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core",
+      "started_utc": "2026-10-20T05:38:52.546563+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core-deps.log",
+      "log_sha256": "e1d9180890e967f202f578a19a5a6abd378ef12d0bd7fedc270b37bbf067adcb"
+    },
+    {
+      "name": "core-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core",
+      "started_utc": "2026-10-20T05:38:56.037740+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core-compile.log",
+      "log_sha256": "a0fec6046e24d286e29371658373592624a6266f9d508f49cef17b402ac6ab1c"
+    },
+    {
+      "name": "core-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\n            deps = Mix.Dep.load_and_cache()\n            true = Enum.all?(deps, &(&1.scm == Hex.SCM))\n            Enum.each(deps, fn dep -> IO.puts(\"HEX_DEP #{dep.app} #{inspect(dep.opts[:hex])}\") end)\n            "
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core",
+      "started_utc": "2026-10-20T05:40:25.958913+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core-resolved.log",
+      "log_sha256": "6d4b16936737c21f18f0aaaa4ede80f69fe1c5f19cc79ed8a8c9ae3ce70b80af"
+    },
+    {
+      "name": "core-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core",
+      "started_utc": "2026-10-20T05:40:27.881273+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/core-tests.log",
+      "log_sha256": "f2c448877d8baf15147bde8838ea0e1c58ba45629fb015d2b58509f88a7b7e91"
+    },
+    {
+      "name": "http-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http",
+      "started_utc": "2026-10-20T05:40:29.281007+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http-deps.log",
+      "log_sha256": "9dafc6923423f38a0d1e19ce465b5a4c5b9c183bd6815417727ea82d50c45212"
+    },
+    {
+      "name": "http-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http",
+      "started_utc": "2026-10-20T05:40:31.506355+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http-compile.log",
+      "log_sha256": "e1f8ecf98a0c8cc484a6f144c6330f6680ff3fb360f02df3d7f8268e6a1b0e51"
+    },
+    {
+      "name": "http-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\n            deps = Mix.Dep.load_and_cache()\n            true = Enum.all?(deps, &(&1.scm == Hex.SCM))\n            Enum.each(deps, fn dep -> IO.puts(\"HEX_DEP #{dep.app} #{inspect(dep.opts[:hex])}\") end)\n            "
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http",
+      "started_utc": "2026-10-20T05:42:00.061330+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http-resolved.log",
+      "log_sha256": "1c2b2817ad4d51337ba1dc20b7902c0f53a68c72983ae6956c208eed4d043a91"
+    },
+    {
+      "name": "http-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http",
+      "started_utc": "2026-10-20T05:42:01.025529+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/http-tests.log",
+      "log_sha256": "611da3cf9d78fe1344290f4de94f4902bbda56e5f536e4fbfe3ada4998a23e3c"
+    },
+    {
+      "name": "phoenix-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix",
+      "started_utc": "2026-10-20T05:42:02.593760+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix-deps.log",
+      "log_sha256": "eae527ffceb1ae5c72f16f608f3be9ce300b8871a57d5f0ce1d3d4002d5f5cb3"
+    },
+    {
+      "name": "phoenix-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix",
+      "started_utc": "2026-10-20T05:42:04.593237+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix-compile.log",
+      "log_sha256": "16f2afcbc4c0ca38d88d187e0429826314ba5b6bbf70cb40d2c8aaef66a2d457"
+    },
+    {
+      "name": "phoenix-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\n            deps = Mix.Dep.load_and_cache()\n            true = Enum.all?(deps, &(&1.scm == Hex.SCM))\n            Enum.each(deps, fn dep -> IO.puts(\"HEX_DEP #{dep.app} #{inspect(dep.opts[:hex])}\") end)\n            "
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix",
+      "started_utc": "2026-10-20T05:43:48.226216+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix-resolved.log",
+      "log_sha256": "e11e86e2f193090381e56750c41057c24213b3b35f3631c76c5eeb93c20f62d0"
+    },
+    {
+      "name": "phoenix-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix",
+      "started_utc": "2026-10-20T05:43:49.575751+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/hex-consumers/run-1792474727892739476/phoenix-tests.log",
+      "log_sha256": "0b54cb36f4ccb4a0664affc6eb1daf9ab1fe5c3552edd3b81e5be1648e51689a"
+    }
+  ],
+  "third_party_tarballs": [
+    {
+      "file": "abyss-0.7.0.tar",
+      "sha256": "09264b7a07b70d2d6f1f6675eea6b3e25fc6ff618a9c015975a517ab50f3f496",
+      "origin": "https://repo.hex.pm/tarballs/abyss-0.7.0.tar"
+    },
+    {
+      "file": "earmark_parser-1.4.46.tar",
+      "sha256": "9c44636e8a1c68c62f526b2dcd85d941dbbcee7ab82cf64ba06ce28bef8e89f5",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/earmark_parser-1.4.46.tar"
+    },
+    {
+      "file": "elixir_quic-0.21.10.tar",
+      "sha256": "c8a86f13f4a3103c3d8087ada29feef8773ee0808942a774395207a4ce0b033b",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/elixir_quic-0.21.10.tar"
+    },
+    {
+      "file": "elixir_quic_http3-0.21.10.tar",
+      "sha256": "798b8abd97f674bc4fd55b64e5b816f137e4a5a34d016c636e48c8bea09aa876",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/elixir_quic_http3-0.21.10.tar"
+    },
+    {
+      "file": "ex_doc-0.40.4.tar",
+      "sha256": "6222b9e423d76584ee34df2c82a5ed72c2d53dc153f7f483ad28b378694186cc",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/ex_doc-0.40.4.tar"
+    },
+    {
+      "file": "ex_ssl-0.21.10.tar",
+      "sha256": "0392ab3deeea731da0512e1b61f2fdd2b1db21efc834e222fa569b4cc12c3266",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/ex_ssl-0.21.10.tar"
+    },
+    {
+      "file": "hell-0.1.2.tar",
+      "sha256": "5d0b633cf909295ed58f5a289a1ba7d8fa3cbb422414e338d95473db9e750860",
+      "origin": "https://repo.hex.pm/tarballs/hell-0.1.2.tar"
+    },
+    {
+      "file": "hpax-1.1.0.tar",
+      "sha256": "0b8d0f05832f55571d65ac720f79bf8994138ffbb133209dc4685eae0ad456a8",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/hpax-1.1.0.tar"
+    },
+    {
+      "file": "http_core-0.21.10.tar",
+      "sha256": "0c073b2c6c9945c0d4ccdef6c9ae3c4556ada8ff6b2e56567e24a6e0275c47cc",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/http_core-0.21.10.tar"
+    },
+    {
+      "file": "http_fetch-0.21.10.tar",
+      "sha256": "46045633e5b09e73215fdb2eacc70d9348e0066fe1e2659e6ae9f7362ee08848",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/http_fetch-0.21.10.tar"
+    },
+    {
+      "file": "http_runtime-0.21.10.tar",
+      "sha256": "fe74fecdfce2613082b88e42a082d73dc80aeb2e36f5b7a9241be450af8cd8ec",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/http_runtime-0.21.10.tar"
+    },
+    {
+      "file": "http_web_socket-0.21.10.tar",
+      "sha256": "4182678137fad33495f67496d00d7de13bb6b610ccf750a3c9b66697b6e7971f",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/http_web_socket-0.21.10.tar"
+    },
+    {
+      "file": "jason-1.4.5.tar",
+      "sha256": "b0c823996102bcd0239b3c2444eb00409b72f6a140c1950bc8b457d836b30684",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/jason-1.4.5.tar"
+    },
+    {
+      "file": "makeup-1.2.3.tar",
+      "sha256": "15970751b7021c2bcd7ed56a54b3def23affd3969fb7c214dffdf28e97ce6f76",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/makeup-1.2.3.tar"
+    },
+    {
+      "file": "makeup_elixir-1.0.1.tar",
+      "sha256": "7284900d412a3e5cfd97fdaed4f5ed389b8f2b4cb49efc0eb3bd10e2febf9507",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/makeup_elixir-1.0.1.tar"
+    },
+    {
+      "file": "makeup_erlang-1.1.0.tar",
+      "sha256": "1cd6780fb1dd1a03979abaed0fe82712b0625118fd5257d3ebbf73f960c73c3c",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/makeup_erlang-1.1.0.tar"
+    },
+    {
+      "file": "mime-2.0.7.tar",
+      "sha256": "6171188e399ee16023ffc5b76ce445eb6d9672e2e241d2df6050f3c771e80ccd",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/mime-2.0.7.tar"
+    },
+    {
+      "file": "nimble_parsec-1.4.2.tar",
+      "sha256": "4b21398942dda052b403bbe1da991ccd03a053668d147d53fb8c4e0efe09c973",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/nimble_parsec-1.4.2.tar"
+    },
+    {
+      "file": "phoenix-1.8.15.tar",
+      "sha256": "7b83ed6b3d544f24a29277eab7f051be38b76f390bb511bb6ddb7ec6e8e05b95",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/phoenix-1.8.15.tar"
+    },
+    {
+      "file": "phoenix_html-4.3.0.tar",
+      "sha256": "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/phoenix_html-4.3.0.tar"
+    },
+    {
+      "file": "phoenix_live_view-1.2.12.tar",
+      "sha256": "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/phoenix_live_view-1.2.12.tar"
+    },
+    {
+      "file": "phoenix_pubsub-2.4.1.tar",
+      "sha256": "352fba7a87bf61395b6e97da66944ad9b1bfe5459e5981039f60d68270bd9700",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/phoenix_pubsub-2.4.1.tar"
+    },
+    {
+      "file": "phoenix_template-1.1.0.tar",
+      "sha256": "eba70070de79b2c3501ef205a74a69f98ab352f3785aa15da9ed161f9fe0fd5d",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/phoenix_template-1.1.0.tar"
+    },
+    {
+      "file": "plug-1.20.3.tar",
+      "sha256": "be266aee1b8536ef6409d58cf39a3121319f0ec47cfa1b24024485aa0e76ad76",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/plug-1.20.3.tar"
+    },
+    {
+      "file": "plug_crypto-2.2.0.tar",
+      "sha256": "83a95744ab1c75876542b6fab135fcc176280e0f301a111c1f757fddcec95d2c",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/plug_crypto-2.2.0.tar"
+    },
+    {
+      "file": "rustler-0.38.0.tar",
+      "sha256": "704c03c1bf66be12b031c5a389347b91c81c5cb819a24b068b0de36fe4a5652a",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/rustler-0.38.0.tar"
+    },
+    {
+      "file": "telemetry-1.4.2.tar",
+      "sha256": "928f6495066506077862c0d1646609eed891a4326bee3126ba54b60af61febb1",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/telemetry-1.4.2.tar"
+    },
+    {
+      "file": "telemetry_metrics-1.2.0.tar",
+      "sha256": "71dde12fc29b58b9c77ec17ec319109e5ca848d010fc1965ed4463bba1837c07",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/telemetry_metrics-1.2.0.tar"
+    },
+    {
+      "file": "websock-0.5.3.tar",
+      "sha256": "6105453d7fac22c712ad66fab1d45abdf049868f253cf719b625151460b8b453",
+      "origin": "/home/gao/.local/share/hex/packages/hexpm/websock-0.5.3.tar"
+    }
+  ],
+  "fixture_source_sha256": {
+    "integration/core_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/core_consumer/test/consumer_test.exs": "a476e150bd4998f62d3ac3d9512d7d8815bd40b405c3eae7f5d7afcdde241b89",
+    "integration/http_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/http_consumer/test/consumer_test.exs": "c6817eb2fedce66ffcfd3a25a22ee1867edbfc398faf8c4bd24e3e53cf7a36b2",
+    "examples/phoenix_native/lib/phoenix_native/counter_live.ex": "106c721e2f06163ab1623953ffe5ab1d01be1fb04ea22f5cba40d53dddb60c86",
+    "examples/phoenix_native/lib/phoenix_native/room_channel.ex": "cff78d00e89fd0e4a707b2e635714220b22050a5c99a10ee121c2adabe51c9d5",
+    "examples/phoenix_native/lib/phoenix_native/router.ex": "d1209709aa22b5e3cbb1cac30310abeace2779bf65952508db85025084f75aaa",
+    "examples/phoenix_native/lib/phoenix_native/application.ex": "980ceda489c037200ec52b4926e4a577672c61ce1e27e29ee1ca060169e839aa",
+    "examples/phoenix_native/lib/phoenix_native/user_socket.ex": "0e45e6a64611933b9d1057ef6407f1adb5b63da749960d0057bf48b6b56ba5b3",
+    "examples/phoenix_native/lib/phoenix_native/endpoint.ex": "39d4908ce2e7fdd0a52fe6b64a738a6576f8b1c8eebd04aa5432a5140b8ac283",
+    "examples/phoenix_native/lib/phoenix_native/page_controller.ex": "40445bd30fbbff4554ee47d4a04d313771583f5b143a05f38042ae233b419ec4",
+    "examples/phoenix_native/lib/phoenix_native/layouts.ex": "3612c932820ca1216967ede42dc928f1d5ce24687211ed7905d86907213f3cca",
+    "examples/phoenix_native/config/config.exs": "501cd3df34d6717f363a9c89108cd466c32af472e169971658cd379cb37ef724",
+    "examples/phoenix_native/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "examples/phoenix_native/test/ownership_test.exs": "6c288a46f869a0e53c4184aeeb515db4c27e0e7eb093268a52b3e587b7478059"
+  },
+  "own_tarballs": [
+    {
+      "file": "gaoxy_websock_adapter-0.5.1.tar",
+      "sha256": "4e10919404e100dc15fe71462a5fb5221d7c1dc938ed6e3285968257e9d795e6"
+    },
+    {
+      "file": "gaoxy-0.5.1.tar",
+      "sha256": "bb6171223a23ecb6dbbec46c1d59b3e04a271fbbdb1d37769d5196721fecf2cc"
+    },
+    {
+      "file": "gaoxy_http-0.5.1.tar",
+      "sha256": "37348856f029bcd9c65682c6dd342197be22243d0bb1b90ac9c63541f499cfaf"
+    },
+    {
+      "file": "gaoxy_http3-0.5.1.tar",
+      "sha256": "a50e1460af240fb9128b9663191740ba43da074dc9af5978e4926cc603c63871"
+    },
+    {
+      "file": "gaoxy_proxy-0.5.1.tar",
+      "sha256": "c9ccf568d4c38bc6dc9e22e466495a87f44786f5972f4d9cbe2d7c85a37d9978"
+    }
+  ],
+  "registry_url": "http://127.0.0.1:33911",
+  "consumers": {
+    "core": {
+      "executed": 1,
+      "failures": 0,
+      "lock_sha256": "b263df44b0b493cac0dd6316686adc83e8d3d435ceecdfdbe59aae5b72b318b2"
+    },
+    "http": {
+      "executed": 2,
+      "failures": 0,
+      "lock_sha256": "6b3302947e374c5c0c1adce87c2db426b8d3b569dd08d855dbf330de1c53015c"
+    },
+    "phoenix": {
+      "executed": 4,
+      "failures": 0,
+      "lock_sha256": "21d61d457c79a0ad9ced05e3ad20443308c07808d5b48c8e995ddd319ba1fef7"
+    }
+  },
+  "registry_server_joined": true
+}

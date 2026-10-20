@@ -1,0 +1,43 @@
+{
+  "task": "release_readiness",
+  "kind": "independent-docs-workflow-review",
+  "status": "OPEN",
+  "time_utc": "2026-10-20T05:45:23.308267+00:00",
+  "files": {
+    ".github/workflows/release.yml": "5762fa48853b69ffb5aff4ee90a8654d0f96b40bd988d085c2915255785efcfb",
+    "README.md": "e6b4c0ae9ba7351375adf55d7858afad3aeb00936bd95f69b7312ea0882b6680",
+    "docs/releases/0.5.1.md": "bda1c73b27d88a2ae5d5c937a6a7946859c1f4704302c55040139080e7fedf5a",
+    "docs/plans/release-0.5.1-hex.md": "6442acfb6ff456db57bd29720778aaf2c862cd54ab4c5f70492a3e0acfbb9e24",
+    "scripts/stage-hex-packages.exs": "7b6cfdc34a6548c1fb72f9beb64bd1f7c43c541fa0033dca635ac02abd065114",
+    "scripts/test-stage-hex-packages.py": "6ddc4ea7873566d9c7c95e45894ded10092d892f2cb67213ed29da2563aaf400"
+  },
+  "scope": [
+    "Selected MIT license and fork attribution",
+    "Direct main execution without worktrees",
+    "Exact Hex versions and documented Phoenix fork override",
+    "All packages built before publication; downloaded publication bytes checked before tagging",
+    "Hosted no-start fallback publishes only qualified source tarballs/sums/build-info with Hex BLOCKED_ENV and no new standalone binary",
+    "Preservation of v0.5.0 Debian portability and excluded specialist/production/E2E scope"
+  ],
+  "findings": [
+    {
+      "id": "PUBLISH-DEPS",
+      "status": "OPEN",
+      "evidence": ".audit/hex-artifacts/gaoxy_websock_adapter-publish-dry-run.log",
+      "finding": "Current mix hex.publish runs in standalone staging directories without their dependencies installed; dry-run fails before upload. Other agent owns repair."
+    },
+    {
+      "id": "RELEASE-CANCELLATION",
+      "status": "OPEN",
+      "finding": "Release workflow currently cancels an active release on redispatch; use cancel-in-progress:false to preserve five-package mutation sequence."
+    }
+  ],
+  "consumer_evidence": ".audit/hex-consumers/run-1792474727892739476/result.json",
+  "consumer_status": "PASS core1 HTTP2 Phoenix4;7 tests/0 failures; all Hex.SCM; registry server joined",
+  "payload_evidence": ".audit/hex-consumers/run-1792474727892739476/actual-package-payloads.json",
+  "code_review": ".audit/hex-consumers/code-review.json",
+  "limitations": [
+    "Actual GitHub and Hex publication NOT RUN by this reviewer",
+    "Fresh ordinary consumer evidence does not certify specialist suites or standalone archive portability"
+  ]
+}
