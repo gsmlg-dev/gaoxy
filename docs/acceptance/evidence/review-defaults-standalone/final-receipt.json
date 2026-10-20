@@ -1,0 +1,157 @@
+{
+  "recorded_at_utc": "2026-10-20T11:25:58.371055+00:00",
+  "status": "PASS_SCOPED_ORDINARY_REVIEW_FIXES",
+  "baseline": "c063607e65cb3486dc19c78827f1ea8c62dbc87a",
+  "implementation_commit": "27bffd83e42a5da053fdf3366e13702469a5b4cd",
+  "branch": "codex/review-defaults-standalone",
+  "environment": {
+    "elixir": "1.18.5",
+    "otp": "28",
+    "erts": "16.4.0.5",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "mix_lock_sha256": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+    "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/merged-worktrees/20261019T170220Z-0av9jwuw/m5-websocket-over-h2-h3/ignored/.audit/m5/venv/bin/python",
+    "h3_peer": "aioquic 1.2.0"
+  },
+  "executed_tests": 217,
+  "failures": 0,
+  "checks": {
+    "strict_compile": {
+      "exit": 0,
+      "command": "MIX_ENV=test mix compile --force --warnings-as-errors"
+    },
+    "format": {
+      "exit": 0,
+      "command": "mix format --check-formatted <26 task-owned Elixir files>"
+    },
+    "scoped_tests": {
+      "exit": 0,
+      "seed": 0,
+      "groups": {
+        "h2": 72,
+        "websocket_proxy_and_h3": 19,
+        "server": 92,
+        "core_compatibility": 34
+      }
+    },
+    "git_diff_check": {
+      "exit": 0
+    }
+  },
+  "browser": {
+    "status": "PASS",
+    "managed_http": {
+      "status": 200,
+      "body": "BROWSER_MANAGED_OK"
+    },
+    "ordinary_websocket_get": {
+      "status": 400,
+      "body": ""
+    },
+    "websocket": {
+      "echoed": "BROWSER_WEBSOCKET_OK",
+      "code": 1000,
+      "clean": true
+    },
+    "shutdown": "BROWSER_CLEANUP_OK"
+  },
+  "independent_review": {
+    "h2": "PASS, websocket_errors independent review",
+    "websocket_and_relays": "PASS, h2_default_concurrency independent review; relay mode regression reviewed",
+    "managed_config_and_lifecycle": "PASS, websocket_errors final read-only review, all actionable findings resolved",
+    "deferred_budget_design": "h2_default_concurrency recommendation and implementation, independently reviewed by websocket_errors"
+  },
+  "limits": {
+    "specialist_pressure_slow_peer_soak_blocked_upload": "NOT_RUN_BY_SCOPE",
+    "new_hosted_ci": "NOT_RUN",
+    "new_push_release_publication_deployment": "NOT_RUN",
+    "existing_v052_release": "PASS previously verified run39404989025 at d9fb3a5e, separate source"
+  },
+  "repair_counters": {
+    "inherited_astra": "2/2 exhausted, no new Astra round",
+    "h2_worker": 2,
+    "relay_worker": 1,
+    "parent_repairs": "authorized local repairs including fixture precharge, prep-release reconciliation, matching and shutdown compatibility; no assertion weakening"
+  },
+  "raw_log_root": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/review-defaults-standalone/.audit/review-defaults-standalone",
+  "logs": {
+    "h2-final.log": {
+      "sha256": "6c99932352795e378c341091f9f893790e9da8e56a0903452dff6193a11fedad",
+      "counts": [
+        {
+          "tests": 72,
+          "failures": 0
+        }
+      ]
+    },
+    "websocket-final.log": {
+      "sha256": "fcc061efcd1821d9f3ea92e4fbad3b3f404ebc79d33c3c28c85aeb9804292955",
+      "counts": [
+        {
+          "tests": 1,
+          "failures": 0
+        },
+        {
+          "tests": 18,
+          "failures": 0
+        }
+      ]
+    },
+    "server-core-final.log": {
+      "sha256": "a835e9e88a3b823140eeef06ca492d30643fc3671d008a20bd972339c4a38917",
+      "counts": [
+        {
+          "tests": 34,
+          "failures": 0
+        },
+        {
+          "tests": 92,
+          "failures": 0
+        }
+      ]
+    },
+    "compile-final.log": {
+      "sha256": "029c9fca5bf3f28e770fe41d72845950065dddd216ea4ef3b0a5246c6a1c2c93"
+    },
+    "format-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "browser-server.log": {
+      "sha256": "19a5518d94d6f00891ef150a72a3d0a09d8b17a7a3f790a31b8c1b52489849c0"
+    },
+    "browser-result.json": {
+      "sha256": "3122c198da35098ff2dbbac101aa38f9cb908e45eb2362a70863082e5fefb3ae"
+    },
+    "browser-snapshot.json": {
+      "sha256": "d2f79cad048a4d3ad430f52e53e850d65c839a77c70d2179856dc193ab5cb2ac"
+    }
+  },
+  "source_sha256": {
+    "apps/gaoxy/lib/gaoxy/instance.ex": "b02f0e6727f14fd420e379776ee0a84fa4280b76d3ae20104f5cdbd9921c241b",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex": "7a6baeba62d805974a355da569fdc3e02b774795b4bace1e52fc60a7c6eb4233",
+    "apps/gaoxy_http/lib/gaoxy/http/http2/limits.ex": "edbe0628074075f55e61dfb38fe222d8b915061fe756beb8d6e5ee3e64ce574d",
+    "apps/gaoxy_http/test/http2_capacity_test.exs": "ace65e68211c0b2fbdaf3ae55f50bb4111048e83e314461101d867576c58fecc",
+    "apps/gaoxy_http/test/http2_default_concurrency_test.exs": "a22aba019ef6549823336848ff2852ad690766a0f2cb66cb0b21bdc2edc55d20",
+    "apps/gaoxy_http/test/http2_independent_review_test.exs": "b93e45d9fa7358426bca02304ac2b8ca91975f3456913c159e046f4e22457e8c",
+    "apps/gaoxy_http/test/http2_protocol_test.exs": "be809e8286f3167ce220e974af0a9b765ebea4ee82ff7e0c09dd6be0ed0b2835",
+    "apps/gaoxy_http/test/http2_stale_start_test.exs": "73701d37cbddc6c6295fe78f5a21af74258dab7890365568cfcecc8f397e6969",
+    "apps/gaoxy_http/test/http2_worker_startup_test.exs": "6f984c9a3192e1cc9c06167b4db2c38bd18263e5162633570b5966750efc6e8d",
+    "apps/gaoxy_http3/test/websocket_proxy_rejection_test.exs": "51148087b9c3654dd406bd47310168fe8b5c42dec6bf522f42681db5850329c9",
+    "apps/gaoxy_proxy/lib/gaoxy/proxy/websocket.ex": "895d6a373a4ec496b6a15a54128c1853e6784e30a65d7803037ea11497b3c3f2",
+    "apps/gaoxy_proxy/test/websocket_protocol_rejection_test.exs": "bb13aa35f62d1f09ef1e068364bf6f2832e61fe1bd1caf1b9b2d72635400161b",
+    "apps/gaoxy_server/lib/gaoxy/server/config.ex": "e20664cd8b5c61a6c7486df87d4315041178e53b4ceb154d9d7a2149ba4548bc",
+    "apps/gaoxy_server/lib/gaoxy/server/relay_config.ex": "860272401ee64d6c1d57d09aa9bbc798bda26c4421aa38522b27a6fe1734e299",
+    "apps/gaoxy_server/lib/gaoxy/server/route_config.ex": "91bf7fc2a9218a8e90360434c77f8d4e4152f2e6686c008dd2d0644220718579",
+    "apps/gaoxy_server/lib/gaoxy/server/route_resources.ex": "706920c38d071f3597034f69f3cdf674d0b857c4231f2e38b9aa5d2050239469",
+    "apps/gaoxy_server/lib/gaoxy/server/supervisor.ex": "9568c052c7392c7cfd707ed67a9e4d0a070238c70a248df0a376065df1f5aa47",
+    "apps/gaoxy_server/lib/gaoxy/server/upstream_endpoint.ex": "f6eb4115d62680dd00cf5c1982950467f6e222c30adbd130bbf4081bacbb561b",
+    "apps/gaoxy_server/lib/gaoxy/server/upstream_supervisor.ex": "469001a45bb6b79dbd655d155b8584f06bc5d2c3e4ce1b5a30c6e26c96149d45",
+    "apps/gaoxy_server/test/config_test.exs": "b307bae939d641ae6a54242489a8d1d33c92ea8a061dcbd43542f6e39187a986",
+    "apps/gaoxy_server/test/http3_generation_test.exs": "8a1490bae0ad6ca7f20e0d93d3137e6631bd05146d30f9b7b38baa60e6ff6af0",
+    "apps/gaoxy_server/test/relay_config_test.exs": "a15acc520ba95e5c1a02aa1e0530e0cf6a208fb5477a612244a9aacb92325664",
+    "apps/gaoxy_server/test/route_resources_test.exs": "5ae43db3989dfd60f9078b13300575c3e8323c919327e4b1424167be465af490",
+    "apps/gaoxy_server/test/standalone_drain_budget_test.exs": "c504a441b917ce762bd699a8f4782994204c62984dc1d716f8fcdd23cb208651",
+    "apps/gaoxy_server/test/standalone_proxy_config_test.exs": "7fabed1aeb7088b6b96544c2c8fe240298fa8ba98bb27a46250e82b098ee1948",
+    "apps/gaoxy_server/test/standalone_upstream_runtime_test.exs": "f8a0fc33860c4da3971473ab233b5d10701af3db7e2af8b6500797b6e2afe544"
+  }
+}
