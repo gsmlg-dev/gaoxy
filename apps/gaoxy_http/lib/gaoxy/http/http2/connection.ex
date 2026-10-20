@@ -46,6 +46,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
            }),
          h2: h2,
          reserves: reserves,
+         decode_reservation: 0,
          buffer: "",
          preface: false,
          first: true,
@@ -451,27 +452,49 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     if byte_size(block) > state.h2.max_header_block do
       failure(state, :enhance_your_calm)
     else
-      case HPAX.decode(block, state.decoder) do
-        {:ok, fields, decoder} ->
-          state = %{state | decoder: decoder}
-
-          cond do
-            stream_error != nil ->
-              reset(%{state | highest: max(state.highest, id)}, id, stream_error)
-
-            Map.has_key?(state.streams, id) ->
-              trailers(state, id, fields, ended)
-
-            id <= state.highest ->
-              reset(state, id, :stream_closed)
-
-            true ->
-              admit(state, id, fields, ended)
-          end
-
-        {:error, _} ->
-          failure(state, :compression_error)
+      case reserve_decode(state, byte_size(block)) do
+        {:ok, state} -> decode_reserved_headers(state, id, block, ended, stream_error)
+        {:error, _} -> failure(state, :enhance_your_calm)
       end
+    end
+  end
+
+  defp reserve_decode(state, block_bytes) do
+    bytes = Limits.decode_reservation(state.h2, block_bytes)
+
+    if bytes <= state.decode_reservation do
+      {:ok, state}
+    else
+      # HPAX materializes the entire field list before header validation. Grow
+      # before decoding, and retain the high-water charge through connection exit.
+      case Admission.update(state.gate, state.lease, state.reserves.connection + bytes) do
+        :ok -> {:ok, %{state | decode_reservation: bytes}}
+        error -> error
+      end
+    end
+  end
+
+  defp decode_reserved_headers(state, id, block, ended, stream_error) do
+    case HPAX.decode(block, state.decoder) do
+      {:ok, fields, decoder} ->
+        state = %{state | decoder: decoder}
+
+        cond do
+          stream_error != nil ->
+            reset(%{state | highest: max(state.highest, id)}, id, stream_error)
+
+          Map.has_key?(state.streams, id) ->
+            trailers(state, id, fields, ended)
+
+          id <= state.highest ->
+            reset(state, id, :stream_closed)
+
+          true ->
+            admit(state, id, fields, ended)
+        end
+
+      {:error, _} ->
+        failure(state, :compression_error)
     end
   end
 

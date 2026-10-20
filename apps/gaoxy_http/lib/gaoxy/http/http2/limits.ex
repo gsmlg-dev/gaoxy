@@ -45,22 +45,24 @@ defmodule Gaoxy.HTTP.HTTP2.Limits do
   end
 
   def reservation(http, h2) do
-    b = h2.max_header_block
-    t = h2.table_size
-    decode = 2 * b * (max(t, 128) + 2) + 512 * b + 2 * t
-
     %{
-      connection: decode + 16_777_216 + 65_535 + 4 * http.max_buffer_bytes + 8 * @max_delivery,
-      decode: decode,
+      connection: 16_777_216 + 65_535 + 4 * http.max_buffer_bytes + 8 * @max_delivery,
+      decode: decode_reservation(h2, h2.max_header_block),
       stream: 2 * http.max_header_bytes + 4 * http.max_read_chunk + 65_536,
       writer: 4 * 16_384 + 1_024
     }
   end
 
+  def decode_reservation(h2, block_bytes) do
+    t = h2.table_size
+    2 * block_bytes * (max(t, 128) + 2) + 512 * block_bytes + 2 * t
+  end
+
   def validate_budget(http, h2, service) do
     reserves = reservation(http, h2)
 
-    if service.max_bytes >= reserves.connection + reserves.stream + reserves.writer and
+    if service.max_bytes >=
+         reserves.connection + reserves.decode + reserves.stream + reserves.writer and
          service.max_active >= 3,
        do: :ok,
        else: {:error, :http2_byte_budget}

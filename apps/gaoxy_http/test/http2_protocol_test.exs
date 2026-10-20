@@ -77,7 +77,7 @@ defmodule Gaoxy.HTTP2ProtocolTest do
              Gaoxy.HTTP.HTTP2.Settings.apply(defaults, <<8::16, 1::32, 65535::16, 42::32>>)
   end
 
-  test "codec reservation includes worst-case expansion before dispatch capacity" do
+  test "codec reservation validates worst-case expansion separately from initial connection capacity" do
     {:ok, spec} = Gaoxy.HTTP.service_spec(endpoint: {Endpoint, []})
     {:ok, h2} = apply(Gaoxy.HTTP.HTTP2.Limits, :normalize, [%{}])
 
@@ -85,7 +85,23 @@ defmodule Gaoxy.HTTP2ProtocolTest do
       apply(Gaoxy.HTTP.HTTP2.Limits, :reservation, [spec.handler_options.http_limits, h2])
 
     assert reservations.decode >= 2 * 16_384 * 4_098 + 512 * 16_384 + 2 * 4_096
-    assert reservations.connection >= reservations.decode + 16_777_216
+    assert reservations.connection >= 16_777_216
+
+    minimum =
+      reservations.connection + reservations.decode + reservations.stream + reservations.writer
+
+    assert :ok =
+             Gaoxy.HTTP.HTTP2.Limits.validate_budget(spec.handler_options.http_limits, h2, %{
+               max_bytes: minimum,
+               max_active: 3
+             })
+
+    assert {:error, :http2_byte_budget} =
+             Gaoxy.HTTP.HTTP2.Limits.validate_budget(spec.handler_options.http_limits, h2, %{
+               max_bytes: minimum - 1,
+               max_active: 3
+             })
+
     assert reservations.stream > 0
     assert reservations.writer > 0
   end

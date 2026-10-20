@@ -1300,6 +1300,34 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
     assert_receive {:native_seed, {owner, 1, _}, gate}, @wait
     on_exit(fn -> safe_resume(gate) end)
     assert responses(socket, [1]) == %{1 => %{status: "200", body: "seed"}}
+    await_owner(owner, fn state -> map_size(state.streams) == 0 and state.starting == nil end)
+
+    # Isolate worker admission from decoder admission. Decoding a valid block on
+    # the closed seed stream grows the reserve without admitting a large-header
+    # worker, which would distort the tests' exact worker-capacity boundary.
+    padding = String.duplicate("a", 16_300)
+
+    seed_fields = [
+      {":method", "GET"},
+      {":scheme", "http"},
+      {":authority", "localhost"},
+      {":path", "/seed"},
+      {"x-precharge", padding}
+    ]
+
+    {seed, _} = HPAX.encode(:never_store, seed_fields, HPAX.new(4_096))
+    padding = padding <> String.duplicate("a", 16_384 - IO.iodata_length(seed))
+
+    {seed, _} =
+      HPAX.encode(
+        :never_store,
+        List.keyreplace(seed_fields, "x-precharge", 0, {"x-precharge", padding}),
+        HPAX.new(4_096)
+      )
+
+    assert IO.iodata_length(seed) == 16_384
+    assert :ok = :gen_tcp.send(socket, Frame.encode(1, 5, 1, seed))
+    assert_reset(socket, 1, :stream_closed)
 
     state =
       await_owner(owner, fn state ->
@@ -1317,17 +1345,22 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
       payload: initialized_payload
     }
 
-    await_baseline(context, state.reserves.connection + state.reserves.writer)
+    await_baseline(
+      context,
+      state.reserves.connection + state.decode_reservation + state.reserves.writer
+    )
+
     context
   end
 
   defp connection_baseline!(context) do
     {_socket, state} = :sys.get_state(context.owner, @wait)
-    expected = state.reserves.connection + state.reserves.writer
+    connection = state.reserves.connection + state.decode_reservation
+    expected = connection + state.reserves.writer
     gate = :sys.get_state(context.gate, @wait)
     assert map_size(gate.leases) == 2
     assert gate.leases[state.lease].pid == context.owner
-    assert gate.leases[state.lease].bytes == state.reserves.connection
+    assert gate.leases[state.lease].bytes == connection
 
     writer =
       Enum.find_value(gate.leases, fn {_, row} ->

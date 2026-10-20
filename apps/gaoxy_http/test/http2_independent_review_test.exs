@@ -79,7 +79,8 @@ defmodule Gaoxy.HTTP2IndependentReviewTest do
 
   test "terminal trailers buffered before worker admission still require final body consumption" do
     {socket, _server} = connect()
-    send_headers(socket, 1, "/hold", true)
+    # Establish decoding capacity before deliberately suspending Admission.
+    send_headers(socket, 1, "/hold", true, [{"x-precharge", String.duplicate("a", 128)}])
     assert_receive {:review_owner, held, {owner, 1, _}}, @timeout
     {_socket, state} = :sys.get_state(owner)
     gate = state.gate

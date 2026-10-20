@@ -65,6 +65,66 @@ defmodule Gaoxy.HTTP2CapacityTest do
     assert large[:buffer] == 16_384
   end
 
+  test "decode reservation grows before HPACK table insertion and retains its high water" do
+    {server, socket} = live_connection()
+    fields = request_fields() ++ [{"x-pad", String.duplicate("a", 3_000)}]
+    {block, encoder} = HPAX.encode(:store, fields, HPAX.new(4_096))
+    block = IO.iodata_to_binary(block)
+    send_head_and_body(socket, block)
+    assert_receive {:capacity_native, {owner, 1, _}}, @timeout
+    assert response(socket) == %{status: "200", body: "hello"}
+    {_, state} = :sys.get_state(owner)
+    reserve = Gaoxy.HTTP.HTTP2.Limits.decode_reservation(state.h2, byte_size(block))
+    assert state.decode_reservation == reserve
+    gate = :sys.get_state(state.gate)
+    assert gate.leases[state.lease].bytes == state.reserves.connection + reserve
+
+    # Reuse the inserted dynamic entry. A short indexed block must preserve
+    # both the HPACK context and the connection's existing expansion charge.
+    {indexed, _} = HPAX.encode(:store, fields, encoder)
+    assert IO.iodata_length(indexed) < byte_size(block)
+    send_head_and_body(socket, indexed, 3)
+    assert_receive {:capacity_native, {^owner, 3, _}}, @timeout
+
+    assert response(socket, %{status: nil, body: ""}, HPAX.new(4_096), 3) ==
+             %{status: "200", body: "hello"}
+
+    {_, after_indexed} = :sys.get_state(owner)
+    assert after_indexed.decode_reservation == reserve
+    assert %{rejected: 0} = Gaoxy.status(server, :http)
+  end
+
+  test "unavailable expansion capacity rejects a block before HPACK decoding" do
+    {_server, socket} = live_connection()
+    {block, _} = HPAX.encode(:never_store, request_fields(), HPAX.new(4_096))
+    send_head_and_body(socket, block)
+    assert_receive {:capacity_native, {owner, 1, _}}, @timeout
+    assert response(socket) == %{status: "200", body: "hello"}
+    {_, state} = :sys.get_state(owner)
+    retained = Gaoxy.Admission.status(state.gate).retained_bytes
+    parent = self()
+
+    {filler, monitor} =
+      spawn_monitor(fn ->
+        {:ok, _lease} = Gaoxy.Admission.acquire(state.gate, @budget - retained - 1_024)
+        send(parent, :capacity_filled)
+
+        receive do
+          :stop -> :ok
+        end
+      end)
+
+    on_exit(fn -> send(filler, :stop) end)
+    assert_receive :capacity_filled, @timeout
+
+    # Index zero is malformed HPACK and would produce COMPRESSION_ERROR (9)
+    # if reached. Resource rejection must happen first, before any expansion.
+    :ok = :gen_tcp.send(socket, Frame.encode(1, 5, 3, :binary.copy(<<0x80>>, 4_096)))
+    assert_goaway(socket, 11)
+    send(filler, :stop)
+    assert_receive {:DOWN, ^monitor, :process, ^filler, :normal}, @timeout
+  end
+
   test "an unsupported native TCP backend is rejected by pure prebind validation" do
     with_env(:kernel, :inet_backend, :inet, fn ->
       assert {:ok, _} = Gaoxy.HTTP.service_spec(options())
@@ -175,25 +235,71 @@ defmodule Gaoxy.HTTP2CapacityTest do
     end
   end
 
-  defp response(socket, result \\ %{status: nil, body: ""}, decoder \\ HPAX.new(4_096)) do
+  defp live_connection do
+    {:ok, server} = Gaoxy.HTTP.start_link(options())
+    {:ok, {ip, port}} = Gaoxy.info(server, :http).local
+    {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], @timeout)
+
+    on_exit(fn ->
+      :gen_tcp.close(socket)
+      if Process.alive?(server), do: Gaoxy.stop(server, @timeout)
+    end)
+
+    :ok =
+      :gen_tcp.send(socket, ["PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n", Frame.encode(4, 0, 0, "")])
+
+    {server, socket}
+  end
+
+  defp request_fields do
+    [
+      {":method", "POST"},
+      {":scheme", "http"},
+      {":authority", "localhost"},
+      {":path", "/echo"},
+      {"content-length", "5"}
+    ]
+  end
+
+  defp send_head_and_body(socket, block, id \\ 1) do
+    :ok = :gen_tcp.send(socket, [Frame.encode(1, 4, id, block), Frame.encode(0, 1, id, "hello")])
+  end
+
+  defp assert_goaway(socket, code) do
+    assert {:ok, <<size::24, type, _flags, _::1, id::31>>} = :gen_tcp.recv(socket, 9, @timeout)
+    bytes = if size == 0, do: "", else: elem(:gen_tcp.recv(socket, size, @timeout), 1)
+
+    case {type, id} do
+      {7, 0} -> assert <<_last::32, ^code::32>> = bytes
+      {4, 0} -> assert_goaway(socket, code)
+      _ -> flunk("unexpected H2 frame #{type} for stream #{id}: #{inspect(bytes)}")
+    end
+  end
+
+  defp response(
+         socket,
+         result \\ %{status: nil, body: ""},
+         decoder \\ HPAX.new(4_096),
+         stream_id \\ 1
+       ) do
     {:ok, <<size::24, type, flags, _::1, id::31>>} = :gen_tcp.recv(socket, 9, @timeout)
     bytes = if size == 0, do: "", else: elem(:gen_tcp.recv(socket, size, @timeout), 1)
 
     case {type, id} do
-      {1, 1} ->
+      {1, ^stream_id} ->
         assert Frame.flag?(flags, 4)
         {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
         {":status", status} = List.keyfind(fields, ":status", 0)
         next = %{result | status: status}
-        if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder)
+        if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder, stream_id)
 
-      {0, 1} ->
+      {0, ^stream_id} ->
         next = %{result | body: result.body <> bytes}
-        if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder)
+        if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder, stream_id)
 
       {4, 0} ->
         unless Frame.flag?(flags, 1), do: :gen_tcp.send(socket, Frame.encode(4, 1, 0, ""))
-        response(socket, result, decoder)
+        response(socket, result, decoder, stream_id)
 
       _ ->
         flunk("unexpected H2 frame #{type} for stream #{id}: #{inspect(bytes)}")

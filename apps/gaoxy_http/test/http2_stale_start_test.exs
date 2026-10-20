@@ -18,7 +18,8 @@ defmodule Gaoxy.HTTP2StaleStartTest do
   @tag :controlled_late_receipt
   test "a canceled starter's late failure cannot replace the current admission starter" do
     {socket, server} = connect()
-    send_headers(socket, 1, "/seed")
+    # Precharge decoding before suspending Admission to isolate worker startup.
+    send_headers(socket, 1, "/seed", [{"x-precharge", String.duplicate("a", 128)}])
     assert_receive {:stale_start_owner, {owner, 1, _}, gate}, @timeout
     assert responses(socket, [1]) == %{1 => %{status: "200", body: "/seed"}}
     await_owner(owner, &(not Map.has_key?(&1.streams, 1) and &1.starting == nil))
@@ -95,7 +96,7 @@ defmodule Gaoxy.HTTP2StaleStartTest do
     {socket, server}
   end
 
-  defp send_headers(socket, id, path) do
+  defp send_headers(socket, id, path, extra \\ []) do
     fields = [
       {":method", "GET"},
       {":scheme", "http"},
@@ -103,7 +104,7 @@ defmodule Gaoxy.HTTP2StaleStartTest do
       {":path", path}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {block, _} = HPAX.encode(:never_store, fields ++ extra, HPAX.new(4_096))
     :ok = :gen_tcp.send(socket, Frame.encode(1, 5, id, block))
   end
 
