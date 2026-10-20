@@ -1,317 +1,178 @@
 # Gaoxy
 
-## Current source backend — 2026-10-20 (Asia/Shanghai)
+Gaoxy is an Elixir/OTP server runtime for Plug, Phoenix, reverse proxies and
+custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
+HTTP/3 available through an optional package. Run it inside your application's
+supervision tree or use the standalone release with JSON configuration.
 
-Published [v0.5.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.0) uses
-[Hell](https://github.com/gsmlg-dev/hell) 0.1.2,
-the Thousand Island fork, for TCP/OTP TLS, using the public `Hell` namespace and
-`:hell` application. Published v0.4.0 source and binaries retain Thousand Island.
-See the [dependency audit](docs/dependency-audit.md) for the exact Hell pin and
-[migration acceptance](docs/acceptance/hell-migration.md) for source verification.
+The current published version is **0.5.2**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.2) ·
+[release verification](docs/acceptance/release-0.5.2.md).
 
-## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
+## Choose a package
 
-Published [v0.5.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.0) from
-`b0e1531b9d2ac682e4af19d4616ad4461e3ca6f2` with Hell 0.1.2 (`Hell` namespace,
-`:hell` application) replacing Thousand Island. Accepted protocol and Phoenix
-functionality is unchanged; published v0.4.0 source and binaries retain
-Thousand Island. Fresh ordinary portable verification passed **210 executions /
-0 failures / 144 excluded / 0 skipped**. Packaged H2/h2c/H3 WebSocket passed
-**15/15 each** in builder and offline runtime; all **21 ELF objects** passed
-dependency checks. Three freshly downloaded release assets match the qualified
-bytes and hashes. New hosted CI remains **NOT RUN**. See the
-[release notes](docs/releases/0.5.0.md) for platform support and retained limits,
-and [release acceptance](docs/acceptance/release-0.5.0.md) for exact evidence.
-Historical results below retain their recorded source identities and outcomes.
+| Package | Use it for | Guide |
+| --- | --- | --- |
+| [`gaoxy`](https://hex.pm/packages/gaoxy) | Custom TCP/TLS/UDP services and runtime lifecycle | [README](apps/gaoxy/README.md) |
+| [`gaoxy_http`](https://hex.pm/packages/gaoxy_http) | Plug, Phoenix, HTTP/1.1, HTTP/2 and WebSocket servers | [README](apps/gaoxy_http/README.md) |
+| [`gaoxy_websock_adapter`](https://hex.pm/packages/gaoxy_websock_adapter) | Gaoxy's WebSockAdapter distribution for Phoenix and Plug upgrades | [README](vendor/websock_adapter/README.gaoxy.md) |
+| [`gaoxy_http3`](https://hex.pm/packages/gaoxy_http3) | Optional native HTTP/3 server over QUIC | [README](apps/gaoxy_http3/README.md) |
+| [`gaoxy_proxy`](https://hex.pm/packages/gaoxy_proxy) | Reverse HTTP/WebSocket proxies, upstream resources and gateway services | [README](apps/gaoxy_proxy/README.md) |
+| `gaoxy_server` | Standalone application with JSON service and route configuration | [README](apps/gaoxy_server/README.md) |
 
-## v0.4.0 release status — 2026-10-19
+`gaoxy_server` ships in the standalone release rather than as a Hex package.
+Choose `gaoxy_http` to replace Bandit in Phoenix; its dependencies bring in the
+core runtime. Add `gaoxy_http3` or `gaoxy_proxy` when your application needs them.
 
-Accepted source includes embedded managed H1 reuse, managed H2/h2c fixed/group upstreams, probes and Generation/resource accounting, plus native downstream H2/h2c/H3 WebSocket and Phoenix integration. Embedded HTTPS prefers H2 with H1 negotiation/no-ALPN fallback; plain TCP defaults to H1, prior-knowledge h2c is explicit, and WebSocket requires listener `extended_connect` opt-in. Standalone JSON defaults HTTP services to H1, permits explicit H2/h2c and separate H3 HTTP services and fixed H1/H3 origins, and exposes no managed handles/groups/probes or WebSocket activation. Browser H3 evidence uses controlled QUIC-first selection; automatic H3 selection with TCP available remains unqualified.
+## Replace Bandit in Phoenix
 
-Published [v0.4.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.4.0) from `ebd2b12a997750109ffd3fc7db4f3eda223ab79b`. Fresh ordinary portable verification: **200 executed / 0 failures / 90 excluded**; packaged H2/h2c/H3 WebSocket **15/15 each** in builder and offline runtime. All **21 ELF objects** passed dependency checks; three freshly downloaded assets match the qualified bytes and hashes. [Release acceptance](docs/acceptance/release-0.4.0.md) records source, artifact and publication evidence. New hosted CI remains NOT RUN.
+See the [complete Phoenix setup and Bandit migration guide](docs/phoenix.md)
+for development, production, HTTPS, LiveView, Channels and option migration.
+For an existing Phoenix application, the essential changes are:
 
-Earlier snapshots retain their capture-time scope and actual failed, blocked and unexecuted results. Specialist qualification remains with its dedicated environment; deployment and production acceptance remain NOT RUN.
+1. Replace the explicit Bandit dependency in `mix.exs` with:
 
-## Historical overview
+   ```elixir
+   {:gaoxy_http, "~> 0.5.2"},
+   {:websock_adapter, "~> 0.5.2", hex: :gaoxy_websock_adapter, override: true}
+   ```
 
-An Elixir/OTP transport runtime, usable inside an application's supervision tree
-or as a standalone release. The M0/M1 implementation composed Thousand Island
-for TCP/OTP TLS and Abyss for UDP and optional generic QUIC. M0/M1 implements
-transport hosting, service lifecycle, finite admission, telemetry and custom
-protocol handlers.
-The M2 worktree adds native HTTP/1, WebSock and Plug/Phoenix integration with a
-real browser fixture, [HTTP streaming reverse proxying](docs/http-proxy.md), and
-message-level [WebSocket reverse proxying](docs/websocket-proxy.md).
-HTTP Fetch 0.21.4 supplies H1 request-owned cleanup and preserves present empty
-queries (`/upload?` remains `/upload?`), resolving the former
-[#64](https://github.com/gsmlg-dev/http_fetch/issues/64) blocker.
-**M2 local completion gates pass**: all 255 scoped tests and refreshed native
-Phoenix/browser, reverse-proxy example and core-consumer checks pass.
-See [M2 evidence](docs/acceptance/m2.md). Gaoxy hosted CI, push, merge, release
-and deployment are not part of this local acceptance.
+   Keep the dependency name `:websock_adapter`: that is the OTP application
+   Phoenix uses. `hex: :gaoxy_websock_adapter` selects the Gaoxy distribution.
 
-M3 implements opt-in native HTTP/2, authenticated forward HTTP/H1 CONNECT,
-TCP/TLS relays, bounded UDP unicast associations, immutable route generations,
-standalone HTTP configuration and supervised dedicated-H1 upstream groups.
-See [native HTTP](docs/native-http.md), [gateway APIs](docs/gateway.md) and
-[M3 acceptance](docs/acceptance/m3.md). The v0.2.0 gateway beta covers this
-implemented subset. Upstream pools and upstream H2 are not implemented. Native
-downstream [HTTP/3](docs/http3.md) is implemented in the M4 worktree.
-[HTTP Fetch #101](https://github.com/gsmlg-dev/http_fetch/issues/101) is closed;
-0.21.4 passes all 15 Fetch functional diagnostic rows, including request trailers.
-Fetch H3 cleanup completion remains unsupported. The independently reviewed
-[public Session design](docs/designs/m4-public-session-upstream.md) is selected
-for upstream H3, with the reviewed
-[consumer-affinity amendment](docs/designs/m4-public-session-consumer-affinity.md).
-All prescribed M4 implementation checks pass:530 scoped tests/0 failures,
-public Session50 checks, native/server/shared/browser47/59/19, standalone16,
-and clean core/H1-H2/H3 consumers1/2/2. The complete H1/H2/H3-to-H3 matrix
-passes66network+2policy checks in both its first execution and required fresh
-repeat, with independent evidence reviews. Final independent M4 acceptance
-passes. [v0.3.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.3.0) is published from source4931982:
-the portable builder passes757 tests/0 failures, fresh offline core/H1/H2/H3
-runtime and21-ELF inspection pass, and all three published downloads equal
-the qualified bytes. Hosted CI remains BLOCKED_ENV with zero executed steps;
-deployment and release-artifact E2E are NOT RUN. [M4 acceptance](docs/acceptance/m4.md#final-implementation-gate-ledger--2026-10-13)
-binds exact source identities, counts and limits and preserves historical FAILs.
-The released 0.21.3 M3 cohort passed compatibility486/0, public managed39/39,
-H1 baseline20/0, B21, supplemental TLS5/5 and the public H2 supplement8/8.
-Negative probes retain their genuine failures and expected outcomes.
-[ADR007](docs/adr/007-m3-beta-and-m4.md) records the reviewed scope and authorizes
-release plus M4 preparation. Existing native browser/RFC/600-second load evidence
-retains its recorded earlier source identity.
+2. Set the Endpoint adapter in `config/config.exs`:
 
-**M0/M1 required transport foundation gates passed** on the recorded macOS and
-isolated Linux baselines; the experimental optional QUIC wire gate also passed. See [execution evidence](docs/acceptance/m1.md) and
-[task status and repair counters](docs/implementation-status.md).
-Release execution and artifact verification are recorded separately in
-[the v0.3.0 release receipt](docs/acceptance/release-0.3.0.md).
-Continuing local development has accepted [M3 H1 resource foundation](docs/plans/m3-h1-resource-foundation.md),
-[fixed endpoints](docs/plans/m3-managed-h1-fixed-endpoint.md),
-[groups/probes](docs/plans/m3-managed-h1-groups.md) and
-[Generation ownership](docs/plans/m3-managed-h1-generation.md). The Generation
-commit is `cb619569c7a18568981d3425845954ad04908ffb`, with independent SPEC/CODE
-and fresh341/0 scoped verification. [Managed H2 preparation](docs/plans/m3-managed-h2-preparation.md)
-has passed complete independent SPEC/CODE and fresh97/0 scoped plus63/0 public
-qualification; live H2 activation,
-standalone integration and sustained-load acceptance remain pending. These local
-changes are separate from the published v0.3.0 artifact and full M3 acceptance.
+   ```elixir
+   config :my_app, MyAppWeb.Endpoint,
+     adapter: Gaoxy.PhoenixAdapter
+   ```
 
-## Development
+3. Configure a development listener in `config/dev.exs`:
 
-Core declares Elixir 1.18+. Executed baselines are macOS x86_64 with Elixir
-1.20.1/OTP29 and isolated Alpine Linux with Elixir1.19.5/OTP28. The pinned Abyss
-artifact builds a Rust NIF, so Rust/Cargo are required even for ordinary UDP.
-The locked Nix shell supplies Elixir1.18/OTP28, Rust/Cargo, Python, OpenSSL and
-Expect; M3 executes that shell on Linux with Elixir1.18.5/OTP28.5.0.7.
-Elixir **1.18.5** is the canonical formatter, matching the locked Nix package.
-Use that version for `mix format` and its check; formatting runs in its own CI
-job. Runtime compilation and tests retain both Elixir1.18.5/OTP28.5 and
-Elixir1.20.1/OTP29.0.2, independently of formatting. There is no devenv
-configuration in this repository.
+   ```elixir
+   config :my_app, MyAppWeb.Endpoint,
+     http: [ip: {127, 0, 0, 1}, port: 4000],
+     server: true
+   ```
 
-Certificate fixtures require OpenSSL3.x. `OPENSSL_BIN` optionally selects one
-executable path (including paths containing spaces); it is never evaluated as
-shell code. CI provisions OpenSSL3 on Linux and Homebrew `openssl@3` on macOS,
-records its version, and exports its absolute path. Generation uses an isolated
-private temporary directory and an explicit CA/leaf profile, verifies server
-purpose plus `localhost`/`127.0.0.1`, and removes signing keys/serial/request files.
-The caller owns the resulting short-lived leaf key and public certificates;
-never install this CA globally. TLS regressions also reject a different generated
-CA and a wrong hostname while keeping peer verification enabled.
+   Keep `MyAppWeb.Endpoint` in the application's supervisor. The Endpoint
+   starts and owns its Gaoxy listeners. Translate existing Bandit listener
+   options using the migration guide's supported option table.
+
+4. Fetch dependencies and start the application:
+
+   ```sh
+   mix deps.get
+   mix phx.server
+   ```
+
+   Open <http://localhost:4000>. Existing routes, Plug pipelines, Channel
+   sockets and LiveView declarations remain part of your Phoenix application.
+
+Plain HTTP defaults to HTTP/1.1. HTTPS defaults to HTTP/2 with HTTP/1.1 fallback.
+Ordinary HTTP/1.1 WebSocket upgrades work with the adapter above. Native H2/H3
+WebSocket additionally requires `extended_connect: true` and an explicit
+`websocket_paths` allowlist; the [Phoenix guide](docs/phoenix.md) shows both.
+
+## Serve a Plug
+
+Add `{:gaoxy_http, "~> 0.5.2"}` to your dependencies. Given a Plug module such
+as `MyApp.Router`, add a listener to your application's supervision tree:
+
+```elixir
+children = [
+  {Gaoxy.HTTP,
+   id: :web,
+   plug: {MyApp.Router, []},
+   ip: {127, 0, 0, 1},
+   port: 4000}
+]
+
+Supervisor.start_link(children, strategy: :one_for_one, name: MyApp.Supervisor)
+```
+
+The [HTTP package README](apps/gaoxy_http/README.md) covers TLS certificates,
+protocol selection, resource limits and multiple listeners. For custom wire
+protocols, start with the [core package README](apps/gaoxy/README.md).
+
+## Run the standalone server
+
+Create `config.json`:
+
+```json
+{
+  "version": 1,
+  "services": [{
+    "id": "echo",
+    "transport": "tcp",
+    "handler": "stream_echo",
+    "ip": "127.0.0.1",
+    "port": 4000
+  }]
+}
+```
+
+From this checkout:
 
 ```sh
+mix deps.get --check-locked
+mix gaoxy.validate config.json
+MIX_ENV=prod mix release gaoxy
+GAOXY_CONFIG="$PWD/config.json" _build/prod/rel/gaoxy/bin/gaoxy start
+```
+
+Startup prints `GAOXY_READY` with actual bound addresses and ports. The
+[standalone guide](apps/gaoxy_server/README.md) includes HTTP routes, reverse
+proxy configuration, TLS and local route reload.
+
+## Requirements and development
+
+The packages require Elixir **1.18+**. The core's Abyss dependency builds a
+Rust NIF, so install Rust/Cargo and a native compiler toolchain. HTTP/3 and the
+proxy dependency graph add QUIC/TLS libraries; see their package
+guides for requirements. Core-only consumers remain independent of Plug,
+Phoenix and the optional QUIC engine.
+
+The locked Nix shell supplies Elixir 1.18.5 / OTP 28, Rust/Cargo, Python,
+OpenSSL and Expect:
+
+```sh
+nix develop
 mix deps.get --check-locked
 mix format --check-formatted
 mix compile --warnings-as-errors
 python3 scripts/check-tests.py
-bash scripts/external-consumer.sh
 ```
 
-The test wrapper fails on empty execution. Tests use generated short-lived
-credentials and real sockets; independent TLS peers validate CA and hostname.
-For the measured local macOS timing environment, an explicit process-scoped
-`ELIXIR_ERL_OPTIONS='+S 2:2'` has passed the same checks/deadlines. Default VM
-release startup stalled during code preload, and default TLS timing has been
-intermittent; those failures remain recorded.
+Use **Elixir 1.18.5** for canonical formatting. TLS fixtures require OpenSSL 3;
+`OPENSSL_BIN` can select its executable. Run network fixtures in their
+documented isolated environment.
 
-## Hex publishing
+## Documentation and publishing
 
-The manual release workflow prepares standalone Hex packages from the umbrella
-source and publishes `gaoxy_websock_adapter`, `gaoxy`, `gaoxy_http`,
-`gaoxy_http3` and `gaoxy_proxy` in dependency order after the standalone smoke
-checks. It uses the configured `HEX_API_KEY` Actions secret, builds all packages
-before the first publication, and verifies downloaded package bytes before
-pushing the release tag. GitHub assets include the package tarballs and
-checksums. `gaoxy_server` remains the standalone application artifact.
-Publishing uses `mix hex.publish package --yes`; HexDocs are not generated.
-Each staged project fetches its production dependencies before publication.
+- [Phoenix and Bandit migration](docs/phoenix.md)
+- [Native HTTP and WebSocket](docs/native-http.md)
+- [HTTP/3](docs/http3.md), [HTTP reverse proxy](docs/http-proxy.md) and
+  [WebSocket reverse proxy](docs/websocket-proxy.md)
+- [Gateway APIs](docs/gateway.md) and [capability limits](docs/capabilities.md)
+- [Architecture](docs/architecture.md) and [dependency provenance](docs/dependency-audit.md)
+- [Historical README and acceptance records](docs/history/readme-2026-10-20.md)
 
-The staging script preserves runtime source bytes while replacing workspace
-dependency declarations with exact Hex requirements. Packages use the selected
-MIT license; the adapter fork retains upstream licensing and provenance.
-Its version follows the Gaoxy release, with upstream WebSockAdapter 0.6.0 as
-the current source base. Core packages use Hell 0.1.2 and Abyss 0.7.0.
-
-Publication status and clean-consumer results for 0.5.2 are recorded in
-[the release acceptance](docs/acceptance/release-0.5.2.md).
-After publication, a Phoenix application's dependencies include:
-
-```elixir
-{:gaoxy_http, "~> 0.5.2"},
-{:websock_adapter, "~> 0.5.2", hex: :gaoxy_websock_adapter, override: true}
-```
-
-Set the Phoenix endpoint's `adapter` to `Gaoxy.PhoenixAdapter`. The explicit
-WebSockAdapter override selects Gaoxy dispatch and native H2/H3 validation
-for Phoenix's existing adapter dependency. Keep this fork while those changes
-remain outside the canonical upstream package; see the
-[native HTTP guide](docs/native-http.md) for endpoint and WebSocket settings.
-
-To reproduce package preparation without publishing:
+The manual release workflow builds and publishes all five Hex packages in
+dependency order using the `HEX_API_KEY` Actions secret. Each package contains
+its own README. The staging tool preserves runtime source bytes and converts
+workspace dependencies to exact Hex requirements:
 
 ```sh
 elixir scripts/stage-hex-packages.exs "$PWD" .audit/hex-packages
+python3 scripts/test-stage-hex-packages.py
 ```
 
-## Embedded services
+The output directory must be empty. The workflow publishes packages and GitHub
+assets; HexDocs are not generated. Historical verification records retain their
+recorded source identities, outcomes and scope.
 
-For native HTTP/Plug/Phoenix, see [the server guide](docs/native-http.md) and
-[runnable Phoenix fixture](examples/phoenix_native/README.md). The transport API
-below remains independent of all HTTP dependencies.
+## License
 
-```elixir
-defmodule Echo do
-  @behaviour Gaoxy.StreamHandler
-  def init(_metadata, _options), do: {:ok, nil}
-  def handle_data(bytes, state), do: {:send, bytes, state}
-end
-
-{:ok, runtime} = Gaoxy.start_link(services: [
-  %{id: "echo", transport: :tcp, ip: {127, 0, 0, 1}, port: 0, handler: Echo}
-])
-Gaoxy.info(runtime, "echo")
-Gaoxy.status(runtime, "echo")
-Gaoxy.pause(runtime, "echo")
-Gaoxy.resume(runtime, "echo")
-Gaoxy.remove(runtime, "echo", 1_000)
-Gaoxy.stop(runtime)
-```
-
-`Gaoxy.child_spec/1` embeds the runtime under supervision. `Gaoxy.add/2` validates
-before activation. Service IDs and telemetry are instance-scoped;
-`Gaoxy.handle/2` returns a generation-scoped handle usable in place of an ID.
-Actual ephemeral ports are reported after binding. Startup failure rolls back
-activated siblings, and explicit removal stays removed. TCP and UDP bindings
-are separate; conflicting same-family ownership is rejected.
-
-Streams preserve ordered bytes across arbitrary delivery boundaries. Their
-callbacks return continue/send/close/error actions, with independent state,
-output, callback and idle limits. TLS uses OTP `:ssl` explicitly. Selecting
-unsupported `:ex_ssl` or mTLS fails without fallback.
-
-Datagram handlers implement `handle_datagram(packet, options)` and return `:ok`,
-`{:reply, bytes}`, `{:send, destination, bytes}` or `{:error, reason}`. A packet
-preserves empty payloads, peer and actual local bind; unavailable destination
-and interface fields stay `:unknown`. The callback receives no listener socket
-or close capability. Addressed sends use the owned endpoint, enforce output/byte
-bounds and never automatically retry. Scoped IPv6 destinations use an explicit
-sockaddr. Multicast exposes `memberships/2`, `join/3`, `leave/3` with group/interface
-pairs, finite limits and desired-state recovery after restart.
-
-UDP pause retains the bind/memberships and stops admission; received paused
-packets are dropped, while kernel-queued packets may survive withheld credit.
-TCP/TLS pause unbinds new acceptance while admitted connections retain I/O;
-resume rebinds and may change a port-zero endpoint. Removal uses one absolute
-deadline and forces cleanup at expiry. Send telemetry distinguishes operation
-submission and local/unknown outcomes; admission and local completion do not
-prove peer delivery. Counters exclude arbitrary callback allocation and kernel
-buffers.
-
-## Standalone and mixed transports
-
-Standalone version1 JSON resolves handlers through a fixed allowlist, without
-evaluating code:
-
-```json
-{"version":1,"services":[{"id":"echo","transport":"tcp","handler":"stream_echo","ip":"127.0.0.1","port":4000}]}
-```
-
-```sh
-mix gaoxy.validate config.json
-MIX_ENV=prod mix release
-GAOXY_CONFIG=config.json _build/prod/rel/gaoxy/bin/gaoxy start
-```
-
-Startup emits `GAOXY_READY` with actual bound endpoints.
-[The mixed example](examples/mixed_transports/README.md) defines custom handlers
-and starts TCP, TLS, unicast, broadcast and multicast simultaneously. Its
-`MIXED_READY` record drives the dedicated example fixture.
-
-Run privileged network gates only in a disposable isolated Linux environment:
-
-```sh
-python3 integration/network/fixture.py --allow-privileged --ipv6
-GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6
-MIX_ENV=prod mix release
-python3 integration/network/release_gate.py --allow-privileged
-python3 integration/network/example_gate.py --allow-privileged
-```
-
-They create fixture-owned namespaces/veths, use two independent peers and clean
-up on failure. Do not use physical LAN broadcast or alter normal host routes.
-The recorded s93 executions use Docker `--network none` with explicit namespace
-capabilities. Linux IPv6 inet scoped egress passed; socket scoped egress is
-explicitly unsupported and tested for absence of delivery.
-
-## Optional QUIC
-
-The standalone core dependency graph contains no QUIC engine. The umbrella
-proxy package now transitively selects `elixir_quic` and `ex_ssl` 0.21.4 through
-HTTP Fetch/WebSocket; native downstream H2 is explicit in `gaoxy_http`, and this
-dependency selection does not enable upstream H2/H3. The separately locked
-opt-in consumer now selects `elixir_quic` and `ex_ssl` ==0.21.4. M4's independent
-public-host gate passed on0.21.4 with independent review; earlier0.21.3 evidence
-retains its historical source identity. The final implementation ledger records accepted reuse after unchanged-host-input review.
-Older 0.17.0 evidence remains historical:
-
-```sh
-cd integration/quic_consumer
-mix deps.get --check-locked
-mix compile --warnings-as-errors
-python3 ../../scripts/check-tests.py
-```
-
-The consumer uses aioquic1.2.0/CPython3.12 via `uv`, generated credentials and a
-custom ALPN. The experimental `Gaoxy.QUICHandler` and `Gaoxy.QUIC` facade use
-only public `Abyss.QUIC` handles; the engine retains CID routing, cryptographic
-state, flow control and generations. Facade reads/writes are at most16KiB and
-also obey configured limits. Native operation references and unknown receipts
-are preserved; a write receipt means admission. QUIC pause and full protocol
-drain are unavailable; local host cleanup is reported explicitly. IPv6/wildcard
-QUIC, DATAGRAM, migration, mTLS,0-RTT and WebTransport are unsupported. Native
-H3 is an explicit optional application with [its own limits and gates](docs/http3.md).
-The independent custom-ALPN wire gate passed. Test handlers can log
-`invalid_operation` after peer-requested close because polling races the native
-closing phase; clean/no-error fixture teardown is not established.
-
-| Feature | Current implementation/evidence |
-|---|---|
-| TCP / OTP TLS | Real exchanges, fragmented input, failure/bound isolation and independently validating TLS |
-| UDP unicast | Empty/nonempty/oversize, callback crash, sustained overload and admitted reply during drain |
-| IPv4 broadcast/multicast | Isolated inet/socket ingress/egress, two peers, TTL/interface/loopback and membership restart wire |
-| Lifecycle | Actual ports, pause/resume, deadline cleanup, generation/timer isolation and startup rollback |
-| Core-only consumer / release | Cold optional-stack exclusion; production five-transport traffic/shutdown/rebind |
-| IPv6 multicast | Linux inet accepted subset; socket scoped-send negative; macOS controls rejected |
-| Generic QUIC | Experimental custom-ALPN streams accepted with independent aioquic; noisy fixture close handling remains |
-| Custom TCP TLS | Explicitly unsupported; public ex_ssl server API missing |
-| Native HTTP/Phoenix/proxies | Native HTTP/Phoenix, WebSocket and HTTP streaming implemented; M2 local gates PASS with HTTP Fetch 0.19.1: 255 scoped tests, native Phoenix/browser, routes, streaming and clean core consumer |
-| Native H2 / gateway M3 | Native H2, forward/CONNECT, relays, generations and dedicated-H1 groups implemented; [current candidate gates and upstream blockers](docs/acceptance/m3.md) remain distinct |
-
-[Capability limits](docs/capabilities.md), [dependency provenance](docs/dependency-audit.md),
-[architecture](docs/architecture.md) and [ADRs](docs/adr/) define the boundaries.
-GitHub CI had not executed at implementation acceptance; local/isolated results
-are recorded separately from subsequent workflow runs.
-
-Final M4 implementation acceptance: [independent review](docs/acceptance/evidence/m4/upstream-matrix/review-m4-final-implementation-candidate-acceptance-1791858009332797257.json),
-PASS with no unresolved findings. Portable qualification/publication stay separate.
+MIT. The WebSockAdapter distribution retains its upstream MIT license and
+provenance files.
