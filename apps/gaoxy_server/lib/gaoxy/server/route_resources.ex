@@ -113,10 +113,11 @@ defmodule Gaoxy.Server.RouteResources do
     end
   end
 
-  defp install(%{handler_options: %{endpoint: {Router, router}}} = spec, state, deadline) do
+  defp install(%{handler_options: %{endpoint: {Router, _router}}} = spec, state, deadline) do
     store = Supervisor.route_store(spec.id)
 
-    with {:ok, expected, _} <- Generation.snapshot(store, Lifecycle.remaining(deadline)) do
+    with {:ok, expected, router} <-
+           Generation.declared_snapshot(store, Lifecycle.remaining(deadline)) do
       case prepare_and_activate(store, expected, router, deadline, state) do
         {{:ok, _}, state} ->
           options = %{spec.handler_options | endpoint: {Generation, store}, initialized: false}
@@ -151,8 +152,15 @@ defmodule Gaoxy.Server.RouteResources do
     case resolve(router.routes, state, deadline) do
       {:ok, routes, pins, state} ->
         result =
-          with {:ok, router} <- Router.compile(Enum.map(routes, &route_input/1)),
-               do: Generation.activate(store, expected, router, Lifecycle.remaining(deadline))
+          with {:ok, resolved} <- Router.compile(Enum.map(routes, &route_input/1)),
+               do:
+                 Generation.activate_declared(
+                   store,
+                   expected,
+                   resolved,
+                   router,
+                   Lifecycle.remaining(deadline)
+                 )
 
         {result, release_preparations(pins, state, deadline)}
 

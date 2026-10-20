@@ -350,6 +350,13 @@ Inline upstream addresses, trust and health policy can change through route
 reload. Relay services, listener/address/TLS settings and service limits require
 a restart. This API provides no public management listener.
 
+Internal managed-owner/runtime recovery preserves the latest successfully
+accepted declarative routes, including route reloads, and reconstructs fresh
+instance-local upstream handles before restoring listeners. Obsolete owner
+incarnations cannot leave generation pins blocking later reloads. Transport
+custodians retain their independent cleanup duties, and cleanup failures from
+live owners remain visible and retryable.
+
 Configuration files must be regular files no larger than 1 MiB. Unknown keys,
 unregistered targets and invalid protocols are rejected; configuration does
 not evaluate code or create atoms from input.

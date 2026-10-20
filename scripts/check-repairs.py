@@ -27,6 +27,7 @@ SUITES = {
         ("apps/gaoxy_http3/test/transport_test.exs", 13),
     ],
     "protocol": [
+        ("apps/gaoxy_server/test/standalone_recovery_test.exs", 2),
         ("apps/gaoxy_http/test/plug_body_network_test.exs", 4),
         ("apps/gaoxy_http3/test/plug_body_network_test.exs", 1),
         ("apps/gaoxy_http/test/http2_authority_network_test.exs", 1),

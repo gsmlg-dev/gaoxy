@@ -354,12 +354,12 @@ defmodule Gaoxy.Proxy.UpstreamGroups do
 
   def pin_many(_, _, _, _, _), do: {:error, :invalid_resource_pin}
   @impl Gaoxy.HTTP.Resources
-  def release(%{owner: owner} = pin),
-    do: Lifecycle.call(owner, {:release, pin}, Lifecycle.deadline(100))
+  def release(%{owner: _} = pin),
+    do: Gaoxy.Proxy.ManagedPin.release(pin, Lifecycle.deadline(100))
 
   def release(%{owner: owner} = pin, deadline) when is_pid(owner) and is_integer(deadline) do
     if Lifecycle.remaining(deadline) > 0,
-      do: Lifecycle.call(owner, {:release, pin}, deadline),
+      do: Gaoxy.Proxy.ManagedPin.release(pin, deadline),
       else: {:error, :deadline_exceeded}
   end
 

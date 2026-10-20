@@ -129,14 +129,14 @@ defmodule Gaoxy.Proxy.UpstreamTransports do
 
   @impl true
   def release(%{provider: __MODULE__, owner: owner} = pin) when is_pid(owner),
-    do: Lifecycle.call(owner, {:release, pin}, Lifecycle.deadline(1000))
+    do: Gaoxy.Proxy.ManagedPin.release(pin, Lifecycle.deadline(1000))
 
   def release(_), do: {:error, :invalid_resource_pin}
 
   def release(%{provider: __MODULE__, owner: owner} = pin, deadline)
       when is_pid(owner) and is_integer(deadline) do
     if Lifecycle.remaining(deadline) > 0,
-      do: Lifecycle.call(owner, {:release, pin}, deadline),
+      do: Gaoxy.Proxy.ManagedPin.release(pin, deadline),
       else: {:error, :deadline_exceeded}
   end
 

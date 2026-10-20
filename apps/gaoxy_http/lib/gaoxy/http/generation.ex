@@ -33,6 +33,10 @@ defmodule Gaoxy.HTTP.Generation do
 
   def snapshot(store, timeout \\ 5_000), do: request(store, :snapshot, timeout)
 
+  @doc false
+  def declared_snapshot(store, timeout \\ 5_000),
+    do: request(store, :declared_snapshot, timeout)
+
   def prepare(store, routes, timeout \\ 5_000)
 
   def prepare(store, routes, timeout)
@@ -76,20 +80,30 @@ defmodule Gaoxy.HTTP.Generation do
 
   def activate(store, expected, %Router{} = prepared, timeout)
       when is_integer(timeout) and timeout > 0 do
-    deadline = Lifecycle.deadline(timeout)
-
-    with {:ok, limits} <- request(store, :limits, Lifecycle.remaining(deadline)),
-         :ok <- Gaoxy.HTTP.Generation.Store.compiled_bound(prepared, limits),
-         do:
-           request(
-             store,
-             {:activate, expected, prepared, deadline},
-             Lifecycle.remaining(deadline)
-           )
+    activate_declared(store, expected, prepared, prepared, timeout)
   end
 
   def activate(_, _, %Router{}, _), do: {:error, :invalid_activation_timeout}
   def activate(_, _, _, _), do: {:error, :invalid_prepared_router}
+
+  @doc false
+  def activate_declared(store, expected, %Router{} = prepared, %Router{} = declaration, timeout)
+      when is_integer(timeout) and timeout > 0 do
+    deadline = Lifecycle.deadline(timeout)
+
+    with {:ok, limits} <- request(store, :limits, Lifecycle.remaining(deadline)),
+         :ok <- Gaoxy.HTTP.Generation.Store.compiled_bound(prepared, limits),
+         :ok <- Gaoxy.HTTP.Generation.Store.compiled_bound(declaration, limits),
+         do:
+           request(
+             store,
+             {:activate, expected, prepared, declaration, deadline},
+             Lifecycle.remaining(deadline)
+           )
+  end
+
+  def activate_declared(_, _, %Router{}, %Router{}, _),
+    do: {:error, :invalid_activation_timeout}
 
   def reload(store, routes, timeout \\ 5_000)
 
@@ -424,12 +438,24 @@ defmodule Gaoxy.HTTP.Generation.Store do
   def init(limits) do
     Process.flag(:trap_exit, true)
     {:ok, router} = Router.compile([])
-    {:ok, %{router: router, limits: limits, preparation: nil, baseline: [], retired: []}}
+
+    {:ok,
+     %{
+       router: router,
+       declaration: router,
+       limits: limits,
+       preparation: nil,
+       baseline: [],
+       retired: []
+     }}
   end
 
   @impl true
   def handle_call(:snapshot, _, state),
     do: {:reply, {:ok, state.router.generation, state.router}, state}
+
+  def handle_call(:declared_snapshot, _, state),
+    do: {:reply, {:ok, state.router.generation, state.declaration}, state}
 
   def handle_call({:snapshot_for_request, holder, deadline}, {caller, _}, state) do
     with true <- holder == caller || {:error, :invalid_resource_holder},
@@ -514,15 +540,19 @@ defmodule Gaoxy.HTTP.Generation.Store do
   def handle_call({:await_preparation, _}, _, state),
     do: {:reply, {:error, :prepare_timeout}, state}
 
-  def handle_call({:activate, expected, router, deadline}, _, state) do
+  def handle_call({:activate, expected, router, deadline}, from, state),
+    do: handle_call({:activate, expected, router, router, deadline}, from, state)
+
+  def handle_call({:activate, expected, router, declaration, deadline}, _, state) do
     with true <- Lifecycle.remaining(deadline) > 0 || {:error, :activation_timeout},
          true <- expected == state.router.generation || {:error, :stale_generation},
          true <- state.retired == [] || {:error, :resource_release_pending},
          :ok <- compiled_bound(router, state.limits),
+         :ok <- compiled_bound(declaration, state.limits),
          {:ok, baseline} <- Resources.pin_many(router.resources, self(), :baseline, deadline) do
       if Lifecycle.remaining(deadline) > 0 do
         old = state.baseline
-        state = %{state | router: router, baseline: baseline}
+        state = %{state | router: router, declaration: declaration, baseline: baseline}
         {:reply, {:ok, router.generation}, retire_pins(state, old)}
       else
         {:reply, {:error, :activation_timeout}, retire_pins(state, baseline)}
