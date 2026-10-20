@@ -30,8 +30,20 @@ Complete independent review and push the publication closeout.
 
 A hosted no-start remains BLOCKED_ENV; it does not authorize billing changes or
 secret extraction. Any locally qualified source-package fallback must state
-that Hex is unpublished and that no new standalone binary was built. Specialist
+that Hex is unpublished and report the actual hosted-build status; a source-only
+fallback must state that no standalone binary is included. Specialist
 abnormal/disconnect, slow-peer, pressure, load and soak suites, deployment,
 production operations, Vault, public management and disabled release-artifact
 E2E remain outside this packaging release. No new runtime capability or Debian
 portability claim follows from an Ubuntu hosted build.
+
+## Actual first attempt
+
+Source `ff06d13bfed97744e47b452d10fc17c2bfba5fff` passed local preflight and
+independent review, was pushed to `main`, and ran in hosted job `39386137306`.
+All build and ordinary standalone smoke gates passed. Publication stopped
+before uploading because `HEX_API_KEY` was empty. The organization secret is
+inaccessible to this private repository on GitHub Free; a repository-level
+secret is required. No tag or release was created, so 0.5.2 remains available
+for a new dispatch. Prepared public consumers remain unexecuted. Preserve the
+hosted artifact, logs and actual outcomes while awaiting that external change.
