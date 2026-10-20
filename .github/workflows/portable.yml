@@ -216,6 +216,8 @@ jobs:
       - name: Locked optional consumer and independent validating aioquic peer
         working-directory: integration/quic_consumer
         run: |
+          uv venv .venv --python 3.12
+          uv pip install --python .venv/bin/python -r ../http3/requirements.txt
           mix deps.get --check-locked
           mix compile --warnings-as-errors
           python3 ../../scripts/check-tests.py
