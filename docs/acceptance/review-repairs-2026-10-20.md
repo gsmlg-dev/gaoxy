@@ -61,6 +61,8 @@ are serialized by `.audit/review-repairs/mix.lock`.
 | Reviewed integration before commit | PASS: 158 tests, 0 failures, 0 exclusions/skips; canonical format and strict compile exit 0 |
 | Gate/wrapper/package/smoke helper regressions | PASS: 6/8/8/5 tests; modern ExUnit summary red preserved before repair |
 | Initial source core/HTTP/Phoenix consumers | PASS: 1/3/5 tests; final committed-source runs remain below |
+| Browser at `20359557` | FAIL: six checks passed before an initial LiveView click preceded channel readiness; source restored and fixture stopped |
+| Browser fixture readiness repair | PASS: 15 checks, including H1/H2 clicks, upload, reconnect, reload and shutdown; original assertions and deadlines preserved |
 | Final repair gate, compatibility/build/package/consumers/browser | NOT RUN on frozen publication source |
 | Independent R2 and R3 specification/code review | PASS; no actionable findings |
 | Independent R1 and integration specification/code review | PASS; all findings resolved, including read-triggered Continue deadlines, write caps and late-token cleanup |
@@ -80,6 +82,11 @@ Bounded raw logs remain under `.audit/review-repairs/`; the final receipt will
 record exact commands, counts, exits, source hashes and log digests without
 embedding transcripts in this document. Review findings and failed diagnostic
 runs retain their actual status; a repaired fixture failure is not a product red.
+The browser diagnosis held the real server's join reply and confirmed that a
+disconnected click is dropped. Initial clicks now wait for `phx-connected`, as
+the existing reconnect check already did. The failed attempt and causal probe
+remain under `.audit/review-repairs/final/phoenix/` and
+`.audit/review-repairs/browser-diagnosis-held-join/`.
 
 ## Retained limits
 

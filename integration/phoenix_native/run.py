@@ -133,6 +133,8 @@ try:
 
         page.goto(base + "/live-counter", wait_until="networkidle")
         expect(page.locator("#count")).to_have_text("0")
+        # The server-rendered count appears before the channel can accept clicks.
+        expect(page.locator("[data-phx-main].phx-connected")).to_be_visible()
         page.locator("#increment").click()
         expect(page.locator("#count")).to_have_text("1")
         assert any("/live/websocket" in url for url in sockets)
@@ -194,6 +196,7 @@ try:
             assert any(value["url"] == tls_base + "/" and value["protocol"] == "h2" for value in protocols), protocols
             h2_page.goto(tls_base + "/live-counter", wait_until="networkidle")
             expect(h2_page.locator("#count")).to_have_text("0")
+            expect(h2_page.locator("[data-phx-main].phx-connected")).to_be_visible()
             h2_page.locator("#increment").click()
             expect(h2_page.locator("#count")).to_have_text("1")
             assert any(value["url"] == tls_base + "/live-counter" and value["protocol"] == "h2" for value in protocols), protocols
