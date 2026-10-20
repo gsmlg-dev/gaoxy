@@ -25,6 +25,7 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
             (name == "content-length" and policy.allowed != [] and
                exchange.request.version in [:"HTTP/2", :"HTTP/3"])
         end)
+        |> request_cookies(exchange.request.version)
         |> declare_trailers(policy.allowed)
 
       fields = fields ++ forwarded
@@ -34,6 +35,23 @@ defmodule Gaoxy.Proxy.HTTP.Headers do
            do: {:ok, fields, policy}
     end
   end
+
+  # RFC 9113 / RFC 9114 allow splitting Cookie on multiplexed hops. Rejoin
+  # before handing the fields to an upstream serializer, preserving H1 input.
+  defp request_cookies(fields, version) when version in [:"HTTP/2", :"HTTP/3"] do
+    case for({"cookie", value} <- fields, do: value) do
+      [] -> fields
+      [_] -> fields
+      values -> join_cookies(fields, Enum.join(values, "; "))
+    end
+  end
+
+  defp request_cookies(fields, _version), do: fields
+
+  defp join_cookies([{"cookie", _} | rest], joined),
+    do: [{"cookie", joined} | Enum.reject(rest, &match?({"cookie", _}, &1))]
+
+  defp join_cookies([field | rest], joined), do: [field | join_cookies(rest, joined)]
 
   defp distrust_forwarding_trailers(policy) do
     {dropped, allowed} = Enum.split_with(policy.allowed, &forwarding_field?/1)
