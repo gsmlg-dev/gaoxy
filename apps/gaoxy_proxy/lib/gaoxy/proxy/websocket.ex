@@ -15,7 +15,7 @@ defmodule Gaoxy.Proxy.WebSocket do
   does not measure total BEAM memory or kernel/OTP socket buffers.
   """
   @behaviour Gaoxy.HTTP.Endpoint
-  alias Gaoxy.HTTP.{WebSocket, WebSocket.Handshake, HTTP1.Response}
+  alias Gaoxy.HTTP.{Response, WebSocket, WebSocket.Handshake}
   alias Gaoxy.Proxy.WebSocket.{Handler, Session}
 
   @defaults %{
