@@ -8,16 +8,16 @@ isolated under `.trees/` on `codex/` branches; unrelated user files are preserve
 
 ## Execution and acceptance
 
-- [ ] A: record a short recovery design before editing production code. Reproduce
+- [x] A: record a short recovery design before editing production code. Reproduce
   the subsequent-reload failure through real standalone supervision, for fixed
   and grouped managed upstreams. Preserve the latest accepted declarative routes,
   reconstruct local handles, and settle obsolete ownership through accounted
   lifecycle termination. Retain live-owner cleanup failures and activation guards.
   Verify recovery traffic, another reload, settled retirements and usable resources.
-- [ ] B: reproduce Elixir 1.20 strict compilation, inspect each match binding and
+- [x] B: reproduce Elixir 1.20 strict compilation, inspect each match binding and
   pin only externally bound size variables. Preserve the dependency cohort,
   `--warnings-as-errors`, supported profiles and existing tests.
-- [ ] C: provision a clean Python environment with the existing pinned QUIC peer
+- [x] C: provision a clean Python environment with the existing pinned QUIC peer
   requirements at the consumer's actual path. Verify actual independent peer
   launch and all optional consumer tests with certificate checks and deadlines.
 - [ ] Integrate A/B/C, add the recovery regression to the ordinary repair and

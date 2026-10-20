@@ -1,0 +1,102 @@
+diff --git 1/.audit/standalone-followup/repair2-expired-activation/generation.ex 2/apps/gaoxy_http/lib/gaoxy/http/generation.ex
+index f551c7b9..cda1d183 100644
+--- 1/.audit/standalone-followup/repair2-expired-activation/generation.ex
++++ 2/apps/gaoxy_http/lib/gaoxy/http/generation.ex
+@@ -102,6 +102,9 @@ defmodule Gaoxy.HTTP.Generation do
+            )
+   end
+ 
++  def activate_declared(_, _, %Router{}, %Router{}, _),
++    do: {:error, :invalid_activation_timeout}
++
+   def reload(store, routes, timeout \\ 5_000)
+ 
+   def reload(store, routes, timeout) when is_integer(timeout) and timeout > 0 do
+diff --git 1/.audit/standalone-followup/repair2-expired-activation/standalone_recovery_test.exs 2/apps/gaoxy_server/test/standalone_recovery_test.exs
+index 2dfa6652..4450a3f3 100644
+--- 1/.audit/standalone-followup/repair2-expired-activation/standalone_recovery_test.exs
++++ 2/apps/gaoxy_server/test/standalone_recovery_test.exs
+@@ -6,6 +6,20 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
+   @moduletag :capture_log
+   @moduletag :tmp_dir
+ 
++  defmodule ExpiredCandidate do
++    def init({test, gate}) do
++      send(test, {:activation_compiling, self(), gate})
++
++      receive do
++        {^gate, :finish} -> {:ok, []}
++      after
++        2000 -> {:error, :expiry_gate_timeout}
++      end
++    end
++
++    def call(exchange, _), do: {:ok, exchange}
++  end
++
+   for kind <- [:fixed, :group] do
+     @kind kind
+     test "#{kind} recovery preserves accepted routes and permits subsequent reload", %{
+@@ -34,6 +48,8 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
+                RouteResources.activate(store, make_ref(), candidate, Lifecycle.deadline(3000))
+ 
+       assert {:ok, ^generation, _} = Generation.snapshot(store)
++      reject_expired_candidate(store, generation, candidate)
++      assert body() == "accepted"
+ 
+       %{transports: transports, groups: groups} = :sys.get_state(RouteResources)
+       owner_monitors = Enum.map([transports, groups], &{&1, Process.monitor(&1)})
+@@ -99,6 +115,53 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
+     end
+   end
+ 
++  defp reject_expired_candidate(store, generation, candidate) do
++    coordinator = Process.whereis(RouteResources)
++    runtime = Process.whereis(Gaoxy.Server.Runtime)
++    before = :sys.get_state(coordinator)
++    baseline = :sys.get_state(GenServer.whereis(store)).baseline
++    assert {:ok, ^generation, declaration} = Generation.declared_snapshot(store)
++    gate = make_ref()
++    test = self()
++    deadline = Lifecycle.deadline(1000)
++
++    expiring = %Gaoxy.HTTP.Router{
++      routes: candidate.routes ++ [%{target: {ExpiredCandidate, {test, gate}}}]
++    }
++
++    {caller, monitor} =
++      spawn_monitor(fn ->
++        result = RouteResources.activate(store, generation, expiring, deadline)
++        send(test, {:expired_activation, self(), result})
++      end)
++
++    assert_receive {:activation_compiling, ^coordinator, ^gate}, 1000
++
++    assert_receive {:expired_activation, ^caller,
++                    {:error, {:deadline_exceeded, :cleanup_pending}}},
++                   2000
++
++    assert_receive {:DOWN, ^monitor, :process, ^caller, :normal}, 1000
++    assert Lifecycle.remaining(deadline) == 0
++    send(coordinator, {gate, :finish})
++
++    # Compilation has finished after D. This barrier must return from the same
++    # coordinator, with no accepted declaration/baseline or runtime replacement.
++    after_expiry = :sys.get_state(coordinator, 1000)
++    assert Process.whereis(RouteResources) == coordinator
++    assert Process.whereis(Gaoxy.Server.Runtime) == runtime
++    assert after_expiry.transports == before.transports
++    assert after_expiry.groups == before.groups
++    assert :sys.get_state(GenServer.whereis(store)).baseline == baseline
++    assert {:ok, ^generation, ^declaration} = Generation.declared_snapshot(store)
++
++    # The expired caller cannot join preparation cleanup; the coordinator keeps
++    # those pins and reconciles them under its existing finite cleanup budget.
++    assert after_expiry.pending_pins != []
++    send(coordinator, :reconcile_preparations)
++    assert :sys.get_state(coordinator, 1000).pending_pins == []
++  end
++
+   defp await_recovered(previous, deadline) do
+     assert Lifecycle.remaining(deadline) > 0, "standalone recovery readiness deadline"
+ 

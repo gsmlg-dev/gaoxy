@@ -1,0 +1,46 @@
+==> gaoxy_server
+Running ExUnit with seed: 0, max_cases: 8
+
+
+
+  1) test fixed recovery preserves accepted routes and permits subsequent reload (Gaoxy.Server.StandaloneRecoveryTest)
+     [1m[30mapps/gaoxy_server/test/standalone_recovery_test.exs:11[0m
+     [31mmatch (match?) failed[0m
+     [36mcode:  [0massert match?({"accepted", {:ok, _}}, {recovered, reloaded})
+     [36mleft:  [0m{"[31maccepted[0m", {[31m:ok[0m, _}}
+     [36mright: [0m{"[32mstartup[0m", {[32m:error[0m, :resource_release_pending}}
+     [36mstacktrace:[0m
+       test/standalone_recovery_test.exs:63: (test)
+
+     The following output was logged:
+     [31m
+     01:29:25.875 [error] Standalone upstream shutdown remains unconfirmed: {:error, {:shutdown, [], [{#Reference<0.1891960396.903348227.147046>, {:error, :cleanup_unconfirmed}}]}}
+     [0m[31m
+     01:29:25.878 [error] GenServer Gaoxy.Server.RouteResources terminating
+     ** (stop) {:upstream_owner_down, :killed}
+     Last message: {:DOWN, #Reference<0.1891960396.903348227.147065>, :process, #PID<0.367.0>, :killed}
+     State: %{monitors: %{#Reference<0.1891960396.903348227.147064> => #PID<0.366.0>, #Reference<0.1891960396.903348227.147065> => #PID<0.367.0>}, instance: #PID<0.362.0>, groups: #PID<0.367.0>, transports: #PID<0.366.0>, instance_monitor: #Reference<0.1891960396.903348227.147031>, pending_pins: [], drain_timeout: 1000}
+     [0m
+
+
+  2) test group recovery preserves accepted routes and permits subsequent reload (Gaoxy.Server.StandaloneRecoveryTest)
+     [1m[30mapps/gaoxy_server/test/standalone_recovery_test.exs:11[0m
+     [31mmatch (match?) failed[0m
+     [36mcode:  [0massert match?({"accepted", {:ok, _}}, {recovered, reloaded})
+     [36mleft:  [0m{"[31maccepted[0m", {[31m:ok[0m, _}}
+     [36mright: [0m{"[32mstartup[0m", {[32m:error[0m, :resource_release_pending}}
+     [36mstacktrace:[0m
+       test/standalone_recovery_test.exs:63: (test)
+
+     The following output was logged:
+     [31m
+     01:29:26.042 [error] Standalone upstream shutdown remains unconfirmed: {:error, {:shutdown, [], [{#Reference<0.1891960396.903348228.150058>, {:error, :cleanup_unconfirmed}}]}}
+     [0m[31m
+     01:29:26.042 [error] GenServer Gaoxy.Server.RouteResources terminating
+     ** (stop) {:upstream_owner_down, :killed}
+     Last message: {:DOWN, #Reference<0.1891960396.903348228.150069>, :process, #PID<0.526.0>, :killed}
+     State: %{monitors: %{#Reference<0.1891960396.903348228.150068> => #PID<0.525.0>, #Reference<0.1891960396.903348228.150069> => #PID<0.526.0>}, instance: #PID<0.521.0>, groups: #PID<0.526.0>, transports: #PID<0.525.0>, instance_monitor: #Reference<0.1891960396.903348228.150051>, pending_pins: [], drain_timeout: 1000}
+     [0m
+
+Finished in 0.9 seconds (0.00s async, 0.9s sync)
+[31m2 tests, 2 failures[0m

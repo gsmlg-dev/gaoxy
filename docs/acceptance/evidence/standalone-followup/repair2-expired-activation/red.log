@@ -1,0 +1,120 @@
+==> gaoxy_server
+Running ExUnit with seed: 0, max_cases: 8
+
+
+
+  1) test fixed recovery preserves accepted routes and permits subsequent reload (Gaoxy.Server.StandaloneRecoveryTest)
+     [1m[30mapps/gaoxy_server/test/standalone_recovery_test.exs:25[0m
+     [31m** (exit) exited in: :sys.get_state(#PID<0.368.0>, 1000)
+        ** (EXIT) an exception was raised:[0m
+          [31m** (FunctionClauseError) no function clause matching in Gaoxy.HTTP.Generation.activate_declared/5[0m
+
+          The following arguments were given to Gaoxy.HTTP.Generation.activate_declared/5:
+
+              # 1
+              {:via, Registry, {Gaoxy.Server.RouteStores, "web"}}
+
+              # 2
+              #Reference<0.144475949.1978925059.68231>
+
+              # 3
+              %Gaoxy.HTTP.Router{generation: #Reference<0.144475949.1978925059.68971>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Proxy.HTTP, %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "127.0.0.1:35427", userinfo: nil, host: "127.0.0.1", port: 35427, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.369.0>, resource: #Reference<0.144475949.1978925059.68402>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925059.67648>}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}}}, %{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, []}}], resources: [%{owner: #PID<0.369.0>, resource: #Reference<0.144475949.1978925059.68402>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925059.67648>}]}
+
+              # 4
+              %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :fixed, options: %{source: %{origin: "http://127.0.0.1:35427", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:35427", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.319.0>, #Reference<0.144475949.1978925059.68396>}}}], resources: []}
+
+              # 5
+              0
+
+          Attempted function clauses (showing 1 out of 1):
+
+              def activate_declared(store, expected, %Gaoxy.HTTP.Router{} = prepared, %Gaoxy.HTTP.Router{} = declaration, timeout) when is_integer(timeout) and [31mtimeout > 0[0m
+
+          [36mstacktrace:[0m
+            (gaoxy_http 0.5.3) lib/gaoxy/http/generation.ex:90: Gaoxy.HTTP.Generation.activate_declared/5
+            (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:157: Gaoxy.Server.RouteResources.prepare_and_activate/5
+            (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:65: Gaoxy.Server.RouteResources.handle_call/3
+            (stdlib 7.3.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+            (stdlib 7.3.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+            (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+
+     [36mstacktrace:[0m
+       (stdlib 7.3.0.1) sys.erl:763: :sys.send_system_msg/3
+       (stdlib 7.3.0.1) sys.erl:411: :sys.get_state/2
+       test/standalone_recovery_test.exs:150: Gaoxy.Server.StandaloneRecoveryTest.reject_expired_candidate/3
+       test/standalone_recovery_test.exs:51: (test)
+
+     The following output was logged:
+     [31m
+     01:44:26.356 [error] GenServer Gaoxy.Server.RouteResources terminating
+     ** (FunctionClauseError) no function clause matching in Gaoxy.HTTP.Generation.activate_declared/5
+         (gaoxy_http 0.5.3) lib/gaoxy/http/generation.ex:90: Gaoxy.HTTP.Generation.activate_declared({:via, Registry, {Gaoxy.Server.RouteStores, "web"}}, #Reference<0.144475949.1978925059.68231>, %Gaoxy.HTTP.Router{generation: #Reference<0.144475949.1978925059.68971>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Proxy.HTTP, %Gaoxy.Proxy.HTTP{uri: %URI{scheme: "http", authority: "127.0.0.1:35427", userinfo: nil, host: "127.0.0.1", port: 35427, path: nil, query: nil, fragment: nil}, cacertfile: nil, connect_address: nil, transport: %{owner: #PID<0.369.0>, resource: #Reference<0.144475949.1978925059.68402>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925059.67648>}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, upstream_protocol: :http1, client: Gaoxy.Proxy.HTTPFetchClient}}}, %{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, []}}], resources: [%{owner: #PID<0.369.0>, resource: #Reference<0.144475949.1978925059.68402>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925059.67648>}]}, %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :fixed, options: %{source: %{origin: "http://127.0.0.1:35427", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:35427", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.319.0>, #Reference<0.144475949.1978925059.68396>}}}], resources: []}, 0)
+         (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:157: Gaoxy.Server.RouteResources.prepare_and_activate/5
+         (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:65: Gaoxy.Server.RouteResources.handle_call/3
+         (stdlib 7.3.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+         (stdlib 7.3.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+         (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     Last message (from #PID<0.424.0>): {:activate, {:via, Registry, {Gaoxy.Server.RouteStores, "web"}}, #Reference<0.144475949.1978925059.68231>, %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :fixed, options: %{source: %{origin: "http://127.0.0.1:35427", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:35427", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.319.0>, #Reference<0.144475949.1978925059.68396>}}}], resources: []}, -576460748669}
+     State: %{monitors: %{#Reference<0.144475949.1978925059.67663> => #PID<0.369.0>, #Reference<0.144475949.1978925059.67664> => #PID<0.370.0>}, instance: #PID<0.365.0>, groups: #PID<0.370.0>, transports: #PID<0.369.0>, pending_pins: [], instance_monitor: #Reference<0.144475949.1978925059.67630>, drain_timeout: 1000}
+     Client #PID<0.424.0> is dead
+     [0m
+
+
+  2) test group recovery preserves accepted routes and permits subsequent reload (Gaoxy.Server.StandaloneRecoveryTest)
+     [1m[30mapps/gaoxy_server/test/standalone_recovery_test.exs:25[0m
+     [31m** (exit) exited in: :sys.get_state(#PID<0.513.0>, 1000)
+        ** (EXIT) an exception was raised:[0m
+          [31m** (FunctionClauseError) no function clause matching in Gaoxy.HTTP.Generation.activate_declared/5[0m
+
+          The following arguments were given to Gaoxy.HTTP.Generation.activate_declared/5:
+
+              # 1
+              {:via, Registry, {Gaoxy.Server.RouteStores, "web"}}
+
+              # 2
+              #Reference<0.144475949.1978925059.69656>
+
+              # 3
+              %Gaoxy.HTTP.Router{generation: #Reference<0.144475949.1978925060.67979>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.515.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.144475949.1978925060.66825>, transports: [%{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}], owner_epoch: #Reference<0.144475949.1978925060.65644>, max_url_bytes: 22}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}}}}, %{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, []}}], resources: [%{owner: #PID<0.515.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.144475949.1978925060.66825>, transports: [%{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}], owner_epoch: #Reference<0.144475949.1978925060.65644>, max_url_bytes: 22}, %{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}]}
+
+              # 4
+              %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :group, options: %{id: "api", members: [%{id: "one", source: %{origin: "http://127.0.0.1:42851", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:42851", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 4}], health: %{timeout: 500, path: "/", interval: 60000, failure_threshold: 3, recovery_threshold: 1, stale_after: 120000, jitter: 0}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 64}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.464.0>, #Reference<0.144475949.1978925060.66736>}}}], resources: []}
+
+              # 5
+              0
+
+          Attempted function clauses (showing 1 out of 1):
+
+              def activate_declared(store, expected, %Gaoxy.HTTP.Router{} = prepared, %Gaoxy.HTTP.Router{} = declaration, timeout) when is_integer(timeout) and [31mtimeout > 0[0m
+
+          [36mstacktrace:[0m
+            (gaoxy_http 0.5.3) lib/gaoxy/http/generation.ex:90: Gaoxy.HTTP.Generation.activate_declared/5
+            (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:157: Gaoxy.Server.RouteResources.prepare_and_activate/5
+            (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:65: Gaoxy.Server.RouteResources.handle_call/3
+            (stdlib 7.3.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+            (stdlib 7.3.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+            (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+
+     [36mstacktrace:[0m
+       (stdlib 7.3.0.1) sys.erl:763: :sys.send_system_msg/3
+       (stdlib 7.3.0.1) sys.erl:411: :sys.get_state/2
+       test/standalone_recovery_test.exs:150: Gaoxy.Server.StandaloneRecoveryTest.reject_expired_candidate/3
+       test/standalone_recovery_test.exs:51: (test)
+
+     The following output was logged:
+     [31m
+     01:44:27.511 [error] GenServer Gaoxy.Server.RouteResources terminating
+     ** (FunctionClauseError) no function clause matching in Gaoxy.HTTP.Generation.activate_declared/5
+         (gaoxy_http 0.5.3) lib/gaoxy/http/generation.ex:90: Gaoxy.HTTP.Generation.activate_declared({:via, Registry, {Gaoxy.Server.RouteStores, "web"}}, #Reference<0.144475949.1978925059.69656>, %Gaoxy.HTTP.Router{generation: #Reference<0.144475949.1978925060.67979>, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Proxy.GroupEndpoint, %Gaoxy.Proxy.GroupEndpoint{group: %{owner: #PID<0.515.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.144475949.1978925060.66825>, transports: [%{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}], owner_epoch: #Reference<0.144475949.1978925060.65644>, max_url_bytes: 22}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}}}}, %{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, []}}], resources: [%{owner: #PID<0.515.0>, group: "api", provider: Gaoxy.Proxy.UpstreamGroups, generation: #Reference<0.144475949.1978925060.66825>, transports: [%{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}], owner_epoch: #Reference<0.144475949.1978925060.65644>, max_url_bytes: 22}, %{owner: #PID<0.514.0>, resource: #Reference<0.144475949.1978925060.66742>, provider: Gaoxy.Proxy.UpstreamTransports, owner_epoch: #Reference<0.144475949.1978925060.65639>}]}, %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :group, options: %{id: "api", members: [%{id: "one", source: %{origin: "http://127.0.0.1:42851", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:42851", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 4}], health: %{timeout: 500, path: "/", interval: 60000, failure_threshold: 3, recovery_threshold: 1, stale_after: 120000, jitter: 0}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 64}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.464.0>, #Reference<0.144475949.1978925060.66736>}}}], resources: []}, 0)
+         (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:157: Gaoxy.Server.RouteResources.prepare_and_activate/5
+         (gaoxy_server 0.5.3) lib/gaoxy/server/route_resources.ex:65: Gaoxy.Server.RouteResources.handle_call/3
+         (stdlib 7.3.0.1) gen_server.erl:2470: :gen_server.try_handle_call/4
+         (stdlib 7.3.0.1) gen_server.erl:2499: :gen_server.handle_msg/3
+         (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     Last message (from #PID<0.580.0>): {:activate, {:via, Registry, {Gaoxy.Server.RouteStores, "web"}}, #Reference<0.144475949.1978925059.69656>, %Gaoxy.HTTP.Router{generation: nil, routes: [%{path: :any, host: :any, methods: :any, target: {Gaoxy.Server.UpstreamEndpoint, %Gaoxy.Server.UpstreamEndpoint{kind: :group, options: %{id: "api", members: [%{id: "one", source: %{origin: "http://127.0.0.1:42851", connect_address: {127, 0, 0, 1}, trust: nil}, endpoint: %{idle_timeout: 60000, write_timeout: 5000, upstream: "http://127.0.0.1:42851", upstream_protocol: :http1, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 4}], health: %{timeout: 500, path: "/", interval: 60000, failure_threshold: 3, recovery_threshold: 1, stale_after: 120000, jitter: 0}, limits: %{idle_timeout: 60000, write_timeout: 5000, opening_timeout: 5000, max_lifetime: 30000, max_chunk_bytes: 65536}, max_inflight: 64}}}}, %{target: {Gaoxy.Server.StandaloneRecoveryTest.ExpiredCandidate, {#PID<0.464.0>, #Reference<0.144475949.1978925060.66736>}}}], resources: []}, -576460747514}
+     State: %{monitors: %{#Reference<0.144475949.1978925060.65646> => #PID<0.514.0>, #Reference<0.144475949.1978925060.65647> => #PID<0.515.0>}, instance: #PID<0.510.0>, groups: #PID<0.515.0>, transports: #PID<0.514.0>, pending_pins: [], instance_monitor: #Reference<0.144475949.1978925060.65629>, drain_timeout: 1000}
+     Client #PID<0.580.0> is dead
+     [0m
+
+Finished in 3.1 seconds (0.00s async, 3.1s sync)
+[31m2 tests, 2 failures[0m

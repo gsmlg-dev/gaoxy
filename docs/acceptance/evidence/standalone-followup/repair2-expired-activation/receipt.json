@@ -1,0 +1,145 @@
+{
+  "task": "Issue A review P2 expired activation",
+  "status": "PASS_LOCAL_PENDING_PARENT_IMPORT_AND_REVIEW",
+  "assignment": "direct review repair",
+  "worktree": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+  "baseline": "581bea7d27b9d86c7dd0e63a1d49fcbca3adc3dd",
+  "root_cause": "activate_declared/5 lacked timeout fallback and raised FunctionClauseError when post-compilation remaining budget was 0",
+  "change": "one validation fallback; existing fixed/group cases gated through deadline expiry and verify same coordinator/runtime/owners, unchanged declaration/baselines, cleanup pin retention/reconciliation and accepted traffic",
+  "before": {
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "3b734d0f728355193404d7fef952b2bc8947f79227399fd31676d25704ffb7f6",
+    "apps/gaoxy_server/test/standalone_recovery_test.exs": "57f299bced98bd879107e9dd14e51b00b181f5343b8c7e1f2175ae58cd5d281d"
+  },
+  "files": {
+    "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "df20a47f0bf642fa03e50592fde97e3b733528ebe4584c63a724d713c851ed23",
+    "apps/gaoxy_server/test/standalone_recovery_test.exs": "a94845f01bf908d1451a17e863efcdca2272dc0a1696c8d4074f5df8c5b145b2"
+  },
+  "patch_sha256": "f11342b44eed874591e32de3101127e2c8e331890370c5c045cf65db6404ab2d",
+  "tests": {
+    "red": {
+      "executed": 2,
+      "failures": 2,
+      "exit": 2,
+      "proof": "both cases crash original coordinator at activate_declared/5(...,0) after original caller deadline"
+    },
+    "green": {
+      "http": 13,
+      "server": 4,
+      "executed": 17,
+      "failures": 0,
+      "exit": 0
+    },
+    "gate_test_count": 2,
+    "gate_count_change": 0
+  },
+  "checks": {
+    "red": {
+      "command": [
+        "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/unbuffer",
+        "mix",
+        "test",
+        "apps/gaoxy_server/test/standalone_recovery_test.exs",
+        "--seed",
+        "0"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+      "baseline": "581bea7d27b9d86c7dd0e63a1d49fcbca3adc3dd",
+      "exit": 2,
+      "seconds": 4.681429624557495,
+      "versions": "Erlang/OTP 28 [erts-16.4.0.5] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:1] [jit:ns]\n\nElixir 1.18.5 (compiled with Erlang/OTP 28)\n",
+      "files": {
+        "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "3b734d0f728355193404d7fef952b2bc8947f79227399fd31676d25704ffb7f6",
+        "apps/gaoxy_server/test/standalone_recovery_test.exs": "a94845f01bf908d1451a17e863efcdca2272dc0a1696c8d4074f5df8c5b145b2"
+      },
+      "sol_repair_rounds": 2,
+      "astra_repair_rounds": 0
+    },
+    "green": {
+      "command": [
+        "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/unbuffer",
+        "mix",
+        "test",
+        "apps/gaoxy_server/test/standalone_recovery_test.exs",
+        "apps/gaoxy_server/test/route_resources_test.exs",
+        "apps/gaoxy_http/test/generation_resources_test.exs",
+        "apps/gaoxy_http/test/generation_endpoint_validation_test.exs",
+        "--seed",
+        "0"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+      "baseline": "581bea7d27b9d86c7dd0e63a1d49fcbca3adc3dd",
+      "exit": 0,
+      "seconds": 6.484583377838135,
+      "versions": "Erlang/OTP 28 [erts-16.4.0.5] [source] [64-bit] [smp:4:4] [ds:4:4:10] [async-threads:1] [jit:ns]\n\nElixir 1.18.5 (compiled with Erlang/OTP 28)\n",
+      "files": {
+        "apps/gaoxy_http/lib/gaoxy/http/generation.ex": "df20a47f0bf642fa03e50592fde97e3b733528ebe4584c63a724d713c851ed23",
+        "apps/gaoxy_server/test/standalone_recovery_test.exs": "a94845f01bf908d1451a17e863efcdca2272dc0a1696c8d4074f5df8c5b145b2"
+      },
+      "sol_repair_rounds": 2,
+      "astra_repair_rounds": 0
+    },
+    "strict-compile": {
+      "command": [
+        "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/unbuffer",
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+      "exit": 0,
+      "seconds": 8.287253141403198,
+      "sol_repair_rounds": 2,
+      "astra_repair_rounds": 0,
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 4:4"
+      }
+    },
+    "format": {
+      "command": [
+        "/nix/store/hypwn40g5g43jvfgx8hha9b130v8vigy-expect-5.45.4/bin/unbuffer",
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/lib/gaoxy/http/generation.ex",
+        "apps/gaoxy_server/test/standalone_recovery_test.exs"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+      "exit": 0,
+      "seconds": 1.0171411037445068,
+      "sol_repair_rounds": 2,
+      "astra_repair_rounds": 0,
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 4:4"
+      }
+    },
+    "diff-check": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/standalone-recovery",
+      "exit": 0,
+      "seconds": 0.033254384994506836,
+      "sol_repair_rounds": 2,
+      "astra_repair_rounds": 0,
+      "environment": {
+        "ELIXIR_ERL_OPTIONS": "+S 4:4"
+      }
+    }
+  },
+  "logs": {
+    "format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "strict-compile.log": "6aba1a462d32697bb9e9b3102bb082925043b86f914ce6df0625f5bed832c0b8",
+    "red.log": "14c5d5c3964c9c21cad118ba41e65c2c66c2e4cd20b606cc196359d48033422d",
+    "diff-check.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "green.log": "d79daca15baf615c03eace39be38f122a38f3507a4b63ed307803b9af434b52c"
+  },
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 0,
+  "astra_gate": null,
+  "commands_finished": true,
+  "committed": false,
+  "publication": false,
+  "remaining": "parent import, independent review and integrated verification; excluded specialist suites unchanged"
+}
