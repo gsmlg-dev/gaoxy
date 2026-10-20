@@ -134,6 +134,8 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
             with self.subTest(package=name):
                 package = self.output / name
                 source = self.source / relative
+                readme = "README.gaoxy.md" if name == "gaoxy_websock_adapter" else "README.md"
+                self.assertEqual((package / "README.md").read_bytes(), (source / readme).read_bytes())
                 self.assertEqual(snapshot(package / "lib"), snapshot(source / "lib"))
                 if (source / "priv").exists():
                     self.assertEqual(snapshot(package / "priv"), snapshot(source / "priv"))
@@ -145,6 +147,14 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 with tarfile.open(package / f"{name}-{VERSION}.tar") as archive:
                     metadata = self.metadata(archive.extractfile("metadata.config").read())
                     contents = tarfile.open(fileobj=io.BytesIO(archive.extractfile("contents.tar.gz").read()), mode="r:gz")
+                    documents = {"README.md": source / readme}
+                    if name == "gaoxy_websock_adapter":
+                        documents["README.upstream.md"] = source / "README.md"
+                        for filename in ["LICENSE", "GAOXY.md", "SOURCE.json", "gaoxy.patch", "CHANGELOG.md"]:
+                            documents[filename] = source / filename
+                    for filename, original in documents.items():
+                        self.assertIn(filename, contents.getnames())
+                        self.assertEqual(contents.extractfile(filename).read(), original.read_bytes())
                     for member in contents.getmembers():
                         if member.isfile():
                             self.assertEqual(contents.extractfile(member).read(), (package / member.name).read_bytes())
@@ -163,8 +173,9 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 self.assertTrue(all(entry["repository"] == "hexpm" for entry in metadata["requirements"]))
                 if name == "gaoxy_websock_adapter":
                     self.assertEqual(metadata["licenses"], ["MIT", "Apache-2.0"])
-                    for filename in ["LICENSE", "README.md", "GAOXY.md", "SOURCE.json", "gaoxy.patch", "CHANGELOG.md"]:
+                    for filename in ["LICENSE", "GAOXY.md", "SOURCE.json", "gaoxy.patch", "CHANGELOG.md"]:
                         self.assertEqual((package / filename).read_bytes(), (source / filename).read_bytes())
+                    self.assertEqual((package / "README.upstream.md").read_bytes(), (source / "README.md").read_bytes())
                 else:
                     self.assertEqual((package / "LICENSE").read_bytes(), (self.source / "LICENSE").read_bytes())
                     self.assertEqual(metadata["licenses"], ["Apache-2.0"])
@@ -200,6 +211,21 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("LICENSE", result.stdout)
         self.assertFalse(self.output.exists())
+
+    def test_requires_each_package_readme_before_staging_packages(self):
+        for name, relative in PACKAGES.items():
+            with self.subTest(package=name):
+                filename = "README.gaoxy.md" if name == "gaoxy_websock_adapter" else "README.md"
+                readme = self.source / relative / filename
+                original = readme.read_bytes()
+                readme.unlink()
+                try:
+                    result = self.stage()
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(filename, result.stdout)
+                    self.assertFalse(self.output.exists())
+                finally:
+                    readme.write_bytes(original)
 
     def test_requires_explicit_license_metadata(self):
         manifest = self.source / "mix.exs"

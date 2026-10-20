@@ -41,7 +41,6 @@ defmodule StageHexPackages do
     end
 
     license = File.read!(Path.join(source, "LICENSE"))
-    readme = File.read!(Path.join(source, "README.md"))
 
     # Read and validate all source projects before creating output.
     packages =
@@ -58,7 +57,9 @@ defmodule StageHexPackages do
         end
 
         deps = Enum.map(config[:deps], &dependency(&1, version))
-        {name, app, path, config, application, deps}
+        readme_file = if app == :websock_adapter, do: "README.gaoxy.md", else: "README.md"
+        readme = File.read!(Path.join(path, readme_file))
+        {name, app, path, config, application, deps, readme}
       end
 
     if File.exists?(output) and File.ls!(output) != [] do
@@ -67,7 +68,7 @@ defmodule StageHexPackages do
 
     File.mkdir_p!(output)
 
-    for {name, app, path, config, application, deps} <- packages do
+    for {name, app, path, config, application, deps, readme} <- packages do
       destination = Path.join(output, name)
       File.mkdir!(destination)
 
@@ -79,7 +80,6 @@ defmodule StageHexPackages do
         if app == :websock_adapter do
           for file <- [
                 "LICENSE",
-                "README.md",
                 "CHANGELOG.md",
                 "GAOXY.md",
                 "SOURCE.json",
@@ -88,14 +88,15 @@ defmodule StageHexPackages do
             File.cp!(Path.join(path, file), Path.join(destination, file))
           end
 
+          File.cp!(Path.join(path, "README.md"), Path.join(destination, "README.upstream.md"))
           File.write!(Path.join(destination, "LICENSE.gaoxy"), license)
           Enum.uniq(config[:package][:licenses] ++ licenses)
         else
           File.write!(Path.join(destination, "LICENSE"), license)
-          File.write!(Path.join(destination, "README.md"), readme)
           licenses
         end
 
+      File.write!(Path.join(destination, "README.md"), readme)
       files = Enum.sort(["mix.exs" | File.ls!(destination)])
       links = %{"GitHub" => @repository}
 
