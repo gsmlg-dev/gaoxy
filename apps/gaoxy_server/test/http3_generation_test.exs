@@ -225,10 +225,10 @@ defmodule Gaoxy.Server.HTTP3GenerationTest do
     assert {:ok, ^config} = Gaoxy.Proxy.HTTP.init(config)
   end
 
-  test "data-only upstream protocol rejects all values outside the two fixed strings", %{
+  test "data-only upstream protocol rejects values outside the registered strings", %{
     directory: directory
   } do
-    for value <- [nil, "http2", "HTTP3", "Elixir.Gaoxy.Proxy.HTTP3SessionClient", :http3, %{}] do
+    for value <- [nil, "http4", "HTTP3", "Elixir.Gaoxy.Proxy.HTTP3SessionClient", :http3, %{}] do
       target = Map.put(h3_target(directory), "upstream_protocol", value)
 
       assert {:error, :invalid_upstream_protocol} = RouteConfig.decode(proxy_routes(target))
@@ -272,7 +272,7 @@ defmodule Gaoxy.Server.HTTP3GenerationTest do
     path = Path.join(directory, "h3-origin-routes.json")
 
     for {target, reason} <- [
-          {Map.put(h3_target(directory), "upstream_protocol", "http2"),
+          {Map.put(h3_target(directory), "upstream_protocol", "http4"),
            :invalid_upstream_protocol},
           {Map.delete(h3_target(directory), "cacertfile"), :invalid_http_proxy_options}
         ] do

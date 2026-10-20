@@ -119,13 +119,18 @@ Listener/address/TLS changes require a separate restart; reload changes routes.
 
 Standalone `GAOXY_CONFIG` version-1 JSON adds `handler: "http"` and a `routes`
 object containing its own `version: 1` and `routes` list. Named targets are
-`static` and fixed `reverse_proxy`; unknown keys, arbitrary modules/atoms and
-code evaluation are rejected. File preparation runs under the same bounded
+`static`, `reverse_proxy`, `websocket` and inline `upstream_group`; unknown keys,
+arbitrary modules/atoms and code evaluation are rejected. File preparation runs under the same bounded
 deadline, including regular-file checks and a 1 MiB configuration ceiling.
 `Gaoxy.Server.reload_routes(service_id, path, timeout)` is a local Elixir API;
 it leaves the listener and in-flight snapshots stable. There is no public
-management listener. External JSON for upstream groups, forward policy or
-stream/UDP relay endpoints is UNSUPPORTED by this allowlist.
+management listener. Managed H1/H2/h2c origins and homogeneous groups/probes
+are prepared before route activation. Fixed TCP/TLS and protected UDP relays
+use registered service handlers; their configuration requires a restart.
+Forward-proxy/CONNECT policy configuration remains available through embedded
+APIs. See the [standalone guide](../apps/gaoxy_server/README.md) for complete JSON
+examples and explicit address/trust requirements. Historical release statements
+above retain their original scope.
 
 ## Supervised upstream groups
 

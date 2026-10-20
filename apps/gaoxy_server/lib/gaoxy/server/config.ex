@@ -4,7 +4,9 @@ defmodule Gaoxy.Server.Config do
     "stream_echo" => Gaoxy.Server.StreamEcho,
     "datagram_echo" => Gaoxy.Server.DatagramEcho,
     "http" => Gaoxy.HTTP.Connection,
-    "http3" => Gaoxy.HTTP.HTTP3.Connection
+    "http3" => Gaoxy.HTTP.HTTP3.Connection,
+    "stream_relay" => Gaoxy.Proxy.StreamRelay,
+    "udp_relay" => Gaoxy.Proxy.UDPRelay
   }
   @service_keys %{"id" => :id, "port" => :port, "handler_options" => :handler_options}
   @limits ~w(max_active max_bytes max_packet max_output max_state callback_timeout idle_timeout drain_timeout max_memberships)a
@@ -110,12 +112,26 @@ defmodule Gaoxy.Server.Config do
       case handler do
         Gaoxy.HTTP.Connection -> http_service(data, spec)
         Gaoxy.HTTP.HTTP3.Connection -> http3_service(data, spec)
+        Gaoxy.Proxy.StreamRelay -> relay_service(data, spec, :native)
+        Gaoxy.Proxy.UDPRelay -> relay_service(data, spec, :datagram_dispatcher)
         _ -> {:ok, spec}
       end
     end
   end
 
   defp service(_), do: {:error, :invalid_service}
+
+  defp relay_service(data, spec, mode) do
+    with {:ok, options} <- Gaoxy.Server.RelayConfig.decode(spec.handler, data["handler_options"]),
+         true <-
+           (mode != :native or spec.transport == :tls == (options.mode == :tls_termination)) ||
+             {:error, :relay_listener_mode},
+         {:ok, %{services: [spec]}} <-
+           Gaoxy.Config.validate(
+             services: [Map.merge(spec, %{handler_options: options, handler_mode: mode})]
+           ),
+         do: {:ok, spec}
+  end
 
   defp http3_service(data, spec) do
     with true <-
@@ -229,7 +245,7 @@ defmodule Gaoxy.Server.Config do
     required =
       if :http2 in options.protocols do
         reserves = Gaoxy.HTTP.HTTP2.Limits.reservation(http, options.h2_limits)
-        reserves.connection + reserves.stream + reserves.writer
+        reserves.connection + reserves.decode + reserves.stream + reserves.writer
       else
         2 * http.max_header_bytes + 4 * http.max_read_chunk + http.max_buffer_bytes
       end

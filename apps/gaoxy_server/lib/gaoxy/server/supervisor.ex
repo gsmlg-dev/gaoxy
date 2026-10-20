@@ -29,10 +29,7 @@ defmodule Gaoxy.Server.Supervisor do
         )
       end
 
-    services = Enum.map(services, &generation_service/1)
-    runtime_options = [name: Gaoxy.Server.Runtime, services: services]
-    runtime = Supervisor.child_spec({Gaoxy, runtime_options}, [])
-    runtime = %{runtime | start: {__MODULE__, :start_runtime, [runtime_options]}}
+    runtime = {Gaoxy.Server.UpstreamSupervisor, services: services}
 
     children =
       [{Registry, keys: :unique, name: Gaoxy.Server.RouteStores}] ++
@@ -42,25 +39,12 @@ defmodule Gaoxy.Server.Supervisor do
   end
 
   @doc false
-  def start_runtime(options) do
-    Enum.reduce_while(options[:services], {:ok, []}, fn spec, {:ok, services} ->
-      case initialize_generation(spec) do
-        {:ok, spec} -> {:cont, {:ok, [spec | services]}}
-        error -> {:halt, error}
-      end
-    end)
-    |> case do
-      {:ok, services} -> Gaoxy.start_link(Keyword.put(options, :services, Enum.reverse(services)))
-      error -> error
-    end
-  end
-
-  defp initialize_generation(
-         %{
-           handler: Gaoxy.HTTP.HTTP3.Connection,
-           handler_options: %{endpoint: {Generation, store}} = options
-         } = spec
-       ) do
+  def initialize_generation(
+        %{
+          handler: Gaoxy.HTTP.HTTP3.Connection,
+          handler_options: %{endpoint: {Generation, store}} = options
+        } = spec
+      ) do
     with {:ok, initialized} <- Generation.init(store),
          do:
            {:ok,
@@ -74,22 +58,5 @@ defmodule Gaoxy.Server.Supervisor do
             }}
   end
 
-  defp initialize_generation(spec), do: {:ok, spec}
-
-  defp generation_service(
-         %{handler: handler, handler_options: %{endpoint: {Router, _}} = options} =
-           spec
-       )
-       when handler in [Gaoxy.HTTP.Connection, Gaoxy.HTTP.HTTP3.Connection] do
-    %{
-      spec
-      | handler_options: %{
-          options
-          | endpoint: {Generation, route_store(spec.id)},
-            initialized: false
-        }
-    }
-  end
-
-  defp generation_service(spec), do: spec
+  def initialize_generation(spec), do: {:ok, spec}
 end

@@ -54,7 +54,11 @@ defmodule Gaoxy.Instance do
       stopping: nil
     }
 
-    case Enum.reduce_while(plan.services, :ok, fn spec, _ ->
+    # Standalone prepares instance-bound resources before opening listeners.
+    # Its internal plan retains the complete service list for the shutdown cap.
+    services = if Map.get(plan, :defer_services, false), do: [], else: plan.services
+
+    case Enum.reduce_while(services, :ok, fn spec, _ ->
            case start_service(spec, state) do
              {:ok, _} -> {:cont, :ok}
              {:error, reason} -> {:halt, {:error, reason}}
