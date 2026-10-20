@@ -1,0 +1,299 @@
+{
+  "status": "PASS",
+  "version": "0.5.2",
+  "run": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634",
+  "source_head": "d9fb3a5edee0c7e1dc1d141c7ce04db788b92fdf",
+  "public_repository": "https://repo.hex.pm",
+  "checks": [
+    {
+      "name": "public-repository",
+      "command": [
+        "mix",
+        "hex.repo",
+        "list"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634",
+      "started_utc": "2026-10-20T10:07:55.697874+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/public-repository.log",
+      "log_sha256": "911a9c352954f5f592e90d31288f1178eaf5f86a4f824a55f981446ba0db094d"
+    },
+    {
+      "name": "core-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core",
+      "started_utc": "2026-10-20T10:07:56.525781+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core-deps.log",
+      "log_sha256": "d7f6f9f08a2f28d2970658b670d7243e8deb8bb3d182056d3304c1f1096b5b6c"
+    },
+    {
+      "name": "core-trim-lock",
+      "command": [
+        "mix",
+        "deps.unlock",
+        "--unused"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core",
+      "started_utc": "2026-10-20T10:07:59.839364+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core-trim-lock.log",
+      "log_sha256": "ace885e87ecfeb0b54f226a6d5e49d549f176fa4ad91c6b594f9e39044105649"
+    },
+    {
+      "name": "core-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core",
+      "started_utc": "2026-10-20T10:08:00.724682+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core-compile.log",
+      "log_sha256": "28d720420b153431b945d20a0c186de64daffb960799ec03a839c9f2af88bdf9"
+    },
+    {
+      "name": "core-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\ndeps = Mix.Dep.load_and_cache()\nlock = Mix.Dep.Lock.read()\n{accepted, _} = Code.eval_file(\"../accepted-upstream.lock\")\ntrue = Enum.all?(deps, &(&1.scm == Hex.SCM))\nEnum.each(deps, fn dep ->\n  true = String.starts_with?(dep.opts[:dest], System.fetch_env!(\"MIX_DEPS_PATH\") <> \"/\")\n  {:hex, package, version, _, _, _, \"hexpm\", _} = lock[dep.app]\n  if dep.app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :websock_adapter] do\n    \"0.5.2\" = version\n    true = package == if(dep.app == :websock_adapter, do: :gaoxy_websock_adapter, else: dep.app)\n  else\n    case accepted[dep.app] do\n      nil ->\n        true = {dep.app, version} in [{:hell, \"0.1.2\"}, {:abyss, \"0.7.0\"}]\n      previous ->\n        true = lock[dep.app] == previous\n    end\n  end\n  IO.puts(\"PUBLIC_HEX_DEP #{dep.app} #{package} #{version}\")\nend)\nCode.ensure_loaded!(Gaoxy)\ntrue = String.starts_with?(to_string(:code.which(Gaoxy)), System.fetch_env!(\"MIX_BUILD_PATH\") <> \"/\")\n"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core",
+      "started_utc": "2026-10-20T10:09:17.492258+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core-resolved.log",
+      "log_sha256": "338ad3fdda46a5d43f4ce2aa1ab0c373ca6ca83e7786a6d09257884e385bf2de"
+    },
+    {
+      "name": "core-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core",
+      "started_utc": "2026-10-20T10:09:18.504075+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/core-tests.log",
+      "log_sha256": "bc8a02385a1aab536c016e87927eb6a2db56acf5ef8c38a69c8ba08bccb9c6ce"
+    },
+    {
+      "name": "http-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http",
+      "started_utc": "2026-10-20T10:09:19.913313+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http-deps.log",
+      "log_sha256": "db7ab1438319bf03a815bfa120046d74314c241481656d10e51be56ca6422655"
+    },
+    {
+      "name": "http-trim-lock",
+      "command": [
+        "mix",
+        "deps.unlock",
+        "--unused"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http",
+      "started_utc": "2026-10-20T10:09:23.944781+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http-trim-lock.log",
+      "log_sha256": "658e6733cf5af62e1b075e9ac26bce2194da96bcebd0d6a317c68497b0fa9c94"
+    },
+    {
+      "name": "http-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http",
+      "started_utc": "2026-10-20T10:09:24.907128+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http-compile.log",
+      "log_sha256": "4ab0f9fae231ad55517a900f238f5b8f06936e72c8e56334b020319fcb5564eb"
+    },
+    {
+      "name": "http-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\ndeps = Mix.Dep.load_and_cache()\nlock = Mix.Dep.Lock.read()\n{accepted, _} = Code.eval_file(\"../accepted-upstream.lock\")\ntrue = Enum.all?(deps, &(&1.scm == Hex.SCM))\nEnum.each(deps, fn dep ->\n  true = String.starts_with?(dep.opts[:dest], System.fetch_env!(\"MIX_DEPS_PATH\") <> \"/\")\n  {:hex, package, version, _, _, _, \"hexpm\", _} = lock[dep.app]\n  if dep.app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :websock_adapter] do\n    \"0.5.2\" = version\n    true = package == if(dep.app == :websock_adapter, do: :gaoxy_websock_adapter, else: dep.app)\n  else\n    case accepted[dep.app] do\n      nil ->\n        true = {dep.app, version} in [{:hell, \"0.1.2\"}, {:abyss, \"0.7.0\"}]\n      previous ->\n        true = lock[dep.app] == previous\n    end\n  end\n  IO.puts(\"PUBLIC_HEX_DEP #{dep.app} #{package} #{version}\")\nend)\nCode.ensure_loaded!(Gaoxy)\ntrue = String.starts_with?(to_string(:code.which(Gaoxy)), System.fetch_env!(\"MIX_BUILD_PATH\") <> \"/\")\n"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http",
+      "started_utc": "2026-10-20T10:10:47.380598+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http-resolved.log",
+      "log_sha256": "4c6740d4f92224e059cd5b65f1cfc95047fcbef81daab90a5ce8201a5c097cb5"
+    },
+    {
+      "name": "http-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http",
+      "started_utc": "2026-10-20T10:10:48.347738+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/http-tests.log",
+      "log_sha256": "611da3cf9d78fe1344290f4de94f4902bbda56e5f536e4fbfe3ada4998a23e3c"
+    },
+    {
+      "name": "phoenix-deps",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix",
+      "started_utc": "2026-10-20T10:10:49.708526+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix-deps.log",
+      "log_sha256": "3334e1254266130201a7a4af4ed1af007210432e2bd6dcc961951f4a73a1ce28"
+    },
+    {
+      "name": "phoenix-trim-lock",
+      "command": [
+        "mix",
+        "deps.unlock",
+        "--unused"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix",
+      "started_utc": "2026-10-20T10:10:54.053409+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix-trim-lock.log",
+      "log_sha256": "6b53dbfa4d0da29273d2b6afa408348f5080f4971e6186bd7fe1496c81d4df63"
+    },
+    {
+      "name": "phoenix-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix",
+      "started_utc": "2026-10-20T10:10:54.967228+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix-compile.log",
+      "log_sha256": "81d2157f118a0f79165cc3bcceb0018960a9c46c0edf1d5833b7f6c9f3168817"
+    },
+    {
+      "name": "phoenix-resolved",
+      "command": [
+        "mix",
+        "run",
+        "--no-start",
+        "--no-compile",
+        "-e",
+        "\ndeps = Mix.Dep.load_and_cache()\nlock = Mix.Dep.Lock.read()\n{accepted, _} = Code.eval_file(\"../accepted-upstream.lock\")\ntrue = Enum.all?(deps, &(&1.scm == Hex.SCM))\nEnum.each(deps, fn dep ->\n  true = String.starts_with?(dep.opts[:dest], System.fetch_env!(\"MIX_DEPS_PATH\") <> \"/\")\n  {:hex, package, version, _, _, _, \"hexpm\", _} = lock[dep.app]\n  if dep.app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :websock_adapter] do\n    \"0.5.2\" = version\n    true = package == if(dep.app == :websock_adapter, do: :gaoxy_websock_adapter, else: dep.app)\n  else\n    case accepted[dep.app] do\n      nil ->\n        true = {dep.app, version} in [{:hell, \"0.1.2\"}, {:abyss, \"0.7.0\"}]\n      previous ->\n        true = lock[dep.app] == previous\n    end\n  end\n  IO.puts(\"PUBLIC_HEX_DEP #{dep.app} #{package} #{version}\")\nend)\nCode.ensure_loaded!(Gaoxy)\ntrue = String.starts_with?(to_string(:code.which(Gaoxy)), System.fetch_env!(\"MIX_BUILD_PATH\") <> \"/\")\n"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix",
+      "started_utc": "2026-10-20T10:12:32.892624+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix-resolved.log",
+      "log_sha256": "b5fd55921251c43bd3a3083e86aa7d3025cde355edc3909853ad1af3095e3773"
+    },
+    {
+      "name": "phoenix-tests",
+      "command": [
+        "mix",
+        "test",
+        "--warnings-as-errors",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix",
+      "started_utc": "2026-10-20T10:12:33.852332+00:00",
+      "exit": 0,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.5.2/public-consumers/run-1792490858095153634/phoenix-tests.log",
+      "log_sha256": "ea688992e6d5bcd620bc103aa6118e82de32153256be1d2154acdb3756038861"
+    }
+  ],
+  "fixture_source_sha256": {
+    "integration/core_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/core_consumer/test/consumer_test.exs": "a476e150bd4998f62d3ac3d9512d7d8815bd40b405c3eae7f5d7afcdde241b89",
+    "integration/http_consumer/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "integration/http_consumer/test/consumer_test.exs": "c6817eb2fedce66ffcfd3a25a22ee1867edbfc398faf8c4bd24e3e53cf7a36b2",
+    "examples/phoenix_native/lib/phoenix_native/counter_live.ex": "106c721e2f06163ab1623953ffe5ab1d01be1fb04ea22f5cba40d53dddb60c86",
+    "examples/phoenix_native/lib/phoenix_native/room_channel.ex": "cff78d00e89fd0e4a707b2e635714220b22050a5c99a10ee121c2adabe51c9d5",
+    "examples/phoenix_native/lib/phoenix_native/router.ex": "d1209709aa22b5e3cbb1cac30310abeace2779bf65952508db85025084f75aaa",
+    "examples/phoenix_native/lib/phoenix_native/application.ex": "980ceda489c037200ec52b4926e4a577672c61ce1e27e29ee1ca060169e839aa",
+    "examples/phoenix_native/lib/phoenix_native/user_socket.ex": "0e45e6a64611933b9d1057ef6407f1adb5b63da749960d0057bf48b6b56ba5b3",
+    "examples/phoenix_native/lib/phoenix_native/endpoint.ex": "39d4908ce2e7fdd0a52fe6b64a738a6576f8b1c8eebd04aa5432a5140b8ac283",
+    "examples/phoenix_native/lib/phoenix_native/page_controller.ex": "40445bd30fbbff4554ee47d4a04d313771583f5b143a05f38042ae233b419ec4",
+    "examples/phoenix_native/lib/phoenix_native/layouts.ex": "3612c932820ca1216967ede42dc928f1d5ce24687211ed7905d86907213f3cca",
+    "examples/phoenix_native/config/config.exs": "501cd3df34d6717f363a9c89108cd466c32af472e169971658cd379cb37ef724",
+    "examples/phoenix_native/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "examples/phoenix_native/test/ownership_test.exs": "6c288a46f869a0e53c4184aeeb515db4c27e0e7eb093268a52b3e587b7478059"
+  },
+  "prepared_source_sha256": {
+    "core/mix.exs": "c73c0d5d5fb659e8c53a56124e0d5998e7127671ae852bceabfc2f9772c43683",
+    "core/mix.lock": "106f4d93b5232745f7eb88194127064035039834fc2353f3399b2853d570f9cd",
+    "core/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "core/test/consumer_test.exs": "a476e150bd4998f62d3ac3d9512d7d8815bd40b405c3eae7f5d7afcdde241b89",
+    "http/mix.exs": "26c9a7e8086cf97d42320690b13cd949e14dec2038e4969efd5f1b523599d980",
+    "http/mix.lock": "106f4d93b5232745f7eb88194127064035039834fc2353f3399b2853d570f9cd",
+    "http/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "http/test/consumer_test.exs": "c6817eb2fedce66ffcfd3a25a22ee1867edbfc398faf8c4bd24e3e53cf7a36b2",
+    "phoenix/mix.exs": "cfc2002c5b5c8016c119d308cfb936012ec8235873d1bd5baf352279d9985128",
+    "phoenix/mix.lock": "106f4d93b5232745f7eb88194127064035039834fc2353f3399b2853d570f9cd",
+    "phoenix/config/config.exs": "501cd3df34d6717f363a9c89108cd466c32af472e169971658cd379cb37ef724",
+    "phoenix/test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12",
+    "phoenix/test/ownership_test.exs": "6c288a46f869a0e53c4184aeeb515db4c27e0e7eb093268a52b3e587b7478059",
+    "phoenix/lib/phoenix_native/counter_live.ex": "106c721e2f06163ab1623953ffe5ab1d01be1fb04ea22f5cba40d53dddb60c86",
+    "phoenix/lib/phoenix_native/room_channel.ex": "cff78d00e89fd0e4a707b2e635714220b22050a5c99a10ee121c2adabe51c9d5",
+    "phoenix/lib/phoenix_native/router.ex": "d1209709aa22b5e3cbb1cac30310abeace2779bf65952508db85025084f75aaa",
+    "phoenix/lib/phoenix_native/application.ex": "980ceda489c037200ec52b4926e4a577672c61ce1e27e29ee1ca060169e839aa",
+    "phoenix/lib/phoenix_native/user_socket.ex": "0e45e6a64611933b9d1057ef6407f1adb5b63da749960d0057bf48b6b56ba5b3",
+    "phoenix/lib/phoenix_native/endpoint.ex": "39d4908ce2e7fdd0a52fe6b64a738a6576f8b1c8eebd04aa5432a5140b8ac283",
+    "phoenix/lib/phoenix_native/page_controller.ex": "40445bd30fbbff4554ee47d4a04d313771583f5b143a05f38042ae233b419ec4",
+    "phoenix/lib/phoenix_native/layouts.ex": "3612c932820ca1216967ede42dc928f1d5ce24687211ed7905d86907213f3cca"
+  },
+  "accepted_lock_sources": {
+    "mix.lock": "9f04f56f7b3389e217803614537133cda21a6bc176d2499fdcee6128292f0777",
+    "examples/phoenix_native/mix.lock": "7059476a6e745020b89f610a54bd908d2c26181e88cac3ee511d61390f8bfda1"
+  },
+  "accepted_upstream_lock_sha256": "106f4d93b5232745f7eb88194127064035039834fc2353f3399b2853d570f9cd",
+  "execution": "core1 / HTTP2 / Phoenix4 public Hex tests passed",
+  "execution_source_head": "d9fb3a5edee0c7e1dc1d141c7ce04db788b92fdf",
+  "consumers": {
+    "core": {
+      "executed": 1,
+      "failures": 0,
+      "lock_sha256": "7e9e5a5f7b8b186c894d1da2c2ba59864edacece7e1662f9c5da6d2cf690048a"
+    },
+    "http": {
+      "executed": 2,
+      "failures": 0,
+      "lock_sha256": "519d043e299d5508b05def70c54081a33dfd9c63ee7d9aa9e1595ff4ca93e340"
+    },
+    "phoenix": {
+      "executed": 4,
+      "failures": 0,
+      "lock_sha256": "f7ba8c23a29a3cc37490e51caa31dfbdf6988a588d3e7c08fceb0c213d64a75d"
+    }
+  }
+}

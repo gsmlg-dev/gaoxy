@@ -42,8 +42,22 @@ portability claim follows from an Ubuntu hosted build.
 Source `ff06d13bfed97744e47b452d10fc17c2bfba5fff` passed local preflight and
 independent review, was pushed to `main`, and ran in hosted job `39386137306`.
 All build and ordinary standalone smoke gates passed. Publication stopped
-before uploading because `HEX_API_KEY` was empty. The organization secret is
-inaccessible to this private repository on GitHub Free; a repository-level
-secret is required. No tag or release was created, so 0.5.2 remains available
-for a new dispatch. Prepared public consumers remain unexecuted. Preserve the
-hosted artifact, logs and actual outcomes while awaiting that external change.
+before uploading because `HEX_API_KEY` was empty. At that attempt, the
+organization secret was inaccessible to the private repository on GitHub Free;
+a repository-level secret was requested as a possible resolution. No tag or
+release was created then, so 0.5.2 remained available for another dispatch.
+Prepared public consumers were unexecuted at that point. The hosted artifact,
+logs and actual outcomes are preserved separately from the successful retry.
+
+## Public retry
+
+The user subsequently made the repository public and requested another attempt.
+The unchanged release workflow ran at `d9fb3a5e` in job `39404989025` and
+completed successfully, publishing all five Hex packages and GitHub v0.5.2.
+Independent downloads verified all seven GitHub assets, six checksum entries,
+five public-Hex tarballs and their dependency metadata. Fresh public-Hex
+consumers passed all original core 1, HTTP 2 and Phoenix 4 tests, with zero
+failures, strict compilation and actual public Hex dependency resolution.
+One disposable harness stream-handling repair was recorded separately; no
+runtime, dependency cohort or assertions changed. Final documentation and
+evidence closeout retain the published source and artifact identities.
