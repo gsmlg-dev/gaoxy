@@ -35,6 +35,33 @@ defmodule Gaoxy.Admission do
   def adjust_bytes(gate, lease, delta), do: GenServer.call(gate, {:adjust_bytes, lease, delta})
   def start_send(gate, lease, bytes), do: GenServer.call(gate, {:start_send, lease, bytes})
 
+  # Read-triggered informational output needs a caller-known operation token:
+  # a late reply must never leave an operation whose token the caller lost.
+  def start_send_until(gate, lease, bytes, operation, deadline) do
+    case Lifecycle.remaining(deadline) do
+      0 ->
+        {:error, :timeout}
+
+      remaining ->
+        GenServer.call(gate, {:start_send_until, lease, bytes, operation, deadline}, remaining)
+    end
+  catch
+    :exit, {:timeout, _} ->
+      _ = finish_send_async(gate, lease, operation, {:error, :not_submitted})
+      {:error, :timeout}
+
+    :exit, _ ->
+      {:error, :closed}
+  end
+
+  def finish_send_async(gate, lease, operation, result) do
+    request = :gen_server.send_request(gate, {:finish_send, lease, operation, result})
+    _ = :gen_server.receive_response(request, 0)
+    :ok
+  catch
+    :exit, _ -> {:error, :closed}
+  end
+
   def finish_send(gate, lease, operation, result),
     do: GenServer.call(gate, {:finish_send, lease, operation, result})
 
@@ -445,6 +472,23 @@ defmodule Gaoxy.Admission do
 
         {:reply, {:ok, operation},
          %{state | leases: Map.put(state.leases, ref, %{lease | send: pending})}}
+
+      _ ->
+        {:reply, {:error, :stale_or_pending_send}, state}
+    end
+  end
+
+  def handle_call({:start_send_until, ref, bytes, operation, deadline}, {pid, _}, state)
+      when is_reference(operation) and is_integer(deadline) do
+    case state.leases[ref] do
+      %{pid: ^pid, send: nil} = lease when is_integer(bytes) and bytes >= 0 ->
+        if Lifecycle.remaining(deadline) == 0 do
+          {:reply, {:error, :timeout}, state}
+        else
+          pending = %{operation: operation, bytes: bytes}
+          Telemetry.emit(:send_started, %{bytes: bytes}, state.scope, %{operation: operation})
+          {:reply, :ok, %{state | leases: Map.put(state.leases, ref, %{lease | send: pending})}}
+        end
 
       _ ->
         {:reply, {:error, :stale_or_pending_send}, state}

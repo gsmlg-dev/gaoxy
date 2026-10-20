@@ -1,6 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.Transport do
   @moduledoc false
-  alias Gaoxy.{Admission, Lifecycle}
+  alias Gaoxy.Lifecycle
   alias Gaoxy.HTTP.{Exchange, HTTP2.Headers}
   alias Gaoxy.HTTP.HTTP3.Operations
 
@@ -113,9 +113,8 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
 
     with {:ok, exchange} <- maybe_continue(exchange),
          :ok <-
-           Admission.update(
-             exchange.gate,
-             exchange.lease,
+           Exchange.update_body_retention(
+             exchange,
              Exchange.retained_bytes(exchange) + 2 * credit
            ) do
       result = operation(exchange, {:read, credit, {:until, deadline}})
@@ -132,17 +131,17 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
 
           next = %{exchange | body: body}
 
-          case Admission.update(next.gate, next.lease, Exchange.retained_bytes(next)) do
+          case Exchange.update_body_retention(next, Exchange.retained_bytes(next)) do
             :ok -> {kind, bytes, next}
             {:error, reason} -> {:error, reason, next}
           end
 
         :pending ->
-          _ = Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
+          _ = Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange))
           {:pending, exchange}
 
         {:error, reason} ->
-          _ = Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
+          _ = Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange))
           {:error, reason, exchange}
       end
     else

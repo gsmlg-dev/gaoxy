@@ -169,8 +169,12 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
         true -> spec.limits
       end
 
-    {:ok, gate} = Gaoxy.Admission.start_link({limits, %{instance: make_ref(), service: :test}})
-    on_exit(fn -> if Process.alive?(gate), do: GenServer.stop(gate) end)
+    gate =
+      start_supervised!(
+        {Gaoxy.Admission, {limits, %{instance: make_ref(), service: :test}}},
+        id: make_ref()
+      )
+
     {:ok, lease} = Gaoxy.Admission.acquire(gate, retained)
 
     {:ok, listener} = :gen_tcp.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}])

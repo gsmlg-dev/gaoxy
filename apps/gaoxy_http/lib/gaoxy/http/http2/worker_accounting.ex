@@ -215,6 +215,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         route_bytes: e(0),
         resource_pins: e([]),
         protocol_bytes: e(n),
+        adapter_body_bytes: e(0),
         poll_buffer_bytes: e(0),
         transport: e(Transport),
         transport_state: transport,

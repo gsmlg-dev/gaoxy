@@ -467,10 +467,12 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
         spec.limits
       end
 
-    {:ok, gate} =
-      Gaoxy.Admission.start_link({limits, %{instance: make_ref(), service: :test}})
+    gate =
+      start_supervised!(
+        {Gaoxy.Admission, {limits, %{instance: make_ref(), service: :test}}},
+        id: make_ref()
+      )
 
-    on_exit(fn -> if Process.alive?(gate), do: GenServer.stop(gate) end)
     {:ok, lease} = Gaoxy.Admission.acquire(gate, 0)
     {:ok, listener} = :gen_tcp.listen(0, [:binary, active: false, ip: {127, 0, 0, 1}])
     {:ok, {ip, port}} = :inet.sockname(listener)

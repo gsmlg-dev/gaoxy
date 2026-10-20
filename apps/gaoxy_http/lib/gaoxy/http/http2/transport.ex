@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP2.Transport do
   @moduledoc false
   alias Gaoxy.HTTP.Exchange
-  alias Gaoxy.{Admission, Lifecycle}
+  alias Gaoxy.Lifecycle
 
   defdelegate send_resp(exchange, status, headers, body), to: Gaoxy.HTTP.HTTP2.Response
 
@@ -43,6 +43,31 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
     end
   end
 
+  def operation(exchange, {:read, _, _} = operation) do
+    {owner, id, token} = exchange.transport_state
+
+    case Lifecycle.remaining(exchange.deadline) do
+      0 -> {:error, :timeout}
+      remaining -> GenServer.call(owner, {:h2_operation, id, token, operation}, remaining)
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :timeout}
+    :exit, _ -> {:error, :closed}
+  end
+
+  def operation(exchange, :read_continue) do
+    {operation, deadline} = write_operation(exchange, {:head, 100, [], false})
+    {owner, id, token} = exchange.transport_state
+
+    case Lifecycle.remaining(deadline) do
+      0 -> {:error, :timeout}
+      remaining -> GenServer.call(owner, {:h2_operation, id, token, operation}, remaining)
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :timeout}
+    :exit, _ -> {:error, :closed}
+  end
+
   def operation(exchange, operation) do
     {owner, id, token} = exchange.transport_state
 
@@ -82,9 +107,8 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
         with {:ok, exchange} <- maybe_continue(exchange),
              :ok <-
-               Admission.update(
-                 exchange.gate,
-                 exchange.lease,
+               Exchange.update_body_retention(
+                 exchange,
                  Exchange.retained_bytes(exchange) + 2 * credit
                ) do
           result =
@@ -105,15 +129,14 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
               next = %{exchange | body: body}
 
-              case Admission.update(next.gate, next.lease, Exchange.retained_bytes(next)) do
+              case Exchange.update_body_retention(next, Exchange.retained_bytes(next)) do
                 :ok -> {kind, bytes, next}
                 {:error, reason} -> {:error, reason, next}
               end
 
             :pending ->
-              case Admission.update(
-                     exchange.gate,
-                     exchange.lease,
+              case Exchange.update_body_retention(
+                     exchange,
                      Exchange.retained_bytes(exchange)
                    ) do
                 :ok -> {:pending, exchange}
@@ -122,7 +145,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
             {:error, reason} ->
               _ =
-                Admission.update(exchange.gate, exchange.lease, Exchange.retained_bytes(exchange))
+                Exchange.update_body_retention(exchange, Exchange.retained_bytes(exchange))
 
               {:error, reason, exchange}
           end
@@ -136,7 +159,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
   defp maybe_continue(%{request: %{expect_continue: true}, expect_sent: false} = exchange) do
     exchange = %{exchange | expect_sent: true}
 
-    case inform(exchange, 100, []) do
+    case operation(exchange, :read_continue) do
       :ok -> {:ok, exchange}
       {:error, reason} -> {:error, reason, exchange}
     end
