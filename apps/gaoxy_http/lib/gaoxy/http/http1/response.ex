@@ -191,6 +191,8 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   def inform(_, _, _), do: {:error, :not_supported}
 
   defp prepare_headers(exchange, status, headers, {:length, length}) do
+    headers = Gaoxy.HTTP.ListenerSet.Discovery.headers(exchange, status, headers)
+
     with :ok <- validate_status(status),
          :ok <-
            validate_headers(
@@ -216,6 +218,8 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
   end
 
   defp stream_headers(exchange, status, headers) do
+    headers = Gaoxy.HTTP.ListenerSet.Discovery.headers(exchange, status, headers)
+
     with :ok <- validate_status(status),
          :ok <-
            validate_headers(

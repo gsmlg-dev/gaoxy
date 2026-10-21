@@ -34,6 +34,7 @@ defmodule Gaoxy.M5BrowserFixture.Observer do
   # guard before this prepared state is wrapped. Managed TLS state is likewise
   # already initialized by the real Phoenix adapter.
   def init({:initialized, module, options}), do: {module, options}
+  def init({:raw, module, options}), do: {module, module.init(options)}
 
   def call(conn, {module, options}) do
     websocket = conn.request_path in ["/socket/websocket", "/live/websocket"]
@@ -73,21 +74,25 @@ defmodule Gaoxy.M5BrowserFixture.Adapter do
 
   def child_specs(endpoint, config) do
     Gaoxy.PhoenixAdapter.child_specs(endpoint, config)
-    |> Enum.map(fn %{start: {Gaoxy, :start_link, [options]}} = child ->
-      services =
-        Enum.map(options[:services], fn service ->
-          {Gaoxy.HTTP.PlugEndpoint, {module, initialized}} = service.handler_options.endpoint
-          endpoint = {Gaoxy.HTTP.PlugEndpoint, {Observer, {module, initialized}}}
-          %{service | handler_options: %{service.handler_options | endpoint: endpoint}}
-        end)
+    |> Enum.map(fn %{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}} = child ->
+      plan = options[:plan]
+      {:endpoint, Gaoxy.HTTP.PlugEndpoint, {module, raw, :endpoint_managed}} = plan.target
+
+      target =
+        {:endpoint, Gaoxy.HTTP.PlugEndpoint, {Observer, {:raw, module, raw}, :endpoint_managed}}
 
       send(Application.fetch_env!(:phoenix_native, :m5_browser_observer), {
         :m5_managed_runtime,
-        options[:name],
-        Enum.map(services, & &1.id)
+        options[:instance_name],
+        Map.values(plan.service_ids)
       })
 
-      %{child | start: {Gaoxy, :start_link, [Keyword.put(options, :services, services)]}}
+      %{
+        child
+        | start:
+            {Gaoxy.HTTP.ListenerSet, :start_link,
+             [Keyword.put(options, :plan, %{plan | target: target})]}
+      }
     end)
   end
 

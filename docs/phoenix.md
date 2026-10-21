@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.7.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.8.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.7.0"},
-{:websock_adapter, "~> 0.7.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.8.0"},
+{:websock_adapter, "~> 0.8.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -32,7 +32,7 @@ mix compile --warnings-as-errors
 ```
 
 The package requires Elixir `~> 1.18`. The runnable reference uses Phoenix
-1.8.15. Keep your normal Phoenix, Plug, LiveView and JSON configuration; adding
+1.8.16. Keep your normal Phoenix, Plug, LiveView and JSON configuration; adding
 Gaoxy does not generate or replace those application files.
 
 ## 2. Select the adapter and configure development
@@ -468,9 +468,10 @@ port requires the prior-knowledge client.
 
 ## HTTP/3 and runnable examples
 
-HTTP/3 uses optional `gaoxy_http3` and a separate `Gaoxy.HTTP.HTTP3` service.
-`Gaoxy.PhoenixAdapter` owns only `http` and `https` TCP/TLS services;
-`protocols: [:http3]` is invalid. External Phoenix H3 mounts require
+HTTP/3 uses optional `gaoxy_http3`. `Gaoxy.PhoenixAdapter` can own an explicit
+`http3:` listener alongside `http:` and `https:`, as configured below.
+`protocols: [:http3]` remains invalid for TCP/TLS listeners. Applications can
+also mount a separate `Gaoxy.HTTP.HTTP3` service. External Phoenix mounts require
 `server: false`, the ordinary Endpoint supervisor, a WebSocket wrapper for exact
 paths, and their own extended-CONNECT opt-in. See [HTTP/3 setup](http3.md) and
 the [H3 gateway example](../examples/phoenix_native/h3_gateway.exs).
@@ -480,3 +481,45 @@ static assets, SSE, Channels and LiveView upload/click flows. Its path
 dependencies are for development inside this repository; use the Hex
 dependencies at the beginning of this guide in your own application. Its
 fixture-only secrets and ephemeral default port are not production settings.
+
+## One Endpoint with HTTP/3
+
+`Gaoxy.PhoenixAdapter` owns one ListenerSet and one core instance for the
+Endpoint's enabled roles. Existing `http` and `https` defaults and service IDs
+remain in use. Add `gaoxy_http3` to the host application's dependencies and
+configure H3 explicitly:
+
+```elixir
+config :my_app, MyAppWeb.Endpoint,
+  adapter: Gaoxy.PhoenixAdapter,
+  server: true,
+  http: false,
+  https: [ip: {127, 0, 0, 1}, port: 8443,
+          certfile: "priv/cert.pem", keyfile: "priv/key.pem"],
+  http3: [ip: {127, 0, 0, 1}, port: 8443,
+          certfile: "priv/cert.pem", keyfile: "priv/key.pem"],
+  http3_discovery: [port: :bound, max_age: 60]
+```
+
+`http3: nil` or `false` disables H3. `http3: true` is invalid: H3 requires its
+own explicit IP, port, certificate and key. TCP ALPN/version options belong to
+`https`; they are not copied to QUIC. Existing `limits`, `http_limits`,
+`h3_limits` and explicit `extended_connect` are accepted. Unsupported wildcard,
+IPv6 and TLS capabilities fail instead of falling back to a different listener.
+Two zero ports are independent; two equal nonzero ports deliberately share the
+numeric port across TCP and UDP.
+
+All roles share the same initialized Endpoint, code-reload wrapper and exact
+`websocket_paths`. H1 Upgrade remains available; H2/H3 WebSocket extended CONNECT
+requires explicit enablement. The external duplicate-mount guard remains:
+set `server: false` when another runtime owns the Endpoint listener.
+
+`Gaoxy.PhoenixAdapter.server_info(endpoint, :http | :https)` retains its TCP
+return shape. Use `Gaoxy.PhoenixAdapter.listeners(endpoint)` to inspect every
+role, including actual H3 UDP addresses and degraded/recovering members. An
+H3-only Endpoint does not invent a TCP HTTPS listener. Phoenix's `url` remains
+the public-origin configuration, independent of ephemeral bound addresses.
+
+See [ListenerSets](listener-sets.md) for startup rollback, optional discovery,
+cache lifetimes and transport lifecycle limits. A runnable same-Endpoint example
+is in [the Phoenix fixture](../examples/phoenix_native/README.md).

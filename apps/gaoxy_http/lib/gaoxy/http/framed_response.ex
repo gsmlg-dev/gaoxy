@@ -122,6 +122,8 @@ defmodule Gaoxy.HTTP.FramedResponse do
   end
 
   defp prepare(exchange, status, headers, size) do
+    headers = Gaoxy.HTTP.ListenerSet.Discovery.headers(exchange, status, headers)
+
     with true <- (is_integer(status) and status in 200..599) || {:error, :invalid_status},
          :ok <-
            Headers.response(

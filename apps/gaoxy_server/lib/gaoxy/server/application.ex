@@ -10,10 +10,10 @@ defmodule Gaoxy.Server.Application do
       path ->
         with {:ok, options} <- Gaoxy.Server.Config.load(path),
              {:ok, supervisor} <- Gaoxy.Server.Supervisor.start_link(options) do
-          ready =
-            for id <- Gaoxy.services(Gaoxy.Server.Runtime) do
-              info = Gaoxy.info(Gaoxy.Server.Runtime, id)
+          %{phase: :ready, listeners: listeners} = Gaoxy.Proxy.Gateway.info(supervisor)
 
+          ready =
+            for info <- listeners do
               local =
                 case info.local do
                   {:ok, address} -> address
@@ -23,7 +23,7 @@ defmodule Gaoxy.Server.Application do
               {ip, port} = local
 
               %{
-                id: id,
+                id: info.id,
                 address: to_string(:inet.ntoa(ip)),
                 port: port,
                 transport: Atom.to_string(info.transport)
@@ -40,7 +40,7 @@ defmodule Gaoxy.Server.Application do
 
   @impl true
   def prep_stop(state) do
-    if pid = Process.whereis(Gaoxy.Server.Runtime), do: Gaoxy.stop(pid, 5_000)
+    if pid = Process.whereis(Gaoxy.Server.Supervisor), do: Gaoxy.Proxy.Gateway.stop(pid, 5_000)
     state
   end
 end

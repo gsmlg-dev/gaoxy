@@ -37,6 +37,52 @@ defmodule Gaoxy.HTTP.Generation do
   def declared_snapshot(store, timeout \\ 5_000),
     do: request(store, :declared_snapshot, timeout)
 
+  @doc false
+  def accepted(store, timeout \\ 5_000), do: request(store, :accepted, timeout)
+
+  @doc false
+  def begin_epoch(store, epoch, timeout \\ 5_000),
+    do: request(store, {:begin_epoch, epoch}, timeout)
+
+  @doc false
+  def admit(store, operation, revision, declaration, deadline),
+    do:
+      request(
+        store,
+        {:admit, operation, revision, declaration, deadline},
+        Lifecycle.remaining(deadline)
+      )
+
+  @doc false
+  def operation_status(store, operation, timeout \\ 5_000),
+    do: request(store, {:operation_status, operation}, timeout)
+
+  @doc false
+  def reject(store, operation, reason, timeout \\ 5_000),
+    do: request(store, {:reject_operation, operation, reason}, timeout)
+
+  @doc false
+  def materialize(store, epoch, router, declaration, deadline),
+    do:
+      request(
+        store,
+        {:materialize, epoch, router, declaration, deadline},
+        Lifecycle.remaining(deadline)
+      )
+
+  @doc false
+  def commit(store, operation, revision, epoch, router, declaration, deadline),
+    do:
+      request(
+        store,
+        {:commit, operation, revision, epoch, router, declaration, deadline},
+        max(1, Lifecycle.remaining(deadline))
+      )
+
+  @doc false
+  def drain(store, deadline),
+    do: request(store, {:drain, deadline}, Lifecycle.remaining(deadline))
+
   def prepare(store, routes, timeout \\ 5_000)
 
   def prepare(store, routes, timeout)
@@ -446,7 +492,14 @@ defmodule Gaoxy.HTTP.Generation.Store do
        limits: limits,
        preparation: nil,
        baseline: [],
-       retired: []
+       retired: [],
+       accepted: nil,
+       revision: 0,
+       epoch: nil,
+       phase: :running,
+       operations: %{},
+       inflight: nil,
+       terminal: nil
      }}
   end
 
@@ -456,6 +509,170 @@ defmodule Gaoxy.HTTP.Generation.Store do
 
   def handle_call(:declared_snapshot, _, state),
     do: {:reply, {:ok, state.router.generation, state.declaration}, state}
+
+  def handle_call(:accepted, _, state) do
+    {:reply,
+     {:ok,
+      %{
+        declaration: state.accepted,
+        revision: state.revision,
+        epoch: state.epoch,
+        phase: state.phase,
+        generation: state.router.generation,
+        cleanup_pending: state.retired != [] or state.inflight != nil
+      }}, state}
+  end
+
+  def handle_call({:begin_epoch, _}, _, %{phase: :draining} = state),
+    do: {:reply, {:error, :gateway_draining}, state}
+
+  def handle_call({:begin_epoch, epoch}, _, state) when is_reference(epoch) do
+    state =
+      if state.inflight,
+        do: terminal(state, state.inflight, %{status: :rejected, reason: :stale_runtime_epoch}),
+        else: state
+
+    {:reply, :ok, %{state | epoch: epoch}}
+  end
+
+  def handle_call({:operation_status, operation}, _, state) do
+    result =
+      case Map.fetch(state.operations, operation) do
+        {:ok, receipt} -> {:ok, Map.drop(receipt, [:fingerprint])}
+        :error -> {:ok, %{status: :unknown}}
+      end
+
+    {:reply, result, state}
+  end
+
+  def handle_call({:admit, operation, revision, declaration, deadline}, _, state) do
+    fingerprint = :crypto.hash(:sha256, :erlang.term_to_binary({revision, declaration}))
+
+    case Map.fetch(state.operations, operation) do
+      {:ok, %{fingerprint: ^fingerprint} = receipt} ->
+        {:reply, {:ok, Map.drop(receipt, [:fingerprint])}, state}
+
+      {:ok, _} ->
+        {:reply, {:error, :operation_conflict}, state}
+
+      :error ->
+        with true <- state.phase == :running || {:error, :gateway_draining},
+             true <- Lifecycle.remaining(deadline) > 0 || {:error, :activation_timeout},
+             true <- revision == state.revision || {:error, :stale_revision},
+             true <- state.inflight == nil || {:error, :reload_busy},
+             true <-
+               :erlang.external_size(declaration) <= state.limits.max_config_bytes ||
+                 {:error, :configuration_too_large} do
+          receipt = %{status: :pending, fingerprint: fingerprint}
+
+          {:reply, {:ok, :admitted},
+           %{
+             state
+             | inflight: operation,
+               operations: Map.put(state.operations, operation, receipt)
+           }}
+        else
+          error -> {:reply, error, state}
+        end
+    end
+  end
+
+  def handle_call({:reject_operation, operation, reason}, _, state) do
+    state =
+      if state.inflight == operation,
+        do: terminal(state, operation, %{status: :rejected, reason: reason}),
+        else: state
+
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:drain, deadline}, _, state) do
+    if Lifecycle.remaining(deadline) > 0 do
+      state =
+        if state.inflight,
+          do: terminal(state, state.inflight, %{status: :rejected, reason: :gateway_draining}),
+          else: state
+
+      {:reply, :ok, %{state | phase: :draining}}
+    else
+      {:reply, {:error, :activation_timeout}, state}
+    end
+  end
+
+  def handle_call({:materialize, epoch, router, declaration, deadline}, _, state) do
+    with :ok <- gateway_candidate(state, epoch, router, declaration, deadline),
+         true <-
+           (state.accepted == nil or state.accepted == declaration) || {:error, :stale_revision},
+         {:ok, baseline} <- Resources.pin_many(router.resources, self(), :baseline, deadline) do
+      if Lifecycle.remaining(deadline) > 0 do
+        old = state.baseline
+        revision = if state.accepted == nil, do: 1, else: state.revision
+
+        state = %{
+          state
+          | router: router,
+            declaration: declaration_router(router, declaration),
+            accepted: declaration,
+            revision: revision,
+            baseline: baseline
+        }
+
+        {:reply, {:ok, revision}, retire_pins(state, old)}
+      else
+        {:reply, {:error, :activation_timeout}, retire_pins(state, baseline)}
+      end
+    else
+      error -> {:reply, error, state}
+    end
+  end
+
+  def handle_call({:commit, operation, revision, epoch, router, declaration, deadline}, _, state) do
+    result =
+      with :ok <- gateway_candidate(state, epoch, router, declaration, deadline),
+           true <- state.inflight == operation || {:error, :unknown_operation},
+           true <- revision == state.revision || {:error, :stale_revision},
+           {:ok, baseline} <- Resources.pin_many(router.resources, self(), :baseline, deadline) do
+        {:prepared, baseline}
+      end
+
+    case result do
+      {:prepared, baseline} ->
+        if Lifecycle.remaining(deadline) > 0 do
+          receipt = %{
+            status: :committed,
+            revision: state.revision + 1,
+            generation: router.generation
+          }
+
+          old = state.baseline
+
+          state = %{
+            state
+            | router: router,
+              declaration: declaration_router(router, declaration),
+              accepted: declaration,
+              revision: receipt.revision,
+              baseline: baseline
+          }
+
+          state = terminal(state, operation, receipt) |> retire_pins(old)
+          {:reply, {:ok, Map.delete(receipt, :status)}, state}
+        else
+          state = retire_pins(state, baseline)
+
+          {:reply, {:error, :activation_timeout},
+           terminal(state, operation, %{status: :rejected, reason: :activation_timeout})}
+        end
+
+      {:error, reason} = error ->
+        state =
+          if state.inflight == operation,
+            do: terminal(state, operation, %{status: :rejected, reason: reason}),
+            else: state
+
+        {:reply, error, state}
+    end
+  end
 
   def handle_call({:snapshot_for_request, holder, deadline}, {caller, _}, state) do
     with true <- holder == caller || {:error, :invalid_resource_holder},
@@ -640,6 +857,31 @@ defmodule Gaoxy.HTTP.Generation.Store do
       do: Process.send_after(self(), :reconcile_resources, 0)
 
     %{state | retired: pins ++ state.retired}
+  end
+
+  defp gateway_candidate(state, epoch, router, declaration, deadline) do
+    with true <- state.phase == :running || {:error, :gateway_draining},
+         true <- epoch == state.epoch || {:error, :stale_runtime_epoch},
+         true <- Lifecycle.remaining(deadline) > 0 || {:error, :activation_timeout},
+         true <- state.retired == [] || {:error, :resource_release_pending},
+         true <-
+           :erlang.external_size(declaration) <= state.limits.max_config_bytes ||
+             {:error, :configuration_too_large},
+         :ok <- compiled_bound(router, state.limits),
+         do: :ok
+  end
+
+  defp declaration_router(router, %Router{} = declaration),
+    do: %{declaration | generation: router.generation}
+
+  defp declaration_router(router, routes),
+    do: %Router{generation: router.generation, routes: routes}
+
+  defp terminal(state, operation, receipt) do
+    previous = Map.get(state.operations, operation, %{})
+    receipt = Map.merge(Map.take(previous, [:fingerprint]), receipt)
+    operations = state.operations |> Map.delete(state.terminal) |> Map.put(operation, receipt)
+    %{state | operations: operations, terminal: operation, inflight: nil}
   end
 
   defp finish(%{preparation: preparation} = state, result) do

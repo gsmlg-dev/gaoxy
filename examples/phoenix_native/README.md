@@ -42,3 +42,32 @@ test certificate directory. It mounts `Gaoxy.PhoenixWebSocket` around the
 Endpoint with the same exact paths and `server: false`. The M5 browser runner
 in `integration/websocket_multiplexed` records the WebSocket's native protocol
 and stream, Channels/PubSub, LiveView click/upload, and ordinary Origin refusal.
+
+## Endpoint-owned HTTPS and H3 together
+
+The fixture can now use its normal Endpoint child for all protocols. Generate
+local test credentials from the repository root with
+`scripts/generate-fixtures.sh .audit/phoenix-unified-certs`, then from this
+example directory:
+
+```sh
+PHOENIX_NATIVE_H3=1 mix deps.get --check-locked
+PHOENIX_NATIVE_H3=1 \
+PHOENIX_NATIVE_HTTPS_PORT=0 PHOENIX_NATIVE_HTTP3_PORT=0 \
+PHOENIX_NATIVE_CERTFILE="$PWD/../../.audit/phoenix-unified-certs/cert.pem" \
+PHOENIX_NATIVE_KEYFILE="$PWD/../../.audit/phoenix-unified-certs/key.pem" \
+mix run --no-halt -e 'IO.inspect(Gaoxy.PhoenixAdapter.listeners(PhoenixNative.Endpoint))'
+```
+
+The printed metadata reports the independent actual TCP and UDP ports. Set both
+secure port variables to the same nonzero number to share that numeric port.
+This path uses `server: true`, the same Endpoint/code reload/WebSocket pipeline,
+and opt-in discovery on secure H1/H2 responses. The older `h3_gateway.exs` remains
+an explicit external mounting example with `server: false`.
+
+`integration/phoenix_native/unified.py` is the focused real Endpoint gate. It
+requires this example compiled in development with H2, H3 and code reload
+enabled, plus the Python browser requirements and `aioquic`. It records forced
+H1/H2/H3 requests, the exact native H2/H3 Channel and LiveView socket paths,
+code reload and source restoration, and Endpoint shutdown. Its default evidence
+directory is `.audit/unified-phoenix`.

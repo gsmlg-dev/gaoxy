@@ -1,9 +1,14 @@
 defmodule Gaoxy.PhoenixAdapter do
   @moduledoc """
-  Phoenix Endpoint server adapter. One Endpoint child owns a Gaoxy instance and
-  its configured HTTP and HTTPS services. An externally mounted Endpoint sets
-  `server: false` so its supervisor does not create another listener.
+  Phoenix Endpoint server adapter. One Endpoint child owns a ListenerSet and
+  one Gaoxy instance for its configured HTTP, HTTPS and optional HTTP/3 roles.
+  An externally mounted Endpoint sets `server: false`.
+
+  Enable H3 explicitly with `http3: [ip: ..., port: ..., certfile: ..., keyfile: ...]`
+  and include `gaoxy_http3` in the host dependencies. `listeners/1` reports actual
+  transport addresses; Phoenix's `url` remains the configured public origin.
   """
+  alias Gaoxy.HTTP.ListenerSet
 
   @http_options [
     :ip,
@@ -16,26 +21,63 @@ defmodule Gaoxy.PhoenixAdapter do
     :extended_connect
   ]
   @https_options @http_options ++ [:certfile, :keyfile, :versions, :alpn]
+  @h3_options [
+    :ip,
+    :port,
+    :certfile,
+    :keyfile,
+    :limits,
+    :http_limits,
+    :h3_limits,
+    :extended_connect
+  ]
 
   def child_specs(endpoint, config) when is_atom(endpoint) and is_list(config) do
     if Keyword.get(config, :server) == false do
       []
     else
-      services =
-        [:http, :https]
-        |> Enum.flat_map(fn scheme ->
-          case Keyword.get(config, scheme) do
-            nil -> []
-            false -> []
-            options -> [service!(endpoint, scheme, options, config)]
+      listeners =
+        Enum.flat_map([:http, :https, :http3], fn role ->
+          case Keyword.get(config, role) do
+            disabled when disabled in [nil, false] -> []
+            options -> [{role, options!(endpoint, role, options)}]
           end
         end)
 
-      if services == [] do
+      if listeners == [] do
         []
       else
-        options = [name: instance_name(endpoint), services: services]
-        [%{Gaoxy.child_spec(options) | id: {__MODULE__, endpoint}}]
+        target =
+          if Keyword.get(config, :code_reloader, false),
+            do: {Phoenix.Endpoint.SyncCodeReloadPlug, {endpoint, []}},
+            else: endpoint
+
+        paths = Keyword.get(config, :websocket_paths, [])
+
+        options = [
+          id: endpoint,
+          endpoint:
+            {Gaoxy.HTTP.PlugEndpoint,
+             {Gaoxy.PhoenixWebSocket, {target, paths}, :endpoint_managed}},
+          listeners: listeners,
+          service_ids: Map.new(listeners, fn {role, _} -> {role, service_id(endpoint, role)} end),
+          discovery: Keyword.get(config, :http3_discovery, false)
+        ]
+
+        case ListenerSet.plan(options) do
+          {:ok, plan} ->
+            child =
+              ListenerSet.child_spec(
+                plan: plan,
+                name: owner_name(endpoint),
+                instance_name: instance_name(endpoint)
+              )
+
+            [%{child | id: {__MODULE__, endpoint}}]
+
+          {:error, reason} ->
+            raise ArgumentError, "invalid listeners for #{inspect(endpoint)}: #{inspect(reason)}"
+        end
       end
     end
   end
@@ -55,65 +97,37 @@ defmodule Gaoxy.PhoenixAdapter do
 
   def server_info(_, _), do: {:error, :invalid_scheme}
 
-  defp service!(endpoint, scheme, options, config)
-       when is_list(options) do
-    allowed = if scheme == :https, do: @https_options, else: @http_options
-
-    if not Keyword.keyword?(options) or
-         Enum.any?(Keyword.keys(options), &(&1 not in allowed)) do
-      raise ArgumentError, "invalid #{scheme} listener options for #{inspect(endpoint)}"
-    end
-
-    port = port!(Keyword.get(options, :port, if(scheme == :http, do: 4000, else: 4040)))
-
-    {plug_module, plug_options} =
-      if Keyword.get(config, :code_reloader, false),
-        do: {Phoenix.Endpoint.SyncCodeReloadPlug, {endpoint, []}},
-        else: {endpoint, []}
-
-    target = if plug_module == endpoint, do: endpoint, else: {plug_module, plug_options}
-    paths = Keyword.get(config, :websocket_paths, [])
-
-    args = [
-      id: service_id(endpoint, scheme),
-      ip: Keyword.get(options, :ip, {127, 0, 0, 1}),
-      port: port,
-      transport: if(scheme == :http, do: :tcp, else: :tls),
-      endpoint:
-        {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.PhoenixWebSocket, {target, paths}, :endpoint_managed}},
-      limits: Keyword.get(options, :limits, %{}),
-      http_limits: Keyword.get(options, :http_limits, %{}),
-      h2c: Keyword.get(options, :h2c, :disabled),
-      extended_connect: Keyword.get(options, :extended_connect, false),
-      h2_limits: Keyword.get(options, :h2_limits, %{})
-    ]
-
-    args = args ++ Keyword.take(options, [:protocols])
-
-    args =
-      if scheme == :https do
-        tls =
-          options
-          |> Keyword.take([:certfile, :keyfile, :versions, :alpn])
-          |> Map.new()
-
-        Keyword.put(args, :tls, tls)
-      else
-        args
-      end
-
-    case Gaoxy.HTTP.service_spec(args) do
-      {:ok, service} ->
-        service
-
-      {:error, reason} ->
-        raise ArgumentError,
-              "invalid #{scheme} listener for #{inspect(endpoint)}: #{inspect(reason)}"
+  @doc "Returns the current logical phase and physical listener metadata, including UDP H3."
+  def listeners(endpoint) do
+    case Process.whereis(owner_name(endpoint)) do
+      nil -> {:error, :not_running}
+      owner -> ListenerSet.info(owner)
     end
   end
 
-  defp service!(endpoint, scheme, _options, _config),
-    do: raise(ArgumentError, "invalid #{scheme} listener options for #{inspect(endpoint)}")
+  defp options!(endpoint, role, options) when is_list(options) do
+    allowed =
+      case role do
+        :http -> @http_options
+        :https -> @https_options
+        :http3 -> @h3_options
+      end
+
+    if not Keyword.keyword?(options) or length(options) != map_size(Map.new(options)) or
+         Enum.any?(Keyword.keys(options), &(&1 not in allowed)) do
+      raise ArgumentError, "invalid #{role} listener options for #{inspect(endpoint)}"
+    end
+
+    if role == :http3 and
+         not Enum.all?([:ip, :port, :certfile, :keyfile], &Keyword.has_key?(options, &1)),
+       do: raise(ArgumentError, "http3 requires explicit ip, port, certfile and keyfile")
+
+    default = if role == :http, do: 4000, else: 4040
+    Keyword.put(options, :port, port!(Keyword.get(options, :port, default)))
+  end
+
+  defp options!(endpoint, role, _),
+    do: raise(ArgumentError, "invalid #{role} listener options for #{inspect(endpoint)}")
 
   defp port!(port) when is_integer(port) and port in 0..65_535, do: port
 
@@ -125,9 +139,17 @@ defmodule Gaoxy.PhoenixAdapter do
   end
 
   defp port!(_), do: raise(ArgumentError, "invalid Phoenix listener port")
-
   defp instance_name(endpoint), do: Module.concat(endpoint, GaoxyInstance)
+  defp owner_name(endpoint), do: Module.concat(endpoint, GaoxyListenerSet)
 
-  defp service_id(endpoint, scheme),
-    do: Module.concat(endpoint, if(scheme == :http, do: HTTP, else: HTTPS))
+  defp service_id(endpoint, role),
+    do:
+      Module.concat(
+        endpoint,
+        case role do
+          :http -> HTTP
+          :https -> HTTPS
+          :http3 -> HTTP3
+        end
+      )
 end

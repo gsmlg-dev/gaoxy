@@ -1,0 +1,140 @@
+{
+  "status": "PASS",
+  "command": [
+    "mix",
+    "run",
+    "--no-start",
+    "--no-compile",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/integration/phoenix_native/unified_fixture.exs"
+  ],
+  "baseline": "656dbf5bb84564adc6a4d68247c0ad2fe52c2625",
+  "checks": [
+    {
+      "check": "independent_endpoint_HTTP/1.1",
+      "status": "PASS",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/2",
+      "status": "PASS",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/3",
+      "status": "PASS"
+    },
+    {
+      "check": "browser_endpoint_h2",
+      "status": "PASS",
+      "sockets": [
+        {
+          "version": "HTTP/2",
+          "state": "upgraded",
+          "path": "/live/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "_csrf_token=BTMiBQFzPl4cTkchNhp9GAg7CQYABQwYwJqPfAa5lvuWn_LUXkBEIsuy&_mounts=0&_mount_attempts=0&_live_referer=undefined&vsn=2.0.0&unified=h2"
+        },
+        {
+          "version": "HTTP/2",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h2"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h2",
+      "status": "PASS"
+    },
+    {
+      "check": "browser_endpoint_h3",
+      "status": "PASS",
+      "sockets": [
+        {
+          "version": "HTTP/3",
+          "state": "upgraded",
+          "path": "/live/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "_csrf_token=BjItNApUEDggCFhzEBgSfVR-Ey86SCgVchZQG8rPVF61XjtDbGdzbyQf&_mounts=0&_mount_attempts=0&_live_referer=undefined&vsn=2.0.0&unified=h3"
+        },
+        {
+          "version": "HTTP/3",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h3"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h3",
+      "status": "PASS"
+    },
+    {
+      "check": "endpoint_shutdown",
+      "status": "PASS"
+    }
+  ],
+  "receipts": [
+    {
+      "ports": {
+        "http": 46115,
+        "https": 33261,
+        "http3": 41966
+      },
+      "code_reloader": true,
+      "event": "ready",
+      "endpoint_server": true
+    },
+    {
+      "version": "HTTP/2",
+      "state": "upgraded",
+      "path": "/live/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "_csrf_token=BTMiBQFzPl4cTkchNhp9GAg7CQYABQwYwJqPfAa5lvuWn_LUXkBEIsuy&_mounts=0&_mount_attempts=0&_live_referer=undefined&vsn=2.0.0&unified=h2"
+    },
+    {
+      "version": "HTTP/2",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h2"
+    },
+    {
+      "version": "HTTP/3",
+      "state": "upgraded",
+      "path": "/live/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "_csrf_token=BjItNApUEDggCFhzEBgSfVR-Ey86SCgVchZQG8rPVF61XjtDbGdzbyQf&_mounts=0&_mount_attempts=0&_live_referer=undefined&vsn=2.0.0&unified=h3"
+    },
+    {
+      "version": "HTTP/3",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h3"
+    },
+    {
+      "event": "stopped"
+    }
+  ],
+  "process_exit": 0,
+  "source_restored": true
+}

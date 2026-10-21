@@ -11,7 +11,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_http3, "~> 0.7.0"}
+    {:gaoxy_http3, "~> 0.8.0"}
   ]
 end
 ```
@@ -98,3 +98,10 @@ does not prove its WebSocket uses H3. See the
 for protocol limits and the
 [native HTTP guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/native-http.md)
 for shared Plug/endpoint APIs.
+
+For one Phoenix Endpoint across H1/H2/H3, use the adapter's explicit `http3:`
+option or `Gaoxy.HTTP.ListenerSet`; see the [Phoenix guide](../../docs/phoenix.md)
+and [ListenerSet contract](../../docs/listener-sets.md). This package supplies
+the optional versioned H3 listener provider. HTTP-only consumers do not resolve
+or load it, and existing `Gaoxy.HTTP.HTTP3.service_spec/1` remains a single
+service builder.

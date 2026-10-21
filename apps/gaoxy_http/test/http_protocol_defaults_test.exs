@@ -103,17 +103,24 @@ defmodule Gaoxy.HTTP.ProtocolDefaultsTest do
   end
 
   test "Phoenix mixed HTTP options create one native listener" do
-    assert [%{start: {Gaoxy, :start_link, [[name: _, services: [http]]]}}] =
+    assert [%{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}}] =
              Gaoxy.PhoenixAdapter.child_specs(FixturePlug,
                http: [port: 0, protocols: [:http2, :http1], h2c: :prior_knowledge],
                https: false
              )
 
+    assert options[:plan].service_ids == %{http: Module.concat(FixturePlug, "HTTP")}
+    assert {:ok, [http]} = Gaoxy.HTTP.ListenerSet.planned_services(options[:plan])
+
     assert http.transport == :tcp
     assert http.handler == Gaoxy.HTTP.Connection
     assert http.handler_options.protocols == [:http2, :http1]
     assert http.handler_options.h2c == :prior_knowledge
-    assert {Gaoxy.HTTP.PlugEndpoint, _} = http.handler_options.endpoint
+    assert {Gaoxy.HTTP.ListenerSet.Target, :planned} = http.handler_options.endpoint
+
+    assert {:endpoint, Gaoxy.HTTP.PlugEndpoint,
+            {Gaoxy.PhoenixWebSocket, {FixturePlug, []}, :endpoint_managed}} =
+             options[:plan].target
   end
 
   test "H2 defaults preserve supplied limit fields and insufficient-budget rejection" do
@@ -146,11 +153,18 @@ defmodule Gaoxy.HTTP.ProtocolDefaultsTest do
   end
 
   test "Phoenix delegates omitted HTTPS protocols while plain HTTP keeps H1" do
-    assert [%{start: {Gaoxy, :start_link, [[name: _, services: [http, https]]]}}] =
+    assert [%{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}}] =
              Gaoxy.PhoenixAdapter.child_specs(FixturePlug,
                http: [port: 0],
                https: [port: 0, certfile: "cert.pem", keyfile: "key.pem"]
              )
+
+    assert options[:plan].service_ids == %{
+             http: Module.concat(FixturePlug, "HTTP"),
+             https: Module.concat(FixturePlug, "HTTPS")
+           }
+
+    assert {:ok, [http, https]} = Gaoxy.HTTP.ListenerSet.planned_services(options[:plan])
 
     assert http.handler_options.protocols == [:http1]
     assert https.handler_options.protocols == [:http2, :http1]

@@ -222,6 +222,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         secure: secure,
         ssl: e(nil),
         peer_cert: cert,
+        discovery: e(nil),
         expect_sent: e(false)
       )
 

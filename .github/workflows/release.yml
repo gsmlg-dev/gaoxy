@@ -92,8 +92,45 @@ jobs:
         run: |
           python -m venv .audit/h2peer
           .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
+      - name: Isolated core, HTTP, H3 and Gateway consumers on publication source
+        env:
+          GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
+          GAOXY_QUIC_PYTHON: ${{ github.workspace }}/.audit/h2peer/bin/python
+        run: |
+          bash scripts/external-consumer.sh
+          bash scripts/http-consumer.sh
+          bash scripts/h3-consumer.sh
+          bash scripts/gateway-consumer.sh
+          bash scripts/h3-gateway-consumer.sh
       - name: Correctness repair and ordinary compatibility on publication source
         run: python3 scripts/check-repairs.py all
+      - name: Unified Phoenix browser and peer dependencies
+        run: |
+          python -m pip install -r integration/phoenix_native/requirements.txt -r integration/http3/requirements.txt
+          python -m playwright install --with-deps chromium
+      - name: Prepare unified Phoenix publication fixture
+        working-directory: examples/phoenix_native
+        env:
+          MIX_ENV: dev
+          PHOENIX_NATIVE_H2: '1'
+          PHOENIX_NATIVE_H3: '1'
+          PHOENIX_NATIVE_RELOAD: '1'
+        run: |
+          mix deps.get --check-locked
+          mix compile --warnings-as-errors
+      - name: Unified Endpoint H1/H2/H3 browser, WebSocket and reload acceptance
+        env:
+          GAOXY_PHOENIX_EVIDENCE: .audit/release-unified-phoenix
+        run: python integration/phoenix_native/unified.py
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
+        with:
+          name: release-unified-phoenix-evidence
+          path: |
+            .audit/release-unified-phoenix/server.log
+            .audit/release-unified-phoenix/report.json
+            .audit/release-unified-phoenix/h2.png
+            .audit/release-unified-phoenix/h3.png
       - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
       - run: mix release gaoxy
