@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.6.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.7.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.6.0"},
-{:websock_adapter, "~> 0.6.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.7.0"},
+{:websock_adapter, "~> 0.7.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -211,7 +211,7 @@ These are keyword lists; their three limit values are maps.
 | `ip` | `{127, 0, 0, 1}`; IPv4 or IPv6 address tuple |
 | `port` | HTTP `4000`, HTTPS `4040`; integer or decimal string in `0..65535` |
 | `protocols` | HTTP `[:http1]`; HTTPS `[:http2, :http1]` |
-| `h2c` | `:disabled`; use `:prior_knowledge` only with TCP `[:http2]` |
+| `h2c` | `:disabled`; use `:prior_knowledge` with TCP `[:http2]` or `[:http2, :http1]` |
 | `extended_connect` | `false`; opt in with `true` for native H2 WebSocket |
 | `limits` | `%{}`; merges service admission/lifecycle defaults below |
 | `http_limits` | `%{}`; merges HTTP parser/deadline defaults below |
@@ -220,15 +220,28 @@ These are keyword lists; their three limit values are maps.
 | `versions` | HTTPS only, `[:"tlsv1.3"]`; also `[:"tlsv1.2"]` or `[:"tlsv1.3", :"tlsv1.2"]` |
 | `alpn` | HTTPS only; automatically derived from `protocols` |
 
-TCP supports either H1 or explicit prior-knowledge H2. For a dedicated h2c
-listener:
+TCP defaults to H1-only with h2c disabled. For H1 and prior-knowledge H2
+on the same native listener:
 
 ```elixir
-http: [ip: {127, 0, 0, 1}, port: 4001, protocols: [:http2], h2c: :prior_knowledge]
+http: [ip: {127, 0, 0, 1}, port: 4001, protocols: [:http2, :http1], h2c: :prior_knowledge]
 ```
 
-That port no longer accepts H1. H1 Upgrade to h2c and mixed cleartext protocol
-detection are unsupported. HTTPS accepts `[:http1]`, `[:http2]` or the default
+Keep the Endpoint as the owner; these options create one HTTP service, with
+connection-level protocol selection. For a dedicated H2-only port, select
+`protocols: [:http2]` with `h2c: :prior_knowledge` instead. The full 24-byte H2
+preface selects H2; the first mismatching byte selects H1. Selection is fixed
+for the connection. HTTP/1 `Upgrade: h2c` is unsupported, and there is no
+`:auto` setting.
+
+Before first input, the existing idle timeout applies. From the first byte,
+detection expires after the minimum of `http_limits.header_timeout`,
+`http_limits.request_timeout`, and `h2_limits.frame_timeout`; additional prefix
+bytes do not renew it. H1's first header/request budgets and H2's remaining
+startup allowance use that original time. H2 startup completes on acknowledgment
+of server SETTINGS, and its separate partial-frame timer is preserved.
+
+HTTPS accepts `[:http1]`, `[:http2]` or the default
 `[:http2, :http1]`. Leave `alpn` unset unless necessary; if provided, it must
 exactly match the selected protocols in order (`["h2", "http/1.1"]`,
 `["h2"]` or `["http/1.1"]`). H1-only TLS also permits `alpn: []`.
@@ -433,7 +446,7 @@ into the supported Gaoxy and Phoenix configuration.
 | Dependency conflict for `websock_adapter` | Use app key `:websock_adapter`, `hex: :gaoxy_websock_adapter`, and `override: true` |
 | `invalid http listener options` / `invalid https listener options` | Remove leftover Bandit/transport keys; place limits in maps and socket paths at Endpoint level |
 | `:missing_credentials` or TLS startup error | Supply both binary credential paths; verify runtime file readability and certificate/host trust |
-| `:unsupported_http_alpn` / `:invalid_http_protocols` | Use supported protocol lists; omit custom ALPN; h2c requires TCP H2-only prior knowledge |
+| `:unsupported_http_alpn` / `:invalid_http_protocols` | Use supported protocol lists; omit custom ALPN; h2c requires explicit TCP prior knowledge with H2-only or H2/H1 protocols |
 | `:http2_ingress_budget` | Ensure `max_buffer_bytes >= max_frame + 9` |
 | `:http2_byte_budget` | Restore the default H2 byte budget and at least three active slots; account for enlarged headers/tables/buffers |
 | `:unsupported_http2_host` | Check the `:inet` backend and TLS `internal_active_n` constraints |
@@ -448,9 +461,10 @@ server and exercise a page, static assets, an API route and the LiveView/Channel
 flows you use. Check browser WebSocket behavior and application logs. Verify
 TLS and negotiated protocol with an appropriate client, for example
 `curl --http2 https://your-host:8443/` when your curl build supports H2 and the
-certificate is trusted. For a dedicated h2c listener, use
-`curl --http2-prior-knowledge http://localhost:4001/`. Do not use an H1 curl
-request to judge an H2-only cleartext port.
+certificate is trusted. For prior-knowledge H2, use
+`curl --http2-prior-knowledge http://localhost:4001/`. On a mixed listener,
+`curl --http1.1 http://localhost:4001/` uses that same port. A dedicated H2-only
+port requires the prior-knowledge client.
 
 ## HTTP/3 and runnable examples
 

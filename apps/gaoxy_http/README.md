@@ -4,22 +4,22 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.6.0**.
+Requires Elixir `~> 1.18`. Package version: **0.7.0**.
 
 ## Install
 
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.6.0"}
+{:gaoxy_http, "~> 0.7.0"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.6.0"},
-{:websock_adapter, "~> 0.6.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.7.0"},
+{:websock_adapter, "~> 0.7.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
@@ -106,12 +106,34 @@ covers production runtime configuration, TLS and externally mounted Endpoints.
 
 | Listener | Default protocol | Explicit alternatives |
 |---|---|---|
-| Plain TCP / Phoenix `http` | HTTP/1.1 | `protocols: [:http2], h2c: :prior_knowledge` |
+| Plain TCP / Phoenix `http` | HTTP/1.1 | `protocols: [:http2]` or `[:http2, :http1]`, with `h2c: :prior_knowledge` |
 | TLS / Phoenix `https` | HTTP/2 preferred, HTTP/1.1 fallback | `protocols: [:http1]` or `[:http2]` |
 
-Cleartext HTTP/2 requires prior knowledge; HTTP/1 Upgrade and mixed H1/H2
-cleartext detection are unsupported. Protocol lists use `:http1` and
-`:http2`, not `:h2` or `:http3`.
+To serve H1 and prior-knowledge H2 on the same TCP port, set:
+
+```elixir
+{Gaoxy.HTTP,
+ plug: {MyApp.HealthPlug, []},
+ port: 4000,
+ protocols: [:http2, :http1],
+ h2c: :prior_knowledge}
+```
+
+The same protocol options work inside Phoenix's `http: [...]`. Plain TCP stays
+H1-only with h2c disabled by default; `protocols: [:http2]` with prior knowledge
+retains H2-only behavior. Mixed mode compares the complete 24-byte H2 client
+preface incrementally; a mismatch selects H1, and the selection lasts for that
+connection. HTTP/1 `Upgrade: h2c` is unsupported. Protocol values are `:http1`
+and `:http2`; a mixed list must use the order `[:http2, :http1]`. There is no
+`:auto` option.
+
+Idle handling applies before the first byte. From first input, detection has
+one fixed deadline: the minimum of `http_limits.header_timeout`,
+`http_limits.request_timeout` and `h2_limits.frame_timeout`. Further prefix
+bytes do not extend it. H1's first header/request budgets and H2's startup
+allowance retain that first-input time; H2 startup completes only when the
+client acknowledges server SETTINGS. H2's separate partial-frame timer remains
+in effect.
 
 A standalone Plug TLS listener uses a **map** for `:tls`:
 

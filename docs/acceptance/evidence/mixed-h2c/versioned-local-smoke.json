@@ -1,0 +1,39 @@
+{
+  "feature_commit": "930fba3abfeab48838d09aa4d838704c1259b746",
+  "integration_base": "aaa613985b08edd146f393ddd48f65fd6f3665b2",
+  "candidate_version": "0.7.0",
+  "status": "PASS",
+  "version_state": "uncommitted coordinated version preparation; exact publication commit recorded later",
+  "core_transports": 3,
+  "gateway_exchanges": 7,
+  "mixed_requests": 5,
+  "h3_checks": 3,
+  "commands": [
+    "ELIXIR_ERL_OPTIONS='+S 4:4' MIX_ENV=prod mix release gaoxy --overwrite",
+    "ELIXIR_ERL_OPTIONS='+S 4:4' python3 scripts/release-smoke.py",
+    "ELIXIR_ERL_OPTIONS='+S 4:4' .audit/h2peer/bin/python scripts/gateway-release-smoke.py",
+    "ELIXIR_ERL_OPTIONS='+S 4:4' .audit/h2peer/bin/python scripts/h3-release-smoke.py --evidence .audit/mixed-h2c/versioned-h3"
+  ],
+  "logs": [
+    {
+      "file": "versioned-release-build.log.gz",
+      "sha256": "9310103f59f878ec49f95c65c1e11f6782877ed0db1eb82cdf31df7ce9646dac",
+      "bytes": 880
+    },
+    {
+      "file": "versioned-core-smoke.log.gz",
+      "sha256": "7ae5f89d354866503b19edb3cba85933725cf8ce29f7afeef431fa4bea35f95d",
+      "bytes": 2779
+    },
+    {
+      "file": "versioned-gateway-smoke.log.gz",
+      "sha256": "670dbecdeada2dc72567fb9201ef19ca48b9ee7bee7fd798eec8b9611b76be56",
+      "bytes": 329
+    },
+    {
+      "file": "versioned-h3-smoke.log.gz",
+      "sha256": "34d67fc2d978945aca6344e0afc87e634670a7b9f117128c33dcaf9fb2b6326c",
+      "bytes": 32
+    }
+  ]
+}

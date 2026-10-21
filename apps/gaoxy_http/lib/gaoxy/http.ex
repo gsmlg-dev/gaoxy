@@ -1,5 +1,5 @@
 defmodule Gaoxy.HTTP do
-  @moduledoc "Native HTTP service with H2-first HTTPS and explicit prior-knowledge h2c."
+  @moduledoc "Native HTTP service with H2-first HTTPS and optional mixed H1/prior-knowledge H2 TCP."
 
   @keys [
     :id,
@@ -112,7 +112,10 @@ defmodule Gaoxy.HTTP do
   defp alpn(_, tls, _), do: tls
 
   defp protocol_transport(:tcp, _, %{protocols: [:http1], h2c: :disabled}), do: :ok
-  defp protocol_transport(:tcp, _, %{protocols: [:http2], h2c: :prior_knowledge}), do: :ok
+
+  defp protocol_transport(:tcp, _, %{protocols: protocols, h2c: :prior_knowledge})
+       when protocols in [[:http2], [:http2, :http1]],
+       do: :ok
 
   defp protocol_transport(:tls, tls, %{h2c: :disabled, protocols: protocols}) when is_map(tls) do
     allowed =

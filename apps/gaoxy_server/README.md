@@ -114,9 +114,30 @@ TLS. For HTTPS with H2 and H1 fallback, set:
 ```
 
 These are replacement fields for the `web` service above. Certificates must
-exist before validation/startup. TCP H2 is prior-knowledge h2c: use
-`"protocols": ["http2"]` with `"h2c": "prior_knowledge"`. It uses a dedicated
-listener, without HTTP/1 Upgrade or mixed cleartext detection.
+exist before validation/startup. For H1 and prior-knowledge H2 on the same
+cleartext listener, replace those service fields with:
+
+```json
+{
+  "transport": "tcp",
+  "protocols": ["http2", "http1"],
+  "h2c": "prior_knowledge"
+}
+```
+
+Routes and the native handler are shared on that one listener. To retain a
+dedicated H2-only listener, use `"protocols": ["http2"]` with the same explicit
+prior-knowledge setting. Plain TCP defaults to H1-only and h2c disabled.
+HTTP/1 `Upgrade: h2c` is unsupported; prior-knowledge clients send the full H2
+preface directly. There is no `"auto"` setting.
+
+Mixed detection keeps the existing idle timeout before first input. Its fixed
+deadline starts at the first byte and uses the minimum of
+`http_limits.header_timeout`, `http_limits.request_timeout`, and
+`h2_limits.frame_timeout`. More prefix bytes never extend it. The first H1
+header/request budgets and H2 startup allowance retain that original time;
+H2 startup requires acknowledgment of server SETTINGS, with its separate
+partial-frame timer preserved.
 
 HTTP/3 uses a separate `handler: "http3"`, `transport: "quic"`,
 `protocols: ["http3"]` service. See the

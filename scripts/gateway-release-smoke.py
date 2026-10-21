@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise native H1/H2 to dedicated H1 proxy traffic in a built release."""
+"""Exercise native H1/H2 proxy traffic and mixed cleartext in a built release."""
 import argparse
 import http.client
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -9,6 +9,7 @@ from pathlib import Path
 import queue
 import socket
 import subprocess
+import sys
 import tempfile
 import threading
 import time
@@ -66,14 +67,14 @@ def wait_for_readiness(process, ready, output):
         try:
             data = json.loads(ready.read_text())
             assert data["version"] == 1
-            assert len(data["services"]) == 2
+            assert len(data["services"]) == 3
             addresses = {}
             for service in data["services"]:
                 assert service["transport"] == "tcp"
                 assert service["address"] == "127.0.0.1" and service["port"] > 0
                 addresses[service["id"]] = (service["address"], service["port"])
-            assert set(addresses) == {"gateway-h1", "gateway-h2"}
-            assert len(set(addresses.values())) == 2
+            assert set(addresses) == {"gateway-h1", "gateway-h2", "gateway-mixed"}
+            assert len(set(addresses.values())) == 3
             return addresses
         except (FileNotFoundError, json.JSONDecodeError):
             time.sleep(0.01)
@@ -179,6 +180,14 @@ def main():
                 ("gateway-h1", "http1", "disabled"),
                 ("gateway-h2", "http2", "prior_knowledge"),
             )]
+            services.append({
+                "id": "gateway-mixed", "transport": "tcp", "handler": "http",
+                "ip": "127.0.0.1", "port": 0,
+                "protocols": ["http2", "http1"], "h2c": "prior_knowledge",
+                "routes": {"version": 1, "routes": [{"target": {
+                    "type": "static", "body": "mixed-release",
+                }}]},
+            })
             config.write_text(json.dumps({"version": 1, "services": services}))
             environment = dict(os.environ, GAOXY_CONFIG=str(config), GAOXY_READY_FILE=str(ready),
                                ERL_CRASH_DUMP=str(fixture / "erl_crash.dump"))
@@ -188,6 +197,13 @@ def main():
                     addresses = wait_for_readiness(process, ready, output)
                     h1_exchange(addresses["gateway-h1"])
                     h2_exchange(addresses["gateway-h2"])
+                    # Two explicit clients remain open on the identical mixed
+                    # service address; Python h2 cannot silently fall back to H1.
+                    subprocess.run([
+                        sys.executable,
+                        str(ROOT / "apps/gaoxy_http/test/support/mixed_http_peer.py"),
+                        str(addresses["gateway-mixed"][1]), "mixed-release",
+                    ], check=True, timeout=20)
                     assert [upstream.results.get(timeout=5) for _ in PATHS] == list(PATHS)
                     assert upstream.results.empty(), "unexpected upstream request"
                     process.terminate()
@@ -209,7 +225,8 @@ def main():
         assert not peer.is_alive(), "upstream thread did not stop"
         assert_reusable(upstream.server_address)
     print("PASS standalone gateway release readiness, native H1/H2 POST uploads and responses "
-          "through dedicated H1 upstream, SIGTERM exit0 and gateway/upstream port reuse; 2 exchanges")
+          "through dedicated H1 upstream, 5 mixed same-port requests, SIGTERM exit0 "
+          "and gateway/upstream port reuse; 7 exchanges")
 
 
 if __name__ == "__main__":

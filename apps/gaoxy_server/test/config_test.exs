@@ -28,6 +28,44 @@ defmodule Gaoxy.Server.ConfigTest do
              Gaoxy.Server.Config.decode(%{"version" => 2, "services" => []})
   end
 
+  test "standalone JSON mixed protocols use one native HTTP routing listener" do
+    config = %{
+      "version" => 1,
+      "services" => [
+        %{
+          "id" => "mixed",
+          "transport" => "tcp",
+          "handler" => "http",
+          "protocols" => ["http2", "http1"],
+          "h2c" => "prior_knowledge",
+          "routes" => %{
+            "version" => 1,
+            "routes" => [%{"target" => %{"type" => "static", "body" => "mixed"}}]
+          }
+        }
+      ]
+    }
+
+    assert {:ok, [services: [spec]]} =
+             config |> JSON.encode!() |> JSON.decode!() |> Gaoxy.Server.Config.decode()
+
+    assert spec.transport == :tcp
+    assert spec.handler == Gaoxy.HTTP.Connection
+    assert {Gaoxy.HTTP.Router, _} = spec.handler_options.endpoint
+    assert spec.handler_options.protocols == [:http2, :http1]
+    assert spec.handler_options.h2c == :prior_knowledge
+
+    assert {:error, :invalid_http_protocols} =
+             config
+             |> update_in(["services", Access.at(0)], &Map.delete(&1, "h2c"))
+             |> Gaoxy.Server.Config.decode()
+
+    assert {:error, :unsupported_value} =
+             config
+             |> put_in(["services", Access.at(0), "h2c"], "auto")
+             |> Gaoxy.Server.Config.decode()
+  end
+
   test "H2 routes retain the maximum decode and two-snapshot byte budget" do
     config = %{
       "version" => 1,

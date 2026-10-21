@@ -336,7 +336,8 @@ defmodule Gaoxy.HTTP2NetworkTest do
                limits: %{max_bytes: 1_048_576}
              )
 
-    assert {:error, :invalid_http_protocols} =
+    assert {:ok,
+            %{handler: Gaoxy.HTTP.Connection, handler_options: %{protocols: [:http2, :http1]}}} =
              Gaoxy.HTTP.service_spec(
                endpoint: {Endpoint, []},
                protocols: [:http2, :http1],
