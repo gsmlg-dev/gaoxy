@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "source": "ed3fbbfbe4016906b10a97711193d341f3d9ed4f",
+  "version": "0.9.0",
+  "archive_sha256": "640ebc50a365390fbb2897c1061fa40d14473ff06edc0cb822571c5ade764eed",
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/bin/gaoxy",
+  "checks": [
+    {
+      "name": "core",
+      "exit": 0,
+      "expected_checks": 3,
+      "seconds": 3.725,
+      "command": [
+        "python3",
+        "-c",
+        "import importlib.util;from pathlib import Path;spec=importlib.util.spec_from_file_location('release_smoke','scripts/release-smoke.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.release=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/bin/gaoxy');module.main()"
+      ],
+      "status": "PASS",
+      "verified_checks": 3
+    },
+    {
+      "name": "gateway",
+      "exit": 0,
+      "expected_checks": 7,
+      "seconds": 3.425,
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/bin/gaoxy"
+      ],
+      "status": "PASS",
+      "verified_checks": 7
+    },
+    {
+      "name": "h3",
+      "exit": 0,
+      "expected_checks": 3,
+      "seconds": 4.526,
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/bin/gaoxy",
+        "--evidence",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/h3-evidence"
+      ],
+      "status": "PASS",
+      "verified_checks": 3
+    }
+  ],
+  "environment": {
+    "LD_LIBRARY_PATH": "/nix/store/wpyc0r4d4idaq96y0dc1375ziabl4b38-ncurses-6.6/lib:/nix/store/6s4wm3zl2y0v5g998n2g88k1zh3vf2pr-zlib-1.3.2/lib:/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5/lib:/nix/store/dqj57l1prad38vjrad4bs9d977i4q5zm-gcc-15.3.0-lib/lib",
+    "NIX_LD_LIBRARY_PATH": "/run/current-system/sw/share/nix-ld/lib",
+    "ERL_FLAGS": "+S 4:4"
+  }
+}

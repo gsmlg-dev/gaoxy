@@ -5,8 +5,8 @@ Date: 2026-10-22, Asia/Shanghai. Work starts directly on `main` at
 `internal request` fixes and publication of the next version. The initial three
 requests were supplemented by four newly opened requests during execution.
 
-Status: **Implementation committed and pushed; local qualification PASS;
-final hosted verification and publication pending.** See the
+Status: **Published as v0.9.0; local, hosted and public qualification PASS
+under the recorded environments. All seven requests are closed.** See the
 [release plan](../plans/release-0.9.0.md).
 
 ## Implemented requests
@@ -90,6 +90,15 @@ status in the archived audit evidence; none is relabeled passing.
   failed dependency attempt. The prepared environment and actual lint/test
   reruns pass. A temporary archive verifier initially expected the fixture's
   Apache license; actual source/package licenses are MIT, verified explicitly.
+- Initial hosted macOS unit qualification at `044e1cd9` failed two existing
+  deadline assertions: H1 elapsed 634 ms against 250 ms and H2 elapsed 157 ms
+  against 100 ms. Scheduler witnesses recorded 604 ms and 127 ms lateness.
+  The unchanged tests passed at the final candidate; the original FAIL remains
+  archived and is not described as a product repair.
+- The first downloaded standalone attempt on NixOS failed before VM startup
+  because the host lacked `libtinfo.so.6`; linkage also identified absent zlib
+  and C++ runtime libraries. Zero application checks executed. The failed
+  receipt/logs remain preserved separately from the successful qualified run.
 
 Specialist abnormal/disconnect/pressure/load suites retain their historical
 statuses and remain assigned to their dedicated environment. Deployment,
@@ -110,7 +119,64 @@ Only two test files changed from the original 557-entry source manifest;
 runtime and package payloads remain unchanged. The original qualification
 fingerprint and evidence above retain their historical identity.
 
-Required hosted workflows on the repaired final SHA, release dispatch,
-tag/GitHub/Hex publication, public checksums/payloads, clean public-Hex consumers
-and downloaded standalone execution remain pending. They must be recorded
-after the exact committed SHA is validated and published.
+The final release source and local/remote `v0.9.0` tag resolve to
+**`ed3fbbfbe4016906b10a97711193d341f3d9ed4f`**. The refreshed source-manifest
+fingerprint is
+`d82c696ee30d855d79e9c0e8e2de8ecb17246d8c7ecaeddc8763172188f55bd2`.
+The later documentation/evidence commit on `main` does not move that tag or
+change the published payloads.
+
+| Hosted gate at the release SHA | Result |
+|---|---|
+| [Static/build 39650998389](https://github.com/gsmlg-dev/gaoxy/actions/runs/39650998389) | PASS: format and Linux/macOS builds, 3 jobs |
+| [Unit 39650998345](https://github.com/gsmlg-dev/gaoxy/actions/runs/39650998345) | PASS: Linux/macOS, 2 jobs |
+| [Foundation 39650998362](https://github.com/gsmlg-dev/gaoxy/actions/runs/39650998362) | PASS: native HTTP, Linux/macOS portable, optional QUIC and isolated network, 5 jobs |
+| [Release 39653398896](https://github.com/gsmlg-dev/gaoxy/actions/runs/39653398896) | PASS: exact-SHA/version validation, issue 46/0, five source consumers, ordinary 265/0, browser 8 checks, Phoenix 17/0, strict builds and standalone 13 checks before publication |
+
+All ten prerequisite hosted jobs completed successfully before dispatch with
+`version=0.9.0`, `git_ref=main` and that full `expected_sha`. The workflow
+published the five Hex distributions, compared their public bytes, then created
+the tag and [GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.9.0)
+at `2026-10-21T18:41:04Z`. The release has seven uploaded assets: the Linux
+x86_64 standalone archive, five Hex archives and `SHA256SUMS`.
+
+Public Hex packages:
+[gaoxy_websock_adapter](https://hex.pm/packages/gaoxy_websock_adapter/0.9.0),
+[gaoxy](https://hex.pm/packages/gaoxy/0.9.0),
+[gaoxy_http](https://hex.pm/packages/gaoxy_http/0.9.0),
+[gaoxy_http3](https://hex.pm/packages/gaoxy_http3/0.9.0), and
+[gaoxy_proxy](https://hex.pm/packages/gaoxy_proxy/0.9.0).
+
+| Independent public verification | Result |
+|---|---|
+| Downloaded assets and actual public packages | PASS: 7 assets, 6 checksum entries, GitHub/Hex bytes equal, API checksums equal, exact staged/source files and 122 runtime payload files verified |
+| Fresh isolated public-Hex consumers | PASS: core 2/0, HTTP 10/0, Gateway 2/0, H3 Gateway 4/0; total 18/0, unchanged source tests and upstream cohort, exact public-cache checksums |
+| Fresh public-Hex Phoenix consumer | PASS: four issue files 17/0 plus dependency-isolation 1/0; total 18/0, zero excluded/skipped; dependency resolution, locked resolution, strict compile and tests all exit 0 |
+| Downloaded standalone, sequential core/Gateway/H3 | PASS: 3 + 7 + 3 = 13 checks, all exit 0; unmodified public archive with explicitly supplied host library paths |
+
+The downloaded standalone SHA-256 is
+`640ebc50a365390fbb2897c1061fa40d14473ff06edc0cb822571c5ade764eed`.
+The successful NixOS run supplies pinned Nix ncurses 6.6, zlib 1.3.2,
+OpenSSL 3.6.5 and GCC 15.3 runtime libraries via `LD_LIBRARY_PATH`;
+`nix develop` supplies `unbuffer`. The receipt records the exact store paths,
+`NIX_LD_LIBRARY_PATH` and `ERL_FLAGS`. This is execution evidence under that
+explicit environment, without an additional default-NixOS portability claim.
+
+After these public checks, issues
+[#3](https://github.com/gsmlg-dev/gaoxy/issues/3),
+[#5](https://github.com/gsmlg-dev/gaoxy/issues/5),
+[#6](https://github.com/gsmlg-dev/gaoxy/issues/6),
+[#7](https://github.com/gsmlg-dev/gaoxy/issues/7),
+[#8](https://github.com/gsmlg-dev/gaoxy/issues/8),
+[#9](https://github.com/gsmlg-dev/gaoxy/issues/9) and
+[#10](https://github.com/gsmlg-dev/gaoxy/issues/10)
+were commented, labeled `internal request fixed` and closed. A final live,
+paginated query found zero open `internal request` issues.
+
+The [public qualification receipt](evidence/internal-requests/public-qualification.json)
+indexes the four public receipts and the compact `public-audit.tar.gz` archive.
+The archive preserves hosted summaries/logs, original failed attempts, public
+consumer/runtime logs, exact runtime environment, verification-script hashes,
+issue closure actions and final live remote audit. It excludes downloaded
+binaries, dependency/build caches and private fixture keys. Initial local
+qualification and hosted-H2 repair archives remain unchanged.
