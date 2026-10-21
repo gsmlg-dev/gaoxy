@@ -121,7 +121,13 @@ defmodule Gaoxy.Server.HTTP3GenerationTest do
       wait_until(fn ->
         case Registry.lookup(Gaoxy.Server.RouteStores, "h3") do
           [{store, profile}] when store != old_store ->
-            if Process.whereis(Gaoxy.Server.Runtime), do: {store, profile}, else: false
+            # The supported staged instance registers before activation. Wait
+            # for complete Gateway readiness, rather than treating a PID as a
+            # bound H3 service.
+            case Gaoxy.Proxy.Gateway.info(Gaoxy.Server.Supervisor) do
+              %{phase: :ready, instance: runtime} when is_pid(runtime) -> {store, profile}
+              _ -> false
+            end
 
           _ ->
             false

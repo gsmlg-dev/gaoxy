@@ -5,7 +5,32 @@ defmodule Gaoxy.Server do
     with true <-
            Process.whereis(Gaoxy.Server.RouteStores) != nil || {:error, :unknown_http_service},
          [{store, profile}] <- Registry.lookup(Gaoxy.Server.RouteStores, service_id) do
-      Gaoxy.Server.RouteConfig.reload(store, path, timeout, profile)
+      deadline = Gaoxy.Lifecycle.deadline(timeout)
+
+      loader = fn ->
+        with {:ok, routes} <- Gaoxy.Server.RouteConfig.load(path),
+             :ok <- Gaoxy.Server.RouteConfig.validate_routes(routes, profile),
+             do: {:ok, routes}
+      end
+
+      with {:ok, prepared} <-
+             Gaoxy.HTTP.Generation.prepare_with(
+               store,
+               loader,
+               Gaoxy.Lifecycle.remaining(deadline)
+             ),
+           routes = Enum.map(prepared.routes, &Gaoxy.Proxy.Gateway.Declaration.route_input/1),
+           {:ok, accepted} <-
+             Gaoxy.HTTP.Generation.accepted(store, max(1, Gaoxy.Lifecycle.remaining(deadline))),
+           true <- Gaoxy.Lifecycle.remaining(deadline) > 0 || {:error, :reload_timeout},
+           {:ok, %{generation: generation}} <-
+             Gaoxy.Proxy.Gateway.reload_routes(Gaoxy.Server.Supervisor, service_id, routes,
+               expected_revision: accepted.revision,
+               deadline: deadline,
+               timeout: Gaoxy.Lifecycle.remaining(deadline)
+             ) do
+        {:ok, generation}
+      end
     else
       [] -> {:error, :unknown_http_service}
       {:error, _} = error -> error

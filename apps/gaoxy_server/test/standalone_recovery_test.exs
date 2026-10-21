@@ -135,7 +135,20 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
         send(test, {:expired_activation, self(), result})
       end)
 
-    assert_receive {:activation_compiling, ^coordinator, ^gate}, 1000
+    assert_receive {:activation_compiling, worker, ^gate}, 1000
+    refute worker == coordinator
+    worker_monitor = Process.monitor(worker)
+    # Keep release unconfirmed until the bounded initializer is terminated.
+    # Preparation and its pins remain owned by the responsive coordinator.
+    :ok = :sys.suspend(before.transports)
+
+    on_exit(fn ->
+      try do
+        if Process.alive?(before.transports), do: :sys.resume(before.transports, 1000)
+      catch
+        :exit, _ -> :ok
+      end
+    end)
 
     assert_receive {:expired_activation, ^caller,
                     {:error, {:deadline_exceeded, :cleanup_pending}}},
@@ -143,7 +156,8 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
 
     assert_receive {:DOWN, ^monitor, :process, ^caller, :normal}, 1000
     assert Lifecycle.remaining(deadline) == 0
-    send(coordinator, {gate, :finish})
+    assert_receive {:DOWN, ^worker_monitor, :process, ^worker, :killed}, 1000
+    send(worker, {gate, :finish})
 
     # Compilation has finished after D. This barrier must return from the same
     # coordinator, with no accepted declaration/baseline or runtime replacement.
@@ -158,6 +172,7 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
     # The expired caller cannot join preparation cleanup; the coordinator keeps
     # those pins and reconciles them under its existing finite cleanup budget.
     assert after_expiry.pending_pins != []
+    :ok = :sys.resume(before.transports)
     send(coordinator, :reconcile_preparations)
     assert :sys.get_state(coordinator, 1000).pending_pins == []
   end
