@@ -34,9 +34,9 @@ the existing five Hex packages and standalone application, versioned `0.5.5`.
   compilation, production release and core/gateway/HTTP3 smoke gates.
 - [x] Update current build requirements and release notes. Obtain independent
   specification/code review and fresh verification before committing.
-- [ ] Commit and push `main`, verify remote SHA and applicable hosted gates, then
+- [x] Commit and push `main`, verify remote SHA and applicable hosted gates, then
   dispatch the existing release workflow with version and exact expected SHA.
   Any failed required publication gate blocks its publication.
-- [ ] Verify public Hex artifacts (especially core Abyss requirement), checksums,
+- [x] Verify public Hex artifacts (especially core Abyss requirement), checksums,
   shared Gaoxy tag/source, GitHub Release and standalone artifact. Record exact
   commands, counts, exits and PASS/FAIL/BLOCKED/NOT RUN states in acceptance notes.

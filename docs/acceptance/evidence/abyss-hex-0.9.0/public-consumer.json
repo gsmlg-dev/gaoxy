@@ -1,0 +1,337 @@
+{
+  "status": "PASS",
+  "cwd": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer",
+  "source_sha": "a6234ef03f5bf2879e7f7cf47879f44ceeb93045",
+  "public_release": "https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.5",
+  "fresh_initial_state": {
+    "deps_absent": true,
+    "build_absent": true,
+    "lock_absent": true
+  },
+  "env": {
+    "MIX_ENV": "test",
+    "MIX_DEPS_PATH": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/deps",
+    "MIX_BUILD_PATH": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2"
+  },
+  "commands": [
+    {
+      "name": "deps-get",
+      "command": [
+        "mix",
+        "deps.get"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 3.374,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/logs/deps-get.log",
+      "log_sha256": "84e88a191491238f2d057433c713cba6abd53d50d379677fdf8ea1a027dcb14c"
+    },
+    {
+      "name": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 59.042,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/logs/compile.log",
+      "log_sha256": "df55b33df3ef73fbe2731b08c148089f6d0a0743b0a48dbfce1bf4066f3193a1"
+    },
+    {
+      "name": "test",
+      "command": [
+        "mix",
+        "test"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.319,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/logs/test.log",
+      "log_sha256": "0269c6352ee001c65ca300491bc729ab3a4047891a868eae4bf2715cc95933c2"
+    },
+    {
+      "name": "deps-tree",
+      "command": [
+        "mix",
+        "deps.tree"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.867,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/logs/deps-tree.log",
+      "log_sha256": "70ff23da76a18a5ec87e622f9004d20d699589898fb87f72e7b2c790a41f2549"
+    },
+    {
+      "name": "graph",
+      "command": [
+        "mix",
+        "run",
+        "--no-compile",
+        "--no-deps-check",
+        "-e",
+        "deps = Mix.Dep.load_and_cache(); for d <- deps, do: Application.load(d.app); forbidden = [:gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :gaoxy_server, :websock_adapter, :websock, :abyss_raw, :rustler, :thousand_island, :plug, :phoenix, :bandit, :http_fetch, :hpax, :elixir_quic, :ex_ssl]; graph = Enum.map(deps, fn d -> %{app: Atom.to_string(d.app), scm: inspect(d.scm), package: to_string(d.opts[:hex] || d.app), requirement: d.requirement, version: to_string(Application.spec(d.app, :vsn)), status: inspect(d.status), code_lib_dir: to_string(:code.lib_dir(d.app))} end); running = Enum.map(Application.started_applications(), fn {a, _, _} -> Atom.to_string(a) end); absent = Enum.map(forbidden, fn app -> %{app: Atom.to_string(app), resolved: Enum.any?(deps, &(&1.app == app)), running: Atom.to_string(app) in running, code_lib_dir: inspect(:code.lib_dir(app)), installed: File.exists?(Path.join(Mix.Project.deps_path(), Atom.to_string(app)))} end); IO.puts(\"PUBLISHED_GRAPH \" <> JSON.encode!(%{dependencies: graph, running: running, forbidden: absent}))"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.968,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/logs/graph.log",
+      "log_sha256": "6e6f6690b809db104e7debc6d9defb3b933aff9e6cf8fd304336c540127b16d0"
+    }
+  ],
+  "graph": {
+    "running": [
+      "published_gaoxy_consumer",
+      "gaoxy",
+      "abyss",
+      "telemetry_metrics",
+      "hell",
+      "telemetry",
+      "logger",
+      "hex",
+      "inets",
+      "ssl",
+      "public_key",
+      "asn1",
+      "crypto",
+      "mix",
+      "elixir",
+      "compiler",
+      "stdlib",
+      "kernel"
+    ],
+    "dependencies": [
+      {
+        "status": "{:ok, \"1.4.46\"}",
+        "version": "1.4.46",
+        "app": "earmark_parser",
+        "scm": "Hex.SCM",
+        "requirement": "~> 1.4.46",
+        "package": "earmark_parser",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/earmark_parser"
+      },
+      {
+        "status": "{:ok, \"1.4.2\"}",
+        "version": "1.4.2",
+        "app": "nimble_parsec",
+        "scm": "Hex.SCM",
+        "requirement": "~> 1.4",
+        "package": "nimble_parsec",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/nimble_parsec"
+      },
+      {
+        "status": "{:ok, \"1.2.3\"}",
+        "version": "1.2.3",
+        "app": "makeup",
+        "scm": "Hex.SCM",
+        "requirement": "~> 1.0",
+        "package": "makeup",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/makeup"
+      },
+      {
+        "status": "{:ok, \"1.0.1\"}",
+        "version": "1.0.1",
+        "app": "makeup_elixir",
+        "scm": "Hex.SCM",
+        "requirement": "~> 0.14 or ~> 1.0",
+        "package": "makeup_elixir",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/makeup_elixir"
+      },
+      {
+        "status": "{:ok, \"1.1.0\"}",
+        "version": "1.1.0",
+        "app": "makeup_erlang",
+        "scm": "Hex.SCM",
+        "requirement": "~> 0.1 or ~> 1.0",
+        "package": "makeup_erlang",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/makeup_erlang"
+      },
+      {
+        "status": "{:ok, \"0.40.4\"}",
+        "version": "0.40.4",
+        "app": "ex_doc",
+        "scm": "Hex.SCM",
+        "requirement": ">= 0.0.0",
+        "package": "ex_doc",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/ex_doc"
+      },
+      {
+        "status": "{:ok, \"1.4.2\"}",
+        "version": "1.4.2",
+        "app": "telemetry",
+        "scm": "Hex.SCM",
+        "requirement": "~> 1.3",
+        "package": "telemetry",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/telemetry"
+      },
+      {
+        "status": "{:ok, \"0.1.2\"}",
+        "version": "0.1.2",
+        "app": "hell",
+        "scm": "Hex.SCM",
+        "requirement": "0.1.2",
+        "package": "hell",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/hell"
+      },
+      {
+        "status": "{:ok, \"1.2.0\"}",
+        "version": "1.2.0",
+        "app": "telemetry_metrics",
+        "scm": "Hex.SCM",
+        "requirement": "~> 1.0",
+        "package": "telemetry_metrics",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/telemetry_metrics"
+      },
+      {
+        "status": "{:ok, \"0.9.0\"}",
+        "version": "0.9.0",
+        "app": "abyss",
+        "scm": "Hex.SCM",
+        "requirement": "0.9.0",
+        "package": "abyss",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/abyss"
+      },
+      {
+        "status": "{:ok, \"0.5.5\"}",
+        "version": "0.5.5",
+        "app": "gaoxy",
+        "scm": "Hex.SCM",
+        "requirement": "== 0.5.5",
+        "package": "gaoxy",
+        "code_lib_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/abyss-hex-0.9.0/published-consumer/build/lib/gaoxy"
+      }
+    ],
+    "forbidden": [
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "gaoxy_http",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "gaoxy_http3",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "gaoxy_proxy",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "gaoxy_server",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "websock_adapter",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "websock",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "abyss_raw",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "rustler",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "thousand_island",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "plug",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "phoenix",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "bandit",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "http_fetch",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "hpax",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "elixir_quic",
+        "code_lib_dir": "{:error, :bad_name}"
+      },
+      {
+        "running": false,
+        "resolved": false,
+        "installed": false,
+        "app": "ex_ssl",
+        "code_lib_dir": "{:error, :bad_name}"
+      }
+    ]
+  },
+  "test_counts": [
+    [
+      "1",
+      "0"
+    ]
+  ],
+  "consumer_source_sha256": {
+    "mix.exs": "a4e1bbe39dccf52c9cfeb1c5cb0336a1548bbe5bb172d282a746c20033c96ccd",
+    "mix.lock": "9df035a352c9eaf17dfc87b96559fd762de65f355a5a442a3c59134cfd704a78",
+    "test/consumer_test.exs": "c79915f0ffdea0d4682de0e4bf457446516fadfcdf4d8ebcf03ec654879f91e5",
+    "test/test_helper.exs": "b086ec47f0c6c7aaeb4cffca5ae5243dd05e0dc96ab761ced93325d5315f4b12"
+  },
+  "downloaded_dependency_file_inventory": {
+    "files": 314,
+    "manifest_sha256": "8dcd42255bb9ac719ae93f81141707e49d3c16a7971a64423e292b584825ec6d",
+    "note": "Full file hashes remain in the raw receipt; inventory includes installed package metadata and generated compilation support files."
+  },
+  "raw_receipt": {
+    "path": ".audit/abyss-hex-0.9.0/published-consumer/receipt.json",
+    "sha256": "37a665308ddeb23e12631f9e56261480061e1a669795f6f5f996c4271fcaa5a1"
+  }
+}
