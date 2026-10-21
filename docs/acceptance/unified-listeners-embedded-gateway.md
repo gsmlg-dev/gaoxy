@@ -198,6 +198,36 @@ local verification using `ELIXIR_ERL_OPTIONS='+S 2:2'` executes 28 tests with ze
 failures and three trace reports. The [independent instrumentation review](evidence/unified-gateway/deadline-instrumentation-review.md) is PASS. The required hosted Unit gate remains pending;
 this local result does not relabel either previous failure or establish a repair.
 
+The instrumented main run on `fd398884` preserved that distinction. Static
+`39632125144` and Foundation `39632125090` PASS; Foundation again executed
+265 cases with no failures/exclusions/skips and all eight unified browser checks.
+Unit `39632124759` FAIL on macOS: 67 executed, 66 passed, one failed and 113
+NOT RUN after the wrapper stopped. Ubuntu executed all 180 cases successfully.
+The [Unit summary](evidence/unified-gateway/diagnostic-unit.summary.json) and
+[raw macOS log](evidence/unified-gateway/diagnostic-unit-macos.log.gz) retain
+the H2 Continue timeout result followed by the failed 105 ms < 100 ms assertion.
+Its request spent 105.084 ms off-scheduler in `gen.do_call`; the trace did not
+capture its timeout argument. A separate passing direct-H2 case spent 96.319 ms
+waiting in `code_server.call`. Neither observation establishes the cause of the
+failed Continue case or the earlier H1 failure.
+
+[Runtime-source investigation](evidence/unified-gateway/diagnostic-h2-followup.md)
+found identical finite `gen.do_call` timeout handling in OTP 28.5 and 29.0.2,
+and no added grace in the relevant Elixir wrappers. The next controlled run
+therefore adds actual call timeout/exception events and an independent timer
+witness to the existing three caller traces. It keeps product code, workflow
+settings, request deadlines, elapsed assertions and test counts unchanged.
+The witness never queries or wakes the caller; its processing delay includes
+timer delivery and collector scheduling, so it cannot alone identify OS or VM
+root cause. Missing witnesses and dropped events are explicit.
+
+The [matching-source local receipt](evidence/unified-gateway/deadline-witness-local.json)
+records 28/0 with `+S 2:2`, three observed witnesses and no dropped events.
+The [independent review](evidence/unified-gateway/deadline-witness-review.md) is
+PASS. Enhanced hosted verification is NOT RUN at this commit; the required
+main Unit gate remains unresolved and publication has not started. All earlier
+failure evidence remains immutable.
+
 ## Preserved failures and limits
 
 The first expanded exact gate failed six unchanged WorkerAccounting tests:

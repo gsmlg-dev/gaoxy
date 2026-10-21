@@ -8,7 +8,8 @@ defmodule Gaoxy.PlugBodyTest do
     if context[:deadline_trace] do
       tracer = spawn(fn -> deadline_events([], 0) end)
       Process.put(:deadline_tracer, tracer)
-      :erlang.trace(self(), true, [:running, :monotonic_timestamp, {:tracer, tracer}])
+      :erlang.trace_pattern({:gen, :do_call, 4}, [{:_, [], [{:exception_trace}]}], [:local])
+      :erlang.trace(self(), true, [:running, :call, :monotonic_timestamp, {:tracer, tracer}])
 
       on_exit(fn ->
         monitor = Process.monitor(tracer)
@@ -36,7 +37,19 @@ defmodule Gaoxy.PlugBodyTest do
 
               IO.puts(
                 "DEADLINE_TRACE " <>
-                  inspect(%{test: context.test, events_us: events, dropped: dropped},
+                  inspect(
+                    %{
+                      test: context.test,
+                      events_us: events,
+                      dropped: dropped,
+                      witness:
+                        if(Enum.any?(events, &match?({_, {:deadline_witness, _}}, &1)),
+                          do: :observed,
+                          else: :not_observed_before_report
+                        ),
+                      logical_processors: :erlang.system_info(:logical_processors_available),
+                      schedulers: :erlang.system_info(:schedulers_online)
+                    },
                     limit: :infinity
                   )
               )
@@ -44,6 +57,7 @@ defmodule Gaoxy.PlugBodyTest do
             1_000 -> flunk("deadline trace collector did not respond")
           end
         after
+          :erlang.trace_pattern({:gen, :do_call, 4}, false, [:local])
           Process.exit(tracer, :kill)
 
           receive do
@@ -71,11 +85,46 @@ defmodule Gaoxy.PlugBodyTest do
 
             {:deadline_stage, stage, time} ->
               {time, stage}
+
+            {:trace_ts, _, :call, {:gen, :do_call, [_, _, request, timeout]}, time} ->
+              operation =
+                case request do
+                  {:h2_operation, _, _, operation} -> operation
+                  _ -> :fixture_call
+                end
+
+              {time, {:gen_call, timeout, operation}}
+
+            {:trace_ts, _, :return_from, {:gen, :do_call, 4}, _, time} ->
+              {time, :gen_return}
+
+            {:trace_ts, _, :exception_from, {:gen, :do_call, 4}, exception, time} ->
+              {time, {:gen_exception, exception}}
+
+            {:deadline_witness, deadline} ->
+              {System.monotonic_time(),
+               {:deadline_witness,
+                %{
+                  late_ms: System.monotonic_time(:millisecond) - deadline,
+                  run_queues: :erlang.statistics(:run_queue_lengths)
+                }}}
           end
 
         if length(events) < 256,
           do: deadline_events([event | events], dropped),
           else: deadline_events(events, dropped + 1)
+    end
+  end
+
+  def deadline_stage({:request_start, deadline}) do
+    if tracer = Process.get(:deadline_tracer) do
+      send(tracer, {:deadline_stage, :request_start, System.monotonic_time()})
+
+      Process.send_after(
+        tracer,
+        {:deadline_witness, deadline},
+        Gaoxy.Lifecycle.remaining(deadline)
+      )
     end
   end
 
@@ -394,7 +443,7 @@ defmodule Gaoxy.PlugBodyTest do
     :ok = :sys.suspend(owner)
 
     try do
-      deadline_stage(:request_start)
+      deadline_stage({:request_start, exchange.deadline})
       started = System.monotonic_time(:millisecond)
 
       assert {:error, :timeout} =
@@ -419,7 +468,7 @@ defmodule Gaoxy.PlugBodyTest do
     }
 
     try do
-      deadline_stage(:request_start)
+      deadline_stage({:request_start, exchange.deadline})
       started = System.monotonic_time(:millisecond)
       assert {:error, :timeout} = Gaoxy.PlugAdapter.read_req_body(exchange, [])
       deadline_stage(:request_done)
@@ -449,7 +498,7 @@ defmodule Gaoxy.PlugBodyTest do
     :ok = :sys.suspend(owner)
 
     try do
-      deadline_stage(:request_start)
+      deadline_stage({:request_start, exchange.deadline})
       started = System.monotonic_time(:millisecond)
       assert {:error, :timeout} = Gaoxy.PlugAdapter.read_req_body(exchange, [])
       deadline_stage(:request_done)
