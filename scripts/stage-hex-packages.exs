@@ -22,10 +22,7 @@ defmodule StageHexPackages do
   @git_dependencies %{
     hell:
       {"https://github.com/gsmlg-dev/hell.git", "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee",
-       "0.1.2"},
-    abyss:
-      {"https://github.com/gsmlg-dev/abyss.git", "9b710e6480900e16e304f40e63623aff8c922e19",
-       "0.7.0"}
+       "0.1.2"}
   }
 
   def run(source, output) do

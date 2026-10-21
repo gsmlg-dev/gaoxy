@@ -1,5 +1,20 @@
 # Dependency audit
 
+## Current Abyss selection — 2026-10-21
+
+Gaoxy selects Hex `abyss == 0.9.0`, replacing the bundled 0.7.0 Git revision
+`9b710e6480900e16e304f40e63623aff8c922e19`. The completed coordinated upstream
+[release 0.9.0](https://github.com/gsmlg-dev/abyss/releases/tag/0.9.0) binds
+both Hex packages to commit `f336d939ff8a23b38c66072f1d1ba5873b5ef43b` and tag
+`0.9.0`. Both archive downloads, checksums and packaged source files were
+independently verified against that commit.
+
+Gaoxy requires only core `abyss`; `abyss_raw` owns the separated DHCP/ARP Rust
+implementation and is absent from Gaoxy's ordinary dependency graph. Core has
+no Rustler dependency. The old bundled-native-build observations below remain
+historical evidence. See the [migration acceptance](acceptance/abyss-hex-0.9.0.md)
+for fresh graph, integration and publication verification.
+
 ## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
 Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from

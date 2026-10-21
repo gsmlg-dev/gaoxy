@@ -17,10 +17,9 @@ end
 ```
 
 This brings in `gaoxy_http`, `elixir_quic_http3`, `elixir_quic` and `ex_ssl`.
-Use Elixir 1.18 or newer with Erlang/OTP crypto and public-key support. The
-transitive Abyss dependency builds a Rust NIF, so source builds also need
-Rust/Cargo and a working system linker. Keep the matching QUIC/TLS dependency
-versions selected by Mix.
+Use Elixir 1.18 or newer with Erlang/OTP crypto and public-key support. Core
+Abyss 0.9.0 excludes its former DHCP NIF and Rustler build; Gaoxy does not depend
+on `abyss_raw`. Keep the matching QUIC/TLS dependency versions selected by Mix.
 
 ## Serve a Plug
 

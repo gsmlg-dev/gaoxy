@@ -16,8 +16,9 @@ defp deps do
 end
 ```
 
-Use Elixir 1.18 or newer. The transitive Abyss dependency builds a Rust NIF;
-source builds need Rust/Cargo and a working system linker as well as Erlang/OTP.
+Use Elixir 1.18 or newer with Erlang/OTP. Core uses Hex `abyss == 0.9.0`, which
+has no bundled DHCP NIF or Rustler build dependency. Neither Rust/Cargo nor
+`abyss_raw` is required for ordinary Gaoxy services.
 
 ## Run a TCP service
 

@@ -36,7 +36,7 @@ REQUIREMENTS = {
     },
     "gaoxy": {
         "hell": ("hell", "== 0.1.2", False),
-        "abyss": ("abyss", "== 0.7.0", False),
+        "abyss": ("abyss", "== 0.9.0", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
@@ -184,7 +184,9 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
                     self.assertIn('hell: "== 0.1.2"', manifest)
-                    self.assertIn('abyss: "== 0.7.0"', manifest)
+                    self.assertIn('abyss: "== 0.9.0"', manifest)
+                    self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
+                        entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":
                     self.assertIn('hex: :gaoxy_websock_adapter', manifest)
                     self.assertIn(f'"== {VERSION}"', manifest)
@@ -192,6 +194,19 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
     def test_rejects_changed_git_pin_without_staging_packages(self):
         manifest = self.source / "apps/gaoxy/mix.exs"
         manifest.write_text(manifest.read_text().replace("59eed42b019ca41413d1b8cd7a7dc3e344bb93ee", "unreviewed-revision"))
+        result = self.stage()
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("unsupported dependency", result.stdout)
+        self.assertFalse(self.output.exists())
+
+    def test_rejects_old_bundled_abyss_git_dependency_without_staging_packages(self):
+        manifest = self.source / "apps/gaoxy/mix.exs"
+        original = '''{:abyss,
+         git: "https://github.com/gsmlg-dev/abyss.git",
+         ref: "9b710e6480900e16e304f40e63623aff8c922e19"}'''
+        content, count = re.subn(r"\{:abyss,.*?\}", original, manifest.read_text(), flags=re.DOTALL)
+        self.assertEqual(count, 1)
+        manifest.write_text(content)
         result = self.stage()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported dependency", result.stdout)

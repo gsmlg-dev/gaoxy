@@ -16,8 +16,8 @@ end
 ```
 
 Use Elixir 1.18 or newer. Mix starts the proxy application's supervisors and its
-dependencies with your application. The transitive Abyss dependency builds a
-Rust NIF; source builds need Rust/Cargo and a working system linker.
+dependencies with your application. Core Abyss 0.9.0 excludes its former DHCP
+NIF and Rustler build; Gaoxy does not depend on `abyss_raw`.
 
 ## Fixed HTTP reverse proxy
 

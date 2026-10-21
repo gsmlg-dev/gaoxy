@@ -127,11 +127,12 @@ proxy configuration, TLS and local route reload.
 
 ## Requirements and development
 
-The packages require Elixir **1.18+**. The core's Abyss dependency builds a
-Rust NIF, so install Rust/Cargo and a native compiler toolchain. HTTP/3 and the
-proxy dependency graph add QUIC/TLS libraries; see their package
-guides for requirements. Core-only consumers remain independent of Plug,
-Phoenix and the optional QUIC engine.
+The packages require Elixir **1.18+** with Erlang/OTP crypto and public-key
+support. Core uses Hex `abyss == 0.9.0`, which excludes the former bundled DHCP
+Rust NIF and Rustler build. Gaoxy does not depend on `abyss_raw`. HTTP/3 and the
+proxy dependency graph add QUIC/TLS libraries; see their package guides for
+requirements. Core-only consumers remain independent of Plug, Phoenix and the
+optional QUIC engine.
 
 The locked Nix shell supplies Elixir 1.18.5 / OTP 28, Rust/Cargo, Python,
 OpenSSL and Expect:

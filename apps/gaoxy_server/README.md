@@ -12,8 +12,8 @@ application, install `gaoxy_http` instead and follow the
 
 ## Build and run
 
-From the repository root, with Elixir 1.18+, Rust/Cargo and a native compiler
-toolchain installed:
+From the repository root, with Elixir 1.18+ and Erlang/OTP crypto and public-key
+support installed:
 
 ```sh
 mix deps.get --check-locked

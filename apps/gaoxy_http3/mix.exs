@@ -4,7 +4,7 @@ defmodule GaoxyHttp3.MixProject do
   def project do
     [
       app: :gaoxy_http3,
-      version: "0.5.4",
+      version: "0.5.5",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",

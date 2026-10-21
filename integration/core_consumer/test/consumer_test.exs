@@ -9,6 +9,8 @@ defmodule CoreConsumerTest do
 
   test "external core consumer exchanges TCP and UDP with no optional application installed" do
     forbidden = [
+      :abyss_raw,
+      :rustler,
       :thousand_island,
       :plug,
       :phoenix,
