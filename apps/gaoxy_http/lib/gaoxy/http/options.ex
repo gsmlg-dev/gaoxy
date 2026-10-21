@@ -11,6 +11,7 @@ defmodule Gaoxy.HTTP.Options do
     max_read_chunk: 16_384,
     max_buffer_bytes: 65_536,
     request_timeout: 30_000,
+    stream_timeout: :request,
     header_timeout: 5_000,
     read_timeout: 5_000,
     write_timeout: 5_000
@@ -23,7 +24,10 @@ defmodule Gaoxy.HTTP.Options do
              {:error, :unknown_http_limit},
          limits = Map.merge(@defaults, input),
          true <-
-           Enum.all?(limits, fn {_key, value} -> is_integer(value) and value > 0 end) ||
+           Enum.all?(limits, fn
+             {:stream_timeout, value} when value in [:request, :infinity] -> true
+             {_key, value} -> is_integer(value) and value > 0
+           end) ||
              {:error, :invalid_http_limit},
          true <-
            limits.max_read_chunk <= limits.max_buffer_bytes ||

@@ -38,6 +38,9 @@ jobs:
         run: |
           python -m venv .audit/h2peer
           .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
+      - name: Internal request configuration and H1/H2 streaming regressions
+        run: |
+          python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
       - name: External Gateway consumer without Server or H3
         env:
           GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
@@ -59,7 +62,7 @@ jobs:
         env:
           PHOENIX_NATIVE_H3: '1'
         run: mix deps.get --check-locked
-      - name: Phoenix listener ownership
+      - name: Phoenix listener ownership and internal request regressions
         working-directory: examples/phoenix_native
         run: mix test --warnings-as-errors
       - name: Browser and independent peer dependencies

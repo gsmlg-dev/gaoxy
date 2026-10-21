@@ -20,7 +20,16 @@ defmodule Gaoxy.PhoenixAdapter do
     :h2_limits,
     :extended_connect
   ]
-  @https_options @http_options ++ [:certfile, :keyfile, :versions, :alpn]
+  @https_options @http_options ++
+                   [
+                     :certfile,
+                     :keyfile,
+                     :versions,
+                     :alpn,
+                     :verify,
+                     :cacertfile,
+                     :fail_if_no_peer_cert
+                   ]
   @h3_options [
     :ip,
     :port,

@@ -689,6 +689,18 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     reset(state, stream.id, :cancel)
   end
 
+  defp operation(state, stream, {:begin_stream, deadline}, from)
+       when deadline == :infinity or is_integer(deadline) do
+    if not state.draining and not stream.committed and not stream.websocket and
+         stream.eof and stream.input == "" and stream.read == nil and stream.poll == nil and
+         Lifecycle.remaining(stream.deadline) > 0 and Lifecycle.remaining(deadline) > 0 do
+      GenServer.reply(from, :ok)
+      put_in(state.streams[stream.id].deadline, deadline)
+    else
+      reply_error(state, from, :invalid_stream_transition)
+    end
+  end
+
   defp operation(state, stream, {:websocket_open, headers, lifetime, write_deadline}, from)
        when is_integer(lifetime) and is_integer(write_deadline) do
     valid =

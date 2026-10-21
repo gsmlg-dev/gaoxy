@@ -202,6 +202,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         gate: g,
         lease: ref,
         deadline: d,
+        stream_timeout: e(nil),
         limits: limits,
         body: body,
         buffer: e(""),

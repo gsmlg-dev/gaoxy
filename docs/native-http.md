@@ -268,12 +268,19 @@ separate [gateway endpoint](gateway.md), with explicit destination policy.
 | `max_trailer_bytes`, `max_trailers` | 8,192 bytes, 32 fields |
 | `max_read_chunk`, `max_buffer_bytes` | 16,384 bytes, 65,536 bytes |
 | `header_timeout` | 5,000 ms from the first request byte |
-| `request_timeout` | 30,000 ms for the whole request/response |
+| `request_timeout` | 30,000 ms for ordinary request/response lifetime |
+| `stream_timeout` | `:request`; also `:infinity` or positive response-lifetime milliseconds |
 | `read_timeout`, `write_timeout` | 5,000 ms per body-read call / socket write |
 
-Limits are positive finite integers. SSE/long requests need an explicit larger
-`request_timeout`. Partial headers and body metadata cannot renew their original
-deadline. Slow writes have a finite transport timeout and request watchdog.
+Limits other than `stream_timeout` are positive finite integers. HTTP/1 and
+HTTP/2 SSE routes can select `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
+before `send_chunked/2`, or a listener default with
+`http_limits: %{stream_timeout: :infinity}`. The default preserves the ordinary
+request deadline. The transition requires a completed request body, and does
+not remove finite header, body-read, write, admission or shutdown controls.
+See [streaming responses](streaming-responses.md) for polling and cancellation;
+HTTP/3 does not support the opt-in. Partial headers and body metadata cannot
+renew their original deadline. Slow writes retain a finite transport timeout.
 `max_header_bytes` also bounds informational and final response heads;
 `max_headers` limits parsed request headers.
 The service's global active/byte/output limits still apply: configured HTTP
@@ -301,8 +308,11 @@ immutable H2/H3 metadata early validation, with
 Options default to `timeout: 60_000`, `callback_timeout: 5_000`,
 `close_timeout: 1_000`, `max_lifetime: 86_400_000`,
 `max_frame_size: 262_144`, `max_message_size: 262_144`, `max_fragments: 128`,
-`max_mailbox: 128`, and `max_push_frames: 32`. Frame/message ceilings are also
-clamped to one quarter of the service byte budget. The service `max_state`
+`max_mailbox: 128`, and `max_push_frames: 32`. When `max_message_size` is
+omitted, it follows the configured `max_frame_size`. Phoenix accepts the frame
+option, while a direct WebSock caller can retain an explicit independent
+message ceiling. Frame/message ceilings are also clamped to one quarter of
+the service byte budget; see [message limits](websocket-limits.md). The service `max_state`
 limits callback state. Upgrade establishes one admitted protocol lifetime;
 callbacks cannot renew it. For H2/H3 this lifetime replaces the original HTTP
 request deadline in the stream worker and native owner; writes and callbacks
@@ -367,3 +377,12 @@ termination remains `terminate(:remote, state)`. A native callback result
 `{:gaoxy_push, messages, {recipient, ref}, state}` delivers
 `{:gaoxy_websocket_written, ref, result}` after local writes finish; only `:ok`
 permits an upstream delivery acknowledgment. `{nil, ""}` preserves an empty Close.
+
+## Supervised shutdown
+
+Use `{Gaoxy.HTTP, options}` as an OTP supervisor child. Its child spec inherits
+the validated Gaoxy instance budget: configured `limits.drain_timeout` plus the
+runtime's cleanup headroom. The HTTP/3 wrapper preserves the same budget.
+Overriding the child spec's `shutdown` with a shorter value can kill the instance
+before admitted requests drain and owned sockets finish cleanup. The default
+5000ms drain therefore uses a 7000ms supervisor shutdown allowance.

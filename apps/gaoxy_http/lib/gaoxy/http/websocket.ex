@@ -38,6 +38,8 @@ defmodule Gaoxy.HTTP.WebSocket do
     :path,
     :serializer,
     :error_handler,
+    :log,
+    :code_reloader,
     :transport_log,
     :check_origin,
     :connect_info,
@@ -74,7 +76,17 @@ defmodule Gaoxy.HTTP.WebSocket do
       Map.keys(@defaults) ++
         @application_options ++ [:compress, :validate_utf8, :early_validate_upgrade]
 
-    limits = Map.merge(@defaults, Map.new(Keyword.take(options, Map.keys(@defaults))))
+    configured = Map.new(Keyword.take(options, Map.keys(@defaults)))
+
+    # Phoenix exposes max_frame_size, so an omitted message ceiling follows it.
+    # A direct WebSock user's explicit message ceiling remains authoritative.
+    limits =
+      @defaults
+      |> Map.put(
+        :max_message_size,
+        Map.get(configured, :max_frame_size, @defaults.max_frame_size)
+      )
+      |> Map.merge(configured)
 
     if Keyword.keyword?(options) and Enum.all?(Keyword.keys(options), &(&1 in allowed)) and
          Enum.all?(limits, fn {_, value} -> is_integer(value) and value > 0 end) and

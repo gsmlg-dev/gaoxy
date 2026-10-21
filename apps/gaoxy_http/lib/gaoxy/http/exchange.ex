@@ -18,6 +18,7 @@ defmodule Gaoxy.HTTP.Exchange do
     :service,
     :instance,
     discovery: nil,
+    stream_timeout: nil,
     response: :unset,
     response_trailers: [],
     close: false,
@@ -35,6 +36,62 @@ defmodule Gaoxy.HTTP.Exchange do
   ]
 
   @type t :: %__MODULE__{}
+
+  @doc "Selects a streaming response lifetime before response start; request reads remain finite."
+  def put_stream_timeout(%{response: :unset} = exchange, timeout)
+      when timeout in [:request, :infinity] or (is_integer(timeout) and timeout > 0),
+      do: %{exchange | stream_timeout: timeout}
+
+  def put_stream_timeout(_, _),
+    do:
+      raise(
+        ArgumentError,
+        "stream timeout requires an unsent response and :request, :infinity or positive milliseconds"
+      )
+
+  @doc false
+  def begin_stream(exchange) do
+    timeout = exchange.stream_timeout || Map.get(exchange.limits, :stream_timeout, :request)
+
+    cond do
+      timeout == :request ->
+        {:ok, exchange}
+
+      exchange.response != :unset ->
+        {:error, :invalid_response_state}
+
+      exchange.transport not in [nil, Gaoxy.HTTP.HTTP2.Transport] ->
+        {:error, :unsupported_stream_timeout}
+
+      not body_complete?(exchange) ->
+        {:error, :unconsumed_request_body}
+
+      Gaoxy.Lifecycle.remaining(exchange.deadline) == 0 ->
+        {:error, :timeout}
+
+      true ->
+        deadline = if timeout == :infinity, do: :infinity, else: Gaoxy.Lifecycle.deadline(timeout)
+
+        with :ok <-
+               Admission.begin_stream(
+                 exchange.gate,
+                 exchange.lease,
+                 retained_bytes(exchange),
+                 deadline,
+                 min(Gaoxy.Lifecycle.remaining(exchange.deadline), 5_000)
+               ),
+             :ok <- begin_transport_stream(exchange, deadline),
+             do: {:ok, %{exchange | deadline: deadline}}
+    end
+  catch
+    :exit, {:timeout, _} -> {:error, :timeout}
+    :exit, _ -> {:error, :closed}
+  end
+
+  defp begin_transport_stream(%{transport: nil}, _deadline), do: :ok
+
+  defp begin_transport_stream(exchange, deadline),
+    do: Gaoxy.HTTP.HTTP2.Transport.operation(exchange, {:begin_stream, deadline})
 
   def new(request, socket, gate, lease, deadline, limits, buffer) do
     {:ok, peer} = Socket.peername(socket)
@@ -432,7 +489,8 @@ defmodule Gaoxy.HTTP.Exchange do
     end
   end
 
-  defp send_window(%{deadline: deadline} = exchange, chunk) when is_integer(deadline) do
+  defp send_window(%{deadline: deadline} = exchange, chunk)
+       when is_integer(deadline) or deadline == :infinity do
     case Gaoxy.Lifecycle.remaining(deadline) do
       0 ->
         {:error, :timeout}
@@ -452,7 +510,7 @@ defmodule Gaoxy.HTTP.Exchange do
   def update_body_retention(exchange, bytes) do
     case Gaoxy.Lifecycle.remaining(exchange.deadline) do
       0 -> {:error, :timeout}
-      remaining -> Admission.update(exchange.gate, exchange.lease, bytes, remaining)
+      remaining -> Admission.update(exchange.gate, exchange.lease, bytes, min(remaining, 5_000))
     end
   catch
     :exit, {:timeout, _} -> {:error, :timeout}

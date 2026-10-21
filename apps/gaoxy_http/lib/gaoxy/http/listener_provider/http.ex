@@ -1,13 +1,14 @@
 defmodule Gaoxy.HTTP.ListenerProvider.HTTP do
   @moduledoc false
   @behaviour Gaoxy.HTTP.ListenerProvider
+  @tls [:certfile, :keyfile, :versions, :alpn, :verify, :cacertfile, :fail_if_no_peer_cert]
   def version, do: 1
   def normalize(role, options), do: Gaoxy.HTTP.ListenerSet.normalize_listener(role, options)
   def capabilities(_), do: %{pause: :unbind_rebind, drain: :admitted_work}
 
   def materialize(role, options, target) do
-    tls = options |> Keyword.take([:certfile, :keyfile, :versions, :alpn]) |> Map.new()
-    options = Keyword.drop(options, [:certfile, :keyfile, :versions, :alpn])
+    tls = options |> Keyword.take(@tls) |> Map.new()
+    options = Keyword.drop(options, @tls)
 
     options =
       Keyword.merge(options,

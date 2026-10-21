@@ -114,10 +114,12 @@ defmodule Gaoxy do
   defp shutdown_timeout(options) do
     case Gaoxy.Config.validate(options) do
       {:ok, plan} ->
-        Gaoxy.Instance.drain_timeout(plan.services) + 2 * Gaoxy.Lifecycle.cleanup_headroom()
+        Gaoxy.Config.shutdown_timeout(%{
+          drain_timeout: Gaoxy.Instance.drain_timeout(plan.services)
+        })
 
       _ ->
-        7_000
+        Gaoxy.Config.shutdown_timeout(%{})
     end
   end
 
@@ -151,7 +153,7 @@ defmodule Gaoxy do
       tls_ex_ssl: :unsupported,
       quic: if(Code.ensure_loaded?(Quic), do: :experimental, else: :unsupported),
       http: :unsupported,
-      mtls: :unsupported,
+      mtls: :supported,
       metadata_destination: :not_tested
     }
   end

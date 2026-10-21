@@ -378,7 +378,14 @@ defmodule Gaoxy.HTTP.Generation do
           :erlang.raise(kind, value, stack)
       end
 
-    case checked_cleanup(pins, exchange, store, accounting, :release) do
+    latest =
+      case result do
+        {:ok, %Exchange{} = latest} -> latest
+        {:error, _, %Exchange{} = latest} -> latest
+        _ -> nil
+      end
+
+    case checked_cleanup(pins, exchange, store, accounting, :release, latest) do
       :ok ->
         result
 
@@ -390,8 +397,10 @@ defmodule Gaoxy.HTTP.Generation do
     end
   end
 
-  defp checked_cleanup(pins, exchange, store, accounting, stage) do
-    case Resources.release_checked(pins, exchange.deadline + 1_000, accounting) do
+  defp checked_cleanup(pins, exchange, store, accounting, stage, latest \\ nil) do
+    deadline = checked_cleanup_deadline(exchange, stage, latest)
+
+    case Resources.release_checked(pins, deadline, accounting) do
       :ok ->
         :ok
 
@@ -404,6 +413,25 @@ defmodule Gaoxy.HTTP.Generation do
       checked_observe(exchange, store, stage)
       {:error, :generation_pin_release_failed}
   end
+
+  defp checked_cleanup_deadline(exchange, :release, %Exchange{deadline: deadline})
+       when deadline != exchange.deadline,
+       do: Lifecycle.deadline(1_000)
+
+  defp checked_cleanup_deadline(exchange, :release, _) do
+    original = exchange.deadline + 1_000
+
+    if Lifecycle.remaining(original) == 0 do
+      case Admission.request_deadline(exchange.gate, exchange.lease, 50) do
+        {:ok, deadline} when deadline != exchange.deadline -> Lifecycle.deadline(1_000)
+        _ -> original
+      end
+    else
+      original
+    end
+  end
+
+  defp checked_cleanup_deadline(exchange, _, _), do: exchange.deadline + 1_000
 
   defp checked_observe(exchange, store, stage) do
     Gaoxy.Telemetry.emit(:generation_capture_cleanup, %{count: 1}, %{}, %{

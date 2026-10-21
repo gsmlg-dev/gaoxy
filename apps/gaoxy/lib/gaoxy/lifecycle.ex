@@ -5,6 +5,7 @@ defmodule Gaoxy.Lifecycle do
   def cleanup_headroom, do: @cleanup_headroom
   def now, do: System.monotonic_time(:millisecond)
   def deadline(timeout), do: now() + timeout
+  def remaining(:infinity), do: :infinity
   def remaining(deadline), do: max(0, deadline - now())
 
   def call(server, request, deadline) do

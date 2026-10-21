@@ -56,6 +56,9 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
              http_limits: Keyword.get(options, :http_limits, %{}),
              initialized: true
            }),
+         true <-
+           normalized.http_limits.stream_timeout == :request ||
+             {:error, :unsupported_stream_timeout},
          handler =
            Map.take(normalized, [:endpoint, :http_limits, :initialized])
            |> Map.put(:h3_limits, h3)

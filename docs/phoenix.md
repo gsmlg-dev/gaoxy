@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.8.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.9.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.8.0"},
-{:websock_adapter, "~> 0.8.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.9.0"},
+{:websock_adapter, "~> 0.9.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -219,6 +219,9 @@ These are keyword lists; their three limit values are maps.
 | `certfile`, `keyfile` | HTTPS only, required binary file paths |
 | `versions` | HTTPS only, `[:"tlsv1.3"]`; also `[:"tlsv1.2"]` or `[:"tlsv1.3", :"tlsv1.2"]` |
 | `alpn` | HTTPS only; automatically derived from `protocols` |
+| `verify` | HTTPS only; `:verify_none` default or `:verify_peer` |
+| `cacertfile` | HTTPS only; nonempty binary CA path, required for `:verify_peer` |
+| `fail_if_no_peer_cert` | HTTPS only; boolean, requires `:verify_peer`; default `false` |
 
 TCP defaults to H1-only with h2c disabled. For H1 and prior-knowledge H2
 on the same native listener:
@@ -246,6 +249,12 @@ HTTPS accepts `[:http1]`, `[:http2]` or the default
 exactly match the selected protocols in order (`["h2", "http/1.1"]`,
 `["h2"]` or `["http/1.1"]`). H1-only TLS also permits `alpn: []`.
 HTTPS H1 fallback includes clients that do not negotiate ALPN.
+
+For optional verified client certificates on enrollment/runtime listeners, see
+[client certificates](client-certificates.md). `verify: :verify_peer` validates
+any supplied certificate against `cacertfile`; `fail_if_no_peer_cert: false`
+permits anonymous clients. HTTP and WebSocket peer data expose the real TLS DER
+certificate, while application authorization decides whether it grants access.
 
 H2 requires the `:inet` TCP backend. For TLS, `Application.get_env(:ssl,
 :internal_active_n, 100)` must be an integer in `1..100`; an unsupported host
@@ -287,17 +296,25 @@ memory or allocations made by application code.
 | `max_trailers` | 32 fields |
 | `max_read_chunk` | 16,384 bytes |
 | `max_buffer_bytes` | 65,536 bytes |
-| `request_timeout` | 30,000 ms for the whole HTTP request/response |
+| `request_timeout` | 30,000 ms for ordinary HTTP request/response lifetime |
+| `stream_timeout` | `:request`; also `:infinity` or positive response-lifetime milliseconds |
 | `header_timeout` | 5,000 ms from the first request byte |
 | `read_timeout`, `write_timeout` | 5,000 ms per body read / write |
 
-All values are positive finite integers; `max_read_chunk` must not exceed
+Except `stream_timeout`, all values are positive finite integers; `max_read_chunk` must not exceed
 `max_buffer_bytes`. For example, raise the HTTP upload ceiling and SSE deadline
 inside the listener with:
 
 ```elixir
 http_limits: %{max_body_bytes: 16_777_216, request_timeout: 120_000}
 ```
+
+For explicitly unbounded SSE, call `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
+in the route before `Plug.Conn.send_chunked/2`, or select a listener default with
+`http_limits: %{stream_timeout: :infinity}`. The transition requires request-body
+completion and retains finite header/body/write controls and admission budgets.
+See [streaming responses](streaming-responses.md) for HTTP/1 and HTTP/2 lifecycle,
+polling, cancellation and shutdown. HTTP/3 does not support this opt-in.
 
 Plug body reads aggregate native pieces up to their logical `:length`, while
 `:read_length`, the native chunk cap, cumulative server body limit and per-read
@@ -369,10 +386,11 @@ not establish which WebSocket protocol was used. `compress: true` and disabling
 UTF-8 validation are unsupported. Gaoxy's WebSock defaults include a 60-second
 idle timeout and 24-hour maximum lifetime. Its raw frame/message defaults are
 256 KiB, but WebSockAdapter supplies a 10,000,000-byte frame limit when omitted;
-the message default remains 256 KiB. Both limits are clamped to one quarter of
-the service byte budget. Set `max_frame_size` and `max_message_size` explicitly
-through your Phoenix socket's `websocket: [...]` configuration when choosing
-these ceilings. These are socket options, not listener keys.
+an omitted message ceiling follows that frame ceiling. Both limits are clamped
+to one quarter of the service byte budget. Set `max_frame_size` in the Phoenix
+socket's `websocket: [...]` configuration to select message capacity. Phoenix
+does not accept Gaoxy's direct `max_message_size` override. These are socket
+options, not listener keys. See [message limits](websocket-limits.md).
 See [WebSock limits](native-http.md#websock).
 
 ## Running a separately supervised Plug listener
@@ -428,7 +446,7 @@ startup for the usual Phoenix deployment and automatic code-reload composition.
 | `ip`, `port` | Supported; use an IP tuple and integer/decimal-string port |
 | `http_options`, `http_1_options`, `http_2_options` | Not accepted; configure documented `http_limits`, `protocols`, `h2_limits` as appropriate |
 | `thousand_island_options`, acceptor/transport options | Not accepted as passthrough; use documented Gaoxy service limits where they express your requirement |
-| TLS option passthrough, `otp_app`, `cipher_suite` inside `https` | Not accepted; use the documented credential paths, `versions`, and matching `alpn` |
+| TLS option passthrough, `otp_app`, `cipher_suite` inside `https` | Not accepted; use the documented credential paths, `versions`, matching `alpn`, and peer-verification keys |
 | HTTP/2 enable/disable options | Select `protocols`; H2 is preferred on HTTPS by default |
 | WebSocket compression | Unsupported; remove `compress: true` |
 | Router, plugs, Channels, LiveView and session policies | Keep application configuration and code |
@@ -454,7 +472,7 @@ into the supported Gaoxy and Phoenix configuration.
 | No listener / connection refused | Ensure the Endpoint child is supervised, `server: true`, and at least one scheme enabled; inspect `server_info/2` |
 | Code changes are not reloaded | Check `code_reloader`, `Phoenix.CodeReloader` Mix listener, and Endpoint plug |
 | LiveView or Channels fail after migration | Check adapter override, original socket/session/Origin configuration, then H2 opt-in and exact transport paths |
-| Long SSE/HTTP response ends around 30 seconds | Increase finite `http_limits.request_timeout`; check proxy timeouts too |
+| Long SSE/HTTP response ends around 30 seconds | Choose an explicit `stream_timeout` for chunked SSE or increase finite `request_timeout`; check proxy timeouts too |
 
 After switching, run your application's ordinary tests, start its development
 server and exercise a page, static assets, an API route and the LiveView/Channel

@@ -24,7 +24,7 @@ defmodule Gaoxy.HTTP.ListenerSet do
   @roles [:http, :https, :http3]
   @common [:id, :ip, :port, :limits, :http_limits, :extended_connect]
   @http [:protocols, :h2c, :h2_limits]
-  @tls [:certfile, :keyfile, :versions, :alpn]
+  @tls [:certfile, :keyfile, :versions, :alpn, :verify, :cacertfile, :fail_if_no_peer_cert]
   @keys [:id, :endpoint, :plug, :listeners, :service_ids, :discovery, :startup_timeout]
 
   def plan(%Plan{} = input) do

@@ -930,6 +930,10 @@ defmodule Gaoxy.Service do
           versions: Map.get(spec.tls, :versions, [:"tlsv1.3"])
         ]
 
+        credentials =
+          credentials ++
+            Map.to_list(Map.take(spec.tls, [:verify, :cacertfile, :fail_if_no_peer_cert]))
+
         case Map.get(spec.tls, :alpn, []) do
           [] -> credentials
           protocols -> [{:alpn_preferred_protocols, protocols} | credentials]

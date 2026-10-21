@@ -4,22 +4,22 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.8.0**.
+Requires Elixir `~> 1.18`. Package version: **0.9.0**.
 
 ## Install
 
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.8.0"}
+{:gaoxy_http, "~> 0.9.0"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.8.0"},
-{:websock_adapter, "~> 0.8.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.9.0"},
+{:websock_adapter, "~> 0.9.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
@@ -148,7 +148,10 @@ A standalone Plug TLS listener uses a **map** for `:tls`:
 ```
 
 Phoenix instead accepts `certfile` and `keyfile` directly inside its `https`
-keyword list. TLS defaults to TLS 1.3. Protocol selection supplies matching
+keyword list. Verified client certificates use `verify: :verify_peer`,
+`cacertfile` and `fail_if_no_peer_cert`; see the
+[client-certificate guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/client-certificates.md).
+TLS defaults to TLS 1.3. Protocol selection supplies matching
 ALPN automatically; normally leave `:alpn` unset.
 
 ## Limits and WebSockets
@@ -162,8 +165,12 @@ limits: %{max_active: 128, max_bytes: 536_870_912}
 ```
 
 The default request body ceiling is 8 MiB, header ceiling 32 KiB, and whole
-request/response deadline 30 seconds. Long HTTP requests and SSE need a larger
-finite `request_timeout`. H1's default service byte budget is 1 MiB; selecting
+request/response deadline 30 seconds. SSE routes can explicitly select an
+unbounded response lifetime with `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
+before `send_chunked/2`; finite header, body-read and write deadlines remain in
+effect. A listener default uses `http_limits: %{stream_timeout: :infinity}`.
+See the [streaming guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/streaming-responses.md)
+for cancellation and shutdown. H1's default service byte budget is 1 MiB; selecting
 H2 raises the omitted `max_bytes` default to 256 MiB. These are resource
 budgets, not preallocated buffers or guarantees that a request will be admitted.
 H2 defaults to 32 concurrent streams per connection; resource admission also
@@ -188,7 +195,10 @@ config :my_app, MyAppWeb.Endpoint,
 ```
 
 Keep Phoenix's Origin, session and authentication policies. WebSocket
-compression is unsupported; `compress: true` is rejected. The client chooses
+compression is unsupported; `compress: true` is rejected. An omitted message
+ceiling follows `max_frame_size`; both remain subject to the service budget. See
+[WebSocket limits](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/websocket-limits.md).
+The client chooses
 its WebSocket transport, so an HTTP/2 page alone does not prove H2 WebSockets.
 
 HTTP/3 is provided by the separate optional `Gaoxy.HTTP.HTTP3` service; it is not an

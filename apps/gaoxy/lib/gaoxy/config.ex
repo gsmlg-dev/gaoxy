@@ -28,6 +28,18 @@ defmodule Gaoxy.Config do
     :capabilities
   ]
 
+  @doc false
+  def shutdown_timeout(input) do
+    limits = if is_map(input), do: Map.merge(@limits, input), else: @limits
+
+    limits =
+      if is_map(input) and limit_check(%{limits: input}, limits) == :ok,
+        do: limits,
+        else: @limits
+
+    limits.drain_timeout + 2 * Gaoxy.Lifecycle.cleanup_headroom()
+  end
+
   def validate(options) do
     with :ok <- keyword(options),
          :ok <- known(Map.new(options), [:services, :name, :activation]),
@@ -181,10 +193,21 @@ defmodule Gaoxy.Config do
 
   defp transport(%{transport: :tls} = spec) do
     with :ok <- empty(spec.quic),
-         :ok <- known(spec.tls, [:provider, :certfile, :keyfile, :alpn, :versions]),
+         :ok <-
+           known(spec.tls, [
+             :provider,
+             :certfile,
+             :keyfile,
+             :alpn,
+             :versions,
+             :verify,
+             :cacertfile,
+             :fail_if_no_peer_cert
+           ]),
          true <-
            (is_binary(spec.tls[:certfile]) and is_binary(spec.tls[:keyfile])) ||
              {:error, :missing_credentials},
+         :ok <- tls_verification(spec.tls),
          true <- valid_alpn?(Map.get(spec.tls, :alpn, [])) || {:error, :invalid_alpn},
          true <-
            Map.get(spec.tls, :versions, [:"tlsv1.3"]) in [
@@ -227,6 +250,25 @@ defmodule Gaoxy.Config do
   end
 
   defp transport(_), do: {:error, :invalid_transport}
+
+  defp tls_verification(tls) do
+    verify = Map.get(tls, :verify, :verify_none)
+
+    valid =
+      case verify do
+        :verify_peer ->
+          is_binary(tls[:cacertfile]) and byte_size(tls.cacertfile) > 0 and
+            is_boolean(Map.get(tls, :fail_if_no_peer_cert, false))
+
+        :verify_none ->
+          not Map.has_key?(tls, :cacertfile) and not Map.has_key?(tls, :fail_if_no_peer_cert)
+
+        _ ->
+          false
+      end
+
+    if valid, do: :ok, else: {:error, :invalid_tls_verification}
+  end
 
   defp udp_options(spec) do
     memberships = Map.get(spec.udp, :memberships, [])
@@ -395,6 +437,11 @@ defmodule Gaoxy.Config do
       else
         [spec.transport, :pause, :drain] ++ if(spec.transport == :udp, do: [spec.mode], else: [])
       end
+
+    supported =
+      if spec.transport == :tls and Map.get(spec.tls, :verify) == :verify_peer,
+        do: [:mtls | supported],
+        else: supported
 
     if is_list(spec.capabilities) do
       case spec.capabilities -- supported do

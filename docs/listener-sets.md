@@ -25,6 +25,8 @@ Use `endpoint: {Module, options}` instead of `plug:` for a native
 `Gaoxy.HTTP.Endpoint`. The host explicitly depends on `gaoxy_http3` to enable
 H3. An HTTP-only consumer does not acquire the H3 dependency through this API.
 An explicitly requested missing H3 provider fails before any bind.
+HTTPS supports `verify`, `cacertfile`, and `fail_if_no_peer_cert` in its listener
+keyword list; see [verified client certificates](client-certificates.md).
 
 `Gaoxy.HTTP.ListenerSet.plan/1` produces a stable pure Plan. It preserves the
 uninitialized application declaration and rejects PIDs, references, ports and

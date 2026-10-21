@@ -24,6 +24,12 @@ defmodule Gaoxy.Admission do
   def upgrade(gate, lease, bytes, deadline),
     do: GenServer.call(gate, {:upgrade, lease, bytes, deadline})
 
+  def begin_stream(gate, lease, bytes, deadline, timeout),
+    do: GenServer.call(gate, {:begin_stream, lease, bytes, deadline}, timeout)
+
+  def request_deadline(gate, lease, timeout) when is_integer(timeout) and timeout in 1..50,
+    do: GenServer.call(gate, {:request_deadline, lease}, timeout)
+
   def drain(gate, deadline), do: GenServer.call(gate, {:drain, deadline})
   def begin(gate, lease, bytes), do: GenServer.call(gate, {:begin, lease, bytes})
   def retain(gate, lease, bytes), do: GenServer.call(gate, {:retain, lease, bytes})
@@ -241,7 +247,7 @@ defmodule Gaoxy.Admission do
   end
 
   def handle_call({action, ref, bytes, deadline}, {pid, _}, state)
-      when action in [:begin_request, :begin_callback, :upgrade] do
+      when action in [:begin_request, :begin_callback, :upgrade, :begin_stream] do
     case state.leases[ref] do
       %{pid: ^pid} = lease ->
         deadline =
@@ -250,17 +256,17 @@ defmodule Gaoxy.Admission do
             else: deadline
 
         cond do
-          action == :upgrade and
+          action in [:upgrade, :begin_stream] and
               (not lease.request_active or not lease.drain_notify) ->
             reject(state, :inactive_request)
 
-          action == :upgrade and lease.deadline <= Gaoxy.Lifecycle.now() ->
+          action in [:upgrade, :begin_stream] and lease.deadline <= Gaoxy.Lifecycle.now() ->
             reject(state, :deadline_exceeded)
 
           action == :begin_request and lease.cleanup != nil ->
             reject(state, :cleanup_pending)
 
-          action in [:begin_request, :upgrade] and state.mode != :ready ->
+          action in [:begin_request, :upgrade, :begin_stream] and state.mode != :ready ->
             reject(state, state.mode)
 
           action == :begin_callback and lease.deadline == nil and state.mode != :ready ->
@@ -270,22 +276,25 @@ defmodule Gaoxy.Admission do
               state.bytes - lease.bytes + bytes > state.limits.max_bytes ->
             reject(state, :byte_limit)
 
-          not is_integer(deadline) or deadline <= Gaoxy.Lifecycle.now() ->
+          not (action == :begin_stream and deadline == :infinity) and
+              (not is_integer(deadline) or deadline <= Gaoxy.Lifecycle.now()) ->
             reject(state, :deadline_exceeded)
 
           true ->
             cancel(lease)
-            token = make_ref()
+            token = if deadline == :infinity, do: nil, else: make_ref()
 
             timer =
-              Process.send_after(
-                self(),
-                {:expired, ref, token},
-                Gaoxy.Lifecycle.remaining(deadline)
-              )
+              if deadline != :infinity do
+                Process.send_after(
+                  self(),
+                  {:expired, ref, token},
+                  Gaoxy.Lifecycle.remaining(deadline)
+                )
+              end
 
             request_deadline =
-              if action in [:begin_request, :upgrade] or lease.deadline == nil,
+              if action in [:begin_request, :upgrade, :begin_stream] or lease.deadline == nil,
                 do: deadline,
                 else: lease.deadline
 
@@ -511,6 +520,16 @@ defmodule Gaoxy.Admission do
       _ ->
         {:reply, {:error, :stale_operation}, state}
     end
+  end
+
+  def handle_call({:request_deadline, ref}, {owner, _}, state) do
+    result =
+      case state.leases[ref] do
+        %{pid: ^owner, request_active: true, deadline: deadline} -> {:ok, deadline}
+        _ -> {:error, :stale_lease}
+      end
+
+    {:reply, result, state}
   end
 
   def handle_call(:status, _from, state) do

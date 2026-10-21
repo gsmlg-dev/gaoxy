@@ -21,11 +21,44 @@ defmodule Gaoxy.HTTP do
     with {:ok, spec} <- service_spec(options), do: Gaoxy.start_link(services: [spec])
   end
 
+  @doc "Selects :request, :infinity or positive milliseconds for this route's streaming response."
+  def put_stream_timeout(
+        %Plug.Conn{adapter: {Gaoxy.PlugAdapter, exchange}, state: state} = conn,
+        timeout
+      )
+      when state in [:unset, :set] do
+    %{
+      conn
+      | adapter: {Gaoxy.PlugAdapter, Gaoxy.HTTP.Exchange.put_stream_timeout(exchange, timeout)}
+    }
+  end
+
+  def put_stream_timeout(_, _),
+    do: raise(ArgumentError, "stream timeout requires an unsent Gaoxy Plug connection")
+
+  @doc "Checks peer closure with a finite wait, retaining any input and the updated Plug connection."
+  def poll_connection(%Plug.Conn{adapter: {Gaoxy.PlugAdapter, exchange}} = conn, wait) do
+    case Gaoxy.HTTP.Exchange.poll_connection(exchange, wait) do
+      {kind, next} when kind in [:pending, :more] ->
+        {kind, %{conn | adapter: {Gaoxy.PlugAdapter, next}}}
+
+      {:error, reason, next} ->
+        {:error, reason, %{conn | adapter: {Gaoxy.PlugAdapter, next}}}
+    end
+  end
+
+  @doc "Aborts this response; HTTP/2 cancellation affects only the current stream."
+  def abort(%Plug.Conn{adapter: {Gaoxy.PlugAdapter, exchange}} = conn, reason \\ :cancelled) do
+    with {:ok, next} <- Gaoxy.HTTP.Exchange.abort(exchange, reason),
+         do: {:ok, %{conn | adapter: {Gaoxy.PlugAdapter, next}}}
+  end
+
   def child_spec(options) do
     %{
       id: {__MODULE__, Keyword.get(options, :id, :http)},
       start: {__MODULE__, :start_link, [options]},
-      restart: :transient
+      restart: :transient,
+      shutdown: Gaoxy.Config.shutdown_timeout(Keyword.get(options, :limits, %{}))
     }
   end
 

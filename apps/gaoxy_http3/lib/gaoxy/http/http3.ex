@@ -10,7 +10,8 @@ defmodule Gaoxy.HTTP.HTTP3 do
     %{
       id: {__MODULE__, Keyword.get(options, :id, :http3)},
       start: {__MODULE__, :start_link, [options]},
-      restart: :transient
+      restart: :transient,
+      shutdown: Gaoxy.Config.shutdown_timeout(Keyword.get(options, :limits, %{}))
     }
   end
 

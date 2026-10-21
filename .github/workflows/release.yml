@@ -92,6 +92,11 @@ jobs:
         run: |
           python -m venv .audit/h2peer
           .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
+      - name: Internal request configuration and H1/H2 streaming regressions
+        env:
+          MIX_ENV: test
+        run: |
+          python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
       - name: Isolated core, HTTP, H3 and Gateway consumers on publication source
         env:
           GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
@@ -122,6 +127,12 @@ jobs:
         env:
           GAOXY_PHOENIX_EVIDENCE: .audit/release-unified-phoenix
         run: python integration/phoenix_native/unified.py
+      - name: Phoenix client-certificate, large-message and streaming regressions
+        working-directory: examples/phoenix_native
+        env:
+          MIX_ENV: test
+          PHOENIX_NATIVE_H3: '1'
+        run: python3 ../../scripts/check-tests.py test/client_certificate_test.exs test/websocket_configured_limits_test.exs test/stream_lifetime_test.exs test/websocket_phoenix_compatibility_test.exs
       - uses: actions/upload-artifact@v7.0.2
         if: always()
         with:

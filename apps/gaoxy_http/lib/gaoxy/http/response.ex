@@ -7,8 +7,10 @@ defmodule Gaoxy.HTTP.Response do
   def send_file(exchange, status, headers, path, offset, length),
     do: backend(exchange).send_file(exchange, status, headers, path, offset, length)
 
-  def send_chunked(exchange, status, headers),
-    do: backend(exchange).send_chunked(exchange, status, headers)
+  def send_chunked(exchange, status, headers) do
+    with {:ok, exchange} <- Gaoxy.HTTP.Exchange.begin_stream(exchange),
+         do: backend(exchange).send_chunked(exchange, status, headers)
+  end
 
   def chunk(exchange, data), do: backend(exchange).chunk(exchange, data)
   def inform(exchange, status, headers), do: backend(exchange).inform(exchange, status, headers)
