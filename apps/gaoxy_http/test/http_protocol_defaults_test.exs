@@ -56,6 +56,66 @@ defmodule Gaoxy.HTTP.ProtocolDefaultsTest do
     assert spec.limits.max_bytes == 268_435_456
   end
 
+  test "mixed TCP accepts endpoints and Plugs with the native handler and H2 budget" do
+    for endpoint <- [[endpoint: {Endpoint, []}], [plug: {FixturePlug, []}]] do
+      assert {:ok, spec} =
+               Gaoxy.HTTP.service_spec(
+                 endpoint ++ [transport: :tcp, protocols: [:http2, :http1], h2c: :prior_knowledge]
+               )
+
+      assert spec.transport == :tcp
+      assert spec.handler == Gaoxy.HTTP.Connection
+      assert spec.handler_options.protocols == [:http2, :http1]
+      assert spec.handler_options.h2c == :prior_knowledge
+      assert spec.limits.max_bytes == 268_435_456
+    end
+  end
+
+  test "invalid cleartext combinations and unknown values stay rejected" do
+    for options <- [
+          [protocols: [:http2]],
+          [protocols: [:http2, :http1]],
+          [protocols: [:http1], h2c: :prior_knowledge],
+          [protocols: [:http1, :http2], h2c: :prior_knowledge],
+          [protocols: [:unknown], h2c: :prior_knowledge],
+          [protocols: [:http2, :http1], h2c: :auto],
+          [transport: :tls, tls: @tls, protocols: [:http2, :http1], h2c: :prior_knowledge]
+        ] do
+      assert {:error, :invalid_http_protocols} =
+               Gaoxy.HTTP.service_spec([endpoint: {Endpoint, []}] ++ options)
+    end
+
+    assert {:error, :http2_byte_budget} =
+             Gaoxy.HTTP.service_spec(
+               endpoint: {Endpoint, []},
+               protocols: [:http2, :http1],
+               h2c: :prior_knowledge,
+               limits: %{max_bytes: 1_048_576}
+             )
+
+    assert {:error, :http2_ingress_budget} =
+             Gaoxy.HTTP.service_spec(
+               endpoint: {Endpoint, []},
+               protocols: [:http2, :http1],
+               h2c: :prior_knowledge,
+               http_limits: %{max_buffer_bytes: 16_384}
+             )
+  end
+
+  test "Phoenix mixed HTTP options create one native listener" do
+    assert [%{start: {Gaoxy, :start_link, [[name: _, services: [http]]]}}] =
+             Gaoxy.PhoenixAdapter.child_specs(FixturePlug,
+               http: [port: 0, protocols: [:http2, :http1], h2c: :prior_knowledge],
+               https: false
+             )
+
+    assert http.transport == :tcp
+    assert http.handler == Gaoxy.HTTP.Connection
+    assert http.handler_options.protocols == [:http2, :http1]
+    assert http.handler_options.h2c == :prior_knowledge
+    assert {Gaoxy.HTTP.PlugEndpoint, _} = http.handler_options.endpoint
+  end
+
   test "H2 defaults preserve supplied limit fields and insufficient-budget rejection" do
     assert {:ok, spec} =
              Gaoxy.HTTP.service_spec(

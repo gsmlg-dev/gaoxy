@@ -3,7 +3,7 @@ defmodule Gaoxy.HTTP.Connection do
   use Hell.Handler
   @behaviour Gaoxy.NativeStreamHandler
   alias Gaoxy.{Admission, Lifecycle}
-  alias Gaoxy.HTTP.{Exchange, Options, WebSocket}
+  alias Gaoxy.HTTP.{Exchange, Options, ProtocolDetector, WebSocket}
   alias Gaoxy.HTTP.HTTP1.Parser
 
   @impl Gaoxy.NativeStreamHandler
@@ -13,35 +13,10 @@ defmodule Gaoxy.HTTP.Connection do
   def handle_connection(socket, %{spec: spec} = context) do
     case protocol(socket, spec.handler_options) do
       :http2 ->
-        with {:ok, peer} <- Hell.Socket.peername(socket),
-             {:ok, local} <- Hell.Socket.sockname(socket) do
-          ssl =
-            case Hell.Socket.connection_information(socket) do
-              {:ok, value} -> value
-              _ -> nil
-            end
+        start_http2(socket, context)
 
-          cert =
-            case Hell.Socket.peercert(socket) do
-              {:ok, value} -> value
-              _ -> nil
-            end
-
-          Gaoxy.HTTP.HTTP2.Connection.start(
-            socket,
-            Map.merge(context, %{
-              owner: self(),
-              peer: peer,
-              local: local,
-              secure: Hell.Socket.secure?(socket),
-              ssl: ssl,
-              peer_cert: cert
-            })
-          )
-        else
-          {:error, reason} when reason in [:closed, :einval, :enotconn] -> {:close, context}
-          {:error, reason} -> {:error, reason, context}
-        end
+      :detecting ->
+        start_detecting(socket, context)
 
       :http1 ->
         start_http1(socket, context)
@@ -67,13 +42,69 @@ defmodule Gaoxy.HTTP.Connection do
           {:error, :unsupported_protocol}
       end
     else
-      if options.h2c == :prior_knowledge and options.protocols == [:http2],
-        do: :http2,
-        else: :http1
+      case {options.h2c, options.protocols} do
+        {:prior_knowledge, [:http2]} -> :http2
+        {:prior_knowledge, [:http2, :http1]} -> :detecting
+        _ -> :http1
+      end
     end
   end
 
-  defp start_http1(socket, %{spec: spec, gate: gate} = context) do
+  defp start_http2(socket, context) do
+    with {:ok, peer} <- Hell.Socket.peername(socket),
+         {:ok, local} <- Hell.Socket.sockname(socket) do
+      ssl = socket_information(Hell.Socket.connection_information(socket))
+      cert = socket_information(Hell.Socket.peercert(socket))
+
+      Gaoxy.HTTP.HTTP2.Connection.start(
+        socket,
+        Map.merge(context, %{
+          owner: self(),
+          peer: peer,
+          local: local,
+          secure: Hell.Socket.secure?(socket),
+          ssl: ssl,
+          peer_cert: cert
+        })
+      )
+    else
+      {:error, reason} when reason in [:closed, :einval, :enotconn] -> {:close, context}
+      {:error, reason} -> {:error, reason, context}
+    end
+  end
+
+  defp socket_information({:ok, value}), do: value
+  defp socket_information(_), do: nil
+
+  defp start_detecting(socket, %{spec: spec, gate: gate} = context) do
+    with :ok <-
+           Hell.Socket.setopts(socket,
+             recbuf: Gaoxy.HTTP.HTTP2.Limits.receive_buffer(),
+             buffer: Gaoxy.HTTP.HTTP2.Limits.receive_buffer(),
+             send_timeout: spec.handler_options.http_limits.write_timeout,
+             send_timeout_close: true
+           ),
+         {:ok, lease} <- Admission.acquire(gate, 0, drain_notify: true) do
+      {:continue,
+       Map.merge(context, %{
+         phase: :detecting,
+         lease: lease,
+         buffer: "",
+         first_input: nil,
+         detector_deadline: nil,
+         detector_timer: nil,
+         detector_token: nil,
+         closing: false
+       })}
+    else
+      {:error, reason} -> {:error, reason, context}
+    end
+  end
+
+  defp owner_lease(%{lease: lease}), do: {:ok, lease}
+  defp owner_lease(%{gate: gate}), do: Admission.acquire(gate, 0, drain_notify: true)
+
+  defp start_http1(socket, %{spec: spec} = context) do
     limits = spec.handler_options.http_limits
 
     with :ok <-
@@ -83,10 +114,11 @@ defmodule Gaoxy.HTTP.Connection do
              send_timeout: limits.write_timeout,
              send_timeout_close: true
            ),
-         {:ok, lease} <- Admission.acquire(gate, 0, drain_notify: true) do
+         {:ok, lease} <- owner_lease(context) do
       {:continue,
        Map.merge(context, %{
          lease: lease,
+         first_input: Map.get(context, :first_input),
          buffer: "",
          phase: :idle,
          deadline: nil,
@@ -102,6 +134,27 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   @impl true
+  def handle_data("", _socket, %{phase: :detecting} = state), do: {:continue, state}
+
+  def handle_data(bytes, socket, %{phase: :detecting} = state) do
+    state = detection_started(state)
+
+    if Lifecycle.remaining(state.detector_deadline) == 0 do
+      {:close, cancel_detection(state)}
+    else
+      case ProtocolDetector.classify(state.buffer, bytes) do
+        {:more, carry} ->
+          case Admission.update(state.gate, state.lease, byte_size(carry)) do
+            :ok -> {:continue, %{state | buffer: carry}}
+            {:error, _} -> {:close, cancel_detection(state)}
+          end
+
+        {protocol, replay} ->
+          select_protocol(protocol, replay, socket, cancel_detection(state))
+      end
+    end
+  end
+
   def handle_data(bytes, socket, %{phase: :http2} = state),
     do: Gaoxy.HTTP.HTTP2.Connection.data(bytes, socket, state)
 
@@ -110,36 +163,89 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   def handle_data(bytes, socket, state) do
-    buffer = state.buffer <> bytes
-
-    if byte_size(buffer) > state.spec.limits.max_bytes do
+    if byte_size(state.buffer) + byte_size(bytes) > state.spec.limits.max_bytes do
       {:close, state}
     else
-      state = %{state | buffer: buffer}
+      state = %{state | buffer: state.buffer <> bytes}
 
       process(socket, state)
     end
   end
 
+  defp detection_started(%{first_input: nil} = state) do
+    options = state.spec.handler_options
+
+    timeout =
+      min(
+        options.http_limits.header_timeout,
+        min(options.http_limits.request_timeout, options.h2_limits.frame_timeout)
+      )
+
+    first = Lifecycle.now()
+    token = make_ref()
+    timer = Process.send_after(self(), {:gaoxy_http_detect_timeout, token}, timeout)
+
+    %{
+      state
+      | first_input: first,
+        detector_deadline: first + timeout,
+        detector_timer: timer,
+        detector_token: token
+    }
+  end
+
+  defp detection_started(state), do: state
+
+  defp cancel_detection(state) do
+    if state.detector_timer, do: Process.cancel_timer(state.detector_timer)
+    %{state | detector_timer: nil, detector_token: nil}
+  end
+
+  defp select_protocol(protocol, replay, socket, state) do
+    limit =
+      if protocol == :http2,
+        do: state.spec.handler_options.http_limits.max_buffer_bytes,
+        else: state.spec.limits.max_bytes
+
+    if IO.iodata_length(replay) > limit do
+      {:close, state}
+    else
+      initialized =
+        if protocol == :http2, do: start_http2(socket, state), else: start_http1(socket, state)
+
+      case initialized do
+        {:continue, selected} -> handle_data(IO.iodata_to_binary(replay), socket, selected)
+        result -> result
+      end
+    end
+  end
+
   defp process(socket, %{phase: :idle} = state) do
-    deadline = Lifecycle.deadline(state.limits.request_timeout)
+    first = state.first_input || Lifecycle.now()
+    deadline = first + state.limits.request_timeout
+    header_deadline = first + state.limits.header_timeout
+    state = %{state | first_input: nil}
     token = make_ref()
 
-    case Admission.begin_request(state.gate, state.lease, byte_size(state.buffer), deadline) do
-      :ok ->
-        timeout = min(state.limits.header_timeout, Lifecycle.remaining(deadline))
-        timer = Process.send_after(self(), {:gaoxy_http_header_timeout, token}, timeout)
+    if Lifecycle.remaining(header_deadline) == 0 do
+      {:close, state}
+    else
+      case Admission.begin_request(state.gate, state.lease, byte_size(state.buffer), deadline) do
+        :ok ->
+          timeout = min(Lifecycle.remaining(header_deadline), Lifecycle.remaining(deadline))
+          timer = Process.send_after(self(), {:gaoxy_http_header_timeout, token}, timeout)
 
-        process(socket, %{
-          state
-          | phase: :header,
-            deadline: deadline,
-            header_timer: timer,
-            header_token: token
-        })
+          process(socket, %{
+            state
+            | phase: :header,
+              deadline: deadline,
+              header_timer: timer,
+              header_token: token
+          })
 
-      {:error, _} ->
-        {:close, state}
+        {:error, _} ->
+          {:close, state}
+      end
     end
   end
 
@@ -299,6 +405,18 @@ defmodule Gaoxy.HTTP.Connection do
     do: Gaoxy.HTTP.HTTP2.Connection.call(message, from, socket, state)
 
   @impl true
+  def handle_info(
+        {:gaoxy_http_detect_timeout, token},
+        {socket, %{phase: :detecting, detector_token: token} = state}
+      )
+      when is_reference(token) do
+    {:stop, :normal, {socket, cancel_detection(state)}}
+  end
+
+  # A canceled timer may already be queued. Consume these before H2 delegation.
+  def handle_info({:gaoxy_http_detect_timeout, _}, {socket, state}),
+    do: {:noreply, {socket, state}}
+
   def handle_info(message, {socket, %{phase: :http2} = state}),
     do: Gaoxy.HTTP.HTTP2.Connection.info(message, socket, state)
 
@@ -318,6 +436,13 @@ defmodule Gaoxy.HTTP.Connection do
 
   def handle_info({:gaoxy_http_header_timeout, _}, {socket, state}) do
     {:noreply, {socket, state}}
+  end
+
+  def handle_info(
+        {:gaoxy_drain, gate, lease, _deadline},
+        {socket, %{phase: :detecting, gate: gate, lease: lease} = state}
+      ) do
+    {:stop, :normal, {socket, %{cancel_detection(state) | closing: true}}}
   end
 
   def handle_info(
@@ -352,11 +477,21 @@ defmodule Gaoxy.HTTP.Connection do
   end
 
   @impl true
+  def handle_close(_, %{phase: :detecting} = state) do
+    _ = cancel_detection(state)
+    :ok
+  end
+
   def handle_close(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
   def handle_close(_, %{phase: :websocket, websocket: ws}), do: WebSocket.terminate(ws, :remote)
   def handle_close(_, _), do: :ok
 
   @impl true
+  def handle_error(_, _, %{phase: :detecting} = state) do
+    _ = cancel_detection(state)
+    :ok
+  end
+
   def handle_error(_, _, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
 
   def handle_error(reason, _, %{phase: :websocket, websocket: ws}),
@@ -365,6 +500,11 @@ defmodule Gaoxy.HTTP.Connection do
   def handle_error(_, _, _), do: :ok
 
   @impl true
+  def handle_shutdown(_, %{phase: :detecting} = state) do
+    _ = cancel_detection(state)
+    :ok
+  end
+
   def handle_shutdown(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
 
   def handle_shutdown(_, %{phase: :websocket, websocket: ws}),
@@ -373,6 +513,11 @@ defmodule Gaoxy.HTTP.Connection do
   def handle_shutdown(_, _), do: :ok
 
   @impl true
+  def handle_timeout(_, %{phase: :detecting} = state) do
+    _ = cancel_detection(state)
+    :ok
+  end
+
   def handle_timeout(_, %{phase: :http2} = state), do: Gaoxy.HTTP.HTTP2.Connection.close(state)
   def handle_timeout(_, %{phase: :websocket, websocket: ws}), do: WebSocket.timeout(ws)
   def handle_timeout(_, _), do: :ok

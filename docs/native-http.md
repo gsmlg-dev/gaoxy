@@ -55,8 +55,11 @@ remain in force. Standalone JSON keeps its explicit H1 selection.
 ## Native HTTP/2
 
 TLS prefers H2 by default; select `protocols: [:http2]` for H2-only TLS.
-Cleartext requires `protocols: [:http2], h2c: :prior_knowledge`; HTTP/1 upgrade
-and mixed-cleartext detection are unsupported. The HTTP facade supplies
+Cleartext H2 requires explicit `h2c: :prior_knowledge`. Select
+`protocols: [:http2]` for H2-only TCP or `protocols: [:http2, :http1]` to serve
+H1 and prior-knowledge H2 on one TCP listener. Plain TCP remains H1-only with
+h2c disabled by default. HTTP/1 `Upgrade: h2c` is unsupported; there is no
+`:auto` setting. The HTTP facade supplies
 `limits.max_bytes: 268_435_456` (256 MiB) when H2 is selected and that field is
 omitted. Explicit budgets remain unchanged and must cover the reservation
 profile. An explicit configuration can use:
@@ -68,6 +71,42 @@ profile. An explicit configuration can use:
   limits: %{max_bytes: 536_870_912, max_active: 128}
 )
 ```
+
+For a shared cleartext listener, the same native handler accepts both protocols:
+
+```elixir
+Gaoxy.HTTP.start_link(
+  plug: {MyPlug, []},
+  transport: :tcp,
+  protocols: [:http2, :http1],
+  h2c: :prior_knowledge
+)
+```
+
+Standalone JSON uses `"protocols": ["http2", "http1"]` and
+`"h2c": "prior_knowledge"` on its existing `"transport": "tcp"` HTTP service.
+Phoenix accepts the Elixir options in its existing `http: [...]` list. Each
+entry point uses one listener and the same endpoint/router and native engines.
+Protocol ordering, unknown-value rejection, host validation and H2 budgets
+remain enforced. H2 over TCP without explicit prior knowledge, h2c over TLS,
+and H1-only with h2c enabled are invalid.
+
+Detection compares the complete 24-byte H2 preface incrementally. An incomplete
+matching prefix remains undecided, the first mismatch selects H1 immediately,
+and the complete match selects H2. Selection lasts for the connection; parser
+errors never trigger fallback. At most 23 undecided bytes are retained, with
+all received bytes replayed exactly once into the selected engine. The detector
+creates no H2 decoder/writer or H2 output before selection.
+
+Before input, existing idle handling applies. First input starts one fixed
+detection deadline using the minimum of `http_limits.header_timeout`,
+`http_limits.request_timeout`, and `h2_limits.frame_timeout`. Additional matching
+bytes do not extend it. The first H1 header/request deadlines retain that
+original start; later keep-alive requests retain their existing budgets. H2
+receives the remaining startup allowance from first input and completes startup
+only when the client acknowledges server SETTINGS. Its separate partial-frame
+timer retains its existing semantics. An undecided connection closes promptly
+on drain, using the same connection-owner admission lease through handoff.
 
 For embedding in a mixed runtime, construct HTTP specifications with
 `Gaoxy.HTTP.service_spec/1`. It validates protocol, host profile and minimum

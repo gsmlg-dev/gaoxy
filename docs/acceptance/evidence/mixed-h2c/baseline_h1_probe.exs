@@ -1,0 +1,6 @@
+ExUnit.start()
+ExUnit.configure(exclude: [:test], include: [location: {"apps/gaoxy_http/test/http_network_test.exs", 351}])
+{source, 0} = System.cmd("git", ["show", "ec1fead80884804de9ab662e311ebb9c1cfdaf60:apps/gaoxy_http/lib/gaoxy/http/connection.ex"])
+Code.compiler_options(ignore_module_conflict: true)
+Code.compile_string(source)
+Code.require_file("apps/gaoxy_http/test/http_network_test.exs")

@@ -21,7 +21,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
              recbuf: Limits.receive_buffer(),
              buffer: Limits.receive_buffer()
            ),
-         {:ok, lease} <- Admission.acquire(context.gate, reserves.connection, drain_notify: true),
+         {:ok, lease} <- owner_lease(context, reserves.connection),
          {:ok, writer} <-
            Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fn ->
              Writer.run(
@@ -33,7 +33,14 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
              )
            end) do
       token = make_ref()
-      timer = Process.send_after(self(), {:h2_start_timeout, token}, h2.frame_timeout)
+      startup_deadline = (Map.get(context, :first_input) || Lifecycle.now()) + h2.frame_timeout
+
+      timer =
+        Process.send_after(
+          self(),
+          {:h2_start_timeout, token},
+          Lifecycle.remaining(startup_deadline)
+        )
 
       {:continue,
        Map.merge(context, %{
@@ -72,6 +79,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
          closing: false,
          draining: false,
          close_after_write: false,
+         start_deadline: startup_deadline,
          start_token: token,
          start_timer: timer,
          settings_ack: false,
@@ -85,6 +93,16 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       {:error, reason} -> {:error, reason, context}
     end
   end
+
+  defp owner_lease(%{gate: gate, lease: lease}, bytes) do
+    case Admission.update(gate, lease, bytes) do
+      :ok -> {:ok, lease}
+      error -> error
+    end
+  end
+
+  defp owner_lease(%{gate: gate}, bytes),
+    do: Admission.acquire(gate, bytes, drain_notify: true)
 
   defp tls_policy(socket) do
     if Socket.secure?(socket) do
@@ -112,12 +130,17 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   def data(bytes, _socket, state) do
-    if byte_size(state.buffer) + byte_size(bytes) > state.limits.max_buffer_bytes do
-      {:close, state}
-    else
-      state = %{state | buffer: state.buffer <> bytes}
-      state = parse(state, state.h2.control_turn)
-      {:continue, schedule(partial_timer(state))}
+    cond do
+      not state.settings_ack and Lifecycle.remaining(state.start_deadline) == 0 ->
+        {:continue, schedule(failure(state, :settings_timeout))}
+
+      byte_size(state.buffer) + byte_size(bytes) > state.limits.max_buffer_bytes ->
+        {:close, state}
+
+      true ->
+        state = %{state | buffer: state.buffer <> bytes}
+        state = parse(state, state.h2.control_turn)
+        {:continue, schedule(partial_timer(state))}
     end
   end
 
@@ -207,6 +230,9 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
       Frame.flag?(flags, 1) and state.settings_ack ->
         state
+
+      Frame.flag?(flags, 1) and Lifecycle.remaining(state.start_deadline) == 0 ->
+        failure(state, :settings_timeout)
 
       Frame.flag?(flags, 1) ->
         Process.cancel_timer(state.start_timer)

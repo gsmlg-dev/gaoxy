@@ -42,7 +42,7 @@ defmodule Gaoxy.HTTP.Options do
                {:error, :invalid_http_protocols},
            true <- h2c in [:disabled, :prior_knowledge] || {:error, :invalid_http_protocols},
            true <-
-             (h2c != :prior_knowledge or protocols == [:http2]) ||
+             (h2c != :prior_knowledge or :http2 in protocols) ||
                {:error, :invalid_http_protocols},
            true <-
              (:http2 not in protocols or h2.max_frame + 9 <= limits.max_buffer_bytes) ||

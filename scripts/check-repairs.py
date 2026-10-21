@@ -11,6 +11,11 @@ ROOT = Path(__file__).resolve().parent.parent
 # Each file is checked separately: losing a case or excluding it fails the gate.
 SUITES = {
     "unit": [
+        # Mixed cleartext selection, ownership, deadlines and public contracts.
+        ("apps/gaoxy_http/test/protocol_detector_test.exs", 6),
+        ("apps/gaoxy_http/test/mixed_connection_lifecycle_test.exs", 19),
+        ("apps/gaoxy_http/test/http_protocol_defaults_test.exs", 11),
+        ("apps/gaoxy_server/test/config_test.exs", 3),
         ("apps/gaoxy_http/test/plug_body_test.exs", 28),
         ("apps/gaoxy_http/test/http2_authority_test.exs", 8),
         ("apps/gaoxy_proxy/test/cookie_headers_test.exs", 5),
@@ -27,6 +32,8 @@ SUITES = {
         ("apps/gaoxy_http3/test/transport_test.exs", 13),
     ],
     "protocol": [
+        ("apps/gaoxy_http/test/mixed_http_network_test.exs", 7),
+        ("apps/gaoxy_server/test/mixed_http_routing_test.exs", 1),
         ("apps/gaoxy_server/test/standalone_recovery_test.exs", 2),
         ("apps/gaoxy_http/test/plug_body_network_test.exs", 4),
         ("apps/gaoxy_http3/test/plug_body_network_test.exs", 1),
