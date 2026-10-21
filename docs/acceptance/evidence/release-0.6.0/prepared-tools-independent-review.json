@@ -1,0 +1,72 @@
+{
+  "task_id": "migration_review/prepared-publication-consumer-tools",
+  "status": "DONE_STATIC_REVIEW",
+  "verdict": "PASS_PREPARED_TOOLS_STATIC_REVIEW",
+  "assignment": "direct independent read-only review; no implementation or runtime execution",
+  "generated_utc": "2026-10-21T05:43:31.241458+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "baseline": "aaa613985b08edd146f393ddd48f65fd6f3665b2",
+  "reviewed_files": {
+    ".audit/release-0.6.0/20261021T052454Z-ec1fead8/publication/verify-publication.py": "feeb3a5d9cbc9bd4c9048400b11348b16ebabdb3f4057a973e09d4d91ec8fef7",
+    ".audit/release-0.6.0/20261021T052454Z-ec1fead8/consumers/verify.py": "e650ace1007278aa5efb7aca8116baee8bec320936db23bdaa10240c39ffe540",
+    ".audit/release-0.6.0/20261021T052454Z-ec1fead8/publication/preparation.json": "ded78e34ea5f4cf6bc0a32034bc7ba6923f2749256664a62943985f7ffb17527",
+    ".audit/release-0.6.0/20261021T052454Z-ec1fead8/consumers/run-1792560949970552380/result.json": "397dfbbeca40d42642c7c9517d6ad1a12bc9ea6d3a35d338315732713f51deb7"
+  },
+  "material_findings": [],
+  "checks": {
+    "python_ast_syntax": "PASS for both tools; not executed",
+    "prepared_files_hash_matches": 22,
+    "fixture_and_lock_hash_matches_to_snapshot_and_commit": 18,
+    "accepted_upstream_lock_recomputed": "PASS; non-own Hex entries preserved byte for byte and conflicting entries rejected",
+    "prepared_fixture_declared_test_counts": {
+      "core": 1,
+      "http": 3,
+      "phoenix": 5
+    },
+    "executed_tests": "NOT RUN; declared counts are static only",
+    "prepared_state": "PREPARED with empty checks and no deps/_build",
+    "installed_unbuffer_path_present": true
+  },
+  "publication_tool_assessment": [
+    "Accepts explicit actual commit/run and required qualified-artifact directory; regenerates package expectations from immutable git archive and its committed staging script.",
+    "Requires successful completed workflow_dispatch release.yml at the supplied SHA, exactly one successful release job, and every named source/build/ordinary-smoke/publication step successful.",
+    "Checks final public non-prerelease tag peels to supplied source and publication occurs within workflow times.",
+    "Requires exactly seven release assets; downloaded sizes and SHA256 must match GitHub asset API; SHA256SUMS must contain exactly six unique expected artifact entries.",
+    "For all five public Hex releases checks exact requirements, non-retirement, checksum equality with downloaded bytes and GitHub assets; compares every payload path and hash to committed staging.",
+    "Checks name/app/version/Elixir/build tools/license/file-set/requirements metadata and requires local qualified payload equality plus complete normalized metadata equality. Records local archive SHA256 and byte-equality separately; semantic/payload equality does not assert archive reproducibility.",
+    "Standalone inspection checks own app version paths, Abyss 0.9.0 and forbidden legacy native packages; tool explicitly limits its claim to static archive plus successful exact-source workflow provenance. Downloaded standalone execution is not claimed.",
+    "Retains command exits, complete output bytes, output hashes, source files, downloads, API bodies and final evidence hashes; exception records FAIL and rethrows."
+  ],
+  "consumer_tool_assessment": [
+    "Execution requires matching PASS publication receipt at supplied source/run, unchanged harness/inputs/prepared file hashes, and fresh PREPARED evidence.",
+    "Before resolution/testing binds original fixtures and accepted locks to supplied immutable commit and records pretest actual hashes. Prepared fixtures preserve existing assertion bytes.",
+    "Uses fresh Hex/cache/dependency/build locations and public Hex repository; checks resolved deps use Hex.SCM, own exact 0.6.0 identities, accepted upstream lock cohort and isolated destinations; verifies loaded Gaoxy code path.",
+    "Strict compilation precedes unchanged tests. For each consumer requires successful command and exactly one expected ExUnit summary with zero failures and no skipped/excluded marker. Static expected counts are core 1, HTTP 3, Phoenix 5.",
+    "Rechecks unchanged fixtures/manifests and accepted lock, retains final hashes and actual consumer lock hashes. No tests are skipped by this harness.",
+    "Does not claim clean public-consumer H3/proxy coverage; those packages are checked by publication metadata/payload and parent-owned release runtime gates."
+  ],
+  "closure_requirements": [
+    "Parent must verify all three final required exact-source prepublication CI workflows pass; historical failed baseline remains FAIL.",
+    "Actual release workflow must complete successfully at the authorized SHA, with tag/GitHub release/all five public Hex packages verified.",
+    "Run publication verifier with actual SHA/run and the qualified dist directory whose local artifact hashes are already independently reviewed. Preserve full successful or failed receipt.",
+    "Execute unchanged prepared consumer run only after matching successful publication evidence; require actual counts core 1, HTTP 3, Phoenix 5 and all zero failures/skips/exclusions.",
+    "Independently review actual final receipts, output hashes, dependency locks and source identity; prepared tooling review alone is not publication/consumer PASS.",
+    "Update release acceptance closeout with actual hosted/local/publication/consumer results and retain historical failures; keep specialist qualification/deployment/production/disabled E2E distinct."
+  ],
+  "limits": [
+    "No network calls, builds, test runs or tool execution performed by this review.",
+    "Runtime API formats, public availability, native package compilation and consumer runtime success remain unvalidated until actual execution.",
+    "Standalone downloaded archive is not reproduced byte for byte or executed by this verifier."
+  ],
+  "repair_counters": {
+    "sol_repair_rounds": 0,
+    "astra_repair_rounds": 0,
+    "astra_gate": null
+  },
+  "changed_files": [
+    ".audit/release-0.6.0/20261021T052454Z-ec1fead8/prepared-tools-independent-review.json"
+  ],
+  "command_shutdown_status": "All reviewer commands finished; none started in background",
+  "protected_prompt_sha256": "e4016ba4605747c584beb113246c26d48f55667b975f60d5b199df3c01d23a07",
+  "decisions_needed": null
+}
