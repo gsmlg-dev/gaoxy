@@ -8,8 +8,9 @@ Implementation starts at `656dbf5bb84564adc6a4d68247c0ad2fe52c2625`, preserving
 the released mixed cleartext H1/prior-knowledge H2 behavior and prior evidence.
 Work is isolated in `.trees/unified-gateway` on `codex/unified-gateway`.
 Local implementation commits: core `7e45d7e1`, HTTP `bc66c489`, and Gateway /
-standalone `52a96976`. The final versioned source and publication receipts are
-recorded after integration.
+standalone `52a96976`; coordinated 0.8.0 qualification `14c5fd91`; and
+Elixir 1.20 compiler compatibility `d206e55de1696a8801a1cd64d80c7b903671641a`.
+Integration and publication receipts are recorded after their actual completion.
 
 Status: ordinary implementation and verification PASS. Independent source
 and release documentation reviews PASS. Publication
@@ -80,7 +81,8 @@ overlap and must not be added as unique cases.
 | Gate-counter and release-smoke harness regressions | PASS: 6 and 5 tests respectively |
 | Coordinated five package archives | PASS: five actual 0.8.0 archives; all 122 runtime payload files match staged source |
 | Independent specification and code reviews | PASS: core, HTTP, Gateway/Generation/standalone/accounting and final shutdown/preflight followup; no remaining code findings |
-| Push, hosted CI and coordinated publication | NOT RUN |
+| Push and hosted CI | PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) open; initial Linux jobs PASS, initial macOS compiler jobs FAIL; corrected-source hosted verification pending |
+| Coordinated publication | NOT RUN |
 | Deployment/production acceptance | NOT RUN; outside this task |
 
 Acceptance matrix evidence maps to these scoped suites and real peers:
@@ -131,10 +133,15 @@ python3 scripts/test-stage-hex-packages.py
 ```
 
 Raw local evidence is archived under [evidence/unified-gateway](evidence/unified-gateway/).
-The [source input manifest](evidence/unified-gateway/source-inputs.json) fixes all
-157 packaging inputs. The [package receipt](evidence/unified-gateway/package-receipt.json)
-records five archive hashes and all 122 runtime payload hashes.
-[Exact final log](evidence/unified-gateway/exact-final.log.gz),
+The original [source input manifest](evidence/unified-gateway/source-inputs.json) and
+[package receipt](evidence/unified-gateway/package-receipt.json) preserve the reviewed
+pre-compiler-correction source. The [final source manifest](evidence/unified-gateway/source-inputs-final.json)
+fixes all 157 packaging inputs on `d206e55d`; the
+[final package receipt](evidence/unified-gateway/package-receipt-final.json) records
+five corrected-source archive hashes and all 122 runtime payload hashes.
+[Committed-source exact log](evidence/unified-gateway/exact-committed.log.gz)
+records 265 executions with zero failures/exclusions/skips on `d206e55d`. The earlier
+[exact final log](evidence/unified-gateway/exact-final.log.gz),
 [Phoenix report](evidence/unified-gateway/phoenix-final.json),
 [core/HTTP review](evidence/unified-gateway/core-http-review.md) and
 [Gateway review](evidence/unified-gateway/gateway-review.md), and
@@ -163,6 +170,15 @@ new logical owner PID as a core instance. The test now resolves the core through
 the public ListenerSet inspection API and preserves all seven real-peer cases.
 Its teardown also exposed ignored host shutdown in ListenerSet.Owner; the final
 repair and its direct lifecycle regression are recorded separately.
+
+Hosted Elixir 1.20 strict compilation exposed two unreachable outer `with ... else`
+clauses in `Gateway.do_reload_routes/4`. The two-line correction removes only those
+clauses; the inner missing-set branch and public invalid-options guard remain.
+[Independent review](evidence/unified-gateway/elixir120-review.md) is PASS. Fresh
+local Gateway/lifecycle verification is 20/0, the complete committed-source gate
+is 265/0, and formatting/strict production compilation exit 0. The original
+[hosted compiler failure](evidence/unified-gateway/hosted-elixir120-initial-failure.log.gz)
+is retained; a local 1.18 result is not a claim of hosted 1.20 success.
 
 Existing failures reproduced on untouched baseline remain separate:
 
