@@ -2,6 +2,88 @@ defmodule Gaoxy.PlugBodyTest do
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.{Exchange, HTTP1.Body, HTTP1.Parser}
 
+  # Preserve the strict deadline assertions while distinguishing fixture waits
+  # from time spent off-scheduler on shared CI runners. No request data is traced.
+  setup context do
+    if context[:deadline_trace] do
+      tracer = spawn(fn -> deadline_events([], 0) end)
+      Process.put(:deadline_tracer, tracer)
+      :erlang.trace(self(), true, [:running, :monotonic_timestamp, {:tracer, tracer}])
+
+      on_exit(fn ->
+        monitor = Process.monitor(tracer)
+
+        try do
+          delivery = :erlang.trace_delivered(:all)
+
+          receive do
+            {:trace_delivered, :all, ^delivery} -> :ok
+          after
+            1_000 -> flunk("deadline trace delivery did not complete")
+          end
+
+          send(tracer, {:report, self()})
+
+          receive do
+            {:deadline_events, events, dropped} ->
+              events = Enum.sort_by(events, &elem(&1, 0))
+              origin = events |> hd() |> elem(0)
+
+              events =
+                Enum.map(events, fn {time, event} ->
+                  {System.convert_time_unit(time - origin, :native, :microsecond), event}
+                end)
+
+              IO.puts(
+                "DEADLINE_TRACE " <>
+                  inspect(%{test: context.test, events_us: events, dropped: dropped},
+                    limit: :infinity
+                  )
+              )
+          after
+            1_000 -> flunk("deadline trace collector did not respond")
+          end
+        after
+          Process.exit(tracer, :kill)
+
+          receive do
+            {:DOWN, ^monitor, :process, ^tracer, _} -> :ok
+          after
+            1_000 -> flunk("deadline trace collector did not stop")
+          end
+        end
+      end)
+    end
+
+    :ok
+  end
+
+  defp deadline_events(events, dropped) do
+    receive do
+      {:report, caller} ->
+        send(caller, {:deadline_events, events, dropped})
+
+      message ->
+        event =
+          case message do
+            {:trace_ts, _, action, mfa, time} when action in [:in, :out] ->
+              {time, {action, mfa}}
+
+            {:deadline_stage, stage, time} ->
+              {time, stage}
+          end
+
+        if length(events) < 256,
+          do: deadline_events([event | events], dropped),
+          else: deadline_events(events, dropped + 1)
+    end
+  end
+
+  def deadline_stage(stage) do
+    if tracer = Process.get(:deadline_tracer),
+      do: send(tracer, {:deadline_stage, stage, System.monotonic_time()})
+  end
+
   defmodule Endpoint do
     def init(options), do: {:ok, options}
     def call(exchange, _), do: {:ok, exchange}
@@ -25,10 +107,14 @@ defmodule Gaoxy.PlugBodyTest do
 
   defmodule GateDelayTransport do
     def read_body_step(exchange, credit, wait) do
+      Gaoxy.PlugBodyTest.deadline_stage(:fixture_status_start)
       charged = Gaoxy.Admission.status(exchange.gate).retained_bytes
+      Gaoxy.PlugBodyTest.deadline_stage(:fixture_status_done)
       :ok = :sys.suspend(exchange.gate)
+      Gaoxy.PlugBodyTest.deadline_stage(:fixture_suspend_done)
       send(self(), {:native_gate_suspended, charged})
       result = Exchange.read_body_step(%{exchange | transport: nil}, credit, wait)
+      Gaoxy.PlugBodyTest.deadline_stage(:native_read_done)
       send(self(), {:native_read_result, result})
       result
     end
@@ -295,6 +381,7 @@ defmodule Gaoxy.PlugBodyTest do
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes == byte_size(exchange.buffer)
   end
 
+  @tag :deadline_trace
   test "a suspended H2 body-read owner is bounded by the hard deadline and returns timeout" do
     owner = start_supervised!({ReadOwner, []})
 
@@ -307,17 +394,20 @@ defmodule Gaoxy.PlugBodyTest do
     :ok = :sys.suspend(owner)
 
     try do
+      deadline_stage(:request_start)
       started = System.monotonic_time(:millisecond)
 
       assert {:error, :timeout} =
                Gaoxy.HTTP.HTTP2.Transport.operation(exchange, {:read, 1, 1_000})
 
+      deadline_stage(:request_done)
       assert System.monotonic_time(:millisecond) - started < 100
     after
       :ok = :sys.resume(owner)
     end
   end
 
+  @tag :deadline_trace
   test "read-triggered H1 Continue cannot wait past the deadline at a delayed gate" do
     exchange = exchange({:length, 1}, "x")
 
@@ -329,8 +419,10 @@ defmodule Gaoxy.PlugBodyTest do
     }
 
     try do
+      deadline_stage(:request_start)
       started = System.monotonic_time(:millisecond)
       assert {:error, :timeout} = Gaoxy.PlugAdapter.read_req_body(exchange, [])
+      deadline_stage(:request_done)
       assert System.monotonic_time(:millisecond) - started < 250
       assert_receive {:native_read_result, {:error, :timeout, %{expect_sent: true}}}
     after
@@ -341,6 +433,7 @@ defmodule Gaoxy.PlugBodyTest do
     assert :sys.get_state(exchange.gate).leases[exchange.lease].send == nil
   end
 
+  @tag :deadline_trace
   test "read-triggered H2 Continue cannot outwait the hard deadline at a suspended owner" do
     owner = start_supervised!({ReadOwner, []})
     exchange = exchange({:length, 1}, "x")
@@ -356,8 +449,10 @@ defmodule Gaoxy.PlugBodyTest do
     :ok = :sys.suspend(owner)
 
     try do
+      deadline_stage(:request_start)
       started = System.monotonic_time(:millisecond)
       assert {:error, :timeout} = Gaoxy.PlugAdapter.read_req_body(exchange, [])
+      deadline_stage(:request_done)
       assert System.monotonic_time(:millisecond) - started < 100
     after
       :ok = :sys.resume(owner)

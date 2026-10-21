@@ -40,7 +40,7 @@ See the [design](../designs/unified-listeners-embedded-gateway.md).
 - [x] Phase 4: focused tests and finite independent network acceptance matrix.
 - [x] Phase 4: external consumers demonstrate core, H1/H2, optional H3 and Gateway isolation.
 - [x] Phase 4: independent specification/code reviews; resolve findings; fresh verification.
-- [ ] Phase 4: documentation/examples, conventional commits and authorized integration.
+- [x] Phase 4: documentation/examples, conventional commits and authorized integration.
 - [ ] Phase 4: push, coordinated package/release workflow after its required gates.
 
 Record commands, counts, outcomes and limits in

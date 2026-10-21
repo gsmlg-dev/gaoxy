@@ -1,6 +1,6 @@
 # Unified listeners and embedded Gateway acceptance
 
-Date: 2026-10-21, Asia/Shanghai. Specification: Agent Note
+Date: 2026-10-22, Asia/Shanghai. Specification: Agent Note
 `c676efd4-a6a5-4157-879b-750f1563c0d2`, revision 1, preserved in the
 [design](../designs/unified-listeners-embedded-gateway.md). The
 [plan](../plans/unified-listeners-embedded-gateway.md) tracks completion.
@@ -81,7 +81,7 @@ overlap and must not be added as unique cases.
 | Gate-counter and release-smoke harness regressions | PASS: 6 and 5 tests respectively |
 | Coordinated five package archives | PASS: five actual 0.8.0 archives; all 122 runtime payload files match staged source |
 | Independent specification and code reviews | PASS: core, HTTP, Gateway/Generation/standalone/accounting and final shutdown/preflight followup; no remaining code findings |
-| Push and hosted CI | PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) open; initial Linux jobs PASS, initial macOS compiler jobs FAIL; corrected-source hosted verification pending |
+| Integration and hosted CI | PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) merged normally into main `2539b3c4`; all corrected-source PR workflows PASS. Main static and Foundation PASS; main macOS Unit FAIL on two existing elapsed assertions; instrumented verification pending |
 | Coordinated publication | NOT RUN |
 | Deployment/production acceptance | NOT RUN; outside this task |
 
@@ -158,6 +158,45 @@ The release workflow repeats external consumers, the exact ordinary gate, actual
 unified Phoenix acceptance, strict builds, staging and package/release smokes on
 the exact already-versioned source before irreversible publication. Configured
 workflow steps are not an executed hosted result.
+
+## Integration and merged-main verification
+
+PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) was merged normally at
+`2539b3c400231c079eda7ad60f1c343101227eca`. Its head `2078ee8e` and actual
+synthetic PR checkout have the same complete tree as the merge:
+`74e3b6688f3e5648fdf23c87d96aa4d4f95f9c51`. Local and remote main were verified
+at that merge. The [integration receipt](evidence/unified-gateway/integration.json)
+and [PR CI receipt](evidence/unified-gateway/pr-ci-success.json) preserve these
+identities. PR static `39624808606`, Unit `39624808585` and Foundation
+`39624808820` completed successfully. Stale job-table metadata did not replace
+the authoritative completed workflow results.
+
+Merged-main static `39627274174` and Foundation `39627274265` PASS. Foundation
+executed the exact 265-case gate with no failures/exclusions/skips and the
+unified browser's eight checks, external consumers, portable releases and
+ordinary platform gates. Its [summary](evidence/unified-gateway/main-foundation.summary.json)
+and [raw log](evidence/unified-gateway/main-foundation.log.gz) preserve counts,
+existing exclusions and unsupported IPv6-negative semantics separately.
+
+Main Unit `39627273984` Linux PASS. macOS attempt 1 returned the expected H2
+Continue timeout but failed the unchanged elapsed assertion at 104 ms < 100 ms;
+one unchanged diagnostic retry failed the H1 delayed-gate elapsed assertion at
+562 ms < 250 ms. Both file results are FAIL: 27/28 passed. The H1 native-result
+and cleanup assertions after the elapsed assertion were not reached. The
+[H2 diagnosis](evidence/unified-gateway/main-h2-deadline-diagnosis.md),
+[H1 diagnosis](evidence/unified-gateway/main-h1-deadline-diagnosis.md) and
+[environment comparison](evidence/unified-gateway/main-unit-environment.md)
+identify unchanged production paths, fixture calls outside the request deadline,
+and variable same-tree hosted execution. They do not establish the exact cause
+of either elapsed breach. Original failures and metadata remain archived.
+
+The next verification adds bounded caller scheduling and fixture-phase traces
+to the three affected tests, without changing any assertion, threshold, case
+count, product code or workflow setting. Off-scheduler intervals can include
+legitimate blocking waits; they do not alone prove runnable starvation. Fresh
+local verification using `ELIXIR_ERL_OPTIONS='+S 2:2'` executes 28 tests with zero
+failures and three trace reports. The [independent instrumentation review](evidence/unified-gateway/deadline-instrumentation-review.md) is PASS. The required hosted Unit gate remains pending;
+this local result does not relabel either previous failure or establish a repair.
 
 ## Preserved failures and limits
 

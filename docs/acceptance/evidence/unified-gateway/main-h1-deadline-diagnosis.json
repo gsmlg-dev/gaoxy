@@ -1,0 +1,38 @@
+{
+  "task": "unified-main-h1-deadline-diagnosis",
+  "status": "DONE",
+  "assignment": "direct read-only diagnosis",
+  "source": "2539b3c400231c079eda7ad60f1c343101227eca",
+  "baseline": "656dbf5bb84564adc6a4d68247c0ad2fe52c2625",
+  "run": 39627273984,
+  "attempt": 2,
+  "required_gate_status": "FAIL_UNRESOLVED",
+  "test": "read-triggered H1 Continue cannot wait past the deadline at a delayed gate",
+  "observed": {
+    "elapsed_ms": 562,
+    "required_less_than_ms": 250,
+    "original_deadline_ms": 30,
+    "timeout_result_assertion": "PASS",
+    "native_expect_sent_assertion": "NOT_REACHED",
+    "post_resume_cleanup_assertions": "NOT_REACHED",
+    "passed": 27,
+    "executed": 28
+  },
+  "established": [
+    "Test and production H1 deadline/cleanup functions unchanged from baseline; Exchange only adds discovery default.",
+    "Fixture Admission.status and sys.suspend are synchronous operations without the30ms request deadline inside the measured interval.",
+    "Production admission updates use remaining original deadline; cleanup uses nonblocking deferred requests.",
+    "Same complete PR tree previously passed all28 on the same named macOS toolchain; parent local28/0 also passes."
+  ],
+  "uncertain": [
+    "Which phase consumed562ms",
+    "Whether attempt2 reached native expect_sent:true",
+    "Whether host scheduling or fixture latency caused elapsed breach"
+  ],
+  "recommended_next_action": "One bounded same-platform audit-only phase/scheduler diagnostic with unchanged original assertions; no blind third retry. Apply only an evidenced repair/environment action, then require fresh original gate.",
+  "tracked_edits": false,
+  "root_mix_run": false,
+  "sol_repair_increment": 0,
+  "command_shutdown": "all commands completed",
+  "report": ".audit/unified-main-h1-deadline-diagnosis.md"
+}
