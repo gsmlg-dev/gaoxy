@@ -7,6 +7,12 @@ refresh beyond the reviewed 0.5.5 snapshot. Work is isolated in
 checkout. [Design](../designs/mixed-h2c.md) and
 [implementation plan](../plans/mixed-h2c.md) define this feature's scope.
 
+Feature commit after reconciliation: `930fba3abfeab48838d09aa4d838704c1259b746`,
+based on concurrent 0.6.0 preparation `aaa613985b08edd146f393ddd48f65fd6f3665b2`.
+The next feature release is **0.7.0**; all six own manifests and five
+distributions are coordinated. The corrected vendor guide retains upstream
+WebSockAdapter source version 0.6.0.
+
 ## Behavior
 
 ```elixir
@@ -66,6 +72,8 @@ in the isolated worktree. Counts below describe separate runs and overlap.
 | Strict production compile | PASS: `MIX_ENV=prod mix compile --warnings-as-errors`, exit 0 |
 | Fresh final feature/configuration run after review | PASS: 47 tests, 0 failures, exit 0 |
 | Standalone production assembly and mixed artifact smoke | PASS: core 3 transports, gateway 7 exchanges (5 on the mixed port), H3 3 checks; all exit 0. Pre-version candidate assembly identifies as 0.5.5; final publication assembly is separate. |
+| Versioned 0.7.0 standalone assembly and smoke | PASS: core 3 transports, gateway 7 exchanges, H3 3 checks; [receipt](evidence/mixed-h2c/versioned-local-smoke.json) |
+| Versioned package build and independent release-preparation review | PASS: five actual archives, 108 runtime payload files and 131 stable packaging inputs; [receipt](evidence/mixed-h2c/package-0.7.0/receipt.json). Coordinated versions, dependency metadata and vendor provenance verified. |
 | Exact publication source, hosted CI, release and public artifact verification | PENDING |
 
 Main verification commands:
@@ -129,6 +137,11 @@ assertions. One earlier fixture-only repair corrected iodata concatenation in
 new tests. A fresh independent agent then completed specification and code
 reviews with no findings and ran all 47 feature/configuration cases. Astra
 recovery rounds: zero.
+
+Independent review of the rebased feature, versioned package contents and smoke
+receipts also passed. Its sole documentation finding was corrected before the
+version commit: future publication receipts are described as pending until
+actually recorded. No runtime or package input changed during that correction.
 
 Raw logs and source receipts are preserved in
 [feature evidence](evidence/mixed-h2c/manifest.json). Initial logs preserve

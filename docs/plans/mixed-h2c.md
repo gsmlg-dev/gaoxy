@@ -49,7 +49,7 @@ connection handler. Reuse engines, the owner lease and first-input deadlines.
 
 - [x] Obtain independent specification review, repair findings and rerun tests.
 - [x] Obtain independent code-quality review and fresh final verification.
-- [ ] Inspect current version/tag/release policy, coordinate own package/example
+- [x] Inspect current version/tag/release policy, coordinate own package/example
   versions, run format/build/package/portable smoke gates and update current docs.
 - [ ] Commit only task-owned files with conventional messages, integrate main,
   push and verify remote SHA. Preserve untracked `prompt.md`.
