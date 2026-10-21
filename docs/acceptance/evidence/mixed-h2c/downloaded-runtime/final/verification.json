@@ -1,0 +1,83 @@
+{
+  "status": "PASS",
+  "source": "14287f30b83ccec207ffc944867413043cb8f360",
+  "version": "0.7.0",
+  "publication": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/run-1792563923297863898/verification.json",
+  "publication_sha256": "5ec3df215ed144ae1481ba83b3f8f855585eeeb8a63f8ce94f43714967eaacec",
+  "archive_sha256": "b85128c90dd319563398dd6ab58c32fc32574d34fc27f84e6a9ae18210126283",
+  "tool_sha256": "69b272e4a466acca2f927e1f89bdf31666a16e952f809ab3d07d040e3afb5e53",
+  "environment": {
+    "NIX_LD": "/run/current-system/sw/share/nix-ld/lib/ld.so",
+    "NIX_LD_LIBRARY_PATH": "/run/current-system/sw/share/nix-ld/lib",
+    "LD_LIBRARY_PATH": "/run/current-system/sw/share/nix-ld/lib:/nix/store/2iaawa9vbqas51lgpn4cjnnfdv74x8fn-ncurses-6.6/lib"
+  },
+  "commands": [
+    {
+      "name": "version",
+      "argv": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/runtime-1792564376658913242/standalone/bin/gaoxy",
+        "version"
+      ],
+      "exit": 0,
+      "seconds": 0.06464147567749023,
+      "log": "version.log",
+      "sha256": "1bdb0890e64172a18e6d5951b01db9c33a3bcca42c5984a873184f89a470cd27"
+    },
+    {
+      "name": "core",
+      "argv": [
+        "/run/current-system/sw/bin/python3",
+        "-c",
+        "import pathlib,runpy,sys; x=runpy.run_path('scripts/release-smoke.py',run_name='downloaded_release'); f=x['main']; f.__globals__['release']=pathlib.Path(sys.argv[1]); f()",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/runtime-1792564376658913242/standalone/bin/gaoxy"
+      ],
+      "exit": 0,
+      "seconds": 3.724170684814453,
+      "log": "core.log",
+      "sha256": "7feb114278d79d4a4b828c9134ae9366ca74ec7eb52272952eee3a3878e4a853"
+    },
+    {
+      "name": "gateway",
+      "argv": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/h2peer/bin/python",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/runtime-1792564376658913242/standalone/bin/gaoxy"
+      ],
+      "exit": 0,
+      "seconds": 3.373074531555176,
+      "log": "gateway.log",
+      "sha256": "a6f479196f466c7bc19630b267a6deb832ee35c81b4ed409e529e1414202d9f8"
+    },
+    {
+      "name": "h3",
+      "argv": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/h2peer/bin/python",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/runtime-1792564376658913242/standalone/bin/gaoxy",
+        "--evidence",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/runtime-1792564376658913242/h3-evidence"
+      ],
+      "exit": 0,
+      "seconds": 4.326814889907837,
+      "log": "h3.log",
+      "sha256": "34d67fc2d978945aca6344e0afc87e634670a7b9f117128c33dcaf9fb2b6326c"
+    }
+  ],
+  "source_files_sha256": {
+    "scripts/release-smoke.py": "8b1152e0ab5684f89be56d35bf5d65566531f7d98d677b1cb85187c2b176b140",
+    "scripts/gateway-release-smoke.py": "2986e04ca7bcfb67357bb4708d9ef95adc7068051983e28d80d73fa8cc34eb06",
+    "scripts/h3-release-smoke.py": "b2e89df4787185c306b38884d263804ddc3b931f5bbb2b088918d2df3c1c0caf",
+    "scripts/generate-fixtures.sh": "46761d658e675a440abadfd17dfb079c27c1cfe7ba8c6655157876251a9786c9",
+    "apps/gaoxy_http/test/support/mixed_http_peer.py": "52f390d2933f3831bfb6c4611b91329a90fba31c5642fbeeba21c11d156a239a",
+    "integration/http3/upstream/run.py": "333e4a531238e1da2c07b60d4512aadc666b8e056cb6e0ae69446d97199021d5",
+    "integration/http3/upstream/origin.py": "f6a069fa8cc165341c662e7b87577cb0c81f4a07ec770d318da5fce51b070167"
+  },
+  "counts": {
+    "core_transports": 3,
+    "gateway_exchanges": 7,
+    "mixed_port_exchanges": 5,
+    "h3_checks": 3
+  }
+}

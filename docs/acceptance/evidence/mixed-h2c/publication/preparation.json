@@ -1,0 +1,64 @@
+{
+  "status": "PREPARED",
+  "version": "0.7.0",
+  "execution": "NOT RUN; syntax, fixtures, workflow names and local artifact metadata checked only",
+  "publication_tool": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/verify-publication.py",
+  "consumer_tool": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/consumers/verify.py",
+  "prepared_consumer_run": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/consumers/run-1792561859466896362",
+  "fixtures": {
+    "core": 1,
+    "http": 4,
+    "phoenix": 5
+  },
+  "snapshot_files": 19,
+  "qualified_artifacts_dir": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/mixed-h2c/.audit/mixed-h2c/publication/qualified-local-artifacts",
+  "qualified_artifacts_sha256": {
+    "gaoxy-0.7.0.tar": "4a2446362368e180d8082c4a7e3357e34b43260ac243ba6584090358dfe5b565",
+    "gaoxy_http-0.7.0.tar": "0f25bb0e9f7dd589457eadc3aa21c1c5190199e815498b414c398a9ee6140e69",
+    "gaoxy_http3-0.7.0.tar": "b13ee9f7f2464a1dd59e4c81bdcf0288ca00bc25b888661b9be4b8514d632a6d",
+    "gaoxy_proxy-0.7.0.tar": "41f727717f61ce968f8df7e8c1e2450dce8d801ec1bf03b60c95caf5c02291bb",
+    "gaoxy_websock_adapter-0.7.0.tar": "89e9fb2f2f5b87661acbd783c1ab35f56687f1e6389c36e8b8b67841c03b530f"
+  },
+  "originals_sha256": {
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.6.0/20261021T052454Z-ec1fead8/publication/verify-publication.py": "feeb3a5d9cbc9bd4c9048400b11348b16ebabdb3f4057a973e09d4d91ec8fef7",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.6.0/20261021T052454Z-ec1fead8/consumers/verify.py": "e650ace1007278aa5efb7aca8116baee8bec320936db23bdaa10240c39ffe540"
+  },
+  "tool_sha256": {
+    "publication/verify-publication.py": "6edda532beb6450374dea9eb076a1e0b5881750bce5772166f7986074b50152a",
+    "consumers/verify.py": "132d527196b53929b14fd9e3ed10a886ed02e3d456205fe07eb31f5e9d648e5b",
+    "consumers/mixed_public_test.exs": "8df3939ec4074cd6ebe9c120664be53d55a38e74d5d539a42b469dbcb025446c"
+  },
+  "constraints": [
+    "Execute publication verifier only after exact0.7.0 release SHA and successful workflow ID are known.",
+    "Consumers require matching PASS publication receipt; own packages resolve from public Hex with isolated caches and no path/git dependencies.",
+    "Fixture+lock files must match supplied published commit; copied upstream lock cohort must remain exact.",
+    "External Python peer interpreter must provide h2=4.3.0,hpack=4.2.0,hyperframe=6.1.0.",
+    "Existing Nix unbuffer executable must remain available.",
+    "Downloaded standalone verification remains static archive/workflow provenance; this verifier does not execute downloaded standalone."
+  ],
+  "readiness_checks": [
+    {
+      "command": "Python ast.parse of publication/verify-publication.py,consumers/verify.py,and snapshotted mixed_http_peer.py",
+      "status": "READY"
+    },
+    {
+      "command": "python3 consumers/verify.py --prepare --snapshot consumers/fixture-source --candidate-inputs consumers/fixture-inputs.json",
+      "exit": 0,
+      "status": "PREPARED_ONLY"
+    },
+    {
+      "command": "elixir Code.string_to_quoted of mixed_public_test.exs and3 generated consumer mix.exs manifests",
+      "exit": 0,
+      "status": "READY"
+    },
+    {
+      "command": "mix format --check-formatted .audit/mixed-h2c/consumers/mixed_public_test.exs",
+      "exit": 0,
+      "status": "READY"
+    },
+    {
+      "command": "Local read-only metadata/workflow/fixture/lock/artifact path validation",
+      "status": "READY"
+    }
+  ]
+}

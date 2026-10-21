@@ -51,8 +51,8 @@ connection handler. Reuse engines, the owner lease and first-input deadlines.
 - [x] Obtain independent code-quality review and fresh final verification.
 - [x] Inspect current version/tag/release policy, coordinate own package/example
   versions, run format/build/package/portable smoke gates and update current docs.
-- [ ] Commit only task-owned files with conventional messages, integrate main,
+- [x] Commit only task-owned files with conventional messages, integrate main,
   push and verify remote SHA. Preserve untracked `prompt.md`.
-- [ ] Run established release workflow (or independently qualified local
+- [x] Run established release workflow (or independently qualified local
   portable process when hosted execution cannot start); verify tag, checksums,
   downloaded artifacts and release links. Record hosted/deployment limitations.

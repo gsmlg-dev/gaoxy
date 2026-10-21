@@ -9,9 +9,17 @@ checkout. [Design](../designs/mixed-h2c.md) and
 
 Feature commit after reconciliation: `930fba3abfeab48838d09aa4d838704c1259b746`,
 based on concurrent 0.6.0 preparation `aaa613985b08edd146f393ddd48f65fd6f3665b2`.
-The next feature release is **0.7.0**; all six own manifests and five
+The feature release is **0.7.0**; all six own manifests and five
 distributions are coordinated. The corrected vendor guide retains upstream
 WebSockAdapter source version 0.6.0.
+
+[PR #2](https://github.com/gsmlg-dev/gaoxy/pull/2) merged normally as
+`14287f30b83ccec207ffc944867413043cb8f360`. Its parents preserve the completed
+0.6.0 evidence commit `e536fc9e81a6eec9a8568f7c0f1bf23154af6455` and reviewed
+feature/CI head `2a096b7db1a4e52d7296c7c65cc1c94fb26cc647`. The remote merge
+tree matches the prevalidated tree `87ba24ff20c206194f254c073873f2f6c7f2573c`;
+all 131 qualified packaging inputs remain byte-identical. Both local checkouts
+were fast-forwarded to the merge; the untracked `prompt.md` is preserved.
 
 ## Behavior
 
@@ -74,7 +82,12 @@ in the isolated worktree. Counts below describe separate runs and overlap.
 | Standalone production assembly and mixed artifact smoke | PASS: core 3 transports, gateway 7 exchanges (5 on the mixed port), H3 3 checks; all exit 0. Pre-version candidate assembly identifies as 0.5.5; final publication assembly is separate. |
 | Versioned 0.7.0 standalone assembly and smoke | PASS: core 3 transports, gateway 7 exchanges, H3 3 checks; [receipt](evidence/mixed-h2c/versioned-local-smoke.json) |
 | Versioned package build and independent release-preparation review | PASS: five actual archives, 108 runtime payload files and 131 stable packaging inputs; [receipt](evidence/mixed-h2c/package-0.7.0/receipt.json). Coordinated versions, dependency metadata and vendor provenance verified. |
-| Exact publication source, hosted CI, release and public artifact verification | PENDING |
+| Hosted PR CI with corrected API head `2a096b7d` | PASS: Unit 180 tests on each Linux/macOS platform; Static all 3 jobs; Foundation all 5 jobs, including native HTTP 207 cases, Phoenix ownership 5 cases, browser, external consumer and portable release checks. Actual synthetic checkout `c46c99ff` has the same tree as the API head. Both push runs also passed. |
+| Exact merged-main CI on `14287f30` | PASS: Unit `39554903610` (2 jobs), Static `39554903614` (3 jobs), Foundation `39554903599` (5 jobs), including both portable platforms; all 10 jobs successful. |
+| Exact publication-source workflow | PASS: release run `39555029237` on merged source `14287f30`; native HTTP 207 tests, packaging 9 tests, core 3 transports, gateway 7 exchanges (5 mixed), H3 3 checks; zero failures. |
+| Public GitHub/Hex downloads and package payloads | PASS: 7 assets, 6 checksum entries, 5 public Hex packages; source/tag/run identity, GitHub/Hex byte equality and immutable source/local payload-metadata comparison verified. |
+| Downloaded standalone on local NixOS | PASS with explicit existing host library path: version 0.7.0, core 3 transports, gateway 7 exchanges (5 mixed), H3 3 checks. The initial missing-`libtinfo.so.6` startup FAIL remains preserved separately. |
+| Clean public Hex consumers | PASS: core 1 + HTTP 4 + Phoenix 5 = 10 executed tests, zero failures/exclusions/skips; all 37 commands exit 0, exact 0.7.0 own packages, isolated dependency/build/cache paths and unchanged accepted upstream locks. |
 
 Main verification commands:
 
@@ -135,7 +148,10 @@ Ubuntu but failed two TLS configuration fixtures on macOS because its selected
 OpenSSL was 1.1.1w. The classifier and lifecycle files passed before that setup
 failure. The unit workflow now provisions OpenSSL 3 and exports `OPENSSL_BIN`
 using the established portable-workflow step. The original hosted failure is
-retained separately; the corrected workflow requires a fresh hosted run.
+retained separately. Fresh corrected-head unit run `39553035130` passed all
+180 cases on both platforms; static run `39553035149` and foundation run
+`39553035150` also passed in full. No runtime, package payload or test assertion
+changed in that CI repair.
 
 The first independent specification review identified the expired H2 startup
 race. One production Sol repair added the absolute startup deadline checks and
@@ -152,6 +168,87 @@ actually recorded. No runtime or package input changed during that correction.
 
 Raw logs and source receipts are preserved in
 [feature evidence](evidence/mixed-h2c/manifest.json). Initial logs preserve
-fixture and baseline failures separately from successful reruns. Publication
-receipts will bind the final commit, tag and downloaded artifacts separately
-from the local implementation evidence.
+fixture and baseline failures separately from successful reruns.
+
+## Publication and independent consumption
+
+[Gaoxy v0.7.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.7.0) was
+published by [release workflow 39555029237](https://github.com/gsmlg-dev/gaoxy/actions/runs/39555029237)
+from `14287f30b83ccec207ffc944867413043cb8f360`. The tag resolves to that
+exact commit. All five distributions are publicly available at version 0.7.0:
+[gaoxy](https://hex.pm/packages/gaoxy/0.7.0),
+[gaoxy_http](https://hex.pm/packages/gaoxy_http/0.7.0),
+[gaoxy_http3](https://hex.pm/packages/gaoxy_http3/0.7.0),
+[gaoxy_proxy](https://hex.pm/packages/gaoxy_proxy/0.7.0), and
+[gaoxy_websock_adapter](https://hex.pm/packages/gaoxy_websock_adapter/0.7.0).
+
+The [publication receipt](evidence/mixed-h2c/publication/verification.json)
+binds all seven downloaded assets, six checksum entries, public Hex metadata,
+source payloads and the actual release workflow. GitHub and public Hex package
+bytes agree. Locally built tar bytes may differ; normalized package payloads
+and metadata agree with the qualified local artifacts and immutable Git source.
+The standalone asset's SHA-256 is
+`b85128c90dd319563398dd6ab58c32fc32574d34fc27f84e6a9ae18210126283`.
+[Artifact](https://github.com/gsmlg-dev/gaoxy/releases/download/v0.7.0/gaoxy-0.7.0-linux-x86_64.tar.gz)
+and [checksums](https://github.com/gsmlg-dev/gaoxy/releases/download/v0.7.0/SHA256SUMS)
+are attached to the release. Binary downloads and expanded builds stay in the
+audit directory; compact receipts, tools and lossless logs are archived.
+
+The [downloaded runtime receipt](evidence/mixed-h2c/downloaded-runtime/final/verification.json)
+records actual execution of that unmodified archive. Its initial startup on
+NixOS failed because the default loader path lacked `libtinfo.so.6`; gateway
+and H3 were not run in that attempt. A direct BEAM probe isolated the host
+lookup issue. A fresh extraction passed all smoke checks with the existing
+nix-ld libraries and ncurses directory supplied through `LD_LIBRARY_PATH`.
+No system configuration or artifact files changed. This result is qualified
+by the recorded host environment; the original FAIL remains immutable.
+
+The [clean consumer receipt](evidence/mixed-h2c/public-consumers/result.json)
+records ten tests using newly resolved public Hex packages, separate caches,
+deps and builds, and nineteen source-bound fixture/lock files. The HTTP
+consumer holds explicit H1 and independent Python-h2 sockets open on one port,
+checks actual versions/content, preserves body/pipeline/coalesced frames,
+asserts five exact-once endpoint calls and verifies lease cleanup. Phoenix
+body and listener ownership regressions also pass. Existing warnings from
+the unchanged accepted lock syntax remain in the logs.
+
+Post-publication commands, executed from the isolated worktree:
+
+```sh
+python3 .audit/mixed-h2c/publication/verify-publication.py \
+  --source 14287f30b83ccec207ffc944867413043cb8f360 \
+  --run 39555029237 \
+  --artifacts-dir .audit/mixed-h2c/publication/qualified-local-artifacts
+python3 .audit/mixed-h2c/consumers/verify.py \
+  --execute .audit/mixed-h2c/consumers/run-1792561859466896362 \
+  --source 14287f30b83ccec207ffc944867413043cb8f360 \
+  --run 39555029237 \
+  --publication .audit/mixed-h2c/publication/run-1792563923297863898/verification.json
+LD_LIBRARY_PATH=/run/current-system/sw/share/nix-ld/lib:/nix/store/2iaawa9vbqas51lgpn4cjnnfdv74x8fn-ncurses-6.6/lib \
+python3 .audit/mixed-h2c/publication/verify-runtime.py \
+  --publication .audit/mixed-h2c/publication/run-1792563923297863898/verification.json
+```
+
+The [PR CI archive](evidence/mixed-h2c/hosted-final/README.md) records API head
+`2a096b7d` and actual checkout `c46c99ff48123d58b765f3ba79944c0ba703524a`.
+Their Git trees are identical. The later normal merge differs only in 225
+acceptance-document/evidence files from the completed 0.6.0 closeout; all
+qualified packaging inputs remain identical.
+
+Fresh [main CI evidence](evidence/mixed-h2c/main-ci/README.md) separately binds
+the actual merged/published commit `14287f30` in both API data and checkout logs:
+[Unit 39554903610](https://github.com/gsmlg-dev/gaoxy/actions/runs/39554903610),
+[Static 39554903614](https://github.com/gsmlg-dev/gaoxy/actions/runs/39554903614),
+and [Foundation 39554903599](https://github.com/gsmlg-dev/gaoxy/actions/runs/39554903599)
+passed all ten jobs. Both unit platforms executed 180 tests without failures,
+exclusions or skips; native HTTP executed 207 without failures, exclusions or
+skips. Main CI, release execution and downloaded/public-consumer verification
+remain separate source-bound results. Publication grants no deployment or
+production acceptance.
+
+Final independent closeout review passed with no actionable findings. It
+verified all five new archive inventories (241 files), exact/decompressed
+hashes and audit copies, source identities, actual counts, public payloads,
+consumer isolation and the initial/final runtime distinction. Documentation
+links and whitespace checks passed; all 131 release inputs remain unchanged.
+The closeout changes only acceptance/release/plan documents and their evidence.
