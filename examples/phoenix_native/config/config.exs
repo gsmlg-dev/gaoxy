@@ -25,10 +25,27 @@ https =
     https
   end
 
+http3 =
+  case System.get_env("PHOENIX_NATIVE_HTTP3_PORT") do
+    nil ->
+      nil
+
+    port ->
+      [
+        ip: {127, 0, 0, 1},
+        port: String.to_integer(port),
+        certfile: System.fetch_env!("PHOENIX_NATIVE_CERTFILE"),
+        keyfile: System.fetch_env!("PHOENIX_NATIVE_KEYFILE"),
+        extended_connect: true
+      ]
+  end
+
 config :phoenix_native, PhoenixNative.Endpoint,
   adapter: Gaoxy.PhoenixAdapter,
   http: [ip: {127, 0, 0, 1}, port: String.to_integer(System.get_env("PHOENIX_NATIVE_PORT", "0"))],
   https: https,
+  http3: http3,
+  http3_discovery: if(http3, do: [port: :bound, max_age: 60], else: false),
   server: true,
   code_reloader: System.get_env("PHOENIX_NATIVE_RELOAD") == "1",
   websocket_paths: ["/socket/websocket", "/live/websocket"],

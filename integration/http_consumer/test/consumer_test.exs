@@ -13,6 +13,42 @@ defmodule HTTPConsumerTest do
     def echo(conn, _), do: Plug.Conn.send_resp(conn, 200, conn.body_params["value"])
   end
 
+  test "ListenerSet runs without optional H3 and explicit H3 fails before any bind" do
+    alias Gaoxy.HTTP.ListenerSet
+
+    {:ok, owner} =
+      ListenerSet.start_link(
+        id: :embedded,
+        endpoint: {Endpoint, nil},
+        listeners: [http: [port: 0]]
+      )
+
+    Process.unlink(owner)
+    on_exit(fn -> if Process.alive?(owner), do: GenServer.stop(owner) end)
+
+    assert %{phase: :ready, listeners: [%{role: :http, local: {:ok, {ip, port}}}]} =
+             ListenerSet.info(owner)
+
+    {:ok, socket} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
+    :ok = :gen_tcp.send(socket, "GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+    response = receive_h1(socket, "")
+    assert response =~ "HTTP/1.1 200"
+    assert String.ends_with?(response, "consumer")
+    :gen_tcp.close(socket)
+
+    assert {:error, {:missing_optional_dependency, :gaoxy_http3}} =
+             ListenerSet.start_link(
+               id: :missing_h3,
+               endpoint: {Endpoint, nil},
+               listeners: [
+                 http: [port: 0],
+                 http3: [ip: {127, 0, 0, 1}, port: 0, certfile: "missing", keyfile: "missing"]
+               ]
+             )
+
+    assert {:error, :bad_name} = :code.lib_dir(:gaoxy_http3)
+  end
+
   test "the clean HTTP consumer parses JSON and forms above the native chunk size" do
     {:ok, server} = Gaoxy.HTTP.start_link(plug: {BodyPlug, []})
     on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)

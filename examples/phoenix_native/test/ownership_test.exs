@@ -63,7 +63,7 @@ defmodule PhoenixNative.OwnershipTest do
     endpoint = PhoenixNative.Endpoint
     paths = ["/socket/websocket", "/live/websocket"]
 
-    assert [%{start: {Gaoxy, :start_link, [[name: _, services: [service]]]}}] =
+    assert [%{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}}] =
              Gaoxy.PhoenixAdapter.child_specs(endpoint,
                server: true,
                code_reloader: true,
@@ -71,9 +71,10 @@ defmodule PhoenixNative.OwnershipTest do
                http: [port: 0]
              )
 
-    assert {Gaoxy.HTTP.PlugEndpoint,
+    assert {:endpoint, Gaoxy.HTTP.PlugEndpoint,
             {Gaoxy.PhoenixWebSocket,
-             {Phoenix.Endpoint.SyncCodeReloadPlug, {^endpoint, []}, ^paths}}} =
-             service.handler_options.endpoint
+             {{Phoenix.Endpoint.SyncCodeReloadPlug, {^endpoint, []}}, ^paths},
+             :endpoint_managed}} =
+             options[:plan].target
   end
 end

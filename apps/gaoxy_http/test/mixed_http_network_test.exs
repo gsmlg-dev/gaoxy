@@ -69,7 +69,8 @@ defmodule Gaoxy.HTTP.MixedHTTPNetworkTest do
         http: [port: 0, protocols: [:http2, :http1], h2c: :prior_knowledge]
       )
 
-    server = start_supervised!(child)
+    owner = start_supervised!(child)
+    %{instance: server} = Gaoxy.HTTP.ListenerSet.info(owner)
     assert [service] = Gaoxy.services(server)
     assert {:ok, {_, port}} = Gaoxy.info(server, service).local
     run_peer(port)

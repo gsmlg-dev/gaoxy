@@ -274,12 +274,16 @@ defmodule Gaoxy.HTTP.Connection do
         Process.cancel_timer(state.header_timer)
         scheme = if Hell.Socket.secure?(socket), do: :https, else: :http
 
-        {endpoint, _options} = state.spec.handler_options.endpoint
+        {endpoint, endpoint_options} = state.spec.handler_options.endpoint
 
         allowed_absolute =
           request.target_form == :absolute and
-            function_exported?(endpoint, :absolute_form_scheme?, 1) and
-            endpoint.absolute_form_scheme?(request.scheme)
+            if(function_exported?(endpoint, :absolute_form_scheme?, 2),
+              do: endpoint.absolute_form_scheme?(request.scheme, endpoint_options),
+              else:
+                function_exported?(endpoint, :absolute_form_scheme?, 1) and
+                  endpoint.absolute_form_scheme?(request.scheme)
+            )
 
         if request.scheme != nil and request.scheme != scheme and not allowed_absolute do
           _ = write_error(socket, state, 400)

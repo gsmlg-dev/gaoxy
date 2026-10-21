@@ -17,6 +17,7 @@ defmodule Gaoxy.HTTP.Exchange do
     :local,
     :service,
     :instance,
+    discovery: nil,
     response: :unset,
     response_trailers: [],
     close: false,

@@ -13,17 +13,18 @@ defmodule Gaoxy.PhoenixAdapterTest do
       https: [ip: {127, 0, 0, 1}, port: 0, certfile: "cert.pem", keyfile: "key.pem"]
     ]
 
-    assert [%{start: {Gaoxy, :start_link, [[name: name, services: services]]}}] =
+    assert [%{start: {Gaoxy.HTTP.ListenerSet, :start_link, [options]}}] =
              Gaoxy.PhoenixAdapter.child_specs(Endpoint, config)
 
-    assert is_atom(name)
+    assert is_atom(options[:instance_name])
+    assert plan = options[:plan]
 
-    assert Enum.map(services, & &1.id) == [
-             Module.concat(Endpoint, HTTP),
-             Module.concat(Endpoint, HTTPS)
-           ]
+    assert plan.service_ids == %{
+             http: Module.concat(Endpoint, HTTP),
+             https: Module.concat(Endpoint, HTTPS)
+           }
 
-    assert Enum.map(services, & &1.transport) == [:tcp, :tls]
+    assert Keyword.keys(plan.listeners) == [:http, :https]
     assert {:error, :not_running} = Gaoxy.PhoenixAdapter.server_info(Endpoint, :http)
   end
 
