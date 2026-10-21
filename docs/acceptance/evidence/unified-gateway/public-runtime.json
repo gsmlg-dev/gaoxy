@@ -1,0 +1,57 @@
+{
+  "status": "PASS",
+  "source": "0f8b777590c16f3d3a2a334b5653a4c817f7b79a",
+  "version": "0.8.0",
+  "archive_sha256": "ca030336e614dd510005efa6e00798c1cda091288c91f055ab0f0f2a064872ef",
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/unified-public-runtime/bin/gaoxy",
+  "checks": [
+    {
+      "name": "core",
+      "exit": 0,
+      "expected_checks": 3,
+      "seconds": 3.625,
+      "command": [
+        "python3",
+        "-c",
+        "import importlib.util;from pathlib import Path;spec=importlib.util.spec_from_file_location('release_smoke','scripts/release-smoke.py');module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.release=Path('/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/unified-public-runtime/bin/gaoxy');module.main()"
+      ],
+      "status": "PASS",
+      "verified_checks": 3
+    },
+    {
+      "name": "gateway",
+      "exit": 0,
+      "expected_checks": 7,
+      "seconds": 4.027,
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/h2peer/bin/python",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/unified-public-runtime/bin/gaoxy"
+      ],
+      "status": "PASS",
+      "verified_checks": 7
+    },
+    {
+      "name": "h3",
+      "exit": 0,
+      "expected_checks": 3,
+      "seconds": 4.828,
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/h2peer/bin/python",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/unified-public-runtime/bin/gaoxy",
+        "--evidence",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.trees/unified-gateway/.audit/unified-public-runtime/h3-evidence"
+      ],
+      "status": "PASS",
+      "verified_checks": 3
+    }
+  ],
+  "environment": {
+    "LD_LIBRARY_PATH": "/nix/store/49ma9vimj6wlsbrhqsra6g6fzvsj6shh-ncurses-6.6/lib:/nix/store/si4q3zks5mn5jhzzyri9hhd3cv789vlm-gcc-15.2.0-lib/lib:/run/current-system/sw/share/nix-ld/lib",
+    "NIX_LD_LIBRARY_PATH": "/nix/store/49ma9vimj6wlsbrhqsra6g6fzvsj6shh-ncurses-6.6/lib:/nix/store/si4q3zks5mn5jhzzyri9hhd3cv789vlm-gcc-15.2.0-lib/lib:/run/current-system/sw/share/nix-ld/lib",
+    "ERL_FLAGS": "+S 4:4"
+  }
+}

@@ -12,9 +12,9 @@ standalone `52a96976`; coordinated 0.8.0 qualification `14c5fd91`; and
 Elixir 1.20 compiler compatibility `d206e55de1696a8801a1cd64d80c7b903671641a`.
 Integration and publication receipts are recorded after their actual completion.
 
-Status: ordinary implementation and verification PASS. Independent source
-and release documentation reviews PASS. Publication
-and deployment remain separately recorded below.
+Status: implementation, ordinary verification, independent source review and
+coordinated 0.8.0 publication PASS. Public package consumers and the downloaded
+standalone runtime PASS. Deployment is NOT RUN and remains outside this task.
 
 ## Delivered contracts
 
@@ -81,8 +81,10 @@ overlap and must not be added as unique cases.
 | Gate-counter and release-smoke harness regressions | PASS: 6 and 5 tests respectively |
 | Coordinated five package archives | PASS: five actual 0.8.0 archives; all 122 runtime payload files match staged source |
 | Independent specification and code reviews | PASS: core, HTTP, Gateway/Generation/standalone/accounting and final shutdown/preflight followup; no remaining code findings |
-| Integration and hosted CI | PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) merged normally into main `2539b3c4`; all corrected-source PR workflows PASS. Main static and Foundation PASS; main macOS Unit FAIL on two existing elapsed assertions; instrumented verification pending |
-| Coordinated publication | NOT RUN |
+| Integration and hosted CI | PR [#4](https://github.com/gsmlg-dev/gaoxy/pull/4) merged normally into main `2539b3c4`; all corrected-source PR workflows PASS. Final main Unit (180/0 per platform), Static and Foundation PASS on `0f8b7775`; historical macOS failures preserved below |
+| Coordinated publication | PASS: GitHub `v0.8.0` and five Hex distributions; exact tag/source, assets, checksums and payloads independently verified |
+| Public Hex consumers | PASS: 11 tests across four isolated projects, 0 failures/exclusions/skips; public archives only |
+| Downloaded public runtime | PASS: core 3, Gateway 7 and H3 3 checks; all five own application versions verified as 0.8.0 |
 | Deployment/production acceptance | NOT RUN; outside this task |
 
 Acceptance matrix evidence maps to these scoped suites and real peers:
@@ -154,10 +156,10 @@ failure remains archived. The successful run used pinned aioquic 1.2.0 and
 reported eight PASS checks, source restoration and process exit 0. No host
 configuration was changed.
 
-The release workflow repeats external consumers, the exact ordinary gate, actual
+The release workflow repeated external consumers, the exact ordinary gate, actual
 unified Phoenix acceptance, strict builds, staging and package/release smokes on
 the exact already-versioned source before irreversible publication. Configured
-workflow steps are not an executed hosted result.
+steps alone were not evidence; the actual completed hosted result is recorded below.
 
 ## Integration and merged-main verification
 
@@ -195,8 +197,8 @@ to the three affected tests, without changing any assertion, threshold, case
 count, product code or workflow setting. Off-scheduler intervals can include
 legitimate blocking waits; they do not alone prove runnable starvation. Fresh
 local verification using `ELIXIR_ERL_OPTIONS='+S 2:2'` executes 28 tests with zero
-failures and three trace reports. The [independent instrumentation review](evidence/unified-gateway/deadline-instrumentation-review.md) is PASS. The required hosted Unit gate remains pending;
-this local result does not relabel either previous failure or establish a repair.
+failures and three trace reports. The [independent instrumentation review](evidence/unified-gateway/deadline-instrumentation-review.md) is PASS. At that point the required hosted Unit gate was pending;
+that local result did not relabel either previous failure or establish a repair.
 
 The instrumented main run on `fd398884` preserved that distinction. Static
 `39632125144` and Foundation `39632125090` PASS; Foundation again executed
@@ -224,9 +226,95 @@ root cause. Missing witnesses and dropped events are explicit.
 The [matching-source local receipt](evidence/unified-gateway/deadline-witness-local.json)
 records 28/0 with `+S 2:2`, three observed witnesses and no dropped events.
 The [independent review](evidence/unified-gateway/deadline-witness-review.md) is
-PASS. Enhanced hosted verification is NOT RUN at this commit; the required
-main Unit gate remains unresolved and publication has not started. All earlier
+PASS. At instrumentation commit `0f8b7775`, enhanced hosted verification was
+NOT RUN. Its subsequent completed Unit `39635685816` is PASS: all 180 cases
+executed on each of Linux and macOS, including 28/0 in the affected file on each
+platform. All six trace reports have observed witnesses and zero dropped events.
+The [final Unit summary](evidence/unified-gateway/witness-unit.summary.json)
+retains complete call/exception and timer observations. macOS H2 Continue passed
+in 50.047 ms with an actual 30 ms call timeout and a witness processed 20 ms
+late. The independent collector and caller were both delayed in this passing
+attempt; this does not establish the earlier failures' causes or a product repair.
+The direct-H2 case consumed its deadline during code loading before an H2 call
+was emitted. All original elapsed assertions remain unchanged, and all earlier
 failure evidence remains immutable.
+
+Static `39635685732` and Foundation `39635685418` also completed successfully
+on full release candidate `0f8b777590c16f3d3a2a334b5653a4c817f7b79a`.
+Foundation executed the exact 265-case gate, eight unified browser checks,
+external consumers and portable TCP/TLS/UDP release smokes on both platforms.
+Existing portable loopback exclusions and unsupported IPv6-negative semantics
+remain explicit in the [Foundation summary](evidence/unified-gateway/witness-foundation.summary.json).
+The [release preflight](evidence/unified-gateway/release-preflight.json)
+independently checked all three authoritative workflow results, exact remote
+main and committed versions before dispatch. All 157 packaging inputs and five
+staged archive hashes still match the final package qualification, as recorded
+in the [publication-source identity check](evidence/unified-gateway/prepublication-identity.json).
+
+## Publication
+
+Coordinated release workflow
+[`39638994661`](https://github.com/gsmlg-dev/gaoxy/actions/runs/39638994661)
+completed successfully after all required main CI gates passed. The published
+[`v0.8.0` tag and GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.8.0)
+identify exact source `0f8b777590c16f3d3a2a334b5653a4c817f7b79a`.
+The [release summary](evidence/unified-gateway/release-run.summary.json) and
+[raw log](evidence/unified-gateway/release-run.log.gz) retain the publication-source
+265/0 gate, isolated consumers, eight unified browser checks, packaging regressions,
+release smokes and actual upload/tag/release results.
+
+Five public Hex distributions are version 0.8.0: `gaoxy_websock_adapter`,
+`gaoxy`, `gaoxy_http`, `gaoxy_http3` and `gaoxy_proxy`. The
+[independent public-artifact verification](evidence/unified-gateway/public-artifact-verification.json)
+checks seven GitHub assets, six SHA256 entries, all five public Hex API versions
+and checksums, byte equality between GitHub and Hex archives, exact staged file
+sets and all 122 runtime payload files. The actual downloaded Linux x86_64
+archive SHA256 is `ca030336e614dd510005efa6e00798c1cda091288c91f055ab0f0f2a064872ef`.
+Public release-note guide links are pinned to the versioned documentation;
+[page and raw-document checks](evidence/unified-gateway/public-guide-links-and-preservation.json)
+all return HTTP 200 and match the tagged source.
+
+The [downloaded-runtime receipt](evidence/unified-gateway/public-runtime.json)
+is PASS: core TCP/TLS/UDP (3), Gateway exchanges (7) and H3 checks (3), with all
+three commands exiting 0. [Application metadata](evidence/unified-gateway/public-runtime-versions.json)
+confirms 0.8.0 for all five own applications. This executes the public archive,
+independently of the local release build. NixOS qualification used both
+process-local `LD_LIBRARY_PATH` and `NIX_LD_LIBRARY_PATH` from the receipt; no host
+configuration changed. Vendored adapter provenance remains separate from its
+coordinated public distribution version.
+
+The [public Hex consumer receipt](evidence/unified-gateway/public-consumers.json)
+is PASS: core 2/0, HTTP 5/0, Gateway 2/0 and H3 Gateway 2/0, totaling 11 executed
+with no failures, exclusions or skips. All 16 isolated Mix commands exited 0.
+These projects resolve exact public 0.8.0 packages, use separate dependency/build
+directories and explicit WebSock overrides, and reject source fallback. All 13
+consumed tar copies, covering the five distributions, match Hex API and GitHub
+digests. Original test and H3 helper files remain unchanged. The
+[raw harness receipt](evidence/unified-gateway/public-consumers.raw.json) retains
+fixture preparation source `14c5fd91` and its original preparation note; the
+publication receipt separately identifies executed package source `0f8b7775`
+and links the raw receipt by SHA256. [Project sources and locks](evidence/unified-gateway/public-consumer-projects.tar.gz)
+exclude dependency/build/cache outputs and preserve the actual isolated inputs.
+
+Public verification commands are preserved with their logs and receipts:
+
+```sh
+GAOXY_EXPECTED_RELEASE_SHA=0f8b777590c16f3d3a2a334b5653a4c817f7b79a \
+  GODEBUG=http2client=0 python3 .audit/verify-unified-public.py
+# With the process-local library paths recorded in public-runtime.json:
+python3 .audit/unified-public-runtime.py
+python3 .audit/unified-public-consumers-validate.py run \
+  --publication-signal 'https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.8.0 source 0f8b777590c16f3d3a2a334b5653a4c817f7b79a; workflow 39638994661 SUCCESS'
+```
+
+Verifier sources are archived as `public-*-verifier.py.gz` beside the receipts.
+They originally execute from the repository's `.audit/` directory; consumer
+preparation uses the unchanged integration tests and accepted dependency cohort.
+Later documentation/evidence commits do not change the published source or
+package inputs. The [independent closeout review](evidence/unified-gateway/closeout-review.md)
+is PASS with no remaining actionable findings, including publication identity,
+consumer provenance, actual runtime checks, checklist completion and preserved
+historical failures. Deployment remains NOT RUN and outside authorization.
 
 ## Preserved failures and limits
 
