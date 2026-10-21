@@ -4,7 +4,7 @@ defmodule Gaoxy.Umbrella.MixProject do
   def project do
     [
       apps_path: "apps",
-      version: "0.5.5",
+      version: "0.6.0",
       elixir: "~> 1.18",
       start_permanent: Mix.env() == :prod,
       package: [licenses: ["MIT"]],

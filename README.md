@@ -5,9 +5,9 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.5.3**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.5.3) ·
-[release verification](docs/acceptance/review-repairs-2026-10-20.md).
+This source targets version **0.6.0**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.6.0) ·
+[release verification](docs/acceptance/release-0.6.0.md).
 
 ## Choose a package
 
@@ -33,8 +33,8 @@ For an existing Phoenix application, the essential changes are:
 1. Replace the explicit Bandit dependency in `mix.exs` with:
 
    ```elixir
-   {:gaoxy_http, "~> 0.5.3"},
-   {:websock_adapter, "~> 0.5.3", hex: :gaoxy_websock_adapter, override: true}
+   {:gaoxy_http, "~> 0.6.0"},
+   {:websock_adapter, "~> 0.6.0", hex: :gaoxy_websock_adapter, override: true}
    ```
 
    Keep the dependency name `:websock_adapter`: that is the OTP application
@@ -76,7 +76,7 @@ WebSocket additionally requires `extended_connect: true` and an explicit
 
 ## Serve a Plug
 
-Add `{:gaoxy_http, "~> 0.5.3"}` to your dependencies. Given a Plug module such
+Add `{:gaoxy_http, "~> 0.6.0"}` to your dependencies. Given a Plug module such
 as `MyApp.Router`, add a listener to your application's supervision tree:
 
 ```elixir

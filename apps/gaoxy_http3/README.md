@@ -11,7 +11,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_http3, "~> 0.5.3"}
+    {:gaoxy_http3, "~> 0.6.0"}
   ]
 end
 ```
