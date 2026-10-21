@@ -5,8 +5,9 @@ Date: 2026-10-22, Asia/Shanghai. Work starts directly on `main` at
 `internal request` fixes and publication of the next version. The initial three
 requests were supplemented by four newly opened requests during execution.
 
-Status: **Local implementation and release qualification PASS; commit, hosted
-verification and publication pending.** See the [release plan](../plans/release-0.9.0.md).
+Status: **Implementation committed and pushed; local qualification PASS;
+final hosted verification and publication pending.** See the
+[release plan](../plans/release-0.9.0.md).
 
 ## Implemented requests
 
@@ -97,7 +98,19 @@ release-artifact E2E workflow remain outside this acceptance.
 
 ## Publication and public verification
 
-Commit/push, required hosted workflows, release dispatch, tag/GitHub/Hex
-publication, public checksums/payloads, clean public-Hex consumers and downloaded
-standalone execution are **NOT RUN** at this recorded source-preparation point.
-They must be recorded after the exact committed SHA is validated and published.
+The qualified implementation was committed and pushed as
+`044e1cd90ddf4cc1550df99411f2906209387f5f`. Hosted static/build and Ubuntu unit
+gates passed. Foundation native HTTP exposed an incorrect new shutdown-test
+premise: the documented single-service pending aggregate can win the caller
+deadline race. Its failed result is preserved; a bounded real-H2 reproduction,
+narrow test-contract correction, stronger instance-termination assertions,
+independent review and fresh 46/0 issue gate are recorded in the
+[repair evidence](evidence/internal-requests/hosted-h2-contract-repair.md).
+Only two test files changed from the original 557-entry source manifest;
+runtime and package payloads remain unchanged. The original qualification
+fingerprint and evidence above retain their historical identity.
+
+Required hosted workflows on the repaired final SHA, release dispatch,
+tag/GitHub/Hex publication, public checksums/payloads, clean public-Hex consumers
+and downloaded standalone execution remain pending. They must be recorded
+after the exact committed SHA is validated and published.

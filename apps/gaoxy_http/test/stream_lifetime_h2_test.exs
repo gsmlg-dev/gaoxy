@@ -103,11 +103,20 @@ defmodule Gaoxy.HTTP.StreamLifetimeH2Test do
 
     assert_receive {:h2_stream, worker, "/infinite"}, 1_000
     monitor = Process.monitor(worker)
+    server_monitor = Process.monitor(server)
     started = System.monotonic_time(:millisecond)
     result = Gaoxy.stop(server, 500)
-    assert result == :ok or match?({:error, {:deadline_exceeded, :cleanup_pending}}, result)
+
+    # ADR 004 preserves the service aggregate when it wins the caller-deadline race.
+    assert result in [
+             :ok,
+             {:error, {:deadline_exceeded, :cleanup_pending}},
+             {:error, {:services, [http: {:error, {:deadline_exceeded, :cleanup_pending}}]}}
+           ]
+
     assert System.monotonic_time(:millisecond) - started < 1_500
     assert_receive {:DOWN, ^monitor, :process, ^worker, _}, 1_000
+    assert_receive {:DOWN, ^server_monitor, :process, ^server, :normal}, 1_000
   end
 
   defp assert_idle(server, deadline) do
