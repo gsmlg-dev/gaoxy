@@ -130,6 +130,13 @@ from the local Linux verification.
 
 ## Review and repair record
 
+The first hosted PR unit run (`39551788377`, source `1be0f0fb`) passed on
+Ubuntu but failed two TLS configuration fixtures on macOS because its selected
+OpenSSL was 1.1.1w. The classifier and lifecycle files passed before that setup
+failure. The unit workflow now provisions OpenSSL 3 and exports `OPENSSL_BIN`
+using the established portable-workflow step. The original hosted failure is
+retained separately; the corrected workflow requires a fresh hosted run.
+
 The first independent specification review identified the expired H2 startup
 race. One production Sol repair added the absolute startup deadline checks and
 two deterministic regressions; RED and GREEN evidence preserves the original
