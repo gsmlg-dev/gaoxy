@@ -30,10 +30,12 @@ defmodule Gaoxy.Config do
 
   def validate(options) do
     with :ok <- keyword(options),
-         :ok <- known(Map.new(options), [:services, :name]),
+         :ok <- known(Map.new(options), [:services, :name, :activation]),
+         activation = Keyword.get(options, :activation, :immediate),
+         true <- activation in [:immediate, :deferred] || {:error, :invalid_activation},
          true <- is_list(Keyword.get(options, :services, [])) || {:error, :invalid_services},
          {:ok, services} <- services(Keyword.get(options, :services, []), []) do
-      {:ok, %{name: Keyword.get(options, :name), services: services}}
+      {:ok, %{name: Keyword.get(options, :name), services: services, activation: activation}}
     end
   end
 

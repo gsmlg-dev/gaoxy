@@ -1,7 +1,7 @@
 defmodule Gaoxy.Instance do
   @moduledoc false
   use GenServer
-  alias Gaoxy.{Lifecycle, RegistryPolicy}
+  alias Gaoxy.{Activation, Lifecycle, RegistryPolicy}
 
   def start_link(plan) do
     case GenServer.start(
@@ -51,12 +51,19 @@ defmodule Gaoxy.Instance do
       drain_timeout: drain_timeout(plan.services),
       participants: %{},
       operations: %{},
+      activation_mode: Map.get(plan, :activation, :immediate),
+      planned_services: plan.services,
+      activation_control: :ets.new(Activation, [:set, :public]),
+      activation: nil,
+      activation_receipt: nil,
       stopping: nil
     }
 
-    # Standalone prepares instance-bound resources before opening listeners.
-    # Its internal plan retains the complete service list for the shutdown cap.
-    services = if Map.get(plan, :defer_services, false), do: [], else: plan.services
+    # Retain the complete plan and budgets while preparing instance-bound state.
+    services =
+      if state.activation_mode == :deferred or Map.get(plan, :defer_services, false),
+        do: [],
+        else: plan.services
 
     case Enum.reduce_while(services, :ok, fn spec, _ ->
            case start_service(spec, state) do
@@ -78,6 +85,88 @@ defmodule Gaoxy.Instance do
     do: {:reply, Enum.map(:ets.tab2list(state.table), &elem(&1, 0)), state}
 
   def handle_call({:lookup, id}, _, state), do: {:reply, lookup(state, id), state}
+
+  def handle_call({:activation_status, operation}, _, state) do
+    receipt = activation_record(state, operation)
+
+    result =
+      if receipt,
+        do: {:ok, Map.take(receipt, [:operation_id, :status, :result, :cleanup])},
+        else: {:error, :unknown_operation}
+
+    {:reply, result, state}
+  end
+
+  def handle_call({:activate, _, _, _}, _, %{stopping: stopping} = state)
+      when not is_nil(stopping),
+      do: {:reply, {:error, :stopping}, state}
+
+  def handle_call({:activate, services, operation, deadline}, from, state) do
+    current = activation_record(state, operation)
+
+    cond do
+      current && current.operation_id == operation && current.services != services ->
+        {:reply, {:error, :operation_conflict}, state}
+
+      current && current.operation_id == operation ->
+        result = current.result || {:error, {:activation_pending, operation}}
+        {:reply, result, state}
+
+      state.activation ->
+        {:reply, {:error, :activation_in_progress}, state}
+
+      state.activation_mode == :cleanup_pending ->
+        {:reply, {:error, :cleanup_pending}, state}
+
+      state.activation_mode != :deferred ->
+        {:reply, {:error, :already_activated}, state}
+
+      true ->
+        owner = self()
+        caller = elem(from, 0)
+        context = activation_context(state)
+        :ets.insert(state.activation_control, {operation, :pending})
+
+        {pid, monitor} =
+          :erlang.spawn_opt(
+            fn ->
+              Activation.run(
+                owner,
+                caller,
+                operation,
+                deadline,
+                services,
+                state.planned_services,
+                context,
+                &start_service(&1, state)
+              )
+            end,
+            [:link, :monitor]
+          )
+
+        activation = %{
+          operation_id: operation,
+          services: services,
+          status: :pending,
+          result: nil,
+          cleanup: :pending,
+          pid: pid,
+          monitor: monitor,
+          caller: caller,
+          caller_monitor: Process.monitor(caller),
+          from: from,
+          deadline: deadline,
+          timer:
+            Process.send_after(
+              owner,
+              {:activation_deadline, operation, pid},
+              Lifecycle.remaining(deadline)
+            )
+        }
+
+        {:noreply, %{state | activation: activation}}
+    end
+  end
 
   def handle_call({:register_lifecycle_participant, _}, _, %{stopping: stopping} = state)
       when not is_nil(stopping),
@@ -104,6 +193,12 @@ defmodule Gaoxy.Instance do
   def handle_call({:add, _}, _, %{stopping: stopping} = state) when not is_nil(stopping),
     do: {:reply, {:error, :stopping}, state}
 
+  def handle_call({:add, _}, _, %{activation_mode: :deferred} = state),
+    do: {:reply, {:error, :activation_required}, state}
+
+  def handle_call({:add, _}, _, %{activation_mode: :cleanup_pending} = state),
+    do: {:reply, {:error, :cleanup_pending}, state}
+
   def handle_call({:add, input}, _, state) do
     result =
       with {:ok, plan} <-
@@ -123,6 +218,10 @@ defmodule Gaoxy.Instance do
       when not is_nil(stopping),
       do: {:reply, {:error, :stopping}, state}
 
+  def handle_call({:remove, _, _}, _, %{activation: activation} = state)
+      when not is_nil(activation),
+      do: {:reply, {:error, :activation_in_progress}, state}
+
   def handle_call({:remove, id, deadline}, from, state) do
     key = if is_map(id), do: id.id, else: id
 
@@ -140,11 +239,51 @@ defmodule Gaoxy.Instance do
     do: {:reply, {:error, :stopping}, state}
 
   def handle_call({:stop, deadline}, from, state) do
-    operation = operation(live_services(state), deadline, from, :instance, state.participants)
+    state = cancel_activation(state, :stopping)
+
+    operation =
+      operation(live_services(state), deadline, from, :instance, state.participants, state)
+
     {:noreply, %{state | stopping: operation}}
   end
 
   @impl true
+  def handle_info(
+        {:activation_ready, operation, worker, handles},
+        %{activation: %{operation_id: operation, pid: worker} = activation} = state
+      ) do
+    cond do
+      state.stopping != nil ->
+        {:noreply, cancel_activation(state, :stopping)}
+
+      Lifecycle.remaining(activation.deadline) == 0 ->
+        {:noreply, cancel_activation(state, :deadline_exceeded)}
+
+      not Process.alive?(activation.caller) ->
+        {:noreply, cancel_activation(state, :caller_down)}
+
+      :ets.lookup(state.activation_control, operation) != [{operation, :pending}] ->
+        {:noreply, state}
+
+      true ->
+        send(worker, {:activation_commit, operation})
+        {:noreply, finish_activation(state, {:ok, handles}, :committed, :complete)}
+    end
+  end
+
+  def handle_info(
+        {:activation_done, operation, worker, result, cleanup},
+        %{activation: %{operation_id: operation, pid: worker}} = state
+      ) do
+    {:noreply, finish_activation(state, result, :rejected, cleanup)}
+  end
+
+  def handle_info(
+        {:activation_deadline, operation, worker},
+        %{activation: %{operation_id: operation, pid: worker}} = state
+      ),
+      do: {:noreply, cancel_activation(state, :deadline_exceeded)}
+
   def handle_info({:operation_done, token, result}, state) do
     cond do
       state.stopping && state.stopping.token == token ->
@@ -178,6 +317,34 @@ defmodule Gaoxy.Instance do
 
   def handle_info({:DOWN, ref, :process, _, _}, %{registry_monitor: ref} = state),
     do: {:stop, :normal, %{state | drain_timeout: min(state.drain_timeout, 1_000)}}
+
+  def handle_info({:DOWN, ref, :process, _, _}, %{activation: %{caller_monitor: ref}} = state),
+    do: {:noreply, cancel_activation(state, :caller_down)}
+
+  def handle_info(
+        {:DOWN, ref, :process, _, reason},
+        %{activation: %{monitor: ref} = activation} = state
+      ) do
+    state = cancel_activation(state, {:activation_worker_exit, reason})
+    owner = self()
+    context = activation_context(state)
+
+    {pid, monitor} =
+      :erlang.spawn_opt(
+        fn ->
+          cleanup = Activation.rollback(context)
+
+          send(
+            owner,
+            {:activation_done, activation.operation_id, self(),
+             {:error, {:activation_worker_exit, reason}}, cleanup}
+          )
+        end,
+        [:link, :monitor]
+      )
+
+    {:noreply, %{state | activation: %{state.activation | pid: pid, monitor: monitor}}}
+  end
 
   def handle_info({:DOWN, ref, :process, _, reason}, state) do
     case Enum.find(state.operations, fn {_, op} -> op.monitor == ref end) do
@@ -218,6 +385,8 @@ defmodule Gaoxy.Instance do
 
   @impl true
   def terminate(_, state) do
+    state = cancel_activation(state, :stopping)
+
     deadline =
       if state.stopping,
         do: state.stopping.deadline,
@@ -292,20 +461,92 @@ defmodule Gaoxy.Instance do
         do: {id, pid, generation}
       )
 
-  defp operation(services, deadline, from, id, participants \\ %{}) do
+  defp operation(services, deadline, from, id, participants \\ %{}, state \\ nil) do
     owner = self()
     token = make_ref()
 
     {pid, monitor} =
       :erlang.spawn_opt(
         fn ->
-          result = Lifecycle.drain_all(services, participants, deadline)
+          result =
+            if state && state.activation do
+              result = Lifecycle.drain_services(services, deadline)
+              # A pending start can still create a dependent listener. Retain
+              # cleanup participants until its owned rollback has completed.
+              Activation.wait(state.activation_control, state.activation.operation_id)
+              late_result = Lifecycle.drain_all(live_services(state), participants, deadline)
+              if result == :ok, do: late_result, else: result
+            else
+              Lifecycle.drain_all(services, participants, deadline)
+            end
+
           send(owner, {:operation_done, token, result})
         end,
         [:link, :monitor]
       )
 
     %{pid: pid, monitor: monitor, token: token, from: from, id: id, deadline: deadline}
+  end
+
+  defp activation_context(state),
+    do: %{
+      supervisor: state.supervisor,
+      table: state.table,
+      live: state.live,
+      control: state.activation_control
+    }
+
+  defp activation_record(state, operation),
+    do:
+      Enum.find([state.activation, state.activation_receipt], fn record ->
+        record && record.operation_id == operation
+      end)
+
+  defp cancel_activation(%{activation: nil} = state, _), do: state
+
+  defp cancel_activation(state, reason) do
+    activation = state.activation
+
+    case :ets.lookup(state.activation_control, activation.operation_id) do
+      [{_, :pending}] ->
+        :ets.insert(state.activation_control, {activation.operation_id, {:cancelled, reason}})
+        send(activation.pid, {:activation_cancel, activation.operation_id, reason})
+
+      _ ->
+        :ok
+    end
+
+    state
+  end
+
+  defp finish_activation(state, result, status, cleanup) do
+    activation = state.activation
+    Process.cancel_timer(activation.timer)
+    Process.demonitor(activation.monitor, [:flush])
+    Process.demonitor(activation.caller_monitor, [:flush])
+    GenServer.reply(activation.from, result)
+
+    if state.activation_receipt,
+      do: :ets.delete(state.activation_control, state.activation_receipt.operation_id)
+
+    :ets.insert(
+      state.activation_control,
+      {activation.operation_id, if(status == :committed, do: :committed, else: :complete)}
+    )
+
+    receipt = Map.merge(activation, %{status: status, result: result, cleanup: cleanup})
+
+    %{
+      state
+      | activation: nil,
+        activation_receipt: receipt,
+        activation_mode:
+          cond do
+            status == :committed -> :immediate
+            cleanup == :pending -> :cleanup_pending
+            true -> state.activation_mode
+          end
+    }
   end
 
   defp start_service(spec, state) do
