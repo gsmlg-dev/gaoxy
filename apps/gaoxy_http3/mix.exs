@@ -12,7 +12,7 @@ defmodule GaoxyHttp3.MixProject do
       elixir: "~> 1.18",
       deps: [
         {:gaoxy_http, in_umbrella: true},
-        {:elixir_quic_http3, "== 0.21.10"}
+        {:elixir_quic_http3, "== 0.21.14"}
       ]
     ]
   end

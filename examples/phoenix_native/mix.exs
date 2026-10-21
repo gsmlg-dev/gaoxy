@@ -22,7 +22,7 @@ defmodule PhoenixNative.MixProject do
       {:gaoxy, path: "../../apps/gaoxy", override: true},
       {:gaoxy_http, path: "../../apps/gaoxy_http"},
       {:websock_adapter, path: "../../vendor/websock_adapter", override: true},
-      {:phoenix, "== 1.8.15"},
+      {:phoenix, "== 1.8.16"},
       {:phoenix_live_view, "~> 1.1"},
       {:phoenix_html, "~> 4.0"},
       {:phoenix_pubsub, "~> 2.1"},

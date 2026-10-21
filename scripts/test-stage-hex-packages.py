@@ -48,13 +48,13 @@ REQUIREMENTS = {
     },
     "gaoxy_http3": {
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "elixir_quic_http3": ("elixir_quic_http3", "== 0.21.10", False),
+        "elixir_quic_http3": ("elixir_quic_http3", "== 0.21.14", False),
     },
     "gaoxy_proxy": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "http_fetch": ("http_fetch", "== 0.21.10", False),
-        "http_web_socket": ("http_web_socket", "== 0.21.10", False),
+        "http_fetch": ("http_fetch", "== 0.21.14", False),
+        "http_web_socket": ("http_web_socket", "== 0.21.14", False),
     },
 }
 
