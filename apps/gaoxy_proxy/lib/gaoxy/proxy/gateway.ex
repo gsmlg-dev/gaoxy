@@ -142,9 +142,7 @@ defmodule Gaoxy.Proxy.Gateway do
         Lifecycle.remaining(deadline) -> {:error, {:operation_pending, identity}}
       end
     else
-      nil -> {:error, :unknown_listener_set}
       {:error, _} = error -> error
-      _ -> {:error, :invalid_reload_options}
     end
   end
 
