@@ -5,6 +5,11 @@ the application behind the standalone `gaoxy` release, with allowlisted echo,
 HTTP/HTTP3 and relay handlers, static responses, HTTP/WebSocket reverse proxies,
 and managed upstream groups with health probes.
 
+The standalone application delegates listener, generation and upstream ownership
+to [`Gaoxy.Proxy.Gateway`](../../docs/embedded-gateway.md). Embedded applications can use
+that runtime directly with `gaoxy_proxy`; they do not need this JSON/release app.
+Version-1 HTTP and HTTP3 services remain independent logical sets.
+
 Use this application when you want a server configured by data. For a Phoenix
 application, install `gaoxy_http` instead and follow the
 [Phoenix and Bandit migration guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/phoenix.md).

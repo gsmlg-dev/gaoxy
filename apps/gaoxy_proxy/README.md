@@ -3,6 +3,10 @@
 `gaoxy_proxy` provides streaming HTTP and WebSocket reverse-proxy endpoints for
 Gaoxy's HTTP listeners, plus policy-controlled forward proxy and CONNECT support.
 
+For managed upstreams, shared H1/H2/H3 routes, reload and owner recovery, embed
+[`Gaoxy.Proxy.Gateway`](../../docs/embedded-gateway.md). It is the runtime used by the
+standalone application and needs no `gaoxy_server` dependency.
+
 ## Install
 
 Add to `mix.exs`, then run `mix deps.get`:
@@ -10,7 +14,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_proxy, "~> 0.7.0"}
+    {:gaoxy_proxy, "~> 0.8.0"}
   ]
 end
 ```

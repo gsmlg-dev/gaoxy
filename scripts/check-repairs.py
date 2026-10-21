@@ -46,6 +46,18 @@ SUITES = {
         ("apps/gaoxy_http/test/http2_websocket_network_test.exs", 2),
         ("apps/gaoxy_http3/test/websocket_network_test.exs", 1),
     ],
+    "composition": [
+        # Supported staged ownership and pure, optional listener composition.
+        ("apps/gaoxy/test/staged_activation_test.exs", 12),
+        ("apps/gaoxy_http/test/listener_set_test.exs", 10),
+        ("apps/gaoxy_http/test/phoenix_adapter_test.exs", 3),
+        ("apps/gaoxy_http/test/gateway_generation_test.exs", 3),
+        # Reusable Gateway operations, deadlines, recovery and real shared peers.
+        ("apps/gaoxy_proxy/test/gateway_test.exs", 7),
+        ("apps/gaoxy_proxy/test/gateway_lifecycle_test.exs", 13),
+        ("apps/gaoxy_http3/test/listener_set_network_test.exs", 8),
+        ("apps/gaoxy_server/test/gateway_listener_set_test.exs", 2),
+    ],
 }
 
 

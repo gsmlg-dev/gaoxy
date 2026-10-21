@@ -1,3 +1,10 @@
+# Reusable Gateway runtime
+
+For the current embedded runtime, shared ListenerSets, reload and recovery, see
+[Embedded Gateway](embedded-gateway.md). Standalone JSON v1 delegates to that
+implementation. The policy API guide and historical acceptance records below
+retain their original scope.
+
 ## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
 Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from
