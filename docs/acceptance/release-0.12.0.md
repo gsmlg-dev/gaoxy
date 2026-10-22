@@ -80,11 +80,102 @@ was changed. These files retain their existing unscheduled disposition.
 The 452-test ordinary gate does not claim to cover that failure or the
 deferred specialist suites.
 
+## Exact-source hosted workflows
+
+Publication source: `fbe59b76a68af38bce058456032f54dea5e28fd2`, pushed directly
+to `main`. All five source workflows completed successfully: 10 required jobs
+executed and passed. Raw run/job metadata and executed-count logs are preserved
+in `source-ci-raw.tar.gz`, with readable `source-ci-receipt.json` and
+`source-ci-counts.json` alongside it in the evidence directory.
+
+| Workflow | Run | Result |
+| --- | --- | --- |
+| Static checks and build | [39739932526](https://github.com/gsmlg-dev/gaoxy/actions/runs/39739932526) | PASS: format/inventory and build |
+| Unit tests | [39739932512](https://github.com/gsmlg-dev/gaoxy/actions/runs/39739932512) | PASS: 193 app cases plus script regressions |
+| Integration and end-to-end tests | [39739932500](https://github.com/gsmlg-dev/gaoxy/actions/runs/39739932500) | PASS: 137 component, 122 protocol, isolated-network; separate manual release-clients job skipped |
+| Portable HTTP smoke | [39739932505](https://github.com/gsmlg-dev/gaoxy/actions/runs/39739932505) | PASS: Linux and macOS start/GET health/stop |
+| Package and consumer qualification | [39739932571](https://github.com/gsmlg-dev/gaoxy/actions/runs/39739932571) | PASS: package and optional-QUIC jobs |
+
 ## Publication status
 
-NOT RUN at this local acceptance checkpoint: exact-source hosted workflows,
-release qualification, GitHub/Hex publication and public-package issue
-regressions. Follow the existing guarded `release.yml` with the full versioned
-commit SHA. Record final source, run IDs, asset/package receipts and downstream
-results here after their actual execution; do not infer publication from local
-test success.
+The guarded [release run 39740781358](https://github.com/gsmlg-dev/gaoxy/actions/runs/39740781358)
+was dispatched with version 0.12.0 and the exact full publication SHA above.
+**PASS:** qualification, publication and fresh public consumers completed.
+[Gaoxy v0.12.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.12.0) is a
+stable, non-draft GitHub release. The remote tag points to the publication SHA.
+The subsequent evidence-only commit on `main` does not move this tag.
+
+| Release gate | Result |
+| --- | --- |
+| Isolated core, HTTP, H3 and gateway source consumers | PASS: five consumers, 9 tests |
+| Ordinary correctness suite on exact publication source | PASS: 452 executed, 0 failures, exclusions or skips |
+| Built-package consumers and production isolation | PASS: 7 tests; helper/ExUnit absent from production release |
+| Unified Phoenix independent peers | PASS: 8 checks, including H1/H2/H3, H2/H3 channels, reload/restore and shutdown |
+| Selected Phoenix certificate/message/stream/disconnect regressions | PASS: 18 tests |
+| Formatting, strict compilation and source-built standalone smokes | PASS: core, H1/H2 gateway and H3 |
+| Build/publish six Hex distributions, compare public archive bytes | PASS |
+| Fresh `test-consumers.py --published --version 0.12.0` | PASS: base/H3/http_fetch consumers, 7 tests plus production release isolation |
+| GitHub release assets and standalone metadata | PASS: Linux archive, six Hex archives and SHA256SUMS |
+
+`release-qualification.json`, raw `release-run.json`, `release.log.gz` and the
+unified Phoenix report/server log preserve the actual hosted results. The
+published consumer checker already ran in the release workflow; its success
+is hosted public-package evidence, not an unexecuted local duplicate.
+
+Independent post-publication read-back used
+`python3 .audit/release-0.12.0/verify-public-artifacts.py --sha fbe59b76a68af38bce058456032f54dea5e28fd2`:
+**PASS**, exit 0. It downloaded and verified all 8 GitHub assets, their declared
+digests/sizes and the exact 7 payload checksums; all 6 public Hex API releases
+are 0.12.0 and unretired, with matching archive checksums and byte-identical
+GitHub/Hex tarballs. All 135 packaged `lib/**/*.ex` files match `git show` of the
+exact publication commit: core 22, HTTP 45, H3 10, proxy 42, test helper 12,
+adapter 4. The Linux archive's release/start metadata and all 5 own bundled
+runtime applications report 0.12.0. The remote tag was checked twice.
+`public-artifacts-receipt.json`, raw release/Hex metadata and the verifier
+script retain this evidence. Downloaded binary assets remain in the ignored
+local audit directory; they are not added to the source repository.
+
+## Additional public-package issue regressions
+
+The prepared fixtures match the exact committed test/support bytes. Their
+consumer dependencies select all six public packages at exactly 0.12.0, with
+the adapter mapped under Phoenix's `:websock_adapter` key. No local source
+override is allowed. **PASS:** 53 executed, 0 failures, exclusions or skips;
+48 independent HEAD/GET protocol rows also passed. Both fresh consumers
+strictly compiled and verified all six locked and loaded public Hex versions.
+
+| Public consumer | Result |
+| --- | --- |
+| Standalone issue suites | PASS: 47 tests across 9 unchanged files; HEAD metadata, H1/H2 lifetimes, H3/Generation/gateway boundaries, accounting and WebSocket stream behavior |
+| Actual Phoenix fixture | PASS: 6 unchanged compatibility tests, including disconnect broadcast, wire close 1000, acknowledgment, channel/transport DOWN and TCP EOF |
+
+Command:
+`ELIXIR_ERL_OPTIONS='+S 2:2' python3 -B .audit/release-0.12.0/public-issues/attempt-03/run.py --published --python "$PWD/.audit/h2peer/bin/python"`.
+The final marker is
+`PUBLIC_ISSUES_PASS executed=53 failures=0 own_packages=6 version=0.12.0 phoenix=6 independent_HEAD_GET_rows=48`.
+`public-acceptance-receipt.json` and `public-acceptance-evidence.tar.gz` preserve
+commands, exact-source fixture hashes, both locks/provenance checks, successful
+logs, the runner/preparer and earlier failed harness evidence. Dependency trees,
+Mix `_build` caches and downloaded package/release binaries remain outside the
+repository; the archive retains generated test fixtures.
+The archive contains 149 files, with SHA256
+`d2ca59927ac70e525fda3cee687ed54c51822e51bdbab0fe53079036eb1bdfe7`;
+its artifact metadata and individual-file hashes are retained alongside it.
+
+Two pre-test harness failures remain preserved: the initial runner resolved
+the virtualenv Python symlink to its base interpreter (missing `h2`), and the
+next attempt called `Mix.Dep.load_on_environment/1`, unavailable in Elixir
+1.18.5. Neither attempt executed tests. Repairs preserve the virtualenv path
+with `os.path.abspath` and use supported `Mix.Dep.load_and_cache/0`; provenance
+assertions and fixture bytes are unchanged. A third fresh consumer attempt
+passed after those repairs. These failures are not product test failures or
+PASS. Acceptance harness Sol repair rounds: 2; Astra recovery rounds: 0.
+
+## Issue disposition
+
+[#12](https://github.com/gsmlg-dev/gaoxy/issues/12),
+[#13](https://github.com/gsmlg-dev/gaoxy/issues/13) and
+[#14](https://github.com/gsmlg-dev/gaoxy/issues/14) are CLOSED and carry
+`internal request fixed`. The publication-source commit contains their
+closing references. All three are resolved in the coordinated 0.12.0 release.
+The separate unscheduled failure above retains its actual FAIL disposition.

@@ -1,0 +1,150 @@
+{
+  "status": "PASS",
+  "command": [
+    "mix",
+    "run",
+    "--no-start",
+    "--no-compile",
+    "/home/runner/work/gaoxy/gaoxy/integration/phoenix_native/unified_fixture.exs"
+  ],
+  "baseline": "fbe59b76a68af38bce058456032f54dea5e28fd2",
+  "environment": {
+    "python": "3.12.15 (main, Oct  1 2026, 02:35:59) [GCC 13.3.0]",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "dependencies": {
+      "h2": "4.3.0",
+      "hpack": "4.1.0",
+      "hyperframe": "6.1.0",
+      "aioquic": "1.2.0",
+      "wsproto": "1.2.0"
+    }
+  },
+  "checks": [
+    {
+      "check": "independent_endpoint_HTTP/1.1",
+      "status": "PASS",
+      "protocol": "HTTP/1.1",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/2",
+      "status": "PASS",
+      "protocol": "HTTP/2",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/3",
+      "status": "PASS",
+      "requests": [
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/static/hello.txt"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/events"
+        }
+      ]
+    },
+    {
+      "check": "independent_channel_h2",
+      "status": "PASS",
+      "client": {
+        "protocol": "h2",
+        "stream": 1,
+        "close_code": 1000
+      },
+      "sockets": [
+        {
+          "version": "HTTP/2",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h2"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h2",
+      "status": "PASS",
+      "protocol": "h2"
+    },
+    {
+      "check": "independent_channel_h3",
+      "status": "PASS",
+      "client": {
+        "protocol": "h3",
+        "stream": 0,
+        "close_code": 1000
+      },
+      "sockets": [
+        {
+          "version": "HTTP/3",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h3"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h3",
+      "status": "PASS",
+      "protocol": "h3"
+    },
+    {
+      "check": "endpoint_shutdown",
+      "status": "PASS"
+    }
+  ],
+  "receipts": [
+    {
+      "ports": {
+        "http": 36399,
+        "https": 32893,
+        "http3": 53987
+      },
+      "code_reloader": true,
+      "event": "ready",
+      "endpoint_server": true
+    },
+    {
+      "version": "HTTP/2",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h2"
+    },
+    {
+      "version": "HTTP/3",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h3"
+    },
+    {
+      "event": "stopped"
+    }
+  ],
+  "process_exit": 0,
+  "source_restored": true
+}

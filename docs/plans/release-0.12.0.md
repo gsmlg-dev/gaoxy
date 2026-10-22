@@ -26,3 +26,10 @@ the invoked skill's worktree/PR workflow. The initial eligible batch is #12,
 No deployment, operational data/certificates, Vault/public-management changes,
 specialist pressure/load/disconnect qualification or browser test gates belong
 to this release. Existing historical evidence remains immutable.
+
+Completed: publication source `fbe59b76a68af38bce058456032f54dea5e28fd2`,
+10 successful source CI jobs, guarded release run `39740781358`, stable
+`v0.12.0`, six public Hex packages, Linux archive and independent asset/source
+read-back. Fresh public issue regressions passed 53 tests plus 48 independent
+HEAD/GET rows. See [acceptance](../acceptance/release-0.12.0.md) for exact
+counts, preserved failures and source/publication evidence.

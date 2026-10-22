@@ -25,7 +25,7 @@ or generalized graceful-shutdown rule is needed.
 - [x] Run scoped tests and formatting checks.
 - [x] Parent integrates manifest classification and independent review, followed
   by fresh ordinary and full Phoenix fixture verification.
-- [ ] Coordinated package publication and fresh public consumer validation under
+- [x] Coordinated package publication and fresh public consumer validation under
   the release plan.
 
 The existing `websocket_stream_test.exs` is controlled component coverage and
