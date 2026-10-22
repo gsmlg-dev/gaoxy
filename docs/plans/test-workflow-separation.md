@@ -18,7 +18,11 @@ aioquic and websockets.
 
 **Design:** ../designs/test-workflow-separation.md
 **Baseline:** 09715de3f165db134e287e1ea5fd4e93b1325905
-**Current deliverable:** Independently reviewed design and plan. All implementation boxes below are open.
+**Current deliverable:** Implemented separation with independent review and
+passing local ordinary verification. The completed boxes below describe local
+work; hosted CI and macOS execution remain NOT RUN. See
+[acceptance](../acceptance/test-workflow-separation.md) for commands, counts,
+source identity and retained setup failures.
 
 ## 1. Execution order and ownership
 
@@ -46,7 +50,7 @@ execution time, belong in .trees/ on codex/ branches.
 **Create:** scripts/test-inventory.json, scripts/check-test-inventory.py,
 scripts/test-check-test-inventory.py.
 
-- [ ] Record the actual starting SHA/status and all old active commands. Import
+- [x] Record the actual starting SHA/status and all old active commands. Import
   the manifest without running its main function:
 
   ~~~python
@@ -63,25 +67,25 @@ scripts/test-check-test-inventory.py.
   composition=77. The eleven additional files account for 46 static cases.
   These source counts are not execution evidence.
 
-- [ ] Add inventory-checker unit regressions for an unknown test file, missing
+- [x] Add inventory-checker unit regressions for an unknown test file, missing
   active file, duplicate active ownership, active/retained overlap, wildcard
   retention, nonpositive count and a valid explicit retained file. Use temporary
   fixture trees and fake manifests; do not run Mix or open sockets.
-- [ ] Run python3 scripts/test-check-test-inventory.py and preserve its initial
+- [x] Run python3 scripts/test-check-test-inventory.py and preserve its initial
   failure before implementing the checker.
-- [ ] Keep SUITES as the only active path/count authority. Expose unit,
+- [x] Keep SUITES as the only active path/count authority. Expose unit,
   component and protocol; all walks their union once. Keep MIX_ENV=test,
   warnings-as-errors, seed 0 and the existing count/failure protections.
-- [ ] Until Task D migrates callers, keep old test_helpers/composition CLI
+- [x] Until Task D migrates callers, keep old test_helpers/composition CLI
   selectors as aliases of canonical entries. They are not SUITES owners, do not
   duplicate counts in all and must not duplicate paths in inventory validation.
-- [ ] Register existing unscheduled app files by exact path and reason in the
+- [x] Register existing unscheduled app files by exact path and reason in the
   inventory. Derive active ownership from SUITES rather than storing it twice.
   Retain existing specialist dispositions; do not execute retained entries.
-- [ ] Implement checker arguments --root and --manifest so temporary regression
+- [x] Implement checker arguments --root and --manifest so temporary regression
   fixtures do not depend on the real checkout. With no arguments it checks the
   current repository and imports scripts/check-repairs.py.
-- [ ] Run the new inventory regression script, scripts/test-check-repairs.py
+- [x] Run the new inventory regression script, scripts/test-check-repairs.py
   and scripts/check-test-inventory.py. Expected: nonzero unit regressions pass;
   inventory has no unknown/missing/duplicate paths.
 
@@ -113,30 +117,30 @@ All paths in the table are relative to apps/. Counts are planning values.
 | gaoxy_proxy/test/gateway_test.exs | New gateway_plan_test.exs, 2 | Keep 5 |
 | gaoxy_proxy/test/gateway_lifecycle_test.exs | New gateway_config_test.exs, 3 | Keep 10 |
 
-- [ ] Assign the remaining pure parser/options/header/renderer files to unit.
+- [x] Assign the remaining pure parser/options/header/renderer files to unit.
   Keep gaoxy_test/expectations_test.exs, HTTP phoenix_adapter and
   gateway_generation tests as isolated unit candidates.
-- [ ] Keep gaoxy_test core/lifecycle/recovery/subprocess, stream_lifetime_h2,
+- [x] Keep gaoxy_test core/lifecycle/recovery/subprocess, stream_lifetime_h2,
   H3 listener network and server Gateway listener files outside unit. Review
   fake transports directly; a transport name alone does not imply real I/O.
-- [ ] Confirm each retained unit uses mocks/doubles for service boundaries.
+- [x] Confirm each retained unit uses mocks/doubles for service boundaries.
   Do not call a real server even to obtain an error or timeout.
-- [ ] Add unit module declarations and check their consistency with SUITES.
+- [x] Add unit module declarations and check their consistency with SUITES.
   Review actual dependencies; declarations alone do not prove isolation.
-- [ ] Bring all eleven inline files into the canonical manifest. Keep legacy
+- [x] Bring all eleven inline files into the canonical manifest. Keep legacy
   selector aliases available; Task D removes them after migrating all callers.
-- [ ] Preserve the one currently selected runtime_test.exs case, formerly at
+- [x] Preserve the one currently selected runtime_test.exs case, formerly at
   line 109, by extracting its named two-instance/fragmented-stream case to
   gaoxy/test/runtime_instance_network_test.exs. Leave the rest of the original
   file in its existing unscheduled disposition.
-- [ ] Move the existing certificate_fixture, TLS, datagram_egress and
+- [x] Move the existing certificate_fixture, TLS, datagram_egress and
   backend_telemetry portable gates to Linux integration/package ownership.
   Do not bring their full historical neighbour suites into the run.
-- [ ] Verify test-name/count conservation. For the initial 407 app cases the
+- [x] Verify test-name/count conservation. For the initial 407 app cases the
   provisional partition is 184 unit / 223 component+protocol. Additional old
   portable selections are recorded separately. Any revised count requires an
   explained source mapping and fresh execution, not automatic acceptance.
-- [ ] Run python3 scripts/check-repairs.py unit, component and protocol
+- [x] Run python3 scripts/check-repairs.py unit, component and protocol
   separately. Expected: exact declared positive counts, zero failures, no skipped
   or excluded required cases. Scope failures to the affected implementation.
 
@@ -150,7 +154,7 @@ integration/http3/matrix.py and current client usage documentation.
 integration/websocket_multiplexed/browser.py and browser_fixture.exs;
 integration/upstream_transport/browser.py and browser.mjs.
 
-- [ ] List every executable browser import, launch, requirement and caller:
+- [x] List every executable browser import, launch, requirement and caller:
 
   ~~~sh
   rg -n 'playwright|chromium|browser[.]py|browser[.]mjs' integration scripts .github
@@ -158,24 +162,24 @@ integration/upstream_transport/browser.py and browser.mjs.
 
   Inspect each hit. Historical receipts under docs/acceptance are preserved.
   Application fixture pages are not browser automation and need no product edit.
-- [ ] Separate the existing independent-client checks from the browser blocks.
+- [x] Separate the existing independent-client checks from the browser blocks.
   Keep h11/httpx HTTP/TLS checks, H2 peers, WebSocket frames and ordinary shutdown.
-- [ ] Remove browser/UI assertions, Playwright imports and browser-only scripts.
+- [x] Remove browser/UI assertions, Playwright imports and browser-only scripts.
   Replace server-facing static/SSE/reload assertions with direct requests.
   Preserve source restoration in finally blocks and actual process-exit checks.
-- [ ] Retain existing h2_peer.py/h3_peer.py; remove Playwright from both active
+- [x] Retain existing h2_peer.py/h3_peer.py; remove Playwright from both active
   requirements and dependency-version metadata. In particular update
   websocket_multiplexed/run.py so absence of Playwright is not a setup failure.
-- [ ] Update gate.py's required-check set to client/server checks. List removed
+- [x] Update gate.py's required-check set to client/server checks. List removed
   UI checks explicitly in the migration receipt; do not label them as passed.
   Preserve nonempty required protocol checks and protocol-version receipts.
-- [ ] Use curl and httpx for overlapping basic H1 response assertions; retain
+- [x] Use curl and httpx for overlapping basic H1 response assertions; retain
   HTTPFetch consumer compatibility and existing h2/aioquic/WebSocket peers.
   Reuse supported client APIs instead of reproducing browser/LiveView UI logic.
-- [ ] Remove browser branches from retained matrix entrypoints without running
+- [x] Remove browser branches from retained matrix entrypoints without running
   deferred specialist matrices. Keep independent non-browser assertions and
   historical outcomes distinct.
-- [ ] In a Python environment containing only the remaining client requirements,
+- [x] In a Python environment containing only the remaining client requirements,
   run the ordinary Phoenix peer gate and unified client gate:
 
   ~~~sh
@@ -193,10 +197,10 @@ integration/upstream_transport/browser.py and browser.mjs.
 AGENTS.md (a current testing-boundary section).
 **Create:** .github/workflows/package.yml.
 
-- [ ] Make ci.build Linux-only; retain formatter and strict compilation.
+- [x] Make ci.build Linux-only; retain formatter and strict compilation.
   Move its three Python regression executions to test.yml. Static inventory
   validation stays in ci; its unit regressions run in test.yml.
-- [ ] Replace the unit matrix with this fixed job boundary:
+- [x] Replace the unit matrix with this fixed job boundary:
 
   ~~~yaml
   jobs:
@@ -209,7 +213,7 @@ AGENTS.md (a current testing-boundary section).
   Install Python for script unit regressions. Keep a compiler only when unit
   dependency compilation actually needs it. Do not install OpenSSL fixtures,
   H2/aioquic peers, browsers or consumer projects for this job.
-- [ ] Give test.yml only these behavioral entries:
+- [x] Give test.yml only these behavioral entries:
 
   ~~~sh
   python3 scripts/test-check-tests.py
@@ -219,40 +223,40 @@ AGENTS.md (a current testing-boundary section).
   python3 scripts/check-repairs.py unit
   ~~~
 
-- [ ] Put Linux component/protocol/isolated-network jobs in e2e.yml.
+- [x] Put Linux component/protocol/isolated-network jobs in e2e.yml.
   Copy their necessary OpenSSL/client prerequisites, locks, privileged tools,
   deadlines and non-browser evidence uploads. Do not call all here.
   Assign h2_rfc/run.py, reverse_proxy/run.py and the browser-free Phoenix
   gate.py/unified.py to protocol. Assign examples/phoenix_native's existing
   Mix test command to component, retaining its fixture dependencies/settings.
-- [ ] Give e2e.yml all push/PR/manual triggers inherited from the old portable
+- [x] Give e2e.yml all push/PR/manual triggers inherited from the old portable
   workflow. Change workflow_dispatch.inputs.version to optional with default ''.
   All three source integration jobs run on every event, without a published
   version, without a global disable condition and without needs on one another
   or on release-clients. Keep only the released-server placeholder disabled
   until Task F's actual harness is qualified.
-- [ ] Create Linux package jobs for test-stage-hex-packages.py,
+- [x] Create Linux package jobs for test-stage-hex-packages.py,
   test-consumers.py, external-consumer.sh, gateway-consumer.sh,
   h3-gateway-consumer.sh, optional QUIC consumer and source-built release smoke.
   Keep http-consumer.sh and h3-consumer.sh release-only. Preserve production/test
   dependency isolation. Do not add registry credentials or publish packages.
-- [ ] Move the old portable loopback checks and release smoke to their new
+- [x] Move the old portable loopback checks and release smoke to their new
   Linux owners. Replace portable's body with Task E's minimal matrix only.
-- [ ] Remove browser steps, browser requirements and screenshot artifact paths
+- [x] Remove browser steps, browser requirements and screenshot artifact paths
   from both ordinary and release workflows. Keep release's exact-source
   required suite, consumer qualification and pre-upload SHA checks.
-- [ ] After all workflow callers reference canonical suites, delete the
+- [x] After all workflow callers reference canonical suites, delete the
   test_helpers/composition compatibility selectors. Recheck that all still
   executes the canonical union once and the inventory has one owner per path.
-- [ ] Check triggers, concurrency, permissions, cache ownership and evidence
+- [x] Check triggers, concurrency, permissions, cache ownership and evidence
   paths against the design. Record intentional runner and UI-scope reductions.
   Python unit regressions now inherit test.yml's main-targeted triggers.
   Inspect required-check references before naming/removing jobs.
-- [ ] Add a current AGENTS.md testing-boundary section: single Linux mocked
+- [x] Add a current AGENTS.md testing-boundary section: single Linux mocked
   unit gate; integration and real-client end-to-end jobs under e2e.yml;
   portable-only cross-platform smoke; no browser testing. Retain historical
   scope/evidence text.
-- [ ] Run actionlint on all six workflows, plus the inventory checker and
+- [x] Run actionlint on all six workflows, plus the inventory checker and
   scripts' mocked unit regressions. Expected: no configuration errors or lost
   required entries. Hosted run status remains NOT RUN until actually observed.
 
@@ -262,19 +266,19 @@ AGENTS.md (a current testing-boundary section).
 scripts/portable-smoke.py.
 **Workflow wiring:** D's workflow owner modifies .github/workflows/portable.yml.
 
-- [ ] Create a clean consumer of candidate gaoxy/gaoxy_http through the existing
+- [x] Create a clean consumer of candidate gaoxy/gaoxy_http through the existing
   source-consumer staging pattern. Do not depend on proxy, Server, H3 or
   gaoxy_test for this minimal HTTP scenario.
-- [ ] Implement one public-API scenario: start a native endpoint on loopback
+- [x] Implement one public-API scenario: start a native endpoint on loopback
   port 0; OTP :httpc requests /health; require 200 and body "ok"; stop in an
   after block with a finite timeout; require successful VM exit.
-- [ ] Make the wrapper create its project under a temporary directory, preserve
+- [x] Make the wrapper create its project under a temporary directory, preserve
   failure logs and print GAOXY_PORTABLE_PASS only after request and stop succeed.
   Record mode=candidate-source-boot, source SHA and platform.
-- [ ] Set the only cross-platform matrix in portable.yml to ubuntu-latest
+- [x] Set the only cross-platform matrix in portable.yml to ubuntu-latest
   Elixir 1.18.5/OTP 28.5 and macos-15-intel Elixir 1.20.1/OTP 29.0.2,
   fail-fast: false. Preserve existing supported targets; add no new platform.
-- [ ] Run python3 scripts/portable-smoke.py on the local supported Linux
+- [x] Run python3 scripts/portable-smoke.py on the local supported Linux
   environment. Expected: one successful request and normal stop. macOS is
   NOT RUN until a macOS runner executes it; do not infer it from Linux.
 
@@ -284,27 +288,27 @@ scripts/portable-smoke.py.
 **Workflow wiring:** D's workflow owner modifies .github/workflows/e2e.yml,
 after Task D's source jobs and this task's harness qualification.
 
-- [ ] Add a Linux release-clients job beside the source integration jobs in
+- [x] Add a Linux release-clients job beside the source integration jobs in
   e2e.yml. Its final event condition is github.event_name == 'workflow_dispatch'
   && inputs.version != ''. This condition is job-local; source jobs do not
   depend on it. A manual run with no version still runs source integration.
-- [ ] In release-clients, download the existing Linux runtime archive and
+- [x] In release-clients, download the existing Linux runtime archive and
   SHA256SUMS for the selected version into a fresh directory. Verify integrity
   before extraction and record the release revision. Never compile or
   substitute its server under test from the checkout.
-- [ ] Reuse the existing public runtime/fixture startup pattern. Bind only
+- [x] Reuse the existing public runtime/fixture startup pattern. Bind only
   loopback ephemeral listeners. Use clients from the matching revision, with
   explicit finite start, request and stop deadlines.
-- [ ] Implement this bounded client set: curl H1 status/headers/body and trusted
+- [x] Implement this bounded client set: curl H1 status/headers/body and trusted
   HTTPS; httpx independent H1/H2, upload and streaming; HTTPFetch public-client
   compatibility; aioquic H3 request/body; existing WebSocket message/close peers.
   Require two independent clients to agree on the basic response contract.
   Check negotiated versions rather than inferring them from requested options.
-- [ ] Write per-client PASS/FAIL results, actual server version and protocol,
+- [x] Write per-client PASS/FAIL results, actual server version and protocol,
   client/server logs and process exit. Missing prerequisites are BLOCKED_ENV,
   never a passing empty suite. Do not add browser, UI, sustained load or
   specialist exceptional-test cases.
-- [ ] Validate the harness locally against an existing published Linux version:
+- [x] Validate the harness locally against an existing published Linux version:
 
   ~~~sh
   python3 integration/e2e/run.py --version 0.11.1 --evidence .audit/workflow-split/e2e
@@ -313,7 +317,7 @@ after Task D's source jobs and this task's harness qualification.
   Expected: nonempty actual client results and bounded cleanup, with no server
   build from checkout. Change the version only to another verified existing
   release; a locally built package is not an artifact-E2E pass.
-- [ ] After the harness and cleanup pass review/qualification, hand its command
+- [x] After the harness and cleanup pass review/qualification, hand its command
   and prerequisites to D's workflow owner. That owner replaces only the
   released-server placeholder and applies the manual/nonempty-version gate;
   source integration jobs remain runnable independently. This design task
@@ -323,17 +327,17 @@ after Task D's source jobs and this task's harness qualification.
 
 **Create:** docs/acceptance/test-workflow-separation.md.
 
-- [ ] Independently review the design and implementation against every boundary:
+- [x] Independently review the design and implementation against every boundary:
   unit mocks/no requests; all cross-platform only in portable; E2E owns
   integration and different-client testing; no browsers; no active-case loss
   or accidental specialist execution.
-- [ ] Review the ownership ledger: each old command/case has one ordinary owner
+- [x] Review the ownership ledger: each old command/case has one ordinary owner
   or an explicit UI-only retirement. Distinguish repeat verification on a
   publication source from unintended duplicate ordinary CI.
-- [ ] Repair actionable findings without weakening assertions, then run fresh
+- [x] Repair actionable findings without weakening assertions, then run fresh
   affected suites. Record source SHA/diff, environment, command, count, exit,
   PASS/FAIL/BLOCKED_ENV/NOT RUN and evidence paths.
-- [ ] Run these final structural checks:
+- [x] Run these final structural checks:
 
   ~~~sh
   git diff --check
@@ -352,9 +356,9 @@ after Task D's source jobs and this task's harness qualification.
   independent of the manual release-clients/version condition. The final six
   workflows are ci, test, e2e, package, portable and release.
   Inspect active entrypoints/requirements for browser imports and launches.
-- [ ] Keep scoped, reviewable commits for runner/test classification, browser
+- [x] Keep scoped, reviewable commits for runner/test classification, browser
   removal, workflow separation and the smoke/E2E harnesses. Stage only owned
   files. No push, publication, deployment or remote settings change.
-- [ ] Update the acceptance receipt with observed local and hosted evidence
+- [x] Update the acceptance receipt with observed local and hosted evidence
   separately. Stop after the agreed separation scope is verified; do not expand
   into deferred specialist work.

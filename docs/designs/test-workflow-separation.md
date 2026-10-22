@@ -2,7 +2,9 @@
 
 **Date:** 2026-10-22, Asia/Shanghai
 **Source baseline:** main at 09715de3f165db134e287e1ea5fd4e93b1325905, version 0.11.1
-**Status:** Independently reviewed design; executable implementation has not started.
+**Status:** Implemented and independently reviewed; local ordinary verification
+passed. Hosted CI and macOS execution are NOT RUN. See
+[acceptance](../acceptance/test-workflow-separation.md).
 
 ## 1. Required boundaries
 
@@ -33,9 +35,9 @@ The scope is test organization and client-based verification. It grants no
 publication, deployment, production-data, operational-certificate, Vault or
 public-management changes. Planning does not enable the existing E2E placeholder.
 
-## 2. Current source facts
+## 2. Pre-migration source facts
 
-The existing test.yml selects files explicitly; it does not run a default
+The baseline test.yml selects files explicitly; it does not run a default
 umbrella-wide test command. Its four entries are the unit manifest, eleven
 inline regression files, the test_helpers manifest and built-package consumers.
 
@@ -48,7 +50,7 @@ inline regression files, the test_helpers manifest and built-package consumers.
 | check-repairs.py composition | 11 | 77 |
 | Unique union of these selections | 59 | 407 |
 
-These are planning counts, not new execution results. They exclude Python tests,
+These are baseline planning counts, not execution results. They exclude Python tests,
 consumer projects and the additional portable/network gates. The apps directory
 contains 214 test files; many are outside the current ordinary selection.
 
@@ -287,3 +289,18 @@ artifact publication or two-mode server runner is needed.
   and E2E dispatch are not part of implementing this local separation.
 
 See ../plans/test-workflow-separation.md for files, task order and commands.
+
+## 8. Implemented result
+
+The final canonical manifest has 184 unit, 123 component and 109 protocol cases.
+All 407 original selected app cases are conserved; nine existing portable cases
+bring the executed union to 416. The inventory records 77 active files and 151
+explicit retained files. Legacy manifest aliases were removed after migration.
+
+All six workflows now follow the boundaries above. Browser automation and
+dependencies were removed. The minimal Linux portable scenario passed. The
+released-server harness passed 11 real client checks against the downloaded
+0.11.1 archive, then passed independent cleanup and wiring review; its final
+manual/nonempty-version condition is enabled in YAML. No workflow was dispatched.
+Detailed commands, source/artifact identity, earlier setup failures, independent
+reviews and unexecuted hosted/macOS limits are in the acceptance receipt.
