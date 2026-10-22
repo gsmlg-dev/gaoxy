@@ -29,6 +29,7 @@ defmodule Gaoxy.Service do
   @impl true
   def init({table, live, id, instance}) do
     Process.flag(:trap_exit, true)
+    service = self()
     [{^id, spec}] = :ets.lookup(table, id)
     generation = make_ref()
     scope = %{instance: instance, service: id, generation: generation}
@@ -76,7 +77,11 @@ defmodule Gaoxy.Service do
                  cleanups: %{},
                  cleanup_failed: nil,
                  registry_policy: policy,
-                 drain_fun: &Lifecycle.drain/4,
+                 drain_fun: fn transport, backend, gate, deadline ->
+                   Lifecycle.drain(transport, backend, gate, deadline, fn ->
+                     Lifecycle.call(service, {:retain_drain_resources, backend}, deadline)
+                   end)
+                 end,
                  backend_control: &backend_control/3
                }}
 
@@ -263,6 +268,25 @@ defmodule Gaoxy.Service do
       {:reply, result, state}
     end
   end
+
+  def handle_call(
+        {:retain_drain_resources, backend},
+        {helper, _},
+        %{backend: backend, drain: %{pid: helper, phase: :draining} = drain} = state
+      ) do
+    added = owned_resources(state) -- drain.resources
+
+    drain = %{
+      drain
+      | resources: drain.resources ++ added,
+        monitors: drain.monitors ++ Enum.map(added, &Process.monitor/1)
+    }
+
+    {:reply, :ok, %{state | drain: drain}}
+  end
+
+  def handle_call({:retain_drain_resources, _}, _, state),
+    do: {:reply, {:error, :not_draining}, state}
 
   def handle_call({:drain, generation, _deadline}, _, state)
       when not is_nil(generation) and generation != state.generation,

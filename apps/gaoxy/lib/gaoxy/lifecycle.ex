@@ -125,7 +125,7 @@ defmodule Gaoxy.Lifecycle do
     :ok
   end
 
-  def drain(transport, backend, gate, deadline) do
+  def drain(transport, backend, gate, deadline, on_suspended \\ fn -> :ok end) do
     case transport do
       :udp ->
         Abyss.stop(backend, remaining(deadline))
@@ -135,6 +135,7 @@ defmodule Gaoxy.Lifecycle do
 
       _ ->
         with :ok <- Hell.suspend(backend),
+             :ok <- on_suspended.(),
              :ok <- await_leases(gate, deadline) do
           Supervisor.stop(backend, :normal, remaining(deadline))
         end
