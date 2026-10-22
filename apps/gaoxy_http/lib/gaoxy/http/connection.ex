@@ -294,29 +294,38 @@ defmodule Gaoxy.HTTP.Connection do
           _ = write_error(socket, state, 400)
           {:close, state}
         else
-          exchange = %{
-            Exchange.new(
-              request,
-              socket,
-              state.gate,
-              state.lease,
-              state.deadline,
-              Map.put(
-                state.limits,
-                :max_write_chunk,
-                min(state.spec.limits.max_output, state.limits.max_read_chunk)
-              ),
-              rest
-            )
-            | service: Map.get(state, :service),
-              instance: Map.get(state, :instance)
-          }
+          case Exchange.new(
+                 request,
+                 socket,
+                 state.gate,
+                 state.lease,
+                 state.deadline,
+                 Map.put(
+                   state.limits,
+                   :max_write_chunk,
+                   min(state.spec.limits.max_output, state.limits.max_read_chunk)
+                 ),
+                 rest
+               ) do
+            %Exchange{} = exchange ->
+              exchange = %{
+                exchange
+                | service: Map.get(state, :service),
+                  instance: Map.get(state, :instance)
+              }
 
-          state = %{state | buffer: ""}
+              state = %{state | buffer: ""}
 
-          case Admission.update(state.gate, state.lease, Exchange.retained_bytes(exchange)) do
-            :ok -> respond(socket, state, exchange)
-            _ -> {:close, state}
+              case Admission.update(state.gate, state.lease, Exchange.retained_bytes(exchange)) do
+                :ok -> respond(socket, state, exchange)
+                _ -> {:close, state}
+              end
+
+            {:error, reason} when reason in [:closed, :einval, :enotconn] ->
+              {:close, state}
+
+            {:error, reason} ->
+              {:error, reason, state}
           end
         end
     end

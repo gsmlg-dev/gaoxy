@@ -94,22 +94,22 @@ defmodule Gaoxy.HTTP.Exchange do
     do: Gaoxy.HTTP.HTTP2.Transport.operation(exchange, {:begin_stream, deadline})
 
   def new(request, socket, gate, lease, deadline, limits, buffer) do
-    {:ok, peer} = Socket.peername(socket)
-    {:ok, local} = Socket.sockname(socket)
-
-    %__MODULE__{
-      request: request,
-      socket: socket,
-      gate: gate,
-      lease: lease,
-      deadline: deadline,
-      limits: limits,
-      body: Body.new(request.body, limits),
-      buffer: buffer,
-      peer: peer,
-      local: local,
-      close: not request.keep_alive
-    }
+    with {:ok, peer} <- Socket.peername(socket),
+         {:ok, local} <- Socket.sockname(socket) do
+      %__MODULE__{
+        request: request,
+        socket: socket,
+        gate: gate,
+        lease: lease,
+        deadline: deadline,
+        limits: limits,
+        body: Body.new(request.body, limits),
+        buffer: buffer,
+        peer: peer,
+        local: local,
+        close: not request.keep_alive
+      }
+    end
   end
 
   def plug_conn(exchange) do

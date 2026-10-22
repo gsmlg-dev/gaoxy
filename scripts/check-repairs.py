@@ -50,6 +50,7 @@ SUITES = {
         ('apps/gaoxy_test/test/server_profile_config_test.exs', 1),
     ],
     'component': [
+        ('apps/gaoxy_http/test/exchange_peer_close_test.exs', 7),
         ('apps/gaoxy_http/test/websocket_stream_test.exs', 14),
         ('apps/gaoxy_test/test/core_test.exs', 9),
         ('apps/gaoxy_test/test/lifecycle_test.exs', 12),
@@ -69,6 +70,7 @@ SUITES = {
         ('apps/gaoxy/test/certificate_fixture_test.exs', 3),
     ],
     'protocol': [
+        ('apps/gaoxy_http/test/exchange_peer_close_network_test.exs', 2),
         ('apps/gaoxy_http/test/head_content_length_network_test.exs', 2),
         ('apps/gaoxy_http3/test/head_content_length_network_test.exs', 1),
         ('apps/gaoxy_http/test/request_lifetime_network_test.exs', 10),
