@@ -57,6 +57,9 @@ SUITES = {
     ],
     "composition": [
         # Supported staged ownership and pure, optional listener composition.
+        ("apps/gaoxy/test/backend_options_test.exs", 9),
+        ("apps/gaoxy_http/test/backend_options_test.exs", 5),
+        ("apps/gaoxy_http3/test/backend_options_test.exs", 5),
         ("apps/gaoxy/test/staged_activation_test.exs", 12),
         ("apps/gaoxy_http/test/listener_set_test.exs", 10),
         ("apps/gaoxy_http/test/phoenix_adapter_test.exs", 3),

@@ -4,7 +4,7 @@ Real, isolated HTTP fixtures with atomic expectations and ordinary Plug handlers
 Install the aligned package as a test-only dependency:
 
 ```elixir
-{:gaoxy_test, "~> 0.10.0", only: :test}
+{:gaoxy_test, "~> 0.11.0", only: :test}
 ```
 
 The application starts fixture supervision, but starts no listener until `open/1`.
