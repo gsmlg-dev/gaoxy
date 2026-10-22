@@ -1,0 +1,51 @@
+[
+  {
+    "name": "public-consumers",
+    "command": [
+      "python3",
+      "scripts/test-consumers.py",
+      "--published",
+      "--version",
+      "0.11.1"
+    ],
+    "cwd": "/Volumes/Data/dev/gsmlg-dev/gaoxy",
+    "exit": 0,
+    "seconds": 88.58
+  },
+  {
+    "name": "boundary-deps",
+    "command": [
+      "mix",
+      "deps.get"
+    ],
+    "cwd": "/Volumes/Data/dev/gsmlg-dev/gaoxy/.audit/release-0.11.1/public-boundary",
+    "exit": 0,
+    "seconds": 3.97
+  },
+  {
+    "name": "boundary-compile",
+    "command": [
+      "mix",
+      "compile",
+      "--warnings-as-errors"
+    ],
+    "cwd": "/Volumes/Data/dev/gsmlg-dev/gaoxy/.audit/release-0.11.1/public-boundary",
+    "exit": 0,
+    "seconds": 15.5
+  },
+  {
+    "name": "public-boundary",
+    "command": [
+      "python3",
+      "/Volumes/Data/dev/gsmlg-dev/gaoxy/scripts/check-tests.py",
+      "test/poll_boundary_network_test.exs",
+      "--seed",
+      "0",
+      "--max-cases",
+      "1"
+    ],
+    "cwd": "/Volumes/Data/dev/gsmlg-dev/gaoxy/.audit/release-0.11.1/public-boundary",
+    "exit": 0,
+    "seconds": 0.58
+  }
+]
