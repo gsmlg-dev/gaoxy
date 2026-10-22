@@ -5,14 +5,15 @@
 **Reviewed baseline:** main at `656dbf5bb84564adc6a4d68247c0ad2fe52c2625`, source version 0.7.0  
 **Reference consumer:** https://github.com/gsmlg-dev/http_fetch at `6b69bde3f43f2270317c38fbe68d5ac9635d3b36`, source version 0.21.14  
 **Delivery:** Implement, document, test, package, and release an independently consumable `:gaoxy_test` package in the Gaoxy repository.  
-**Status:** The user accepted the package direction and requested this development plan. The new APIs below are implementation contracts, not claims that the package already exists.
+**Status:** All Phases 0–5 completed and published as v0.10.0 on 2026-10-22. Source/tag: `75a8bf6026faf4aa98045f82bf2776165079f420`. See [acceptance and publication evidence](../acceptance/gaoxy-test.md). The original contracts below remain the delivery requirements.
 
 ### Execution checklist — 2026-10-21
 
 The original phase requirements below remain unchanged. The checkout was
 reconciled with newer remote 0.8.0 source as recorded below. The user-provided
 plan was initially untracked; no reset, new branch, worktree, or unrelated edit
-occurred. Implementation is present but integrated acceptance remains incomplete.
+occurred. Implementation, independent review, hosted qualification, six-package
+publication and fresh Hex-only acceptance are complete.
 
 - [x] Read the complete plan and current repository instructions.
 - [x] Inspect actual checkout, public lifecycle APIs, package manifests, curated
@@ -20,17 +21,17 @@ occurred. Implementation is present but integrated acceptance remains incomplete
 - [x] Write initial shared API/ownership/deadline contracts in
   `docs/testing/gaoxy-test-design.md` before implementation dispatch.
 - [x] Complete Phase 0 independent specification review and frozen contracts.
-- [ ] Commit the scoped implementation checklist with the reviewed delivery.
+- [x] Commit the scoped implementation checklist with the reviewed delivery.
 - [x] Phase 1: package, H1/HTTPS and isolated ExUnit proof passed independent
   lifecycle review and fresh canonical aggregate verification.
 - [x] Phase 2: actual H2, counts and SSE tests passed; cleanup and report-freezing
   findings were repaired and independently accepted.
 - [x] Phase 3: optional H3, absence proof and H1 WebSocket helpers passed
   independent protocol review and fresh canonical verification.
-- [ ] Phase 4: consumers, packaging, isolation and CI/release gates implemented;
-  staged consumers, final standalone isolation and local gates pass; hosted
-  execution pending.
-- [ ] Phase 5: independent review, aligned versions, fresh required verification,
+- [x] Phase 4: consumers, packaging, isolation and CI/release gates implemented;
+  staged consumers, actual standalone isolation and all10 prerequisite hosted
+  jobs pass on the exact source.
+- [x] Phase 5: independent review, aligned versions, fresh required verification,
   commits/push/integration, publication and fresh Hex-only consumer.
 
 **Historical BLOCKED_ENV (resolved 2026-10-22):** the required `sol_worker` runtime could not start because its
@@ -41,8 +42,8 @@ package. See `docs/acceptance/gaoxy-test.md` for exact evidence and outstanding
 acceptance rows. On 2026-10-22 the original named role successfully allocated
 the core and protocol workers without a model override. Implementation resumed;
 repair counters started at zero. Current cumulative repair counters and escalation
-evidence are in `docs/testing/gaoxy-test-design.md`; the overall objective remains
-active and incomplete.
+evidence are in `docs/testing/gaoxy-test-design.md`. This historical blocker was
+resolved; final acceptance and publication are complete.
 
 **Source reconciliation 2026-10-22:** remote main and published packages advanced
 to 0.8.0 during the blocked period. Local main was fast-forwarded to
@@ -58,8 +59,19 @@ collided with untracked task files, fast-forwarded main, and reapplied the task
 changes through a three-way merge. The sole workflow conflict retained both
 upstream internal-request gates and new helper/consumer gates. No reset, stash,
 worktree or history rewrite occurred. Independent review accepted the recovery;
-root/all applications and published-package examples now target 0.10.0. Fresh
-integrated-source verification is in progress; no publication is claimed.
+root/all applications and published-package examples target 0.10.0. Fresh
+integrated-source verification was pending at that reconciliation.
+
+**Final integration/publication 2026-10-22:** after authorized Astra round3 and
+independent specification review passed, the coordinator fast-forwarded to
+`6c82d5be5dd10a1cf96343113addbc926bfacb5c` without path collisions, preserving
+the newer upstream test contracts and all task changes. Runtime repair157c0fc5
+and complete delivery75a8bf60 were committed and pushed. All10 prerequisite
+hosted jobs and release39706321154 passed; six Hex packages, tag and GitHub
+v0.10.0 were published from75a8bf60. Independent public checks verified all8
+assets,7 checksums,161 package files and fresh Hex-only7 tests plus actual
+production release isolation. Final reports distinguish this source from their
+later documentation-only commit.
 
 ## 1. Mission and completion target
 

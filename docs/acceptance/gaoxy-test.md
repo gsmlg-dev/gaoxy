@@ -2,23 +2,20 @@
 
 ## Current disposition
 
-**INCOMPLETE / final integration verification**, resumed 2026-10-22 (Asia/Shanghai).
-The complete target remains Phases 0–5 of `../plans/gaoxy-test.md`. Initial
-contracts are in `../testing/gaoxy-test-design.md`. Package, protocol helpers,
-external consumers, packaging and CI changes are present in the uncommitted
-development snapshot. Staged consumers and integrated local lifecycle checks pass.
-Required hosted release verification and publication remain incomplete.
-Independent contract/code review accepted the fixes; the versioned target is
-0.10.0. Authorized Astra round3 passed the canonical119 aggregate, exact69 helper
-gate and unchanged browser8 checks with explicit Chrome156 selection. Actual
-standalone isolation and13 smoke checks also passed after final reconciliation;
-fresh hosted/publication checks remain pending.
+**COMPLETE / published v0.10.0**, verified 2026-10-22 (Asia/Shanghai).
+All Phases 0–5 of `../plans/gaoxy-test.md` are delivered. Independent specification
+and code review accepted the implementation. Source/tag
+`75a8bf6026faf4aa98045f82bf2776165079f420` passed all10 prerequisite hosted jobs and
+the exact-source release workflow. Six aligned Hex packages and the GitHub release
+are public. Independent fresh Hex-only consumers pass7 tests, manual mode without
+ExUnit, and actual production release isolation. All8 public assets,7 checksum
+entries and161 package files match the accepted source.
 
-Final canonical execution exposed an additional required-gate failure after the
-original recovery budget was exhausted. On 2026-10-22 the user explicitly extended
-the cumulative Astra limit to four rounds. Recovery resumes with Sol2/Astra2 used
-and two Astra rounds remaining, without resetting the task or counters. No commit,
-push, merge request, tag or publication was made.
+Final cumulative recovery counters are **Sol2/Astra3 of user-authorized maximum4**;
+round4 was not started. The explicit extension resolved the earlier exhausted
+budget handoff without resetting counters or changing assertions. Historical
+failed, blocked and unexecuted results below retain their original source and
+environment scope. No deployment or specialist pressure/soak acceptance is claimed.
 
 ## Source and environment
 
@@ -26,7 +23,7 @@ push, merge request, tag or publication was made.
   source version 0.7.0 at kickoff. On 2026-10-22 the checkout was fast-forwarded
   to `32933790457bcfa3533e40dc2ae4d51ad91aa86d` (0.8.0), preserving all task
   changes and newer remote fixes. No reset, stash or worktree creation.
-- Current integration baseline: `044e1cd90ddf4cc1550df99411f2906209387f5f`
+- Second integration baseline: `044e1cd90ddf4cc1550df99411f2906209387f5f`
   (remote 0.9.0), safely fast-forwarded after Astra stopped all writes/commands.
   Task patches and file copies were saved before reconciliation; all untracked
   task files survived and both upstream/new CI gates remain. Root/application
@@ -71,7 +68,7 @@ push, merge request, tag or publication was made.
 | Astra round2 scoped production lifecycle | Archived `astra-repair2-production.log`, 0.8.0 baseline, OpenSSL3 | PASS, exit0 | 47 tests |
 | `python3 scripts/test-stage-hex-packages.py` | Integrated 0.10.0 source over `044e1cd9` | PASS, exit0 | 10 tests |
 | `python3 scripts/test-consumers.py` | All six built/extracted 0.10.0 package tarballs | PASS, exit0 | 3 base +2 H3 +2 HTTPFetch tests; manual/prod dependency/actual release isolation |
-| `python3 scripts/check-repairs.py all` | Integrated 0.10.0, local Elixir1.20.1/OTP29 | FAIL, exit1 | All69 helper tests and190 unit cases passed; old Linux-specific alternate-loopback TLS case failed |
+| `python3 scripts/check-repairs.py all` | Integrated 0.10.0, local Elixir1.20.1/OTP29 | FAIL, exit1 | All69 helper tests and180 unit cases passed; old Linux-specific alternate-loopback TLS case failed |
 | Existing eleven-file internal-request gate | Integrated 0.10.0, seed0, max-cases1 | PASS, exit0 | 46 tests across core/HTTP/H3 |
 | `python3 scripts/check-repairs.py composition` | Integrated 0.10.0, local Elixir1.20.1 | FAIL, exit1 | Gateway lifecycle13/13 passed, but an unchanged test emits a type warning after upstream shutdown became `:infinity` |
 | `python3 scripts/check-repairs.py composition` | Canonical Elixir1.18.5 on local OTP29, after provisioning its version-specific rebar3 | PASS, exit0 | 58 tests, 0 skipped/excluded |
@@ -262,10 +259,10 @@ historical failure and does not claim hosted or published acceptance.
 | A16 | Bounded journal/body capture independent of verification accounting | PASS, integrated helper gate |
 | A17 | Isolated public HTTPFetch consumer | PASS, extracted0.10.0 with public HTTPFetch0.21.14, 2 tests |
 | A18 | New package metadata/assets/version and production release isolation | Staging10, external actual release exclusion and standalone exclusion/smokes PASS on0.10.0 |
-| A19 | Dedicated nonempty tests in CI and required release verification | IMPLEMENTED; fresh canonical119/helper69 and browser8 PASS locally; hosted execution NOT RUN |
-| A20 | Fresh published Hex-only consumer | NOT RUN; new package not published |
+| A19 | Dedicated nonempty tests in CI and required release verification | PASS on exact source75a8bf60: all10 prerequisite jobs and release workflow; full334 gate, helper69, browser8 and staged consumers execute |
+| A20 | Fresh published Hex-only consumer | PASS: hosted post-publication7 and independent local7, manual/no-ExUnit and actual production release isolation; no source overrides |
 
-## Integration changes awaiting final-source verification
+## Integration changes
 
 - Added the package/description to `scripts/stage-hex-packages.exs`, narrowly
   preserved `optional: true` on the internal H3 edge, and extended unsupported-option
@@ -284,12 +281,78 @@ historical failure and does not claim hosted or published acceptance.
 - Preserve raw/negative peers and independent interoperability suites. Keep
   HTTPFetch exclusively in `integration/http_fetch_test_consumer` dependencies.
 
-## Delivery identities
+## Delivery identities and published verification
 
-This source-preparation snapshot precedes task commits, push, hosted verification,
-tag and publication. Their exact identities and fresh Hex-only consumer results
-must be recorded after execution; no publication is claimed here. Installation,
-manual ownership and protocol/helper examples are in the package guide; downstream
-migration candidates and preserved raw-peer boundaries are in the integration
-guide. No production deployment, operational certificates, data, settings or
-credentials changed.
+The runtime repair was committed as
+`157c0fc55a28564da4f4e2ef586c800d3cefed17`; the complete reviewed/versioned delivery
+and checklist were committed as
+**`75a8bf6026faf4aa98045f82bf2776165079f420`** and pushed normally to `main`.
+No branch, worktree, reset, stash or history rewrite was used. An unrelated
+untracked `prompt.md` appeared during hosted verification and was preserved
+outside the delivery. This final report update is documentation/evidence only;
+it does not change the source or payload referenced by `v0.10.0`.
+
+| Hosted workflow on75a8bf60 | Result |
+| --- | --- |
+| [Static/build39704461934](https://github.com/gsmlg-dev/gaoxy/actions/runs/39704461934) | PASS: canonical formatting and Linux/macOS strict builds,3 jobs |
+| [Unit39704461931](https://github.com/gsmlg-dev/gaoxy/actions/runs/39704461931) | PASS: Linux Elixir1.18.5/OTP28.5 and macOS Elixir1.20.1/OTP29.0.2,2 jobs; each executes180 unit +69 helper cases, upstream gate and all extracted consumers |
+| [Foundation39704462179](https://github.com/gsmlg-dev/gaoxy/actions/runs/39704462179) | PASS: native HTTP, optional QUIC, Linux/macOS portable and isolated network,5 jobs; full334/0 and browser8/8 |
+| [Release39706321154](https://github.com/gsmlg-dev/gaoxy/actions/runs/39706321154) | PASS: exact-SHA/version checks, staging10, upstream46, five source consumers, full334/0, extracted consumers7, browser8, Phoenix17, strict production build and standalone13 checks before publication; fresh Hex-only7 after publication |
+
+The release was dispatched only after all10 prerequisite jobs passed, with
+`version=0.10.0`, `git_ref=main` and the full source SHA as `expected_sha`. The
+workflow rechecked remote branch identity before uploading, verified public Hex
+bytes, created the exact-source tag, passed fresh public consumers and created
+[Gaoxy v0.10.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.10.0) at
+`2026-10-22T01:46:14Z`.
+
+Published packages, all0.10.0:
+[gaoxy_websock_adapter](https://hex.pm/packages/gaoxy_websock_adapter/0.10.0),
+[gaoxy](https://hex.pm/packages/gaoxy/0.10.0),
+[gaoxy_http](https://hex.pm/packages/gaoxy_http/0.10.0),
+[gaoxy_http3](https://hex.pm/packages/gaoxy_http3/0.10.0),
+[gaoxy_proxy](https://hex.pm/packages/gaoxy_proxy/0.10.0), and
+[gaoxy_test](https://hex.pm/packages/gaoxy_test/0.10.0).
+
+Independent readback downloaded all8 GitHub assets and six public Hex archives.
+All7 `SHA256SUMS` entries and GitHub asset digests match. Each Hex API checksum,
+archive byte, metadata record and all161 packaged file hashes match the six local
+archives built from75a8bf60. `gaoxy_test` contains18 files, including all three
+trust assets; its only requirements are `gaoxy_http`, optional `gaoxy_http3` and
+Plug. Abyss remains0.9.0. The downloaded Linux archive excludes `gaoxy_test` and
+ExUnit and contains release0.10.0. Its SHA256 is
+`530c8e2fa619faa7a7d91d3405448a5fb60e39e95ce05a51350d82df1c874b3d`.
+The Linux binary was not executed on this macOS host; the release runner executed
+its13 smoke checks before archiving. Local macOS standalone checks are recorded
+separately above.
+
+Independent public installation command, exit0:
+
+```sh
+PATH="$PWD/.audit/canonical-elixir/distribution/bin:$PWD/.audit/h2peer/bin:/opt/homebrew/opt/openssl@3/bin:$PATH" \
+MIX_ARCHIVES="$PWD/.audit/gaoxy-test-canonical-archives" \
+ELIXIR_ERL_OPTIONS='+S 2:2' \
+OPENSSL_BIN=/opt/homebrew/opt/openssl@3/bin/openssl \
+GAOXY_QUIC_PYTHON="$PWD/.audit/h2peer/bin/python" \
+python3 scripts/test-consumers.py --published --version 0.10.0
+```
+
+This creates fresh projects without any local source overrides: base3, trusted
+H3 2 and public HTTPFetch2 tests pass, with zero skipped/excluded cases. Manual
+mode starts no ExUnit application; an actual production consumer release excludes
+the helper and HTTP dependencies. The hosted post-publication command separately
+passes the same7 tests. Receipts, raw hosted logs and browser reports are indexed
+by `evidence/gaoxy-test/README.md` and its checksum manifest. The earlier unit
+summary's190 count is corrected to180 from the exact suite map and hosted logs;
+raw historical evidence is unchanged.
+
+Install with `{:gaoxy_test, "~> 0.10.0", only: :test}`. Automatic/manual examples,
+trust configuration and the protocol/helper matrix are in the
+[package guide](../../apps/gaoxy_test/README.md); atomic admission, callback
+failure propagation and lifecycle ownership are in the
+[design](../testing/gaoxy-test-design.md). Fixture reuse and downstream migration
+candidates are in the [integration guide](../../integration/README.md).
+H1/HTTPS/H2 and optional H3 support ordinary streaming/SSE; WebSocket helpers are
+H1 only. Extended-CONNECT helpers, Bypass down/up and wholesale HTTPFetch test
+migration remain outside this delivery. No production deployment, operational
+certificates, data, settings or credentials changed.

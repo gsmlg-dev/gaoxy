@@ -2,6 +2,13 @@
 
 ## Scope and source
 
+All Phases 0–5 are complete and published as v0.10.0 from
+`75a8bf6026faf4aa98045f82bf2776165079f420`. Independent contract/code review,
+all10 prerequisite hosted jobs, exact-source release qualification and independent
+fresh Hex-only consumers pass. See `docs/acceptance/gaoxy-test.md` for identities,
+supported scope and preserved historical failures. Final counters are Sol2/Astra3
+of user-authorized maximum4; round4 was not started.
+
 Implement all phases of `docs/plans/gaoxy-test.md`. Work began from main
 `656dbf5bb84564adc6a4d68247c0ad2fe52c2625` (0.7.0). The checkout initially had
 only the user-provided untracked plan. No worktree, reset, or dependency source
@@ -121,7 +128,7 @@ the newer public APIs and their invariants without modifying production layers.
 | --- | --- | --- | --- |
 | GT-CORE | sol_worker / astra_worker recovery complete | Sol repairs2; Astra repairs3/max4; astra escalated once | Round3 canonical119/126, helper69 and browser8 PASS; no round4 started |
 | GT-PROTOCOL | sol_worker / integrated Astra recovery complete | Sol repair1; integrated Astra repairs3/max4, no reset | Review fixes accepted; canonical compatibility and bounded browser selection verified |
-| GT-INTEGRATE | coordinator | No escalation | Consumers, staging and CI integration in progress |
+| GT-INTEGRATE | coordinator | No escalation | Complete: six-package0.10.0 publication, exact public payloads and independent Hex-only7 verified |
 
 Validation proceeds from scoped pure/network/subprocess tests to isolated staged
 consumers and existing curated release gates. Final independent read-only review

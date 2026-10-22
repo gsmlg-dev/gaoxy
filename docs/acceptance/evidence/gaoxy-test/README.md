@@ -72,3 +72,27 @@ evidence. The fresh internal46 gate, strict production compilation, actual relea
 isolation and13 standalone smoke checks pass. Final local logs and the H3 receipt
 use the `reconciled-*` and `standalone-*` prefixes. These are local macOS arm64
 results; hosted Linux/OTP28 and publication remain separate checks.
+
+## Published0.10.0 qualification
+
+Source/tag: `75a8bf6026faf4aa98045f82bf2776165079f420`. All10 prerequisite hosted
+jobs and exact-source release39706321154 pass. The release gate executes334
+curated cases, browser8, Phoenix17 and standalone13 checks; extracted and published
+consumers each execute7 tests plus manual/no-ExUnit and actual release isolation.
+Independent local public-Hex acceptance also passes7 tests and the isolation
+checks. No test assertion/deadline was removed and historical failures remain.
+
+`public-hex-verification.json` records six public archives, metadata/dependency
+identity and161 exact-source file hashes. All six archive bytes also match the
+locally built source archives. `public-release-verification.json` records all8
+GitHub assets,7 checksum entries, matching public Hex bytes and downloaded
+standalone helper/ExUnit exclusion. The Linux archive is inspected here; its13
+execution checks ran on the release runner. `published-consumers.log` retains the
+independent fresh public installation without any local overrides.
+
+`published-audit.tar.gz` contains raw hosted workflow logs/receipts and their
+uploaded browser/network evidence. It excludes downloaded binaries, dependency
+and build caches, generated fixture keys and unrelated user files. Separate
+receipts identify the exact publication source; this final documentation update
+does not move its tag. All evidence files except this index and the manifest
+itself are covered by `SHA256SUMS`.
