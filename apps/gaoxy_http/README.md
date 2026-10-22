@@ -4,7 +4,7 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.11.0**.
+Requires Elixir `~> 1.18`. Package version: **0.11.1**.
 
 TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
 tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
@@ -17,15 +17,15 @@ and [Bandit migration example](https://github.com/gsmlg-dev/gaoxy/blob/main/docs
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.11.0"}
+{:gaoxy_http, "~> 0.11.1"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.11.0"},
-{:websock_adapter, "~> 0.11.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.11.1"},
+{:websock_adapter, "~> 0.11.1", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
@@ -182,6 +182,19 @@ budgets, not preallocated buffers or guarantees that a request will be admitted.
 H2 defaults to 32 concurrent streams per connection; resource admission also
 applies. See the migration guide's complete option and limit tables before
 lowering H2 budgets or raising parser limits.
+
+Long-running Plug handlers can call `Gaoxy.HTTP.poll_connection(conn, wait_ms)`
+with a finite wait (including `0`) to observe cancellation. Keep the returned
+connection for every `:more`, `:pending` or error result. HTTP/1 polling retains
+one received byte for later body reads or the next keep-alive request. The
+default 65,536-byte `max_buffer_bytes` ceiling is inclusive: a full buffer stays
+usable and can still report idle input or peer closure. An actual excess byte
+returns `{:error, :buffer_limit, next_conn}` without growing the retained buffer;
+abort the returned connection on this and other polling errors. No extra buffer
+margin is required. The service byte budget must also admit the conservative
+copy/probe reservation (up to twice the input ceiling plus two bytes, in addition
+to other exchange state); polling does not extend the request deadline. HTTP/2
+polling and abort remain scoped to the current stream.
 
 Ordinary H1 WebSocket Upgrade uses Phoenix's existing socket routes. To permit
 native H2 WebSocket extended CONNECT, set `extended_connect: true` on that
