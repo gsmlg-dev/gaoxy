@@ -1,0 +1,326 @@
+{
+  "task": "release-0.11-record",
+  "status": "PASS",
+  "version": "0.11.0",
+  "release_source": "638906cce7546028db2e8f5ecc8076957e889c09",
+  "tag": "v0.11.0",
+  "documentation_identity": "Later documentation-only HEAD; not the immutable release source/tag.",
+  "release_url": "https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.11.0",
+  "published_at": "2026-10-22T03:52:50Z",
+  "hosted_runs": [
+    {
+      "receipt": "static-final.json",
+      "url": "https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428935",
+      "source": "638906cce7546028db2e8f5ecc8076957e889c09",
+      "status": "PASS",
+      "jobs": [
+        {
+          "name": "format",
+          "status": "PASS"
+        },
+        {
+          "name": "build (macos-15-intel, 1.20.1, 29.0.2)",
+          "status": "PASS"
+        },
+        {
+          "name": "build (ubuntu-latest, 1.18.5, 28.5)",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "receipt": "unit-final.json",
+      "url": "https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428936",
+      "source": "638906cce7546028db2e8f5ecc8076957e889c09",
+      "status": "PASS",
+      "jobs": [
+        {
+          "name": "unit (macos-15-intel, 1.20.1, 29.0.2)",
+          "status": "PASS"
+        },
+        {
+          "name": "unit (ubuntu-latest, 1.18.5, 28.5)",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "receipt": "foundation-final.json",
+      "url": "https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428933",
+      "source": "638906cce7546028db2e8f5ecc8076957e889c09",
+      "status": "PASS",
+      "jobs": [
+        {
+          "name": "native_http",
+          "status": "PASS"
+        },
+        {
+          "name": "optional-quic",
+          "status": "PASS"
+        },
+        {
+          "name": "portable (ubuntu-latest, 1.18.5, 28.5)",
+          "status": "PASS"
+        },
+        {
+          "name": "portable (macos-15-intel, 1.20.1, 29.0.2)",
+          "status": "PASS"
+        },
+        {
+          "name": "isolated-network",
+          "status": "PASS"
+        }
+      ]
+    },
+    {
+      "receipt": "release-final.json",
+      "url": "https://github.com/gsmlg-dev/gaoxy/actions/runs/39717847092",
+      "source": "638906cce7546028db2e8f5ecc8076957e889c09",
+      "status": "PASS",
+      "jobs": [
+        {
+          "name": "release",
+          "status": "PASS"
+        }
+      ]
+    }
+  ],
+  "prerequisite_jobs": 10,
+  "ordinary_gate": {
+    "status": "PASS",
+    "executed": 353,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0,
+    "previous_expected": 334,
+    "new_backend_cases": {
+      "core": 9,
+      "http": 5,
+      "http3": 5
+    }
+  },
+  "local_public_consumers": {
+    "status": "PASS",
+    "exit": 0,
+    "source": "638906cce7546028db2e8f5ecc8076957e889c09",
+    "mode": "published-hex-only",
+    "command": [
+      "python3",
+      "scripts/test-consumers.py",
+      "--published",
+      "--version",
+      "0.11.0"
+    ],
+    "toolchain": {
+      "elixir": "1.18.5",
+      "otp": "29",
+      "platform": "macOS arm64"
+    },
+    "environment": {
+      "PATH_prefix": [
+        ".audit/canonical-elixir/distribution/bin",
+        ".audit/h2peer/bin",
+        "/opt/homebrew/opt/openssl@3/bin"
+      ],
+      "MIX_ENV": "test",
+      "MIX_ARCHIVES": ".audit/gaoxy-test-canonical-archives",
+      "OPENSSL_BIN": "/opt/homebrew/opt/openssl@3/bin/openssl",
+      "GAOXY_QUIC_PYTHON": ".audit/h2peer/bin/python"
+    },
+    "tests": {
+      "base": 3,
+      "h3": 2,
+      "http_fetch": 2,
+      "total": 7,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0
+    },
+    "manual_cases": 1,
+    "production_isolation_cases": 1,
+    "release_isolation_cases": 1,
+    "log": "public-consumers.log.gz"
+  },
+  "fixture_repair": {
+    "initial_source": "9e2326c4c6d49239185f38b1acce2fcf17b5f997",
+    "fix_source": "638906cce7546028db2e8f5ecc8076957e889c09",
+    "initial_status": "FAIL",
+    "reason": "Peer close after END_STREAM can kill callback before completion bookkeeping.",
+    "fix": "Verify callback completion before closing TCP; all assertions retained; no product lifecycle edits.",
+    "source_equality": {
+      "from": "v0.10.0",
+      "to": "9e2326c4",
+      "status": "PASS",
+      "files": [
+        "apps/gaoxy_test/lib/gaoxy/test/dispatch_plug.ex",
+        "apps/gaoxy_test/lib/gaoxy/test/instance.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex",
+        "apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex",
+        "integration/test_consumer/test/consumer_test.exs"
+      ]
+    },
+    "independent_review": "APPROVED; no findings",
+    "sol_repair_rounds": 1,
+    "sol_result": "successful",
+    "astra_rounds": 0,
+    "deterministic_probe": "PASS negative reproduction and positive ordering",
+    "initial_probe_tooling_error": "Expected cleanup :complete instead of actual :ok; preserved separately, corrected final probe passed.",
+    "repeated_built_consumers": {
+      "status": "PASS",
+      "exit": 0,
+      "base_runs": 10,
+      "base_tests": 30,
+      "h3_tests": 2,
+      "http_fetch_tests": 2,
+      "total_tests": 34,
+      "failures": 0,
+      "manual_cases": 1,
+      "production_isolation_cases": 1,
+      "release_isolation_cases": 1
+    }
+  },
+  "historical_environment_failure": {
+    "status": "BLOCKED_ENV",
+    "reason": "Original macOS setup-beam could not download Rebar from builds.hex.pm; fresh exact-source macOS jobs passed without a source workaround.",
+    "log": "unit-failed.log.gz"
+  },
+  "artifact_readback": "publication-readback.json",
+  "standalone_local_execution": {
+    "status": "NOT RUN",
+    "reason": "Published standalone is Linux x86_64; local host is macOS. Hosted Linux standalone smoke passed."
+  },
+  "preparation_checks_scope": "checks.json retains its original f2d64a44 feature-source and working-diff identity; it is not exact-final-source verification.",
+  "record_validation": {
+    "scope": "Documentation links, JSON, gzip provenance and checksums only; no Mix or test reruns.",
+    "sol_repair_rounds": 0,
+    "astra_rounds": 0
+  },
+  "evidence_files": [
+    {
+      "file": "static-final.json",
+      "source": ".audit/release-0.11-prep/static-final.json",
+      "source_sha256": "9a427da3c6c2afc618685965b319265249cd2934f5be6f77acbf457dc748abc7",
+      "encoding": "identity"
+    },
+    {
+      "file": "unit-final.json",
+      "source": ".audit/release-0.11-prep/unit-final.json",
+      "source_sha256": "f6ef4377f757720b449c3989e053905e611e86d00491f0e206b3fced76b241cf",
+      "encoding": "identity"
+    },
+    {
+      "file": "foundation-final.json",
+      "source": ".audit/release-0.11-prep/foundation-final.json",
+      "source_sha256": "7607f1ba20f12d972526ae6e80f2e4e46cc81c8d1989dda264a8ffbd81f9b68b",
+      "encoding": "identity"
+    },
+    {
+      "file": "release-final.json",
+      "source": ".audit/release-0.11-prep/release-final.json",
+      "source_sha256": "f970e5aa16617b7dd1b71d024ade264a848f21e0d30953f4de9d2a89a19a08f6",
+      "encoding": "identity"
+    },
+    {
+      "file": "publication-readback.json",
+      "source": ".audit/release-0.11-prep/publication-readback.json",
+      "source_sha256": "6d892d6d4261231f5759b13c8c5d38a6184fdb1a80a1efe50fdecd2bdc41d2bb",
+      "encoding": "identity"
+    },
+    {
+      "file": "published-release.json",
+      "source": ".audit/release-0.11-prep/published-release.json",
+      "source_sha256": "dda681d299c0ed2d96d0ff962a2ef4551a71ffa6ec4fd556d1c5f5bf9c4dec3b",
+      "encoding": "identity"
+    },
+    {
+      "file": "checks.json",
+      "source": ".audit/release-0.11-prep/checks.json",
+      "source_sha256": "3cfb2f6cd9b6f110468addd6f782f9a2a391f55b2d335529103aaf5c9f3ee548",
+      "encoding": "identity"
+    },
+    {
+      "file": "h2-consumer-ordering-probe.exs",
+      "source": ".audit/release-0.11-prep/h2-consumer-ordering-probe.exs",
+      "source_sha256": "5add7821f43a24b7c1c5e87558b8735ce06eff93bc44dbd269a72badb49cad4d",
+      "encoding": "identity"
+    },
+    {
+      "file": "h2-consumers-repeated.py",
+      "source": ".audit/release-0.11-prep/h2-consumers-repeated.py",
+      "source_sha256": "5edcddccfe0779c69271e335439038d27bfd1455099352909d10d5c46faf48bd",
+      "encoding": "identity"
+    },
+    {
+      "file": "hosted-browser-report.json",
+      "source": ".audit/release-0.11-prep/hosted-browser/report.json",
+      "source_sha256": "ae543e55bce9eae9ccc7baaac55761204179a14559409463b36ababefbdca2d1",
+      "encoding": "identity"
+    },
+    {
+      "file": "published-SHA256SUMS",
+      "source": ".audit/release-0.11-prep/published-assets/SHA256SUMS",
+      "source_sha256": "dd7903d88ce93a3cd49ad55fbac622aa65b8b2542facbe2cd1ba27d65cfa0e7b",
+      "encoding": "identity"
+    },
+    {
+      "file": "release-final.log.gz",
+      "source": ".audit/release-0.11-prep/release-final.log",
+      "source_sha256": "701f62536b66d8b16397f9d14e79287347220d555af6810a83aee645bebb3954",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "unit-failed.log.gz",
+      "source": ".audit/release-0.11-prep/unit-failed.log",
+      "source_sha256": "0a5b3c80bce8c81ff25e9199143780c8e39522543de09e26ce7f6a1148351e41",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "h2-consumer-ordering-probe.log.gz",
+      "source": ".audit/release-0.11-prep/h2-consumer-ordering-probe.log",
+      "source_sha256": "e5df63e1940084b2339836a2a99229ea3ccd3636fb755567f782226514a75925",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "h2-consumer-ordering-probe-final.log.gz",
+      "source": ".audit/release-0.11-prep/h2-consumer-ordering-probe-final.log",
+      "source_sha256": "833f87f54fdbc76617bb949887c6ade47e452f917be67ab5082e9a521cab9636",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "h2-consumers-repeated.log.gz",
+      "source": ".audit/release-0.11-prep/h2-consumers-repeated.log",
+      "source_sha256": "c7ef524b8640483a581dbb5ebaaf6999758b1c5a12c6e33f102510bb9ac58058",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "public-consumers.log.gz",
+      "source": ".audit/release-0.11-prep/public-consumers.log",
+      "source_sha256": "8cf2bfcda0a6d89e61489e18eb5655fdb256d083d7ad44072ab91c5dd35390ec",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "format.log.gz",
+      "source": ".audit/release-0.11-prep/format.log",
+      "source_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "staging.log.gz",
+      "source": ".audit/release-0.11-prep/staging.log",
+      "source_sha256": "835e049642ff54b4288a4d521262ca078473c24678e26af29895d221aa83c592",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "backend-tests.log.gz",
+      "source": ".audit/release-0.11-prep/backend-tests.log",
+      "source_sha256": "027c173c46e76703a44b4bbfa1cb4396fa6f269309523201e164ad64d731fdd3",
+      "encoding": "gzip; mtime=0; filename empty"
+    },
+    {
+      "file": "strict-compile.log.gz",
+      "source": ".audit/release-0.11-prep/strict-compile.log",
+      "source_sha256": "f4d62ed9be3f7c437489639d93bc4e47864b4914f557ae88826967bcb6aa1b71",
+      "encoding": "gzip; mtime=0; filename empty"
+    }
+  ]
+}

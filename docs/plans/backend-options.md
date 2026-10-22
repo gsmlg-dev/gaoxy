@@ -29,8 +29,6 @@
 - Baseline selected portable checks: 17 passed. Eight H3 network cases failed
   during fixture setup because PATH selected OpenSSL 4.0.3; no request ran.
   Use `OPENSSL_BIN=/opt/homebrew/opt/openssl@3/bin/openssl` for fresh checks.
-- Agent Note recall unavailable: `.agents/current.md` does not exist and no
-  explicit project label was established. No note was written.
 - Independent specification/code review completed; both HTTP findings resolved
   and re-reviewed. HTTP worker independently reviewed core with no findings.
 - Final scoped verification: 183 passed, exit 0; strict development compilation

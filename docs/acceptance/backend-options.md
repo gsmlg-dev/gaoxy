@@ -126,5 +126,75 @@ receive buffers remain explicitly unsupported. Acceptor division may leave
 unused slots, and kernel buffer rounding/clamping remains platform dependent.
 Standalone JSON configuration is outside this change. Hosted CI, release,
 deployment, sustained-load qualification and historical excluded slices were
-not run. Agent Note was not read/written because `.agents/current.md` and an
-explicit project-label declaration were unavailable.
+not run.
+
+## Fresh v0.11.0 publication result — 2026-10-22
+
+**PASS:** [v0.11.0](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.11.0)
+was published at `2026-10-22T03:52:50Z` from immutable source/tag commit
+`638906cce7546028db2e8f5ecc8076957e889c09`. This appended record is a later
+documentation-only change: its documentation HEAD is separate from the tagged
+release source. The earlier observations above retain their original status;
+the fresh results below do not rewrite them or expand the supported feature
+matrix. See the [publication evidence index](evidence/backend-options/release-0.11.0/INDEX.md)
+and [structured receipt](evidence/backend-options/release-0.11.0/receipt.json).
+
+All **10 exact-source prerequisite jobs passed**: static/build
+[39715428935](https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428935)
+(3 jobs), unit
+[39715428936](https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428936)
+(2 jobs), and foundation
+[39715428933](https://github.com/gsmlg-dev/gaoxy/actions/runs/39715428933)
+(5 jobs). Release workflow
+[39717847092](https://github.com/gsmlg-dev/gaoxy/actions/runs/39717847092)
+passed its packaging, ordinary compatibility, built-package consumer,
+production-isolation, formatter, strict compilation and standalone smoke
+checks before publication, and its fresh public Hex consumers afterward.
+The mandatory ordinary repair/compatibility gate includes the 19 new backend
+cases (core 9, HTTP 5, HTTP3 5), increasing its asserted count from 334 to 353.
+
+The hosted Chromium 155 report records **PASS** for independent H1/H2/H3
+requests, H2/H3 browser endpoints and WebSockets, code reload/restore, and
+endpoint shutdown. This is fresh hosted verification; the earlier local
+browser attempt remains **BLOCKED_ENV / NOT RUN**.
+
+The six packages `gaoxy_websock_adapter`, `gaoxy`, `gaoxy_http`, `gaoxy_http3`,
+`gaoxy_proxy` and `gaoxy_test` were published to Hex at **0.11.0**. Independent
+public readback verified all eight GitHub asset digests, all seven published
+`SHA256SUMS` entries, and six Hex API/version, archive-version and byte-equality
+checks against the release tarballs. The Linux x86_64 standalone archive reports
+version 0.11.0 and excludes `gaoxy_test` and `ex_unit`. Its Linux binary was
+**NOT RUN locally on macOS**; the hosted Linux standalone smoke passed.
+
+A separate fresh local public-install check used canonical Elixir 1.18.5 /
+OTP 29, OpenSSL 3 and the existing independent H3 peer:
+
+```sh
+python3 scripts/test-consumers.py --published --version 0.11.0
+```
+
+**PASS, exit 0:** public Hex-only base 3, H3 2 and HTTPFetch 2: **7 tests,
+zero failures, exclusions or skips**, plus manual mode (1), production
+dependency isolation (1) and assembled-release isolation (1). No local source
+dependency overrides were used.
+
+The original CI attempt on `9e2326c4` remains **FAIL** for the Linux H2
+consumer fixture, which received the complete response then closed TCP before
+the callback recorded completion (`{:terminated, :killed}`). A deterministic
+real-H2 probe reproduced that ordering and passed when verification preceded
+closure. The original consumer and four relevant lifecycle modules have no
+diff between v0.10.0 and `9e2326c4`; this was a pre-existing fixture race.
+The independently approved fixture-only fix `638906cc` moves verification
+before peer closure, retaining every protocol/body/verification assertion and
+leaving product lifecycle code unchanged. Its repeated built-package check
+passed base 30 + H3 2 + HTTPFetch 2 tests (34 total), plus the manual,
+production and release-isolation checks. Sol repair rounds: **1 successful**;
+Astra: **0**. The initial probe also retained a diagnostic-script cleanup-field
+assertion error; the corrected probe passed both ordering cases. Separately,
+the original macOS Rebar mirror
+download failure remains **BLOCKED_ENV**; the fresh macOS prerequisite jobs
+passed without a source workaround.
+
+This release result adds no deployment, production-data/certificate,
+sustained-load or historical excluded-slice qualification. Unsupported options
+and all feature limitations above remain in force.

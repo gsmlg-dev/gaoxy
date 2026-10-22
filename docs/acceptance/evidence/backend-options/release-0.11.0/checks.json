@@ -1,0 +1,62 @@
+{
+  "source": "f2d64a44951e2d1f164451c14d17f85ded57bddd",
+  "version": "0.11.0",
+  "toolchain": "Erlang/OTP 29 [erts-17.0.2] [source] [64-bit] [smp:10:10] [ds:10:10:10] [async-threads:1] [jit]\n\nElixir 1.18.5 (compiled with Erlang/OTP 27)\n",
+  "working_diff_sha256": "aa9cb44cfe7f329615f901121caf3eb2c91624835a0c5ccc3f9ad66d60efc2ef",
+  "checks": [
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "exit": 0,
+      "seconds": 0.401,
+      "log": ".audit/release-0.11-prep/format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "staging",
+      "command": [
+        "python3",
+        "scripts/test-stage-hex-packages.py"
+      ],
+      "exit": 0,
+      "seconds": 8.18,
+      "log": ".audit/release-0.11-prep/staging.log",
+      "sha256": "835e049642ff54b4288a4d521262ca078473c24678e26af29895d221aa83c592"
+    },
+    {
+      "name": "backend-tests",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/backend_options_test.exs",
+        "apps/gaoxy_http/test/backend_options_test.exs",
+        "apps/gaoxy_http3/test/backend_options_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "exit": 0,
+      "seconds": 2.614,
+      "log": ".audit/release-0.11-prep/backend-tests.log",
+      "sha256": "027c173c46e76703a44b4bbfa1cb4396fa6f269309523201e164ad64d731fdd3"
+    },
+    {
+      "name": "strict-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--force",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "seconds": 3.028,
+      "log": ".audit/release-0.11-prep/strict-compile.log",
+      "sha256": "f4d62ed9be3f7c437489639d93bc4e47864b4914f557ae88826967bcb6aa1b71"
+    }
+  ]
+}
