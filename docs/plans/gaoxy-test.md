@@ -564,4 +564,4 @@ Repository sources below are pinned to the reviewed baseline. They ground existi
 - [Bypass API semantics](https://hexdocs.pm/bypass/Bypass.html)
 - [ExUnit lifecycle and callbacks](https://hexdocs.pm/ex_unit/ExUnit.Callbacks.html)
 
-Related project design: Agent Note `c676efd4-a6a5-4157-879b-750f1563c0d2`, project `gaoxy`, “Unified Phoenix H1/H2/H3 and an Embeddable Gateway Runtime.” Its production-layer boundaries remain relevant; this plan adds a separate consumer-facing test package.
+Related project design: [Unified listeners and embedded Gateway](unified-listeners-embedded-gateway.md). Its production-layer boundaries remain relevant; this plan adds a separate consumer-facing test package.
