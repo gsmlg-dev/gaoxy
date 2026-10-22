@@ -90,3 +90,16 @@ Hosted qualification, publication and public-consumer execution are **NOT RUN**
 at this source checkpoint. The final record belongs in
 `docs/acceptance/release-0.12.2.md` after completion. Historical specialist
 evidence and unrelated unscheduled test results are unchanged.
+
+Final closeout: **PASS** on publication source
+`55ed97d2b05ba2a8dd7c911472833e71dd6b87f7`. All ten required hosted jobs and
+guarded release run 39803249750 completed successfully. Stable v0.12.2, all
+eight assets/seven checksums, six public Hex distributions and 135 packaged
+source files verified. A fresh Hex-only consumer passed all nine issue cases,
+including two actual `:enotconn` TCP races. The initial artifact transfer's
+180-second timeout remains **FAIL**; its resumed download and subsequent full
+verification are separately **PASS**, with unchanged validation assertions.
+Issue #15 is labeled fixed and closed; final MCP and paginated REST queries
+both found zero open internal requests. See
+[release acceptance](../acceptance/release-0.12.2.md) for commands, evidence,
+review and scope. The earlier NOT RUN statement records the source checkpoint.
