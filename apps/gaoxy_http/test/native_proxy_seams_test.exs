@@ -303,18 +303,24 @@ defmodule Gaoxy.HTTP.NativeProxySeamsTest do
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes == retained
   end
 
-  test "maximum poll floor stays bounded and a full buffer refuses the following byte" do
+  test "maximum poll floor admits one excess observation without growing the full buffer" do
     {exchange, client} = exchange(:none, "p")
     exchange = %{exchange | limits: %{exchange.limits | max_buffer_bytes: 2}}
     base = Exchange.retained_bytes(exchange) - 1
-    :ok = :gen_tcp.send(client, "zy")
+    :ok = :gen_tcp.send(client, "zyx")
 
     assert {:more, next} = Exchange.poll_connection(exchange, 100)
     assert next.buffer == "pz"
     assert Exchange.retained_bytes(next) == base + 2 * next.limits.max_buffer_bytes
-    assert {:error, :buffer_limit, ^next} = Exchange.poll_connection(next, 100)
-    assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
-    assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+    assert {:error, :buffer_limit, rejected} = Exchange.poll_connection(next, 100)
+    assert rejected.buffer == next.buffer
+    assert rejected.body == next.body
+    assert rejected.deadline == next.deadline
+    assert Exchange.retained_bytes(rejected) == base + 2 * next.limits.max_buffer_bytes + 2
+    assert {:ok, "x"} = Hell.Socket.recv(exchange.socket, 1, 100)
+
+    assert Gaoxy.Admission.status(rejected.gate).retained_bytes ==
+             Exchange.retained_bytes(rejected)
   end
 
   test "poll floor survives deadline and peer close without renewing the request" do

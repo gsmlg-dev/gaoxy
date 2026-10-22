@@ -71,13 +71,38 @@ defmodule Gaoxy.HTTP.ConnectionPollTest do
     assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
   end
 
-  test "full pipeline buffer rejects before taking another wire byte" do
+  test "full pipeline buffer rejects only an observed excess byte without growing" do
     {exchange, client} = exchange(buffer: "ab")
+    exchange = %{exchange | limits: %{exchange.limits | max_buffer_bytes: 2}}
+    :ok = :gen_tcp.send(client, "zy")
+
+    assert {:error, :buffer_limit, next} = Exchange.poll_connection(exchange, 100)
+    assert next.buffer == "ab"
+    assert next.body == exchange.body
+    assert next.deadline == exchange.deadline
+    assert next.poll_buffer_bytes == 6
+    assert {:ok, "y"} = Hell.Socket.recv(exchange.socket, 1, 100)
+
+    assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+  end
+
+  test "exact default boundary remains idle and exposes peer closure" do
+    {exchange, client} = exchange(buffer: :binary.copy("p", 65_536))
+    assert {:pending, next} = Exchange.poll_connection(exchange, 0)
+    assert next.buffer == exchange.buffer
+    assert next.poll_buffer_bytes == 2 * 65_536 + 2
+    assert {:pending, ^next} = Exchange.poll_connection(next, 0)
+    :ok = :gen_tcp.close(client)
+    assert {:error, :closed, ^next} = Exchange.poll_connection(next, 100)
+    assert Gaoxy.Admission.status(next.gate).retained_bytes == Exchange.retained_bytes(next)
+  end
+
+  test "full boundary reservation denies before consuming an excess byte" do
+    {exchange, client} = exchange(buffer: "ab", credit: 3)
     exchange = %{exchange | limits: %{exchange.limits | max_buffer_bytes: 2}}
     :ok = :gen_tcp.send(client, "z")
 
-    assert {:error, :buffer_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
-    assert exchange.poll_buffer_bytes == 0
+    assert {:error, :byte_limit, ^exchange} = Exchange.poll_connection(exchange, 100)
     assert {:ok, "z"} = Hell.Socket.recv(exchange.socket, 1, 100)
 
     assert Gaoxy.Admission.status(exchange.gate).retained_bytes ==

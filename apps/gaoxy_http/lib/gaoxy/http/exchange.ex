@@ -224,7 +224,7 @@ defmodule Gaoxy.HTTP.Exchange do
       Gaoxy.Lifecycle.remaining(exchange.deadline) <= 0 ->
         {:error, :timeout, exchange}
 
-      byte_size(exchange.buffer) >= exchange.limits.max_buffer_bytes ->
+      byte_size(exchange.buffer) > exchange.limits.max_buffer_bytes ->
         {:error, :buffer_limit, exchange}
 
       true ->
@@ -251,6 +251,11 @@ defmodule Gaoxy.HTTP.Exchange do
         else: Socket.recv(exchange.socket, 1, min(wait_ms, remaining))
 
     case result do
+      {:ok, _byte} when byte_size(exchange.buffer) == exchange.limits.max_buffer_bytes ->
+        # A full buffer is valid. Only an observed excess byte rejects it; do not
+        # concatenate that byte or retain more than the configured input limit.
+        {:error, :buffer_limit, exchange}
+
       {:ok, byte} ->
         exchange = %{exchange | buffer: exchange.buffer <> byte}
 

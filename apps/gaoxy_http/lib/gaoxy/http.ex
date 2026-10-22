@@ -37,7 +37,21 @@ defmodule Gaoxy.HTTP do
   def put_stream_timeout(_, _),
     do: raise(ArgumentError, "stream timeout requires an unsent Gaoxy Plug connection")
 
-  @doc "Checks peer closure with a finite wait, retaining any input and the updated Plug connection."
+  @doc """
+  Checks peer closure with a finite wait, retaining input and the updated connection.
+
+  Always use the returned connection on the next operation. HTTP/1 observes at
+  most one byte: `:more` retains it for a body read or the next keep-alive request;
+  `:pending` means no byte or closure was observed within `wait` milliseconds.
+  The inclusive `http_limits.max_buffer_bytes` ceiling remains usable: an exact
+  full buffer can return `:pending` or a peer-close error. Only an actual excess
+  byte returns `:buffer_limit`; that byte is consumed without growing the buffer.
+  Treat polling errors as terminal and abort the returned connection.
+
+  Polls retain resource admission and the existing deadline. A listener's
+  aggregate byte budget can reject the copy/probe reservation before a read.
+  HTTP/2 polling and cancellation remain scoped to the current stream.
+  """
   def poll_connection(%Plug.Conn{adapter: {Gaoxy.PlugAdapter, exchange}} = conn, wait) do
     case Gaoxy.HTTP.Exchange.poll_connection(exchange, wait) do
       {kind, next} when kind in [:pending, :more] ->
