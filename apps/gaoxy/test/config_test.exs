@@ -1,5 +1,6 @@
 defmodule Gaoxy.ConfigTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Stream do
     def init(_, _), do: {:ok, ""}

@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP2AuthorityTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP2.Headers
 
   @limits %{

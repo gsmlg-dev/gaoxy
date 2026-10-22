@@ -44,7 +44,7 @@ and checks group exit, or terminates/checks that owned group on failure.
 The fixture JSON-line adapter also exposes `start`, `event`, `upstream`,
 `pending`, `clean`, `stop`, then `finish`. Start accepts a `row` object with
 `mount`, `downstream`, `upstream`; optional `downstream_tls: true` supports
-separate local browser checks without changing this cleartext matrix. Ready
+independent TLS clients without changing this cleartext matrix. Ready
 includes listener port and URL; TLS rows include only public certificate paths
 and their digest. All certificates come from the existing test fixture generator.
 

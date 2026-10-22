@@ -106,24 +106,6 @@ defmodule Gaoxy.RuntimeTest do
   end
 
   @tag :loopback
-  test "two instances reuse service identities and reconstruct fragmented streams independently" do
-    a = instance([spec(:tcp)])
-    b = instance([spec(:tcp)])
-    {ip, port} = endpoint(a)
-    {_, other_port} = endpoint(b)
-    assert port > 0 and other_port > 0 and port != other_port
-    {:ok, client} = :gen_tcp.connect(ip, port, [:binary, active: false], 1_000)
-    :ok = :gen_tcp.send(client, "frag")
-    :ok = :gen_tcp.send(client, "mented\n")
-    assert {:ok, "fragmented\n"} = :gen_tcp.recv(client, 0, 1_000)
-    :gen_tcp.close(client)
-    assert :ok = Gaoxy.remove(a, "echo", 1_000)
-    assert [] = Gaoxy.services(a)
-    assert ["echo"] = Gaoxy.services(b)
-    assert {:error, :not_running} = Gaoxy.info(a, "echo")
-  end
-
-  @tag :loopback
   test "binding failure rolls back an already opened sibling socket" do
     {:ok, occupied} = :gen_tcp.listen(0, ip: {127, 0, 0, 1}, active: false)
     {:ok, {_, port}} = :inet.sockname(occupied)

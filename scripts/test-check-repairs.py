@@ -33,6 +33,23 @@ class ExecutionAccounting(unittest.TestCase):
             with self.assertRaises(ValueError):
                 gate.executed(output)
 
+    def test_canonical_selectors_have_one_owner_per_path(self):
+        self.assertEqual(set(gate.SUITES), {"unit", "component", "protocol"})
+        paths = [path for entries in gate.SUITES.values() for path, _ in entries]
+        self.assertEqual(len(paths), len(set(paths)))
+        self.assertEqual(list(gate.selected_entries("all")),
+                         [entry for entries in gate.SUITES.values() for entry in entries])
+
+    def test_all_deduplicates_paths(self):
+        from unittest.mock import patch
+        with patch.object(gate, "SUITES", {"unit": [("same", 1)], "component": [("same", 1)], "protocol": []}):
+            self.assertEqual(list(gate.selected_entries("all")), [("same", 1)])
+
+    def test_legacy_selectors_are_removed(self):
+        self.assertNotIn("test_helpers", gate.SUITES)
+        self.assertNotIn("composition", gate.SUITES)
+        self.assertFalse(hasattr(gate, "ALIASES"))
+
     def test_manifest_files_exist_and_have_positive_counts(self):
         for cases in gate.SUITES.values():
             for path, count in cases:

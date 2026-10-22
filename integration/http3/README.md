@@ -123,3 +123,15 @@ events identify that one request and its runtime diagnostic; zero cases passed.
 Source hashes stayed unchanged and all owned processes exited. A later PASS
 must retain that failure evidence. Shared acceptance does not qualify Phoenix,
 browser, upstream-H3, standalone release, publication or deployment.
+
+## Retained proxy matrix
+
+`matrix.py --evidence <directory> --python <aioquic-python>` retains the
+source-bound H3 proxy/independent-H1-origin checks. Phoenix document/static
+checks use an aioquic peer with actual negotiated H3 and correlated server
+receipts, retaining admission release and runtime stop/rebind assertions. Its
+browser entrypoint has been removed. Ordinary Phoenix H1/H2/H3 document/static/
+SSE, reload and shutdown checks use the direct-client
+[unified Phoenix gate](../phoenix_native/README.md).
+This change does not execute or certify the matrix's specialist cases.
+Historical immutable results under `docs/acceptance/` remain unchanged.

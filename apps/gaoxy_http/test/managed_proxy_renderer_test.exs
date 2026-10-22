@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.ManagedProxyRendererTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.{Exchange, HTTP1.Response, HTTP2.Frame}
   @bounds Gaoxy.HTTP.RendererBounds
 

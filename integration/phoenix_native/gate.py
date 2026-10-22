@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Record the complete browser gate, source restoration and actual process exit."""
+"""Record the complete client gate, source restoration and actual process exit."""
 import datetime
 import hashlib
 import importlib.metadata
@@ -11,11 +11,10 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[2]
 EXPECTED = {
-    "independent_h11_page", "verified_https_and_hostname_rejection",
-    "independent_websocket_channel_fragmentation_ping_close", "browser_page",
-    "browser_static", "browser_liveview_click", "browser_liveview_upload",
-    "browser_channel", "browser_sse", "browser_liveview_reconnect",
-    "development_code_reload_and_restore", "browser_no_page_errors",
+    "independent_h11_page", "independent_httpx_page", "independent_curl_page",
+    "verified_https_and_hostname_rejection",
+    "independent_websocket_channel_fragmentation_ping_close",
+    "independent_static", "independent_sse", "development_code_reload_and_restore",
     "graceful_shutdown_and_listener_cleanup",
 }
 
@@ -37,12 +36,12 @@ def sources():
 
 
 def main():
-    evidence = Path(os.environ.get("GAOXY_PHOENIX_EVIDENCE", str(ROOT / ".audit/m2-browser"))).resolve()
+    evidence = Path(os.environ.get("GAOXY_PHOENIX_EVIDENCE", str(ROOT / ".audit/phoenix-clients"))).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
     os.environ["GAOXY_PHOENIX_EVIDENCE"] = str(evidence)
     expected = set(EXPECTED)
     if os.environ.get("PHOENIX_NATIVE_H2") == "1":
-        expected.update(["independent_verified_h2_phoenix", "browser_h2_phoenix_and_liveview"])
+        expected.add("independent_verified_h2_phoenix")
     command = [sys.executable, str(Path(__file__).with_name("run.py"))]
     manifest = {
         "status": "NOT RUN", "started_utc": utc(), "command": command,
@@ -50,7 +49,7 @@ def main():
         "branch": subprocess.check_output(["git", "branch", "--show-current"], cwd=ROOT, text=True).strip(),
         "environment": {"python": sys.version, "h2_enabled": os.environ.get("PHOENIX_NATIVE_H2") == "1",
                         "dependencies": {name: importlib.metadata.version(name)
-                                         for name in ["playwright", "websockets", "h11", "httpx", "h2", "hpack", "hyperframe"]}},
+                                         for name in ["websockets", "h11", "httpx", "h2", "hpack", "hyperframe"]}},
         "source_before": sources(), "expected_checks": sorted(expected), "errors": [],
     }
     with (evidence / "gate.log").open("w") as log:
@@ -64,10 +63,11 @@ def main():
         if len(checks) != len(expected) or passed != expected:
             manifest["errors"].append("complete expected check set did not pass")
         manifest["executed_checks"] = len(checks)
+        manifest["checks"] = checks
     except Exception as error:
         manifest["errors"].append(repr(error))
     if result.returncode != 0:
-        manifest["errors"].append(f"browser runner exited {result.returncode}")
+        manifest["errors"].append(f"client runner exited {result.returncode}")
     if not manifest["source_restored"]:
         manifest["errors"].append("source or controller restoration failed")
     manifest["status"] = "FAIL" if manifest["errors"] else "PASS"

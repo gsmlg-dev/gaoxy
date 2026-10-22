@@ -76,34 +76,6 @@ defmodule Gaoxy.HTTP.StreamLifetimeTest do
     end
   end
 
-  test "stream lifetime accepts explicit infinity while request and I/O deadlines stay finite" do
-    for timeout <- [:infinity, :request, 500] do
-      assert {:ok, spec} =
-               Gaoxy.HTTP.service_spec(
-                 plug: {StreamPlug, self()},
-                 http_limits: %{stream_timeout: timeout}
-               )
-
-      assert spec.handler_options.http_limits.stream_timeout == timeout
-    end
-
-    for timeout <- [0, -1, nil, true, 1.5] do
-      assert {:error, :invalid_http_limit} =
-               Gaoxy.HTTP.service_spec(
-                 plug: {StreamPlug, self()},
-                 http_limits: %{stream_timeout: timeout}
-               )
-    end
-
-    for key <- [:request_timeout, :header_timeout, :read_timeout, :write_timeout] do
-      assert {:error, :invalid_http_limit} =
-               Gaoxy.HTTP.service_spec(
-                 plug: {StreamPlug, self()},
-                 http_limits: %{key => :infinity}
-               )
-    end
-  end
-
   test "route opt-in survives multiple absolute request intervals and releases on peer close" do
     {server, port} = server()
     {socket, worker, monitor} = request(port, "/infinite")

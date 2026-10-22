@@ -5,74 +5,40 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
-
 env:
   ELIXIR_ERL_OPTIONS: '+S 2:2'
-
 jobs:
   unit:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            elixir: '1.18.5'
-            otp: '28.5'
-          - os: macos-15-intel
-            elixir: '1.20.1'
-            otp: '29.0.2'
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7.0.1
       - uses: erlef/setup-beam@v1.24.1
         with:
-          elixir-version: ${{ matrix.elixir }}
-          otp-version: ${{ matrix.otp }}
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
       - uses: dtolnay/rust-toolchain@stable
-      - name: Provision certificate tool
-        shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install openssl@3
-            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
-          else
-            sudo apt-get update && sudo apt-get install -y openssl
-            certificate_tool="$(command -v openssl)"
-          fi
-          "$certificate_tool" version -a
-          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v7.0.0
         with:
-          python-version: '3.14'
+          python-version: '3.12'
       - uses: actions/cache@v6.1.0
         with:
           path: |
             deps
             _build
-          key: mix-${{ runner.os }}-${{ runner.arch }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
+          key: unit-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock', 'examples/phoenix_native/mix.lock', 'vendor/websock_adapter/SOURCE.json') }}
       - run: mix local.hex --force && mix local.rebar --force
       - run: mix deps.get --check-locked
-      - name: Pinned independent native H2 peer
+      - name: Mocked script unit regressions
         run: |
-          python -m venv .audit/h2peer
-          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
-      - name: Repair, configuration and ordinary unit compatibility (exact counts)
+          python3 scripts/test-check-tests.py
+          python3 scripts/test-check-repairs.py
+          python3 scripts/test-release-smoke.py
+          python3 scripts/test-check-test-inventory.py
+      - name: Isolated unit contracts (exact counts, no service requests)
         run: python3 scripts/check-repairs.py unit
-      - name: Internal request configuration and H1/H2 streaming regressions
-        run: |
-          python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
-      - name: Gaoxy.Test expectations, lifecycle and protocol helpers (nonempty)
-        env:
-          MIX_ENV: test
-        run: python3 scripts/check-repairs.py test_helpers
-      - name: Isolated built-package test consumers and production isolation
-        env:
-          MIX_ENV: test
-        run: python3 scripts/test-consumers.py

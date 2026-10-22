@@ -55,16 +55,6 @@ defmodule Gaoxy.StagedActivationTest do
     pid
   end
 
-  test "activation option is strict and immediate remains the default" do
-    assert {:ok, %{activation: :immediate}} = Gaoxy.Config.validate(services: [spec()])
-
-    assert {:ok, %{activation: :deferred}} =
-             Gaoxy.Config.validate(services: [spec()], activation: :deferred)
-
-    assert {:error, :invalid_activation} =
-             Gaoxy.Config.validate(services: [spec()], activation: :paused)
-  end
-
   test "deferred startup preserves budgets above five seconds without binding" do
     service = spec(%{port: free_port(:tcp), limits: %{drain_timeout: 7_000}})
     instance = instance([service])

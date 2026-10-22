@@ -1,5 +1,6 @@
 defmodule Gaoxy.PhoenixClientCertificateConfigTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Endpoint do
     def init(options), do: options

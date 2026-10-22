@@ -1,5 +1,31 @@
 # Gaoxy agent instructions
 
+## Current automated testing boundaries — 2026-10-22
+
+These boundaries supersede historical browser-verification requirements below.
+
+- `test.yml` has one `ubuntu-latest` unit job, without an OS or BEAM matrix.
+  Service interactions use mocks or controlled doubles. Unit tests must not open
+  real listeners/sockets, request even localhost services, launch protocol peers
+  or start a complete multi-component runtime.
+- `e2e.yml` owns Linux component integration, real network/protocol tests and
+  independent HTTP-client acceptance. Source jobs run on push/PR/manual without
+  requiring a published version. Released-server checks have a separate manual,
+  nonempty-version gate after their actual harness is qualified.
+- `portable.yml` alone owns cross-platform execution. Keep its smoke to one
+  native HTTP start, GET `/health` requiring 200 and `ok`, and successful stop.
+- `package.yml` owns package staging, clean consumers, dependency isolation and
+  source-built release smoke. Release qualification repeats required checks on
+  the exact publication source and retains its separate publication guards.
+- Use HTTP clients and protocol peers; do not add browser automation, Playwright,
+  Chromium installation, UI assertions or screenshots to server test gates.
+- `scripts/check-repairs.py` is the sole active app-file/count manifest with
+  `unit`, `component` and `protocol` suites. Classify every new app test file;
+  explicitly retain unscheduled/specialist paths in `scripts/test-inventory.json`.
+  Keep unit module declarations consistent and review their real dependencies.
+- Preserve ordinary assertions and exact, positive executed counts. Deferred
+  specialist cases and immutable historical evidence retain their disposition.
+
 ## Current M3 acceptance and local merge scope — 2026-10-19
 
 The user accepts M3 as **COMPLETE within the implemented product functionality

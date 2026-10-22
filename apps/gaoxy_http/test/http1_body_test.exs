@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP1.BodyTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP1.Body
 
   test "fixed bodies honor read credit and preserve pipelined bytes" do

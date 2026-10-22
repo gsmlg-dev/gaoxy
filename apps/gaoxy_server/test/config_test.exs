@@ -1,5 +1,6 @@
 defmodule Gaoxy.Server.ConfigTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   test "configuration is data-only and handler resolution is allowlisted" do
     assert {:ok, options} =

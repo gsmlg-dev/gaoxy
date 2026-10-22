@@ -1,6 +1,6 @@
 defmodule Gaoxy.Test.ProtocolTest do
   use ExUnit.Case, async: false
-  alias Gaoxy.Test.{Response, SSE, Server}
+  alias Gaoxy.Test.{Response, SSE}
   @timeout 15_000
 
   @peer ~S"""
@@ -271,11 +271,6 @@ defmodule Gaoxy.Test.ProtocolTest do
       assert Enum.any?(failures, &(&1.type == :excessive))
       assert_unavailable(info)
     end
-  end
-
-  test "unsupported profiles fail before creating a server process" do
-    assert {:error, {:unsupported_profile, :invalid}} =
-             Server.start_link(self(), profile: :invalid, fixture_id: make_ref())
   end
 
   defp peer(info, mode) do

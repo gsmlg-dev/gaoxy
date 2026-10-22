@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.GatewayGenerationTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.{Generation, Router}
   alias Gaoxy.Lifecycle
 

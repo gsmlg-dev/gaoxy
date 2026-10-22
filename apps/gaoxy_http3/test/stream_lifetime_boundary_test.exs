@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.StreamLifetimeBoundaryTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Endpoint do
     def init(options), do: {:ok, options}

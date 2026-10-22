@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.WebSocket.ApplicationOptionsTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Handler do
     def init(state), do: {:ok, state}

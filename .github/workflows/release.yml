@@ -92,11 +92,6 @@ jobs:
         run: |
           python -m venv .audit/h2peer
           .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
-      - name: Internal request configuration and H1/H2 streaming regressions
-        env:
-          MIX_ENV: test
-        run: |
-          python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
       - name: Isolated core, HTTP, H3 and Gateway consumers on publication source
         env:
           GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
@@ -113,10 +108,9 @@ jobs:
         env:
           MIX_ENV: test
         run: python3 scripts/test-consumers.py
-      - name: Unified Phoenix browser and peer dependencies
+      - name: Unified Phoenix HTTP-client and peer dependencies
         run: |
           python -m pip install -r integration/phoenix_native/requirements.txt -r integration/http3/requirements.txt
-          python -m playwright install --with-deps chromium
       - name: Prepare unified Phoenix publication fixture
         working-directory: examples/phoenix_native
         env:
@@ -127,7 +121,7 @@ jobs:
         run: |
           mix deps.get --check-locked
           mix compile --warnings-as-errors
-      - name: Unified Endpoint H1/H2/H3 browser, WebSocket and reload acceptance
+      - name: Unified Endpoint H1/H2/H3 clients, WebSocket and reload acceptance
         env:
           GAOXY_PHOENIX_EVIDENCE: .audit/release-unified-phoenix
         run: python integration/phoenix_native/unified.py
@@ -144,8 +138,6 @@ jobs:
           path: |
             .audit/release-unified-phoenix/server.log
             .audit/release-unified-phoenix/report.json
-            .audit/release-unified-phoenix/h2.png
-            .audit/release-unified-phoenix/h3.png
       - run: mix format --check-formatted
       - run: mix compile --warnings-as-errors
       - run: mix release gaoxy

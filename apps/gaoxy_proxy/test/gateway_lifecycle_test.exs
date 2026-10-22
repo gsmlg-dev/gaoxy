@@ -28,32 +28,6 @@ defmodule Gaoxy.Proxy.GatewayLifecycleTest do
     def call(exchange, body), do: Endpoint.call(exchange, body)
   end
 
-  test "the supervisor budget cannot truncate a configured long drain" do
-    child = Gateway.child_spec(options(45_000))
-    assert child.shutdown == :infinity or child.shutdown >= 90_000
-  end
-
-  test "reload rejects malformed, duplicate and unknown options without exiting" do
-    for options <- [nil, [:invalid], [timeout: 20, timeout: 30], [unknown: true]] do
-      assert {:error, :invalid_reload_options} = Gateway.reload_routes(self(), "web", [], options)
-    end
-  end
-
-  test "raw Router services need not provide the internal initialized flag" do
-    service = %{
-      id: :raw,
-      transport: :tcp,
-      ip: {127, 0, 0, 1},
-      port: 0,
-      handler: Gaoxy.HTTP.Connection,
-      handler_mode: :native,
-      handler_options: %{endpoint: {Router, routes("raw")}, http_limits: %{}}
-    }
-
-    assert {:ok, plan} = Gateway.compile(id: :raw, services: [service])
-    assert {:ok, [_]} = Gateway.planned_services(plan)
-  end
-
   test "an explicit reload deadline is validated and expired input is never admitted" do
     gateway = start_supervised!({Gateway, options()})
     operation = make_ref()

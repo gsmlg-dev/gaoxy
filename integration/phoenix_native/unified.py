@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 """Real Endpoint-owned H1/H2/H3, native WebSockets and reload composition."""
 import asyncio
-import base64
-import hashlib
 import json
+import importlib.metadata
 import os
 from pathlib import Path
 import queue
-import re
-import shutil
 import signal
 import subprocess
 import sys
@@ -16,30 +13,106 @@ import threading
 import time
 from types import SimpleNamespace
 
+from aioquic.asyncio import connect
+from aioquic.h3.connection import Setting
+from wsproto.events import TextMessage
+
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "apps/gaoxy_http/test/support"))
 sys.path.insert(0, str(ROOT / "integration/http3"))
 from listener_set_peer import h1, h2
 from peer import opened
-from playwright.sync_api import sync_playwright, expect
+sys.path.insert(0, str(ROOT / "integration/websocket_multiplexed"))
+from h2_peer import H2Peer, WebSocketChannel
+from h3_peer import H3PeerProtocol, client_configuration
 
 
-async def h3_page(port, ca):
+PATHS = [("/", b"Gaoxy Phoenix native"),
+         ("/static/hello.txt", b"Gaoxy native static file"),
+         ("/events", b"event: ready\ndata: native\n\n")]
+
+
+async def h3_request(port, ca, path, body):
     async with opened(SimpleNamespace(port=port, ca=ca, mode="startup")) as client:
-        sid = client.request(path=b"/")
+        sid = client.request(path=path.encode())
         await client.until(lambda: sid in client.ended or sid in client.resets)
         assert sid not in client.resets, client.resets
         assert dict(client.headers[sid][0])[b":status"] == b"200"
-        assert b"Gaoxy Phoenix native" in client.data[sid]
+        assert body in client.data[sid], (path, client.data[sid])
         assert client.negotiated == "h3"
+        return dict(protocol=client.negotiated, status_code=200, path=path)
+
+
+def channel_headers(port, protocol):
+    return [(b":method", b"CONNECT"), (b":scheme", b"https"),
+            (b":authority", f"localhost:{port}".encode()),
+            (b":path", f"/socket/websocket?vsn=2.0.0&unified={protocol}".encode()),
+            (b":protocol", b"websocket"), (b"sec-websocket-version", b"13"),
+            (b"origin", f"https://localhost:{port}".encode())]
+
+
+CHANNEL_MESSAGES = [
+    ["1", "1", "room:unified", "phx_join", {}],
+    ["1", "2", "room:unified", "ping", {"unified": True}],
+]
+
+
+def channel_reply(channel, message):
+    assert len(channel.messages) == 1, channel.messages
+    kind, payload = channel.messages.pop(0)
+    reply = json.loads(payload)
+    assert kind == "text" and reply[:4] == ["1", message[1], "room:unified", "phx_reply"], reply
+    assert reply[4] == {"status": "ok", "response": message[4]}, reply
+
+
+def h2_channel(port, ca):
+    peer = H2Peer("h2", port, ca)
+    try:
+        peer.connect()
+        peer.wait(lambda: peer.h2.remote_settings.enable_connect_protocol == 1)
+        stream = peer.h2.get_next_available_stream_id()
+        peer.channels[stream] = WebSocketChannel("phoenix")
+        peer.h2.send_headers(stream, channel_headers(port, "h2"), end_stream=False)
+        peer.flush()
+        peer.wait(lambda: stream in peer.headers)
+        assert (b":status", b"200") in peer.headers[stream], peer.headers
+        for message in CHANNEL_MESSAGES:
+            peer.send(stream, TextMessage(data=json.dumps(message)))
+            peer.wait(lambda: bool(peer.channels[stream].messages))
+            channel_reply(peer.channels[stream], message)
+        peer.close_websocket(stream)
+        return dict(protocol=peer.socket.selected_alpn_protocol(), stream=stream, close_code=1000)
+    finally:
+        if peer.socket is not None:
+            peer.socket.close()
+
+
+async def h3_channel(port, ca):
+    async with connect("127.0.0.1", port, configuration=client_configuration(ca),
+                       create_protocol=lambda quic, **kw: H3PeerProtocol(quic, port=port, **kw)) as peer:
+        assert peer.negotiated == "h3", peer.negotiated
+        await peer.wait(lambda: peer.http.received_settings is not None)
+        assert peer.http.received_settings[Setting.ENABLE_CONNECT_PROTOCOL] == 1
+        stream = peer.quic.get_next_available_stream_id()
+        peer.channels[stream] = WebSocketChannel("phoenix")
+        peer.http.send_headers(stream, channel_headers(port, "h3"), end_stream=False)
+        peer.transmit()
+        await peer.wait(lambda: stream in peer.headers)
+        assert (b":status", b"200") in peer.headers[stream], peer.headers
+        for message in CHANNEL_MESSAGES:
+            peer.send(stream, TextMessage(data=json.dumps(message)))
+            await peer.wait(lambda: bool(peer.channels[stream].messages))
+            channel_reply(peer.channels[stream], message)
+        await peer.close_websocket(stream)
+        return dict(protocol=peer.negotiated, stream=stream, close_code=1000)
 
 
 def main():
     evidence = Path(os.environ.get("GAOXY_PHOENIX_EVIDENCE", ROOT / ".audit/unified-phoenix")).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
     certs = evidence / "certs"
-    subprocess.run(["bash", str(ROOT / "scripts/generate-fixtures.sh"), str(certs)], check=True, capture_output=True)
-    env = dict(os.environ, MIX_ENV="dev", ELIXIR_ERL_OPTIONS="+S 4:4", PHOENIX_NATIVE_H3="1",
+    subprocess.run(["bash", str(ROOT / "scripts/generate-fixtures.sh"), str(certs)], check=True, capture_output=True, timeout=30)
+    env = dict(os.environ, MIX_ENV="dev", ELIXIR_ERL_OPTIONS="+S 2:2", PHOENIX_NATIVE_H3="1",
                PHOENIX_NATIVE_H2="1", PHOENIX_NATIVE_PORT="0", PHOENIX_NATIVE_HTTPS_PORT="0",
                PHOENIX_NATIVE_HTTP3_PORT="0", PHOENIX_NATIVE_RELOAD="1",
                PHOENIX_NATIVE_CERTFILE=str(certs / "cert.pem"), PHOENIX_NATIVE_KEYFILE=str(certs / "key.pem"))
@@ -75,90 +148,64 @@ def main():
     def passed(name, **details):
         checks.append(dict(check=name, status="PASS", **details))
 
-    report = {"status": "FAIL", "command": command, "baseline": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()}
+    report = {"status": "FAIL", "command": command,
+              "baseline": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+              "environment": {"python": sys.version, "ELIXIR_ERL_OPTIONS": env["ELIXIR_ERL_OPTIONS"],
+                              "dependencies": {name: importlib.metadata.version(name) for name in
+                                               ["h2", "hpack", "hyperframe", "aioquic", "wsproto"]}}}
     try:
         ready = event("ready", 60)
         assert ready["endpoint_server"] and ready["code_reloader"], ready
         ports = ready["ports"]
         ca = str(certs / "ca.pem")
         for request, version in [(h1, "HTTP/1.1"), (h2, "HTTP/2")]:
-            for path, body in [("/", b"Gaoxy Phoenix native"), ("/static/hello.txt", b"Gaoxy native static file"), ("/events", b"native")]:
+            for path, body in PATHS:
                 headers, actual = request(ports["https"], ca, path)
                 assert body in actual, (version, path, actual)
                 assert [v for k, v in headers if k == b"alt-svc"] == [f'h3=":{ports["http3"]}"; ma=60'.encode()], headers
-            passed("independent_endpoint_" + version, paths=["/", "/static/hello.txt", "/events"])
-        asyncio.run(h3_page(ports["http3"], ca))
-        passed("independent_endpoint_HTTP/3")
-
-        public = subprocess.check_output(["openssl", "x509", "-in", str(certs / "cert.pem"), "-pubkey", "-noout"])
-        spki = subprocess.check_output(["openssl", "pkey", "-pubin", "-outform", "DER"], input=public)
-        pin = base64.b64encode(hashlib.sha256(spki).digest()).decode()
-        browser_executable = os.environ.get("GAOXY_CHROMIUM_EXECUTABLE") or shutil.which("chromium")
-        with sync_playwright() as playwright:
-            for protocol, port, version in [("h2", ports["https"], "HTTP/2"), ("h3", ports["http3"], "HTTP/3")]:
-                args = ["--ignore-certificate-errors-spki-list=" + pin]
-                args += (["--enable-quic", "--enable-features=EnableWebsocketsOverHttp3", "--host-resolver-rules=MAP localhost 127.0.0.1", f"--origin-to-force-quic-on=localhost:{port}"] if protocol == "h3" else ["--disable-quic"])
-                browser = playwright.chromium.launch(executable_path=browser_executable, headless=True, args=args)
-                report["browser"] = {"version": browser.version, "executable": browser_executable or playwright.chromium.executable_path}
-                try:
-                    context = browser.new_context()
-                    page = context.new_page()
-                    page.set_default_timeout(8000)
-                    errors, responses = [], []
-                    page.on("pageerror", lambda error: errors.append(str(error)))
-                    cdp = page.context.new_cdp_session(page)
-                    cdp.on("Network.responseReceived", lambda row: responses.append(row["response"]))
-                    cdp.send("Network.enable")
-                    marker = '''(() => {const Native = WebSocket; window.WebSocket = class extends Native {constructor(url, protocols) { const marked = new URL(url, location.href); marked.searchParams.set('unified', 'MODE'); super(marked.toString(), ...(protocols === undefined ? [] : [protocols])); } };})();'''.replace("MODE", protocol)
-                    page.add_init_script(marker)
-                    base = f"https://localhost:{port}"
-                    page.goto(base + "/live-counter", wait_until="networkidle", timeout=20000)
-                    expect(page.locator("[data-phx-main].phx-connected")).to_be_visible()
-                    page.locator("#increment").click()
-                    expect(page.locator("#count")).to_have_text("1")
-                    assert any(r["url"] == base + "/live-counter" and r["protocol"] == protocol for r in responses), responses
-                    # Give each path its own freshly negotiated browser session.
-                    # Chromium may otherwise select an H1 fallback for a second
-                    # WebSocket despite an existing successful H2 CONNECT.
-                    context.close()
-                    context = browser.new_context()
-                    page = context.new_page()
-                    page.set_default_timeout(8000)
-                    page.on("pageerror", lambda error: errors.append(str(error)))
-                    page.add_init_script(marker)
-                    page.goto(base + "/", wait_until="networkidle", timeout=20000)
-                    page.add_script_tag(url=base + "/vendor/phoenix/phoenix.min.js")
-                    reply = page.evaluate('''() => new Promise((resolve,reject) => {const socket = new Phoenix.Socket('/socket');socket.connect(); const channel=socket.channel('room:unified'); channel.join().receive('ok',()=>channel.push('ping',{unified:true}).receive('ok',reply=>{socket.disconnect();resolve(reply)})).receive('error',reject);setTimeout(()=>reject('channel deadline'),5000)})''')
-                    assert reply == {"unified": True}, reply
-                    deadline = time.monotonic() + 5
-                    while True:
-                        sockets = [r for r in receipts if r["event"] == "websocket" and f"unified={protocol}" in r["marker"]]
-                        if {r["path"] for r in sockets} >= {"/socket/websocket", "/live/websocket"}:
-                            break
-                        assert time.monotonic() < deadline, sockets
-                        time.sleep(0.02)
-                    assert all(r["version"] == version and r["protocol"] == "websocket" and r["state"] == "upgraded" for r in sockets), sockets
-                    passed("browser_endpoint_" + protocol, sockets=sockets)
-                    stamp = controller.stat().st_mtime
-                    controller.write_bytes(original.replace(b"Gaoxy Phoenix native", b"Gaoxy unified reload verified"))
-                    os.utime(controller, (time.time(), max(time.time(), stamp + 2)))
-                    page.goto(base + "/", wait_until="networkidle")
-                    expect(page.locator("#page")).to_have_text("Gaoxy unified reload verified")
-                    controller.write_bytes(original)
-                    os.utime(controller, (time.time(), max(time.time(), stamp + 4)))
-                    page.goto(base + "/", wait_until="networkidle")
-                    expect(page.locator("#page")).to_have_text("Gaoxy Phoenix native")
-                    assert not errors, errors
-                    passed("code_reload_and_restore_" + protocol)
-                    page.screenshot(path=str(evidence / (protocol + ".png")))
-                finally:
-                    browser.close()
+            passed("independent_endpoint_" + version, protocol=version, paths=[path for path, _ in PATHS])
+        h3_results = [asyncio.run(h3_request(ports["http3"], ca, path, body)) for path, body in PATHS]
+        passed("independent_endpoint_HTTP/3", requests=h3_results)
+        for protocol, port in [("h2", ports["https"]), ("h3", ports["http3"])]:
+            client = h2_channel(port, ca) if protocol == "h2" else asyncio.run(h3_channel(port, ca))
+            deadline = time.monotonic() + 5
+            while True:
+                sockets = [r for r in receipts if r["event"] == "websocket" and f"unified={protocol}" in r["marker"]]
+                if sockets:
+                    break
+                assert time.monotonic() < deadline, sockets
+                time.sleep(0.02)
+            assert len(sockets) == 1, sockets
+            assert sockets[0]["path"] == "/socket/websocket" and sockets[0]["version"] == ("HTTP/2" if protocol == "h2" else "HTTP/3"), sockets
+            assert sockets[0]["protocol"] == "websocket" and sockets[0]["state"] == "upgraded", sockets
+            passed("independent_channel_" + protocol, client=client, sockets=sockets)
+            stamp = controller.stat().st_mtime
+            changed = b"Gaoxy unified reload verified"
+            controller.write_bytes(original.replace(b"Gaoxy Phoenix native", changed))
+            os.utime(controller, (time.time(), max(time.time(), stamp + 2)))
+            if protocol == "h2":
+                _, body = h2(port, ca, "/")
+                assert changed in body, body
+            else:
+                asyncio.run(h3_request(port, ca, "/", changed))
+            controller.write_bytes(original)
+            os.utime(controller, (time.time(), max(time.time(), stamp + 4)))
+            if protocol == "h2":
+                _, body = h2(port, ca, "/")
+                assert b"Gaoxy Phoenix native" in body, body
+            else:
+                asyncio.run(h3_request(port, ca, "/", b"Gaoxy Phoenix native"))
+            passed("code_reload_and_restore_" + protocol, protocol=client["protocol"])
         server.stdin.write("stop\n")
         server.stdin.flush()
         event("stopped", 12)
         assert server.wait(timeout=5) == 0
         passed("endpoint_shutdown")
         assert controller.read_bytes() == original
+        expected = {"independent_endpoint_HTTP/1.1", "independent_endpoint_HTTP/2", "independent_endpoint_HTTP/3",
+                    "independent_channel_h2", "independent_channel_h3", "code_reload_and_restore_h2",
+                    "code_reload_and_restore_h3", "endpoint_shutdown"}
+        assert len(checks) == len(expected) and {row["check"] for row in checks} == expected, checks
         report["status"] = "PASS"
     except Exception as error:
         import traceback
@@ -176,6 +223,8 @@ def main():
                 server.wait(timeout=3)
         thread.join(timeout=2)
         log.close()
+        if thread.is_alive() or server.returncode != 0 or controller.read_bytes() != original:
+            report["status"] = "FAIL"
         report.update(checks=checks, receipts=receipts, process_exit=server.returncode, source_restored=controller.read_bytes() == original)
         (evidence / "report.json").write_text(json.dumps(report, indent=2) + "\n")
         print(json.dumps({k: report[k] for k in ["status", "checks", "process_exit", "source_restored"]} | {"error": report.get("error")}))

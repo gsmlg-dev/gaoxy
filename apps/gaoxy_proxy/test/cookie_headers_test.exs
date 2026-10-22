@@ -1,5 +1,6 @@
 defmodule Gaoxy.Proxy.CookieHeadersTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.{Exchange, Request}
   alias Gaoxy.Proxy.HTTP.Headers
 

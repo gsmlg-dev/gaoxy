@@ -1,4 +1,5 @@
-name: Foundation integration tests
+name: Portable HTTP smoke
+
 on:
   push:
   pull_request:
@@ -11,116 +12,8 @@ concurrency:
 env:
   ELIXIR_ERL_OPTIONS: '+S 2:2'
 jobs:
-  native_http:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
-        with:
-          elixir-version: '1.18.5'
-          otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - uses: actions/setup-python@v7.0.0
-        with:
-          python-version: '3.12'
-      - uses: actions/cache@v6.1.0
-        with:
-          path: |
-            deps
-            _build
-            examples/phoenix_native/deps
-            examples/phoenix_native/_build
-          key: native-http-${{ runner.os }}-${{ hashFiles('mix.lock', 'examples/phoenix_native/mix.lock', 'vendor/websock_adapter/SOURCE.json') }}
-      - run: mix local.hex --force && mix local.rebar --force
-      - run: mix deps.get --check-locked
-      - name: Pinned independent native H2 peer
-        run: |
-          python -m venv .audit/h2peer
-          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
-      - name: Internal request configuration and H1/H2 streaming regressions
-        run: |
-          python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
-      - name: External Gateway consumer without Server or H3
-        env:
-          GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
-        run: bash scripts/gateway-consumer.sh
-      - name: External H1/H2/H3 Gateway consumer without Server
-        env:
-          GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
-          GAOXY_QUIC_PYTHON: ${{ github.workspace }}/.audit/h2peer/bin/python
-        run: bash scripts/h3-gateway-consumer.sh
-      - name: Repair and ordinary compatibility contracts (nonempty, exact counts)
-        run: python3 scripts/check-repairs.py all
-      - name: Isolated Gaoxy.Test package consumers
-        env:
-          MIX_ENV: test
-        run: python3 scripts/test-consumers.py
-      - name: Independent streaming reverse-proxy example
-        env:
-          MIX_ENV: test
-          GAOXY_PROXY_EVIDENCE: .audit/reverse-proxy
-        run: python integration/reverse_proxy/run.py
-      - name: Independent Phoenix fixture dependencies
-        working-directory: examples/phoenix_native
-        env:
-          PHOENIX_NATIVE_H3: '1'
-        run: mix deps.get --check-locked
-      - name: Phoenix listener ownership and internal request regressions
-        working-directory: examples/phoenix_native
-        run: mix test --warnings-as-errors
-      - name: Browser and independent peer dependencies
-        run: |
-          python -m pip install -r integration/phoenix_native/requirements.txt -r integration/http3/requirements.txt
-          python -m playwright install --with-deps chromium
-      - name: Independent selected H2 RFC cases
-        env:
-          MIX_ENV: test
-        run: python integration/h2_rfc/run.py --evidence .audit/m3-rfc
-      - name: Native Phoenix H1/H2 browser, TLS and WebSocket acceptance
-        env:
-          PHOENIX_NATIVE_H2: '1'
-          GAOXY_PHOENIX_EVIDENCE: .audit/m3-browser
-        run: python integration/phoenix_native/gate.py
-      - name: Compile unified Phoenix fixture with H3 and reload
-        working-directory: examples/phoenix_native
-        env:
-          MIX_ENV: dev
-          PHOENIX_NATIVE_H2: '1'
-          PHOENIX_NATIVE_H3: '1'
-          PHOENIX_NATIVE_RELOAD: '1'
-        run: mix compile --warnings-as-errors
-      - name: Unified Endpoint H1/H2/H3 browser, WebSocket and reload acceptance
-        env:
-          GAOXY_PHOENIX_EVIDENCE: .audit/unified-phoenix
-        run: python integration/phoenix_native/unified.py
-      # Specialist sustained-load qualification remains deferred.
-      - name: Native H2 sustained load and finite teardown
-        if: ${{ !always() }}
-        env:
-          MIX_ENV: test
-        run: python integration/h2_gateway/run.py --duration 600 --evidence .audit/m3-soak
-      - uses: actions/upload-artifact@v7.0.2
-        if: always()
-        with:
-          name: native-http-evidence
-          path: |
-            .audit/m3-browser/server.log
-            .audit/m3-browser/gate.log
-            .audit/m3-browser/manifest.json
-            .audit/m3-browser/results.json
-            .audit/m3-browser/liveview.png
-            .audit/m3-rfc/gateway.log
-            .audit/m3-rfc/results.json
-            .audit/m3-soak/gateway.log
-            .audit/m3-soak/result.json
-            .audit/reverse-proxy/example-server.log
-            .audit/reverse-proxy/example-results.json
-            .audit/unified-phoenix/server.log
-            .audit/unified-phoenix/report.json
-            .audit/unified-phoenix/h2.png
-            .audit/unified-phoenix/h3.png
   portable:
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
@@ -138,123 +31,14 @@ jobs:
         with:
           elixir-version: ${{ matrix.elixir }}
           otp-version: ${{ matrix.otp }}
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Provision certificate tool
-        shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install openssl@3
-            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
-          else
-            sudo apt-get update && sudo apt-get install -y openssl
-            certificate_tool="$(command -v openssl)"
-          fi
-          "$certificate_tool" version -a
-          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
       - uses: actions/setup-python@v7.0.0
         with:
-          python-version: '3.14'
-      - uses: actions/cache@v6.1.0
-        with:
-          path: |
-            deps
-            _build
-          key: mix-${{ runner.os }}-${{ runner.arch }}-${{ matrix.elixir }}-${{ matrix.otp }}-${{ hashFiles('mix.lock') }}
+          python-version: '3.12'
       - run: mix local.hex --force && mix local.rebar --force
-      - run: mix deps.get --check-locked
-      - run: mix compile --warnings-as-errors
-      - name: Ordinary portable loopback contracts (nonempty)
-        run: |
-          python3 scripts/check-tests.py apps/gaoxy/test/certificate_fixture_test.exs apps/gaoxy/test/tls_test.exs apps/gaoxy/test/datagram_egress_test.exs apps/gaoxy/test/backend_telemetry_test.exs
-          python3 scripts/check-tests.py apps/gaoxy/test/runtime_test.exs:109
-      - name: External core consumer
-        run: bash scripts/external-consumer.sh
-      - name: Portable release
-        run: MIX_ENV=prod mix release && python3 scripts/release-smoke.py
-
-  isolated-network:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
+      - name: One HTTP startup, request and stop
+        run: python3 scripts/portable-smoke.py
+      - uses: actions/upload-artifact@v7.0.2
+        if: always()
         with:
-          elixir-version: '1.18.5'
-          otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Provision certificate tool
-        shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install openssl@3
-            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
-          else
-            sudo apt-get update && sudo apt-get install -y openssl
-            certificate_tool="$(command -v openssl)"
-          fi
-          "$certificate_tool" version -a
-          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
-      - uses: actions/setup-python@v7.0.0
-        with:
-          python-version: '3.14'
-      - uses: actions/cache@v6.1.0
-        with:
-          path: |
-            deps
-            _build
-          key: mix-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock') }}
-      - run: sudo apt-get update && sudo apt-get install -y iproute2 util-linux
-      - run: mix local.hex --force && mix local.rebar --force
-      - run: mix deps.get --check-locked && mix compile --warnings-as-errors
-      - name: Isolated IPv4 ingress, memberships, restart and egress
-        run: python3 integration/network/fixture.py --allow-privileged
-      - name: Isolated Linux IPv6 ingress, scope, hops and loopback
-        run: python3 integration/network/fixture.py --allow-privileged --ipv6
-      - name: Socket backend IPv4 ingress and egress
-        run: GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged
-      - name: Socket backend IPv6 scoped-send negative
-        run: GAOXY_UDP_BACKEND=socket python3 integration/network/fixture.py --allow-privileged --ipv6
-      - name: Production five-transport release
-        run: MIX_ENV=prod mix release && python3 integration/network/release_gate.py --allow-privileged
-      - name: Shipped five-transport custom-handler example
-        run: python3 integration/network/example_gate.py --allow-privileged
-
-  optional-quic:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v7.0.1
-      - uses: erlef/setup-beam@v1.24.1
-        with:
-          elixir-version: '1.18.5'
-          otp-version: '28.5'
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Provision certificate tool
-        shell: bash
-        run: |
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            brew install openssl@3
-            certificate_tool="$(brew --prefix openssl@3)/bin/openssl"
-          else
-            sudo apt-get update && sudo apt-get install -y openssl
-            certificate_tool="$(command -v openssl)"
-          fi
-          "$certificate_tool" version -a
-          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
-      - uses: astral-sh/setup-uv@v10.2.0
-      - uses: actions/cache@v6.1.0
-        with:
-          path: |
-            integration/quic_consumer/deps
-            integration/quic_consumer/_build
-          key: mix-quic-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock', 'integration/quic_consumer/mix.lock') }}
-      - run: mix local.hex --force && mix local.rebar --force
-      - name: Locked optional consumer and independent validating aioquic peer
-        working-directory: integration/quic_consumer
-        run: |
-          uv venv .venv --python 3.12
-          uv pip install --python .venv/bin/python -r ../http3/requirements.txt
-          mix deps.get --check-locked
-          mix compile --warnings-as-errors
-          python3 ../../scripts/check-tests.py
-
-# Configured CI is not an executed GitHub run. s93 isolated-network/release
-# evidence is recorded separately from configured optional-consumer acceptance.
+          name: portable-${{ runner.os }}-evidence
+          path: .audit/portable-smoke/

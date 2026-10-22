@@ -1,65 +1,60 @@
-# Native Phoenix browser and peer acceptance
+# Native Phoenix client and peer acceptance
 
-From the repository root, resolve the root and fixture locks, then install the
-isolated Python dependencies and a Chromium browser:
+Resolve the root and fixture locks and install the independent client pins:
 
 ```sh
 mix deps.get --check-locked
-(cd examples/phoenix_native && mix deps.get --check-locked)
-uv venv .audit/browser-venv
-uv pip install --python .audit/browser-venv/bin/python -r integration/phoenix_native/requirements.txt
-.audit/browser-venv/bin/python -m playwright install --with-deps chromium
-.audit/browser-venv/bin/python integration/phoenix_native/gate.py
+(cd examples/phoenix_native && PHOENIX_NATIVE_H3=1 mix deps.get --check-locked)
+uv venv .audit/phoenix-clients
+uv pip install --python .audit/phoenix-clients/bin/python -r integration/phoenix_native/requirements.txt
+PHOENIX_NATIVE_H2=1 GAOXY_PHOENIX_EVIDENCE=.audit/workflow-split/phoenix \
+  .audit/phoenix-clients/bin/python integration/phoenix_native/gate.py
 ```
 
-The runner prefers system `chromium` when present, otherwise Playwright's
-installed browser. It starts its own development fixture on ephemeral HTTP and
-HTTPS ports, generates a local test CA/certificate, and cleans up the process.
-No CA is installed globally. Outputs are under `.audit/m2-browser/`; the private
-fixture key stays there and is never included in committed or CI artifacts.
+The shell needs Mix, OpenSSL and curl. Both runners create loopback ephemeral
+listeners and generate a temporary CA/certificate, without changing global trust.
+Keep generated private keys out of committed and uploaded artifacts. Browser
+runtimes and browser automation packages are not used.
 
-On Nix/Linux, run these commands inside `nix develop`; the pinned development
-shell supplies the C++ runtime required by the Python greenlet wheel. Keep the
-isolated Python environment separate from that library search path.
+`gate.py` requires overlapping curl and httpx H1 status, content-type and body
+checks, independent h11 framing, CA/hostname-verified HTTPS and wrong-hostname
+rejection, WebSocket Channel join/fragmentation/ping/close, static files, SSE,
+development code reload/restoration and graceful shutdown. Set
+`PHOENIX_NATIVE_H2=1` to require httpx's actual negotiated HTTP/2 response.
+Each recorded protocol comes from the response or TLS negotiation. Static and
+SSE checks use direct HTTP requests. No LiveView UI protocol is emulated.
 
-The checks cover independent h11 framing, CA/hostname-verified HTTPS with a wrong
-hostname negative, independent WebSocket Channel join/fragmentation/ping/close,
-and Chromium page/static/LiveView interaction/upload/Channel/SSE/reconnect.
-Development reload temporarily edits the fixture controller, confirms changed
-and restored behavior through real requests, and restores its original bytes in
-`finally`. Do not edit the fixture controller concurrently. Shutdown verifies a
-1001/1012 WebSocket close, process exit and both listeners closed.
+The runner temporarily edits the fixture controller and restores its original
+bytes in `finally`; do not edit that controller concurrently. Shutdown requires a
+1001/1012 WebSocket close, successful process exit and closed listeners.
+`manifest.json` records source hashes before/after, client versions, actual exit,
+and the complete nonempty expected-check set. Partial results after a failed
+runner remain failed. Evidence defaults to `.audit/phoenix-clients/`.
 
-`gate.py` records the command, environment, source hashes before/after, actual
-runner exit and complete expected check set in `manifest.json`. The runner's
-`results.json` records individually completed checks; a partial JSON after a
-nonzero exit is **not** a passing run. The existing integration workflow runs
-this gate on Linux. Local acceptance does not establish hosted CI or proxy
-acceptance. See [the M2 record](../../docs/acceptance/m2.md).
-
-For M3, set `PHOENIX_NATIVE_H2=1` and an absolute `GAOXY_PHOENIX_EVIDENCE`
-directory. The temporary HTTPS listener advertises `h2` and HTTP/1, with explicit
-512 MiB/128-active capacity. An independent HTTPX peer validates CA/hostname and
-HTTP/2, and Chromium's network events must report `h2` for actual Phoenix page
-and LiveView document responses. Chromium trusts only the generated test leaf's
-SPKI through a process-local flag; no global trust-store change occurs. LiveView
-WebSockets continue through HTTP/1 Upgrade, with no extended-CONNECT claim.
-Run `gate.py` for the complete M3 evidence envelope. Keep generated leaf keys
-out of committed artifacts when choosing an evidence directory outside `.audit`.
-
-`unified.py` runs the Endpoint-owned H1/H2/H3 suite, including native H2/H3
-LiveView and Channel WebSockets, reload/restoration and shutdown. It uses system
-`chromium`, then Playwright's installed browser by default. Set
-`GAOXY_CHROMIUM_EXECUTABLE` to select an explicit browser executable:
+`unified.py` uses the Endpoint-owned H1/H2/H3 listeners with reload enabled.
+Prepare the fixture with its optional H3 dependency before running it:
 
 ```sh
-GAOXY_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
-GAOXY_PHOENIX_EVIDENCE=.audit/unified-phoenix \
-.audit/browser-venv/bin/python integration/phoenix_native/unified.py
+(cd examples/phoenix_native && \
+  PHOENIX_NATIVE_H2=1 PHOENIX_NATIVE_H3=1 PHOENIX_NATIVE_RELOAD=1 \
+  ELIXIR_ERL_OPTIONS='+S 2:2' mix compile --warnings-as-errors)
+GAOXY_PHOENIX_EVIDENCE=.audit/workflow-split/unified \
+  .audit/phoenix-clients/bin/python integration/phoenix_native/unified.py
 ```
 
-Its `report.json` records the selected executable and browser version alongside
-the transport receipts. In a local macOS comparison, downloaded Chromium
-141.0.7390.37 failed the H3 WebSocket connection while installed Chrome
-156.0.8078.48 passed the same suite. This comparison does not establish a general
-browser or platform limitation; keep the required transport assertions enabled.
+The unified gate checks document/static/SSE responses through independent TLS
+H1/H2 and aioquic H3 peers, including H3 discovery headers on H1/H2 responses.
+Its native H2/H3 WebSocket peers join and ping the Phoenix Channel, complete
+normal Close, and correlate their actual negotiated transport with server upgrade
+receipts. It verifies reload/restoration over both H2 and H3, requires all eight
+client/server checks, and stops the Endpoint with a finite cleanup deadline.
+`report.json` retains per-check protocol receipts, source restoration and process
+exit. Existing multiplexed peer modules remain shared with their separate
+ordinary protocol runners.
+
+Retired UI checks are page DOM assertions, LiveView mount/click/upload/reconnect,
+JavaScript Channel/EventSource calls, page-error assertions, CDP checks and
+screenshots. Their historical acceptance receipts are preserved under
+`docs/acceptance/`; retirement does not relabel those outcomes. Ordinary Linux
+integration belongs to `e2e.yml`. Local client results do not establish hosted CI,
+publication or deployment acceptance.

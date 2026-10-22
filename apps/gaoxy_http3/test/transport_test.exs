@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.TransportTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, Request, Response}
   alias Gaoxy.HTTP.HTTP3.{Operations, Options, Transport}

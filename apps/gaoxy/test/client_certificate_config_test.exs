@@ -1,5 +1,6 @@
 defmodule Gaoxy.ClientCertificateConfigTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Echo do
     def init(_, _), do: {:ok, nil}

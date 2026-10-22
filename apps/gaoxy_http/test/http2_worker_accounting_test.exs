@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP2.WorkerAccounting
   alias Gaoxy.HTTP.{Exchange, Request}
   alias Gaoxy.HTTP.HTTP2.{Stream, Transport}

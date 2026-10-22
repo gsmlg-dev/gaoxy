@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP1.ParserTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP1.Parser
 
   test "retained header values do not pin a coalesced large request body" do

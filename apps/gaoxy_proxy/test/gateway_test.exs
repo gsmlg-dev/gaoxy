@@ -24,50 +24,6 @@ defmodule Gaoxy.Proxy.GatewayTest do
     def call(exchange, body), do: Endpoint.call(exchange, body)
   end
 
-  test "pure plans retain file references and never initialize route endpoints" do
-    assert {:ok, target} =
-             Upstream.fixed(%{
-               upstream: "https://example.test",
-               connect_address: {127, 0, 0, 1},
-               cacertfile: "/does/not/exist"
-             })
-
-    options = options("web", [%{target: target}, %{target: {Blocked, "never initialized"}}])
-    assert {:ok, first} = Gateway.compile(options)
-    assert {:ok, ^first} = Gateway.compile(options)
-    assert {:ok, ^first} = Gateway.compile(first)
-    assert Gaoxy.Proxy.Gateway.Declaration.owner_independent?(first)
-    refute_receive {:preparing, _}
-    assert {:error, _} = Gateway.compile(options("web", [%{target: {Endpoint, self()}}]))
-
-    for invalid <- [
-          [id: nil],
-          [id: :ok, name: "invalid"],
-          [services: [%{}]],
-          %Gaoxy.Proxy.Gateway.Plan{sets: :invalid}
-        ] do
-      assert {:error, _} = Gateway.compile(invalid)
-    end
-  end
-
-  @tag :tmp_dir
-  test "invalid trust files produce a structured preparation error", %{tmp_dir: dir} do
-    path = Path.join(dir, "empty.pem")
-
-    for bytes <- ["", "not a certificate"] do
-      File.write!(path, bytes)
-
-      assert {:ok, {_, declaration}} =
-               Upstream.fixed(%{
-                 upstream: "https://localhost:443",
-                 connect_address: {127, 0, 0, 1},
-                 cacertfile: path
-               })
-
-      assert {:error, :invalid_trust} = Upstream.materialize(declaration)
-    end
-  end
-
   test "two gateways share IDs while routes, owners and stop remain isolated" do
     a = start_supervised!({Gateway, options("web", routes("one"))}, id: :a)
     b = start_supervised!({Gateway, options("web", routes("two"))}, id: :b)

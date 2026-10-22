@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.StreamLifetimeContractTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.{Exchange, HTTP2.Transport}
 
   test "an infinite response retains a finite owner wait for a body-read operation" do

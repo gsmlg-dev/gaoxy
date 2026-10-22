@@ -1,5 +1,6 @@
 defmodule Gaoxy.Test.ExpectationsTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.Test.Expectations, as: E
 
   test "normalization, duplicate routes and count validation" do

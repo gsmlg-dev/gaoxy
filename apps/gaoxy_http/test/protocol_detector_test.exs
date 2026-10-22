@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.ProtocolDetectorTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.ProtocolDetector
   @preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
 

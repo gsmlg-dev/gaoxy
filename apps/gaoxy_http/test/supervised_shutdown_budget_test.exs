@@ -54,26 +54,6 @@ defmodule Gaoxy.HTTP.SupervisedShutdownBudgetTest do
     assert_raise RuntimeError, "startup initialization", fn -> Gaoxy.HTTP.start_link(raising) end
   end
 
-  test "HTTP child spec inherits the validated instance budget and defers invalid startup errors" do
-    for limits <- [%{}, %{drain_timeout: 5_500}] do
-      options = [id: :budget, plug: {BodyPlug, self()}, limits: limits]
-      assert {:ok, service} = Gaoxy.HTTP.service_spec(options)
-      expected = Gaoxy.child_spec(services: [service])
-      actual = Gaoxy.HTTP.child_spec(options)
-      assert Map.get(actual, :shutdown) == expected.shutdown
-      assert actual.id == {Gaoxy.HTTP, :budget}
-      assert actual.start == {Gaoxy.HTTP, :start_link, [options]}
-      assert actual.restart == :transient
-    end
-
-    invalid = [plug: {BodyPlug, self()}, limits: %{drain_timeout: -1}]
-
-    assert %{shutdown: 7_000, start: {Gaoxy.HTTP, :start_link, [^invalid]}} =
-             Gaoxy.HTTP.child_spec(invalid)
-
-    assert {:error, _} = Gaoxy.HTTP.start_link(invalid)
-  end
-
   test "supervised idle HTTP shutdown acknowledges runtime and listener cleanup" do
     fixture = server(%{})
     stop_and_assert(fixture, nil)

@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP2FacadeTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.Exchange
 
   test "a generation snapshot reservation survives exchange accounting" do

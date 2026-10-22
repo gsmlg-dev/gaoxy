@@ -1,0 +1,90 @@
+name: Package and consumer qualification
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  ELIXIR_ERL_OPTIONS: '+S 2:2'
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
+        with:
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/setup-python@v7.0.0
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            deps
+            _build
+          key: package-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock', 'examples/phoenix_native/mix.lock', 'vendor/websock_adapter/SOURCE.json') }}
+      - run: mix local.hex --force && mix local.rebar --force
+      - run: mix deps.get --check-locked
+      - name: Certificate tool and independent protocol peers
+        run: |
+          sudo apt-get update && sudo apt-get install -y openssl
+          python -m venv .audit/h2peer
+          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
+      - name: Hex staging and package regressions
+        run: python3 scripts/test-stage-hex-packages.py
+      - name: Isolated built-package consumers and production isolation
+        env:
+          MIX_ENV: test
+        run: python3 scripts/test-consumers.py
+      - name: Source core and Gateway consumers
+        env:
+          GAOXY_CONSUMER_DEPS: ${{ github.workspace }}/deps
+          GAOXY_QUIC_PYTHON: ${{ github.workspace }}/.audit/h2peer/bin/python
+        run: |
+          bash scripts/external-consumer.sh
+          bash scripts/gateway-consumer.sh
+          bash scripts/h3-gateway-consumer.sh
+      - name: Source-built standalone release smoke
+        run: MIX_ENV=prod mix release && python3 scripts/release-smoke.py
+
+  optional-quic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: erlef/setup-beam@v1.24.1
+        with:
+          elixir-version: '1.18.5'
+          otp-version: '28.5'
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Provision certificate tool
+        shell: bash
+        run: |
+          sudo apt-get update && sudo apt-get install -y openssl
+          certificate_tool="$(command -v openssl)"
+          "$certificate_tool" version -a
+          echo "OPENSSL_BIN=$certificate_tool" >> "$GITHUB_ENV"
+      - uses: astral-sh/setup-uv@v10.2.0
+      - uses: actions/cache@v6.1.0
+        with:
+          path: |
+            integration/quic_consumer/deps
+            integration/quic_consumer/_build
+          key: mix-quic-${{ runner.os }}-${{ runner.arch }}-1.18.5-28.5-${{ hashFiles('mix.lock', 'integration/quic_consumer/mix.lock') }}
+      - run: mix local.hex --force && mix local.rebar --force
+      - name: Locked optional consumer and independent validating aioquic peer
+        working-directory: integration/quic_consumer
+        run: |
+          uv venv .venv --python 3.12
+          uv pip install --python .venv/bin/python -r ../http3/requirements.txt
+          mix deps.get --check-locked
+          mix compile --warnings-as-errors
+          python3 ../../scripts/check-tests.py

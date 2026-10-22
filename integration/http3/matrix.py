@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-"""Execute the source-bound H3 proxy and real Phoenix/Chromium matrix."""
+"""Execute the source-bound H3 proxy independent-client matrix."""
 import argparse
+import asyncio
 import hashlib
 import json
 import os
@@ -13,6 +14,7 @@ import sys
 import tempfile
 import threading
 import time
+from types import SimpleNamespace
 import uuid
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -27,7 +29,23 @@ PROXY_CASES = {
     "proxy_reset_cancels_origin_keeps_connection_siblings",
     "proxy_separate_listener_sibling",
 }
-BROWSER_CASES = {"browser_h3_phoenix_document", "browser_h3_phoenix_static"}
+
+PHOENIX_CASES = {"independent_h3_phoenix_document", "independent_h3_phoenix_static"}
+
+
+async def phoenix_requests(port, ca, marker):
+    from peer import opened
+    async with opened(SimpleNamespace(port=port, ca=ca, mode="startup")) as client:
+        for name, path, body in [("document", "/", b"Gaoxy Phoenix native"),
+                                 ("static", "/static/hello.txt", b"Gaoxy native static file")]:
+            stream = client.request(path=path.encode(), extra=[(b"x-gaoxy-m4-browser", marker.encode())])
+            await client.until(lambda: stream in client.ended or stream in client.resets)
+            assert stream not in client.resets, client.resets
+            assert dict(client.headers[stream][0])[b":status"] == b"200"
+            assert body in client.data[stream], client.data[stream]
+            assert client.negotiated == "h3", client.negotiated
+            print("GAOXY_HTTP3_MATRIX " + json.dumps(dict(name="independent_h3_phoenix_" + name,
+                  result="PASS", protocol=client.negotiated, status_code=200, path=path)), flush=True)
 
 
 class EnvironmentUnavailable(Exception):
@@ -155,7 +173,6 @@ def main():
     parser.add_argument("--evidence", type=Path, required=True)
     parser.add_argument("--python", default=os.environ.get("GAOXY_QUIC_PYTHON",
                         str(ROOT / "integration/quic_consumer/.venv/bin/python")))
-    parser.add_argument("--browser-python", default=str(ROOT / ".audit/browser-venv/bin/python"))
     args = parser.parse_args()
     evidence_root = args.evidence.resolve()
     evidence_root.mkdir(parents=True, exist_ok=True)
@@ -163,7 +180,7 @@ def main():
     evidence.mkdir()
     started = time.monotonic()
     total_deadline = started + 240
-    report = dict(status="FAIL", gate="downstream-proxy-phoenix-browser", checks=[],
+    report = dict(status="FAIL", gate="downstream-proxy-independent-clients", checks=[],
                   source_sha256=source_hashes(), commands=[], total_deadline_ms=240_000)
     report["source_commit"] = subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
@@ -181,11 +198,10 @@ def main():
         return child
 
     try:
-        for executable in (args.python, args.browser_python, "mix", "openssl", "chromium"):
+        for executable in (args.python, "mix", "openssl"):
             if shutil.which(executable) is None:
                 raise EnvironmentUnavailable(f"required executable unavailable: {executable}")
-        for executable, package, required in ((args.python, "aioquic", "1.2.0"),
-                                              (args.browser_python, "playwright", "1.56.0")):
+        for executable, package, required in ((args.python, "aioquic", "1.2.0"),):
             command = [executable, "-c", "import importlib.metadata,sys; print(sys.version); "
                        f"print(importlib.metadata.version({package!r}))"]
             version = subprocess.run(command, capture_output=True, text=True, timeout=10)
@@ -252,19 +268,20 @@ def main():
             assert phoenix_ready["event"] == "ready" and phoenix_ready["server_disabled"], phoenix_ready
             report["phoenix_runtime"] = phoenix_ready
             marker = uuid.uuid4().hex
-            browser = launch("chromium", [args.browser_python, "integration/http3/browser.py",
-                "--port", str(phoenix_ready["port"]), "--cert", str(Path(directory) / "cert.pem"),
-                "--marker", marker, "--evidence", str(evidence / "browser")],
-                prefixes=("GAOXY_HTTP3_BROWSER",))
-            report["checks"].extend(browser.cases(BROWSER_CASES))
-            browser_sample = baseline(phoenix, report["checks"], "phoenix")
-            requests = browser_sample["requests"]
+            phoenix_peer = launch("phoenix-peer", [args.python, "-c",
+                "import asyncio,sys; from matrix import phoenix_requests; "
+                "asyncio.run(phoenix_requests(int(sys.argv[1]), sys.argv[2], sys.argv[3]))",
+                str(phoenix_ready["port"]), str(Path(directory) / "ca.pem"), marker],
+                directory=ROOT / "integration/http3", prefixes=("GAOXY_HTTP3_MATRIX",))
+            report["checks"].extend(phoenix_peer.cases(PHOENIX_CASES))
+            sample = baseline(phoenix, report["checks"], "phoenix")
+            requests = sample["requests"]
             for path in ("/", "/static/hello.txt"):
                 matched = [request for request in requests if request["path"] == path
                            and request["marker"] == [marker]]
                 assert len(matched) == 1, (path, requests)
                 assert matched[0]["protocol"] == "HTTP/3" and matched[0]["status"] == 200, matched
-            report["checks"].append(dict(name="browser_marker_server_h3_confirmation", result="PASS",
+            report["checks"].append(dict(name="client_marker_server_h3_confirmation", result="PASS",
                                          marker=marker, requests=requests))
             stopped = phoenix.control("stop")
             assert stopped["event"] == "stopped" and stopped["runtime_down"] and stopped["port_rebound"], stopped

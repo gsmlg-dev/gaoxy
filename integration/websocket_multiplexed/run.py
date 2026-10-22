@@ -184,7 +184,7 @@ def main():
         "environment": {"python": sys.version, "executable": sys.executable, "openssl": ssl.OPENSSL_VERSION,
                         "MIX_ENV": "test", "ERL_FLAGS": "+S 2:2"},
         "peer_versions": {name: importlib.metadata.version(name) for name in
-                          ["h2", "hpack", "hyperframe", "aioquic", "wsproto", "playwright"]},
+                          ["h2", "hpack", "hyperframe", "aioquic", "wsproto"]},
         "scope": "ordinary protocol/multiplexing/Close only; no specialist fault or load cases",
     }
     fixture = None

@@ -1,5 +1,6 @@
 defmodule Gaoxy.PhoenixAdapterTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
 
   defmodule Endpoint do
     def init(opts), do: opts

@@ -1,5 +1,6 @@
 defmodule Gaoxy.PlugBodyTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.{Exchange, HTTP1.Body, HTTP1.Parser}
 
   # Preserve the strict deadline assertions while distinguishing fixture waits
