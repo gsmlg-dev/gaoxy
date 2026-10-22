@@ -1,0 +1,78 @@
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+Running ExUnit with seed: 457284, max_cases: 4
+
+
+
+  1) test final report retains session event after network cleanup (Gaoxy.Test.RecoveryTest)
+     apps/gaoxy_test/test/recovery_test.exs:63
+     Assertion with == failed
+     code:  assert state.phase == :closing
+     left:  :closed
+     right: :closing
+     stacktrace:
+       test/recovery_test.exs:68: (test)
+
+
+
+  2) test final report retains session abnormal_down after network cleanup (Gaoxy.Test.RecoveryTest)
+     apps/gaoxy_test/test/recovery_test.exs:63
+     Assertion with == failed
+     code:  assert state.phase == :closing
+     left:  :closed
+     right: :closing
+     stacktrace:
+       test/recovery_test.exs:68: (test)
+
+
+
+  3) test a TLS handshake accepted during drain is retained until forced cleanup (Gaoxy.Test.RecoveryTest)
+     apps/gaoxy_test/test/recovery_test.exs:7
+     Assertion failed, no matching message after 1000ms
+     The following variables were pinned:
+       handler = #PID<0.476.0>
+       handler_monitor = #Reference<0.253685944.1935933441.77690>
+     The process mailbox is empty.
+     code: assert_receive {:DOWN, ^handler_monitor, :process, ^handler, _}
+     stacktrace:
+       test/recovery_test.exs:52: (test)
+
+     The following output was logged:
+     
+     01:57:27.050 [info] The function passed as a handler with ID #Reference<0.253685944.1935933441.77549> is a local function.
+     This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+     
+     https://hexdocs.pm/telemetry/telemetry.html#attach/4
+     
+     01:57:28.051 [error] GenServer #PID<0.455.0> terminating
+     ** (stop) killed
+     Last message: {:EXIT, #PID<0.454.0>, :killed}
+     State: %{timeout: 1000, info: %{profile: :http2, url: "https://127.0.0.1:53875", tls: %{cacertfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/ca.pem"}, capabilities: %{protocol: :http2, sse: true, streaming: true, websocket: false}, ready: true, endpoints: [%{port: 53875, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.253685944.1935933441.77415>, runtime: #PID<0.456.0>}
+     
+
+
+  4) test unresolved established sessions make deadline finalization uncertain (Gaoxy.Test.RecoveryTest)
+     apps/gaoxy_test/test/recovery_test.exs:86
+     Assertion with == failed
+     code:  assert report.status == :error
+     left:  :ok
+     right: :error
+     stacktrace:
+       test/recovery_test.exs:89: (test)
+
+
+Finished in 2.1 seconds (0.00s async, 2.1s sync)
+
+Result: 0/4 passed
+Failed: 4 tests

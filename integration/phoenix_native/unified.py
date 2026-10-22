@@ -93,11 +93,13 @@ def main():
         public = subprocess.check_output(["openssl", "x509", "-in", str(certs / "cert.pem"), "-pubkey", "-noout"])
         spki = subprocess.check_output(["openssl", "pkey", "-pubin", "-outform", "DER"], input=public)
         pin = base64.b64encode(hashlib.sha256(spki).digest()).decode()
+        browser_executable = os.environ.get("GAOXY_CHROMIUM_EXECUTABLE") or shutil.which("chromium")
         with sync_playwright() as playwright:
             for protocol, port, version in [("h2", ports["https"], "HTTP/2"), ("h3", ports["http3"], "HTTP/3")]:
                 args = ["--ignore-certificate-errors-spki-list=" + pin]
                 args += (["--enable-quic", "--enable-features=EnableWebsocketsOverHttp3", "--host-resolver-rules=MAP localhost 127.0.0.1", f"--origin-to-force-quic-on=localhost:{port}"] if protocol == "h3" else ["--disable-quic"])
-                browser = playwright.chromium.launch(executable_path=shutil.which("chromium"), headless=True, args=args)
+                browser = playwright.chromium.launch(executable_path=browser_executable, headless=True, args=args)
+                report["browser"] = {"version": browser.version, "executable": browser_executable or playwright.chromium.executable_path}
                 try:
                     context = browser.new_context()
                     page = context.new_page()

@@ -4,22 +4,22 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.9.0**.
+Requires Elixir `~> 1.18`. Package version: **0.10.0**.
 
 ## Install
 
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.9.0"}
+{:gaoxy_http, "~> 0.10.0"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.9.0"},
-{:websock_adapter, "~> 0.9.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.10.0"},
+{:websock_adapter, "~> 0.10.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module

@@ -24,6 +24,7 @@ PACKAGES = {
     "gaoxy_http": "apps/gaoxy_http",
     "gaoxy_http3": "apps/gaoxy_http3",
     "gaoxy_proxy": "apps/gaoxy_proxy",
+    "gaoxy_test": "apps/gaoxy_test",
 }
 VERSION = "9.8.7"
 ENV = {**os.environ, "ELIXIR_ERL_OPTIONS": "+S 2:2", "MIX_ENV": "prod"}
@@ -56,6 +57,11 @@ REQUIREMENTS = {
         "http_fetch": ("http_fetch", "== 0.21.14", False),
         "http_web_socket": ("http_web_socket", "== 0.21.14", False),
     },
+    "gaoxy_test": {
+        "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
+        "gaoxy_http3": ("gaoxy_http3", f"== {VERSION}", True),
+        "plug": ("plug", "== 1.20.3", False),
+    },
 }
 
 
@@ -84,7 +90,7 @@ end
             destination = self.source / relative
             destination.mkdir(parents=True)
             for child in (ROOT / relative).iterdir():
-                if child.name == "lib":
+                if child.name in ["lib", "priv"]:
                     shutil.copytree(child, destination / child.name)
                 elif child.is_file():
                     shutil.copyfile(child, destination / child.name)
@@ -226,6 +232,29 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("LICENSE", result.stdout)
         self.assertFalse(self.output.exists())
+
+    def test_rejects_unreviewed_internal_optional_options_before_output(self):
+        manifest = self.source / "apps/gaoxy_test/mix.exs"
+        original = manifest.read_text()
+        for options in [
+                "in_umbrella: true, optional: false",
+                "in_umbrella: true, optional: true, override: true",
+                "in_umbrella: true, optional: true, runtime: false",
+                'in_umbrella: true, optional: true, path: "../gaoxy_http3"']:
+            with self.subTest(options=options):
+                modified, count = re.subn(
+                    r"\{:gaoxy_http3,\s*in_umbrella: true,\s*optional: true\}",
+                    "{:gaoxy_http3, " + options + "}", original,
+                )
+                self.assertEqual(count, 1)
+                manifest.write_text(modified)
+                try:
+                    result = self.stage()
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn("unsupported dependency", result.stdout)
+                    self.assertFalse(self.output.exists())
+                finally:
+                    manifest.write_text(original)
 
     def test_requires_each_package_readme_before_staging_packages(self):
         for name, relative in PACKAGES.items():

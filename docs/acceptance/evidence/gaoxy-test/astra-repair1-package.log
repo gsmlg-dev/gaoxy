@@ -1,0 +1,94 @@
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy_test
+warning: in-umbrella application :gaoxy_http3 has the flag :optional set to true, but the flag is not supported for umbrella dependencies
+
+==> gaoxy
+Compiling 2 files (.ex)
+==> gaoxy_http3
+Compiling 1 file (.ex)
+==> gaoxy_test
+Compiling 3 files (.ex)
+==> gaoxy_proxy
+Compiling 2 files (.ex)
+==> gaoxy_server
+Compiling 1 file (.ex)
+==> gaoxy_test
+Running ExUnit with seed: 457284, max_cases: 4
+
+................
+02:02:02.955 [error] GenServer #PID<0.850.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.849.0>, :killed}
+State: %{timeout: 500, info: %{profile: :http1, url: "http://127.0.0.1:53988", tls: nil, ready: true, capabilities: %{protocol: :http1, websocket: true, streaming: true, sse: true}, endpoints: [%{port: 53988, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.2148568179.2473590785.110244>, runtime: #PID<0.851.0>}
+......................................
+02:02:07.903 [error] GenServer #PID<0.1508.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1507.0>, :killed}
+State: %{timeout: 1000, info: %{profile: :http2, url: "https://127.0.0.1:54063", tls: %{cacertfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/ca.pem"}, ready: true, capabilities: %{protocol: :http2, websocket: false, streaming: true, sse: true}, endpoints: [%{port: 54063, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.2148568179.2473590785.117703>, runtime: #PID<0.1509.0>}
+...
+02:02:08.046 [error] GenServer #PID<0.1605.0> terminating
+** (stop) :draining
+Process Label: {:hell, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 54073}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.188>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106152>, start_time: -576460744325950792, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 54073, telemetry_span_context: #Reference<0.2148568179.2473590786.106152>, parent_telemetry_span_context: #Reference<0.2148568179.2473590785.118188>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106152>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2148568179.2473590785.118149>, service: :gaoxy_test, generation: #Reference<0.2148568179.2473590785.118155>}, instance: #PID<0.1592.0>, service: #PID<0.1594.0>, spec: %{id: :gaoxy_test, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, limits: %{max_bytes: 1048576, drain_timeout: 5000, callback_timeout: 5000, max_memberships: 64, max_active: 64, max_packet: 65507, idle_timeout: 30000, max_output: 65507, max_state: 65536}, transport: :tcp, quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, http_limits: %{read_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, max_headers: 100, max_header_bytes: 32768, max_buffer_bytes: 65536, request_timeout: 30000, header_timeout: 5000, max_trailers: 32, max_trailer_bytes: 8192, max_body_bytes: 8388608, max_chunk_line: 1024, max_request_line: 8192}, endpoint: {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.Test.DispatchPlug, {#PID<0.1590.0>, #Reference<0.2148568179.2473590785.118135>}}}, h2c: :disabled, h2_limits: %{frame_timeout: 5000, table_size: 4096, receive_window: 65535, max_header_block: 16384, control_rate: 256, max_streams: 32, max_frame: 16384, control_turn: 32}, extended_connect: false}, dispatcher: %{}, capabilities: []}, gate: #PID<0.1595.0>, startup_token: #Reference<0.2148568179.2473590785.118159>}}
+
+02:02:08.048 [error] GenServer #PID<0.1591.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1590.0>, :killed}
+State: %{timeout: 1000, info: %{profile: :http1, url: "http://127.0.0.1:54072", tls: nil, ready: true, capabilities: %{protocol: :http1, websocket: true, streaming: true, sse: true}, endpoints: [%{port: 54072, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.2148568179.2473590785.118142>, runtime: #PID<0.1592.0>}
+
+
+  1) test http1: abrupt coordinator death closes the listener and accepted sockets (Gaoxy.Test.ProtocolTest)
+     apps/gaoxy_test/test/protocol_test.exs:229
+     TCP cleanup probe: {:error, :econnreset}
+     code: await_unavailable(info, System.monotonic_time(:millisecond) + 7_000)
+     stacktrace:
+       test/protocol_test.exs:372: Gaoxy.Test.ProtocolTest.await_unavailable/2
+       test/protocol_test.exs:248: (test)
+
+.
+02:02:08.140 [error] GenServer #PID<0.1654.0> terminating
+** (stop) {:options, {:socket_options, [send_timeout_close: true, send_timeout: 5000, buffer: 65536, recbuf: 65536], :einval}}
+Process Label: {:hell, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 54079}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.196>, #PID<0.1653.0>, #PID<0.1652.0>, :gen_tcp, :tls_gen_connection, #Reference<0.2148568179.2473721857.118646>, [option_tracker: #PID<0.1644.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106572>, start_time: -576460744234660834, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 54079, telemetry_span_context: #Reference<0.2148568179.2473590786.106572>, parent_telemetry_span_context: #Reference<0.2148568179.2473590785.118631>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106572>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2148568179.2473590785.118619>, service: :gaoxy_test, generation: #Reference<0.2148568179.2473590785.118625>}, instance: #PID<0.1638.0>, service: #PID<0.1640.0>, spec: %{id: :gaoxy_test, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{certfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/cert.pem", keyfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/key.pem", alpn: ["http/1.1"]}, limits: %{max_bytes: 1048576, drain_timeout: 5000, callback_timeout: 5000, max_memberships: 64, max_active: 64, max_packet: 65507, idle_timeout: 30000, max_output: 65507, max_state: 65536}, transport: :tls, quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, http_limits: %{read_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, max_headers: 100, max_header_bytes: 32768, max_buffer_bytes: 65536, request_timeout: 30000, header_timeout: 5000, max_trailers: 32, max_trailer_bytes: 8192, max_body_bytes: 8388608, max_chunk_line: 1024, max_request_line: 8192}, endpoint: {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.Test.DispatchPlug, {#PID<0.1636.0>, #Reference<0.2148568179.2473590785.118601>}}}, h2c: :disabled, h2_limits: %{frame_timeout: 5000, table_size: 4096, receive_window: 65535, max_header_block: 16384, control_rate: 256, max_streams: 32, max_frame: 16384, control_turn: 32}, extended_connect: false}, dispatcher: %{}, capabilities: []}, gate: #PID<0.1641.0>, startup_token: #Reference<0.2148568179.2473590786.106498>}}
+
+02:02:08.142 [error] GenServer #PID<0.1659.0> terminating
+** (stop) {:options, {:socket_options, [send_timeout_close: true, send_timeout: 5000, buffer: 65536, recbuf: 65536], :einval}}
+Process Label: {:hell, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 54080}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: {:sslsocket, #Port<0.197>, #PID<0.1658.0>, #PID<0.1657.0>, :gen_tcp, :tls_gen_connection, #Reference<0.2148568179.2473721858.106600>, [option_tracker: #PID<0.1644.0>, session_tickets_tracker: :disabled, session_id_tracker: :not_relevant]}, transport_module: Hell.Transports.SSL, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106616>, start_time: -576460744231880250, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 54080, telemetry_span_context: #Reference<0.2148568179.2473590786.106616>, parent_telemetry_span_context: #Reference<0.2148568179.2473590785.118631>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.2148568179.2473590786.106616>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{scope: %{instance: #Reference<0.2148568179.2473590785.118619>, service: :gaoxy_test, generation: #Reference<0.2148568179.2473590785.118625>}, instance: #PID<0.1638.0>, service: #PID<0.1640.0>, spec: %{id: :gaoxy_test, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{certfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/cert.pem", keyfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/key.pem", alpn: ["http/1.1"]}, limits: %{max_bytes: 1048576, drain_timeout: 5000, callback_timeout: 5000, max_memberships: 64, max_active: 64, max_packet: 65507, idle_timeout: 30000, max_output: 65507, max_state: 65536}, transport: :tls, quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http1], initialized: true, http_limits: %{read_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, max_headers: 100, max_header_bytes: 32768, max_buffer_bytes: 65536, request_timeout: 30000, header_timeout: 5000, max_trailers: 32, max_trailer_bytes: 8192, max_body_bytes: 8388608, max_chunk_line: 1024, max_request_line: 8192}, endpoint: {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.Test.DispatchPlug, {#PID<0.1636.0>, #Reference<0.2148568179.2473590785.118601>}}}, h2c: :disabled, h2_limits: %{frame_timeout: 5000, table_size: 4096, receive_window: 65535, max_header_block: 16384, control_rate: 256, max_streams: 32, max_frame: 16384, control_turn: 32}, extended_connect: false}, dispatcher: %{}, capabilities: []}, gate: #PID<0.1641.0>, startup_token: #Reference<0.2148568179.2473590786.106498>}}
+...
+02:02:08.253 [error] GenServer #PID<0.1738.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1737.0>, :killed}
+State: %{timeout: 1000, info: %{profile: :http3, url: "https://127.0.0.1:60019", tls: %{cacertfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/ca.pem"}, ready: true, capabilities: %{protocol: :http3, websocket: false, streaming: true, sse: true}, endpoints: [%{port: 60019, ip: {127, 0, 0, 1}, transport: :udp}]}, monitor: #Reference<0.2148568179.2473590786.107807>, runtime: #PID<0.1739.0>}
+.
+02:02:08.266 [error] GenServer #PID<0.1768.0> terminating
+** (stop) :draining
+Process Label: {:hell, :connection, {Gaoxy.HTTP.Connection, {{127, 0, 0, 1}, 54096}}}
+Last message: {:continue, :handle_connection}
+State: {%Hell.Socket{socket: #Port<0.219>, transport_module: Hell.Transports.TCP, read_timeout: 30000, handshake_timeout: 5000, silent_terminate_on_error: false, span: %Hell.Telemetry{span_name: :connection, telemetry_span_context: #Reference<0.2148568179.2473590786.108012>, start_time: -576460744106642667, start_metadata: %{handler: Gaoxy.HTTP.Connection, remote_address: {127, 0, 0, 1}, remote_port: 54096, telemetry_span_context: #Reference<0.2148568179.2473590786.108012>, parent_telemetry_span_context: #Reference<0.2148568179.2473590786.107979>}, handler: Gaoxy.HTTP.Connection, span_metadata: %{handler: Gaoxy.HTTP.Connection, telemetry_span_context: #Reference<0.2148568179.2473590786.108012>}}, read_timer: nil, read_deadline: nil, timer_deadline: nil}, %{local: {{127, 0, 0, 1}, 54095}, owner: #PID<0.1768.0>, scope: %{instance: #Reference<0.2148568179.2473590786.107940>, service: :gaoxy_test, generation: #Reference<0.2148568179.2473590786.107946>}, ssl: nil, instance: #PID<0.1755.0>, service: #PID<0.1757.0>, peer: {{127, 0, 0, 1}, 54096}, spec: %{id: :gaoxy_test, port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.HTTP.Connection, tls: %{}, limits: %{max_bytes: 268435456, drain_timeout: 5000, callback_timeout: 5000, max_memberships: 64, max_active: 64, max_packet: 65507, idle_timeout: 30000, max_output: 65507, max_state: 65536}, transport: :tcp, quic: %{}, handler_mode: :native, handler_options: %{protocols: [:http2], initialized: true, http_limits: %{read_timeout: 5000, write_timeout: 5000, max_read_chunk: 16384, max_headers: 100, max_header_bytes: 32768, max_buffer_bytes: 65536, request_timeout: 30000, header_timeout: 5000, max_trailers: 32, max_trailer_bytes: 8192, max_body_bytes: 8388608, max_chunk_line: 1024, max_request_line: 8192}, endpoint: {Gaoxy.HTTP.PlugEndpoint, {Gaoxy.Test.DispatchPlug, {#PID<0.1753.0>, #Reference<0.2148568179.2473590786.107926>}}}, h2c: :prior_knowledge, h2_limits: %{frame_timeout: 5000, table_size: 4096, receive_window: 65535, max_header_block: 16384, control_rate: 256, max_streams: 32, max_frame: 16384, control_turn: 32}, extended_connect: false}, dispatcher: %{}, capabilities: []}, gate: #PID<0.1758.0>, startup_token: #Reference<0.2148568179.2473590786.107950>, peer_cert: nil, secure: false}}
+
+02:02:08.266 [error] GenServer #PID<0.1754.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1753.0>, :killed}
+State: %{timeout: 1000, info: %{profile: :h2c, url: "http://127.0.0.1:54095", tls: nil, ready: true, capabilities: %{protocol: :h2c, websocket: false, streaming: true, sse: true}, endpoints: [%{port: 54095, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.2148568179.2473590786.107933>, runtime: #PID<0.1755.0>}
+.
+02:02:09.276 [error] GenServer #PID<0.1773.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.1772.0>, :killed}
+State: %{timeout: 1000, info: %{profile: :https, url: "https://127.0.0.1:54099", tls: %{cacertfile: "/Volumes/Data/dev/gsmlg-dev/gaoxy/_build/test/lib/gaoxy_test/priv/tls/ca.pem"}, ready: true, capabilities: %{protocol: :https, websocket: true, streaming: true, sse: true}, endpoints: [%{port: 54099, ip: {127, 0, 0, 1}, transport: :tcp}]}, monitor: #Reference<0.2148568179.2473590785.118968>, runtime: #PID<0.1774.0>}
+.....
+Finished in 7.8 seconds (0.7s async, 7.0s sync)
+
+Result: 68/69 passed
+Failed: 1 test

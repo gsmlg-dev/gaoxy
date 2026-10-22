@@ -10,6 +10,15 @@ import sys
 ROOT = Path(__file__).resolve().parent.parent
 # Each file is checked separately: losing a case or excluding it fails the gate.
 SUITES = {
+    "test_helpers": [
+        ("apps/gaoxy_test/test/expectations_test.exs", 6),
+        ("apps/gaoxy_test/test/core_test.exs", 9),
+        ("apps/gaoxy_test/test/lifecycle_test.exs", 12),
+        ("apps/gaoxy_test/test/subprocess_test.exs", 8),
+        ("apps/gaoxy_test/test/protocol_test.exs", 13),
+        ("apps/gaoxy_test/test/helper_test.exs", 17),
+        ("apps/gaoxy_test/test/recovery_test.exs", 4),
+    ],
     "unit": [
         # Mixed cleartext selection, ownership, deadlines and public contracts.
         ("apps/gaoxy_http/test/protocol_detector_test.exs", 6),

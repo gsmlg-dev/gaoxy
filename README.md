@@ -5,9 +5,9 @@ custom TCP, TLS and UDP services. It provides native HTTP/1.1 and HTTP/2, with
 HTTP/3 available through an optional package. Run it inside your application's
 supervision tree or use the standalone release with JSON configuration.
 
-This source targets version **0.9.0**:
-[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.9.0) ·
-[release verification](docs/acceptance/release-0.9.0.md).
+This source targets version **0.10.0**:
+[GitHub release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.10.0) ·
+[release verification](docs/acceptance/gaoxy-test.md).
 
 ## Choose a package
 
@@ -18,6 +18,7 @@ This source targets version **0.9.0**:
 | [`gaoxy_websock_adapter`](https://hex.pm/packages/gaoxy_websock_adapter) | Gaoxy's WebSockAdapter distribution for Phoenix and Plug upgrades | [README](vendor/websock_adapter/README.gaoxy.md) |
 | [`gaoxy_http3`](https://hex.pm/packages/gaoxy_http3) | Optional native HTTP/3 server over QUIC | [README](apps/gaoxy_http3/README.md) |
 | [`gaoxy_proxy`](https://hex.pm/packages/gaoxy_proxy) | Reverse HTTP/WebSocket proxies, upstream resources and gateway services | [README](apps/gaoxy_proxy/README.md) |
+| [`gaoxy_test`](https://hex.pm/packages/gaoxy_test) | Test-only real HTTP fixtures, expectations, streaming and ExUnit verification | [README](apps/gaoxy_test/README.md) |
 | `gaoxy_server` | Standalone application with JSON service and route configuration | [README](apps/gaoxy_server/README.md) |
 
 `gaoxy_server` ships in the standalone release rather than as a Hex package.
@@ -33,8 +34,8 @@ For an existing Phoenix application, the essential changes are:
 1. Replace the explicit Bandit dependency in `mix.exs` with:
 
    ```elixir
-   {:gaoxy_http, "~> 0.9.0"},
-   {:websock_adapter, "~> 0.9.0", hex: :gaoxy_websock_adapter, override: true}
+   {:gaoxy_http, "~> 0.10.0"},
+   {:websock_adapter, "~> 0.10.0", hex: :gaoxy_websock_adapter, override: true}
    ```
 
    Keep the dependency name `:websock_adapter`: that is the OTP application
@@ -76,7 +77,7 @@ WebSocket additionally requires `extended_connect: true` and an explicit
 
 ## Serve a Plug
 
-Add `{:gaoxy_http, "~> 0.9.0"}` to your dependencies. Given a Plug module such
+Add `{:gaoxy_http, "~> 0.10.0"}` to your dependencies. Given a Plug module such
 as `MyApp.Router`, add a listener to your application's supervision tree:
 
 ```elixir
@@ -162,7 +163,7 @@ documented isolated environment.
 - [Architecture](docs/architecture.md) and [dependency provenance](docs/dependency-audit.md)
 - [Historical README and acceptance records](docs/history/readme-2026-10-20.md)
 
-The manual release workflow builds and publishes all five Hex packages in
+The manual release workflow builds and publishes all six Hex packages in
 dependency order using the `HEX_API_KEY` Actions secret. Each package contains
 its own README. The staging tool preserves runtime source bytes and converts
 workspace dependencies to exact Hex requirements:

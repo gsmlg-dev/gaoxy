@@ -10,13 +10,15 @@ defmodule StageHexPackages do
     {"gaoxy", :gaoxy, "apps/gaoxy"},
     {"gaoxy_http", :gaoxy_http, "apps/gaoxy_http"},
     {"gaoxy_http3", :gaoxy_http3, "apps/gaoxy_http3"},
-    {"gaoxy_proxy", :gaoxy_proxy, "apps/gaoxy_proxy"}
+    {"gaoxy_proxy", :gaoxy_proxy, "apps/gaoxy_proxy"},
+    {"gaoxy_test", :gaoxy_test, "apps/gaoxy_test"}
   ]
   @descriptions %{
     gaoxy: "Elixir/OTP transport runtime for embedded and standalone services",
     gaoxy_http: "Native HTTP/1, HTTP/2, Plug and Phoenix adapters for Gaoxy",
     gaoxy_http3: "Native HTTP/3 service for Gaoxy",
     gaoxy_proxy: "HTTP and WebSocket proxy services for Gaoxy",
+    gaoxy_test: "Real HTTP test fixtures with expectations and reliable ExUnit verification",
     websock_adapter: "Gaoxy distribution of WebSockAdapter with native HTTP/2 and HTTP/3 support"
   }
   @git_dependencies %{
@@ -145,9 +147,13 @@ defmodule StageHexPackages do
         if Map.new(options) != %{git: url, ref: ref}, do: unsupported!(original)
         {app, "== #{published}"}
 
-      app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy] and
+      app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :gaoxy_test] and
           options == [in_umbrella: true] ->
         {app, "== #{version}"}
+
+      app == :gaoxy_http3 and
+          options in [[in_umbrella: true, optional: true], [optional: true, in_umbrella: true]] ->
+        {app, "== #{version}", optional: true}
 
       app == :websock_adapter and
           Map.new(options) == %{path: "../../vendor/websock_adapter", override: true} ->

@@ -46,3 +46,20 @@ SPKI through a process-local flag; no global trust-store change occurs. LiveView
 WebSockets continue through HTTP/1 Upgrade, with no extended-CONNECT claim.
 Run `gate.py` for the complete M3 evidence envelope. Keep generated leaf keys
 out of committed artifacts when choosing an evidence directory outside `.audit`.
+
+`unified.py` runs the Endpoint-owned H1/H2/H3 suite, including native H2/H3
+LiveView and Channel WebSockets, reload/restoration and shutdown. It uses system
+`chromium`, then Playwright's installed browser by default. Set
+`GAOXY_CHROMIUM_EXECUTABLE` to select an explicit browser executable:
+
+```sh
+GAOXY_CHROMIUM_EXECUTABLE="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+GAOXY_PHOENIX_EVIDENCE=.audit/unified-phoenix \
+.audit/browser-venv/bin/python integration/phoenix_native/unified.py
+```
+
+Its `report.json` records the selected executable and browser version alongside
+the transport receipts. In a local macOS comparison, downloaded Chromium
+141.0.7390.37 failed the H3 WebSocket connection while installed Chrome
+156.0.8078.48 passed the same suite. This comparison does not establish a general
+browser or platform limitation; keep the required transport assertions enabled.

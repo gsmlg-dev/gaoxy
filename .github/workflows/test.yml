@@ -62,9 +62,17 @@ jobs:
       - name: Pinned independent native H2 peer
         run: |
           python -m venv .audit/h2peer
-          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt
+          .audit/h2peer/bin/python -m pip install -r apps/gaoxy_http/test/support/h2-requirements.txt -r integration/http3/requirements.txt
       - name: Repair, configuration and ordinary unit compatibility (exact counts)
         run: python3 scripts/check-repairs.py unit
       - name: Internal request configuration and H1/H2 streaming regressions
         run: |
           python3 scripts/check-tests.py apps/gaoxy/test/client_certificate_config_test.exs apps/gaoxy_http/test/phoenix_client_certificate_config_test.exs apps/gaoxy_http/test/websocket_configured_limits_test.exs apps/gaoxy_http/test/websocket_application_options_test.exs apps/gaoxy_http/test/stream_lifetime_test.exs apps/gaoxy_http/test/stream_lifetime_h2_test.exs apps/gaoxy_http/test/stream_lifetime_contract_test.exs apps/gaoxy_http/test/stream_lifetime_generation_test.exs apps/gaoxy_http3/test/stream_lifetime_boundary_test.exs apps/gaoxy_http/test/supervised_shutdown_budget_test.exs apps/gaoxy_http3/test/supervised_shutdown_budget_test.exs
+      - name: Gaoxy.Test expectations, lifecycle and protocol helpers (nonempty)
+        env:
+          MIX_ENV: test
+        run: python3 scripts/check-repairs.py test_helpers
+      - name: Isolated built-package test consumers and production isolation
+        env:
+          MIX_ENV: test
+        run: python3 scripts/test-consumers.py

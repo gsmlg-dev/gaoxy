@@ -54,6 +54,10 @@ def wait_for_admission_barrier(process, addresses):
 
 
 def main():
+    for app in ["gaoxy_test", "ex_unit"]:
+        assert not list((release.parent.parent / "lib").glob(app + "-[0-9]*")), (
+            f"test infrastructure leaked into standalone release: {app}"
+        )
     with tempfile.TemporaryDirectory(prefix="gaoxy-release-") as directory:
         fixture = Path(directory)
         subprocess.run(["bash", str(ROOT / "scripts/generate-fixtures.sh"), directory], check=True)

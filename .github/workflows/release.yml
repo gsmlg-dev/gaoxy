@@ -109,6 +109,10 @@ jobs:
           bash scripts/h3-gateway-consumer.sh
       - name: Correctness repair and ordinary compatibility on publication source
         run: python3 scripts/check-repairs.py all
+      - name: Built-package test consumers and production dependency isolation
+        env:
+          MIX_ENV: test
+        run: python3 scripts/test-consumers.py
       - name: Unified Phoenix browser and peer dependencies
         run: |
           python -m pip install -r integration/phoenix_native/requirements.txt -r integration/http3/requirements.txt
@@ -159,7 +163,7 @@ jobs:
       - name: Build all Hex packages before publication
         run: |
           elixir scripts/stage-hex-packages.exs "$GITHUB_WORKSPACE" "$RUNNER_TEMP/gaoxy-hex"
-          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
+          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy gaoxy_test)
           for app in "${packages[@]}"; do
             (cd "$RUNNER_TEMP/gaoxy-hex/$app" && mix hex.build --output "$GITHUB_WORKSPACE/dist/${app}-${RELEASE_VERSION}.tar")
             (cd dist && sha256sum "${app}-${RELEASE_VERSION}.tar" >> SHA256SUMS)
@@ -179,7 +183,7 @@ jobs:
           HEX_API_KEY: ${{ secrets.HEX_API_KEY }}
         run: |
           : "${HEX_API_KEY:?Set the HEX_API_KEY Actions secret to publish packages}"
-          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy)
+          packages=(gaoxy_websock_adapter gaoxy gaoxy_http gaoxy_http3 gaoxy_proxy gaoxy_test)
           for app in "${packages[@]}"; do
             (cd "$RUNNER_TEMP/gaoxy-hex/$app" && mix deps.get --only prod && mix hex.publish package --yes)
           done
@@ -196,6 +200,10 @@ jobs:
           git diff --exit-code
           git tag "v${RELEASE_VERSION}"
           git push origin "refs/tags/v${RELEASE_VERSION}"
+      - name: Fresh Hex-only test consumers after publication
+        env:
+          MIX_ENV: test
+        run: python3 scripts/test-consumers.py --published --version "$RELEASE_VERSION"
       - name: Create GitHub Release with application artifacts
         env:
           GH_TOKEN: ${{ github.token }}

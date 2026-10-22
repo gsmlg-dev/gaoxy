@@ -1,5 +1,27 @@
 # Acceptance boundaries
 
+`test_consumer`, `test_h3_consumer`, and `http_fetch_test_consumer` are copied to
+fresh temporary projects by `python3 scripts/test-consumers.py`. Before
+publication the script builds actual Hex tarballs, extracts their runtime files
+and trust assets, and uses explicit fixture-only path mappings for the aligned
+unreleased sibling packages. Other dependencies resolve from Hex. The base
+consumer proves H3/QUIC/ExSSL/proxy/client packages are physically absent, manual
+mode starts no ExUnit runner, and the test-only dependency is absent from a real
+production release. The explicit H3 consumer reuses the independent validating
+aioquic peer. HTTPFetch uses its published public API in a separate project.
+
+Future HTTPFetch migration candidates are ordinary request/response, upload,
+redirect, finite SSE and H1 WebSocket scenarios that need expectation or teardown
+verification. This delivery demonstrates adoption through the isolated consumer;
+it does not migrate HTTPFetch's existing suites. Keep malformed-frame, exact-reset
+and independent interoperability peers where their wire control is required.
+
+After publication run `python3 scripts/test-consumers.py --published --version
+VERSION`; this omits every local override and resolves fresh Hex-only consumers.
+Set `GAOXY_QUIC_PYTHON` to a Python environment with the pinned dependencies in
+`integration/http3/requirements.txt`. A missing peer prerequisite is a failed
+gate, never an implicit skipped success.
+
 `core_consumer` is copied to a fresh temporary external project by
 `scripts/external-consumer.sh`. It tests real TCP and UDP and rejects optional
 HTTP/Plug/Phoenix/Bandit/QUIC dependencies and started applications. It uses the
