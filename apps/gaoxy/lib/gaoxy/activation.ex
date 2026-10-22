@@ -11,6 +11,8 @@ defmodule Gaoxy.Activation do
     :tls,
     :udp,
     :quic,
+    :hell_options,
+    :abyss_options,
     :handler_mode,
     :handler,
     :capabilities

@@ -23,6 +23,8 @@ defmodule Gaoxy.Config do
     :tls,
     :udp,
     :quic,
+    :hell_options,
+    :abyss_options,
     :dispatcher,
     :limits,
     :capabilities
@@ -52,6 +54,12 @@ defmodule Gaoxy.Config do
   end
 
   def service(input) when is_map(input) do
+    with {:ok, input} <- Gaoxy.BackendOptions.normalize(input), do: normalized_service(input)
+  end
+
+  def service(_), do: {:error, :invalid_service}
+
+  defp normalized_service(input) do
     limits = Map.merge(@limits, Map.get(input, :limits, %{}))
 
     spec =
@@ -92,8 +100,6 @@ defmodule Gaoxy.Config do
     BadMapError -> {:error, :invalid_options}
     ArgumentError -> {:error, :invalid_options}
   end
-
-  def service(_), do: {:error, :invalid_service}
 
   def conflicts(a, b) do
     family = fn spec -> if spec.transport in [:udp, :quic], do: :udp, else: :tcp end

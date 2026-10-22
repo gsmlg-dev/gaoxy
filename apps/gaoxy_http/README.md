@@ -6,6 +6,12 @@ connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
 Requires Elixir `~> 1.18`. Package version: **0.10.0**.
 
+TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
+tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
+ListenerSet. See the
+[backend support matrix](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/backend-options.md)
+and [Bandit migration example](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/phoenix.md#backend-tuning-migration).
+
 ## Install
 
 For a Plug application, add:

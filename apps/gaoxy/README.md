@@ -108,6 +108,14 @@ Defaults bind loopback and limit each service to 64 active operations and
 `limits: %{max_active: 32, max_bytes: 4_194_304, idle_timeout: 60_000}`.
 These budgets describe admitted resources, not total VM or kernel memory.
 
+TCP/TLS services accept `hell_options`, for example
+`[num_acceptors: 4, transport_options: [backlog: 2048, keepalive: true]]`.
+UDP services accept `abyss_options`, for example `[udp_buffer_size: 262_144]`.
+These are strict backend-specific subsets; binding, TLS, resource and lifecycle
+controls remain in their existing fields. See
+[backend tuning](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/backend-options.md)
+for supported keys, defaults and acceptor budget division.
+
 For HTTP and Phoenix, see the
 [HTTP package](https://github.com/gsmlg-dev/gaoxy/blob/main/apps/gaoxy_http/README.md)
 and [Phoenix guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/phoenix.md).

@@ -8,6 +8,7 @@ defmodule Gaoxy.HTTP do
     :transport,
     :tls,
     :limits,
+    :hell_options,
     :http_limits,
     :plug,
     :endpoint,
@@ -63,7 +64,8 @@ defmodule Gaoxy.HTTP do
   end
 
   def service_spec(options) when is_list(options) do
-    if Keyword.keyword?(options) and Enum.all?(Keyword.keys(options), &(&1 in @keys)) do
+    if Keyword.keyword?(options) and length(options) == map_size(Map.new(options)) and
+         Enum.all?(Keyword.keys(options), &(&1 in @keys)) do
       {endpoint, plug} = {Keyword.get(options, :endpoint), Keyword.get(options, :plug)}
 
       case {endpoint, plug} do
@@ -94,6 +96,7 @@ defmodule Gaoxy.HTTP do
       transport: transport,
       tls: tls,
       limits: Keyword.get(options, :limits, %{}),
+      hell_options: Keyword.get(options, :hell_options, []),
       handler_mode: :native,
       handler: Gaoxy.HTTP.Connection,
       handler_options: %{
@@ -111,7 +114,9 @@ defmodule Gaoxy.HTTP do
       }
     }
 
-    with {:ok, normalized} <- Gaoxy.HTTP.Options.normalize(service.handler_options),
+    with {:ok, service} <- Gaoxy.BackendOptions.normalize(service),
+         :ok <- socket_budget(service.hell_options),
+         {:ok, normalized} <- Gaoxy.HTTP.Options.normalize(service.handler_options),
          limits =
            if(:http2 in normalized.protocols and is_map(service.limits),
              do: Map.put_new(service.limits, :max_bytes, 268_435_456),
@@ -128,6 +133,15 @@ defmodule Gaoxy.HTTP do
            }),
          :ok <- budget(spec) do
       {:ok, spec}
+    end
+  end
+
+  defp socket_budget(options) do
+    transport = Keyword.get(options, :transport_options, [])
+
+    case Enum.find([:recbuf, :buffer], &Keyword.has_key?(transport, &1)) do
+      nil -> :ok
+      key -> {:error, {:unsupported_http_backend_option, key}}
     end
   end
 

@@ -163,8 +163,8 @@ defmodule Gaoxy.HTTP.ListenerSet do
     allowed =
       @common ++
         if(role == :http3,
-          do: [:certfile, :keyfile, :h3_limits],
-          else: @http ++ if(role == :https, do: @tls, else: [])
+          do: [:certfile, :keyfile, :h3_limits, :abyss_options],
+          else: [:hell_options] ++ @http ++ if(role == :https, do: @tls, else: [])
         )
 
     with :ok <- keyword(options, path),

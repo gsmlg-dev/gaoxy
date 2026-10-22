@@ -14,6 +14,7 @@ defmodule Gaoxy.PhoenixAdapter do
     :ip,
     :port,
     :limits,
+    :hell_options,
     :http_limits,
     :protocols,
     :h2c,
@@ -38,6 +39,7 @@ defmodule Gaoxy.PhoenixAdapter do
     :limits,
     :http_limits,
     :h3_limits,
+    :abyss_options,
     :extended_connect
   ]
 

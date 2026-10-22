@@ -883,6 +883,8 @@ defmodule Gaoxy.Service do
       {:ip, spec.ip} | options
     ]
 
+    options = options ++ Keyword.get(spec.abyss_options, :transport_options, [])
+
     host_options = [
       handler_module: Gaoxy.DatagramBridge,
       handler_options: context,
@@ -897,6 +899,8 @@ defmodule Gaoxy.Service do
       shutdown_timeout: spec.limits.drain_timeout,
       connection_telemetry_sample_rate: 1.0
     ]
+
+    host_options = host_options ++ Keyword.take(spec.abyss_options, [:udp_buffer_size])
 
     host_options =
       if spec.handler_mode == :datagram_dispatcher do
@@ -920,6 +924,7 @@ defmodule Gaoxy.Service do
         port: spec.port,
         alpn: spec.quic.alpn,
         poll_interval: spec.quic.poll_interval,
+        event_batch: Keyword.get(spec.abyss_options, :event_batch, 32),
         tls: tls,
         max_connections: spec.limits.max_active,
         init_timeout: spec.limits.callback_timeout,
@@ -966,6 +971,8 @@ defmodule Gaoxy.Service do
         []
       end
 
+    num_acceptors = Keyword.get(spec.hell_options, :num_acceptors, 1)
+
     Hell.start_link(
       handler_module:
         if(spec.handler_mode == :native, do: spec.handler, else: Gaoxy.StreamBridge),
@@ -976,14 +983,15 @@ defmodule Gaoxy.Service do
           do: Hell.Transports.SSL,
           else: Hell.Transports.TCP
         ),
-      transport_options: [
-        if(tuple_size(spec.ip) == 8, do: :inet6, else: :inet),
-        {:ip, spec.ip},
-        {:send_timeout, spec.limits.callback_timeout},
-        {:send_timeout_close, true} | tls
-      ],
-      num_acceptors: 1,
-      num_connections: spec.limits.max_active,
+      transport_options:
+        [
+          if(tuple_size(spec.ip) == 8, do: :inet6, else: :inet),
+          {:ip, spec.ip},
+          {:send_timeout, spec.limits.callback_timeout},
+          {:send_timeout_close, true} | tls
+        ] ++ Keyword.get(spec.hell_options, :transport_options, []),
+      num_acceptors: num_acceptors,
+      num_connections: div(spec.limits.max_active, num_acceptors),
       max_connections_retry_count: 0,
       read_timeout: spec.limits.idle_timeout,
       handshake_timeout: spec.limits.callback_timeout,

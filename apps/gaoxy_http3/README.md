@@ -65,6 +65,12 @@ The binding requires a concrete IPv4 tuple; wildcard and IPv6 bindings are
 currently rejected. The defaults are loopback, port `0` and ID `:http3`.
 TLS credentials are required. Transport is `:quic`, and ALPN is fixed to `h3`.
 
+Use `abyss_options: [event_batch: 16, poll_interval: 5]` to tune the backend's
+bounded event batch and polling interval. The defaults remain 32 events and
+10 ms. The same entry belongs inside `http3` for ListenerSet and Phoenix.
+QUIC socket tuning and resource/lifecycle overrides are rejected; see the
+[backend support matrix](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/backend-options.md).
+
 `Gaoxy.HTTP.HTTP3.service_spec/1` returns `{:ok, service}` for use in a shared
 `{Gaoxy, services: [...]}` instance alongside TCP or HTTP/1–2 services.
 `Gaoxy.HTTP` accepts HTTP/1 and HTTP/2; `protocols: [:http3]` does not enable H3.

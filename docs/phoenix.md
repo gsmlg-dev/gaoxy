@@ -216,6 +216,7 @@ These are keyword lists; their three limit values are maps.
 | `limits` | `%{}`; merges service admission/lifecycle defaults below |
 | `http_limits` | `%{}`; merges HTTP parser/deadline defaults below |
 | `h2_limits` | `%{}`; merges H2 limits below |
+| `hell_options` | `[]`; validated TCP/TLS backend tuning, described below |
 | `certfile`, `keyfile` | HTTPS only, required binary file paths |
 | `versions` | HTTPS only, `[:"tlsv1.3"]`; also `[:"tlsv1.2"]` or `[:"tlsv1.3", :"tlsv1.2"]` |
 | `alpn` | HTTPS only; automatically derived from `protocols` |
@@ -260,6 +261,47 @@ H2 requires the `:inet` TCP backend. For TLS, `Application.get_env(:ssl,
 :internal_active_n, 100)` must be an integer in `1..100`; an unsupported host
 profile is rejected. See [native HTTP](native-http.md) for the qualified host
 profile and protocol boundaries.
+
+### Backend tuning migration
+
+Replace Bandit's `thousand_island_options` with `hell_options` inside each
+`http` or `https` listener. The old name is not an alias. For example, migrate:
+
+```elixir
+http: [
+  port: 4000,
+  thousand_island_options: [
+    num_acceptors: 4,
+    transport_options: [backlog: 2048, nodelay: true]
+  ]
+]
+```
+
+to:
+
+```elixir
+http: [
+  port: 4000,
+  limits: %{max_active: 64},
+  hell_options: [
+    num_acceptors: 4,
+    transport_options: [backlog: 2048, nodelay: true]
+  ]
+]
+```
+
+This gives each of the four acceptors 16 backend connection slots. Gaoxy
+retains the service-wide admission and byte budgets. Move connection and
+shutdown controls to the existing `limits` fields; arbitrary Thousand Island
+options are not portable to Hell. Keep certificates, binding and protocol
+policy in their existing listener fields. Remove old options at their original
+configuration definitions to prevent Phoenix config merging from retaining them.
+
+For an optional `http3` listener, use
+`abyss_options: [event_batch: 16, poll_interval: 5]`. QUIC has no public backend
+socket-tuning interface in Abyss 0.9.0. See the complete
+[backend support matrix and restrictions](backend-options.md), including the
+different UDP buffer API and unused remainders when dividing acceptor slots.
 
 ### Service budgets: `limits`
 
@@ -445,7 +487,7 @@ startup for the usual Phoenix deployment and automatic code-reload composition.
 | Endpoint `http` / `https` | Keep those keys; rebuild their contents from the supported listener table |
 | `ip`, `port` | Supported; use an IP tuple and integer/decimal-string port |
 | `http_options`, `http_1_options`, `http_2_options` | Not accepted; configure documented `http_limits`, `protocols`, `h2_limits` as appropriate |
-| `thousand_island_options`, acceptor/transport options | Not accepted as passthrough; use documented Gaoxy service limits where they express your requirement |
+| `thousand_island_options`, acceptor/transport options | Rename the supported tuning subset to `hell_options`; put resource/deadline controls in `limits`. See [backend tuning migration](#backend-tuning-migration). |
 | TLS option passthrough, `otp_app`, `cipher_suite` inside `https` | Not accepted; use the documented credential paths, `versions`, matching `alpn`, and peer-verification keys |
 | HTTP/2 enable/disable options | Select `protocols`; H2 is preferred on HTTPS by default |
 | WebSocket compression | Unsupported; remove `compress: true` |
@@ -522,7 +564,7 @@ config :my_app, MyAppWeb.Endpoint,
 `http3: nil` or `false` disables H3. `http3: true` is invalid: H3 requires its
 own explicit IP, port, certificate and key. TCP ALPN/version options belong to
 `https`; they are not copied to QUIC. Existing `limits`, `http_limits`,
-`h3_limits` and explicit `extended_connect` are accepted. Unsupported wildcard,
+`h3_limits`, `abyss_options` and explicit `extended_connect` are accepted. Unsupported wildcard,
 IPv6 and TLS capabilities fail instead of falling back to a different listener.
 Two zero ports are independent; two equal nonzero ports deliberately share the
 numeric port across TCP and UDP.

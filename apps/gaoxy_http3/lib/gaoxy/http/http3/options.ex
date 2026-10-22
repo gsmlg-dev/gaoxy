@@ -8,6 +8,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
     :tls,
     :quic,
     :limits,
+    :abyss_options,
     :http_limits,
     :h3_limits,
     :extended_connect,
@@ -49,6 +50,13 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
              {:error, :unsupported_http3_alpn},
          {:ok, h3} <- h3_limits(Keyword.get(options, :h3_limits, %{})),
          {:ok, service_limits} <- service_limits(Keyword.get(options, :limits, %{})),
+         {:ok, backend} <-
+           Gaoxy.BackendOptions.normalize(%{
+             transport: :quic,
+             limits: service_limits,
+             quic: %{alpn: ["h3"]},
+             abyss_options: Keyword.get(options, :abyss_options, [])
+           }),
          {:ok, endpoint} <- endpoint(options),
          {:ok, normalized} <-
            Gaoxy.HTTP.Options.normalize(%{
@@ -73,7 +81,8 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
          port: Keyword.get(options, :port, 0),
          transport: :quic,
          tls: tls,
-         quic: %{alpn: ["h3"]},
+         quic: backend.quic,
+         abyss_options: backend.abyss_options,
          limits: service_limits,
          handler_options: %{handler | endpoint: initialized.endpoint}
        }}
