@@ -5,6 +5,7 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
   alias Gaoxy.Proxy.ManagedH2FixedFixture, as: F
   alias Gaoxy.Proxy.ManagedH2GroupFixture, as: G
   alias Gaoxy.Proxy.{ManagedH2GroupBoundary, UpstreamGroups, UpstreamTransports}
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
   @reserve 16_478_862
 
@@ -140,7 +141,13 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
               )
           else
             :ok = F.send_body(f, socket, body, false)
-            {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+
+            {_, block} =
+              HPACK.encode_headers(HPACK.new_encoder(), trailers,
+                indexing: :never,
+                huffman: :never
+              )
+
             :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
           end
 
@@ -270,7 +277,13 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
               )
           else
             :ok = F.send_body(f, socket, body, false)
-            {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+
+            {_, block} =
+              HPACK.encode_headers(HPACK.new_encoder(), trailers,
+                indexing: :never,
+                huffman: :never
+              )
+
             :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
           end
 
@@ -385,7 +398,10 @@ defmodule Gaoxy.Proxy.UpstreamTransportStreamingTest do
 
           # Submission does not establish pump parsing or an upstream trailer queue.
           :ok = F.send_body(f, socket, body, false, 1)
-          {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+
+          {_, block} =
+            HPACK.encode_headers(HPACK.new_encoder(), trailers, indexing: :never, huffman: :never)
+
           :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
 
           assert %{"connection" => ^connection, "stream" => ^stream, "total_bytes" => 1} =

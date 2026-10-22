@@ -5,6 +5,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedWriteLifecycleTest do
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
   alias Gaoxy.HTTP.HTTP2.Frame
   alias Hell.Socket
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
   @timeout 5_000
 
@@ -459,7 +460,10 @@ defmodule Gaoxy.Proxy.ManagedH2FixedWriteLifecycleTest do
           h2_committed_head(socket, block, ended, deadline)
         else
           refute ended, "head unexpectedly terminated the still-open upstream response"
-          assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(4_096))
+
+          assert {:ok, _, fields} =
+                   HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), block)
+
           fields
         end
 

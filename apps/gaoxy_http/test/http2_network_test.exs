@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2NetworkTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.{Exchange, Response}
 
@@ -425,7 +426,7 @@ defmodule Gaoxy.HTTP2NetworkTest do
 
       if path == "/deadline-trailers" do
         assert {1, 4, 1, bytes} = recv_response_head(socket)
-        assert {:ok, fields, _} = HPAX.decode(bytes, HPAX.new(4_096))
+        assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), bytes)
         assert {":status", "200"} in fields
         assert {"trailer", "x-check"} in fields
       end
@@ -721,13 +722,18 @@ defmodule Gaoxy.HTTP2NetworkTest do
     assert responses(socket, [1])[1].body == "/first"
     await_stream_completion(server, Gaoxy.Lifecycle.deadline(1_000))
 
-    {closed_block, encoder} = HPAX.encode(:store, [{"x-context", "kept"}], HPAX.new(4_096))
+    {encoder, closed_block} =
+      HPACK.encode_headers(HPACK.new_encoder(), [{"x-context", "kept"}],
+        indexing: :incremental,
+        huffman: :never
+      )
+
     :ok = :gen_tcp.send(socket, frame(1, 5, 1, closed_block))
     assert {3, _, 1, <<5::32>>} = recv_frame(socket)
 
-    {next_block, _} =
-      HPAX.encode(
-        :no_store,
+    {_, next_block} =
+      HPACK.encode_headers(
+        encoder,
         [
           {":method", "GET"},
           {":scheme", "http"},
@@ -735,7 +741,8 @@ defmodule Gaoxy.HTTP2NetworkTest do
           {":path", "/sibling"},
           {"x-context", "kept"}
         ],
-        encoder
+        indexing: :incremental,
+        huffman: :never
       )
 
     :ok = :gen_tcp.send(socket, frame(1, 5, 3, next_block))
@@ -772,9 +779,9 @@ defmodule Gaoxy.HTTP2NetworkTest do
   test "a self-dependent HEADERS priority still updates HPACK before its stream error" do
     {socket, _} = connect()
 
-    {block, encoder} =
-      HPAX.encode(
-        :store,
+    {encoder, block} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [
           {":method", "GET"},
           {":scheme", "http"},
@@ -782,15 +789,16 @@ defmodule Gaoxy.HTTP2NetworkTest do
           {":path", "/rejected"},
           {"x-context", "kept"}
         ],
-        HPAX.new(4_096)
+        indexing: :incremental,
+        huffman: :never
       )
 
     :ok = :gen_tcp.send(socket, frame(1, 37, 1, [<<0::1, 1::31, 0>>, block]))
     assert_reset(socket, 1, 1)
 
-    {next, _} =
-      HPAX.encode(
-        :no_store,
+    {_, next} =
+      HPACK.encode_headers(
+        encoder,
         [
           {":method", "GET"},
           {":scheme", "http"},
@@ -798,7 +806,8 @@ defmodule Gaoxy.HTTP2NetworkTest do
           {":path", "/sibling"},
           {"x-context", "kept"}
         ],
-        encoder
+        indexing: :incremental,
+        huffman: :never
       )
 
     :ok = :gen_tcp.send(socket, frame(1, 5, 3, next))
@@ -861,7 +870,7 @@ defmodule Gaoxy.HTTP2NetworkTest do
                          else: []
                        )
     @tag :renderer_proof
-    test "native H2 #{@renderer_kind} preserves exact public HPAX bytes and ordered fields within existing renderer bounds" do
+    test "native H2 #{@renderer_kind} preserves exact public http_core HPACK bytes and ordered fields within existing renderer bounds" do
       {socket, server} =
         connect(
           owner: self(),
@@ -899,10 +908,18 @@ defmodule Gaoxy.HTTP2NetworkTest do
         end
 
       expected_head = [{":status", "200"} | fields]
-      {expected_block, _} = HPAX.encode(:never_store, expected_head, HPAX.resize(HPAX.new(0), 0))
+
+      {_, expected_block} =
+        HPACK.encode_headers(HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0), expected_head,
+          indexing: :never,
+          huffman: :never
+        )
+
       assert {1, 4, 1, head} = recv_response_head(socket)
       assert head == IO.iodata_to_binary(expected_block)
-      assert {:ok, ^expected_head, decoder} = HPAX.decode(head, HPAX.new(4_096))
+
+      assert {:ok, decoder, ^expected_head} =
+               HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), head)
 
       case @renderer_kind do
         :head255 ->
@@ -911,12 +928,15 @@ defmodule Gaoxy.HTTP2NetworkTest do
         kind when kind in [:trailer128, :empty_trailers] ->
           trailers = @renderer_trailers
 
-          {expected_terminal, _} =
-            HPAX.encode(:never_store, trailers, HPAX.resize(HPAX.new(0), 0))
+          {_, expected_terminal} =
+            HPACK.encode_headers(HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0), trailers,
+              indexing: :never,
+              huffman: :never
+            )
 
           assert {1, 5, 1, terminal} = recv_frame(socket)
           assert terminal == IO.iodata_to_binary(expected_terminal)
-          assert {:ok, ^trailers, _} = HPAX.decode(terminal, decoder)
+          assert {:ok, _, ^trailers} = HPACK.decode(decoder, terminal)
       end
 
       assert_receive {:DOWN, ^worker_monitor, :process, ^worker, :normal}, 1_000
@@ -949,7 +969,9 @@ defmodule Gaoxy.HTTP2NetworkTest do
     assert :erlang.resume_process(writer)
     assert {1, 0, 1, first} = recv_response_head(socket)
     assert {9, 4, 1, last} = recv_frame(socket)
-    assert {:ok, fields, _} = HPAX.decode(first <> last, HPAX.new(4_096))
+
+    assert {:ok, _, fields} =
+             HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), first <> last)
 
     value =
       String.duplicate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 450)
@@ -968,7 +990,10 @@ defmodule Gaoxy.HTTP2NetworkTest do
     refute_receive {:renderer_written, :trailers, ^worker}, 0
     assert :erlang.resume_process(writer)
     assert {1, 5, 1, terminal} = recv_frame(socket)
-    assert {:ok, [{"x-check", "value"}], _} = HPAX.decode(terminal, HPAX.new(4_096))
+
+    assert {:ok, _, [{"x-check", "value"}]} =
+             HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), terminal)
+
     assert_receive {:renderer_written, :trailers, ^worker}, 1_000
     assert_renderer_released(owner, worker, 1)
     refute_receive {:DOWN, ^monitor, :process, ^worker, _}, 0
@@ -989,8 +1014,8 @@ defmodule Gaoxy.HTTP2NetworkTest do
     send_headers(socket, 3, "/renderer-sibling", true)
     assert {1, 4, 3, sibling_head} = recv_frame(socket)
 
-    assert {:ok, [{":status", "200"}, {"content-length", "17"}], _} =
-             HPAX.decode(sibling_head, HPAX.new(4_096))
+    assert {:ok, _, [{":status", "200"}, {"content-length", "17"}]} =
+             HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), sibling_head)
 
     assert {0, 1, 3, "/renderer-sibling"} = recv_frame(socket)
     :ok = :gen_tcp.send(socket, frame(6, 0, 0, "render03"))
@@ -1083,7 +1108,9 @@ defmodule Gaoxy.HTTP2NetworkTest do
     assert :erlang.resume_process(writer)
     assert {1, 0, 3, first} = recv_frame(socket)
     assert {9, 4, 3, last} = recv_frame(socket)
-    assert {:ok, fields, _} = HPAX.decode(first <> last, HPAX.new(4_096))
+
+    assert {:ok, _, fields} =
+             HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), first <> last)
 
     value =
       String.duplicate("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 450)
@@ -1258,7 +1285,9 @@ defmodule Gaoxy.HTTP2NetworkTest do
         {":path", path}
       ] ++ extra
 
-    {bytes, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, bytes} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
+
     :ok = :gen_tcp.send(socket, frame(1, if(ended, do: 5, else: 4), id, bytes))
   end
 
@@ -1287,7 +1316,7 @@ defmodule Gaoxy.HTTP2NetworkTest do
       current =
         case type do
           1 ->
-            {:ok, fields, _} = HPAX.decode(payload, HPAX.new(4_096))
+            {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), payload)
             %{current | headers: current.headers ++ fields}
 
           0 ->
@@ -1350,7 +1379,8 @@ defmodule Gaoxy.HTTP2NetworkTest do
   defp assert_status(socket, id, status) do
     case recv_frame(socket) do
       {1, 4, ^id, payload} ->
-        assert {:ok, [{":status", ^status}], _} = HPAX.decode(payload, HPAX.new(4_096))
+        assert {:ok, _, [{":status", ^status}]} =
+                 HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), payload)
 
       {4, 0, 0, _} ->
         :ok = :gen_tcp.send(socket, frame(4, 1, 0, ""))

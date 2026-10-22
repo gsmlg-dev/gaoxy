@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2IndependentReviewTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.HTTP.HTTP2.{Frame, Headers}
@@ -89,7 +90,10 @@ defmodule Gaoxy.HTTP2IndependentReviewTest do
 
     send_headers(socket, 3, "/trailers-before-ready", false, [{"trailer", "x-check"}])
     trailers = [{"x-check", "first"}, {"x-check", "last"}]
-    {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), trailers, indexing: :never, huffman: :never)
+
     :ok = :gen_tcp.send(socket, Frame.encode(1, 5, 3, block))
 
     await_owner(owner, fn state ->
@@ -213,7 +217,9 @@ defmodule Gaoxy.HTTP2IndependentReviewTest do
       [{":method", "GET"}, {":scheme", "http"}, {":authority", "localhost"}, {":path", path}] ++
         extra
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
+
     :ok = :gen_tcp.send(socket, Frame.encode(1, if(ended, do: 5, else: 4), id, block))
   end
 
@@ -222,14 +228,14 @@ defmodule Gaoxy.HTTP2IndependentReviewTest do
          id,
          result \\ %{status: nil, fields: [], informational: [], body: ""},
          block \\ "",
-         decoder \\ HPAX.new(4_096)
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096)
        ) do
     case recv_frame(socket) do
       {type, flags, ^id, bytes} when type in [1, 9] ->
         block = block <> bytes
 
         if Frame.flag?(flags, 4) do
-          {:ok, fields, decoder} = HPAX.decode(block, decoder)
+          {:ok, decoder, fields} = HPACK.decode(decoder, block)
           {":status", status} = List.keyfind(fields, ":status", 0)
 
           next =

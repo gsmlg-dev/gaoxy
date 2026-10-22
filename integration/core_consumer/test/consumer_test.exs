@@ -16,6 +16,7 @@ defmodule CoreConsumerTest do
       :phoenix,
       :bandit,
       :http_fetch,
+      :http_core,
       :hpax,
       :elixir_quic,
       :ex_ssl

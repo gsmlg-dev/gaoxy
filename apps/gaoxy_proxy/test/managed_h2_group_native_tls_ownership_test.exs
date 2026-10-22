@@ -10,6 +10,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
   alias Gaoxy.Proxy.GroupEndpoint
   alias Gaoxy.Proxy.ManagedH2GroupFixture, as: G
   alias HTTP.RequestCompletion
+  alias HTTP.HTTP2.HPACK
   @timeout 5_000
 
   defmodule ObservedEndpoint do
@@ -136,16 +137,17 @@ defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
       on_exit(fn -> :ssl.close(socket) end)
       assert {:ok, "h2"} = :ssl.negotiated_protocol(socket)
 
-      {block, _} =
-        HPAX.encode(
-          :never_store,
+      {_, block} =
+        HPACK.encode_headers(
+          HPACK.new_encoder(),
           [
             {":method", "GET"},
             {":scheme", "https"},
             {":authority", "localhost"},
             {":path", "/native-tls?"}
           ],
-          HPAX.new(4_096)
+          indexing: :never,
+          huffman: :never
         )
 
       assert :ok =
@@ -196,7 +198,14 @@ defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
       G.command(f.peer, seen, "respond", %{"fields" => [["content-length", "0"]]})
 
       assert %{status: 200, body: ""} =
-               response(socket, nil, "", HPAX.new(4_096), 256, Gaoxy.Lifecycle.deadline(@timeout))
+               response(
+                 socket,
+                 nil,
+                 "",
+                 HPACK.new_decoder(max_dynamic_size: 4_096),
+                 256,
+                 Gaoxy.Lifecycle.deadline(@timeout)
+               )
 
       assert :ok = RequestCompletion.await(completion, @timeout)
       # Upstream completion precedes the downstream pump returning. Join that
@@ -298,16 +307,17 @@ defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
     assert {:ok, settings} = :ssl.recv(socket, settings_bytes, @timeout)
     assert rem(byte_size(settings), 6) === 0
 
-    {block, _} =
-      HPAX.encode(
-        :never_store,
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [
           {":method", "GET"},
           {":scheme", "https"},
           {":authority", "localhost"},
           {":path", "/owner-deadline"}
         ],
-        HPAX.new(4_096)
+        indexing: :never,
+        huffman: :never
       )
 
     assert :ok = :ssl.send(socket, [Frame.encode(4, 1, 0, ""), Frame.encode(1, 5, 1, block)])
@@ -522,7 +532,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupNativeTLSOwnershipTest do
 
       {1, 1} ->
         assert Bitwise.band(flags, 4) === 4
-        assert {:ok, fields, decoder} = HPAX.decode(payload, decoder)
+        assert {:ok, decoder, fields} = HPACK.decode(decoder, payload)
         {":status", code} = List.keyfind(fields, ":status", 0)
         status = String.to_integer(code)
 

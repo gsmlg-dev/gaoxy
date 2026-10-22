@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2CapacityTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: false
   alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -68,7 +69,10 @@ defmodule Gaoxy.HTTP2CapacityTest do
   test "decode reservation grows before HPACK table insertion and retains its high water" do
     {server, socket} = live_connection()
     fields = request_fields() ++ [{"x-pad", String.duplicate("a", 3_000)}]
-    {block, encoder} = HPAX.encode(:store, fields, HPAX.new(4_096))
+
+    {encoder, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :incremental, huffman: :never)
+
     block = IO.iodata_to_binary(block)
     send_head_and_body(socket, block)
     assert_receive {:capacity_native, {owner, 1, _}}, @timeout
@@ -81,12 +85,17 @@ defmodule Gaoxy.HTTP2CapacityTest do
 
     # Reuse the inserted dynamic entry. A short indexed block must preserve
     # both the HPACK context and the connection's existing expansion charge.
-    {indexed, _} = HPAX.encode(:store, fields, encoder)
+    {_, indexed} = HPACK.encode_headers(encoder, fields, indexing: :incremental, huffman: :never)
     assert IO.iodata_length(indexed) < byte_size(block)
     send_head_and_body(socket, indexed, 3)
     assert_receive {:capacity_native, {^owner, 3, _}}, @timeout
 
-    assert response(socket, %{status: nil, body: ""}, HPAX.new(4_096), 3) ==
+    assert response(
+             socket,
+             %{status: nil, body: ""},
+             HPACK.new_decoder(max_dynamic_size: 4_096),
+             3
+           ) ==
              %{status: "200", body: "hello"}
 
     {_, after_indexed} = :sys.get_state(owner)
@@ -96,7 +105,13 @@ defmodule Gaoxy.HTTP2CapacityTest do
 
   test "unavailable expansion capacity rejects a block before HPACK decoding" do
     {_server, socket} = live_connection()
-    {block, _} = HPAX.encode(:never_store, request_fields(), HPAX.new(4_096))
+
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), request_fields(),
+        indexing: :never,
+        huffman: :never
+      )
+
     send_head_and_body(socket, block)
     assert_receive {:capacity_native, {owner, 1, _}}, @timeout
     assert response(socket) == %{status: "200", body: "hello"}
@@ -210,7 +225,8 @@ defmodule Gaoxy.HTTP2CapacityTest do
         {"content-length", "5"}
       ]
 
-      {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+      {_, block} =
+        HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
 
       :ok =
         :gen_tcp.send(socket, [
@@ -279,7 +295,7 @@ defmodule Gaoxy.HTTP2CapacityTest do
   defp response(
          socket,
          result \\ %{status: nil, body: ""},
-         decoder \\ HPAX.new(4_096),
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096),
          stream_id \\ 1
        ) do
     {:ok, <<size::24, type, flags, _::1, id::31>>} = :gen_tcp.recv(socket, 9, @timeout)
@@ -288,7 +304,7 @@ defmodule Gaoxy.HTTP2CapacityTest do
     case {type, id} do
       {1, ^stream_id} ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
         next = %{result | status: status}
         if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder, stream_id)

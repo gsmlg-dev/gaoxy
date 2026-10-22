@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2StaleStartTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.Response
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -104,12 +105,22 @@ defmodule Gaoxy.HTTP2StaleStartTest do
       {":path", path}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields ++ extra, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields ++ extra,
+        indexing: :never,
+        huffman: :never
+      )
+
     :ok = :gen_tcp.send(socket, Frame.encode(1, 5, id, block))
   end
 
   defp responses(socket, ids) do
-    collect(socket, Map.new(ids, &{&1, %{status: nil, body: ""}}), ids, HPAX.new(4_096))
+    collect(
+      socket,
+      Map.new(ids, &{&1, %{status: nil, body: ""}}),
+      ids,
+      HPACK.new_decoder(max_dynamic_size: 4_096)
+    )
   end
 
   defp collect(_socket, results, [], _decoder), do: results
@@ -128,7 +139,7 @@ defmodule Gaoxy.HTTP2StaleStartTest do
     case {type, id} do
       {1, id} when is_map_key(results, id) ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
         results = put_in(results[id].status, status)
         remaining = if Frame.flag?(flags, 1), do: List.delete(remaining, id), else: remaining

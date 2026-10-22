@@ -1,5 +1,6 @@
 defmodule GaoxyTestConsumerTest do
   use ExUnit.Case, async: false
+  alias HTTP.HTTP2.HPACK
 
   test "public automatic fixtures serve H1 and verified HTTPS from packaged assets" do
     for profile <- [:http1, :https] do
@@ -44,20 +45,26 @@ defmodule GaoxyTestConsumerTest do
     end
   end
 
-  test "clean ordinary consumer physically excludes H3 and production packages" do
+  test "clean ordinary consumer starts shared HTTP dependencies and excludes H3 and production packages" do
     resolved = Enum.map(Mix.Dep.load_and_cache(), & &1.app)
     started = for {app, _, _} <- Application.started_applications(), do: app
     assert :gaoxy_test in resolved
     assert :gaoxy_test in started
 
+    for app <- [:http_core, :ex_ssl, :elixir_quic] do
+      assert app in resolved
+      assert app in started
+      assert File.dir?(:code.lib_dir(app))
+      assert File.dir?(Path.join(Mix.Project.deps_path(), Atom.to_string(app)))
+    end
+
     for app <- [
           :gaoxy_http3,
-          :elixir_quic,
           :elixir_quic_http3,
-          :ex_ssl,
           :gaoxy_proxy,
           :gaoxy_server,
           :http_fetch,
+          :hpax,
           :http_web_socket
         ] do
       refute app in resolved
@@ -90,11 +97,12 @@ defmodule GaoxyTestConsumerTest do
     {:ok, socket} = :gen_tcp.connect(~c"127.0.0.1", uri.port, [:binary, active: false], 2_000)
     on_exit(fn -> :gen_tcp.close(socket) end)
 
-    {block, _} =
-      HPAX.encode(
-        :never_store,
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0),
         [{":method", "GET"}, {":scheme", "http"}, {":authority", "localhost"}, {":path", "/h2"}],
-        HPAX.new(0)
+        indexing: :never,
+        huffman: :never
       )
 
     :ok =
@@ -104,7 +112,9 @@ defmodule GaoxyTestConsumerTest do
         frame(1, 5, 1, IO.iodata_to_binary(block))
       ])
 
-    assert {"200", "external h2"} = receive_h2(socket, HPAX.new(4_096), nil, "")
+    assert {"200", "external h2"} =
+             receive_h2(socket, HPACK.new_decoder(max_dynamic_size: 4_096), nil, "")
+
     # END_STREAM can reach the peer before the callback records its completion.
     assert :ok = Gaoxy.Test.verify!(fixture)
     :gen_tcp.close(socket)
@@ -120,7 +130,7 @@ defmodule GaoxyTestConsumerTest do
         receive_h2(socket, decoder, status, body)
 
       {1, 1} ->
-        assert {:ok, fields, decoder} = HPAX.decode(payload, decoder)
+        assert {:ok, decoder, fields} = HPACK.decode(decoder, payload)
         status = fields |> List.keyfind(":status", 0) |> elem(1)
 
         if Bitwise.band(flags, 1) == 1,

@@ -1,5 +1,6 @@
 defmodule HTTPConsumerTest do
   use ExUnit.Case, async: true
+  alias HTTP.HTTP2.HPACK
 
   defmodule Endpoint do
     def init(options), do: {:ok, options}
@@ -79,14 +80,13 @@ defmodule HTTPConsumerTest do
     end
   end
 
-  test "H1/H2 consumer resolves and starts without optional QUIC or proxy applications" do
+  test "H1/H2 consumer starts shared HTTP dependencies and excludes optional server packages" do
     forbidden = [
       :thousand_island,
       :gaoxy_http3,
-      :elixir_quic,
       :elixir_quic_http3,
-      :ex_ssl,
       :http_fetch,
+      :hpax,
       :bandit
     ]
 
@@ -97,6 +97,13 @@ defmodule HTTPConsumerTest do
     assert :hell in running
     assert :gaoxy_http in resolved
     assert :gaoxy_http in running
+
+    for app <- [:http_core, :ex_ssl, :elixir_quic] do
+      assert app in resolved
+      assert app in running
+      assert File.dir?(:code.lib_dir(app))
+      assert File.dir?(Path.join(Mix.Project.deps_path(), Atom.to_string(app)))
+    end
 
     for app <- forbidden do
       refute app in resolved
@@ -133,11 +140,12 @@ defmodule HTTPConsumerTest do
 
     {:ok, h2} = :gen_tcp.connect(ip, h2_port, [:binary, active: false], 1_000)
 
-    {block, _} =
-      HPAX.encode(
-        :never_store,
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0),
         [{":method", "GET"}, {":scheme", "http"}, {":authority", "localhost"}, {":path", "/"}],
-        HPAX.new(0)
+        indexing: :never,
+        huffman: :never
       )
 
     :ok =
@@ -147,7 +155,9 @@ defmodule HTTPConsumerTest do
         frame(1, 5, 1, IO.iodata_to_binary(block))
       ])
 
-    assert {"200", "consumer"} = receive_h2(h2, HPAX.new(4_096), nil, "")
+    assert {"200", "consumer"} =
+             receive_h2(h2, HPACK.new_decoder(max_dynamic_size: 4_096), nil, "")
+
     :gen_tcp.close(h2)
     assert :ok = Gaoxy.stop(instance, 1_000)
   end
@@ -176,7 +186,7 @@ defmodule HTTPConsumerTest do
         receive_h2(socket, decoder, status, body)
 
       {1, 1} ->
-        assert {:ok, fields, decoder} = HPAX.decode(payload, decoder)
+        assert {:ok, decoder, fields} = HPACK.decode(decoder, payload)
         status = List.keyfind(fields, ":status", 0) |> elem(1)
 
         if Bitwise.band(flags, 1) == 1,

@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parent.parent
 # Each file is checked separately: losing a case or excluding it fails the gate.
 SUITES = {
     'unit': [
+        ('apps/gaoxy_http/test/http2_codec_test.exs', 5),
         ('apps/gaoxy_http/test/protocol_detector_test.exs', 6),
         ('apps/gaoxy_http/test/http_protocol_defaults_test.exs', 9),
         ('apps/gaoxy_server/test/config_test.exs', 3),

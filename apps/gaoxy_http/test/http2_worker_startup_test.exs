@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2WorkerStartupTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: false
   alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -70,11 +71,19 @@ defmodule Gaoxy.HTTP2WorkerStartupTest do
       {":path", "/"}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
+
     :ok = :gen_tcp.send(socket, Frame.encode(1, 5, id, block))
   end
 
-  defp response(socket, id, status \\ nil, body \\ "", decoder \\ HPAX.new(4_096)) do
+  defp response(
+         socket,
+         id,
+         status \\ nil,
+         body \\ "",
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096)
+       ) do
     {:ok, <<size::24, type, flags, _::1, sid::31>>} = :gen_tcp.recv(socket, 9, @wait)
     bytes = if size == 0, do: "", else: elem(:gen_tcp.recv(socket, size, @wait), 1)
 
@@ -85,7 +94,7 @@ defmodule Gaoxy.HTTP2WorkerStartupTest do
 
       {1, ^id} ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
 
         if Frame.flag?(flags, 1),
@@ -119,6 +128,7 @@ defmodule Gaoxy.HTTP2WorkerStartupTest do
 end
 
 defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: false
   alias Gaoxy.{Admission, Lifecycle}
   alias Gaoxy.HTTP.{Exchange, Response}
@@ -1231,7 +1241,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
          id,
          status \\ nil,
          body \\ "",
-         decoder \\ HPAX.new(4_096),
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096),
          deadline \\ nil
        ) do
     deadline = deadline || Lifecycle.deadline(@wait)
@@ -1243,7 +1253,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
 
       {1, flags, ^id, bytes} ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
 
         if Frame.flag?(flags, 1),
@@ -1315,14 +1325,17 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
       {"x-precharge", padding}
     ]
 
-    {seed, _} = HPAX.encode(:never_store, seed_fields, HPAX.new(4_096))
+    {_, seed} =
+      HPACK.encode_headers(HPACK.new_encoder(), seed_fields, indexing: :never, huffman: :never)
+
     padding = padding <> String.duplicate("a", 16_384 - IO.iodata_length(seed))
 
-    {seed, _} =
-      HPAX.encode(
-        :never_store,
+    {_, seed} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         List.keyreplace(seed_fields, "x-precharge", 0, {"x-precharge", padding}),
-        HPAX.new(4_096)
+        indexing: :never,
+        huffman: :never
       )
 
     assert IO.iodata_length(seed) == 16_384
@@ -1437,12 +1450,16 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
       [{":method", method}, {":scheme", "http"}, {":authority", "localhost"}, {":path", path}] ++
         extra
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
+
     assert :ok = :gen_tcp.send(socket, Frame.encode(1, if(ended, do: 5, else: 4), id, block))
   end
 
   defp send_trailers(socket, id, trailers) do
-    {block, _} = HPAX.encode(:never_store, trailers, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), trailers, indexing: :never, huffman: :never)
+
     assert :ok = :gen_tcp.send(socket, Frame.encode(1, 5, id, block))
   end
 
@@ -1513,7 +1530,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
       socket,
       Map.new(ids, &{&1, %{status: nil, body: ""}}),
       ids,
-      HPAX.new(4_096),
+      HPACK.new_decoder(max_dynamic_size: 4_096),
       Lifecycle.deadline(@wait)
     )
   end
@@ -1524,7 +1541,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
     case frame(socket, deadline) do
       {1, flags, id, bytes} when is_map_key(results, id) ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
         results = put_in(results[id].status, status)
         remaining = if Frame.flag?(flags, 1), do: List.delete(remaining, id), else: remaining
@@ -1546,7 +1563,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
          id,
          status \\ nil,
          body \\ "",
-         decoder \\ HPAX.new(4_096),
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096),
          deadline \\ nil
        ) do
     deadline = deadline || Lifecycle.deadline(@wait)
@@ -1555,7 +1572,7 @@ defmodule Gaoxy.HTTP2WorkerStartupExtendedTest do
       {1, flags, ^id, bytes} ->
         refute Frame.flag?(flags, 1)
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
         read_partial(socket, id, status, body, decoder, deadline)
 

@@ -55,7 +55,7 @@ defmodule StageHexPackages do
           raise "source application/version mismatch: #{path}"
         end
 
-        deps = Enum.map(config[:deps], &dependency(&1, version))
+        deps = Enum.map(config[:deps], &dependency(&1, version, app))
         readme_file = if app == :websock_adapter, do: "README.gaoxy.md", else: "README.md"
         readme = File.read!(Path.join(path, readme_file))
         {name, app, path, config, application, deps, readme}
@@ -133,13 +133,13 @@ defmodule StageHexPackages do
     end
   end
 
-  defp dependency({app, requirement}, version) when is_binary(requirement),
-    do: dependency({app, requirement, []}, version)
+  defp dependency({app, requirement}, version, package_app) when is_binary(requirement),
+    do: dependency({app, requirement, []}, version, package_app)
 
-  defp dependency({app, options}, version) when is_list(options),
-    do: dependency({app, nil, options}, version)
+  defp dependency({app, options}, version, package_app) when is_list(options),
+    do: dependency({app, nil, options}, version, package_app)
 
-  defp dependency({app, requirement, options} = original, version) do
+  defp dependency({app, requirement, options} = original, version, package_app) do
     cond do
       Map.has_key?(@git_dependencies, app) and options[:git] ->
         {url, ref, published} = Map.fetch!(@git_dependencies, app)
@@ -147,13 +147,12 @@ defmodule StageHexPackages do
         if Map.new(options) != %{git: url, ref: ref}, do: unsupported!(original)
         {app, "== #{published}"}
 
+      package_app == :gaoxy_test and app == :gaoxy_http3 and options == [in_umbrella: true] ->
+        {app, "== #{version}", optional: true}
+
       app in [:gaoxy, :gaoxy_http, :gaoxy_http3, :gaoxy_proxy, :gaoxy_test] and
           options == [in_umbrella: true] ->
         {app, "== #{version}"}
-
-      app == :gaoxy_http3 and
-          options in [[in_umbrella: true, optional: true], [optional: true, in_umbrella: true]] ->
-        {app, "== #{version}", optional: true}
 
       app == :websock_adapter and
           Map.new(options) == %{path: "../../vendor/websock_adapter", override: true} ->

@@ -5,6 +5,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   alias Gaoxy.HTTP.RendererBounds
   alias Gaoxy.HTTP.HTTP2.{Stream, Writer, Transport, WorkerAccounting}
   alias Hell.Socket
+  alias HTTP.HTTP2.HPACK
   @preface "PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n"
   @max_window 2_147_483_647
 
@@ -57,7 +58,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
          buffer: "",
          preface: false,
          first: true,
-         decoder: HPAX.new(h2.table_size),
+         decoder: HPACK.new_decoder(Limits.decoder_options(h2)),
          settings: Settings.defaults(),
          streams: %{},
          highest: 0,
@@ -491,7 +492,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     if bytes <= state.decode_reservation do
       {:ok, state}
     else
-      # HPAX materializes the entire field list before header validation. Grow
+      # HPACK materializes the entire field list before header validation. Grow
       # before decoding, and retain the high-water charge through connection exit.
       case Admission.update(state.gate, state.lease, state.reserves.connection + bytes) do
         :ok -> {:ok, %{state | decode_reservation: bytes}}
@@ -501,8 +502,8 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp decode_reserved_headers(state, id, block, ended, stream_error) do
-    case HPAX.decode(block, state.decoder) do
-      {:ok, fields, decoder} ->
+    case HPACK.decode(state.decoder, block) do
+      {:ok, decoder, fields} ->
         state = %{state | decoder: decoder}
 
         cond do
@@ -976,7 +977,8 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     stream = state.streams[id]
 
     with true <- stream.renderer_blocks < 2,
-         {block, _encoder} <- encode_field_blocks(fields, HPAX.resize(HPAX.new(0), 0)),
+         {block, _encoder} <-
+           encode_field_blocks(fields, HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0)),
          {:ok, _} <- RendererBounds.iodata(block, 131_072),
          bytes = IO.iodata_to_binary(block),
          {:ok, entries} <- RendererBounds.header_frames(bytes, id, ended, from, deadline) do
@@ -1005,12 +1007,12 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp encode_field_blocks([], encoder) do
-    {block, encoder} = HPAX.encode(:never_store, [], encoder)
+    {encoder, block} = HPACK.encode_headers(encoder, [], indexing: :never, huffman: :never)
     {[block], encoder}
   end
 
   defp encode_field_blocks([field | fields], encoder) do
-    {block, encoder} = HPAX.encode(:never_store, [field], encoder)
+    {encoder, block} = HPACK.encode_headers(encoder, [field], indexing: :never, huffman: :never)
     {blocks, encoder} = encode_field_blocks(fields, encoder)
     {[block | blocks], encoder}
   end

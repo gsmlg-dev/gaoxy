@@ -981,6 +981,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
   alias Gaoxy.HTTP.{Exchange, Generation, Resources, Router}
   alias Gaoxy.Proxy.{GroupEndpoint, ManagedGenerationAccounting, UpstreamGroups}
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
+  alias HTTP.HTTP2.HPACK
 
   @moduletag :capture_log
   @timeout 5_000
@@ -1764,16 +1765,17 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
   end
 
   defp send_request(socket, :http2, id, path) do
-    {bytes, _} =
-      HPAX.encode(
-        :never_store,
+    {_, bytes} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [
           {":method", "GET"},
           {":scheme", "http"},
           {":authority", "downstream.test"},
           {":path", path}
         ],
-        HPAX.new(4096)
+        indexing: :never,
+        huffman: :never
       )
 
     :ok = :gen_tcp.send(socket, frame(1, 5, id, bytes))
@@ -1828,7 +1830,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
   end
 
   defp response(socket, :http2, id),
-    do: response_h2(socket, id, [], "", HPAX.new(4096), deadline())
+    do: response_h2(socket, id, [], "", HPACK.new_decoder(max_dynamic_size: 4096), deadline())
 
   defp response_h2(socket, id, headers, body, decoder, d) do
     assert Lifecycle.remaining(d) > 0
@@ -1841,7 +1843,7 @@ defmodule Gaoxy.Proxy.ManagedGenerationCheckedNativeTest do
 
       {1, ^id} ->
         assert Bitwise.band(flags, 4) == 4
-        assert {:ok, fields, decoder} = HPAX.decode(payload, decoder)
+        assert {:ok, decoder, fields} = HPACK.decode(decoder, payload)
         headers = headers ++ fields
 
         if Bitwise.band(flags, 1) == 1,

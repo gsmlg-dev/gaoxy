@@ -4,6 +4,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedEndpointTest do
   use ExUnit.Case, async: false
   alias Gaoxy.Proxy.ManagedH2FixedFixture, as: F
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
 
   for protocol <- [:http2, :h2c], {pad, status} <- [{65_458, 200}, {65_459, 502}] do
@@ -342,8 +343,11 @@ defmodule Gaoxy.Proxy.ManagedH2FixedEndpointTest do
       else
         :ok = F.send_body(f, socket, "wire", false)
 
-        {block, _} =
-          HPAX.encode(:never_store, [{"x-check", "first"}, {"x-check", "second"}], HPAX.new(4096))
+        {_, block} =
+          HPACK.encode_headers(HPACK.new_encoder(), [{"x-check", "first"}, {"x-check", "second"}],
+            indexing: :never,
+            huffman: :never
+          )
 
         :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
       end

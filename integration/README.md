@@ -5,9 +5,10 @@ fresh temporary projects by `python3 scripts/test-consumers.py`. Before
 publication the script builds actual Hex tarballs, extracts their runtime files
 and trust assets, and uses explicit fixture-only path mappings for the aligned
 unreleased sibling packages. Other dependencies resolve from Hex. The base
-consumer proves H3/QUIC/ExSSL/proxy/client packages are physically absent, manual
-mode starts no ExUnit runner, and the test-only dependency is absent from a real
-production release. The explicit H3 consumer reuses the independent validating
+consumer requires the shared `http_core`, QUIC and ExSSL dependencies and proves
+the H3 server extension, HPAX, proxy and client packages are physically absent.
+Manual mode starts no ExUnit runner, and the test-only dependency is absent from
+a real production release. The explicit H3 consumer reuses the independent validating
 aioquic peer. HTTPFetch uses its published public API in a separate project.
 
 Future HTTPFetch migration candidates are ordinary request/response, upload,

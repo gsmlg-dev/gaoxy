@@ -1,5 +1,6 @@
 defmodule Gaoxy.Proxy.WebSocketProtocolRejectionTest do
   use ExUnit.Case, async: false
+  alias HTTP.HTTP2.HPACK
 
   defmodule Local do
     def init(options), do: {:ok, options}
@@ -49,10 +50,15 @@ defmodule Gaoxy.Proxy.WebSocketProtocolRejectionTest do
           {":path", path}
         ] ++ extra
 
-      {block, _} = HPAX.encode(:never_store, fields, HPAX.new(0))
+      {_, block} =
+        HPACK.encode_headers(HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0), fields,
+          indexing: :never,
+          huffman: :never
+        )
+
       :ok = :gen_tcp.send(socket, frame(1, 5, id, block))
       {1, flags, ^id, block} = next(socket, 1, id)
-      assert {:ok, response, _} = HPAX.decode(block, HPAX.new(0))
+      assert {:ok, _, response} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
       assert {":status", status} in response
       refute List.keymember?(response, "connection", 0)
 

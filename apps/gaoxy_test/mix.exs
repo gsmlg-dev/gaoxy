@@ -18,7 +18,7 @@ defmodule GaoxyTest.MixProject do
       ],
       deps: [
         {:gaoxy_http, in_umbrella: true},
-        {:gaoxy_http3, in_umbrella: true, optional: true},
+        {:gaoxy_http3, in_umbrella: true},
         {:plug, "== 1.20.3"}
       ]
     ]

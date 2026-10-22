@@ -6,6 +6,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupLifecycleTest do
   alias Gaoxy.Proxy.ManagedH2FixedFixture, as: F
   alias Gaoxy.Proxy.{ManagedH2GroupBoundary, UpstreamGroups, UpstreamTransports}
   alias Gaoxy.HTTP.HTTP2.Frame
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
   @timeout 5_000
   @reserve 16_478_862
@@ -340,7 +341,10 @@ defmodule Gaoxy.Proxy.ManagedH2GroupLifecycleTest do
           h2_committed_head(socket, block, ended, deadline)
         else
           refute ended, "head unexpectedly terminated the still-open upstream response"
-          assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(4_096))
+
+          assert {:ok, _, fields} =
+                   HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), block)
+
           fields
         end
 

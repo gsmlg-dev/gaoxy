@@ -3,6 +3,7 @@ defmodule Gaoxy.Server.StandaloneIndependentReviewTest do
   import Bitwise
   alias Gaoxy.HTTP.Generation
   alias Gaoxy.Server.{Config, RouteConfig}
+  alias HTTP.HTTP2.HPACK
   @moduletag :tmp_dir
   @timeout 2_000
 
@@ -99,7 +100,8 @@ defmodule Gaoxy.Server.StandaloneIndependentReviewTest do
       {":path", "/"}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
 
     try do
       :ok =
@@ -113,7 +115,7 @@ defmodule Gaoxy.Server.StandaloneIndependentReviewTest do
         socket,
         %{status: nil, body: ""},
         "",
-        HPAX.new(4_096),
+        HPACK.new_decoder(max_dynamic_size: 4_096),
         Gaoxy.Lifecycle.deadline(@timeout)
       )
     after
@@ -143,7 +145,7 @@ defmodule Gaoxy.Server.StandaloneIndependentReviewTest do
         block = block <> bytes
 
         if (flags &&& 4) != 0 do
-          {:ok, fields, decoder} = HPAX.decode(block, decoder)
+          {:ok, decoder, fields} = HPACK.decode(decoder, block)
           {":status", status} = List.keyfind(fields, ":status", 0)
           result = %{result | status: status}
 

@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2IntegrationTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.Response
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -173,8 +174,11 @@ defmodule Gaoxy.HTTP2IntegrationTest do
     headers(socket, 1, "POST", "/upload?x=%2F", false, [{"trailer", "x-check"}])
     :ok = :gen_tcp.send(socket, Frame.encode(0, 0, 1, "upload"))
 
-    {block, _} =
-      HPAX.encode(:never_store, [{"x-check", "one"}, {"x-check", "two"}], HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), [{"x-check", "one"}, {"x-check", "two"}],
+        indexing: :never,
+        huffman: :never
+      )
 
     :ok = :gen_tcp.send(socket, Frame.encode(1, 5, 1, block))
     result = response(socket, 1)
@@ -372,12 +376,13 @@ defmodule Gaoxy.HTTP2IntegrationTest do
   end
 
   defp headers(socket, id, method, path, ended, fields \\ []) do
-    {block, _} =
-      HPAX.encode(
-        :never_store,
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [{":method", method}, {":scheme", "http"}, {":authority", "localhost"}, {":path", path}] ++
           fields,
-        HPAX.new(4_096)
+        indexing: :never,
+        huffman: :never
       )
 
     :ok = :gen_tcp.send(socket, Frame.encode(1, if(ended, do: 5, else: 4), id, block))
@@ -388,7 +393,7 @@ defmodule Gaoxy.HTTP2IntegrationTest do
          id,
          result \\ %{status: nil, headers: [], body: "", trailers: [], inform: []},
          block \\ "",
-         decoder \\ HPAX.new(4_096)
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096)
        ) do
     {type, flags, stream, payload} = recv_frame(socket)
 
@@ -403,7 +408,7 @@ defmodule Gaoxy.HTTP2IntegrationTest do
         if Bitwise.band(flags, 4) == 0 do
           response(socket, id, result, block, decoder)
         else
-          {:ok, fields, decoder} = HPAX.decode(block, decoder)
+          {:ok, decoder, fields} = HPACK.decode(decoder, block)
           status = List.keyfind(fields, ":status", 0)
 
           result =

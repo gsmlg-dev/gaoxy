@@ -58,6 +58,18 @@ defmodule Gaoxy.HTTP.HTTP2.Limits do
     2 * block_bytes * (max(t, 128) + 2) + 512 * block_bytes + 2 * t
   end
 
+  def decoder_options(h2) do
+    expanded_bytes = h2.max_header_block * (max(h2.table_size, 128) + 2)
+
+    [
+      max_dynamic_size: h2.table_size,
+      max_block_bytes: h2.max_header_block,
+      max_decoded_bytes: expanded_bytes,
+      max_field_bytes: expanded_bytes,
+      max_fields: h2.max_header_block
+    ]
+  end
+
   def validate_budget(http, h2, service) do
     reserves = reservation(http, h2)
 

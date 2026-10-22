@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2DefaultConcurrencyTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.Response
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -106,18 +107,24 @@ defmodule Gaoxy.HTTP2DefaultConcurrencyTest do
       {":path", path}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields, indexing: :never, huffman: :never)
+
     assert :ok = :ssl.send(socket, Frame.encode(1, 5, id, block))
   end
 
-  defp response(socket, result \\ %{status: nil, body: ""}, decoder \\ HPAX.new(4_096)) do
+  defp response(
+         socket,
+         result \\ %{status: nil, body: ""},
+         decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096)
+       ) do
     assert {:ok, <<size::24, type, flags, _::1, id::31>>} = :ssl.recv(socket, 9, @timeout)
     bytes = if size == 0, do: "", else: elem(:ssl.recv(socket, size, @timeout), 1)
 
     case {type, id} do
       {1, id} when id in [1, 3] ->
         assert Frame.flag?(flags, 4)
-        {:ok, fields, decoder} = HPAX.decode(bytes, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, bytes)
         {":status", status} = List.keyfind(fields, ":status", 0)
         next = %{result | status: status}
         if Frame.flag?(flags, 1), do: next, else: response(socket, next, decoder)

@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP.HttpProtocolDefaultsNetworkTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
 
   defmodule Endpoint do
@@ -74,7 +75,7 @@ defmodule Gaoxy.HTTP.HttpProtocolDefaultsNetworkTest do
     {status, body} =
       case {type, id} do
         {1, 1} ->
-          assert {:ok, fields, _} = HPAX.decode(payload, HPAX.new(0))
+          assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), payload)
           {List.keyfind(fields, ":status", 0) |> elem(1), body}
 
         {0, 1} ->
@@ -95,11 +96,12 @@ defmodule Gaoxy.HTTP.HttpProtocolDefaultsNetworkTest do
     socket = tls_client(dir, port, alpn_advertised_protocols: ["h2", "http/1.1"])
     assert {:ok, "h2"} = :ssl.negotiated_protocol(socket)
 
-    {head, _} =
-      HPAX.encode(
-        :never_store,
+    {_, head} =
+      HPACK.encode_headers(
+        HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0),
         [{":method", "GET"}, {":scheme", "https"}, {":authority", "localhost"}, {":path", "/"}],
-        HPAX.new(0)
+        indexing: :never,
+        huffman: :never
       )
 
     :ok =

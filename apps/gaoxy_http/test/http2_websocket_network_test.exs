@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
 
   defmodule Echo do
@@ -52,7 +53,7 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
     :ok = send_headers(socket, 1, 4, headers)
     {1, flags, 1, block} = next(socket, 1, 1)
     assert Bitwise.band(flags, 1) == 0
-    assert {:ok, response_fields, _} = HPAX.decode(block, HPAX.new(0))
+    assert {:ok, _, response_fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
     assert {":status", "200"} in response_fields
 
     assert Enum.all?(response_fields, fn {name, _} ->
@@ -82,7 +83,7 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
       ])
 
     {1, _, 3, block} = next(socket, 1, 3)
-    assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(0))
+    assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
     assert {":status", "200"} in fields
     assert {0, 1, 3, "/sibling"} = next(socket, 0, 3)
     :ok = :gen_tcp.close(socket)
@@ -129,7 +130,7 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
         ])
 
       {1, _, 1, block} = next(socket, 1, 1)
-      assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(0))
+      assert {:ok, _, fields} = HPACK.decode(HPACK.new_decoder(max_dynamic_size: 0), block)
       assert {":status", "200"} in fields
       assert {0, 1, 1, "ordinary"} = next(socket, 0, 1)
       assert_receive {:ordinary_limits, ^enabled, limits}
@@ -140,7 +141,12 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
   end
 
   defp send_headers(socket, stream, flags, fields) do
-    {block, _} = HPAX.encode(:never_store, fields, HPAX.new(0))
+    {_, block} =
+      HPACK.encode_headers(HPACK.set_max_dynamic_size(HPACK.new_encoder(), 0), fields,
+        indexing: :never,
+        huffman: :never
+      )
+
     :gen_tcp.send(socket, frame(1, flags, stream, block))
   end
 

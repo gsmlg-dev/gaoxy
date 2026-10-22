@@ -5,6 +5,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupEndpointTest do
   alias Gaoxy.Proxy.ManagedH2GroupFixture, as: G
   alias Gaoxy.Proxy.{ManagedH2GroupBoundary, UpstreamGroups, UpstreamTransports}
   alias Gaoxy.Proxy.HTTP.Session
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
   @timeout 5_000
   @reserve 16_478_862
@@ -157,8 +158,11 @@ defmodule Gaoxy.Proxy.ManagedH2GroupEndpointTest do
       else
         :ok = G.send_body(f, socket, "wire", false)
 
-        {block, _} =
-          HPAX.encode(:never_store, [{"x-check", "first"}, {"x-check", "second"}], HPAX.new(4096))
+        {_, block} =
+          HPACK.encode_headers(HPACK.new_encoder(), [{"x-check", "first"}, {"x-check", "second"}],
+            indexing: :never,
+            huffman: :never
+          )
 
         :ok = :gen_tcp.send(socket, Gaoxy.HTTP.HTTP2.Frame.encode(1, 5, 1, block))
       end

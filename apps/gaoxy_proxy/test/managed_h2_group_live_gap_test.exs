@@ -17,6 +17,7 @@ defmodule Gaoxy.Proxy.ManagedH2GroupLiveGapTest do
   alias Gaoxy.HTTP.HTTP2.Frame
   alias Gaoxy.Proxy.ManagedH2GroupFixture, as: G
   alias Gaoxy.Proxy.{ManagedH2GroupBoundary, UpstreamGroups, UpstreamTransports}
+  alias HTTP.HTTP2.HPACK
   @moduletag :capture_log
   @timeout 5_000
   @reserve 16_478_862
@@ -360,7 +361,9 @@ defmodule Gaoxy.Proxy.ManagedH2GroupLiveGapTest do
         if Bitwise.band(flags, 4) === 0 do
           committed_head(socket, block, deadline)
         else
-          assert {:ok, fields, _} = HPAX.decode(block, HPAX.new(4_096))
+          assert {:ok, _, fields} =
+                   HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), block)
+
           fields
         end
 

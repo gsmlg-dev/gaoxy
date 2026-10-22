@@ -3,6 +3,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
   import ExUnit.Assertions
   alias Gaoxy.HTTP.{Resources, HTTP2.Frame}
   alias Gaoxy.Proxy.UpstreamTransports, as: Transports
+  alias HTTP.HTTP2.HPACK
   @timeout 5_000
 
   # This collector owns only the independent peer's public stdin/stdout port.
@@ -325,16 +326,17 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
 
   def send_request(f, socket, method, target, fields \\ [], ended \\ true, id \\ 1) do
     if f.downstream == :http2 do
-      {block, _} =
-        HPAX.encode(
-          :never_store,
+      {_, block} =
+        HPACK.encode_headers(
+          HPACK.new_encoder(),
           [
             {":method", method},
             {":scheme", "http"},
             {":authority", "downstream.test"},
             {":path", target}
           ] ++ fields,
-          HPAX.new(4_096)
+          indexing: :never,
+          huffman: :never
         )
 
       :ok = :gen_tcp.send(socket, Frame.encode(1, if(ended, do: 5, else: 4), id, block))
@@ -365,7 +367,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
           id,
           %{status: nil, headers: [], body: "", trailers: [], inform: []},
           "",
-          HPAX.new(4_096),
+          HPACK.new_decoder(max_dynamic_size: 4_096),
           progress
         ),
       else: h1_response(socket, method, [], progress)
@@ -502,7 +504,7 @@ defmodule Gaoxy.Proxy.ManagedH2FixedFixture do
         if Bitwise.band(flags, 4) == 0 do
           h2_response(socket, id, result, block, decoder, progress)
         else
-          assert {:ok, fields, decoder} = HPAX.decode(block, decoder)
+          assert {:ok, decoder, fields} = HPACK.decode(decoder, block)
 
           result =
             case List.keyfind(fields, ":status", 0) do

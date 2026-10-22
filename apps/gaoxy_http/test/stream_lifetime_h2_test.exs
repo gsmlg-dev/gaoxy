@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP.StreamLifetimeH2Test do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
 
   defmodule StreamPlug do
@@ -83,15 +84,17 @@ defmodule Gaoxy.HTTP.StreamLifetimeH2Test do
     {:ok, socket} = :gen_tcp.connect({127, 0, 0, 1}, port, [:binary, active: false], 1_000)
     on_exit(fn -> :gen_tcp.close(socket) end)
 
-    {block, _} =
-      HPAX.encode(
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [
-          {:no_store, ":method", "GET"},
-          {:no_store, ":scheme", "http"},
-          {:no_store, ":authority", "localhost"},
-          {:no_store, ":path", "/infinite"}
+          {":method", "GET"},
+          {":scheme", "http"},
+          {":authority", "localhost"},
+          {":path", "/infinite"}
         ],
-        HPAX.new(4096)
+        indexing: :literal,
+        huffman: :never
       )
 
     :ok =

@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP.MixedHTTPNetworkTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.HTTP.{Exchange, Response}
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -216,17 +217,18 @@ defmodule Gaoxy.HTTP.MixedHTTPNetworkTest do
   end
 
   defp headers(id, path) do
-    {block, _} =
-      HPAX.encode(
-        :never_store,
+    {_, block} =
+      HPACK.encode_headers(
+        HPACK.new_encoder(),
         [{":method", "GET"}, {":scheme", "http"}, {":authority", "localhost"}, {":path", path}],
-        HPAX.new(4_096)
+        indexing: :never,
+        huffman: :never
       )
 
     Frame.encode(1, 5, id, block)
   end
 
-  defp h2_response(socket, body \\ "", decoder \\ HPAX.new(4_096)) do
+  defp h2_response(socket, body \\ "", decoder \\ HPACK.new_decoder(max_dynamic_size: 4_096)) do
     {:ok, <<size::24, type, flags, _::1, id::31>>} = :gen_tcp.recv(socket, 9, @timeout)
     payload = if size == 0, do: "", else: elem(:gen_tcp.recv(socket, size, @timeout), 1)
 
@@ -236,7 +238,7 @@ defmodule Gaoxy.HTTP.MixedHTTPNetworkTest do
         h2_response(socket, body, decoder)
 
       {1, 1} ->
-        {:ok, fields, decoder} = HPAX.decode(payload, decoder)
+        {:ok, decoder, fields} = HPACK.decode(decoder, payload)
         assert {":status", "200"} in fields
         assert {"x-native-version", "HTTP/2"} in fields
         if Frame.flag?(flags, 1), do: body, else: h2_response(socket, body, decoder)

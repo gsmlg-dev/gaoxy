@@ -43,19 +43,19 @@ REQUIREMENTS = {
     "gaoxy_http": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "plug": ("plug", "== 1.20.3", False),
-        "hpax": ("hpax", "== 1.1.0", False),
+        "http_core": ("http_core", "~> 0.21 and >= 0.21.16", False),
         "websock": ("websock", "== 0.5.3", False),
         "gaoxy_websock_adapter": ("websock_adapter", f"== {VERSION}", False),
     },
     "gaoxy_http3": {
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "elixir_quic_http3": ("elixir_quic_http3", "== 0.21.14", False),
+        "elixir_quic_http3": ("elixir_quic_http3", "~> 0.21", False),
     },
     "gaoxy_proxy": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
-        "http_fetch": ("http_fetch", "== 0.21.14", False),
-        "http_web_socket": ("http_web_socket", "== 0.21.14", False),
+        "http_fetch": ("http_fetch", "~> 0.21", False),
+        "http_web_socket": ("http_web_socket", "~> 0.21", False),
     },
     "gaoxy_test": {
         "gaoxy_http": ("gaoxy_http", f"== {VERSION}", False),
@@ -233,17 +233,47 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
         self.assertIn("LICENSE", result.stdout)
         self.assertFalse(self.output.exists())
 
+    def test_stages_test_http3_umbrella_dependency_as_optional(self):
+        manifest = self.source / "apps/gaoxy_test/mix.exs"
+        modified, count = re.subn(
+            r"\{:gaoxy_http3,\s*in_umbrella: true[^}]*\}",
+            "{:gaoxy_http3, in_umbrella: true}", manifest.read_text(),
+        )
+        self.assertEqual(count, 1)
+        manifest.write_text(modified)
+        result = self.stage()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        self.assertIn(
+            f'{{:gaoxy_http3, "== {VERSION}", [optional: true]}}',
+            (self.output / "gaoxy_test/mix.exs").read_text(),
+        )
+
+    def test_keeps_other_packages_http3_umbrella_dependency_required(self):
+        manifest = self.source / "apps/gaoxy_proxy/mix.exs"
+        original = "{:gaoxy_http, in_umbrella: true}"
+        self.assertEqual(manifest.read_text().count(original), 1)
+        manifest.write_text(manifest.read_text().replace(
+            original, "{:gaoxy_http3, in_umbrella: true}"))
+        result = self.stage()
+        self.assertEqual(result.returncode, 0, result.stdout)
+        staged = (self.output / "gaoxy_proxy/mix.exs").read_text()
+        self.assertIn(f'gaoxy_http3: "== {VERSION}"', staged)
+        self.assertNotIn("optional: true", staged)
+
     def test_rejects_unreviewed_internal_optional_options_before_output(self):
         manifest = self.source / "apps/gaoxy_test/mix.exs"
         original = manifest.read_text()
         for options in [
                 "in_umbrella: true, optional: false",
+                "in_umbrella: true, optional: true",
+                "optional: true, in_umbrella: true",
+                "in_umbrella: true, runtime: false",
                 "in_umbrella: true, optional: true, override: true",
                 "in_umbrella: true, optional: true, runtime: false",
                 'in_umbrella: true, optional: true, path: "../gaoxy_http3"']:
             with self.subTest(options=options):
                 modified, count = re.subn(
-                    r"\{:gaoxy_http3,\s*in_umbrella: true,\s*optional: true\}",
+                    r"\{:gaoxy_http3,\s*in_umbrella: true[^}]*\}",
                     "{:gaoxy_http3, " + options + "}", original,
                 )
                 self.assertEqual(count, 1)

@@ -1,4 +1,5 @@
 defmodule Gaoxy.HTTP2PreSettingsTest do
+  alias HTTP.HTTP2.HPACK
   use ExUnit.Case, async: true
   alias Gaoxy.{HTTP, Lifecycle}
   alias Gaoxy.HTTP.HTTP2.Frame
@@ -159,7 +160,12 @@ defmodule Gaoxy.HTTP2PreSettingsTest do
       {":path", path}
     ]
 
-    {block, _} = HPAX.encode(:never_store, fields ++ extra, HPAX.new(4_096))
+    {_, block} =
+      HPACK.encode_headers(HPACK.new_encoder(), fields ++ extra,
+        indexing: :never,
+        huffman: :never
+      )
+
     :ok = :gen_tcp.send(socket, Frame.encode(1, if(ended, do: 5, else: 4), id, block))
   end
 
@@ -245,7 +251,10 @@ defmodule Gaoxy.HTTP2PreSettingsTest do
       case {type, stream} do
         {1, ^id} ->
           assert Frame.flag?(flags, 4), "response HEADERS must be complete"
-          assert {:ok, fields, _} = HPAX.decode(payload, HPAX.new(4_096))
+
+          assert {:ok, _, fields} =
+                   HPACK.decode(HPACK.new_decoder(max_dynamic_size: 4_096), payload)
+
           %{result | headers: result.headers ++ fields}
 
         {0, ^id} ->
