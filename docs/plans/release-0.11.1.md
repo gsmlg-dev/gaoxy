@@ -5,6 +5,12 @@ Date: 2026-10-22, Asia/Shanghai. User request: fix eligible open GitHub
 Baseline: `6201d4270a5805993359868973f0fb019c1c1fe0`, clean and equal to remote
 `main`; latest public release `v0.11.0`. No worktree or PR is needed.
 
+**Complete:** initial issue #11 fixed, independently reviewed and published as
+`v0.11.1` from `09715de3f165db134e287e1ea5fd4e93b1325905`. All six steps below
+are complete; see [acceptance and publication evidence](../acceptance/release-0.11.1.md).
+Issues #12–14 were created during CI after the initial source push and remain
+outside this batch.
+
 1. Fix [#11](https://github.com/gsmlg-dev/gaoxy/issues/11): preserve inclusive
    H1 poll-buffer capacity, bounded excess-input detection, and peer closure.
    Verify public Plug/TCP keep-alive flows with delayed and coalesced pipeline
