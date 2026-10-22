@@ -3,13 +3,14 @@
 > For agentic workers: use subagent-driven-development or executing-plans.
 > Follow the task dependencies and ownership below. Preserve concurrent work.
 
-**Goal:** Make test.yml a single Linux, fully mocked unit-test gate; separate
-real-client integration, packaging, cross-platform smoke and Linux E2E; remove
-browser testing.
+**Goal:** Make test.yml a single Linux, fully mocked unit-test gate; put
+integration and end-to-end testing in e2e.yml; keep packaging and cross-platform
+smoke separate; remove browser testing.
 
 **Architecture:** Reuse the existing file/count runner as the execution source.
-Split mixed files, migrate each entry to one ordinary owner, and keep
-cross-platform execution exclusively in portable.yml.
+Split mixed files, migrate each entry to one ordinary owner, group component,
+protocol and client jobs in e2e.yml, and keep cross-platform execution exclusively
+in portable.yml.
 
 **Tech stack:** GitHub Actions, Elixir 1.18.5 / OTP 28.5, the existing macOS
 BEAM baseline only for portable smoke, Python, curl, HTTPFetch, httpx, h2,
@@ -26,15 +27,18 @@ aioquic and websockets.
 | A: Freeze coverage and define selectors | Manifest/inventory owner: scripts/check-repairs.py and its unit tests; new inventory/checker | First |
 | B: Split mixed tests | Test owner: app test files listed below | A's schema; can run beside C |
 | C: Remove browsers and retain client coverage | Client owner: integration browser/client files and current usage docs | Design; can run beside B |
-| D: Move ordinary workflows | Workflow owner: ci/test/integration/package/portable/release YAML | A, B and C |
-| E: Small platform smoke | Smoke owner: isolated portable consumer and portable.yml | A; workflow writer serializes YAML edits with D |
-| F: Linux client E2E | E2E owner: integration/e2e and e2e.yml | C and existing runtime artifact contract |
+| D: Move ordinary workflows | Sole workflow owner: ci/test/e2e/package/portable/release YAML | A, B and C; released-client job qualified after F |
+| E: Small platform smoke | Smoke owner: isolated portable consumer; workflow owner wires portable.yml | A; YAML edits stay with D's owner |
+| F: Released-server clients | Client owner: integration/e2e harness and job contract; workflow owner wires release-clients | C and existing runtime artifact contract; YAML wiring after D and harness qualification |
 | G: Independent review and verification | Independent reviewers, then coordinator | All affected implementation |
 
 Use Sol for implementation and ordinary review. Give each writer exclusive file
-ownership. Shared runner changes precede dependent workflow edits. No worker may
-revert another worker's changes. New worktrees, if needed at execution time,
-belong in .trees/ on codex/ branches.
+ownership. D's workflow owner is the only writer of workflow YAML, including
+Task E/F integration; harness owners hand over their commands and prerequisites.
+Task D can finish source-job migration before F; its completion does not depend
+on enabling release-clients. Shared runner changes precede dependent workflow
+edits. No worker may revert another worker's changes. New worktrees, if needed at
+execution time, belong in .trees/ on codex/ branches.
 
 ## Task A: Freeze coverage and define one executable manifest
 
@@ -185,9 +189,9 @@ integration/upstream_transport/browser.py and browser.mjs.
 
 ## Task D: Move ordinary workflow ownership
 
-**Modify:** .github/workflows/{ci.yml,test.yml,portable.yml,release.yml},
+**Modify:** .github/workflows/{ci.yml,test.yml,e2e.yml,portable.yml,release.yml},
 AGENTS.md (a current testing-boundary section).
-**Create:** .github/workflows/{integration.yml,package.yml}.
+**Create:** .github/workflows/package.yml.
 
 - [ ] Make ci.build Linux-only; retain formatter and strict compilation.
   Move its three Python regression executions to test.yml. Static inventory
@@ -215,12 +219,18 @@ AGENTS.md (a current testing-boundary section).
   python3 scripts/check-repairs.py unit
   ~~~
 
-- [ ] Create Linux component/protocol/isolated-network integration jobs.
+- [ ] Put Linux component/protocol/isolated-network jobs in e2e.yml.
   Copy their necessary OpenSSL/client prerequisites, locks, privileged tools,
   deadlines and non-browser evidence uploads. Do not call all here.
   Assign h2_rfc/run.py, reverse_proxy/run.py and the browser-free Phoenix
   gate.py/unified.py to protocol. Assign examples/phoenix_native's existing
   Mix test command to component, retaining its fixture dependencies/settings.
+- [ ] Give e2e.yml all push/PR/manual triggers inherited from the old portable
+  workflow. Change workflow_dispatch.inputs.version to optional with default ''.
+  All three source integration jobs run on every event, without a published
+  version, without a global disable condition and without needs on one another
+  or on release-clients. Keep only the released-server placeholder disabled
+  until Task F's actual harness is qualified.
 - [ ] Create Linux package jobs for test-stage-hex-packages.py,
   test-consumers.py, external-consumer.sh, gateway-consumer.sh,
   h3-gateway-consumer.sh, optional QUIC consumer and source-built release smoke.
@@ -239,9 +249,10 @@ AGENTS.md (a current testing-boundary section).
   Python unit regressions now inherit test.yml's main-targeted triggers.
   Inspect required-check references before naming/removing jobs.
 - [ ] Add a current AGENTS.md testing-boundary section: single Linux mocked
-  unit gate; real clients for integration/E2E; portable-only cross-platform
-  smoke; no browser testing. Retain historical scope/evidence text.
-- [ ] Run actionlint on all seven workflows, plus the inventory checker and
+  unit gate; integration and real-client end-to-end jobs under e2e.yml;
+  portable-only cross-platform smoke; no browser testing. Retain historical
+  scope/evidence text.
+- [ ] Run actionlint on all six workflows, plus the inventory checker and
   scripts' mocked unit regressions. Expected: no configuration errors or lost
   required entries. Hosted run status remains NOT RUN until actually observed.
 
@@ -249,7 +260,7 @@ AGENTS.md (a current testing-boundary section).
 
 **Create:** integration/portable_smoke/{mix.exs,smoke.exs,README.md},
 scripts/portable-smoke.py.
-**Modify:** .github/workflows/portable.yml.
+**Workflow wiring:** D's workflow owner modifies .github/workflows/portable.yml.
 
 - [ ] Create a clean consumer of candidate gaoxy/gaoxy_http through the existing
   source-consumer staging pattern. Do not depend on proxy, Server, H3 or
@@ -267,15 +278,20 @@ scripts/portable-smoke.py.
   environment. Expected: one successful request and normal stop. macOS is
   NOT RUN until a macOS runner executes it; do not infer it from Linux.
 
-## Task F: Linux E2E using different clients
+## Task F: Released-server clients within the unified E2E workflow
 
 **Create:** integration/e2e/{run.py,fixture.exs,requirements.txt,README.md}.
-**Modify:** .github/workflows/e2e.yml.
+**Workflow wiring:** D's workflow owner modifies .github/workflows/e2e.yml,
+after Task D's source jobs and this task's harness qualification.
 
-- [ ] Keep workflow_dispatch.version and a single Linux environment. Download
-  the existing Linux runtime archive and SHA256SUMS for that version into a
-  fresh directory. Verify integrity before extraction and record the release
-  revision. Never compile or substitute the server under test from the checkout.
+- [ ] Add a Linux release-clients job beside the source integration jobs in
+  e2e.yml. Its final event condition is github.event_name == 'workflow_dispatch'
+  && inputs.version != ''. This condition is job-local; source jobs do not
+  depend on it. A manual run with no version still runs source integration.
+- [ ] In release-clients, download the existing Linux runtime archive and
+  SHA256SUMS for the selected version into a fresh directory. Verify integrity
+  before extraction and record the release revision. Never compile or
+  substitute its server under test from the checkout.
 - [ ] Reuse the existing public runtime/fixture startup pattern. Bind only
   loopback ephemeral listeners. Use clients from the matching revision, with
   explicit finite start, request and stop deadlines.
@@ -297,17 +313,20 @@ scripts/portable-smoke.py.
   Expected: nonempty actual client results and bounded cleanup, with no server
   build from checkout. Change the version only to another verified existing
   release; a locally built package is not an artifact-E2E pass.
-- [ ] Replace the placeholder/disabled job only after its actual suite and
-  cleanup are reviewed and qualified. This design task itself does not enable
-  or dispatch it. Do not publish a release to obtain test inputs.
+- [ ] After the harness and cleanup pass review/qualification, hand its command
+  and prerequisites to D's workflow owner. That owner replaces only the
+  released-server placeholder and applies the manual/nonempty-version gate;
+  source integration jobs remain runnable independently. This design task
+  does not enable or dispatch it. Do not publish a release to obtain test inputs.
 
 ## Task G: Review, verify and commit locally
 
 **Create:** docs/acceptance/test-workflow-separation.md.
 
 - [ ] Independently review the design and implementation against every boundary:
-  unit mocks/no requests; all cross-platform only in portable; E2E different
-  clients; no browsers; no active-case loss or accidental specialist execution.
+  unit mocks/no requests; all cross-platform only in portable; E2E owns
+  integration and different-client testing; no browsers; no active-case loss
+  or accidental specialist execution.
 - [ ] Review the ownership ledger: each old command/case has one ordinary owner
   or an explicit UI-only retirement. Distinguish repeat verification on a
   publication source from unintended duplicate ordinary CI.
@@ -329,6 +348,9 @@ scripts/portable-smoke.py.
 
   Inspect all workflow runner declarations: only portable.yml may contain macOS
   or an OS matrix; test.yml must contain one literal ubuntu-latest unit job.
+  E2E must contain component/protocol/isolated-network on ordinary events,
+  independent of the manual release-clients/version condition. The final six
+  workflows are ci, test, e2e, package, portable and release.
   Inspect active entrypoints/requirements for browser imports and launches.
 - [ ] Keep scoped, reviewable commits for runner/test classification, browser
   removal, workflow separation and the smoke/E2E harnesses. Stage only owned

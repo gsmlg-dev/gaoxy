@@ -16,11 +16,13 @@
    belongs to integration, even when it makes no network request.
 4. All cross-platform execution belongs to portable.yml. Its purpose is a small
    can-run smoke on the already established Linux and macOS targets.
-5. e2e.yml runs on Linux and exercises the HTTP server with different HTTP
-   clients. It does not perform the cross-platform matrix.
+5. e2e.yml owns integration and end-to-end testing on Linux: component
+   collaboration, real network/protocol tests and different HTTP clients.
+   Use separate jobs within this workflow, without another integration workflow
+   or a cross-platform matrix.
 6. Remove browser tests, Playwright, Chromium setup and browser-only acceptance.
    Use HTTP clients and protocol peers for server behavior.
-7. CI, integration, package and release jobs use Linux. Existing macOS build and
+7. CI, E2E, package and release jobs use Linux. Existing macOS build and
    non-unit matrices move out of their former owners; portable is the only
    workflow allowed to select macOS.
 8. Preserve ordinary assertions and nonempty/exact-count guards. Keep specialist
@@ -66,15 +68,17 @@ adding an exclude flag cannot establish unit isolation.
 | --- | --- | --- |
 | ci.yml | ubuntu-latest | Formatting, static inventory validation and strict compilation |
 | test.yml | One ubuntu-latest job | Mocked/isolated unit tests and Python script unit regressions |
-| integration.yml | Linux jobs | Component collaboration, real network/protocol tests and isolated Linux networking |
+| e2e.yml | Linux jobs | Source integration, real network/protocol tests, isolated Linux networking and client-based published-server checks |
 | package.yml | Linux jobs | Hex staging, clean source/built-package consumers, dependency isolation and source-built release smoke |
 | portable.yml | Linux/macOS matrix | One minimal HTTP startup/request/stop smoke per platform |
-| e2e.yml | One Linux test environment | Black-box published-server checks using different HTTP clients |
 | release.yml | Linux | Independent qualification of the exact publication source, then the existing manual publication flow |
 
-Keep current triggers: CI on all pushes/PRs; unit tests on main pushes and PRs
-targeting main; integration, package and portable inherit all push/PR/manual
-triggers from the old portable workflow. E2E stays manual with a version input.
+CI stays on all pushes/PRs; unit tests stay on main pushes and PRs targeting
+main. E2E, package and portable inherit all push/PR/manual triggers from the old
+portable workflow. E2E's manual version input becomes optional, defaulting to
+an empty string. Source integration jobs run on every event; release-clients
+runs only for a manual event with a nonempty version, once its actual suite is
+qualified. Ordinary pushes/PRs do not require an already published candidate.
 Do not introduce schedules, path filters or cross-workflow dependencies.
 
 Ordinary workflows use contents: read, separate concurrency groups and redundant
@@ -140,12 +144,14 @@ commands with one ordinary workflow owner. They are not executed by app-file
 discovery. Preserve existing entrypoints that are not currently scheduled
 without turning them into new automatic gates.
 
-### 3.3 Integration and package ownership
+### 3.3 E2E integration jobs and package ownership
 
-Integration jobs are component, protocol and isolated-network. Each job installs
-only the peers/tools it uses. Keep OpenSSL and pinned H2/aioquic dependencies
-with the real network suites. The privileged job retains Linux namespaces,
-IPv4/IPv6/backend variants, finite deadlines and owned-resource cleanup.
+Within e2e.yml, source integration jobs are component, protocol and
+isolated-network. They run independently on Linux without depending on
+release-clients. Each job installs only the peers/tools it uses. Keep OpenSSL
+and pinned H2/aioquic dependencies with the real network suites. The privileged
+job retains Linux namespaces, IPv4/IPv6/backend variants, finite deadlines and
+owned-resource cleanup.
 
 Package jobs own staging/build regressions, built/extracted six-package
 consumers, the three currently scheduled source consumers (external-consumer.sh,
@@ -156,14 +162,14 @@ for them. Move source-built standalone release smoke here. These jobs never
 publish. Preserve locks, temporary-project isolation, optional dependency checks
 and nonempty execution.
 
-Keep h2_rfc/run.py and reverse_proxy/run.py under the Linux protocol job.
+Keep h2_rfc/run.py and reverse_proxy/run.py under e2e.yml's Linux protocol job.
 The browser-free Phoenix gate.py/unified.py also belong to source protocol
 integration, with the example project's own Mix tests under component
-integration. These source-fixture checks are separate from E2E against a
-published server.
+integration. Keep source-fixture identity and published-server identity distinct
+within the same workflow; they use different jobs and commands.
 
-Do not repeat unit or consumer suites in integration. Repeating required checks
-on the exact publication source in release.yml remains intentional.
+Do not repeat unit or package-consumer suites in e2e.yml. Repeating required
+checks on the exact publication source in release.yml remains intentional.
 
 ## 4. HTTP clients instead of browsers
 
@@ -226,15 +232,21 @@ remain only where the candidate's dependencies require them. A missing
 dependency/platform capability produces a truthful failure or environment block,
 not a skipped case reported as a successful smoke.
 
-## 6. Linux E2E with multiple clients
+## 6. One Linux workflow for integration and E2E
 
-E2E is ordinary HTTP-server acceptance, on Linux, separate from platform smoke.
-Use the existing manual version input and the matching published Linux runtime.
-Download the archive and SHA256SUMS, verify them, and run from a fresh temporary
-directory. Test fixtures/clients may come from the matching release revision;
-they must not build or substitute the server from the current checkout.
+e2e.yml owns all source integration described in section 3.3. Its component,
+protocol and isolated-network jobs validate the candidate checkout on pushes,
+PRs and manual runs. Existing ordinary real-client checks stay in these jobs.
+The component and protocol manifests retain their distinct classifications and
+exact-count guards; grouping them in one workflow does not merge their suites.
 
-Start a local-only server fixture, drive it with the clients above, and test
+The additional release-clients job uses the optional manual version input and
+the matching published Linux runtime. Download the archive and SHA256SUMS,
+verify them, and run from a fresh temporary directory. Test fixtures/clients
+may come from the matching release revision; this job must not build or
+substitute the server from the current checkout.
+
+Start a local-only server fixture, drive it with the clients above, and verify
 ordinary request/response, headers/body, upload/streaming, TLS, supported H2/H3
 and WebSocket behavior. Reuse ordinary peer cases; do not import specialist
 load/disconnect qualification or add a large new conformance programme.
@@ -243,10 +255,16 @@ Use finite request/start/stop deadlines. Record version, server artifact, client
 and actual protocol, individual results and process exit. Keep peer/server logs
 and results; no browser or screenshot artifacts.
 
-The existing E2E job remains disabled during this planning change. Its later
-implementation replaces the placeholder and becomes runnable only after the
-actual client-based suite is reviewed and qualified. Existing Linux artifacts
-are sufficient for this E2E design; no new macOS artifact publication is needed.
+The existing release-artifact placeholder remains disabled during this planning
+change. At implementation, that disabled state applies only to release-clients
+until its actual suite is reviewed and qualified. It must not disable the
+migrated source integration jobs or make them depend on a published version.
+After qualification the release-clients condition is manual event AND nonempty
+version. A manual run without version still runs source integration; a version
+adds the released-server job. Keep these jobs independent.
+
+Existing Linux artifacts suffice for the released-server checks; no macOS
+artifact publication or two-mode server runner is needed.
 
 ## 7. Verification and migration acceptance
 
@@ -254,6 +272,9 @@ are sufficient for this E2E design; no new macOS artifact publication is needed.
 - All unit service boundaries use mocks/doubles; no real request/listener/peer.
 - Only portable.yml contains cross-platform runners; its runtime scenario is one
   startup, GET and stop.
+- E2E contains the Linux component, protocol and isolated-network jobs. They run
+  on pushes/PRs and manual events without a release version; release-clients has
+  its separate manual/version gate.
 - No executable test entrypoint or dependency installation requires a browser.
 - Every currently selected non-UI ordinary case has a new owner. For the 407
   app cases above, the provisional split is 184 unit and 223 component/protocol;
