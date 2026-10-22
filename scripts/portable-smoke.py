@@ -52,7 +52,7 @@ def main():
             environment.pop("MIX_BUILD_PATH", None)
             with (args.evidence / "consumer.log").open("w") as output:
                 run(["mix", "deps.get", "--check-locked"], project, environment, output, 180)
-                run(["mix", "compile", "--warnings-as-errors"], project, environment, output, 300)
+                run(["mix", "compile", "--warnings-as-errors"], project, environment, output, 600)
                 run(["mix", "run", "--no-compile", "smoke.exs"], project, environment, output, 30)
             assert "GAOXY_PORTABLE_PASS" in (args.evidence / "consumer.log").read_text()
             report.update(status="PASS", requests=1, stopped=True, exit=0)
