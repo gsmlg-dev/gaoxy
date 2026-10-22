@@ -67,6 +67,9 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
          true <-
            normalized.http_limits.stream_timeout == :request ||
              {:error, :unsupported_stream_timeout},
+         true <-
+           normalized.http_limits.request_timeout != :infinity ||
+             {:error, :unsupported_request_timeout},
          handler =
            Map.take(normalized, [:endpoint, :http_limits, :initialized])
            |> Map.put(:h3_limits, h3)

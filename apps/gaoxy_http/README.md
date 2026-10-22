@@ -4,7 +4,7 @@
 HTTP/2 and WebSocket implementations. Gaoxy owns listener supervision and
 connection admission; Hell provides TCP and OTP TLS. Bandit is not required.
 
-Requires Elixir `~> 1.18`. Package version: **0.11.1**.
+Requires Elixir `~> 1.18`. Package version: **0.12.0**.
 
 TCP/TLS listeners accept validated `hell_options` for acceptor count and socket
 tuning. Put these inside each HTTP/HTTPS listener when using Phoenix or
@@ -17,15 +17,15 @@ and [Bandit migration example](https://github.com/gsmlg-dev/gaoxy/blob/main/docs
 For a Plug application, add:
 
 ```elixir
-{:gaoxy_http, "~> 0.11.1"}
+{:gaoxy_http, "~> 0.12.0"}
 ```
 
 For Phoenix, use both dependencies below, keeping your existing Phoenix,
 LiveView and application dependencies:
 
 ```elixir
-{:gaoxy_http, "~> 0.11.1"},
-{:websock_adapter, "~> 0.11.1", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.12.0"},
+{:websock_adapter, "~> 0.12.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 `gaoxy_websock_adapter` is the Hex package name; its OTP application and module
@@ -171,17 +171,31 @@ limits: %{max_active: 128, max_bytes: 536_870_912}
 ```
 
 The default request body ceiling is 8 MiB, header ceiling 32 KiB, and whole
-request/response deadline 30 seconds. SSE routes can explicitly select an
-unbounded response lifetime with `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
+request/response deadline 30 seconds. Native H1/H2 listeners can set
+`http_limits: %{request_timeout: :infinity}` for uploads, ordinary responses and
+`Plug.Conn.send_file`, while header/read/write timeouts, admission budgets,
+cancellation and finite shutdown remain in force. Trusted application code
+without I/O needs its own execution/idle policy. H3 and Generation targets,
+including managed gateway targets, reject this setting with
+`:unsupported_request_timeout`, whether direct or wrapped. Ordinary native/Plug
+targets through ListenerSet or Endpoint-owned Phoenix support the H1/H2 opt-in.
+
+SSE routes can explicitly select an unbounded response lifetime with `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
 before `send_chunked/2`; finite header, body-read and write deadlines remain in
 effect. A listener default uses `http_limits: %{stream_timeout: :infinity}`.
-See the [streaming guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/streaming-responses.md)
+The default `stream_timeout: :request` retains the configured request lifetime,
+including infinity when explicitly selected on a supported listener. See the
+[streaming guide](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/streaming-responses.md)
 for cancellation and shutdown. H1's default service byte budget is 1 MiB; selecting
 H2 raises the omitted `max_bytes` default to 256 MiB. These are resource
 budgets, not preallocated buffers or guarantees that a request will be admitted.
 H2 defaults to 32 concurrent streams per connection; resource admission also
 applies. See the migration guide's complete option and limit tables before
 lowering H2 budgets or raising parser limits.
+
+HEAD responses preserve a validated supplied Content-Length as representation
+metadata while suppressing the body. Without a supplied length, the body length
+is inferred. Existing 204/205/304 rules and GET framing remain unchanged.
 
 Long-running Plug handlers can call `Gaoxy.HTTP.poll_connection(conn, wait_ms)`
 with a finite wait (including `0`) to observe cancellation. Keep the returned
@@ -212,6 +226,10 @@ config :my_app, MyAppWeb.Endpoint,
     extended_connect: true
   ]
 ```
+
+Phoenix's standard disconnect broadcast returns `{:shutdown, :disconnected}`;
+Gaoxy closes it with 1000 and normal WebSock termination. Restart remains 1012,
+arbitrary stop errors remain 1011, and explicit close codes remain authoritative.
 
 Keep Phoenix's Origin, session and authentication policies. WebSocket
 compression is unsupported; `compress: true` is rejected. An omitted message

@@ -11,7 +11,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_http3, "~> 0.11.1"}
+    {:gaoxy_http3, "~> 0.12.0"}
   ]
 end
 ```
@@ -80,6 +80,11 @@ Start with the supplied resource limits. `:limits`, `:http_limits` and
 `:h3_limits` are maps validated together before activation. H3 defaults allow
 eight request streams per connection and 32,768-byte header blocks. Dynamic
 QPACK table capacity and blocked-stream limits must both remain zero.
+
+Request lifetimes remain finite. `http_limits: %{request_timeout: :infinity}`
+is rejected with `:unsupported_request_timeout`. Response-only lifetime overrides
+remain unsupported (`:unsupported_stream_timeout`). The native H1/H2
+storage opt-in does not apply to H3.
 
 ## WebSocket and Phoenix
 

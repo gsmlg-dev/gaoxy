@@ -18,4 +18,13 @@ defmodule Gaoxy.HTTP.HTTP3.StreamLifetimeBoundaryTest do
                )
     end
   end
+
+  test "HTTP3 explicitly rejects infinite request lifetime before endpoint initialization" do
+    assert {:error, :unsupported_request_timeout} =
+             Gaoxy.HTTP.HTTP3.Options.normalize(
+               endpoint: {Endpoint, []},
+               tls: %{certfile: "cert", keyfile: "key"},
+               http_limits: %{request_timeout: :infinity}
+             )
+  end
 end

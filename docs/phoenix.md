@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.11.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.12.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.11.0"},
-{:websock_adapter, "~> 0.11.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.12.0"},
+{:websock_adapter, "~> 0.12.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -343,9 +343,10 @@ memory or allocations made by application code.
 | `header_timeout` | 5,000 ms from the first request byte |
 | `read_timeout`, `write_timeout` | 5,000 ms per body read / write |
 
-Except `stream_timeout`, all values are positive finite integers; `max_read_chunk` must not exceed
-`max_buffer_bytes`. For example, raise the HTTP upload ceiling and SSE deadline
-inside the listener with:
+`request_timeout` also accepts `:infinity` for ordinary H1/H2 native/Plug targets;
+all values except `request_timeout` and `stream_timeout` are positive finite
+integers. `max_read_chunk` must not exceed `max_buffer_bytes`. For example,
+raise the HTTP upload ceiling and request deadline inside the listener with:
 
 ```elixir
 http_limits: %{max_body_bytes: 16_777_216, request_timeout: 120_000}
@@ -356,7 +357,29 @@ in the route before `Plug.Conn.send_chunked/2`, or select a listener default wit
 `http_limits: %{stream_timeout: :infinity}`. The transition requires request-body
 completion and retains finite header/body/write controls and admission budgets.
 See [streaming responses](streaming-responses.md) for HTTP/1 and HTTP/2 lifecycle,
-polling, cancellation and shutdown. HTTP/3 does not support this opt-in.
+polling, cancellation and shutdown. `stream_timeout: :request` retains the
+configured request lifetime; it does not itself select a finite timeout.
+HTTP/3 does not support this response-stream opt-in.
+
+The separate `request_timeout: :infinity` storage policy covers H1/H2 uploads
+and ordinary `send_file` responses without a chunked-response transition.
+Ordinary Endpoint-owned Phoenix listeners and ListenerSet Plug targets support
+it. Configure it inside the chosen listener:
+
+```elixir
+http: [port: 4000, http_limits: %{request_timeout: :infinity}]
+```
+
+H3 and Generation targets, including managed gateway targets, reject infinite
+requests with `:unsupported_request_timeout` (possibly wrapped as a configuration
+error). Wrapping a Generation target in ListenerSet does not add support.
+Finite header/read/write limits, admission and shutdown still apply; trusted
+application code without I/O owns its own execution/idle policy. See the
+[request lifetime guide](streaming-responses.md#uploads-and-file-responses).
+
+HEAD responses preserve validated application Content-Length metadata while
+suppressing the wire body. An omitted length is inferred from the body, and
+204/205/304 status rules and GET framing retain their existing behavior.
 
 Plug body reads aggregate native pieces up to their logical `:length`, while
 `:read_length`, the native chunk cap, cumulative server body limit and per-read
@@ -422,6 +445,13 @@ native WebSocket CONNECT on an allowlisted path. Native protocol metadata is
 retained. Phoenix still performs its ordinary Origin, session, CSRF,
 authentication and subprotocol checks. Do not disable those checks to make a
 migration work.
+
+Phoenix's standard `"disconnect"` broadcast returns
+`{:stop, {:shutdown, :disconnected}, state}`. Gaoxy treats this exact reason as
+normal WebSock termination and sends close code 1000, matching Bandit. A restart
+still sends 1012; arbitrary shutdown/error reasons still send 1011. Explicit
+application close codes and final messages remain authoritative. Transport and
+channel cleanup follow the close handshake.
 
 The client chooses H1 Upgrade or H2 extended CONNECT; an H2 document load does
 not establish which WebSocket protocol was used. `compress: true` and disabling
@@ -510,6 +540,7 @@ into the supported Gaoxy and Phoenix configuration.
 | `:http2_ingress_budget` | Ensure `max_buffer_bytes >= max_frame + 9` |
 | `:http2_byte_budget` | Restore the default H2 byte budget and at least three active slots; account for enlarged headers/tables/buffers |
 | `:unsupported_http2_host` | Check the `:inet` backend and TLS `internal_active_n` constraints |
+| `:unsupported_request_timeout` | Use finite `request_timeout` for H3 or Generation/managed gateway targets; ordinary H1/H2 native/Plug targets support the opt-in |
 | `:duplicate_endpoint_listener` | Choose Endpoint-owned or externally mounted startup; inspect `server` and global `serve_endpoints` |
 | No listener / connection refused | Ensure the Endpoint child is supervised, `server: true`, and at least one scheme enabled; inspect `server_info/2` |
 | Code changes are not reloaded | Check `code_reloader`, `Phoenix.CodeReloader` Mix listener, and Endpoint plug |

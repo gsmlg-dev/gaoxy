@@ -289,6 +289,7 @@ defmodule Gaoxy.HTTP.Exchange do
     size = min(byte_size(pending), Map.get(exchange.limits, :max_write_chunk, 16_384))
     <<bytes::binary-size(^size), rest::binary>> = pending
     operation = make_ref()
+    deadline = min(exchange.deadline, Gaoxy.Lifecycle.deadline(exchange.limits.write_timeout))
 
     result =
       with :ok <- update_body_retention(exchange, retained_bytes(exchange) + byte_size(bytes)),
@@ -298,7 +299,7 @@ defmodule Gaoxy.HTTP.Exchange do
                exchange.lease,
                byte_size(bytes),
                operation,
-               exchange.deadline
+               deadline
              ) do
         {result, outcome} = send_continue_window(exchange, bytes)
         _ = Admission.finish_send_async(exchange.gate, exchange.lease, operation, outcome)

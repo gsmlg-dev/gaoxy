@@ -374,6 +374,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     code =
       case reason do
         :normal -> 1000
+        {:shutdown, :disconnected} -> 1000
         {:shutdown, :restart} -> 1012
         _ -> 1011
       end
@@ -391,6 +392,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     reason =
       case reason do
         :normal -> :normal
+        {:shutdown, :disconnected} -> :normal
         {:shutdown, :restart} -> :shutdown
         other -> {:error, other}
       end

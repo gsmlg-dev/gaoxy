@@ -86,6 +86,12 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
     verify(%{state | limits: Map.delete(state.limits, :max_write_chunk)}, stream)
   end
 
+  test "infinite request lifetime retains the finite startup constructor reservation" do
+    {state, stream} = fixture()
+    state = put_in(state.limits.request_timeout, :infinity)
+    verify(state, stream)
+  end
+
   defp normalized_state(state, initialized) do
     {:ok, spec} =
       Gaoxy.HTTP.service_spec(
@@ -303,6 +309,15 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
       expect_sent: false
     }
 
+    # Independently instantiate both actual deadline representations and retain
+    # the larger Exchange for exact constructor-cap comparisons.
+    infinite = %{exchange | deadline: :infinity}
+
+    exchange =
+      if s.limits.request_timeout == :infinity and c.(infinite) > c.(exchange),
+        do: infinite,
+        else: exchange
+
     dispatch = {:h2_dispatch, owner, exchange, s.spec.handler_options.endpoint}
     done = {:h2_stream_done, worker, r.id, r.token, {:error, :response_failed}}
 
@@ -321,7 +336,11 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccountingTest do
        r.request.head_bytes, e(r.request), e(s.spec.handler_options.endpoint), e(limits),
        e(s.peer), e(s.local), e(s.service), e(s.instance), e(s.secure), e(s.peer_cert),
        e(s.spec.limits.max_bytes), e(s.spec.limits.max_active), e(node()) + 13, e(node()) + 27,
-       e(s.limits.request_timeout)}
+       e(s.limits.request_timeout),
+       if(s.limits.request_timeout == :infinity,
+         do: max(e(r.deadline), e(:infinity)),
+         else: e(r.deadline)
+       )}
 
     plan = {:native_http2_worker_v1, n, w}
 

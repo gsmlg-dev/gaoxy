@@ -47,6 +47,16 @@ defmodule PhoenixNative.WebSocketPhoenixCompatibilityTest do
 
   defmodule Channel do
     use Phoenix.Channel
+
+    def join("compatibility", %{"observe" => true}, socket) do
+      send(
+        Process.whereis(PhoenixNative.WebSocketPhoenixCompatibilityTest),
+        {:channel_joined, self(), socket.transport_pid}
+      )
+
+      {:ok, socket}
+    end
+
     def join("compatibility", _, socket), do: {:ok, socket}
     def handle_in("echo", payload, socket), do: {:reply, {:ok, payload}, socket}
   end
@@ -55,7 +65,7 @@ defmodule PhoenixNative.WebSocketPhoenixCompatibilityTest do
     use Phoenix.Socket
     channel("compatibility", Channel)
     def connect(_, socket, _), do: {:ok, socket}
-    def id(_), do: nil
+    def id(_), do: "compatibility:disconnect"
   end
 
   defmodule Endpoint do
@@ -109,6 +119,29 @@ defmodule PhoenixNative.WebSocketPhoenixCompatibilityTest do
              "phx_reply",
              %{"status" => "ok", "response" => %{"message" => "wire-ok"}}
            ] = receive_json(socket)
+  end
+
+  test "Phoenix disconnect broadcast closes normally and cleans up the transport and channel", %{
+    port: port
+  } do
+    Process.register(self(), __MODULE__)
+    socket = upgrade(port, "/application/websocket?vsn=2.0.0", "")
+    send_json(socket, ["1", "1", "compatibility", "phx_join", %{"observe" => true}])
+    assert ["1", "1", "compatibility", "phx_reply", %{"status" => "ok"}] = receive_json(socket)
+    assert_receive {:channel_joined, channel, transport}, 2_000
+    channel_ref = Process.monitor(channel)
+    transport_ref = Process.monitor(transport)
+
+    :ok = Endpoint.broadcast("compatibility:disconnect", "disconnect", %{})
+    assert {8, <<1000::16>>} = frame(socket)
+    :ok = :gen_tcp.send(socket, masked(8, <<1000::16>>))
+    # H1 closes its connection owner with :local_closed after the WebSocket
+    # close handshake; Phoenix propagates that process exit to its channel.
+    assert_receive {:DOWN, ^transport_ref, :process, ^transport, {:shutdown, :local_closed}},
+                   2_000
+
+    assert_receive {:DOWN, ^channel_ref, :process, ^channel, {:shutdown, :local_closed}}, 2_000
+    assert {:error, :closed} = :gen_tcp.recv(socket, 0, 2_000)
   end
 
   for fragmented <- [false, true] do

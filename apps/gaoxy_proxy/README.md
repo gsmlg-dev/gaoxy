@@ -14,7 +14,7 @@ Add to `mix.exs`, then run `mix deps.get`:
 ```elixir
 defp deps do
   [
-    {:gaoxy_proxy, "~> 0.11.1"}
+    {:gaoxy_proxy, "~> 0.12.0"}
   ]
 end
 ```
@@ -59,7 +59,10 @@ reservation is not a measurement of total VM or kernel memory.
 HTTP endpoint defaults are `opening_timeout: 5_000`, `idle_timeout: 60_000`,
 `write_timeout: 5_000`, `max_lifetime: 30_000` and `max_chunk_bytes: 65_536`
 (milliseconds for timeouts). Longer streams also need a sufficient listener
-`http_limits.request_timeout`.
+`http_limits.request_timeout`. Generation targets, including managed gateway
+targets, retain finite request lifetimes and reject `request_timeout: :infinity`
+with `:unsupported_request_timeout`, including when wrapped by ListenerSet.
+The native H1/H2 storage policy does not extend upstream session lifetimes.
 
 ## Upstream protocol selection
 

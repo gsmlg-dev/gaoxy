@@ -201,15 +201,21 @@ defmodule Gaoxy.HTTP.HTTP1.Response do
              exchange.limits.max_header_bytes
            ),
          :ok <- valid_framing(headers) do
+      head_length? =
+        exchange.request.method == "HEAD" and status not in [204, 205] and
+          Enum.any?(headers, fn {key, _} -> key == "content-length" end)
+
       headers =
         Enum.reject(headers, fn {key, _} ->
-          key == "transfer-encoding" or (key == "content-length" and status != 304)
+          key == "transfer-encoding" or
+            (key == "content-length" and status != 304 and not head_length?)
         end)
 
       headers =
         cond do
           status in [204, 304] -> headers
           status == 205 -> [{"content-length", "0"} | headers]
+          head_length? -> headers
           true -> [{"content-length", Integer.to_string(length)} | headers]
         end
 

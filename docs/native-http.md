@@ -182,10 +182,12 @@ existing status mapping; a zero-progress result fails without a busy loop.
 
 Plug's `:read_timeout` defaults to 15,000 ms per underlying socket read. The
 server's explicit `http_limits.read_timeout` (5,000 ms by default) caps each
-wait, and the original absolute request deadline caps the whole operation.
-Progress never resets that deadline. Read-triggered `100 Continue` output
-also respects that deadline and the configured write chunk cap, and a failed
-Continue is never replayed. This is separate from the native API's finite
+wait. A finite absolute request deadline also caps the whole operation, and
+progress never resets it. Native H1/H2 listeners can explicitly select
+`http_limits: %{request_timeout: :infinity}` to remove that total deadline for
+uploads and file responses. Read-triggered `100 Continue` output retains finite
+write/coordination limits and the configured write chunk cap; a failed Continue
+is never replayed. This is separate from the native API's finite
 per-step wait.
 
 Admission reserves accumulated detached chunks and the temporary final binary
@@ -254,6 +256,14 @@ framing, duplicate Content-Length, unsupported transfer encodings and malformed
 authorities are rejected before dispatch. The original escaped path/query is
 preserved. Unread bodies force closure. Ordinary, prepared, chunked, fixed-length
 streaming, file, HEAD/bodyless and informational Plug responses are supported.
+
+For HEAD, a validated supplied `content-length` describes the representation
+and is preserved even when the application sends an empty body. Without one,
+the response body determines the length; no body is sent. Status rules retain
+precedence: 204 omits the length, 205 uses zero, and 304 retains a supplied
+representation length. Malformed or duplicate lengths remain errors; ordinary
+GET response framing remains based on the actual body.
+
 Protocol push is unsupported. Authenticated H1 CONNECT is available through the
 separate [gateway endpoint](gateway.md), with explicit destination policy.
 
@@ -268,16 +278,26 @@ separate [gateway endpoint](gateway.md), with explicit destination policy.
 | `max_trailer_bytes`, `max_trailers` | 8,192 bytes, 32 fields |
 | `max_read_chunk`, `max_buffer_bytes` | 16,384 bytes, 65,536 bytes |
 | `header_timeout` | 5,000 ms from the first request byte |
-| `request_timeout` | 30,000 ms for ordinary request/response lifetime |
+| `request_timeout` | 30,000 ms; native H1/H2 also accept `:infinity` |
 | `stream_timeout` | `:request`; also `:infinity` or positive response-lifetime milliseconds |
-| `read_timeout`, `write_timeout` | 5,000 ms per body-read call / socket write |
+| `read_timeout`, `write_timeout` | 5,000 ms per underlying body read / socket write |
 
-Limits other than `stream_timeout` are positive finite integers. HTTP/1 and
-HTTP/2 SSE routes can select `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
+`request_timeout` also accepts `:infinity` for native H1/H2 requests;
+other limits except `stream_timeout` are positive finite integers. This covers
+uploads and ordinary file responses without a stream transition. Header, read
+and write timeouts, admission budgets, cancellation and shutdown remain finite.
+Trusted application work without I/O needs its own execution/idle policy.
+HTTP/3 and Generation targets, including managed gateway targets, reject
+infinite requests with `:unsupported_request_timeout`, whether direct or wrapped.
+Ordinary native/Plug targets, including ListenerSet and Endpoint-owned Phoenix,
+support the H1/H2 opt-in.
+
+HTTP/1 and HTTP/2 SSE routes can select `Gaoxy.HTTP.put_stream_timeout(conn, :infinity)`
 before `send_chunked/2`, or a listener default with
-`http_limits: %{stream_timeout: :infinity}`. The default preserves the ordinary
-request deadline. The transition requires a completed request body, and does
-not remove finite header, body-read, write, admission or shutdown controls.
+`http_limits: %{stream_timeout: :infinity}`. The `:request` stream default
+preserves the configured request lifetime, which can be infinite on a supported
+listener that explicitly opts in. The transition requires a completed request
+body and retains finite header, read, write, admission and shutdown controls.
 See [streaming responses](streaming-responses.md) for polling and cancellation;
 HTTP/3 does not support the opt-in. Partial headers and body metadata cannot
 renew their original deadline. Slow writes retain a finite transport timeout.
@@ -320,7 +340,10 @@ retain finite deadlines. Normal Close ends only that WebSocket stream, leaving
 ordinary HTTP siblings and other WebSockets independent. Specialist abnormal
 disconnect, slow-peer, pressure and load qualification remains deferred.
 H1 drain uses its existing absolute deadline and sends
-1001; a WebSock restart stop sends 1012. Forced watchdog termination cannot run
+1001. The exact Phoenix `{:shutdown, :disconnected}` stop reason sends 1000
+and normal WebSock termination; restart sends 1012. Arbitrary stop reasons retain
+1011/error behavior, and explicit close-code results remain authoritative.
+Forced watchdog termination cannot run
 application cleanup callbacks.
 
 Gaoxy uses active-once transport delivery. Third-party processes can send

@@ -112,6 +112,13 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
 
   defp listener_set(input) do
     with {:ok, plan} <- ListenerSet.plan(input),
+         :ok <-
+           Enum.reduce_while(plan.listeners, :ok, fn {_, options}, :ok ->
+             case request_lifetime(Keyword.get(options, :http_limits, %{})) do
+               :ok -> {:cont, :ok}
+               error -> {:halt, error}
+             end
+           end),
          {:ok, routes} <- target_routes(plan.target),
          do: {:ok, %{id: plan.id, listener: gateway_budgets(plan), routes: routes, service: nil}}
   end
@@ -179,12 +186,18 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
 
   defp raw_service(%{handler_options: %{endpoint: {Router, routes}}} = spec) do
     with true <- valid_id?(spec[:id]),
+         :ok <- request_lifetime(Map.get(spec.handler_options, :http_limits, %{})),
          {:ok, routes} <- routes(routes),
          do: {:ok, :set, %{id: spec.id, listener: nil, routes: routes, service: spec}}
   end
 
   defp raw_service(%{} = spec), do: {:ok, :raw, spec}
   defp raw_service(_), do: {:error, :invalid_service}
+
+  defp request_lifetime(%{request_timeout: :infinity}),
+    do: {:error, :unsupported_request_timeout}
+
+  defp request_lifetime(_), do: :ok
 
   defp route(%{target: {module, config}} = input) when is_atom(module) and module != nil do
     with true <- Map.keys(input) -- [:host, :path, :methods, :target] == [],

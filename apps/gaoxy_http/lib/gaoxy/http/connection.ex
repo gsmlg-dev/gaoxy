@@ -222,7 +222,12 @@ defmodule Gaoxy.HTTP.Connection do
 
   defp process(socket, %{phase: :idle} = state) do
     first = state.first_input || Lifecycle.now()
-    deadline = first + state.limits.request_timeout
+
+    deadline =
+      if state.limits.request_timeout == :infinity,
+        do: :infinity,
+        else: first + state.limits.request_timeout
+
     header_deadline = first + state.limits.header_timeout
     state = %{state | first_input: nil}
     token = make_ref()

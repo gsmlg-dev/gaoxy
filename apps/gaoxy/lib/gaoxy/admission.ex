@@ -276,7 +276,7 @@ defmodule Gaoxy.Admission do
               state.bytes - lease.bytes + bytes > state.limits.max_bytes ->
             reject(state, :byte_limit)
 
-          not (action == :begin_stream and deadline == :infinity) and
+          not (action in [:begin_request, :begin_stream] and deadline == :infinity) and
               (not is_integer(deadline) or deadline <= Gaoxy.Lifecycle.now()) ->
             reject(state, :deadline_exceeded)
 

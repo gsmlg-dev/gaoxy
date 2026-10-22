@@ -569,7 +569,15 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
                 lease: nil,
                 startup: nil,
                 request: request,
-                deadline: Lifecycle.deadline(state.limits.request_timeout),
+                # Admission and activation retain a finite startup deadline.
+                # The dispatched worker selects its configured request lifetime.
+                deadline:
+                  Lifecycle.deadline(
+                    if(state.limits.request_timeout == :infinity,
+                      do: state.limits.header_timeout,
+                      else: state.limits.request_timeout
+                    )
+                  ),
                 input: "",
                 queued_wire: 0,
                 delivered_wire: 0,
@@ -687,6 +695,17 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp operation(state, stream, {:abort, _}, from) do
     GenServer.reply(from, :ok)
     reset(state, stream.id, :cancel)
+  end
+
+  defp operation(state, stream, :infinite_request, from) do
+    if state.limits.request_timeout == :infinity and not state.draining and
+         not stream.committed and not stream.websocket and stream.read == nil and
+         stream.poll == nil and Lifecycle.remaining(stream.deadline) > 0 do
+      GenServer.reply(from, :ok)
+      put_in(state.streams[stream.id].deadline, :infinity)
+    else
+      reply_error(state, from, :invalid_request_transition)
+    end
   end
 
   defp operation(state, stream, {:begin_stream, deadline}, from)

@@ -83,12 +83,19 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
           do: limits - e(Map.fetch!(state.limits, :max_write_chunk)) + e(16_384),
           else: limits + e(:max_write_chunk) + e(16_384) - 2
 
+      # The activated storage worker replaces the finite startup deadline with
+      # infinity. Charge the larger representation before constructing either.
+      deadline_bytes =
+        if state.limits.request_timeout == :infinity,
+          do: max(e(deadline), e(:infinity)),
+          else: e(deadline)
+
       {:ok,
        {e(owner), e(gate), e(parent), e(id), e(token), e(deadline), p, head, e(stream.request),
         e(state.spec.handler_options.endpoint), limits, e(state.peer), e(state.local),
         e(Map.get(state, :service)), e(Map.get(state, :instance)), e(state.secure),
         e(state.peer_cert), e(state.spec.limits.max_bytes), e(state.spec.limits.max_active),
-        e(node()) + 13, e(node()) + 27, e(state.limits.request_timeout)}}
+        e(node()) + 13, e(node()) + 27, e(state.limits.request_timeout), deadline_bytes}}
     else
       @error
     end
@@ -133,7 +140,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
 
   defp caps(input, a, j, n, w, next, iteration) do
     {o, g, parent, id, token, d, p, head, request, endpoint, limits, peer, local, service,
-     instance, secure, cert, max_bytes, max_active, pid, ref, timeout} = input
+     instance, secure, cert, max_bytes, max_active, pid, ref, timeout, request_d} = input
 
     args = l([o, id, token, g, e(n), d])
     mfa = t([e(Stream), e(:run), args])
@@ -201,7 +208,7 @@ defmodule Gaoxy.HTTP.HTTP2.WorkerAccounting do
         socket: e(nil),
         gate: g,
         lease: ref,
-        deadline: d,
+        deadline: request_d,
         stream_timeout: e(nil),
         limits: limits,
         body: body,

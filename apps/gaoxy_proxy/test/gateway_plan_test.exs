@@ -74,4 +74,23 @@ defmodule Gaoxy.Proxy.GatewayPlanTest do
       assert {:error, :invalid_trust} = Upstream.materialize(declaration)
     end
   end
+
+  test "managed generation declarations reject infinite request deadlines before preparation" do
+    declaration = options("storage", [%{target: {Endpoint, "object"}}])
+    [set] = declaration[:listener_sets]
+    set = Keyword.put(set, :listeners, http: [http_limits: %{request_timeout: :infinity}])
+
+    assert {:error, :unsupported_request_timeout} =
+             Gateway.compile(Keyword.put(declaration, :listener_sets, [set]))
+
+    service = %{
+      id: :raw,
+      handler_options: %{
+        endpoint: {Router, [%{target: {Endpoint, "object"}}]},
+        http_limits: %{request_timeout: :infinity}
+      }
+    }
+
+    assert {:error, :unsupported_request_timeout} = Gateway.compile(services: [service])
+  end
 end

@@ -19,7 +19,10 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
            protocol_bytes: ^protocol_bytes,
            transport_state: {^owner, ^id, ^token}
          } = exchange, {module, options}} ->
-          if Process.alive?(owner) and Process.alive?(gate) and Lifecycle.remaining(deadline) > 0 do
+          with true <-
+                 Process.alive?(owner) and Process.alive?(gate) and
+                   Lifecycle.remaining(deadline) > 0,
+               {:ok, exchange} <- request_lifetime(exchange) do
             result =
               try do
                 if exchange.request.method == "CONNECT" and
@@ -78,4 +81,19 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
 
     :ok
   end
+
+  defp request_lifetime(%{limits: %{request_timeout: :infinity}} = exchange) do
+    with :ok <-
+           Gaoxy.Admission.begin_request(
+             exchange.gate,
+             exchange.lease,
+             Exchange.retained_bytes(exchange),
+             :infinity
+           ),
+         :ok <- Gaoxy.HTTP.HTTP2.Transport.operation(exchange, :infinite_request) do
+      {:ok, %{exchange | deadline: :infinity}}
+    end
+  end
+
+  defp request_lifetime(exchange), do: {:ok, exchange}
 end

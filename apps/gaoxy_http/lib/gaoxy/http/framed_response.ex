@@ -149,6 +149,9 @@ defmodule Gaoxy.HTTP.FramedResponse do
           status == 304 or size == nil ->
             headers
 
+          exchange.request.method == "HEAD" and lengths != [] ->
+            headers
+
           true ->
             [
               {"content-length", Integer.to_string(size)}

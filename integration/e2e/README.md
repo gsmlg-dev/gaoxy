@@ -3,7 +3,7 @@
 Install `requirements.txt`, curl, OpenSSL 3 and the GitHub CLI, then run:
 
 ~~~sh
-python3 integration/e2e/run.py --version 0.11.1 --evidence .audit/released-clients
+python3 integration/e2e/run.py --version 0.12.0 --evidence .audit/released-clients
 ~~~
 
 The runner downloads the existing Linux x86_64 archive and SHA256SUMS, verifies

@@ -13,6 +13,11 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
 
     def handle_in({bytes, opcode: opcode}, owner), do: {:push, {opcode, bytes}, owner}
     def handle_info({:push, bytes}, owner), do: {:push, {:text, bytes}, owner}
+    def handle_info({:stop, reason}, owner), do: {:stop, reason, owner}
+    def handle_info({:stop, reason, detail}, owner), do: {:stop, reason, detail, owner}
+
+    def handle_info({:stop, reason, detail, messages}, owner),
+      do: {:stop, reason, detail, messages, owner}
 
     def handle_info(message, owner) do
       send(owner, {:application_message, message})
@@ -228,6 +233,57 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
     send(worker, {:push, "still live"})
     assert_receive {:written, ^worker, <<0x81, 10, "still live">>, ^deadline}
     send(worker, {:gaoxy_websocket_data, token, ref, "", true})
+    assert_receive {:result, ^worker, {:ok, _}}
+  end
+
+  for {name, callback, payload, reason, pushed} <- [
+        {"normal", {:stop, :normal}, <<1000::16>>, :normal, nil},
+        {"Phoenix disconnect", {:stop, {:shutdown, :disconnected}}, <<1000::16>>, :normal, nil},
+        {"restart", {:stop, {:shutdown, :restart}}, <<1012::16>>, :shutdown, nil},
+        {"arbitrary shutdown", {:stop, {:shutdown, :other}}, <<1011::16>>,
+         {:error, {:shutdown, :other}}, nil},
+        {"arbitrary error", {:stop, :failed}, <<1011::16>>, {:error, :failed}, nil},
+        {"explicit disconnect code", {:stop, {:shutdown, :disconnected}, 4001}, <<4001::16>>,
+         :normal, nil},
+        {"explicit restart code", {:stop, {:shutdown, :restart}, 4002}, <<4002::16>>, :shutdown,
+         nil},
+        {"explicit error code and final message",
+         {:stop, {:shutdown, :other}, {4003, "application"}, [{:text, "final"}]},
+         <<4003::16, "application">>, {:error, {:shutdown, :other}}, "final"}
+      ] do
+    test "stop callback preserves #{name} close and termination semantics" do
+      {worker, token, _} = start_session()
+      assert_receive {:opened, ^worker, [], deadline, _}
+      assert_receive {:initialized, ^worker}
+      assert_receive {:demand, ^worker, 64, ref, _}
+      send(worker, unquote(Macro.escape(callback)))
+
+      assert_final_push(worker, deadline, unquote(pushed))
+
+      payload = unquote(payload)
+      assert_receive {:written, ^worker, <<0x88, size, ^payload::binary>>, ^deadline}
+      assert size == byte_size(payload)
+      send(worker, {:gaoxy_websocket_data, token, ref, masked(8, payload), false})
+      assert_receive {:terminated, unquote(Macro.escape(reason))}
+      assert_stop_result(worker, unquote(Macro.escape(reason)))
+      refute_receive {:terminated, _}, 10
+    end
+  end
+
+  defp assert_final_push(_, _, nil), do: :ok
+
+  defp assert_final_push(worker, deadline, payload) do
+    assert_receive {:written, ^worker, <<0x81, 5, ^payload::binary>>, ^deadline}
+  end
+
+  defp assert_stop_result(worker, {:error, reason}) do
+    assert_receive {:aborted, ^worker, ^reason}
+    assert_receive {:result, ^worker, {:error, ^reason, _}}
+    refute_receive {:finished, ^worker}, 10
+  end
+
+  defp assert_stop_result(worker, _) do
+    assert_receive {:finished, ^worker}
     assert_receive {:result, ^worker, {:ok, _}}
   end
 
