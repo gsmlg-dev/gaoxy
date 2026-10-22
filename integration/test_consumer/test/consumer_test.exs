@@ -105,8 +105,9 @@ defmodule GaoxyTestConsumerTest do
       ])
 
     assert {"200", "external h2"} = receive_h2(socket, HPAX.new(4_096), nil, "")
-    :gen_tcp.close(socket)
+    # END_STREAM can reach the peer before the callback records its completion.
     assert :ok = Gaoxy.Test.verify!(fixture)
+    :gen_tcp.close(socket)
   end
 
   defp receive_h2(socket, decoder, status, body) do
