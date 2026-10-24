@@ -13,7 +13,7 @@ defmodule GaoxyHttp.MixProject do
       deps: [
         {:gaoxy, in_umbrella: true},
         {:plug, "== 1.20.3"},
-        {:http_core, "~> 0.21 and >= 0.21.16"},
+        {:http_core, "~> 0.21 and >= 0.21.17"},
         {:websock, "== 0.5.3"},
         {:websock_adapter, path: "../../vendor/websock_adapter", override: true}
       ]

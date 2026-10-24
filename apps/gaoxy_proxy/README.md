@@ -20,7 +20,7 @@ end
 ```
 
 Use Elixir 1.18 or newer. Mix starts the proxy application's supervisors and its
-dependencies with your application. Core Abyss 0.9.0 excludes its former DHCP
+dependencies with your application. Core Abyss 0.10.0 excludes its former DHCP
 NIF and Rustler build; Gaoxy does not depend on `abyss_raw`.
 
 ## Fixed HTTP reverse proxy

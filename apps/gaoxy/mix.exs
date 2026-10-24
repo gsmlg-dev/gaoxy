@@ -14,7 +14,7 @@ defmodule Gaoxy.MixProject do
         {:hell,
          git: "https://github.com/gsmlg-dev/hell.git",
          ref: "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee"},
-        {:abyss, "== 0.9.0"},
+        {:abyss, "== 0.10.0"},
         {:telemetry, "~> 1.3"}
       ]
     ]

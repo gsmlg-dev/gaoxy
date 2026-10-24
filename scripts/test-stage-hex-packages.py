@@ -37,13 +37,13 @@ REQUIREMENTS = {
     },
     "gaoxy": {
         "hell": ("hell", "== 0.1.2", False),
-        "abyss": ("abyss", "== 0.9.0", False),
+        "abyss": ("abyss", "== 0.10.0", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
     "gaoxy_http": {
         "gaoxy": ("gaoxy", f"== {VERSION}", False),
         "plug": ("plug", "== 1.20.3", False),
-        "http_core": ("http_core", "~> 0.21 and >= 0.21.16", False),
+        "http_core": ("http_core", "~> 0.21 and >= 0.21.17", False),
         "websock": ("websock", "== 0.5.3", False),
         "gaoxy_websock_adapter": ("websock_adapter", f"== {VERSION}", False),
     },
@@ -190,7 +190,7 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
                     self.assertIn('hell: "== 0.1.2"', manifest)
-                    self.assertIn('abyss: "== 0.9.0"', manifest)
+                    self.assertIn('abyss: "== 0.10.0"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
                 if name == "gaoxy_http":
