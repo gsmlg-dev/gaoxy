@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.WebSocketTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP3.{Connection, Headers, Options, Protocol}
   alias QuicHttp3.{Control, Frame, Qpack, Settings, Varint}
 
@@ -105,11 +106,7 @@ defmodule Gaoxy.HTTP.HTTP3.WebSocketTest do
         native = Map.put(spec.handler_options.http_limits, :max_write_chunk, 16_384)
 
         if request.protocol == "websocket" do
-          assert exchange.limits ==
-                   Map.merge(native, %{
-                     extended_connect: true,
-                     websocket_limits: Map.take(spec.limits, [:max_state, :max_bytes])
-                   })
+          assert exchange.limits == Map.put(native, :extended_connect, true)
         else
           assert exchange.limits == native
         end

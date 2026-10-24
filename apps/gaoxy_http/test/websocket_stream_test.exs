@@ -19,12 +19,43 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
     def handle_info({:stop, reason, detail, messages}, owner),
       do: {:stop, reason, detail, messages, owner}
 
+    def handle_info(:stall, owner) do
+      send(owner, {:callback_stalled, self()})
+
+      receive do
+        :return -> {:ok, owner}
+      end
+    end
+
+    def handle_info(:raise, owner) do
+      send(owner, {:callback_exception_pending, self()})
+
+      receive do
+        :raise -> raise "callback failed"
+      end
+    end
+
     def handle_info(message, owner) do
       send(owner, {:application_message, message})
       {:ok, owner}
     end
 
     def terminate(reason, owner), do: send(owner, {:terminated, reason})
+  end
+
+  defmodule ControlledTerminateHandler do
+    defdelegate init(owner), to: Handler
+    defdelegate handle_in(message, owner), to: Handler
+    defdelegate handle_info(message, owner), to: Handler
+
+    def terminate(reason, owner) do
+      send(owner, {:terminate_pending, self(), reason})
+
+      receive do
+        :terminate_return -> :ok
+        :terminate_raise -> raise "terminate failed"
+      end
+    end
   end
 
   defmodule Transport do
@@ -64,18 +95,56 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
     defdelegate abort(exchange, reason), to: Transport
   end
 
-  defp start_session(options \\ [], transport \\ Transport, protocol \\ :h2) do
+  defmodule BlockingTransport do
+    defdelegate websocket_open(exchange, headers, deadline), to: Transport
+    defdelegate websocket_demand(exchange, credit, ref), to: Transport
+    defdelegate websocket_finish(exchange), to: Transport
+    defdelegate abort(exchange, reason), to: Transport
+
+    def websocket_send(exchange, bytes) do
+      owner = elem(exchange.transport_state, 0)
+      reference = make_ref()
+      send(owner, {:send_pending, self(), reference, bytes})
+
+      receive do
+        {^reference, result} -> result
+      end
+    end
+  end
+
+  defmodule BlockingFinishTransport do
+    defdelegate websocket_open(exchange, headers, deadline), to: Transport
+    defdelegate websocket_demand(exchange, credit, ref), to: Transport
+    defdelegate websocket_send(exchange, bytes), to: Transport
+    defdelegate abort(exchange, reason), to: Transport
+
+    def websocket_finish(exchange) do
+      reference = make_ref()
+      send(elem(exchange.transport_state, 0), {:finish_pending, self(), reference})
+
+      receive do
+        {^reference, result} -> result
+      end
+    end
+  end
+
+  defp start_session(options \\ [], transport \\ Transport, protocol \\ :h2, session \\ []) do
     assert Code.ensure_loaded?(Stream) and function_exported?(Stream, :run, 2),
            "missing shared WebSocket stream driver"
 
-    limits = %{max_active: 4, max_bytes: 65_536, max_state: 4096, callback_timeout: 1000}
+    limits =
+      Map.merge(
+        %{max_active: 4, max_bytes: 65_536, max_state: 4096, callback_timeout: 1000},
+        Keyword.get(session, :limits, %{})
+      )
+
     scope = %{service: :test, instance: self(), generation: make_ref(), service_pid: self()}
     gate = start_supervised!({Admission, {limits, scope}})
     owner = self()
     token = make_ref()
 
     worker =
-      spawn_link(fn ->
+      spawn(fn ->
         {:ok, lease} = Admission.acquire(gate, 0, drain_notify: true)
         deadline = Lifecycle.deadline(5000)
         :ok = Admission.begin_request(gate, lease, 0, deadline)
@@ -114,17 +183,164 @@ defmodule Gaoxy.HTTP.WebSocket.StreamTest do
             max_read_chunk: 64,
             max_write_chunk: 64,
             max_header_bytes: 4096,
-            write_timeout: 1000,
+            write_timeout: Keyword.get(session, :write_timeout, 1000),
             max_body_bytes: 1
           }
         }
 
-        {:ok, exchange} = WebSocket.prepare(exchange, {Handler, owner, options})
+        handler = Keyword.get(session, :handler, Handler)
+        {:ok, exchange} = WebSocket.prepare(exchange, {handler, owner, options})
         send(owner, {:result, self(), apply(Stream, :run, [exchange, limits])})
       end)
 
     on_exit(fn -> if Process.alive?(worker), do: Process.exit(worker, :kill) end)
     {worker, token, gate}
+  end
+
+  test "default upgraded ownership has no inactivity or lifetime watchdog" do
+    {worker, _token, gate} = start_session()
+    assert_receive {:original_request, ^worker, lease, stale, _}
+    assert_receive {:opened, ^worker, [], :infinity, _}
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, _, _}
+
+    assert %{deadline: :infinity, timer: nil, token: nil, websocket_bytes: retained} =
+             :sys.get_state(gate).leases[lease]
+
+    assert retained > 0
+    send(gate, {:expired, lease, stale})
+    send(worker, {:push, "still persistent"})
+    assert_receive {:written, ^worker, <<0x81, 16, "still persistent">>, _}
+    assert Process.alive?(worker)
+  end
+
+  test "a progressing output outlives callback and individual send deadlines" do
+    {worker, _token, gate} =
+      start_session([callback_timeout: 40], BlockingTransport, :h2, write_timeout: 180)
+
+    assert_receive {:original_request, ^worker, lease, _, _}
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, _, _}
+    payload = String.duplicate("x", 512)
+    started = Lifecycle.now()
+    send(worker, {:push, payload})
+
+    wire =
+      Enum.map(1..9, fn _ ->
+        assert_receive {:send_pending, ^worker, reference, chunk}, 500
+
+        assert %{send: %{operation: _}, timer: timer, websocket_bytes: retained} =
+                 :sys.get_state(gate).leases[lease]
+
+        assert is_reference(timer)
+        assert retained >= byte_size(payload)
+        Process.send_after(self(), {:progress, reference}, 50)
+        assert_receive {:progress, ^reference}, 200
+        send(worker, {reference, :ok})
+        chunk
+      end)
+
+    assert Lifecycle.now() - started > 180
+    assert IO.iodata_to_binary(wire) == <<0x81, 126, 512::16, payload::binary>>
+    # A following application callback is an ordered completion barrier.
+    send(worker, :barrier)
+    assert_receive {:application_message, :barrier}, 500
+    assert %{timer: nil, token: nil, send: nil} = :sys.get_state(gate).leases[lease]
+    assert %{transport_bytes: transport, websocket_bytes: retained} = Admission.status(gate)
+    assert transport <= 65_536
+    assert retained < byte_size(payload)
+  end
+
+  test "an outstanding send that stops progressing still expires" do
+    {worker, _, gate} = start_session([], BlockingTransport, :h2, write_timeout: 60)
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, _, _}
+    monitor = Process.monitor(worker)
+    send(worker, {:push, "stalled"})
+    assert_receive {:send_pending, ^worker, _, _}
+    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}, 500
+
+    assert %{active: 0, retained_bytes: 0, transport_bytes: 0, websocket_bytes: 0} =
+             Admission.status(gate)
+  end
+
+  test "a callback that does not return retains its finite execution bound" do
+    {worker, _, gate} = start_session(callback_timeout: 50)
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, _, _}
+    monitor = Process.monitor(worker)
+    send(worker, :stall)
+    assert_receive {:callback_stalled, ^worker}
+    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}, 500
+    assert %{active: 0, retained_bytes: 0} = Admission.status(gate)
+  end
+
+  test "a raised callback ends its execution watchdog before sending its close frame" do
+    {worker, token, gate} =
+      start_session([callback_timeout: 1000], BlockingTransport, :h2, write_timeout: 2000)
+
+    assert_receive {:original_request, ^worker, lease, _, _}
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, ref, _}
+    send(worker, :raise)
+    assert_receive {:callback_exception_pending, ^worker}
+    assert %{token: callback_token} = :sys.get_state(gate).leases[lease]
+    assert is_reference(callback_token)
+    send(worker, :raise)
+    assert_receive {:send_pending, ^worker, reference, <<0x88, 2, 1011::16>>}
+    assert %{send: %{operation: _}, token: send_token} = :sys.get_state(gate).leases[lease]
+    assert is_reference(send_token)
+    assert send_token != callback_token
+    send(gate, {:expired, lease, callback_token})
+    assert %{leases: %{^lease => %{token: ^send_token}}} = :sys.get_state(gate)
+    assert Process.alive?(worker)
+    send(worker, {reference, :ok})
+    send(worker, {:gaoxy_websocket_data, token, ref, masked(8, <<1011::16>>), false})
+    assert_receive {:result, ^worker, {:error, {:error, %RuntimeError{}}, _}}
+  end
+
+  for action <- [:terminate_return, :terminate_raise] do
+    test "#{action} ends its callback watchdog before transport finish" do
+      {worker, token, gate} =
+        start_session([callback_timeout: 1000], BlockingFinishTransport, :h2,
+          handler: ControlledTerminateHandler
+        )
+
+      assert_receive {:original_request, ^worker, lease, _, _}
+      assert_receive {:initialized, ^worker}
+      assert_receive {:demand, ^worker, 64, ref, _}
+      send(worker, {:gaoxy_websocket_data, token, ref, "", true})
+      assert_receive {:terminate_pending, ^worker, :remote}
+      assert %{timer: timer, token: callback_token} = :sys.get_state(gate).leases[lease]
+      assert is_reference(timer) and is_reference(callback_token)
+      send(worker, unquote(action))
+      assert_receive {:finish_pending, ^worker, reference}
+      assert %{timer: nil, token: nil, send: nil} = :sys.get_state(gate).leases[lease]
+      send(gate, {:expired, lease, callback_token})
+      assert %{leases: %{^lease => %{token: nil}}} = :sys.get_state(gate)
+      assert Process.alive?(worker)
+      send(worker, {reference, :ok})
+      assert_receive {:result, ^worker, {:ok, _}}
+    end
+  end
+
+  test "a nonreturning terminate callback retains its execution deadline" do
+    {worker, token, gate} =
+      start_session([callback_timeout: 100], BlockingFinishTransport, :h2,
+        handler: ControlledTerminateHandler
+      )
+
+    assert_receive {:initialized, ^worker}
+    assert_receive {:demand, ^worker, 64, ref, _}
+    monitor = Process.monitor(worker)
+    send(worker, {:gaoxy_websocket_data, token, ref, "", true})
+    assert_receive {:terminate_pending, ^worker, :remote}
+    assert_receive {:DOWN, ^monitor, :process, ^worker, :killed}, 1000
+
+    assert %{active: 0, retained_bytes: 0, transport_bytes: 0, websocket_bytes: 0} =
+             Admission.status(gate)
+
+    refute_receive {:finish_pending, ^worker, _}, 10
   end
 
   test "H3-shaped transport identity remains intact through data and application pushes" do

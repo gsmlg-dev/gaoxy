@@ -9,7 +9,7 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
     monitor = Process.monitor(owner)
     gate_monitor = Process.monitor(gate)
 
-    if Process.alive?(owner) and Process.alive?(gate) and Lifecycle.remaining(deadline) > 0 do
+    if Process.alive?(owner) and Process.alive?(gate) and Lifecycle.remaining(deadline) != 0 do
       receive do
         {:h2_dispatch, ^owner,
          %Exchange{
@@ -21,7 +21,7 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
          } = exchange, {module, options}} ->
           with true <-
                  Process.alive?(owner) and Process.alive?(gate) and
-                   Lifecycle.remaining(deadline) > 0,
+                   Lifecycle.remaining(deadline) != 0,
                {:ok, exchange} <- request_lifetime(exchange) do
             result =
               try do
@@ -43,7 +43,7 @@ defmodule Gaoxy.HTTP.HTTP2.Stream do
             completed =
               case {result, final.response} do
                 {{:ok, _}, {:websocket, _, _, _, _}} ->
-                  Gaoxy.HTTP.WebSocket.Stream.run(final, final.limits.websocket_limits)
+                  Gaoxy.HTTP.WebSocket.Stream.run(final, %{})
 
                 {{:error, _, _}, :chunked} ->
                   {:error, :endpoint_failed}

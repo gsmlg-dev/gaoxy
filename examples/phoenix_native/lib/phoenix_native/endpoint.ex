@@ -4,12 +4,12 @@ defmodule PhoenixNative.Endpoint do
   @session_options [store: :cookie, key: "_phoenix_native", signing_salt: "nativefixture"]
 
   socket("/socket", PhoenixNative.UserSocket,
-    websocket: true,
+    websocket: [timeout: :infinity],
     longpoll: false
   )
 
   socket("/live", Phoenix.LiveView.Socket,
-    websocket: [connect_info: [session: @session_options]],
+    websocket: [timeout: :infinity, connect_info: [session: @session_options]],
     longpoll: false
   )
 

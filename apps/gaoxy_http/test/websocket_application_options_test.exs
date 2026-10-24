@@ -13,7 +13,7 @@ defmodule Gaoxy.HTTP.WebSocket.ApplicationOptionsTest do
       assert {:ok, %{response: {:websocket, Handler, nil, limits, []}}} = prepare(options)
       refute Map.has_key?(limits, :log)
       refute Map.has_key?(limits, :code_reloader)
-      assert limits.max_frame_size == 262_144
+      assert limits.max_frame_size == :infinity
     end
   end
 

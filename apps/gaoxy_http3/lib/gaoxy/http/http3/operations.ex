@@ -69,9 +69,9 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
     change(table, key, token, :owner, fn
       {_, _, _, lease, original, {:claimed, ^reference, {:websocket_open, _, ^lifetime}, _},
        metadata} = row
-      when is_reference(lease) and is_integer(lifetime) ->
-        if metadata.websocket == :http and Lifecycle.remaining(original) > 0 and
-             Lifecycle.remaining(lifetime) > 0 do
+      when is_reference(lease) and (is_integer(lifetime) or lifetime == :infinity) ->
+        if metadata.websocket == :http and Lifecycle.remaining(original) != 0 and
+             Lifecycle.remaining(lifetime) != 0 do
           {:ok, row |> put_elem(4, lifetime) |> put_elem(6, %{metadata | websocket: :opening}),
            :ok}
         else
@@ -123,7 +123,7 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
       change(table, key, token, :owner, fn
         {_, _, worker, _, deadline, status, %{demand: {:pending, ^ref, credit}} = metadata} = row ->
           if metadata.websocket == :open and not terminal?(status) and
-               Lifecycle.remaining(deadline) > 0 and byte_size(bytes) <= credit do
+               Lifecycle.remaining(deadline) != 0 and byte_size(bytes) <= credit do
             {:ok, put_elem(row, 6, %{metadata | demand: {:delivered, ref, byte_size(bytes)}}),
              {:notify, worker}}
           else
@@ -158,7 +158,8 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
         match?({:websocket_open, _, _}, operation) and limits.websocket != :http ->
           {:error, :closed}
 
-        not is_integer(deadline) or deadline > original or Lifecycle.remaining(deadline) == 0 ->
+        not is_integer(deadline) or Lifecycle.earlier(deadline, original) != deadline or
+            Lifecycle.remaining(deadline) == 0 ->
           {:error, :timeout}
 
         state != :idle ->
@@ -374,7 +375,7 @@ defmodule Gaoxy.HTTP.HTTP3.Operations do
 
   defp valid_operation?({:websocket_open, fields, lifetime}, _, limits),
     do:
-      is_integer(lifetime) and Lifecycle.remaining(lifetime) > 0 and
+      (is_integer(lifetime) or lifetime == :infinity) and Lifecycle.remaining(lifetime) != 0 and
         fields?(fields, limits.max_headers, limits.max_header_bytes)
 
   defp valid_operation?({:websocket_finish}, _, limits), do: limits.websocket == :closing

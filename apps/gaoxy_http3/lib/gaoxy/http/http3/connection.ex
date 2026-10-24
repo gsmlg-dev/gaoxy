@@ -1,7 +1,7 @@
 defmodule Gaoxy.HTTP.HTTP3.Connection do
   @moduledoc false
   @behaviour Gaoxy.QUICHandler
-  alias Gaoxy.QUIC
+  alias Gaoxy.{Lifecycle, QUIC}
   alias Gaoxy.HTTP.Exchange
   alias Gaoxy.HTTP.HTTP3.{Headers, Operations, Options, Protocol, Stream, Transport}
   alias QuicHttp3.{Control, Frame, Qpack}
@@ -38,6 +38,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
          order: :queue.new(),
          pending: %{},
          closed: false,
+         idle_deadline: nil,
+         keepalive: nil,
          turn_deadline: nil
        }}
     end
@@ -53,7 +55,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         {:stop, :http3_not_authenticated, state}
 
       true ->
-        progress(%{state | ready: true, metadata: metadata})
+        progress(%{state | ready: true, metadata: metadata, idle_deadline: nil})
     end
   end
 
@@ -112,7 +114,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
   def handle_event({:closed, _}, state), do: {:stop, :normal, clear(state)}
   def handle_event(event, state) when event in [:tick, :writable], do: progress(state)
-  def handle_event({:readable, _}, state), do: progress(state)
+  def handle_event({:readable, _}, state), do: progress(%{state | idle_deadline: nil})
   def handle_event(_, state), do: {:ok, state}
 
   @impl true
@@ -127,10 +129,104 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
   defp progress(state) do
     state = %{state | turn_deadline: now() + min(100, state.connection.limits.callback_timeout)}
 
-    with {:ok, state} <- control(state) do
+    with {:ok, state} <- persistent_connection(state),
+         {:ok, state} <- keepalive(state),
+         {:ok, state} <- control(state) do
       if state.control == nil or state.control_bytes != <<>>,
         do: {:ok, state},
         else: turns(state, min(:queue.len(state.order), state.options.h3_limits.control_turn))
+    end
+  end
+
+  # This is an idle policy for an empty HTTP/3 connection. Active requests and
+  # their cleanup retain their own finite operation deadlines. It does not
+  # replace QUIC's packet-level idle accounting.
+  @doc false
+  def persistence(state, at) do
+    requests = Enum.any?(state.streams, fn {_, entry} -> entry.kind == :bidi end)
+
+    idle_deadline =
+      if requests, do: nil, else: state.idle_deadline || at + state.connection.limits.idle_timeout
+
+    state = %{state | idle_deadline: idle_deadline}
+
+    cond do
+      idle_deadline != nil and at >= idle_deadline ->
+        {:error, :idle_timeout, state}
+
+      websocket_active?(state) ->
+        case get_in(state.metadata, [:idle_timeout, :peer_ms]) do
+          :infinity ->
+            {:ok, %{state | keepalive: nil}}
+
+          interval when is_integer(interval) and interval > 0 ->
+            interval = max(1, div(interval, 3))
+
+            keepalive =
+              state.keepalive || %{interval: interval, next: at + interval, deadline: nil}
+
+            {:ok, %{state | keepalive: keepalive}}
+
+          _ ->
+            {:error, :missing_peer_idle_policy, state}
+        end
+
+      Map.has_key?(state.pending, :websocket_keepalive) ->
+        {:ok, state}
+
+      true ->
+        {:ok, %{state | keepalive: nil}}
+    end
+  end
+
+  defp websocket_active?(state) do
+    Enum.any?(state.streams, fn {_, entry} ->
+      entry.mode in [:websocket_opening, :websocket] and entry.cancel == []
+    end)
+  end
+
+  defp persistent_connection(state) do
+    case persistence(state, now()) do
+      {:ok, state} -> {:ok, state}
+      {:error, reason, state} -> fail(state, 0x100, reason)
+    end
+  end
+
+  defp keepalive(%{keepalive: nil} = state), do: {:ok, state}
+
+  defp keepalive(state) do
+    keepalive = state.keepalive
+
+    if now() < keepalive.next do
+      {:ok, state}
+    else
+      deadline =
+        keepalive.deadline ||
+          now() + min(keepalive.interval, state.options.http_limits.write_timeout)
+
+      state = %{state | keepalive: %{keepalive | deadline: deadline}}
+
+      case operation(state, :websocket_keepalive, deadline, &QUIC.ping(state.connection, &1)) do
+        {:ok, state, {:ok, _reference}} ->
+          keepalive =
+            if websocket_active?(state),
+              do: %{keepalive | next: now() + keepalive.interval, deadline: nil},
+              else: nil
+
+          {:ok, %{state | keepalive: keepalive}}
+
+        {:ok, state, {:blocked, _}} ->
+          {:ok, state}
+
+        {:wait, state} ->
+          {:ok, state}
+
+        {:ok, state, failure} ->
+          fail(state, 0x102, {:websocket_keepalive, failure})
+
+        failure ->
+          failure
+      end
     end
   end
 
@@ -230,7 +326,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       entry.kind == :uni and entry.work_deadline != nil and now() >= entry.work_deadline ->
         fail(state, 0x107, :incomplete_uni_timeout)
 
-      entry.kind == :bidi and now() >= entry.deadline ->
+      entry.kind == :bidi and Lifecycle.remaining(entry.deadline) == 0 ->
         cleanup_stream(cancel(state, key, 0x10C), key)
 
       entry.kind == :bidi and entry.request == nil and now() >= entry.header_deadline ->
@@ -300,7 +396,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
     deadline =
       if state.operations != nil and state.streams[key].kind == :bidi,
-        do: min(state.streams[key].deadline, deadline),
+        do: Lifecycle.earlier(state.streams[key].deadline, deadline),
         else: deadline
 
     case operation(state, {key, :read}, deadline, fn opts -> QUIC.read(key, maximum, opts) end) do
@@ -590,10 +686,7 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
 
     limits =
       if request.protocol == "websocket" do
-        Map.merge(limits, %{
-          extended_connect: state.options.extended_connect,
-          websocket_limits: Map.take(state.connection.limits, [:max_state, :max_bytes])
-        })
+        Map.put(limits, :extended_connect, state.options.extended_connect)
       else
         limits
       end
@@ -686,7 +779,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
     valid =
       state.options.extended_connect and entry.mode == nil and
         entry.response_phase in [:unset, :informational] and not entry.recv_fin and
-        entry.trailers == [] and now() < entry.deadline and now() < lifetime
+        entry.trailers == [] and Lifecycle.remaining(entry.deadline) != 0 and
+        Lifecycle.remaining(lifetime) != 0
 
     with true <- valid,
          {:ok, ^fields} <- Gaoxy.HTTP.WebSocket.ExtendedHandshake.headers(entry.request, fields),
@@ -1016,8 +1110,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
               do: nil,
               else:
                 &1.cancel_deadline ||
-                  min(
-                    &1.deadline + Gaoxy.Lifecycle.cleanup_headroom(),
+                  Lifecycle.earlier(
+                    cleanup_deadline(&1.deadline),
                     now() + state.options.http_limits.write_timeout
                   )
             ),
@@ -1025,6 +1119,9 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
       }
     )
   end
+
+  defp cleanup_deadline(:infinity), do: :infinity
+  defp cleanup_deadline(deadline), do: deadline + Lifecycle.cleanup_headroom()
 
   defp cleanup_stream(%{operations: nil} = state, key), do: cleanup_command(state, key)
 
@@ -1194,6 +1291,8 @@ defmodule Gaoxy.HTTP.HTTP3.Connection do
         pending: %{},
         control: nil,
         control_bytes: <<>>,
+        idle_deadline: nil,
+        keepalive: nil,
         closed: true
     })
   end

@@ -19,7 +19,10 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
 
     with {:ok, %{deadline: original}} <- Operations.status(table, key, token),
          deadline =
-           min(original, min(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))),
+           Lifecycle.earlier(
+             original,
+             Lifecycle.earlier(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))
+           ),
          :ok <- operation_until(exchange, {:websocket_open, headers, lifetime}, deadline) do
       {:ok, %{exchange | deadline: lifetime, response: :upgraded}}
     end
@@ -57,13 +60,13 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
   end
 
   defp operation_deadline(exchange, {:read, _, {:until, deadline}}),
-    do: min(exchange.deadline, deadline + exchange.limits.write_timeout)
+    do: Lifecycle.earlier(exchange.deadline, deadline + exchange.limits.write_timeout)
 
   defp operation_deadline(exchange, {:poll, {:until, deadline}}),
-    do: min(exchange.deadline, deadline + exchange.limits.write_timeout)
+    do: Lifecycle.earlier(exchange.deadline, deadline + exchange.limits.write_timeout)
 
   defp operation_deadline(exchange, _),
-    do: min(exchange.deadline, Lifecycle.deadline(exchange.limits.write_timeout))
+    do: Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(exchange.limits.write_timeout))
 
   defp await(owner, monitor, table, key, token, ref, deadline) do
     receive do
@@ -109,7 +112,7 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
   end
 
   defp read(exchange, credit, wait) do
-    deadline = min(exchange.deadline, Lifecycle.deadline(wait))
+    deadline = Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(wait))
 
     with {:ok, exchange} <- maybe_continue(exchange),
          :ok <-
@@ -175,7 +178,7 @@ defmodule Gaoxy.HTTP.HTTP3.Transport do
         poll_now(exchange)
 
       true ->
-        deadline = min(exchange.deadline, Lifecycle.deadline(wait))
+        deadline = Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(wait))
 
         case operation(exchange, {:poll, {:until, deadline}}) do
           result when result in [:ok, :pending] -> {:pending, exchange}

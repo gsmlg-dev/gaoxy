@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.OperationsTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP3.Operations
   alias Gaoxy.Lifecycle
 
@@ -47,16 +48,47 @@ defmodule Gaoxy.HTTP.HTTP3.OperationsTest do
     {table, key, token, pid, deadline}
   end
 
-  defp websocket_slot do
+  defp websocket_slot(lifetime \\ nil) do
     assert Code.ensure_loaded?(Operations) and function_exported?(Operations, :upgrade, 5),
            "missing owner-validated H3 websocket lifetime transition"
 
     {table, key, token, pid, original} = slot()
-    lifetime = Lifecycle.deadline(10_000)
+    lifetime = lifetime || Lifecycle.deadline(10_000)
     operation = {:websocket_open, [], lifetime}
     assert {:ok, ref} = invoke(pid, :submit, [table, key, token, {operation, original}])
     assert {:ok, ^pid, ^ref, ^operation, ^original} = op(:claim, [table, key, token])
     {table, key, token, pid, original, lifetime, ref}
+  end
+
+  test "infinite websocket ownership retains finite operations and reusable receive credits" do
+    {table, key, token, pid, original, :infinity, ref} = websocket_slot(:infinity)
+    assert :ok = op(:upgrade, [table, key, token, ref, :infinity])
+    assert :ok = op(:reply, [table, key, token, ref, :ok])
+    assert :ok = invoke(pid, :ack, [table, key, token, ref])
+    assert {:ok, %{deadline: :infinity, websocket: :open}} = op(:status, [table, key, token])
+
+    assert {:error, :timeout} =
+             invoke(pid, :submit, [
+               table,
+               key,
+               token,
+               {{:data, "unbounded operation", false}, :infinity}
+             ])
+
+    for _ <- 1..3 do
+      demand = make_ref()
+      assert :ok = invoke(pid, :demand, [table, key, token, 4, demand])
+      assert :ok = op(:deliver, [table, key, token, demand, "data", false])
+      assert_receive {:observed, ^pid, {:gaoxy_websocket_data, ^token, ^demand, "data", false}}
+      assert :ok = invoke(pid, :demand, [table, key, token, 0, demand])
+
+      deadline = original + 1_000
+      operation = {:data, "progress", false}
+      assert {:ok, write} = invoke(pid, :submit, [table, key, token, {operation, deadline}])
+      assert {:ok, ^pid, ^write, ^operation, ^deadline} = op(:claim, [table, key, token])
+      assert :ok = op(:reply, [table, key, token, write, :ok])
+      assert :ok = invoke(pid, :ack, [table, key, token, write])
+    end
   end
 
   test "only the owner adopts the requested lifetime once while the opening operation stays finite" do

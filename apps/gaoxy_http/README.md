@@ -232,8 +232,11 @@ Gaoxy closes it with 1000 and normal WebSock termination. Restart remains 1012,
 arbitrary stop errors remain 1011, and explicit close codes remain authoritative.
 
 Keep Phoenix's Origin, session and authentication policies. WebSocket
-compression is unsupported; `compress: true` is rejected. An omitted message
-ceiling follows `max_frame_size`; both remain subject to the service budget. See
+compression is unsupported; `compress: true` is rejected. Omitted native size and lifetime policies are infinite; a deliberately selected
+frame ceiling supplies an omitted message ceiling. Generic service budgets
+cover reusable transport capacity, not retained WS messages/state. Configure
+Phoenix sockets with `websocket: [timeout: :infinity]` for persistence. Full H2
+quiet persistence awaits Hell's public owner timeout API (issue #2). See
 [WebSocket limits](https://github.com/gsmlg-dev/gaoxy/blob/main/docs/websocket-limits.md).
 The client chooses
 its WebSocket transport, so an HTTP/2 page alone does not prove H2 WebSockets.

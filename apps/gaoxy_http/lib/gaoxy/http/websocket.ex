@@ -10,6 +10,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     :app_state,
     :limits,
     :message,
+    :decoder,
     :deadline,
     :lifetime_timer,
     :close_timer,
@@ -17,20 +18,22 @@ defmodule Gaoxy.HTTP.WebSocket do
     :reason,
     buffer: "",
     input_credit: 0,
+    pending_output: [],
+    input_events: [],
     closing: false,
     initialized: false
   ]
 
   @defaults %{
-    timeout: 60_000,
+    timeout: :infinity,
     callback_timeout: 5_000,
     close_timeout: 1_000,
-    max_lifetime: 86_400_000,
-    max_frame_size: 262_144,
-    max_message_size: 262_144,
-    max_fragments: 128,
-    max_mailbox: 128,
-    max_push_frames: 32
+    max_lifetime: :infinity,
+    max_frame_size: :infinity,
+    max_message_size: :infinity,
+    max_fragments: :infinity,
+    max_mailbox: :infinity,
+    max_push_frames: :infinity
   }
   # Phoenix passes its complete transport configuration after applying these
   # policies. They belong to the application handshake, not the wire engine.
@@ -89,7 +92,10 @@ defmodule Gaoxy.HTTP.WebSocket do
       |> Map.merge(configured)
 
     if Keyword.keyword?(options) and Enum.all?(Keyword.keys(options), &(&1 in allowed)) and
-         Enum.all?(limits, fn {_, value} -> is_integer(value) and value > 0 end) and
+         Enum.all?(limits, fn {key, value} ->
+           (value == :infinity and key not in [:callback_timeout, :close_timeout]) or
+             (is_integer(value) and value > 0)
+         end) and
          Keyword.get(options, :compress, false) == false and
          Keyword.get(options, :validate_utf8, true) == true do
       {:ok, limits}
@@ -98,14 +104,8 @@ defmodule Gaoxy.HTTP.WebSocket do
     end
   end
 
-  def start(exchange, service_limits) do
+  def start(exchange, _service_limits) do
     {:websocket, module, initial, limits, response_headers} = exchange.response
-
-    limits =
-      limits
-      |> Map.put(:max_state, service_limits.max_state)
-      |> Map.update!(:max_frame_size, &min(&1, div(service_limits.max_bytes, 4)))
-      |> Map.update!(:max_message_size, &min(&1, div(service_limits.max_bytes, 4)))
 
     deadline = Lifecycle.deadline(limits.max_lifetime)
 
@@ -113,7 +113,7 @@ defmodule Gaoxy.HTTP.WebSocket do
       if exchange.transport do
         %{exchange | buffer: "", response: :upgraded, deadline: deadline}
       else
-        %{exchange | buffer: "", response: :upgraded, request: nil, body: nil}
+        %{exchange | buffer: "", response: :upgraded, request: nil, body: nil, deadline: deadline}
       end
 
     ws = %__MODULE__{
@@ -123,6 +123,7 @@ defmodule Gaoxy.HTTP.WebSocket do
       limits: limits,
       deadline: deadline,
       buffer: exchange.buffer,
+      decoder: Frame.decoder(max_frame_size: limits.max_frame_size),
       message:
         Message.new(
           max_message_bytes: limits.max_message_size,
@@ -134,20 +135,15 @@ defmodule Gaoxy.HTTP.WebSocket do
          # Upgrade is a single transition from the completed H1 request to a new
          # admitted protocol lifetime. Later callbacks cannot renew this deadline.
          :ok <- Admission.upgrade(exchange.gate, exchange.lease, retained(ws), deadline),
-         :ok <-
-           Admission.begin_callback(
-             exchange.gate,
-             exchange.lease,
-             retained(ws),
-             if(exchange.transport, do: deadline, else: exchange.deadline)
-           ),
          {:ok, ws} <- send_handshake(ws, headers) do
       timer =
-        Process.send_after(
-          self(),
-          {:gaoxy_websocket_lifetime, exchange.lease},
-          if(exchange.transport, do: Lifecycle.remaining(deadline), else: limits.max_lifetime)
-        )
+        if deadline != :infinity do
+          Process.send_after(
+            self(),
+            {:gaoxy_websocket_lifetime, exchange.lease},
+            Lifecycle.remaining(deadline)
+          )
+        end
 
       ws = %{ws | lifetime_timer: timer, initialized: true}
 
@@ -178,7 +174,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     size = IO.iodata_length(head)
 
     with true <- size <= ws.exchange.limits.max_header_bytes || {:error, :response_header_limit},
-         :ok <- account(ws, retained(ws) + size),
+         :ok <- account(ws, size),
          :ok <- send_wire(ws, IO.iodata_to_binary(head)) do
       {:ok, ws}
     end
@@ -190,45 +186,55 @@ defmodule Gaoxy.HTTP.WebSocket do
   end
 
   def data(bytes, ws) do
-    ws = %{ws | input_credit: 0}
-    size = byte_size(ws.buffer) + byte_size(bytes)
-
-    with true <- size <= ws.limits.max_frame_size + 14 + ws.exchange.limits.max_read_chunk,
-         :ok <- account(ws, retained(%{ws | buffer: ""}) + 2 * size) do
-      parse(%{ws | buffer: ws.buffer <> bytes})
-    else
-      _ -> close(ws, 1009, {:error, :buffer_limit})
-    end
+    ws = %{ws | input_credit: 0, buffer: bytes}
+    parse(ws)
   end
 
   @doc false
   def reserve_input(ws, credit) do
     ws = %{ws | input_credit: credit}
 
-    case account(ws, retained(ws)) do
+    case account(ws) do
       :ok -> {:ok, ws}
       error -> error
     end
   end
 
   defp parse(ws) do
-    with :ok <- account(ws, retained(ws)),
-         {:message_queue_len, count} when count <= ws.limits.max_mailbox <-
-           Process.info(self(), :message_queue_len) do
-      case Frame.decode(ws.buffer, ws.limits.max_frame_size) do
-        :more -> idle(ws)
-        {:error, code, reason} -> close(%{ws | buffer: ""}, code, {:error, reason})
-        {:ok, frame, rest} -> dispatch(%{ws | buffer: rest}, frame)
-      end
+    with :ok <- account(ws),
+         true <- within?(mailbox_count(), ws.limits.max_mailbox),
+         {:ok, events, decoder} <- Frame.consume(ws.decoder, ws.buffer) do
+      events(%{ws | buffer: "", decoder: decoder, input_events: events})
     else
+      {:error, code, reason} -> close(%{ws | buffer: ""}, code, {:error, reason})
       _ -> close(%{ws | buffer: ""}, 1009, {:error, :resource_limit})
     end
   end
 
-  defp dispatch(%{closing: true} = ws, %{opcode: :close}), do: {:close, ws}
-  defp dispatch(%{closing: true} = ws, _), do: parse(ws)
+  defp events(%{input_events: []} = ws), do: idle(ws)
+  defp events(%{closing: true, input_events: [{:control, :close, _} | _]} = ws), do: {:close, ws}
 
-  defp dispatch(ws, %{opcode: :close, payload: payload}) do
+  defp events(%{closing: true, input_events: [_ | rest]} = ws),
+    do: events(%{ws | input_events: rest})
+
+  defp events(%{input_events: [event | rest]} = ws) do
+    case Message.consume(ws.message, event) do
+      {:error, code, reason} ->
+        close(ws, code, {:error, reason})
+
+      {:ok, result, message} ->
+        next = %{ws | message: message, input_events: rest}
+
+        case dispatch(next, result) do
+          {:continue, next} -> events(next)
+          other -> other
+        end
+    end
+  end
+
+  defp dispatch(ws, nil), do: {:continue, ws}
+
+  defp dispatch(ws, {:control, :close, payload}) do
     result =
       if function_exported?(ws.handler, :gaoxy_close, 2) do
         detail =
@@ -252,50 +258,32 @@ defmodule Gaoxy.HTTP.WebSocket do
     end
   end
 
-  defp dispatch(ws, frame) do
-    case Message.push(ws.message, frame) do
-      {:error, code, reason} ->
-        close(ws, code, {:error, reason})
+  defp dispatch(ws, {:data, opcode, payload}),
+    do:
+      callback(
+        ws,
+        :handle_in,
+        [{payload, [opcode: opcode]}, ws.app_state],
+        2 * byte_size(payload)
+      )
 
-      {:ok, nil, message} ->
-        parse(%{ws | message: message})
+  defp dispatch(ws, {:control, opcode, payload}) do
+    result = if opcode == :ping, do: send_frame(ws, :pong, payload), else: :ok
 
-      {:ok, {:data, opcode, payload}, message} ->
-        next = %{ws | message: message}
-
-        proceed(
+    if result == :ok do
+      if function_exported?(ws.handler, :handle_control, 2),
+        do:
           callback(
-            next,
-            :handle_in,
+            ws,
+            :handle_control,
             [{payload, [opcode: opcode]}, ws.app_state],
             byte_size(payload)
-          )
-        )
-
-      {:ok, {:control, opcode, payload}, message} ->
-        next = %{ws | message: message}
-        result = if opcode == :ping, do: send_frame(next, :pong, payload), else: :ok
-
-        if result == :ok do
-          if function_exported?(ws.handler, :handle_control, 2),
-            do:
-              proceed(
-                callback(
-                  next,
-                  :handle_control,
-                  [{payload, [opcode: opcode]}, ws.app_state],
-                  byte_size(payload)
-                )
-              ),
-            else: parse(next)
-        else
-          {:close, %{ws | reason: {:error, result}}}
-        end
+          ),
+        else: {:continue, ws}
+    else
+      {:close, %{ws | reason: {:error, result}}}
     end
   end
-
-  defp proceed({:continue, ws}), do: parse(ws)
-  defp proceed(other), do: other
 
   def info({:gaoxy_websocket_lifetime, lease}, %{exchange: %{lease: lease}} = ws),
     do: close(ws, 1001, :timeout)
@@ -308,17 +296,13 @@ defmodule Gaoxy.HTTP.WebSocket do
   def info(_, %{closing: true} = ws), do: idle(ws)
 
   def info(message, ws) do
-    case Process.info(self(), :message_queue_len) do
-      {:message_queue_len, count} when count <= ws.limits.max_mailbox ->
-        callback(ws, :handle_info, [message, ws.app_state])
-
-      _ ->
-        close(ws, 1009, {:error, :mailbox_limit})
-    end
+    if within?(mailbox_count(), ws.limits.max_mailbox),
+      do: callback(ws, :handle_info, [message, ws.app_state]),
+      else: close(ws, 1009, {:error, :mailbox_limit})
   end
 
   def drain(ws, deadline) do
-    ws = %{ws | deadline: min(ws.deadline, deadline)}
+    ws = %{ws | deadline: Lifecycle.earlier(ws.deadline, deadline)}
 
     ws =
       if ws.exchange.transport,
@@ -329,13 +313,13 @@ defmodule Gaoxy.HTTP.WebSocket do
   end
 
   defp callback(ws, function, args, bytes \\ 0) do
-    deadline = min(ws.deadline, Lifecycle.deadline(ws.limits.callback_timeout))
+    deadline = Lifecycle.earlier(ws.deadline, Lifecycle.deadline(ws.limits.callback_timeout))
 
     with :ok <-
            Admission.begin_callback(
              ws.exchange.gate,
              ws.exchange.lease,
-             retained(ws) + bytes,
+             retained(ws, 0, bytes),
              deadline
            ) do
       result(ws, apply(ws.handler, function, args))
@@ -343,31 +327,33 @@ defmodule Gaoxy.HTTP.WebSocket do
       {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
     end
   catch
-    kind, reason -> close(ws, 1011, {:error, {kind, reason}})
+    kind, reason ->
+      case complete(ws, ws.app_state, []) do
+        {:continue, ws} -> close(ws, 1011, {:error, {kind, reason}})
+        other -> other
+      end
   end
 
-  defp result(ws, {:ok, state}), do: idle(%{ws | app_state: state})
+  defp result(ws, {:ok, state}), do: complete(ws, state, [])
   defp result(ws, {:reply, _, messages, state}), do: result(ws, {:push, messages, state})
 
   defp result(ws, {:push, messages, state}) do
-    ws = %{ws | app_state: state}
-
-    case push(ws, messages) do
-      :ok -> idle(ws)
-      {:error, reason} -> close(ws, 1011, {:error, reason})
-    end
+    with {:continue, ws} <- complete(ws, state, messages), {:ok, ws} <- push(ws), do: idle(ws)
   end
 
   defp result(ws, {:gaoxy_push, messages, {recipient, reference}, state})
        when is_pid(recipient) and is_reference(reference) do
-    ws = %{ws | app_state: state}
-    result = push(ws, messages)
-    send(recipient, {:gaoxy_websocket_written, reference, result})
+    result = result(ws, {:push, messages, state})
 
-    case result do
-      :ok -> idle(ws)
-      {:error, reason} -> close(ws, 1011, {:error, reason})
-    end
+    receipt =
+      case result do
+        {_, %{reason: {:error, reason}}} -> {:error, reason}
+        {:continue, %{closing: false}} -> :ok
+        _ -> {:error, :closed}
+      end
+
+    send(recipient, {:gaoxy_websocket_written, reference, receipt})
+    result
   end
 
   defp result(ws, {:stop, reason, state}) do
@@ -386,58 +372,89 @@ defmodule Gaoxy.HTTP.WebSocket do
     do: result(ws, {:stop, reason, detail, [], state})
 
   defp result(ws, {:stop, reason, detail, messages, state}) do
-    ws = %{ws | app_state: state}
-    _ = push(ws, messages)
+    with {:continue, ws} <- complete(ws, state, messages),
+         {:ok, ws} <- push(ws) do
+      reason =
+        case reason do
+          :normal -> :normal
+          {:shutdown, :disconnected} -> :normal
+          {:shutdown, :restart} -> :shutdown
+          other -> {:error, other}
+        end
 
-    reason =
-      case reason do
-        :normal -> :normal
-        {:shutdown, :disconnected} -> :normal
-        {:shutdown, :restart} -> :shutdown
-        other -> {:error, other}
-      end
-
-    close(ws, detail, reason)
+      close(ws, detail, reason)
+    end
   end
 
-  defp result(ws, _), do: close(ws, 1011, {:error, :invalid_callback_result})
+  defp result(ws, _) do
+    case complete(ws, ws.app_state, []) do
+      {:continue, ws} -> close(ws, 1011, {:error, :invalid_callback_result})
+      other -> other
+    end
+  end
 
-  defp push(ws, messages) do
+  # The callback watchdog owns computation only. Install its complete retained
+  # result and invalidate that watchdog before any synchronous transport call.
+  defp complete(ws, state, messages) do
     messages = if is_tuple(messages), do: [messages], else: messages
+    ws = %{ws | app_state: state, pending_output: messages}
 
-    with {:ok, _} <-
-           Enum.reduce_while(messages, {:ok, {0, 0}}, fn
-             {opcode, payload}, {:ok, {count, bytes}}
-             when opcode in [:text, :binary, :ping, :pong] ->
-               bytes = bytes + IO.iodata_length(payload || "")
+    case Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
+      :ok -> {:continue, ws}
+      {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
+    end
+  end
 
-               if count < ws.limits.max_push_frames and bytes <= ws.limits.max_message_size,
-                 do: {:cont, {:ok, {count + 1, bytes}}},
-                 else: {:halt, {:error, :output_limit}}
+  defp push(ws) do
+    with true <- is_list(ws.pending_output),
+         true <- within?(length(ws.pending_output), ws.limits.max_push_frames),
+         true <-
+           Enum.all?(ws.pending_output, fn
+             {opcode, payload} when opcode in [:text, :binary, :ping, :pong] ->
+               within?(IO.iodata_length(payload || ""), ws.limits.max_message_size) and
+                 within?(IO.iodata_length(payload || ""), ws.limits.max_frame_size)
 
-             _, _ ->
-               {:halt, {:error, :invalid_output}}
+             _ ->
+               false
            end) do
-      Enum.reduce_while(messages, :ok, fn {opcode, payload}, :ok ->
-        case send_frame(ws, opcode, payload || "") do
-          :ok -> {:cont, :ok}
-          error -> {:halt, error}
+      push_next(ws)
+    else
+      _ -> close(ws, 1011, {:error, :output_limit})
+    end
+  end
+
+  defp push_next(%{pending_output: []} = ws), do: {:ok, ws}
+
+  defp push_next(%{pending_output: [{opcode, payload} | rest]} = ws) do
+    case send_frame(ws, opcode, payload || "") do
+      :ok ->
+        next = %{ws | pending_output: rest}
+
+        case account(next) do
+          :ok -> push_next(next)
+          {:error, reason} -> {:close, %{next | reason: {:error, reason}}}
         end
-      end)
+
+      {:error, reason} ->
+        close(ws, 1011, {:error, reason})
     end
   end
 
   defp send_frame(ws, opcode, payload) do
-    size = IO.iodata_length(payload)
-
-    with :ok <- account(ws, retained(ws) + 2 * size + 14),
-         {:ok, wire} <- Frame.encode(opcode, payload),
-         :ok <- send_wire(ws, wire),
-         :ok <- account(ws, retained(ws)) do
-      :ok
+    with {:ok, cursor} <- Frame.encoder(opcode, payload) do
+      send_cursor(ws, cursor)
     else
       {:error, _, reason} -> {:error, reason}
-      error -> error
+    end
+  end
+
+  defp send_cursor(ws, cursor) do
+    case Frame.next_chunk(cursor, ws.exchange.limits.max_write_chunk) do
+      :done ->
+        :ok
+
+      {:ok, chunk, next} ->
+        with :ok <- send_chunk(ws, chunk), do: send_cursor(ws, next)
     end
   end
 
@@ -445,20 +462,35 @@ defmodule Gaoxy.HTTP.WebSocket do
 
   defp send_wire(ws, wire) do
     size = min(byte_size(wire), ws.exchange.limits.max_write_chunk)
-    <<chunk::binary-size(^size), rest::binary>> = wire
+    <<chunk::binary-size(size), rest::binary>> = wire
+    with :ok <- send_chunk(ws, chunk), do: send_wire(ws, rest)
+  end
 
-    with {:ok, operation} <- Admission.start_send(ws.exchange.gate, ws.exchange.lease, size) do
+  defp send_chunk(ws, chunk) do
+    size = byte_size(chunk)
+
+    deadline =
+      Lifecycle.earlier(ws.deadline, Lifecycle.deadline(ws.exchange.limits.write_timeout))
+
+    operation = make_ref()
+
+    with :ok <- account(ws, 2 * size),
+         :ok <-
+           Admission.start_send_until(
+             ws.exchange.gate,
+             ws.exchange.lease,
+             size,
+             operation,
+             deadline
+           ) do
       result =
         if ws.exchange.transport,
           do: ws.exchange.transport.websocket_send(ws.exchange, chunk),
           else: Socket.send(ws.exchange.socket, chunk)
 
       :ok = Admission.finish_send(ws.exchange.gate, ws.exchange.lease, operation, result)
-
-      case result do
-        :ok -> send_wire(ws, rest)
-        error -> error
-      end
+      :ok = account(ws)
+      result
     end
   end
 
@@ -475,7 +507,7 @@ defmodule Gaoxy.HTTP.WebSocket do
     case send_frame(ws, :close, payload) do
       :ok ->
         token = make_ref()
-        timeout = min(ws.limits.close_timeout, Lifecycle.remaining(ws.deadline))
+        timeout = Lifecycle.earlier(ws.limits.close_timeout, Lifecycle.remaining(ws.deadline))
         timer = Process.send_after(self(), {:gaoxy_websocket_close, token}, timeout)
 
         idle(%{
@@ -494,13 +526,9 @@ defmodule Gaoxy.HTTP.WebSocket do
   end
 
   defp idle(ws) do
-    if :erlang.external_size(ws.app_state) <= ws.limits.max_state do
-      case Admission.retain(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
-        :ok -> {:continue, ws}
-        _ -> {:close, %{ws | reason: {:error, :byte_limit}}}
-      end
-    else
-      {:close, %{ws | reason: {:error, :state_limit}}}
+    case Admission.retain(ws.exchange.gate, ws.exchange.lease, retained(ws)) do
+      :ok -> {:continue, ws}
+      {:error, reason} -> {:close, %{ws | reason: {:error, reason}}}
     end
   end
 
@@ -510,11 +538,16 @@ defmodule Gaoxy.HTTP.WebSocket do
     reason = ws.reason || fallback
 
     if ws.initialized and function_exported?(ws.handler, :terminate, 2) do
-      deadline = min(ws.deadline, Lifecycle.deadline(ws.limits.callback_timeout))
+      deadline = Lifecycle.earlier(ws.deadline, Lifecycle.deadline(ws.limits.callback_timeout))
 
       if Admission.begin_callback(ws.exchange.gate, ws.exchange.lease, retained(ws), deadline) ==
-           :ok,
-         do: ws.handler.terminate(reason, ws.app_state)
+           :ok do
+        try do
+          ws.handler.terminate(reason, ws.app_state)
+        after
+          Admission.end_websocket_callback(ws.exchange.gate, ws.exchange.lease, retained(ws))
+        end
+      end
     end
 
     :ok
@@ -527,13 +560,29 @@ defmodule Gaoxy.HTTP.WebSocket do
     terminate(ws, :timeout)
   end
 
-  defp retained(ws) do
+  defp retained(ws, staging \\ 0, callback_bytes \\ 0) do
     exchange_bytes =
       if ws.exchange.transport, do: Gaoxy.HTTP.Exchange.retained_bytes(ws.exchange), else: 0
 
-    exchange_bytes + 2 * byte_size(ws.buffer) + 2 * ws.message.bytes +
-      2 * ws.input_credit + :erlang.external_size(ws.app_state)
+    %{
+      transport_bytes:
+        exchange_bytes + 2 * byte_size(ws.buffer) + 2 * ws.input_credit +
+          :erlang.external_size(ws.decoder) + staging,
+      websocket_bytes:
+        2 * ws.message.bytes + :erlang.external_size(ws.app_state) +
+          :erlang.external_size(ws.pending_output) + :erlang.external_size(ws.input_events) +
+          callback_bytes
+    }
   end
 
-  defp account(ws, bytes), do: Admission.update(ws.exchange.gate, ws.exchange.lease, bytes)
+  defp account(ws, staging \\ 0),
+    do: Admission.update(ws.exchange.gate, ws.exchange.lease, retained(ws, staging))
+
+  defp within?(_, :infinity), do: true
+  defp within?(value, limit), do: value <= limit
+
+  defp mailbox_count do
+    {:message_queue_len, count} = Process.info(self(), :message_queue_len)
+    count
+  end
 end

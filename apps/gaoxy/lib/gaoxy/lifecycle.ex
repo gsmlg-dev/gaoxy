@@ -4,7 +4,11 @@ defmodule Gaoxy.Lifecycle do
 
   def cleanup_headroom, do: @cleanup_headroom
   def now, do: System.monotonic_time(:millisecond)
+  def deadline(:infinity), do: :infinity
   def deadline(timeout), do: now() + timeout
+  def earlier(:infinity, deadline), do: deadline
+  def earlier(deadline, :infinity), do: deadline
+  def earlier(left, right), do: min(left, right)
   def remaining(:infinity), do: :infinity
   def remaining(deadline), do: max(0, deadline - now())
 

@@ -47,11 +47,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
        Map.merge(context, %{
          phase: :http2,
          lease: lease,
-         limits:
-           Map.merge(options.http_limits, %{
-             extended_connect: options.extended_connect,
-             websocket_limits: Map.take(context.spec.limits, [:max_bytes, :max_state])
-           }),
+         limits: Map.put(options.http_limits, :extended_connect, options.extended_connect),
          h2: h2,
          reserves: reserves,
          decode_reservation: 0,
@@ -701,7 +697,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp operation(state, stream, :infinite_request, from) do
     if state.limits.request_timeout == :infinity and not state.draining and
          not stream.committed and not stream.websocket and stream.read == nil and
-         stream.poll == nil and Lifecycle.remaining(stream.deadline) > 0 do
+         stream.poll == nil and Lifecycle.remaining(stream.deadline) != 0 do
       GenServer.reply(from, :ok)
       put_in(state.streams[stream.id].deadline, :infinity)
     else
@@ -713,7 +709,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
        when deadline == :infinity or is_integer(deadline) do
     if not state.draining and not stream.committed and not stream.websocket and
          stream.eof and stream.input == "" and stream.read == nil and stream.poll == nil and
-         Lifecycle.remaining(stream.deadline) > 0 and Lifecycle.remaining(deadline) > 0 do
+         Lifecycle.remaining(stream.deadline) != 0 and Lifecycle.remaining(deadline) != 0 do
       GenServer.reply(from, :ok)
       put_in(state.streams[stream.id].deadline, deadline)
     else
@@ -722,11 +718,13 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp operation(state, stream, {:websocket_open, headers, lifetime, write_deadline}, from)
-       when is_integer(lifetime) and is_integer(write_deadline) do
+       when (is_integer(lifetime) or lifetime == :infinity) and is_integer(write_deadline) do
+    # TODO(upstream): gsmlg-dev/hell#2
+    # The owner must suspend the host idle timer through a supported API here.
     valid =
       state.limits.extended_connect and not stream.websocket and
         not stream.committed and not stream.eof and stream.read == nil and stream.poll == nil and
-        Lifecycle.remaining(stream.deadline) > 0 and Lifecycle.remaining(lifetime) > 0 and
+        Lifecycle.remaining(stream.deadline) != 0 and Lifecycle.remaining(lifetime) != 0 and
         Gaoxy.HTTP.WebSocket.ExtendedHandshake.headers(stream.request, headers) == {:ok, headers}
 
     if valid do
@@ -800,7 +798,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   defp operation(state, stream, {:write, deadline, operation}, from)
        when is_integer(deadline) and
               deadline in -9_223_372_036_854_775_808..9_223_372_036_854_775_807 do
-    deadline = min(deadline, stream.deadline)
+    deadline = Lifecycle.earlier(deadline, stream.deadline)
 
     cond do
       stream.write_failed ->
@@ -1346,7 +1344,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
           {:reply, {:ok, worker, lease}} when is_pid(worker) and is_reference(lease) ->
             if startup.token == stream.token and startup.parent_lease == state.lease and
                  startup.deadline == stream.deadline and node(worker) == node() and
-                 Process.alive?(worker) and Lifecycle.remaining(stream.deadline) > 0 do
+                 Process.alive?(worker) and Lifecycle.remaining(stream.deadline) != 0 do
               Process.cancel_timer(startup.timer)
               dispatch(state, stream, worker, lease, startup.protocol_bytes)
             else
@@ -1372,7 +1370,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     limits =
       if stream.request.protocol == "websocket",
         do: state.limits,
-        else: Map.drop(state.limits, [:extended_connect, :websocket_limits])
+        else: Map.drop(state.limits, [:extended_connect])
 
     exchange = %Exchange{
       request: stream.request,
@@ -1513,6 +1511,8 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp discard(state, id, kill \\ true) do
+    # TODO(upstream): gsmlg-dev/hell#2
+    # Restore the host idle timer after the last WebSocket owner is removed.
     # Once HEADERS is handed off, its remaining CONTINUATION frames must reach
     # END_HEADERS. Otherwise remove the entire unsent block for this stream.
     state =

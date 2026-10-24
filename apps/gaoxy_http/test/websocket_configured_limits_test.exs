@@ -23,20 +23,20 @@ defmodule Gaoxy.HTTP.WebSocket.ConfiguredLimitsTest do
     assert %{max_frame_size: 1024, max_message_size: 1024} = limits(max_frame_size: 1024)
   end
 
-  test "the default frame and message capacities remain 256 KiB" do
-    assert %{max_frame_size: 262_144, max_message_size: 262_144} = limits([])
+  test "the default frame and message policies impose no size ceiling" do
+    assert %{max_frame_size: :infinity, max_message_size: :infinity} = limits([])
   end
 
   test "explicit message limits remain independent of frame limits" do
     assert %{max_frame_size: 1_048_576, max_message_size: 1024} =
              limits(max_frame_size: 1_048_576, max_message_size: 1024)
 
-    assert %{max_frame_size: 262_144, max_message_size: 1_048_576} =
+    assert %{max_frame_size: :infinity, max_message_size: 1_048_576} =
              limits(max_message_size: 1_048_576)
   end
 
   test "invalid frame and message limits are still rejected" do
-    for key <- [:max_frame_size, :max_message_size], value <- [0, -1, nil, :infinity] do
+    for key <- [:max_frame_size, :max_message_size], value <- [0, -1, nil] do
       assert {:error, :invalid_websocket_upgrade} = prepare([{key, value}])
     end
   end

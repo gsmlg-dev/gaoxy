@@ -25,6 +25,11 @@ defmodule Gaoxy.QUIC do
   def ready(%Connection{handle: handle}), do: Abyss.QUIC.ready(handle)
   def info(%Connection{handle: handle}), do: Abyss.QUIC.info(handle)
 
+  def ping(%Connection{} = connection, options \\ []) do
+    with {:ok, options} <- options(options, connection),
+         do: Abyss.QUIC.ping(connection.handle, options)
+  end
+
   def operation_status(%Connection{handle: handle}, reference),
     do: Abyss.QUIC.operation_status(handle, reference)
 

@@ -167,7 +167,7 @@ documented isolated environment.
 - [Native HTTP and WebSocket](docs/native-http.md)
 - [Streaming response lifetimes](docs/streaming-responses.md),
   [TLS client certificates](docs/client-certificates.md) and
-  [WebSocket message limits](docs/websocket-limits.md)
+  [Persistent WebSockets and capacity](docs/websocket-limits.md)
 - [HTTP/3](docs/http3.md), [HTTP reverse proxy](docs/http-proxy.md) and
   [WebSocket reverse proxy](docs/websocket-proxy.md)
 - [Gateway APIs](docs/gateway.md) and [capability limits](docs/capabilities.md)

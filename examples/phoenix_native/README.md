@@ -12,6 +12,29 @@ HTTPS prefers H2 with H1 compatibility. This fixture explicitly enables extended
 CONNECT and allowlists `/socket/websocket` and `/live/websocket` through
 `websocket_paths`; ordinary HTTP listeners retain H1 unless h2c is selected.
 
+The Endpoint declares persistent Channels and LiveView sockets through Phoenix's
+public configuration:
+
+```elixir
+socket("/socket", PhoenixNative.UserSocket,
+  websocket: [timeout: :infinity],
+  longpoll: false
+)
+
+socket("/live", Phoenix.LiveView.Socket,
+  websocket: [timeout: :infinity, connect_info: [session: @session_options]],
+  longpoll: false
+)
+```
+
+Keep the LiveView session `connect_info`. Phoenix otherwise inserts its finite
+inactivity default before the adapter receives the upgrade. This explicit
+integration configuration disables that policy; deliberate finite application
+policies still work. No frame/message or service-budget override is required
+for large WebSocket messages. Gaoxy measures retained application state,
+messages and pending output separately from its reusable finite transport
+capacity; retained memory grows with the whole-message callback API.
+
 To exercise H1 and prior-knowledge H2 on the same HTTP port, replace the
 Endpoint's existing `http` options in `config/config.exs` with:
 

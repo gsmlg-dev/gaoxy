@@ -1,8 +1,38 @@
-diff --git a/lib/websock_adapter.ex b/lib/websock_adapter.ex
-index de367e6d0b242f5333ab69a802ef7987c5cd293e..71123c83e6a2527200a4de3d0b6f5672dfafd187 100644
---- a/lib/websock_adapter.ex
-+++ b/lib/websock_adapter.ex
-@@ -72,6 +72,7 @@ defmodule WebSockAdapter do
+diff --git i/lib/websock_adapter.ex w/lib/websock_adapter.ex
+index de367e6d0b242f5333ab69a802ef7987c5cd293e..a36e43f3de3ca299d0812924925cafd1aa961f04 100644
+--- i/lib/websock_adapter.ex
++++ w/lib/websock_adapter.ex
+@@ -38,11 +38,14 @@ defmodule WebSockAdapter do
+   Having WebSockAdapter do its own checks as part of this call helps to alleviate this. Defaults
+   to `true`
+   * `timeout`: The number of milliseconds to wait after no client data is received before
+-   closing the connection. Defaults to `60_000`
++   closing the connection. `:infinity` disables this inactivity policy. Other adapters default to
++   `60_000`; Gaoxy leaves an omitted inactivity policy unbounded. Phoenix socket declarations
++   apply their own default before calling this adapter
+   * `compress`: Whether or not to accept negotiation of a compression extension with the client.
+    Defaults to `false`
+   * `max_frame_size`: The maximum frame size to accept, in octets. If a frame size larger than this
+-   is received the connection will be closed. Defaults to `10_000_000` (10MB)
++   is received the connection will be closed. Defaults to `10_000_000` (10MB) for
++   other adapters; Gaoxy leaves an omitted frame ceiling unbounded
+   * `fullsweep_after`: The maximum number of garbage collections before forcing a fullsweep of
+    the WebSocket connection process. Setting this option requires OTP 24 or newer
+   * `max_heap_size`: The maximum size of the websocket process heap in words, or a configuration
+@@ -61,7 +64,11 @@ defmodule WebSockAdapter do
+   @spec upgrade(Plug.Conn.t(), WebSock.impl(), WebSock.state(), [connection_opt()]) ::
+           Plug.Conn.t()
+   def upgrade(%{adapter: {adapter, _}} = conn, websock, state, opts) do
+-    opts = Keyword.put_new(opts, :max_frame_size, 10_000_000)
++    opts =
++      if adapter == Gaoxy.PlugAdapter,
++        do: opts,
++        else: Keyword.put_new(opts, :max_frame_size, 10_000_000)
++
+     # Do this first so we can identify unsupported adapters
+     tuple = tuple_for(adapter, websock, state, opts)
+ 
+@@ -72,6 +79,7 @@ defmodule WebSockAdapter do
      Plug.Conn.upgrade_adapter(conn, :websocket, tuple)
    end
  
@@ -10,10 +40,10 @@ index de367e6d0b242f5333ab69a802ef7987c5cd293e..71123c83e6a2527200a4de3d0b6f5672
    defp tuple_for(Bandit.Adapter, websock, state, opts), do: {websock, state, opts}
    # Support for adapters as specified prior to Bandit 1.4
    defp tuple_for(Bandit.HTTP1.Adapter, websock, state, opts), do: {websock, state, opts}
-diff --git a/lib/websock_adapter/upgrade_validation.ex b/lib/websock_adapter/upgrade_validation.ex
+diff --git i/lib/websock_adapter/upgrade_validation.ex w/lib/websock_adapter/upgrade_validation.ex
 index 313310dff13ae0e321286027697753190db56cff..732c83e3d7f704dbb73e7301178dc836bd40b4df 100644
---- a/lib/websock_adapter/upgrade_validation.ex
-+++ b/lib/websock_adapter/upgrade_validation.ex
+--- i/lib/websock_adapter/upgrade_validation.ex
++++ w/lib/websock_adapter/upgrade_validation.ex
 @@ -24,6 +24,13 @@ defmodule WebSockAdapter.UpgradeValidation do
    `{:error, reason}` if not
    """
@@ -46,12 +76,12 @@ index 313310dff13ae0e321286027697753190db56cff..732c83e3d7f704dbb73e7301178dc836
    @doc """
    Raising variant of `validate_upgrade/1`.
  
-diff --git a/test/gaoxy_dispatch_test.exs b/test/gaoxy_dispatch_test.exs
+diff --git i/test/gaoxy_dispatch_test.exs w/test/gaoxy_dispatch_test.exs
 new file mode 100644
-index 0000000000000000000000000000000000000000..6957c6b6ed6796b827dcf3cb85a0469d1def8c1b
+index 0000000000000000000000000000000000000000..2f866ffb069f034e521ecbbc12b5f6c1ccec8662
 --- /dev/null
-+++ b/test/gaoxy_dispatch_test.exs
-@@ -0,0 +1,78 @@
++++ w/test/gaoxy_dispatch_test.exs
+@@ -0,0 +1,112 @@
 +# This isolated dependency test supplies the consumer's public adapter contract.
 +defmodule Gaoxy.PlugAdapter do
 +  def upgrade(:payload, :websocket, {handler, state, options}),
@@ -71,7 +101,41 @@ index 0000000000000000000000000000000000000000..6957c6b6ed6796b827dcf3cb85a0469d
 +    upgraded = WebSockAdapter.upgrade(conn, MyWebSock, :state, early_validate_upgrade: false)
 +    assert upgraded.state == :upgraded
 +    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
++    refute Keyword.has_key?(options, :max_frame_size)
++  end
++
++  test "Gaoxy preserves explicitly selected frame and inactivity policies" do
++    conn = %Plug.Conn{adapter: {Gaoxy.PlugAdapter, :payload}}
++
++    upgraded =
++      WebSockAdapter.upgrade(conn, MyWebSock, :state,
++        max_frame_size: 10_000_000,
++        timeout: 60_000,
++        early_validate_upgrade: false
++      )
++
++    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
 +    assert options[:max_frame_size] == 10_000_000
++    assert options[:timeout] == 60_000
++  end
++
++  test "other adapters retain their default and explicitly selected frame ceiling" do
++    for options <- [[], [max_frame_size: 1234]] do
++      ref = make_ref()
++      conn = %Plug.Conn{adapter: {Plug.Adapters.Test.Conn, %{owner: self(), ref: ref}}}
++
++      upgraded =
++        WebSockAdapter.upgrade(
++          conn,
++          MyWebSock,
++          :state,
++          Keyword.put(options, :early_validate_upgrade, false)
++        )
++
++      assert upgraded.state == :upgraded
++      assert_receive {^ref, :upgrade, {:websocket, {MyWebSock, :state, passed}}}
++      assert passed[:max_frame_size] == Keyword.get(options, :max_frame_size, 10_000_000)
++    end
 +  end
 +
 +  test "Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET" do

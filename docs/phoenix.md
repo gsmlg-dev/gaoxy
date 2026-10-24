@@ -407,15 +407,15 @@ All are positive integers. `http_limits.max_buffer_bytes` must hold
 
 ## Channels, LiveView and WebSockets
 
-Keep existing Endpoint socket declarations, such as:
+Use Phoenix's public socket options for persistent WebSockets:
 
 ```elixir
 socket "/socket", MyAppWeb.UserSocket,
-  websocket: true,
+  websocket: [timeout: :infinity],
   longpoll: false
 
 socket "/live", Phoenix.LiveView.Socket,
-  websocket: [connect_info: [session: @session_options]],
+  websocket: [timeout: :infinity, connect_info: [session: @session_options]],
   longpoll: false
 ```
 
@@ -455,14 +455,16 @@ channel cleanup follow the close handshake.
 
 The client chooses H1 Upgrade or H2 extended CONNECT; an H2 document load does
 not establish which WebSocket protocol was used. `compress: true` and disabling
-UTF-8 validation are unsupported. Gaoxy's WebSock defaults include a 60-second
-idle timeout and 24-hour maximum lifetime. Its raw frame/message defaults are
-256 KiB, but WebSockAdapter supplies a 10,000,000-byte frame limit when omitted;
-an omitted message ceiling follows that frame ceiling. Both limits are clamped
-to one quarter of the service byte budget. Set `max_frame_size` in the Phoenix
-socket's `websocket: [...]` configuration to select message capacity. Phoenix
-does not accept Gaoxy's direct `max_message_size` override. These are socket
-options, not listener keys. See [message limits](websocket-limits.md).
+UTF-8 validation are unsupported. The native engine defaults to infinite
+inactivity, lifetime, frame/message and wire-fragment policies. Phoenix supplies
+a finite timeout before dispatch, so the explicit `timeout: :infinity` socket
+setting above is required for persistence. Omitted frame/message options remain
+omitted through the Gaoxy adapter; service byte/state budgets do not cap WS
+payloads or callback state. Explicit finite application limits still apply.
+Phoenix accepts `max_frame_size`, but not the direct Gaoxy `max_message_size`
+override. Full H2 quiet persistence remains blocked by
+[hell#2](https://github.com/gsmlg-dev/hell/issues/2).
+See [persistent connections and capacity](websocket-limits.md).
 See [WebSock limits](native-http.md#websock).
 
 ## Running a separately supervised Plug listener

@@ -1,7 +1,8 @@
 # Internal request #16: Caddy defaults research and alignment design
 
 Date: 2026-10-24 (Asia/Shanghai).
-Status: research completed; product contract clarified by the user; implementation not started.
+Status: implementation and scoped H1/Phoenix/H3 qualification completed; H2 persistence blocked; final combined acceptance and publication incomplete.
+Execution update: 2026-10-25 (Asia/Shanghai).
 
 ## Baselines and scope
 
@@ -20,8 +21,9 @@ source; it did not rerun that network reproduction.
 - Official documentation was retrieved on 2026-10-24. Its pages are live
   documentation; the immutable source links below establish versioned behavior.
 
-This is configuration and runtime-boundary research, with a proposed alignment
-plan. It does not establish a new release, deployment or runtime acceptance.
+The Caddy research below preserves its original source baseline. The alignment
+implementation and scoped runtime results are recorded separately below; they
+do not establish complete H1/H2/H3 acceptance, a new release or deployment.
 The existing #6 configuration repair and #15 peer-close repair keep their
 historical scope and evidence.
 
@@ -160,11 +162,11 @@ runtime memory target is not an interchangeable BEAM configuration value.
 
 ## Gaoxy comparison
 
-The common native engine currently has idle timeout 60s, callback timeout 5s,
-close-handshake timeout 1s, absolute lifetime 24h, frame/message limits 256 KiB,
+At the research baseline, the common native engine had idle timeout 60s, callback
+timeout 5s, close-handshake timeout 1s, absolute lifetime 24h, frame/message limits 256 KiB,
 fragment count 128, mailbox count 128 and output-frame count 32 per callback
 ([source](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f/apps/gaoxy_http/lib/gaoxy/http/websocket.ex#L24-L34)).
-All are validated as positive integers. Startup clamps both selected payload
+All were validated as positive integers. Startup clamped both selected payload
 limits to one quarter of the service byte budget
 ([source](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f/apps/gaoxy_http/lib/gaoxy/http/websocket.ex#L77-L108)).
 
@@ -186,8 +188,8 @@ Sources: [core limits](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0
 [H3 service defaults](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f/apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex#L27-L36),
 and [adapter default injection](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f/vendor/websock_adapter/lib/websock_adapter.ex#L63-L76).
 
-The output path compares the sum of a callback's frame payloads with
-`max_message_size`, then maps `:output_limit` to close 1011. It does not simply
+The baseline output path compared the sum of a callback's frame payloads with
+`max_message_size`, then mapped `:output_limit` to close 1011. It did not simply
 apply independent per-frame/per-message wire limits
 ([source](https://github.com/gsmlg-dev/gaoxy/blob/e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f/apps/gaoxy_http/lib/gaoxy/http/websocket.ex#L405-L459)).
 That explains the issue's server-output symptom and identifies a separate
@@ -195,8 +197,8 @@ batch-policy ambiguity.
 
 ### Configuration changes alone are insufficient
 
-Gaoxy's decoder currently assembles full frames and full messages; output
-encoding also constructs a complete wire binary before chunked sends.
+At the research baseline, Gaoxy's decoder assembled full frames and full messages;
+output encoding also constructed a complete wire binary before chunked sends.
 Chunking the final socket write does not make that allocation independent of
 message size. Native WebSock delivers a complete message to its callback, so
 application-message memory remains proportional to payload size even after
@@ -354,10 +356,10 @@ in separate commits after the accounting foundation:
    private metadata. This is explicit integration configuration, not proof
    of zero-configuration compatibility for every existing Phoenix application.
 4. End the callback-computation watchdog when the handler returns, while
-   atomically taking ownership of returned state/output. The current
-   `begin_callback -> result -> push -> send -> retain` path keeps the 5s timer
-   across the whole batch; this must change. A large message making progress
-   must not be cut off by that callback deadline.
+   atomically taking ownership of returned state/output. The baseline
+   `begin_callback -> result -> push -> send -> retain` path kept the 5s timer
+   across the whole batch; the implementation now ends it before output. A large
+   message making progress must not be cut off by that callback deadline.
 5. Sends use finite operation/progress bounds on bounded chunks. Capacity waits
    and credit handoffs are owned and finite where necessary; a deadline must
    not count the total age of a progressing message. Protocol fault handling,
@@ -367,28 +369,40 @@ Do not change Phoenix's own application heartbeat or authorization logic merely
 to suppress a server transport timer. No finite callback/send/close/drain setting
 is copied into an idle timeout or whole-message/connection lifetime.
 
-### Confirmed H3 dependency gate
+### Resolved H3 dependency gate and remaining H2 blocker
 
-Installed `elixir_quic` 0.21.16 defaults connection idle expiry to 30s, and both
-its `Quic.Connection` validation and Abyss 0.9.0 host validation require positive
-finite idle values. The same relevant code was read on upstream `main`. No
-supported disabled local idle mode was established. H3 quiet persistence is
-therefore **BLOCKED** on these routed Feature requests:
+The original H3 investigation found that `elixir_quic` 0.21.16 and Abyss 0.9.0
+required finite local idle values. The routed Feature requests
+[gsmlg-dev/http_fetch#143](https://github.com/gsmlg-dev/http_fetch/issues/143) and
+[gsmlg-dev/abyss#6](https://github.com/gsmlg-dev/abyss/issues/6) are now **CLOSED**.
+Released Abyss **0.10.0** and the HTTPFetch/QUIC **0.21.17** cohort are installed
+in the root and Phoenix fixture locks. H3 now uses the supported disabled local
+idle policy and public PING API, without dependency patches or a large finite
+duration standing in for infinity.
 
-- [gsmlg-dev/http_fetch#143](https://github.com/gsmlg-dev/http_fetch/issues/143)
-  for `apps/elixir_quic`: a supported disabled local idle policy with correct
-  timer/peer semantics.
-- [gsmlg-dev/abyss#6](https://github.com/gsmlg-dev/abyss/issues/6): validate and
-  forward that supported policy through the host API.
+Only the H3 host selects disabled QUIC local idle. The H3 owner restores finite
+ordinary empty-connection idle after request cleanup. Active WebSockets use
+ready metadata's peer idle policy to schedule finite PING operations; uncertain
+admissions retain their original reference and deadline for polling. Keepalive
+admission does not prove peer receipt, and actual transport failure remains a
+valid termination. A focused independent-peer run passed **2 tests, 0 failures**:
+exact **5 MiB** transfer and **900 ms** quiet persistence against a peer with a
+**300 ms** advertised idle timeout. The canonical protocol run also passed
+**130 tests, 0 failures**; final local gates are recorded below.
 
-Both requests identify `gsmlg-dev/gaoxy` on `main`, have severity `blocker`,
-issue type Feature and label `internal request`. TODO markers are at Gaoxy's
-QUIC host option callsite. Resume the blocked H3 slice only after the upstream
-capabilities are released and dependencies updated. H1/H2 work can proceed.
-Do not patch dependency internals, substitute a huge finite duration, or call
-an unexecuted H3 case passing. A server also cannot override a peer's negotiated
-idle policy or prevent actual network failure; supported keepalive and peer
-configuration must be qualified where needed.
+H2 persistence is now **BLOCKED** by the still-**OPEN** Feature request
+[gsmlg-dev/hell#2](https://github.com/gsmlg-dev/hell/issues/2): a supported
+connection-owner idle transition while WebSocket streams require persistence,
+with ordinary idle restoration after the last owner ends. H2's infinite common
+WS receive loop alone does not suppress Hell's inherited connection idle timer.
+TODO markers remain at the H2 upgrade and removal callsites. Do not patch Hell,
+use private state, globally disable ordinary H2 idle, or add a local workaround.
+Resume this slice only after the upstream fix is released and installed.
+
+Size and persistence remain one H1/H2/H3 completion contract. Qualified H1,
+Phoenix and H3 results do not complete the blocked H2 slice; **no release or #16
+closure** follows from the current partial completion. Historical specialist
+pressure, slow-peer and soak dispositions remain unchanged.
 
 ### Completion and later HTTP work
 
@@ -416,8 +430,24 @@ incidental WS repair. Upstream pool/dial/probe policy is separate again.
 | Original architecture/plan review | Completed before the user clarified the product contract |
 | Revised persistent-transfer contract review | Two independent read-only reviews completed; no remaining reported findings |
 | Caddy runtime or comparative benchmark | NOT RUN |
-| Fresh Gaoxy network reproduction | NOT RUN |
-| Product implementation and its regressions | NOT STARTED |
+| Original native and Phoenix default-capacity regressions | RED preserved: both returned 1011 instead of required bytes |
+| Native default-capacity qualification | PASS: 5 tests, 0 failures; 300 KiB, 2 MiB and 10,000,001-byte exact payloads, fragment/batch reuse, state isolation, normal close and quiet H1 |
+| Actual LiveView default-capacity qualification | PASS: 1 test, 0 failures; complete 320 KiB render, serialized reply at least 313,781 bytes, heartbeat and close |
+| Phoenix configured-policy and compatibility qualification | PASS: 12 tests, 0 failures |
+| H3 independent-peer qualification | PASS: 2 tests, 0 failures; exact 5 MiB and 900 ms quiet with 300 ms peer idle |
+| Callback completion regression | RED: 22 tests, 2 failures from armed terminate timers; repaired GREEN: 22 tests, 0 failures |
+| Scoped implementation and independent source/ownership review | Completed for implemented slices; no outstanding reported findings in those slices |
+| H2 connection-owner quiet persistence | BLOCKED: open hell#2; no local workaround |
+| Final canonical gates | PASS: unit 254/0, component 167/0, protocol 130/0; inventory, format and strict compile exit 0 |
+| Full Phoenix fixture and clean package consumers | PASS: Phoenix 24/0; consumers base 3/0, H3 2/0, HTTPFetch 2/0 plus production isolation/consumer release |
+| Combined product acceptance, release and #16 closure | INCOMPLETE; size acceptance alone does not complete persistence |
+
+Original failures are retained at `.audit/internal-16/native-baseline-red.log`
+and `.audit/internal-16/phoenix-baseline-red.log`; the callback timer RED is at
+`.audit/internal-16/callback-completion-red.log`. Commands, source identities,
+counts and final local gate results are consolidated in
+[the acceptance record](../acceptance/internal-16-default-capacity.md). These
+results do not complete the blocked H2 persistence contract.
 
 Raw research downloads are retained under ignored
 `.audit/research-caddy-2026-10-24/`; source links above make the findings

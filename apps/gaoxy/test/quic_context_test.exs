@@ -29,4 +29,25 @@ defmodule Gaoxy.QUICContextTest do
     assert connection.scope == scope
     assert state.connection == connection
   end
+
+  test "QUIC keepalive rejects unbounded and duplicate operation options before backend access" do
+    connection = %Gaoxy.QUIC.Connection{
+      handle: :unused,
+      gate: self(),
+      lease: make_ref(),
+      limits: %{callback_timeout: 50},
+      scope: %{}
+    }
+
+    for options <- [
+          [timeout: :infinity],
+          [timeout: 0],
+          [timeout: 51],
+          [deadline: :infinity],
+          [timeout: 1, timeout: 2],
+          [unknown: true]
+        ] do
+      assert {:error, :invalid_operation_options} = Gaoxy.QUIC.ping(connection, options)
+    end
+  end
 end

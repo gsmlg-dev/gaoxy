@@ -71,10 +71,17 @@ defmodule PhoenixNative.WebSocketPhoenixCompatibilityTest do
   defmodule Endpoint do
     use Phoenix.Endpoint, otp_app: :phoenix_native
     @session [store: :cookie, key: "_compatibility", signing_salt: "compatibility"]
-    socket("/application", Socket, websocket: [log: false, code_reloader: false], longpoll: false)
+    socket("/application", Socket,
+      websocket: [timeout: :infinity, log: false, code_reloader: false],
+      longpoll: false
+    )
 
     socket("/live", Phoenix.LiveView.Socket,
-      websocket: [max_frame_size: 2_097_152, connect_info: [session: @session]],
+      websocket: [
+        timeout: :infinity,
+        max_frame_size: 2_097_152,
+        connect_info: [session: @session]
+      ],
       longpoll: false
     )
 

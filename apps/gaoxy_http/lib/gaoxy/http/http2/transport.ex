@@ -14,7 +14,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
   defdelegate finish(exchange, trailers), to: Gaoxy.HTTP.HTTP2.Response
 
   def websocket_open(exchange, headers, lifetime) do
-    deadline = min(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))
+    deadline = Lifecycle.earlier(lifetime, Lifecycle.deadline(exchange.limits.write_timeout))
 
     case operation(exchange, {:websocket_open, headers, lifetime, deadline}) do
       :ok -> {:ok, %{exchange | deadline: lifetime, response: :upgraded}}
@@ -33,7 +33,8 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
       # Keep the worker admitted until the peer's ordinary END_STREAM arrives.
       # Reuse the bounded read slot after cancelling the WS demand, so the
       # owner can finish this stream without resetting a valid half-close.
-      wait = min(exchange.limits.read_timeout, Lifecycle.remaining(exchange.deadline))
+      wait =
+        Lifecycle.earlier(exchange.limits.read_timeout, Lifecycle.remaining(exchange.deadline))
 
       case operation(exchange, {:read, 1, wait}) do
         {:ok, "", true, _} -> :ok
@@ -47,7 +48,10 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
     {owner, id, token} = exchange.transport_state
 
     deadline =
-      min(exchange.deadline, Lifecycle.deadline(min(wait, exchange.limits.read_timeout) + 100))
+      Lifecycle.earlier(
+        exchange.deadline,
+        Lifecycle.deadline(min(wait, exchange.limits.read_timeout) + 100)
+      )
 
     case Lifecycle.remaining(deadline) do
       0 -> {:error, :timeout}
@@ -76,12 +80,24 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
 
     {operation, deadline} =
       case operation do
-        {:head, _, _, _} -> write_operation(exchange, operation)
-        {:data, _, _} -> write_operation(exchange, operation)
-        {:trailers, _} -> write_operation(exchange, operation)
-        {:websocket_open, _, _, deadline} -> {operation, deadline}
-        {:poll, wait} -> {operation, min(exchange.deadline, Lifecycle.deadline(wait + 100))}
-        _ -> {operation, min(exchange.deadline, Lifecycle.deadline(exchange.limits.read_timeout))}
+        {:head, _, _, _} ->
+          write_operation(exchange, operation)
+
+        {:data, _, _} ->
+          write_operation(exchange, operation)
+
+        {:trailers, _} ->
+          write_operation(exchange, operation)
+
+        {:websocket_open, _, _, deadline} ->
+          {operation, deadline}
+
+        {:poll, wait} ->
+          {operation, Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(wait + 100))}
+
+        _ ->
+          {operation,
+           Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(exchange.limits.read_timeout))}
       end
 
     remaining = Lifecycle.remaining(deadline)
@@ -94,7 +110,9 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
   end
 
   defp write_operation(exchange, operation) do
-    deadline = min(exchange.deadline, Lifecycle.deadline(exchange.limits.write_timeout))
+    deadline =
+      Lifecycle.earlier(exchange.deadline, Lifecycle.deadline(exchange.limits.write_timeout))
+
     {{:write, deadline, operation}, deadline}
   end
 
@@ -118,7 +136,7 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
           result =
             operation(
               exchange,
-              {:read, credit, min(wait, Lifecycle.remaining(exchange.deadline))}
+              {:read, credit, Lifecycle.earlier(wait, Lifecycle.remaining(exchange.deadline))}
             )
 
           case result do
@@ -174,7 +192,10 @@ defmodule Gaoxy.HTTP.HTTP2.Transport do
   def body_complete?(exchange), do: exchange.body.phase == :done
 
   def poll_connection(exchange, wait) when is_integer(wait) and wait >= 0 do
-    case operation(exchange, {:poll, min(wait, Lifecycle.remaining(exchange.deadline))}) do
+    case operation(
+           exchange,
+           {:poll, Lifecycle.earlier(wait, Lifecycle.remaining(exchange.deadline))}
+         ) do
       :ok ->
         if Lifecycle.remaining(exchange.deadline) == 0,
           do: {:error, :timeout, exchange},

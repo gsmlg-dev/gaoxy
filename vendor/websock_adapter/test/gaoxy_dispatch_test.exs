@@ -17,7 +17,41 @@ defmodule WebSockAdapter.GaoxyDispatchTest do
     upgraded = WebSockAdapter.upgrade(conn, MyWebSock, :state, early_validate_upgrade: false)
     assert upgraded.state == :upgraded
     assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
+    refute Keyword.has_key?(options, :max_frame_size)
+  end
+
+  test "Gaoxy preserves explicitly selected frame and inactivity policies" do
+    conn = %Plug.Conn{adapter: {Gaoxy.PlugAdapter, :payload}}
+
+    upgraded =
+      WebSockAdapter.upgrade(conn, MyWebSock, :state,
+        max_frame_size: 10_000_000,
+        timeout: 60_000,
+        early_validate_upgrade: false
+      )
+
+    assert {Gaoxy.PlugAdapter, {:native, MyWebSock, :state, options}} = upgraded.adapter
     assert options[:max_frame_size] == 10_000_000
+    assert options[:timeout] == 60_000
+  end
+
+  test "other adapters retain their default and explicitly selected frame ceiling" do
+    for options <- [[], [max_frame_size: 1234]] do
+      ref = make_ref()
+      conn = %Plug.Conn{adapter: {Plug.Adapters.Test.Conn, %{owner: self(), ref: ref}}}
+
+      upgraded =
+        WebSockAdapter.upgrade(
+          conn,
+          MyWebSock,
+          :state,
+          Keyword.put(options, :early_validate_upgrade, false)
+        )
+
+      assert upgraded.state == :upgraded
+      assert_receive {^ref, :upgrade, {:websocket, {MyWebSock, :state, passed}}}
+      assert passed[:max_frame_size] == Keyword.get(options, :max_frame_size, 10_000_000)
+    end
   end
 
   test "Gaoxy H2 and H3 use immutable CONNECT metadata while Phoenix sees GET" do

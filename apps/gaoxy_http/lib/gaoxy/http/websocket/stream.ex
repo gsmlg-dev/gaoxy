@@ -57,7 +57,7 @@ defmodule Gaoxy.HTTP.WebSocket.Stream do
       message ->
         continue(WebSocket.info(message, ws), ref, credit)
     after
-      min(ws.limits.timeout, Lifecycle.remaining(ws.deadline)) ->
+      Lifecycle.earlier(ws.limits.timeout, Lifecycle.remaining(ws.deadline)) ->
         continue(WebSocket.info({:gaoxy_websocket_lifetime, lease}, ws), ref, credit)
     end
   end

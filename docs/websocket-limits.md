@@ -1,66 +1,87 @@
-# WebSocket frame and message limits
+# Persistent WebSocket connections and data capacity
 
-Gaoxy 0.9.0 uses the configured `max_frame_size` as the message-size limit when
-`max_message_size` is omitted. Gaoxy's own defaults remain 262,144 bytes (256 KiB).
-WebSockAdapter supplies its own 10,000,000-byte frame default when the application
-omits that option; this also becomes the selected message ceiling before the
-service-budget clamp. Set the desired frame limit explicitly for Phoenix:
+The native WebSock engine uses no default frame-size, message-size,
+wire-fragment-count, callback-batch-count, inactivity or absolute-lifetime
+ceiling. The Gaoxy WebSockAdapter dispatch preserves omitted size options.
+This behavior is implemented on the current development branch; the complete
+H1/H2/H3 persistence contract remains blocked by
+[hell#2](https://github.com/gsmlg-dev/hell/issues/2). See the
+[current qualification](acceptance/internal-16-default-capacity.md).
+
+## Phoenix configuration
+
+Phoenix applies a finite transport timeout before calling WebSockAdapter. Use
+its supported socket configuration for persistent connections:
 
 ```elixir
-# In the Endpoint:
-socket "/live", Phoenix.LiveView.Socket,
-  websocket: [max_frame_size: 16 * 1024 * 1024]
+socket "/socket", MyAppWeb.UserSocket,
+  websocket: [timeout: :infinity],
+  longpoll: false
 
-# In the Endpoint configuration:
-config :my_app, MyAppWeb.Endpoint,
-  adapter: Gaoxy.PhoenixAdapter,
-  http: [port: 4000, limits: %{max_bytes: 128 * 1024 * 1024}]
+socket "/live", Phoenix.LiveView.Socket,
+  websocket: [timeout: :infinity, connect_info: [session: @session_options]],
+  longpoll: false
 ```
 
-The example permits a message up to 16 MiB, including the total payload of a
-fragmented message. Each individual frame also has a 16 MiB ceiling. Protocol and
-fragment-count validation continue to apply. Larger messages receive WebSocket
-close code 1009.
+Retain your actual session options and session plug. Origin, CSRF,
+authentication, heartbeat and application close behavior remain application
+policies. Existing Phoenix applications need this explicit integration setting;
+Gaoxy cannot infer whether a finite timeout was inserted by Phoenix or selected
+by the application. No frame or service-budget override is needed for the
+ordinary large-render case.
 
-The service admission budget remains authoritative: Gaoxy clamps both frame and
-message limits to `div(limits.max_bytes, 4)`. Raising only the transport frame
-limit does not raise that budget. Account for all concurrent connections and
-application state when choosing the service budget; admission can reject work
-before the nominal frame ceiling if the shared budget is already occupied.
+## Reusable transport capacity and retained messages
 
-Direct WebSock users can still choose an independent, lower message ceiling:
+`limits.max_bytes` constrains finite transport reservations: receive staging,
+writer chunks, protocol control state, queues and windows. Consumed input and
+completed output return credits for subsequent chunks and messages. This value
+is neither a WebSocket payload ceiling nor a cumulative transfer allowance.
+
+At upgrade, Admission classifies `transport_bytes` and `websocket_bytes`.
+The latter measures retained messages, callback state, decoded input waiting for
+dispatch and pending output. Generic service `max_bytes` and `max_state`, even
+when explicitly configured, do not impose a ceiling on that retained WS data.
+Status reports both categories, their sum as `retained_bytes`, and high-water
+values. Transport capacity remains finite and reusable.
+
+The WebSock callback API still supplies a complete message. Its memory cost is
+O(message + application state + pending output), with transient assembly copies;
+finite staging does not bound total BEAM memory. Arbitrary external/PubSub
+producers need their own bounded production policy.
+
+## Deliberate application limits
+
+A direct WebSock application can select finite policies:
 
 ```elixir
 WebSockAdapter.upgrade(conn, MyWebSock, state,
   max_frame_size: 1024 * 1024,
-  max_message_size: 64 * 1024
+  max_message_size: 64 * 1024,
+  max_fragments: 128,
+  timeout: 60_000,
+  max_lifetime: 3_600_000
 )
 ```
 
-An explicitly supplied `max_message_size` remains authoritative before the
-service-budget clamp. Phoenix validates its transport options and does not
-accept this Gaoxy-specific option; use `max_frame_size` for Phoenix transports.
+An explicitly selected frame limit also supplies an omitted message limit.
+An explicit message limit is independent. Phoenix exposes `max_frame_size` on
+its socket configuration; it does not accept Gaoxy's `max_message_size` option.
+Configured incoming size violations still close with 1009. Mandatory masking,
+UTF-8, fragmentation ordering, valid lengths and the RFC control-frame maximum
+of 125 bytes always apply.
 
-## Phoenix application policies and LiveView composer acceptance
+Callback computation defaults to 5 seconds and normal close to 1 second.
+The callback watchdog ends when its retained result is installed, before any
+output transmission. Each bounded send has its own finite operation deadline;
+no callback or send deadline covers an entire progressing message or batch.
+Application close, protocol failure, actual transport loss and finite service
+drain remain valid termination events.
 
-Phoenix-owned `log` and `code_reloader` transport options are accepted after
-Phoenix applies their semantics. They do not change Gaoxy's wire limits;
-unknown settings, unsupported compression and invalid numeric limits still fail.
-
-For LiveView, configure the supported frame option on the `/live` socket:
-
-```elixir
-socket "/live", Phoenix.LiveView.Socket,
-  websocket: [max_frame_size: 2_097_152, connect_info: [session: @session_options]],
-  longpoll: false
-```
-
-An omitted message ceiling follows that frame ceiling. The service byte budget
-still clamps both ceilings to one quarter of `limits.max_bytes`. Allow enough
-capacity for form encoding and escaped outbound HTML as well as the plain text;
-a 300KiB body of double quotes occupies about 900KiB in URL-encoded form and
-1.8MiB as escaped textarea HTML. The scoped real LiveView regression uses a
-16MiB service budget and 2MiB frame/message ceilings. It checks exact persisted
-test-store bytes, HTTP reload, WebSocket rejoin, unfragmented/fragmented events,
-outbound rendered content and configured oversize rejection. Consumers retain
-their own application persistence and authorization acceptance.
+H1 uses the supported infinite Hell read timeout after default upgrade. H3
+uses the released QUIC disabled local idle policy and bounded public PING
+operations below a finite peer-negotiated idle period while WS ownership exists.
+Empty ordinary H3 connections retain a finite owner idle policy; active ordinary
+requests retain their existing finite request and operation deadlines. H2 still
+needs Hell's public owner-side idle transition before quiet persistence can be
+qualified. The separately configured message-level `Gaoxy.Proxy.WebSocket`
+endpoint retains its own bridge policies; this change adds no opaque proxy API.

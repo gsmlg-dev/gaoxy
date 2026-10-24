@@ -933,21 +933,7 @@ defmodule Gaoxy.Service do
         writer_timeout: spec.limits.callback_timeout,
         writer_max_queue: spec.limits.max_active,
         writer_max_bytes: spec.limits.max_bytes,
-        # TODO(upstream): gsmlg-dev/http_fetch#143
-        # TODO(upstream): gsmlg-dev/abyss#6
-        quic_options: [
-          streams: [
-            max_data: spec.limits.max_bytes,
-            max_stream_data: spec.limits.max_bytes,
-            max_buffer: spec.limits.max_bytes,
-            max_ready_bytes: spec.limits.max_bytes,
-            max_streams_bidi: spec.limits.max_active,
-            max_streams_uni: spec.limits.max_active,
-            # The engine reserves both peer quotas before allocating local streams.
-            max_stream_records: spec.limits.max_active * 3,
-            max_recv_ranges: 128
-          ]
-        ]
+        quic_options: quic_engine_options(spec)
       )
     end
   end
@@ -999,6 +985,26 @@ defmodule Gaoxy.Service do
       handshake_timeout: spec.limits.callback_timeout,
       shutdown_timeout: spec.limits.drain_timeout
     )
+  end
+
+  defp quic_engine_options(spec) do
+    options = [
+      streams: [
+        max_data: spec.limits.max_bytes,
+        max_stream_data: spec.limits.max_bytes,
+        max_buffer: spec.limits.max_bytes,
+        max_ready_bytes: spec.limits.max_bytes,
+        max_streams_bidi: spec.limits.max_active,
+        max_streams_uni: spec.limits.max_active,
+        # The engine reserves both peer quotas before allocating local streams.
+        max_stream_records: spec.limits.max_active * 3,
+        max_recv_ranges: 128
+      ]
+    ]
+
+    if spec.handler == Gaoxy.HTTP.HTTP3.Connection,
+      do: Keyword.put(options, :idle_timeout, :infinity),
+      else: options
   end
 
   defp quic_credentials(tls) do

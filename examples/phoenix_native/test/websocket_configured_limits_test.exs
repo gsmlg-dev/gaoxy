@@ -21,8 +21,17 @@ defmodule PhoenixNative.WebSocketConfiguredLimitsTest do
 
   defmodule Endpoint do
     use Phoenix.Endpoint, otp_app: :phoenix_native
-    socket("/large", Socket, websocket: [max_frame_size: 1_048_576], longpoll: false)
-    socket("/bounded", Socket, websocket: [max_frame_size: 262_144], longpoll: false)
+
+    socket("/large", Socket,
+      websocket: [timeout: :infinity, max_frame_size: 1_048_576],
+      longpoll: false
+    )
+
+    socket("/bounded", Socket,
+      websocket: [timeout: :infinity, max_frame_size: 262_144],
+      longpoll: false
+    )
+
     plug(:fallback)
     defp fallback(conn, _opts), do: Plug.Conn.send_resp(conn, 200, "limits")
   end
@@ -91,12 +100,14 @@ defmodule PhoenixNative.WebSocketConfiguredLimitsTest do
   end
 
   @tag service_bytes: 2 * 1024 * 1024
-  test "the service budget still clamps a larger Phoenix frame configuration", %{port: port} do
+  test "the explicit service transport budget does not clamp Phoenix message data", %{port: port} do
     socket = connect(port)
     :ok = :gen_tcp.send(socket, masked(1, message(300 * 1024)))
     assert_size(socket, 300 * 1024)
     :ok = :gen_tcp.send(socket, masked(1, message(600 * 1024)))
-    assert {8, <<1009::16>>} = frame(socket)
+    assert_size(socket, 600 * 1024)
+    :ok = :gen_tcp.send(socket, masked(9, "still-open"))
+    assert {10, "still-open"} = frame(socket)
   end
 
   defp message(bytes),

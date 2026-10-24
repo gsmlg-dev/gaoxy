@@ -49,6 +49,25 @@ Keep the Endpoint under your application's supervisor and start it with
 Origin checks and LiveView settings. Ordinary H1 WebSocket upgrades use your
 existing socket paths.
 
+For persistent Channels and LiveView connections, explicitly disable Phoenix's
+inactivity default through the public Endpoint socket configuration:
+
+```elixir
+socket "/socket", MyAppWeb.UserSocket,
+  websocket: [timeout: :infinity],
+  longpoll: false
+
+socket "/live", Phoenix.LiveView.Socket,
+  websocket: [timeout: :infinity, connect_info: [session: @session_options]],
+  longpoll: false
+```
+
+Keep your existing session options. Phoenix inserts a finite timeout before the
+adapter receives the upgrade; this explicit integration setting keeps healthy
+quiet connections open. Gaoxy leaves omitted frame/message limits unbounded;
+this distribution preserves that omission. Explicit application limits still
+apply. The upstream frame default for other adapters remains unchanged.
+
 For native WebSocket over HTTP/2, add exact paths at the Endpoint level and
 enable extended CONNECT on the HTTPS listener:
 
@@ -97,7 +116,7 @@ defmodule MyApp.Router do
 
   get "/websocket" do
     conn
-    |> WebSockAdapter.upgrade(MyApp.EchoSocket, nil, timeout: 60_000)
+    |> WebSockAdapter.upgrade(MyApp.EchoSocket, nil, timeout: :infinity)
     |> halt()
   end
 

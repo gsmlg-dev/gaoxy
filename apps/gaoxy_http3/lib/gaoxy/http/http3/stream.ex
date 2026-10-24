@@ -68,7 +68,7 @@ defmodule Gaoxy.HTTP.HTTP3.Stream do
     completed =
       case {result, final.response} do
         {{:ok, _}, {:websocket, _, _, _, _}} ->
-          Gaoxy.HTTP.WebSocket.Stream.run(final, final.limits.websocket_limits)
+          Gaoxy.HTTP.WebSocket.Stream.run(final, %{})
 
         {{:error, _, _}, :chunked} ->
           {:error, :endpoint_failed}

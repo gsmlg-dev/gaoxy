@@ -308,7 +308,7 @@ ceilings are not promises of admission under resource pressure. Output iodata
 and files are traversed in bounded pieces, without creating a full-body binary.
 
 The ledger charges retained request headers/trailers, parser/body tails, selected
-output windows, WebSocket fragments and callback state. Native receive buffers
+output windows, and separately observed WebSocket messages and callback state. Native receive buffers
 and decoding have bounded transient copies; kernel/OTP transport buffers and
 arbitrary allocations or retained body data inside trusted application code are
 outside the ledger. This is not a bound on total BEAM memory. Low global byte
@@ -318,26 +318,31 @@ budgets may reject work below a protocol-specific maximum, especially TLS record
 
 Use `WebSockAdapter.upgrade(conn, MyWebSock, initial_state, options)`. The H1
 connection process or H2/H3 stream worker implements callbacks, automatic pong,
-bounded fragmented messages, UTF-8 validation, and close handshakes. Handshake response headers,
+incremental fragmented-message assembly, UTF-8 validation, and close handshakes. Handshake response headers,
 including a selected offered subprotocol, survive the Plug pipeline. Compression
 extensions are not negotiated; `compress: true` and disabling UTF-8 validation
 are rejected. The vendored dependency includes native Gaoxy dispatch and
 immutable H2/H3 metadata early validation, with
 [provenance and a removal plan](../vendor/websock_adapter/GAOXY.md).
 
-Options default to `timeout: 60_000`, `callback_timeout: 5_000`,
-`close_timeout: 1_000`, `max_lifetime: 86_400_000`,
-`max_frame_size: 262_144`, `max_message_size: 262_144`, `max_fragments: 128`,
-`max_mailbox: 128`, and `max_push_frames: 32`. When `max_message_size` is
-omitted, it follows the configured `max_frame_size`. Phoenix accepts the frame
-option, while a direct WebSock caller can retain an explicit independent
-message ceiling. Frame/message ceilings are also clamped to one quarter of
-the service byte budget; see [message limits](websocket-limits.md). The service `max_state`
-limits callback state. Upgrade establishes one admitted protocol lifetime;
-callbacks cannot renew it. For H2/H3 this lifetime replaces the original HTTP
-request deadline in the stream worker and native owner; writes and callbacks
-retain finite deadlines. Normal Close ends only that WebSocket stream, leaving
-ordinary HTTP siblings and other WebSockets independent. Specialist abnormal
+Options default to `timeout: :infinity`, `max_lifetime: :infinity`,
+`max_frame_size: :infinity`, `max_message_size: :infinity`,
+`max_fragments: :infinity`, `max_mailbox: :infinity` and
+`max_push_frames: :infinity`. Callback computation defaults to 5 seconds and
+close to 1 second. A deliberately configured frame ceiling supplies an omitted
+message ceiling; an explicit message ceiling stays independent. Generic service
+byte/state budgets do not cap retained WS data or state. Transfer staging,
+protocol windows and queues remain finite and reusable; retained WS messages,
+state and output are reported separately. See [capacity](websocket-limits.md).
+
+Upgrade replaces the original HTTP request deadline. Its optional application
+lifetime cannot be renewed by callbacks. The callback-result handoff cancels its
+execution watchdog before output; bounded sends get fresh finite deadlines.
+Phoenix requires `websocket: [timeout: :infinity]` through its supported socket
+configuration. H1 persistence and released H3 idle/keepalive APIs are integrated;
+H2 owner idle suspension/restoration still awaits
+[hell#2](https://github.com/gsmlg-dev/hell/issues/2). Normal Close ends only that
+WebSocket stream, leaving ordinary siblings independent. Specialist abnormal
 disconnect, slow-peer, pressure and load qualification remains deferred.
 H1 drain uses its existing absolute deadline and sends
 1001. The exact Phoenix `{:shutdown, :disconnected}` stop reason sends 1000
@@ -347,9 +352,9 @@ Forced watchdog termination cannot run
 application cleanup callbacks.
 
 Gaoxy uses active-once transport delivery. Third-party processes can send
-arbitrary messages to a WebSock owner; the adapter checks mailbox length and
-closes an overloaded connection but cannot promise an absolute bound on such
-external traffic. Keep application/PubSub producers bounded.
+arbitrary messages to a WebSock owner; an explicit mailbox policy is optional.
+The transport cannot backpressure arbitrary external senders or promise an
+absolute bound on their traffic. Keep application/PubSub producers bounded.
 
 ## Routing and proxy boundary
 

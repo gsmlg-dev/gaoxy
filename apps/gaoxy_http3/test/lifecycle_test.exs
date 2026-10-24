@@ -1,5 +1,6 @@
 defmodule Gaoxy.HTTP.HTTP3.LifecycleTest do
   use ExUnit.Case, async: true
+  @moduletag :unit
   alias Gaoxy.HTTP.HTTP3.{Connection, Options}
 
   defmodule Endpoint do
@@ -85,5 +86,42 @@ defmodule Gaoxy.HTTP.HTTP3.LifecycleTest do
     assert :ets.info(state.operations, :owner) == self()
     assert :ok = Connection.terminate(:test, state)
     assert :ets.info(state.operations) == :undefined
+  end
+
+  test "empty ordinary connection idle is suspended by request ownership and restored after cleanup" do
+    now = Gaoxy.Lifecycle.now()
+    initial = state()
+    timeout = initial.connection.limits.idle_timeout
+    assert {:ok, idle} = Connection.persistence(initial, now)
+    assert idle.idle_deadline == now + timeout
+    assert {:error, :idle_timeout, _} = Connection.persistence(idle, now + timeout)
+
+    request = %{kind: :bidi, mode: :websocket, cancel: []}
+    active = %{idle | streams: %{ws: request}, metadata: %{idle_timeout: %{peer_ms: :infinity}}}
+    assert {:ok, active} = Connection.persistence(active, now + timeout)
+    assert active.idle_deadline == nil
+    assert active.keepalive == nil
+
+    closing = %{active | streams: %{ws: %{request | mode: :websocket_closing}}}
+    assert {:ok, closing} = Connection.persistence(closing, now + 2 * timeout)
+    assert closing.idle_deadline == nil
+    assert {:ok, restored} = Connection.persistence(%{closing | streams: %{}}, now + 2 * timeout)
+    assert restored.idle_deadline == now + 3 * timeout
+  end
+
+  test "finite peer idle creates a reusable cadence only for active websockets" do
+    now = Gaoxy.Lifecycle.now()
+    request = %{kind: :bidi, mode: :websocket, cancel: []}
+    initial = %{state() | streams: %{ws: request}, metadata: %{idle_timeout: %{peer_ms: 300}}}
+    assert {:ok, active} = Connection.persistence(initial, now)
+    assert active.keepalive == %{interval: 100, next: now + 100, deadline: nil}
+    assert {:ok, ^active} = Connection.persistence(active, now + 50)
+    assert {:ok, closed} = Connection.persistence(%{active | streams: %{}}, now + 60)
+    assert closed.keepalive == nil
+
+    ordinary = %{initial | streams: %{http: %{request | mode: nil}}}
+    assert {:ok, ordinary} = Connection.persistence(ordinary, now)
+    assert ordinary.keepalive == nil
+    assert ordinary.idle_deadline == nil
   end
 end

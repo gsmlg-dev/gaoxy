@@ -38,11 +38,14 @@ defmodule WebSockAdapter do
   Having WebSockAdapter do its own checks as part of this call helps to alleviate this. Defaults
   to `true`
   * `timeout`: The number of milliseconds to wait after no client data is received before
-   closing the connection. Defaults to `60_000`
+   closing the connection. `:infinity` disables this inactivity policy. Other adapters default to
+   `60_000`; Gaoxy leaves an omitted inactivity policy unbounded. Phoenix socket declarations
+   apply their own default before calling this adapter
   * `compress`: Whether or not to accept negotiation of a compression extension with the client.
    Defaults to `false`
   * `max_frame_size`: The maximum frame size to accept, in octets. If a frame size larger than this
-   is received the connection will be closed. Defaults to `10_000_000` (10MB)
+   is received the connection will be closed. Defaults to `10_000_000` (10MB) for
+   other adapters; Gaoxy leaves an omitted frame ceiling unbounded
   * `fullsweep_after`: The maximum number of garbage collections before forcing a fullsweep of
    the WebSocket connection process. Setting this option requires OTP 24 or newer
   * `max_heap_size`: The maximum size of the websocket process heap in words, or a configuration
@@ -61,7 +64,11 @@ defmodule WebSockAdapter do
   @spec upgrade(Plug.Conn.t(), WebSock.impl(), WebSock.state(), [connection_opt()]) ::
           Plug.Conn.t()
   def upgrade(%{adapter: {adapter, _}} = conn, websock, state, opts) do
-    opts = Keyword.put_new(opts, :max_frame_size, 10_000_000)
+    opts =
+      if adapter == Gaoxy.PlugAdapter,
+        do: opts,
+        else: Keyword.put_new(opts, :max_frame_size, 10_000_000)
+
     # Do this first so we can identify unsupported adapters
     tuple = tuple_for(adapter, websock, state, opts)
 

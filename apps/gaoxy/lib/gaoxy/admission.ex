@@ -2,7 +2,7 @@ defmodule Gaoxy.Admission do
   @moduledoc false
   use GenServer
   alias Gaoxy.{Lifecycle, Telemetry}
-  alias Gaoxy.Admission.WorkerBootstrap
+  alias Gaoxy.Admission.{Accounting, WorkerBootstrap}
 
   def start_link({limits, scope}), do: GenServer.start_link(__MODULE__, {limits, scope})
   def acquire(gate, bytes), do: acquire(gate, bytes, [])
@@ -20,6 +20,11 @@ defmodule Gaoxy.Admission do
 
   def begin_callback(gate, lease, bytes, deadline),
     do: GenServer.call(gate, {:begin_callback, lease, bytes, deadline})
+
+  # Transfer the returned state/output into retained ownership before sending.
+  # The callback watchdog cannot also own a progressing output batch.
+  def end_websocket_callback(gate, lease, accounting),
+    do: GenServer.call(gate, {:end_websocket_callback, lease, accounting})
 
   def upgrade(gate, lease, bytes, deadline),
     do: GenServer.call(gate, {:upgrade, lease, bytes, deadline})
@@ -100,6 +105,8 @@ defmodule Gaoxy.Admission do
        spawns: %{},
        bytes: 0,
        high_water: 0,
+       transport_high_water: 0,
+       websocket_high_water: 0,
        rejected: 0
      }}
   end
@@ -126,7 +133,8 @@ defmodule Gaoxy.Admission do
       map_size(state.leases) >= state.limits.max_active ->
         reject(state, :active_limit)
 
-      not is_integer(bytes) or bytes < 0 or state.bytes + bytes > state.limits.max_bytes ->
+      not is_integer(bytes) or bytes < 0 or
+          transport_bytes(state) + bytes > state.limits.max_bytes ->
         reject(state, :byte_limit)
 
       true ->
@@ -221,7 +229,8 @@ defmodule Gaoxy.Admission do
       map_size(state.leases) >= state.limits.max_active ->
         reject(state, :active_limit)
 
-      not is_integer(bytes) or bytes < 0 or state.bytes + bytes > state.limits.max_bytes ->
+      not is_integer(bytes) or bytes < 0 or
+          transport_bytes(state) + bytes > state.limits.max_bytes ->
         reject(state, :byte_limit)
 
       true ->
@@ -252,15 +261,17 @@ defmodule Gaoxy.Admission do
       %{pid: ^pid} = lease ->
         deadline =
           if action == :begin_callback and lease.deadline != nil and is_integer(deadline),
-            do: min(deadline, lease.deadline),
+            do: Lifecycle.earlier(deadline, lease.deadline),
             else: deadline
+
+        replacement = replace_accounting(state, lease, bytes, action == :upgrade)
 
         cond do
           action in [:upgrade, :begin_stream] and
               (not lease.request_active or not lease.drain_notify) ->
             reject(state, :inactive_request)
 
-          action in [:upgrade, :begin_stream] and lease.deadline <= Gaoxy.Lifecycle.now() ->
+          action in [:upgrade, :begin_stream] and Lifecycle.remaining(lease.deadline) == 0 ->
             reject(state, :deadline_exceeded)
 
           action == :begin_request and lease.cleanup != nil ->
@@ -272,15 +283,15 @@ defmodule Gaoxy.Admission do
           action == :begin_callback and lease.deadline == nil and state.mode != :ready ->
             reject(state, state.mode)
 
-          not is_integer(bytes) or bytes < 0 or
-              state.bytes - lease.bytes + bytes > state.limits.max_bytes ->
+          not match?({:ok, _}, replacement) ->
             reject(state, :byte_limit)
 
-          not (action in [:begin_request, :begin_stream] and deadline == :infinity) and
+          not (action in [:begin_request, :upgrade, :begin_stream] and deadline == :infinity) and
               (not is_integer(deadline) or deadline <= Gaoxy.Lifecycle.now()) ->
             reject(state, :deadline_exceeded)
 
           true ->
+            {:ok, replacement} = replacement
             cancel(lease)
             token = if deadline == :infinity, do: nil, else: make_ref()
 
@@ -299,9 +310,8 @@ defmodule Gaoxy.Admission do
                 else: lease.deadline
 
             lease = %{
-              lease
-              | bytes: bytes,
-                deadline: request_deadline,
+              replacement
+              | deadline: request_deadline,
                 request_active: action == :begin_request or lease.request_active,
                 token: token,
                 timer: timer
@@ -310,7 +320,7 @@ defmodule Gaoxy.Admission do
             {:reply, :ok,
              sample(%{
                state
-               | bytes: state.bytes - state.leases[ref].bytes + bytes,
+               | bytes: state.bytes - state.leases[ref].bytes + lease.bytes,
                  leases: Map.put(state.leases, ref, lease)
              })}
         end
@@ -346,7 +356,8 @@ defmodule Gaoxy.Admission do
               not Process.alive?(guardian) ->
             reject(state, :invalid_guardian)
 
-          not is_integer(bytes) or bytes < 0 or state.bytes + bytes > state.limits.max_bytes ->
+          not is_integer(bytes) or bytes < 0 or
+              transport_bytes(state) + bytes > state.limits.max_bytes ->
             reject(state, :byte_limit)
 
           true ->
@@ -396,39 +407,49 @@ defmodule Gaoxy.Admission do
   def handle_call({:drain, _deadline}, _from, state), do: {:reply, :ok, state}
 
   def handle_call({action, ref, bytes}, {pid, _}, state)
-      when action in [:begin, :retain, :update] do
+      when action in [:begin, :retain, :update, :end_websocket_callback] do
     case state.leases[ref] do
       %{pid: ^pid} = lease ->
-        new_bytes = state.bytes - lease.bytes + bytes
+        cond do
+          action == :end_websocket_callback and not Map.has_key?(lease, :websocket_bytes) ->
+            {:reply, {:error, :not_websocket}, state}
 
-        if is_integer(bytes) and bytes >= 0 and new_bytes <= state.limits.max_bytes do
-          lease =
-            case action do
-              :begin ->
-                cancel(lease)
-                token = make_ref()
+          true ->
+            case replace_accounting(state, lease, bytes) do
+              {:ok, replacement} ->
+                replacement =
+                  case action do
+                    :begin ->
+                      cancel(lease)
+                      token = make_ref()
 
-                timer =
-                  Process.send_after(
-                    self(),
-                    {:expired, ref, token},
-                    state.limits.callback_timeout
-                  )
+                      timer =
+                        Process.send_after(
+                          self(),
+                          {:expired, ref, token},
+                          state.limits.callback_timeout
+                        )
 
-                %{lease | timer: timer, token: token, bytes: bytes}
+                      %{replacement | timer: timer, token: token}
 
-              :retain ->
-                cancel(lease)
-                %{lease | timer: nil, token: nil, bytes: bytes}
+                    action when action in [:retain, :end_websocket_callback] ->
+                      cancel(lease)
+                      %{replacement | timer: nil, token: nil}
 
-              :update ->
-                %{lease | bytes: bytes}
+                    :update ->
+                      replacement
+                  end
+
+                {:reply, :ok,
+                 sample(%{
+                   state
+                   | bytes: state.bytes - lease.bytes + replacement.bytes,
+                     leases: Map.put(state.leases, ref, replacement)
+                 })}
+
+              {:error, reason} ->
+                reject(state, reason)
             end
-
-          {:reply, :ok,
-           sample(%{state | bytes: new_bytes, leases: Map.put(state.leases, ref, lease)})}
-        else
-          reject(state, :byte_limit)
         end
 
       _ ->
@@ -456,15 +477,19 @@ defmodule Gaoxy.Admission do
   def handle_call({:adjust_bytes, ref, delta}, {pid, _}, state) when is_integer(delta) do
     case state.leases[ref] do
       %{pid: ^pid} = lease ->
-        if lease.bytes + delta >= 0 and state.bytes + delta <= state.limits.max_bytes do
-          {:reply, :ok,
-           sample(%{
-             state
-             | bytes: state.bytes + delta,
-               leases: Map.put(state.leases, ref, %{lease | bytes: lease.bytes + delta})
-           })}
-        else
-          reject(state, :byte_limit)
+        transport = Accounting.categories(lease).transport_bytes
+
+        case replace_accounting(state, lease, transport + delta) do
+          {:ok, replacement} ->
+            {:reply, :ok,
+             sample(%{
+               state
+               | bytes: state.bytes - lease.bytes + replacement.bytes,
+                 leases: Map.put(state.leases, ref, replacement)
+             })}
+
+          {:error, reason} ->
+            reject(state, reason)
         end
 
       _ ->
@@ -495,8 +520,22 @@ defmodule Gaoxy.Admission do
           {:reply, {:error, :timeout}, state}
         else
           pending = %{operation: operation, bytes: bytes}
+
+          lease =
+            if Map.has_key?(lease, :websocket_bytes) do
+              cancel(lease)
+              token = make_ref()
+
+              timer =
+                Process.send_after(self(), {:expired, ref, token}, Lifecycle.remaining(deadline))
+
+              %{lease | timer: timer, token: token, send: pending}
+            else
+              %{lease | send: pending}
+            end
+
           Telemetry.emit(:send_started, %{bytes: bytes}, state.scope, %{operation: operation})
-          {:reply, :ok, %{state | leases: Map.put(state.leases, ref, %{lease | send: pending})}}
+          {:reply, :ok, %{state | leases: Map.put(state.leases, ref, lease)}}
         end
 
       _ ->
@@ -515,7 +554,16 @@ defmodule Gaoxy.Admission do
           end
 
         send_outcome(state, pending, outcome)
-        {:reply, :ok, %{state | leases: Map.put(state.leases, ref, %{lease | send: nil})}}
+
+        lease =
+          if Map.has_key?(lease, :websocket_bytes) do
+            cancel(lease)
+            %{lease | send: nil, timer: nil, token: nil}
+          else
+            %{lease | send: nil}
+          end
+
+        {:reply, :ok, %{state | leases: Map.put(state.leases, ref, lease)}}
 
       _ ->
         {:reply, {:error, :stale_operation}, state}
@@ -533,12 +581,18 @@ defmodule Gaoxy.Admission do
   end
 
   def handle_call(:status, _from, state) do
+    accounting = Accounting.totals(state.leases, state.cleanups)
+
     {:reply,
      %{
        active: map_size(state.leases),
        cleanup_pending: map_size(state.cleanups),
        retained_bytes: state.bytes,
        retained_high_water: state.high_water,
+       transport_bytes: accounting.transport_bytes,
+       websocket_bytes: accounting.websocket_bytes,
+       transport_high_water: state.transport_high_water,
+       websocket_high_water: state.websocket_high_water,
        rejected: state.rejected,
        queued_items: 0,
        queued_bytes: 0
@@ -752,13 +806,41 @@ defmodule Gaoxy.Admission do
     {:reply, {:error, reason}, %{state | rejected: state.rejected + 1}}
   end
 
+  defp replace_accounting(state, lease, bytes, classify? \\ false) do
+    if is_map(bytes) and not classify? and not Map.has_key?(lease, :websocket_bytes) do
+      {:error, :byte_limit}
+    else
+      with {:ok, replacement} <- Accounting.replace(lease, bytes),
+           :ok <-
+             Accounting.validate(
+               state.leases,
+               state.cleanups,
+               lease,
+               replacement,
+               state.limits.max_bytes
+             ) do
+        {:ok, replacement}
+      end
+    end
+  end
+
+  defp transport_bytes(state),
+    do: Accounting.totals(state.leases, state.cleanups).transport_bytes
+
   defp sample(state) do
+    accounting = Accounting.totals(state.leases, state.cleanups)
+
     Telemetry.emit(
       :work,
-      %{active: map_size(state.leases), retained_bytes: state.bytes},
+      Map.merge(accounting, %{active: map_size(state.leases), retained_bytes: state.bytes}),
       state.scope
     )
 
-    %{state | high_water: max(state.high_water, state.bytes)}
+    %{
+      state
+      | high_water: max(state.high_water, state.bytes),
+        transport_high_water: max(state.transport_high_water, accounting.transport_bytes),
+        websocket_high_water: max(state.websocket_high_water, accounting.websocket_bytes)
+    }
   end
 end
