@@ -58,6 +58,7 @@ SUITES = {
     'component': [
         ('apps/gaoxy/test/quic_context_test.exs', 2),
         ('apps/gaoxy_http/test/exchange_peer_close_test.exs', 7),
+        ('apps/gaoxy_http/test/http2_startup_peer_close_test.exs', 8),
         ('apps/gaoxy_http/test/websocket_stream_test.exs', 22),
         ('apps/gaoxy_http/test/websocket_event_retention_test.exs', 2),
         ('apps/gaoxy/test/websocket_admission_test.exs', 11),
@@ -80,6 +81,7 @@ SUITES = {
     ],
     'protocol': [
         ('apps/gaoxy_http/test/exchange_peer_close_network_test.exs', 2),
+        ('apps/gaoxy_http/test/http2_startup_peer_close_network_test.exs', 1),
         ('apps/gaoxy_http/test/head_content_length_network_test.exs', 2),
         ('apps/gaoxy_http3/test/head_content_length_network_test.exs', 1),
         ('apps/gaoxy_http/test/request_lifetime_network_test.exs', 10),

@@ -17,11 +17,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     with :ok <- Limits.validate_budget(options.http_limits, h2, context.spec.limits),
          :ok <- Limits.validate_host(if(Socket.secure?(socket), do: :tls, else: :tcp)),
          :ok <- tls_policy(socket),
-         :ok <-
-           Socket.setopts(socket,
-             recbuf: Limits.receive_buffer(),
-             buffer: Limits.receive_buffer()
-           ),
+         :ok <- receive_options(socket),
          {:ok, lease} <- owner_lease(context, reserves.connection),
          {:ok, writer} <-
            Task.Supervisor.start_child(Gaoxy.HTTP.Tasks, fn ->
@@ -87,7 +83,34 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
          partial_token: nil
        })}
     else
+      :closed -> {:close, context}
       {:error, reason} -> {:error, reason, context}
+    end
+  end
+
+  defp receive_options(socket) do
+    case Socket.setopts(socket,
+           recbuf: Limits.receive_buffer(),
+           buffer: Limits.receive_buffer()
+         ) do
+      {:error, {:options, {:socket_options, _, reason}}} = error
+      when reason in [:closed, :einval, :enotconn] ->
+        disconnected_option_error(socket, error)
+
+      {:error, reason} = error when reason in [:closed, :einval, :enotconn] ->
+        disconnected_option_error(socket, error)
+
+      result ->
+        result
+    end
+  end
+
+  defp disconnected_option_error(socket, error) do
+    # OTP SSL can wrap a transport failure as an invalid-option error. Confirm
+    # the peer is gone before treating that setup failure as an orderly close.
+    case Socket.peername(socket) do
+      {:error, reason} when reason in [:closed, :einval, :enotconn] -> :closed
+      _ -> error
     end
   end
 
