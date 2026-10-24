@@ -933,6 +933,8 @@ defmodule Gaoxy.Service do
         writer_timeout: spec.limits.callback_timeout,
         writer_max_queue: spec.limits.max_active,
         writer_max_bytes: spec.limits.max_bytes,
+        # TODO(upstream): gsmlg-dev/http_fetch#143
+        # TODO(upstream): gsmlg-dev/abyss#6
         quic_options: [
           streams: [
             max_data: spec.limits.max_bytes,

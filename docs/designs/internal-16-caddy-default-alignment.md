@@ -1,7 +1,7 @@
 # Internal request #16: Caddy defaults research and alignment design
 
 Date: 2026-10-24 (Asia/Shanghai).
-Status: research completed; recommended design for review; implementation not started.
+Status: research completed; product contract clarified by the user; implementation not started.
 
 ## Baselines and scope
 
@@ -225,262 +225,185 @@ request timeout and 5s header/read/write timeouts, with 16 KiB reads and a
 64 KiB staging buffer. These need a separate HTTP timeout/body policy slice;
 the #16 repair must not silently redefine them.
 
-## Recommended alignment
+## Confirmed WebSocket product contract
 
-### Decision and alternatives
+On 2026-10-24 the user clarified the product direction: WebSocket exists to
+keep a connection open and transfer data; the implementation must not impose
+connection-time or data-size ceilings. In this context the connection wording
+is understood as connection lifetime/inactivity, not a promise that physical
+network connections can never fail.
 
-Adopt Caddy's separation of transferable payload size, finite transfer buffers,
-and optional lifetime policy. Preserve Gaoxy's whole-message WebSock contract.
-Implement the WebSocket payload/accounting change first; schedule idle and
-absolute lifetime independently. General HTTP defaults are a separate design
-slice, not an incidental change in #16.
+This decision supersedes the earlier proposal to ship the payload fix while
+leaving default idle/lifetime changes for optional later work. The following
+are one completion contract for native and Phoenix paths over H1/H2/H3:
 
-| Alternative | Effect | Decision |
-| --- | --- | --- |
-| Raise 256 KiB or the service budget | Can clear the reported 300 KiB symptom | Reject as the final fix: another arbitrary ceiling remains |
-| Remove payload limits but keep the default whole-message admission ceiling | Retains today's aggregate-memory guarantee | Reject as the final fix: large default messages still fail |
-| Separate finite transport accounting from optional WS retained-memory admission | Removes implicit payload ceilings and preserves explicit limits | Recommended; requires an accounting change rather than a constants-only patch |
+- A healthy upgraded connection has no implementation-selected maximum age and
+  is not closed merely because it has been quiet for a fixed interval.
+- Default operation has no arbitrary single-frame, whole-message, wire-fragment,
+  callback-batch-byte or cumulative-transfer ceiling. Mandatory RFC wire-format
+  and protocol-validity rules remain in force.
+- Finite transfer capacity is reusable: stop requesting input or wait for output
+  capacity, return credit when its owner consumes/releases it, then continue.
+  A buffer/window size is not a maximum transferable payload or lifetime total.
+- Generic service `max_bytes` and `max_state`, whether omitted or explicitly
+  configured for service resources, do not become WS message/application-state
+  ceilings. Preserve their finite ordinary HTTP/raw/UDP and transport meanings.
+- Application-requested close, explicit application policy, protocol errors,
+  actual transport failure and service shutdown remain valid lifecycle events.
+  A framework-injected default does not establish an explicit application policy.
 
-A finite default aggregate ceiling over complete messages cannot also promise
-no default payload ceiling. The recommended behavior deliberately makes WS
-retained memory an application/operator policy. It must be described as such,
-including the increased default exposure to large messages and application
-state. This is a compatibility decision about defaults, not evidence that the
-current implementation already handles arbitrarily large messages.
+No new `max_websocket_bytes` or `max_websocket_state` configuration is planned.
+The previous optional-budget/provenance/aggregate-ceiling proposal is withdrawn:
+it is unnecessary for this contract and could recreate a hidden size limit.
+Existing deliberate application WS policies are a separate compatibility path;
+none is implicitly enabled or used as the acceptance mode for this product goal.
 
-### Proposed WebSocket behavior
+### Decisions and defaults
 
-| Option or resource | Current native default | Proposed behavior |
-| --- | --- | --- |
-| `max_frame_size` | 256 KiB, also clamped by service budget | `:infinity`; explicit positive bytes remain authoritative |
-| `max_message_size` | 256 KiB, also clamped | `:infinity`; when only a finite frame limit is supplied, inherit it for compatibility with #6 |
-| `max_fragments` | 128 | `:infinity`; explicit positive counts still reject excessive fragmentation |
-| Retained WS payload/state admission | Implicit service byte ceiling | Optional service-wide budget, default `:infinity`; continue measuring actual accounted bytes |
-| WS application state | Implicit core `max_state` | Optional state ceiling; preserve an explicitly configured legacy `max_state` |
-| Native `timeout` | 60s | Separate idle slice: omitted native option becomes `:infinity`; received application values remain authoritative |
-| `max_lifetime` | 24h | Separate lifetime slice: omitted option becomes `:infinity`; explicit finite lifetime remains absolute |
-| Callback / close deadlines | 5s / 1s | Retain finite defaults |
-| Mailbox / output-frame count | 128 / 32 | Retain finite defaults; these bound queued work and a callback batch, not one message's byte size |
-| Transport read/write staging, H2/QUIC windows and queues | Finite | Retain finite capacities independent of cumulative message bytes |
+| Resource or policy | Required behavior |
+| --- | --- |
+| Native frame/message sizes | Omitted limits select `:infinity`; no clamp derived from service bytes |
+| Wire fragment count | No default count ceiling; internal read chunks are not wire fragments |
+| Retained WS messages/state/output | Measure ownership and bytes; no generic service-cap rejection |
+| Idle and absolute lifetime | No implementation-selected cutoff after upgrade; no corresponding default close timers |
+| Phoenix and vendored adapter defaults | No injected frame or idle limit may silently bound the default WS path |
+| Callback output batch | Process incrementally; no default batch-byte/count ceiling acting as a transfer limit |
+| Transport staging, H2/QUIC windows and writer queues | Finite, recycled through demand/credit/backpressure |
+| Callback computation, an individual send, close and drain | Finite fault/lifecycle bounds; never a deadline covering an entire progressing message or connection |
+| Application heartbeat/authentication/close policy | Application ownership, separate from server transport defaults |
 
-Use `:infinity` explicitly only on the selected policy fields. Reject zero,
-negative, `nil`, booleans, floats and unsupported sentinel values. Do not rely
-on Erlang's ordering between integers and atoms to implement an unlimited
-comparison. Mandatory RFC 6455 checks remain: masking, reserved bits, opcode,
-minimal/valid 63-bit lengths, UTF-8, fragmentation order, and the 125-byte
-control-frame ceiling.
-
-Each WebSock text/binary output tuple is one message in the existing API.
-Validate its frame/message policy independently; do not sum two valid messages
-and reject their callback batch as one oversized message. Keep the separate
-finite `max_push_frames` check. No automatic output fragmentation or public
-streaming callback API is introduced by this plan.
-
-Remove the vendored adapter's injected 10,000,000-byte frame default only for
-`Gaoxy.PlugAdapter` dispatch, before the omission information is lost. Preserve
-an explicit limit with that exact value and preserve other adapters' defaults.
-Refresh the canonical vendor patch, snapshot hashes and reconstruction evidence
-together. Do not modify fetched `deps/`.
-
-Phoenix supplies its own transport `timeout` (currently 60s). Honor it just as
-any other received value. Native omission can select infinity without changing
-Phoenix policy. Never identify provenance by equality with 60,000 or 10,000,000.
-Selecting infinity for native WS inactivity is a Gaoxy product choice informed
-by Caddy's H1 upgraded-stream behavior; it is not a claim that Caddy has identical
-H1/H2/H3 inactivity defaults.
+This is Gaoxy's product contract, informed by Caddy research. It does not claim
+Caddy has identical H1/H2/H3 inactivity behavior: the research above preserves
+its outstanding-body-read idle boundary for multiplexed WebSockets.
 
 ### Admission and memory ownership
 
-Account three quantities separately, with integer counters:
+Separate classified integer accounting at WS upgrade:
 
-- `transport_bytes`: ordinary HTTP/raw reservations, protocol control state,
-  WS staging buffers and outstanding send/read credits. Keep the existing
-  finite `limits.max_bytes` enforcement for this category.
-- `websocket_bytes`: accumulated application messages, application state,
-  pending callback output and transient message-sized copies. Its new explicit
-  service-wide ceiling is optional and shared by upgraded connections.
-- `bytes`: the sum of both categories. Keep it visible as total accounted
-  application retention, not total BEAM/kernel/native memory. Preserve an
-  explicitly configured legacy `limits.max_bytes` as an additional aggregate
-  ceiling over this sum.
+- `transport_bytes` covers finite staging, protocol control reservations and
+  outstanding read/send credits, alongside ordinary scalar admission.
+- `websocket_bytes` measures accumulated message payload, application state,
+  unsent callback output and accounted message-sized temporary copies.
+- `bytes` reports the sum as accounted retention, not total VM/kernel/native
+  allocation. After upgrade, only transport accounting is constrained by the
+  generic finite service transport budget; total retained WS bytes may exceed it.
 
-Do not count a retained output payload again for each transmitted chunk, or
-return transport credit while a queue still retains it. Count unavoidable
-message flattening/copy overlap while both representations are live. For H2/H3,
-connection/stream queue ownership must transfer credit exactly once; moving a
-payload into message retention permits renewed finite transport credit, rather
-than accumulating all consumed bytes against a flow-control window.
+Ordinary scalar Admission callers keep their current meanings. Upgrade
+atomically reclassifies the existing owned lease, preserving its generation,
+monitor, request eligibility, send-operation tracking and drain behavior.
+Classified updates cannot be replaced by scalar updates that erase retained
+ownership. Check finite transport capacity consistently across acquisition,
+upgrade, updates, sends and cleanup; retained WS counts remain measured without
+an added admission ceiling. Release both categories at actual terminal ownership
+transitions, not at an optimistic early acknowledgement.
 
-Upgrade must atomically reclassify the existing owned lease, retaining its
-generation checks, monitor, request eligibility, send-operation tracking and
-drain behavior. Ordinary scalar Admission callers continue to mean transport
-accounting. Only an upgraded WS lease can use classified updates. Apply the
-same capacity predicate in acquisition, upgrade, retain/update, callback entry,
-send reservation and cleanup transitions; do not leave one scalar path able to
-erase or bypass retained WS accounting. Release both categories on the actual
-owner/cleanup terminal transition.
+Do not count an already retained output payload again for each transmitted
+chunk. Do not release a credit while an H2/H3/native queue still owns its bytes.
+Moving consumed input into message retention returns transport capacity so
+larger messages and many successive messages can continue. Completed transfer
+bytes are not permanently deducted from a listener budget.
 
-Capture explicit legacy `max_bytes` and `max_state` choices before any H1/H2/H3
-default insertion. Persist that provenance through service normalization and
-revalidation; H2's 256 MiB or H3's 16 MiB defaults must not become user policy
-merely because they appear in a normalized map. A value explicitly equal to
-the default is still explicit. Explicit new and legacy limits compose by the
-stricter applicable ceiling; an unlimited new field cannot relax a finite
-legacy aggregate/state policy.
+The previous configuration-provenance machinery is not needed: explicit
+`max_bytes` no longer means an additional combined WS ceiling. Core limit keys,
+QUIC window arithmetic, UDP relay calculations and ordinary state policies stay
+finite. Do not pass infinity into those existing arithmetic consumers. Audit
+H2's manually constructed lease-size estimator if the ordinary lease schema
+changes; a stale estimator and stale unit fixture must not agree on an old shape.
 
-Keep QUIC windows/writer capacity, HTTP request admission, UDP packet/output
-rules, relay arithmetic and route-snapshot limits finite with their existing
-meanings. Never pass `:infinity` into those existing `max_bytes` consumers.
-Update status/telemetry contracts alongside the accounting change: after a
-default WS upgrade, `bytes <= max_bytes` is no longer a total-retention invariant;
-`transport_bytes <= max_bytes` remains one. Counters remain measured even with
-unlimited WS enforcement.
+### Incremental data path
 
-### Configuration interface and provenance
+Consume frames through bounded input chunks while retaining partial headers,
+mask position and actual wire-frame boundaries. Accumulated payload belongs to
+message retention. Preserve masking, UTF-8, valid 63-bit lengths, fragmentation
+order and control-frame rules. Count internal chunks separately from wire
+fragments; avoid accumulating metadata for empty fragments.
 
-Add two core-validated service limit keys; both accept positive integers or
-`:infinity`:
+Keep complete-message WebSock callbacks. For output, construct a small frame
+header and traverse the callback's iodata with a bounded chunk cursor instead
+of constructing a second whole header-plus-payload binary. Account the whole
+unsent batch while it is retained, then release it progressively. Existing
+`max_push_frames` and mailbox-close behavior require review: work-turn/queue
+bounds must regulate scheduling or demand, rather than close an otherwise
+healthy connection because valid work is larger than one turn.
 
-```elixir
-limits: %{
-  max_websocket_bytes: :infinity,
-  max_websocket_state: :infinity
-}
-```
+Finite staging does not imply constant total memory. Native callback retention
+remains O(message + application state + pending output), and callback code can
+allocate before handing its result back to Admission. These are physical/API
+properties, not an excuse to introduce an implicit protocol payload ceiling.
+This plan adds no public streaming callback API, disk spooling or opaque proxy
+mode.
 
-`max_websocket_bytes` applies to service-wide `websocket_bytes`.
-`max_websocket_state` applies to each WS application's `:erlang.external_size/1`;
-that state also contributes to the service-wide retained count. Existing
-`max_bytes` and `max_state` still accept only positive integers.
+### Lifetime, inactivity and operation ownership
 
-Core-owned normalized specifications carry internal provenance for only the two
-legacy keys, recording both the source and the value it describes:
+Idle and absolute-lifetime changes are required acceptance, even if implemented
+in separate commits after the accounting foundation:
 
-```elixir
-limit_sources: %{
-  max_bytes: {:default, 268_435_456},
-  max_state: {:explicit, 65_536}
-}
-```
+1. Upgrade a still-live HTTP request atomically into WS ownership with no default
+   absolute deadline; cancel old request timers and ignore stale timer tokens.
+   No 24h timer is created. Expired/unowned requests still cannot upgrade.
+2. Default healthy WS inactivity creates no close timer. Audit H1's supported
+   persistent timeout, the shared H2/H3 receive loop and underlying connection
+   idle owners. Wrapper-injected finite defaults must not reintroduce eviction.
+3. Phoenix's synthesized 60s timeout cannot automatically be treated as an
+   explicit application decision. The inspected Phoenix 1.8.16 upgrade API
+   receives already-merged options; generated `Endpoint.__sockets__/0` is
+   `@doc false`, not a supported provenance interface. Use the documented
+   `websocket: [timeout: :infinity]` socket declaration in the supported Gaoxy
+   integration and fixtures, preserving a deliberately finite application
+   declaration. Never guess intent from equality with 60,000 or couple to
+   private metadata. This is explicit integration configuration, not proof
+   of zero-configuration compatibility for every existing Phoenix application.
+4. End the callback-computation watchdog when the handler returns, while
+   atomically taking ownership of returned state/output. The current
+   `begin_callback -> result -> push -> send -> retain` path keeps the 5s timer
+   across the whole batch; this must change. A large message making progress
+   must not be cut off by that callback deadline.
+5. Sends use finite operation/progress bounds on bounded chunks. Capacity waits
+   and credit handoffs are owned and finite where necessary; a deadline must
+   not count the total age of a progressing message. Protocol fault handling,
+   actual disconnect, application close and finite service drain still clean up.
 
-This is internal metadata, not another HTTP keyword option. The embedded
-configuration is trusted; provenance prevents normalization mistakes rather
-than providing an authentication boundary. Recommended pure core interfaces:
+Do not change Phoenix's own application heartbeat or authorization logic merely
+to suppress a server transport timer. No finite callback/send/close/drain setting
+is copied into an idle timeout or whole-message/connection lifetime.
 
-```elixir
-Gaoxy.Config.normalize_limits(raw_limits, defaults, sources \\ nil)
-# {:ok, %{limits: limits, limit_sources: sources}} | {:error, reason}
+### Confirmed H3 dependency gate
 
-Gaoxy.Config.put_limits(normalized_spec, overrides)
-# {:ok, updated_spec} | {:error, reason}
+Installed `elixir_quic` 0.21.16 defaults connection idle expiry to 30s, and both
+its `Quic.Connection` validation and Abyss 0.9.0 host validation require positive
+finite idle values. The same relevant code was read on upstream `main`. No
+supported disabled local idle mode was established. H3 quiet persistence is
+therefore **BLOCKED** on these routed Feature requests:
 
-Gaoxy.Config.retention_policy(normalized_spec)
-# %{max_retained_bytes: limit, max_retained_state: limit, max_total_bytes: limit}
-```
+- [gsmlg-dev/http_fetch#143](https://github.com/gsmlg-dev/http_fetch/issues/143)
+  for `apps/elixir_quic`: a supported disabled local idle policy with correct
+  timer/peer semantics.
+- [gsmlg-dev/abyss#6](https://github.com/gsmlg-dev/abyss/issues/6): validate and
+  forward that supported policy through the host API.
 
-On first normalization, raw-key presence determines explicitness. Merge core
-defaults, protocol defaults and raw input in that order. With existing metadata,
-require complete valid source entries and matching legacy values, then preserve
-them. Reject malformed/stale metadata; never silently re-infer or repair it.
-`put_limits/2` marks intentional legacy overrides explicit, even for an equal
-number. Repeated `Config.service/1` validation must be idempotent.
+Both requests identify `gsmlg-dev/gaoxy` on `main`, have severity `blocker`,
+issue type Feature and label `internal request`. TODO markers are at Gaoxy's
+QUIC host option callsite. Resume the blocked H3 slice only after the upstream
+capabilities are released and dependencies updated. H1/H2 work can proceed.
+Do not patch dependency internals, substitute a huge finite duration, or call
+an unexecuted H3 case passing. A server also cannot override a peer's negotiated
+idle policy or prevent actual network failure; supported keepalive and peer
+configuration must be qualified where needed.
 
-H2 supplies its numeric defaults to `normalize_limits/3` instead of injecting
-them into the raw map. H3 replaces its private defaults merge with the same
-helper. Carry the resulting metadata through `Config.service/1`, the second
-validation in `Gaoxy.start_link/1`, ETS and service initialization. The effective
-policy is:
+### Completion and later HTTP work
 
-- `max_retained_bytes = limits.max_websocket_bytes`;
-- `max_retained_state = min_limit(limits.max_websocket_state,
-  explicit_legacy_max_state_or_infinity)`;
-- `max_total_bytes = explicit_legacy_max_bytes_or_infinity`.
+Size acceptance alone no longer completes this WS work. Require default native
+and Phoenix data exchange, no default idle/lifetime timers, progress across many
+reused transport credits, unchanged protocol siblings and complete cleanup.
+Use bounded ordinary cases and controlled timers; preserve historical deferred
+specialist pressure/slow-peer/soak evidence without reopening those slices.
 
-Initialize Admission with `{limits, retention_policy, scope}`. Its atomic
-`upgrade(gate, lease, accounting, deadline)` returns `{:ok, retention_policy}`
-after checking initial state and capacity. The accounting argument includes
-initial state size, so the state check happens before handshake success.
-Subsequent classified updates enforce aggregate capacity at the same gate.
-The WS engine therefore no longer needs copied service-limit maps from the H2
-or H3 connection owner; it receives effective state policy from its owned gate.
-Core does not call or depend on an HTTP module.
-
-`Gaoxy.Activation.match_plan/2` also needs explicit infinity-aware limit
-comparison and comparison of effective retention policy. A final specification
-may tighten the plan, including default-to-explicit legacy policy, but cannot
-change an explicit finite aggregate ceiling to unlimited merely by changing
-provenance with the same numeric limit. Do not compare source maps for exact
-equality: that would incorrectly reject legitimate tightening.
-
-### Bounded transport work with whole-message callbacks
-
-Change internal frame parsing to consume bounded chunks incrementally, retain
-partial header/masking state, and continue the masking offset across chunk
-boundaries. Store accumulated payload as message memory. Enforce a configured
-frame limit when its declared length is known, and a configured message limit
-as data arrives. Track actual wire-fragment boundaries separately from internal
-read chunks; the latter must not consume `max_fragments`.
-
-Preserve interleaved ping/pong/close handling between wire fragments. Avoid
-building a retained list entry for every empty fragment; count finite fragment
-policy independently. Message assembly still produces a complete payload for
-`handle_in/2`, including any temporary flattening overlap in optional admission.
-
-For output, construct a small frame header and traverse existing iodata using
-a finite chunk cursor. Avoid first flattening payload and then constructing a
-second complete header-plus-payload binary. Each actual send remains bounded
-by the existing transport write quantum and its finite operation deadline.
-The callback's retained batch must be accounted while later messages are waiting
-to send, even though the message-size policy applies to each independently.
-Admission observes application state/output at callback handoff; it cannot
-prevent a callback from allocating memory before returning. The optional
-accounted-retention policy is therefore not a hard process/VM allocation limit.
-
-This bounds transport work and avoids unnecessary full-wire duplication.
-It does **not** make native callback memory O(buffer): memory remains O(message
-size + application state + retained callback output), and the VM can run out
-of memory under an unlimited policy. Do not add disk spooling, an opaque proxy
-mode, dependency patches or a new public callback contract to solve #16.
-
-### Idle and lifetime ownership
-
-Keep the existing finite defaults during the accounting foundation. Enable the
-new payload defaults only after the complete framing/admission path is ready.
-Then handle these independent lifecycle slices:
-
-1. Native inactivity: accept `timeout: :infinity` and omit idle timer creation;
-   preserve supplied finite values, including Phoenix's value. Do not turn an
-   omitted timeout into an unbounded callback or send.
-2. Absolute lifetime: extend upgrade validation to allow `:infinity`, create no
-   lifetime timer in that case, and cap finite callbacks by the lifetime when
-   present. Upgrade from a still-live finite HTTP request to the new WS lifetime
-   in one owned transition. Repeated callbacks cannot renew finite lifetime.
-3. Close, callback, send and service drain retain finite deadlines, even when
-   both inactivity and lifetime are infinite. A forced drain/reconfiguration
-   must still release resources. Caddy's `stream_close_delay` is not a reason
-   to alter Gaoxy's shutdown protocol in this change.
-
-### Later HTTP alignment decision
-
-The useful Caddy target is distinct policy ownership: header completion,
-active body read, active write/flush, optional whole-transfer deadline, and
-next-request keepalive. Do not copy a single 60s value into all these fields.
-The subsequent HTTP design should propose 60s header/read-progress/write-progress
-defaults, no hard whole-transfer timeout and 5m next-request idle, with explicit
-compatibility for current finite settings. Preserve quiet SSE gaps and clear
-body-read deadline ownership on EOF and handler completion. Specify H1/H2/H3
-scope separately; H3 currently rejects an infinite general request timeout.
-
-Do not lower Gaoxy's 32 KiB header ceiling merely to match Caddy's 16 KiB, or
-remove its 8 MiB body limit as part of #16. Body retention/admission and Plug
-parser policy need their own decision and acceptance. Current finite values
-remain effective until that separate design is complete. Existing read/write
-chunks need only remain bounded; choosing 32 KiB solely because Caddy uses it
-would not improve the native whole-message contract.
-
-Upstream pool retention, TCP probes and dial/header waits are a separate
-transport owner again. This plan does not add missing pooling/upstream-H2
-capabilities or reopen historical gateway/HTTP Fetch proof requirements.
+General HTTP defaults remain a separate design: header completion, active body
+read, active write/flush, optional hard whole-transfer deadline and next-request
+keepalive must have distinct owners. Caddy's 60s active-I/O values and 5m
+keepalive are research inputs. Do not change Gaoxy's 32 KiB headers, 8 MiB body
+policy, or currently unsupported general H3 infinite request timeout as an
+incidental WS repair. Upstream pool/dial/probe policy is separate again.
 
 ## Verification disposition
 
@@ -490,7 +413,8 @@ capabilities or reopen historical gateway/HTTP Fetch proof requirements.
 | Current Gaoxy source and existing test contracts | READ and compared |
 | Independent research of Caddy server defaults and Gaoxy option flow | Completed |
 | Independent Caddy source/semantics review | Completed; H2/H3 idle and copy-buffer wording clarified |
-| Architecture and implementation-plan review | Completed; shared WS driver and H2 lease-size estimator audit included; no remaining reported findings |
+| Original architecture/plan review | Completed before the user clarified the product contract |
+| Revised persistent-transfer contract review | Two independent read-only reviews completed; no remaining reported findings |
 | Caddy runtime or comparative benchmark | NOT RUN |
 | Fresh Gaoxy network reproduction | NOT RUN |
 | Product implementation and its regressions | NOT STARTED |

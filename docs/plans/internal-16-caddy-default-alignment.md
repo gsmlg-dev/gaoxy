@@ -1,88 +1,84 @@
-# Caddy-informed WebSocket defaults implementation plan
+# Persistent WebSocket connections and unrestricted data transfer plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use `subagent-driven-development` or `executing-plans` to implement this plan task-by-task. Steps use checkbox syntax for tracking.
 
-**Goal:** Remove Gaoxy's implicit WebSocket payload ceilings, preserve explicit limits and finite transport resources, and separate subsequent lifecycle/HTTP policy changes.
+**Goal:** Keep healthy WebSocket connections open without implicit inactivity/lifetime or data-size cutoffs, using finite reusable transport capacity and preserving explicit application ownership.
 
-**Architecture:** Core Admission separates transport reservations from retained WS messages/state/output. Pure configuration normalization preserves explicit legacy limit provenance through H1/H2/H3 and repeated validation. Incremental internal framing bounds transport staging while keeping the complete-message WebSock callback API.
+**Architecture:** Classify WS retained messages/state/output separately from finite transport reservations, and measure those retained bytes without a generic service ceiling. Incremental internal framing and credit recycling permit larger and repeated transfers. Callback computation, bounded sends, close and drain have separate operation owners; none supplies a deadline for a whole progressing transfer.
 
-**Tech Stack:** Elixir/OTP, native Gaoxy H1/H2/H3, Plug/WebSock/Phoenix, vendored WebSockAdapter, Python independent protocol peers.
+**Tech Stack:** Elixir/OTP, native Gaoxy H1/H2/H3, Plug/WebSock/Phoenix, vendored WebSockAdapter, independent protocol peers.
 
 ---
 
-Date: 2026-10-24, Asia/Shanghai. Source baseline:
-`e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f` on `main`.
-Status: **proposed implementation plan; no implementation or runtime qualification
-has been performed in this research task**. All checkboxes below describe future
-work. Research and source references are in
-[the design](../designs/internal-16-caddy-default-alignment.md).
+Date: 2026-10-24, Asia/Shanghai. Research source baseline:
+`e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f`; previous documentation commit:
+`58e3e43eef3a57e8a49d32e4b03d2515294cf240`, branch `main`.
+Status: **updated to the user's confirmed product direction; implementation and
+runtime qualification not started**. Checkboxes describe future execution.
+See [research and product contract](../designs/internal-16-caddy-default-alignment.md).
 
-The concrete trigger is [#16](https://github.com/gsmlg-dev/gaoxy/issues/16): a
-default 300 KiB server reply and a 313,781-byte initial LiveView render close
-1011. Raising the service budget is a reported downstream mitigation, not the
-target behavior. Caddy v2.11.7's 32 KiB copy buffer is not a message ceiling;
-its opaque proxy also does not have Gaoxy's complete-message callback memory
-cost. The plan aligns policy ownership and documents that distinction.
+The user's clarification makes size, inactivity and lifetime one completion
+contract. Separate implementation commits do not make the latter optional.
+General HTTP timeout/body defaults remain separate. Actual transport loss,
+protocol errors, application-requested close and service shutdown remain normal
+lifecycle events; this is not a promise that a physical connection never fails.
 
-## Execution boundaries and ownership
+## Scope and ownership
 
-Work on `main` under the user's branch instruction, preserving unrelated files.
-The coordinator owns integration, inventory/count updates, docs and final
-verification. Use Sol workers for implementation/tests and independent review.
-Parallel writers must own disjoint files and must not revert others' edits.
-If isolation is needed later, any new worktree belongs under `.trees/`.
+Work on `main`, preserve unrelated files and use small reviewed conventional
+commits. If isolation becomes necessary, put worktrees under `.trees/`.
+The coordinator owns integration, inventory/count updates, docs and final gates.
+Sol workers may own disjoint framing and accounting files in parallel; dependent
+handoffs, edits and final integration are sequential. Do not revert others' work.
 
-| Owner | Responsibility | Dependency |
+| Owner | Work | Dependency |
 | --- | --- | --- |
-| Configuration worker | Task 1: core normalization, activation and H1/H2/H3 option assembly | Baseline/reproduction |
-| Accounting worker | Task 2: pure accounting and Admission transitions/status | Task 1 interfaces |
-| Framing worker | Task 3: frame/message chunking and pure regressions | Independent of Tasks 1–2; final integration waits for both |
-| Coordinator or integration worker | Task 4: common engine, protocol handoff, vendor dispatch and default acceptance | Tasks 1–3 |
-| Lifecycle worker | Tasks 5 and 6, sequentially | Task 4 gate |
-| Independent reviewers | Specification, accounting/implementation and protocol-source review | Each completed slice |
+| Framing worker | Task 1: pure incremental frame/message processing | Existing interfaces; independent of accounting work |
+| Accounting worker | Task 2: classified leases, callback/output transition and cleanup | Product contract |
+| Integration worker/coordinator | Task 3: native lifetime/idle and protocol-owner handoff | Tasks 1–2 |
+| Adapter/Phoenix worker | Task 4: dispatch and supported endpoint configuration | Product contract; integration waits for Task 3 |
+| Independent reviewers | Specification, source/ownership and protocol acceptance | Completed slices |
 
-The accounting/framing foundation is not a partial release of uncapped defaults.
-Keep existing live engine behavior until Task 4 switches the complete path.
-Commit only coherent, reviewed changes with their relevant passing tests;
-integration-dependent edits may be one reviewable commit. Use conventional
-messages without generated-by or AI coauthor trailers.
+Do not add the previously proposed `max_websocket_bytes`, `max_websocket_state`,
+legacy source metadata, combined WS budget or activation-policy machinery.
+Generic `max_bytes`/`max_state` do not constrain WS messages or application state,
+even when an operator supplied them for service resources. Existing deliberately
+chosen WS application policies remain a separate opt-in compatibility path.
+Do not mistake framework injection for an explicit application decision.
 
-Only Task 4's payload/accounting acceptance is required to resolve #16's
-reported size behavior. Tasks 5–6 are separate lifecycle decisions. General
-HTTP alignment is the follow-up design in Task 7. This research task neither
-implements these tasks nor initiates another release. Historical slow-peer,
-pressure, blocked-upload and soak slices retain their existing specialist
-dispositions and are not reopened.
+H3 quiet persistence is **BLOCKED** by
+[http_fetch#143](https://github.com/gsmlg-dev/http_fetch/issues/143) and
+[abyss#6](https://github.com/gsmlg-dev/abyss/issues/6). No local workaround is
+permitted; resume that slice only after released dependencies are updated.
+Continue unblocked H1/H2 work. Historical specialist slow-peer, pressure,
+blocked-upload and soak evidence keeps its existing disposition.
 
-## Task 0: Preserve the current failure and define acceptance
+## Task 0: Record the current failure and final contract
 
 **Files:**
 - Create: `apps/gaoxy_http/test/websocket_default_capacity_network_test.exs`.
 - Create: `examples/phoenix_native/test/websocket_default_capacity_test.exs`.
-- Modify: `scripts/check-repairs.py`, `scripts/test-inventory.json`.
 - Create during execution: `docs/acceptance/internal-16-default-capacity.md`.
+- Modify inventory/counts: `scripts/check-repairs.py`, `scripts/test-inventory.json`.
 
-- [ ] Record HEAD, dirty paths, BEAM/Elixir/peer versions, environment and
-  exact commands in the execution record before changes. Preserve the original
-  issue report separately from a fresh local reproduction.
-- [ ] Add a default H1 WebSock fixture with **no** frame/message/service budget
-  override. Its `init/1` emits `{:push, {:binary, payload}, state}` with
-  `payload = :binary.copy(<<0x61>>, 300 * 1024)`. Require the peer to receive the
-  exact complete payload and then exchange ping/pong. Original source should
-  fail by closing 1011 rather than delivering that reply; record the actual
-  observed result, not a predicted RED as if executed.
-- [ ] Add a real LiveView fixture that mounts with enough assigned content for
-  a serialized initial join reply of at least 313,781 bytes. Reuse the signed
-  session/CSRF, native WebSocket join and JSON helpers from
-  `websocket_phoenix_compatibility_test.exs`. Omit WS frame/message limits and
-  listener `max_bytes`/`max_state`; do not reuse that test's raised budgets.
-  Assert the measured encoded size, successful `phx_reply`, full expected
-  rendered content, a subsequent Phoenix heartbeat reply and normal cleanup.
-- [ ] Keep the new app network file in `protocol`, never `unit`. Add its exact
-  positive executed count to the sole active manifest. The Phoenix fixture
-  runs under the existing nonempty fixture gate in `e2e.yml`.
+- [ ] Record source identity, dirty paths, runtime/peer versions, exact commands,
+  executed counts and original failures before source edits.
+- [ ] Add a default H1 handler whose init returns
+  `{:push, {:binary, :binary.copy(<<0x61>>, 300 * 1024)}, state}`. With no frame,
+  message or raised service-budget option, require exact complete bytes followed
+  by ping/pong and normal close. Preserve the actual original 1011 failure.
+- [ ] Add actual LiveView initial-render acceptance with serialized join reply
+  at least 313,781 bytes, full rendered content and subsequent Phoenix heartbeat.
+  Reuse supported signed session/CSRF and wire helpers from the existing
+  compatibility fixture, but do not copy its raised frame/service budgets.
+  The lifecycle setup uses the documented infinity timeout in Task 4; this is
+  explicit integration configuration and is not a zero-config Phoenix claim.
+- [ ] Add controlled assertions for no default idle/lifetime close timers and
+  reusable transport credits; do not substitute waiting 24 hours or pressure
+  testing for ownership assertions. Preserve RED evidence without weakening
+  payload, normal-close or cleanup assertions.
 
-Focused commands from the repository root, after dependency preparation:
+Run focused root cases with:
 
 ```sh
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test python3 scripts/check-tests.py apps/gaoxy_http/test/websocket_default_capacity_network_test.exs --seed 0 --max-cases 1
@@ -94,179 +90,22 @@ From `examples/phoenix_native`:
 ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test python3 ../../scripts/check-tests.py test/websocket_default_capacity_test.exs --seed 0 --max-cases 1
 ```
 
-Save the unchanged failing assertions and logs. Neither raising a fixture budget
-nor accepting any close code in place of the payload constitutes GREEN.
+The root network file belongs to `protocol`; Phoenix real-peer tests belong to
+the existing E2E fixture gate. Every required execution must have a positive
+count; record an expected-but-unexecuted failure as NOT RUN, never RED/PASS.
 
-## Task 1: Normalize policy and preserve explicit configuration
-
-**Files:**
-- Modify: `apps/gaoxy/lib/gaoxy/config.ex`, `apps/gaoxy/lib/gaoxy/activation.ex`.
-- Modify: `apps/gaoxy_http/lib/gaoxy/http.ex`.
-- Modify: `apps/gaoxy_http3/lib/gaoxy/http/http3/options.ex`.
-- Create: `apps/gaoxy/test/websocket_retention_config_test.exs`.
-- Modify: `apps/gaoxy/test/activation_config_test.exs`.
-- Modify: `apps/gaoxy_http/test/websocket_configured_limits_test.exs` when the
-  associated default change is enabled in Task 4.
-
-- [ ] Write socket-free configuration tests first. Cover raw core/H1/H2/H3
-  defaults, explicit values equal to each default, second normalization,
-  unknown keys, invalid infinity use and malformed/stale provenance.
-- [ ] Add these public service limit defaults; all existing numeric limits
-  retain positive-integer validation:
-
-```elixir
-%{max_websocket_bytes: :infinity, max_websocket_state: :infinity}
-```
-
-- [ ] Implement these pure core contracts, retaining the current public
-  `Config.service/1` and `Gaoxy.start_link/1` signatures:
-
-```elixir
-Gaoxy.Config.normalize_limits(raw_limits, defaults, sources \\ nil)
-# {:ok, %{limits: limits, limit_sources: sources}} | {:error, reason}
-Gaoxy.Config.put_limits(normalized_spec, overrides)
-# {:ok, normalized_spec} | {:error, reason}
-Gaoxy.Config.retention_policy(normalized_spec)
-# %{max_retained_bytes: limit, max_retained_state: limit, max_total_bytes: limit}
-```
-
-`normalize_limits/3` merges core defaults, supplied protocol defaults, then raw
-input. On first normalization, raw key presence determines whether `max_bytes`
-and `max_state` are explicit. Preserve complete internal metadata on subsequent
-normalization, validating the recorded value against the actual legacy value:
-
-```elixir
-%{
-  max_bytes: {:default, 268_435_456},
-  max_state: {:explicit, 65_536}
-}
-```
-
-Invalid metadata fails validation. `put_limits/2` validates intentional updates
-and marks overridden legacy keys explicit, even if the number is unchanged.
-Use it at owned callsites that intentionally change normalized legacy limits.
-Do not expose `limit_sources` as an HTTP/HTTP3 keyword option.
-
-- [ ] Replace H2's `Map.put_new` default insertion and H3's private limit merge
-  with the core helper. Carry `limits` and `limit_sources` together through
-  Config revalidation and ETS. Preserve numeric reservation checks and backend
-  option normalization. Core must not import an HTTP application.
-- [ ] Derive effective retained policy exactly as follows:
-
-```text
-max_retained_bytes = limits.max_websocket_bytes
-max_retained_state = min_limit(limits.max_websocket_state,
-                              explicit legacy max_state or infinity)
-max_total_bytes = explicit legacy max_bytes or infinity
-```
-
-- [ ] Make limit operations explicit. Use this comparison shape rather than
-  integer/atom ordering in activation and capacity validation:
-
-```elixir
-def limit_within?(:infinity, :infinity), do: true
-def limit_within?(n, :infinity) when is_integer(n) and n > 0, do: true
-def limit_within?(:infinity, n) when is_integer(n) and n > 0, do: false
-def limit_within?(n, cap) when is_integer(n) and n > 0 and is_integer(cap) and cap > 0,
-  do: n <= cap
-def limit_within?(_, _), do: false
-```
-
-Define `min_limit(:infinity, n) = n`, `min_limit(n, :infinity) = n`, and integer
-minimum for validated finite policies. Byte counters may be zero; policy limits
-must be positive or infinity, so do not confuse limit validation with counters.
-
-- [ ] Update activation plan matching to compare both numeric/new limits and
-  effective retention policy. Test finite-to-infinite rejection with equal
-  legacy numeric maps but changed provenance; allow legitimate tightening.
-- [ ] Run the new pure config file and activation config file with
-  `scripts/check-tests.py`, seed 0, max-cases 1. Classify the new file as unit,
-  with exact executed count. Verify ordinary core/UDP defaults and QUIC's
-  existing numeric capacity inputs remain unchanged.
-
-## Task 2: Add classified admission without losing lease ownership
-
-**Files:**
-- Create: `apps/gaoxy/lib/gaoxy/admission/accounting.ex`.
-- Modify: `apps/gaoxy/lib/gaoxy/admission.ex`, `apps/gaoxy/lib/gaoxy/service.ex`.
-- Modify as needed for documented status fields: `apps/gaoxy/lib/gaoxy/telemetry.ex`.
-- Audit; modify only if ordinary lease representation changes:
-  `apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex` and
-  `apps/gaoxy_http/test/http2_worker_accounting_test.exs`.
-- Create: `apps/gaoxy/test/websocket_accounting_test.exs` (pure unit).
-- Create: `apps/gaoxy/test/websocket_admission_test.exs` (controlled component).
-
-- [ ] Write a pure capacity/transition table and controlled gate tests first.
-  The accounting vector has nonnegative integer `transport_bytes`,
-  `websocket_bytes` and `state_bytes`; the last is a subset of retained WS
-  bytes used for the initial per-connection state check, not a third additive
-  category. Ordinary scalar leases remain `{transport_bytes: n, websocket_bytes: 0}`.
-- [ ] Centralize the following capacity predicate in the pure accounting module;
-  all aggregate quantities are computed after subtracting the old lease vector
-  and adding its replacement:
-
-```text
-transport_bytes <= finite limits.max_bytes
-AND (max_retained_bytes is infinity OR websocket_bytes <= max_retained_bytes)
-AND (max_total_bytes is infinity OR transport_bytes + websocket_bytes <= max_total_bytes)
-```
-
-Validate counter types/nonnegativity before arithmetic. Initial WS application
-state must also satisfy `max_retained_state` before the handshake succeeds.
-
-- [ ] Service initializes Admission with `{limits, retention_policy, scope}`.
-  Keep the old scalar upgrade path working until Task 4 integration; add the
-  classified owned upgrade contract:
-
-```elixir
-Gaoxy.Admission.upgrade(gate, lease, accounting, deadline)
-# {:ok, retention_policy} | {:error, reason} for classified WS upgrade
-```
-
-- [ ] Upgrade the existing lease atomically. Retain request-active/drain checks,
-  owner identity, generation, monitor and send-operation ownership. Require
-  classified retain/update/callback calls for a classified WS lease; reject
-  scalar replacement that would silently discard retained WS memory.
-- [ ] Review every acquisition, begin/retain/update, adjust, send, cleanup and
-  terminal transition against the centralized predicate. Scalar operations by
-  connection/stream owners update only their owned transport reservations.
-  Send reservation adds finite staging bytes without counting the entire
-  retained callback payload a second time. Late/unknown outcomes retain their
-  existing terminal semantics.
-- [ ] Extend status and high-water telemetry with transport and retained WS
-  categories. Preserve total `bytes` as their sum, not a promise of total VM
-  memory. Document that only explicit legacy aggregate policy bounds total
-  bytes by `max_bytes` after a default WS upgrade.
-- [ ] Audit H2 `WorkerAccounting.caps/6` and its modeled lease/overlap sizes.
-  If generic accounting adds fields to ordinary leases, update the estimator
-  and its independent test constructors together. Include a controlled
-  component check against a realized ordinary Admission lease so a stale
-  hand-built schema cannot make both the estimator and its unit test pass.
-  If ordinary lease shape is preserved, record why no estimator change is
-  needed. Do not alter unrelated H2 memory policy.
-- [ ] Component regressions prove unauthorized/stale upgrades fail, admission
-  rejection leaves the old lease intact, multiple WS leases share one retained
-  budget, explicit total policy applies across ordinary and WS work, and close,
-  owner death and finite drain restore both counters exactly once. Use controlled
-  messages/monitors, no real sockets in this file.
-- [ ] Run both new files through `scripts/check-tests.py`; classify the pure
-  file as unit and the real Admission collaboration as component. Preserve
-  raw/UDP scalar semantics. This task does not enable new live engine defaults.
-
-## Task 3: Build incremental framing and bounded output traversal
+## Task 1: Incremental framing and reusable data capacity
 
 **Files:**
 - Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket/frame.ex`.
 - Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket/message.ex`.
 - Create: `apps/gaoxy_http/test/websocket_incremental_frame_test.exs` (unit).
 
-- [ ] Write pure decoder cases that divide a masked frame at every header/mask
-  boundary and several non-multiple-of-four payload offsets. Include split
-  UTF-8 sequences, 64-bit lengths, invalid control frames, invalid fragment
-  order, interleaved ping/pong and explicit finite limits.
-- [ ] Add internal incremental decode/encode interfaces to the existing frame
-  module. Preserve existing `decode/2` and `encode/3` contracts for consumers;
-  switch the engine to incremental interfaces only in Task 4:
+- [ ] Write pure cases splitting headers, masking keys, payload and UTF-8 across
+  reads; include actual fragmentation, empty fragments, interleaved controls,
+  valid 63-bit lengths and mandatory RFC rejection behavior.
+- [ ] Add bounded internal interfaces while retaining existing `decode/2` and
+  `encode/3` compatibility contracts:
 
 ```text
 decoder(options) -> decoder state
@@ -275,69 +114,161 @@ encoder(opcode, iodata, fin) -> {:ok, cursor} | {:error, code, reason}
 next_chunk(cursor, positive_quantum) -> {:ok, chunk, next_cursor} | :done
 ```
 
-Events describe data-frame start `(opcode, fin, declared_length)`, payload
-pieces, frame end, or a complete bounded control frame. Payload pieces are
-retained as message data. A cursor never creates a complete header-plus-payload
-binary and never returns a chunk over its quantum. Validate text/iodata before
-transmitting a frame; preserve the 125-byte control-frame and 63-bit length rules.
+Events describe a data-frame start, payload pieces, frame end, or a complete
+bounded control frame. Preserve mask offsets across reads. Internal chunks do
+not consume a wire-fragment count. Retain accumulated payload as message memory,
+not transport staging; avoid a list entry for each empty fragment.
 
-- [ ] Track mask position across reads. Frame limits check declared frame
-  length; message limits check accumulated message bytes. A transport chunk
-  is not a WebSocket fragment. Count actual wire fragments independently and
-  avoid storing an empty payload list entry for every empty fragment.
-- [ ] Make frame/message/fragment policy comparisons infinity-aware. Assembling
-  a complete application message remains necessary; account flattening overlap
-  rather than claiming the message itself is bounded by staging size.
-- [ ] Add pure output tests using nested iodata larger than 256 KiB. Assert
-  reconstructed wire bytes exactly match the retained legacy encoder for
-  valid fixtures, chunk sizes never exceed the quantum, and header/UTF-8/control
-  validation rejects malformed output before any chunk is sent.
-- [ ] Run and classify the new unit file. Do not activate previously retained
-  legacy network files just because their names resemble these cases; preserve
-  their inventory dispositions. No listener or protocol peer belongs here.
+- [ ] Traverse output iodata with a bounded chunk cursor and small frame header;
+  avoid flattening a second full wire binary. Validate text/control output
+  before sending, preserving mandatory protocol rules. Account unavoidable
+  whole-message flattening overlap when it occurs.
+- [ ] Make omitted frame/message/fragment policies infinite. Keep deliberately
+  selected existing application limits separate, with their existing rejection
+  assertions. Do not derive policy from a service byte budget.
+- [ ] Pure tests require exact reconstructed bytes and chunk size at most the
+  quantum for nested iodata above 256 KiB. Run this new unit file through
+  `scripts/check-tests.py`; classify it with its exact count. No sockets or
+  complete runtime collaboration belongs in unit tests.
 
-## Task 4: Integrate the new default payload policy across H1/H2/H3
+## Task 2: Classify admission and separate callback execution from output
+
+**Files:**
+- Create: `apps/gaoxy/lib/gaoxy/admission/accounting.ex` (pure accounting).
+- Modify: `apps/gaoxy/lib/gaoxy/admission.ex`, `apps/gaoxy/lib/gaoxy/service.ex`.
+- Modify status documentation/emission as needed: `apps/gaoxy/lib/gaoxy/telemetry.ex`.
+- Audit if ordinary lease schema changes:
+  `apps/gaoxy_http/lib/gaoxy/http/http2/worker_accounting.ex` and
+  `apps/gaoxy_http/test/http2_worker_accounting_test.exs`.
+- Create: `apps/gaoxy/test/websocket_accounting_test.exs` (unit).
+- Create: `apps/gaoxy/test/websocket_admission_test.exs` (component).
+
+- [ ] Define nonnegative integer `transport_bytes` and `websocket_bytes` for each
+  classified lease. Ordinary scalar leases still mean transport reservations.
+  Account WS payload/state/output as observed retention, with no new enforcement
+  ceiling and no implicit legacy aggregate/state cap.
+- [ ] Centralize transport capacity validation after replacing an owned lease:
+
+```text
+new_transport = service_transport - old_lease_transport + replacement_transport
+0 <= new_transport <= finite limits.max_bytes
+new_websocket = service_websocket - old_lease_websocket + replacement_websocket
+new_websocket is a nonnegative integer; it is observed without a size ceiling
+bytes = new_transport + new_websocket
+```
+
+- [ ] Upgrade the existing lease atomically to classified WS ownership. Keep
+  generation, owner/monitor, drain eligibility and outstanding-send tracking.
+  Classified lease updates cannot discard retained WS ownership through scalar
+  replacement. Preserve ordinary raw/UDP/HTTP admission semantics.
+- [ ] Add one owned callback-result transition, used immediately when a handler
+  returns and before any synchronous output send:
+
+```text
+end_websocket_callback(gate, lease, accounting)
+  validates owner/generation and retained result
+  cancels the callback-execution watchdog and invalidates its token
+  installs state + complete pending output retention atomically
+  preserves the independent connection/application lifetime policy
+  returns :ok or an ordinary owned-transition error
+```
+
+This transition is an internal Admission interface, not a new WebSock callback.
+The existing handler callback is still computation-bounded. Neither that timer
+nor its start timestamp can cover the subsequent progressing output batch.
+
+- [ ] Update acquisition, callback entry/result, retain/update, send and cleanup
+  paths consistently. Send reservations cover the bounded staging operation,
+  without counting an already-retained payload once per chunk. Release credits
+  only when their actual queue/owner releases bytes; release terminal categories
+  exactly once on close, owner death or finite drain.
+- [ ] Expose transport, retained and total counters/high-water values honestly.
+  `transport_bytes <= max_bytes` remains the transport invariant; total WS
+  retention may exceed that number. This is not a VM-memory bound.
+- [ ] Audit H2's hand-built lease-size estimator and independent fixtures if
+  ordinary leases gain fields. Include a controlled component comparison with
+  a realized ordinary lease so stale copies cannot validate each other. If
+  ordinary shape is unchanged, record why the estimator needs no change.
+- [ ] Controlled cases prove stale/unauthorized transitions fail, rejected
+  transport reservation preserves the old lease, repeated credit reuse works,
+  explicit generic service budgets do not cap WS retained data/state, and cleanup
+  restores counters. Run pure tests as unit and real Admission collaboration
+  as component, both with exact positive executed counts.
+
+## Task 3: Integrate persistent native ownership and operation deadlines
 
 **Files:**
 - Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket.ex`.
-- Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket/stream.ex` (common H2/H3
-  demand/receive loop and WS start handoff).
-- Modify handoff/accounting only: `apps/gaoxy_http/lib/gaoxy/http/connection.ex`,
-  `apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex`,
-  `apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex`.
-- Modify handoff/accounting only: `apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex`,
-  `apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex`.
-- Modify if queue credit transfer requires it:
-  `apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex`,
+- Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket/stream.ex`.
+- Modify: `apps/gaoxy_http/lib/gaoxy/http/connection.ex`.
+- Modify: `apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex`,
+  `apps/gaoxy_http/lib/gaoxy/http/http2/stream.ex`,
+  `apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex`.
+- Modify: `apps/gaoxy/lib/gaoxy/lifecycle.ex`.
+- H3 handoff, only after the upstream gate resolves:
+  `apps/gaoxy_http3/lib/gaoxy/http/http3/connection.ex`,
+  `apps/gaoxy_http3/lib/gaoxy/http/http3/stream.ex`,
   `apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex`,
   `apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex`.
-- Modify: `vendor/websock_adapter/lib/websock_adapter.ex`,
-  `vendor/websock_adapter/test/gaoxy_dispatch_test.exs`,
-  `vendor/websock_adapter/gaoxy.patch`, `vendor/websock_adapter/SOURCE.json`,
-  `vendor/websock_adapter/GAOXY.md`.
-- Modify tests: `apps/gaoxy_http/test/websocket_configured_limits_test.exs`,
-  `apps/gaoxy_http/test/websocket_stream_test.exs`,
-  `apps/gaoxy_http/test/websocket_configured_limits_network_test.exs`,
-  `apps/gaoxy_http/test/http2_websocket_network_test.exs`,
-  `apps/gaoxy_http3/test/websocket_network_test.exs`,
-  `examples/phoenix_native/test/websocket_configured_limits_test.exs`.
-- Complete the two default regressions introduced by Task 0.
+- Create: `apps/gaoxy_http/test/websocket_lifecycle_config_test.exs` (unit).
+- Extend: `apps/gaoxy_http/test/websocket_stream_test.exs` (component).
 
-- [ ] Change omitted native frame/message/fragment defaults to infinity and
-  remove the `/4` clamp. Preserve finite frame-to-message inheritance, explicitly
-  supplied infinity and independent finite message policy. Keep idle/lifetime
-  defaults unchanged until their separate slices.
-- [ ] Use the classified Admission upgrade and returned effective state policy.
-  Remove the need for H2/H3 copies of just `max_bytes`/`max_state`; common WS
-  start takes its owned exchange and gets policy atomically from Admission.
-- [ ] Connect incremental input/output. Charge the entire unsent callback batch
-  while it is retained, plus transient copies; check message limits independently
-  for each text/binary tuple. Retain `max_push_frames` and control-frame bounds.
-- [ ] Ensure H2/H3 stream and connection owners release/transfer each bounded
-  transport credit exactly once as payload enters message retention. Keep
-  protocol flow-control/writer limits numeric and finite. Unchanged sibling
-  streams and ordinary HTTP requests must still operate after WS cleanup.
-- [ ] Change adapter default injection before dispatch, preserving other adapters:
+- [ ] Switch the engine to incremental framing and classified ownership. Remove
+  the `/4` clamp and generic `max_state` inheritance. Eliminate copied service
+  byte/state maps from H2/H3 WS start handoff. Omitted payload/fragment options
+  are infinite and do not become a callback-batch sum ceiling.
+- [ ] Default `timeout` and `max_lifetime` to infinity. Handle infinity explicitly
+  in deadline calculations, timer creation and receive waits, without relying
+  on atom/integer ordering. Extend the existing helper without changing its
+  finite-value behavior:
+
+```elixir
+def deadline(:infinity), do: :infinity
+def deadline(timeout), do: now() + timeout
+```
+
+- [ ] Upgrade only a live owned HTTP request. Cancel its old watchdog, invalidate
+  stale request/callback tokens and create no default WS lifetime timer. Keep a
+  deliberately finite application policy distinct; callbacks cannot renew it.
+- [ ] On H1 upgrade use Hell's supported `{:persistent, :infinity}` for the
+  unrestricted path. For H2, also suppress the inherited connection-owner read
+  idle while WS streams require persistence; an infinite common WS receive loop
+  alone is insufficient. Restore ordinary owner policy appropriately after the
+  last WS stream ends, preserving sibling streams and finite partial-frame/I/O
+  operations. Do not change all ordinary HTTP connections to infinite idle.
+- [ ] Invoke the owned callback-result transition immediately after handler
+  return. Release unsent batch retention progressively while traversing output.
+  Replace default output-frame-count/mailbox-close shortcuts with bounded work
+  turns/demand/backpressure where they would reject healthy valid transfer.
+  Supported owned queues stay finite; do not claim arbitrary external process
+  messages can be backpressured by the WS transport.
+- [ ] Give each actual bounded send a fresh finite operation deadline. A quiet
+  connection has no pending send. A progressing multi-chunk message may take
+  longer in total than a single callback/send timeout; a genuinely stalled
+  outstanding operation can fail. Close and service drain remain finite.
+- [ ] Add controlled tests where aggregate output duration exceeds a short
+  callback/send timeout while every chunk completes within its operation bound.
+  Separately prove a nonreturning handler and a stalled operation fail, and
+  stale timers cannot kill the completed-callback/new-lifetime owner.
+- [ ] Qualify H1/H2 first. H3 requires released supported idle configuration from
+  both routed issues, dependency updates and finite transport/peer-policy
+  qualification. No dependency patch, private-state workaround or enormous
+  duration is an infinity implementation.
+
+## Task 4: Remove adapter defaults and configure supported Phoenix persistence
+
+**Files:**
+- Modify: `vendor/websock_adapter/lib/websock_adapter.ex`.
+- Modify: `vendor/websock_adapter/test/gaoxy_dispatch_test.exs`.
+- Modify together: `vendor/websock_adapter/gaoxy.patch`,
+  `vendor/websock_adapter/SOURCE.json`, `vendor/websock_adapter/GAOXY.md`.
+- Modify: `examples/phoenix_native/lib/phoenix_native/endpoint.ex` and dedicated
+  default-capacity test endpoint declarations.
+- Modify: `examples/phoenix_native/README.md` and current option documentation.
+- Extend: native/Phoenix configured-limit and compatibility regressions.
+
+- [ ] Skip injected `max_frame_size: 10_000_000` only for Gaoxy dispatch, preserving
+  omission and explicit application values, and preserving other adapter backends:
 
 ```elixir
 opts =
@@ -346,139 +277,64 @@ opts =
     else: Keyword.put_new(opts, :max_frame_size, 10_000_000)
 ```
 
-Do not remove an explicitly supplied `10_000_000`. Update adapter option docs,
-the isolated dispatch regression, canonical patch and all snapshot hashes.
-Use the reconstruction procedure and isolated command in `GAOXY.md`; a hash-only
-update is insufficient. Do not edit `deps/`.
-
-- [ ] Replace assertions for superseded default 256 KiB and `/4` behavior with
-  the approved contracts, retaining their old evidence. Explicit budget tests
-  must still prove rejection by actual accounted capacity; removing the heuristic
-  clamp need not preserve its old synthetic boundary or close reason. Preserve
-  frame/message RFC limit close-code assertions and normal-close assertions.
-
-Required acceptance matrix, with exact payload equality and positive counts:
-
-| Case | Assertion |
-| --- | --- |
-| Default H1 300 KiB server reply | Complete reply, ping/pong, normal close; no budget override |
-| Default actual LiveView initial render ≥313,781 bytes | Join/render complete, Phoenix heartbeat replies, transport/channel cleanup |
-| Default native/adapter input and output | 300 KiB and 2 MiB messages succeed without payload/service overrides |
-| Former adapter/H3 clamp thresholds | Adapter payload >10,000,000 bytes and H3 payload >4 MiB succeed under omitted payload policy |
-| Fragment count | 129 legal fragments succeed by default; explicitly selected 128 rejects with 1009 |
-| Explicit independent limits | Declared oversized frame and fragmented oversized message reject at selected byte boundary |
-| Callback batch | Two individually valid messages whose sum exceeds a finite message limit succeed; oversized individual message fails |
-| State/retained/legacy aggregate | New state and shared retained ceilings reject; explicit legacy values, including values equal to defaults, still constrain |
-| Memory categories | Measured staging/credits stay within finite configured bounds while retained message counters grow; terminal counters return to baseline |
-| Protocol siblings | H2/H3 WS completion/failure preserves healthy sibling stream and subsequent ordinary HTTP request |
-
-Do not allocate a >256 MiB network message merely to cross H2's old aggregate
-budget. Prove category separation using controlled component fixtures with a
-small default-sourced transport budget, plus bounded protocol cases above the
-former payload thresholds. These are ordinary finite regressions, not pressure
-or sustained-load qualification. No single size test proves an infinite capacity.
-
-- [ ] Run scoped unit/component/protocol files, the Phoenix default and explicit
-  suites, and the isolated vendor/reconstruction checks. Obtain independent
-  specification and code review, resolve actionable findings, then run the
-  fresh final gates below. Record any external block with its actual status;
-  do not suppress a missing protocol run or substitute source inspection.
-
-## Task 5: Separate native inactivity policy
-
-**Files:**
-- Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket.ex` and its idle receive
-  owners in `apps/gaoxy_http/lib/gaoxy/http/connection.ex` and
-  `apps/gaoxy_http/lib/gaoxy/http/websocket/stream.ex`.
-- Create: `apps/gaoxy_http/test/websocket_lifecycle_config_test.exs` (unit).
-- Extend: `apps/gaoxy_http/test/websocket_stream_test.exs` (component),
-  Task 0 protocol/Phoenix files for real-peer policy coverage.
-
-- [ ] Add RED cases for omitted native timeout, explicit finite/infinite timeout,
-  invalid values and a Phoenix-supplied `60_000`. Numeric equality never detects
-  omission. The adapter must preserve the options it actually receives.
-- [ ] Set native omitted `timeout` to infinity and accept that sentinel on this
-  field. Skip idle timer creation when infinite; preserve finite inactivity
-  expiration and the existing event/reset ownership. Callback and send operation
-  deadlines stay finite. Do not change HTTP keepalive or lifetime in this task.
-  H1 can use Hell's supported `{:persistent, :infinity}` handler timeout; the
-  common multiplexed receive loop must handle infinite waits explicitly.
-- [ ] Verify quiet native WS remains owned until explicit close/drain, finite
-  inactivity expires, active callbacks still time out and Phoenix's effective
-  finite value survives normalization. Use controlled short finite settings and
-  timer ownership assertions; do not introduce a 60-second unit sleep.
-- [ ] Review and qualify this slice separately. Document it as a Gaoxy native
-  policy choice, not identical Caddy H2/H3 idle behavior.
-
-## Task 6: Remove the implicit absolute lifetime separately
-
-**Files:**
-- Modify: `apps/gaoxy/lib/gaoxy/admission.ex`, `apps/gaoxy/lib/gaoxy/lifecycle.ex`.
-- Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket.ex`.
-- Modify: `apps/gaoxy_http/lib/gaoxy/http/websocket/stream.ex`.
-- Modify lifetime handoff only:
-  `apps/gaoxy_http/lib/gaoxy/http/http2/connection.ex`,
-  `apps/gaoxy_http/lib/gaoxy/http/http2/transport.ex`,
-  `apps/gaoxy_http3/lib/gaoxy/http/http3/transport.ex`,
-  `apps/gaoxy_http3/lib/gaoxy/http/http3/operations.ex`.
-- Extend: `apps/gaoxy_http/test/websocket_lifecycle_config_test.exs`,
-  `apps/gaoxy/test/websocket_admission_test.exs`,
-  `apps/gaoxy_http/test/websocket_stream_test.exs` and focused H2/H3 protocol files.
-
-- [ ] Add RED coverage for an owned live HTTP request upgraded to infinite WS
-  lifetime, expired request rejection, finite lifetime that callbacks cannot
-  renew, and cleanup of infinite WS leases on finite service drain.
-- [ ] Default `max_lifetime` to infinity and accept it at the admission upgrade
-  boundary. Extend `Lifecycle.deadline/1` explicitly:
+- [ ] Regenerate the canonical vendor patch and snapshot hashes and prove
+  reconstruction from the documented upstream snapshot. Run the isolated
+  dispatch command in `GAOXY.md`; never edit fetched `deps/`.
+- [ ] Use Phoenix's public socket configuration for persistent integration:
 
 ```elixir
-def deadline(:infinity), do: :infinity
-def deadline(timeout), do: now() + timeout
+socket("/socket", PhoenixNative.UserSocket,
+  websocket: [timeout: :infinity],
+  longpoll: false
+)
 ```
 
-Preserve current `remaining/1` semantics. Do not add an infinity duration to
-`now()` or pass infinity to `Process.send_after/3`. Set lifetime token/timer to
-nil when unbounded; finite upgrade cancels the previous request timer and arms
-one new absolute deadline. Ignore stale previous tokens.
+Apply `timeout: :infinity` to the `/live` declaration while preserving its
+session `connect_info`. Add it to dedicated persistent test declarations too.
+Phoenix 1.8.16 injects finite timeout before the supported upgrade boundary;
+its generated `__sockets__/0` is hidden metadata. Do not read it to infer intent,
+remove values by comparing with 60_000, or describe this explicit integration
+setting as zero-configuration support for all existing Phoenix applications.
+A deliberately finite application declaration remains a separate opt-in policy.
 
-- [ ] Keep callback/close/send/drain caps finite, selecting a finite operation
-  deadline even with infinite lifetime. Include the H2/H3 protocol owner and
-  operation-table lifetime transition rather than only the common WS struct.
-  Do not enable general H3 infinite request timeouts in this task.
-- [ ] Verify close during/after finite expiry, owner death, finite callback
-  timeout and drain release all reservations without renewing finite lifetime.
-  Run focused tests and independent review before integrating this slice.
+- [ ] Preserve Phoenix heartbeat/authentication/close behavior. Do not add WS
+  frame/message/service budget overrides to make the default-capacity fixture
+  pass. Update inherited-limit tests to the new transport/accounting contract
+  while preserving historical evidence and explicit application rejection cases.
 
-## Task 7: Write the separate HTTP defaults design
+## Task 5: Fresh acceptance and documentation
 
-**File:** Create `docs/designs/caddy-http-timeout-alignment.md`.
+**Tests and inventory:**
+- New files above, each classified in the sole app manifest.
+- Existing `apps/gaoxy_http/test/websocket_configured_limits_test.exs`,
+  `websocket_application_options_test.exs`, `websocket_stream_test.exs`,
+  `websocket_configured_limits_network_test.exs`, `http2_websocket_network_test.exs`.
+- Existing `apps/gaoxy_http3/test/websocket_network_test.exs` after its gate.
+- Existing `examples/phoenix_native/test/websocket_configured_limits_test.exs`,
+  `websocket_phoenix_compatibility_test.exs`, plus the new default-capacity file.
 
-- [ ] Map Gaoxy's current 30s whole-request timeout, 5s header/read/write values
-  and route streaming policy to their actual H1/H2/H3 operation owners. Use
-  the pinned Caddy facts in the research document, including v2.11.7's fixes
-  for SSE and handler-lifecycle regressions introduced in v2.11.6. This is a
-  new design task, not an instruction
-  to change those constants while fixing #16.
-- [ ] Propose distinct 60s header completion, active read-progress and active
-  write/flush deadlines; no default hard transfer lifetime; and 5m next-request
-  idle. Define compatibility for explicit current settings and explain H3's
-  currently unsupported infinite request timeout. Require quiet SSE intervals,
-  request-body EOF followed by long response, and H2 sibling isolation cases.
-- [ ] Keep current 32 KiB headers and 8 MiB body ceiling until their separate
-  compatibility/admission decisions are documented. Preserve supported transport
-  capabilities; do not add pools, upstream H2, proxy bypasses, browser gates or
-  revive excluded HTTP Fetch/specialist qualification requirements.
-- [ ] Obtain architecture/specification review and produce a scoped execution
-  plan before starting the general HTTP runtime change.
+- [ ] Require exact complete bytes for 300 KiB and 2 MiB native input/output,
+  adapter payload above 10,000,000 bytes and H3 payload above its old 4 MiB
+  threshold when H3 is qualified. LiveView initial render and heartbeat must pass.
+- [ ] Prove 129 legal wire fragments work without a default fragment ceiling.
+  Multiple valid callback messages and work turns cannot create a batch-byte or
+  default frame-count cutoff. Keep mandatory RFC/control-frame assertions.
+- [ ] Reuse small finite staging/credits over many bounded ordinary transfers so
+  cumulative bytes substantially exceed capacity. Observe capacity remaining
+  bounded, credit replenishment, ping/pong and normal close. Prove category
+  isolation in controlled fixtures instead of allocating >256 MiB as a stress
+  substitute. A tested size is evidence, not proof of physical infinite capacity.
+- [ ] Verify no default inactivity/lifetime timers at all relevant owners;
+  finite application policy, real disconnect and finite drain still terminate.
+  H2/H3 siblings and a subsequent ordinary request remain healthy after cleanup.
+- [ ] Measure retained messages/output/state and terminal restoration without
+  enforcing a generic size ceiling. Preserve whole-message memory exposure:
+  O(message + state + pending output), not O(staging) for total process memory.
+- [ ] Obtain independent specification/code/ownership review; fix findings, then
+  run fresh required gates. Keep H3 BLOCKED until upstream and actual peer
+  qualification pass. Size-only acceptance is not complete product acceptance.
 
-## Fresh gates, documentation and eventual publication boundary
-
-Run only after implementation, not as documentation-only research verification.
-Use the repository's pinned peer dependencies and environment; independent
-network tests belong in Linux E2E. Unit tests must not open sockets or launch
-protocol peers. `portable.yml` remains only start, health 200/ok and stop.
-
-From the repository root:
+Root verification commands after implementation and pinned peer preparation:
 
 ```sh
 python3 scripts/check-test-inventory.py
@@ -491,30 +347,23 @@ python3 scripts/test-stage-hex-packages.py
 python3 scripts/test-consumers.py
 ```
 
-From `examples/phoenix_native`, use its existing locked dependency preparation
-and `python3 ../../scripts/check-tests.py` for its nonempty fixture gate. Run
-vendor dispatch and reconstruction independently as described in `GAOXY.md`.
-Update exact manifest counts to the actual implemented cases; require no skipped
-or excluded required cases. Once relevant gates pass, do not repeat the same
-runs without a new change/failure/concern.
+Run the nonempty Phoenix fixture gate from its directory and the isolated vendor
+checks independently. Units open no sockets; Linux E2E owns component/protocol/
+real clients; portable smoke remains native start, health 200/ok and stop. No
+browser gates. Record source, commands, exact positive counts, exits and review.
+Do not count excluded/skipped required cases or rerun unchanged green gates
+without a new concern. Preserve unrelated failures and specialist dispositions.
 
-- [ ] Update `README.md`, affected package option docs, the fixture README and
-  `CHANGELOG.md` with the effective defaults, explicit-limit example, changed
-  status invariants and complete-message memory exposure. Record the approved
-  change to #6's old default/clamp policy without rewriting historical evidence.
-- [ ] Record exact source identity, commands, executed counts, exits and
-  independent review. Keep READ, PASS, FAIL, BLOCKED and NOT RUN distinct.
-  Report unrelated failures without silently repairing outside this scope.
-- [ ] For a later release, recheck the current user instruction and use the
-  existing guarded exact-source publication workflow, synchronized package
-  versions, clean consumers and public artifact read-back. A plan or local
-  green test is not publication proof. No release is started by this document.
-- [ ] Close #16 only after the size-default acceptance, published-consumer
-  verification when released, and the requesting application's acceptance are
-  established. Any missing downstream validation remains explicit. Rerun the
-  open internal-request query after closeout; do not infer an empty queue from
-  the earlier #15 release.
+- [ ] Update README/package docs, fixture docs, CHANGELOG and acceptance with
+  persistent ownership, explicit application policy, the Phoenix integration
+  setting, finite reusable buffers, observed memory and upstream gates.
+- [ ] Keep general HTTP timeout/body work in a separate design. Do not incidentally
+  change 32 KiB headers, 8 MiB body policy, general H3 request lifetime or proxy
+  pools/protocol capabilities while implementing this WS contract.
+- [ ] Any later release uses current authorization and exact-source publication,
+  clean consumers and artifact read-back. This research task starts no release.
+  Report #16's actual size acceptance separately; close matching issues only
+  after their requested behavior and downstream evidence are established.
 
-No deployment, production data, operational certificates, Vault changes,
-public-management endpoint changes or enabling of the released-server E2E gate
-is included.
+No deployment, production data/certificates, Vault/public-management change or
+enabling of the released-server E2E gate is included.
