@@ -3,13 +3,15 @@
 Date: 2026-10-25, Asia/Shanghai. Branch: `main`. Implementation baseline:
 `76d76ef2c93e25dc46b8d96ee4b06e7fa349b617`.
 
-Disposition: **H1/H2/H3 implementation, focused qualification and all 568
-canonical tests, core package/runtime checks and final independent H3 client
-qualification pass; 0.13.0 publication is in progress**. The upstream gate
+Disposition: **H1/H2/H3 implementation, all 568 canonical tests, exact-source
+hosted qualification, 0.13.0 publication and independent public verification
+PASS**. The upstream gate
 [hell#2](https://github.com/gsmlg-dev/hell/issues/2) is CLOSED and released Hell
 0.1.3 is installed. Size and persistence remain one completion contract. Issue
-[#16](https://github.com/gsmlg-dev/gaoxy/issues/16) remains open until coordinated
-publication and independent public checks complete. No deployment is included.
+[#16](https://github.com/gsmlg-dev/gaoxy/issues/16) meets its coordinated
+publication and public-regression acceptance criteria. Final source, artifacts,
+counts and issue closeout are recorded in the
+[0.13.0 release acceptance](release-0.13.0.md). No deployment is included.
 
 See the [design](../designs/internal-16-caddy-default-alignment.md),
 [implementation plan](../plans/internal-16-caddy-default-alignment.md) and
@@ -376,3 +378,20 @@ also pass fresh unified **8/8** and packaged H3 **3/3** checks. Receipts are
 original hosted logs are retained as
 `ci-e7d294d0-package-failed.log`. These local repairs require a new exact-source
 hosted qualification before publication.
+
+## Final publication and public qualification — 2026-10-26
+
+Publication source `bd325eb408d4566b807bcef9fdaf1a2b1ad83a2d` passed all
+five source workflows and the guarded release workflow. The stable
+[v0.13.0 release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.13.0),
+six public Hex packages and eight GitHub assets are independently verified.
+Fresh public Hex-only consumers execute **23 tests, 0 failures**, including
+the native default-capacity, H2 persistence, Phoenix default/configured-limit
+and compatibility cases, plus #17's TLS startup-close regression. Downloaded
+standalone checks pass **13/13**, including H3 with the conforming independent
+peer. Independent public-verification review has no actionable findings.
+See the [release acceptance](release-0.13.0.md) for receipts and the preserved
+earlier failures; earlier pending-publication statements describe their
+historical qualification points. Issue #16 is labeled `internal request fixed`
+and closed as completed after the public checks; the release acceptance links
+its completion comment and final discovery snapshots.

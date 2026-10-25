@@ -1,0 +1,25 @@
+--- .audit/release-0.13.0/verify-public-artifacts.py
++++ .audit/release-0.13.0/public-runtime-verification-o_yath33/verify-public-artifacts-keyword.py
+@@ -19,7 +19,7 @@
+ VERSION = "0.13.0"
+ TAG = f"v{VERSION}"
+ REPO = "gsmlg-dev/gaoxy"
+-ROOT = Path(__file__).resolve().parents[2]
++ROOT = Path(__file__).resolve().parents[3]
+ PACKAGES = {
+     "gaoxy": "apps/gaoxy",
+     "gaoxy_http": "apps/gaoxy_http",
+@@ -216,8 +216,11 @@
+             require(not re.search(r"\b(?:git|github|path|in_umbrella):", manifest),
+                     "packaged gaoxy manifest contains a source-only dependency")
+             for app in ("hell", "abyss"):
+-                require(re.search(r"\{:" + app + r',\s*"== '
+-                                  + re.escape(PINNED_VERSIONS[app]) + r'"\}', manifest),
++                require(re.search(r"(?:\{:" + app + r',\s*"== '
++                                  + re.escape(PINNED_VERSIONS[app]) + r'"\}|\b'
++                                  + app + r':\s*"== '
++                                  + re.escape(PINNED_VERSIONS[app])
++                                  + r'"(?=\s*(?:,|\])))', manifest),
+                         f"packaged gaoxy manifest lacks exact {app} pin")
+         if package == "gaoxy_http":
+             manifest = archive_bytes(inner, members, "mix.exs").decode()

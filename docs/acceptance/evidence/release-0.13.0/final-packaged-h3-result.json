@@ -1,0 +1,287 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "name": "packaged_h1_to_h3_data_trailers",
+      "status": "PASS"
+    },
+    {
+      "name": "packaged_h3_listener",
+      "status": "PASS"
+    },
+    {
+      "name": "packaged_h3_to_h3_zero_trailers",
+      "status": "PASS"
+    }
+  ],
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/_build/prod/rel/gaoxy/bin/gaoxy",
+  "aioquic": "1.2.0",
+  "commands": [
+    [
+      "cargo",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/release_peer/Cargo.toml",
+      "--target-dir",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-peer-target"
+    ],
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/upstream/origin.py",
+      "--cert-a",
+      "/tmp/gaoxy-packaged-h3-9z_g_1pp/a",
+      "--cert-b",
+      "/tmp/gaoxy-packaged-h3-9z_g_1pp/b"
+    ],
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/_build/prod/rel/gaoxy/bin/gaoxy",
+      "start"
+    ],
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-peer-target/debug/gaoxy-h3-release-peer",
+      "47846",
+      "/tmp/gaoxy-packaged-h3-9z_g_1pp/a/ca.pem"
+    ]
+  ],
+  "child_exits": {
+    "release": 0,
+    "origin": 0
+  },
+  "native_h3_peer": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/release_peer/Cargo.toml",
+      "--target-dir",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-peer-target"
+    ],
+    "lock_sha256": "220be94377edf2d65bdacabc6173d4d252d0916ce9e221eae04d8c9d4c15882c",
+    "dependencies": {
+      "h3": "0.0.8",
+      "h3-quinn": "0.0.10",
+      "quinn": "0.11.12",
+      "quinn-proto": "0.11.19",
+      "rustls": "0.23.46"
+    },
+    "receipt": {
+      "alpn": "h3",
+      "connection_id": 100999582805824,
+      "implementation": "h3-quinn",
+      "responses": [
+        {
+          "body": [
+            114,
+            101,
+            108,
+            101,
+            97,
+            115,
+            101,
+            45,
+            104,
+            51
+          ],
+          "connection_id": 100999582805824,
+          "ended": true,
+          "headers": [
+            [
+              [
+                ":status",
+                "200"
+              ],
+              [
+                "content-length",
+                "10"
+              ]
+            ]
+          ],
+          "path": "/",
+          "stream_id": 0
+        },
+        {
+          "body": [
+            101,
+            99,
+            104,
+            111,
+            45,
+            102,
+            105,
+            110,
+            105,
+            115,
+            104,
+            101,
+            100
+          ],
+          "connection_id": 100999582805824,
+          "ended": true,
+          "headers": [
+            [
+              [
+                ":status",
+                "200"
+              ],
+              [
+                "x-origin",
+                "b"
+              ],
+              [
+                "x-repeat",
+                "one"
+              ],
+              [
+                "x-repeat",
+                "two"
+              ],
+              [
+                "trailer",
+                "x-check"
+              ]
+            ],
+            [
+              [
+                "x-check",
+                "one"
+              ],
+              [
+                "x-check",
+                "two"
+              ]
+            ]
+          ],
+          "path": "/echo-zero-declared",
+          "stream_id": 4
+        }
+      ]
+    }
+  },
+  "origin_requests": [
+    {
+      "origin": "a",
+      "connection": 0,
+      "stream": 0,
+      "path": "/echo-three-declared",
+      "method": "POST",
+      "authority": "localhost:51282",
+      "id": null,
+      "certificate_sha256": "d6d8b03137ee613ad7b290e868f1d8f64a9d24d64221ef2056c8845438cb1059",
+      "trailer_blocks": 1,
+      "headers": [
+        [
+          ":method",
+          "POST"
+        ],
+        [
+          ":scheme",
+          "https"
+        ],
+        [
+          ":authority",
+          "localhost:51282"
+        ],
+        [
+          ":path",
+          "/echo-three-declared"
+        ],
+        [
+          "trailer",
+          "x-check"
+        ],
+        [
+          "x-forwarded-for",
+          "127.0.0.1"
+        ],
+        [
+          "x-forwarded-host",
+          "edge.test"
+        ],
+        [
+          "x-forwarded-proto",
+          "http"
+        ]
+      ],
+      "trailers": [
+        [
+          "x-check",
+          "one"
+        ],
+        [
+          "x-check",
+          "two"
+        ]
+      ],
+      "data_bytes": 3,
+      "data_sha256": "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad",
+      "request_fin": true,
+      "fin_count": 1,
+      "data_events": 1,
+      "response_fin": false
+    },
+    {
+      "origin": "b",
+      "connection": 1,
+      "stream": 0,
+      "path": "/echo-zero-declared",
+      "method": "POST",
+      "authority": "localhost:40007",
+      "id": null,
+      "certificate_sha256": "1bffc4d45119c3f4dea0e00fc6e37f7d6575e480e92c00b2efd141212a2294a7",
+      "trailer_blocks": 1,
+      "headers": [
+        [
+          ":method",
+          "POST"
+        ],
+        [
+          ":scheme",
+          "https"
+        ],
+        [
+          ":authority",
+          "localhost:40007"
+        ],
+        [
+          ":path",
+          "/echo-zero-declared"
+        ],
+        [
+          "trailer",
+          "x-check"
+        ],
+        [
+          "x-forwarded-for",
+          "127.0.0.1"
+        ],
+        [
+          "x-forwarded-host",
+          "localhost"
+        ],
+        [
+          "x-forwarded-proto",
+          "https"
+        ]
+      ],
+      "trailers": [
+        [
+          "x-check",
+          "one"
+        ],
+        [
+          "x-check",
+          "two"
+        ]
+      ],
+      "data_bytes": 0,
+      "data_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "request_fin": true,
+      "fin_count": 1,
+      "data_events": 0,
+      "response_fin": false
+    }
+  ],
+  "ports_rebound": true
+}

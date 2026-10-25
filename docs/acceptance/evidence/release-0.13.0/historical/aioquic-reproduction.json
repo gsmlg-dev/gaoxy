@@ -1,0 +1,30 @@
+{
+  "status": "FAIL",
+  "checks": [
+    {
+      "name": "packaged_h1_to_h3_data_trailers",
+      "status": "PASS"
+    }
+  ],
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/_build/prod/rel/gaoxy/bin/gaoxy",
+  "aioquic": "1.2.0",
+  "commands": [
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/upstream/origin.py",
+      "--cert-a",
+      "/tmp/gaoxy-packaged-h3-o7ondmrf/a",
+      "--cert-b",
+      "/tmp/gaoxy-packaged-h3-o7ondmrf/b"
+    ],
+    [
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/_build/prod/rel/gaoxy/bin/gaoxy",
+      "start"
+    ]
+  ],
+  "child_exits": {
+    "origin": -9,
+    "release": 0
+  },
+  "error": "AssertionError(\"ConnectionTerminated(error_code=<QuicErrorCode.INTERNAL_ERROR: 1>, frame_type=<QuicFrameType.PADDING: 0>, reason_phrase='Idle timeout')\")"
+}

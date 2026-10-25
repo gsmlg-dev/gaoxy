@@ -3,9 +3,11 @@
 Date: 2026-10-25, Asia/Shanghai. Branch: `main`. Baseline:
 `90e75ed5809bc3d94ba71d9eaddee4f1da56de6e`.
 Issue: [#17](https://github.com/gsmlg-dev/gaoxy/issues/17).
-Status: locally repaired; focused regressions, independent review and affected
-canonical gates pass. The separate #16 dependency gate is resolved by released
-Hell 0.1.3; coordinated local 0.13.0 qualification passes and publication is in progress.
+Status: **released in 0.13.0**; focused regressions, independent review, canonical
+gates, exact-source hosted qualification and public Hex-only TLS regression
+PASS. Hell 0.1.3 resolves the separate #16 dependency gate. See the
+[0.13.0 release acceptance](release-0.13.0.md) for publication and final issue
+closeout; the initial local-only dispositions below remain historical evidence.
 
 ## Problem and bounded repair
 
@@ -137,3 +139,18 @@ tests, 0 failures**, including all **9** startup-close regressions. See
 for current dependencies, final integrated gates and publication evidence.
 This issue stays open until the coordinated release and public Hex-only
 startup-close regression pass.
+
+## Final public qualification — 2026-10-26
+
+The stable [v0.13.0 release](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.13.0)
+uses publication source `bd325eb408d4566b807bcef9fdaf1a2b1ad83a2d`. Its release
+workflow repeats all **568 ordinary cases**, zero failures/excluded/skipped.
+A fresh Hex-only native consumer resolves exact public 0.13.0 packages, matches
+their source to the commit, strictly compiles and executes the synchronized
+real TLS startup-close regression: **1 test, 0 failures**, exit 0. It is part of
+the **23/23** public issue regressions. The controlled **8** startup-close cases
+also remain in the passing canonical component gate. Publication and public
+regression conditions are satisfied; see the
+[release acceptance](release-0.13.0.md) for immutable receipts and issue closeout.
+Issue #17 is labeled `internal request fixed` and closed as completed after
+the public checks.

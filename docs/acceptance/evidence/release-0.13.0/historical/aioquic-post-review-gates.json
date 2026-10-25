@@ -1,0 +1,58 @@
+{
+  "source_delta_since_canonical": [
+    "integration/phoenix_native/unified.py",
+    "scripts/h3-release-smoke.py"
+  ],
+  "gates": [
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "exit": 0,
+      "seconds": 3.23
+    },
+    {
+      "name": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "seconds": 1.38
+    },
+    {
+      "name": "rust-format",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "integration/http3/release_peer/Cargo.toml",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.16
+    },
+    {
+      "name": "unified",
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "integration/phoenix_native/unified.py"
+      ],
+      "exit": 1,
+      "seconds": 8.13
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "status": "PASS",
+  "source_commit": "bd325eb408d4566b807bcef9fdaf1a2b1ad83a2d",
+  "version": "0.13.0",
+  "artifact_receipt": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/public-artifacts-sff7ug_t/receipt.json",
+  "archive_sha256": "2067b30f6d31e5a1d120b74459da7f34e4488a62b758c30b7f07b43ce66229e3",
+  "runtime": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-runtime",
+  "release": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-runtime/bin/gaoxy",
+  "safe_extraction_filter": "data",
+  "archive_members": 1463,
+  "host_environment_source": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.9.0-public-runtime/receipt.json",
+  "host_environment_scope": "process-local Nix host compatibility; downloaded Ubuntu runtime qualification only",
+  "environment": {
+    "LD_LIBRARY_PATH": "/nix/store/wpyc0r4d4idaq96y0dc1375ziabl4b38-ncurses-6.6/lib:/nix/store/6s4wm3zl2y0v5g998n2g88k1zh3vf2pr-zlib-1.3.2/lib:/nix/store/kysvfcf8d8v26rr32xfqji8ri2lczlqk-openssl-3.6.5/lib:/nix/store/dqj57l1prad38vjrad4bs9d977i4q5zm-gcc-15.3.0-lib/lib",
+    "NIX_LD_LIBRARY_PATH": "/run/current-system/sw/share/nix-ld/lib",
+    "ERL_FLAGS": "+S 4:4",
+    "ELIXIR_ERL_OPTIONS": "+S 4:4",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt"
+  },
+  "script_hashes": {
+    "scripts/release-smoke.py": "c9e92e0e9c249153f7f9531b3f5a53ca4b793db07ae09bfbdc1f202b23924853",
+    "scripts/gateway-release-smoke.py": "2986e04ca7bcfb67357bb4708d9ef95adc7068051983e28d80d73fa8cc34eb06",
+    "scripts/h3-release-smoke.py": "16a14407fc720d1d72e882fddeae21ee0607f937f27fe85859fecb2fd17c1fce",
+    "scripts/generate-fixtures.sh": "46761d658e675a440abadfd17dfb079c27c1cfe7ba8c6655157876251a9786c9",
+    "apps/gaoxy_http/test/support/mixed_http_peer.py": "52f390d2933f3831bfb6c4611b91329a90fba31c5642fbeeba21c11d156a239a",
+    "integration/http3/quinn_peer.py": "a67743d5dbdb70092c9df22624651f7202945214f9644d5fc50b95a3cc44bf5a",
+    "integration/http3/release_peer/Cargo.toml": "dca5d419653cf07a0dba97e769e36b91c45096c0b267d1419f2c46b9e91bc17f",
+    "integration/http3/release_peer/Cargo.lock": "220be94377edf2d65bdacabc6173d4d252d0916ce9e221eae04d8c9d4c15882c",
+    "integration/http3/release_peer/src/main.rs": "d7c571a3bf74051bc336bb632cc1f3f61e28b2778a5ed9c98564de949297f443",
+    "integration/http3/upstream/origin.py": "f6a069fa8cc165341c662e7b87577cb0c81f4a07ec770d318da5fce51b070167",
+    "integration/http3/upstream/run.py": "333e4a531238e1da2c07b60d4512aadc666b8e056cb6e0ae69446d97199021d5"
+  },
+  "runner_sha256": "ee5b0a371824af4659aa6809d9a04a04d3b32828aef5eb9f4011bb871c7de983",
+  "python": "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+  "python_dependencies": {
+    "aioquic": "1.2.0",
+    "h2": "4.3.0",
+    "hpack": "4.1.0",
+    "hyperframe": "6.1.0"
+  },
+  "checks": [
+    {
+      "name": "core",
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "-B",
+        "-c",
+        "import importlib.util,sys;from pathlib import Path;s=importlib.util.spec_from_file_location(\"release_smoke\",\"scripts/release-smoke.py\");m=importlib.util.module_from_spec(s);s.loader.exec_module(m);m.release=Path(sys.argv[1]);m.main()",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-runtime/bin/gaoxy"
+      ],
+      "expected_checks": 3,
+      "status": "PASS",
+      "timeout_seconds": 150,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/core.log",
+      "pid": 1930220,
+      "process_group": 1930220,
+      "exit": 0,
+      "seconds": 3.77,
+      "process_group_gone": true,
+      "verified_checks": 3,
+      "log_sha256": "b1e43cf76a3e9a7366c8c20910e8d876c88884da6dc3c9d76ad257c7637577a8"
+    },
+    {
+      "name": "gateway",
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "-B",
+        "scripts/gateway-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-runtime/bin/gaoxy"
+      ],
+      "expected_checks": 7,
+      "status": "PASS",
+      "timeout_seconds": 150,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/gateway.log",
+      "pid": 1930302,
+      "process_group": 1930302,
+      "exit": 0,
+      "seconds": 3.27,
+      "process_group_gone": true,
+      "verified_checks": 7,
+      "log_sha256": "cfca3cddcb74b54755817dafb3fd57b3e780c10632347634492af1874edf41a2"
+    },
+    {
+      "name": "h3",
+      "command": [
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+        "-B",
+        "scripts/h3-release-smoke.py",
+        "--release",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-runtime/bin/gaoxy",
+        "--evidence",
+        "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/downloaded-h3"
+      ],
+      "expected_checks": 3,
+      "status": "PASS",
+      "timeout_seconds": 750,
+      "log": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/public-runtime-verification-o_yath33/h3.log",
+      "pid": 1930484,
+      "process_group": 1930484,
+      "exit": 0,
+      "seconds": 4.53,
+      "process_group_gone": true,
+      "h3_child_exits": {
+        "release": 0,
+        "origin": 0
+      },
+      "ports_rebound": true,
+      "verified_checks": 3,
+      "log_sha256": "34d67fc2d978945aca6344e0afc87e634670a7b9f117128c33dcaf9fb2b6326c"
+    }
+  ],
+  "processes_stopped": true,
+  "verified_checks": 13
+}

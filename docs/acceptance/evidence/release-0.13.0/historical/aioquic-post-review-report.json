@@ -1,0 +1,138 @@
+{
+  "status": "FAIL",
+  "command": [
+    "mix",
+    "run",
+    "--no-start",
+    "--no-compile",
+    "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/phoenix_native/unified_fixture.exs"
+  ],
+  "native_h3_peer": {
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--manifest-path",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/release_peer/Cargo.toml",
+      "--target-dir",
+      "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-h3-peer-target"
+    ],
+    "lock_sha256": "220be94377edf2d65bdacabc6173d4d252d0916ce9e221eae04d8c9d4c15882c",
+    "dependencies": {
+      "h3": "0.0.8",
+      "h3-quinn": "0.0.10",
+      "quinn": "0.11.12",
+      "quinn-proto": "0.11.19",
+      "rustls": "0.23.46"
+    }
+  },
+  "baseline": "f2ba26ab6319d0e81da5ff2eb40724d1c170c050",
+  "environment": {
+    "python": "3.12.13 (main, Jun 11 2026, 04:03:26) [Clang 22.1.3 ]",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "dependencies": {
+      "h2": "4.3.0",
+      "hpack": "4.1.0",
+      "hyperframe": "6.1.0",
+      "aioquic": "1.2.0",
+      "wsproto": "1.2.0"
+    }
+  },
+  "error": "AssertionError(\"unexpected QUIC event: ConnectionTerminated(error_code=<QuicErrorCode.INTERNAL_ERROR: 1>, frame_type=<QuicFrameType.PADDING: 0>, reason_phrase='Idle timeout')\")",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/integration/phoenix_native/unified.py\", line 177, in main\n    client = h2_channel(port, ca) if protocol == \"h2\" else asyncio.run(h3_channel(port, ca))\n                                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py\", line 195, in run\n    return runner.run(main)\n           ^^^^^^^^^^^^^^^^\n  File \"/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py\", line 118, in run\n    return self._loop.run_until_complete(task)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/gao/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py\", line 691, in run_until_complete\n    return future.result()\n           ^^^^^^^^^^^^^^^\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/integration/phoenix_native/unified.py\", line 105, in h3_channel\n    await peer.wait(lambda: stream in peer.headers)\n  File \"/home/gao/Workspace/gsmlg-opt/gaoxy/integration/websocket_multiplexed/h3_peer.py\", line 73, in wait\n    raise self.error\nAssertionError: unexpected QUIC event: ConnectionTerminated(error_code=<QuicErrorCode.INTERNAL_ERROR: 1>, frame_type=<QuicFrameType.PADDING: 0>, reason_phrase='Idle timeout')\n",
+  "checks": [
+    {
+      "check": "independent_endpoint_HTTP/1.1",
+      "status": "PASS",
+      "protocol": "HTTP/1.1",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/2",
+      "status": "PASS",
+      "protocol": "HTTP/2",
+      "paths": [
+        "/",
+        "/static/hello.txt",
+        "/events"
+      ]
+    },
+    {
+      "check": "independent_endpoint_HTTP/3",
+      "status": "PASS",
+      "requests": [
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/post-review-unified/h3-peer/request-727121254119436"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/static/hello.txt",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/post-review-unified/h3-peer/request-727122441687015"
+        },
+        {
+          "protocol": "h3",
+          "status_code": 200,
+          "path": "/events",
+          "evidence": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/release-0.13.0/post-review-unified/h3-peer/request-727122748446625"
+        }
+      ]
+    },
+    {
+      "check": "independent_channel_h2",
+      "status": "PASS",
+      "client": {
+        "protocol": "h2",
+        "stream": 1,
+        "close_code": 1000
+      },
+      "sockets": [
+        {
+          "version": "HTTP/2",
+          "state": "upgraded",
+          "path": "/socket/websocket",
+          "protocol": "websocket",
+          "event": "websocket",
+          "marker": "vsn=2.0.0&unified=h2"
+        }
+      ]
+    },
+    {
+      "check": "code_reload_and_restore_h2",
+      "status": "PASS",
+      "protocol": "h2"
+    }
+  ],
+  "receipts": [
+    {
+      "ports": {
+        "http": 45207,
+        "https": 35129,
+        "http3": 54513
+      },
+      "code_reloader": true,
+      "event": "ready",
+      "endpoint_server": true
+    },
+    {
+      "version": "HTTP/2",
+      "state": "upgraded",
+      "path": "/socket/websocket",
+      "protocol": "websocket",
+      "event": "websocket",
+      "marker": "vsn=2.0.0&unified=h2"
+    },
+    {
+      "event": "stopped"
+    }
+  ],
+  "process_exit": 0,
+  "source_restored": true
+}
