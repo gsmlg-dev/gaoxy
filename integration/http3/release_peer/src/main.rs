@@ -8,6 +8,14 @@ use tokio::time::timeout;
 
 type Result<T> = std::result::Result<T, Box<dyn Error + Send + Sync>>;
 
+#[derive(Clone, Copy)]
+enum RequestKind {
+    Get,
+    Trailers,
+    ConsumerGet,
+    ConsumerUpload,
+}
+
 fn fields(headers: &HeaderMap) -> Result<Vec<Vec<String>>> {
     headers
         .iter()
@@ -24,14 +32,33 @@ async fn request(
     sender: &mut h3::client::SendRequest<h3_quinn::OpenStreams, Bytes>,
     port: u16,
     path: &str,
-    trailers: bool,
+    kind: RequestKind,
     connection_id: usize,
 ) -> Result<Value> {
-    timeout(Duration::from_secs(5), async {
+    let consumer = matches!(kind, RequestKind::ConsumerGet | RequestKind::ConsumerUpload);
+    let trailers = matches!(kind, RequestKind::Trailers);
+    let upload =
+        matches!(kind, RequestKind::ConsumerUpload).then(|| b"clean-h3-consumer-".repeat(4096));
+    timeout(Duration::from_secs(if consumer { 8 } else { 5 }), async {
+        let authority = if consumer {
+            "localhost".to_owned()
+        } else {
+            format!("localhost:{port}")
+        };
         let mut request = Request::builder()
-            .method(if trailers { "POST" } else { "GET" })
-            .uri(format!("https://localhost:{port}{path}"))
+            .method(if trailers || upload.is_some() {
+                "POST"
+            } else {
+                "GET"
+            })
+            .uri(format!("https://{authority}{path}"))
             .body(())?;
+        if let Some(payload) = &upload {
+            request.headers_mut().insert(
+                "content-length",
+                HeaderValue::from_str(&payload.len().to_string())?,
+            );
+        }
         if trailers {
             request
                 .headers_mut()
@@ -42,6 +69,11 @@ async fn request(
         }
         let mut stream = sender.send_request(request).await?;
         let stream_id = stream.id().into_inner();
+        if let Some(payload) = &upload {
+            for chunk in payload.chunks(4096) {
+                stream.send_data(Bytes::copy_from_slice(chunk)).await?;
+            }
+        }
         if trailers {
             let mut fields = HeaderMap::new();
             fields.append("x-check", HeaderValue::from_static("one"));
@@ -82,8 +114,11 @@ async fn main() -> Result<()> {
     let mut args = std::env::args().skip(1);
     let port: u16 = args.next().ok_or("missing listener port")?.parse()?;
     let ca = args.next().ok_or("missing CA certificate")?;
-    let path = match args.next() {
+    let option = args.next();
+    let consumer = option.as_deref() == Some("--consumer");
+    let path = match option {
         None => None,
+        Some(option) if option == "--consumer" && args.next().is_none() => None,
         Some(option) if option == "--path" => {
             let path = args.next().ok_or("missing GET path")?;
             if !path.starts_with('/') || args.next().is_some() {
@@ -91,7 +126,7 @@ async fn main() -> Result<()> {
             }
             Some(path)
         }
-        _ => return Err("expected listener port, CA certificate and optional --path".into()),
+        _ => return Err("expected listener port, CA certificate and --path or --consumer".into()),
     };
     let mut roots = rustls::RootCertStore::empty();
     for certificate in rustls_pemfile::certs(&mut BufReader::new(File::open(ca)?)) {
@@ -125,16 +160,37 @@ async fn main() -> Result<()> {
         h3::client::new(h3_quinn::Connection::new(connection.clone())).await?;
     let driving = tokio::spawn(async move { driver.wait_idle().await });
     let mut responses = Vec::new();
-    if let Some(path) = path {
-        responses.push(request(&mut sender, port, &path, false, connection_id).await?);
+    if consumer {
+        responses.push(
+            request(
+                &mut sender,
+                port,
+                "/",
+                RequestKind::ConsumerGet,
+                connection_id,
+            )
+            .await?,
+        );
+        responses.push(
+            request(
+                &mut sender,
+                port,
+                "/echo",
+                RequestKind::ConsumerUpload,
+                connection_id,
+            )
+            .await?,
+        );
+    } else if let Some(path) = path {
+        responses.push(request(&mut sender, port, &path, RequestKind::Get, connection_id).await?);
     } else {
-        responses.push(request(&mut sender, port, "/", false, connection_id).await?);
+        responses.push(request(&mut sender, port, "/", RequestKind::Get, connection_id).await?);
         responses.push(
             request(
                 &mut sender,
                 port,
                 "/echo-zero-declared",
-                true,
+                RequestKind::Trailers,
                 connection_id,
             )
             .await?,

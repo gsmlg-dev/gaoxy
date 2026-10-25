@@ -13,6 +13,9 @@ import tempfile
 
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "integration/http3"))
+from quinn_peer import prepare as prepare_h3_peer
+
 FIXTURES = {
     "base": "test_consumer",
     "h3": "test_h3_consumer",
@@ -59,6 +62,9 @@ def main():
 
     with tempfile.TemporaryDirectory(prefix="gaoxy-test-consumers-") as temporary:
         workspace = Path(temporary)
+        if "h3" in selected:
+            binary, _ = prepare_h3_peer(workspace / "h3-peer")
+            env["GAOXY_H3_CONSUMER_PEER"] = str(binary)
         if not args.published:
             staged, unpacked = workspace / "staged", workspace / "packages"
             execute(["elixir", str(ROOT / "scripts/stage-hex-packages.exs"), str(ROOT), str(staged)],

@@ -333,3 +333,46 @@ are `final-peer-replacement-gates.json`, `final-conforming-unified/report.json`,
 frozen 568-case canonical qualification; the replacement changes test clients
 and their workflow toolchain setup. Coordinated publication and independent
 public read-back remain required before issue closure.
+
+### Hosted source qualification follow-up
+
+The first publication candidate, `e7d294d02039b1908d7f003ad7dcd15312566157`,
+passed static/build, unit, portable and source E2E workflows. Package workflow
+`40210792153` failed in two independent consumers before any publication:
+
+- The optional QUIC consumer's committed lock still selected Abyss 0.9.0 and
+  the old Hell source. Its exact `mix deps.get --check-locked` failure was
+  reproduced. Supported resolution updates exactly four entries: Abyss 0.10.0,
+  Hell 0.1.3's source, and `elixir_quic`/`ex_ssl` 0.21.17. Locked resolution and
+  strict compile now pass; a fresh isolated build executes **4 tests, 0
+  failures**. The initial local stale-build setup failure executed zero tests;
+  that evidence and the original build directory remain preserved.
+- The built H3 consumer still copied the aioquic GET/upload peer. Hosted
+  execution reported **2 tests, 1 failure**, with the same self-generated idle
+  timeout. Unchanged local execution passed **2 tests, 0 failures**. A controlled
+  local diagnostic retaining its assertions and adding a 1.2-second quiet gap
+  between requests reproduces the timeout: remote idle 0, local idle 60 seconds,
+  effective idle approximately 0.561 seconds. Earlier diagnostic setup and
+  non-echo-stub errors remain separate from this reproduction.
+
+The existing shared Rust peer now also supports the consumer's original GET
+and POST on one connection, preserving authority `localhost`, the exact
+73,728-byte payload, 4,096-byte DATA chunks, content length, real FIN/EOF, CA,
+hostname, ALPN, status and body assertions. Its requests retain eight-second
+bounds and the Python process retains the original 20-second bound. Both source
+and built/published consumer entrypoints prepare this test-only peer before
+starting their fixture. Runtime dependency-isolation and cleanup assertions are
+unchanged; neither the product nor package dependencies acquire a client.
+
+Independent source review approves these changes. Fresh complete built-package
+consumers pass base **3/0**, H3 **2/0**, HTTPFetch **2/0**, plus production
+dependency isolation and consumer release. The isolated source H3 consumer also
+passes **2 tests, 0 failures**, including dependency isolation and endpoint reuse.
+The shared peer's earlier modes
+also pass fresh unified **8/8** and packaged H3 **3/3** checks. Receipts are
+`ci-consumer-quinn-green.json`, `ci-consumer-final-gates.json`,
+`consumer-final-unified/report.json`, `consumer-final-h3/result.json` and
+`optional-quic-lock/summary.json` and `ci-source-h3-consumer-green.json`;
+original hosted logs are retained as
+`ci-e7d294d0-package-failed.log`. These local repairs require a new exact-source
+hosted qualification before publication.

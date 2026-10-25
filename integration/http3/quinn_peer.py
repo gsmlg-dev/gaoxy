@@ -57,3 +57,13 @@ def request(binary, port, ca, *, path=None, timeout=15, evidence_dir=None):
         (evidence / "peer.stderr.log").write_text(result.stderr)
     assert result.returncode == 0, f"independent H3 peer failed: {result.stderr}"
     return json.loads(result.stdout)
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--prepare", type=Path, required=True)
+    args = parser.parse_args()
+    binary, _ = prepare(args.prepare)
+    print(binary)

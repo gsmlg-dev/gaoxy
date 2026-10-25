@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 project_root=$(cd "$(dirname "$0")/.." && pwd)
+GAOXY_H3_CONSUMER_PEER=$(python3 "$project_root/integration/http3/quinn_peer.py" \
+  --prepare "$project_root/.audit/h3-consumer-peer")
+export GAOXY_H3_CONSUMER_PEER
 consumer_root=$(mktemp -d)
 trap 'rm -rf "$consumer_root"' EXIT
 mkdir -p "$consumer_root/apps" "$consumer_root/integration" "$consumer_root/vendor"
