@@ -4,7 +4,7 @@ defmodule Gaoxy.MixProject do
   def project do
     [
       app: :gaoxy,
-      version: "0.12.2",
+      version: "0.13.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",
@@ -13,7 +13,7 @@ defmodule Gaoxy.MixProject do
       deps: [
         {:hell,
          git: "https://github.com/gsmlg-dev/hell.git",
-         ref: "59eed42b019ca41413d1b8cd7a7dc3e344bb93ee"},
+         ref: "4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83"},
         {:abyss, "== 0.10.0"},
         {:telemetry, "~> 1.3"}
       ]

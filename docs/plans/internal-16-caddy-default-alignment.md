@@ -14,12 +14,12 @@ Date: 2026-10-24, Asia/Shanghai. Research source baseline:
 `e435c05b08d7cbdb0e3c02ee585f23ddc8b9316f`; previous documentation commit:
 `58e3e43eef3a57e8a49d32e4b03d2515294cf240`, branch `main`.
 Execution baseline: `76d76ef2c93e25dc46b8d96ee4b06e7fa349b617`, branch `main`.
-Status updated 2026-10-25: **implemented slices and scoped H1/Phoenix/H3 checks
-pass; H2 connection-owner persistence is BLOCKED; final combined acceptance and
-publication remain incomplete**. Checked items record established implementation
-and scoped evidence, not completion of the entire product contract. Final local
-canonical gates and the complete Phoenix fixture have passed; H2 persistence
-still requires the upstream fix and fresh qualification.
+Status updated 2026-10-25: **H1/H2/H3 implementation and focused qualification
+pass; all 568 canonical tests and core package/runtime gates pass; final H3
+client qualification and publication are in progress**. Hell 0.1.3
+is released and installed. Independent specification/code review of the H2
+owner transition reports no actionable findings. Checked items record established
+implementation and scoped evidence; the final publication item remains open.
 See [research and product contract](../designs/internal-16-caddy-default-alignment.md).
 
 The user's clarification makes size, inactivity and lifetime one completion
@@ -31,7 +31,7 @@ lifecycle events; this is not a promise that a physical connection never fails.
 ## Scope and ownership
 
 Work on `main`, preserve unrelated files and use small reviewed conventional
-commits. If isolation becomes necessary, put worktrees under `.trees/`.
+commits. Do not create a branch or worktree; the user explicitly requests main.
 The coordinator owns integration, inventory/count updates, docs and final gates.
 Sol workers may own disjoint framing and accounting files in parallel; dependent
 handoffs, edits and final integration are sequential. Do not revert others' work.
@@ -57,12 +57,14 @@ Abyss **0.10.0** and the HTTPFetch/QUIC **0.21.17** cohort are installed in both
 locks. Actual H3 independent-peer qualification passed **2 tests, 0 failures**,
 including exact **5 MiB** transfer and **900 ms** quiet with **300 ms** peer idle.
 
-H2 connection-owner persistence is **BLOCKED** by the still-**OPEN** Feature
-[hell#2](https://github.com/gsmlg-dev/hell/issues/2). There is no local workaround;
-resume the idle transition/restoration slice only after a released fix is
-installed. H2 size/stream results do not complete its quiet persistence. Size
-and persistence remain one contract: **no release or #16 closure** until that
-contract and final gates pass. Historical specialist slow-peer, pressure,
+H2's dependency gate [hell#2](https://github.com/gsmlg-dev/hell/issues/2) is now
+**CLOSED**. Installed Hell **0.1.3** at source
+`4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83` supplies the supported owner transition.
+H2 now suspends inherited idle while opening/open WebSocket owners exist and
+restores the original interval after the final owner ends. Focused qualification
+passes **47 tests, 0 failures**, including four independent-peer cases. Size and
+persistence remain one contract; close #16 only after final gates, coordinated
+publication and public read-back. Historical specialist slow-peer, pressure,
 blocked-upload and soak evidence keeps its existing disposition.
 
 Scoped evidence is consolidated in
@@ -72,10 +74,11 @@ default capacity passed **5 tests, 0 failures**; actual LiveView default capacit
 failures**; callback completion is now **22 tests, 0 failures** after preserved
 **22-test/2-failure** RED. A canonical protocol execution passed **130 tests, 0
 failures**. These
-results are included in the final local gate run: unit **254/0**, component
+results are included in the initial local gate run at `90e75ed5`: unit **254/0**, component
 **167/0**, protocol **130/0**, full Phoenix **24/0**, clean package consumers
 **7/0** plus production isolation/consumer release. Inventory, format and strict
-compile exit 0. H2 connection-owner persistence remains blocked.
+compile exit 0. That historical source was blocked on H2. The resumed 0.13.0
+qualification is recorded separately in the acceptance record.
 
 ## Task 0: Record the current failure and final contract
 
@@ -99,12 +102,12 @@ compile exit 0. H2 connection-owner persistence remains blocked.
   compatibility fixture, but do not copy its raised frame/service budgets.
   The lifecycle setup uses the documented infinity timeout in Task 4; this is
   explicit integration configuration and is not a zero-config Phoenix claim.
-- [ ] Add controlled assertions for no default idle/lifetime close timers and
+- [x] Add controlled assertions for no default idle/lifetime close timers and
   reusable transport credits; do not substitute waiting 24 hours or pressure
   testing for ownership assertions. Preserve RED evidence without weakening
-  payload, normal-close or cleanup assertions. **Partial:** common engine and
-  H1/H3 ownership checks are established; H2 owner idle suppression/restoration
-  remains blocked by hell#2, so this combined item stays open.
+  payload, normal-close or cleanup assertions. Common engine and H1/H3 ownership
+  checks are established; H2 controlled owner suppression/restoration cases and
+  real-peer persistence pass after installation of released Hell 0.1.3.
 
 Run focused root cases with:
 
@@ -260,14 +263,15 @@ def deadline(timeout), do: now() + timeout
 - [x] Upgrade only a live owned HTTP request. Cancel its old watchdog, invalidate
   stale request/callback tokens and create no default WS lifetime timer. Keep a
   deliberately finite application policy distinct; callbacks cannot renew it.
-- [ ] On H1 upgrade use Hell's supported `{:persistent, :infinity}` for the
+- [x] On H1 upgrade use Hell's supported `{:persistent, :infinity}` for the
   unrestricted path. For H2, also suppress the inherited connection-owner read
   idle while WS streams require persistence; an infinite common WS receive loop
   alone is insufficient. Restore ordinary owner policy appropriately after the
   last WS stream ends, preserving sibling streams and finite partial-frame/I/O
   operations. Do not change all ordinary HTTP connections to infinite idle.
-  **Partial:** H1 uses the supported persistent transition. H2 upgrade/removal
-  TODOs identify hell#2; its owner transition and restoration are not implemented.
+  H2 uses released `Hell.Handler.set_read_timeout/2` in call/info paths and the
+  supported persistent result in network continuations, retaining returned socket
+  state. Resolved hell#2 TODOs are removed. Controlled owner/timer cases pass 6/0.
 - [x] Invoke the owned callback-result transition immediately after handler
   return. Release unsent batch retention progressively while traversing output.
   Replace default output-frame-count/mailbox-close shortcuts with bounded work
@@ -284,11 +288,12 @@ def deadline(timeout), do: now() + timeout
   stale timers cannot kill the completed-callback/new-lifetime owner. Callback
   completion, including terminate/exception paths, now passes **22 tests, 0
   failures** after the preserved armed-timer **22-test/2-failure** RED.
-- [ ] Complete H1/H2/H3 persistence qualification. **Partial:** H1 and H3 scoped
+- [x] Complete H1/H2/H3 persistence qualification. H1 and H3 scoped
   qualification pass, including H3's released supported idle configuration,
-  dependency updates and finite peer keepalive. H2 owner persistence remains
-  blocked by hell#2. No dependency patch, private-state workaround or enormous
-  duration is an infinity implementation.
+  dependency updates and finite peer keepalive. H2 real-peer tests pass 4/0:
+  quiet persistence, repeated exact transfers, siblings, final-owner restoration,
+  finite partial-frame assembly and explicit application lifetime. No dependency
+  patch, private-state workaround or enormous finite duration is used.
 
 ## Task 4: Remove adapter defaults and configure supported Phoenix persistence
 
@@ -359,20 +364,22 @@ A deliberately finite application declaration remains a separate opt-in policy.
   bounded, credit replenishment, ping/pong and normal close. Prove category
   isolation in controlled fixtures instead of allocating >256 MiB as a stress
   substitute. A tested size is evidence, not proof of physical infinite capacity.
-- [ ] Verify no default inactivity/lifetime timers at all relevant owners;
+- [x] Verify no default inactivity/lifetime timers at all relevant owners;
   finite application policy, real disconnect and finite drain still terminate.
   H2/H3 siblings and a subsequent ordinary request remain healthy after cleanup.
-  **Partial:** scoped implemented-path lifecycle checks pass. H3 restores finite
-  ordinary idle; H2 cannot complete this requirement before hell#2 is resolved.
+  Scoped lifecycle checks pass. H2/H3 restore finite ordinary idle. H2 controlled
+  cases cover multiple owners, closing and resets; worker-death cleanup was
+  source-reviewed. Real peers verify sibling traffic, normal close and restored
+  empty-connection idle.
 - [x] Measure retained messages/output/state and terminal restoration without
   enforcing a generic size ceiling. Preserve whole-message memory exposure:
   O(message + state + pending output), not O(staging) for total process memory.
 - [x] Obtain independent specification/code/ownership review; fix findings, then
   run fresh required gates for the implemented scope. Independent reviews of
   framing, accounting, adapter and H2/H3 ownership paths report no remaining
-  findings; H3 upstream and actual-peer gates pass. H2 remains BLOCKED by hell#2,
-  despite passing final canonical gates and full Phoenix execution. Size-only
-  acceptance is not complete product acceptance.
+  findings; H3 upstream and actual-peer gates pass. Fresh independent H2
+  specification/code/ownership review also reports no actionable findings.
+  Final canonical gates are repeated for the integrated 0.13.0 source.
 
 Root verification commands after implementation and pinned peer preparation:
 
@@ -397,17 +404,56 @@ without a new concern. Preserve unrelated failures and specialist dispositions.
 - [x] Update README/package docs, fixture docs and acceptance with
   persistent ownership, explicit application policy, the Phoenix integration
   setting, finite reusable buffers, observed memory and upstream gates.
-  No project CHANGELOG exists; the acceptance record documents this unpublished
-  change. Preserve the vendored upstream changelog as historical content.
+  No project CHANGELOG exists; release notes are in `docs/releases/0.13.0.md`.
+  Preserve the vendored upstream changelog as historical content.
 - [x] Keep general HTTP timeout/body work in a separate design. Do not incidentally
   change 32 KiB headers, 8 MiB body policy, general H3 request lifetime or proxy
   pools/protocol capabilities while implementing this WS contract.
-- [ ] Any later release uses current authorization and exact-source publication,
-  clean consumers and artifact read-back. This research task starts no release.
+- [ ] The explicitly requested 0.13.0 release uses exact-source publication,
+  clean consumers and artifact read-back.
   Report #16's actual size acceptance separately; close matching issues only
   after their requested behavior and downstream evidence are established.
-  **INCOMPLETE:** no release or #16 closure while H2 persistence and complete
-  contract acceptance remain incomplete.
+  **IN PROGRESS:** publish only after required integrated gates pass; close issues
+  after independent public artifact/consumer checks.
+
+### Packaged H3 client qualification
+
+The initial standalone H3 smoke failed in its independent aioquic client's
+zero-idle negotiation; the unchanged reproduction and original failure remain
+recorded in the acceptance ledger. On 2026-10-25 the user explicitly chose a
+conforming independent replacement client and continued publication. Replace
+that smoke's downstream client and the unified fixture's ordinary H3 GET client,
+retain the actual aioquic origin and all
+existing certificate/ALPN, exact response bytes, duplicate trailers, request FIN,
+finite runtime deadlines, process-exit and endpoint-reuse assertions. Pin the
+test peer's dependencies, review it independently and run the unchanged scenario
+against the existing source-built release before source CI and publication.
+The pinned Rust h3/Quinn/rustls peer and shared Python helper now pass the
+packaged **3/3** scenario, wrong-CA control and full unified **8/8** scenario;
+native HTTP/TLS clients pass **10/10**. Independent specification/code/ownership
+review approved the peer and both integrations with no actionable findings.
+A fresh repeat then exposed the same aioquic zero-idle failure in the remaining
+H3 Channels client. Extend the independent replacement to that path and retain
+the original advertised setting, messages, close and reload assertions; the
+earlier 8/8 run does not qualify the remaining broken client.
+The public Rust h3 `Protocol` type cannot express `websocket`. The final split
+uses Rust h3/Quinn for ordinary requests and the exact zero-declared trailer
+scenario, and Go quic-go for the WebSocket CONNECT path. quic-go exposes the
+received SETTINGS, request stream and `Proto: "websocket"`; gobwas/ws supplies
+the masking and frame codec. Pass the existing `CHANNEL_MESSAGES` into the peer
+and verify actual replies and received close 1000 with the existing Python
+assertions. Go dependencies are pinned in `integration/http3/channel_peer/`;
+only source E2E's protocol job and the publication job provision Go 1.26.6.
+Both peers are test tooling and remain outside product dependencies/artifacts.
+Do not patch the broken dependency or change server behavior to accommodate it.
+
+Final local replacement qualification is complete on 2026-10-26
+(Asia/Shanghai): fresh unified **8/8** and packaged H3 **3/3** checks pass,
+including source restoration, child exits and endpoint reuse. The Go peer uses
+one five-second case deadline and bounds its own finite fixture storage.
+Independent code/specification/evidence review approved the corrected clients
+and unchanged publication guards. The current source still requires its own
+hosted CI and exact-SHA release, followed by independent public read-back.
 
 No deployment, production data/certificates, Vault/public-management change or
 enabling of the released-server E2E gate is included.

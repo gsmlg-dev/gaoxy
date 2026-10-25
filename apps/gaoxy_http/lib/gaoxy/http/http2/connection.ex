@@ -42,6 +42,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       {:continue,
        Map.merge(context, %{
          phase: :http2,
+         default_read_timeout: socket.read_timeout,
          lease: lease,
          limits: Map.put(options.http_limits, :extended_connect, options.extended_connect),
          h2: h2,
@@ -149,10 +150,10 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     end
   end
 
-  def data(bytes, _socket, state) do
+  def data(bytes, socket, state) do
     cond do
       not state.settings_ack and Lifecycle.remaining(state.start_deadline) == 0 ->
-        {:continue, schedule(failure(state, :settings_timeout))}
+        network_continue(socket, schedule(failure(state, :settings_timeout)))
 
       byte_size(state.buffer) + byte_size(bytes) > state.limits.max_buffer_bytes ->
         {:close, state}
@@ -160,7 +161,7 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
       true ->
         state = %{state | buffer: state.buffer <> bytes}
         state = parse(state, state.h2.control_turn)
-        {:continue, schedule(partial_timer(state))}
+        network_continue(socket, schedule(partial_timer(state)))
     end
   end
 
@@ -681,7 +682,8 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
     case state.streams[id] do
       %{token: ^token, worker: ^pid} = stream ->
         state = operation(state, stream, operation, from)
-        {:noreply, {socket, schedule(state)}}
+        state = schedule(state)
+        {:noreply, {owner_timeout(socket, state), state}}
 
       _ ->
         {:reply, {:error, :closed}, {socket, state}}
@@ -742,8 +744,6 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
   defp operation(state, stream, {:websocket_open, headers, lifetime, write_deadline}, from)
        when (is_integer(lifetime) or lifetime == :infinity) and is_integer(write_deadline) do
-    # TODO(upstream): gsmlg-dev/hell#2
-    # The owner must suspend the host idle timer through a supported API here.
     valid =
       state.limits.extended_connect and not stream.websocket and
         not stream.committed and not stream.eof and stream.read == nil and stream.poll == nil and
@@ -1162,9 +1162,37 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
 
   def info(message, socket, state) do
     case message(state, message) do
-      :close -> {:stop, {:shutdown, :local_closed}, {socket, state}}
-      next -> {:noreply, {socket, schedule(next)}}
+      :close ->
+        {:stop, {:shutdown, :local_closed}, {socket, state}}
+
+      next ->
+        next = schedule(next)
+        {:noreply, {owner_timeout(socket, next), next}}
     end
+  end
+
+  # The H2 owner outlives individual streams. Only WebSocket ownership changes
+  # its host idle policy; ordinary local messages must not refresh the interval.
+  defp read_timeout(state) do
+    if Enum.any?(state.streams, fn {_, stream} -> stream.websocket end),
+      do: :infinity,
+      else: state.default_read_timeout
+  end
+
+  defp owner_timeout(socket, state) do
+    timeout = read_timeout(state)
+
+    if socket.read_timeout == timeout,
+      do: socket,
+      else: Hell.Handler.set_read_timeout(socket, timeout)
+  end
+
+  defp network_continue(socket, state) do
+    timeout = read_timeout(state)
+
+    if socket.read_timeout == timeout,
+      do: {:continue, state},
+      else: {:continue, state, {:persistent, timeout}}
   end
 
   defp message(state, {:h2_writer_ready, writer}) when writer == state.writer,
@@ -1534,8 +1562,6 @@ defmodule Gaoxy.HTTP.HTTP2.Connection do
   end
 
   defp discard(state, id, kill \\ true) do
-    # TODO(upstream): gsmlg-dev/hell#2
-    # Restore the host idle timer after the last WebSocket owner is removed.
     # Once HEADERS is handed off, its remaining CONTINUATION frames must reach
     # END_HEADERS. Otherwise remove the entire unsent block for this stream.
     state =

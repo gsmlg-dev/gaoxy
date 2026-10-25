@@ -36,7 +36,7 @@ REQUIREMENTS = {
         "plug_cowboy": ("plug_cowboy", "~> 2.6", True),
     },
     "gaoxy": {
-        "hell": ("hell", "== 0.1.2", False),
+        "hell": ("hell", "== 0.1.3", False),
         "abyss": ("abyss", "== 0.10.0", False),
         "telemetry": ("telemetry", "~> 1.3", False),
     },
@@ -189,7 +189,7 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
                 for forbidden in ["in_umbrella:", "override:", "path:", "git:", "config_path:", "build_path:", "deps_path:", "lockfile:"]:
                     self.assertNotIn(forbidden, manifest)
                 if name == "gaoxy":
-                    self.assertIn('hell: "== 0.1.2"', manifest)
+                    self.assertIn('hell: "== 0.1.3"', manifest)
                     self.assertIn('abyss: "== 0.10.0"', manifest)
                     self.assertTrue({"abyss_raw", "rustler"}.isdisjoint(
                         entry["name"] for entry in metadata["requirements"]))
@@ -199,7 +199,7 @@ IO.puts(JSON.encode!(convert.(terms, convert)))
 
     def test_rejects_changed_git_pin_without_staging_packages(self):
         manifest = self.source / "apps/gaoxy/mix.exs"
-        manifest.write_text(manifest.read_text().replace("59eed42b019ca41413d1b8cd7a7dc3e344bb93ee", "unreviewed-revision"))
+        manifest.write_text(manifest.read_text().replace("4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83", "unreviewed-revision"))
         result = self.stage()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported dependency", result.stdout)
@@ -376,9 +376,10 @@ end
         env = {**ENV, "HEX_HOME": str(directory / "hex-home"),
                "HEX_API_URL": url + "/api", "HEX_API_KEY": "explicit-test-fixture-key"}
 
-        def execute(command, cwd=directory):
+        def execute(command, cwd=directory, input=None):
             result = subprocess.run(command, cwd=cwd, env=env, timeout=30,
-                                    text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                                    input=input, text=True, stdout=subprocess.PIPE,
+                                    stderr=subprocess.STDOUT)
             self.assertEqual(result.returncode, 0, result.stdout)
             return result.stdout
 
@@ -399,6 +400,11 @@ end
             self.assertIn('run "mix deps.get"', unfetched.stdout)
             execute(["mix", "deps.get", "--only", "prod"], package)
             output = execute(["mix", "hex.publish", "package", "--dry-run", "--yes"], package)
+            self.assertIn("Publishing package...", output)
+            # Hex 2.6 skips owner lookup with --yes. Exercise the confirmed
+            # owner prompt as well, retaining the API-read and no-upload checks.
+            output = execute(["mix", "hex.publish", "package", "--dry-run"],
+                             package, input="Y\n")
             self.assertIn("Publishing package...", output)
             after = snapshot(package)
             self.assertEqual({path: after[path] for path in before}, before)

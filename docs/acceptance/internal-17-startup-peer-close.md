@@ -4,8 +4,8 @@ Date: 2026-10-25, Asia/Shanghai. Branch: `main`. Baseline:
 `90e75ed5809bc3d94ba71d9eaddee4f1da56de6e`.
 Issue: [#17](https://github.com/gsmlg-dev/gaoxy/issues/17).
 Status: locally repaired; focused regressions, independent review and affected
-canonical gates pass. Publication remains blocked by the
-separate H2 persistence dependency in #16.
+canonical gates pass. The separate #16 dependency gate is resolved by released
+Hell 0.1.3; coordinated local 0.13.0 qualification passes and publication is in progress.
 
 ## Problem and bounded repair
 
@@ -44,7 +44,7 @@ logging policy or ordinary H2 request behavior.
   and strict compile; rerun affected H2/common compatibility when the change
   warrants it. Preserve unrelated and specialist evidence.
 
-## Executed evidence
+## Initial executed evidence (historical `f2ba26ab`)
 
 The new regression files executed **9 tests, 7 failures** against the unchanged
 baseline: six controlled bare/wrapped closure cases and the real TLS boundary
@@ -119,10 +119,21 @@ dependency check is retained in `latest-dependencies.log`. Hell upstream main
 still points at `59eed42b019ca41413d1b8cd7a7dc3e344bb93ee`, and its issue #2
 remains OPEN at final closeout.
 
-## Current disposition
+## Initial closeout disposition (historical `f2ba26ab`)
 
 This issue remains open until qualified publication. The broader native WS
 contract in [#16's acceptance](internal-16-default-capacity.md) still depends on
 [hell#2](https://github.com/gsmlg-dev/hell/issues/2); completing this independent
 repair does not remove that release blocker. No version bump, publication or
 deployment is included in this local repair result.
+
+## Resumed 0.13.0 qualification
+
+Hell 0.1.3 resolves the separate H2 owner idle blocker. The integrated H2 change
+preserves this startup-close classification; independent read-only review found
+no actionable findings. The final focused integrated command executes **47
+tests, 0 failures**, including all **9** startup-close regressions. See
+[#16's resumed qualification](internal-16-default-capacity.md#resumed-h2-implementation-and-0130-qualification)
+for current dependencies, final integrated gates and publication evidence.
+This issue stays open until the coordinated release and public Hex-only
+startup-close regression pass.

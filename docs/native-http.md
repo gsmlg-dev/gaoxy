@@ -340,8 +340,12 @@ lifetime cannot be renewed by callbacks. The callback-result handoff cancels its
 execution watchdog before output; bounded sends get fresh finite deadlines.
 Phoenix requires `websocket: [timeout: :infinity]` through its supported socket
 configuration. H1 persistence and released H3 idle/keepalive APIs are integrated;
-H2 owner idle suspension/restoration still awaits
-[hell#2](https://github.com/gsmlg-dev/hell/issues/2). Normal Close ends only that
+Hell 0.1.3 resolves the upstream gate in
+[hell#2](https://github.com/gsmlg-dev/hell/issues/2) with public
+`Hell.Handler.set_read_timeout/2`. H2 suspends connection idle while a WebSocket
+owns a stream and restores the original idle interval after the last one ends.
+Finite partial-frame and explicit application deadlines remain effective.
+Normal Close ends only that
 WebSocket stream, leaving ordinary siblings independent. Specialist abnormal
 disconnect, slow-peer, pressure and load qualification remains deferred.
 H1 drain uses its existing absolute deadline and sends

@@ -11,20 +11,17 @@ import subprocess
 import sys
 import threading
 import time
-from types import SimpleNamespace
 
-from aioquic.asyncio import connect
-from aioquic.h3.connection import Setting
 from wsproto.events import TextMessage
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "apps/gaoxy_http/test/support"))
 sys.path.insert(0, str(ROOT / "integration/http3"))
 from listener_set_peer import h1, h2
-from peer import opened
+from quinn_peer import prepare as prepare_h3_peer, request as quinn_request
+from quic_go_peer import prepare as prepare_h3_channel_peer, channel as quic_go_channel
 sys.path.insert(0, str(ROOT / "integration/websocket_multiplexed"))
 from h2_peer import H2Peer, WebSocketChannel
-from h3_peer import H3PeerProtocol, client_configuration
 
 
 PATHS = [("/", b"Gaoxy Phoenix native"),
@@ -32,15 +29,21 @@ PATHS = [("/", b"Gaoxy Phoenix native"),
          ("/events", b"event: ready\ndata: native\n\n")]
 
 
-async def h3_request(port, ca, path, body):
-    async with opened(SimpleNamespace(port=port, ca=ca, mode="startup")) as client:
-        sid = client.request(path=path.encode())
-        await client.until(lambda: sid in client.ended or sid in client.resets)
-        assert sid not in client.resets, client.resets
-        assert dict(client.headers[sid][0])[b":status"] == b"200"
-        assert body in client.data[sid], (path, client.data[sid])
-        assert client.negotiated == "h3"
-        return dict(protocol=client.negotiated, status_code=200, path=path)
+async def h3_request(port, ca, path, body, binary, evidence):
+    request_evidence = evidence / "h3-peer" / f"request-{time.monotonic_ns()}"
+    request_evidence.mkdir(parents=True)
+    receipt = await asyncio.to_thread(quinn_request, binary, port, ca, path=path,
+                                      timeout=5, evidence_dir=request_evidence)
+    assert receipt["alpn"] == "h3", receipt
+    assert len(receipt["responses"]) == 1, receipt
+    response = receipt["responses"][0]
+    assert response["path"] == path and response["ended"], response
+    assert response["connection_id"] == receipt["connection_id"], receipt
+    assert dict(response["headers"][0])[":status"] == "200", response
+    actual = bytes(response["body"])
+    assert body in actual, (path, actual)
+    return dict(protocol=receipt["alpn"], status_code=200, path=path,
+                evidence=str(request_evidence))
 
 
 def channel_headers(port, protocol):
@@ -87,29 +90,28 @@ def h2_channel(port, ca):
             peer.socket.close()
 
 
-async def h3_channel(port, ca):
-    async with connect("127.0.0.1", port, configuration=client_configuration(ca),
-                       create_protocol=lambda quic, **kw: H3PeerProtocol(quic, port=port, **kw)) as peer:
-        assert peer.negotiated == "h3", peer.negotiated
-        await peer.wait(lambda: peer.http.received_settings is not None)
-        assert peer.http.received_settings[Setting.ENABLE_CONNECT_PROTOCOL] == 1
-        stream = peer.quic.get_next_available_stream_id()
-        peer.channels[stream] = WebSocketChannel("phoenix")
-        peer.http.send_headers(stream, channel_headers(port, "h3"), end_stream=False)
-        peer.transmit()
-        await peer.wait(lambda: stream in peer.headers)
-        assert (b":status", b"200") in peer.headers[stream], peer.headers
-        for message in CHANNEL_MESSAGES:
-            peer.send(stream, TextMessage(data=json.dumps(message)))
-            await peer.wait(lambda: bool(peer.channels[stream].messages))
-            channel_reply(peer.channels[stream], message)
-        await peer.close_websocket(stream)
-        return dict(protocol=peer.negotiated, stream=stream, close_code=1000)
+async def h3_channel(port, ca, binary, evidence):
+    channel_evidence = evidence / "h3-channel-peer"
+    receipt = await asyncio.to_thread(quic_go_channel, binary, port, ca, CHANNEL_MESSAGES,
+                                      timeout=15, evidence_dir=channel_evidence)
+    assert receipt["alpn"] == "h3", receipt
+    assert receipt["enable_extended_connect"] is True, receipt
+    assert receipt["status"] == 200, receipt
+    assert len(receipt["messages"]) == len(CHANNEL_MESSAGES), receipt
+    channel = WebSocketChannel("phoenix")
+    for message, received in zip(CHANNEL_MESSAGES, receipt["messages"], strict=True):
+        channel.messages = [received]
+        channel_reply(channel, message)
+    assert receipt["close_code"] == 1000, receipt
+    return dict(protocol=receipt["alpn"], stream=receipt["stream"], close_code=receipt["close_code"],
+                evidence=str(channel_evidence))
 
 
 def main():
     evidence = Path(os.environ.get("GAOXY_PHOENIX_EVIDENCE", ROOT / ".audit/unified-phoenix")).resolve()
     evidence.mkdir(parents=True, exist_ok=True)
+    h3_binary, h3_build = prepare_h3_peer(evidence / "h3-peer")
+    h3_channel_binary, h3_channel_build = prepare_h3_channel_peer(evidence / "h3-channel-peer")
     certs = evidence / "certs"
     subprocess.run(["bash", str(ROOT / "scripts/generate-fixtures.sh"), str(certs)], check=True, capture_output=True, timeout=30)
     env = dict(os.environ, MIX_ENV="dev", ELIXIR_ERL_OPTIONS="+S 2:2", PHOENIX_NATIVE_H3="1",
@@ -148,7 +150,8 @@ def main():
     def passed(name, **details):
         checks.append(dict(check=name, status="PASS", **details))
 
-    report = {"status": "FAIL", "command": command,
+    report = {"status": "FAIL", "command": command, "native_h3_peer": h3_build,
+              "native_h3_channel_peer": h3_channel_build,
               "baseline": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
               "environment": {"python": sys.version, "ELIXIR_ERL_OPTIONS": env["ELIXIR_ERL_OPTIONS"],
                               "dependencies": {name: importlib.metadata.version(name) for name in
@@ -164,10 +167,12 @@ def main():
                 assert body in actual, (version, path, actual)
                 assert [v for k, v in headers if k == b"alt-svc"] == [f'h3=":{ports["http3"]}"; ma=60'.encode()], headers
             passed("independent_endpoint_" + version, protocol=version, paths=[path for path, _ in PATHS])
-        h3_results = [asyncio.run(h3_request(ports["http3"], ca, path, body)) for path, body in PATHS]
+        h3_results = [asyncio.run(h3_request(ports["http3"], ca, path, body, h3_binary, evidence))
+                      for path, body in PATHS]
         passed("independent_endpoint_HTTP/3", requests=h3_results)
         for protocol, port in [("h2", ports["https"]), ("h3", ports["http3"])]:
-            client = h2_channel(port, ca) if protocol == "h2" else asyncio.run(h3_channel(port, ca))
+            client = h2_channel(port, ca) if protocol == "h2" else asyncio.run(
+                h3_channel(port, ca, h3_channel_binary, evidence))
             deadline = time.monotonic() + 5
             while True:
                 sockets = [r for r in receipts if r["event"] == "websocket" and f"unified={protocol}" in r["marker"]]
@@ -187,14 +192,14 @@ def main():
                 _, body = h2(port, ca, "/")
                 assert changed in body, body
             else:
-                asyncio.run(h3_request(port, ca, "/", changed))
+                asyncio.run(h3_request(port, ca, "/", changed, h3_binary, evidence))
             controller.write_bytes(original)
             os.utime(controller, (time.time(), max(time.time(), stamp + 4)))
             if protocol == "h2":
                 _, body = h2(port, ca, "/")
                 assert b"Gaoxy Phoenix native" in body, body
             else:
-                asyncio.run(h3_request(port, ca, "/", b"Gaoxy Phoenix native"))
+                asyncio.run(h3_request(port, ca, "/", b"Gaoxy Phoenix native", h3_binary, evidence))
             passed("code_reload_and_restore_" + protocol, protocol=client["protocol"])
         server.stdin.write("stop\n")
         server.stdin.flush()

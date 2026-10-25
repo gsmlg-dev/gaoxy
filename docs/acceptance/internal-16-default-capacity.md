@@ -3,18 +3,19 @@
 Date: 2026-10-25, Asia/Shanghai. Branch: `main`. Implementation baseline:
 `76d76ef2c93e25dc46b8d96ee4b06e7fa349b617`.
 
-Disposition: **H1/native size and H3 persistence are locally qualified; the
-complete H1/H2/H3 product contract remains BLOCKED by
-[hell#2](https://github.com/gsmlg-dev/hell/issues/2)**. Size and persistence are
-one completion contract. Issue [#16](https://github.com/gsmlg-dev/gaoxy/issues/16)
-remains open. The package version remains `0.12.2`; this work has not been
-published or deployed.
+Disposition: **H1/H2/H3 implementation, focused qualification and all 568
+canonical tests, core package/runtime checks and final independent H3 client
+qualification pass; 0.13.0 publication is in progress**. The upstream gate
+[hell#2](https://github.com/gsmlg-dev/hell/issues/2) is CLOSED and released Hell
+0.1.3 is installed. Size and persistence remain one completion contract. Issue
+[#16](https://github.com/gsmlg-dev/gaoxy/issues/16) remains open until coordinated
+publication and independent public checks complete. No deployment is included.
 
 See the [design](../designs/internal-16-caddy-default-alignment.md),
 [implementation plan](../plans/internal-16-caddy-default-alignment.md) and
 [current configuration contract](../websocket-limits.md).
 
-## Dependency and source qualification
+## Initial dependency and source qualification (historical `90e75ed5`)
 
 The updated root and Phoenix fixture locks select Abyss `0.10.0` and the
 HTTP Fetch/QUIC `0.21.17` cohort (`http_core`, `http_fetch`, `http_runtime`,
@@ -27,7 +28,7 @@ support `quic_options: [idle_timeout: :infinity]`, public `Abyss.QUIC.ping/2`
 and authenticated peer/local/negotiated/effective idle metadata. Gaoxy uses
 those APIs rather than dependency internals.
 
-Hell remains at `59eed42b019ca41413d1b8cd7a7dc3e344bb93ee`, verified against
+Hell then remained at `59eed42b019ca41413d1b8cd7a7dc3e344bb93ee`, verified against
 upstream `main`. Its public persistent timeout result is available to network
 callbacks. H2 upgrade and final stream cleanup occur in GenServer callbacks;
 there is no supported transition there to invalidate the inherited read-idle
@@ -127,7 +128,7 @@ regressions executed **22 tests, 2 failures** before the completion fix and
 **22 tests, 0 failures** afterwards. The failures specifically showed live
 callback timers after returning/raising terminate callbacks at transport finish.
 
-## Verification ledger
+## Initial verification ledger (historical `90e75ed5`)
 
 The sole active app manifest is `scripts/check-repairs.py`; inventory reports
 **95 active files, 145 retained files**, with exact scheduled counts of
@@ -185,4 +186,150 @@ The frozen source-file receipt covers 492 non-Markdown files, combined SHA-256
 `source-files.json` retains each path/hash; production and test files are checked
 against it before the local commits. The existing vendor changelog is upstream
 history; this acceptance record documents the unpublished change instead of
-altering that history or creating release notes for a version not yet released.
+altering that history. Subsequent 0.13.0 release notes live at
+`docs/releases/0.13.0.md`.
+
+## Resumed H2 implementation and 0.13.0 qualification
+
+Baseline: `f2ba26ab6319d0e81da5ff2eb40724d1c170c050`, including the separate #17
+repair. Hell 0.1.3 source is
+`4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83`; its published tag and Hex release
+were verified before integration. Root and Phoenix fixture locks select this
+source. Staging maps that exact source to required Hex `== 0.1.3`. Plug.Crypto
+is updated to compatible 2.2.1 in both locks; the Abyss/HTTP/QUIC cohort above
+remains current. All six Gaoxy packages and standalone are versioned 0.13.0.
+
+H2 captures the original host read-idle interval at startup. Opening/open WS
+owners select infinity; cleanup after the final owner restores that exact
+interval. Call/info transitions retain the updated socket from public
+`Hell.Handler.set_read_timeout/2`; network continuations use supported persistent
+results. Hell invalidates old timer tokens. An unchanged ordinary policy is not
+restarted on arbitrary local messages. Partial-frame assembly and explicit
+application lifetime remain finite, and #17 classification is preserved.
+
+Evidence under `.audit/internal-16-h2/` retains semantic component RED **6 tests,
+4 failures** and protocol RED **3 tests, 1 failure**. Final focused GREEN executes
+**47 tests, 0 failures**: idle-owner 6, wire 4, configured policies 6, common
+stream 22 and startup-close 9. Additional ordinary H2 compatibility executes
+**7 tests, 0 failures, 76 excluded**; it is scoped evidence, not a whole-file
+pass. Real peers verify quiet 600 ms beyond ordinary 200 ms idle, exact
+300 KiB / 2 MiB / 300 KiB transfers, ping, HTTP siblings, normal close and idle
+restoration. Separate controls preserve a 100 ms partial-frame deadline and
+100 ms explicit WS lifetime. Independent specification/code/ownership review
+found no actionable runtime findings.
+
+The active manifest now schedules **254 unit / 181 component / 133 protocol**
+cases across **98 active files / 145 retained files**. New H2 idle cases are
+component tests; real peers remain protocol tests. No specialist slice was run.
+Final root commands use `ELIXIR_ERL_OPTIONS='+S 2:2' MIX_ENV=test`; raw logs and
+exits are in `.audit/release-0.13.0/final-gates.json`:
+
+| Integrated 0.13.0 gate | Result |
+| --- | --- |
+| Inventory, full formatter, strict compile | PASS, all exit 0 |
+| Canonical unit | PASS, 254 executed, 0 failures/excluded/skipped, exit 0 |
+| Canonical component | PASS, 181 executed, 0 failures/excluded/skipped, exit 0 |
+| Canonical protocol | PASS, 133 executed, 0 failures/excluded/skipped, exit 0 |
+| Mocked Python script unit gates | PASS, all four commands exit 0 |
+| Isolated vendor dispatch | PASS, 5 tests, 0 failures, exit 0 |
+| Packaging regression, Hex 2.6 | PASS, 12 tests, 0 failures, exit 0 |
+| Packaging compatibility, Hex 2.5.4 | PASS, affected case 1 test, 0 failures, exit 0 |
+| Complete Phoenix fixture | PASS, 24 tests, 0 failures, exit 0 |
+| Built-package clean consumers | PASS, base 3/0, H3 2/0, HTTPFetch 2/0; production isolation/release pass, exit 0 |
+| Direct dependency freshness and security audit | PASS, both exit 0; all direct Hex packages current, no retired/advisory package |
+| Production strict compile and standalone build | PASS, both exit 0 |
+| Standalone TCP/TLS/UDP smoke | PASS, 3 transports, orderly drain/exit and endpoint reuse, exit 0 |
+| Standalone H1/H2 gateway smoke | PASS, 7 exchanges, exit 0 |
+| Initial standalone H3 smoke | FAIL, exit 1; independent aioquic peer self-expires while awaiting response |
+| Conforming standalone H3 peer | PASS, 3 checks; exact responses/trailers, orderly exits and port reuse, exit 0 |
+| Unified Phoenix H1/H2/H3, WebSockets and reload | PASS, all 8 checks, source restored and fixture exit 0 |
+| Native Phoenix HTTP/TLS clients | PASS, all 10 checks, source restored and fixture exit 0 |
+| Independent peer wrong-CA control | PASS, certificate rejected; subsequent positive scenario passes 3 checks |
+
+The first resumed packaging command executed **12 tests, 1 failure**: its fixture
+expected an owner API lookup on `mix hex.publish --dry-run --yes`. Hex 2.6 skips
+that lookup with `--yes`. The test keeps that automated dry run, additionally
+executes an explicitly confirmed interactive dry run, and preserves all positive
+owner-lookup, immutable-package and no-upload assertions. No production change
+or upstream workaround was needed. Original/reproduced failures and compatible
+green runs remain in `package-staging.log` and `diagnosis-staging-*`.
+
+### H3 release peer diagnosis and replacement
+
+The original packaged H3 smoke and an unchanged reproduction fail. An
+observation-only trace shows aioquic 1.2.0 receiving remote
+`max_idle_timeout=0`, with local idle 60 seconds, then calculating approximately
+96 ms (three PTO). After the static GET completed at 2.1506 seconds, the same
+client began the trailer-bearing POST at 2.1507 seconds and fired its own idle
+timer at 2.2551 seconds. The origin received the complete zero-body request,
+both trailers and exactly one FIN. This proves request forwarding, not response
+completion. The failure does not establish a Gaoxy defect or a passing H3 gate.
+
+[RFC 9000 section 10.1](https://www.rfc-editor.org/rfc/rfc9000#section-10.1)
+requires the sole nonzero advertised timeout in this case. The same zero-value
+calculation remains in the official aioquic 1.7.0 release and upstream main;
+upgrading the test dependency alone has no evidenced fix. Independent review
+confirmed the diagnosis. Original `local-h3/`, `final-h3-release-smoke.log` and
+`diagnosis-h3-*` evidence remains unchanged under `.audit/release-0.13.0/`.
+
+The user explicitly chose replacement with a conforming independent H3 client
+on 2026-10-25. The same old peer defect also failed the unified Phoenix H3
+GET after source reload, after six checks had passed; the fixture exited 0 and
+restored its source. Earlier local setup attempts lacked `wsproto` and then
+the UV-managed venv's `pip` module; installing the declared requirements with
+`uv pip` resolved setup without source changes. Those commands and failures
+remain recorded separately from the actual protocol failure and passing run.
+
+The packaged smoke's downstream client and the unified fixture's ordinary H3
+GETs now use the independent Rust `h3`/Quinn/rustls client in
+`integration/http3/release_peer/`. Dependencies are pinned in Cargo.toml and
+Cargo.lock. The shared Python helper builds with `--locked`, with a separate
+600-second preparation bound before scenario startup. Each request retains its
+5-second bound; the release peer/scenario retain 15/90 seconds. Released Quinn
+correctly handles a zero peer idle value through its public transport API.
+
+The original independent origin and all certificate,
+ALPN, exact byte/trailer, FIN, response, deadline, exit and endpoint-reuse
+assertions remain. The two packaged requests share one real connection and use
+distinct stream IDs. The new peer returns actual response receipts for Python
+validation; it rejects an unrelated CA with `BadSignature`. Generic GET and
+full release scenarios passed; final parent gates pass **8/8 unified**, **10/10
+native clients** and **3/3 packaged H3**, including clean processes and source
+restoration. Receipts are `local-unified-quinn/report.json`,
+`local-phoenix-clients/manifest.json`, `local-h3-quinn/result.json` and
+`quinn-gates.json`. A first peer receipt used HTTP's `200 OK` display text;
+the unchanged numeric-status assertion rejected it. That failure is preserved;
+the peer now serializes the actual public `status.as_u16()` value. No assertion
+or network deadline was relaxed. Gaoxy server behavior is unchanged by this
+test-client repair. Independent specification/code/ownership review approved
+the peer and both integrations with no actionable findings. Fresh
+post-review commands and their outcomes are recorded in
+`post-review-gates.json`. Coordinated
+publication and independent public read-back remain required.
+
+A fresh post-review repeat exposed the same aioquic zero-idle failure in the
+remaining H3 WebSocket client before the channel check completed. Earlier
+protocol paths, H2 Channels and H2 reload passed; the fixture exited 0 and
+restored its source. This executed failure remains in
+`post-review-unified/report.json` and `post-review-unified.log`; the 8/8 result
+above is the earlier passing run. Under the same user decision, the remaining
+WebSocket path now uses quic-go 0.64.1's public extended CONNECT API, built with
+Go 1.26.6. It verifies the real CA and hostname, negotiated H3, server SETTINGS,
+the two original Channels replies, close 1000 and subsequent receive-stream EOF.
+All channel operations share the original five-second case deadline. The
+independent finite-fixture reader bounds its own frame/message/control storage;
+these test-client bounds do not change server policies or capacity assertions.
+
+Independent review found and corrected an allocating convenience reader and a
+reset per-operation timeout in the first Go implementation. Eleven temporary
+reader regression cases, readonly Go build/vet and formatting pass. Final
+post-review parent commands on 2026-10-26 (Asia/Shanghai) pass inventory,
+formatter, strict compile, all 12 staging tests, **8/8 unified checks** and
+**3/3 packaged H3 checks**. The unified fixture restores its source and exits 0;
+the packaged smoke verifies both child exits and endpoint reuse. Exact receipts
+are `final-peer-replacement-gates.json`, `final-conforming-unified/report.json`,
+`final-conforming-h3/result.json` and
+`diagnosis-h3-go-reader/verification.json`. Service sources still match the
+frozen 568-case canonical qualification; the replacement changes test clients
+and their workflow toolchain setup. Coordinated publication and independent
+public read-back remain required before issue closure.

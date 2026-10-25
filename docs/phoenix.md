@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.12.2**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.13.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.12.2"},
-{:websock_adapter, "~> 0.12.2", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.13.0"},
+{:websock_adapter, "~> 0.13.0", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
@@ -462,8 +462,8 @@ setting above is required for persistence. Omitted frame/message options remain
 omitted through the Gaoxy adapter; service byte/state budgets do not cap WS
 payloads or callback state. Explicit finite application limits still apply.
 Phoenix accepts `max_frame_size`, but not the direct Gaoxy `max_message_size`
-override. Full H2 quiet persistence remains blocked by
-[hell#2](https://github.com/gsmlg-dev/hell/issues/2).
+override. H2 uses Hell 0.1.3's public idle transition to keep WebSocket owners
+persistent and restore ordinary connection idle after the final WebSocket ends.
 See [persistent connections and capacity](websocket-limits.md).
 See [WebSock limits](native-http.md#websock).
 

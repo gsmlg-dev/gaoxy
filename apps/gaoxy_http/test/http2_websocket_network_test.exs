@@ -20,6 +20,14 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
       Plug.Conn.upgrade_adapter(conn, :websocket, {Echo, nil, [max_lifetime: 10_000]})
     end
 
+    def call(%{request_path: "/finite"} = conn, _) do
+      Plug.Conn.upgrade_adapter(conn, :websocket, {Echo, nil, [max_lifetime: 100]})
+    end
+
+    def call(%{request_path: "/persistent"} = conn, _) do
+      Plug.Conn.upgrade_adapter(conn, :websocket, {Echo, nil, []})
+    end
+
     def call(conn, _), do: Plug.Conn.send_resp(conn, 200, conn.request_path)
   end
 
@@ -87,6 +95,71 @@ defmodule Gaoxy.HTTP.HTTP2WebSocketNetworkTest do
     assert {":status", "200"} in fields
     assert {0, 1, 3, "/sibling"} = next(socket, 0, 3)
     :ok = :gen_tcp.close(socket)
+    assert :ok = Gaoxy.stop(server)
+  end
+
+  test "default H2 WebSocket stays quiet past owner idle, transfers repeated large messages and restores idle" do
+    {:ok, server} =
+      Gaoxy.HTTP.start_link(
+        plug: {EndpointPlug, []},
+        protocols: [:http2],
+        h2c: :prior_knowledge,
+        extended_connect: true,
+        limits: %{idle_timeout: 200}
+      )
+
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {_, port}} = Gaoxy.info(server, :http).local
+    python = Path.expand("../../../.audit/h2peer/bin/python", __DIR__)
+    assert File.exists?(python)
+
+    assert {output, 0} =
+             System.cmd(
+               python,
+               [
+                 Path.join(__DIR__, "support/websocket_persistent_h2_peer.py"),
+                 Integer.to_string(port)
+               ],
+               stderr_to_stdout: true
+             )
+
+    assert output =~
+             "PASS quiet idle, ping, repeated large messages, live sibling, close, restored idle"
+
+    assert :ok = Gaoxy.stop(server)
+  end
+
+  test "H2 WebSocket ownership preserves finite frame assembly and explicit lifetime policies" do
+    {:ok, server} =
+      Gaoxy.HTTP.start_link(
+        plug: {EndpointPlug, []},
+        protocols: [:http2],
+        h2c: :prior_knowledge,
+        extended_connect: true,
+        limits: %{idle_timeout: 500},
+        h2_limits: %{frame_timeout: 100}
+      )
+
+    on_exit(fn -> if Process.alive?(server), do: Gaoxy.stop(server) end)
+    {:ok, {_, port}} = Gaoxy.info(server, :http).local
+    python = Path.expand("../../../.audit/h2peer/bin/python", __DIR__)
+    assert File.exists?(python)
+
+    for mode <- ["partial", "finite"] do
+      assert {output, 0} =
+               System.cmd(
+                 python,
+                 [
+                   Path.join(__DIR__, "support/websocket_persistent_h2_peer.py"),
+                   Integer.to_string(port),
+                   mode
+                 ],
+                 stderr_to_stdout: true
+               )
+
+      assert output =~ "PASS " <> mode
+    end
+
     assert :ok = Gaoxy.stop(server)
   end
 

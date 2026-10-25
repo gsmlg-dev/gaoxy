@@ -3,10 +3,11 @@
 The native WebSock engine uses no default frame-size, message-size,
 wire-fragment-count, callback-batch-count, inactivity or absolute-lifetime
 ceiling. The Gaoxy WebSockAdapter dispatch preserves omitted size options.
-This behavior is implemented on the current development branch; the complete
-H1/H2/H3 persistence contract remains blocked by
-[hell#2](https://github.com/gsmlg-dev/hell/issues/2). See the
-[current qualification](acceptance/internal-16-default-capacity.md).
+Gaoxy 0.13.0 integrates H1/H2/H3 persistence using released transport APIs.
+Hell 0.1.3 resolves [hell#2](https://github.com/gsmlg-dev/hell/issues/2) and
+provides H2's public owner idle transition. See the
+[qualification record](acceptance/internal-16-default-capacity.md) for executed
+checks and publication evidence.
 
 ## Phoenix configuration
 
@@ -81,7 +82,10 @@ H1 uses the supported infinite Hell read timeout after default upgrade. H3
 uses the released QUIC disabled local idle policy and bounded public PING
 operations below a finite peer-negotiated idle period while WS ownership exists.
 Empty ordinary H3 connections retain a finite owner idle policy; active ordinary
-requests retain their existing finite request and operation deadlines. H2 still
-needs Hell's public owner-side idle transition before quiet persistence can be
-qualified. The separately configured message-level `Gaoxy.Proxy.WebSocket`
-endpoint retains its own bridge policies; this change adds no opaque proxy API.
+requests retain their existing finite request and operation deadlines. Hell
+0.1.3 provides the public owner-side idle transition used by H2 to suspend
+connection idle while WebSocket ownership exists and restore the original
+ordinary idle interval after the final WebSocket closes. Finite partial-frame
+assembly and explicit application lifetime deadlines remain effective. The separately configured
+message-level `Gaoxy.Proxy.WebSocket` endpoint retains its own bridge policies;
+this change adds no opaque proxy API.

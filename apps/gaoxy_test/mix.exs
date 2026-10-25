@@ -4,7 +4,7 @@ defmodule GaoxyTest.MixProject do
   def project do
     [
       app: :gaoxy_test,
-      version: "0.12.2",
+      version: "0.13.0",
       build_path: "../../_build",
       config_path: "../../config/config.exs",
       deps_path: "../../deps",

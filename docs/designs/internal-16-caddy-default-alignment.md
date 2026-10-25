@@ -1,7 +1,7 @@
 # Internal request #16: Caddy defaults research and alignment design
 
 Date: 2026-10-24 (Asia/Shanghai).
-Status: implementation and scoped H1/Phoenix/H3 qualification completed; H2 persistence blocked; final combined acceptance and publication incomplete.
+Status: H1/H2/H3 implementation, 568 canonical tests and core package/runtime checks pass; final independent H3 client qualification and 0.13.0 publication in progress.
 Execution update: 2026-10-25 (Asia/Shanghai).
 
 ## Baselines and scope
@@ -22,8 +22,8 @@ source; it did not rerun that network reproduction.
   documentation; the immutable source links below establish versioned behavior.
 
 The Caddy research below preserves its original source baseline. The alignment
-implementation and scoped runtime results are recorded separately below; they
-do not establish complete H1/H2/H3 acceptance, a new release or deployment.
+implementation, resumed H2 qualification and final release evidence are recorded
+separately below and in the linked acceptance record.
 The existing #6 configuration repair and #15 peer-close repair keep their
 historical scope and evidence.
 
@@ -369,7 +369,7 @@ Do not change Phoenix's own application heartbeat or authorization logic merely
 to suppress a server transport timer. No finite callback/send/close/drain setting
 is copied into an idle timeout or whole-message/connection lifetime.
 
-### Resolved H3 dependency gate and remaining H2 blocker
+### Resolved H3 and H2 dependency gates
 
 The original H3 investigation found that `elixir_quic` 0.21.16 and Abyss 0.9.0
 required finite local idle values. The routed Feature requests
@@ -390,19 +390,29 @@ exact **5 MiB** transfer and **900 ms** quiet persistence against a peer with a
 **300 ms** advertised idle timeout. The canonical protocol run also passed
 **130 tests, 0 failures**; final local gates are recorded below.
 
-H2 persistence is now **BLOCKED** by the still-**OPEN** Feature request
-[gsmlg-dev/hell#2](https://github.com/gsmlg-dev/hell/issues/2): a supported
-connection-owner idle transition while WebSocket streams require persistence,
-with ordinary idle restoration after the last owner ends. H2's infinite common
-WS receive loop alone does not suppress Hell's inherited connection idle timer.
-TODO markers remain at the H2 upgrade and removal callsites. Do not patch Hell,
-use private state, globally disable ordinary H2 idle, or add a local workaround.
-Resume this slice only after the upstream fix is released and installed.
+The initial H2 slice was **BLOCKED** by Feature request
+[gsmlg-dev/hell#2](https://github.com/gsmlg-dev/hell/issues/2). That issue is now
+**CLOSED** and Hell **0.1.3**, source
+`4fb5d53a1b2acfb5afc9b1ceba65fdc52d61ef83`, is installed in both locks and mapped
+to the exact Hex version by package staging. Its public
+`Hell.Handler.set_read_timeout/2` invalidates prior idle timers and returns the
+updated socket. H2 retains that socket in call/info callbacks and uses the
+supported persistent continuation result in network callbacks.
 
-Size and persistence remain one H1/H2/H3 completion contract. Qualified H1,
-Phoenix and H3 results do not complete the blocked H2 slice; **no release or #16
-closure** follows from the current partial completion. Historical specialist
-pressure, slow-peer and soak dispositions remain unchanged.
+Opening/open WebSocket owners suspend inherited connection idle. Final-owner
+cleanup restores the original interval; ordinary local messages do not reset an
+unchanged idle policy. Finite partial-frame assembly, explicit application
+lifetime, ordinary sibling requests and startup peer-close classification retain
+their own behavior. No dependency patch or private timer mutation is used.
+Focused qualification passes **47 tests, 0 failures**; six controlled H2 owner
+cases and four real-peer cases cover quiet persistence, repeated exact transfers,
+siblings, close, idle restoration and finite deadline controls. Independent
+specification/code/ownership review found no actionable findings.
+
+Size and persistence remain one H1/H2/H3 completion contract. Final integrated
+gates, coordinated publication and public read-back remain required for #16
+closure. Historical specialist pressure, slow-peer and soak dispositions remain
+unchanged.
 
 ### Completion and later HTTP work
 
@@ -419,7 +429,7 @@ keepalive are research inputs. Do not change Gaoxy's 32 KiB headers, 8 MiB body
 policy, or currently unsupported general H3 infinite request timeout as an
 incidental WS repair. Upstream pool/dial/probe policy is separate again.
 
-## Verification disposition
+## Initial verification disposition (historical source `90e75ed5`)
 
 | Evidence | Disposition |
 | --- | --- |
@@ -447,7 +457,10 @@ and `.audit/internal-16/phoenix-baseline-red.log`; the callback timer RED is at
 `.audit/internal-16/callback-completion-red.log`. Commands, source identities,
 counts and final local gate results are consolidated in
 [the acceptance record](../acceptance/internal-16-default-capacity.md). These
-results do not complete the blocked H2 persistence contract.
+results did not complete the then-blocked H2 persistence contract. The resumed
+H2 implementation and current 0.13.0 qualification are recorded in the
+[acceptance record](../acceptance/internal-16-default-capacity.md), separately
+from this historical ledger.
 
 Raw research downloads are retained under ignored
 `.audit/research-caddy-2026-10-24/`; source links above make the findings

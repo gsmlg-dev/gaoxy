@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Qualify native H3 and fixed H3 origins using an actual standalone release."""
 import argparse
-import asyncio
 import hashlib
 import importlib.metadata
 import json
@@ -15,63 +14,13 @@ import tempfile
 import threading
 import time
 
-from aioquic.asyncio import QuicConnectionProtocol, connect
-from aioquic.h3.connection import H3Connection
-from aioquic.h3.events import DataReceived, HeadersReceived
-from aioquic.quic.configuration import QuicConfiguration
-from aioquic.quic.events import ConnectionTerminated, ProtocolNegotiated, StreamReset
-
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "integration/http3"))
+from quinn_peer import prepare, request
 sys.path.insert(0, str(ROOT / "integration/http3/upstream"))
 from run import credentials
 
 TRAILERS = [(b"x-check", b"one"), (b"x-check", b"two")]
-
-
-class Peer(QuicConnectionProtocol):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.http = H3Connection(self._quic)
-        self.responses = {}
-        self.alpn = None
-        self.failure = None
-
-    def quic_event_received(self, event):
-        if isinstance(event, ProtocolNegotiated):
-            self.alpn = event.alpn_protocol
-        elif isinstance(event, (ConnectionTerminated, StreamReset)):
-            self.failure = repr(event)
-        for item in self.http.handle_event(event):
-            if isinstance(item, (HeadersReceived, DataReceived)):
-                response = self.responses.setdefault(item.stream_id,
-                    {"headers": [], "body": bytearray(), "ended": False})
-                if isinstance(item, HeadersReceived):
-                    response["headers"].append(item.headers)
-                else:
-                    response["body"].extend(item.data)
-                    assert len(response["body"]) <= 262_144, "packaged H3 smoke response exceeded allowance"
-                response["ended"] = item.stream_ended
-
-    async def request(self, port, path, trailers=False):
-        stream = self._quic.get_next_available_stream_id()
-        fields = [(b":method", b"POST" if trailers else b"GET"),
-                  (b":scheme", b"https"),
-                  (b":authority", f"localhost:{port}".encode()),
-                  (b":path", path.encode())]
-        if trailers:
-            fields += [(b"content-length", b"0"), (b"trailer", b"x-check")]
-        self.http.send_headers(stream, fields, end_stream=not trailers)
-        if trailers:
-            self.http.send_headers(stream, TRAILERS, end_stream=True)
-        self.transmit()
-        async with asyncio.timeout(5):
-            while not self.responses.get(stream, {}).get("ended"):
-                assert self.failure is None, self.failure
-                await asyncio.sleep(0.002)
-        response = self.responses[stream]
-        assert self.alpn == "h3", self.alpn
-        assert response["headers"][0].count((b":status", b"200")) == 1, response
-        return response
 
 
 def h1(port, remaining):
@@ -103,21 +52,22 @@ def h1(port, remaining):
     assert bytes(data) == b"echo-finished", data
 
 
-async def h3(port, ca):
-    config = QuicConfiguration(is_client=True, alpn_protocols=["h3"], server_name="localhost")
-    config.load_verify_locations(cafile=str(ca))
-    async with connect("127.0.0.1", port, configuration=config,
-                       create_protocol=Peer) as peer:
-        static = await peer.request(port, "/")
-        assert bytes(static["body"]) == b"release-h3", static
-        proxied = await peer.request(port, "/echo-zero-declared", trailers=True)
-        assert bytes(proxied["body"]) == b"echo-finished", proxied
-        assert proxied["headers"][-1] == TRAILERS, proxied["headers"]
-
-
-async def bounded_h3(port, ca, timeout):
-    async with asyncio.timeout(timeout):
-        await h3(port, ca)
+def h3(command, timeout, evidence):
+    receipt = request(command[0], command[1], command[2], timeout=timeout, evidence_dir=evidence)
+    assert receipt["alpn"] == "h3", receipt
+    responses = receipt["responses"]
+    assert len(responses) == 2 and [row["path"] for row in responses] == ["/", "/echo-zero-declared"], receipt
+    assert all(row["connection_id"] == receipt["connection_id"] for row in responses), receipt
+    assert len({row["stream_id"] for row in responses}) == 2, receipt
+    for response in responses:
+        assert response["ended"], response
+        assert response["headers"][0].count([":status", "200"]) == 1, response
+        assert len(response["body"]) <= 262_144, "packaged H3 smoke response exceeded allowance"
+    static, proxied = responses
+    assert bytes(static["body"]) == b"release-h3", static
+    assert bytes(proxied["body"]) == b"echo-finished", proxied
+    assert [(name.encode(), value.encode()) for name, value in proxied["headers"][-1]] == TRAILERS, proxied["headers"]
+    return receipt
 
 
 def main():
@@ -132,7 +82,7 @@ def main():
               "aioquic": "1.2.0", "commands": [], "child_exits": {}}
     children, logs, origin_ports, listener_ports = {}, [], [], {}
     events = queue.Queue()
-    deadline = time.monotonic() + 90
+    deadline = None
 
     def remaining(maximum):
         value = min(maximum, deadline - time.monotonic())
@@ -150,6 +100,11 @@ def main():
                 return item
 
     try:
+        # Build preparation has its own bound; network scenario deadlines remain
+        # 90s overall, 15s for the H3 peer and 5s per request inside that peer.
+        peer, report["native_h3_peer"] = prepare(args.evidence)
+        report["commands"].append(report["native_h3_peer"]["command"])
+        deadline = time.monotonic() + 90
         with tempfile.TemporaryDirectory(prefix="gaoxy-packaged-h3-") as temporary:
             directory = Path(temporary)
             with (args.evidence / "certificates.log").open("w") as output:
@@ -213,7 +168,9 @@ def main():
             assert set(listener_ports) == {"h1", "h3"} and all(listener_ports.values()), data
             h1(listener_ports["h1"], remaining)
             report["checks"].append({"name": "packaged_h1_to_h3_data_trailers", "status": "PASS"})
-            asyncio.run(bounded_h3(listener_ports["h3"], directory / "a/ca.pem", remaining(15)))
+            command = [str(peer), str(listener_ports["h3"]), str(directory / "a/ca.pem")]
+            report["commands"].append(command)
+            report["native_h3_peer"]["receipt"] = h3(command, remaining(15), args.evidence)
             report["checks"] += [{"name": "packaged_h3_listener", "status": "PASS"},
                                  {"name": "packaged_h3_to_h3_zero_trailers", "status": "PASS"}]
             control(origin, "snapshot")
