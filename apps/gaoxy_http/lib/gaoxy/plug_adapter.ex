@@ -2,7 +2,11 @@ defmodule Gaoxy.PlugAdapter do
   @behaviour Plug.Conn.Adapter
   alias Gaoxy.HTTP.{Exchange, Response}
 
+  @connection_response_fields ~w(connection keep-alive proxy-connection transfer-encoding upgrade te)
+
   def send_resp(exchange, status, headers, body) do
+    headers = response_headers(exchange, headers)
+
     case Response.send_resp(exchange, status, headers, body) do
       {:ok, exchange} ->
         send(self(), Plug.Conn.Adapter.already_sent())
@@ -14,6 +18,8 @@ defmodule Gaoxy.PlugAdapter do
   end
 
   def send_file(exchange, status, headers, file, offset, length) do
+    headers = response_headers(exchange, headers)
+
     case Response.send_file(exchange, status, headers, file, offset, length) do
       {:ok, exchange} ->
         send(self(), Plug.Conn.Adapter.already_sent())
@@ -25,6 +31,8 @@ defmodule Gaoxy.PlugAdapter do
   end
 
   def send_chunked(exchange, status, headers) do
+    headers = response_headers(exchange, headers)
+
     case Response.send_chunked(exchange, status, headers) do
       {:ok, exchange} ->
         send(self(), Plug.Conn.Adapter.already_sent())
@@ -177,7 +185,34 @@ defmodule Gaoxy.PlugAdapter do
     end
   end
 
-  def inform(exchange, status, headers), do: Response.inform(exchange, status, headers)
+  def inform(exchange, status, headers),
+    do: Response.inform(exchange, status, response_headers(exchange, headers))
+
+  # Plug middleware may use H1 connection fields without knowing the negotiated
+  # protocol. Remove those fields only here; native framed responses remain strict.
+  defp response_headers(%{request: %{version: version}, limits: limits}, headers)
+       when version in [:"HTTP/2", :"HTTP/3"] do
+    # Bound the original collection before splitting Connection nominations.
+    # Invalid collections pass unchanged to the existing response validator.
+    if Gaoxy.HTTP.RendererBounds.fields(headers, limits.max_headers, limits.max_header_bytes) ==
+         :ok do
+      nominated =
+        for {name, value} <- headers,
+            String.downcase(name, :ascii) == "connection",
+            token <- String.split(value, ","),
+            do: token |> String.trim() |> String.downcase(:ascii)
+
+      removed = MapSet.new(@connection_response_fields ++ nominated)
+
+      Enum.reject(headers, fn {name, _} ->
+        MapSet.member?(removed, String.downcase(name, :ascii))
+      end)
+    else
+      headers
+    end
+  end
+
+  defp response_headers(_, headers), do: headers
 
   def upgrade(%{request: %{version: version}} = exchange, :websocket, arguments)
       when version in [:"HTTP/2", :"HTTP/3"] do

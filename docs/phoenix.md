@@ -1,7 +1,7 @@
 # Phoenix with Gaoxy
 
 This guide migrates an existing Phoenix application from Bandit to
-`gaoxy_http` **0.13.0**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
+`gaoxy_http` **0.13.1**. It uses `MyAppWeb.Endpoint` and OTP application `:my_app`;
 replace those names with your own. The adapter is `Gaoxy.PhoenixAdapter`.
 Gaoxy provides the listener and native H1/H2/WebSocket engine, while Phoenix
 continues to own the Endpoint pipeline, router, Channels, LiveView, sessions,
@@ -13,8 +13,8 @@ Remove your explicit `{:bandit, ...}` dependency from `mix.exs`. Add these
 entries to your existing `deps/0`, retaining the rest of your application deps:
 
 ```elixir
-{:gaoxy_http, "~> 0.13.0"},
-{:websock_adapter, "~> 0.13.0", hex: :gaoxy_websock_adapter, override: true}
+{:gaoxy_http, "~> 0.13.1"},
+{:websock_adapter, "~> 0.13.1", hex: :gaoxy_websock_adapter, override: true}
 ```
 
 The second entry is required for Phoenix: `gaoxy_websock_adapter` is the
