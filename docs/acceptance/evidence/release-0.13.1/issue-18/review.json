@@ -1,0 +1,174 @@
+{
+  "task_id": "h2_release_review/issue-18-v0.13.1",
+  "status": "DONE",
+  "verdict": "APPROVED for parent fresh ordinary qualification; publication/public/runtime acceptance is not yet established",
+  "assignment": "direct independent specification/code review; read-only source and evidence inspection with only this report authorized for writing",
+  "reviewed_at": "2026-10-28T16:20:37.121328+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "baseline": "9f272f9284e1526838d518b294e08f62511191c6",
+  "branch": "main (parent-supplied; reviewer did not run Git)",
+  "reviewed_scope": {
+    "frozen_task_files": 23,
+    "tracked_diff_sha256": "a2400f0b1f84ee0df79ccedc9583578c508c08a5b08c90027340907a0bf59985",
+    "source_sha256": {
+      "README.md": "0b943e6892137488d765a3e565ba01475b1a588b023e1a39cfdfdcc53b9b5a44",
+      "apps/gaoxy/README.md": "02158b5e07d4b7cd7a078237c19c7192eec628f8961d23601b6e149e555c757d",
+      "apps/gaoxy/mix.exs": "d27cf7eb57df9009b97816fe69eac48c55fd836b0976c797207404767464881d",
+      "apps/gaoxy_http/README.md": "91dc366457cc71389192b7be5289cfd04f42cea181ed6db55b52f3be4d3f8adb",
+      "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "aea92de8b2f7d9efe1e888edf3211f1b27a9e2521fd5314ea161a4eaee2fd492",
+      "apps/gaoxy_http/mix.exs": "9a0383fae199ded81e1bf03fe541e96509e71a8ec3ad56bb22a74ba45f8698dc",
+      "apps/gaoxy_http/test/plug_response_headers_network_test.exs": "1327040a2f46348be90971b9d89aa490b20417dc2e2393033f596c3bc1c9dbb1",
+      "apps/gaoxy_http/test/plug_response_headers_test.exs": "6bd2e8ccb100c03ad79ad87e52bcd7afa3f1a3f6f76cf22072e1a04908d85bc9",
+      "apps/gaoxy_http/test/support/plug_response_headers_fixture.exs": "dc57a8d4a97e63d0fe0140cd5147c31a540f225e3da75893a8ea05fc84affe3e",
+      "apps/gaoxy_http/test/support/plug_response_headers_peer.py": "f639561b208eb0f0d356e3e74e64aa5300e83517e16ab981e506c20b2629f4e5",
+      "apps/gaoxy_http3/README.md": "57e64d9961bef592f0df0cec36c3997b7db946e6c326602a3419dff6530a9d25",
+      "apps/gaoxy_http3/mix.exs": "c222fb9841b229b6c78b36d0ab1ef8b21507810bedd8afbb0b86623bcb252d14",
+      "apps/gaoxy_proxy/README.md": "c85b80a60f3622d562be0c7c1c77644d5e5c8149eebed522465341f0d2768895",
+      "apps/gaoxy_proxy/mix.exs": "08a6d42f044e3c6a2d049023310c2b6eab0935a7a1e885e19607afbfc86479a3",
+      "apps/gaoxy_server/mix.exs": "c82a2c36227aead379ae25d6522f351d52c138a0d33f5f0fce6dedd90763f3e4",
+      "apps/gaoxy_test/README.md": "cdd646d5ce651b89334c210bd2008168026b8bd4c3f75690595f6ea1d705efe6",
+      "apps/gaoxy_test/mix.exs": "fd86aab41c96050faa51dd05c89db1ff7a6d8f8474c49947bd3cc77bb1209595",
+      "docs/acceptance/release-0.13.1.md": "babcff08f091af269ecae7861c421da7508fbe3c3c9527ed489f987d24541247",
+      "docs/phoenix.md": "8591720389fe845d061638b903c7e42b2131177d8f391dd2dd20ab829e87a0fe",
+      "docs/plans/issue-18-plug-response-headers.md": "6f4a92104fb8f53526a80e149ed1a6f2d6c6dc58a217c4e5b448829d8dee8a79",
+      "docs/releases/0.13.1.md": "1b881deed99702ad8422ec439ef8980e29d0645d54e5d23853981c3421718bf9",
+      "mix.exs": "918faa6e8ef721d65a509ed145ffaaf32d0fbbe7c22566ea0547ec7f5cc6d7ac",
+      "scripts/check-repairs.py": "f97cc7abb07c5da588da1295469cbad36d93f41600866d08342901fc29f715fa"
+    },
+    "audit_helper_sha256": {
+      ".audit/release-0.13.1/public-issue-regressions.py": "b3a8494d1639fd6673dc435fe7df7bd4d8c75018c68266411ae0747ed9b64f0e",
+      ".audit/release-0.13.1/public-verification/verify-public-artifacts.py": "80838fbb5af4a227ffe2250cb2298f1974a8a24feae53c6e4bf3a1e747da6b91",
+      ".audit/release-0.13.1/public-verification/offline-controls.py": "0435793785c80942d5d69ef32b8b7b743cd4c3165e48d9e54917fd3506bb4869",
+      ".audit/release-0.13.1/public-verification/downloaded-runtime.py": "477e7f3bb89c30f58aeaa05f046219b714dd632da195e3ab75baf3fd5fa96c85",
+      ".audit/release-0.13.1/public-verification/runtime-offline-controls.py": "2a3f9ba576a1bac37322a17405c76f24ef61bbf7d391bb913aa39bc840bfd192"
+    },
+    "reviewed_source_fingerprints_match": true,
+    "source_changes_by_reviewer": [],
+    "reviewer_write_scope": ".audit/internal-18/review.json"
+  },
+  "root_cause": "Plug application response headers reached strict shared H2/H3 framing unchanged; legacy Connection fields caused invalid_response_headers and HTTP 500.",
+  "specification_and_code_review": [
+    "Private pure normalization occurs only at Plug send_resp/send_file/send_chunked/inform boundary for HTTP/2 and HTTP/3.",
+    "Removes connection, keep-alive, proxy-connection, transfer-encoding, upgrade and response te, plus all fields nominated by repeated Connection headers using case-insensitive names/tokens.",
+    "RendererBounds.fields validates original collection shape, field count, logical bytes and retained binary backing before tokenization/filtering. Invalid collections continue unchanged to strict native validation.",
+    "Enum.reject preserves retained ordinary field order and duplicates; operation status, body and file offset/length are unchanged.",
+    "Frozen diff leaves native response/header/framing validators, HTTP/1 behavior, request handling and WebSocket upgrade paths unchanged.",
+    "Controlled tests use no listeners, sockets, external protocol peers or complete runtime; temporary ordinary files and controlled transport doubles fit unit boundary.",
+    "All four adapter operations have compatibility coverage; H3 parity uses the shared adapter and controlled framer without claiming new H3 networking evidence.",
+    "Malformed ordinary fields and collections, invalid/duplicate content lengths, fixed-stream overflow/incomplete finish, raw budgets and native strict rejection retain positive assertions.",
+    "Four protocol cases use independent finite Python H1/h2 clients for MCP POST SSE and synchronized held GET notification streams, later same-stream data, normal completion, healthy follow-up and admission cleanup.",
+    "Peer reads/body buffers and wall deadlines are bounded; fixture gates notification emission on peer receipt and has its own finite wait.",
+    "Canonical manifest adds exactly 11 unit and 4 protocol cases; existing entries and retained specialist dispositions are preserved.",
+    "Seven own Mix manifests and current install examples target 0.13.1; vendored WebSockAdapter version and dependency pins/provenance remain unchanged.",
+    "Plan/release notes/acceptance accurately distinguish focused evidence from pending full, exact-source hosted, publication and public acceptance."
+  ],
+  "findings": [],
+  "resolved_findings": [
+    {
+      "id": "PUBLIC-HARNESS-HASH-GUARD",
+      "problem": "Python assert could remove the reviewed-base checksum guard under optimized Python before import.",
+      "resolution": "Explicit require now checks both recorded original and archived SHA256 before importing the helper.",
+      "verification": "Source reinspection plus recorded controls reject changed helper before import with both normal Python and python -O.",
+      "status": "RESOLVED"
+    }
+  ],
+  "observed_worker_verification": {
+    "provenance": "Existing raw logs and receipts inspected; reviewer did not execute these checks.",
+    "initial_fixture_setup": "FAIL before semantic reproduction; preserved separately",
+    "semantic_red": {
+      "path": ".audit/internal-18/worker/red.log",
+      "executed": 14,
+      "failures": 9,
+      "exit": 2
+    },
+    "expanded_red_after_raw_budget_case": {
+      "path": ".audit/internal-18/worker/red-final.log",
+      "executed": 15,
+      "failures": 9,
+      "exit": 2
+    },
+    "initial_green": {
+      "executed": 15,
+      "failures": 1,
+      "exit": 2,
+      "cause": "controlled exchange omitted trailer limits used by unchanged validator"
+    },
+    "repaired_green": {
+      "path": ".audit/internal-18/worker/green-repair-1.log",
+      "executed": 15,
+      "failures": 0,
+      "exit": 0,
+      "unit": 11,
+      "protocol": 4
+    },
+    "format": "PASS, exit 0 in worker-result.json",
+    "inventory": "PASS unit=265 component=181 protocol=137 active_files=100 retained_files=145, exit 0",
+    "whitespace": "PASS, exit 0 in worker-result.json"
+  },
+  "public_verification_preparation_review": {
+    "issue_harness": {
+      "recorded_controls": 6,
+      "status": "PASS",
+      "actual_published_run": "NOT RUN",
+      "approved_adapter_test": "plug_response_headers_test.exs",
+      "adapter_count": 11,
+      "approved_protocol_test": "plug_response_headers_network_test.exs",
+      "protocol_count": 4,
+      "required_support_arguments": [
+        "apps/gaoxy_http/test/support/plug_response_headers_fixture.exs",
+        "apps/gaoxy_http/test/support/plug_response_headers_peer.py"
+      ],
+      "note": "h2-requirements.txt is copied automatically; explicit --sha, positive counts, --run-published and both --support paths are required for future execution."
+    },
+    "artifact_verifier": {
+      "recorded_offline_controls": 20,
+      "status": "PASS",
+      "actual_public_verification": "NOT RUN",
+      "contracts": "six Hex packages, eight assets, seven payload checksums, actual-source-derived library sets/bytes, required pins/optionality, stable exact tag, successful exact-SHA main dispatch Actions payload equality, verified CA, explicit cryptographic_build_attestation_verified=false"
+    },
+    "runtime_runner": {
+      "recorded_offline_controls": 23,
+      "status": "PASS",
+      "actual_downloaded_runtime": "NOT RUN",
+      "contracts": "passing artifact receipt, exact source/tag/version/cohort/digests, eleven smoke inputs checked before/after, safe unique extraction, prior process-local qualified Nix environment, verified CA, serial core3/gateway7/H3 3; natural clean exit required; H3 child exits and port rebind evidence; forced cleanup cannot pass"
+    },
+    "limitation": "Offline synthetic controls establish guard behavior only; they are not network, public package, artifact or runtime acceptance."
+  },
+  "evidence_sha256": {
+    ".audit/internal-18/worker/red-initial-fixture-setup.log": "d6c6ab93fcdd83d2a7fae1bb935a0dd74dffb676f1193ebf99a26d729ed88acd",
+    ".audit/internal-18/worker/red.log": "a9c41a0ed3b61c7fb7c75bac46d50e3643f4c587656aea1569d082b650f380cf",
+    ".audit/internal-18/worker/red-final.log": "b23204f852f59b41a10037c4193f2065b2e1b5a2cc81f2a790f355a9b37e66e7",
+    ".audit/internal-18/worker/green-initial.log": "2e1b29f089c361230313e5f1ebdd9c2fb5542fca08d362817848259aaa125a37",
+    ".audit/internal-18/worker/green-repair-1.log": "999908b417acfd7398fa4dbd4f1b6fcda83dcdde35ec6dade6a8eecef5ba9cbc",
+    ".audit/internal-18/worker/worker-result.json": "696b90fe203f9ef36662173a2a35438a07276391ac7bafeca4786f89fb59631c",
+    ".audit/release-0.13.1/public-issue-harness-controls.json": "8fc6691ae1707b6f60e3ca8fee3becf1766100f4ae3faa3512b298753699b1e1",
+    ".audit/release-0.13.1/public-verification/offline-controls.json": "99add8e4c82aa2d8c9ac945f118dd249d4d50df2ac03e575ea8cc0e5594aad6c",
+    ".audit/release-0.13.1/public-verification/runtime-preparation.json": "b21d803844c97c84f96c9c2b957af37334c0755a6ca4edc6bc851346fc7a9dee"
+  },
+  "pending_acceptance": [
+    "Parent fresh integrated 583-case ordinary gate, strict compile, formatting, staging and clean consumer qualification",
+    "Commit/push and all required exact-source hosted workflow qualification",
+    "Guarded release execution and immutable stable publication source/tag",
+    "Independent actual public artifact verification, Hex-only 11+4 issue regressions and 13 downloaded standalone checks",
+    "Issue evidence/labels/closure and final MCP plus paginated REST queue recheck"
+  ],
+  "repair_counters": {
+    "implementation_sol_repair_rounds": 1,
+    "received_astra_repair_rounds": 0,
+    "reviewer_repair_rounds": 0,
+    "astra_gate": null
+  },
+  "reviewer_execution": {
+    "tests": "NOT RUN by assignment",
+    "builds": "NOT RUN by assignment",
+    "network": "NOT RUN by assignment",
+    "git": "NOT RUN by assignment",
+    "commands": "Read/search/hash and report serialization only",
+    "commands_finished": true,
+    "active_processes": []
+  },
+  "remaining_risks": [
+    "Release acceptance remains conditional on the listed pending gates; source approval does not imply publication or production acceptance."
+  ],
+  "decisions_needed": []
+}

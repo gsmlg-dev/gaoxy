@@ -58,3 +58,9 @@ Historical specialist abnormal/disconnect, slow-peer, pressure and sustained-loa
 evidence retains its disposition. This release does not include deployment,
 production data/certificates, Vault, public-management changes, browser gates or
 the separately gated released-server E2E suite.
+
+Execution completed in [v0.13.1](https://github.com/gsmlg-dev/gaoxy/releases/tag/v0.13.1),
+publication source `84c7ff76461ada8aebaa34c567c61206bc963d83`. Ordinary 583,
+public issue 15 and downloaded-runtime 13 checks pass, with independent review
+and issue #18 closeout complete. Both final discovery methods return zero open
+internal requests; see the [final acceptance](../acceptance/release-0.13.1.md).

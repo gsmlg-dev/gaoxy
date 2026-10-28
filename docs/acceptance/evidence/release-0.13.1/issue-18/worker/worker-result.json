@@ -1,0 +1,74 @@
+{
+  "task": "issue18_fix",
+  "assignment": "direct",
+  "baseline": "9f272f9284e1526838d518b294e08f62511191c6",
+  "root": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "checks": [
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex",
+        "apps/gaoxy_http/test/plug_response_headers_test.exs",
+        "apps/gaoxy_http/test/plug_response_headers_network_test.exs",
+        "apps/gaoxy_http/test/support/plug_response_headers_fixture.exs"
+      ],
+      "exit": 0,
+      "seconds": 0.841,
+      "output": ""
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "seconds": 0.161,
+      "output": "INVENTORY_PASS unit=265, component=181, protocol=137 active_files=100 retained_files=145\n"
+    },
+    {
+      "name": "diff-check",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.024,
+      "output": ""
+    }
+  ],
+  "focused_result": {
+    "command": [
+      "python3",
+      "scripts/check-tests.py",
+      "apps/gaoxy_http/test/plug_response_headers_test.exs",
+      "apps/gaoxy_http/test/plug_response_headers_network_test.exs",
+      "--seed",
+      "0",
+      "--max-cases",
+      "1"
+    ],
+    "exit": 0,
+    "seconds": 5.283,
+    "environment": {
+      "MIX_ENV": "test",
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "sol_repair_rounds": 1
+  },
+  "owned_file_sha256": {
+    "apps/gaoxy_http/lib/gaoxy/plug_adapter.ex": "aea92de8b2f7d9efe1e888edf3211f1b27a9e2521fd5314ea161a4eaee2fd492",
+    "apps/gaoxy_http/test/plug_response_headers_test.exs": "6bd2e8ccb100c03ad79ad87e52bcd7afa3f1a3f6f76cf22072e1a04908d85bc9",
+    "apps/gaoxy_http/test/plug_response_headers_network_test.exs": "1327040a2f46348be90971b9d89aa490b20417dc2e2393033f596c3bc1c9dbb1",
+    "apps/gaoxy_http/test/support/plug_response_headers_fixture.exs": "dc57a8d4a97e63d0fe0140cd5147c31a540f225e3da75893a8ea05fc84affe3e",
+    "apps/gaoxy_http/test/support/plug_response_headers_peer.py": "f639561b208eb0f0d356e3e74e64aa5300e83517e16ab981e506c20b2629f4e5",
+    "scripts/check-repairs.py": "f97cc7abb07c5da588da1295469cbad36d93f41600866d08342901fc29f715fa"
+  },
+  "sol_repair_rounds": 1,
+  "astra_repair_rounds": 0,
+  "commands_finished": true
+}

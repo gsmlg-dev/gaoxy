@@ -1,0 +1,197 @@
+{
+  "task_id": "h2_release_review/issue-18-local-qualification",
+  "status": "DONE",
+  "verdict": "APPROVED local source qualification; no actionable findings",
+  "assignment": "direct independent read-only evidence review; only this report authorized for writing",
+  "reviewed_at": "2026-10-28T16:34:10.930242+00:00",
+  "repository": "/home/gao/Workspace/gsmlg-opt/gaoxy",
+  "baseline": "9f272f9284e1526838d518b294e08f62511191c6",
+  "branch": "main (parent supplied; reviewer did not execute Git)",
+  "qualification_receipt": ".audit/release-0.13.1/local-qualification-dwo5hmgr/receipt.json",
+  "qualification_receipt_sha256": "39091dbd9bc043056534f1002f63a69e0612f9a405f96c5a1d9681c493a71c9c",
+  "qualification_status": "PASS",
+  "qualification_started_at": "2026-10-28T16:21:06.405345+00:00",
+  "qualification_finished_at": "2026-10-28T16:32:14.274584+00:00",
+  "qualification_environment": {
+    "MIX_ENV": "test",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "GAOXY_QUIC_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+    "GAOXY_H2_PYTHON": "/home/gao/Workspace/gsmlg-opt/gaoxy/.audit/h2peer/bin/python",
+    "SSL_CERT_FILE": "/etc/ssl/certs/ca-certificates.crt",
+    "PIP_CERT": "/etc/ssl/certs/ca-certificates.crt"
+  },
+  "source_identity": {
+    "qualification_fingerprints": 620,
+    "all_qualification_fingerprints_match_current_source": true,
+    "frozen_task_files": 23,
+    "qualification_frozen_intersection": 18,
+    "intersection_hashes_match_frozen_review": true,
+    "unchanged_frozen_files": 22,
+    "expected_postqualification_documentation_change": {
+      "docs/acceptance/release-0.13.1.md": "a295c6e5012db12e580691d75b9af458955ccfbc01da6e2f00b78bb39f15ddce"
+    },
+    "documentation_review": "Parent-authorized acceptance checkpoint now records full local PASS and actual six gates; pending hosted/publication/public checks remain NOT RUN. Product/test/build inputs are unchanged.",
+    "not_captured_by_qualification_runner": [
+      "README.md",
+      "docs/acceptance/release-0.13.1.md",
+      "docs/phoenix.md",
+      "docs/plans/issue-18-plug-response-headers.md",
+      "docs/releases/0.13.1.md"
+    ],
+    "scope_note": "Root README and documentation lie outside qualification fingerprint roots; they were separately compared with the frozen review manifest. All match except the explicitly reviewed acceptance checkpoint."
+  },
+  "verification": {
+    "six_gates_terminal_pass_exit_zero": true,
+    "six_log_hashes_match_receipt": true,
+    "ordinary": {
+      "executed": 583,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "files": 100,
+      "every_file_count_matches_manifest": true,
+      "unit": 265,
+      "component": 181,
+      "protocol": 137,
+      "issue18_unit": 11,
+      "issue18_protocol": 4
+    },
+    "staging": {
+      "executed": 12,
+      "failures": 0,
+      "result": "OK"
+    },
+    "consumers": {
+      "mode": "built-tarballs-local-siblings",
+      "version": "0.13.1",
+      "base": 3,
+      "h3": 2,
+      "http_fetch": 2,
+      "executed": 7,
+      "failures": 0,
+      "excluded": 0,
+      "skipped": 0,
+      "manual_without_exunit": 1,
+      "production_helper_exunit_absent": 1,
+      "production_release_isolation": 1
+    },
+    "inventory": {
+      "active_files": 100,
+      "retained_paths": 145
+    },
+    "format": "PASS: mix format --check-formatted, exit 0",
+    "strict_compile": "PASS: mix compile --warnings-as-errors, exit 0"
+  },
+  "gate_evidence": [
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 0.215,
+      "timeout_seconds": 60,
+      "log_sha256": "2d307a9520bc03037045e8365ac38d0d041742a19370f353d16cae2b1d26bcf2"
+    },
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 3.174,
+      "timeout_seconds": 60,
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 5.531,
+      "timeout_seconds": 300,
+      "log_sha256": "1c44ac6e1f71df922feca4eea84f2f78ac7b01b99197d0ff55d38c58336b3014"
+    },
+    {
+      "name": "ordinary",
+      "command": [
+        "python3",
+        "scripts/check-repairs.py",
+        "all"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 310.408,
+      "timeout_seconds": 1200,
+      "log_sha256": "76067f7743c369ff663c25481fd0d5e22685d19bc8a59af5a5a16b141a655482"
+    },
+    {
+      "name": "staging",
+      "command": [
+        "python3",
+        "scripts/test-stage-hex-packages.py"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 47.948,
+      "timeout_seconds": 300,
+      "log_sha256": "d5bee502042230272c2b8dae1a2fa027b31ad14b12f13086d46d7a2909676d08"
+    },
+    {
+      "name": "consumers",
+      "command": [
+        "python3",
+        "scripts/test-consumers.py"
+      ],
+      "status": "PASS",
+      "exit": 0,
+      "seconds": 300.456,
+      "timeout_seconds": 900,
+      "log_sha256": "c7a9b44f2b6c8122fdd2fd58a44e2c7e3660c393f93baf9dcf6acf9e6e351bd4"
+    }
+  ],
+  "findings": [],
+  "resolved_observations": [
+    {
+      "observation": "Initial strict all-frozen hash check stopped on acceptance document drift before any report write.",
+      "resolution": "Parent confirmed and reviewer inspected the sole authorized postqualification prose update; all 620 captured inputs and all other 22 frozen task files match."
+    }
+  ],
+  "reviewer_changes": [
+    ".audit/internal-18/local-qualification-review.json"
+  ],
+  "repair_counters": {
+    "implementation_sol_repair_rounds": 1,
+    "received_astra_repair_rounds": 0,
+    "reviewer_repair_rounds": 0,
+    "astra_gate": null
+  },
+  "reviewer_execution": {
+    "tests": "NOT RUN by assignment",
+    "builds": "NOT RUN by assignment",
+    "network": "NOT RUN by assignment",
+    "git": "NOT RUN by assignment",
+    "commands": "read/search/hash, static log/count parsing and report serialization only",
+    "commands_finished": true,
+    "active_processes": []
+  },
+  "remaining_risks": [
+    "Local qualification uses the fingerprinted uncommitted source tree at the stated baseline; it does not establish public Hex-only acceptance, hosted qualification, publication or production acceptance."
+  ],
+  "pending": [
+    "Parent commit/push source identity and evidence bridge",
+    "Required exact-source hosted gates and guarded release",
+    "Independent public artifacts, Hex-only 15 issue regressions and 13 downloaded-runtime checks",
+    "Issue closure and final MCP/REST queue discovery"
+  ],
+  "decisions_needed": []
+}
