@@ -5,6 +5,37 @@ For the current embedded runtime, shared ListenerSets, reload and recovery, see
 implementation. The policy API guide and historical acceptance records below
 retain their original scope.
 
+## Shared instance resource policy
+
+All sets and raw services in one `Gaoxy.Proxy.Gateway` use one Gaoxy instance.
+Configure its memory policy at Gateway level:
+
+```elixir
+{Gaoxy.Proxy.Gateway,
+ id: :edge,
+ resource_budget: %{soft_limit: 268_435_456, hard_limit: 402_653_184},
+ listener_sets: listener_sets}
+```
+
+Omission, or both thresholds set to `nil`, selects adaptive defaults: soft is
+50% of effective physical/cgroup capacity and hard is twice soft, with a
+256/512 MiB fallback. Explicit thresholds must be positive finite integers with
+`soft_limit <= hard_limit`; explicit hard limits are never doubled. All Gateway
+instances also participate in the shared VM pool. Usage above soft through hard
+remains admissible; projected growth above hard is rejected.
+
+An embedded ListenerSet may omit `resource_budget` or declare the adaptive nil
+pair. An explicit numeric policy inside a set fails with
+`:listener_set_resource_budget_requires_gateway_policy`, even if it equals the
+Gateway policy. Put that policy at Gateway level so independent sets cannot
+silently discard it or multiply the instance allowance. Existing per-service
+`limits` stay attached to each service: explicit `max_bytes` caps transport and
+cleanup bytes, and explicit `max_active` caps ordinary leases. Distinct
+`max_connections`, `max_requests` and `max_streams` quotas remain independent.
+Monitor the instance from `Gateway.info(gateway)` with
+`Gaoxy.resource_budget(instance)`. Adaptive protocol/runtime qualification is
+still in progress; historical release evidence below retains its original scope.
+
 ## v0.5.0 release status — 2026-10-20 (Asia/Shanghai)
 
 Published [v0.5.0](https://github.com/gsmlg-opt/gaoxy/releases/tag/v0.5.0) from

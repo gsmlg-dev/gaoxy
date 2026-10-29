@@ -1,7 +1,8 @@
 defmodule Gaoxy.Service do
   @moduledoc false
   use GenServer, restart: :transient
-  alias Gaoxy.{Admission, Lifecycle, RegistryPolicy, Telemetry}
+  alias Gaoxy.{Admission, Lifecycle, RegistryPolicy, ResourceBudget, Telemetry}
+  alias Gaoxy.Admission.Reconciler
   def start_link(args), do: GenServer.start_link(__MODULE__, args)
 
   def attach_cleanup(service, gate, lease, guardian, reserved_bytes, deadline),
@@ -32,73 +33,164 @@ defmodule Gaoxy.Service do
     service = self()
     [{^id, spec}] = :ets.lookup(table, id)
     generation = make_ref()
-    scope = %{instance: instance, service: id, generation: generation}
+    scope = %{instance: instance.telemetry_scope, service: id, generation: generation}
 
-    with {:ok, spec} <- prepare_dispatcher(spec),
-         {:ok, policy} <- RegistryPolicy.register(scope) do
-      {:ok, gate} = Admission.start_link({spec.limits, Map.put(scope, :service_pid, self())})
-
-      context = %{
-        spec: spec,
-        gate: gate,
-        scope: scope,
-        service: self(),
-        instance: :ets.info(table, :owner),
-        startup_token: make_ref()
-      }
+    with {:ok, service_ref} <-
+           ResourceBudget.register_service(
+             instance.budget.server,
+             instance.budget.instance,
+             %{id: id, owner: self(), generation: generation},
+             spec.budget_policy,
+             Lifecycle.deadline(50)
+           ) do
+      budget = Map.put(instance.budget, :service, service_ref)
 
       result =
-        Lifecycle.protect(fn ->
-          with {:ok, backend} <- start_backend(spec, context),
-               do: attach_dispatcher(backend, context)
-        end)
+        init_registered(table, live, id, instance, spec, scope, service, generation, budget)
 
-      case result do
-        {:ok, backend, dispatcher_owner} ->
-          case RegistryPolicy.bind(policy, backend) do
-            {:ok, policy} ->
-              :ets.insert(live, {id, self(), generation})
-              Telemetry.emit(:lifecycle, %{count: 1}, scope, %{state: :ready})
+      if match?({:stop, _}, result),
+        do: Reconciler.retire_registration(budget, {:service, service_ref}, 1)
 
-              {:ok,
-               %{
-                 spec: spec,
-                 table: table,
-                 live: live,
-                 backend: backend,
-                 dispatcher_owner: dispatcher_owner,
-                 dispatcher_monitor: if(dispatcher_owner, do: Process.monitor(dispatcher_owner)),
-                 gate: gate,
-                 scope: scope,
-                 generation: generation,
-                 mode: :ready,
-                 drain: nil,
-                 control: nil,
-                 cleanups: %{},
-                 cleanup_failed: nil,
-                 registry_policy: policy,
-                 drain_fun: fn transport, backend, gate, deadline ->
-                   Lifecycle.drain(transport, backend, gate, deadline, fn ->
-                     Lifecycle.call(service, {:retain_drain_resources, backend}, deadline)
-                   end)
-                 end,
-                 backend_control: &backend_control/3
-               }}
+      result
+    else
+      {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp init_registered(table, live, id, instance, spec, scope, service, generation, budget) do
+    with {:ok, spec} <- prepare_dispatcher(spec),
+         {:ok, policy} <- RegistryPolicy.register(scope) do
+      case Admission.start_link(
+             {spec.limits, scope |> Map.put(:service_pid, self()) |> Map.put(:budget, budget)}
+           ) do
+        {:ok, gate} ->
+          case Admission.budget_client(gate) do
+            {:ok, client} ->
+              init_backend(
+                table,
+                live,
+                id,
+                instance,
+                spec,
+                scope,
+                service,
+                generation,
+                Map.put(budget, :client, client),
+                gate,
+                policy
+              )
 
             {:error, reason} ->
-              close_resources(backend, gate, spec.transport, dispatcher_owner)
+              if Process.alive?(gate), do: GenServer.stop(gate)
               RegistryPolicy.cancel(policy)
               {:stop, reason}
           end
 
         {:error, reason} ->
-          close_dispatcher_start(context)
-          if Process.alive?(gate), do: GenServer.stop(gate)
           RegistryPolicy.cancel(policy)
           {:stop, reason}
       end
     else
       {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp init_backend(
+         table,
+         live,
+         id,
+         instance,
+         spec,
+         scope,
+         service,
+         generation,
+         budget,
+         gate,
+         policy
+       ) do
+    context = %{
+      spec: spec,
+      gate: gate,
+      scope: scope,
+      service: self(),
+      instance: instance.instance_pid,
+      startup_token: make_ref()
+    }
+
+    result =
+      Lifecycle.protect(fn ->
+        with {:ok, backend} <- start_backend(spec, context),
+             do: attach_dispatcher(backend, context)
+      end)
+
+    case result do
+      {:ok, backend, dispatcher_owner} ->
+        case RegistryPolicy.bind(policy, backend) do
+          {:ok, policy} ->
+            :ets.insert(live, {id, self(), generation})
+            Telemetry.emit(:lifecycle, %{count: 1}, scope, %{state: :ready})
+
+            {:ok,
+             %{
+               budget: budget,
+               budget_cleanup: %{},
+               budget_reconciliation: nil,
+               spec: spec,
+               table: table,
+               live: live,
+               backend: backend,
+               dispatcher_owner: dispatcher_owner,
+               dispatcher_monitor: if(dispatcher_owner, do: Process.monitor(dispatcher_owner)),
+               gate: gate,
+               scope: scope,
+               generation: generation,
+               mode: :ready,
+               drain: nil,
+               control: nil,
+               cleanups: %{},
+               cleanup_failed: nil,
+               registry_policy: policy,
+               drain_fun: fn transport, backend, gate, deadline ->
+                 Lifecycle.drain(transport, backend, gate, deadline, fn ->
+                   Lifecycle.call(service, {:retain_drain_resources, backend}, deadline)
+                 end)
+               end,
+               backend_control: &backend_control/3
+             }}
+
+          {:error, reason} ->
+            native_terminal = close_resources(backend, gate, spec.transport, dispatcher_owner)
+
+            Reconciler.finish(
+              budget,
+              gate,
+              %{},
+              Lifecycle.deadline(Lifecycle.cleanup_headroom()),
+              native_terminal
+            )
+
+            RegistryPolicy.cancel(policy)
+            {:stop, reason}
+        end
+
+      {:error, reason} ->
+        native_terminal = close_dispatcher_start(context)
+
+        gate_terminal =
+          Lifecycle.protect(fn ->
+            if Process.alive?(gate), do: GenServer.stop(gate), else: :ok
+          end) == :ok
+
+        Reconciler.finish(
+          budget,
+          gate,
+          %{},
+          Lifecycle.deadline(Lifecycle.cleanup_headroom()),
+          native_terminal and gate_terminal
+        )
+
+        RegistryPolicy.cancel(policy)
+        {:stop, reason}
     end
   end
 
@@ -118,7 +210,20 @@ defmodule Gaoxy.Service do
 
     case result do
       :ok ->
-        cleanup = %{guardian: guardian, monitor: Process.monitor(guardian), receipt: false}
+        allocation =
+          receive do
+            {:gaoxy_cleanup_budget, ^token, receipt} -> receipt.token
+          after
+            0 -> nil
+          end
+
+        cleanup = %{
+          guardian: guardian,
+          monitor: Process.monitor(guardian),
+          receipt: false,
+          allocation: allocation
+        }
+
         state = %{state | cleanups: Map.put(state.cleanups, token, cleanup)}
         send(guardian, {:gaoxy_cleanup_activate, token})
         {:reply, {:ok, token}, state}
@@ -462,6 +567,16 @@ defmodule Gaoxy.Service do
     end
   end
 
+  def handle_info({:gaoxy_cleanup_budget, token, receipt}, state) do
+    state =
+      case state.cleanups[token] do
+        nil -> state
+        cleanup -> put_in(state.cleanups[token], Map.put(cleanup, :allocation, receipt.token))
+      end
+
+    {:noreply, state}
+  end
+
   def handle_info({:EXIT, pid, _}, %{drain: drain} = state)
       when not is_nil(drain) and (pid == state.backend or pid == state.gate),
       do: {:noreply, state}
@@ -487,10 +602,24 @@ defmodule Gaoxy.Service do
       if state.drain.pid, do: Process.exit(state.drain.pid, :kill)
     end
 
-    close_resources(state.backend, state.gate, state.spec.transport, state.dispatcher_owner)
+    native_terminal =
+      close_resources(state.backend, state.gate, state.spec.transport, state.dispatcher_owner)
+
     deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
     cancel_cleanups(state, :service_terminating, deadline)
-    await_cleanup_termination(state.cleanups, deadline)
+
+    proofs =
+      await_cleanup_termination(state.cleanups, deadline, Map.get(state, :budget_cleanup, %{}))
+
+    if Map.get(state, :budget),
+      do:
+        Reconciler.finish(
+          state.budget,
+          state.gate,
+          proofs,
+          Lifecycle.deadline(Lifecycle.cleanup_headroom()),
+          native_terminal
+        )
 
     # The instance owns this table and may exit while guardian cleanup continues.
     try do
@@ -520,7 +649,9 @@ defmodule Gaoxy.Service do
 
     state =
       if cleanup.receipt and reason == :normal do
-        state
+        if Map.has_key?(state, :budget_cleanup),
+          do: put_in(state.budget_cleanup[cleanup.allocation], :normal),
+          else: state
       else
         failure = if cleanup.receipt, do: {:guardian_exit, reason}, else: :cleanup_receipt_missing
         state = %{state | cleanup_failed: failure}
@@ -539,6 +670,16 @@ defmodule Gaoxy.Service do
   end
 
   defp start_drain(state, deadline, waiters) do
+    if Map.get(state, :budget),
+      do:
+        ResourceBudget.set_registration_mode(
+          state.budget.server,
+          {:service, state.budget.service},
+          :draining,
+          1,
+          Lifecycle.deadline(50)
+        )
+
     cancel_cleanups(state, :draining, deadline)
     owner = self()
     token = make_ref()
@@ -656,8 +797,17 @@ defmodule Gaoxy.Service do
 
   # A terminating service cannot run handle_call/3. Authenticate and acknowledge
   # receipts here so a guardian can finish without waiting for service death.
-  defp await_cleanup_termination(cleanups, deadline) when map_size(cleanups) > 0 do
+  defp await_cleanup_termination(cleanups, deadline, proofs) when map_size(cleanups) > 0 do
     receive do
+      {:gaoxy_cleanup_budget, token, receipt} ->
+        cleanups =
+          case cleanups[token] do
+            nil -> cleanups
+            cleanup -> Map.put(cleanups, token, Map.put(cleanup, :allocation, receipt.token))
+          end
+
+        await_cleanup_termination(cleanups, deadline, proofs)
+
       {:"$gen_call", {guardian, _} = from, {:complete_cleanup, token}} ->
         case cleanups[token] do
           %{guardian: ^guardian} = cleanup ->
@@ -665,23 +815,34 @@ defmodule Gaoxy.Service do
 
             await_cleanup_termination(
               Map.put(cleanups, token, %{cleanup | receipt: true}),
-              deadline
+              deadline,
+              proofs
             )
 
           _ ->
             GenServer.reply(from, {:error, :stale_cleanup})
-            await_cleanup_termination(cleanups, deadline)
+            await_cleanup_termination(cleanups, deadline, proofs)
         end
 
-      {:DOWN, monitor, :process, _, _} ->
-        cleanups = Map.reject(cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end)
-        await_cleanup_termination(cleanups, deadline)
+      {:DOWN, monitor, :process, guardian, reason} ->
+        case Enum.find(cleanups, fn {_, cleanup} -> cleanup.monitor == monitor end) do
+          {token, %{guardian: ^guardian} = cleanup} ->
+            proofs =
+              if cleanup.receipt and reason == :normal,
+                do: Map.put(proofs, cleanup.allocation, :normal),
+                else: proofs
+
+            await_cleanup_termination(Map.delete(cleanups, token), deadline, proofs)
+
+          _ ->
+            await_cleanup_termination(cleanups, deadline, proofs)
+        end
     after
-      Lifecycle.remaining(deadline) -> :ok
+      Lifecycle.remaining(deadline) -> proofs
     end
   end
 
-  defp await_cleanup_termination(_, _), do: :ok
+  defp await_cleanup_termination(_, _, proofs), do: proofs
 
   defp close_resources(backend, gate, transport, dispatcher_owner \\ nil) do
     extra = if dispatcher_owner, do: Lifecycle.resources(dispatcher_owner, self()), else: []
@@ -693,11 +854,13 @@ defmodule Gaoxy.Service do
     Lifecycle.force(resources, gate)
     deadline = Lifecycle.deadline(Lifecycle.cleanup_headroom())
 
-    Enum.each(monitors, fn {pid, monitor} ->
+    Enum.reduce(monitors, true, fn {pid, monitor}, confirmed ->
       receive do
-        {:DOWN, ^monitor, :process, ^pid, _} -> :ok
+        {:DOWN, ^monitor, :process, ^pid, _} -> confirmed
       after
-        Lifecycle.remaining(deadline) -> Process.demonitor(monitor, [:flush])
+        Lifecycle.remaining(deadline) ->
+          Process.demonitor(monitor, [:flush])
+          false
       end
     end)
   end
@@ -744,9 +907,11 @@ defmodule Gaoxy.Service do
     receive do
       {:gaoxy_dispatcher_ready, ^generation, ^token, owner} when is_pid(owner) ->
         resources = Lifecycle.resources(owner, self())
-        Lifecycle.terminate_resources(resources, Lifecycle.deadline(Lifecycle.cleanup_headroom()))
+
+        Lifecycle.terminate_resources(resources, Lifecycle.deadline(Lifecycle.cleanup_headroom())) ==
+          :ok
     after
-      0 -> :ok
+      0 -> context.spec.handler_mode != :datagram_dispatcher
     end
   end
 
@@ -892,7 +1057,7 @@ defmodule Gaoxy.Service do
       transport_module: transport,
       transport_options: options,
       num_listeners: 1,
-      num_connections: spec.limits.max_active,
+      num_connections: Gaoxy.Config.connection_capacity(spec),
       max_packet_size: spec.limits.max_packet,
       admission_start_timeout: spec.limits.callback_timeout,
       read_timeout: spec.limits.idle_timeout,
@@ -926,13 +1091,13 @@ defmodule Gaoxy.Service do
         poll_interval: spec.quic.poll_interval,
         event_batch: Keyword.get(spec.abyss_options, :event_batch, 32),
         tls: tls,
-        max_connections: spec.limits.max_active,
+        max_connections: Gaoxy.Config.connection_capacity(spec),
         init_timeout: spec.limits.callback_timeout,
         callback_timeout: spec.limits.callback_timeout,
         shutdown_timeout: spec.limits.drain_timeout,
         writer_timeout: spec.limits.callback_timeout,
-        writer_max_queue: spec.limits.max_active,
-        writer_max_bytes: spec.limits.max_bytes,
+        writer_max_queue: quic_stream_capacity(spec),
+        writer_max_bytes: quic_buffer_capacity(spec),
         quic_options: quic_engine_options(spec)
       )
     end
@@ -979,7 +1144,7 @@ defmodule Gaoxy.Service do
           {:send_timeout_close, true} | tls
         ] ++ Keyword.get(spec.hell_options, :transport_options, []),
       num_acceptors: num_acceptors,
-      num_connections: div(spec.limits.max_active, num_acceptors),
+      num_connections: div(Gaoxy.Config.connection_capacity(spec), num_acceptors),
       max_connections_retry_count: 0,
       read_timeout: spec.limits.idle_timeout,
       handshake_timeout: spec.limits.callback_timeout,
@@ -987,17 +1152,20 @@ defmodule Gaoxy.Service do
     )
   end
 
+  defp quic_stream_capacity(spec), do: spec.budget_policy.max_active || 64
+  defp quic_buffer_capacity(spec), do: spec.budget_policy.max_bytes || 16_777_216
+
   defp quic_engine_options(spec) do
     options = [
       streams: [
-        max_data: spec.limits.max_bytes,
-        max_stream_data: spec.limits.max_bytes,
-        max_buffer: spec.limits.max_bytes,
-        max_ready_bytes: spec.limits.max_bytes,
-        max_streams_bidi: spec.limits.max_active,
-        max_streams_uni: spec.limits.max_active,
+        max_data: quic_buffer_capacity(spec),
+        max_stream_data: quic_buffer_capacity(spec),
+        max_buffer: quic_buffer_capacity(spec),
+        max_ready_bytes: quic_buffer_capacity(spec),
+        max_streams_bidi: quic_stream_capacity(spec),
+        max_streams_uni: quic_stream_capacity(spec),
         # The engine reserves both peer quotas before allocating local streams.
-        max_stream_records: spec.limits.max_active * 3,
+        max_stream_records: quic_stream_capacity(spec) * 3,
         max_recv_ranges: 128
       ]
     ]

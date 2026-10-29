@@ -1,0 +1,401 @@
+--- apps/gaoxy/test/resource_budget_admission_test.exs before-recovery
++++ apps/gaoxy/test/resource_budget_admission_test.exs
+@@ -211,6 +211,24 @@
+             1 -> eventually(fun, until)
+           end
+         )
++  end
++
++  defp start_stream(gate, parent, kind, id) do
++    request =
++      Admission.spawn_request(
++        gate,
++        parent,
++        make_ref(),
++        20,
++        deadline(),
++        {__MODULE__, :worker, [self(), gate]},
++        kind: kind,
++        memberships: %{kind => {parent, id}, :request => make_ref()}
++      )
++
++    assert {:reply, {:ok, worker, lease}} = :gen_server.receive_response(request, 1000)
++    assert_receive {:worker_started, ^worker, ^lease, _}
++    {worker, lease}
+   end
+ 
+   test "worker credit transfers before activation and terminal pair retains the same nonlegacy stream token" do
+@@ -255,6 +273,11 @@
+     assert {:ok, _} = Admission.acquire(g, 0, kind: :writer)
+     assert :ok = Admission.end_stream(g, parent, :h2_stream, 1, deadline())
+     assert %{usage: 30, requests: 0, h2_streams: 0} = snapshot(b)
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [g, parent, lease, make_ref(), deadline()])
++
++    eventually(fn -> snapshot(b).usage == 10 end)
+   end
+ 
+   test "stream end is independent of live worker and request-end bytes" do
+@@ -285,9 +308,231 @@
+     send(worker, {:end_request, 12})
+     assert_receive {:request_ended, :ok}
+     assert %{usage: 22, requests: 0, h3_streams: 0} = snapshot(b)
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [g, parent, lease, make_ref(), deadline()])
++
++    assert %{usage: 22} = snapshot(b)
+     send(worker, :finish)
+     eventually(fn -> snapshot(b).leases == 1 end)
+     assert %{usage: 10} = snapshot(b)
++  end
++
++  for {kind, ordering} <- [
++        {:h2_stream, [:resources, :stream, :worker]},
++        {:h3_stream, [:resources, :worker, :stream]},
++        {:h2_stream, [:stream, :resources, :worker]},
++        {:h3_stream, [:stream, :worker, :resources]},
++        {:h2_stream, [:worker, :resources, :stream]},
++        {:h3_stream, [:worker, :stream, :resources]}
++      ] do
++    counter = if kind == :h2_stream, do: :h2_streams, else: :h3_streams
++
++    test "stream terminal boundaries converge for #{kind} #{inspect(ordering)}" do
++      Process.flag(:trap_exit, true)
++      kind = unquote(kind)
++      stream_counter = unquote(counter)
++      b = budget()
++      g = gate(b)
++      assert {:ok, parent} = Admission.acquire(g, 0)
++      {worker, lease} = start_stream(g, parent, kind, 1)
++      monitor = Process.monitor(worker)
++      assert {:ok, client} = Admission.budget_client(g)
++      assert {:ok, page} = ResourceBudget.allocations(client)
++      original = Enum.find(page.allocations, &(&1.kind == kind))
++      operation = make_ref()
++
++      Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
++        case event do
++          :resources ->
++            assert :ok =
++                     apply(Admission, :finish_stream_resources, [
++                       g,
++                       parent,
++                       lease,
++                       operation,
++                       deadline()
++                     ])
++
++          :stream ->
++            assert :ok = Admission.end_stream(g, parent, kind, 1, deadline())
++
++          :worker ->
++            send(worker, :finish)
++            assert_receive {:DOWN, ^monitor, :process, ^worker, :normal}
++            eventually(fn -> :sys.get_state(g).spawns == %{} end)
++        end
++
++        completed = MapSet.put(completed, event)
++        worker_done = MapSet.member?(completed, :worker)
++        memory_done = worker_done and MapSet.member?(completed, :resources)
++        stream_done = MapSet.member?(completed, :stream)
++        expected_usage = if memory_done, do: 0, else: 20
++        expected_leases = if memory_done and stream_done, do: 1, else: 2
++        expected_streams = if stream_done, do: 0, else: 1
++        expected_legacy = if worker_done, do: 1, else: 2
++
++        eventually(fn ->
++          observed = snapshot(b)
++
++          observed.usage == expected_usage and observed.leases == expected_leases and
++            observed[stream_counter] == expected_streams and
++            observed.legacy_leases == expected_legacy
++        end)
++
++        unless worker_done, do: assert(Process.alive?(worker))
++        assert {:ok, page} = ResourceBudget.allocations(client)
++        row = Enum.find(page.allocations, &(&1.token == original.token))
++
++        if memory_done and stream_done do
++          assert row == nil
++        else
++          assert row.token == original.token
++          assert row.accounting.retained_bytes == expected_usage
++        end
++
++        completed
++      end)
++
++      assert %{usage: 0, h2_streams: 0, h3_streams: 0, requests: 0, leases: 1} = snapshot(b)
++
++      assert :ok =
++               apply(Admission, :finish_stream_resources, [
++                 g,
++                 parent,
++                 lease,
++                 operation,
++                 deadline() - 2000
++               ])
++    end
++  end
++
++  test "stream memory terminal proof authenticates parent binding and operation identity" do
++    Process.flag(:trap_exit, true)
++    b = budget()
++    g = gate(b)
++    assert {:ok, first_parent} = Admission.acquire(g, 0)
++    assert {:ok, other_parent} = Admission.acquire(g, 0)
++    {first_worker, first_lease} = start_stream(g, first_parent, :h2_stream, 1)
++    {other_worker, other_lease} = start_stream(g, other_parent, :h2_stream, 2)
++    observer = self()
++
++    spawn(fn ->
++      result =
++        apply(Admission, :finish_stream_resources, [
++          g,
++          first_parent,
++          first_lease,
++          make_ref(),
++          deadline()
++        ])
++
++      send(observer, {:foreign_finish, result})
++    end)
++
++    assert_receive {:foreign_finish, {:error, :stale_generation}}
++
++    assert {:error, :stale_generation} =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               other_parent,
++               first_lease,
++               make_ref(),
++               deadline()
++             ])
++
++    assert {:error, :stale_generation} =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               first_parent,
++               other_lease,
++               make_ref(),
++               deadline()
++             ])
++
++    operation = make_ref()
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               first_parent,
++               first_lease,
++               operation,
++               deadline()
++             ])
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               first_parent,
++               first_lease,
++               operation,
++               deadline() - 2000
++             ])
++
++    assert {:error, :operation_conflict} =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               other_parent,
++               other_lease,
++               operation,
++               deadline()
++             ])
++
++    assert %{usage: 40, leases: 4, h2_streams: 2} = snapshot(b)
++    assert Process.alive?(first_worker) and Process.alive?(other_worker)
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [
++               g,
++               other_parent,
++               other_lease,
++               make_ref(),
++               deadline()
++             ])
++
++    assert :ok = Admission.end_stream(g, first_parent, :h2_stream, 1, deadline())
++    assert :ok = Admission.end_stream(g, other_parent, :h2_stream, 2, deadline())
++    send(first_worker, :finish)
++    send(other_worker, :finish)
++    eventually(fn -> snapshot(b).leases == 2 end)
++    assert %{usage: 0, h2_streams: 0, requests: 0} = snapshot(b)
++  end
++
++  test "stream memory completion preserves independent guardian charges until terminal receipt" do
++    Process.flag(:trap_exit, true)
++    b = budget()
++    g = gate(b)
++    assert {:ok, parent} = Admission.acquire(g, 0)
++    {worker, lease} = start_stream(g, parent, :h3_stream, 1)
++
++    guardian =
++      spawn(fn ->
++        receive do
++          :finish -> :ok
++        end
++      end)
++
++    on_exit(fn -> if Process.alive?(guardian), do: Process.exit(guardian, :kill) end)
++    token = make_ref()
++    request_deadline = :sys.get_state(g).leases[lease].deadline
++    assert :ok = Admission.attach_cleanup(g, worker, lease, guardian, 5, request_deadline, token)
++
++    assert :ok =
++             apply(Admission, :finish_stream_resources, [g, parent, lease, make_ref(), deadline()])
++
++    assert %{usage: 25} = snapshot(b)
++    assert :ok = Admission.end_stream(g, parent, :h3_stream, 1, deadline())
++    send(worker, :finish)
++    eventually(fn -> snapshot(b).usage == 5 end)
++    assert %{usage: 5, leases: 2} = snapshot(b)
++    assert %{cleanup_pending: 1} = Admission.status(g)
++    assert :ok = Admission.complete_cleanup(g, token)
++    assert %{usage: 5} = snapshot(b)
++    send(guardian, :finish)
++    eventually(fn -> snapshot(b).usage == 0 end)
++    assert %{cleanup_pending: 0} = Admission.status(g)
++    assert %{usage: 0, leases: 1, h3_streams: 0} = snapshot(b)
+   end
+ 
+   test "another caller cannot end a parent's stream" do
+@@ -363,6 +608,90 @@
+     assert %{usage: 20} = snapshot(b)
+   end
+ 
++  test "ambiguous update retains its terminal rejection for identical retries" do
++    b = {server, _} = budget()
++    g = gate(b)
++    assert {:ok, lease} = Admission.acquire(g, 10)
++    assert {:ok, client} = Admission.budget_client(g)
++    assert {:ok, before} = ResourceBudget.allocations(client)
++    operation = make_ref()
++    assert :ok = :sys.suspend(server)
++
++    try do
++      limit = System.monotonic_time(:millisecond) + 20
++
++      assert {:error, :budget_timeout} =
++               Admission.update_until(g, lease, 20, operation, limit)
++
++      state = :sys.get_state(g)
++      assert state.budget.pending.deadline == limit
++      assert elem(state.update_pending, 0) == operation
++      assert System.monotonic_time(:millisecond) >= limit
++    after
++      :ok = :sys.resume(server)
++    end
++
++    eventually(fn -> :sys.get_state(g).budget.pending == nil end)
++
++    assert {:error, :deadline_exceeded} =
++             Admission.update_until(g, lease, 20, operation, deadline())
++
++    assert {:error, :deadline_exceeded} =
++             Admission.update_until(g, lease, 20, operation, deadline() - 2000)
++
++    assert {:error, :operation_conflict} =
++             Admission.update_until(g, lease, 21, operation, deadline())
++
++    assert :sys.get_state(g).update_pending == nil
++    assert {:ok, after_retry} = ResourceBudget.allocations(client)
++    assert after_retry.allocations == before.allocations
++    assert %{usage: 10} = snapshot(b)
++    assert :ok = Admission.update_until(g, lease, 30, make_ref(), deadline())
++    assert %{usage: 30} = snapshot(b)
++  end
++
++  test "a competing update cannot clear pending identity or cache a transient rejection" do
++    b = {server, _} = budget()
++    g = gate(b)
++    assert {:ok, lease} = Admission.acquire(g, 10)
++    operation = make_ref()
++    competing = make_ref()
++    assert :ok = :sys.suspend(server)
++
++    try do
++      assert {:error, :budget_timeout} =
++               Admission.update_until(
++                 g,
++                 lease,
++                 20,
++                 operation,
++                 System.monotonic_time(:millisecond) + 20
++               )
++
++      pending = :sys.get_state(g).update_pending
++
++      assert {:error, :budget_pending} =
++               Admission.update_until(g, lease, 30, competing, deadline())
++
++      state = :sys.get_state(g)
++      assert state.update_pending == pending
++      refute Map.has_key?(state.update_receipts, competing)
++
++      assert {:error, :operation_conflict} =
++               Admission.update_until(g, lease, 21, operation, deadline())
++    after
++      :ok = :sys.resume(server)
++    end
++
++    eventually(fn -> :sys.get_state(g).budget.pending == nil end)
++
++    assert {:error, :deadline_exceeded} =
++             Admission.update_until(g, lease, 20, operation, deadline())
++
++    assert :ok = Admission.update_until(g, lease, 30, competing, deadline())
++    assert %{usage: 30} = snapshot(b)
++  end
++
+   test "cleanup is nonlegacy and normal DOWN without receipt remains charged" do
+     b = budget()
+     g = gate(b, %{max_active: 1})
+@@ -442,6 +771,38 @@
+              Gaoxy.Admission.Reconciler.finish(context, g, %{c.token => :normal}, deadline())
+ 
+     assert %{usage: 0, leases: 0} = snapshot(b)
++  end
++
++  test "gate-loss page reads respect cleanup deadline and retain uncertain allocations" do
++    Process.flag(:trap_exit, true)
++    b = {server, instance} = budget()
++    g = gate(b)
++    assert {:ok, _lease} = Admission.acquire(g, 10)
++    assert {:ok, client} = Admission.budget_client(g)
++    assert {:ok, before} = ResourceBudget.allocations(client)
++    monitor = Process.monitor(g)
++    Process.exit(g, :kill)
++    assert_receive {:DOWN, ^monitor, :process, ^g, :killed}
++    context = %{server: server, instance: instance, service: client.service, client: client}
++    assert :ok = :sys.suspend(server)
++
++    {result, elapsed} =
++      try do
++        started = System.monotonic_time(:millisecond)
++
++        result =
++          Gaoxy.Admission.Reconciler.finish(context, g, %{}, started + 100, false)
++
++        {result, System.monotonic_time(:millisecond) - started}
++      after
++        :ok = :sys.resume(server)
++      end
++
++    assert {:error, :budget_timeout} = result
++    assert %{usage: 10, leases: 1} = snapshot(b)
++    assert {:ok, after_retry} = ResourceBudget.allocations(client)
++    assert after_retry.allocations == before.allocations
++    assert elapsed < 250
+   end
+ 
+   test "begin retain adjust and send paths retain canonical ownership" do

@@ -123,7 +123,13 @@ defmodule Gaoxy.Proxy.Gateway.RuntimeSupervisor do
   def start_link(context), do: Supervisor.start_link(__MODULE__, context)
   @impl true
   def init(context) do
-    instance = {Gaoxy, name: context.instance, services: context.planned, activation: :deferred}
+    instance =
+      {Gaoxy,
+       name: context.instance,
+       services: context.planned,
+       activation: :deferred,
+       resource_budget: context.plan.resource_budget}
+
     owners = {DynamicSupervisor, strategy: :one_for_one, name: context.owners}
 
     coordinator =

@@ -18,6 +18,7 @@ defmodule Gaoxy.HTTP.ListenerSet.Owner do
              Gaoxy.start_link(
                services: planned,
                activation: :deferred,
+               resource_budget: plan.resource_budget,
                name: options[:instance_name]
              ) do
         prepared =

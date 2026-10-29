@@ -1,7 +1,7 @@
 defmodule Gaoxy.Instance do
   @moduledoc false
   use GenServer
-  alias Gaoxy.{Activation, Lifecycle, RegistryPolicy}
+  alias Gaoxy.{Activation, Lifecycle, RegistryPolicy, ResourceBudget}
 
   def start_link(plan) do
     case GenServer.start(
@@ -38,9 +38,29 @@ defmodule Gaoxy.Instance do
   end
 
   defp init_services(plan, parent, registry_monitor) do
+    server = ResourceBudget.server()
+
+    with :ok <- ResourceBudget.refresh(server),
+         {:ok, ref} <-
+           ResourceBudget.register_instance(
+             server,
+             self(),
+             Map.get(plan, :resource_budget, %{}),
+             Lifecycle.deadline(50)
+           ) do
+      init_budget_services(plan, parent, registry_monitor, %{server: server, instance: ref})
+    else
+      {:error, reason} -> {:stop, reason}
+    end
+  end
+
+  defp init_budget_services(plan, parent, registry_monitor, budget) do
     {:ok, supervisor} = DynamicSupervisor.start_link(strategy: :one_for_one)
 
     state = %{
+      budget: budget,
+      budget_sequence: 1,
+      instance_pid: self(),
       table: :ets.new(__MODULE__, [:set, :public]),
       live: :ets.new(__MODULE__, [:set, :public]),
       supervisor: supervisor,
@@ -81,6 +101,8 @@ defmodule Gaoxy.Instance do
   end
 
   @impl true
+  def handle_call(:resource_budget_context, _, state), do: {:reply, state.budget, state}
+
   def handle_call(:services, _, state),
     do: {:reply, Enum.map(:ets.tab2list(state.table), &elem(&1, 0)), state}
 
@@ -240,6 +262,7 @@ defmodule Gaoxy.Instance do
 
   def handle_call({:stop, deadline}, from, state) do
     state = cancel_activation(state, :stopping)
+    state = drain_budget(state)
 
     operation =
       operation(live_services(state), deadline, from, :instance, state.participants, state)
@@ -386,6 +409,7 @@ defmodule Gaoxy.Instance do
   @impl true
   def terminate(_, state) do
     state = cancel_activation(state, :stopping)
+    state = drain_budget(state)
 
     deadline =
       if state.stopping,
@@ -409,6 +433,12 @@ defmodule Gaoxy.Instance do
       resources = Lifecycle.resources(state.supervisor, self())
       Lifecycle.terminate_resources(resources, deadline + 2 * Lifecycle.cleanup_headroom())
     end
+
+    Gaoxy.Admission.Reconciler.retire_registration(
+      state.budget,
+      {:instance, state.budget.instance},
+      state.budget_sequence
+    )
 
     Enum.each(state.operations, fn {_, op} -> Process.exit(op.pid, :kill) end)
 
@@ -549,12 +579,30 @@ defmodule Gaoxy.Instance do
     }
   end
 
+  defp drain_budget(state) do
+    ResourceBudget.set_registration_mode(
+      state.budget.server,
+      {:instance, state.budget.instance},
+      :draining,
+      state.budget_sequence,
+      Lifecycle.deadline(50)
+    )
+
+    %{state | budget_sequence: state.budget_sequence + 1}
+  end
+
   defp start_service(spec, state) do
     :ets.insert(state.table, {spec.id, spec})
 
     case DynamicSupervisor.start_child(
            state.supervisor,
-           {Gaoxy.Service, {state.table, state.live, spec.id, state.scope}}
+           {Gaoxy.Service,
+            {state.table, state.live, spec.id,
+             %{
+               telemetry_scope: state.scope,
+               instance_pid: state.instance_pid,
+               budget: state.budget
+             }}}
          ) do
       {:ok, pid} ->
         {:ok, GenServer.call(pid, {:request, nil, :handle})}

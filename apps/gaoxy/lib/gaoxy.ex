@@ -20,6 +20,14 @@ defmodule Gaoxy do
   def add(instance, spec),
     do: Gaoxy.Lifecycle.call(instance, {:add, spec}, Gaoxy.Lifecycle.deadline(5_000))
 
+  @doc "Returns shared memory policy, usage, quotas and sampling availability for an instance."
+  def resource_budget(instance) do
+    with %{server: server, instance: ref} <-
+           Gaoxy.Lifecycle.call(instance, :resource_budget_context, Gaoxy.Lifecycle.deadline(50)) do
+      Gaoxy.ResourceBudget.snapshot(server, ref)
+    end
+  end
+
   def services(instance),
     do: Gaoxy.Lifecycle.call(instance, :services, Gaoxy.Lifecycle.deadline(5_000))
 

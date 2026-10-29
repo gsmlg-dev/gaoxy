@@ -258,6 +258,15 @@ confirms protocol completion. This is a distinct nonlegacy retention kind,
 never a second ordinary allocation or a cleanup guardian. Removing request or
 stream membership does not release memory still owned by output or cleanup.
 
+An authenticated parent separately confirms that a worker lease's output and
+buffer resources are terminal with `finish_stream_resources/5`. This hook uses
+the stable worker lease identity, so it remains usable after stream membership
+ends. It does not refund a live worker. Once both worker terminal signals are
+confirmed, memory can end while a zero-byte row retains an open stream quota;
+the row retires after stream completion as well. Reordering these events must
+converge to the same final ownership. Plain `end_stream/5` retains its independent
+quota-only semantics, including positive bytes lacking memory-terminal proof.
+
 ## Dynamic protocol accounting
 
 Acquire connection ownership at establishment, account retained state/buffers as

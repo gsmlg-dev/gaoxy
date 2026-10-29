@@ -18,6 +18,8 @@ defmodule Gaoxy.Proxy.Gateway do
   terminal operation per logical set. Unknown/evicted receipts prove no outcome.
 
   Listener bindings and certificates are fixed for the gateway lifetime.
+  Top-level `resource_budget` selects the one instance policy shared by all sets;
+  explicit instance policies inside embedded ListenerSets are rejected.
   Successful reloads survive runtime/upstream subtree recovery. Complete root
   or VM loss returns to the host's configured startup declaration.
   """
@@ -247,7 +249,12 @@ defmodule Gaoxy.Proxy.Gateway do
       end)
 
     with {:ok, specs} <- result,
-         {:ok, config} <- Gaoxy.Config.validate(services: specs, activation: :deferred),
+         {:ok, config} <-
+           Gaoxy.Config.validate(
+             services: specs,
+             activation: :deferred,
+             resource_budget: plan.resource_budget
+           ),
          do: {:ok, config.services}
   end
 

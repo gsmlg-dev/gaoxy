@@ -33,17 +33,37 @@ ordinary large-render case.
 
 ## Reusable transport capacity and retained messages
 
-`limits.max_bytes` constrains finite transport reservations: receive staging,
-writer chunks, protocol control state, queues and windows. Consumed input and
-completed output return credits for subsequent chunks and messages. This value
-is neither a WebSocket payload ceiling nor a cumulative transfer allowance.
+An explicitly configured `limits.max_bytes` remains an undoubled aggregate
+transport/cleanup hard cap. Finite protocol profiles constrain receive staging,
+writer chunks, control state, queues and windows even when this administrator
+cap is omitted. Consumed input and completed output return credits for subsequent
+chunks and messages. Neither a transport profile nor this explicit cap is a
+WebSocket payload ceiling or cumulative transfer allowance.
 
 At upgrade, Admission classifies `transport_bytes` and `websocket_bytes`.
 The latter measures retained messages, callback state, decoded input waiting for
 dispatch and pending output. Generic service `max_bytes` and `max_state`, even
 when explicitly configured, do not impose a ceiling on that retained WS data.
-Status reports both categories, their sum as `retained_bytes`, and high-water
-values. Transport capacity remains finite and reusable.
+Shared memory accounting includes both categories, including WS retention.
+Omitting `max_bytes` selects adaptive admission coordinated across listeners and
+instances in the same BEAM VM: soft is 50% of effective physical/cgroup capacity,
+hard is twice soft, with 256/512 MiB fallback. Usage through soft is normal;
+above soft through hard warns while continuing admission, and projected growth
+above hard is rejected. Explicit instance thresholds are not doubled. Committed
+completion credits remain available to admitted work. Protocol, process and OOM
+safety checks remain independent.
+
+`Gaoxy.resource_budget(instance)` is the public monitoring contract for shared
+usage, thresholds, counters and rejection reasons; adaptive runtime integration
+and its ordinary verification remain in progress. Existing historical release
+qualification above does not qualify this new policy.
+
+WebSocket upgrade ends ordinary-request quota ownership, retaining connection
+and H2/H3 stream ownership until their terminal boundaries. Explicit `max_active`
+counts ordinary leases, including writers/workers, excluding cleanup and
+nonlegacy post-worker stream retention. Separate service defaults are 16,384
+connections, 65,536 requests and 65,536 streams; the old omitted 64-lease value
+is not an administrator cap. Transport capacity remains finite and reusable.
 
 The WebSock callback API still supplies a complete message. Its memory cost is
 O(message + application state + pending output), with transient assembly copies;

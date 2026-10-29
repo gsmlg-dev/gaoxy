@@ -1,0 +1,36 @@
+==> gaoxy
+Compiling 13 files (.ex)
+Generated gaoxy app
+==> gaoxy_http
+Compiling 1 file (.ex)
+Generated gaoxy_http app
+==> gaoxy_http3
+Compiling 1 file (.ex)
+Generated gaoxy_http3 app
+==> gaoxy
+
+17:21:40.348 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:21:40.376 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+17:21:40.838 [warning] resource budget warning
+.
+17:21:40.840 [warning] resource budget warning
+...
+
+  1) test explicit transport and ordinary lease caps remain exact (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:133
+     match (=) failed
+     code:  assert :ok = Admission.upgrade(g, lease, %{transport_bytes: 20, websocket_bytes: 30}, deadline())
+     left:  :ok
+     right: {:error, :inactive_request}
+     stacktrace:
+       test/resource_budget_admission_test.exs:140: (test)
+
+...
+Finished in 0.3 seconds (0.00s async, 0.3s sync)
+8 tests, 1 failure
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

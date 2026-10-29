@@ -1,6 +1,14 @@
 defmodule Gaoxy.HTTP.ListenerSet.Plan do
   @moduledoc "A pure reusable listener declaration; endpoint state is prepared at startup."
-  defstruct [:id, :target, :listeners, :service_ids, discovery: false, startup_timeout: 5_000]
+  defstruct [
+    :id,
+    :target,
+    :listeners,
+    :service_ids,
+    resource_budget: %{soft_limit: nil, hard_limit: nil},
+    discovery: false,
+    startup_timeout: 5_000
+  ]
 end
 
 defmodule Gaoxy.HTTP.ListenerSet do
@@ -15,6 +23,10 @@ defmodule Gaoxy.HTTP.ListenerSet do
        id: :site, plug: {MyPlug, []},
        listeners: [http: [port: 4000]]}
 
+  Top-level `resource_budget: %{soft_limit: ..., hard_limit: ...}` selects one
+  instance policy shared by all roles; omission uses adaptive VM-coordinated
+  defaults. Service `limits` remain inside each physical listener.
+
   Secure roles accept `certfile` and `keyfile`. H3 requires `gaoxy_http3`.
   `discovery: [port: :bound, max_age: 60]` enables same-host Alt-Svc on secure
   H1/H2 responses. Independent port-zero bindings remain independent.
@@ -25,7 +37,16 @@ defmodule Gaoxy.HTTP.ListenerSet do
   @common [:id, :ip, :port, :limits, :http_limits, :extended_connect]
   @http [:protocols, :h2c, :h2_limits]
   @tls [:certfile, :keyfile, :versions, :alpn, :verify, :cacertfile, :fail_if_no_peer_cert]
-  @keys [:id, :endpoint, :plug, :listeners, :service_ids, :discovery, :startup_timeout]
+  @keys [
+    :id,
+    :endpoint,
+    :plug,
+    :listeners,
+    :service_ids,
+    :resource_budget,
+    :discovery,
+    :startup_timeout
+  ]
 
   def plan(%Plan{} = input) do
     target =
@@ -42,7 +63,8 @@ defmodule Gaoxy.HTTP.ListenerSet do
           listeners: input.listeners,
           service_ids: input.service_ids,
           discovery: input.discovery,
-          startup_timeout: input.startup_timeout
+          startup_timeout: input.startup_timeout,
+          resource_budget: input.resource_budget
         ]
     )
   end
@@ -50,6 +72,7 @@ defmodule Gaoxy.HTTP.ListenerSet do
   def plan(options) when is_list(options) do
     with :ok <- keyword(options, []),
          :ok <- known(options, @keys, []),
+         {:ok, budget_plan} <- Gaoxy.Config.validate(Keyword.take(options, [:resource_budget])),
          id = Keyword.get(options, :id),
          true <- valid_id?(id) || field([:id], :invalid_id),
          {:ok, target} <- target(options),
@@ -67,7 +90,8 @@ defmodule Gaoxy.HTTP.ListenerSet do
          listeners: listeners,
          service_ids: ids,
          discovery: discovery,
-         startup_timeout: timeout
+         startup_timeout: timeout,
+         resource_budget: budget_plan.resource_budget
        }}
     end
   end

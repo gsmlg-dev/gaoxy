@@ -1,0 +1,268 @@
+{
+  "task": "ARB-CORE",
+  "mode": "bounded-recovery-implementation",
+  "status": "recovery_checks_passed_pending_independent_review",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "gate_evidence": "Sol repair1 failed230/21; Sol repair2 passed230/0 but independent review found terminal update receipt and cleanup read deadline defects. Parent added evidenced missing stream resource-terminal hook within this same recovery1.",
+  "baseline": "a0a05efe300cb126b509ad1035719b4995c0d593",
+  "counters": {
+    "sol_repair_rounds": 2,
+    "astra_repair_rounds": 1
+  },
+  "environment": {
+    "MIX_ENV": "test",
+    "ELIXIR_ERL_OPTIONS": "+S 2:2"
+  },
+  "changes": [
+    "apps/gaoxy/lib/gaoxy/admission.ex",
+    "apps/gaoxy/lib/gaoxy/admission/budget.ex",
+    "apps/gaoxy/lib/gaoxy/admission/reconciler.ex",
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+    "apps/gaoxy/test/resource_budget_admission_test.exs",
+    "scripts/check-repairs.py"
+  ],
+  "source_hashes": {
+    "apps/gaoxy/lib/gaoxy.ex": "f28d121c34a5e1a292b643d79a1a0db7325f7813da9e18526deed9f31457ad24",
+    "apps/gaoxy/lib/gaoxy/application.ex": "d37def4078d4a859d173fce48679bbc1b4552e110dc3007041dc843f7421840e",
+    "apps/gaoxy/lib/gaoxy/instance.ex": "0af626b10a2693e56990cdbb8d13cd2eb26822364307da0e5d053a78a7fb6965",
+    "apps/gaoxy/lib/gaoxy/service.ex": "ebc2a1564a3c496fb8c42a7ba7bf6a7f6967ef09490a304b2271a7912359f354",
+    "apps/gaoxy/lib/gaoxy/stream_bridge.ex": "e0f0e6dc42047fa22a32f74f9379e91263d6ccf62d27812148b1e81a3bd850c2",
+    "apps/gaoxy/lib/gaoxy/datagram_bridge.ex": "724fbb667243caaf845d69226c4a1eb1d5a6d07f2ddf82bfb714cdcd0ef49226",
+    "apps/gaoxy/lib/gaoxy/quic_bridge.ex": "f527f3ccb91a94a3017e1964289ddda3a04cee3304d1969962a902b692b199d5",
+    "apps/gaoxy/lib/gaoxy/admission.ex": "51d7dffde9bb98fe3d6b039540e2ea39ad5d391400d3100822cd6eeff9f09c80",
+    "apps/gaoxy/lib/gaoxy/admission/accounting.ex": "ee13ce929f5bb7590e4085f177d394513657b3e84f7765fde9849e0583793cdd",
+    "apps/gaoxy/lib/gaoxy/admission/budget.ex": "7f0bf4e37d3237d15e59a0b34170625a38e6b83f85a33331c15ab70371b59cc1",
+    "apps/gaoxy/lib/gaoxy/admission/reconciler.ex": "8b1c2a1cb377a50fb8078f8f1cf3f00eef2189f6023a63b39da4b8e846165f36",
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex": "8f9cb8856555ee58c735c2f9e2847d2d104817d6bf34e1d0089f526c8b7e1cff",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "26173508c11c5f4ca3aa7a987f7b95c0cc9b764eb815316be0b89ddcc5024957",
+    "apps/gaoxy/test/resource_budget_admission_test.exs": "e83e7a4e4a13a0870e18f186c9f945d18d18b0c55e34a9bcfc066ae0930a9f18",
+    "scripts/check-repairs.py": "1b63d46912cdaf85b8e23b828b7c51f55868ce5a4b63c1d6f9e0826c2932515a"
+  },
+  "protected_source_hashes": {
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "26173508c11c5f4ca3aa7a987f7b95c0cc9b764eb815316be0b89ddcc5024957",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ad28df899a5c5f34184bc556b4c1b08034468e867bb32dbf1f76ff0837d8fb6b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex": "9e163881a3b100f8d32fd50bff94add168b3cd9d49c28287e3cd0494dd35e561",
+    "apps/gaoxy/test/resource_budget_owner_test.exs": "e0bc50fef482cdce19ac365dbd4669932d46e08a48863b5f43c0ec290977b408",
+    "apps/gaoxy/test/resource_budget_safety_test.exs": "2d3ce05383e7d62039877164f2682396edc25cd41605ba2489935865fb311345",
+    "apps/gaoxy/lib/gaoxy/config.ex": "4fb1e8f4b143c18ec55d322b652e0f6452bb58d59b87991d478867db35f96d2b",
+    "apps/gaoxy_http/lib/gaoxy/http/listener_set.ex": "0064df5ae52c7f8d3d49f135085e689e0f2bde9e3f6850acf9af422172aca5c2",
+    "apps/gaoxy_http/lib/gaoxy/http/listener_set/owner.ex": "f1929747bdfd933ea84f01e3ea962f888bfba298061e9557a5f3c1feb0a305e6",
+    "apps/gaoxy_http/lib/gaoxy/phoenix_adapter.ex": "831d4cf7865b0fddaed282e21b7e24188cca324b7bdcc9d3c13fc94a0f437a06",
+    "apps/gaoxy_http/test/resource_budget_phoenix_config_test.exs": "10b2d7e306b773e1f8f5b3caddde1e952072437537d919143587bca1f162eec5",
+    "apps/gaoxy_http/test/resource_budget_phoenix_test.exs": "5a52db5287cff255908976e54379c6d2afd7ec8a4c2ec726ee206871343e294c"
+  },
+  "protected_sources_unchanged": true,
+  "tests": {
+    "core": 32,
+    "owner": 52,
+    "safety": 15,
+    "memory": 53,
+    "other_existing_regressions": 89,
+    "executed": 241,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0
+  },
+  "test_command": {
+    "command": [
+      "python3",
+      "scripts/check-tests.py",
+      "apps/gaoxy/test/resource_budget_admission_test.exs",
+      "apps/gaoxy/test/resource_budget_owner_test.exs",
+      "apps/gaoxy/test/resource_budget_safety_test.exs",
+      "apps/gaoxy/test/system_memory_test.exs",
+      "apps/gaoxy/test/system_memory_native_test.exs",
+      "apps/gaoxy/test/resource_budget_policy_test.exs",
+      "apps/gaoxy/test/admitted_spawn_test.exs",
+      "apps/gaoxy/test/admission_timeout_test.exs",
+      "apps/gaoxy/test/cleanup_attachment_test.exs",
+      "apps/gaoxy/test/lifecycle_ownership_test.exs",
+      "apps/gaoxy/test/lifecycle_participant_test.exs",
+      "apps/gaoxy/test/websocket_admission_test.exs",
+      "apps/gaoxy/test/websocket_accounting_test.exs",
+      "--seed",
+      "0",
+      "--max-cases",
+      "1"
+    ],
+    "environment": {
+      "MIX_ENV": "test",
+      "ELIXIR_ERL_OPTIONS": "+S 2:2"
+    },
+    "exit": 0,
+    "elapsed_seconds": 19.330546379089355,
+    "log_sha256": "d48488aabc847f18390a0d86128361cb8b47949a915f4b4372c8ae159a1c68a9"
+  },
+  "checks": [
+    {
+      "name": "strict-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.2861781120300293,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/strict-compile.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "PASS"
+    },
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy.ex",
+        "apps/gaoxy/lib/gaoxy/application.ex",
+        "apps/gaoxy/lib/gaoxy/instance.ex",
+        "apps/gaoxy/lib/gaoxy/service.ex",
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/datagram_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/quic_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/admission.ex",
+        "apps/gaoxy/lib/gaoxy/admission/accounting.ex",
+        "apps/gaoxy/lib/gaoxy/admission/budget.ex",
+        "apps/gaoxy/lib/gaoxy/admission/reconciler.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.922189474105835,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "PASS"
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.1651601791381836,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/inventory.log",
+      "log_sha256": "b6c29bcb332f103bab1b47d4a279507fde5b09e06e10b3a452de676db4c5d204",
+      "status": "PASS"
+    },
+    {
+      "name": "source-whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check",
+        "--",
+        "apps/gaoxy/lib/gaoxy.ex",
+        "apps/gaoxy/lib/gaoxy/application.ex",
+        "apps/gaoxy/lib/gaoxy/instance.ex",
+        "apps/gaoxy/lib/gaoxy/service.ex",
+        "apps/gaoxy/lib/gaoxy/stream_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/datagram_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/quic_bridge.ex",
+        "apps/gaoxy/lib/gaoxy/admission.ex",
+        "apps/gaoxy/lib/gaoxy/admission/accounting.ex",
+        "apps/gaoxy/lib/gaoxy/admission/budget.ex",
+        "apps/gaoxy/lib/gaoxy/admission/reconciler.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/test/resource_budget_admission_test.exs",
+        "scripts/check-repairs.py"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.02857232093811035,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/source-whitespace.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "PASS"
+    },
+    {
+      "name": "untracked-whitespace-confirmed-1",
+      "command": [
+        "git",
+        "diff",
+        "--no-index",
+        "--check",
+        "/dev/null",
+        "apps/gaoxy/lib/gaoxy/admission/budget.ex"
+      ],
+      "exit": 1,
+      "status": "PASS",
+      "interpretation": "--no-index implies --exit-code; exit1 with empty --check output means differences and no whitespace errors.",
+      "elapsed_seconds": 0.0043239593505859375,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-1.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "untracked-whitespace-confirmed-2",
+      "command": [
+        "git",
+        "diff",
+        "--no-index",
+        "--check",
+        "/dev/null",
+        "apps/gaoxy/lib/gaoxy/admission/reconciler.ex"
+      ],
+      "exit": 1,
+      "status": "PASS",
+      "interpretation": "--no-index implies --exit-code; exit1 with empty --check output means differences and no whitespace errors.",
+      "elapsed_seconds": 0.0038123130798339844,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-2.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "untracked-whitespace-confirmed-3",
+      "command": [
+        "git",
+        "diff",
+        "--no-index",
+        "--check",
+        "/dev/null",
+        "apps/gaoxy/test/resource_budget_admission_test.exs"
+      ],
+      "exit": 1,
+      "status": "PASS",
+      "interpretation": "--no-index implies --exit-code; exit1 with empty --check output means differences and no whitespace errors.",
+      "elapsed_seconds": 0.00418543815612793,
+      "log": ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-3.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "logs": {
+    ".audit/adaptive-resource-budget/core/astra-recovery/format-write.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/format.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/green.log": "d48488aabc847f18390a0d86128361cb8b47949a915f4b4372c8ae159a1c68a9",
+    ".audit/adaptive-resource-budget/core/astra-recovery/inventory.log": "b6c29bcb332f103bab1b47d4a279507fde5b09e06e10b3a452de676db4c5d204",
+    ".audit/adaptive-resource-budget/core/astra-recovery/red-confirmed.log": "d317d7a0bf8d813bef709d70c9da2d9f27cf716dd7ba34db205015a10478737c",
+    ".audit/adaptive-resource-budget/core/astra-recovery/red.log": "7ed2355b5174c8c0ae638982feb704a675094bc73685f6543086db4cc2f12ffd",
+    ".audit/adaptive-resource-budget/core/astra-recovery/source-whitespace.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/stream-red.log": "f1478d5fd56e2736c60fef4b9e6dc5cd4f88cd4dd920ef266c4c1fde0a2e7964",
+    ".audit/adaptive-resource-budget/core/astra-recovery/strict-compile.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-1.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-1.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-2.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    ".audit/adaptive-resource-budget/core/astra-recovery/untracked-whitespace-confirmed-3.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "apis": {
+    "Gaoxy.Admission.finish_stream_resources/5": "(gate,parent_lease,worker_lease,operation,deadline): exact live-parent binding; :ok acknowledges recorded output/buffer terminal proof, not immediate refund. No live-worker refund. Same token retained/replaced/released only after worker DOWN+EXIT; stream membership independently retains a zero-byte row until end_stream. Identical retained operation retries return :ok; conflicting reuse fails. Separate guardians retain their own receipt/normal-DOWN requirement.",
+    "Gaoxy.ResourceBudget.allocations/3": "(client,cursor,absolute_deadline): <=remaining bounded read, max5000ms; expired ->{:error,:deadline_exceeded}, invalid ->{:error,:invalid_deadline}; allocations/1,2 unchanged.",
+    "Gaoxy.Admission.Budget.run/6": "Internal optional definite-rejection callback retained across ambiguous canonical calls; existing run/5 compatible."
+  },
+  "root_causes": [
+    "Definite late canonical rejection previously skipped Admission receipt bookkeeping, leaving update_pending forever. Transient competing budget_pending also cleared the original marker and was incorrectly cached.",
+    "Cleanup pagination used allocations/2 with5000ms wait despite shorter cleanup deadline.",
+    "No authenticated independent output/buffer terminal hook existed; completed stream quota could prematurely release worker output memory, or positive retained stream rows could remain until connection death."
+  ],
+  "preserved_evidence": [
+    "red24/3 included one fixture missing trap_exit; red-confirmed24/3 reproduced both P1 branches and5052ms cleanup overshoot.",
+    "stream-red32/10 preserved missing hook and premature refund evidence, initial guardian deadline mismatch and type warnings.",
+    "Initial untracked-whitespace command exit1 was an expected git --no-index difference status with empty --check output; documented confirmations passed without source edits."
+  ],
+  "not_run": [
+    "Fresh combined Phoenix integration after this recovery",
+    "Protocol H1/H2/H3 runtime integration and network acceptance",
+    "Publication and release qualification"
+  ],
+  "commands_terminal": true,
+  "temporary_processes_remaining": false,
+  "build_lane_released": true
+}

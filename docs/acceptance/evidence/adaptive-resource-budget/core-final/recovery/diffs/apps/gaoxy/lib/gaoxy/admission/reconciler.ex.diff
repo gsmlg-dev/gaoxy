@@ -1,0 +1,50 @@
+--- apps/gaoxy/lib/gaoxy/admission/reconciler.ex before-recovery
++++ apps/gaoxy/lib/gaoxy/admission/reconciler.ex
+@@ -6,20 +6,25 @@
+   # Pages and sequence are retained together; an ambiguous write retries identical
+   # arguments, never a speculative subtraction or a new operation identity.
+   def finish(budget, gate, guardians, deadline, native_terminal \\ true) do
+-    if Process.alive?(gate) do
+-      {:error, :gate_alive}
+-    else
+-      ResourceBudget.set_registration_mode(
+-        budget.server,
+-        {:service, budget.service},
+-        :draining,
+-        1,
+-        budget_deadline(deadline)
+-      )
++    cond do
++      Process.alive?(gate) ->
++        {:error, :gate_alive}
+ 
+-      result = page(budget.client, guardians, deadline, native_terminal, :start, nil)
+-      report(budget, result)
+-      result
++      Lifecycle.remaining(deadline) == 0 ->
++        {:error, :cleanup_unconfirmed}
++
++      true ->
++        ResourceBudget.set_registration_mode(
++          budget.server,
++          {:service, budget.service},
++          :draining,
++          1,
++          budget_deadline(deadline)
++        )
++
++        result = page(budget.client, guardians, deadline, native_terminal, :start, nil)
++        report(budget, result)
++        result
+     end
+   end
+ 
+@@ -50,7 +55,7 @@
+     if Lifecycle.remaining(deadline) == 0 do
+       {:error, :cleanup_unconfirmed}
+     else
+-      with {:ok, page} <- ResourceBudget.allocations(client, cursor),
++      with {:ok, page} <- ResourceBudget.allocations(client, cursor, deadline),
+            {:ok, sequence} <-
+              rows(
+                client,

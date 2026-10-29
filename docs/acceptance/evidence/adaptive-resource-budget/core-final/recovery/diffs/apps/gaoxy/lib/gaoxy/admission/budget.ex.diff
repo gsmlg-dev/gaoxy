@@ -1,0 +1,50 @@
+--- apps/gaoxy/lib/gaoxy/admission/budget.ex before-recovery
++++ apps/gaoxy/lib/gaoxy/admission/budget.ex
+@@ -21,26 +21,31 @@
+   def deadline(value) when is_integer(value), do: min(value, Lifecycle.deadline(50))
+   def deadline(_), do: Lifecycle.now() - 1
+ 
+-  # The callback is run only after a canonical receipt. An ambiguous operation
+-  # freezes further mutations; its exact sequence/arguments survive reconciliation.
++  # The commit callback requires a successful canonical receipt. Rejection records
++  # a definite failure, never a transient pending result. Both callbacks survive
++  # ambiguous calls with their exact sequence/arguments through reconciliation.
+   # No five-second inspection API is used by Admission.
+-  def run(%{budget: nil} = state, _, _, _, commit), do: {:ok, commit.(state, nil, false)}
++  def run(state, name, arguments, limit, commit, reject \\ fn state, _ -> state end)
+ 
+-  def run(%{budget: %{pending: pending}} = state, _, _, _, _) when not is_nil(pending),
++  def run(%{budget: nil} = state, _, _, _, commit, _),
++    do: {:ok, commit.(state, nil, false)}
++
++  def run(%{budget: %{pending: pending}} = state, _, _, _, _, _) when not is_nil(pending),
+     do: {:error, :budget_pending, state}
+ 
+-  def run(state, name, arguments, limit, commit) do
++  def run(state, name, arguments, limit, commit, reject) do
+     limit = deadline(limit)
+ 
+     if Lifecycle.remaining(limit) == 0 do
+-      {:error, :deadline_exceeded, state}
++      {:error, :deadline_exceeded, reject.(state, :deadline_exceeded)}
+     else
+       operation = %{
+         name: name,
+         arguments: arguments,
+         deadline: limit,
+         sequence: state.budget.sequence,
+-        commit: commit
++        commit: commit,
++        reject: reject
+       }
+ 
+       finish(state, operation, invoke(state.budget.client, operation), false)
+@@ -72,7 +77,7 @@
+ 
+     case result do
+       {:ok, receipt} -> {:ok, operation.commit.(state, receipt, late)}
+-      {:error, reason} -> {:error, reason, state}
++      {:error, reason} -> {:error, reason, operation.reject.(state, reason)}
+     end
+   end
+ 

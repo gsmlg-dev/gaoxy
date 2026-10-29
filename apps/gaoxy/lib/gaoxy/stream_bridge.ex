@@ -5,7 +5,8 @@ defmodule Gaoxy.StreamBridge do
 
   @impl true
   def handle_connection(socket, %{spec: spec, gate: gate} = state) do
-    with {:ok, lease} <- Admission.acquire(gate, 0),
+    with {:ok, lease} <-
+           Admission.acquire(gate, 0, kind: :connection, memberships: %{connection: make_ref()}),
          :ok <- Admission.begin(gate, lease, 0),
          {:ok, local} <- Hell.Socket.sockname(socket),
          {:ok, peer} <- Hell.Socket.peername(socket),

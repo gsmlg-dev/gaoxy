@@ -7,7 +7,11 @@ defmodule Gaoxy.DatagramBridge do
   def handle_data({peer, port, bytes}, state) do
     %{spec: spec, gate: gate, scope: scope} = state.server_config.handler_options
 
-    with {:ok, lease} <- Admission.acquire(gate, byte_size(bytes)),
+    with {:ok, lease} <-
+           Admission.acquire(gate, byte_size(bytes),
+             kind: :connection,
+             memberships: %{connection: make_ref()}
+           ),
          :ok <- Admission.begin(gate, lease, byte_size(bytes)) do
       metadata = state.connection_span.start_metadata
 

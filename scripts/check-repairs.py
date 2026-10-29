@@ -11,19 +11,20 @@ ROOT = Path(__file__).resolve().parent.parent
 # Each file is checked separately: losing a case or excluding it fails the gate.
 SUITES = {
     'unit': [
+        ('apps/gaoxy_http/test/resource_budget_phoenix_config_test.exs', 11),
         ('apps/gaoxy/test/resource_budget_safety_test.exs', 15),
         ('apps/gaoxy/test/resource_budget_config_test.exs', 14),
         ('apps/gaoxy/test/resource_budget_activation_test.exs', 5),
         ('apps/gaoxy_http/test/resource_budget_config_test.exs', 3),
         ('apps/gaoxy_http3/test/resource_budget_config_test.exs', 3),
-        ('apps/gaoxy_proxy/test/resource_budget_config_test.exs', 2),
+        ('apps/gaoxy_proxy/test/resource_budget_config_test.exs', 10),
         ('apps/gaoxy/test/system_memory_test.exs', 35),
         ('apps/gaoxy/test/resource_budget_policy_test.exs', 9),
         ('apps/gaoxy_http/test/plug_response_headers_test.exs', 11),
         ('apps/gaoxy_http/test/http2_codec_test.exs', 5),
         ('apps/gaoxy_http/test/protocol_detector_test.exs', 6),
         ('apps/gaoxy_http/test/http_protocol_defaults_test.exs', 9),
-        ('apps/gaoxy_server/test/config_test.exs', 3),
+        ('apps/gaoxy_server/test/config_test.exs', 10),
         ('apps/gaoxy_http/test/plug_body_test.exs', 28),
         ('apps/gaoxy_http/test/head_content_length_test.exs', 4),
         ('apps/gaoxy_http/test/http2_authority_test.exs', 8),
@@ -65,6 +66,8 @@ SUITES = {
         ('apps/gaoxy_test/test/server_profile_config_test.exs', 1),
     ],
     'component': [
+        ('apps/gaoxy/test/resource_budget_admission_test.exs', 32),
+        ('apps/gaoxy_http/test/resource_budget_phoenix_test.exs', 2),
         ('apps/gaoxy/test/resource_budget_owner_test.exs', 52),
         ('apps/gaoxy/test/system_memory_native_test.exs', 9),
         ('apps/gaoxy/test/quic_context_test.exs', 2),

@@ -1,6 +1,13 @@
 defmodule Gaoxy.Proxy.Gateway.Plan do
   @moduledoc "Pure reusable Gateway declaration. Runtime resources are prepared during startup."
-  defstruct [:id, :name, sets: [], services: [], startup_timeout: 5000]
+  defstruct [
+    :id,
+    :name,
+    resource_budget: %{soft_limit: nil, hard_limit: nil},
+    sets: [],
+    services: [],
+    startup_timeout: 5000
+  ]
 end
 
 defmodule Gaoxy.Proxy.Gateway.Declaration do
@@ -12,6 +19,7 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
     compile(
       id: plan.id,
       name: plan.name,
+      resource_budget: plan.resource_budget,
       startup_timeout: plan.startup_timeout,
       listener_sets: for(%{listener: listener} <- plan.sets, listener != nil, do: listener),
       services: plan.services ++ for(%{listener: nil, service: service} <- plan.sets, do: service)
@@ -24,8 +32,10 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
     with true <- Keyword.keyword?(options),
          true <- length(options) == map_size(Map.new(options)),
          true <-
-           Keyword.keys(options) -- [:id, :name, :listener_sets, :services, :startup_timeout] ==
+           Keyword.keys(options) --
+             [:id, :name, :listener_sets, :services, :startup_timeout, :resource_budget] ==
              [],
+         {:ok, budget_plan} <- Gaoxy.Config.validate(Keyword.take(options, [:resource_budget])),
          {:ok, sets} <- traverse(Keyword.get(options, :listener_sets, []), &listener_set/1),
          {:ok, services, raw_sets} <- services(Keyword.get(options, :services, [])),
          sets = sets ++ raw_sets,
@@ -42,6 +52,7 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
        %Plan{
          id: Keyword.get(options, :id, :gateway),
          name: options[:name],
+         resource_budget: budget_plan.resource_budget,
          sets: sets,
          services: services,
          startup_timeout: timeout
@@ -112,6 +123,9 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
 
   defp listener_set(input) do
     with {:ok, plan} <- ListenerSet.plan(input),
+         true <-
+           (is_nil(plan.resource_budget.soft_limit) and is_nil(plan.resource_budget.hard_limit)) ||
+             {:error, :listener_set_resource_budget_requires_gateway_policy},
          :ok <-
            Enum.reduce_while(plan.listeners, :ok, fn {_, options}, :ok ->
              case request_lifetime(Keyword.get(options, :http_limits, %{})) do

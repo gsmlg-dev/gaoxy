@@ -282,7 +282,7 @@ to:
 ```elixir
 http: [
   port: 4000,
-  limits: %{max_active: 64},
+  limits: %{max_connections: 64},
   hell_options: [
     num_acceptors: 4,
     transport_options: [backlog: 2048, nodelay: true]
@@ -291,8 +291,9 @@ http: [
 ```
 
 This gives each of the four acceptors 16 backend connection slots. Gaoxy
-retains the service-wide admission and byte budgets. Move connection and
-shutdown controls to the existing `limits` fields; arbitrary Thousand Island
+retains shared memory admission and any explicit service caps. Move connection
+controls to `limits.max_connections` and shutdown controls to the existing
+`limits` fields; arbitrary Thousand Island
 options are not portable to Hell. Keep certificates, binding and protocol
 policy in their existing listener fields. Remove old options at their original
 configuration definitions to prevent Phoenix config merging from retaining them.
@@ -303,27 +304,89 @@ socket-tuning interface in Abyss 0.9.0. See the complete
 [backend support matrix and restrictions](backend-options.md), including the
 different UDP buffer API and unused remainders when dividing acceptor slots.
 
+### Shared instance memory policy: `resource_budget`
+
+Put `resource_budget` at Endpoint level, alongside `http`, `https` and `http3`.
+The adapter creates one ListenerSet and one Gaoxy instance for all enabled
+listeners. Multiple Endpoints and ListenerSets share the VM's capacity pool;
+starting another instance does not create another independent memory allowance.
+`server: false` starts no adapter-owned listener or budget scope.
+
+Omission selects adaptive defaults: the soft limit is 50% of effective physical
+memory, respecting applicable cgroup limits, and the hard limit is twice that
+soft limit. Unreliable capacity detection uses a 256 MiB soft limit and 512 MiB
+hard limit. Current free memory does not set capacity. These defaults coordinate
+one BEAM VM; separate VMs need operator capacity partitioning.
+
+Usage at or below soft is normal. Usage above soft and at or below hard remains
+admissible with rate-limited warnings: above 100% through 200% of the default
+soft limit. A new allocation whose projected usage exceeds hard is rejected.
+Existing admitted work retains its committed completion credits and releases
+resources normally; admission recovers when usage permits. Independent process,
+decoder, transport and OOM safety guards still apply.
+
+For an intentional instance override:
+
+```elixir
+config :my_app, MyAppWeb.Endpoint,
+  adapter: Gaoxy.PhoenixAdapter,
+  resource_budget: %{soft_limit: 268_435_456, hard_limit: 402_653_184},
+  http: [port: 4000],
+  server: true
+```
+
+Both thresholds must be positive finite integers with `soft_limit <= hard_limit`;
+the explicit hard value is never doubled. Both keys set to `nil` select adaptive
+policy. Partial pairs, mixed nil/numeric pairs and unknown keys are rejected.
+Explicit instance policy still participates in the shared VM pool. The same
+option is accepted at the top level of `Gaoxy.HTTP.ListenerSet.plan/1`.
+
+The public monitoring contract is `Gaoxy.resource_budget(instance)`, where
+`instance` is the PID reported by `Gaoxy.PhoenixAdapter.listeners(Endpoint)`.
+It reports effective thresholds, usage, counters, availability and rejection
+reasons, including shared VM totals. Runtime integration and qualification of
+this adaptive-budget API are in progress; pure planning evidence does not
+establish Phoenix LiveView, network, platform or production qualification.
+
 ### Service budgets: `limits`
 
-| Key | Default |
-|---|---:|
-| `max_active` | 64 admission slots |
-| `max_bytes` | H1: 1,048,576 bytes; H2 when omitted: 268,435,456 bytes |
-| `max_packet`, `max_output` | 65,507 bytes each |
-| `max_state` | 65,536 bytes |
+Each physical listener retains its own optional administrator caps and finite
+protocol/lifecycle settings:
+
+| Key | Default / meaning |
+|---|---|
+| `max_connections` | 16,384 concurrent connections |
+| `max_requests` | 65,536 concurrent ordinary requests |
+| `max_streams` | 65,536 concurrent H2/H3 request streams; protocol ceilings also apply |
+| `max_active` | Omitted: no legacy administrator cap; explicit: aggregate ordinary lease cap |
+| `max_bytes` | Omitted: adaptive shared admission; explicit: undoubled transport-byte hard cap |
+| `max_packet`, `max_output` | H1/H2: 65,507 bytes each; H3: 16,384 bytes each |
+| `max_state` | H1/H2: 65,536 bytes; H3: 3,145,728 bytes |
 | `callback_timeout` | 5,000 ms |
 | `idle_timeout` | 30,000 ms |
 | `drain_timeout` | 5,000 ms |
 | `max_memberships` | 64; relevant to UDP services rather than this HTTP listener |
 
-These are service-wide resource controls, not Bandit/Thousand Island options.
-All values are positive integers; `max_packet` cannot exceed 65,507 and
-`max_memberships` cannot exceed 64. H2 needs at least three admission slots and
-a byte budget covering connection, stream and writer reservations. The default
-256 MiB budget passes the default profile; raising H2 header/table or HTTP
-buffer limits increases reservations. An explicit smaller budget is validated
-and can fail with `:http2_byte_budget`. These limits do not bound total BEAM
-memory or allocations made by application code.
+An explicit `max_active` counts connection, writer and request-worker leases;
+cleanup records and nonlegacy stream retention after worker termination do not
+consume another legacy slot. Request and stream counters have independent
+lifetimes. WebSocket upgrade ends ordinary-request ownership while retaining its
+connection and, for H2/H3, stream ownership.
+
+An explicit `max_bytes` covers aggregate transport and cleanup bytes, excluding
+retained WebSocket messages and callback state. Shared memory accounting includes
+that WebSocket retention. Neither option bounds cumulative transfer or arbitrary
+application allocations. The former numeric defaults of 64 leases and 1 MiB/H1,
+256 MiB/H2 or 16 MiB/H3 remain finite compatibility/profile values; omission does
+not make them administrator admission caps. No H2 budget override is needed to
+select adaptive policy.
+
+Supplied limits must be positive finite integers. `max_packet` cannot exceed
+65,507 and `max_memberships` cannot exceed 64. Protocol preflight and finite
+transport, decoder, frame, flow-control and queue bounds remain independent of
+detected host memory; an incompatible explicit profile can fail with
+`:http2_byte_budget`. See [backend tuning](backend-options.md) for the separate
+64-acceptor safety ceiling.
 
 ### HTTP parser and deadlines: `http_limits`
 
@@ -459,8 +522,9 @@ UTF-8 validation are unsupported. The native engine defaults to infinite
 inactivity, lifetime, frame/message and wire-fragment policies. Phoenix supplies
 a finite timeout before dispatch, so the explicit `timeout: :infinity` socket
 setting above is required for persistence. Omitted frame/message options remain
-omitted through the Gaoxy adapter; service byte/state budgets do not cap WS
-payloads or callback state. Explicit finite application limits still apply.
+omitted through the Gaoxy adapter. Explicit legacy service byte/state caps do
+not cap retained WS payloads or callback state; shared memory admission still
+accounts for that retention. Explicit finite application limits also apply.
 Phoenix accepts `max_frame_size`, but not the direct Gaoxy `max_message_size`
 override. H2 uses Hell 0.1.3's public idle transition to keep WebSocket owners
 persistent and restore ordinary connection idle after the final WebSocket ends.
@@ -540,7 +604,7 @@ into the supported Gaoxy and Phoenix configuration.
 | `:missing_credentials` or TLS startup error | Supply both binary credential paths; verify runtime file readability and certificate/host trust |
 | `:unsupported_http_alpn` / `:invalid_http_protocols` | Use supported protocol lists; omit custom ALPN; h2c requires explicit TCP prior knowledge with H2-only or H2/H1 protocols |
 | `:http2_ingress_budget` | Ensure `max_buffer_bytes >= max_frame + 9` |
-| `:http2_byte_budget` | Restore the default H2 byte budget and at least three active slots; account for enlarged headers/tables/buffers |
+| `:http2_byte_budget` | Check explicit transport/lease caps against the finite H2 profile; inspect shared memory pressure separately |
 | `:unsupported_http2_host` | Check the `:inet` backend and TLS `internal_active_n` constraints |
 | `:unsupported_request_timeout` | Use finite `request_timeout` for H3 or Generation/managed gateway targets; ordinary H1/H2 native/Plug targets support the opt-in |
 | `:duplicate_endpoint_listener` | Choose Endpoint-owned or externally mounted startup; inspect `server` and global `serve_endpoints` |

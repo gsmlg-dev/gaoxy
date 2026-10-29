@@ -24,6 +24,8 @@ defmodule Gaoxy.ResourceBudget do
   DOWN alone is not a terminal receipt. Release proof binds `owner`, `revision`,
   and `terminal: :confirmed`; the reconciler must first establish the real terminal
   boundary (including normal guardian completion or worker DOWN/EXIT pairs).
+  `allocations/3` additionally bounds the read by an absolute monotonic deadline;
+  an expired read returns `:deadline_exceeded` without a receipt grace window.
 
   `set_mode/4` accepts a gate mode or `{:service | :instance, mode}`. Drain is
   irreversible. `retire/4` takes confirmed proof with optional `scope: :gate |
@@ -61,6 +63,14 @@ defmodule Gaoxy.ResourceBudget do
   def transfer(client, token, revision, owner, operation, deadline),
     do: mutation(client, operation, deadline, {:transfer, token, revision, owner})
 
+  @doc false
+  def activate(client, token, revision, owner, operation, deadline),
+    do: mutation(client, operation, deadline, {:activate, token, revision, owner})
+
+  @doc false
+  def retain_stream(client, token, revision, owner, proof, operation, deadline),
+    do: mutation(client, operation, deadline, {:retain_stream, token, revision, owner, proof})
+
   def release(client, token, revision, receipt, operation, deadline),
     do: mutation(client, operation, deadline, {:release, token, revision, receipt})
 
@@ -72,6 +82,16 @@ defmodule Gaoxy.ResourceBudget do
 
   def allocations(client, cursor \\ :start),
     do: call(client.server, {:allocations, client, cursor})
+
+  def allocations(client, cursor, deadline) when is_integer(deadline) do
+    remaining = deadline - System.monotonic_time(:millisecond)
+
+    if remaining > 0,
+      do: call_timeout(client.server, {:allocations, client, cursor}, min(5000, remaining)),
+      else: {:error, :deadline_exceeded}
+  end
+
+  def allocations(_, _, _), do: {:error, :invalid_deadline}
 
   def operation_status(client, operation),
     do: call(client.server, {:operation_status, client, operation})
@@ -112,6 +132,10 @@ defmodule Gaoxy.ResourceBudget do
         true -> max(1, min(5000, deadline - System.monotonic_time(:millisecond)))
       end
 
+    call_timeout(server, request, timeout)
+  end
+
+  defp call_timeout(server, request, timeout) do
     GenServer.call(server, request, timeout)
   catch
     :exit, {:timeout, _} -> {:error, :budget_timeout}

@@ -22,9 +22,11 @@ complete by a narrower passing test.
 | ARB-CORE-PREFLIGHT | Sol/Sol | Accepted read-only transition/provenance patch map | 0 | 0 | None |
 | ARB-CONFIG | Sol/Sol | Accepted specification/code review and fresh combined 147/0 | 0 | 0 | None |
 | ARB-PROTOCOL-PREFLIGHT | Sol/Sol | Accepted read-only hook map; same-token stream retention selected | 0 | 0 | None |
-| ARB-CORE | Sol/unassigned | Not started | 0 | 0 | None |
-| ARB-PROTOCOL | Sol/unassigned | Not started | 0 | 0 | None |
-| ARB-PHOENIX | Sol/unassigned | Not started | 0 | 0 | None |
+| ARB-CORE | Sol/Astra | Accepted recovery 241/0, parent review and fresh combined 312/0 | 2 | 1 | SOL_REPEATED_FAILURE |
+| ARB-ENTRY | Sol/Sol | Gateway/JSON propagation accepted in combined 312/0 | 0 | 0 | None |
+| ARB-H1H2 | Sol/Sol | Dynamic protocol integration in progress | 0 | 0 | None |
+| ARB-H3 | Sol/Sol | Disjoint protocol implementation; build lane held by H1/H2 | 0 | 0 | None |
+| ARB-PHOENIX | Sol/Sol | Pure 11/0 accepted; two runtime cases await H1 integration | 0 | 0 | None |
 | ARB-QUALIFY | Sol/unassigned | Not started | 0 | 0 | None |
 | ARB-RELEASE | Coordinator/unassigned | Not started | 0 | 0 | None |
 
@@ -40,6 +42,14 @@ ROUTE task=ARB-CORE-PREFLIGHT agent=sol_worker reason=bounded-core-integration-i
 ROUTE task=ARB-CONFIG agent=sol_worker reason=independent-pure-policy-provenance-and-quota-normalization
 ROUTE task=ARB-PROTOCOL-PREFLIGHT agent=sol_worker reason=bounded-read-only-protocol-hook-contract
 ROUTE task=ARB-OWNER agent=astra_worker reason=SOL_REPEATED_FAILURE
+
+ROUTE task=ARB-CORE agent=sol_worker reason=production-lifecycle-and-admission-integration
+ROUTE task=ARB-PHOENIX agent=sol_worker reason=listener-set-and-phoenix-policy-propagation
+ROUTE task=ARB-CORE-REVIEW agent=sol_worker reason=independent-production-ownership-review
+ROUTE task=ARB-CORE agent=astra_worker reason=SOL_REPEATED_FAILURE
+ROUTE task=ARB-ENTRY agent=sol_worker reason=outer-configuration-policy-propagation
+ROUTE task=ARB-H1H2 agent=sol_worker reason=approved-dynamic-protocol-integration
+ROUTE task=ARB-H3 agent=sol_worker reason=approved-dynamic-h3-integration
 
 Architecture admission is the explicitly requested system ownership redesign;
 it is not a Sol failure/recovery escalation. Other tasks default to Sol. Keep
@@ -221,6 +231,25 @@ not accidentally share one globally named default authority.
 - [ ] Independent specification/code review, required repairs and fresh checks.
 
 ## Phases 2–3: dynamic protocol accounting and overload
+
+CORE recovery passed **241 tests with zero failures, exclusions or skips**.
+Parent review accepted matching rejection reconciliation, deadline-bounded cleanup
+pagination and independent stream-buffer terminal proofs. All 26 source/protected
+hash entries and recorded logs matched; the manifest was subsequently updated for
+15 new Gateway/JSON unit cases. A fresh combined run then passed **312/0**:
+CORE 241, configuration 45, Phoenix pure 11 and outer compatibility 15. Strict
+compile, scoped formatting, inventory and source whitespace checks passed. All
+29 final source hashes and command logs matched the combined receipt. Evidence
+is archived under `../acceptance/evidence/adaptive-resource-budget/core-final/`
+and `entry/`; earlier failing CORE candidates remain in `core-candidate/`.
+
+`finish_stream_resources/5` authenticates the live parent and stable worker
+lease. Its proof, worker DOWN/EXIT and stream termination are separate; all six
+event orders converge in controlled tests. Protocol integration must supply
+the real buffer/output terminal boundary. Phoenix's two network cases remain
+NOT RUN until H1 supplies connection membership metadata. H1/H2 owns the one
+build lane while H3 prepares disjoint source changes. No protocol acceptance or
+publication is inferred from the 312-case checkpoint.
 
 ### ARB-PROTOCOL
 

@@ -1,0 +1,103 @@
+==> gaoxy_http
+Compiling 3 files (.ex)
+Generated gaoxy_http app
+==> gaoxy
+
+17:15:11.088 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:15:11.111 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test production budget ignores omitted numeric legacy caps and commits before acknowledgment (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:33
+     match (=) failed
+     code:  assert {:ok, _} = Admission.acquire(gate, 100)
+     left:  {:ok, _}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:35: (test)
+
+
+
+  2) test two gates share instance accounting and recover after reduction (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:41
+     match (=) failed
+     code:  assert {:ok, lease} = Admission.acquire(a, 120)
+     left:  {:ok, lease}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:43: (test)
+
+
+
+  3) test request completion removes quota and watchdog without releasing connection bytes (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:50
+     match (=) failed
+     code:  assert {:ok, a} = Admission.acquire(g, 10, kind: :connection, memberships: %{connection: :a})
+     left:  {:ok, a}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:52: (test)
+
+
+
+  4) test full accounting keeps temporary credit and websocket ownership through scalar mutations (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:61
+     match (=) failed
+     code:  assert {:ok, lease} = Admission.acquire(g, accounting, kind: :connection)
+     left:  {:ok, lease}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:64: (test)
+
+
+
+  5) test explicit transport and ordinary lease caps remain exact (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:71
+     match (=) failed
+     code:  assert {:ok, lease} = Admission.acquire(g, 20)
+     left:  {:ok, lease}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:73: (test)
+
+
+
+  6) test expired internal updates never execute while public queued update compatibility remains (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:78
+     match (=) failed
+     code:  assert {:ok, lease} = Admission.acquire(g, 10)
+     left:  {:ok, lease}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:80: (test)
+
+
+
+  7) test invalid acquire metadata fails before allocation (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:85
+     match (=) failed
+     code:  assert {:error, :invalid_options} = Admission.acquire(g, 0, kind: :unknown)
+     left:  {:error, :invalid_options}
+     right: {:ok, #Reference<0.4090370253.1224474625.175127>}
+     stacktrace:
+       test/resource_budget_admission_test.exs:87: (test)
+
+
+
+  8) test mode and drain fence shared mutations while reductions remain possible (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:92
+     match (=) failed
+     code:  assert {:ok, lease} = Admission.acquire(g, 20)
+     left:  {:ok, lease}
+     right: {:error, :byte_limit}
+     stacktrace:
+       test/resource_budget_admission_test.exs:94: (test)
+
+
+Finished in 0.2 seconds (0.00s async, 0.2s sync)
+8 tests, 8 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

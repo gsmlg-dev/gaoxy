@@ -1,0 +1,52 @@
+==> gaoxy
+
+17:41:42.328 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:41:42.360 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+17:41:44.326 [warning] resource budget warning
+.
+17:41:44.327 [warning] resource budget warning
+.............
+
+  1) test ambiguous update retains its terminal rejection for identical retries (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:366
+     match (=) failed
+     code:  assert {:error, :deadline_exceeded} = Admission.update_until(g, lease, 20, operation, deadline())
+     left:  {:error, :deadline_exceeded}
+     right: {:error, :budget_pending}
+     stacktrace:
+       test/resource_budget_admission_test.exs:391: (test)
+
+
+
+  2) test a competing update cannot clear pending identity or cache a transient rejection (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:408
+     Assertion with == failed
+     code:  assert state.update_pending == pending
+     left:  nil
+     right: {#Reference<0.2737005627.3375890434.132718>,
+             <<207, 59, 247, 13, 227, 121, 139, 50, 100, 152, 142,
+               119, 115, 91, 171, 6, 86, 227, 209, 228, 213, 253,
+               68, 211, 181, 164, 250, 77, 13, 104, 220, 184>>}
+     stacktrace:
+       test/resource_budget_admission_test.exs:432: (test)
+
+...
+17:41:44.498 [error] GenServer #PID<0.526.0> terminating
+** (stop) killed
+Last message: {:EXIT, #PID<0.525.0>, :killed}
+State: {:state, {#PID<0.526.0>, ExUnit.OnExitHandler.Supervisor}, :one_for_one, {[Gaoxy.ResourceBudget.Supervisor], %{Gaoxy.ResourceBudget.Supervisor => {:child, #PID<0.527.0>, Gaoxy.ResourceBudget.Supervisor, {Gaoxy.ResourceBudget.Supervisor, :start_link, [[identity: #Reference<0.2737005627.3375890433.144037>, capacity_probe: #Function<0.59919907/0 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>, safety_probe: #Function<1.59919907/1 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>, processes: #Function<2.59919907/0 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>]]}, :permanent, false, :infinity, :supervisor, [Gaoxy.ResourceBudget.Supervisor]}}}, :undefined, 1000000, 1, [], 0, 0, :never, 1000, #Reference<0.2737005627.3375890433.144040>, ExUnit.OnExitHandler.Supervisor, {[], [#PID<0.525.0>]}}
+
+
+  3) test gate-loss page reads respect cleanup deadline and retain uncertain allocations (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:531
+     ** (EXIT from #PID<0.525.0>) killed
+
+....
+Finished in 2.0 seconds (0.00s async, 2.0s sync)
+24 tests, 3 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

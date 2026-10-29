@@ -9,7 +9,7 @@ defmodule Gaoxy.Server.Config do
     "udp_relay" => Gaoxy.Proxy.UDPRelay
   }
   @service_keys %{"id" => :id, "port" => :port, "handler_options" => :handler_options}
-  @limits ~w(max_active max_bytes max_packet max_output max_state callback_timeout idle_timeout drain_timeout max_memberships)a
+  @limits ~w(max_active max_bytes max_connections max_requests max_streams max_packet max_output max_state callback_timeout idle_timeout drain_timeout max_memberships)a
   @http_limits ~w(max_request_line max_header_bytes max_headers max_body_bytes max_chunk_line max_trailer_bytes max_trailers max_read_chunk max_buffer_bytes request_timeout header_timeout read_timeout write_timeout)a
   @h2_limits ~w(max_streams max_frame max_header_block table_size receive_window frame_timeout control_turn control_rate)a
   @h3_limits ~w(max_streams max_header_block max_pending_output control_turn control_quantum dynamic_table_capacity blocked_streams)a
@@ -46,13 +46,27 @@ defmodule Gaoxy.Server.Config do
   end
 
   def decode(%{"version" => 1, "services" => services} = data) when is_list(services) do
-    with :ok <- keys(data, ["version", "services"]),
+    with :ok <- keys(data, ["version", "services", "resource_budget"]),
+         {:ok, budget_options} <- resource_budget(data),
          {:ok, specs} <- traverse(services, &service/1) do
-      {:ok, [services: specs]}
+      {:ok, [services: specs] ++ budget_options}
     end
   end
 
   def decode(_), do: {:error, :invalid_configuration_version_or_shape}
+
+  defp resource_budget(data) do
+    case Map.fetch(data, "resource_budget") do
+      :error ->
+        {:ok, []}
+
+      {:ok, input} ->
+        with {:ok, policy} <-
+               named(input, %{"soft_limit" => :soft_limit, "hard_limit" => :hard_limit}),
+             {:ok, plan} <- Gaoxy.Config.validate(resource_budget: policy),
+             do: {:ok, [resource_budget: plan.resource_budget]}
+    end
+  end
 
   defp service(data) when is_map(data) do
     http_keys =

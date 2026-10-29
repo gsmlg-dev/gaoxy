@@ -1,0 +1,52 @@
+==> gaoxy
+
+17:42:02.538 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:42:02.577 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+17:42:04.255 [warning] resource budget warning
+.
+17:42:04.256 [warning] resource budget warning
+.............
+
+  1) test ambiguous update retains its terminal rejection for identical retries (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:366
+     match (=) failed
+     code:  assert {:error, :deadline_exceeded} = Admission.update_until(g, lease, 20, operation, deadline())
+     left:  {:error, :deadline_exceeded}
+     right: {:error, :budget_pending}
+     stacktrace:
+       test/resource_budget_admission_test.exs:391: (test)
+
+
+
+  2) test a competing update cannot clear pending identity or cache a transient rejection (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:408
+     Assertion with == failed
+     code:  assert state.update_pending == pending
+     left:  nil
+     right: {#Reference<0.1907501953.154927106.17147>,
+             <<182, 249, 61, 6, 84, 98, 178, 79, 143, 211, 229, 7,
+               204, 82, 105, 163, 2, 171, 45, 163, 69, 113, 204, 3,
+               117, 214, 170, 67, 131, 70, 120, 25>>}
+     stacktrace:
+       test/resource_budget_admission_test.exs:432: (test)
+
+...
+
+  3) test gate-loss page reads respect cleanup deadline and retain uncertain allocations (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:531
+     Assertion with < failed
+     code:  assert elapsed < 250
+     left:  5052
+     right: 250
+     stacktrace:
+       test/resource_budget_admission_test.exs:560: (test)
+
+....
+Finished in 6.8 seconds (0.00s async, 6.8s sync)
+24 tests, 3 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

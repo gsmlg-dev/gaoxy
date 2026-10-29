@@ -94,12 +94,48 @@ For example, add a UDP service beside the HTTP service:
 }
 ```
 
-`limits` sets finite service budgets such as `max_active`, `max_bytes`,
-`max_output`, `max_state`, `callback_timeout`, `idle_timeout` and
-`drain_timeout`. HTTP also accepts `http_limits` and `h2_limits`; HTTP/3
+`limits` accepts separate `max_connections`, `max_requests` and `max_streams`
+quotas, defaulting to 16,384, 65,536 and 65,536 respectively. Explicit legacy
+`max_active` caps aggregate ordinary leases, including request workers and
+writers but excluding cleanup records and nonlegacy stream retention. Explicit
+`max_bytes` remains an undoubled aggregate transport/cleanup byte cap excluding
+retained WebSocket data; shared memory accounting includes that retention.
+Omitted historical numeric profiles do not become administrator caps.
+
+Other finite service limits include `max_output`, `max_state`,
+`callback_timeout`, `idle_timeout` and `drain_timeout`. HTTP also accepts
+`http_limits` and `h2_limits`; HTTP/3
 accepts `http_limits` and `h3_limits`. Their values are JSON objects with
 allowlisted keys. Keep enough byte budget for protocol buffers and immutable
 route snapshots; undersized configurations fail validation.
+
+### Instance memory policy
+
+All configured services share one Gateway-owned Gaoxy instance. Add optional
+`resource_budget` beside top-level `version` and `services` for an intentional
+instance override:
+
+```json
+{
+  "version": 1,
+  "resource_budget": {"soft_limit": 268435456, "hard_limit": 402653184},
+  "services": []
+}
+```
+
+Both thresholds must be positive finite integers with `soft_limit <= hard_limit`.
+Explicit hard values are never doubled. Omission, or both keys set to `null`,
+selects adaptive defaults: soft is 50% of effective physical/cgroup capacity,
+hard is twice soft, and unreliable detection falls back to 256/512 MiB. Multiple
+instances share the VM pool. Usage above soft through hard remains admissible;
+projected growth above hard is refused. Independent protocol and OOM safety
+guards still apply.
+
+Only `soft_limit` and `hard_limit` are accepted inside this JSON object. Partial
+pairs, mixed null/numeric pairs, unknown keys, internal provenance and detection
+hooks are rejected. Service quotas and explicit legacy caps remain independent
+of this instance policy. Adaptive runtime and release qualification are in
+progress; these options do not establish new platform or protocol acceptance.
 
 ## TLS and HTTP protocols
 

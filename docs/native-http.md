@@ -59,16 +59,16 @@ Cleartext H2 requires explicit `h2c: :prior_knowledge`. Select
 `protocols: [:http2]` for H2-only TCP or `protocols: [:http2, :http1]` to serve
 H1 and prior-knowledge H2 on one TCP listener. Plain TCP remains H1-only with
 h2c disabled by default. HTTP/1 `Upgrade: h2c` is unsupported; there is no
-`:auto` setting. The HTTP facade supplies
-`limits.max_bytes: 268_435_456` (256 MiB) when H2 is selected and that field is
-omitted. Explicit budgets remain unchanged and must cover the reservation
-profile. An explicit configuration can use:
+`:auto` setting. The HTTP facade retains a finite 256 MiB numeric H2 transport
+profile when `max_bytes` is omitted; this profile does not become an explicit
+administrator admission cap. Omission selects adaptive shared memory admission.
+Explicit service caps remain undoubled. A default H2 declaration needs no
+resource override:
 
 ```elixir
 {:ok, server} = Gaoxy.HTTP.start_link(
   plug: {MyPlug, []},
-  protocols: [:http2], h2c: :prior_knowledge,
-  limits: %{max_bytes: 536_870_912, max_active: 128}
+  protocols: [:http2], h2c: :prior_knowledge
 )
 ```
 
@@ -128,13 +128,13 @@ Maximum streams are 128, control frames per parsing turn 128, and control rate
 are 65,536 bytes. The ingress buffer must hold the maximum frame plus its header.
 Positive finite limits and service admission apply independently.
 
-Before decoding, the connection reserves conservative HPACK expansion, fixed
-control/state allowance, the initial connection receive window, configurable
-carry copies and bounded OTP SSL delivery copies. Stream and writer leases are
-additional. Default minimum capacity for one connection, stream and writer is
-173,302,823 bytes and three active slots; larger header/table/carry settings
-raise it. This bounds the specified retained payload/copy profile, excluding
-whole-BEAM heap/GC, kernel/OTP socket memory and trusted endpoint allocations.
+Decoder expansion must have safe credit before HPACK allocation. Finite table,
+header-block, carry, OTP SSL delivery/copy, flow-control and writer bounds remain
+independent of adaptive admission. Numeric preflight validates the configured
+protocol profile; those values do not allocate a separate host-memory allowance
+per connection or listener. Dynamic H2 retention/decode-credit integration and
+its ordinary qualification are in progress. The accounted resource model does
+not bound whole-BEAM heap/GC or arbitrary trusted endpoint allocations.
 
 Streams have independent workers, deadlines and reset cleanup. Flow control
 credits follow body consumption and acknowledged writes. Shared Exchange and
@@ -149,7 +149,9 @@ H2 CONNECT tunnels remain unsupported; optional H3 uses its
 
 For Phoenix, configure `adapter: Gaoxy.PhoenixAdapter` with `http: [...]` and/or
 `https: [...]`. The Endpoint supervisor owns one Gaoxy instance with one service
-per enabled scheme. `MyEndpoint.server_info(:http)` returns its actual address
+per enabled scheme. Endpoint-level `resource_budget` configures one normalized
+instance policy shared by all those listeners; multiple Endpoints also share
+the VM pool. `MyEndpoint.server_info(:http)` returns its actual address
 and port. The HTTPS options accept `:certfile`, `:keyfile`, `:versions` and `:alpn`
 alongside `:ip`, `:port`, `:limits`, `:http_limits`, `:protocols`, `:h2c`,
 `:h2_limits` and `:extended_connect`. Omitted HTTPS protocols use the HTTP
@@ -247,6 +249,30 @@ TLS and is not an H3-specific rejection claim. Exact evidence and the final
 independent closeout review are recorded in
 [M5 acceptance](acceptance/m5-websocket-over-h2-h3.md).
 
+## Shared resource admission
+
+Adaptive defaults use 50% of effective physical memory, respecting cgroup
+limits, as soft and twice soft as hard. Detection fallback is 256 MiB soft and
+512 MiB hard. One authority coordinates instances/listeners in the same BEAM VM.
+Normal usage is at or below soft; above soft through hard remains admissible
+with rate-limited warnings. Projected growth above hard is rejected; admitted
+work retains committed completion credits, and admission recovers after release.
+Independent decoder, transport, process and OOM safety checks still apply.
+
+Top-level ListenerSet/Phoenix `resource_budget` accepts both nil thresholds for
+adaptive policy or positive finite `soft_limit <= hard_limit` overrides. Explicit
+hard values are never doubled. Use `Gaoxy.resource_budget(instance)` for public
+monitoring; adaptive runtime integration and qualification are in progress.
+
+Service `limits.max_connections`, `max_requests` and `max_streams` default to
+16,384, 65,536 and 65,536 respectively. Explicit legacy `max_active` caps aggregate
+ordinary leases, including writers/workers, excluding cleanup and nonlegacy
+post-worker stream retention. Explicit legacy `max_bytes` caps aggregate
+transport/cleanup bytes excluding WS retention; shared memory accounting includes
+WS retention. Omitted historical 64-lease and 1/256/16 MiB H1/H2/H3 profile values
+are not administrator admission limits. Protocol-specific limits remain finite;
+backend acceptor fanout retains a separate ceiling of 64.
+
 ## HTTP profile and limits
 
 The initial profile supports HTTP/1.1 and explicit HTTP/1.0 persistence, raw
@@ -303,16 +329,17 @@ HTTP/3 does not support the opt-in. Partial headers and body metadata cannot
 renew their original deadline. Slow writes retain a finite transport timeout.
 `max_header_bytes` also bounds informational and final response heads;
 `max_headers` limits parsed request headers.
-The service's global active/byte/output limits still apply: configured HTTP
-ceilings are not promises of admission under resource pressure. Output iodata
+Shared memory admission, explicit service caps and finite output limits still
+apply: configured HTTP ceilings are not promises of admission under resource
+pressure. Output iodata
 and files are traversed in bounded pieces, without creating a full-body binary.
 
 The ledger charges retained request headers/trailers, parser/body tails, selected
 output windows, and separately observed WebSocket messages and callback state. Native receive buffers
 and decoding have bounded transient copies; kernel/OTP transport buffers and
 arbitrary allocations or retained body data inside trusted application code are
-outside the ledger. This is not a bound on total BEAM memory. Low global byte
-budgets may reject work below a protocol-specific maximum, especially TLS records.
+outside the ledger. This is not a bound on total BEAM memory. Explicit transport
+caps and shared safety policy may reject work below a protocol-specific maximum.
 
 ## WebSock
 
@@ -331,7 +358,8 @@ Options default to `timeout: :infinity`, `max_lifetime: :infinity`,
 `max_push_frames: :infinity`. Callback computation defaults to 5 seconds and
 close to 1 second. A deliberately configured frame ceiling supplies an omitted
 message ceiling; an explicit message ceiling stays independent. Generic service
-byte/state budgets do not cap retained WS data or state. Transfer staging,
+byte/state caps do not cap retained WS data or state; shared memory accounting
+includes that retention. Transfer staging,
 protocol windows and queues remain finite and reusable; retained WS messages,
 state and output are reported separately. See [capacity](websocket-limits.md).
 

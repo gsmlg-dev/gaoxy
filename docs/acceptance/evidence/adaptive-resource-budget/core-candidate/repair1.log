@@ -1,0 +1,744 @@
+==> gaoxy
+Compiling 3 files (.ex)
+Generated gaoxy app
+==> gaoxy
+
+17:31:33.883 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:31:33.906 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+........................................................................
+17:31:41.743 [error] Task #PID<0.773.0> started from #PID<0.755.0> terminating
+** (stop) :injected
+    test/cleanup_attachment_test.exs:82: Gaoxy.CleanupAttachmentTest.guardian_loop/3
+    (elixir 1.18.5) lib/task/supervised.ex:101: Task.Supervised.invoke_mfa/2
+Function: #Function<4.115828988/0 in Gaoxy.CleanupAttachmentTest.guardian/0>
+    Args: []
+...........................
+
+  1) test ordinary leases retain their original scalar schema (Gaoxy.WebSocketAdmissionTest)
+     apps/gaoxy/test/websocket_admission_test.exs:115
+     Assertion with == failed
+     code:  assert Enum.sort(Map.keys(ordinary)) ==
+              Enum.sort([
+                :pid,
+                :monitor,
+                :bytes,
+                :token,
+                :timer,
+                :send,
+                :drain_notify,
+                :request_active,
+                :cleanup,
+                :deadline
+              ])
+     left:  [:accounting, :budget_owner, :bytes, :cleanup, :deadline,
+             :down_seen, :drain_notify, :exit_seen, :kind, :monitor,
+             :pid, :request_active, :send, :timer, :token]
+     right: [:bytes, :cleanup, :deadline, :drain_notify, :monitor, :pid,
+             :request_active, :send, :timer, :token]
+     stacktrace:
+       test/websocket_admission_test.exs:120: (test)
+
+.........
+17:31:43.393 [warning] resource budget warning
+.
+17:31:43.396 [warning] resource budget warning
+.................
+17:31:43.508 [error] GenServer #PID<0.1277.0> terminating
+** (stop) {:handler_preflight, :controlled_preflight}
+Last message: {:EXIT, #PID<0.1276.0>, {:handler_preflight, :controlled_preflight}}
+State: {:state, {#PID<0.1277.0>, ExUnit.OnExitHandler.Supervisor}, :one_for_one, {[Gaoxy.ResourceBudget.Supervisor], %{Gaoxy.ResourceBudget.Supervisor => {:child, #PID<0.1278.0>, Gaoxy.ResourceBudget.Supervisor, {Gaoxy.ResourceBudget.Supervisor, :start_link, [[identity: #Reference<0.3385521274.2837446658.74299>, capacity_probe: #Function<0.7982972/0 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>, safety_probe: #Function<1.7982972/1 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>, processes: #Function<2.7982972/0 in Gaoxy.ResourceBudget.AdmissionTest.budget/0>]]}, :permanent, false, :infinity, :supervisor, [Gaoxy.ResourceBudget.Supervisor]}}}, :undefined, 1000000, 1, [], 0, 0, :never, 1000, #Reference<0.3385521274.2837446658.74302>, ExUnit.OnExitHandler.Supervisor, {[], [#PID<0.1276.0>]}}
+
+
+  2) test pre-gate service failure retires its registration without an Instance callback (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:467
+     ** (EXIT from #PID<0.1276.0>) {:handler_preflight, :controlled_preflight}
+
+...........
+17:31:43.565 [warning] resource budget warning
+.
+17:31:43.567 [warning] resource budget warning
+.
+17:31:43.569 [warning] resource budget warning
+.........
+17:31:43.591 [warning] resource budget warning
+........
+17:31:43.606 [info] The function passed as a handler with ID #Reference<0.3385521274.2837446657.91989> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+............
+17:31:43.817 [warning] resource budget warning
+.......................
+17:31:46.407 [error] GenServer #PID<0.1865.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.94669>, :process, #PID<0.1867.0>, :normal}
+State: %{scope: %{instance: #PID<0.1860.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.94652>}, mode: :ready, service: #PID<0.1860.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 100011, callback_timeout: 10000, max_active: 2, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.94658> => %{monitor: #Reference<0.3385521274.2837446657.94659>, pid: #PID<0.1866.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94662>, bytes: 11, deadline: -576460726718, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.94661>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94658>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1866.0>}, #Reference<0.3385521274.2837446657.94667> => %{monitor: #Reference<0.3385521274.2837446657.94669>, pid: #PID<0.1867.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94671>, bytes: 100000, deadline: -576460726718, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.94670>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94667>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1867.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.94665> => %{owner: #PID<0.1866.0>, worker: #PID<0.1867.0>, deadline: -576460726718, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.94658>, lease: #Reference<0.3385521274.2837446657.94667>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+  3) test W minus one refuses before any real child spawn; exact W gets one slot and owned lease (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:63
+     ** (exit) exited in: GenServer.call(#PID<0.1865.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+
+......
+17:31:46.419 [error] GenServer #PID<0.1901.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.94848>, :process, #PID<0.1903.0>, :normal}
+State: %{scope: %{instance: #PID<0.1899.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.94833>}, mode: :ready, service: #PID<0.1899.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.94839> => %{monitor: #Reference<0.3385521274.2837446657.94840>, pid: #PID<0.1902.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94843>, bytes: 11, deadline: -576460726705, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.94842>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94839>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1902.0>}, #Reference<0.3385521274.2837446657.94846> => %{monitor: #Reference<0.3385521274.2837446657.94848>, pid: #PID<0.1903.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94850>, bytes: 100000, deadline: -576460726705, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.94849>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94846>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1903.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.94844> => %{owner: #PID<0.1902.0>, worker: #PID<0.1903.0>, deadline: -576460726705, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.94839>, lease: #Reference<0.3385521274.2837446657.94846>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+  4) test qualified live negative monotonic absolute deadline is accepted intact (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:175
+     ** (exit) exited in: GenServer.call(#PID<0.1901.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+
+
+17:31:46.422 [error] GenServer #PID<0.1907.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.94899>, :process, #PID<0.1909.0>, :normal}
+State: %{scope: %{instance: #PID<0.1905.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.94882>}, mode: :ready, service: #PID<0.1905.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.94888> => %{monitor: #Reference<0.3385521274.2837446657.94889>, pid: #PID<0.1908.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94892>, bytes: 11, deadline: -576460726704, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.94891>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94888>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1908.0>}, #Reference<0.3385521274.2837446657.94897> => %{monitor: #Reference<0.3385521274.2837446657.94899>, pid: #PID<0.1909.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94901>, bytes: 100000, deadline: -576460726704, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.94900>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94897>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1909.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.94895> => %{owner: #PID<0.1908.0>, worker: #PID<0.1909.0>, deadline: -576460726704, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.94888>, lease: #Reference<0.3385521274.2837446657.94897>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+17:31:46.425 [error] GenServer #PID<0.1918.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.94973>, :process, #PID<0.1920.0>, :normal}
+State: %{scope: %{instance: #PID<0.1916.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.94956>}, mode: :ready, service: #PID<0.1916.0>, bytes: 100000, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.94971> => %{monitor: #Reference<0.3385521274.2837446657.94973>, pid: #PID<0.1920.0>, send: nil, timer: #Reference<0.3385521274.2837446657.94975>, bytes: 100000, deadline: -576460726700, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.94974>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.94971>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1920.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.94969> => %{owner: #PID<0.1919.0>, worker: #PID<0.1920.0>, deadline: -576460726700, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.94962>, lease: #Reference<0.3385521274.2837446657.94971>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+17:31:46.426 [error] GenServer #PID<0.1924.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95017>, :process, #PID<0.1926.0>, :killed}
+State: %{scope: %{instance: #PID<0.1922.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95002>}, mode: :ready, service: #PID<0.1922.0>, bytes: 100000, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95015> => %{monitor: #Reference<0.3385521274.2837446657.95017>, pid: #PID<0.1926.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95019>, bytes: 100000, deadline: -576460726698, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95018>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95015>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1926.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95013> => %{owner: #PID<0.1925.0>, worker: #PID<0.1926.0>, deadline: -576460726698, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95008>, lease: #Reference<0.3385521274.2837446657.95015>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+17:31:46.430 [error] GenServer #PID<0.1935.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95092>, :process, #PID<0.1937.0>, :owner_failed}
+State: %{scope: %{instance: #PID<0.1933.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95075>}, mode: :ready, service: #PID<0.1933.0>, bytes: 100000, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95090> => %{monitor: #Reference<0.3385521274.2837446657.95092>, pid: #PID<0.1937.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95094>, bytes: 100000, deadline: -576460726695, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95093>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95090>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1937.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95088> => %{owner: #PID<0.1936.0>, worker: #PID<0.1937.0>, deadline: -576460726695, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95081>, lease: #Reference<0.3385521274.2837446657.95090>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+  5) test wrong activation ref cannot invoke callback before committed gate activation (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:192
+     ** (exit) exited in: GenServer.call(#PID<0.1907.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:217: (test)
+
+.
+17:31:46.432 [error] GenServer #PID<0.1941.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95136>, :process, #PID<0.1943.0>, :owner_failed}
+State: %{scope: %{instance: #PID<0.1939.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95121>}, mode: :ready, service: #PID<0.1939.0>, bytes: 100000, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95134> => %{monitor: #Reference<0.3385521274.2837446657.95136>, pid: #PID<0.1943.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95138>, bytes: 100000, deadline: -576460726693, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95137>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95134>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1943.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95132> => %{owner: #PID<0.1942.0>, worker: #PID<0.1943.0>, deadline: -576460726693, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95127>, lease: #Reference<0.3385521274.2837446657.95134>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+  6) test owner death normal after spawn before PID receipt cannot enter callback (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:241
+     ** (exit) exited in: GenServer.call(#PID<0.1918.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 0, 0)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:255: (test)
+
+
+
+
+17:31:46.435 [error] GenServer #PID<0.1953.0> terminating
+** (stop) :gate_parent_failed
+Last message: {:EXIT, #PID<0.1952.0>, :gate_parent_failed}
+State: %{scope: %{instance: #PID<0.1951.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95207>}, mode: :ready, service: #PID<0.1951.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95213> => %{monitor: #Reference<0.3385521274.2837446657.95214>, pid: #PID<0.1954.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95217>, bytes: 11, deadline: -576460726690, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95216>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95213>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1954.0>}, #Reference<0.3385521274.2837446657.95220> => %{monitor: #Reference<0.3385521274.2837446657.95222>, pid: #PID<0.1955.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95224>, bytes: 100000, deadline: -576460726690, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95223>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95220>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1955.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95218> => %{owner: #PID<0.1954.0>, worker: #PID<0.1955.0>, deadline: -576460726690, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95213>, lease: #Reference<0.3385521274.2837446657.95220>, activation: nil, exit_seen: false, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+  7) test owner death normal kills an endpoint-blocked child without worker polling (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:259
+     ** (exit) exited in: GenServer.call(#PID<0.1924.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 0, 0)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:269: (test)
+
+.
+17:31:46.436 [error] GenServer #PID<0.1965.0> terminating
+** (stop) :pending_parent_failed
+Last message: {:EXIT, #PID<0.1964.0>, :pending_parent_failed}
+State: %{scope: %{instance: #PID<0.1963.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95266>}, mode: :ready, service: #PID<0.1963.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95272> => %{monitor: #Reference<0.3385521274.2837446657.95273>, pid: #PID<0.1966.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95276>, bytes: 11, deadline: -576460726688, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95275>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95272>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1966.0>}, #Reference<0.3385521274.2837446657.95281> => %{monitor: #Reference<0.3385521274.2837446657.95283>, pid: #PID<0.1967.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95285>, bytes: 100000, deadline: -576460726688, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95284>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95281>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1967.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95279> => %{owner: #PID<0.1966.0>, worker: #PID<0.1967.0>, deadline: -576460726688, phase: :pending_activation, from: {#PID<0.1966.0>, [:alias | #Reference<0.0.251651.3385521274.2837512193.95280>]}, parent_lease: #Reference<0.3385521274.2837446657.95272>, lease: #Reference<0.3385521274.2837446657.95281>, activation: #Reference<0.3385521274.2837446657.95282>, exit_seen: false, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+  8) test owner death owner_failed after spawn before PID receipt cannot enter callback (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:241
+     ** (exit) exited in: GenServer.call(#PID<0.1935.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 0, 0)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:255: (test)
+
+
+
+  9) test owner death owner_failed kills an endpoint-blocked child without worker polling (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:259
+     ** (exit) exited in: GenServer.call(#PID<0.1941.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 0, 0)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:269: (test)
+
+....
+17:31:47.438 [error] GenServer #PID<0.1971.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95299>, :process, #PID<0.1973.0>, :killed}
+State: %{scope: %{instance: #PID<0.1969.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78391>}, mode: :ready, service: #PID<0.1969.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95297> => %{monitor: #Reference<0.3385521274.2837446657.95299>, pid: #PID<0.1973.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95301>, bytes: 100000, deadline: -576460735687, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95300>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95297>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1973.0>}, #Reference<0.3385521274.2837446658.78397> => %{monitor: #Reference<0.3385521274.2837446658.78398>, pid: #PID<0.1972.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78401>, bytes: 11, deadline: -576460726687, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78400>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78397>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1972.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78402> => %{owner: #PID<0.1972.0>, worker: #PID<0.1973.0>, deadline: -576460735687, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78397>, lease: #Reference<0.3385521274.2837446657.95297>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+ 10) test original finite watchdog kills endpoint-blocked worker without refund before pair (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:315
+     ** (exit) exited in: GenServer.call(#PID<0.1971.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 0, 0)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:328: (test)
+
+...
+17:31:47.443 [error] GenServer #PID<0.1997.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78505>, :process, #PID<0.2000.0>, :endpoint_failed}
+State: %{scope: %{instance: #PID<0.1995.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95455>}, mode: :ready, service: #PID<0.1995.0>, bytes: 200022, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78488> => %{monitor: #Reference<0.3385521274.2837446658.78489>, pid: #PID<0.1998.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78492>, bytes: 11, deadline: -576460725682, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78491>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78488>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1998.0>}, #Reference<0.3385521274.2837446658.78495> => %{monitor: #Reference<0.3385521274.2837446658.78496>, pid: #PID<0.1999.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78499>, bytes: 11, deadline: -576460725682, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78498>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78495>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.1999.0>}, #Reference<0.3385521274.2837446658.78503> => %{monitor: #Reference<0.3385521274.2837446658.78505>, pid: #PID<0.2000.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78507>, bytes: 100000, deadline: -576460725682, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78506>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78503>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2000.0>}, #Reference<0.3385521274.2837446658.78516> => %{monitor: #Reference<0.3385521274.2837446658.78518>, pid: #PID<0.2001.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78520>, bytes: 100000, deadline: -576460725682, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78519>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78516>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2001.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78500> => %{owner: #PID<0.1998.0>, worker: #PID<0.2000.0>, deadline: -576460725682, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78488>, lease: #Reference<0.3385521274.2837446658.78503>, activation: nil, exit_seen: true, down_seen: false}, #Reference<0.3385521274.2837446658.78501> => %{owner: #PID<0.1999.0>, worker: #PID<0.2001.0>, deadline: -576460725682, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78495>, lease: #Reference<0.3385521274.2837446658.78516>, activation: nil, exit_seen: false, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 200022, transport_high_water: 200022, websocket_high_water: 0}
+
+
+
+17:31:47.445 [error] GenServer #PID<0.2005.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95485>, :process, #PID<0.2007.0>, :normal}
+State: %{scope: %{instance: #PID<0.2003.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95470>}, mode: :ready, service: #PID<0.2003.0>, bytes: 137012, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95476> => %{monitor: #Reference<0.3385521274.2837446657.95477>, pid: #PID<0.2006.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95480>, bytes: 11, deadline: -576460725680, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95479>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95476>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2006.0>}, #Reference<0.3385521274.2837446657.95483> => %{monitor: #Reference<0.3385521274.2837446657.95485>, pid: #PID<0.2007.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95487>, bytes: 137001, deadline: -576460725680, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95486>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95483>}, transport_bytes: 137001, websocket_bytes: 0, retained_bytes: 137001, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2007.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95481> => %{owner: #PID<0.2006.0>, worker: #PID<0.2007.0>, deadline: -576460725680, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95476>, lease: #Reference<0.3385521274.2837446657.95483>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 137012, transport_high_water: 137012, websocket_high_water: 0}
+ 11) test one child crash leaves Gate and another owner/sibling lease alive (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:386
+     ** (exit) exited in: GenServer.call(#PID<0.1997.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 2, @parent_bytes + @worker_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:411: (test)
+
+
+17:31:47.447 [error] GenServer #PID<0.2012.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:785: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:EXIT, #PID<0.2014.0>, :normal}
+State: %{scope: %{instance: #PID<0.2010.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78581>}, mode: :ready, service: #PID<0.2010.0>, bytes: 137012, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78587> => %{monitor: #Reference<0.3385521274.2837446658.78588>, pid: #PID<0.2013.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78591>, bytes: 11, deadline: -576460725677, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78590>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78587>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2013.0>}, #Reference<0.3385521274.2837446658.78594> => %{monitor: #Reference<0.3385521274.2837446658.78596>, pid: #PID<0.2014.0>, send: nil, timer: nil, bytes: 137001, deadline: -576460725677, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78597>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78594>}, transport_bytes: 137001, websocket_bytes: 0, retained_bytes: 137001, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2014.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78592> => %{owner: #PID<0.2013.0>, worker: #PID<0.2014.0>, deadline: -576460725677, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78587>, lease: #Reference<0.3385521274.2837446658.78594>, activation: nil, exit_seen: false, down_seen: true}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 137012, transport_high_water: 137012, websocket_high_water: 0}
+
+
+ 12) test real terminal exit first retains current W plus B until pair; refunds once (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:421
+     ** (exit) exited in: GenServer.call(#PID<0.2005.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:449: (test)
+
+
+
+ 13) test real terminal down first retains current W plus B until pair; refunds once (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:421
+     ** (exit) exited in: GenServer.call(#PID<0.2012.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:785: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:449: (test)
+
+
+17:31:47.450 [error] GenServer #PID<0.2019.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95581>, :process, #PID<0.2021.0>, :killed}
+State: %{scope: %{instance: #PID<0.2017.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95548>}, mode: :ready, service: #PID<0.2017.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95568> => %{monitor: #Reference<0.3385521274.2837446657.95569>, pid: #PID<0.2020.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95572>, bytes: 11, deadline: -576460725675, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95571>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95568>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2020.0>}, #Reference<0.3385521274.2837446657.95579> => %{monitor: #Reference<0.3385521274.2837446657.95581>, pid: #PID<0.2021.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95583>, bytes: 100000, deadline: -576460725675, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95582>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95579>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2021.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95575> => %{owner: #PID<0.2020.0>, worker: #PID<0.2021.0>, deadline: -576460725675, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95568>, lease: #Reference<0.3385521274.2837446657.95579>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+
+17:31:47.452 [error] GenServer #PID<0.2025.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78673>, :process, #PID<0.2027.0>, :killed}
+State: %{scope: %{instance: #PID<0.2023.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78656>}, mode: :ready, service: #PID<0.2023.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78662> => %{monitor: #Reference<0.3385521274.2837446658.78663>, pid: #PID<0.2026.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78666>, bytes: 11, deadline: -576460725673, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78665>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78662>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2026.0>}, #Reference<0.3385521274.2837446658.78671> => %{monitor: #Reference<0.3385521274.2837446658.78673>, pid: #PID<0.2027.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78675>, bytes: 100000, deadline: -576460725673, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78674>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78671>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2027.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78669> => %{owner: #PID<0.2026.0>, worker: #PID<0.2027.0>, deadline: -576460725673, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78662>, lease: #Reference<0.3385521274.2837446658.78671>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+ 14) test same-sender cancel queued after spawn request wins before activation (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:458
+     ** (exit) exited in: GenServer.call(#PID<0.2019.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:475: (test)
+
+
+
+ 15) test retiring original alias is local only; later authenticated cancel still joins worker (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:485
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       payload = :ok
+       owner = #PID<0.2026.0>
+       key = {:cancel, #Reference<0.3385521274.2837446658.78669>}
+     Showing 1 of 1 message in the mailbox
+     code: assert_receive {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+     mailbox:
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:DOWN, #Reference<0.3385521274.2837446658.78679>, :process,
+                 #PID<0.2027.0>, :killed}
+     stacktrace:
+       test/admitted_spawn_test.exs:894: Gaoxy.AdmittedSpawnTest.assert_reply/3
+       test/admitted_spawn_test.exs:503: (test)
+
+.
+17:31:49.455 [error] GenServer #PID<0.2038.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78733>, :process, #PID<0.2041.0>, :killed}
+State: %{scope: %{instance: #PID<0.2036.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78711>}, mode: :ready, service: #PID<0.2036.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78717> => %{monitor: #Reference<0.3385521274.2837446658.78718>, pid: #PID<0.2039.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78721>, bytes: 11, deadline: -576460723669, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78720>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78717>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2039.0>}, #Reference<0.3385521274.2837446658.78731> => %{monitor: #Reference<0.3385521274.2837446658.78733>, pid: #PID<0.2041.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78735>, bytes: 100000, deadline: -576460723669, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78734>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78731>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2041.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78729> => %{owner: #PID<0.2040.0>, worker: #PID<0.2041.0>, deadline: -576460723669, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78724>, lease: #Reference<0.3385521274.2837446658.78731>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100022, transport_high_water: 100022, websocket_high_water: 0}
+
+
+
+17:31:49.458 [error] GenServer #PID<0.2045.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78790>, :process, #PID<0.2048.0>, :owner_failed}
+State: %{scope: %{instance: #PID<0.2043.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78768>}, mode: :ready, service: #PID<0.2043.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78774> => %{monitor: #Reference<0.3385521274.2837446658.78775>, pid: #PID<0.2046.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78778>, bytes: 11, deadline: -576460723667, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78777>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78774>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2046.0>}, #Reference<0.3385521274.2837446658.78788> => %{monitor: #Reference<0.3385521274.2837446658.78790>, pid: #PID<0.2048.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78792>, bytes: 100000, deadline: -576460723667, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78791>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78788>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2048.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78786> => %{owner: #PID<0.2047.0>, worker: #PID<0.2048.0>, deadline: -576460723667, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78781>, lease: #Reference<0.3385521274.2837446658.78788>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100022, transport_high_water: 100022, websocket_high_water: 0}
+ 16) test authenticated success before dispatch retains child custody on owner normal (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:528
+     ** (exit) exited in: GenServer.call(#PID<0.2038.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:558: (test)
+
+
+17:31:49.460 [error] GenServer #PID<0.2052.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78840>, :process, #PID<0.2054.0>, :killed}
+State: %{scope: %{instance: #PID<0.2050.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78823>}, mode: :paused, service: #PID<0.2050.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446658.78829> => %{monitor: #Reference<0.3385521274.2837446658.78830>, pid: #PID<0.2053.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78833>, bytes: 11, deadline: -576460723665, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78832>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78829>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2053.0>}, #Reference<0.3385521274.2837446658.78838> => %{monitor: #Reference<0.3385521274.2837446658.78840>, pid: #PID<0.2054.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78842>, bytes: 100000, deadline: -576460723665, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78841>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78838>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2054.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78836> => %{owner: #PID<0.2053.0>, worker: #PID<0.2054.0>, deadline: -576460723665, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78829>, lease: #Reference<0.3385521274.2837446658.78838>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+ 17) test authenticated success before dispatch retains child custody on owner owner_failed (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:528
+     ** (exit) exited in: GenServer.call(#PID<0.2045.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:558: (test)
+
+
+17:31:49.462 [error] GenServer #PID<0.2059.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78890>, :process, #PID<0.2061.0>, :killed}
+State: %{scope: %{instance: #PID<0.2057.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446658.78873>}, mode: :draining, service: #PID<0.2057.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: -576460723663, leases: %{#Reference<0.3385521274.2837446658.78879> => %{monitor: #Reference<0.3385521274.2837446658.78880>, pid: #PID<0.2060.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78883>, bytes: 11, deadline: -576460723663, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446658.78882>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78879>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2060.0>}, #Reference<0.3385521274.2837446658.78888> => %{monitor: #Reference<0.3385521274.2837446658.78890>, pid: #PID<0.2061.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78892>, bytes: 100000, deadline: -576460723663, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78891>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78888>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2061.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78886> => %{owner: #PID<0.2060.0>, worker: #PID<0.2061.0>, deadline: -576460723663, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446658.78879>, lease: #Reference<0.3385521274.2837446658.78888>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+ 18) test committed child is refused when pause precedes its real activation (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:568
+     ** (exit) exited in: GenServer.call(#PID<0.2052.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:609: (test)
+
+
+
+ 19) test committed child is refused when drain precedes its real activation (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:568
+     ** (exit) exited in: GenServer.call(#PID<0.2059.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     code: await_status(gate, 1, @parent_bytes)
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+       test/admitted_spawn_test.exs:609: (test)
+
+
+17:31:50.214 [error] GenServer #PID<0.2066.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446658.78933>, :process, #PID<0.2068.0>, :normal}
+State: %{scope: %{instance: #PID<0.2064.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95806>}, mode: :ready, service: #PID<0.2064.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95809> => %{monitor: #Reference<0.3385521274.2837446657.95810>, pid: #PID<0.2067.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95813>, bytes: 11, deadline: -576460723661, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95812>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95809>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2067.0>}, #Reference<0.3385521274.2837446658.78931> => %{monitor: #Reference<0.3385521274.2837446658.78933>, pid: #PID<0.2068.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78935>, bytes: 100000, deadline: -576460732911, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78934>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78931>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2068.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78929> => %{owner: #PID<0.2067.0>, worker: #PID<0.2068.0>, deadline: -576460732911, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95809>, lease: #Reference<0.3385521274.2837446658.78931>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+17:31:52.216 [error] GenServer #PID<0.2075.0> terminating
+** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+Last message: {:DOWN, #Reference<0.3385521274.2837446657.95928>, :process, #PID<0.2077.0>, :normal}
+State: %{scope: %{instance: #PID<0.2073.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95913>}, mode: :ready, service: #PID<0.2073.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95919> => %{monitor: #Reference<0.3385521274.2837446657.95920>, pid: #PID<0.2076.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95923>, bytes: 11, deadline: -576460720909, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95922>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95919>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2076.0>}, #Reference<0.3385521274.2837446657.95926> => %{monitor: #Reference<0.3385521274.2837446657.95928>, pid: #PID<0.2077.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95930>, bytes: 100000, deadline: -576460720909, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95929>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95926>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2077.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95924> => %{owner: #PID<0.2076.0>, worker: #PID<0.2077.0>, deadline: -576460720909, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95919>, lease: #Reference<0.3385521274.2837446657.95926>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+ 20) test original deadline expires with a committed child before activation (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:617
+     Assertion failed, no matching message after 2000ms
+     The following variables were pinned:
+       payload = {:error, :deadline_exceeded}
+       owner = #PID<0.2067.0>
+       key = #Reference<0.3385521274.2837446658.78929>
+     Showing 5 of 5 messages in the mailbox
+     code: assert_receive {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+     mailbox:
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:trace, #PID<0.2066.0>, :send,
+                 {:activate_spawn,
+                  #Reference<0.3385521274.2837446658.78929>},
+                 #PID<0.2066.0>}
+
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:trace, #PID<0.2066.0>, :send,
+                 {:committed,
+                  #Reference<0.3385521274.2837446658.78927>,
+                  #PID<0.2066.0>, #PID<0.2068.0>,
+                  #Reference<0.3385521274.2837446658.78931>,
+                  %{
+                    scope: %{
+                      instance: #PID<0.2064.0>,
+                      service: "admitted-spawn",
+                      generation: #Reference<0.3385521274.2837446657.95806>
+                    },
+                    mode: :ready,
+                    service: #PID<0.2064.0>,
+                    bytes: 100011,
+                    rejected: 0,
+                    budget: nil,
+                    limits: %{
+                      max_bytes: 10000000,
+                      callback_timeout: 10000,
+                      max_active: 16,
+                      max_state: 65536
+                    },
+                    drain_deadline: nil,
+                    leases: %{
+                      #Reference<0.3385521274.2837446657.95809> => %{
+                        monitor: #Reference<0.3385521274.2837446657.95810>,
+                        pid: #PID<0.2067.0>,
+                        send: nil,
+                        timer: #Reference<0.3385521274.2837446657.95813>,
+                        bytes: 11,
+                        deadline: -576460723661,
+                        cleanup: nil,
+                        kind: :transport,
+                        token: #Reference<0.3385521274.2837446657.95812>,
+                        accounting: %{
+                          pending_processes: 0,
+                          memberships: %{
+                            request: #Reference<0.3385521274.2837446657.95809>
+                          },
+                          transport_bytes: 11,
+                          websocket_bytes: 0,
+                          retained_bytes: 11,
+                          temporary_bytes: 0
+                        },
+                        drain_notify: true,
+                        request_active: true,
+                        exit_seen: false,
+                        down_seen: false,
+                        budget_owner: #PID<0.2067.0>
+                      },
+                      #Reference<0.3385521274.2837446658.78931> => %{
+                        monitor: #Reference<0.3385521274.2837446658.78933>,
+                        pid: #PID<0.2068.0>,
+                        send: nil,
+                        timer: #Reference<0.3385521274.2837446658.78935>,
+                        bytes: 100000,
+                        deadline: -576460732911,
+                        cleanup: nil,
+                        kind: :request,
+                        token: #Reference<0.3385521274.2837446658.78934>,
+                        accounting: %{
+                          pending_processes: 0,
+                          memberships: %{
+                            request: #Reference<0.3385521274.2837446658.78931>
+                          },
+                          transport_bytes: 100000,
+                          websocket_bytes: 0,
+                          retained_bytes: 100000,
+                          temporary_bytes: 0
+                        },
+                        drain_notify: true,
+                        request_active: true,
+                        exit_seen: false,
+                        down_seen: false,
+                        budget_owner: #PID<0.2068.0>
+                      }
+                    },
+                    cleanups: %{},
+                    spawns: %{
+                      #Reference<0.3385521274.2837446658.78929> => %{
+                        owner: #PID<0.2067.0>,
+                        worker: #PID<0.2068.0>,
+                        deadline: -576460732911,
+                        phase: :pending_activation,
+                        from: {#PID<0.2067.0>,
+                         [:alias |
+                          #Reference<0.0.264579.3385521274.2837512194.78930>]},
+                        parent_lease: #Reference<0.3385521274.2837446657.95809>,
+                        lease: #Reference<0.3385521274.2837446658.78931>,
+                        activation: #Reference<0.3385521274.2837446658.78932>,
+                        exit_seen: false,
+                        down_seen: false
+                      }
+                    },
+                    update_receipts: %{},
+                    update_order: {[], []},
+                    update_pending: nil,
+                    high_water: 100011,
+                    transport_high_water: 100011,
+                    websocket_high_water: 0
+                  }}, #PID<0.2064.0>}
+
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:owner_unmatched, #PID<0.2067.0>,
+                 {:EXIT, #PID<0.2068.0>, :normal}}
+
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:trace, #PID<0.2066.0>, :send,
+                 {[:alias |
+                   #Reference<0.0.264579.3385521274.2837512194.78930>],
+                  {:error, :deadline_exceeded}},
+                 #Reference<0.0.264579.3385521274.2837512194.78930>}
+
+       pattern: {:reply, ^owner, ^key, raw, {:reply, ^payload}}
+       value:   {:trace, #PID<0.2066.0>, :send,
+                 {:"$gen_cast",
+                  {:"$olp_load",
+                   "\n17:31:50.214 [error] GenServer #PID<0.2066.0> terminating\n** (BadBooleanError) expected a boolean on left-side of \"and\", got: nil\n    (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2\n    (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2\n    (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3\n    (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3\n    (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3\nLast message: {:DOWN, #Reference<0.3385521274.2837446658.78933>, :process, #PID<0.2068.0>, :normal}\nState: %{scope: %{instance: #PID<0.2064.0>, service: \"admitted-spawn\", generation: #Reference<0.3385521274.2837446657.95806>}, mode: :ready, service: #PID<0.2064.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95809> => %{monitor: #Reference<0.3385521274.2837446657.95810>, pid: #PID<0.2067.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95813>, bytes: 11, deadline: -576460723661, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95812>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95809>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2067.0>}, #Reference<0.3385521274.2837446658.78931> => %{monitor: #Reference<0.3385521274.2837446658.78933>, pid: #PID<0.2068.0>, send: nil, timer: #Reference<0.3385521274.2837446658.78935>, bytes: 100000, deadline: -576460732911, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446658.78934>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446658.78931>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2068.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446658.78929> => %{owner: #PID<0.2067.0>, worker: #PID<0.2068.0>, deadline: -576460732911, phase: :cancelled, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95809>, lease: #Reference<0.3385521274.2837446658.78931>, activation: nil, exit_seen: true, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}\n"}},
+                 #PID<0.1745.0>}
+     stacktrace:
+       test/admitted_spawn_test.exs:894: Gaoxy.AdmittedSpawnTest.assert_reply/3
+       test/admitted_spawn_test.exs:642: (test)
+
+
+17:31:52.218 [error] GenServer #PID<0.2081.0> terminating
+** (stop) :non_parent_link_failed
+Last message: {:EXIT, #PID<0.2085.0>, :non_parent_link_failed}
+State: %{scope: %{instance: #PID<0.2079.0>, service: "admitted-spawn", generation: #Reference<0.3385521274.2837446657.95965>}, mode: :ready, service: #PID<0.2079.0>, bytes: 100011, rejected: 0, budget: nil, limits: %{max_bytes: 10000000, callback_timeout: 10000, max_active: 16, max_state: 65536}, drain_deadline: nil, leases: %{#Reference<0.3385521274.2837446657.95971> => %{monitor: #Reference<0.3385521274.2837446657.95972>, pid: #PID<0.2082.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95975>, bytes: 11, deadline: -576460720907, cleanup: nil, kind: :transport, token: #Reference<0.3385521274.2837446657.95974>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95971>}, transport_bytes: 11, websocket_bytes: 0, retained_bytes: 11, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2082.0>}, #Reference<0.3385521274.2837446657.95978> => %{monitor: #Reference<0.3385521274.2837446657.95980>, pid: #PID<0.2083.0>, send: nil, timer: #Reference<0.3385521274.2837446657.95982>, bytes: 100000, deadline: -576460720907, cleanup: nil, kind: :request, token: #Reference<0.3385521274.2837446657.95981>, accounting: %{pending_processes: 0, memberships: %{request: #Reference<0.3385521274.2837446657.95978>}, transport_bytes: 100000, websocket_bytes: 0, retained_bytes: 100000, temporary_bytes: 0}, drain_notify: true, request_active: true, exit_seen: false, down_seen: false, budget_owner: #PID<0.2083.0>}}, cleanups: %{}, spawns: %{#Reference<0.3385521274.2837446657.95976> => %{owner: #PID<0.2082.0>, worker: #PID<0.2083.0>, deadline: -576460720907, phase: :running, from: nil, parent_lease: #Reference<0.3385521274.2837446657.95971>, lease: #Reference<0.3385521274.2837446657.95978>, activation: nil, exit_seen: false, down_seen: false}}, update_receipts: %{}, update_order: {[], []}, update_pending: nil, high_water: 100011, transport_high_water: 100011, websocket_high_water: 0}
+
+
+ 21) test a different caller cannot cancel a live authentic owner's child (Gaoxy.AdmittedSpawnTest)
+     apps/gaoxy/test/admitted_spawn_test.exs:651
+     ** (exit) exited in: GenServer.call(#PID<0.2075.0>, :status, 5000)
+         ** (EXIT) an exception was raised:
+             ** (BadBooleanError) expected a boolean on left-side of "and", got: nil
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:945: Gaoxy.Admission.settle_spawn/2
+                 (gaoxy 0.13.1) lib/gaoxy/admission.ex:830: Gaoxy.Admission.handle_info/2
+                 (stdlib 7.3.0.1) gen_server.erl:2434: :gen_server.try_handle_info/3
+                 (stdlib 7.3.0.1) gen_server.erl:2420: :gen_server.handle_msg/3
+                 (stdlib 7.3.0.1) proc_lib.erl:333: :proc_lib.init_p_do_apply/3
+     stacktrace:
+       (elixir 1.18.5) lib/gen_server.ex:1128: GenServer.call/3
+       test/admitted_spawn_test.exs:1065: Gaoxy.AdmittedSpawnTest.await_status/4
+
+..
+Finished in 18.1 seconds (9.3s async, 8.8s sync)
+230 tests, 21 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

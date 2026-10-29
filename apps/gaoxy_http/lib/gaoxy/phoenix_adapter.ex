@@ -2,7 +2,9 @@ defmodule Gaoxy.PhoenixAdapter do
   @moduledoc """
   Phoenix Endpoint server adapter. One Endpoint child owns a ListenerSet and
   one Gaoxy instance for its configured HTTP, HTTPS and optional HTTP/3 roles.
-  An externally mounted Endpoint sets `server: false`.
+  Endpoint-level `resource_budget` configures that shared instance policy;
+  omission uses adaptive defaults coordinated across the VM. An externally
+  mounted Endpoint sets `server: false`.
 
   Enable H3 explicitly with `http3: [ip: ..., port: ..., certfile: ..., keyfile: ...]`
   and include `gaoxy_http3` in the host dependencies. `listeners/1` reports actual
@@ -74,6 +76,8 @@ defmodule Gaoxy.PhoenixAdapter do
           service_ids: Map.new(listeners, fn {role, _} -> {role, service_id(endpoint, role)} end),
           discovery: Keyword.get(config, :http3_discovery, false)
         ]
+
+        options = options ++ Keyword.take(config, [:resource_budget])
 
         case ListenerSet.plan(options) do
           {:ok, plan} ->

@@ -5,7 +5,8 @@ defmodule Gaoxy.QUICBridge do
 
   @impl true
   def init(handle, metadata, %{spec: spec, gate: gate, scope: scope} = context) do
-    with {:ok, lease} <- Admission.acquire(gate, 0),
+    with {:ok, lease} <-
+           Admission.acquire(gate, 0, kind: :connection, memberships: %{connection: make_ref()}),
          :ok <- Admission.begin(gate, lease, 0) do
       connection = %QUIC.Connection{
         handle: handle,

@@ -5,7 +5,10 @@ defmodule Gaoxy.Application do
   def start(_, _) do
     with {:ok, supervisor} <-
            Supervisor.start_link(
-             [{Registry, keys: :unique, name: Gaoxy.Registry}],
+             [
+               {Registry, keys: :unique, name: Gaoxy.Registry},
+               {Gaoxy.ResourceBudget.Supervisor, lease_limit: Gaoxy.Config.lease_safety_limit()}
+             ],
              strategy: :one_for_one
            ) do
       :ok = Gaoxy.Telemetry.attach_backend()

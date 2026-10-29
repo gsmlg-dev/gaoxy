@@ -26,11 +26,17 @@ qualified receive-buffer profile. This prevents listener tuning from being
 accepted and then silently overwritten when a connection starts. Core stream
 services retain both options.
 
-`num_acceptors` accepts `1..limits.max_active`. Gaoxy assigns each acceptor
-`div(limits.max_active, num_acceptors)` backend connection slots. The aggregate
-backend ceiling therefore cannot exceed `max_active`; a remainder is unused.
-For example, 4 acceptors with `max_active: 64` each get 16 slots, while 3
-acceptors each get 21. Application admission and byte budgets remain in force.
+`num_acceptors` accepts `1..min(64, connection_capacity)`. The independent
+64-acceptor safety ceiling does not limit the connection quota to 64.
+`connection_capacity` is `limits.max_connections` (16,384 when omitted),
+intersected with an explicitly configured legacy `max_active` cap. An omitted
+`max_active` does not impose the old 64-lease admission cap.
+
+Each acceptor receives `div(connection_capacity, num_acceptors)` backend
+connection slots; a remainder is unused and every acceptor has nonzero capacity.
+For example, 4 acceptors with `max_connections: 64` each get 16 slots, while 3
+acceptors each get 21. Request and stream quotas are separate. Shared memory
+admission and explicit service transport/ordinary-lease caps remain in force.
 
 UDP `udp_buffer_size` sets both receive and send socket buffers. Its backend
 default is retained when omitted. Separate UDP `recbuf`, `sndbuf` and `buffer`
@@ -56,10 +62,20 @@ packet framing, port sharing, credentials, ALPN or listener topology.
 
 Backend resource/deadline aliases such as `num_connections`, `max_connections`,
 `read_timeout`, `handshake_timeout`, `send_timeout` and `shutdown_timeout` are
-rejected. Use `limits.max_active`, `limits.idle_timeout`,
+rejected inside backend options. Use `limits.max_connections`, `limits.idle_timeout`,
 `limits.callback_timeout` and `limits.drain_timeout` respectively. A duplicate
 binding or TLS field is rejected even if equal. The only accepted duplicate
 surface is QUIC `poll_interval`, which uses the conflict rule above.
+
+Instance memory policy belongs in top-level `resource_budget` on a ListenerSet
+or Phoenix Endpoint, not in backend options or each physical listener. Omission
+uses one shared VM pool with a soft limit at 50% of effective physical/cgroup
+capacity and hard at twice soft; detection fallback is 256/512 MiB. Explicit
+instance thresholds are ordered and undoubled. An explicit service `max_bytes`
+remains a transport/cleanup hard cap excluding WebSocket retention, which shared
+memory accounting includes. Explicit `max_active` caps ordinary leases including
+writers/workers, excluding cleanup and nonlegacy post-worker stream retention.
+Finite socket/QUIC bounds never grow to match detected host memory.
 
 Omitting both entries preserves existing defaults. Backend options are fixed
 parts of a deferred service plan and cannot change during activation.
@@ -76,7 +92,7 @@ For a core TCP service:
   handler: MyApp.Echo,
   ip: {127, 0, 0, 1},
   port: 4001,
-  limits: %{max_active: 64},
+  limits: %{max_connections: 64},
   hell_options: [
     num_acceptors: 4,
     transport_options: [backlog: 2048, nodelay: true, keepalive: true]

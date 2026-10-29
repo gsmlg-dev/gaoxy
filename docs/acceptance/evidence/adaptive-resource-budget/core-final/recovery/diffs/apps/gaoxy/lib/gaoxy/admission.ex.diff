@@ -1,0 +1,206 @@
+--- apps/gaoxy/lib/gaoxy/admission.ex before-recovery
++++ apps/gaoxy/lib/gaoxy/admission.ex
+@@ -26,6 +26,16 @@
+ 
+   def end_stream(gate, parent_lease, kind, stream_id, deadline),
+     do: GenServer.call(gate, {:end_stream, parent_lease, kind, stream_id, deadline}, 50)
++
++  # Records the exact parent's output/buffer terminal proof. This does not refund
++  # a live worker: its DOWN/EXIT pair and the canonical mutation must also finish.
++  def finish_stream_resources(gate, parent_lease, worker_lease, operation, deadline),
++    do:
++      GenServer.call(
++        gate,
++        {:finish_stream_resources, parent_lease, worker_lease, operation, deadline},
++        50
++      )
+ 
+   def budget_client(gate), do: GenServer.call(gate, :budget_client, 50)
+ 
+@@ -192,6 +202,15 @@
+                     deadline: deadline
+                   })
+ 
++                lease =
++                  if lease.kind in [:h2_stream, :h3_stream],
++                    do:
++                      Map.merge(lease, %{
++                        stream_parent: {parent_lease, owner},
++                        stream_resources_terminal: false
++                      }),
++                    else: lease
++
+                 operation = %{
+                   owner: owner,
+                   parent_lease: parent_lease,
+@@ -362,8 +381,8 @@
+ 
+           {:ok, replacement} = Accounting.replace(lease, accounting)
+ 
+-          if lease.kind == :stream_retention and accounting.memberships == %{} and
+-               lease.bytes == 0 do
++          if lease.kind == :stream_retention and not stream_membership?(accounting) and
++               (lease.bytes == 0 or Map.get(lease, :stream_resources_terminal, false)) do
+             release_reply(state, ref, deadline)
+           else
+             commit_lease(state, ref, replacement, deadline)
+@@ -374,6 +393,49 @@
+       end
+     else
+       {:reply, {:error, :stale_generation}, state}
++    end
++  end
++
++  def handle_call(
++        {:finish_stream_resources, parent, ref, operation, deadline},
++        {pid, _},
++        state
++      ) do
++    fingerprint =
++      :crypto.hash(:sha256, :erlang.term_to_binary({pid, :finish_stream_resources, parent, ref}))
++
++    cached = state.update_receipts[operation]
++
++    cond do
++      not is_reference(operation) ->
++        reject(state, :invalid_operation)
++
++      cached && cached.fingerprint != fingerprint ->
++        reject(state, :operation_conflict)
++
++      state.update_pending != nil and elem(state.update_pending, 0) == operation ->
++        reject(state, :operation_conflict)
++
++      not parent_owned?(state, parent, pid) ->
++        reject(state, :stale_generation)
++
++      cached ->
++        {:reply, cached.result, state}
++
++      not is_integer(deadline) or Lifecycle.remaining(deadline) == 0 ->
++        reject(state, :deadline_exceeded)
++
++      true ->
++        case state.leases[ref] do
++          %{stream_parent: {^parent, ^pid}} = lease ->
++            state = put_in(state.leases[ref], %{lease | stream_resources_terminal: true})
++            state = remember_update(state, {operation, fingerprint}, :ok)
++            send(self(), :budget_retry_terminals)
++            {:reply, :ok, state}
++
++          _ ->
++            reject(state, :stale_generation)
++        end
+     end
+   end
+ 
+@@ -948,8 +1010,8 @@
+ 
+       retain? =
+         not is_nil(state.budget) and lease.kind in [:h2_stream, :h3_stream] and
+-          Enum.any?([:h2_stream, :h3_stream], &Map.has_key?(lease.accounting.memberships, &1)) and
+-          parent_owned?(state, operation.parent_lease, operation.owner)
++          parent_owned?(state, operation.parent_lease, operation.owner) and
++          (stream_membership?(lease.accounting) or not lease.stream_resources_terminal)
+ 
+       commit = fn state, receipt, _ ->
+         state = %{state | spawns: Map.delete(state.spawns, token)}
+@@ -977,6 +1039,7 @@
+               exit_seen: false
+           }
+ 
++          send(self(), :budget_retry_terminals)
+           put_in(state.leases[operation.lease], lease)
+         else
+           remove_lease(state, operation.lease)
+@@ -1106,6 +1169,9 @@
+     %{lease | accounting: %{lease.accounting | memberships: members}}
+   end
+ 
++  defp stream_membership?(accounting),
++    do: Enum.any?([:h2_stream, :h3_stream], &Map.has_key?(accounting.memberships, &1))
++
+   defp commit_lease(
+          state,
+          ref,
+@@ -1136,13 +1202,14 @@
+       })
+     end
+ 
+-    case Budget.run(state, :replace, args, deadline, commit) do
++    remember_rejection = fn state, reason ->
++      remember_update(state, operation, {:error, reason})
++    end
++
++    case Budget.run(state, :replace, args, deadline, commit, remember_rejection) do
+       {:error, reason, state} when reason in [:budget_timeout, :budget_unavailable] ->
+         state = if operation, do: %{state | update_pending: operation}, else: state
+         reject(state, reason)
+-
+-      {:error, reason, state} ->
+-        reply_mutation({:error, reason, remember_update(state, operation, {:error, reason})})
+ 
+       result ->
+         reply_mutation(result)
+@@ -1165,7 +1232,10 @@
+         {receipts, order}
+       end
+ 
+-    %{state | update_receipts: receipts, update_order: order, update_pending: nil}
++    pending =
++      if state.update_pending == {operation, fingerprint}, do: nil, else: state.update_pending
++
++    %{state | update_receipts: receipts, update_order: order, update_pending: pending}
+   end
+ 
+   defp commit_mode(state, mode, after_commit \\ &Function.identity/1) do
+@@ -1204,8 +1274,49 @@
+       lease.down_seen and (is_nil(state.budget) or lease.exit_seen) ->
+         terminal_result(release_lease(state, ref))
+ 
++      Map.get(lease, :kind) == :stream_retention and lease.stream_resources_terminal ->
++        settle_stream_resources(state, ref)
++
+       true ->
+         state
++    end
++  end
++
++  defp settle_stream_resources(state, ref) do
++    lease = state.leases[ref]
++
++    cond do
++      not stream_membership?(lease.accounting) ->
++        terminal_result(release_lease(state, ref))
++
++      lease.bytes == 0 ->
++        state
++
++      true ->
++        accounting = %{
++          lease.accounting
++          | retained_bytes: 0,
++            temporary_bytes: 0,
++            transport_bytes: 0,
++            websocket_bytes: 0,
++            pending_processes: 0
++        }
++
++        commit = fn state, receipt, _ ->
++          current = state.leases[ref]
++          {:ok, replacement} = Accounting.replace(current, accounting)
++          replacement = Budget.receipt(replacement, receipt)
++
++          sample(%{
++            state
++            | leases: Map.put(state.leases, ref, replacement),
++              bytes: state.bytes - current.bytes
++          })
++        end
++
++        terminal_result(
++          Budget.run(state, :replace, Budget.arguments(lease, accounting), nil, commit)
++        )
+     end
+   end
+ 

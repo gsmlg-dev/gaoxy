@@ -1,0 +1,207 @@
+==> gaoxy
+Compiling 4 files (.ex)
+Generated gaoxy app
+==> gaoxy
+
+17:48:45.134 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+17:48:45.167 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+     warning: comparison between distinct types found:
+
+         kind == :h2_stream
+
+     given types:
+
+         :h3_stream == :h2_stream
+
+     where "kind" was given the type:
+
+         # type: :h3_stream
+         # from: test/resource_budget_admission_test.exs:331:12
+         kind = :h3_stream
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 371 │         stream_counter = if kind == :h2_stream, do: :h2_streams, else: :h3_streams
+     │                                  ~
+     │
+     └─ test/resource_budget_admission_test.exs:371:34: Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:resources, :worker, :stream]"/1
+
+     warning: comparison between distinct types found:
+
+         kind == :h2_stream
+
+     given types:
+
+         :h3_stream == :h2_stream
+
+     where "kind" was given the type:
+
+         # type: :h3_stream
+         # from: test/resource_budget_admission_test.exs:331:12
+         kind = :h3_stream
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 371 │         stream_counter = if kind == :h2_stream, do: :h2_streams, else: :h3_streams
+     │                                  ~
+     │
+     └─ test/resource_budget_admission_test.exs:371:34: Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:stream, :worker, :resources]"/1
+
+     warning: comparison between distinct types found:
+
+         kind == :h2_stream
+
+     given types:
+
+         :h3_stream == :h2_stream
+
+     where "kind" was given the type:
+
+         # type: :h3_stream
+         # from: test/resource_budget_admission_test.exs:331:12
+         kind = :h3_stream
+
+     While Elixir can compare across all types, you are comparing across types which are always disjoint, and the result is either always true or always false
+
+     typing violation found at:
+     │
+ 371 │         stream_counter = if kind == :h2_stream, do: :h2_streams, else: :h3_streams
+     │                                  ~
+     │
+     └─ test/resource_budget_admission_test.exs:371:34: Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:worker, :stream, :resources]"/1
+
+
+17:48:47.881 [warning] resource budget warning
+.
+17:48:47.882 [warning] resource budget warning
+.......
+
+  1) test worker credit transfers before activation and terminal pair retains the same nonlegacy stream token (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:234
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: apply(Admission, :finish_stream_resources, [g, parent, lease, make_ref(), deadline()])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.538.0>, #Reference<0.2370152968.424148993.248599>, #Reference<0.2370152968.424148993.248605>, #Reference<0.2370152968.424148993.248658>, -576460745353)
+       test/resource_budget_admission_test.exs:278: (test)
+
+
+
+  2) test stream end is independent of live worker and request-end bytes (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:283
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: apply(Admission, :finish_stream_resources, [g, parent, lease, make_ref(), deadline()])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.548.0>, #Reference<0.2370152968.424148994.239915>, #Reference<0.2370152968.424148994.239921>, #Reference<0.2370152968.424148994.239951>, -576460745342)
+       test/resource_budget_admission_test.exs:313: (test)
+
+
+
+  3) test stream terminal boundaries converge for h2_stream [:resources, :stream, :worker] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.558.0>, #Reference<0.2370152968.424148994.240064>, #Reference<0.2370152968.424148994.240071>, #Reference<0.2370152968.424148994.240092>, -576460745338)
+       test/resource_budget_admission_test.exs:346: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h2_stream [:resources, :stream, :worker]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+
+  4) test stream terminal boundaries converge for h3_stream [:resources, :worker, :stream] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.568.0>, #Reference<0.2370152968.424148994.240211>, #Reference<0.2370152968.424148994.240218>, #Reference<0.2370152968.424148994.240239>, -576460745335)
+       test/resource_budget_admission_test.exs:346: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:resources, :worker, :stream]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+
+  5) test stream terminal boundaries converge for h2_stream [:stream, :resources, :worker] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.578.0>, #Reference<0.2370152968.424148994.240341>, #Reference<0.2370152968.424148994.240348>, #Reference<0.2370152968.424148994.240369>, -576460745332)
+       test/resource_budget_admission_test.exs:346: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h2_stream [:stream, :resources, :worker]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+
+  6) test stream terminal boundaries converge for h3_stream [:stream, :worker, :resources] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     Assertion with < failed, both sides are exactly equal
+     code: assert System.monotonic_time(:millisecond) < until
+     left: -576460745324
+     stacktrace:
+       test/resource_budget_admission_test.exs:207: Gaoxy.ResourceBudget.AdmissionTest.eventually/2
+       test/resource_budget_admission_test.exs:373: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:stream, :worker, :resources]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+
+  7) test stream terminal boundaries converge for h2_stream [:worker, :resources, :stream] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.599.0>, #Reference<0.2370152968.424148993.250143>, #Reference<0.2370152968.424148993.250150>, #Reference<0.2370152968.424148993.250171>, -576460744320)
+       test/resource_budget_admission_test.exs:346: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h2_stream [:worker, :resources, :stream]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+
+  8) test stream terminal boundaries converge for h3_stream [:worker, :stream, :resources] (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:329
+     ** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+     code: Enum.reduce(unquote(ordering), MapSet.new(), fn event, completed ->
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.609.0>, #Reference<0.2370152968.424148993.250295>, #Reference<0.2370152968.424148993.250302>, #Reference<0.2370152968.424148993.250318>, -576460744317)
+       test/resource_budget_admission_test.exs:346: anonymous fn/11 in Gaoxy.ResourceBudget.AdmissionTest."test stream terminal boundaries converge for h3_stream [:worker, :stream, :resources]"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_admission_test.exs:342: (test)
+
+
+17:48:48.937 [error] Process #PID<0.622.0> raised an exception
+** (UndefinedFunctionError) function Gaoxy.Admission.finish_stream_resources/5 is undefined or private
+    (gaoxy 0.13.1) Gaoxy.Admission.finish_stream_resources(#PID<0.619.0>, #Reference<0.2370152968.424148993.250459>, #Reference<0.2370152968.424148994.240537>, #Reference<0.2370152968.424148994.240575>, -576460744313)
+    test/resource_budget_admission_test.exs:420: anonymous fn/4 in Gaoxy.ResourceBudget.AdmissionTest."test stream memory terminal proof authenticates parent binding and operation identity"/1
+
+
+  9) test stream memory terminal proof authenticates parent binding and operation identity (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:408
+     Assertion failed, no matching message after 100ms
+     The process mailbox is empty.
+     code: assert_receive {:foreign_finish, {:error, :stale_generation}}
+     stacktrace:
+       test/resource_budget_admission_test.exs:431: (test)
+
+
+
+ 10) test stream memory completion preserves independent guardian charges until terminal receipt (Gaoxy.ResourceBudget.AdmissionTest)
+     apps/gaoxy/test/resource_budget_admission_test.exs:500
+     match (=) failed
+     code:  assert :ok = Admission.attach_cleanup(g, worker, lease, guardian, 5, deadline(), token)
+     left:  :ok
+     right: {:error, :deadline_exceeded}
+     stacktrace:
+       test/resource_budget_admission_test.exs:516: (test)
+
+..............
+Finished in 4.0 seconds (0.00s async, 4.0s sync)
+32 tests, 10 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

@@ -1,31 +1,60 @@
 defmodule Gaoxy.Admission.Accounting do
   @moduledoc false
 
+  def categories(%{accounting: accounting}),
+    do: Map.take(accounting, [:transport_bytes, :websocket_bytes])
+
   def categories(%{transport_bytes: transport, websocket_bytes: websocket}),
     do: %{transport_bytes: transport, websocket_bytes: websocket}
 
   def categories(%{bytes: bytes}), do: %{transport_bytes: bytes, websocket_bytes: 0}
 
-  def replace(lease, %{transport_bytes: transport, websocket_bytes: websocket})
-      when is_integer(transport) and transport >= 0 and is_integer(websocket) and websocket >= 0 do
-    {:ok,
-     Map.merge(lease, %{
-       bytes: transport + websocket,
-       transport_bytes: transport,
-       websocket_bytes: websocket
-     })}
+  def replace(lease, input) do
+    previous =
+      Map.get(
+        lease,
+        :accounting,
+        Map.merge(categories(lease), %{temporary_bytes: 0, memberships: %{}, pending_processes: 0})
+      )
+
+    input =
+      cond do
+        is_integer(input) and input >= 0 ->
+          previous
+          |> Map.put(:transport_bytes, input)
+          |> Map.put(:retained_bytes, input + previous.websocket_bytes - previous.temporary_bytes)
+
+        is_map(input) and Map.keys(input) -- [:transport_bytes, :websocket_bytes] == [] and
+          Map.has_key?(input, :transport_bytes) and Map.has_key?(input, :websocket_bytes) ->
+          previous
+          |> Map.merge(input)
+          |> Map.put(
+            :retained_bytes,
+            input.transport_bytes + input.websocket_bytes - previous.temporary_bytes
+          )
+
+        true ->
+          input
+      end
+
+    with {:ok, accounting} <- Gaoxy.ResourceBudget.normalize_accounting(input) do
+      replacement =
+        Map.merge(lease, %{
+          bytes: accounting.retained_bytes + accounting.temporary_bytes,
+          accounting: accounting
+        })
+
+      replacement =
+        if is_map(input) and
+             (accounting.websocket_bytes > 0 or Map.has_key?(lease, :websocket_bytes)),
+           do: Map.merge(replacement, Map.take(accounting, [:transport_bytes, :websocket_bytes])),
+           else: replacement
+
+      {:ok, replacement}
+    else
+      _ -> {:error, :byte_limit}
+    end
   end
-
-  # A scalar always means transport. It cannot erase an existing WS retention
-  # owner when a transport queue returns or reserves credit.
-  def replace(%{websocket_bytes: websocket} = lease, transport)
-      when is_integer(transport) and transport >= 0,
-      do: replace(lease, %{transport_bytes: transport, websocket_bytes: websocket})
-
-  def replace(lease, bytes) when is_integer(bytes) and bytes >= 0,
-    do: {:ok, %{lease | bytes: bytes}}
-
-  def replace(_, _), do: {:error, :byte_limit}
 
   def totals(leases, cleanups) do
     initial = %{

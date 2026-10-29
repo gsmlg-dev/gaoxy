@@ -17,10 +17,7 @@ https =
 
 https =
   if https && System.get_env("PHOENIX_NATIVE_H2") == "1" do
-    Keyword.merge(https,
-      protocols: [:http2, :http1],
-      limits: %{max_active: 128, max_bytes: 536_870_912}
-    )
+    Keyword.put(https, :protocols, [:http2, :http1])
   else
     https
   end

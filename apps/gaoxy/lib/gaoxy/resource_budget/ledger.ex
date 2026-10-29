@@ -614,7 +614,7 @@ defmodule Gaoxy.ResourceBudget.Ledger do
   end
 
   defp execute(state, client, gate, action, actor, sequence)
-       when elem(action, 0) in [:replace, :transfer, :release] do
+       when elem(action, 0) in [:replace, :transfer, :release, :activate, :retain_stream] do
     token = elem(action, 1)
     revision = elem(action, 2)
 
@@ -630,6 +630,62 @@ defmodule Gaoxy.ResourceBudget.Ledger do
             updated = %{row | accounting: accounting, revision: revision + 1}
             growth = growth?(row.accounting, accounting)
             commit(state, client, gate, row, updated, growth, sequence)
+          end
+
+        {:activate, _, _, pid} ->
+          if authorized?(state, gate, actor) and is_pid(pid) and Process.alive?(pid) do
+            accounting = %{row.accounting | pending_processes: 0}
+
+            commit(
+              state,
+              client,
+              gate,
+              row,
+              %{row | owner: pid, accounting: accounting, revision: revision + 1},
+              false,
+              sequence
+            )
+          else
+            {:error, :invalid_owner}
+          end
+
+        {:retain_stream, _, _, pid, proof} ->
+          cond do
+            not authorized?(state, gate, actor) ->
+              {:error, :unauthorized_owner}
+
+            row.kind not in [:h2_stream, :h3_stream] ->
+              {:error, :invalid_operation}
+
+            not is_pid(pid) or not Process.alive?(pid) ->
+              {:error, :invalid_owner}
+
+            not is_map(proof) or proof[:terminal] != :confirmed or proof[:owner] != row.owner or
+                proof[:revision] != revision ->
+              {:error, :invalid_terminal_receipt}
+
+            true ->
+              accounting = %{
+                row.accounting
+                | memberships: Map.delete(row.accounting.memberships, :request),
+                  pending_processes: 0
+              }
+
+              commit(
+                state,
+                client,
+                gate,
+                row,
+                %{
+                  row
+                  | kind: :stream_retention,
+                    owner: pid,
+                    accounting: accounting,
+                    revision: revision + 1
+                },
+                false,
+                sequence
+              )
           end
 
         {:transfer, _, _, pid} ->
@@ -817,7 +873,7 @@ defmodule Gaoxy.ResourceBudget.Ledger do
             fn key, totals -> Map.update!(totals, key, &(&1 + sign * row.accounting[key])) end
           )
 
-        legacy_delta = if row.kind == :guardian, do: 0, else: sign
+        legacy_delta = if row.kind in [:guardian, :stream_retention], do: 0, else: sign
 
         state =
           put_in(state.totals[scope], %{
