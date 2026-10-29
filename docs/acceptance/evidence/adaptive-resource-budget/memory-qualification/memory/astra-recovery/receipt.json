@@ -1,0 +1,124 @@
+{
+  "task_id": "ARB-MEM",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 1,
+  "baseline": "a6a35438c0a153cd53c87c6a55c19a70a11fb75a",
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "caller_death_before": {
+    "log": "caller-death-before.log",
+    "exit": 1,
+    "result": "query survived caller; owned query explicitly killed and DOWN confirmed"
+  },
+  "commands": [
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "apps/gaoxy/mix.exs"
+      ],
+      "started_at": "2026-10-29T07:34:31.504933+00:00",
+      "finished_at": "2026-10-29T07:34:32.308242+00:00",
+      "exit": 0,
+      "log": "format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "focused",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "started_at": "2026-10-29T07:34:32.309401+00:00",
+      "finished_at": "2026-10-29T07:34:34.547405+00:00",
+      "exit": 0,
+      "log": "focused.log",
+      "sha256": "8d1a8d501219b8f417fb08f8a5cb56d8936540fa10c56c66cbf23d23845ded7c"
+    },
+    {
+      "name": "format-check",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "apps/gaoxy/mix.exs"
+      ],
+      "started_at": "2026-10-29T07:34:34.549218+00:00",
+      "finished_at": "2026-10-29T07:34:35.335767+00:00",
+      "exit": 0,
+      "log": "format-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "started_at": "2026-10-29T07:34:35.336941+00:00",
+      "finished_at": "2026-10-29T07:34:36.689765+00:00",
+      "exit": 0,
+      "log": "compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "started_at": "2026-10-29T07:34:36.691143+00:00",
+      "finished_at": "2026-10-29T07:34:36.858238+00:00",
+      "exit": 0,
+      "log": "inventory.log",
+      "sha256": "20dffedea67735232857e3f3416bb10fb90ccf7b4fa3452bba923d51cb739b91"
+    },
+    {
+      "name": "whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at": "2026-10-29T07:34:36.859778+00:00",
+      "finished_at": "2026-10-29T07:34:36.884911+00:00",
+      "exit": 0,
+      "log": "whitespace.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "files": {
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ae5317394d486ab9b2a6a9fc6d33a612788692fb4e26a4bf6801d51a44b6a686",
+    "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex": "c499b1b1cc65ba4d156b5741f7b276d60a0a3cc23115637110fa59eee05f232b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex": "6c6e7caad7c97c27512cecaa8efeb508b222f2c2b8c39b77f5c973334ef69865",
+    "apps/gaoxy/test/system_memory_test.exs": "09c8eb8c86d71a9591d356fcee1293787930a548efb4698a116826c2370192aa",
+    "apps/gaoxy/test/resource_budget_policy_test.exs": "26ea72973096578da2bf958dba5afbab5c0346d76df95b1426fa02d666c51cc0",
+    "apps/gaoxy/test/system_memory_native_test.exs": "a253fa17dc5e94ddca3a3e15ff7da2cfc93aa3f441e79f0ab5ffd159c17eeebf",
+    "apps/gaoxy/mix.exs": "edb2af8d9823cc737e94f77a29b7ac80fd41d539602ecc55d15ee63a77b9b1ce",
+    "scripts/check-repairs.py": "e736ee871d12026f39cab4188c1ee0645df4d10a7711e4712c57585f5163fcfc"
+  }
+}

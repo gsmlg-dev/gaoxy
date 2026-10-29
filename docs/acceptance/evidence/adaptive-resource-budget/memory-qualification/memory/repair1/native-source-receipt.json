@@ -1,0 +1,30 @@
+{
+  "status": "SOURCE_VERIFIED_NATIVE_MACOS_WINDOWS_NOT_EXECUTED",
+  "native_source_version": "OTP-28.0",
+  "installed_otp_version": "28.5.0.5",
+  "items": [
+    {
+      "path": "memsup.c",
+      "sha256": "ca91aeb3772833306e0cf1624ed13e9f76d1a9babde8432a06c577535f78f7a7",
+      "bytes": 18022,
+      "source": "https://raw.githubusercontent.com/erlang/otp/OTP-28.0/lib/os_mon/c_src/memsup.c"
+    },
+    {
+      "path": "win32sysinfo.c",
+      "sha256": "7171b6bce4d7738718860e4dfd7da2eda1192fe18e6fbb60404b57d1aeed9389",
+      "bytes": 7922,
+      "source": "https://raw.githubusercontent.com/erlang/otp/OTP-28.0/lib/os_mon/c_src/win32sysinfo.c"
+    },
+    {
+      "path": "installed-otp-api.erl",
+      "sha256": "52095a844907a28216bb5e5fd71390d1142d6a60bed3b822be2461af0a985cef",
+      "bytes": 6229,
+      "source": "installed OTP28.5.0.5 BEAM abstract code"
+    }
+  ],
+  "physical_mapping": {
+    "darwin": "memsup.c:HOST_BASIC_INFO.max_mem -> total_memory_size -> me.total -> MEM_SYSTEM_TOTAL",
+    "windows": "win32sysinfo.c:GlobalMemoryStatusEx.ullTotalPhys -> memsup.erl:TotPhys -> system_total_memory"
+  },
+  "cleanup": "Custom per-probe executables removed. OTP supervises reusable helper; memsup.port_shutdown sends native EXIT protocol command. Per-probe BEAM query worker is alias-isolated and monitor-confirmed terminated before returning."
+}

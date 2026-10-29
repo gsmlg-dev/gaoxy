@@ -1,0 +1,107 @@
+{
+  "task_id": "ARB-MEM-REVIEW",
+  "baseline": "a6a35438c0a153cd53c87c6a55c19a70a11fb75a",
+  "sol_repair_rounds": 2,
+  "astra_repair_rounds": 1,
+  "astra_escalated": true,
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "files_before": {
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ae5317394d486ab9b2a6a9fc6d33a612788692fb4e26a4bf6801d51a44b6a686",
+    "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex": "c499b1b1cc65ba4d156b5741f7b276d60a0a3cc23115637110fa59eee05f232b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex": "6c6e7caad7c97c27512cecaa8efeb508b222f2c2b8c39b77f5c973334ef69865",
+    "apps/gaoxy/test/system_memory_test.exs": "09c8eb8c86d71a9591d356fcee1293787930a548efb4698a116826c2370192aa",
+    "apps/gaoxy/test/resource_budget_policy_test.exs": "26ea72973096578da2bf958dba5afbab5c0346d76df95b1426fa02d666c51cc0",
+    "apps/gaoxy/test/system_memory_native_test.exs": "a253fa17dc5e94ddca3a3e15ff7da2cfc93aa3f441e79f0ab5ffd159c17eeebf",
+    "apps/gaoxy/mix.exs": "edb2af8d9823cc737e94f77a29b7ac80fd41d539602ecc55d15ee63a77b9b1ce",
+    "scripts/check-repairs.py": "e736ee871d12026f39cab4188c1ee0645df4d10a7711e4712c57585f5163fcfc"
+  },
+  "matches_astra_receipt": true,
+  "commands": [
+    {
+      "name": "focused",
+      "command": [
+        "python3",
+        "scripts/check-tests.py",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "--seed",
+        "0",
+        "--max-cases",
+        "1"
+      ],
+      "started_at": "2026-10-29T07:40:41.306388+00:00",
+      "finished_at": "2026-10-29T07:40:43.360106+00:00",
+      "exit": 0,
+      "log": "focused.log",
+      "sha256": "6031291d750b8ccdceb1741164c5197eed9329bc96c63f8a26c4c7906ddac91d",
+      "summaries": [
+        "53 tests, 0 failures"
+      ]
+    },
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex",
+        "apps/gaoxy/test/system_memory_test.exs",
+        "apps/gaoxy/test/resource_budget_policy_test.exs",
+        "apps/gaoxy/test/system_memory_native_test.exs",
+        "apps/gaoxy/mix.exs"
+      ],
+      "started_at": "2026-10-29T07:40:43.360915+00:00",
+      "finished_at": "2026-10-29T07:40:44.176747+00:00",
+      "exit": 0,
+      "log": "format.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "started_at": "2026-10-29T07:40:44.177282+00:00",
+      "finished_at": "2026-10-29T07:40:45.482340+00:00",
+      "exit": 0,
+      "log": "compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "started_at": "2026-10-29T07:40:45.482993+00:00",
+      "finished_at": "2026-10-29T07:40:45.710971+00:00",
+      "exit": 0,
+      "log": "inventory.log",
+      "sha256": "20dffedea67735232857e3f3416bb10fb90ccf7b4fa3452bba923d51cb739b91"
+    }
+  ],
+  "files_after": {
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ae5317394d486ab9b2a6a9fc6d33a612788692fb4e26a4bf6801d51a44b6a686",
+    "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex": "c499b1b1cc65ba4d156b5741f7b276d60a0a3cc23115637110fa59eee05f232b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex": "6c6e7caad7c97c27512cecaa8efeb508b222f2c2b8c39b77f5c973334ef69865",
+    "apps/gaoxy/test/system_memory_test.exs": "09c8eb8c86d71a9591d356fcee1293787930a548efb4698a116826c2370192aa",
+    "apps/gaoxy/test/resource_budget_policy_test.exs": "26ea72973096578da2bf958dba5afbab5c0346d76df95b1426fa02d666c51cc0",
+    "apps/gaoxy/test/system_memory_native_test.exs": "a253fa17dc5e94ddca3a3e15ff7da2cfc93aa3f441e79f0ab5ffd159c17eeebf",
+    "apps/gaoxy/mix.exs": "edb2af8d9823cc737e94f77a29b7ac80fd41d539602ecc55d15ee63a77b9b1ce",
+    "scripts/check-repairs.py": "e736ee871d12026f39cab4188c1ee0645df4d10a7711e4712c57585f5163fcfc"
+  },
+  "source_unchanged": true,
+  "whitespace_issues": [],
+  "docs": {
+    "docs/designs/adaptive-resource-budget.md": "880e73455cccdad7bb76f8bc4a90091e4bfede3f7ddb452047f3b7fe8eeae6d6",
+    "docs/plans/adaptive-resource-budget.md": "09219a82bc86a45f57042f438d02a60f0a6156b13acd1267c912b90f5ee7650f"
+  }
+}

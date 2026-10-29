@@ -20,5 +20,6 @@ defmodule Gaoxy.MixProject do
     ]
   end
 
-  def application, do: [mod: {Gaoxy.Application, []}, extra_applications: [:logger, :ssl]]
+  def application,
+    do: [mod: {Gaoxy.Application, []}, extra_applications: [:logger, :ssl, :os_mon]]
 end
