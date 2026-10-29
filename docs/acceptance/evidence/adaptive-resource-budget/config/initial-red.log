@@ -1,0 +1,799 @@
+==> gaoxy
+
+16:44:09.265 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:44:09.293 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test repeated adaptive normalized services preserve deferred ceilings (Gaoxy.ResourceBudgetActivationTest)
+     apps/gaoxy/test/resource_budget_activation_test.exs:19
+     ** (UndefinedFunctionError) function Gaoxy.Activation.validate_services/2 is undefined or private
+     code: assert {:ok, [^planned]} = compare(planned, planned)
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Activation.validate_services([%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}], [%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}])
+       test/resource_budget_activation_test.exs:21: (test)
+
+
+
+  2) test adaptive legacy policy may narrow to explicit transport and aggregate lease caps (Gaoxy.ResourceBudgetActivationTest)
+     apps/gaoxy/test/resource_budget_activation_test.exs:24
+     ** (UndefinedFunctionError) function Gaoxy.Activation.validate_services/2 is undefined or private
+     code: assert {:ok, [_]} = compare(service(%{max_bytes: 500_000, max_active: 32}), service())
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Activation.validate_services([%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 500000, idle_timeout: 30000, max_active: 32, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}], [%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}])
+       test/resource_budget_activation_test.exs:25: (test)
+
+
+
+  3) test an explicit legacy cap cannot be omitted during deferred activation (Gaoxy.ResourceBudgetActivationTest)
+     apps/gaoxy/test/resource_budget_activation_test.exs:28
+     ** (UndefinedFunctionError) function Gaoxy.Activation.validate_services/2 is undefined or private
+     code: compare(service(), service(%{max_bytes: 1_048_576, max_active: 64}))
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Activation.validate_services([%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}], [%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}])
+       test/resource_budget_activation_test.exs:30: (test)
+
+
+
+  4) test explicit limits and independent quotas may decrease but never increase (Gaoxy.ResourceBudgetActivationTest)
+     apps/gaoxy/test/resource_budget_activation_test.exs:33
+     ** (MatchError) no match of right hand side value: {:error, {:unknown_options, [:max_connections]}}
+     code: planned = service(%{max_bytes: 1000, max_connections: 10})
+     stacktrace:
+       test/resource_budget_activation_test.exs:12: Gaoxy.ResourceBudgetActivationTest.service/1
+       test/resource_budget_activation_test.exs:34: (test)
+
+
+
+  5) test a malformed policy cannot exploit generic term ordering in deferred validation (Gaoxy.ResourceBudgetActivationTest)
+     apps/gaoxy/test/resource_budget_activation_test.exs:42
+     ** (UndefinedFunctionError) function Gaoxy.Activation.validate_services/2 is undefined or private
+     code: assert {:error, :invalid_budget_policy} = compare(invalid, planned)
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Activation.validate_services([%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, budget_policy: %{max_bytes: nil}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}], [%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetActivationTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []}])
+       test/resource_budget_activation_test.exs:45: (test)
+
+
+
+  6) test omitted legacy caps retain finite protocol numbers and adaptive policy (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:14
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "budget",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.ResourceBudgetConfigTest.Echo,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 1048576,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{},
+       handler_options: [],
+       abyss_options: []
+     }
+     code: assert service.budget_policy.max_bytes == nil
+     stacktrace:
+       test/resource_budget_config_test.exs:18: (test)
+
+
+
+  7) test explicit historical default numbers remain undoubled administrator caps (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:25
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "budget",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.ResourceBudgetConfigTest.Echo,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 1048576,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{},
+       handler_options: [],
+       abyss_options: []
+     }
+     code: assert service.budget_policy.max_bytes == 1_048_576
+     stacktrace:
+       test/resource_budget_config_test.exs:27: (test)
+
+.
+
+  8) test editing a normalized numeric limit becomes an explicit policy (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:40
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "budget",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.ResourceBudgetConfigTest.Echo,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 500000,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{},
+       handler_options: [],
+       abyss_options: []
+     }
+     code: assert normalized.budget_policy.max_bytes == 500_000
+     stacktrace:
+       test/resource_budget_config_test.exs:44: (test)
+
+
+
+  9) test malformed or contradictory normalized policy provenance is rejected (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:49
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "budget",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.ResourceBudgetConfigTest.Echo,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 1048576,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{},
+       handler_options: [],
+       abyss_options: []
+     }
+     code: Config.service(put_in(original.budget_policy.max_bytes, nil))
+     stacktrace:
+       :erlang.map_get(:budget_policy, %{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetConfigTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []})
+       (elixir 1.18.5) lib/map.ex:318: Map.update!/3
+       test/resource_budget_config_test.exs:52: (test)
+
+
+
+ 10) test independent quotas are positive finite values and retain their explicit values (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:59
+     match (=) failed
+     code:  assert {:ok, service} = Config.service(spec(%{limits: limits}))
+     left:  {:ok, service}
+     right: {:error,
+             {:unknown_options,
+              [:max_connections, :max_requests, :max_streams]}}
+     stacktrace:
+       test/resource_budget_config_test.exs:61: (test)
+
+
+
+ 11) test a finite protocol profile does not become an aggregate administrator cap (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:68
+     match (=) failed
+     code:  assert {:ok, service} = Config.service(spec(%{limits: %{protocol_max_bytes: 67_108_864}}))
+     left:  {:ok, service}
+     right: {:error, {:unknown_options, [:protocol_max_bytes]}}
+     stacktrace:
+       test/resource_budget_config_test.exs:69: (test)
+
+
+
+ 12) test an explicit byte cap preserves its old numeric transport semantics (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:79
+     match (=) failed
+     code:  assert {:ok, service} =
+              Config.service(spec(%{limits: %{protocol_max_bytes: 67_108_864, max_bytes: cap}}))
+     left:  {:ok, service}
+     right: {:error, {:unknown_options, [:protocol_max_bytes]}}
+     stacktrace:
+       test/resource_budget_config_test.exs:81: anonymous fn/2 in Gaoxy.ResourceBudgetConfigTest."test an explicit byte cap preserves its old numeric transport semantics"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_config_test.exs:80: (test)
+
+
+
+ 13) test instance budgets default to adaptive and accept an explicit adaptive pair (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:88
+     match (=) failed
+     code:  assert {:ok, %{resource_budget: %{soft_limit: nil, hard_limit: nil}}} = Config.validate([])
+     left:  {:ok, %{resource_budget: %{soft_limit: nil, hard_limit: nil}}}
+     right: {:ok, %{name: nil, services: [], activation: :immediate}}
+     stacktrace:
+       test/resource_budget_config_test.exs:89: (test)
+
+
+
+ 14) test explicit instance thresholds are ordered undoubled and normalize idempotently (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:94
+     match (=) failed
+     code:  assert {:ok, plan} = Config.validate(resource_budget: %{soft_limit: 100, hard_limit: 150})
+     left:  {:ok, plan}
+     right: {:error, {:unknown_options, [:resource_budget]}}
+     stacktrace:
+       test/resource_budget_config_test.exs:95: (test)
+
+.
+
+ 15) test connection capacity honors connection quota and explicit legacy lease cap (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:112
+     ** (UndefinedFunctionError) function Gaoxy.Config.connection_capacity/1 is undefined or private
+     code: assert apply(Config, :connection_capacity, [adaptive]) == 16_384
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Config.connection_capacity(%{id: "budget", port: 0, udp: %{}, mode: :unicast, ip: {127, 0, 0, 1}, handler: Gaoxy.ResourceBudgetConfigTest.Echo, tls: %{}, transport: :tcp, capabilities: [], dispatcher: %{}, limits: %{max_bytes: 1048576, idle_timeout: 30000, max_active: 64, max_packet: 65507, max_memberships: 64, drain_timeout: 5000, callback_timeout: 5000, max_output: 65507, max_state: 65536}, hell_options: [], handler_mode: :stream, quic: %{}, handler_options: [], abyss_options: []})
+       test/resource_budget_config_test.exs:114: (test)
+
+
+
+ 16) test acceptor safety intersects connection capacity and preserves the finite 64 cap (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:119
+     match (=) failed
+     code:  assert {:ok, _} =
+              Config.service(spec(%{limits: %{max_connections: 2}, hell_options: [num_acceptors: 2]}))
+     left:  {:ok, _}
+     right: {:error, {:unknown_options, [:max_connections]}}
+     stacktrace:
+       test/resource_budget_config_test.exs:120: (test)
+
+
+
+ 17) test lease safety is finite and independent of administrator and connection limits (Gaoxy.ResourceBudgetConfigTest)
+     apps/gaoxy/test/resource_budget_config_test.exs:128
+     ** (UndefinedFunctionError) function Gaoxy.Config.lease_safety_limit/0 is undefined or private
+     code: assert apply(Config, :lease_safety_limit, []) == 262_144
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.Config.lease_safety_limit()
+       test/resource_budget_config_test.exs:129: (test)
+
+
+Finished in 0.3 seconds (0.3s async, 0.00s sync)
+19 tests, 17 failures
+==> gaoxy_http
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test H2 synthetic default remains numeric without becoming an explicit cap (Gaoxy.HTTP.ResourceBudgetConfigTest)
+     apps/gaoxy_http/test/resource_budget_config_test.exs:11
+     ** (KeyError) key :budget_policy not found in: %{
+       id: :http,
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.Connection,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 268435456,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :native,
+       quic: %{},
+       handler_options: %{
+         protocols: [:http2],
+         initialized: true,
+         h2c: :prior_knowledge,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.ResourceBudgetConfigTest.Endpoint, []},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h2_limits: %{
+           max_streams: 32,
+           max_frame: 16384,
+           table_size: 4096,
+           max_header_block: 16384,
+           receive_window: 65535,
+           control_rate: 256,
+           control_turn: 32,
+           frame_timeout: 5000
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == nil
+     stacktrace:
+       test/resource_budget_config_test.exs:14: (test)
+
+
+
+  2) test an explicit H2 value equal to the historical default stays explicit (Gaoxy.HTTP.ResourceBudgetConfigTest)
+     apps/gaoxy_http/test/resource_budget_config_test.exs:19
+     ** (KeyError) key :budget_policy not found in: %{
+       id: :http,
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.Connection,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 268435456,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :native,
+       quic: %{},
+       handler_options: %{
+         protocols: [:http2],
+         initialized: true,
+         h2c: :prior_knowledge,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.ResourceBudgetConfigTest.Endpoint, []},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h2_limits: %{
+           max_streams: 32,
+           max_frame: 16384,
+           table_size: 4096,
+           max_header_block: 16384,
+           receive_window: 65535,
+           control_rate: 256,
+           control_turn: 32,
+           frame_timeout: 5000
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == 268_435_456
+     stacktrace:
+       test/resource_budget_config_test.exs:21: (test)
+
+
+
+  3) test HTTP ListenerSet planned and prepared provider round trips preserve omission (Gaoxy.HTTP.ResourceBudgetConfigTest)
+     apps/gaoxy_http/test/resource_budget_config_test.exs:25
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "budget:http",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.Connection,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 1048576,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :native,
+       quic: %{},
+       handler_options: %{
+         protocols: [:http1],
+         initialized: true,
+         h2c: :disabled,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.ListenerSet.Target, :planned},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h2_limits: %{
+           max_streams: 32,
+           max_frame: 16384,
+           table_size: 4096,
+           max_header_block: 16384,
+           receive_window: 65535,
+           control_rate: 256,
+           control_turn: 32,
+           frame_timeout: 5000
+         }
+       },
+       abyss_options: []
+     }
+     code: assert planned.budget_policy == prepared.budget_policy
+     stacktrace:
+       test/resource_budget_config_test.exs:29: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+3 tests, 3 failures
+==> gaoxy_http3
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test H3 synthetic default and legacy 64 retain omitted policy through core normalization (Gaoxy.HTTP.HTTP3.ResourceBudgetConfigTest)
+     apps/gaoxy_http3/test/resource_budget_config_test.exs:13
+     ** (KeyError) key :budget_policy not found in: %{
+       id: :http3,
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.HTTP3.Connection,
+       tls: %{certfile: "cert", keyfile: "key"},
+       transport: :quic,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 16777216,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 16384,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 16384,
+         max_state: 3145728
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{alpn: ["h3"], poll_interval: 10},
+       handler_options: %{
+         initialized: true,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.HTTP3.ResourceBudgetConfigTest.Endpoint, []},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h3_limits: %{
+           max_streams: 8,
+           max_header_block: 32768,
+           control_turn: 32,
+           max_pending_output: 65536,
+           dynamic_table_capacity: 0,
+           blocked_streams: 0,
+           control_quantum: 16384
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == nil
+     stacktrace:
+       test/resource_budget_config_test.exs:17: (test)
+
+
+
+  2) test explicit H3 values equal to its historical defaults remain administrator caps (Gaoxy.HTTP.HTTP3.ResourceBudgetConfigTest)
+     apps/gaoxy_http3/test/resource_budget_config_test.exs:22
+     ** (KeyError) key :budget_policy not found in: %{
+       id: :http3,
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.HTTP3.Connection,
+       tls: %{certfile: "cert", keyfile: "key"},
+       transport: :quic,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 16777216,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 16384,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 16384,
+         max_state: 3145728
+       },
+       hell_options: [],
+       handler_mode: :stream,
+       quic: %{alpn: ["h3"], poll_interval: 10},
+       handler_options: %{
+         initialized: true,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.HTTP3.ResourceBudgetConfigTest.Endpoint, []},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h3_limits: %{
+           max_streams: 8,
+           max_header_block: 32768,
+           control_turn: 32,
+           max_pending_output: 65536,
+           dynamic_table_capacity: 0,
+           blocked_streams: 0,
+           control_quantum: 16384
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == 16_777_216
+     stacktrace:
+       test/resource_budget_config_test.exs:24: (test)
+
+
+
+  3) test H3 accepts a synthetic Gateway transport profile without an aggregate cap (Gaoxy.HTTP.HTTP3.ResourceBudgetConfigTest)
+     apps/gaoxy_http3/test/resource_budget_config_test.exs:29
+     match (=) failed
+     code:  assert {:ok, spec} = Gaoxy.HTTP.HTTP3.service_spec(options(limits: %{protocol_max_bytes: 67_108_864}))
+     left:  {:ok, spec}
+     right: {:error, :invalid_limits}
+     stacktrace:
+       test/resource_budget_config_test.exs:30: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+3 tests, 3 failures
+==> gaoxy_proxy
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test Gateway synthetic 64 MiB remains an omitted aggregate cap through plan round trips (Gaoxy.Proxy.ResourceBudgetConfigTest)
+     apps/gaoxy_proxy/test/resource_budget_config_test.exs:21
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "web:http",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.Connection,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 67108864,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :native,
+       quic: %{},
+       handler_options: %{
+         protocols: [:http1],
+         initialized: true,
+         h2c: :disabled,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.ListenerSet.Target, :planned},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h2_limits: %{
+           max_streams: 32,
+           max_frame: 16384,
+           table_size: 4096,
+           max_header_block: 16384,
+           receive_window: 65535,
+           control_rate: 256,
+           control_turn: 32,
+           frame_timeout: 5000
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == nil
+     stacktrace:
+       test/resource_budget_config_test.exs:25: (test)
+
+
+
+  2) test an explicit Gateway cap equal to its historical default remains explicit (Gaoxy.Proxy.ResourceBudgetConfigTest)
+     apps/gaoxy_proxy/test/resource_budget_config_test.exs:31
+     ** (KeyError) key :budget_policy not found in: %{
+       id: "web:http",
+       port: 0,
+       udp: %{},
+       mode: :unicast,
+       ip: {127, 0, 0, 1},
+       handler: Gaoxy.HTTP.Connection,
+       tls: %{},
+       transport: :tcp,
+       capabilities: [],
+       dispatcher: %{},
+       limits: %{
+         max_bytes: 67108864,
+         idle_timeout: 30000,
+         max_active: 64,
+         max_packet: 65507,
+         max_memberships: 64,
+         drain_timeout: 5000,
+         callback_timeout: 5000,
+         max_output: 65507,
+         max_state: 65536
+       },
+       hell_options: [],
+       handler_mode: :native,
+       quic: %{},
+       handler_options: %{
+         protocols: [:http1],
+         initialized: true,
+         h2c: :disabled,
+         extended_connect: false,
+         endpoint: {Gaoxy.HTTP.ListenerSet.Target, :planned},
+         http_limits: %{
+           max_read_chunk: 16384,
+           max_buffer_bytes: 65536,
+           request_timeout: 30000,
+           stream_timeout: :request,
+           header_timeout: 5000,
+           max_body_bytes: 8388608,
+           max_chunk_line: 1024,
+           max_header_bytes: 32768,
+           max_headers: 100,
+           max_request_line: 8192,
+           max_trailer_bytes: 8192,
+           max_trailers: 32,
+           read_timeout: 5000,
+           write_timeout: 5000
+         },
+         h2_limits: %{
+           max_streams: 32,
+           max_frame: 16384,
+           table_size: 4096,
+           max_header_block: 16384,
+           receive_window: 65535,
+           control_rate: 256,
+           control_turn: 32,
+           frame_timeout: 5000
+         }
+       },
+       abyss_options: []
+     }
+     code: assert spec.budget_policy.max_bytes == 67_108_864
+     stacktrace:
+       test/resource_budget_config_test.exs:34: (test)
+
+
+Finished in 0.1 seconds (0.1s async, 0.00s sync)
+2 tests, 2 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

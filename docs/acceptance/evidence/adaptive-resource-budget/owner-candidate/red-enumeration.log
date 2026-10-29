@@ -1,0 +1,40 @@
+==> gaoxy
+Compiling 5 files (.ex)
+Generated gaoxy app
+==> gaoxy
+
+16:28:35.885 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:28:35.915 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+.............
+16:28:37.454 [warning] resource budget warning
+.
+16:28:37.456 [warning] resource budget warning
+.
+16:28:37.457 [warning] resource budget warning
+.........
+16:28:37.470 [warning] resource budget warning
+........
+16:28:37.482 [info] The function passed as a handler with ID #Reference<0.1991270242.2290614273.159534> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+............
+16:28:37.688 [warning] resource budget warning
+......
+
+  1) test live parent enumerates canonical post-crash allocation revisions in bounded pages (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:864
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.allocations/2 is undefined or private
+     code: assert {:ok, %{allocations: rows, cursor: cursor}} = api(:allocations, [c, :start])
+     stacktrace:
+       (gaoxy 0.13.1) Gaoxy.ResourceBudget.allocations(%{service: #Reference<0.1991270242.2290614273.160933>, server: {:global, {:nonode@nohost, Gaoxy.ResourceBudget.Authority, #Reference<0.1991270242.2290614273.160831>}}, epoch: #Reference<0.1991270242.2290614273.160859>, generation: #Reference<0.1991270242.2290614273.160937>}, :start)
+       test/resource_budget_owner_test.exs:887: (test)
+
+
+Finished in 1.6 seconds (1.4s async, 0.2s sync)
+51 tests, 1 failure
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

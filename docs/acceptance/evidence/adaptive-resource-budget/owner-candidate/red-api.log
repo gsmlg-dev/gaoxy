@@ -1,0 +1,422 @@
+==> gaoxy
+
+16:09:31.736 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:09:31.766 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test reserves five percent headroom and admits the exact remaining boundary (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:17
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(150 * @mib), sample()) == :ok
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 157286400, temporary_bytes: 0, pending_processes: 0}, %{available_bytes: 209715200, cgroup_headroom_bytes: nil, sampled_at: 1000, retained_baseline: 0, high_pressure?: false}, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:18: (test)
+
+
+
+  2) test minimum headroom is sixteen MiB (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:22
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.headroom/1 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert apply(Safety, :headroom, [100 * @mib]) == 16 * @mib
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.headroom(104857600)
+       test/resource_budget_safety_test.exs:23: (test)
+
+
+
+  3) test uses the smallest physical or finite controller headroom (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:26
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(@mib), sample(%{cgroup_headroom_bytes: 50 * @mib})) ==
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 1048576, temporary_bytes: 0, pending_processes: 0}, %{available_bytes: 209715200, cgroup_headroom_bytes: 52428800, sampled_at: 1000, retained_baseline: 0, high_pressure?: false}, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:27: (test)
+
+
+
+  4) test missing malformed and stale safety observations fail closed (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:31
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: for data <- [nil, %{}, sample(%{available_bytes: -1}), sample(%{sampled_at: -2001})] do
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 1, temporary_bytes: 0, pending_processes: 0}, nil, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:33: anonymous fn/2 in Gaoxy.ResourceBudget.SafetyTest."test missing malformed and stale safety observations fail closed"/1
+       (elixir 1.18.5) lib/enum.ex:2546: Enum."-reduce/3-lists^foldl/2-0-"/3
+       test/resource_budget_safety_test.exs:32: (test)
+
+
+
+  5) test resampling never erases unmaterialized temporary commitments (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:39
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(100 * @mib, 151 * @mib), sample(%{retained_baseline: 100 * @mib})) ==
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 104857600, temporary_bytes: 158334976, pending_processes: 0}, %{available_bytes: 209715200, cgroup_headroom_bytes: nil, sampled_at: 1000, retained_baseline: 104857600, high_pressure?: false}, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:40: (test)
+
+
+
+  6) test confirmed releases reduce positive growth without granting negative usage (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:44
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(90 * @mib, 150 * @mib), sample(%{retained_baseline: 100 * @mib})) == :ok
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 94371840, temporary_bytes: 157286400, pending_processes: 0}, %{available_bytes: 209715200, cgroup_headroom_bytes: nil, sampled_at: 1000, retained_baseline: 104857600, high_pressure?: false}, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:45: (test)
+
+
+
+  7) test live process guard includes pending spawn credits (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:48
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(0, 0, 1), sample(), processes: %{count: 871, limit: 1000}) == :ok
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 0, temporary_bytes: 0, pending_processes: 1}, %{available_bytes: 209715200, cgroup_headroom_bytes: nil, sampled_at: 1000, retained_baseline: 0, high_pressure?: false}, 1048576000, 1000, %{count: 871, limit: 1000})
+       test/resource_budget_safety_test.exs:49: (test)
+
+
+
+  8) test high is a pressure indicator rather than a physical capacity (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:54
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.check/5 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert check(usage(1), sample(%{high_pressure?: true})) == {:error, :system_memory_pressure}
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.check(%{retained_bytes: 1, temporary_bytes: 0, pending_processes: 0}, %{available_bytes: 209715200, cgroup_headroom_bytes: nil, sampled_at: 1000, retained_baseline: 0, high_pressure?: true}, 1048576000, 1000, %{count: 10, limit: 1000})
+       test/resource_budget_safety_test.exs:55: (test)
+
+
+
+  9) test Linux safety reads available physical and finite controller headroom (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:58
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.detect/2 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert {:ok, data} = apply(Safety, :detect, [%{capacity: 800_000_000, cgroup_limit_bytes: 800_000_000},
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.detect(%{capacity: 800000000, cgroup_limit_bytes: 800000000}, [platform: {:unix, :linux}, read_file: #Function<0.33350217/1 in Gaoxy.ResourceBudget.SafetyTest."test Linux safety reads available physical and finite controller headroom"/1>, now: #Function<1.33350217/0 in Gaoxy.ResourceBudget.SafetyTest."test Linux safety reads available physical and finite controller headroom"/1>])
+       test/resource_budget_safety_test.exs:65: (test)
+
+
+
+ 10) test native available memory uses public memsup data and rejects missing physical metrics (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:72
+     ** (UndefinedFunctionError) function Gaoxy.ResourceBudget.Safety.detect/2 is undefined (module Gaoxy.ResourceBudget.Safety is not available)
+     code: assert {:ok, %{available_bytes: 400}} = detect.(fn -> [system_total_memory: 1000, available_memory: 400] end)
+     stacktrace:
+       Gaoxy.ResourceBudget.Safety.detect(%{capacity: 1000}, [platform: {:win32, :nt}, native: #Function<3.33350217/0 in Gaoxy.ResourceBudget.SafetyTest."test native available memory uses public memsup data and rejects missing physical metrics"/1>, now: #Function<6.33350217/0 in Gaoxy.ResourceBudget.SafetyTest."test native available memory uses public memsup data and rejects missing physical metrics"/1>])
+       test/resource_budget_safety_test.exs:75: (test)
+
+
+
+ 11) test exact boundaries admit warning and reject projected hard overflow without changing state (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:42
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:43: (test)
+
+
+
+ 12) test multiple instances share one VM pool (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:55
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(capacity: 1000 * @mib)
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:56: (test)
+
+
+
+ 13) test racing gate reservations cannot overspend shared projected usage (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:70
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(capacity: 1000 * @mib)
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:71: (test)
+
+
+
+ 14) test explicit service max_bytes is undoubled and excludes websocket retention (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:81
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:82: (test)
+
+
+
+ 15) test overlapping request and stream identities count once and websocket ends request ownership (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:92
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:93: (test)
+
+
+
+ 16) test distinct connection and stream quotas reject only their memberships (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:106
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:107: (test)
+
+
+
+ 17) test identical retries keep committed receipt after deadline and conflicting reuse fails (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:116
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:117: (test)
+
+
+
+ 18) test expired fresh mutation does not commit and rejection retry is stable (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:126
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:127: (test)
+
+
+
+ 19) test receipt eviction retains watermark and closed allocations cannot reopen (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:135
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:136: (test)
+
+
+
+ 20) test stale revisions cannot replace or release a newer allocation (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:146
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:147: (test)
+
+
+
+ 21) test ownership transfer preserves exact memory and logical quotas (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:156
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:157: (test)
+
+
+
+ 22) test authority restart reconstructs explicit policy provenance usage and receipt cache (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:169
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {sup, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:170: (test)
+
+
+
+ 23) test ledger loss fences replacement without fabricating zero usage (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:182
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {sup, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:183: (test)
+
+
+
+ 24) test gate and owner DOWN retain charges and live service reconciles confirmed terminal receipt (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:193
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:194: (test)
+
+
+
+ 25) test drain fences growth and retirement requires confirmed empty obligations (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:207
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:208: (test)
+
+
+
+ 26) test stale pressure prevents new growth while release and committed replacement credit remain usable (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:220
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(now: fn -> Agent.get(clock, & &1) end)
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:223: (test)
+
+
+
+ 27) test raced reservations share safety headroom rather than spending the sample twice (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:232
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(safety_probe: fn _ -> {:ok, %{available_bytes: 100 * @mib,
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:233: (test)
+
+
+
+ 28) test refresh retains outstanding temporary commitments in safety debit (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:241
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(safety_probe: fn _ -> {:ok, %{available_bytes: 100 * @mib,
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:242: (test)
+
+
+
+ 29) test capacity shrink preserves admitted work and release permits automatic recovery (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:251
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(capacity_probe: fn -> %{capacity: Agent.get(cap, & &1), fallback?: false, source: :controlled} end)
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:254: (test)
+
+
+
+ 30) test warning telemetry records committed transition once and logs are rate limited (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:265
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:266: (test)
+
+
+
+ 31) test invalid policies accounting and unknown scope never acquire fallback ownership (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:281
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget()
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:282: (test)
+
+
+
+ 32) test process guard protects pending spawn reservations (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:290
+     ** (ArgumentError) The module Gaoxy.ResourceBudget.Supervisor was given as a child to a supervisor but it does not exist
+     code: {_, server} = setup_budget(processes: fn -> %{count: 871, limit: 1000} end)
+     stacktrace:
+       (elixir 1.18.5) lib/supervisor.ex:797: Supervisor.init_child/1
+       (elixir 1.18.5) lib/supervisor.ex:905: Supervisor.child_spec/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:571: ExUnit.Callbacks.start_supervised/2
+       (ex_unit 1.18.5) lib/ex_unit/callbacks.ex:582: ExUnit.Callbacks.start_supervised!/2
+       test/resource_budget_owner_test.exs:22: Gaoxy.ResourceBudget.OwnerTest.setup_budget/1
+       test/resource_budget_owner_test.exs:291: (test)
+
+
+Finished in 0.9 seconds (0.9s async, 0.02s sync)
+32 tests, 32 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

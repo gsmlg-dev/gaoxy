@@ -1,0 +1,89 @@
+==> gaoxy
+     warning: variable "client" is unused (if the variable is not meant to be used, prefix it with an underscore)
+     │
+ 474 │   defp commit(state, client, gate, old, new, growth, sequence) do
+     │                      ~~~~~~
+     │
+     └─ (gaoxy 0.13.1) lib/gaoxy/resource_budget/ledger.ex:474:22: Gaoxy.ResourceBudget.Ledger.commit/7
+
+==> gaoxy
+
+16:21:50.995 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:21:51.016 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+..........
+
+  1) test finite v2 high pressure still applies when the hard maximum is unlimited (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:126
+     match (=) failed
+     code:  assert {:ok, %{high_pressure?: true, cgroup_headroom_bytes: nil}} =
+              apply(Safety, :detect, [
+                %{
+                  capacity: 1_000_000_000,
+                  cgroup_limit_bytes: nil,
+                  metadata: %{controller_locations: [{:v2, "/cg", "/cg"}]}
+                },
+                [platform: {:unix, :linux}, read_file: read]
+              ])
+     left:  {:ok, %{high_pressure?: true, cgroup_headroom_bytes: nil}}
+     right: {:ok,
+             %{
+               available_bytes: 512000000,
+               cgroup_headroom_bytes: nil,
+               sampled_at: -576460750435,
+               high_pressure?: false
+             }}
+     stacktrace:
+       test/resource_budget_safety_test.exs:136: (test)
+
+..
+16:21:52.527 [warning] resource budget warning
+.
+16:21:52.529 [warning] resource budget warning
+.
+16:21:52.531 [warning] resource budget warning
+.........
+16:21:52.543 [warning] resource budget warning
+........
+16:21:52.553 [info] The function passed as a handler with ID #Reference<0.577989765.1216610306.69568> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+....
+
+  2) test instance and service registrations retire only after scoped drain and terminal proof (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:508
+     match (=) failed
+     code:  assert {:ok, _} = api(:set_mode, [c, {:instance, :draining}, 1, deadline()])
+     left:  {:ok, _}
+     right: {:error, :invalid_mode}
+     stacktrace:
+       test/resource_budget_owner_test.exs:511: (test)
+
+
+
+  3) test draining an instance fences every service without scanning its allocations (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:518
+     match (=) failed
+     code:  assert {:ok, _} = api(:set_mode, [c1, {:instance, :draining}, 1, deadline()])
+     left:  {:ok, _}
+     right: {:error, :invalid_mode}
+     stacktrace:
+       test/resource_budget_owner_test.exs:522: (test)
+
+.....
+16:21:52.758 [warning] resource budget warning
+
+
+  4) test coalesced refresh owns one worker and supervisor shutdown confirms its cleanup (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:684
+     ** (EXIT from #PID<0.634.0>) exited in: GenServer.call({:global, {Gaoxy.ResourceBudget.Sampler, #Reference<0.577989765.1216610305.76979>}}, :refresh, 4500)
+         ** (EXIT) shutdown
+
+.
+Finished in 1.6 seconds (1.3s async, 0.2s sync)
+45 tests, 4 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

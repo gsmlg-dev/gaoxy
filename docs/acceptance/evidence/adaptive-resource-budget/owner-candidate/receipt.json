@@ -1,0 +1,92 @@
+{
+  "task": "ARB-OWNER",
+  "status": "implementation_checks_passed_pending_independent_review",
+  "baseline": "bf2b2865944d85c18917d00854a5c503ce3b443d",
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "tests": {
+    "owner": 42,
+    "safety": 15,
+    "accepted_memory_regression": 53,
+    "executed": 110,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0
+  },
+  "checks": [
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/supervisor.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/authority.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/sampler.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/resource_budget_safety_test.exs"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "strict-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "output": ""
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "output": "INVENTORY_PASS unit=351, component=232, protocol=137 active_files=110 retained_files=145"
+    },
+    {
+      "name": "whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "output": ""
+    }
+  ],
+  "counters": {
+    "sol_repair_rounds": 1,
+    "astra_repair_rounds": 0,
+    "accepted_MEM_sol_repair_rounds": 2,
+    "accepted_MEM_astra_repair_rounds": 1
+  },
+  "source_hashes": {
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex": "0f6b46bbece1ad8ca6426952f079462ce6017c71e2e1fff5d776969aff14cc78",
+    "apps/gaoxy/lib/gaoxy/resource_budget/supervisor.ex": "b3a7d2608b0e42472070fc53f00e3f76253bb822eb36005b469ab0dce39f73ab",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "a3489fa58e0de57fdeaa48deb34a32b970310c09e962322458b9f73909e37d98",
+    "apps/gaoxy/lib/gaoxy/resource_budget/authority.ex": "c7a523748263657eb35711537f8ce80c7db01e7bdb695762f5b7a15138c5fe1b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/sampler.ex": "a48da91b40062a4449a42073dc61fafc3a0046d96080f374f67fbbbe7855cbde",
+    "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex": "9e163881a3b100f8d32fd50bff94add168b3cd9d49c28287e3cd0494dd35e561",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ad28df899a5c5f34184bc556b4c1b08034468e867bb32dbf1f76ff0837d8fb6b",
+    "apps/gaoxy/test/resource_budget_owner_test.exs": "2f8b02e930760efec0bfe06a1bec6045c667f16f20ef00aa15c064dc3dbc73c6",
+    "apps/gaoxy/test/resource_budget_safety_test.exs": "2d3ce05383e7d62039877164f2682396edc25cd41605ba2489935865fb311345",
+    "scripts/check-repairs.py": "73ebb4cbecd9e926688662642f98aaee864713f8f1d45ee529afb95464b23a54"
+  },
+  "not_run": [
+    "CONFIG new27 tests (separate writer)",
+    "CORE/protocol/runtime integration",
+    "actual macOS/Windows execution"
+  ],
+  "known_failures": []
+}

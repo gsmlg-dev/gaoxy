@@ -1,0 +1,63 @@
+==> gaoxy
+
+16:36:50.721 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:36:50.755 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+..............
+
+  1) test missing root current cannot hide finite high pressure under an unlimited maximum (Gaoxy.ResourceBudget.SafetyTest)
+     apps/gaoxy/test/resource_budget_safety_test.exs:203
+     match (=) failed
+     code:  assert {:error, :safety_sample_unavailable} =
+              apply(Safety, :detect, [
+                %{
+                  capacity: 1_000_000_000,
+                  cgroup_limit_bytes: nil,
+                  metadata: %{controller_locations: [{:v2, "/cg", "/cg"}]}
+                },
+                [platform: {:unix, :linux}, read_file: read]
+              ])
+     left:  {:error, :safety_sample_unavailable}
+     right: {:ok,
+             %{
+               available_bytes: 512000000,
+               cgroup_headroom_bytes: nil,
+               sampled_at: -576460750590,
+               high_pressure?: false
+             }}
+     stacktrace:
+       test/resource_budget_safety_test.exs:217: (test)
+
+
+16:36:52.625 [warning] resource budget warning
+.
+16:36:52.626 [warning] resource budget warning
+.
+16:36:52.628 [warning] resource budget warning
+.........
+16:36:52.641 [warning] resource budget warning
+........
+16:36:52.650 [info] The function passed as a handler with ID #Reference<0.2968404147.2292449281.192351> is a local function.
+This means that it is either an anonymous function or a capture of a function without a module specified. That may cause a performance penalty when calling that handler. For more details see the note in `telemetry:attach/4` documentation.
+
+https://hexdocs.pm/telemetry/telemetry.html#attach/4
+............
+16:36:52.858 [warning] resource budget warning
+.........
+
+  2) test shared warning logs when every individual instance remains below its own soft limit (Gaoxy.ResourceBudget.OwnerTest)
+     apps/gaoxy/test/resource_budget_owner_test.exs:980
+     Assertion with == failed
+     code:  assert length(Regex.scan(~r/resource budget warning/, log)) == 1
+     left:  0
+     right: 1
+     stacktrace:
+       test/resource_budget_owner_test.exs:1012: (test)
+
+
+Finished in 4.5 seconds (1.7s async, 2.7s sync)
+56 tests, 2 failures
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed

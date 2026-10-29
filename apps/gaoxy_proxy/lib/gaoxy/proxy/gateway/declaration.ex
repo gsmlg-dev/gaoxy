@@ -138,7 +138,7 @@ defmodule Gaoxy.Proxy.Gateway.Declaration do
         limits =
           if :http2 in protocols and role != :http3,
             do: limits,
-            else: Map.put_new(limits, :max_bytes, 67_108_864)
+            else: Map.put_new(limits, :protocol_max_bytes, 67_108_864)
 
         {role, Keyword.put(options, :limits, limits) |> Enum.sort()}
       end)

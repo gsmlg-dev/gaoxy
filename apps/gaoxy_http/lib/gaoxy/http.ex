@@ -131,20 +131,19 @@ defmodule Gaoxy.HTTP do
     with {:ok, service} <- Gaoxy.BackendOptions.normalize(service),
          :ok <- socket_budget(service.hell_options),
          {:ok, normalized} <- Gaoxy.HTTP.Options.normalize(service.handler_options),
-         limits =
-           if(:http2 in normalized.protocols and is_map(service.limits),
-             do: Map.put_new(service.limits, :max_bytes, 268_435_456),
-             else: service.limits
-           ),
+         defaults = if(:http2 in normalized.protocols, do: %{max_bytes: 268_435_456}, else: %{}),
+         {:ok, limits, policy} <- Gaoxy.Config.service_limits(service.limits, defaults),
          tls = alpn(transport, tls, normalized.protocols),
          :ok <- protocol_transport(transport, tls, normalized),
          {:ok, spec} <-
-           Gaoxy.Config.service(%{
-             service
-             | handler_options: normalized,
+           Gaoxy.Config.service(
+             Map.merge(service, %{
+               handler_options: normalized,
                tls: tls,
-               limits: limits
-           }),
+               limits: limits,
+               budget_policy: policy
+             })
+           ),
          :ok <- budget(spec) do
       {:ok, spec}
     end

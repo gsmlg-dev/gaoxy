@@ -224,6 +224,20 @@ Normalization and budget calculation remain pure. Public examples should use
 adaptive defaults without hard-coded H2 budget overrides; show explicit policy
 only where it is an intentional administrator choice.
 
+The normalized service retains a positive numeric `limits` view for protocol
+arithmetic and carries its aggregate admission policy separately as
+`budget_policy`. Presence is captured before constructor defaults and survives
+normalization and deferred activation. An omitted legacy cap therefore projects
+to `nil` in the policy even when its numeric transport profile is populated.
+`limits.protocol_max_bytes` can carry a finite provider transport default through
+ListenerSet planning without turning it into an administrator aggregate cap.
+Initial independent service quota defaults are 16,384 connections, 65,536
+requests and 65,536 streams. The separate ordinary-lease safety ceiling is
+262,144. Backend acceptor fanout keeps its finite safety ceiling of 64, also
+bounded by the effective connection capacity so every acceptor has a nonzero
+connection allowance. These values do not size QUIC flow-control windows or
+queues from host memory.
+
 Quota membership overlaps: every admitted HTTP request consumes request quota;
 an H2/H3 request stream additionally consumes the relevant stream quota. One
 request cannot bypass the request quota by having a stream kind. Connections
@@ -234,6 +248,15 @@ connection and, for H2/H3, stream ownership. Pending output/cleanup may retain
 memory after a request/stream counter ends. Writer and guardian records consume
 memory and the independent lease/process guard, not application request or
 connection quota. Ownership transfer must preserve counters without duplication.
+
+CORE uses a same-token stream-retention transition after an H2/H3 worker's
+confirmed DOWN/EXIT pair. It atomically removes ordinary request membership,
+transfers remaining protocol ownership to the authenticated connection parent,
+and ends the legacy worker lease slot. The retained stream still consumes its
+stream quota and the independent allocation safety guard until the parent
+confirms protocol completion. This is a distinct nonlegacy retention kind,
+never a second ordinary allocation or a cleanup guardian. Removing request or
+stream membership does not release memory still owned by output or cleanup.
 
 ## Dynamic protocol accounting
 

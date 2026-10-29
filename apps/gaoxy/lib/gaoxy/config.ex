@@ -3,6 +3,9 @@ defmodule Gaoxy.Config do
   @limits %{
     max_active: 64,
     max_bytes: 1_048_576,
+    max_connections: 16_384,
+    max_requests: 65_536,
+    max_streams: 65_536,
     max_packet: 65_507,
     max_output: 65_507,
     max_state: 65_536,
@@ -27,8 +30,124 @@ defmodule Gaoxy.Config do
     :abyss_options,
     :dispatcher,
     :limits,
+    :budget_policy,
     :capabilities
   ]
+
+  @finite_max 9_223_372_036_854_775_807
+  @policy_keys [:max_active, :max_bytes, :max_connections, :max_requests, :max_streams]
+  @optional_caps [:max_active, :max_bytes]
+
+  @doc "Independent finite lease bookkeeping guard, separate from administrator caps."
+  def lease_safety_limit, do: 262_144
+
+  @doc "Connection quota intersected with an explicit legacy lease cap."
+  def connection_capacity(spec) when is_map(spec),
+    do: connection_capacity(Map.get(spec, :limits, %{}), Map.get(spec, :budget_policy))
+
+  def connection_capacity(_), do: 0
+
+  def connection_capacity(limits, policy) when is_map(limits) do
+    {connections, active} =
+      if is_map(policy),
+        do: {policy[:max_connections], policy[:max_active]},
+        else: {Map.get(limits, :max_connections, @limits.max_connections), limits[:max_active]}
+
+    if finite?(connections) and (is_nil(active) or finite?(active)),
+      do: if(is_nil(active), do: connections, else: min(connections, active)),
+      else: 0
+  end
+
+  def connection_capacity(_, _), do: 0
+
+  @doc "Normalize numeric protocol limits while retaining raw administrator-cap provenance."
+  def service_limits(input, defaults \\ %{}, policy \\ nil)
+
+  def service_limits(input, defaults, policy) when is_map(input) and is_map(defaults) do
+    limits = Map.merge(@limits, defaults)
+    profile = Map.get(input, :protocol_max_bytes, limits.max_bytes)
+    limits = limits |> Map.put(:max_bytes, profile) |> Map.merge(input)
+
+    with :ok <- limit_check(%{limits: input}, limits),
+         {:ok, sources} <- policy_sources(input, policy) do
+      snapshot = Map.take(limits, @policy_keys)
+      provenance = Map.put(sources, :normalized_limits, snapshot)
+
+      policy =
+        Map.new(@policy_keys, fn key ->
+          value =
+            if key in @optional_caps and sources[key] == :omitted, do: nil, else: limits[key]
+
+          {key, value}
+        end)
+        |> Map.put(:provenance, provenance)
+
+      {:ok, limits, policy}
+    end
+  end
+
+  def service_limits(_, _, _), do: {:error, :invalid_limits}
+
+  defp policy_sources(input, nil),
+    do:
+      {:ok,
+       Map.new(@policy_keys, &{&1, if(Map.has_key?(input, &1), do: :explicit, else: :omitted)})}
+
+  defp policy_sources(input, policy) do
+    if valid_policy?(policy) do
+      sources =
+        Map.new(@policy_keys, fn key ->
+          source =
+            if Map.get(input, key) == policy.provenance.normalized_limits[key],
+              do: policy.provenance[key],
+              else: if(Map.has_key?(input, key), do: :explicit, else: :omitted)
+
+          {key, source}
+        end)
+
+      {:ok, sources}
+    else
+      {:error, :invalid_budget_policy}
+    end
+  end
+
+  defp valid_policy?(policy) when is_map(policy) do
+    provenance = policy[:provenance]
+
+    Map.keys(policy) -- [:provenance | @policy_keys] == [] and
+      map_size(policy) == length(@policy_keys) + 1 and is_map(provenance) and
+      Map.keys(provenance) -- [:normalized_limits | @policy_keys] == [] and
+      map_size(provenance) == length(@policy_keys) + 1 and
+      is_map(provenance[:normalized_limits]) and
+      Enum.sort(Map.keys(provenance.normalized_limits)) == Enum.sort(@policy_keys) and
+      Enum.all?(@policy_keys, fn key ->
+        previous = provenance.normalized_limits[key]
+
+        expected =
+          if key in @optional_caps and provenance[key] == :omitted, do: nil, else: previous
+
+        provenance[key] in [:explicit, :omitted] and finite?(previous) and policy[key] == expected
+      end)
+  end
+
+  defp valid_policy?(_), do: false
+  defp finite?(value), do: is_integer(value) and value in 1..@finite_max
+
+  defp resource_budget(input) when is_map(input) do
+    soft = input[:soft_limit]
+    hard = input[:hard_limit]
+    source = if is_nil(soft) and is_nil(hard), do: :adaptive, else: :explicit
+    provenance = %{source: source}
+
+    if Map.keys(input) -- [:soft_limit, :hard_limit, :provenance] == [] and
+         Map.has_key?(input, :soft_limit) and Map.has_key?(input, :hard_limit) and
+         (source == :adaptive or (finite?(soft) and finite?(hard) and soft <= hard)) and
+         Map.get(input, :provenance, provenance) == provenance,
+       do: {:ok, %{soft_limit: soft, hard_limit: hard, provenance: provenance}},
+       else: {:error, :invalid_resource_budget}
+  end
+
+  defp resource_budget(_), do: {:error, :invalid_resource_budget}
 
   @doc false
   def shutdown_timeout(input) do
@@ -44,57 +163,73 @@ defmodule Gaoxy.Config do
 
   def validate(options) do
     with :ok <- keyword(options),
-         :ok <- known(Map.new(options), [:services, :name, :activation]),
+         :ok <- known(Map.new(options), [:services, :name, :activation, :resource_budget]),
          activation = Keyword.get(options, :activation, :immediate),
          true <- activation in [:immediate, :deferred] || {:error, :invalid_activation},
          true <- is_list(Keyword.get(options, :services, [])) || {:error, :invalid_services},
-         {:ok, services} <- services(Keyword.get(options, :services, []), []) do
-      {:ok, %{name: Keyword.get(options, :name), services: services, activation: activation}}
+         {:ok, services} <- services(Keyword.get(options, :services, []), []),
+         {:ok, budget} <-
+           resource_budget(
+             Keyword.get(options, :resource_budget, %{soft_limit: nil, hard_limit: nil})
+           ) do
+      {:ok,
+       %{
+         name: Keyword.get(options, :name),
+         services: services,
+         activation: activation,
+         resource_budget: budget
+       }}
     end
   end
 
   def service(input) when is_map(input) do
-    with {:ok, input} <- Gaoxy.BackendOptions.normalize(input), do: normalized_service(input)
+    normalized_service(input)
   end
 
   def service(_), do: {:error, :invalid_service}
 
   defp normalized_service(input) do
-    limits = Map.merge(@limits, Map.get(input, :limits, %{}))
+    with true <-
+           (not Map.has_key?(input, :budget_policy) or is_map(input.budget_policy)) ||
+             {:error, :invalid_budget_policy},
+         {:ok, limits, policy} <-
+           service_limits(Map.get(input, :limits, %{}), %{}, Map.get(input, :budget_policy)) do
+      spec =
+        Map.merge(
+          %{
+            ip: {127, 0, 0, 1},
+            port: 0,
+            mode: :unicast,
+            tls: %{},
+            udp: %{},
+            quic: %{},
+            dispatcher: %{},
+            handler_options: [],
+            handler_mode: :stream,
+            capabilities: []
+          },
+          input
+        )
+        |> Map.put(:limits, limits)
+        |> Map.put(:budget_policy, policy)
 
-    spec =
-      Map.merge(
-        %{
-          ip: {127, 0, 0, 1},
-          port: 0,
-          mode: :unicast,
-          tls: %{},
-          udp: %{},
-          quic: %{},
-          dispatcher: %{},
-          handler_options: [],
-          handler_mode: :stream,
-          capabilities: []
-        },
-        input
-      )
-      |> Map.put(:limits, limits)
+      with :ok <- known(input, @keys),
+           {:ok, spec} <- Gaoxy.BackendOptions.normalize(spec),
+           :ok <- identity(spec),
+           :ok <- limit_check(input, limits),
+           :ok <- handler_mode(spec),
+           {:ok, spec} <- dispatcher(spec),
+           :ok <- transport(spec),
+           :ok <- handler(spec),
+           :ok <- requested(spec),
+           {:ok, options} <- handler_options(spec) do
+        quic =
+          if spec.transport == :quic,
+            do: Map.put_new(spec.quic, :poll_interval, 10),
+            else: spec.quic
 
-    with :ok <- known(input, @keys),
-         :ok <- identity(spec),
-         :ok <- limit_check(input, limits),
-         :ok <- handler_mode(spec),
-         {:ok, spec} <- dispatcher(spec),
-         :ok <- transport(spec),
-         :ok <- handler(spec),
-         :ok <- requested(spec),
-         {:ok, options} <- handler_options(spec) do
-      quic =
-        if spec.transport == :quic,
-          do: Map.put_new(spec.quic, :poll_interval, 10),
-          else: spec.quic
-
-      {:ok, %{spec | handler_options: options, quic: quic}}
+        {:ok, %{spec | handler_options: options, quic: quic}}
+      end
     end
   rescue
     BadMapError -> {:error, :invalid_options}
@@ -163,9 +298,9 @@ defmodule Gaoxy.Config do
   defp wildcard?(ip), do: Enum.all?(Tuple.to_list(ip), &(&1 == 0))
 
   defp limit_check(input, limits) do
-    with :ok <- known(Map.get(input, :limits, %{}), Map.keys(@limits)),
+    with :ok <- known(Map.get(input, :limits, %{}), [:protocol_max_bytes | Map.keys(@limits)]),
          true <-
-           Enum.all?(limits, fn {_, n} -> is_integer(n) and n > 0 end) ||
+           Enum.all?(limits, fn {_, n} -> finite?(n) end) ||
              {:error, :invalid_limits},
          true <-
            (limits.max_packet <= 65_507 and limits.max_memberships <= 64) ||

@@ -49,7 +49,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
            Keyword.get(options, :quic, %{alpn: ["h3"]}) == %{alpn: ["h3"]} ||
              {:error, :unsupported_http3_alpn},
          {:ok, h3} <- h3_limits(Keyword.get(options, :h3_limits, %{})),
-         {:ok, service_limits} <- service_limits(Keyword.get(options, :limits, %{})),
+         {:ok, service_limits, policy} <- service_limits(Keyword.get(options, :limits, %{})),
          {:ok, backend} <-
            Gaoxy.BackendOptions.normalize(%{
              transport: :quic,
@@ -87,6 +87,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
          quic: backend.quic,
          abyss_options: backend.abyss_options,
          limits: service_limits,
+         budget_policy: policy,
          handler_options: %{handler | endpoint: initialized.endpoint}
        }}
     end
@@ -186,17 +187,7 @@ defmodule Gaoxy.HTTP.HTTP3.Options do
 
   defp h3_limits(_), do: {:error, :invalid_http3_limits}
 
-  defp service_limits(input) when is_map(input) do
-    limits = Map.merge(@service_defaults, input)
-
-    if Map.keys(input) -- Map.keys(@service_defaults) == [] and
-         Enum.all?(limits, fn {_, value} -> is_integer(value) and value > 0 end) and
-         limits.max_packet <= 65_507 and limits.max_memberships <= 64,
-       do: {:ok, limits},
-       else: {:error, :invalid_limits}
-  end
-
-  defp service_limits(_), do: {:error, :invalid_limits}
+  defp service_limits(input), do: Gaoxy.Config.service_limits(input, @service_defaults)
 
   defp budget(handler, service) do
     reserves = reservation(handler)

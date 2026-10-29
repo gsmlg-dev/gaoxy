@@ -1,0 +1,70 @@
+==> gaoxy_http3
+
+16:50:25.758 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:50:25.784 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+
+
+  1) test direct HTTP3 applies host options and serves an independent QUIC peer (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:92
+     Traceback (most recent call last):
+       File "<string>", line 4, in <module>
+       File "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/peer.py", line 10, in <module>
+         import pylsqpack
+     ModuleNotFoundError: No module named 'pylsqpack'
+
+     code: listener = assert_host(instance, :http3, dir)
+     stacktrace:
+       test/backend_options_network_test.exs:47: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:104: (test)
+
+
+
+  2) test ListenerSet carries HTTP3 host options through real activation (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:109
+     Traceback (most recent call last):
+       File "<string>", line 4, in <module>
+       File "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/peer.py", line 10, in <module>
+         import pylsqpack
+     ModuleNotFoundError: No module named 'pylsqpack'
+
+     code: listener = assert_host(instance, "tuned_h3:http3", dir)
+     stacktrace:
+       test/backend_options_network_test.exs:47: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:124: (test)
+
+
+
+  3) test Phoenix carries HTTP3 host options and shuts down its owned runtime (Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest)
+     apps/gaoxy_http3/test/backend_options_network_test.exs:129
+     Traceback (most recent call last):
+       File "<string>", line 4, in <module>
+       File "/home/gao/Workspace/gsmlg-opt/gaoxy/integration/http3/peer.py", line 10, in <module>
+         import pylsqpack
+     ModuleNotFoundError: No module named 'pylsqpack'
+
+     code: listener = assert_host(instance, Module.concat(PhoenixEndpoint, :HTTP3), dir)
+     stacktrace:
+       test/backend_options_network_test.exs:47: Gaoxy.HTTP.HTTP3.BackendOptionsNetworkTest.assert_host/3
+       test/backend_options_network_test.exs:142: (test)
+
+..
+
+  4) test one target serves negotiated TLS H1/H2 and H3, with opt-in discovery for all final response paths (Gaoxy.HTTP.HTTP3.ListenerSetNetworkTest)
+     apps/gaoxy_http3/test/listener_set_network_test.exs:62
+     Traceback (most recent call last):
+       File "/home/gao/Workspace/gsmlg-opt/gaoxy/apps/gaoxy_http/test/support/listener_set_peer.py", line 10, in <module>
+         import h2.connection
+     ModuleNotFoundError: No module named 'h2'
+
+     code: assert code == 0, output
+     stacktrace:
+       test/listener_set_network_test.exs:106: (test)
+
+......
+Finished in 5.4 seconds (5.4s async, 0.00s sync)
+12 tests, 4 failures
+[os_mon] memory supervisor port (memsup): Erlang has closed
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed

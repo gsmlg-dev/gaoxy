@@ -1,0 +1,13 @@
+--- apps/gaoxy/test/resource_budget_owner_test.exs
++++ apps/gaoxy/test/resource_budget_owner_test.exs
+@@ -1235,8 +1235,8 @@
+     second = :gen_server.send_request(sampler, :refresh)
+     # Same-sender system-message barrier confirms both requests reached the sampler.
+     _ = :sys.get_state(sampler)
+-    assert :timeout = :gen_server.receive_response(first, 0)
+-    assert :timeout = :gen_server.receive_response(second, 0)
++    assert :timeout = :gen_server.wait_response(first, 0)
++    assert :timeout = :gen_server.wait_response(second, 0)
+     send(worker, :continue)
+     assert_receive {:capacity_probe, _}
+     assert {:reply, :ok} = :gen_server.receive_response(first, 1000)

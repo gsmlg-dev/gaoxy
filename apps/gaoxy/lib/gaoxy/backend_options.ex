@@ -51,8 +51,8 @@ defmodule Gaoxy.BackendOptions do
   end
 
   defp option(:hell_options, :num_acceptors, value, spec) do
-    limits = Map.get(spec, :limits, %{})
-    ceiling = if is_map(limits), do: Map.get(limits, :max_active, 64), else: 0
+    # Acceptor fan-out has its own 64-process safety ceiling, independent of the connection quota.
+    ceiling = min(64, Gaoxy.Config.connection_capacity(spec))
 
     valid(
       value,

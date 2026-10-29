@@ -79,13 +79,18 @@ defmodule Gaoxy.ResourceBudget.SystemMemory do
     with {:ok, bytes} <- read(read_file, "/proc/self/cgroup"),
          {:ok, memberships} <- memberships(bytes) do
       if memberships == [] do
-        {[], [], %{controllers: []}}
+        {[], [], %{controllers: [], controller_locations: [], controller_limits: []}}
       else
         with {:ok, bytes} <- read(read_file, "/proc/self/mountinfo"),
              {:ok, mounts} <- mounts(bytes),
              {:ok, locations} <- locations(memberships, mounts),
              {:ok, limits} <- controller_limits(locations, read_file) do
-          {limits, [], %{controllers: Enum.uniq(Enum.map(memberships, &elem(&1, 0)))}}
+          {limits, [],
+           %{
+             controllers: Enum.uniq(Enum.map(memberships, &elem(&1, 0))),
+             controller_locations: Enum.uniq(locations),
+             controller_limits: limits
+           }}
         else
           {:error, reason} -> {[], [reason], %{}}
         end

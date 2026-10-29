@@ -18,7 +18,10 @@ complete by a narrower passing test.
 | ARB-MEM-REVIEW | Sol/Sol | Specification/code accepted; fresh 53/0 | 0 | 0 | None |
 | ARB-ARCH-REVIEW | Sol/Sol | Four clarified contracts accepted | 0 | 0 | None |
 | ARB-OWNER-PREFLIGHT | Sol/Sol | Accepted read-only module/API preflight | 0 | 0 | None |
-| ARB-OWNER | Sol/unassigned | Shared owner implementation not started | 0 | 0 | None |
+| ARB-OWNER | Sol/Astra | Accepted after bounded recovery 120/0 and combined 147/0 | 2 | 1 | SOL_REPEATED_FAILURE |
+| ARB-CORE-PREFLIGHT | Sol/Sol | Accepted read-only transition/provenance patch map | 0 | 0 | None |
+| ARB-CONFIG | Sol/Sol | Accepted specification/code review and fresh combined 147/0 | 0 | 0 | None |
+| ARB-PROTOCOL-PREFLIGHT | Sol/Sol | Accepted read-only hook map; same-token stream retention selected | 0 | 0 | None |
 | ARB-CORE | Sol/unassigned | Not started | 0 | 0 | None |
 | ARB-PROTOCOL | Sol/unassigned | Not started | 0 | 0 | None |
 | ARB-PHOENIX | Sol/unassigned | Not started | 0 | 0 | None |
@@ -32,6 +35,11 @@ ROUTE task=ARB-MEM-REVIEW agent=sol_worker reason=independent-specification-and-
 ROUTE task=ARB-MEM agent=astra_worker reason=SOL_REPEATED_FAILURE
 ROUTE task=ARB-ARCH-REVIEW agent=sol_worker reason=independent-written-architecture-review
 ROUTE task=ARB-OWNER-PREFLIGHT agent=sol_worker reason=bounded-core-interface-preflight
+ROUTE task=ARB-OWNER agent=sol_worker reason=approved-standalone-shared-budget-owners
+ROUTE task=ARB-CORE-PREFLIGHT agent=sol_worker reason=bounded-core-integration-investigation
+ROUTE task=ARB-CONFIG agent=sol_worker reason=independent-pure-policy-provenance-and-quota-normalization
+ROUTE task=ARB-PROTOCOL-PREFLIGHT agent=sol_worker reason=bounded-read-only-protocol-hook-contract
+ROUTE task=ARB-OWNER agent=astra_worker reason=SOL_REPEATED_FAILURE
 
 Architecture admission is the explicitly requested system ownership redesign;
 it is not a Sol failure/recovery escalation. Other tasks default to Sol. Keep
@@ -100,6 +108,11 @@ All commands exited 0 and all 626 input fingerprints remained unchanged.
 Its receipt and byte-preserving logs are archived under
 `../acceptance/evidence/adaptive-resource-budget/foundation/`.
 Shared ownership and runtime protocol integration remain outstanding.
+The qualified foundation is committed locally as
+`bf2b2865944d85c18917d00854a5c503ce3b443d`; all 626 inputs were then compared
+with both that commit and the worktree. This commit has not been pushed or
+released. ARB-OWNER starts from that commit without changing the accepted MEM
+files or wiring production Admission yet.
 
 ### ARB-CORE: state owners, configuration, common admission
 
@@ -110,6 +123,82 @@ Implement the independent authority/ledger/sampler facade as ARB-OWNER first,
 then integrate its fixed interface into existing core as ARB-CORE. Both are new
 implementation tasks with their own zeroed initial repair counters; this does
 not resume or downgrade the accepted ARB-MEM recovery.
+
+ARB-OWNER initially held the build/test and manifest lane while ARB-CONFIG
+prepared disjoint pure configuration/constructor/activation tests. Its first
+compile exposed a syntax error and unused alias, executing zero tests; preserve
+that evidence and complete diagnosis/repair round 1 before reassignment. OWNER
+may add validated controller locations to existing SystemMemory metadata for
+safety sampling, without changing detection semantics or duplicating its
+resolver. This additive integration feature requires the accepted 53 memory
+regressions and leaves the completed MEM task's Sol 2/Astra 1 counters intact.
+Its first completed Sol repair passed **110 tests** (42 owner, 15 safety, 53
+memory regressions), formatting, strict compile, inventory and whitespace checks.
+The candidate source hashes were independently matched and its receipts/raw
+logs archived under `../acceptance/evidence/adaptive-resource-budget/owner-candidate/`.
+This is passing candidate evidence, not final OWNER acceptance. Coordinator
+review identified category-cap replacement, registration commit-deadline and
+explicit refresh coalescing defects, all confirmed by read-only follow-up.
+OWNER now holds the exclusive build/test/manifest lane for its second bounded
+Sol repair; preserve the first receipt and keep accepted MEM counters unchanged.
+That second round executed **120 tests with one failure**: all three product
+repairs and 119 other cases passed, but the new safety-only refresh regression
+used `receive_response(request, 0)` to probe two requests, abandoning both OTP
+request aliases before the later reply assertions. The installed OTP source
+confirms that `wait_response/2` preserves such pending requests. Sol stopped
+writes and all commands after this failure; strict compile and inventory remain
+NOT RUN for that round. Evidence stays under
+`.audit/adaptive-resource-budget/owner/repair2/`. This is the second unsuccessful
+Sol repair/acceptance round (the first candidate's review found three defects),
+so the recorded `SOL_REPEATED_FAILURE` gate admits one bounded Astra recovery.
+The required correction must preserve every positive reply/capacity assertion
+and rerun all 120 cases plus remaining checks; no third Sol repair is authorized.
+The first Astra recovery changed only the two zero-time observations to
+`wait_response/2`, retaining the subsequent positive assertions. It passed all
+120 cases, owned formatting, strict compile, inventory and whitespace checks.
+Coordinator review accepted the narrowly scoped correction and the three
+underlying product repairs. A fresh OWNER/MEM/CONFIG run then executed **147
+tests with zero failures/exclusions/skips**. Recovery and combined receipts are
+archived under `../acceptance/evidence/adaptive-resource-budget/owner-final/`.
+This accepts the standalone OWNER and pure CONFIG checkpoint; production CORE
+and protocol integration remain outstanding. Cumulative OWNER counters are
+Sol 2/Astra 1 and MEM remains Sol 2/Astra 1.
+CONFIG's initial
+27-case RED executed 27/25 failures, followed by GREEN 27/0. Existing compatibility
+checks passed **58 unit, 37 component and 12 H3 protocol tests**, with strict
+compile, owned formatting, inventory and whitespace checks. An initial H3
+12/4 failed invocation incorrectly resolved the virtualenv interpreter symlink;
+the corrected invocation passed 12/0. Both remain archived under
+`../acceptance/evidence/adaptive-resource-budget/config/`. Coordinator independent
+specification/code review found no additional actionable CONFIG changes; all 11
+source and six raw-log hashes match its receipt. A fresh combined run remains
+required after OWNER repair before accepting this integration checkpoint.
+That required combined verification has now passed 147/0 as recorded above.
+
+The CORE preflight identified all byte/ownership mutations, bootstrap terminal
+pairs and Service guardian receipt paths. Preserve the telemetry scope identity
+separately from the actual Instance PID/budget reference. Explicit legacy
+`max_active` counts ordinary leases, including writers/workers but excluding
+separate cleanup records; explicit legacy `max_bytes` counts transport/cleanup
+bytes and excludes existing WebSocket retention. Send start/finish only changes
+metadata because callers already account its bytes. Preserve public queued
+`Admission.update/4` late-execution compatibility; internal budget operations
+use their own absolute deadlines. Backend/QUIC numeric safety controls stay
+finite and independent from detected host capacity.
+
+CONFIG's fixed integration contract is `service.budget_policy` and
+`plan.resource_budget`, plus pure `Config.connection_capacity/1,2` and
+`Config.lease_safety_limit/0`. Protocol/backend consumers retain numeric
+`limits.max_bytes`; `limits.protocol_max_bytes` only carries an omitted-cap
+provider profile through pure planning. A separate finite acceptor ceiling of
+64 preserves fanout safety independently from the connection quota.
+
+OWNER's lifecycle interface must cover registration drain/retirement even for
+an empty instance or service failing before gate registration. Authenticated
+bounded allocation pages let a live parent recover canonical tokens/revisions
+after gate loss. Resource-owner DOWN alone remains insufficient terminal proof.
+Default process names are scoped to the local BEAM node, so connected nodes do
+not accidentally share one globally named default authority.
 
 - [ ] Implement supervised canonical ledger continuity, authority generations,
   per-instance scopes and aggregate VM coordination; fail closed after ledger

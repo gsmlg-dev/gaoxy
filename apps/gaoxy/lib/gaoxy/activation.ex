@@ -24,10 +24,9 @@ defmodule Gaoxy.Activation do
     Process.flag(:trap_exit, true)
 
     result =
-      with {:ok, plan} <- Lifecycle.protect(fn -> Gaoxy.Config.validate(services: services) end),
-           :ok <- match_plan(plan.services, planned),
+      with {:ok, services} <- Lifecycle.protect(fn -> validate_services(services, planned) end),
            :ok <- pending(context.control, operation, owner, caller, deadline) do
-        Enum.reduce_while(plan.services, {:ok, []}, fn spec, {:ok, handles} ->
+        Enum.reduce_while(services, {:ok, []}, fn spec, {:ok, handles} ->
           with :ok <- pending(context.control, operation, owner, caller, deadline),
                {:ok, handle} <- Lifecycle.protect(fn -> start.(spec) end) do
             {:cont, {:ok, [handle | handles]}}
@@ -53,6 +52,14 @@ defmodule Gaoxy.Activation do
       cleanup = rollback(context)
       send(owner, {:activation_done, operation, self(), result, cleanup})
     end
+  end
+
+  @doc false
+  def validate_services(services, planned) do
+    with {:ok, actual} <- Gaoxy.Config.validate(services: services),
+         {:ok, expected} <- Gaoxy.Config.validate(services: planned),
+         :ok <- match_plan(actual.services, expected.services),
+         do: {:ok, actual.services}
   end
 
   def rollback(context) do
@@ -130,7 +137,8 @@ defmodule Gaoxy.Activation do
             {:halt, {:error, {:planned_service_changed, service.id}}}
 
           not within?(service.limits, original.limits) or
-              not within?(service.dispatcher, original.dispatcher) ->
+            not within?(service.dispatcher, original.dispatcher) or
+              not policy_within?(service.budget_policy, original.budget_policy) ->
             {:halt, {:error, {:planned_service_ceiling, service.id}}}
 
           true ->
@@ -142,6 +150,18 @@ defmodule Gaoxy.Activation do
     end
   end
 
+  defp policy_within?(actual, planned) do
+    Enum.all?([:max_active, :max_bytes], fn key ->
+      is_nil(planned[key]) or (is_integer(actual[key]) and actual[key] <= planned[key])
+    end) and
+      Enum.all?([:max_connections, :max_requests, :max_streams], fn key ->
+        actual[key] <= planned[key]
+      end)
+  end
+
   defp within?(actual, planned),
-    do: Enum.all?(actual, fn {key, value} -> value <= Map.fetch!(planned, key) end)
+    do:
+      Enum.all?(actual, fn {key, value} ->
+        is_number(value) and is_number(planned[key]) and value <= planned[key]
+      end)
 end

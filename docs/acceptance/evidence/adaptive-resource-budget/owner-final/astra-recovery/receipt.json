@@ -1,0 +1,128 @@
+{
+  "task": "ARB-OWNER",
+  "mode": "bounded-recovery-implementation",
+  "status": "recovery_checks_passed_pending_independent_review",
+  "astra_gate": "SOL_REPEATED_FAILURE",
+  "baseline": "bf2b2865944d85c18917d00854a5c503ce3b443d",
+  "environment": {
+    "ELIXIR_ERL_OPTIONS": "+S 2:2",
+    "MIX_ENV": "test"
+  },
+  "root_cause": "OTP receive_response/2 timeout abandons request aliases; the zero-time observation must use wait_response/2 to preserve later reply assertions.",
+  "changed_files": [
+    "apps/gaoxy/test/resource_budget_owner_test.exs"
+  ],
+  "counters": {
+    "sol_repair_rounds": 2,
+    "astra_repair_rounds": 1
+  },
+  "tests": {
+    "owner": 52,
+    "safety": 15,
+    "accepted_memory_regression": 53,
+    "executed": 120,
+    "failures": 0,
+    "excluded": 0,
+    "skipped": 0
+  },
+  "test_command": {
+    "command": [
+      "python3",
+      "scripts/check-tests.py",
+      "apps/gaoxy/test/resource_budget_owner_test.exs",
+      "apps/gaoxy/test/resource_budget_safety_test.exs",
+      "apps/gaoxy/test/system_memory_test.exs",
+      "apps/gaoxy/test/resource_budget_policy_test.exs",
+      "apps/gaoxy/test/system_memory_native_test.exs",
+      "--seed",
+      "0",
+      "--max-cases",
+      "1"
+    ],
+    "environment": {
+      "ELIXIR_ERL_OPTIONS": "+S 2:2",
+      "MIX_ENV": "test"
+    },
+    "exit": 0,
+    "elapsed_seconds": 6.6877830028533936,
+    "log_sha256": "9be208e52457ac089f24e47c8b74b71fe04f040c51380160da9381b8ffa12cd9"
+  },
+  "checks": [
+    {
+      "name": "format",
+      "command": [
+        "mix",
+        "format",
+        "--check-formatted",
+        "apps/gaoxy/lib/gaoxy/resource_budget.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/supervisor.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/authority.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/sampler.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex",
+        "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex",
+        "apps/gaoxy/test/resource_budget_owner_test.exs",
+        "apps/gaoxy/test/resource_budget_safety_test.exs"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.9532167911529541,
+      "log": ".audit/adaptive-resource-budget/owner/astra-recovery/format.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "strict-compile",
+      "command": [
+        "mix",
+        "compile",
+        "--warnings-as-errors"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 1.3943228721618652,
+      "log": ".audit/adaptive-resource-budget/owner/astra-recovery/strict-compile.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "inventory",
+      "command": [
+        "python3",
+        "scripts/check-test-inventory.py"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.17270183563232422,
+      "log": ".audit/adaptive-resource-budget/owner/astra-recovery/inventory.log",
+      "log_sha256": "1c7488a59a3a32768441abec8802389007003fbba5b8927824d55fb1d87bf870"
+    },
+    {
+      "name": "whitespace",
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit": 0,
+      "elapsed_seconds": 0.024591445922851562,
+      "log": ".audit/adaptive-resource-budget/owner/astra-recovery/whitespace.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_hashes": {
+    "apps/gaoxy/lib/gaoxy/resource_budget.ex": "0f6b46bbece1ad8ca6426952f079462ce6017c71e2e1fff5d776969aff14cc78",
+    "apps/gaoxy/lib/gaoxy/resource_budget/authority.ex": "c7a523748263657eb35711537f8ce80c7db01e7bdb695762f5b7a15138c5fe1b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/ledger.ex": "febac9a9206279dd011831595b3fb448ea32146f5b25cca9f58771fc8ee24eb2",
+    "apps/gaoxy/lib/gaoxy/resource_budget/policy.ex": "c499b1b1cc65ba4d156b5741f7b276d60a0a3cc23115637110fa59eee05f232b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/safety.ex": "9e163881a3b100f8d32fd50bff94add168b3cd9d49c28287e3cd0494dd35e561",
+    "apps/gaoxy/lib/gaoxy/resource_budget/sampler.ex": "ba7734f14b0be0a06afd92fe77ae643b9a79d411fec6f91751c7eca471db863a",
+    "apps/gaoxy/lib/gaoxy/resource_budget/supervisor.ex": "b3a7d2608b0e42472070fc53f00e3f76253bb822eb36005b469ab0dce39f73ab",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory.ex": "ad28df899a5c5f34184bc556b4c1b08034468e867bb32dbf1f76ff0837d8fb6b",
+    "apps/gaoxy/lib/gaoxy/resource_budget/system_memory/native.ex": "6c6e7caad7c97c27512cecaa8efeb508b222f2c2b8c39b77f5c973334ef69865",
+    "apps/gaoxy/test/resource_budget_owner_test.exs": "e0bc50fef482cdce19ac365dbd4669932d46e08a48863b5f43c0ec290977b408",
+    "apps/gaoxy/test/resource_budget_safety_test.exs": "2d3ce05383e7d62039877164f2682396edc25cd41605ba2489935865fb311345",
+    "apps/gaoxy/test/system_memory_test.exs": "09c8eb8c86d71a9591d356fcee1293787930a548efb4698a116826c2370192aa",
+    "apps/gaoxy/test/resource_budget_policy_test.exs": "26ea72973096578da2bf958dba5afbab5c0346d76df95b1426fa02d666c51cc0",
+    "apps/gaoxy/test/system_memory_native_test.exs": "a253fa17dc5e94ddca3a3e15ff7da2cfc93aa3f441e79f0ab5ffd159c17eeebf",
+    "scripts/check-repairs.py": "6a4d1b9013c3ef1ab56b9efa3d98795a35b4b40067639d173b131362520bc929"
+  },
+  "unchanged_source_count": 14,
+  "commands_terminal": true,
+  "remaining_scope": "Independent parent review and fresh combined OWNER/CONFIG verification; CORE/protocol/Phoenix integration remains outside this recovery."
+}

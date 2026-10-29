@@ -1,0 +1,24 @@
+FAIL: zero executed tests
+==> gaoxy
+
+16:09:12.948 [notice]     :alarm_handler: {:set, {:system_memory_high_watermark, []}}
+
+16:09:12.979 [notice]     :alarm_handler: {:set, {{:disk_almost_full, ~c"/run/user/1000"}, []}}
+Running ExUnit with seed: 0, max_cases: 1
+
+    error: cannot invoke remote function :erlang.*/2 inside a match
+    │
+ 63 │     assert %{usage: 600 * @mib, vm: %{usage: 600 * @mib}} = snapshot(server, i1)
+    │                         ^
+    │
+    └─ test/resource_budget_owner_test.exs:63:25: Gaoxy.ResourceBudget.OwnerTest."test multiple instances share one VM pool"/1
+
+
+== Compilation error in file test/resource_budget_owner_test.exs ==
+** (CompileError) test/resource_budget_owner_test.exs: cannot compile module Gaoxy.ResourceBudget.OwnerTest (errors have been logged)
+    (stdlib 7.3.0.1) lists.erl:2673: :lists.mapfoldl_1/3
+    (stdlib 7.3.0.1) lists.erl:2673: :lists.mapfoldl_1/3
+    (ex_unit 1.18.5) expanding macro: ExUnit.Assertions.assert/1
+    test/resource_budget_owner_test.exs:63: Gaoxy.ResourceBudget.OwnerTest."test multiple instances share one VM pool"/1
+[os_mon] cpu supervisor port (cpu_sup): Erlang has closed
+[os_mon] memory supervisor port (memsup): Erlang has closed
