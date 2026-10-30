@@ -150,9 +150,18 @@ defmodule Gaoxy.Server.StandaloneRecoveryTest do
       end
     end)
 
-    assert_receive {:expired_activation, ^caller,
-                    {:error, {:deadline_exceeded, :cleanup_pending}}},
-                   2000
+    # The preparation timer and caller deadline can expire in the same tick.
+    # Hold the coordinator's reply until the caller observes its own deadline;
+    # the generation store remains runnable and still terminates the worker.
+    true = :erlang.suspend_process(coordinator)
+
+    try do
+      assert_receive {:expired_activation, ^caller,
+                      {:error, {:deadline_exceeded, :cleanup_pending}}},
+                     2000
+    after
+      if Process.alive?(coordinator), do: :erlang.resume_process(coordinator)
+    end
 
     assert_receive {:DOWN, ^monitor, :process, ^caller, :normal}, 1000
     assert Lifecycle.remaining(deadline) == 0

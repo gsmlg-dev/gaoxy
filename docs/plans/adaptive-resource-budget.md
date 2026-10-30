@@ -33,7 +33,7 @@ The historical checkpoints below retain their actual status at execution time.
 | ARB-CORE-PREFLIGHT | Sol/Sol | Accepted read-only transition/provenance patch map | 0 | 0 | None |
 | ARB-CONFIG | Sol/Sol | Accepted specification/code review and fresh combined 147/0 | 0 | 0 | None |
 | ARB-PROTOCOL-PREFLIGHT | Sol/Sol | Accepted read-only hook map; same-token stream retention selected | 0 | 0 | None |
-| ARB-CORE | Sol/Astra | Accepted production14 plus fixture-only compatibility15; original89 network gates PASS; new exact-source hosted qualification pending | 2 | 15 | SOL_REPEATED_FAILURE |
+| ARB-CORE | Sol/Astra | Production14 unchanged; compatibility16 test synchronization accepted after equal-deadline trace, original37 assertions/deadlines preserved; new exact-source CI pending | 2 | 16 | SOL_REPEATED_FAILURE |
 | ARB-ENTRY | Sol/Sol | Gateway/JSON propagation accepted in combined 312/0 | 0 | 0 | None |
 | ARB-H1H2 | Sol/Astra | Accepted scoped378/0 and source review; final pinned868/0 passes, prior helper16/1 retained | 2 | 16 | SOL_REPEATED_FAILURE |
 | ARB-H1H2-REVIEW | Sol/Sol | Test-only repairs accepted; production review requests expired-start retirement repair | 0 | 0 | None |
@@ -55,8 +55,9 @@ The historical checkpoints below retain their actual status at execution time.
 | ARB-CORE-RELEASE-CODE | Sol/Sol | Frozen repair12 accepted; buffer/state/output findings resolved, terminal ownership and raw evidence verified | 0 | 0 | None |
 | ARB-FINAL-ACCEPTANCE | Sol/Sol | Final014 source accepted,12DoD/20verification audited and35 gates/682 input hashes verified; ready for authorized delivery | 0 | 0 | None |
 | ARB-NETWORK-FIXTURE15-REVIEW | Sol/Sol | Accepted four fixture inputs,678 unchanged inputs,35 original assertions and89 passing network gates; exact-SHA hosted rerun required | 0 | 0 | None |
+| ARB-STANDALONE-RECOVERY16-REVIEW | Sol/Sol | Accepted one test-only ordering barrier,681 unchanged inputs and11 passing receipts; original hosted2/1 remains FAIL | 0 | 0 | None |
 | ARB-VERSION | Sol/Sol | Accepted0.14.0 alignment; final source gates PASS and6Hex/tag/GitHubrelease live availability rechecked unused | 0 | 0 | None |
-| ARB-RELEASE | Coordinator/Coordinator | Implementation4f39c9e4 pushed; old hosted E2E FAIL preserved; fixture repair accepted, new CI/publication pending | 0 | 0 | None |
+| ARB-RELEASE | Coordinator/Coordinator | Implementation4f39c9e4 and fixture15 e57fb086 pushed; both original E2E failures preserved; fixture16 accepted, new CI/publication pending | 0 | 0 | None |
 
 ROUTE task=ARB-BASE agent=sol_worker reason=baseline-investigation
 ROUTE task=ARB-ARCH agent=astra_worker reason=PROJECT_ARCHITECTURE
@@ -628,9 +629,14 @@ source-consumer/standalone/Phoenix peer gates. Serialize shared build state.
   portable workflows pass; E2E isolated-network fails with other E2E jobs green.
 - [x] Diagnose and independently review fixture-only CORE15 repair, preserving
   original assertions and failure evidence; all89 original network gates pass.
-- [ ] Commit/push the reviewed fixture repair, bind its exact source to prior
-  qualification with only four integration inputs changed, and require all five
-  source workflows to pass on the new SHA before publication.
+- [x] Commit/push fixture15 as `e57fb086f5aa2093767832699907f3430f8334a6`;
+  authenticate its four-input source bridge and archives. Four workflows pass;
+  E2E network/component pass but recovery timing fails2/1 in protocol.
+- [x] Diagnose equal-deadline ordering and independently review CORE16's single
+  deterministic test barrier with all assertions/deadlines preserved.
+- [ ] Freshly verify, commit/push fixture16, bind its exact source with one test
+  input changed from e57fb086, and require all five source workflows to pass on
+  the new SHA before publication.
 - [ ] Dispatch existing `release.yml` with version, current branch and full
   expected SHA. Preserve all publication guards and actual job dispositions.
 - [ ] Verify tag/source, GitHub assets/checksums, six Hex package versions/bytes,

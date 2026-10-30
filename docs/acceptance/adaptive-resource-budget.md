@@ -1,12 +1,13 @@
 # Adaptive resource budget acceptance
 
-Status: implementation commit `4f39c9e49f6e7c2147bfaa3a8ca4ae7290506d28`
-is pushed. Its35 local gates passed, including **900 canonical cases**, but
-hosted E2E failed in the isolated-network fixture. The fixture-only CORE15
-repair and independent review are accepted, with89 original network gates
-passing. New exact-source hosted qualification, publication and public-artifact/
-runtime acceptance remain open. Application, test, dependency and version bytes
-remain identical to the locally qualified implementation.
+Status: implementation `4f39c9e4` and fixture repair `e57fb086` are pushed.
+The implementation's35 local gates passed, including **900 canonical cases**;
+the repaired isolated-network fixture also passes in hosted CI. A subsequent
+standalone recovery test exposes a same-deadline ordering race. The test-only
+CORE16 synchronization and independent review are accepted, with original
+assertions and deadlines intact. New exact-source hosted qualification,
+publication and public-artifact/runtime acceptance remain open. Production,
+dependency and version bytes remain identical to the locally qualified source.
 Earlier results below describe their own source checkpoints, including both
 preserved optional QUIC failures and the accepted scoped repair.
 The objective is the complete adaptive budget, dynamic H1/H2/H3 ownership,
@@ -26,6 +27,48 @@ On 2026-10-30 the user adds **24 hours** to that quota. The new fixed deadline
 is **2026-10-31 10:09:44 Asia/Shanghai** (UTC2026-10-31T02:09:44Z), preserving
 the original start and a total36-hour allowance. The earlier expiry and selected
 model-capacity interruption remain historical; no failure counter is reset.
+
+## Hosted recovery timing and fixture16 — 2026-10-30
+
+All five source workflows on `e57fb086` completed: static/build, unit,
+package/consumers and Linux/macOS portable HTTP smoke passed. E2E run
+`41032538320` passed component and all89 isolated-network gates, but protocol
+stopped at `standalone_recovery_test.exs`, **2 cases / 1 failure**. The group
+case expected `{:error, {:deadline_exceeded, :cleanup_pending}}` and received
+`{:error, :prepare_timeout}` instead. Later protocol steps did not run. The
+[hosted checkpoint](evidence/adaptive-resource-budget/hosted-e57-before-recovery16/archive-manifest.json)
+preserves all five terminal workflow metadata/logs, the failure, source bridge
+and independent commit/archival review. This remains a failed candidate.
+
+The unchanged local command passed2/0; the wrong-result failure was not locally
+reproduced. Exact-source tracing establishes that the outer activation deadline
+and internal preparation deadline are equal, with outer timeout, store timer
+and inner preparation timeout observed atD+1ms. Suspending the transport owner
+does not determine which timeout wins, because cleanup receives zero remaining
+time. No production defect is established by this fixture race.
+
+The single test-only change suspends the coordinator after the existing
+initializer acknowledgement and transport-owner suspension, keeping the caller
+and generation store runnable. The original2000ms expected-error assertion is
+inside `try/after`, which resumes the coordinator before all original DOWN,
+deadline, declaration/baseline, pending-pin and recovery assertions. No sleeps,
+deadline changes or alternate accepted error were introduced. All37 assertion
+ASTs,24 Lifecycle/sys calls and the initializer are identical. The remaining681
+of682 inputs are unchanged from `e57fb086`, including every production input.
+
+Focused, traced and single-scheduler executions each pass2/0. Neighboring
+gateway lifecycle checks pass10/0 and listener/generation checks pass6/0; four
+of those generation cases retain their existing unscheduled ordinary-test
+classification. Strict compilation, scoped formatting, inventory900 and diff
+checks pass. The
+[worker archive](evidence/adaptive-resource-budget/standalone-recovery16/archive-manifest.json)
+preserves the original local outcomes, timestamps and terminal handoff. The
+[independent specification/code review](evidence/adaptive-resource-budget/standalone-recovery16-review/archive-manifest.json)
+authenticates all682 maps and11 passing receipts without actionable findings.
+After that review the parent freshly reran the original command, passing2/0
+with all682 inputs unchanged. Its raw receipt/log is included in the review
+archive. CORE counters are Sol2/Astra16 compatibility, with production repair14
+unchanged. New exact-source CI and guarded delivery remain required.
 
 ## Hosted qualification and fixture15 — 2026-10-30
 
